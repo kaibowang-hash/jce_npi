@@ -44,19 +44,17 @@ facts pause only formal logic that depends on those facts.
 
 ## Current checkpoint
 
-- Current phase: `1.1 — Development Environment Remediation`.
-- Current atomic task: validate a fresh Codespace built from the repaired branch with
-  `make verify-dev-environment`, `make verify` and `git diff --check`.
-- State at 2026-07-21T18:41:56Z: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`.
-- Latest result: the fresh Codespaces creation log proved the pinned base image's
-  inherited Yarn APT source caused Docker build exit 100 and recovery error
-  1302. Repair round 3 sanitizes both supported Yarn source locations before
-  APT refresh, rejects trust/signature bypasses, retains the verified base
-  digest, locks Feature digests, validates official registry metadata and
-  improves post-create readiness diagnostics. Static configuration and all 24
-  current repository tests pass.
-- Phase 3 remains paused until a newly created target runtime proves the pinned
-  toolchain.
+- Current phase: `3 — React App Shell, Siemens UI and i18n Foundation`.
+- Current atomic task: freeze the approved Phase 3 dependency/i18n runtime facts,
+  then implement the first complete industrial App Shell vertical slice.
+- State at 2026-07-21T19:10:09Z: `IN_PROGRESS`.
+- Latest result: Phase 1.1 passed in a fresh Debian 12 target container after
+  repair round 4 corrected the post-create npm privilege/PATH defect and aligned
+  Docker semantic-version checks with observed package/runtime evidence.
+  The exact post-create path, `make verify-dev-environment`, `make verify` (26/26
+  tests) and `git diff --check` all passed.
+- Phase 3 is unpaused under the automatic-transition authorization. Production
+  ERPNext remains prohibited.
 
 See `NEXT_ACTION.md` for the single recovery action and `LAST_RUN.md` for exact
 evidence.

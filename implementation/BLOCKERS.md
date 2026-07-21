@@ -1,22 +1,24 @@
 # Blockers
 
-## Active hard blocker: fresh target-container validation required
+## Active hard blockers
 
-The current environment is a newly created Alpine recovery container. The
-preserved Codespaces creation log proves the repository's original devcontainer
-build failed before target-container creation: the pinned Python image's
-inherited Yarn APT source had an unavailable signing key, so `apt-get update`
-exited 100 and Codespaces reported error 1302.
+None.
 
-Repair round 3 removes matching repository lines from `/etc/apt/sources.list`
-and deletes all `/etc/apt/sources.list.d/*yarn*` source fragments before package
-refresh. It retains the verified base digest, locks the official Feature OCI
-digests, rejects APT trust/signature bypasses and ignored APT failures,
-cross-validates fixed tool versions, makes post-create setup idempotent and
-extends Docker readiness diagnostics. All current static, registry and
-repository tests pass, but Phase 1.1 cannot pass until a new Codespace created
-from the repaired branch dynamically verifies the target runtime. Phase 3
-remains paused.
+## Resolved: Phase 1.1 fresh target-container validation
 
-Production ERPNext credentials and production activation remain explicitly out
-of scope and are not a development blocker.
+The 2026-07-21 rebuilt Codespace created the intended Debian 12 target container
+from the repaired branch. Its first post-create attempt exposed two additional
+runtime facts that static inspection could not prove: `sudo npm` lost the Node
+Feature PATH, and the selected Moby `28.3.3` package reports runtime version
+`28.3.3-1`. Repair round 4 installs Vite through the writable remote-user npm
+prefix, verifies Docker client/server against the selected semantic version and
+records their complete package revision plus the actual Compose v2 runtime.
+
+The repaired post-create path, `make verify-dev-environment`, `make verify` and
+`git diff --check` all pass in the fresh target container. Phase 1.1 is closed
+and Phase 3 is active.
+
+Production ERPNext credentials and activation remain explicitly out of scope
+and are not a development blocker. The missing sanitized ERPNext reconciliation
+package pauses only later formal business logic that depends on actual ERP
+customization facts; it does not block Phase 3.

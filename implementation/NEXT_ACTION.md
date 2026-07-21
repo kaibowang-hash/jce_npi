@@ -1,15 +1,15 @@
 # Next Action
 
-Status: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`
+Status: `IN_PROGRESS`
 
-Create a new GitHub Codespace from the latest
-`codex/npi-v1.2-implementation` branch.
+Current phase: `3 — React App Shell, Siemens UI and i18n Foundation`.
 
-The latest checkpoint includes both-location Yarn APT cleanup and the matching
-static regression gate; no terminal action is required in the recovery
-container.
+Resume the first Phase 3 atomic task: read the complete applicable UI, UX,
+design, localization and acceptance Pack plus the `industrial-ux`,
+`frappe-i18n`, `npi-domain-guard`, `frappe-safe-change` and `release-gate`
+skills; resolve the already-identified dependency and live Frappe language-code
+facts; then implement the smallest complete trilingual industrial App Shell
+slice with its automated tests and real rendered evidence.
 
-When the target container opens, the delivery agent must resume Phase 1.1 with
-`make verify-dev-environment`, `make verify` and `git diff --check`. Phase 1.1
-remains `IN_PROGRESS`, and Phase 3 remains paused, until those target-runtime
-checks pass.
+Phase 1.1 is `PASS`. Production ERPNext remains prohibited. Missing ERPNext
+reconciliation material does not block this Phase 3 shell/i18n work.

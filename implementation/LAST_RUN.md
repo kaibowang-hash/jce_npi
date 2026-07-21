@@ -1,44 +1,40 @@
 # Last Run
 
-- Timestamp: `2026-07-21T18:41:56Z`
+- Timestamp: `2026-07-21T19:10:09Z`
 - Branch: `codex/npi-v1.2-implementation`
-- Starting HEAD: `835558a7cfdf43ec1a8e10c6606811db2641448a`
+- Starting HEAD: `2537937b7b32748d5e43bcc30fce5a313721de79`
 - Starting upstream state: ahead 0 / behind 0
-- Phase: `1.1 — Dev Container Root-Cause Repair`
-- Repair round: `3/5`
-- Gate state: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`
+- Completed phase: `1.1 — Development Environment Remediation`
+- Repair round: `4/5`
+- Gate state: `PASS`
+- Automatically activated phase: `3 — React App Shell, Siemens UI and i18n Foundation`
 
-## Evidence and repair
+## Fresh-target evidence and repair
 
-- Codespaces creation evidence remains authoritative: the pinned image was
-  pulled and entered Dockerfile execution, then `apt-get update` rejected the
-  inherited `https://dl.yarnpkg.com/debian stable` source with
-  `NO_PUBKEY 62D54FD4003F6525` and exit 100. No new evidence implicates the image
-  digest, so it remains unchanged.
-- The Dockerfile now deletes matching lines from `/etc/apt/sources.list` and all
-  regular `/etc/apt/sources.list.d/*yarn*` fragments before its first APT
-  refresh. It does not trust, disable signature checks, import the old key or
-  ignore APT errors.
-- The repository has no package manifest, Yarn lockfile, `.yarnrc`, Corepack
-  configuration or application-level Yarn requirement. Node/npm remain supplied
-  by the locked Node Dev Container Feature with Yarn APT disabled.
-- The standard-library verifier now prevents the invalid URL from re-entering
-  the build path, requires both cleanup locations/order and rejects
-  `trusted=yes`, unauthenticated/insecure APT settings and ignored APT failures.
-  Six focused regression tests were added.
-- The pre-existing unstaged `.gitignore` duplicate remains user-owned and is not
-  part of this checkpoint. No product, UI, localization, domain, architecture,
-  API, schema, migration, permission, ERPNext or production system changed.
+- A new Codespace successfully built the intended Debian 12 target image from
+  the repaired branch; this is no longer an Alpine recovery container.
+- Its automatic post-create invocation failed at `/usr/bin/env node` because
+  privilege elevation stripped the Node Feature PATH from npm. The repository
+  now installs fixed Vite through the verified writable remote-user npm prefix
+  and statically rejects `sudo npm`.
+- The target Moby package reports runtime `28.3.3-1`; the verifier now matches
+  client/server against selected semantic version `28.3.3` and permits only a
+  numeric packaging revision suffix. It requires Compose v2 and records observed
+  package/Compose revisions without claiming installation pins the Feature does
+  not provide.
+- The repaired `bootstrap-dev.sh` completed as the remote user in the fresh
+  target. No production service, credential, database or ERPNext endpoint was
+  contacted.
 
 ## Commands and results
 
-| Command | Result | Evidence |
-|---|---|---|
-| `make verify-dev-config` | `PASS` | local semantics, both Yarn cleanup paths, MCR/GHCR locks and official tool metadata verified |
-| `make verify` | `PASS` | configuration/registry gate and 24/24 repository tests passed |
-| `git diff --check` | `PASS` | exit 0, no output |
+| Command | Result |
+|---|---|
+| `bash scripts/bootstrap-dev.sh` | `PASS` |
+| `make verify-dev-environment` | `PASS` — complete pinned target toolchain printed |
+| `make verify` | `PASS` — registry/configuration checks and 26/26 tests |
+| `git diff --check` | `PASS` — exit 0, no output |
 
-The `release-gate` review is `PASS` for this root-cause repair checkpoint and
-`BLOCKED` for the Phase 1.1 milestone until fresh-container dynamic evidence is
-available. Phase 1.1 is not `PASS`, and Phase 3 remains paused. The single next
-action is recorded in `NEXT_ACTION.md`.
+The Phase 1.1 `release-gate` result is `PASS`; exact evidence and rollback are in
+`implementation/phase-1.1-gate.md`. The single recovery action is the first
+Phase 3 task recorded in `NEXT_ACTION.md`.

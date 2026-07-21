@@ -5,6 +5,7 @@ from scripts.verify_devcontainer import (
     parse_pinned_from,
     parse_toolchain,
     validate_apt_source_sanitization,
+    validate_bootstrap_vite_installation,
     validate_local_configuration,
 )
 
@@ -60,7 +61,34 @@ class DevcontainerVerifierTest(unittest.TestCase):
         config, toolchain, base_reference = validate_local_configuration()
         self.assertEqual(config["remoteUser"], "vscode")
         self.assertEqual(toolchain["NPM_EXPECTED_VERSION"], "10.8.2")
+        self.assertEqual(toolchain["DOCKER_EXPECTED_VERSION"], "28.3.3")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
+
+    def test_vite_install_rejects_sudo_sanitized_node_path(self):
+        safe_bootstrap = """installed_vite_version="${installed_vite%% *}"
+if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]; then
+npm_prefix="$("${npm_command}" prefix --global)"
+[[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]
+"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+fi
+"""
+        validate_bootstrap_vite_installation(safe_bootstrap)
+        with self.assertRaises(VerificationError):
+            validate_bootstrap_vite_installation(
+                safe_bootstrap
+                + 'sudo "${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"\n'
+            )
+
+    def test_vite_install_rejects_longer_version_prefix(self):
+        unsafe_bootstrap = """installed_vite_version="${installed_vite%% *}"
+if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}"* ]]; then
+npm_prefix="$("${npm_command}" prefix --global)"
+[[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]
+"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+fi
+"""
+        with self.assertRaises(VerificationError):
+            validate_bootstrap_vite_installation(unsafe_bootstrap)
 
     def test_toolchain_rejects_duplicate_key(self):
         with self.assertRaises(VerificationError):

@@ -116,6 +116,33 @@ def git_mode(path: Path) -> str:
     return result.stdout.split()[0]
 
 
+def validate_bootstrap_vite_installation(bootstrap: str) -> None:
+    require(
+        'installed_vite_version="${installed_vite%% *}"' in bootstrap,
+        "Bootstrap must isolate the Vite version token",
+    )
+    require(
+        '[[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]' in bootstrap,
+        "Bootstrap must compare the complete Vite version token",
+    )
+    require(
+        'npm_prefix="$("${npm_command}" prefix --global)"' in bootstrap,
+        "Bootstrap must resolve the Node Feature npm global prefix",
+    )
+    require(
+        '[[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]' in bootstrap,
+        "Bootstrap must reject a non-writable npm global prefix",
+    )
+    require(
+        '"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"' in bootstrap,
+        "Pinned Vite installation path is missing",
+    )
+    require(
+        'sudo "${npm_command}"' not in bootstrap,
+        "Vite installation must not run npm with a sudo-sanitized Node PATH",
+    )
+
+
 def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tuple[str, str, str]]:
     config_path = DEVCONTAINER_DIR / "devcontainer.json"
     lock_path = DEVCONTAINER_DIR / "devcontainer-lock.json"
@@ -215,10 +242,27 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     bootstrap = (REPO_ROOT / "scripts/bootstrap-dev.sh").read_text(encoding="utf-8")
     require('NPI_DOCKER_WAIT_SECONDS:-120' in bootstrap, "Docker readiness wait must default to 120 seconds")
     require("docker version >&2" in bootstrap, "Docker timeout diagnostics are missing")
-    require('sudo "${npm_command}" install --global' in bootstrap, "Pinned Vite installation path is missing")
+    validate_bootstrap_vite_installation(bootstrap)
 
     dynamic_check = (REPO_ROOT / "scripts/verify-dev-environment.sh").read_text(encoding="utf-8")
     require('"${npm_actual}" == "${NPM_EXPECTED_VERSION}"' in dynamic_check, "Dynamic npm check must be exact")
+    require('docker_runtime_pattern=' in dynamic_check, "Dynamic Docker package-revision pattern is missing")
+    require(
+        dynamic_check.count('=~ ${docker_runtime_pattern}') == 2,
+        "Dynamic Docker client and server checks must match the selected version",
+    )
+    require(
+        '"${compose_actual}" == 2.*' in dynamic_check,
+        "Dynamic Docker Compose check must require the configured v2 major",
+    )
+    require(
+        'vite_version_actual="${vite_actual%% *}"' in dynamic_check,
+        "Dynamic check must isolate the Vite version token",
+    )
+    require(
+        '"${vite_version_actual}" == "vite/${VITE_EXPECTED_VERSION}"' in dynamic_check,
+        "Dynamic Vite check must compare the complete version token",
+    )
     return config, toolchain, base_reference
 
 

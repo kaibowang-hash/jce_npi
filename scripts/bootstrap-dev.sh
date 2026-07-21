@@ -24,9 +24,15 @@ for command_name in node npm docker bench sudo; do
 done
 
 installed_vite="$(vite --version 2>/dev/null || true)"
-if [[ "${installed_vite}" != "vite/${VITE_EXPECTED_VERSION}"* ]]; then
+installed_vite_version="${installed_vite%% *}"
+if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]; then
   npm_command="$(command -v npm)"
-  sudo "${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+  npm_prefix="$("${npm_command}" prefix --global)"
+  if [[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]; then
+    echo "npm global prefix is not writable by the remote user: ${npm_prefix}" >&2
+    exit 1
+  fi
+  "${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
 fi
 
 docker_wait_seconds="${NPI_DOCKER_WAIT_SECONDS:-120}"

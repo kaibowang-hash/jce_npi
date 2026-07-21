@@ -26,18 +26,22 @@ done
 node_actual="$(node --version)"
 npm_actual="$(npm --version)"
 python_actual="$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-docker_actual="$(docker version --format '{{.Client.Version}}')"
+docker_client_actual="$(docker version --format '{{.Client.Version}}')"
+docker_server_actual="$(docker version --format '{{.Server.Version}}')"
 compose_actual="$(docker compose version --short)"
 bench_actual="$(bench --version)"
 vite_actual="$(vite --version)"
+vite_version_actual="${vite_actual%% *}"
+docker_runtime_pattern="^${DOCKER_EXPECTED_VERSION//./\\.}(-[0-9]+)?$"
 
 [[ "${node_actual}" == "${NODE_EXPECTED_VERSION}" ]] || { echo "Node mismatch: ${node_actual}" >&2; exit 1; }
 [[ "${npm_actual}" == "${NPM_EXPECTED_VERSION}" ]] || { echo "npm mismatch: ${npm_actual}" >&2; exit 1; }
 [[ "${python_actual}" == "${PYTHON_EXPECTED_MAJOR_MINOR}" ]] || { echo "Python mismatch: ${python_actual}" >&2; exit 1; }
-[[ "${docker_actual}" == "${DOCKER_EXPECTED_VERSION}" ]] || { echo "Docker mismatch: ${docker_actual}" >&2; exit 1; }
-[[ -n "${compose_actual}" ]] || { echo "Docker Compose v2 is unavailable." >&2; exit 1; }
+[[ "${docker_client_actual}" =~ ${docker_runtime_pattern} ]] || { echo "Docker client mismatch: ${docker_client_actual}" >&2; exit 1; }
+[[ "${docker_server_actual}" =~ ${docker_runtime_pattern} ]] || { echo "Docker server mismatch: ${docker_server_actual}" >&2; exit 1; }
+[[ "${compose_actual}" == 2.* ]] || { echo "Docker Compose v2 mismatch: ${compose_actual}" >&2; exit 1; }
 [[ "${bench_actual}" == "${BENCH_EXPECTED_VERSION}" ]] || { echo "Bench mismatch: ${bench_actual}" >&2; exit 1; }
-[[ "${vite_actual}" == "vite/${VITE_EXPECTED_VERSION}"* ]] || { echo "Vite mismatch: ${vite_actual}" >&2; exit 1; }
+[[ "${vite_version_actual}" == "vite/${VITE_EXPECTED_VERSION}" ]] || { echo "Vite mismatch: ${vite_actual}" >&2; exit 1; }
 
 docker info >/dev/null
 docker compose -f "${repo_root}/docker-compose.yml" config -q
@@ -45,7 +49,8 @@ docker compose -f "${repo_root}/docker-compose.yml" config -q
 printf 'node=%s\n' "${node_actual}"
 printf 'npm=%s\n' "${npm_actual}"
 printf 'python=%s\n' "$(python --version 2>&1)"
-printf 'docker=%s\n' "${docker_actual}"
+printf 'docker_client=%s\n' "${docker_client_actual}"
+printf 'docker_server=%s\n' "${docker_server_actual}"
 printf 'compose=%s\n' "${compose_actual}"
 printf 'bench=%s\n' "${bench_actual}"
 printf 'vite=%s\n' "${vite_actual}"
