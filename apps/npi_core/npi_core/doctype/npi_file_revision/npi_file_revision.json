@@ -1,0 +1,17 @@
+{
+  "doctype": "DocType",
+  "name": "NPI File Revision",
+  "module": "NPI Core",
+  "custom": 0,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1},
+    {"fieldname": "revision", "fieldtype": "Int", "label": "Revision", "reqd": 1},
+    {"fieldname": "file", "fieldtype": "Attach", "label": "Private File", "reqd": 1},
+    {"fieldname": "sha256", "fieldtype": "Data", "label": "SHA-256", "reqd": 1, "read_only": 1},
+    {"fieldname": "scan_state", "fieldtype": "Select", "label": "Scan State", "options": "pending\nclean\ninfected\nfailed", "reqd": 1, "read_only": 1},
+    {"fieldname": "released", "fieldtype": "Check", "label": "Released", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Inbox Message",
+  "module": "NPI Integration",
+  "custom": 0,
+  "fields": [
+    {"fieldname": "event_id", "fieldtype": "Data", "label": "Event ID", "reqd": 1, "unique": 1},
+    {"fieldname": "source_system", "fieldtype": "Data", "label": "Source System", "reqd": 1},
+    {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Payload Hash", "reqd": 1},
+    {"fieldname": "payload", "fieldtype": "JSON", "label": "Payload", "reqd": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "pending\nprocessing\nsucceeded\nfailed_retryable\nfailed_final\nquarantined", "reqd": 1},
+    {"fieldname": "replay_id", "fieldtype": "Data", "label": "Replay ID", "read_only": 1}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1}]
+}

@@ -1,0 +1,19 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Outbox Message",
+  "module": "NPI Integration",
+  "custom": 0,
+  "fields": [
+    {"fieldname": "event_id", "fieldtype": "Data", "label": "Event ID", "reqd": 1, "unique": 1},
+    {"fieldname": "event_type", "fieldtype": "Data", "label": "Event Type", "reqd": 1},
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1},
+    {"fieldname": "object_version", "fieldtype": "Int", "label": "Object Version", "reqd": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1},
+    {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Payload Hash", "reqd": 1},
+    {"fieldname": "payload", "fieldtype": "JSON", "label": "Payload", "reqd": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "State", "options": "pending\nprocessing\nsucceeded\nfailed_retryable\nfailed_final", "reqd": 1},
+    {"fieldname": "attempt_count", "fieldtype": "Int", "label": "Attempt Count", "read_only": 1},
+    {"fieldname": "last_error_code", "fieldtype": "Data", "label": "Last Error Code", "read_only": 1}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1}]
+}
