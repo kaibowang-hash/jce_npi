@@ -1,11 +1,11 @@
 # Next Action
 
-Status: `HARD_BLOCKED_CODESPACE_REBUILD`
+Status: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`
 
-In the GitHub Codespaces command palette, run **Codespaces: Rebuild Container**.
+Create a new GitHub Codespace from the latest
+`codex/npi-v1.2-implementation` branch.
 
-After the rebuilt workspace opens, the delivery agent must resume from Phase
-1.1 by running `make verify-dev-environment`, `make verify` and
-`git diff --check`. On `PASS`, update the Phase 1.1 gate and controller evidence,
-commit and push the checkpoint, then continue automatically to Phase 3. No
-production ERPNext connection is authorized.
+When the target container opens, the delivery agent must resume Phase 1.1 with
+`make verify-dev-environment`, `make verify` and `git diff --check`. Phase 1.1
+remains `IN_PROGRESS`, and Phase 3 remains paused, until those target-runtime
+checks pass.

@@ -7,11 +7,14 @@
   "features": {
     "ghcr.io/devcontainers/features/node:2.1.0": {
       "version": "18.20.8",
-      "nodeGypDependencies": true
+      "npmVersion": "10.8.2",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": false
     },
     "ghcr.io/devcontainers/features/docker-in-docker:3.0.1": {
       "version": "28.3.3",
-      "dockerDashComposeVersion": "v2"
+      "dockerDashComposeVersion": "v2",
+      "moby": true
     }
   },
   "containerEnv": {

@@ -32,7 +32,7 @@ bench_actual="$(bench --version)"
 vite_actual="$(vite --version)"
 
 [[ "${node_actual}" == "${NODE_EXPECTED_VERSION}" ]] || { echo "Node mismatch: ${node_actual}" >&2; exit 1; }
-[[ "${npm_actual%%.*}" == "${NPM_EXPECTED_MAJOR}" ]] || { echo "npm mismatch: ${npm_actual}" >&2; exit 1; }
+[[ "${npm_actual}" == "${NPM_EXPECTED_VERSION}" ]] || { echo "npm mismatch: ${npm_actual}" >&2; exit 1; }
 [[ "${python_actual}" == "${PYTHON_EXPECTED_MAJOR_MINOR}" ]] || { echo "Python mismatch: ${python_actual}" >&2; exit 1; }
 [[ "${docker_actual}" == "${DOCKER_EXPECTED_VERSION}" ]] || { echo "Docker mismatch: ${docker_actual}" >&2; exit 1; }
 [[ -n "${compose_actual}" ]] || { echo "Docker Compose v2 is unavailable." >&2; exit 1; }

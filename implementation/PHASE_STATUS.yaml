@@ -1,12 +1,12 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 1.1
-updated_at: '2026-07-21T17:52:30Z'
+updated_at: '2026-07-21T18:28:15Z'
 authorization: automatic_transition_after_pass
 phases:
   - {id: 0, name: Specification Normalization and Architecture, status: PASS, repair_round: 0, gate: implementation/phase-0-gate.md}
   - {id: 1, name: Development Environment and Repository Bootstrap, status: PASS, repair_round: 0, gate: implementation/phase-1-gate.md}
-  - {id: 1.1, name: Development Environment Remediation, status: IN_PROGRESS, repair_round: 1, blocked_by: codespaces_rebuild_required, gate: implementation/phase-1.1-gate.md}
+  - {id: 1.1, name: Development Environment Remediation, status: IN_PROGRESS, repair_round: 2, blocked_by: fresh_codespace_dynamic_validation_required, gate: implementation/phase-1.1-gate.md}
   - {id: 2, name: Frappe Backend and Security Foundation, status: PASS, repair_round: 0, gate: implementation/phase-2-gate.md}
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: PAUSED, repair_round: 0, blocked_by: 1.1}
   - {id: 4, name: Project Work Items and Stage Gates, status: NOT_STARTED, repair_round: 0}

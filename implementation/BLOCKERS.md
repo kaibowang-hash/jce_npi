@@ -1,7 +1,19 @@
 # Blockers
 
-## Active hard blocker: Codespaces rebuild required
+## Active hard blocker: fresh target-container validation required
 
-Phase 1.1 repair round 1 proved that the active container is stale: `make verify-dev-environment` cannot find Node, and direct probes also show npm, Docker CLI and Bench missing while Python is 3.12.13. A fresh verification at `2026-07-21T17:52:30Z` reproduced that dynamic failure; `make verify` and `git diff --check` passed. The committed devcontainer defines the approved pinned toolchain, so the required action is **Codespaces: Rebuild Container**. Phase 3 remains paused until the rebuilt runtime passes both `make verify-dev-environment` and `make verify`.
+The current environment is a newly created Alpine recovery container. The
+preserved Codespaces creation log proves the repository's original devcontainer
+build failed before target-container creation: the pinned Python image's
+inherited Yarn APT source had an unavailable signing key, so `apt-get update`
+exited 100 and Codespaces reported error 1302.
 
-Production ERPNext credentials and production activation remain explicitly out of scope and are not a development blocker.
+Repair round 2 removes that unused source before package refresh, locks the
+official Feature OCI digests, cross-validates fixed tool versions, makes
+post-create setup idempotent and extends Docker readiness diagnostics. All
+current static, registry and repository tests pass, but Phase 1.1 cannot pass
+until a new Codespace created from the repaired branch dynamically verifies the
+target runtime. Phase 3 remains paused.
+
+Production ERPNext credentials and production activation remain explicitly out
+of scope and are not a development blocker.

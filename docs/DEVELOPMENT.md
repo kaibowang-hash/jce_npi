@@ -2,26 +2,44 @@
 
 ## Supported path
 
-GitHub Codespaces / VS Code Dev Containers is the authoritative development path. The rebuilt container provides:
+GitHub Codespaces / VS Code Dev Containers is the authoritative development path. A successfully created container provides:
 
-- Python 3.11 from the digest-pinned Debian Bookworm devcontainer image;
-- Node.js 18.20.8 and npm 10 through the pinned official Node feature;
+- Python 3.11 from the digest-pinned Debian Bookworm devcontainer image. The
+  pinned image contains an obsolete Yarn APT source, which the Dockerfile
+  removes before the first package-index refresh because this repository uses
+  the Node Feature's Corepack path instead of Yarn APT;
+- Node.js 18.20.8 and npm 10.8.2 through the pinned official Node feature;
 - Docker Engine/CLI 28.3.3 and Compose v2 through the pinned official Docker-in-Docker feature;
 - Frappe Bench CLI 5.31.0 installed in the image;
 - Vite 5.4.14 installed by the idempotent post-create bootstrap;
 - digest-pinned MariaDB 10.6 and Redis 7.2 through repository Compose services;
 - Frappe `version-15` pinned to commit `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` for local Bench initialization.
 
-The selected Frappe commit declares Python `>=3.10,<3.15` and Node `>=18`; the pinned toolchain is within those supported ranges. This remediation does not change the accepted independent-site, React SPA or ERPNext boundary decisions.
+The Dev Container Features are additionally locked to their OCI digests in
+`.devcontainer/devcontainer-lock.json`. The selected Frappe commit declares
+Python `>=3.10,<3.15` and Node `>=18`; the pinned toolchain is within those
+supported ranges. This remediation does not change the accepted independent-site,
+React SPA or ERPNext boundary decisions.
 
-## Rebuild and verify
+## Creation failure evidence
 
-After checking out the Phase 1.1 checkpoint in Codespaces:
+The Codespaces creation log for the 2026-07-21 fresh environment proves the
+original target container failed during its Dockerfile build. The pinned base
+image was found, but its Yarn repository rejected `apt-get update` with
+`NO_PUBKEY 62D54FD4003F6525`; Docker build exited 100 and Codespaces then created
+the Alpine recovery container with error 1302. Both Features resolved before
+the build, and the target `postCreateCommand` was skipped, so neither Feature
+installation nor `bootstrap-dev.sh` caused that incident.
 
-1. Open the Command Palette.
-2. Run **Codespaces: Rebuild Container**. If that command is not shown, run **Dev Containers: Rebuild Container**.
-3. Wait for `scripts/bootstrap-dev.sh` to finish. A failure is a failed environment build; do not continue to Phase 3.
-4. In the rebuilt terminal run:
+## Create and verify
+
+Create a new Codespace from the latest
+`codex/npi-v1.2-implementation` branch. Wait for `scripts/bootstrap-dev.sh` to
+finish. It installs Vite only when the exact version is missing, waits up to 120
+seconds for Docker and prints Docker process/log diagnostics before returning a
+real failure. It does not hide installation or daemon failures.
+
+In the new target container run:
 
 ```text
 make verify-dev-environment
@@ -29,6 +47,14 @@ make verify
 ```
 
 The first command prints real versions for Node, npm, Python, Docker, Compose, Bench and Vite, checks the Docker daemon and validates Compose. It also prints the selected Frappe branch and exact commit. It does not infer availability from configuration.
+
+Before creating a container, `make verify-dev-config` checks JSON and shell
+syntax; path/context resolution; tracked executable script modes; the remote
+user; post-create wiring; cross-file toolchain pins; the base-image manifest and
+`vscode` metadata in MCR; locked Feature artifacts and supported options in
+GHCR; and the pinned Node/npm, Moby, Bench, Vite and Frappe releases in their
+official registries. A missing image, Feature, script, user, version or execute
+bit fails the command.
 
 ## GitHub authentication and Git LFS
 
@@ -50,4 +76,7 @@ This creates `tmp/frappe-bench`, fetches the exact Frappe commit, runs the publi
 
 ## Rollback
 
-Revert the Phase 1.1 checkpoint and rebuild the Codespace. Local Compose data remains in named volumes unless the guarded reset command is explicitly invoked. Remove `tmp/frappe-bench` only when its disposable local contents are no longer needed; no production system is touched.
+Revert the Phase 1.1 root-cause checkpoint and create a fresh Codespace from the
+reverted branch. Local Compose data remains in named volumes unless the guarded
+reset command is explicitly invoked. Remove `tmp/frappe-bench` only when its
+disposable local contents are no longer needed; no production system is touched.

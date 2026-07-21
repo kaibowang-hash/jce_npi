@@ -2,7 +2,8 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fc
 
 ARG BENCH_VERSION=5.31.0
 
-RUN apt-get update \
+RUN rm -f /etc/apt/sources.list.d/yarn.list \
+    && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -12,6 +13,7 @@ RUN apt-get update \
         redis-tools \
     && python -m venv /opt/frappe-bench \
     && /opt/frappe-bench/bin/pip install --no-cache-dir "frappe-bench==${BENCH_VERSION}" \
+    && chmod -R a+rX /opt/frappe-bench \
     && ln -s /opt/frappe-bench/bin/bench /usr/local/bin/bench \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

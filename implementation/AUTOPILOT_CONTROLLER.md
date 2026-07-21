@@ -45,14 +45,16 @@ facts pause only formal logic that depends on those facts.
 ## Current checkpoint
 
 - Current phase: `1.1 — Development Environment Remediation`.
-- Current atomic task: validate the rebuilt Codespace with
+- Current atomic task: validate a fresh Codespace built from the repaired branch with
   `make verify-dev-environment`, `make verify` and `git diff --check`.
-- State at 2026-07-21T17:52:30Z: `HARD_BLOCKED_CODESPACE_REBUILD`.
-- Latest result: the active Alpine recovery container has no Node, npm, Docker
-  CLI or Bench and reports Python 3.12.13. Dynamic verification therefore
-  failed at the first required command. Static configuration and all 13 current
-  repository tests passed; the diff whitespace check passed.
-- Phase 3 remains paused until the rebuilt runtime proves the pinned toolchain.
+- State at 2026-07-21T18:28:15Z: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`.
+- Latest result: the fresh Codespaces creation log proved the pinned base image's
+  inherited Yarn APT source caused Docker build exit 100 and recovery error
+  1302. Repair round 2 neutralizes that unused source, locks Feature digests,
+  validates official registry metadata and improves post-create readiness
+  diagnostics. Static configuration and all 18 current repository tests pass.
+- Phase 3 remains paused until a newly created target runtime proves the pinned
+  toolchain.
 
 See `NEXT_ACTION.md` for the single recovery action and `LAST_RUN.md` for exact
 evidence.
