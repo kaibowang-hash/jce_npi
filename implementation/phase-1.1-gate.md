@@ -20,6 +20,13 @@ Only development environment configuration, bootstrap/verification scripts, CI s
 - Repair round: 1 of 5. No in-place tool installation was attempted because it would not validate the committed devcontainer build and would undermine the approved reproducible environment.
 - Required next action: run **Codespaces: Rebuild Container** against the committed `.devcontainer/devcontainer.json`, then rerun both verification commands.
 
+## Git delivery-path diagnosis — 2026-07-21
+
+- The active environment identifies itself as an Alpine 3.23 Codespaces recovery container on `x86_64`, not the approved Debian Bookworm devcontainer. This independently confirms that dynamic toolchain evidence must wait for a rebuild.
+- `core.hookspath` is unset, so Git resolves hooks from this clone's `.git/hooks`. Its `pre-push` and `post-commit` hooks were standard Git LFS-generated hooks, and `.git/config` contained the clone-local `lfs.repositoryformatversion=0` marker. No global hook path or committed/devcontainer hook generator exists.
+- The repository has no `.gitattributes`, no tracked path with the `filter=lfs` attribute, no LFS pointer in the worktree or reachable Git history, and no Git LFS object is required by the repository. The hooks and local marker were therefore invalid clone residue and were removed without rewriting history. Retaining them would make every push fail when the unused `git-lfs` executable is absent; removing them has no content impact. If LFS is intentionally adopted later, that requires an approved `.gitattributes` change plus reproducible `git-lfs` installation and initialization.
+- `origin` remains `https://github.com/kaibowang-hash/jce_npi`. Codespaces provided VS Code Git askpass/IPC and ephemeral environment credentials; a non-interactive read-only `git ls-remote` authentication probe succeeded without exposing or persisting a credential. No credential helper, PAT file, remote rewrite, force push or `main` push was used.
+
 ## Pending dynamic evidence
 
 After **Codespaces: Rebuild Container**, `make verify-dev-environment` must verify actual Node 18.20.8, npm 10.x, Python 3.11, Docker 28.3.3 with Compose v2 and a responding daemon, Bench 5.31.0, Vite 5.4.14, valid Compose configuration and the pinned Frappe v15 commit. The gate remains **BLOCKED** until that command passes in the rebuilt container.

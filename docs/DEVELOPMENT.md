@@ -30,6 +30,12 @@ make verify
 
 The first command prints real versions for Node, npm, Python, Docker, Compose, Bench and Vite, checks the Docker daemon and validates Compose. It also prints the selected Frappe branch and exact commit. It does not infer availability from configuration.
 
+## GitHub authentication and Git LFS
+
+Codespaces' native VS Code Git credential bridge is the supported authentication path for this repository. Credentials must remain in the Codespaces/VS Code credential channel and must never be copied into repository files, scripts, command logs or chat. The expected remote is `https://github.com/kaibowang-hash/jce_npi`; environment setup must not rewrite it.
+
+This repository does not currently use Git LFS: it has no `.gitattributes`, LFS filter attributes or LFS pointer blobs. Do not install or initialize Git LFS merely because a clone contains stale generated hooks. A verified stale clone-local LFS hook may be removed; adopting LFS later requires an approved repository attribute change and a reproducible devcontainer installation. Restore removed generated hooks only by intentionally installing and initializing Git LFS after that approval.
+
 ## Services and Frappe Bench
 
 Start MariaDB and Redis with `make start`, inspect them with `docker compose ps`, and stop them with `make stop`. `CONFIRM_RESET=YES make reset` removes only the named development volumes and is intentionally destructive to local development data.

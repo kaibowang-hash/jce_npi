@@ -8,3 +8,4 @@
 | R-004 | Translation fallback can mask missing Chinese. | Language gate failure | Strict missing markers and coverage/mixed-language scanners | Open |
 | R-005 | ERP retry/replay can duplicate execution. | External data corruption | Idempotency, inbox/outbox, expected version, reconciliation and fault tests | Open |
 | R-006 | No production ERP access for final activation. | External go-live dependency | Mock plus sandbox-ready adapter and activation runbook | Accepted external |
+| R-007 | A Codespaces clone may retain generated Git LFS hooks even though the repository has no LFS attributes or pointer objects. | Push fails when the unused `git-lfs` binary is absent. | Verify attributes and reachable history before removing only clone-local generated hooks; require approved attributes and reproducible installation before any future LFS adoption. | Mitigated — current clone residue removed |
