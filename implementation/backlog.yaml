@@ -1,0 +1,276 @@
+version: '1.2'
+product: NPI One
+rules:
+  one_active_task_per_pr: true
+  m0_no_feature_code: true
+  no_erpnext_core_patch: true
+  no_cross_database_access: true
+  no_dual_master_fields: true
+  no_fake_success: true
+  task_requires_acceptance_and_tests: true
+  siemens_visual_baseline_required: true
+  max_default_radius_px: 2
+  single_primary_palette: true
+  english_source_language: true
+  mixed_ui_language_forbidden: true
+  frappe_i18n_required: true
+milestones:
+- id: M0
+  name: Discovery and decisions
+  exit_gate: Approved repository facts, ADRs, ownership draft and M1 plan
+  tasks:
+  - id: M0-01
+    title: Repository and runtime discovery
+    skills:
+    - repo-discovery
+    outputs:
+    - repo-map
+    - runbook
+    - test-ci-map
+    - evidence-index
+    code_allowed: false
+  - id: M0-02
+    title: ERPNext customization and API inventory
+    skills:
+    - repo-discovery
+    - frappe-safe-change
+    - erpnext-integration
+    outputs:
+    - doctype-inventory
+    - hook-api-inventory
+    - permission-map
+    - file-strategy-facts
+    code_allowed: false
+  - id: M0-03
+    title: Current-to-target architecture gap
+    skills:
+    - repo-discovery
+    - npi-domain-guard
+    outputs:
+    - context-diagram
+    - container-diagram
+    - data-flows
+    - gap-register
+    code_allowed: false
+  - id: M0-04
+    title: ADR package and ownership decision draft
+    skills:
+    - npi-domain-guard
+    - erpnext-integration
+    outputs:
+    - adr-001-through-010
+    - ownership-delta
+    - visual-baseline-decision
+    - i18n-format-decision
+    - decision-log
+    code_allowed: false
+  - id: M0-05
+    title: M1 executable task decomposition
+    skills:
+    - industrial-ux
+    - release-gate
+    - frappe-i18n
+    outputs:
+    - m1-tasks
+    - test-plan
+    - sample-data-plan
+    - risk-register
+    code_allowed: false
+- id: M1
+  name: Siemens iX Classic unified UX and Frappe i18n prototype
+  exit_gate: Six trilingual realistic workflows tested; visual baseline passed; no mixed-language or severe usability issue
+  tasks:
+  - id: M1-01
+    title: Siemens iX Classic Light baseline and design tokens
+    skills:
+    - industrial-ux
+    - release-gate
+  - id: M1-02
+    title: Frappe-compatible English/zh-CN/zh-TW i18n foundation and terminology governance
+    skills:
+    - frappe-i18n
+    - frappe-safe-change
+    - release-gate
+  - id: M1-03
+    title: Industrial App Shell and rectangular navigation
+    skills:
+    - industrial-ux
+    - frappe-i18n
+  - id: M1-04
+    title: My Work tree-table prototype
+    skills:
+    - industrial-ux
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M1-05
+    title: Project cockpit prototype
+    skills:
+    - industrial-ux
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M1-06
+    title: 阶段门评审室 prototype
+    skills:
+    - industrial-ux
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M1-07
+    title: Tooling cockpit prototype
+    skills:
+    - industrial-ux
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M1-08
+    title: Trial workspace prototype
+    skills:
+    - industrial-ux
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M1-09
+    title: ERP execution panel prototype
+    skills:
+    - industrial-ux
+    - erpnext-integration
+    - frappe-i18n
+  - id: M1-10
+    title: Bilingual usability and visual baseline sessions
+    skills:
+    - industrial-ux
+    - frappe-i18n
+    - release-gate
+  - id: M1-11
+    title: Fix and freeze UX visual and translation baseline
+    skills:
+    - industrial-ux
+    - frappe-i18n
+    - release-gate
+- id: M2
+  name: Domain and security foundation
+  tasks:
+  - id: M2-01
+    title: Approved app/site scaffold
+    skills:
+    - frappe-safe-change
+    - release-gate
+  - id: M2-02
+    title: Identity and project authorization
+    skills:
+    - frappe-safe-change
+    - npi-domain-guard
+  - id: M2-03
+    title: "Audit, global ID and concurrency"
+    skills:
+    - frappe-safe-change
+    - npi-domain-guard
+  - id: M2-04
+    title: Domain API error and trace foundation
+    skills:
+    - frappe-safe-change
+  - id: M2-05
+    title: File revision and integrity foundation
+    skills:
+    - frappe-safe-change
+  - id: M2-06
+    title: Outbox Inbox foundation
+    skills:
+    - erpnext-integration
+    - release-gate
+- id: M3
+  name: Project and stage gates
+  tasks:
+  - id: M3-01
+    title: Project templates and project cockpit vertical slice
+  - id: M3-02
+    title: Team RACI and unified work items
+  - id: M3-03
+    title: Gate templates and evidence
+  - id: M3-04
+    title: "Gate review, snapshot and reopening"
+  - id: M3-05
+    title: My Work integration and notifications
+- id: M4
+  name: Design and baselines
+  tasks:
+  - id: M4-01
+    title: Document and design revision
+  - id: M4-02
+    title: Review and release workflow
+  - id: M4-03
+    title: Baseline and impact invalidation
+  - id: M4-04
+    title: EBOM revision and comparison
+  - id: M4-05
+    title: Formal publish request stub and contract
+- id: M5
+  name: Tooling
+  tasks:
+  - id: M5-01
+    title: Tooling aggregate and cockpit
+  - id: M5-02
+    title: Customer-owned tool intake
+  - id: M5-03
+    title: New tool specification and design
+  - id: M5-04
+    title: Manufacturing supplier and ERP cost projection
+  - id: M5-05
+    title: Tool defects and lifecycle controls
+  - id: M5-06
+    title: Acceptance and asset execution request
+- id: M6
+  name: Trial and NPI
+  tasks:
+  - id: M6-01
+    title: Trial plan and round lifecycle
+  - id: M6-02
+    title: Locked inputs parameters and samples
+  - id: M6-03
+    title: Cavity defects and actions
+  - id: M6-04
+    title: Round comparison and conclusion
+  - id: M6-05
+    title: NPI checklist readiness and blockers
+  - id: M6-06
+    title: Handover and observation period
+- id: M7
+  name: ERPNext reliable integration
+  tasks:
+  - id: M7-01
+    title: Read-only master and status projections
+  - id: M7-02
+    title: Signed webhooks and inbox processing
+  - id: M7-03
+    title: Item publish execution
+  - id: M7-04
+    title: MBOM publish execution
+  - id: M7-05
+    title: Tool asset execution
+  - id: M7-06
+    title: Quality linkage
+  - id: M7-07
+    title: Operations DLQ replay and reconciliation
+- id: M8
+  name: Change portfolio and external collaboration
+  tasks:
+  - id: M8-01
+    title: Change impact and revalidation
+  - id: M8-02
+    title: Portfolio and KPI
+  - id: M8-03
+    title: Supplier portal
+  - id: M8-04
+    title: Customer review portal
+- id: M9
+  name: Hardening migration and pilot
+  tasks:
+  - id: M9-01
+    title: Performance and resilience
+  - id: M9-02
+    title: Security hardening
+  - id: M9-03
+    title: Historical migration rehearsal
+  - id: M9-04
+    title: Customer-owned tool pilot
+  - id: M9-05
+    title: New-tool pilot
+  - id: M9-06
+    title: Go-live and rollback rehearsal

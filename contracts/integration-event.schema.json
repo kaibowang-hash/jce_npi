@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/npi/contracts/integration-event.schema.json",
+  "title": "NPI One Integration Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "source_system",
+    "global_id",
+    "object_type",
+    "object_version",
+    "trace_id",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9_]+)+$"
+    },
+    "event_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_system": {
+      "enum": [
+        "NPI_ONE",
+        "ERPNEXT"
+      ]
+    },
+    "target_system": {
+      "enum": [
+        "NPI_ONE",
+        "ERPNEXT"
+      ]
+    },
+    "global_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "object_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "source_object_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "object_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "idempotency_key": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "causation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "actor": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "service"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 255
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ]
+    },
+    "payload_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "sensitivity": {
+      "enum": [
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "default": "internal"
+    }
+  }
+}

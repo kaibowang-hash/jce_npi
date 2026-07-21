@@ -1,0 +1,120 @@
+version: "1.2"
+principles:
+  - one_field_one_owner
+  - projections_are_read_only
+  - formal_execution_in_erpnext
+  - no_cross_database_access
+  - conflicts_create_visible_exception
+  - released_versions_are_immutable
+
+identity:
+  required:
+    - global_id
+    - source_system
+    - source_object_type
+    - source_object_id
+    - version
+  mapping_store_owner: NPI_ONE
+
+objects:
+  Customer:
+    owner_system: ERPNEXT
+    npi_view: projection
+    key: erpnext_customer_id
+    fields:
+      name: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      customer_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      project_specific_contact_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  EngineeringProject:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      project_code: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      target_sop: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      gate_status: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  Item:
+    owner_system: ERPNEXT_AFTER_RELEASE
+    phases:
+      engineering_draft:
+        owner: NPI_ONE
+        identifier: engineering_item_id
+      formal:
+        owner: ERPNEXT
+        identifier: item_code
+    fields:
+      engineering_description: {owner: NPI_ONE_BEFORE_RELEASE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: LOCK_DURING_EXECUTION}
+      item_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      stock_uom: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      project_requirements: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  EBOM_MBOM:
+    owner_system: SPLIT_BY_STAGE
+    fields:
+      ebom_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: RELEASE_NEW_REVISION}
+      mbom_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      manufacturing_routing: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      conversion_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
+
+  Tooling:
+    owner_system: SPLIT_BY_LIFECYCLE
+    fields:
+      development_state: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      specification_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: RELEASE_NEW_REVISION}
+      design_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: RELEASE_NEW_REVISION}
+      trial_state: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: OWNER_WINS}
+      asset_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      asset_status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      location: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      shot_count: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  TrialRound:
+    owner_system: NPI_ONE
+    fields:
+      locked_inputs: {owner: NPI_ONE, editable_in: [NPI_ONE_UNTIL_PREPARED], direction: NONE, conflict: NEW_ROUND_OR_REOPEN}
+      process_parameters: {owner: NPI_ONE, editable_in: [NPI_ONE_UNTIL_SUBMITTED], direction: NPI_TO_ERPNEXT_VIA_RELEASE, conflict: NEW_REVISION}
+      defects: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: OPTIONAL_NCR_REQUEST, conflict: OWNER_WINS}
+      official_quality_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  EngineeringChange:
+    owner_system: SPLIT
+    fields:
+      formal_change_number: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      approval_status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      engineering_impact: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      validation_tasks: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: OWNER_WINS}
+
+  QualityInspection:
+    owner_system: ERPNEXT
+    npi_view: projection_and_gate_evidence
+    fields:
+      inspection_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      gate_interpretation: {owner: NPI_ONE, editable_in: [NPI_ONE_RULE_ENGINE], direction: NONE, conflict: RECOMPUTE}
+
+  ControlledDocument:
+    owner_system: SPLIT_BY_STAGE
+    fields:
+      working_revision: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NEW_REVISION}
+      baseline_membership: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_REFERENCE, conflict: IMMUTABLE_SNAPSHOT}
+      official_archive_id: {owner: ERPNEXT_OR_DMS, editable_in: [ERPNEXT_OR_DMS], direction: EXTERNAL_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      file_hash: {owner: CREATOR_SYSTEM, editable_in: [], direction: BOTH_REFERENCE, conflict: HASH_MISMATCH_EXCEPTION}
+
+exception_policy:
+  create_object: IntegrationException
+  required_fields:
+    - global_id
+    - object_type
+    - field_path
+    - expected_owner
+    - npi_value_hash
+    - erp_value_hash
+    - detected_at
+    - severity
+    - assigned_to
+    - status
