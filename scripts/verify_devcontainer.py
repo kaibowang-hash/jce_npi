@@ -73,6 +73,36 @@ def parse_pinned_from(dockerfile: str) -> tuple[str, str, str]:
     return match.group(1), match.group(2), match.group(3)
 
 
+def validate_apt_source_sanitization(dockerfile: str) -> None:
+    apt_update = dockerfile.find("apt-get update")
+    main_list_cleanup = dockerfile.find("sed -i '/dl\\.yarnpkg\\.com\\/debian/d' /etc/apt/sources.list")
+    fragment_cleanup = dockerfile.find(
+        "find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete"
+    )
+    require(apt_update >= 0, "Dockerfile must refresh APT package indexes")
+    require(
+        0 <= main_list_cleanup < apt_update,
+        "The Yarn repository must be removed from /etc/apt/sources.list before apt-get update",
+    )
+    require(
+        0 <= fragment_cleanup < apt_update,
+        "Yarn source fragments must be deleted before apt-get update",
+    )
+
+    lowered = dockerfile.lower()
+    prohibited = {
+        "dl.yarnpkg.com": "The invalid Yarn APT URL must not appear literally in the build",
+        "trusted=yes": "APT trusted=yes is prohibited",
+        "--allow-unauthenticated": "Unauthenticated APT packages are prohibited",
+        "allowinsecurerepositories": "Insecure APT repositories are prohibited",
+        "allowunauthenticated": "Unauthenticated APT configuration is prohibited",
+    }
+    for pattern, message in prohibited.items():
+        require(pattern not in lowered, message)
+    for command in re.findall(r"apt-get\s+(?:update|install)[^;\n]*", dockerfile):
+        require("|| true" not in command, "APT failures must not be ignored")
+
+
 def git_mode(path: Path) -> str:
     relative = path.relative_to(REPO_ROOT).as_posix()
     result = subprocess.run(
@@ -170,9 +200,7 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
 
     dockerfile = dockerfile_path.read_text(encoding="utf-8")
     base_reference = parse_pinned_from(dockerfile)
-    yarn_removal = dockerfile.find("rm -f /etc/apt/sources.list.d/yarn.list")
-    apt_update = dockerfile.find("apt-get update")
-    require(yarn_removal >= 0 and apt_update > yarn_removal, "The stale Yarn APT source must be removed before apt-get update")
+    validate_apt_source_sanitization(dockerfile)
     require(
         f"ARG BENCH_VERSION={toolchain['BENCH_EXPECTED_VERSION']}" in dockerfile,
         "Bench Dockerfile pin does not match toolchain.env",

@@ -40,9 +40,16 @@ integration or production dependencies.
 ## Root-cause repair
 
 - The Dockerfile retains the validated immutable Python image digest, but
-  removes `/etc/apt/sources.list.d/yarn.list` before the first `apt-get update`.
-  This repository explicitly disables Node Feature Yarn-APT installation, so
-  the removed third-party source is not required.
+  removes matching `dl.yarnpkg.com` lines from `/etc/apt/sources.list` and
+  deletes every regular `/etc/apt/sources.list.d/*yarn*` source fragment before
+  the first `apt-get update`. The image-name parse warning is not treated as a
+  digest failure because the creation log and MCR verification both prove the
+  pinned image was pulled and entered Dockerfile execution.
+- The repository has no `package.json`, Yarn lockfile, `.yarnrc` or application
+  Yarn requirement. Node/npm come from the locked Node Feature, whose Yarn APT
+  option is explicitly disabled. Any approved future Yarn requirement must use
+  a fixed Corepack or controlled npm path after the Feature and must not restore
+  the invalid repository.
 - `.devcontainer/devcontainer-lock.json` locks Node Feature 2.1.0 to
   `sha256:586c9a6f...b686857` and Docker-in-Docker Feature 3.0.1 to
   `sha256:ca250849...933df9`. Registry metadata confirms both official Feature
@@ -60,10 +67,13 @@ integration or production dependencies.
 - `scripts/verify_devcontainer.py` validates JSON semantics, Dockerfile/context
   paths, the immutable base manifest, the image's `vscode` metadata, official
   Feature artifacts/options/lock digests, post-create wiring, Git executable
-  modes and cross-source toolchain availability. It uses only Python standard
-  library code and the official registries needed by the real build.
+  modes and cross-source toolchain availability. It also requires both Yarn
+  source cleanups to precede APT refresh and rejects the literal invalid URL,
+  `trusted=yes`, unauthenticated/insecure APT settings and ignored APT failures.
+  It uses only Python standard library code and the official registries needed
+  by the real build.
 
-## Static and registry evidence — 2026-07-21 repair round 2
+## Static and registry evidence — 2026-07-21 repair round 3
 
 - `make verify-dev-config`: **PASS**. The base image manifest/digest and
   `vscode` user were verified in MCR; both Feature artifacts and digests were
@@ -76,9 +86,8 @@ integration or production dependencies.
   `spawn docker ENOENT`; the creation log already proves the actual Dockerfile,
   context, remote user and Feature resolution used by Codespaces.
 - `make verify`: **PASS**. Environment configuration/registry validation and all
-  18 repository tests passed, including five devcontainer-verifier tests added
-  in this repair.
-- `git diff --check`: must pass on the final checkpoint diff before commit.
+  24 repository tests passed, including 11 devcontainer-verifier tests.
+- `git diff --check`: **PASS** (exit 0, no output).
 - `make verify-dev-environment`: **EXPECTED FAIL IN RECOVERY** with
   `Required development command is missing: node` (make exit 2). The recovery
   container lacks the target Node, npm, Docker, Bench and Vite runtime. Static

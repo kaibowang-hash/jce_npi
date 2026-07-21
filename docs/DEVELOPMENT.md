@@ -6,8 +6,8 @@ GitHub Codespaces / VS Code Dev Containers is the authoritative development path
 
 - Python 3.11 from the digest-pinned Debian Bookworm devcontainer image. The
   pinned image contains an obsolete Yarn APT source, which the Dockerfile
-  removes before the first package-index refresh because this repository uses
-  the Node Feature's Corepack path instead of Yarn APT;
+  removes from `/etc/apt/sources.list` and
+  `/etc/apt/sources.list.d/*yarn*` before the first package-index refresh;
 - Node.js 18.20.8 and npm 10.8.2 through the pinned official Node feature;
 - Docker Engine/CLI 28.3.3 and Compose v2 through the pinned official Docker-in-Docker feature;
 - Frappe Bench CLI 5.31.0 installed in the image;
@@ -30,6 +30,12 @@ image was found, but its Yarn repository rejected `apt-get update` with
 the Alpine recovery container with error 1302. Both Features resolved before
 the build, and the target `postCreateCommand` was skipped, so neither Feature
 installation nor `bootstrap-dev.sh` caused that incident.
+
+The repository contains no `package.json`, Yarn lockfile, `.yarnrc` or other
+application-level Yarn requirement. Node and npm come from the locked Node Dev
+Container Feature. If an approved future toolchain requires Yarn, it must use a
+fixed Corepack or controlled npm installation after that Feature; the invalid
+Yarn APT repository must not be restored.
 
 ## Create and verify
 
@@ -54,7 +60,10 @@ user; post-create wiring; cross-file toolchain pins; the base-image manifest and
 `vscode` metadata in MCR; locked Feature artifacts and supported options in
 GHCR; and the pinned Node/npm, Moby, Bench, Vite and Frappe releases in their
 official registries. A missing image, Feature, script, user, version or execute
-bit fails the command.
+bit fails the command. The same verifier rejects any literal
+`dl.yarnpkg.com` build source, `trusted=yes`, unauthenticated/insecure APT
+settings, ignored APT failures, or removal that does not cover both supported
+source locations before `apt-get update`.
 
 ## GitHub authentication and Git LFS
 

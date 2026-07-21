@@ -47,12 +47,14 @@ facts pause only formal logic that depends on those facts.
 - Current phase: `1.1 — Development Environment Remediation`.
 - Current atomic task: validate a fresh Codespace built from the repaired branch with
   `make verify-dev-environment`, `make verify` and `git diff --check`.
-- State at 2026-07-21T18:28:15Z: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`.
+- State at 2026-07-21T18:41:56Z: `BLOCKED_FRESH_CODESPACE_DYNAMIC_VALIDATION`.
 - Latest result: the fresh Codespaces creation log proved the pinned base image's
   inherited Yarn APT source caused Docker build exit 100 and recovery error
-  1302. Repair round 2 neutralizes that unused source, locks Feature digests,
-  validates official registry metadata and improves post-create readiness
-  diagnostics. Static configuration and all 18 current repository tests pass.
+  1302. Repair round 3 sanitizes both supported Yarn source locations before
+  APT refresh, rejects trust/signature bypasses, retains the verified base
+  digest, locks Feature digests, validates official registry metadata and
+  improves post-create readiness diagnostics. Static configuration and all 24
+  current repository tests pass.
 - Phase 3 remains paused until a newly created target runtime proves the pinned
   toolchain.
 
