@@ -8,4 +8,5 @@
 | 2026-07-21 | React 18 + TypeScript + Vite; local `npi-ui` adapter around Siemens iX Classic Light. | Required architecture and replaceability | Yes; adapter isolates library |
 | 2026-07-21 | MariaDB and Redis use isolated local containers; browser uses NPI BFF only. | Frappe compatibility and security boundary | Yes; compose teardown/volume backup |
 | 2026-07-21 | ERP integration defaults to Mock; sandbox requires explicit URL/credentials; production endpoints are rejected. | Controller prohibition | Yes; configuration-only activation |
-
+| 2026-07-21 | Use the repository V1.2 Execution Pack as the sole machine-execution baseline; record DOCX differences without expanding or blocking Pack scope. | Latest explicit user direction | Yes; a future approved Pack may reconcile the DOCX crosswalk |
+| 2026-07-21 | Require a Codespaces container rebuild for Phase 1.1 instead of installing missing tools into the stale running container. | `make verify-dev-environment` found the runtime does not match the committed reproducible devcontainer | Yes; rebuild uses committed configuration and preserves guarded volumes |
