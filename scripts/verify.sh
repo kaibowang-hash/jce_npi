@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+bash scripts/verify-dev-config.sh
 python -m json.tool contracts/integration-event.schema.json >/dev/null
 python -m json.tool design/design-tokens.json >/dev/null
 find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/null
