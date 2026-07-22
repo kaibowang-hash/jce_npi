@@ -56,6 +56,40 @@ class ApiAuditAndFileTest(unittest.TestCase):
         self.assertEqual(headers["Content-Type"], "application/problem+json")
         self.assertEqual(body["traceId"], headers["X-Trace-ID"])
 
+    def test_unexpected_api_error_uses_safe_retryable_problem(self) -> None:
+        secret_error_text = "do-not-expose-database-detail"
+
+        def fail() -> dict[str, object]:
+            raise RuntimeError(secret_error_text)
+
+        status, body, headers = execute_api(fail, "trace-unexpected-123")
+
+        self.assertEqual(status, 500)
+        self.assertEqual(body["code"], "INTERNAL_SERVER_ERROR")
+        self.assertTrue(body["retryable"])
+        self.assertNotIn(secret_error_text, str(body))
+        self.assertEqual(headers["Content-Type"], "application/problem+json")
+        self.assertEqual(body["traceId"], headers["X-Trace-ID"])
+
+    def test_error_reporter_failure_cannot_break_problem_contract(self) -> None:
+        def fail_handler() -> dict[str, object]:
+            raise RuntimeError("handler detail")
+
+        def fail_reporter(_error: Exception, _trace_id: str) -> None:
+            raise RuntimeError("logger unavailable")
+
+        status, body, headers = execute_api(
+            fail_handler,
+            "trace-reporter-123",
+            fail_reporter,
+        )
+
+        self.assertEqual(status, 500)
+        self.assertEqual(body["code"], "INTERNAL_SERVER_ERROR")
+        self.assertNotIn("handler detail", str(body))
+        self.assertNotIn("logger unavailable", str(body))
+        self.assertEqual(body["traceId"], headers["X-Trace-ID"])
+
     def test_audit_redacts_common_secret_fields(self) -> None:
         event = create_audit_event(actor="user", trace_id="trace-123456", operation="update",
                                    global_id=uuid4(), object_version=1, result="succeeded",

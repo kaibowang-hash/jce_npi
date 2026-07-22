@@ -6,5 +6,8 @@ app_email = "engineering@example.invalid"
 app_license = "MIT"
 required_apps = []
 
+before_request = ["npi_core.bff.route_request"]
+after_request = ["npi_core.bff.attach_response_headers"]
+
 # Desk is intentionally limited to administration and support.
 has_website_permission = {"NPI Audit Event": "npi_core.permissions.deny_public_access"}

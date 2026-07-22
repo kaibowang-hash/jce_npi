@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NPI One Domain API
-  version: 1.1.0
+  version: 1.2.0
   description: >
     Business-oriented API for the independent NPI One web application.
     Raw Frappe DocType CRUD is not the public browser contract.
@@ -11,6 +11,7 @@ security:
   - sessionAuth: []
   - oauth2: [npi.user]
 tags:
+  - {name: Session}
   - {name: Work}
   - {name: Projects}
   - {name: Gates}
@@ -18,6 +19,60 @@ tags:
   - {name: Trials}
   - {name: Execution}
 paths:
+  /session/bootstrap:
+    get:
+      tags: [Session]
+      operationId: getSessionBootstrap
+      responses:
+        "200":
+          description: Authenticated session language and filtered effective NPI catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionBootstrap"
+        "401":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "503":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /session/language:
+    put:
+      tags: [Session]
+      operationId: setSessionLanguage
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetSessionLanguage"
+      responses:
+        "200":
+          description: Persisted language and refreshed effective NPI catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionBootstrap"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "503":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+
   /me/work:
     get:
       tags: [Work]
@@ -315,23 +370,88 @@ components:
       name: Idempotency-Key
       required: true
       schema: {type: string, minLength: 16, maxLength: 255}
+    CsrfToken:
+      in: header
+      name: X-Frappe-CSRF-Token
+      required: true
+      description: Current Frappe session CSRF token returned by SessionBootstrap
+      schema: {type: string, minLength: 32, maxLength: 128}
   responses:
     Error:
       description: Error
+      headers:
+        X-Trace-ID:
+          description: Stable trace identifier matching the Problem traceId
+          schema: {type: string}
       content:
         application/problem+json:
           schema: {$ref: "#/components/schemas/Problem"}
     Conflict:
       description: Version or state conflict
+      headers:
+        X-Trace-ID:
+          description: Stable trace identifier matching the Problem traceId
+          schema: {type: string}
       content:
         application/problem+json:
           schema: {$ref: "#/components/schemas/Problem"}
     ValidationError:
       description: Business validation failed
+      headers:
+        X-Trace-ID:
+          description: Stable trace identifier matching the Problem traceId
+          schema: {type: string}
       content:
         application/problem+json:
           schema: {$ref: "#/components/schemas/Problem"}
   schemas:
+    LanguageCode:
+      type: string
+      enum: [en, zh, zh-TW]
+    TranslationCatalog:
+      type: object
+      additionalProperties: false
+      required: [language, version, messages]
+      properties:
+        language:
+          $ref: "#/components/schemas/LanguageCode"
+        version:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        messages:
+          type: object
+          description: Effective Frappe translations filtered to canonical NPI source/context keys
+          additionalProperties:
+            type: string
+    SessionBootstrap:
+      type: object
+      additionalProperties: false
+      required: [userId, language, allowedLanguages, csrfToken, catalog]
+      properties:
+        userId: {type: string}
+        language:
+          $ref: "#/components/schemas/LanguageCode"
+        allowedLanguages:
+          type: array
+          minItems: 3
+          maxItems: 3
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/LanguageCode"
+        csrfToken:
+          type: string
+          minLength: 32
+          maxLength: 128
+          description: Current token for X-Frappe-CSRF-Token on unsafe session requests
+        catalog:
+          $ref: "#/components/schemas/TranslationCatalog"
+    SetSessionLanguage:
+      type: object
+      additionalProperties: false
+      required: [language]
+      properties:
+        language:
+          $ref: "#/components/schemas/LanguageCode"
     SourceStatus:
       type: object
       additionalProperties: false

@@ -1,4 +1,4 @@
-.PHONY: start stop reset verify verify-dev-config verify-devcontainer verify-dev-environment frappe-init
+.PHONY: start stop reset verify verify-dev-config verify-devcontainer verify-dev-environment frappe-init frappe-site-init frappe-runtime-verify frontend-install frontend-browser-install frontend-verify frontend-e2e frontend-visual
 start:
 	docker compose up -d
 stop:
@@ -16,3 +16,17 @@ verify-dev-environment:
 	bash scripts/verify-dev-environment.sh
 frappe-init:
 	bash scripts/init-frappe-bench.sh
+frappe-site-init:
+	bash scripts/init-npi-site.sh
+frappe-runtime-verify:
+	bash scripts/verify-frappe-runtime.sh
+frontend-install:
+	npm --prefix frontend ci
+frontend-browser-install:
+	cd frontend && npx playwright install --with-deps chromium
+frontend-verify:
+	npm --prefix frontend run verify
+frontend-e2e:
+	npm --prefix frontend run test:e2e
+frontend-visual:
+	npm --prefix frontend run test:visual

@@ -14,4 +14,4 @@ where = ["."]
 include = ["npi_core*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.json", "*.txt"]
+"*" = ["*.json", "*.txt", "translations/*.csv"]

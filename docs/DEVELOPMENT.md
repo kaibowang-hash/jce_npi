@@ -39,11 +39,11 @@ prefix is writable and installs pinned Vite without privilege elevation. This
 is enforced by a regression test; the exact lifecycle script and dynamic gate
 passed in the fresh target container.
 
-The repository contains no `package.json`, Yarn lockfile, `.yarnrc` or other
-application-level Yarn requirement. Node and npm come from the locked Node Dev
-Container Feature. If an approved future toolchain requires Yarn, it must use a
-fixed Corepack or controlled npm installation after that Feature; the invalid
-Yarn APT repository must not be restored.
+The repository root has no application-level Yarn requirement. Phase 3 adds an
+npm-lockfile-backed SPA under `frontend/`; its exact dependencies are isolated
+from the Yarn 1.x invocation used internally by the pinned Frappe Bench setup.
+Node and npm come from the locked Node Dev Container Feature. The invalid Yarn
+APT repository must not be restored.
 
 ## Create and verify
 
@@ -71,6 +71,27 @@ infer availability from configuration. The locked Docker Feature resolves the
 current Moby package revision and Compose v2 patch during image creation, so
 those printed values are runtime evidence, not claims of exact package/Compose
 installation pins.
+
+## Frontend install and verification
+
+The application SPA pins its own Vite, React, Siemens iX, test and lint versions
+in `frontend/package-lock.json`; the globally verified Vite 5.4.14 remains only
+the Phase 1.1 environment smoke tool. Install and verify the application with:
+
+```text
+make frontend-install
+make frontend-browser-install
+make frontend-verify
+make frontend-e2e
+make frontend-visual
+```
+
+`frontend-install` uses `npm ci` and refuses lock drift. Browser installation is
+a separate reproducible provisioning step because Playwright's Chromium and OS
+libraries are larger than ordinary npm dependencies. `make verify` includes the
+frontend type, lint, unit/coverage, production build and audit gates once the
+lockfile has been installed. E2E and visual suites remain explicit commands and
+also run in CI.
 
 Before creating a container, `make verify-dev-config` checks JSON and shell
 syntax; path/context resolution; tracked executable script modes; the remote
@@ -106,6 +127,36 @@ backup scheduling belong to the repository Compose/operations boundary, while
 the end-user UI is the independent React SPA. Bench still installs Frappe's
 declared Node dependencies with the verified Yarn 1.22.22 already present in
 the digest-pinned base image; it never restores the obsolete Yarn APT source.
+
+After the Bench exists, create or reconcile the local NPI One Site with:
+
+```text
+make frappe-site-init
+make frappe-runtime-verify
+```
+
+This idempotent command starts only the repository's local MariaDB and Redis,
+links both repository apps into the pinned Bench, installs `npi_core` before
+`npi_integration`, migrates the Site and clears its runtime caches. It defaults
+to the disposable `npi.localhost` Site and the explicit `dev-only-*` credentials
+from the local Compose boundary; override them with `NPI_FRAPPE_SITE_NAME`,
+`NPI_DATABASE_ROOT_PASSWORD` and `NPI_ADMINISTRATOR_PASSWORD` when needed. It
+does not install ERPNext or connect to any production service.
+
+`frappe-runtime-verify` starts a temporary local development Web process, proves
+the exact `/api/npi/v1` authentication/problem contract, verifies both direct
+Chinese catalogs and language persistence across later sessions, rejects an
+unsupported locale without mutation, keeps the Administrator language
+unchanged, deletes the disposable Website User and then stops the process. It
+requires the local Site and Compose services but no ERPNext installation or
+connection.
+
+Frappe v15 reads the custom App CSV catalogs directly after cache invalidation.
+Do not use `build-message-files` as a deployment/init step: in the pinned v15
+implementation that command calls `rebuild_all_translation_files()` and rewrites
+every installed App's source CSV from Frappe's extractor and merged translation
+dictionary. It is a source-catalog regeneration command, not a non-destructive
+runtime compiler.
 
 ## Rollback
 

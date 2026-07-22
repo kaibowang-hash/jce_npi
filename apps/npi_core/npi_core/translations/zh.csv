@@ -1,0 +1,556 @@
+{{complete}} of {{total}} complete,已完成 {{complete}} 项，共 {{total}} 项
+{{count}} exact versions,{{count}} 个精确版本
+{{count}} item awaiting linkage,{{count}} 项等待关联
+{{count}} notifications,{{count}} 条通知
+{{count}} pending,{{count}} 个待处理
+{{days}} days,{{days}} 天
+{{days}} days late,延误 {{days}} 天
+"{{failed}} failed, {{passed}} passed",{{failed}} 项失败，{{passed}} 项通过
+"{{failed}} failed, {{pending}} pending",{{failed}} 个失败，{{pending}} 个待处理
+"{{major}} major, {{minor}} minor",{{major}} 个主要缺陷，{{minor}} 个次要缺陷
+"{{pending}} pending, {{failed}} exception",{{pending}} 个待处理，{{failed}} 个异常
+"{{percent}} ready, {{count}} blockers",就绪度 {{percent}}，{{count}} 个阻断项
+{{percent}} yield,良率 {{percent}}
+"{{samples}} samples, {{cavities}} cavities",{{samples}} 个样件，{{cavities}} 个型腔
+A failed command changes nothing and returns a trace ID.,命令失败不会变更任何内容，并会返回跟踪编号。
+A failed command leaves the current released revision unchanged.,命令失败时，当前已发布修订版保持不变。
+A failed command leaves the Trial in analysis and returns field errors with a trace ID.,命令失败时，试模保持分析中状态，并返回字段错误和跟踪编号。
+A failed command leaves Tooling in development and creates no ERPNext execution request.,命令失败时，模具开发保持开发中状态，且不会创建 ERPNext 执行请求。
+A failure remains visible and retryable or becomes a final failure with recovery guidance.,失败状态会持续可见且可重试，或转为带恢复指南的最终失败。
+A newer version is available.,有更新的版本可用。
+A submitted round cannot be overwritten; correction requires a controlled reopen or a new round.,已提交轮次不可覆盖；纠正时需要受控重新打开或新轮次。
+A validation or target-system failure remains visible and does not report ERPNext completion.,验证失败或目标系统失败将保持可见，且不会报告 ERPNext 已完成。
+Acceptance,验收
+Acceptance checklist,验收检查表
+"Acceptance will freeze the technical, quality, file, warranty, cost, and asset handover evidence.",验收将冻结技术、质量、文件、保修、成本和资产交接证据。
+Action,操作
+Activity,活动
+Actor,操作人
+Actual cost,实际成本
+Actual value,实际值
+Add trial photo,添加试模照片
+Administration,管理
+Analysis in progress,分析进行中
+Analytics,分析
+Approval,审批
+Approved,已批准
+Asset handover,资产交接
+Assigned the major flash defect for correction.,已分配重大飞边缺陷进行纠正。
+Attempt Count,尝试次数
+Attention required,需要关注
+Audit result,审计结果
+Authentication is required.,需要身份验证。
+Available in a later phase,后续阶段可用
+Baseline B02 released,基线 B02 已发布
+Blocked,已阻断
+Blocked by formal quality result,受正式质量结果阻断
+Blocked by missing evidence,受缺失证据阻断
+Blocker,阻断项
+Blocking,阻断中
+Breadcrumb,面包屑导航
+Budget used,已用预算
+Business action,业务操作
+Cancel,取消
+Cancelled,已取消
+Catalog,目录
+Cavities,型腔数
+Change the filters or choose another saved view.,更改筛选条件或选择其他已保存视图。
+Changed inputs,已变更输入
+Changed since last review,自上次评审后已变更
+Changes,变更
+clean,未发现威胁
+Clear filters,清除筛选条件
+Close the major T1 flash defect,关闭 T1 重大飞边缺陷
+Committed cost,已承诺成本
+Company owned,公司所有
+Compared with T0: tooling design B → C; holding +0.5 s; cooling −1 s.,与 T0 相比：模具开发设计 B → C；保压 +0.5 s；冷却 −1 s。
+Completed,已完成
+Completed in ERPNext,已在 ERPNext 中完成
+Computed,已计算
+Conclusion and next step,结论与下一步
+Confirm the hot runner interface drawing,确认热流道接口图纸
+Confirm tooling correction revision B,确认模具开发纠正修订版 B
+Confirmed,已确认
+Conflict,冲突
+Context,上下文
+Cooling time,冷却时间
+Correct the highlighted fields and submit again.,请更正高亮字段后重新提交。
+"Correct the mapping, review the impact, and then queue a safe retry with the same idempotency key.",更正映射并检查影响，然后使用相同幂等键排队安全重试。
+Create corrective action,创建纠正措施
+Create purchase request,创建采购申请
+Create T1 from T0,基于 T0 创建 T1
+Create tool asset,创建模具资产
+Created,创建时间
+Current design,当前设计
+Current major defect,当前主要缺陷
+Current phase,当前阶段
+Current tooling design,当前模具开发设计
+Customer,客户
+Customer sample approval,客户样件批准
+Customer samples,客户样件
+Cycle time,周期时间
+Date,日期
+Decision,决策
+Decision blocked,决策已阻断
+Decision options,决策选项
+Decision version,决策版本
+DEF-014: Flash on cavity 3 parting line,DEF-014：3 号型腔分型面飞边
+Defects,缺陷
+Deliverables and evidence,交付物与证据
+Design,设计
+Design and Baselines,设计与基线
+Design freeze,设计冻结
+Design release,设计发布
+Design revisions,设计修订版
+Design version,设计版本
+Dimensional status,尺寸状态
+Document preview,文档预览
+Domain navigation,领域导航
+"Draft, approval missing",草稿，缺少批准
+Due,到期日
+Due today,今日到期
+Editable in,可编辑系统
+Empty,空数据
+"Engineering approval and ERPNext completion remain separate, traceable states.",工程审批与 ERPNext 完成仍为相互独立且可追溯的状态。
+Engineering projects,工程项目
+English,英语
+ERPNext,ERPNext
+ERPNext asset,ERPNext 资产
+ERPNext execution,ERPNext 执行
+ERPNext Execution and Reconciliation,ERPNext 执行与对账
+ERPNext has not completed the requested action.,ERPNext 尚未完成请求的操作。
+ERPNext may create a formal object only after its own validation succeeds.,ERPNext 只能在其自身验证成功后创建正式对象。
+"ERPNext owns the formal asset identifier, location, and maintenance state.",ERPNext 主责正式资产标识符、位置和维护状态。
+ERPNext reports a failed formal quality result. Readiness percentage cannot override this blocker.,ERPNext 报告正式质量结果失败。就绪度百分比无法覆盖此阻断项。
+ERPNext retry impact review,ERPNext 重试影响评审
+ERPNext validation did not find an approved target asset category. No formal asset was written.,ERPNext 验证未找到已批准的目标资产类别。未写入任何正式资产。
+ERPNext validation failed and requires your review.,ERPNext 验证失败，需要您评审。
+Error,错误
+Event ID,事件编号
+Event Type,事件类型
+Evidence snapshot,证据快照
+Evidence state,证据状态
+Execution and Reconciliation,执行与对账
+Execution request details,执行请求详情
+Execution request not created,未创建执行请求
+Execution requests,执行请求
+failed,失败
+Failed in ERPNext,在 ERPNext 中失败
+failed_final,最终失败
+failed_retryable,可重试失败
+"Failed, manual action required",失败，需要人工处理
+"Failed, retry available",失败，可重试
+Failure handling,失败处理
+Failure reason,失败原因
+Feasibility,可行性
+File hash,文件哈希
+Filter,筛选
+Filter by project or object,按项目或对象筛选
+Filters and columns,筛选器与列
+Final failure,最终失败
+Fixture state,演示状态
+Formal quality result,正式质量结果
+Formal quality result changed to failed.,正式质量结果已变更为失败。
+Friday,星期五
+G4 trial iteration,G4 试模迭代
+Gate approver,阶段门批准人
+Gate approver permission is required.,需要阶段门批准人权限。
+Gate decision impact review,阶段门决策影响评审
+Gate track,阶段门轨迹
+Global ID,全局标识符
+Global search,全局搜索
+Help,帮助
+Holding time,保压时间
+Idempotency key,幂等键
+Impact,影响
+infected,已感染
+Inherited trial plan,继承的试模计划
+Initiation,立项
+Injection pressure,注射压力
+Input Summary,输入摘要
+Input versions locked,输入版本已锁定
+Inputs and evidence,输入与证据
+Integration,集成
+Integration exceptions,集成异常
+Integration operator permission is required.,需要集成操作员权限。
+Irreversible effect,不可逆影响
+Item,项目
+Language,语言
+Language is managed by the Frappe session.,语言由 Frappe 会话管理。
+Language persistence uses the prototype fallback because no Frappe Site is active.,因当前没有活动的 Frappe 站点，语言持久化使用原型后备方案。
+Last attempt,最近尝试
+Last Error Code,最近错误代码
+Last updated,最近更新
+Link the T1 dimensional report,关联 T1 尺寸报告
+Loading,正在加载
+Loading workspace,正在加载工作区
+Localization resources are unavailable.,本地化资源不可用。
+Locked version,锁定版本
+Machine,机台
+Major blocker,主要阻断项
+Major blockers,主要阻断项
+Major defects,主要缺陷
+Manual action required,需要人工处理
+Manufacturing,制造
+Manufacturing and future Trial references will use this released revision.,制造和后续试模引用将使用此已发布修订版。
+Manufacturing complete,制造完成
+Manufacturing milestones,制造里程碑
+Material batch,材料批次
+Measurement report,测量报告
+Measurements,测量结果
+Melt temperature,熔体温度
+Milestones and trial records,里程碑与试模记录
+Missing approved version,缺少已批准版本
+My Work,我的工作
+New execution request,新建执行请求
+New execution request impact review,新建执行请求影响评审
+Newest first,最新优先
+Next action,下一步操作
+Next actions and blockers,后续操作与阻断项
+Next page,下一页
+No data was changed. Retry or share the trace ID with support.,数据未变更。请重试或将跟踪编号提供给支持人员。
+No items match this view.,没有符合此视图的项目。
+No permission,无权限
+No retry was queued. Follow the recovery guidance and use the trace ID.,未排队任何重试。请按恢复指南处理并使用跟踪编号。
+Node or round,节点或轮次
+Normal,正常
+Not started,未开始
+Not submitted,未提交
+Notifications,通知
+NPI,NPI
+NPI Audit Event,NPI 审计事件
+NPI Core,NPI 核心
+NPI File Revision,NPI 文件修订版
+NPI Inbox Message,NPI 收件箱消息
+NPI Integration,NPI 集成
+NPI One,NPI One
+NPI Outbox Message,NPI 发件箱消息
+NPI readiness,NPI 就绪度
+NPI readiness review,NPI 就绪度评审
+Object,对象
+Object properties and risk,对象属性与风险
+Object Version,对象版本
+Oldest first,最早优先
+"One cross-object queue for assignments, blockers, decisions, and integration exceptions.",一个跨对象队列，统一承载分配事项、阻断项、决策和集成异常。
+Only the failed tool asset node will be retried. Completed ERPNext objects are unchanged.,仅重试失败的模具资产节点。已完成的 ERPNext 对象保持不变。
+Open blockers,未解决阻断项
+Open defect context,打开缺陷上下文
+Open field mapping,打开字段映射
+Open Gate review,打开阶段门评审
+Open recovery guidance,打开恢复指南
+Open review,打开评审
+Operation,操作
+Overall conclusion,总体结论
+Overall progress,总体进度
+Overdue,已逾期
+Ownership,所有权
+Parameter,参数
+Parameter template,参数模板
+Parameters,参数
+Part,零件
+Partial data,部分数据
+Partially succeeded,部分成功
+"Pass, conditional pass, reject, or reopen",通过、有条件通过、驳回或重新打开
+Payload,载荷
+Payload Hash,载荷哈希
+pending,待处理
+Pending,待处理
+Pending approval,待审批
+Pending approvals,待审批
+Pending customer decision,等待客户决策
+Pending in ERPNext,在 ERPNext 中待处理
+Plan and resources,计划与资源
+Planned from T0,源自 T0 计划
+Pre-submit checks,提交前检查
+Prepare acceptance command,准备验收命令
+Prepare conclusion command,准备结论命令
+Prepare decision command,准备决策命令
+Prepare execution request,准备执行请求
+Prepare G5 review,准备 G5 评审
+Prepare release command,准备发布命令
+Prepare the G5 review package,准备 G5 评审包
+Previous page,上一页
+Private File,私有文件
+Process parameters,工艺参数
+processing,处理中
+Processing,处理中
+Processing operation,处理中的操作
+Product and design,产品与设计
+Product and drawing,产品与图纸
+Product baseline,产品基线
+Product baseline B02,产品基线 B02
+Project,项目
+Project health,项目健康度
+Project management,项目管理
+Project manager,项目经理
+Project or object,项目或对象
+Project Portfolio,项目组合
+Project structure,项目结构
+Properties and ERPNext mapping,属性与 ERPNext 映射
+Prototype acceptance request prepared. ERPNext asset execution has not started.,原型验收请求已准备。ERPNext 资产执行尚未开始。
+Prototype command prepared. No gate decision was saved.,原型命令已准备。未保存任何阶段门决策。
+Prototype conclusion command prepared. The Trial snapshot was not submitted.,原型结论命令已准备。未提交试模快照。
+Prototype corrective action prepared. No action was saved.,原型纠正措施已准备。未保存任何措施。
+Prototype data,原型数据
+Prototype data - no production system is connected.,原型数据 - 未连接生产系统。
+Prototype release command prepared. Revision C remains unchanged.,原型发布命令已准备。修订版 C 保持不变。
+Publish controlled file reference,发布受控文件引用
+Purchase execution,采购执行
+Quality,质量
+Quality and samples,质量与样件
+Quality requested an engineering decision.,质量部门请求工程决策。
+quarantined,已隔离
+Queue safe retry,排队安全重试
+Queued,已排队
+Queued a safe retry for the execution request.,已为执行请求排队安全重试。
+Queued operation,已排队操作
+Read only,只读
+Reason,原因
+Referenced trial,引用的试模
+Refresh,刷新
+This prototype refresh restores the simulated processing state; no durable remote operation is queried.,此原型刷新会恢复模拟的处理中状态；不会查询持久化远程操作。
+Refresh status,刷新状态
+Release design revision,发布设计修订版
+Release formal item,发布正式物料
+Released,已发布
+Released and immutable,已发布且不可变
+Released for trial,已发布用于试模
+Released tooling design revision C.,已发布模具设计修订版 C。
+Repeat trial required,需要再次试模
+Replay ID,回放编号
+Request number,请求编号
+Request project access from the project manager.,请向项目经理申请项目访问权限。
+Request quality inspection,请求质量检验
+Request version,请求版本
+Required permission,所需权限
+Requirement,需求
+Resolve defect,解决缺陷
+Responsible function,责任职能
+Result,结果
+Retry,重试
+Retryable failure,可重试失败
+Return to My Work,返回我的工作
+Return to project,返回项目
+Review date,评审日期
+Review decision,检查决策
+Review differences,检查差异
+Review fields,检查字段
+Review impact,检查影响
+Review impact and decide,检查影响并决策
+Review impact and retry,检查影响并重试
+Review retry,检查重试
+Review the differences before replacing your draft.,替换草稿前请检查差异。
+Review the impact before queuing a safe retry.,排队安全重试前请检查影响。
+Review the temporary dimensional deviation,评审临时尺寸偏差
+Review tooling acceptance,评审模具开发验收
+Revision,修订版
+Round comparison,轮次对比
+Run reconciliation,运行对账
+Sample approval,样件批准
+Sample approval review,样件批准评审
+Samples and cavities,样件与型腔
+Saved in NPI One,已保存在 NPI One
+Saved view,已保存视图
+Scan State,扫描状态
+Schedule variance,进度偏差
+"Search projects, tools, trials, and drawings",搜索项目、模具、试模和图纸
+"Select English, Simplified Chinese, or Traditional Chinese.",请选择英语、简体中文或繁体中文。
+Selected evidence,已选证据
+SHA-256,SHA-256
+Showing {{start}}–{{end}} of {{total}} items,显示第 {{start}}–{{end}} 项，共 {{total}} 项
+Simplified Chinese,简体中文
+Some ERPNext projections are unavailable. NPI One data remains available.,部分 ERPNext 投影不可用。NPI One 数据仍可用。
+SOP handover,SOP 交接
+Source,来源
+Source object,源对象
+Source System,源系统
+Stale,已过期
+Start,开始
+State,状态
+Status,状态
+Submit trial conclusion,提交试模结论
+succeeded,成功
+Suggested next round,建议下一轮
+Supplier,供应商
+Synchronized,已同步
+T0,T0
+"T0 completed, T1 under analysis",T0 已完成，T1 分析中
+T1,T1
+T1 analysis in progress,T1 分析进行中
+T1 cavity 3 flash is not verified and blocks G5 sample approval.,T1 的 3 号型腔飞边尚未验证，并阻断 G5 样件批准。
+T1 dimensional report,T1 尺寸报告
+Target acceptance,目标验收日期
+Target SOP,目标 SOP
+Target system,目标系统
+Task,任务
+Template value,模板值
+Test environment,测试环境
+The approved tooling acceptance snapshot will be locked for a new tool asset execution request.,已批准的模具开发验收快照将被锁定，用于新的模具资产执行请求。
+The command failed validation.,命令验证失败。
+The decision will lock five evidence versions and affect the next two Gates.,该决策将锁定五个证据版本，并影响后续两个阶段门。
+The dimensional report is not approved and two major defects remain open.,尺寸报告未批准，且仍有两个主要缺陷未关闭。
+The dimensional report is not linked and two major defects remain open.,尺寸报告未关联，且仍有两个主要缺陷未关闭。
+The historical acceptance snapshot cannot be overwritten.,历史验收快照不可覆盖。
+The historical decision snapshot cannot be overwritten.,历史决策快照不可覆盖。
+The object was changed by another user.,该对象已被其他用户变更。
+The operation failed and can be retried.,操作失败，可以重试。
+The operation failed and requires manual action.,操作失败，需要人工处理。
+The operation is processing.,操作正在处理。
+The operation is queued.,操作已排队。
+The page could not be loaded.,无法加载此页面。
+The project template assigned this task to you.,项目模板已将此任务分配给您。
+The released revision cannot be overwritten; a new revision is required.,已发布修订版不可覆盖；必须创建新修订版。
+The request body is invalid.,请求正文无效。
+The request could not be completed.,无法完成该请求。
+The request could not be verified.,无法验证该请求。
+The requested NPI API route was not found.,未找到请求的 NPI API 路由。
+The selected language is not supported.,不支持所选语言。
+"The submitted Trial will freeze tooling, product, material, plan, parameter, sample, and defect inputs.",提交后的试模将冻结模具开发、产品、材料、计划、参数、样件和缺陷输入。
+The supplier is waiting for your decision.,供应商正在等待您的决策。
+This blocks G5 and you own the corrective action.,此项阻断 G5，且您负责纠正措施。
+This field is not allowed.,不允许使用此字段。
+This field is required.,此字段为必填项。
+This object is read only because the released version is immutable.,此对象为只读，因为已发布版本不可变。
+This request reached a final failure. Correct the source data and prepare a new execution request.,此请求已进入最终失败。请更正源数据并准备新的执行请求。
+Today,今天
+Tomorrow,明天
+Tool asset creation failed,模具资产创建失败
+Tool temperature,模具温度
+Tooling,模具开发
+Tooling acceptance approver permission is required.,需要模具开发验收批准人权限。
+Tooling acceptance impact review,模具开发验收影响评审
+Tooling change required,需要模具开发变更
+Tooling design,模具开发设计
+Tooling design approver permission is required.,需要模具开发设计批准人权限。
+Tooling design release impact review,模具开发设计发布影响评审
+Tooling design revision C,模具开发设计修订版 C
+Tooling engineering,模具开发工程
+Tooling lifecycle,模具开发生命周期
+Tooling object tree,模具开发对象树
+Tooling requirement,模具开发需求
+Tooling start,模具开发启动
+Tooling supplier,模具开发供应商
+Trace ID,跟踪编号
+Traditional Chinese,繁体中文
+Trial,试模
+Trial and NPI,试模与 NPI
+Trial conclusion impact review,试模结论影响评审
+Trial iteration,试模迭代
+Trial record,试模记录
+Trial record sections,试模记录分区
+Trial round,试模轮次
+Trial rounds,试模轮次
+Trial submitter permission is required.,需要试模提交人权限。
+Type,类型
+Under analysis,分析中
+Unit,单位
+Unsaved changes,未保存的变更
+Update manufacturing BOM,更新制造 BOM
+Upload customer-owned tool intake photos,上传客户所有模具入厂照片
+Validation error,验证错误
+Version conflict,版本冲突
+View blockers,查看阻断项
+View context,查看上下文
+View ERPNext execution conditions,查看 ERPNext 执行条件
+View execution,查看执行
+View operation status,查看操作状态
+Waiting,等待中
+Waiting for tooling acceptance,等待模具开发验收
+Why assigned,分配原因
+Why blocked: Gate decisions freeze exact evidence versions. Missing or failed formal evidence cannot be replaced by a score.,阻断原因：阶段门决策会冻结精确证据版本。缺失或失败的正式证据不能用分数替代。
+Why read only,只读原因
+Work item details,工作项详情
+Worklist,工作清单
+"Yes, measurements were replaced",是，测量结果已替换
+Yield,良率
+You are the engineering signatory.,您是工程签署人。
+You do not have permission to perform this action.,您无权执行此操作。
+You do not have permission to view this object.,您无权查看此对象。
+You have unsaved changes. Leave protection is active.,您有未保存的变更。离开保护已启用。
+Protected object,受保护对象
+Cross-object work queue,跨对象工作队列
+Cross-system operations,跨系统操作
+No prototype search result matched this query.,没有与此查询匹配的原型搜索结果。
+No prototype notification feed is connected. Use My Work for assigned actions.,未连接原型通知源。请在“我的工作”中处理已分配操作。
+"Select an object to see its source, sync state, and next safe action.",选择对象以查看其数据源、同步状态和下一个安全操作。
+Current user,当前用户
+Signed in for the test environment with prototype data.,已登录使用原型数据的测试环境。
+Worklist filters and column controls are focused.,工作清单筛选器和列控件已获得焦点。
+This workspace has no configurable table columns.,此工程工作区没有可配置的表格列。
+Prototype refresh is unavailable because this view uses fixed in-memory data.,此视图使用固定的内存数据，因此原型刷新不可用。
+Time zone,时区
+Discard changes and leave,放弃变更并离开
+Your unsaved changes in the current workspace will be discarded.,当前工程工作区中未保存的变更将被放弃。
+No additional permission is required.,不需要额外权限。
+Discarded prototype changes cannot be restored.,已放弃的原型变更无法恢复。
+Cancel keeps the current workspace and its unsaved changes.,取消将保留当前工程工作区及其未保存的变更。
+This prototype does not persist an audit record. A submitted navigation decision would record the actor and outcome without field content.,此原型不会持久保存审计记录。提交后的导航决定会记录操作人和结果，但不记录字段内容。
+Object page sections,工程对象页分区,aria-label
+Expand inspector,展开检查器
+Collapse inspector,折叠检查器
+Inspector width,检查器宽度
+A reason is required to prepare this command.,准备此命令必须填写原因。
+Error details,错误详情
+Field errors,字段错误
+Filters were cleared and the normal prototype view was restored.,已清除筛选条件并恢复正常原型视图。
+Returned to My Work without changing protected data.,已返回“我的工作”，未更改受保护数据。
+The prototype retry restored the deterministic view.,原型重试已恢复确定性视图。
+Prototype comparison: server version v4 differs from draft v3. Neither version was replaced.,原型比较：服务器版本 v4 与草稿 v3 不同。两个版本均未被替换。
+Prototype field error: a required governed value is missing. No command was submitted.,原型字段错误：缺少必填的受治理值。未提交任何命令。
+Current prototype status is queued. ERPNext completion has not been reported.,当前原型状态为已排队。ERPNext 尚未报告完成。
+Current prototype status is processing. ERPNext completion has not been reported.,当前原型状态为处理中。ERPNext 尚未报告完成。
+Retry impact: the same idempotency key and failed node would be reused. No retry was queued.,重试影响：将复用相同的幂等键和失败节点。未将重试排队。
+Recovery guidance: correct the governed source mapping and prepare a new request. Manual action is still required.,恢复指南：请更正受治理的源映射并准备新请求。仍需人工操作。
+Select an approved governed value.,选择已批准的受治理值。
+All assigned work,所有已分配工作
+Group by,分组方式
+No grouping,不分组
+Columns,列
+Grouped by {{field}},按 {{field}} 分组
+Loading worklist,正在加载工作清单
+The worklist query failed. No data was changed. Change a filter or retry.,工作清单查询失败。未更改任何数据。请更改筛选条件或重试。
+Toggle group,切换分组
+No system is editable,所有系统均不可编辑
+Review G5 sample approval,评审 G5 样件批准
+Added a controlled engineering comment.,已添加受控工程评论。
+Approved the Gate decision snapshot.,已批准阶段门决策快照。
+Gate review is due,阶段门评审即将到期
+Project {{project}} requires a Gate review before {{dueAt}}.,项目 {{project}} 必须在 {{dueAt}} 前完成阶段门评审。
+Action required: Gate review for {{project}},需要操作：评审项目 {{project}} 的阶段门
+Review the controlled evidence and complete the assigned Gate decision before {{dueAt}}.,请评审受控证据，并在 {{dueAt}} 前完成分配给您的阶段门决策。
+Project review package,项目评审包
+Generated {{generatedAt}},生成于 {{generatedAt}}
+Work item export,工作项导出
+Prototype retry command prepared. No request was queued in NPI One or ERPNext.,已准备原型重试命令。未在 NPI One 或 ERPNext 中将任何请求排队。
+Prototype reconciliation prepared. No ERPNext or NPI One record was changed.,已准备原型对账。未更改 ERPNext 或 NPI One 中的任何记录。
+Prototype execution command prepared. No request was queued in NPI One or ERPNext.,已准备原型执行命令。未在 NPI One 或 ERPNext 中将任何请求排队。
+The in-memory prototype command captured a reason; no audit record was persisted.,内存中的原型命令已记录原因，但未持久保存审计记录。
+Close field mapping,关闭字段映射
+Field mapping preview,字段映射预览
+Source field,源字段
+Target field,目标字段
+Mapping result,映射结果
+No approved target value is available. Correct the governed mapping before preparing another request.,没有可用的已批准目标值。请更正受治理的映射后再准备请求。
+Prepare reconciliation,准备对账
+"A submitted command would record the idempotency key, actor, reason, attempt, result, and trace ID.",提交后的命令会记录幂等键、操作人、原因、尝试、结果和跟踪编号。
+Reconciliation compares NPI One requests with ERPNext responses. It does not overwrite either system.,对账会比较 NPI One 请求与 ERPNext 响应，不会覆盖任一系统。
+No formal ERPNext object is created or changed by this prototype reconciliation.,此原型对账不会创建或更改任何正式 ERPNext 对象。
+Unmatched operations remain visible with their trace IDs and recovery state.,未匹配的操作及其跟踪编号和恢复状态将保持可见。
+"A submitted command would record the comparison scope, actor, timestamp, result, and trace IDs.",提交后的命令会记录比较范围、操作人、时间戳、结果和跟踪编号。
+"A submitted command would record the idempotency key, input hash, actor, reason, result, and trace ID.",提交后的命令会记录幂等键、输入哈希、操作人、原因、结果和跟踪编号。
+Reconciliation impact review,对账影响评审
+"A submitted command would record the actor, reason, versions, result, and trace ID.",提交后的命令会记录操作人、原因、版本、结果和跟踪编号。
+"A submitted command would record the source files, hashes, approver, reason, and trace ID.",提交后的命令会记录源文件、哈希、批准人、原因和跟踪编号。
+"A submitted command would record the checklist versions, approver, reason, result, and trace ID.",提交后的命令会记录检查表版本、批准人、原因、结果和跟踪编号。
+Prototype photo selected. No file was uploaded.,已选择原型照片。未上传任何文件。
+The selected file is not an image. No upload was prepared.,所选文件不是图像。未准备上传。
+"A submitted command would record the actor, conclusion, reason, input hash, result, and trace ID.",提交后的命令会记录操作人、结论、原因、输入哈希、结果和跟踪编号。
+Request ID,请求编号
+Client reference ID,客户端参考编号
+The service could not be reached.,无法连接到服务。
+The service returned an invalid response.,服务返回了无效响应。
+The request could not be prepared safely.,无法安全地准备请求。
+An unexpected request error occurred.,发生意外的请求错误。
+The session language and catalog could not be loaded.,无法加载会话语言和目录。
+The language change could not be confirmed.,无法确认语言更改。
+"This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此页面保留了先前的语言和目录。请重试以核对会话状态，或将参考编号提供给支持人员。

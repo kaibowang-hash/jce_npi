@@ -86,7 +86,7 @@ milestones:
     - industrial-ux
     - release-gate
   - id: M1-02
-    title: Frappe-compatible English/zh-CN/zh-TW i18n foundation and terminology governance
+    title: Frappe-compatible English/zh/zh-TW i18n foundation and terminology governance
     skills:
     - frappe-i18n
     - frappe-safe-change
@@ -133,7 +133,7 @@ milestones:
     - erpnext-integration
     - frappe-i18n
   - id: M1-10
-    title: Bilingual usability and visual baseline sessions
+    title: Trilingual usability and visual baseline sessions
     skills:
     - industrial-ux
     - frappe-i18n

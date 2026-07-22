@@ -6,7 +6,7 @@ cd "${repo_root}"
 
 python -m json.tool .devcontainer/devcontainer.json >/dev/null
 python -m json.tool .devcontainer/devcontainer-lock.json >/dev/null
-bash -n scripts/bootstrap-dev.sh scripts/init-frappe-bench.sh scripts/verify-dev-environment.sh scripts/verify-dev-config.sh
+bash -n scripts/bootstrap-dev.sh scripts/init-frappe-bench.sh scripts/init-npi-site.sh scripts/verify-frappe-runtime.sh scripts/verify-dev-environment.sh scripts/verify-dev-config.sh
 
 python scripts/verify_devcontainer.py
 

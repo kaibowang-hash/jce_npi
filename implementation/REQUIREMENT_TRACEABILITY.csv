@@ -1,41 +1,41 @@
 requirement_id,priority,phase,status,source,evidence
-FR-UX-001,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-002,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-003,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-004,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-005,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-006,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-007,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-008,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-009,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-010,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-011,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-012,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-013,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-014,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-015,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-016,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-017,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-018,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-019,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-020,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-021,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-022,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-023,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-024,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-025,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-026,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-027,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-028,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-029,P1,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-030,P1,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-031,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-032,P1,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-033,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-034,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-035,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-036,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-FR-UX-037,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
+FR-UX-001,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app.tsx; frontend/src/app/router.ts; frontend/tests/e2e/core-flows.spec.ts
+FR-UX-002,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app-shell.tsx; frontend/tests/unit/pages-and-shell.test.tsx; frontend/tests/e2e/visual-matrix.spec.ts; shell navigation search and environment identity are proven while notifications expose an honest unavailable state only
+FR-UX-003,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app-shell.tsx; frontend/src/app/router.ts; frontend/tests/unit/pages-and-shell.test.tsx
+FR-UX-004,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/pages/work-page.tsx; frontend/src/components/worklist.tsx; frontend/tests/unit/worklist.test.tsx; fixture Worklist only
+FR-UX-005,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/pages/project-page.tsx; frontend/tests/e2e/core-flows.spec.ts; frontend/tests/unit/pages-and-shell.test.tsx; prototype Project data only
+FR-UX-006,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/object-components.tsx; frontend/src/pages/project-page.tsx; frontend/src/pages/tooling-page.tsx; frontend/tests/unit/primitives-and-objects.test.tsx
+FR-UX-007,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/api/worklist-data-source.ts; frontend/src/components/worklist.tsx; frontend/tests/unit/worklist.test.tsx; fixture paging contract only with no live Worklist BFF claim
+FR-UX-008,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/worklist.tsx; frontend/src/components/object-components.tsx; frontend/tests/unit/worklist.test.tsx; frontend/tests/unit/primitives-and-objects.test.tsx
+FR-UX-009,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/primitives.tsx; frontend/tests/e2e/core-flows.spec.ts; frontend/tests/unit/primitives-and-objects.test.tsx
+FR-UX-010,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/primitives.tsx; frontend/src/pages/execution-page.tsx; frontend/tests/unit/worklist.test.tsx; prototype provenance only with no live ERPNext deep-link claim
+FR-UX-011,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/pages/execution-page.tsx; frontend/src/components/scenario-boundary.tsx; frontend/tests/e2e/core-flows.spec.ts; deterministic execution fixtures only
+FR-UX-012,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/scenario-boundary.tsx; frontend/tests/unit/scenario-boundary.test.tsx; frontend/tests/e2e/states-locales-accessibility.spec.ts; no durable remote-operation backend claim
+FR-UX-013,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/scenario-boundary.tsx; frontend/tests/unit/scenario-boundary.test.tsx; frontend/tests/e2e/states-locales-accessibility.spec.ts; deterministic scenario fixtures
+FR-UX-014,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app.tsx; frontend/src/components/scenario-boundary.tsx; frontend/tests/e2e/core-flows.spec.ts; frontend/tests/unit/scenario-boundary.test.tsx; conflict and field-error fixtures only
+FR-UX-015,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/primitives.tsx; frontend/tests/unit/primitives-and-objects.test.tsx; frontend/tests/e2e/states-locales-accessibility.spec.ts
+FR-UX-016,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/pages/trial-page.tsx; frontend/tests/e2e/states-locales-accessibility.spec.ts; photo selection and action preparation only with no upload claim
+FR-UX-017,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/primitives.tsx; frontend/src/components/object-components.tsx; frontend/tests/e2e/core-flows.spec.ts; frontend/tests/e2e/states-locales-accessibility.spec.ts
+FR-UX-018,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/object-components.tsx; frontend/src/fixtures/prototype.ts; frontend/tests/unit/primitives-and-objects.test.tsx; fixture timeline only with no persisted activity claim
+FR-UX-019,P0,3,TECHNICAL_VERIFIED_FOUNDATION,docs/DETAILED_REQUIREMENTS.md,frontend/src/api/http.ts; frontend/src/api/session.ts; frontend/scripts/verify-boundaries.mjs; frontend/tests/unit/api-and-telemetry.test.ts; local runtime proves session BFF only and no live business ViewModel BFF
+FR-UX-020,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/ui-adapters/npi-ui.tsx; frontend/scripts/verify-boundaries.mjs; docs/decisions/ADR-003-frontend-stack.md; frontend/tests/e2e/core-flows.spec.ts
+FR-UX-021,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/i18n/runtime.tsx; apps/npi_core/npi_core/translations/zh.csv; apps/npi_core/npi_core/translations/zh-TW.csv; frontend/scripts/verify-i18n.mjs; scripts/verify_frappe_runtime.py
+FR-UX-022,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app-shell.tsx; frontend/src/styles/app.css; frontend/tests/e2e/visual-matrix.spec.ts; design/UI_VISUAL_BASELINE.md
+FR-UX-023,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,design/design-tokens.json; frontend/scripts/verify-ui.mjs; frontend/tests/e2e/states-locales-accessibility.spec.ts; frontend/tests/e2e/visual-matrix.spec.ts
+FR-UX-024,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,design/design-tokens.json; frontend/src/styles/app.css; frontend/scripts/verify-ui.mjs; frontend/tests/e2e/states-locales-accessibility.spec.ts
+FR-UX-025,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/worklist.tsx; frontend/src/components/object-components.tsx; frontend/src/styles/app.css; frontend/tests/e2e/states-locales-accessibility.spec.ts; frontend/tests/e2e/visual-matrix.spec.ts
+FR-UX-026,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/scripts/verify-i18n.mjs; frontend/tests/e2e/support.ts; frontend/tests/e2e/states-locales-accessibility.spec.ts; apps/npi_core/npi_core/translations/zh.csv; apps/npi_core/npi_core/translations/zh-TW.csv
+FR-UX-027,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/scripts/shared.mjs; frontend/scripts/verify-i18n.mjs; frontend/src/i18n/runtime.tsx
+FR-UX-028,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,contracts/terminology-allowlist.yaml; frontend/scripts/verify-i18n.mjs; frontend/tests/unit/formatters-and-copy.test.ts
+FR-UX-029,P1,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/app/app-shell.tsx; frontend/src/components/primitives.tsx; frontend/src/pages/gate-page.tsx; frontend/tests/unit/pages-and-shell.test.tsx
+FR-UX-030,P1,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/components/worklist.tsx; frontend/src/components/scenario-boundary.tsx; frontend/tests/unit/worklist.test.tsx; fixture 10000-row bounded-DOM check only with no live-server performance claim
+FR-UX-031,P0,3,PENDING_BUSINESS_UAT_AND_SANITIZED_DATA,docs/DETAILED_REQUIREMENTS.md,frontend/tests/e2e/core-flows.spec.ts; implementation/evidence/phase-3/business-uat.md; six technical fixture paths exist but business signatures and provenance-backed sanitized data are pending
+FR-UX-032,P1,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/telemetry/recorder.ts; frontend/tests/unit/api-and-telemetry.test.ts; frontend/tests/unit/pages-and-shell.test.tsx; privacy validation and in-memory prototype route views only with no live telemetry endpoint claim
+FR-UX-033,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/package-lock.json; frontend/src/ui-adapters/npi-ui.tsx; docs/decisions/ADR-003-frontend-stack.md; implementation/evidence/phase-3/dependency-review.md; frontend/scripts/verify-boundaries.mjs
+FR-UX-034,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,contracts/terminology-allowlist.yaml; apps/npi_core/npi_core/translations/zh.csv; apps/npi_core/npi_core/translations/zh-TW.csv; frontend/scripts/verify-i18n.mjs; frontend/tests/e2e/states-locales-accessibility.spec.ts
+FR-UX-035,P0,3,TECHNICAL_VERIFIED_FOUNDATION,docs/DETAILED_REQUIREMENTS.md,frontend/src/i18n/runtime.tsx; apps/npi_core/npi_core/localization_api.py; scripts/verify_frappe_runtime.py; frontend/src/i18n/surfaces.ts; local normal-user session persistence is proven while non-screen renderers are foundation only
+FR-UX-036,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/i18n/runtime.tsx; scripts/verify_frappe_runtime.py; frontend/tests/e2e/states-locales-accessibility.spec.ts; frontend/tests/e2e/visual-matrix.spec.ts; implementation/evidence/phase-3/runtime-validation.md
+FR-UX-037,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/src/ui-adapters/npi-ui.tsx; frontend/src/components/worklist.tsx; frontend/src/pages/trial-page.tsx; frontend/scripts/verify-i18n.mjs; frontend/tests/e2e/states-locales-accessibility.spec.ts
 FR-PM-001,P0,4,PLANNED,docs/DETAILED_REQUIREMENTS.md,
 FR-PM-002,P0,4,PLANNED,docs/DETAILED_REQUIREMENTS.md,
 FR-PM-003,P0,4,PLANNED,docs/DETAILED_REQUIREMENTS.md,
@@ -167,8 +167,8 @@ NFR-INT-001,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,
 NFR-SCL-001,P1,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,
 NFR-MNT-001,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,
 NFR-DAT-001,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-NFR-UX-001,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-NFR-LOC-001,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-NFR-LOC-002,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
-NFR-UX-002,P0,3,PLANNED,docs/DETAILED_REQUIREMENTS.md,
+NFR-UX-001,P0,3,TECHNICAL_VERIFIED_PROTOTYPE,docs/DETAILED_REQUIREMENTS.md,frontend/src/pages/trial-page.tsx; frontend/tests/e2e/states-locales-accessibility.spec.ts; responsive view and photo selection are proven while upload approval and persisted action update are not
+NFR-LOC-001,P0,3,TECHNICAL_VERIFIED_FOUNDATION,docs/DETAILED_REQUIREMENTS.md,frontend/src/i18n/formatters.ts; frontend/src/i18n/surfaces.ts; frontend/tests/unit/i18n.test.tsx; scripts/verify_frappe_runtime.py; UTC is deterministic prototype output rather than session timezone and mail print export are renderers only
+NFR-LOC-002,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,frontend/scripts/shared.mjs; frontend/scripts/verify-i18n.mjs; apps/npi_core/npi_core/translations/zh.csv; apps/npi_core/npi_core/translations/zh-TW.csv; frontend/tests/e2e/states-locales-accessibility.spec.ts
+NFR-UX-002,P0,3,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,design/design-tokens.json; frontend/scripts/generate-tokens.mjs; frontend/scripts/verify-ui.mjs; frontend/src/styles/app.css; frontend/tests/e2e/states-locales-accessibility.spec.ts; frontend/tests/e2e/visual-matrix.spec.ts
 NFR-COM-001,P1,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,

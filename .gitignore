@@ -12,9 +12,13 @@ logs/
 node_modules/
 dist/
 coverage/
+!implementation/evidence/phase-3/coverage/
+implementation/evidence/phase-3/coverage/*
+!implementation/evidence/phase-3/coverage/coverage-summary.json
 .pytest_cache/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .playwright/
 test-results/
 .DS_Store

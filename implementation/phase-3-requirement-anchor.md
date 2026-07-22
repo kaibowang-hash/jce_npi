@@ -1,7 +1,7 @@
 # Phase 3 Requirement Anchor
 
-Status: **ACTIVE — Execution Pack scope authorized; Phase 1.1 prerequisite passed**
-Baseline date: 2026-07-21  
+Status: **TECHNICAL_PASS_PENDING_UAT — release-gated technical evidence complete; business review and provenance-backed sample data pending**
+Baseline date: 2026-07-22
 Machine execution baseline: repository V1.2 Execution Pack
 
 ## Current governing decision
@@ -13,12 +13,18 @@ The user's 2026-07-21 decision makes the repository V1.2 Execution Pack the sole
 - DOCX-only requirements are recorded in `implementation/DOCX_PACK_DEVIATIONS.md`; they are not added to Phase 3 and may not enlarge its scope.
 - Visual dimensions, screenshot evidence, and the test matrix follow the Pack's actual design, acceptance, implementation, and Skill files.
 - Requirements from multiple sources must not be merged into a broader implicit requirement.
-- Pack-internal material conflicts still block implementation. No such conflict was identified during this re-read.
+- Pack-internal material conflicts still block only the affected implementation.
+  The stale requirement mappings and localization metadata identified during the
+  Phase 3 re-read are normalized in this anchor and ADR-005; the remaining UAT,
+  sample-data, and device-evidence limitations are recorded below without
+  changing the approved execution scope.
 
-This anchor was created before implementation. No React, UI, business module,
-DocType, integration logic, or generated visual evidence was created by that
-anchoring step. Phase 1.1 dynamic verification subsequently passed on
-2026-07-21; Phase 3 implementation is now active and remains incomplete.
+This anchor was created before implementation. Phase 1.1 dynamic verification
+subsequently passed on 2026-07-21. The Phase 3 shell, localization foundation,
+and explicit prototype flows are implemented. The repaired repository,
+frontend, migration, local-runtime, post-fix browser, exact visual, and manual
+review gates passed. The release-gated technical result does not close the
+business acceptance limitations in section 5.6.
 
 ## 1. Files actually read
 
@@ -26,90 +32,124 @@ The following repository sources were read for this anchor:
 
 - Governance and state: `AGENTS.md`, `GOAL.md`, `README_FOR_CODEX.md`, `CHANGELOG_V1.2.md`, `implementation/PHASE_STATUS.yaml`, `implementation/REQUIREMENT_TRACEABILITY.csv`, `implementation/QUALITY_GATE.md`, `implementation/BLOCKERS.md`, `implementation/EXECUTION_PLAN.md`, `implementation/ROADMAP.md`, `implementation/backlog.yaml`, `implementation/DECISION_LOG.md`, `implementation/RISK_REGISTER.md`, `implementation/phase-0-gate.md`, `implementation/phase-1-gate.md`, `implementation/phase-1.1-gate.md`, and `implementation/phase-2-gate.md`.
 - Formal V1.2 requirement source: the complete `docs/reference/NPI_Tooling_Product_Spec_V1.2.docx`, extracted and read through its final paragraph, including its requirement annex.
-- Pack product, architecture, domain, UX, localization, and acceptance sources: `docs/PRODUCT_SPEC.md`, `docs/DETAILED_REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DOMAIN_MODEL.md`, `docs/ERP_INTEGRATION_SPEC.md`, `docs/TOOLING_TRIAL_SPEC.md`, `docs/UX_INTERACTION_SPEC.md`, `docs/LOCALIZATION_SPEC.md`, `docs/ACCEPTANCE_TESTS.md`, `docs/SPEC_INDEX.md`, `docs/REPOSITORY_FACTS.md`, and the relevant files under `docs/reference/`.
+- Pack product, architecture, domain, UX, localization, and acceptance sources: `docs/PRODUCT_SPEC.md`, `docs/DETAILED_REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DOMAIN_MODEL.md`, `docs/ERPNEXT_INTEGRATION.md`, `docs/TOOLING_AND_TRIAL.md`, `docs/UX_INTERACTION_SPEC.md`, `docs/LOCALIZATION_SPEC.md`, `docs/ACCEPTANCE_TESTS.md`, `docs/specification/SPEC_INDEX.md`, `docs/REPOSITORY_FACTS.md`, and the relevant files under `docs/reference/`.
 - Visual and token sources: `design/UI_VISUAL_BASELINE.md`, `design/COMPONENT_USAGE.md`, `design/design-tokens.json`, and all five baseline images under `specs/ui/` (My Work, Project Cockpit, Tooling Cockpit, Trial Workspace, and ERP Execution Panel), including visual inspection.
 - Contracts and localization sources: `contracts/data-ownership.yaml`, `contracts/terminology-allowlist.yaml`, the API/event/schema contracts relevant to the Pack, `localization/README.md`, and the Simplified/Traditional Chinese seed catalogs.
 - Phase 3 review instructions: `.agents/skills/industrial-ux/SKILL.md`, `.agents/skills/frappe-i18n/SKILL.md`, and the Pack prompts relevant to UI, localization, and acceptance (`prompts/03_*`, `prompts/04_*`, and `prompts/05_*`).
-- Approved decisions: every file under `docs/adr/`.
-- Repository history: commits `2c8b3cc`, `b1d3abc`, `f3168c6`, `3d69031`, and `665a723`, including recent change summaries. The existing uncommitted `.gitignore` modification was treated as user-owned and was not changed.
+- Approved decisions: every file under `docs/decisions/`.
+- Repository history and current Git status were inspected. Unrelated concurrent
+  work remains user-owned and outside this documentation normalization.
 
 ## 2. Phase 3 requirements currently assigned by the controller
 
-The controller traceability file assigns the following **41** IDs to Phase 3. The Pack-original source for every row is `docs/DETAILED_REQUIREMENTS.md` section 5.0; the DOCX column records the closest formal V1.2 upstream requirement family where a deterministic relationship is visible. The Pack does not contain a reviewed one-to-one crosswalk, so a family reference below is not a claim that the identifiers are equivalent.
+The controller traceability file assigns the following **41** IDs to Phase 3.
+The Pack-original source for `FR-UX-*` is `docs/DETAILED_REQUIREMENTS.md`
+section 5.0; the four NFR rows come from section 9. The table deliberately does
+not infer a DOCX identifier crosswalk.
 
-| Phase 3 requirement | Pack-original source | Closest full-DOCX V1.2 source | Planned implementation files (after unblock) | Planned test / evidence |
+| Requirement | Trace status | Authoritative Pack requirement | Delivered reusable implementation or screen fixture | Technical test / evidence and boundary |
 |---|---|---|---|---|
-| FR-UX-001 | Detailed Requirements §5.0 | UX-001, ARCH-002 | `frontend/src/app/*`, App Shell adapter | Shell structure, keyboard order, EN/zh/zh-TW screenshots |
-| FR-UX-002 | Detailed Requirements §5.0 | UX-002, UX-033 | `frontend/src/app/navigation/*` | Stable navigation and route-state tests |
-| FR-UX-003 | Detailed Requirements §5.0 | UX-025 | `frontend/src/app/my-work/*` | Worklist density, sorting/filtering, state fixtures |
-| FR-UX-004 | Detailed Requirements §5.0 | UX-010 | `frontend/src/app/project-cockpit/*` | Cockpit layout and responsive evidence |
-| FR-UX-005 | Detailed Requirements §5.0 | UX-003, UX-005 | `frontend/src/components/worklist/*` | Table/tree interaction and accessibility tests |
-| FR-UX-006 | Detailed Requirements §5.0 | UX-006 | `frontend/src/components/object-page/*` | Object-page hierarchy and focus tests |
-| FR-UX-007 | Detailed Requirements §5.0 | UX-007 | `frontend/src/components/inspector/*` | Docked inspector and resize tests |
-| FR-UX-008 | Detailed Requirements §5.0 | UX-008 | `frontend/src/components/timeline/*` | Timeline semantics and non-colour status tests |
-| FR-UX-009 | Detailed Requirements §5.0 | UX-013 | `frontend/src/components/gate/*` | Gate evidence presentation tests only; no gate business logic |
-| FR-UX-010 | Detailed Requirements §5.0 | UX-019, ARCH-011 | `frontend/src/components/file-view/*` | Version/immutable-release presentation states |
-| FR-UX-011 | Detailed Requirements §5.0 | UX-016 and ERP execution narrative | `frontend/src/components/erp-execution/*` | Honest pending/error/partial/retry states; no fake success |
-| FR-UX-012 | Detailed Requirements §5.0 | UX-016, UX-017 | `frontend/src/components/status/*` | Text/icon/shape status semantics |
-| FR-UX-013 | Detailed Requirements §5.0 | UX-017, COD-012 | `frontend/src/components/feedback/*` | Error, retry, trace/request-ID rendering |
-| FR-UX-014 | Detailed Requirements §5.0 | UX-012, UX-015 | `frontend/src/components/compare/*` | Comparison layout and keyboard tests |
-| FR-UX-015 | Detailed Requirements §5.0 | UX-015, UX-021 | `frontend/src/components/baseline/*` | Baseline/change visual states only |
-| FR-UX-016 | Detailed Requirements §5.0 | UX-020 | `frontend/src/components/change-impact/*` | Impact summary and confirmation presentation |
-| FR-UX-017 | Detailed Requirements §5.0 | UX-021 | `frontend/src/components/release/*` | Released/read-only visual-state tests |
-| FR-UX-018 | Detailed Requirements §5.0 | UX-009 | `frontend/src/components/command-bar/*` | One-primary-action rule audit |
-| FR-UX-019 | Detailed Requirements §5.0 | ARCH-004 and UX shell narrative | `frontend/src/app/routes/*` | Browser uses BFF route boundary; static import/API audit |
-| FR-UX-020 | Detailed Requirements §5.0 | UX-023, ARCH-003 | `frontend/src/ui-adapters/*` | No raw Siemens component imports outside adapter |
-| FR-UX-021 | Detailed Requirements §5.0 | UX-022, I18N-001, I18N-002 | `frontend/src/i18n/*` | Literal-English extraction and catalog reuse tests |
-| FR-UX-022 | Detailed Requirements §5.0 | UX-024 | `frontend/src/styles/*` | Token, radius, shadow, colour, and density audit |
-| FR-UX-023 | Detailed Requirements §5.0 | UX-031 | `frontend/tests/accessibility/*` | WCAG/keyboard/focus/label/contrast checks |
-| FR-UX-024 | Detailed Requirements §5.0 | UX-032 | `frontend/tests/usability/*` | Task-completion fixtures and acceptance record |
-| FR-UX-025 | Detailed Requirements §5.0 | UX-033, UX-035 | `frontend/src/app/responsive/*` | Supported viewport and zoom matrix |
-| FR-UX-026 | Detailed Requirements §5.0 | I18N-003, I18N-007 | Frappe app translation catalogs after runtime verification | Three-locale coverage and no-fallback checks |
-| FR-UX-027 | Detailed Requirements §5.0 | I18N-001, I18N-002, COD-015, COD-022 | Python/JS/React i18n adapters | `_()`, `__()`, `t()` extraction/static checks |
-| FR-UX-028 | Detailed Requirements §5.0 | I18N-004 | `frontend/src/i18n/formatters.*` | Locale date/time/number/currency tests |
-| FR-UX-029 | Detailed Requirements §5.0 | No deterministic annex-ID mapping found | Help/context components, path pending | Human-approved provenance required before implementation |
-| FR-UX-030 | Detailed Requirements §5.0 | UX-029 | Build configuration and performance tests | Bundle/load/input performance evidence |
-| FR-UX-031 | Detailed Requirements §5.0 | UX-030 | `frontend/tests/visual/*` | Prototype fidelity and review evidence |
-| FR-UX-032 | Detailed Requirements §5.0 | No deterministic annex-ID mapping found | Telemetry adapter, path pending | Privacy-safe telemetry contract and test; provenance decision required |
-| FR-UX-033 | Detailed Requirements §5.0 | ARCH-003, UX-023, UX-024 | `frontend/package.json`, lockfile, adapter boundary | Dependency/license/version and boundary checks |
-| FR-UX-034 | Detailed Requirements §5.0 | I18N-003, I18N-004 | Translation extraction/build scripts | Reproducible catalog build and validation |
-| FR-UX-035 | Detailed Requirements §5.0 | I18N-002, I18N-005 | Terminology lint/config | Controlled-term and mixed-language scan |
-| FR-UX-036 | Detailed Requirements §5.0 | UX-022, I18N-002, I18N-007 | Visual-test locale fixtures | EN/zh/zh-TW screenshots for required states |
-| FR-UX-037 | Detailed Requirements §5.0 | I18N-006 | Third-party default-label adapter | No untranslated library defaults test |
-| NFR-UX-001 | Detailed Requirements §5.0 | NFR-UX-001 | Shell/styles/components above | Industrial visual gate |
-| NFR-LOC-001 | Detailed Requirements §5.0 | NFR-LOC-001 | i18n files/catalogs above | Three-language completeness gate |
-| NFR-LOC-002 | Detailed Requirements §5.0 | I18N family; no same DOCX NFR ID | Locale formatters/catalog validation | Locale-format and fallback gate; ID decision required |
-| NFR-UX-002 | Detailed Requirements §5.0 | UX family; no same DOCX NFR ID | Accessibility/responsive test suites | Accessibility and viewport gate; ID decision required |
+| FR-UX-001 | `TECHNICAL_VERIFIED` | Independent NPI Web App; Desk is not the normal-user entry | App Shell and routes | Critical-path route tests never enter Desk |
+| FR-UX-002 | `TECHNICAL_VERIFIED_PROTOTYPE` | Unified industrial shell, domain navigation, search, notifications, and environment identity | `AppShell`, navigation, environment marker | Shell navigation, search, and environment identity are proven; notifications expose an honest unavailable state only |
+| FR-UX-003 | `TECHNICAL_VERIFIED` | Domain-first information architecture rather than DocType menus | Domain route/navigation model | Users find Project, Tooling, Design, Trial, and NPI work without DocType names |
+| FR-UX-004 | `TECHNICAL_VERIFIED_PROTOTYPE` | Unified My Work queue | My Work screen fixture over shared Worklist | Fixture Worklist only; no live queue claim |
+| FR-UX-005 | `TECHNICAL_VERIFIED_PROTOTYPE` | Project Cockpit with header, Gate track, next action, metrics, tree, and inspector | Project Cockpit screen fixture | Frequent-task and context-preservation tests use prototype Project data only |
+| FR-UX-006 | `TECHNICAL_VERIFIED` | Core objects use Object Pages with anchors/tabs | Reusable Object Page and compact header | Project, Tooling, and Trial fixtures prove hierarchy and keyboard navigation |
+| FR-UX-007 | `TECHNICAL_VERIFIED_PROTOTYPE` | Saved Worklist views, filters, sorting, grouping, columns, and server paging | Reusable Worklist/TreeTable | Fixture paging contract only; no live Worklist BFF claim |
+| FR-UX-008 | `TECHNICAL_VERIFIED` | Split view and docked context inspector preserve context | Reusable split panes and `DockedInspector` | Selection, scroll, and return context survive detail work |
+| FR-UX-009 | `TECHNICAL_VERIFIED` | One visual primary action; high-risk actions use an impact review | Command bar and `ImpactReview` | Primary-action audit and Gate/release/Trial/ERP review fixtures |
+| FR-UX-010 | `TECHNICAL_VERIFIED_PROTOTYPE` | Show source, sync state, and editable system | `SourceBadge`, `SyncBadge`, field provenance | Prototype provenance only; no live ERPNext deep-link claim |
+| FR-UX-011 | `TECHNICAL_VERIFIED_PROTOTYPE` | Distinguish NPI save/approval from ERP queue/completion/failure | `OperationStatus` and ERP execution fixture | Deterministic execution fixtures only; no target-system completion claim |
+| FR-UX-012 | `TECHNICAL_VERIFIED_PROTOTYPE` | All remote operations expose durable async and retry states | Reusable operation state model | State fixtures are proven; no durable remote-operation backend claim |
+| FR-UX-013 | `TECHNICAL_VERIFIED_PROTOTYPE` | Core pages cover empty, denied, read-only, error, conflict, and partial-data states | Shared page-state boundary plus per-screen scenarios | Deterministic scenario fixtures only |
+| FR-UX-014 | `TECHNICAL_VERIFIED_PROTOTYPE` | Draft, dirty guard, field errors, and version conflict | Form-state and concurrency components | Conflict and field-error fixtures only; no live concurrency backend claim |
+| FR-UX-015 | `TECHNICAL_VERIFIED` | Status uses text, icon/shape, and colour together | `SemanticStatus` | Non-colour status and accessible-name tests |
+| FR-UX-016 | `TECHNICAL_VERIFIED_PROTOTYPE` | Desktop and field-tablet use, including photo/Trial actions | Responsive shell and Trial field fixture | Photo selection and action preparation only; no upload claim |
+| FR-UX-017 | `TECHNICAL_VERIFIED` | Keyboard, focus, labels, and 150% zoom | Shared accessibility behaviours | Keyboard/focus/label/zoom checks across core fixtures |
+| FR-UX-018 | `TECHNICAL_VERIFIED_PROTOTYPE` | Unified contextual activity timeline | `ActivityTimeline` in docked inspector | Fixture timeline only; no persisted activity claim |
+| FR-UX-019 | `TECHNICAL_VERIFIED_FOUNDATION` | Browser uses aggregated BFF/domain APIs | Typed `/api/npi/v1` client and fixture transport | Session BFF and strict client boundary are proven; no live business ViewModel BFF |
+| FR-UX-020 | `TECHNICAL_VERIFIED` | Third-party design system is isolated behind local adapters and company tokens | `frontend/src/ui-adapters/*` | Import-boundary and brand-asset scans |
+| FR-UX-021 | `TECHNICAL_VERIFIED` | English-only source; Chinese comes from Frappe catalogs | Local `t()` and Frappe-backed catalog adapter | Literal-source extraction and shared-catalog/runtime tests |
+| FR-UX-022 | `TECHNICAL_VERIFIED` | Siemens iX/classic engineering software is the sole UI reference | Shell, adapter, and tokenized styles | Industrial UX rules, exact 129-case comparison, and representative manual review passed |
+| FR-UX-023 | `TECHNICAL_VERIFIED` | One industrial teal plus neutral surfaces | Token-generated styles | Palette-ratio and competing-accent audit |
+| FR-UX-024 | `TECHNICAL_VERIFIED` | Ordinary radius is 0–2px; panels have no shadow | Token-generated geometry | Computed-style, token, and regenerated exact screenshot checks passed |
+| FR-UX-025 | `TECHNICAL_VERIFIED` | Dense tables, trees, split panes, and docked inspectors | Shared layout primitives and screen fixtures | Desktop/zoom interaction and exact screenshot evidence passed |
+| FR-UX-026 | `TECHNICAL_VERIFIED` | No non-allowlisted mixed UI language | Locale render and mixed-language scanners | Static and post-fix browser scans found no ordinary mixed-language residue |
+| FR-UX-027 | `TECHNICAL_VERIFIED` | User copy only through `_()`, `__()`, or React `t()` | Translation wrappers and extractor | Static scan rejects unwrapped or non-literal display strings |
+| FR-UX-028 | `TECHNICAL_VERIFIED` | Controlled terminology and retain abbreviations use the machine-readable glossary | Terminology validator | Unique approved translation and glossary-change checks |
+| FR-UX-029 | `TECHNICAL_VERIFIED` | Context help explains terms, read-only fields, and blockers | Reusable contextual-help/explanation component | Read-only and blocked fixtures are understandable without developer docs |
+| FR-UX-030 | `TECHNICAL_VERIFIED_PROTOTYPE` | Virtualization, progressive loading, and skeletons for large trees/tables | Worklist virtualization and skeleton primitives | Fixture 10,000-row bounded-DOM check only; no live-server performance claim |
+| FR-UX-031 | `PENDING_BUSINESS_UAT_AND_SANITIZED_DATA` | Six realistic clickable golden paths with anonymized data and multi-role review | Six technical screen/flow fixtures and unsigned UAT package | Named business signatures and provenance-backed sanitized data are pending |
+| FR-UX-032 | `TECHNICAL_VERIFIED_PROTOTYPE` | Privacy-safe usage metrics | Strictly allowlisted in-memory telemetry adapter | Privacy validation and prototype route views only; no live telemetry endpoint claim |
+| FR-UX-033 | `TECHNICAL_VERIFIED` | Siemens iX Classic Light through a version-locked local adapter | Dependency lock, root theme attributes, UI adapter | Version/license/security/bundle record and adapter-boundary tests |
+| FR-UX-034 | `TECHNICAL_VERIFIED` | Ordinary Tooling/Gate/Trial/Worklist/Workspace terms are translated in Chinese | Canonical catalogs and terminology mapping | Title/menu/button/field/help/error terminology scan |
+| FR-UX-035 | `TECHNICAL_VERIFIED_FOUNDATION` | Locale follows persisted Frappe user language and one translation source | Locale BFF, catalog version, CSRF-protected preference update | Normal-user persistence is proven; non-screen renderers remain foundation only |
+| FR-UX-036 | `TECHNICAL_VERIFIED` | English, Simplified Chinese, and Traditional Chinese with verified Frappe codes | `en`, `zh`, and `zh-TW` locale fixtures | Static/runtime coverage and final three-locale browser/visual runs passed |
+| FR-UX-037 | `TECHNICAL_VERIFIED` | Third-party built-in labels also use the translation adapter | Adapter-supplied pagination/upload/validation/empty labels | Static and post-fix browser scans contain no third-party default English in Chinese |
+| NFR-UX-001 | `TECHNICAL_VERIFIED_PROTOTYPE` | Role workbench plus required mobile/field actions | Role fixtures and responsive field layout | Responsive view and photo selection are proven; upload approval and persisted action update are not |
+| NFR-LOC-001 | `TECHNICAL_VERIFIED_FOUNDATION` | Frappe-based localization covers UI, formats, notifications, mail, print, and export | Shared catalogs and locale formatters/renderers | UTC is deterministic prototype output; mail/print/export are renderers only |
+| NFR-LOC-002 | `TECHNICAL_VERIFIED` | Core-page translation coverage is 100%; missing/mixed language blocks release | Coverage, placeholder/context, and mixed-language gates | 556/556 direct rows per Chinese locale with placeholder/context parity |
+| NFR-UX-002 | `TECHNICAL_VERIFIED` | Design tokens are the sole style source; iX defaults cannot bypass them | Token build and adapter theme overrides | Static token, computed-style, and exact visual audits passed |
+
+These are the exact trace qualifiers currently recorded for the 41 Phase 3
+rows: 23 `TECHNICAL_VERIFIED`, 14 `TECHNICAL_VERIFIED_PROTOTYPE`, three
+`TECHNICAL_VERIFIED_FOUNDATION`, and one
+`PENDING_BUSINESS_UAT_AND_SANITIZED_DATA`. A prototype or foundation status
+does not imply delivery of the corresponding live service.
 
 The formal DOCX requirement annex contains requirement families that are absent from the current traceability CSV: `UX-001..UX-036`, `ARCH-001..ARCH-012`, `FR-TX-001..FR-TX-018`, `COD-001..COD-022`, and `I18N-001..I18N-007`. A machine extraction found 228 unique DOCX identifiers while the DOCX states 229 requirements, and the Pack traceability CSV has 173 rows. These counts and mappings must be reconciled before the table above can be treated as complete formal traceability.
 
-## 3. Planned Phase 3 implementation boundary
+## 3. Delivered Phase 3 implementation boundary
 
-After the blockers are resolved, the intended boundary is limited to the approved industrial React shell, the local Siemens iX adapter, tokenized styling, the Frappe-backed localization adapter/catalog pipeline, and their tests. Candidate files are:
+The implementation boundary is limited to the approved industrial React shell,
+the local Siemens iX adapter, tokenized styling, the Frappe-backed localization
+adapter/catalog pipeline, explicit prototype fixtures, and their tests.
+Delivered files include:
 
 - `frontend/package.json`, an approved lockfile, TypeScript/Vite/test configuration, and `frontend/index.html`;
 - `frontend/src/main.tsx`, `frontend/src/app/*`, `frontend/src/ui-adapters/*`, `frontend/src/components/*`, `frontend/src/styles/*`, and `frontend/src/i18n/*`;
-- verified Frappe translation catalogs under the existing app path, only after actual Frappe version, language codes, extraction commands, and runtime resolution are demonstrated;
+- canonical no-header Frappe CSV catalogs under the NPI app translation path,
+  with `zh` and `zh-TW` validated against the pinned runtime and then exercised
+  through a local development site;
 - `frontend/tests/*` and narrowly scoped repository scripts for dependency-boundary, token, translation-coverage, mixed-language, accessibility, and visual checks.
 
 This scope does **not** authorize Project, Tooling, Trial, Change, gate-decision, or ERP integration business logic. It also does not authorize new business DocTypes, fixtures presented as real data, production ERP access, or a change to the approved architecture.
 
-## 4. Planned checks and visual evidence
+## 4. Final technical evidence
 
-No item below has been claimed as executed or passed:
+The detailed results and limitations are recorded in
+`implementation/evidence/phase-3/technical-test-results.md`,
+`runtime-validation.md`, `dependency-review.md`, and `visual-review.md`.
 
-- First complete Phase 1.1 dynamic checks after a Codespaces rebuild: Node, the approved package manager, Python, Docker CLI/approved alternative, Bench/Frappe development path, and React build tooling.
-- Clean dependency install from the lockfile, build, TypeScript check, lint, unit/component tests, and production bundle check.
-- Static enforcement that Siemens packages are imported only through the local adapter; browser calls only the NPI BFF boundary; token values, 0–2 px ordinary radius, restrained shadows, one primary colour, and one primary action are enforced.
-- Keyboard, focus, accessible-name, contrast, non-colour status, resize, and supported zoom checks.
-- Normal, loading, empty, no-permission, read-only, error, conflict, asynchronous-processing, and partial-ERP-result states using explicit test fixtures—not placeholder content or fabricated operational data.
-- Literal-English source scan; Frappe extraction/build; English, Simplified Chinese, and Traditional Chinese coverage; placeholder/context parity; controlled terminology; third-party-default translation; and mixed-language scan. Missing translations must fail rather than silently fall back to English.
-- Real rendered screenshots for all three languages at the finally approved viewport matrix, including 125% and 150% zoom where required. Evidence must be produced by the runnable application and may not be mocked or manually fabricated.
-- Pack Phase 3 acceptance checks and both `industrial-ux` and `frappe-i18n` review gates, followed by the repository release gate before any checkpoint commit.
+- A lockfile-clean install, aggregate repository verification with 58 Python
+  tests, full frontend verification with 110 unit/component tests, 92.96%
+  statement/line coverage, production build, and both dependency audits passed.
+- Static adapter/BFF boundaries, token geometry, restrained colour/shadow rules,
+  one-primary-action behavior, strict BFF path/CSRF/error handling,
+  privacy-safe telemetry validation, and literal/context-aware i18n extraction
+  passed.
+- The post-fix 63-test nonvisual Chromium run passed in 2.6 minutes, covering
+  the six technical golden paths, deterministic state matrix, three-locale
+  purity, WCAG A/AA scan, keyboard/focus, desktop/zoom, tablet, phone, and
+  computed-style checks.
+- All 129 rendered baselines were force-regenerated and passed in 4.3 minutes.
+  A clean comparison then passed 129/129 at `maxDiffPixelRatio: 0` in 3.9
+  minutes, and six representative images passed manual review at original
+  resolution.
+- The local Frappe runtime installed and migrated both apps and proved the
+  normal-user locale, CSRF, error, no-store, trace, and cleanup contracts
+  without contacting ERPNext or production.
+- The aggregate Python gate proves that a cache-invalidation failure after
+  User save rolls back the transaction, restores the in-memory language, keeps
+  the current request locale unchanged, and returns a safe retryable error.
 
-## 5. DOCX/Pack deviations and runtime prerequisites
+## 5. DOCX/Pack deviations and acceptance limitations
 
-The differences in sections 5.1–5.3 are non-blocking under the current governing decision and are tracked in `implementation/DOCX_PACK_DEVIATIONS.md`. Section 5.4 is a Phase 1.1 runtime verification item. Section 5.5 is handled by the approved ADR and lockfile verification during implementation.
+The differences in sections 5.1–5.3 are non-blocking under the current governing
+decision and are tracked in `implementation/DOCX_PACK_DEVIATIONS.md`. Sections
+5.4 and 5.5 record completed runtime and dependency evidence. Section 5.6
+records the remaining Pack-internal acceptance limitations without changing
+scope.
 
 ### 5.1 Phase definition conflict
 
@@ -123,13 +163,59 @@ The DOCX annex and Pack use different identifiers for substantially overlapping 
 
 The full DOCX (`UX-036` and its visual-evidence text) requires 1440×900 and 1920×1080 evidence. The Pack visual baseline, acceptance material, and `industrial-ux` skill require 1366×768 and 1920×1080, plus 125% and 150% zoom checks. The Pack matrix is authoritative for the current Gate.
 
-### 5.4 Frappe language-code verification conflict
+### 5.4 Frappe localization facts and runtime proof
 
-ADR-005 records `zh` and `zh-TW` as verified CSV catalog codes. However, `contracts/terminology-allowlist.yaml` still labels `zh-CN-provisional` and `zh-TW-provisional` as provisional and explicitly says M0 must verify deployed language codes; `localization/README.md` likewise says the seeds are provisional. There is no usable live Bench/site evidence in the repository proving the deployed Frappe version, actual user-language values, resolution order, extraction command, or catalog loading. The English-source policy is clear, but the required Frappe translation mechanism cannot yet be truthfully declared operational.
+The development environment pins Frappe branch `version-15` at commit
+`a3d8090ba80cb91d3ed72ea90bec67df201db5c1`. The rebuilt local checkout reports
+Frappe 15.115.4 and provides `frappe/translations/zh.csv` and
+`frappe/translations/zh-TW.csv`. Its translation loader reads no-header two- or
+three-column application CSV files, resolves the user's language before system
+and English fallbacks, and overlays child-language translations after the
+parent catalog. ADR-005, `contracts/terminology-allowlist.yaml`, and
+`localization/README.md` now consistently select `en`, `zh`, and `zh-TW`.
+
+The disposable `npi.localhost` Site installed and migrated both NPI apps. A
+dedicated Website User exercised the loopback BFF and proved 556 direct entries
+for each catalog, `zh` and `zh-TW` persistence across fresh sessions, an
+unchanged `en` Administrator preference, CSRF enforcement, controlled
+malformed/missing/extra/wrong-type request failures, no-store delivery,
+body/header trace correlation, rejection of `zh-CN`, unchanged state after
+rejected mutations, and exact fixture deletion. Successful bootstrap includes
+only `userId`, `language`, `allowedLanguages`, `csrfToken`, and `catalog`.
+Independent catalog validation still prevents `zh-TW` from silently inheriting
+missing Simplified Chinese rows. The generated browser catalog version is
+`12e5adf665b2cd30`; the BFF runtime version is a full SHA-256 value.
 
 ### 5.5 Dependency approval evidence
 
-The architecture approves the Siemens iX package family and local adapter pattern, but Phase 3 has no reviewed lockfile or dependency record proving exact versions, licenses, maintenance/security posture, bundle impact, and alternatives for the production dependencies. Repository policy prohibits silently adding production dependencies without that evidence.
+`frontend/package-lock.json`, ADR-003, and the Phase 3 dependency review record
+the exact React and Siemens iX versions, MIT licenses, upstream metadata,
+alternatives, adapter-scoped rollback, bundle impact, and upgrade rule. A clean
+install consumed the lockfile, both complete and production-only audits found
+zero known vulnerabilities, and the production build retained its visible
+761.17 kB entry-chunk warning as a measured baseline rather than weakening the
+threshold.
+
+### 5.6 Phase 3 acceptance limitations
+
+- **Business UAT:** FR-UX-031 requires six realistic clickable workflows to be
+  reviewed by Project Management, Engineering/Tooling, and Quality
+  representatives. Codex can implement the technical paths, capture metrics,
+  and provide a complete script and unsigned result template, but it cannot act
+  as those representatives. Until they complete the walkthroughs and severe
+  findings are closed, the truthful outcome is
+  `TECHNICAL_PASS_PENDING_UAT`, not a signed business acceptance.
+- **Representative data:** the repository has no provenance-backed sanitized
+  Project/Tooling/Trial/ERP sample package. Explicit contract-backed fixtures
+  may be used for technical implementation and must be labelled as fixtures;
+  they cannot be presented as real operational data or satisfy the real-data
+  clause of FR-UX-031. This limits that requirement's final acceptance without
+  expanding Phase 3 into ERP reconciliation or production access.
+- **Device evidence:** the Pack desktop matrix remains 1366×768 and 1920×1080
+  plus 125% and 150% zoom-equivalent layouts. A 768×1024 field-tablet visual and
+  interaction test plus a 390×844 phone interaction test separately prove the
+  named Trial review, photo, and prepared-action use case. These are technical
+  prototype results, not a substitute for the pending representative UAT.
 
 ## 6. ERPNext reconciliation evidence check
 
@@ -137,32 +223,34 @@ The repository does **not** contain a complete existing ERPNext customization ba
 
 ### Required ERPNext Reconciliation material
 
-Provide a dated, owner-identified, sanitized, read-only package containing:
+`implementation/REQUIRED_INPUTS.md` is the single complete request for the
+sanitized ERPNext reconciliation, representative-data, provenance, ownership,
+SOP, and business-UAT inputs. It explicitly excludes secrets and production
+access and defines how the package will be validated.
 
-1. Exact Frappe and ERPNext versions/builds, installed-app list and versions, deployment topology, database type, file-storage mode, enabled locales, System Settings language, representative User language values, and the supported Bench/container development commands.
-2. Source or export of every ERPNext custom app and extension: `hooks.py`, modules, DocTypes, patches, fixtures, overrides, whitelisted methods, scheduled jobs, reports, print formats, client/server scripts, notifications, webhooks, and workspace customizations.
-3. Exports of Custom Fields, Property Setters, Workflows and Workflow States/Actions, Naming Series, Roles, Role Profiles, DocPerm/custom permissions, User Permissions, sharing rules, and integration/service-user scopes. Do not include credentials, tokens, session cookies, or private keys.
-4. Current schemas, status/state semantics, ownership, and edit authority for Customer, Supplier, Item, Item Variant, BOM/MBOM, purchasing/receiving, inventory, manufacturing, Quality Inspection/NCR/CAPA, Asset/Maintenance, ECR/ECO/ECN, File/Attachment, and every custom mold/tooling/trial/project object.
-5. A field-level mapping inventory for every existing integration, including endpoints, commands/queries, webhook payloads, authentication method (described but not secret), signatures, idempotency keys, retries, dead-letter/replay/reconciliation behavior, rate limits, error codes, and known failure cases.
-6. Sanitized representative records and relationship diagrams for at least one customer-owned project and one new-tool project, including revisions, approvals, released files, tooling/mold records, trial rounds, quality outcomes, purchase/manufacturing references, and failed/pending integration examples. Preserve stable surrogate relationships while removing personal, commercial, and secret data.
-7. The authoritative Tooling List workbook/template and column dictionary, including the expected 43-column interpretation, A/B/C-face, overmold/insert rules, required/optional fields, units, validation, revision history, and approved sample rows.
-8. Master-data and coding rules: company/site/factory, customer/supplier/item naming, UOM, currency, timezone, fiscal/calendar conventions, numbering/naming series, document retention, attachment classification, and controlled terminology.
-9. Current business SOPs and acceptance evidence for Project, Gate, Tooling, Trial, Change, approval/release, and ERP execution, with named business owners empowered to resolve discrepancies between SOP, ERP configuration, V1.2 contracts, and sample data.
-10. A data provenance manifest for every export: source system/site, extraction command or report, timestamp/timezone, responsible owner, redaction method, record counts, and checksum. Any sandbox access must be separately approved and must not be production access.
-
-The missing ERPNext evidence does not block the Pack-defined Phase 3 shell/i18n foundation. It continues to block formal Project, Tooling, Trial, Change, and ERP integration business logic, which is outside Phase 3.
+The missing ERPNext evidence did not block Phase 3 and does not block
+contract-backed NPI-owned Project/Gate work, explicit mocks, or sandbox-ready
+adapters in later phases. It blocks only affected ERP-specific mappings,
+reconciliation claims, sandbox activation, and production activation until the
+required facts and separate approvals exist.
 
 ## 7. Deferred reconciliation decisions
 
-The following items are deferred and do not block Pack-scoped Phase 3 work:
+The following decisions or external inputs remain deferred and do not invalidate
+the Phase 3 technical gate:
 
 1. Approve a DOCX-to-Pack requirement crosswalk and resolve the 229-stated/228-extracted/173-traced count discrepancy, including whether Pack-only IDs are approved requirements or normalization errors.
-2. Confirm that controller Phase 3 means only the industrial React shell/localization foundation, and record how this maps to the DOCX phase model.
-3. Reconcile the differing DOCX screenshot matrix after the Pack-defined Phase 3 Gate; current evidence uses only the Pack matrix.
-4. Resolve ADR-005 against the still-provisional localization contract using evidence from the rebuilt, actual Frappe/Bench runtime; confirm Frappe version, exact language codes, CSV versus PO/MO path, extraction/build command, and runtime user-language resolution.
-5. Approve exact Siemens iX/React/build/test dependency versions and the required license, maintenance, security, bundle, alternative, and rollback record.
-6. Supply and approve the ERPNext Reconciliation package above, then resolve data ownership, state, permission, and contract discrepancies before any formal Project, Tooling, Trial, Change, or ERP integration business logic is implemented.
+2. Reconcile the differing DOCX screenshot matrix after the Pack-defined Phase 3 Gate; current evidence uses only the Pack matrix.
+3. Supply and approve `implementation/REQUIRED_INPUTS.md` before affected
+   ERP-specific mappings, reconciliation claims, or activation are accepted.
 
 ## 8. Proceed decision
 
-DOCX/Pack differences no longer trigger a stop. Work proceeds first to the real Phase 1.1 environment Gate. Phase 3 may resume only after that Gate passes. Missing ERPNext reconciliation material continues to prohibit later formal business logic but does not prohibit the Pack-defined Phase 3 shell, localization foundation, test fixtures, or contract-backed prototype states.
+The repaired technical checks and release gate are complete. Because
+`FR-UX-031` still requires named business reviewers and provenance-backed
+sanitized data, the truthful acceptance state is
+`TECHNICAL_PASS_PENDING_UAT`, not an unqualified business PASS. The DOCX/Pack
+differences and missing production ERPNext reconciliation package do not
+trigger a global stop. Automatic phase transition remains a controller action;
+this anchor does not authorize scope expansion, production access, or lowered
+gates.

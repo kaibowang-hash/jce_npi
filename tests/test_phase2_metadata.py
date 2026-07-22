@@ -19,7 +19,7 @@ class FrappeMetadataTest(unittest.TestCase):
         self.assertIn('required_apps = ["npi_core"]', integration_hooks)
 
     def test_audit_is_append_only_for_business_roles(self) -> None:
-        audit = self.load("apps/npi_core/npi_core/doctype/npi_audit_event/npi_audit_event.json")
+        audit = self.load("apps/npi_core/npi_core/npi_core/doctype/npi_audit_event/npi_audit_event.json")
         self.assertEqual(audit["read_only"], 1)
         expected = [{"role": "System Manager", "read": 1, "export": 0, "print": 0, "email": 0}]
         self.assertEqual(audit["permissions"], expected)
@@ -29,8 +29,8 @@ class FrappeMetadataTest(unittest.TestCase):
 
     def test_message_ids_are_unique_and_never_default_to_success(self) -> None:
         paths = (
-            "apps/npi_integration/npi_integration/doctype/npi_outbox_message/npi_outbox_message.json",
-            "apps/npi_integration/npi_integration/doctype/npi_inbox_message/npi_inbox_message.json",
+            "apps/npi_integration/npi_integration/npi_integration/doctype/npi_outbox_message/npi_outbox_message.json",
+            "apps/npi_integration/npi_integration/npi_integration/doctype/npi_inbox_message/npi_inbox_message.json",
         )
         for relative in paths:
             metadata = self.load(relative)
@@ -41,7 +41,7 @@ class FrappeMetadataTest(unittest.TestCase):
             self.assertEqual(metadata["permissions"], [{"role": "System Manager", "read": 1}])
 
     def test_file_integrity_fields_are_server_read_only(self) -> None:
-        metadata = self.load("apps/npi_core/npi_core/doctype/npi_file_revision/npi_file_revision.json")
+        metadata = self.load("apps/npi_core/npi_core/npi_core/doctype/npi_file_revision/npi_file_revision.json")
         fields = {field["fieldname"]: field for field in metadata["fields"]}
         self.assertEqual(fields["sha256"]["read_only"], 1)
         self.assertEqual(fields["scan_state"]["read_only"], 1)
