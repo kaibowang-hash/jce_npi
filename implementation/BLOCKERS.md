@@ -16,13 +16,15 @@ activation remain prohibited and are not requested.
 
 ## Scoped Phase 4 rule holds
 
-Phase 4 `P4-00` must reconcile the controller/M3 Project-and-Gate boundary with
-Pack trace rows that also mention portfolio, external collaboration,
-notifications, ERP-owned cost, ERP-triggered creation, or external scheduling.
+Phase 4 `P4-00` reconciled the controller/M3 Project-and-Gate boundary with Pack
+trace rows that also mention portfolio, external collaboration, notifications,
+ERP-owned cost, ERP-triggered creation, or external scheduling. The affected
+requirements are explicitly remapped without losing their original acceptance.
 Production project numbering/source rules, template/skip/duration content,
-RACI-to-approval mapping, WorkItem vocabulary, health/cost thresholds, Gate
-waiver/invalidation authority, and project lifecycle approvals remain Class-B
-holds until authoritative facts exist. Only those ambiguous rules are held.
+RACI-to-approval mapping, per-kind Domain WorkItem lifecycle, health/cost
+thresholds, Gate waiver/invalidation authority, and project lifecycle approvals
+remain Class-B holds until authoritative facts exist. Only those ambiguous
+rules are held.
 Generic/versioned NPI-owned Project/Gate infrastructure, explicit synthetic
 fixtures, contracts, automated tests, localization, UI and documentation can
 continue.

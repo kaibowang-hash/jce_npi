@@ -45,17 +45,16 @@ facts pause only formal logic that depends on those facts.
 ## Current checkpoint
 
 - Current phase: `4 — Project Work Items and Stage Gates`.
-- Current atomic task: `P4-00` requirement anchor. Reconcile the M3 Project/Gate
-  boundary, requirement allocation, domain/API/UI vocabulary, Class-B rule
-  holds, acceptance evidence, migration, test, and rollback plan before
-  business implementation.
-- State at 2026-07-22T15:31:38Z: `IN_PROGRESS`.
-- Latest result: the repaired independent Phase 3 release gate returned
-  technical `PASS` with no blocking findings. Final evidence includes 110/110
-  frontend unit/component tests, a clean standalone 63/63 browser run, 129/129
-  force-regenerated and 129/129 exact-comparison visuals, 58/58 Python tests,
-  556 direct catalog entries per locale, successful Frappe install/migrate and
-  runtime verification, zero npm audit findings, and clean diff checks.
+- Current atomic task: `P4-01` Project template and live cockpit vertical slice.
+  Implement generic versioned templates, atomic Project/G0/G1 instantiation,
+  strict domain commands/queries, authorization/audit/concurrency, and the live
+  trilingual Project cockpit without installing guessed production rules.
+- State at 2026-07-22T15:40:11Z: `IN_PROGRESS`.
+- Latest result: `P4-00` passed. The requirement anchor freezes the Phase 4
+  Project/Gate boundary, remaps ERP creation/cost to Phase 8 and
+  portfolio/portal/notification extensions to Phase 9, separates persisted
+  Domain WorkItems from My Work projections, records eight scoped Class-B rule
+  holds, and defines P4-01 acceptance, migration, and rollback.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
   a global blocker. Phase 4 is active under automatic-transition authority.

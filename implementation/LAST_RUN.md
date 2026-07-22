@@ -1,62 +1,43 @@
 # Last Run
 
-- Timestamp: `2026-07-22T15:31:38Z`
+- Timestamp: `2026-07-22T15:40:11Z`
 - Branch: `codex/npi-v1.2-implementation`
-- Starting HEAD: `f9319fa0e2c4758c40ac4c2722c97ac9d68cefd8`
+- Starting HEAD: `711b17d`
 - Starting upstream state: ahead 0 / behind 0
-- Gate candidate: `3 — React App Shell, Siemens UI and i18n Foundation`
-- Repair round: `1/5`
-- Release-gate technical decision: `PASS`
-- Phase acceptance: `TECHNICAL_PASS_PENDING_UAT`
-- Next phase: `4 — Project Work Items and Stage Gates (active)`
+- Atomic task: `P4-00 — Phase 4 requirement anchor`
+- Result: `PASS`
+- Current phase: `4 — Project Work Items and Stage Gates`
+- Next task: `P4-01 — Project template and live cockpit vertical slice`
 
-## Phase 3 outcome
+## P4-00 outcome
 
-Repair round 1 is complete. It closes the formal localization and Worklist
-error/trace/retry contracts, Frappe CSRF path, unexpected-error ProblemDetails
-boundary, finite telemetry route allowlist, exact BFF route boundary,
-transaction rollback, and request-locale atomicity findings. The full aggregate,
-runtime, browser, and visual evidence was rerun after the fixes. Independent
-final release review returned `PASS` with no release-blocking findings.
+- Frozen the demonstrable Project/Gate path and five bounded implementation
+  slices in `implementation/phase-4-requirement-anchor.md`.
+- Kept 20 requirements in Phase 4 and remapped ERP-triggered creation/cost to
+  Phase 8 plus portfolio, portal, notification, and meeting extensions to Phase
+  9 without changing requirement IDs or acceptance criteria.
+- Separated persisted Domain WorkItems (`risk`, `issue`, `action`,
+  `decision_request`) from read-only My Work projection categories.
+- Recorded eight Class-B production rule holds and a fail-closed implementation
+  boundary. Generic versioned infrastructure and clearly synthetic test
+  fixtures may continue; no production default or ERP fact was invented.
+- Defined P4-01 scope, contract/security/runtime/UI/i18n evidence, additive
+  migration, and forward-fix rollback.
 
-- Delivered the independent React/TypeScript industrial App Shell, local
-  Siemens iX Classic Light adapter, company-owned tokens, reusable dense
-  engineering page/state primitives, six explicitly labelled prototype paths,
-  and the Frappe-compatible `en`/`zh`/`zh-TW` localization chain.
-- The local Frappe 15.115.4 Site install/migrate path and authenticated BFF were
-  exercised without ERPNext or production access. A disposable normal Website
-  User received 556 direct catalog entries per locale, persisted both Chinese
-  language choices across fresh sessions, left Administrator language unchanged,
-  and was deleted exactly after verification.
-- The visual baseline was force-regenerated after the final UI changes, then
-  compared without update mode at `maxDiffPixelRatio: 0`; both runs passed
-  129/129. Six representative images were reviewed at original resolution and
-  contain the zero-notification state and catalog version prefix
-  `12e5adf665b2cd30`.
-- Business UAT by Project Management, Engineering/Tooling and Quality plus
-  provenance-backed sanitized representative data remains unsigned/open. It is
-  not represented as completed by technical fixtures and is not a global
-  blocker.
+## Verification
 
-## Commands and results
-
-| Command | Result |
+| Command / review | Result |
 |---|---|
-| `npm ci` | `PASS` — 432 packages installed; 433 audited from the lockfile |
-| `npm run verify` | `PASS` — 110/110 unit/component tests plus coverage/build/static/i18n/dependency gates |
-| `npm run test:e2e -- --reporter=line` | `PASS` — final clean standalone 63/63 non-visual Chromium run in 2.6 minutes |
-| `npm run test:visual:update` | `PASS` — exact configuration, 129/129 force-regenerated in 4.3 minutes |
-| `npm run test:visual` | `PASS` — 129/129 clean comparison at zero pixel tolerance in 3.9 minutes |
-| `make frappe-site-init` | `PASS` — disposable Frappe Site install/migrate path |
-| `make frappe-runtime-verify` | `PASS` — normal-user locale/session/permission/error/CSRF/cleanup proof |
-| `make verify` | `PASS` — 58/58 repository/Python tests plus the complete frontend gate |
-| final standalone production build | `PASS` — 390 modules; JS 761.17/190.88 kB gzip; CSS 225.79/22.86 kB gzip |
-| `git diff --check` | `PASS` — exit 0, no output |
+| `make verify` | `PASS` — 58/58 Python tests, 110/110 frontend tests, static/type/style/boundary/i18n checks, coverage, build and both npm audits |
+| requirement trace review | `PASS` — all 28 affected FR-PM/FR-SG/FR-CO rows explicitly anchored or remapped |
+| `git diff --check` (through aggregate verifier) | `PASS` |
 
-Frontend aggregate coverage is 4,319/4,646 statements and lines (92.96%),
-784/863 branches (90.84%), and 144/160 functions (90.00%). Both npm audits
-reported zero known vulnerabilities. Exact scope, evidence, rollback and
-acceptance boundaries are in `implementation/phase-3-gate.md` and
-`implementation/evidence/phase-3/`. Phase 3 is recorded as
-`TECHNICAL_PASS_PENDING_UAT`; Phase 4 atomic task `P4-00` is active under the
-automatic-transition authorization.
+The aggregate retained 556 literal English sources with complete direct `zh`
+and `zh-TW` coverage, 92.96% lines/statements, 90.84% branches, 90.00%
+functions, and zero npm audit findings. The documented 761.17 kB minified /
+190.88 kB gzip entry warning remains visible.
+
+Browser/visual, live Frappe migration/runtime, permission-matrix expansion, and
+business UAT are not applicable to this documentation-only anchor because no
+runtime or user surface changed. They become mandatory for P4-01. Phase 3
+remains `TECHNICAL_PASS_PENDING_UAT`, and production ERPNext remains prohibited.

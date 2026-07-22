@@ -1,0 +1,239 @@
+# Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
+
+Status: **ANCHORED — P4-01 ACTIVE**
+
+Anchor date: 2026-07-22
+
+Controller phase: 4 — Project Work Items and Stage Gates
+
+Compatibility milestone: M3 — Project and stage gates
+
+Starting checkpoint: `711b17d`
+
+## 1. Authority and outcome
+
+This anchor applies the V1.2 continuous-delivery authority to the Phase 4
+Project/Gate vertical slice. It is based on `GOAL.md`, `docs/DOMAIN_MODEL.md`,
+`docs/DETAILED_REQUIREMENTS.md`, `docs/ARCHITECTURE.md`,
+`docs/UX_INTERACTION_SPEC.md`, `implementation/ROADMAP.md`, M3 in
+`implementation/backlog.yaml`, the current contracts, and the accepted ADRs.
+
+The bounded demonstrable path is:
+
+> create a project from a versioned template → instantiate G0/G1 → assign the
+> team and an action → attach controlled evidence → review a Gate → persist an
+> immutable decision snapshot → expose the resulting item in My Work
+
+Phase 4 delivers NPI-owned Project, Team/RACI, WorkItem, Gate, Evidence,
+review/snapshot/reopen, internal contextual activity, and live My Work
+capability. It does not silently absorb portfolio/KPI, portals, production ERP
+creation or cost, external scheduling, or live notification delivery.
+
+## 2. Requirement allocation
+
+### 2.1 Phase 4 delivery scope
+
+| Atomic task | Requirements | Truthful delivery boundary |
+|---|---|---|
+| P4-01 — Project template and live cockpit | FR-PM-001, FR-PM-003, FR-PM-004 | Versioned generic templates create Project drafts and Gate instances; explicit references and template policies drive validation; the Project cockpit reads the live BFF |
+| P4-02 — Team, RACI, WBS, and domain work items | FR-PM-005, FR-PM-006, FR-PM-007, FR-PM-009, FR-CO-002 | Project membership, role assignments, substitute dates, parent/child work, dependencies, plan baseline comparison, critical-task flag, and unified risk/issue/action/decision-request records; no resource optimizer or OpenProject dependency |
+| P4-03 — Gate templates and controlled evidence | FR-SG-001, FR-SG-002, FR-SG-004 | Versioned Gate templates, frozen requirements, owners/reviewers/dates, structured version references, private-file revision references, and explicit scan state |
+| P4-04 — Review, decision, snapshot, and reopen | FR-SG-003, FR-SG-005, FR-SG-006, FR-SG-007 | Policy-driven review sequences, blockers, safe-default-denied exceptions, immutable snapshots, preserved prior approvals, generic dependency invalidation, and controlled review cycles |
+| P4-05 — Live My Work, activity, and Project controls | FR-PM-008, FR-PM-011, FR-PM-012, FR-CO-001, FR-CO-002, FR-CO-006 | Honest health state, policy-driven lifecycle controls, lessons/template feedback, internal comments/activity/attachments, live work projection, and complete `en`/`zh`/`zh-TW` UI/API copy for this phase |
+
+FR-PM-007 is satisfied in Phase 4 through plan-baseline comparison and a
+critical-task indicator, both explicitly allowed by its alternative wording.
+This phase does not add a Gantt library, OpenProject integration, or complex
+resource planning.
+
+FR-CO-006 applies to every Phase 4 screen, API business error, notification
+surface rendered by the application, and printable/exportable copy introduced
+here. Actual mail transport, live notification delivery, external-user portal
+surfaces, and later domain screens remain owned by their delivery phases.
+
+### 2.2 Explicit remapping
+
+| Requirement | Delivery phase | Reason |
+|---|---:|---|
+| FR-PM-002 | 8 | ERPNext quotation/sales-order triggered draft creation requires integration ownership, source mapping, idempotency, and sandbox facts |
+| FR-PM-010 | 8 | Purchase/time/expense/tool actuals are ERP-owned projections and cannot be invented locally |
+| FR-SG-008 | 9 | Live reminders, escalation, and notification policy belong to notification/hardening delivery; Phase 4 may create queryable due/overdue work only |
+| FR-SG-009 | 9 | Management portfolio bulk view is a portfolio/reporting capability, not the Project/Gate object vertical slice |
+| FR-CO-003 | 9 | Supplier portal and external authorization are later external-collaboration scope |
+| FR-CO-004 | 9 | Customer portal and externally binding approval are later external-collaboration scope |
+| FR-CO-005 | 9 | Mail/in-app delivery, subscriptions, escalation, and mandatory audit notifications require the later notification service |
+| FR-CO-007 | 9 | Meeting-minutes templates are a collaboration extension outside the minimum Project/Gate path |
+
+The requirement IDs are preserved. Remapping changes only controller
+allocation and does not waive the original acceptance criteria.
+
+## 3. Facts frozen before implementation
+
+- `EngineeringProject` is the Project aggregate root. It may hold references
+  and read-only projections but never owns ERPNext transaction detail.
+- Stable identity uses immutable UUID `global_id`; human `business_code` is not
+  a cross-system identity. Every mutable aggregate uses an optimistic version.
+- The Project state family remains
+  `draft → proposed → active → on_hold → completed/cancelled`. Production
+  transition authorities and prerequisites remain policy input, not hard-coded
+  guesses.
+- `GateInstance` owns the template version, requirement snapshot, evidence
+  references, blockers, review records, exceptions, cycles, and immutable
+  decision snapshots.
+- A Gate snapshot must point to exact object/revision/hash versions. It cannot
+  point to “latest,” and a reopen creates a new review cycle rather than
+  overwriting prior approval.
+- A file revision begins with its real scan state. `pending` or `failed` scan
+  state cannot be represented as `clean` and cannot satisfy a requirement that
+  explicitly requires trusted clean content.
+- Browser traffic stays on same-origin `/api/npi/v1`; commands require
+  authentication, Frappe CSRF, project/tenant authorization, idempotency where
+  retry can duplicate effects, expected version, audit, and trace identity.
+- External principals cannot approve or administer. UI hiding never substitutes
+  for the server permission decision.
+- Every user-visible source string is literal English and uses the shared
+  Frappe-compatible translation chain with complete `zh` and `zh-TW` entries.
+- No normal-user accepted path depends on Frappe Desk.
+
+## 4. WorkItem vocabulary boundary
+
+The existing specifications describe two different concepts and they must not
+share one ambiguous persistence state machine:
+
+1. **Domain WorkItem** is the persisted NPI object from `DOMAIN_MODEL.md` with
+   semantic kinds `risk`, `issue`, `action`, and `decision_request`. Each kind
+   retains its own controlled lifecycle while sharing context, owner, due date,
+   severity, blocking, relations, and evidence.
+2. **My Work item** is a read-only BFF projection that explains work assigned
+   to the current user. Its presentation category may be `task`, `approval`,
+   `blocker`, `risk`, `issue`, `decision`, or `integration`; it may project a
+   Domain WorkItem, Gate assignment, evidence task, or later integration
+   operation.
+
+Phase 4 will rename/contract the current broad OpenAPI `WorkItem` view schema as
+the My Work projection and define the persisted domain kinds separately. A
+projection category is never written back as a domain status or permission.
+Mappings must be explicit and tested; unknown source types fail closed rather
+than being coerced to `task`.
+
+## 5. Class-B rule holds
+
+The following missing business facts pause only their production rule packages.
+They do not block generic/versioned infrastructure, synthetic acceptance
+fixtures, contracts, tests, UI, localization, or documentation.
+
+| Held rule | Safe implementation boundary |
+|---|---|
+| Project numbering and authoritative Customer/Order source | Require an explicit unique `business_code` and typed references in Phase 4. Do not auto-number or claim ERP authority. ERP-triggered creation stays in Phase 8. |
+| Production project/Gate template contents, durations, skip conditions, and required references | Implement versioned configurable templates with immutable published versions. Repository tests create clearly synthetic templates; no default production template is installed. |
+| RACI role-to-approval mapping and segregation of duties | Store versioned assignment/review policies and enforce explicit policies. Do not infer that a project role grants approval. External users remain denied. |
+| Domain WorkItem per-kind lifecycle details | Keep kinds distinct, validate shared invariants, and implement only transitions explicitly covered by the task contract. Do not install one convenience status machine for all kinds. |
+| Project health/cost formula and thresholds | Support a versioned rule reference and honest `unassessed`/unavailable dimensions. Red requires reason and recovery plan. Do not fabricate green health or ERP actual cost. |
+| Conditional-pass/waiver eligibility and authority | Default deny unless an explicit versioned policy names the exception type, eligible requirement, approver access, reason/risk/expiry/closure fields, and separation constraints. |
+| Automatic Gate invalidation dependency matrix | Implement exact version dependencies and a generic invalidation evaluator. No production drawing/tooling/quality/ECN mapping is installed without a versioned policy. Manual controlled reopen remains available to authorized internal users. |
+| Pause/cancel/resume/complete approvers and complete-check prerequisites | Implement policy hooks and fail closed when policy is absent. Do not mark projects complete while later file/handover/cost prerequisites are unavailable. |
+
+External facts remain requested only through
+`implementation/REQUIRED_INPUTS.md`. Production ERPNext access is prohibited.
+
+## 6. P4-01 minimum complete vertical slice
+
+P4-01 is the next active task. It will deliver:
+
+- additive DocTypes/persistence adapters for a versioned Project Template,
+  immutable published template version, Engineering Project, and instantiated
+  Gate shell;
+- framework-independent validation for template versioning, explicit Project
+  references, unique business code, stable identity, optimistic concurrency,
+  and atomic instantiation;
+- a command that creates a Project draft from an explicit published template
+  version and a query that returns the live Project Cockpit ViewModel;
+- a deterministic test-only template that instantiates G0 and G1, carries
+  explicit required-reference rules, and is never installed as a production
+  default;
+- project/tenant authorization, CSRF, input allowlisting, problem responses,
+  trace ID, audit, retry-safe idempotency, and zero partial records on failure;
+- the Project page switched from accepted-path fixture data to the live BFF,
+  with loading, empty/not-found, no-permission, read-only, validation, conflict,
+  retryable/final error, and success states; and
+- complete English source, Simplified Chinese, and Traditional Chinese strings
+  plus component, contract, permission, runtime, migration, E2E, accessibility,
+  and visual evidence.
+
+P4-01 does not propose/activate the Project, assign production RACI, decide a
+Gate, claim ERP-created provenance, or report ERP cost.
+
+## 7. Acceptance and evidence plan
+
+### Domain and contract
+
+- published template versions are immutable and edits create a new version;
+- a Project records the exact template/version used, and later template changes
+  do not change instantiated Gates;
+- duplicate idempotency keys replay the original result and never create a
+  second Project; a key reused with a different payload is rejected;
+- business code uniqueness is enforced server-side without using it as
+  cross-system identity;
+- expected-version mismatch returns a conflict with no partial mutation;
+- parent/child cycles and dependency cycles are rejected when P4-02 lands;
+- evidence references name exact versions and unsafe scan states remain visible;
+- Gate pass is blocked by missing P0 evidence/blockers, and exception paths are
+  denied without an explicit policy;
+- decisions/snapshots are immutable, and reopen preserves prior cycles; and
+- transaction failure leaves no partial Project, Gate, review, audit, or work
+  records.
+
+### Permission and security
+
+- guest and unrelated-project access fail;
+- tenant mismatch and IDOR attempts fail without leaking object existence;
+- view/contribute/approve/administer remain distinct server checks;
+- external principals cannot approve/administer;
+- CSRF, strict request fields/types, XSS-safe rendering, private-file access,
+  audit redaction, and trace behavior are covered; and
+- no `ignore_permissions`, direct SQL, raw browser DocType CRUD, core patch,
+  production secret, or production ERP endpoint is introduced.
+
+### Runtime, UI, and localization
+
+- real Frappe install/migrate and idempotent migrate rerun pass;
+- live BFF contract and permission cases run with disposable normal users;
+- Project, Gate, and My Work accepted paths no longer claim fixture persistence;
+- all required normal/non-normal states pass in `en`, `zh`, and `zh-TW`;
+- keyboard, focus, labels, text-plus-shape status, 125%/150% layouts, and WCAG
+  A/AA automation pass; and
+- exact visual regeneration/comparison plus representative manual review prove
+  the square, neutral, dense industrial baseline.
+
+## 8. Migration and rollback
+
+Phase 4 schema changes are additive. Migrations must be repeatable and cannot
+install a production business template or backfill guessed ownership. Feature
+exposure remains disabled until its complete vertical slice passes.
+
+Before any retained Phase 4 data exists, rollback can disable the slice and
+restore checkpoint `711b17d` on the disposable development Site. Once Project
+or Gate history exists, keep the additive tables and immutable snapshots,
+disable affected commands/routes, and deploy a reviewed forward fix. Never
+uninstall the App or physically delete approval/history records as a production
+rollback. ERPNext remains unaffected because Phase 4 creates no ERP write.
+
+## 9. Expected change surface and risks
+
+Expected files include additive `npi_core` DocTypes and domain/API modules,
+`npi_core.bff` route registration, strict OpenAPI Project/Gate/My Work schemas,
+Project/Gate/My Work data sources and pages, canonical Frappe CSV catalogs,
+Phase 4 tests, migration/runtime scripts, traceability, and evidence. No new
+production dependency is authorized by this anchor.
+
+Primary risks are guessed business policy, mutable snapshots, IDOR, role/approval
+conflation, non-atomic template instantiation, fake file cleanliness, frontend
+fixture leakage, bundle growth, and incomplete trilingual states. Each is an
+explicit test or release-gate item; the unresolved business policy packages
+remain scoped holds rather than silent defaults.
+
+## 10. P4-00 exit decision
+
+**P4-00 PASS.** Phase 4 scope, non-scope, requirement allocation, vocabulary,
+Class-B holds, first vertical slice, test evidence, migration, and rollback are
+explicit. P4-01 is active under the existing automatic-transition authority.

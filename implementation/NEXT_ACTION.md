@@ -4,27 +4,24 @@ Status: `IN_PROGRESS`
 
 Current phase: `4 — Project Work Items and Stage Gates`.
 
-Complete atomic task `P4-00`: create the Phase 4 requirement anchor before
-business code. Reconcile the controller/ROADMAP/backlog M3 boundary with the
-Pack trace rows; freeze the Project, Team/RACI, unified WorkItem, Gate template,
-Evidence, review/snapshot/reopen, activity/comment, and My Work integration
-scope; map requirements to domain objects, APIs, permissions, audit,
-localization, UI states, migrations, tests, evidence, and rollback.
+Implement atomic task `P4-01 — Project template and live cockpit vertical
+slice` from `implementation/phase-4-requirement-anchor.md`:
 
-Record explicit Class-B holds instead of inventing production truth for:
+- add generic, versioned Project Template persistence and immutable published
+  versions without installing a production template;
+- atomically create an Engineering Project draft and G0/G1 Gate shells from an
+  explicit published template version;
+- require an explicit unique business code and typed object references while
+  keeping ERP/customer/order authority honest;
+- enforce stable UUID identity, expected version, retry-safe idempotency,
+  tenant/project authorization, external-user restrictions, Frappe CSRF, strict
+  request schemas, transaction rollback, audit, and trace identity;
+- add strict Project create/query/cockpit contracts under `/api/npi/v1`; and
+- replace the accepted Project cockpit fixture path with the live BFF while
+  covering all required states in English, Simplified Chinese, and Traditional
+  Chinese.
 
-- project numbering, customer/order ownership, and ERP-triggered draft creation;
-- production template contents, durations, skip rules, RACI-to-approval mapping,
-  and segregation of duties;
-- the final persisted WorkItem kind/lifecycle vocabulary;
-- project health/cost thresholds and ownership;
-- Gate waiver/conditional-pass authority, automatic invalidation dependencies,
-  and pause/cancel/resume/close approval rules.
-
-Do not silently expand Phase 4 into portfolio/KPI, Gantt/OpenProject integration,
-external portals, live notifications, ERP-owned actual-cost synchronization, or
-formal ERP-triggered project creation. Continue with generic/versioned NPI-owned
-infrastructure and explicit synthetic fixtures where production rule mappings
-are held. Use only `implementation/REQUIRED_INPUTS.md` for external facts, never
-contact production ERPNext, and preserve `TECHNICAL_PASS_PENDING_UAT` for Phase
-3 until named business evidence arrives.
+Use only explicit synthetic templates in tests and fixtures. Do not propose or
+activate a Project, assign production RACI, decide a Gate, fabricate clean file
+scans or health/cost, claim ERP-created provenance, contact production ERPNext,
+or implement any Class-B rule held by the Phase 4 anchor.
