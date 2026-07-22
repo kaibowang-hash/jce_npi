@@ -19,9 +19,15 @@ require_command() {
   fi
 }
 
-for command_name in node npm docker bench sudo; do
+for command_name in node npm yarn docker bench sudo; do
   require_command "${command_name}"
 done
+
+yarn_actual="$(yarn --version)"
+if [[ "${yarn_actual}" != "${YARN_EXPECTED_VERSION}" ]]; then
+  echo "Yarn mismatch: ${yarn_actual}" >&2
+  exit 1
+fi
 
 installed_vite="$(vite --version 2>/dev/null || true)"
 installed_vite_version="${installed_vite%% *}"
@@ -34,6 +40,20 @@ if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]; then
   fi
   "${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
 fi
+
+uv_command="/opt/frappe-bench/bin/uv"
+uv_pip_command="/opt/frappe-bench/bin/pip"
+if [[ ! -x "${uv_command}" || ! -x "${uv_pip_command}" ]]; then
+  echo "Bench environment does not provide executable uv and pip commands." >&2
+  exit 1
+fi
+uv_actual="$("${uv_command}" --version)"
+uv_version_actual="${uv_actual#uv }"
+uv_version_actual="${uv_version_actual%% *}"
+if [[ "${uv_version_actual}" != "${UV_EXPECTED_VERSION}" ]]; then
+  sudo "${uv_pip_command}" install --no-cache-dir "uv==${UV_EXPECTED_VERSION}"
+fi
+sudo ln -sfn "${uv_command}" /usr/local/bin/uv
 
 docker_wait_seconds="${NPI_DOCKER_WAIT_SECONDS:-120}"
 if [[ ! "${docker_wait_seconds}" =~ ^[1-9][0-9]*$ ]]; then

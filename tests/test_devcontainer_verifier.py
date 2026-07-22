@@ -6,6 +6,7 @@ from scripts.verify_devcontainer import (
     parse_toolchain,
     validate_apt_source_sanitization,
     validate_bootstrap_vite_installation,
+    validate_bootstrap_uv_installation,
     validate_local_configuration,
 )
 
@@ -61,8 +62,22 @@ class DevcontainerVerifierTest(unittest.TestCase):
         config, toolchain, base_reference = validate_local_configuration()
         self.assertEqual(config["remoteUser"], "vscode")
         self.assertEqual(toolchain["NPM_EXPECTED_VERSION"], "10.8.2")
+        self.assertEqual(toolchain["YARN_EXPECTED_VERSION"], "1.22.22")
         self.assertEqual(toolchain["DOCKER_EXPECTED_VERSION"], "28.3.3")
+        self.assertEqual(toolchain["UV_EXPECTED_VERSION"], "0.11.30")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
+
+    def test_uv_installation_is_pinned_and_exposed(self):
+        safe_bootstrap = """uv_command="/opt/frappe-bench/bin/uv"
+uv_pip_command="/opt/frappe-bench/bin/pip"
+sudo "${uv_pip_command}" install --no-cache-dir "uv==${UV_EXPECTED_VERSION}"
+sudo ln -sfn "${uv_command}" /usr/local/bin/uv
+"""
+        validate_bootstrap_uv_installation(safe_bootstrap)
+        with self.assertRaises(VerificationError):
+            validate_bootstrap_uv_installation(
+                safe_bootstrap.replace('"uv==${UV_EXPECTED_VERSION}"', '"uv"')
+            )
 
     def test_vite_install_rejects_sudo_sanitized_node_path(self):
         safe_bootstrap = """installed_vite_version="${installed_vite%% *}"

@@ -17,7 +17,7 @@ integration or any production system.
 Acceptance required all of the following in the rebuilt target container:
 
 - the target Debian image rather than the Alpine recovery image;
-- exact Node, npm, Python, Bench and Vite evidence; Docker client/server evidence
+- exact Node, npm, Yarn, Python, Bench, uv and Vite evidence; Docker client/server evidence
   matching the selected semantic version; actual Compose v2 evidence; and the
   selected Frappe branch and commit;
 - a healthy Docker daemon and valid repository Compose configuration;
@@ -62,6 +62,29 @@ ERPNext endpoint or database was used.
 | `make verify-dev-environment` | **PASS** | Node `v18.20.8`; npm `10.8.2`; Python `3.11.13`; Docker client/server `28.3.3-1`; Compose `2.40.3`; Bench `5.31.0`; Vite `5.4.14`; Frappe `version-15` at `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` |
 | `make verify` | **PASS** | Pinned base/Feature/tool registry checks and 26/26 repository tests passed |
 | `git diff --check` | **PASS** | Exit 0, no output |
+
+## Revalidation addendum — 2026-07-22
+
+The initialized local Bench exposed two development-only prerequisites used by
+Frappe's public initialization path: Yarn for Frappe's declared frontend
+dependencies and uv for the pinned Bench environment. The repeatable lifecycle
+now verifies Yarn `1.22.22`, pins and exposes uv `0.11.30`, and initializes the
+Frappe checkout without creating a second Redis/process-control boundary,
+modifying the user's backup crontab or building the Desk assets that are not the
+NPI One end-user UI. The initialized Frappe checkout is on `version-15` at the
+approved commit `a3d8090ba80cb91d3ed72ea90bec67df201db5c1`.
+
+The same target container was revalidated after this follow-up:
+
+| Command | Result | Evidence |
+|---|---|---|
+| `make verify-dev-environment` | **PASS** | Yarn `1.22.22` and uv `0.11.30` were printed in addition to the previously accepted toolchain |
+| `make verify` | **PASS** | Registry/configuration checks and 27/27 repository tests passed |
+| `git diff --check` | **PASS** | Exit 0, no output |
+
+This addendum changes only reproducible development initialization. It does not
+create a Site, connect to ERPNext, install a production dependency or alter the
+Phase 1.1 `PASS` decision.
 
 Frontend application, E2E, visual, localization, application permission,
 business API/integration and migration checks are not applicable to this

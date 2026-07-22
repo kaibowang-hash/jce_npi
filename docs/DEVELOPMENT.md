@@ -8,9 +8,9 @@ GitHub Codespaces / VS Code Dev Containers is the authoritative development path
   pinned image contains an obsolete Yarn APT source, which the Dockerfile
   removes from `/etc/apt/sources.list` and
   `/etc/apt/sources.list.d/*yarn*` before the first package-index refresh;
-- Node.js 18.20.8 and npm 10.8.2 through the pinned official Node feature;
+- Node.js 18.20.8 and npm 10.8.2 through the pinned official Node feature, plus Yarn 1.22.22 already present in the digest-pinned base image for Frappe dependency installation;
 - Docker/Moby semantic version 28.3.3 and Compose v2 through the digest-locked official Docker-in-Docker feature (the verified fresh target resolved package `28.3.3-debian12u1`, Engine/CLI `28.3.3-1` and Compose `2.40.3`);
-- Frappe Bench CLI 5.31.0 installed in the image;
+- Frappe Bench CLI 5.31.0 and pinned uv 0.11.30 installed in its environment and exposed by post-create;
 - Vite 5.4.14 installed by the idempotent post-create bootstrap;
 - digest-pinned MariaDB 10.6 and Redis 7.2 through repository Compose services;
 - Frappe `version-15` pinned to commit `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` for local Bench initialization.
@@ -63,7 +63,7 @@ make verify
 ```
 
 The first command prints real versions for Node, npm, Python, Docker client and
-server, Compose, Bench and Vite. It checks that Docker client/server match the
+server, Compose, Bench, uv, Yarn and Vite. It checks that Docker client/server match the
 selected semantic version (allowing only the numeric packaging revision suffix),
 requires the configured Compose v2 major, checks the Docker daemon and validates
 Compose. It also prints the selected Frappe branch and exact commit. It does not
@@ -100,6 +100,12 @@ make frappe-init
 ```
 
 This creates `tmp/frappe-bench`, fetches the exact Frappe commit, runs the public `bench init` workflow and verifies the resulting Git HEAD. It refuses to overwrite an existing Bench. Site creation, production credentials and ERPNext production connectivity are not part of Phase 1.1.
+The initialization deliberately skips local Redis configuration, Procfile,
+automatic backup crontab and Frappe asset building: Redis/process control and
+backup scheduling belong to the repository Compose/operations boundary, while
+the end-user UI is the independent React SPA. Bench still installs Frappe's
+declared Node dependencies with the verified Yarn 1.22.22 already present in
+the digest-pinned base image; it never restores the obsolete Yarn APT source.
 
 ## Rollback
 

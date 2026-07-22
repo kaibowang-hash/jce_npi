@@ -143,6 +143,16 @@ def validate_bootstrap_vite_installation(bootstrap: str) -> None:
     )
 
 
+def validate_bootstrap_uv_installation(bootstrap: str) -> None:
+    require('/opt/frappe-bench/bin/uv' in bootstrap, "Bootstrap must use Bench's uv dependency")
+    require('/opt/frappe-bench/bin/pip' in bootstrap, "Bootstrap must use Bench's pinned pip")
+    require(
+        '"uv==${UV_EXPECTED_VERSION}"' in bootstrap,
+        "Bootstrap must enforce the selected uv version",
+    )
+    require('/usr/local/bin/uv' in bootstrap, "Bootstrap must expose uv on the lifecycle PATH")
+
+
 def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tuple[str, str, str]]:
     config_path = DEVCONTAINER_DIR / "devcontainer.json"
     lock_path = DEVCONTAINER_DIR / "devcontainer-lock.json"
@@ -155,8 +165,10 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
         "PYTHON_EXPECTED_MAJOR_MINOR",
         "NODE_EXPECTED_VERSION",
         "NPM_EXPECTED_VERSION",
+        "YARN_EXPECTED_VERSION",
         "DOCKER_EXPECTED_VERSION",
         "BENCH_EXPECTED_VERSION",
+        "UV_EXPECTED_VERSION",
         "VITE_EXPECTED_VERSION",
         "FRAPPE_BRANCH",
         "FRAPPE_COMMIT",
@@ -243,9 +255,11 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     require('NPI_DOCKER_WAIT_SECONDS:-120' in bootstrap, "Docker readiness wait must default to 120 seconds")
     require("docker version >&2" in bootstrap, "Docker timeout diagnostics are missing")
     validate_bootstrap_vite_installation(bootstrap)
+    validate_bootstrap_uv_installation(bootstrap)
 
     dynamic_check = (REPO_ROOT / "scripts/verify-dev-environment.sh").read_text(encoding="utf-8")
     require('"${npm_actual}" == "${NPM_EXPECTED_VERSION}"' in dynamic_check, "Dynamic npm check must be exact")
+    require('"${yarn_actual}" == "${YARN_EXPECTED_VERSION}"' in dynamic_check, "Dynamic Yarn check must be exact")
     require('docker_runtime_pattern=' in dynamic_check, "Dynamic Docker package-revision pattern is missing")
     require(
         dynamic_check.count('=~ ${docker_runtime_pattern}') == 2,
@@ -262,6 +276,23 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     require(
         '"${vite_version_actual}" == "vite/${VITE_EXPECTED_VERSION}"' in dynamic_check,
         "Dynamic Vite check must compare the complete version token",
+    )
+    require(
+        '"${uv_version_actual}" == "${UV_EXPECTED_VERSION}"' in dynamic_check,
+        "Dynamic uv check must compare the complete version token",
+    )
+    bench_init = (REPO_ROOT / "scripts/init-frappe-bench.sh").read_text(encoding="utf-8")
+    require(
+        "--skip-redis-config-generation" in bench_init,
+        "Bench initialization must use the approved Compose Redis boundary",
+    )
+    require("--no-backups" in bench_init, "Bench initialization must not modify the user crontab")
+    require("--skip-assets" in bench_init, "Bench initialization must not require an unapproved Yarn path")
+    require("--no-procfile" in bench_init, "Bench initialization must not duplicate Compose process control")
+    require("UV_LINK_MODE=copy" in bench_init, "Bench initialization must use a cross-filesystem uv mode")
+    require(
+        'checkout -q -b "${FRAPPE_BRANCH}" FETCH_HEAD' in bench_init,
+        "Pinned Frappe checkout must expose the selected local branch to Bench",
     )
     return config, toolchain, base_reference
 
@@ -379,9 +410,13 @@ def validate_tool_versions(toolchain: dict[str, str]) -> None:
     node = next((item for item in node_releases if item.get("version") == toolchain["NODE_EXPECTED_VERSION"]), None)
     require(node is not None, "Pinned Node release does not exist")
     require(node.get("npm") == toolchain["NPM_EXPECTED_VERSION"], "Pinned npm is not bundled with the pinned Node release")
+    yarn = request_json(f"https://registry.npmjs.org/yarn/{toolchain['YARN_EXPECTED_VERSION']}")
+    require(yarn.get("version") == toolchain["YARN_EXPECTED_VERSION"], "Pinned Yarn release does not exist")
 
     bench = request_json(f"https://pypi.org/pypi/frappe-bench/{toolchain['BENCH_EXPECTED_VERSION']}/json")
     require(bench.get("info", {}).get("version") == toolchain["BENCH_EXPECTED_VERSION"], "Pinned Bench release does not exist")
+    uv = request_json(f"https://pypi.org/pypi/uv/{toolchain['UV_EXPECTED_VERSION']}/json")
+    require(uv.get("info", {}).get("version") == toolchain["UV_EXPECTED_VERSION"], "Pinned uv release does not exist")
     vite = request_json(f"https://registry.npmjs.org/vite/{toolchain['VITE_EXPECTED_VERSION']}")
     require(vite.get("version") == toolchain["VITE_EXPECTED_VERSION"], "Pinned Vite release does not exist")
 
@@ -418,8 +453,10 @@ def validate_tool_versions(toolchain: dict[str, str]) -> None:
             (
                 toolchain["NODE_EXPECTED_VERSION"],
                 "npm-" + toolchain["NPM_EXPECTED_VERSION"],
+                "yarn-" + toolchain["YARN_EXPECTED_VERSION"],
                 "docker-" + toolchain["DOCKER_EXPECTED_VERSION"],
                 "bench-" + toolchain["BENCH_EXPECTED_VERSION"],
+                "uv-" + toolchain["UV_EXPECTED_VERSION"],
                 "vite-" + toolchain["VITE_EXPECTED_VERSION"],
             )
         )
