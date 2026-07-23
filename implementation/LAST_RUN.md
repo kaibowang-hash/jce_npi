@@ -1,5 +1,28 @@
 # Last Run
 
+## Controller state correction — 2026-07-23T08:06:04Z
+
+- Confirmed the repository state at `df14486` and renamed the local branch from
+  the environment-provided `work` name to the required
+  `codex/npi-v1.2-implementation` name.
+- Persisted the 2026-07-23 controller additions in
+  `AUTOPILOT_CONTROLLER.md` and made that controller mandatory in `AGENTS.md`.
+- Re-read `PHASE_STATUS.yaml`, `QUALITY_GATE.md`, `phase-3-gate.md`, the Phase 3
+  traceability rows, `NEXT_ACTION.md`, and recent commits. Phase 3 is the first
+  non-`PASS` phase and remains `TECHNICAL_PASS_PENDING_UAT`; `FR-UX-031` remains
+  `PENDING_BUSINESS_UAT_AND_SANITIZED_DATA`.
+- The Phase 3 Gate contains the exact Pack-approved exception that permits
+  continuation: its technical release gate passed, the external UAT/data item
+  is not a global blocker, and it explicitly activates Phase 4. P4-02 is thus
+  the next safely executable Cloud task, not the first incomplete requirement.
+- Phase 1.1 `PASS` is supported by the committed fresh-Codespaces dynamic
+  evidence in `phase-1.1-gate.md`. This Cloud host's unavailable Docker and
+  registry HTTP 403 are environment-specific limitations; they neither
+  overwrite that evidence nor constitute a new validation result.
+- No product feature was implemented in this correction. `git diff --check`
+  passed; the next action now exposes both the earlier external Phase 3 task and
+  the separately authorized Cloud-executable Phase 4 task.
+
 - Timestamp: `2026-07-23T03:20:38Z`
 - Branch: `codex/npi-v1.2-implementation`
 - Starting HEAD: `24e901d8b908`
