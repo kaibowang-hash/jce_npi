@@ -1,6 +1,6 @@
 # AGENTS.md — NPI One / Tooling & New Project Development Platform
 
-本文件对整个仓库生效。Codex 在任何分析、计划、编码、测试、迁移或发布操作前，必须先阅读本文件、`GOAL.md`、`implementation/AUTOPILOT_CONTROLLER.md`、当前里程碑说明、相关领域规格和当前任务文件。任何新 Codex 会话或 Cloud 任务都必须先按 Autopilot Controller 的恢复协议确认实际分支、状态和第一个未完成原子任务；不得以聊天记忆替代仓库事实。子目录如存在更具体的 `AGENTS.md`，以更接近文件的规则为补充；不得覆盖本文件的安全边界。
+本文件对整个仓库生效。新 Codex 会话或 Phase 切换时，必须按 `implementation/AUTOPILOT_CONTROLLER.md` 的恢复协议读取完整恢复文件和当前 Phase 规格，确认实际分支、状态和第一个未完成原子任务；不得以聊天记忆替代仓库事实。原子任务开始时只读取当前任务、相关领域规格、requirement anchor/traceability 索引和适用 Skills。同一原子任务内的小修复不得反复读取完整 DOCX、`GOAL.md`、全部 Pack 或无关领域文档；仅在发现实质歧义、合同冲突、跨领域影响或索引不足时扩大阅读范围。子目录如存在更具体的 `AGENTS.md`，以更接近文件的规则为补充；不得覆盖本文件的安全边界。
 
 ## 0. V1.2 持续交付授权与优先级
 
@@ -69,6 +69,18 @@
 
 一个 PR / worktree 只服务一个任务。不得把多个里程碑混入同一 PR。
 
+### 5.1 三级验证与修复循环
+
+验证必须按 `implementation/QUALITY_GATE.md` 的 Level 1/2/3 影响分级执行。增量验证只改变执行时机和范围，不改变最终覆盖率、测试内容、PASS 标准、Phase Gate 或最终 Release Gate：
+
+- **Level 1 — Incremental Check**：单个小修复、局部重构或测试修正。只运行修改文件的格式/Lint/类型检查、直接相关的单元或组件测试、受影响页面/语言/视觉案例、必要的定向安全/权限测试，以及 `git diff --check`。
+- **Level 2 — Task Gate**：原子任务完成。运行当前模块完整测试、受影响 API/权限/集成/E2E/i18n/视觉测试、当前 Requirement ID 追踪、Task Diff Review 和全部任务验收标准。
+- **Level 3 — Full Release Gate**：仅在 Phase 结束、PR 准备合并、生产发布，或公共架构/合同/Schema/认证/权限模型、共享设计系统/翻译框架/核心基础设施变化，或无法可靠界定跨领域影响时运行全仓检查、完整三语言与视觉矩阵、安全/迁移/回滚/恢复、完整追踪及 `release-gate` Skill。
+
+建立并记录 `changed-files → affected-tests` 映射；能可靠界定影响时优先运行受影响测试。公共组件或共享翻译的局部变化先运行受影响页面矩阵；完整视觉矩阵只在 Level 3 或确有全局渲染影响时运行。无法可靠确定影响范围必须升级 Level 3，不得猜测。Level 1/2 通过绝不允许跳过后续适用的 Phase 或 Release Level 3，也不得删除测试、降低阈值或省略最终证据。
+
+同一根因产生的多个失败可在一轮内成批修复；不得每修复一个失败就重启完整 Gate。每批修复后先执行受影响检查，全部相关检查通过后，再在原子任务、Phase、PR 或发布边界运行对应 Gate。
+
 ## 6. 防误解分级
 
 ### A 类：可逆实现细节
@@ -112,7 +124,7 @@
 - 没有静默失败、假成功、未处理 TODO 和测试绕过；
 - 文档、契约、迁移和回滚说明与代码一致；
 - UI 变更提供 英文、简体中文、繁体中文截图或可复现的 story/fixture；
-- `release-gate` skill 检查通过。
+- 在适用的 Task、Phase、PR 或发布边界，按三级验证策略完成对应 Gate；Level 3 边界必须通过 `release-gate` skill。
 
 ## 9. 目录约定
 

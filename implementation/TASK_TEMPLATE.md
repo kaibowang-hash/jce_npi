@@ -34,12 +34,15 @@
 - [ ] ...
 
 ## 测试
+- Validation level and trigger:
+- Changed files → affected tests:
 - Unit:
 - Contract:
 - Integration:
 - Permission:
 - UI/E2E:
 - Manual evidence:
+- Escalation conditions (uncertain/cross-domain impact → Level 3):
 
 ## 变更预算
 - 预计文件：

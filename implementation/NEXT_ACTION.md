@@ -63,15 +63,19 @@ When the user explicitly resumes delivery, continue P4-02 only:
 
 1. review the checkpoint diff and the resolved HMAC-cursor and named-placeholder
    findings;
-2. rerun the complete `make verify` aggregate against the final checkpoint
-   source;
-3. rerun the non-visual Playwright suite;
-4. force-regenerate and then clean-compare all 147 visual cases because the
-   final 1083-entry catalog changes the rendered catalog hash;
-5. perform representative original-resolution industrial UI and trilingual
-   review;
-6. run the independent `release-gate` review and write final P4-02 evidence;
-7. only after every applicable Gate passes, mark P4-02 `PASS` and activate
+2. record the P4-02 `changed-files → affected-tests` map and run a Level 2 Task
+   Gate: the complete Project-work module plus every affected API, permission,
+   integration, E2E, i18n, and visual check;
+3. use the catalog source-to-page mapping to run affected English, `zh`, and
+   `zh-TW` cases, then perform representative original-resolution industrial UI
+   and trilingual review; do not regenerate unrelated visual cases merely
+   because the catalog hash changed;
+4. review P4-02 Requirement ID traceability, the complete Task Diff, and every
+   acceptance criterion, and write durable Task Gate evidence;
+5. escalate to Level 3 if the impact boundary cannot be established reliably;
+   independently, run Level 3 at the later Phase-end, PR-merge, or release
+   boundary and retain its complete evidence;
+6. only after every applicable Gate passes, mark P4-02 `PASS` and activate
    P4-03.
 
 The earlier Phase 3 business UAT remains the first incomplete external task.
