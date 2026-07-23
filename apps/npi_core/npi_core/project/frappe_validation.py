@@ -16,7 +16,7 @@ def ensure_uuid(value: object, field_label: str) -> str:
         return str(UUID(str(value)))
     except (TypeError, ValueError, AttributeError):
         frappe.throw(
-            _("{0} must be a valid UUID.").format(field_label),
+            _("{field} must be a valid UUID.").format(field=field_label),
             frappe.ValidationError,
         )
 

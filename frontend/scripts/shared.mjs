@@ -32,13 +32,121 @@ export function extractTypeScriptTranslationCalls(content, file) {
     true,
     file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
-  const calls = [];
-  const visit = (node) => {
-    if (
+  const translatorTypeNames = new Set(["Translator"]);
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings || !ts.isNamedImports(bindings)) continue;
+    for (const element of bindings.elements) {
+      const importedName = element.propertyName?.text ?? element.name.text;
+      if (importedName === "Translator")
+        translatorTypeNames.add(element.name.text);
+    }
+  }
+
+  const isUseI18nTypeQuery = (node) =>
+    Boolean(
+      node &&
+      ts.isTypeQueryNode(node) &&
+      ts.isIdentifier(node.exprName) &&
+      node.exprName.text === "useI18n",
+    );
+  const isUseI18nReturnType = (node) =>
+    Boolean(
+      node &&
+      ts.isTypeReferenceNode(node) &&
+      ts.isIdentifier(node.typeName) &&
+      node.typeName.text === "ReturnType" &&
+      node.typeArguments?.length === 1 &&
+      isUseI18nTypeQuery(node.typeArguments[0]),
+    );
+  const isTranslatorType = (node) =>
+    Boolean(
+      node &&
+      ((ts.isTypeReferenceNode(node) &&
+        ts.isIdentifier(node.typeName) &&
+        translatorTypeNames.has(node.typeName.text)) ||
+        (ts.isIndexedAccessTypeNode(node) &&
+          isUseI18nReturnType(node.objectType) &&
+          ts.isLiteralTypeNode(node.indexType) &&
+          ts.isStringLiteral(node.indexType.literal) &&
+          node.indexType.literal.text === "t")),
+    );
+  const isUseI18nCall = (node) =>
+    Boolean(
+      node &&
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
-      node.expression.text === "t"
+      node.expression.text === "useI18n",
+    );
+  const translatorIdentifiers = new Set(["t"]);
+  const i18nObjectIdentifiers = new Set();
+  const collectTranslatorIdentifiers = (node) => {
+    if (
+      (ts.isParameter(node) || ts.isVariableDeclaration(node)) &&
+      ts.isIdentifier(node.name) &&
+      isTranslatorType(node.type)
     ) {
+      translatorIdentifiers.add(node.name.text);
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      isUseI18nCall(node.initializer)
+    ) {
+      i18nObjectIdentifiers.add(node.name.text);
+    }
+    if (
+      ts.isBindingElement(node) &&
+      node.propertyName &&
+      ts.isIdentifier(node.propertyName) &&
+      node.propertyName.text === "t" &&
+      ts.isIdentifier(node.name) &&
+      ts.isObjectBindingPattern(node.parent) &&
+      ts.isVariableDeclaration(node.parent.parent) &&
+      isUseI18nCall(node.parent.parent.initializer)
+    ) {
+      translatorIdentifiers.add(node.name.text);
+    }
+    ts.forEachChild(node, collectTranslatorIdentifiers);
+  };
+  collectTranslatorIdentifiers(sourceFile);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const collectTranslatorAliases = (node) => {
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.initializer &&
+        !translatorIdentifiers.has(node.name.text) &&
+        ((ts.isIdentifier(node.initializer) &&
+          translatorIdentifiers.has(node.initializer.text)) ||
+          (ts.isPropertyAccessExpression(node.initializer) &&
+            node.initializer.name.text === "t" &&
+            (isUseI18nCall(node.initializer.expression) ||
+              (ts.isIdentifier(node.initializer.expression) &&
+                i18nObjectIdentifiers.has(node.initializer.expression.text)))))
+      ) {
+        translatorIdentifiers.add(node.name.text);
+        changed = true;
+      }
+      ts.forEachChild(node, collectTranslatorAliases);
+    };
+    collectTranslatorAliases(sourceFile);
+  }
+
+  const isTranslationCallee = (node) =>
+    (ts.isIdentifier(node) && translatorIdentifiers.has(node.text)) ||
+    (ts.isPropertyAccessExpression(node) &&
+      node.name.text === "t" &&
+      (isUseI18nCall(node.expression) ||
+        (ts.isIdentifier(node.expression) &&
+          i18nObjectIdentifiers.has(node.expression.text))));
+  const calls = [];
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && isTranslationCallee(node.expression)) {
       const [sourceNode, , contextNode] = node.arguments;
       if (!sourceNode || !ts.isStringLiteralLike(sourceNode)) {
         throw new Error(
@@ -85,9 +193,13 @@ export async function extractTranslationSources() {
         (codePoint >= 63_744 && codePoint <= 64_255)
       );
     });
-    if (containsInvalidCharacter || !/[A-Za-z]/.test(source)) {
+    if (
+      containsInvalidCharacter ||
+      !/[A-Za-z]/.test(source) ||
+      /(?<!\{)\{[0-9]+\}(?!\})/u.test(source)
+    ) {
       throw new Error(
-        `${kind} translation source must be an English literal: ${source}`,
+        `${kind} translation source must be an English literal with named placeholders: ${source}`,
       );
     }
     if (context !== undefined && !context.trim()) {

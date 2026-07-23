@@ -4,7 +4,7 @@ bash scripts/verify-dev-config.sh
 python -m json.tool contracts/integration-event.schema.json >/dev/null
 python -m json.tool design/design-tokens.json >/dev/null
 find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/null
-python -m compileall -q apps/npi_core apps/npi_integration tests
+python -m compileall -q apps/npi_core apps/npi_integration scripts tests
 python -m unittest discover -s tests -v
 npm --prefix frontend run verify
 python - <<'PY'

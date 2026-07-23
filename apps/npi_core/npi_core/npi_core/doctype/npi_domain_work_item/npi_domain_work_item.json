@@ -1,0 +1,38 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Domain Work Item",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "title,owner_user_id,project_global_id,stage_global_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "stage_global_id", "fieldtype": "Data", "label": "Stage Global ID", "read_only": 1, "search_index": 1},
+    {"fieldname": "kind", "fieldtype": "Select", "label": "Work Item Kind", "options": "risk\nissue\naction\ndecision_request", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "title", "fieldtype": "Small Text", "label": "Work Item Title", "reqd": 1, "read_only": 1},
+    {"fieldname": "detail", "fieldtype": "Long Text", "label": "Work Item Detail", "read_only": 1},
+    {"fieldname": "wbs_item_global_id", "fieldtype": "Data", "label": "WBS Item Global ID", "read_only": 1},
+    {"fieldname": "owner_user_id", "fieldtype": "Link", "label": "Owner", "options": "User", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "due_at", "fieldtype": "Datetime", "label": "Due At", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "severity", "fieldtype": "Select", "label": "Severity", "options": "low\nmedium\nhigh\ncritical", "reqd": 1, "read_only": 1},
+    {"fieldname": "blocking", "fieldtype": "Check", "label": "Blocking", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "state_key", "fieldtype": "Data", "label": "State Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "state_label_source", "fieldtype": "Data", "label": "State Label Source", "reqd": 1, "read_only": 1},
+    {"fieldname": "state_terminal", "fieldtype": "Check", "label": "Terminal State", "reqd": 1, "default": "0", "read_only": 1, "search_index": 1},
+    {"fieldname": "work_policy_global_id", "fieldtype": "Data", "label": "Work Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_version", "fieldtype": "Int", "label": "Work Policy Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_snapshot_hash", "fieldtype": "Data", "label": "Work Policy Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "relations", "fieldtype": "JSON", "label": "Related Objects", "reqd": 1, "read_only": 1},
+    {"fieldname": "evidence_references", "fieldtype": "JSON", "label": "Evidence References", "reqd": 1, "read_only": 1},
+    {"fieldname": "source_system", "fieldtype": "Select", "label": "Source System", "options": "NPI_ONE", "reqd": 1, "default": "NPI_ONE", "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

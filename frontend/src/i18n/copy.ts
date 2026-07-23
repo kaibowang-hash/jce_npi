@@ -2,15 +2,23 @@ import type {
   ActionCode,
   ActivityEvent,
   AssignmentCode,
+  DomainWorkItemKind,
+  DomainWorkItemSeverity,
   ExecutionRow,
   GateStep,
   LifecycleStep,
+  ProjectResponsibility,
+  ProjectResponsibilityContext,
   Scenario,
   SourceSystem,
   SyncState,
   WorkKind,
   WorkTitleCode,
 } from "../domain/view-models";
+import {
+  isProjectPolicyLabelSource,
+  type ProjectPolicyLabelSource,
+} from "../generated/project-policy-label-sources";
 import type { TranslationValues } from "./runtime";
 
 export type Translator = (
@@ -26,7 +34,7 @@ export function workKindLabel(t: Translator, code: WorkKind): string {
     case "blocker":
       return t("Blocker");
     case "action":
-      return t("Action");
+      return t("Action item");
     case "integration":
       return t("Integration");
     case "task":
@@ -140,6 +148,101 @@ export function sourceSystemLabel(t: Translator, source: SourceSystem): string {
       return t("ERPNext");
     case "COMPUTED":
       return t("Computed");
+  }
+}
+
+export function projectResponsibilityLabel(
+  t: Translator,
+  responsibility: ProjectResponsibility,
+): string {
+  switch (responsibility) {
+    case "responsible":
+      return t("Responsible");
+    case "accountable":
+      return t("Accountable");
+    case "consulted":
+      return t("Consulted");
+    case "informed":
+      return t("Informed");
+  }
+}
+
+export function projectResponsibilityContextLabel(
+  t: Translator,
+  context: ProjectResponsibilityContext,
+): string {
+  switch (context) {
+    case "project":
+      return t("Project");
+    case "wbs_item":
+      return t("WBS item");
+    case "domain_work_item":
+      return t("Domain work item");
+  }
+}
+
+function knownPolicyLabel(
+  t: Translator,
+  labelSource: ProjectPolicyLabelSource,
+): string {
+  switch (labelSource) {
+    case "Draft":
+      return t("Draft");
+    case "Identified":
+      return t("Identified");
+    case "Not started":
+      return t("Not started");
+    case "Open":
+      return t("Open");
+    case "Requested":
+      return t("Requested");
+  }
+}
+
+/**
+ * Translates only finite policy label sources from the canonical registry.
+ * The literal switch is exhaustive against its generated union so catalog
+ * extraction and registry drift stay compile-time visible. Untrusted values
+ * never reach the translator.
+ */
+export function governedPolicyLabel(
+  t: Translator,
+  labelSource: unknown,
+): string {
+  return isProjectPolicyLabelSource(labelSource)
+    ? knownPolicyLabel(t, labelSource)
+    : t("Policy label unavailable");
+}
+
+export function domainWorkItemKindLabel(
+  t: Translator,
+  kind: DomainWorkItemKind,
+): string {
+  switch (kind) {
+    case "risk":
+      return t("Risk");
+    case "issue":
+      return t("Issue");
+    case "action":
+      return t("Action item");
+    case "decision_request":
+      return t("Decision request");
+  }
+}
+
+export function domainWorkItemSeverityLabel(
+  t: Translator,
+  severity: DomainWorkItemSeverity,
+): string {
+  switch (severity) {
+    case "low":
+      return t("Low");
+    case "medium":
+      return t("Medium");
+    case "high":
+      return t("High");
+    case "critical":
+      return t("Critical");
   }
 }
 

@@ -259,8 +259,10 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
                 )
                 with catalog_path.open(encoding="utf-8", newline="") as file:
                     catalog = {row[0]: row[1] for row in csv.reader(file)}
-                uuid_message = catalog["{0} must be a valid UUID."].format(
-                    catalog["Global ID"]
+                uuid_message = catalog[
+                    "{field} must be a valid UUID."
+                ].format(
+                    field=catalog["Global ID"]
                 )
                 hash_message = catalog[
                     "A hash field must be a lowercase SHA-256 value."

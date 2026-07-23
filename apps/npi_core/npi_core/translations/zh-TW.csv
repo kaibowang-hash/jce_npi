@@ -657,7 +657,7 @@ Template codes must be unique.,模板編碼必須唯一。
 Remove reference types that are not allowed by the template.,請移除模板不允許的引用類型。
 Add every reference required by the project template.,請新增專案模板要求的所有引用。
 Only one reference of this type is allowed by the template.,此類型僅允許一個引用。
-{0} must be a valid UUID.,{0} 必須為有效的 UUID。
+{field} must be a valid UUID.,{field} 必須為有效的 UUID。
 A protected field cannot be changed.,受保護欄位無法變更。
 Project records can only be changed through an authorized NPI project command.,專案記錄只能透過已授權的 NPI 專案命令變更。
 Project tenant authorization is unavailable.,專案租戶授權不可用。
@@ -736,3 +736,348 @@ NPI Template Gate Definition,NPI 模板階段門定義
 NPI Template Reference Rule,NPI 模板引用規則
 Required,必須
 Allow Multiple,允許多個
+Responsible,執行
+Accountable,最終負責
+Consulted,諮詢
+Informed,知會
+WBS item,工作分解項目
+Domain work item,領域工作項目
+Risk,風險
+Issue,問題
+Decision request,決策請求
+Low,低
+Medium,中
+High,高
+Critical,嚴重
+Identified,已識別
+Open,待處理
+Requested,已請求
+Policy label unavailable,策略標籤無法使用
+The project work context response could not be used safely,專案工作上下文回應無法安全使用
+Project work context is unavailable,專案工作上下文無法使用
+The domain work item response could not be used safely,領域工作項目回應無法安全使用
+Domain work items are unavailable,領域工作項目無法使用
+"No Team, responsibility, or plan data was displayed. Use the reference ID for support.",未顯示任何團隊、職責或計畫資料。請使用參考識別碼聯絡支援人員。
+No domain work item data was displayed. Use the reference ID for support.,未顯示任何領域工作項目資料。請使用參考識別碼聯絡支援人員。
+Unavailable,無法使用
+The live project work context data source is not configured.,未設定即時專案工作上下文資料來源。
+The live domain work item data source is not configured.,未設定即時領域工作項目資料來源。
+No team members are assigned to this project.,此專案尚未指派團隊成員。
+User,使用者
+Roles,角色
+Effective from,生效日期
+No responsibility assignments are configured for this project.,此專案尚未設定職責分配。
+Scope,範圍
+Responsibility key,職責鍵
+Role key,角色鍵
+Responsibility,職責
+Team member details,團隊成員詳細資料
+Select a team member to inspect role coverage.,選擇一位團隊成員以檢視角色涵蓋情況。
+Effective to,生效截止日期
+No end date,無截止日期
+Role keys,角色鍵
+No role assignment,無角色指派
+Substitution assignments,替代安排明細
+Original member,原持有人
+Substitute member,替代人
+None,無
+Responsibility only,僅職責
+Project roles do not grant Gate approval authority.,專案角色不授予階段門核准權限。
+Not initialized,未初始化
+"Team, responsibility, and plan data have not been initialized.",團隊、職責與計畫資料尚未初始化。
+Team members,團隊成員
+Responsibility assignments,職責分配
+{{days}} days early,提前 {{days}} 天
+1 day late,延誤 1 天
+1 day early,提前 1 天
+On baseline,與基準一致
+No baseline,無基準
+No plan baseline is recorded for this project.,此專案未記錄計畫基準。
+Project plan,專案計畫
+No WBS items are configured for this project.,此專案未設定工作分解項目。
+Owner role,負責人角色
+Current finish,目前完成日期
+Baseline finish,基準完成日期
+Finish variance,完成日期差異
+Progress,進度
+Schedule marker,計畫標記
+{{percent}} percent,{{percent}}%
+Critical task,關鍵任務
+Milestone,里程碑
+Standard task,標準任務
+Plan item details,計畫項目詳細資料
+Parent item,上層項目
+Unassigned,未指派
+Planned start,計畫開始日期
+Planned finish,計畫完成日期
+Actual start,實際開始日期
+Not recorded,未記錄
+Actual finish,實際完成日期
+Start variance,開始日期差異
+Predecessors,前置項目
+Successors,後續項目
+Baseline,基準
+Explicit indicator,明確標記
+"Critical task is a recorded plan indicator, not a computed critical path.",關鍵任務是記錄的計畫標記，並非計算得出的關鍵路徑。
+Select a WBS item to inspect plan details.,選擇一個工作分解項目以檢視計畫詳細資料。
+Domain work item details,領域工作項目詳細資料
+Select a domain work item to inspect its governed context.,選擇一個領域工作項目以檢視其受控上下文。
+Kind,類別
+Due date,到期日期
+Severity,嚴重程度
+Stage,階段
+Project level,專案層級
+Not linked,未連結
+Related work items,相關工作項目
+Work policy version,工作策略版本
+Detail,詳細資料
+More domain work items are available. Use the page controls or refine the filters.,還有更多領域工作項目可用。請使用分頁控制項或細化篩選條件。
+All stages,所有階段
+Owner email,負責人電子郵件
+Apply owner filter,套用負責人篩選
+All kinds,所有類別
+Due state,到期狀態
+All due states,所有到期狀態
+Overdue only,僅逾期
+Not overdue,未逾期
+Domain work items,領域工作項目
+No domain work items match the current filters.,目前篩選條件下沒有領域工作項目。
+Domain work item pages,領域工作項目分頁
+Page {{page}},第 {{page}} 頁
+Non-blocking,非阻斷
+Overview,概覽
+Team and responsibilities,團隊與職責
+Plan,計畫
+Work items,工作項目
+Loading project work context,正在載入專案工作上下文
+Loading domain work items,正在載入領域工作項目
+Project workspace sections,專案工作區區段
+Select a supported Work Item kind.,請選擇支援的工作項目類別。
+Select a supported severity.,請選擇支援的嚴重程度。
+Enter a Work Item title with no more than 280 characters.,請輸入不超過 280 個字元的工作項目標題。
+Work Item Detail cannot exceed 4000 characters.,工作項目詳細資料不能超過 4000 個字元。
+Due At is required.,到期時間為必填項目。
+Select a valid Work Item owner.,請選擇有效的工作項目負責人。
+State Key,狀態鍵
+Work Policy Snapshot Hash,工作策略快照雜湊
+Work Policy Version must be greater than zero.,工作策略版本必須大於零。
+Related Objects,關聯物件
+Evidence References,證據參照
+{field} must be a JSON array.,{field} 必須是資料陣列。
+Work Plan Revision cannot be negative.,工作計畫修訂號不能為負數。
+Project Work Policy identity must be complete.,專案工作策略識別必須完整。
+Work Policy Global ID,工作策略全域識別碼
+Active Plan Baseline Global ID,作用中計畫基準全域識別碼
+Project Version must advance one version at a time.,專案版本每次只能遞增一個版本。
+Project work changes require the next Project version.,專案工作變更必須使用下一個專案版本。
+Work Plan Revision must advance one revision at a time.,工作計畫修訂號每次只能遞增一個修訂號。
+Select a valid Project member.,請選擇有效的專案成員。
+Effective From,生效日期
+Effective To,生效截止日期
+Select a supported RACI context type.,請選擇支援的職責矩陣上下文類型。
+Select a supported RACI responsibility.,請選擇支援的職責矩陣職責。
+Responsibility Key,職責鍵
+Project Role Key,專案角色鍵
+Effective To is required for a substitution.,替代安排必須填寫生效截止日期。
+Actor Key Hash,操作者鍵雜湊
+Response JSON must be a JSON object.,回應資料必須是資料物件。
+A Project work idempotency response must be sealed after the command succeeds.,專案工作冪等回應必須在命令成功後封存。
+A published Project work policy version cannot be changed.,已發布的專案工作策略版本不能變更。
+Policy Global ID,策略全域識別碼
+Policy Version must be greater than zero.,策略版本必須大於零。
+Project Role Keys must be a JSON array.,專案角色鍵必須是資料陣列。
+WBS States must define one lifecycle object.,工作分解狀態必須定義一個生命週期物件。
+Work Item Lifecycles must be a JSON array.,工作項目生命週期必須是資料陣列。
+Enter a valid Project Work Policy.,請輸入有效的專案工作策略。
+Project Work Policy translations are unavailable.,專案工作策略翻譯無法使用。
+Every Project Work Policy state label must have Simplified and Traditional Chinese translations.,每個專案工作策略狀態標籤都必須具有簡體中文和繁體中文翻譯。
+Enter a valid lifecycle definition.,請輸入有效的生命週期定義。
+Lifecycle States must be a JSON array.,生命週期狀態必須是資料陣列。
+A WBS dependency cannot reference the same item twice.,工作分解相依關係不能兩次參照同一個工作分解項目。
+Work Plan Revision must be greater than zero.,工作計畫修訂號必須大於零。
+A WBS item cannot be its own parent.,工作分解項目不能將自身作為上層項目。
+Status Key,狀態鍵
+Progress Percent must be between zero and one hundred.,進度百分比必須介於零到一百之間。
+Planned Start,計畫開始日期
+Planned End,計畫結束日期
+Actual Start,實際開始日期
+Actual End,實際結束日期
+Plan Baseline Snapshot does not match its hash.,計畫基準快照與其雜湊不相符。
+Enter a Plan Baseline label with no more than 140 characters.,請輸入不超過 140 個字元的計畫基準標籤。
+Work Plan Revision,工作計畫修訂號
+Project Version,專案版本
+Work Policy Version,工作策略版本
+{field} must be greater than zero.,{field} 必須大於零。
+Enter a valid date and time.,請輸入有效的日期和時間。
+The effective end date cannot be before the start date.,生效結束日期不能早於開始日期。
+Select a valid true or false value.,請選擇有效的真或假值。
+Add at least one valid lifecycle state.,請至少新增一個有效的生命週期狀態。
+Lifecycle state keys must be unique.,生命週期狀態鍵必須唯一。
+Select an initial state defined by this lifecycle.,請選擇此生命週期定義的初始狀態。
+Select a state defined by the work policy.,請選擇工作策略定義的狀態。
+Enter a valid lifecycle.,請輸入有效的生命週期。
+Enter a valid snapshot hash.,請輸入有效的快照雜湊。
+The work policy snapshot hash does not match its contents.,工作策略快照雜湊與其內容不相符。
+The work policy does not define this work item kind.,工作策略未定義此工作項目類別。
+Publish the current policy before creating a revision.,建立修訂版本前請先發布目前策略。
+Select a published Project work policy version.,請選擇已發布的專案工作策略版本。
+Enter a valid WBS lifecycle.,請輸入有效的工作分解生命週期。
+Project role keys must be unique.,專案角色鍵必須唯一。
+Enter valid work item lifecycles.,請輸入有效的工作項目生命週期。
+Each work item kind must have one lifecycle.,每種工作項目類別必須具有一個生命週期。
+Add at least one Project role before publishing.,發布前請至少新增一個專案角色。
+Define a separate lifecycle for every work item kind.,請為每種工作項目類別分別定義生命週期。
+Select a valid work policy.,請選擇有效的工作策略。
+The RACI Project context does not match this Project.,職責矩陣的專案上下文與此專案不相符。
+Select a WBS item from this Project.,請選擇此專案中的工作分解項目。
+Select a work item from this Project.,請選擇此專案中的工作項目。
+Membership periods for one user cannot overlap.,同一使用者的成員資格期間不能重疊。
+Select a member from this Project.,請選擇此專案中的成員。
+Select a role defined by the work policy.,請選擇工作策略定義的角色。
+A role assignment must remain within its membership period.,角色指派必須處於成員資格期間內。
+Duplicate role-assignment periods cannot overlap.,重複角色指派的期間不能重疊。
+Select a role assignment from this Project.,請選擇此專案中的角色指派。
+Select a substitute member from this Project.,請選擇此專案中的替代成員。
+A member cannot substitute for the same assignment.,成員不能替代自己的同一指派。
+A substitution must remain within both assignment periods.,替代安排必須同時處於兩個指派期間內。
+Substitution periods for one assignment cannot overlap.,同一指派的替代期間不能重疊。
+RACI assignments must be unique.,職責矩陣指派必須唯一。
+Actual finish requires an earlier or equal actual start.,實際完成日期必須晚於或等於實際開始日期。
+A milestone must start and finish on the same planned date.,里程碑的計畫開始和完成日期必須相同。
+A milestone must start and finish on the same actual date.,里程碑的實際開始和完成日期必須相同。
+Enter a progress percentage from 0 to 100.,請輸入 0 到 100 之間的進度百分比。
+A WBS item cannot depend on itself.,工作分解項目不能相依於自身。
+Every WBS item must use the selected work policy version.,每個工作分解項目都必須使用所選工作策略版本。
+WBS codes must be unique.,工作分解編碼必須唯一。
+Select a parent WBS item from this Project.,請選擇此專案中的上層工作分解項目。
+Every dependency must reference WBS items from this Project.,每個相依關係都必須參照此專案中的工作分解項目。
+WBS dependencies must be unique.,工作分解相依關係必須唯一。
+A plan baseline requires unique WBS items.,計畫基準中的工作分解項目必須唯一。
+The plan baseline snapshot hash does not match its contents.,計畫基準快照雜湊與其內容不相符。
+Enter a valid WBS plan.,請輸入有效的工作分解計畫。
+Add at least one WBS item before baselining.,建立基準前請至少新增一個工作分解項目。
+The plan baseline belongs to a different Project.,計畫基準屬於其他專案。
+The plan baseline uses a different work policy version.,計畫基準使用了不同的工作策略版本。
+A baselined WBS item cannot be omitted from the current plan.,目前計畫不能遺漏已建立基準的工作分解項目。
+Enter no more than 4000 characters.,請輸入不超過 4000 個字元。
+Related work item IDs must be unique.,關聯工作項目識別碼必須唯一。
+A work item cannot relate to itself.,工作項目不能關聯自身。
+Controlled evidence references are not available in this task.,此任務不支援受控證據參照。
+Select a stage from this Project.,請選擇此專案中的階段。
+Select related work items from this Project.,請選擇此專案中的關聯工作項目。
+Global IDs must be unique.,全域識別碼必須唯一。
+Every record must belong to this Project.,每筆記錄都必須屬於此專案。
+The WBS graph cannot contain a cycle.,工作分解圖不能包含循環。
+Apply a Project work plan before capturing its baseline.,擷取基準前請先套用專案工作計畫。
+This Project already contains the maximum number of Plan Baselines.,此專案中的計畫基準數已達上限。
+This Project already contains the maximum number of Domain Work Items.,此專案中的領域工作項目數已達上限。
+Select an available published Project Work Policy version.,請選擇可用的已發布專案工作策略版本。
+The Project Work Policy reference does not match its published version.,專案工作策略參照與其已發布版本不相符。
+The Project already uses a different Project Work Policy version.,此專案已使用其他專案工作策略版本。
+Select an enabled Project member.,請選擇已啟用的專案成員。
+Project member global IDs must be unique.,專案成員全域識別碼必須唯一。
+An existing Project member identity cannot be changed.,不能變更現有專案成員識別。
+A Project cannot contain more than 500 members.,一個專案不能包含超過 500 名成員。
+Select a Project member from this Project.,請選擇此專案中的專案成員。
+Select a role allowed by the Project Work Policy.,請選擇專案工作策略允許的角色。
+A role assignment must remain within the member effective dates.,角色指派必須處於成員生效日期範圍內。
+Project role assignment global IDs must be unique.,專案角色指派全域識別碼必須唯一。
+An existing Project role assignment cannot be redirected.,不能重新導向現有專案角色指派。
+A Project cannot contain more than 1000 role assignments.,一個專案不能包含超過 1000 個角色指派。
+A role assignee cannot substitute for the same role assignment.,角色受指派人不能替代自己的同一角色指派。
+A substitution must remain within both role and member effective dates.,替代安排必須同時處於角色和成員生效日期範圍內。
+Project substitution global IDs must be unique.,專案替代安排全域識別碼必須唯一。
+An existing Project substitution cannot be redirected.,不能重新導向現有專案替代安排。
+A Project cannot contain more than 1000 substitutions.,一個專案不能包含超過 1000 個替代安排。
+Project RACI assignment global IDs must be unique.,專案職責矩陣指派全域識別碼必須唯一。
+An existing Project RACI assignment cannot be changed.,不能變更現有專案職責矩陣指派。
+A Project cannot contain more than 2000 RACI assignments.,一個專案不能包含超過 2000 個職責矩陣指派。
+Select a WBS status allowed by the Project Work Policy.,請選擇專案工作策略允許的工作分解狀態。
+WBS item global IDs must be unique.,工作分解項目全域識別碼必須唯一。
+An existing WBS item code cannot be changed.,不能變更現有工作分解項目編碼。
+A Project cannot contain more than 2000 WBS items.,一個專案不能包含超過 2000 個工作分解項目。
+WBS dependency global IDs must be unique.,工作分解相依關係全域識別碼必須唯一。
+An existing WBS dependency cannot be redirected.,不能重新導向現有工作分解相依關係。
+A Project cannot contain more than 5000 WBS dependencies.,一個專案不能包含超過 5000 個工作分解相依關係。
+Select an enabled Work Item owner.,請選擇已啟用的工作項目負責人。
+Select true or false.,請選擇真或假。
+Related Work Item IDs must be unique.,關聯工作項目識別碼必須唯一。
+Select an identifier that belongs to this Project.,請選擇屬於此專案的識別碼。
+Select an object from this Project.,請選擇此專案中的物件。
+Select this Project.,請選擇此專案。
+Enter a valid cursor.,請輸入有效的游標。
+Enter a valid controlled key.,請輸入有效的受控鍵。
+Enter a valid WBS code.,請輸入有效的工作分解編碼。
+Enter a valid email address.,請輸入有效的電子郵件地址。
+The end date cannot be earlier than the start date.,結束日期不能早於開始日期。
+Project work records can only be changed through an authorized NPI project command.,專案工作記錄只能透過獲授權的 NPI 專案命令變更。
+Controlled Project work history cannot be deleted.,不能刪除受控的專案工作歷程記錄。
+Tenant ID is required.,租戶識別碼為必填項目。
+{field} must be a valid controlled key.,{field} 必須是有效的受控鍵。
+{field} must be a lowercase SHA-256 hash.,{field} 必須是小寫 SHA-256 雜湊。
+{end_field} cannot be earlier than {start_field}.,{end_field} 不能早於 {start_field}。
+{field} must be a valid date.,{field} 必須是有效日期。
+Member Global ID,成員全域識別碼
+Original Member Global ID,原成員全域識別碼
+Substitute Member Global ID,替代成員全域識別碼
+Context Global ID,上下文全域識別碼
+Parent WBS Global ID,上層工作分解全域識別碼
+Predecessor WBS Global ID,前置工作分解全域識別碼
+Successor WBS Global ID,後續工作分解全域識別碼
+Stage Global ID,階段全域識別碼
+NPI Domain Work Item,NPI 領域工作項目
+Work Item Kind,工作項目類別
+Action item,行動項
+risk,風險
+issue,問題
+action,行動
+decision_request,決策請求
+Work Item Title,工作項目標題
+Work Item Detail,工作項目詳細資料
+WBS Item Global ID,工作分解項目全域識別碼
+Due At,到期時間
+low,低
+medium,中
+high,高
+critical,嚴重
+State Label Source,狀態標籤來源文案
+Terminal State,終止狀態
+NPI Project Member,NPI 專案成員
+NPI Project RACI Assignment,NPI 專案職責矩陣指派
+Context Type,上下文類型
+project,專案
+wbs_item,工作分解項目
+domain_work_item,領域工作項目
+Role Assignment Global ID,角色指派全域識別碼
+RACI Responsibility,職責矩陣職責
+responsible,執行
+accountable,最終負責
+consulted,諮詢
+informed,知會
+NPI Project Role Assignment,NPI 專案角色指派
+NPI Project Substitution,NPI 專案替代安排
+NPI Project Work Idempotency,NPI 專案工作冪等記錄
+Response JSON,回應資料
+Response Sealed,回應已封存
+NPI Project Work Policy Version,NPI 專案工作策略版本
+Policy Key,策略鍵
+Policy Version,策略版本
+Policy Version Title,策略版本標題
+Project Role Keys,專案角色鍵
+WBS States,工作分解狀態
+Work Item Lifecycles,工作項目生命週期
+NPI WBS Dependency,NPI 工作分解相依關係
+Active,作用中
+NPI WBS Item,NPI 工作分解項目
+WBS Code,工作分解編碼
+WBS Title,工作分解標題
+Owner Role Assignment Global ID,負責人角色指派全域識別碼
+Status Label Source,狀態標籤來源文案
+Progress Percent,進度百分比
+Critical Task,關鍵任務
+NPI WBS Plan Baseline,NPI 工作分解計畫基準
+Plan Baseline Label,計畫基準標籤
+Plan Baseline Snapshot,計畫基準快照
+Captured At,擷取時間
+Captured By,擷取人
+Secure pagination is unavailable.,安全分頁暫時無法使用。

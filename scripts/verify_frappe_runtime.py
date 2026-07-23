@@ -4,7 +4,9 @@ import argparse
 import csv
 import http.cookiejar
 import json
+import os
 import re
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -13,6 +15,10 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+BENCH_PATH = ROOT / "tmp" / "frappe-bench"
+RUNTIME_BASE_URL = "http://127.0.0.1:8003"
+ADMINISTRATOR_USER = "Administrator"
+DISPOSABLE_USER = "npi-runtime-user@example.invalid"
 EXPECTED_KEYS = {"userId", "language", "allowedLanguages", "csrfToken", "catalog"}
 LANGUAGES = ("en", "zh", "zh-TW")
 
@@ -22,6 +28,8 @@ class HttpResult:
     status: int
     headers: Any
     body: dict[str, Any]
+    request_id: str | None = None
+    trace_id: str | None = None
 
 
 def require(condition: bool, message: str) -> None:
@@ -198,10 +206,21 @@ def validate_local_fixture_inputs(
     fixture_user: str,
 ) -> str:
     normalized_base_url = base_url.rstrip("/")
+    require(
+        normalized_base_url == RUNTIME_BASE_URL,
+        "Runtime verification requires the fixed local Frappe endpoint",
+    )
     parsed = urllib.parse.urlparse(normalized_base_url)
     require(
         parsed.scheme == "http"
-        and parsed.hostname in {"127.0.0.1", "localhost", "::1"},
+        and parsed.hostname == "127.0.0.1"
+        and parsed.port == 8003
+        and parsed.username is None
+        and parsed.password is None
+        and parsed.path in {"", "/"}
+        and not parsed.params
+        and not parsed.query
+        and not parsed.fragment,
         "Runtime verification is restricted to a local HTTP Frappe Site",
     )
     require(
@@ -220,7 +239,81 @@ def validate_local_fixture_inputs(
         fixture_user not in {"Administrator", "Guest"},
         "Disposable user must not be a standard Frappe user",
     )
+    validate_runtime_environment()
     return normalized_base_url
+
+
+def validate_runtime_environment() -> None:
+    expected_bench = ROOT / "tmp" / "frappe-bench"
+    require(
+        not (ROOT / "tmp").is_symlink()
+        and BENCH_PATH == expected_bench
+        and BENCH_PATH.is_dir()
+        and not BENCH_PATH.is_symlink()
+        and BENCH_PATH.resolve(strict=True) == expected_bench,
+        "Runtime verifier requires the fixed physical repository Bench",
+    )
+    site_guard = ROOT / "scripts" / "verify_local_frappe_site.py"
+    require(
+        site_guard.is_file() and not site_guard.is_symlink(),
+        "Runtime database identity guard is unavailable",
+    )
+    database_override_names = (
+        "FRAPPE_DB_HOST",
+        "FRAPPE_DB_PORT",
+        "FRAPPE_DB_SOCKET",
+        "FRAPPE_DB_TYPE",
+    )
+    require(
+        not any(os.environ.get(name) for name in database_override_names),
+        "Frappe database environment overrides are forbidden for runtime fixtures",
+    )
+    guard_environment = os.environ.copy()
+    for name in (
+        *database_override_names,
+        "NPI_ADMINISTRATOR_PASSWORD",
+        "NPI_DATABASE_ROOT_PASSWORD",
+        "NPI_LOCAL_DATABASE_ROOT_PASSWORD",
+        "NPI_RUNTIME_ADMINISTRATOR_PASSWORD",
+        "NPI_RUNTIME_FIXTURE_PASSWORD",
+    ):
+        guard_environment.pop(name, None)
+    try:
+        guarded = subprocess.run(
+            [
+                str(BENCH_PATH / "env" / "bin" / "python"),
+                str(site_guard),
+                "--mode",
+                "live",
+            ],
+            cwd=ROOT,
+            env=guard_environment,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise RuntimeError(
+            "Runtime database identity guard could not be executed"
+        ) from None
+    require(
+        guarded.returncode == 0,
+        "Runtime database endpoint or live identity validation failed",
+    )
+
+
+def secret_from_environment(name: str) -> str:
+    value = os.environ.pop(name, None)
+    require(
+        isinstance(value, str)
+        and len(value) >= 12
+        and "\x00" not in value
+        and "\n" not in value
+        and "\r" not in value,
+        f"Required controlled runtime secret is unavailable: {name}",
+    )
+    return value
 
 
 def create_disposable_user(
@@ -305,16 +398,16 @@ def delete_disposable_user(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", required=True)
-    parser.add_argument("--administrator-user", default="Administrator")
-    parser.add_argument("--administrator-password", required=True)
-    parser.add_argument("--fixture-user", required=True)
-    parser.add_argument("--fixture-password", required=True)
     arguments = parser.parse_args()
+    administrator_password = secret_from_environment(
+        "NPI_RUNTIME_ADMINISTRATOR_PASSWORD"
+    )
+    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
 
     base_url = validate_local_fixture_inputs(
         arguments.base_url,
-        arguments.administrator_user,
-        arguments.fixture_user,
+        ADMINISTRATOR_USER,
+        DISPOSABLE_USER,
     )
 
     catalogs = {language: catalog_rows(language) for language in ("zh", "zh-TW")}
@@ -331,8 +424,8 @@ def main() -> None:
 
     administrator_opener = login(
         base_url,
-        arguments.administrator_user,
-        arguments.administrator_password,
+        ADMINISTRATOR_USER,
+        administrator_password,
     )
     administrator_initial = request(
         administrator_opener, base_url, "/api/npi/v1/session/bootstrap"
@@ -340,13 +433,13 @@ def main() -> None:
     administrator_language = str(administrator_initial.body.get("language"))
     validate_bootstrap(
         administrator_initial,
-        arguments.administrator_user,
+        ADMINISTRATOR_USER,
         administrator_language,
         expected_count,
     )
     administrator_csrf_token = str(administrator_initial.body["csrfToken"])
 
-    fixture_path = user_resource_path(arguments.fixture_user)
+    fixture_path = user_resource_path(DISPOSABLE_USER)
     fixture_before = request(administrator_opener, base_url, fixture_path)
     require(
         fixture_before.status == 404,
@@ -360,21 +453,21 @@ def main() -> None:
         created = create_disposable_user(
             administrator_opener,
             base_url,
-            arguments.fixture_user,
-            arguments.fixture_password,
+            DISPOSABLE_USER,
+            fixture_password,
             administrator_csrf_token,
         )
         fixture_created = created.status in {200, 201}
-        validate_disposable_user(created, arguments.fixture_user)
+        validate_disposable_user(created, DISPOSABLE_USER)
 
         fixture_opener = login(
-            base_url, arguments.fixture_user, arguments.fixture_password
+            base_url, DISPOSABLE_USER, fixture_password
         )
         fixture_initial = request(
             fixture_opener, base_url, "/api/npi/v1/session/bootstrap"
         )
         validate_bootstrap(
-            fixture_initial, arguments.fixture_user, "en", expected_count
+            fixture_initial, DISPOSABLE_USER, "en", expected_count
         )
         fixture_csrf_token = str(fixture_initial.body["csrfToken"])
 
@@ -471,13 +564,13 @@ def main() -> None:
         unchanged = request(
             fixture_opener, base_url, "/api/npi/v1/session/bootstrap"
         )
-        validate_bootstrap(unchanged, arguments.fixture_user, "en", expected_count)
+        validate_bootstrap(unchanged, DISPOSABLE_USER, "en", expected_count)
         fixture_csrf_token = str(unchanged.body["csrfToken"])
 
         simplified = set_language(
             fixture_opener, base_url, "zh", fixture_csrf_token
         )
-        validate_bootstrap(simplified, arguments.fixture_user, "zh", expected_count)
+        validate_bootstrap(simplified, DISPOSABLE_USER, "zh", expected_count)
         require(
             simplified.body["catalog"]["messages"]["My Work"]
             == catalogs["zh"]["My Work"],
@@ -485,14 +578,14 @@ def main() -> None:
         )
 
         later_opener = login(
-            base_url, arguments.fixture_user, arguments.fixture_password
+            base_url, DISPOSABLE_USER, fixture_password
         )
         later_bootstrap = request(
             later_opener, base_url, "/api/npi/v1/session/bootstrap"
         )
         validate_bootstrap(
             later_bootstrap,
-            arguments.fixture_user,
+            DISPOSABLE_USER,
             "zh",
             expected_count,
         )
@@ -508,7 +601,7 @@ def main() -> None:
         )
         validate_bootstrap(
             request(later_opener, base_url, "/api/npi/v1/session/bootstrap"),
-            arguments.fixture_user,
+            DISPOSABLE_USER,
             "zh",
             expected_count,
         )
@@ -516,14 +609,14 @@ def main() -> None:
         traditional = set_language(
             later_opener, base_url, "zh-TW", later_csrf_token
         )
-        validate_bootstrap(traditional, arguments.fixture_user, "zh-TW", expected_count)
+        validate_bootstrap(traditional, DISPOSABLE_USER, "zh-TW", expected_count)
         require(
             traditional.body["catalog"]["messages"]["My Work"]
             == catalogs["zh-TW"]["My Work"],
             "Traditional Chinese catalog value drifted",
         )
         fresh_fixture_opener = login(
-            base_url, arguments.fixture_user, arguments.fixture_password
+            base_url, DISPOSABLE_USER, fixture_password
         )
         validate_bootstrap(
             request(
@@ -531,15 +624,15 @@ def main() -> None:
                 base_url,
                 "/api/npi/v1/session/bootstrap",
             ),
-            arguments.fixture_user,
+            DISPOSABLE_USER,
             "zh-TW",
             expected_count,
         )
 
         fresh_administrator_opener = login(
             base_url,
-            arguments.administrator_user,
-            arguments.administrator_password,
+            ADMINISTRATOR_USER,
+            administrator_password,
         )
         validate_bootstrap(
             request(
@@ -547,7 +640,7 @@ def main() -> None:
                 base_url,
                 "/api/npi/v1/session/bootstrap",
             ),
-            arguments.administrator_user,
+            ADMINISTRATOR_USER,
             administrator_language,
             expected_count,
         )
@@ -555,22 +648,22 @@ def main() -> None:
         if fixture_created:
             cleanup_opener = login(
                 base_url,
-                arguments.administrator_user,
-                arguments.administrator_password,
+                ADMINISTRATOR_USER,
+                administrator_password,
             )
             cleanup_bootstrap = request(
                 cleanup_opener, base_url, "/api/npi/v1/session/bootstrap"
             )
             validate_bootstrap(
                 cleanup_bootstrap,
-                arguments.administrator_user,
+                ADMINISTRATOR_USER,
                 administrator_language,
                 expected_count,
             )
             delete_disposable_user(
                 cleanup_opener,
                 base_url,
-                arguments.fixture_user,
+                DISPOSABLE_USER,
                 str(cleanup_bootstrap.body["csrfToken"]),
             )
             fixture_deleted = True
@@ -582,7 +675,7 @@ def main() -> None:
                 "administratorLanguageUnchanged": True,
                 "catalogEntriesPerLocale": expected_count,
                 "disposableUserDeleted": fixture_deleted,
-                "disposableUserId": arguments.fixture_user,
+                "disposableUserId": DISPOSABLE_USER,
                 "disposableUserType": "Website User",
                 "guest": 401,
                 "csrfMissing": 403,

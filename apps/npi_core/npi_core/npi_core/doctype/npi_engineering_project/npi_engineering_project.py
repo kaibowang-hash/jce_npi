@@ -17,6 +17,7 @@ from npi_core.project.frappe_validation import (
     require_project_command_write,
     sha256_json,
 )
+from npi_core.project_work.frappe_validation import validate_hash
 
 
 class NPIEngineeringProject(Document):
@@ -38,6 +39,13 @@ class NPIEngineeringProject(Document):
         "template_snapshot",
         "creation_payload_hash",
     )
+    _WORK_CONTROL_FIELDS = (
+        "work_policy_global_id",
+        "work_policy_version",
+        "work_policy_snapshot_hash",
+        "work_plan_revision",
+        "active_plan_baseline_global_id",
+    )
 
     def before_insert(self) -> None:
         require_project_command_write()
@@ -53,6 +61,7 @@ class NPIEngineeringProject(Document):
         if self.is_new():
             self.lifecycle_state = "draft"
             self.optimistic_version = 1
+            self.work_plan_revision = 0
 
     def validate(self) -> None:
         self.global_id = ensure_uuid(self.global_id, _("Global ID"))
@@ -71,6 +80,43 @@ class NPIEngineeringProject(Document):
             frappe.throw(
                 _("Optimistic Version must be greater than zero."),
                 frappe.ValidationError,
+            )
+        if type(self.work_plan_revision) is not int or self.work_plan_revision < 0:
+            frappe.throw(
+                _("Work Plan Revision cannot be negative."),
+                frappe.ValidationError,
+            )
+        work_policy_values = (
+            self.work_policy_global_id,
+            self.work_policy_version,
+            self.work_policy_snapshot_hash,
+        )
+        if any(work_policy_values) and not all(work_policy_values):
+            frappe.throw(
+                _("Project Work Policy identity must be complete."),
+                frappe.ValidationError,
+            )
+        if all(work_policy_values):
+            self.work_policy_global_id = ensure_uuid(
+                self.work_policy_global_id,
+                _("Work Policy Global ID"),
+            )
+            if (
+                type(self.work_policy_version) is not int
+                or self.work_policy_version < 1
+            ):
+                frappe.throw(
+                    _("Work Policy Version must be greater than zero."),
+                    frappe.ValidationError,
+                )
+            self.work_policy_snapshot_hash = validate_hash(
+                self.work_policy_snapshot_hash,
+                _("Work Policy Snapshot Hash"),
+            )
+        if self.active_plan_baseline_global_id:
+            self.active_plan_baseline_global_id = ensure_uuid(
+                self.active_plan_baseline_global_id,
+                _("Active Plan Baseline Global ID"),
             )
         self._validate_references()
         try:
@@ -114,6 +160,31 @@ class NPIEngineeringProject(Document):
         previous = self.get_doc_before_save()
         if previous is not None:
             assert_immutable_fields(self, previous, self._CREATION_FIELDS)
+            previous_version = int(previous.optimistic_version)
+            current_version = int(self.optimistic_version)
+            if current_version not in {previous_version, previous_version + 1}:
+                frappe.throw(
+                    _("Project Version must advance one version at a time."),
+                    frappe.ValidationError,
+                )
+            work_control_changed = any(
+                self.get(fieldname) != previous.get(fieldname)
+                for fieldname in self._WORK_CONTROL_FIELDS
+            )
+            if work_control_changed and current_version != previous_version + 1:
+                frappe.throw(
+                    _("Project work changes require the next Project version."),
+                    frappe.ValidationError,
+                )
+            if int(self.work_plan_revision) < int(
+                previous.work_plan_revision or 0
+            ) or int(self.work_plan_revision) > int(
+                previous.work_plan_revision or 0
+            ) + 1:
+                frappe.throw(
+                    _("Work Plan Revision must advance one revision at a time."),
+                    frappe.ValidationError,
+                )
 
     def _validate_references(self) -> None:
         identities: set[tuple[str, str, str]] = set()

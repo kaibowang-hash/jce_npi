@@ -36,6 +36,39 @@ objects:
       gate_status: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
       sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
 
+  ProjectTeam:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      membership: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      project_roles: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      substitutions: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      raci_assignments: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      approval_authority: {owner: VERSIONED_APPROVAL_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  ProjectWorkPlan:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      wbs_hierarchy: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      dependencies: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      planned_dates: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      actual_dates: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      progress: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      critical_task: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      plan_baseline: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  DomainWorkItem:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      semantic_kind: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      lifecycle_policy: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      lifecycle_state: {owner: NPI_ONE, editable_in: [NPI_ONE_POLICY_ENGINE], direction: NONE, conflict: VERSION_CONFLICT}
+      context_and_relations: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      owner_due_severity_blocking: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
+      evidence_references: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
   Item:
     owner_system: ERPNEXT_AFTER_RELEASE
     phases:

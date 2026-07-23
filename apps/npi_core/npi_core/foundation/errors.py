@@ -141,3 +141,12 @@ class TenantScopeUnavailable(NpiProblem):
             "TENANT_SCOPE_UNAVAILABLE",
             _("Project tenant authorization is unavailable."),
         )
+
+
+class CursorSigningUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "CURSOR_SIGNING_UNAVAILABLE",
+            _("Secure pagination is unavailable."),
+        )

@@ -4,6 +4,10 @@ import {
   ProjectRequestCancelledError,
   type ProjectCockpitDataSource,
 } from "../api/project-data-source";
+import type {
+  ProjectDomainWorkItemsDataSource,
+  ProjectWorkContextDataSource,
+} from "../api/project-work-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import {
   DockedInspector,
@@ -26,6 +30,7 @@ import { sourceSystemLabel } from "../i18n/copy";
 import { formatDate, formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button } from "../ui-adapters/npi-ui";
+import { ProjectWorkspace } from "./project-workspace";
 
 type FailureKind =
   | "not_found"
@@ -189,8 +194,12 @@ function ProjectFailureSurface({
 
 function ProjectCockpit({
   cockpit,
+  contextDataSource,
+  domainWorkItemsDataSource,
 }: {
   cockpit: ProjectCockpitViewModel;
+  contextDataSource?: ProjectWorkContextDataSource | undefined;
+  domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
   const { project, templateRef, references, gates, permissions } = cockpit;
@@ -236,169 +245,191 @@ function ProjectCockpit({
         source={project.source}
         status={<SemanticStatus label={t("Draft")} tone="info" />}
       />
-      <MetricStrip
-        metrics={[
-          {
-            label: t("Project version"),
-            value: formatNumber(locale, project.version, 0),
-          },
-          {
-            label: t("Template version"),
-            value: formatNumber(locale, templateRef.version, 0),
-          },
-          {
-            label: t("Gate shells"),
-            value: formatNumber(locale, gates.length, 0),
-          },
-          {
-            label: t("Governed references"),
-            value: formatNumber(locale, references.length, 0),
-          },
-        ]}
+      <ProjectWorkspace
+        cockpit={cockpit}
+        contextDataSource={contextDataSource}
+        domainWorkItemsDataSource={domainWorkItemsDataSource}
+        overview={
+          <>
+            <MetricStrip
+              metrics={[
+                {
+                  label: t("Project version"),
+                  value: formatNumber(locale, project.version, 0),
+                },
+                {
+                  label: t("Template version"),
+                  value: formatNumber(locale, templateRef.version, 0),
+                },
+                {
+                  label: t("Gate shells"),
+                  value: formatNumber(locale, gates.length, 0),
+                },
+                {
+                  label: t("Governed references"),
+                  value: formatNumber(locale, references.length, 0),
+                },
+              ]}
+            />
+            <SectionAnchors
+              sections={[
+                { id: "project-gates", label: t("Gate shells") },
+                { id: "project-references", label: t("Governed references") },
+                {
+                  id: "project-context",
+                  label: t("Immutable project context"),
+                },
+              ]}
+            />
+            <div className="engineering-layout engineering-layout--project">
+              <Panel id="project-gates" scrollableBody title={t("Gate shells")}>
+                <table className="data-table data-table--compact">
+                  <thead>
+                    <tr>
+                      <th>{t("Sequence")}</th>
+                      <th>{t("Gate")}</th>
+                      <th>{t("State")}</th>
+                      <th>{t("Version")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gates.length ? (
+                      gates.map((gate) => (
+                        <tr key={gate.globalId}>
+                          <td>{formatNumber(locale, gate.sequence, 0)}</td>
+                          <td>
+                            <strong data-language-exempt="identifier">
+                              {gate.key}
+                            </strong>{" "}
+                            <span data-language-exempt="business-data">
+                              {gate.title}
+                            </span>
+                          </td>
+                          <td>
+                            <SemanticStatus label={t("Not started")} />
+                          </td>
+                          <td>{formatNumber(locale, gate.version, 0)}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4}>
+                          {t(
+                            "No Gate shells are instantiated for this project.",
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Panel>
+              <Panel
+                id="project-references"
+                scrollableBody
+                title={t("Governed references")}
+              >
+                <table className="data-table data-table--compact">
+                  <thead>
+                    <tr>
+                      <th>{t("Reference type")}</th>
+                      <th>{t("Source")}</th>
+                      <th>{t("Source object ID")}</th>
+                      <th>{t("Global ID")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {references.length ? (
+                      references.map((reference) => (
+                        <tr
+                          key={`${reference.type}:${reference.sourceSystem}:${reference.sourceObjectId}`}
+                        >
+                          <td>{referenceTypeLabel(t, reference.type)}</td>
+                          <td>
+                            {sourceSystemLabel(t, reference.sourceSystem)}
+                          </td>
+                          <td data-language-exempt="identifier">
+                            {reference.sourceObjectId}
+                          </td>
+                          <td data-language-exempt="identifier">
+                            {reference.globalId ?? "—"}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4}>
+                          {t(
+                            "No governed references are attached to this project.",
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </Panel>
+              <DockedInspector
+                id="project-context"
+                title={t("Immutable project context")}
+              >
+                <DefinitionList
+                  rows={[
+                    {
+                      label: t("Global ID"),
+                      value: project.globalId,
+                      exempt: "identifier",
+                    },
+                    {
+                      label: t("Project template"),
+                      value: templateRef.code,
+                      exempt: "identifier",
+                    },
+                    {
+                      label: t("Template version"),
+                      value: formatNumber(locale, templateRef.version, 0),
+                    },
+                    {
+                      label: t("Template snapshot hash"),
+                      value: templateRef.snapshotHash,
+                      exempt: "identifier",
+                    },
+                    {
+                      label: t("Created"),
+                      value: formatDateTime(locale, project.createdAt),
+                    },
+                    {
+                      label: t("Last updated"),
+                      value: formatDateTime(locale, project.lastChangedAt),
+                    },
+                    {
+                      label: t("Last changed by"),
+                      value: project.lastChangedBy,
+                      exempt: "business-data",
+                    },
+                    {
+                      label: t("Access"),
+                      value: readOnly ? t("View only") : t("Contribute"),
+                    },
+                  ]}
+                />
+              </DockedInspector>
+            </div>
+          </>
+        }
       />
-      <SectionAnchors
-        sections={[
-          { id: "project-gates", label: t("Gate shells") },
-          { id: "project-references", label: t("Governed references") },
-          { id: "project-context", label: t("Immutable project context") },
-        ]}
-      />
-      <div className="engineering-layout engineering-layout--project">
-        <Panel id="project-gates" scrollableBody title={t("Gate shells")}>
-          <table className="data-table data-table--compact">
-            <thead>
-              <tr>
-                <th>{t("Sequence")}</th>
-                <th>{t("Gate")}</th>
-                <th>{t("State")}</th>
-                <th>{t("Version")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gates.length ? (
-                gates.map((gate) => (
-                  <tr key={gate.globalId}>
-                    <td>{formatNumber(locale, gate.sequence, 0)}</td>
-                    <td>
-                      <strong data-language-exempt="identifier">
-                        {gate.key}
-                      </strong>{" "}
-                      <span data-language-exempt="business-data">
-                        {gate.title}
-                      </span>
-                    </td>
-                    <td>
-                      <SemanticStatus label={t("Not started")} />
-                    </td>
-                    <td>{formatNumber(locale, gate.version, 0)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4}>
-                    {t("No Gate shells are instantiated for this project.")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </Panel>
-        <Panel
-          id="project-references"
-          scrollableBody
-          title={t("Governed references")}
-        >
-          <table className="data-table data-table--compact">
-            <thead>
-              <tr>
-                <th>{t("Reference type")}</th>
-                <th>{t("Source")}</th>
-                <th>{t("Source object ID")}</th>
-                <th>{t("Global ID")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {references.length ? (
-                references.map((reference) => (
-                  <tr
-                    key={`${reference.type}:${reference.sourceSystem}:${reference.sourceObjectId}`}
-                  >
-                    <td>{referenceTypeLabel(t, reference.type)}</td>
-                    <td>{sourceSystemLabel(t, reference.sourceSystem)}</td>
-                    <td data-language-exempt="identifier">
-                      {reference.sourceObjectId}
-                    </td>
-                    <td data-language-exempt="identifier">
-                      {reference.globalId ?? "—"}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4}>
-                    {t("No governed references are attached to this project.")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </Panel>
-        <DockedInspector
-          id="project-context"
-          title={t("Immutable project context")}
-        >
-          <DefinitionList
-            rows={[
-              {
-                label: t("Global ID"),
-                value: project.globalId,
-                exempt: "identifier",
-              },
-              {
-                label: t("Project template"),
-                value: templateRef.code,
-                exempt: "identifier",
-              },
-              {
-                label: t("Template version"),
-                value: formatNumber(locale, templateRef.version, 0),
-              },
-              {
-                label: t("Template snapshot hash"),
-                value: templateRef.snapshotHash,
-                exempt: "identifier",
-              },
-              {
-                label: t("Created"),
-                value: formatDateTime(locale, project.createdAt),
-              },
-              {
-                label: t("Last updated"),
-                value: formatDateTime(locale, project.lastChangedAt),
-              },
-              {
-                label: t("Last changed by"),
-                value: project.lastChangedBy,
-                exempt: "business-data",
-              },
-              {
-                label: t("Access"),
-                value: readOnly ? t("View only") : t("Contribute"),
-              },
-            ]}
-          />
-        </DockedInspector>
-      </div>
     </article>
   );
 }
 
 export default function ProjectPage({
   dataSource,
+  contextDataSource,
+  domainWorkItemsDataSource,
   globalId,
   navigate,
 }: {
   dataSource: ProjectCockpitDataSource;
+  contextDataSource?: ProjectWorkContextDataSource | undefined;
+  domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   globalId: string;
   navigate: (target: string) => void;
 }): React.JSX.Element {
@@ -473,5 +504,12 @@ export default function ProjectPage({
       />
     );
   }
-  return <ProjectCockpit cockpit={state.cockpit} />;
+  return (
+    <ProjectCockpit
+      cockpit={state.cockpit}
+      contextDataSource={contextDataSource}
+      domainWorkItemsDataSource={domainWorkItemsDataSource}
+      key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
+    />
+  );
 }

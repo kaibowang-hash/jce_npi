@@ -1,0 +1,1 @@
+"""NPI Project Substitution DocType."""

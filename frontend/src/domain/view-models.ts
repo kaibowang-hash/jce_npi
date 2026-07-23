@@ -1,3 +1,7 @@
+import type { ProjectPolicyLabelSource } from "../generated/project-policy-label-sources";
+
+export type { ProjectPolicyLabelSource } from "../generated/project-policy-label-sources";
+
 export type ScreenId =
   | "work"
   | "project"
@@ -164,6 +168,185 @@ export interface ProjectCockpitViewModel {
     canContribute: boolean;
     canAdminister: boolean;
   };
+}
+
+export interface ProjectWorkPolicyReference {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+}
+
+export interface ProjectMemberViewModel {
+  globalId: string;
+  projectId: string;
+  userId: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  version: number;
+}
+
+export interface ProjectRoleAssignmentViewModel {
+  globalId: string;
+  projectId: string;
+  memberId: string;
+  roleKey: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  version: number;
+}
+
+export interface ProjectSubstitutionViewModel {
+  globalId: string;
+  projectId: string;
+  roleAssignmentId: string;
+  substituteMemberId: string;
+  effectiveFrom: string;
+  effectiveTo: string;
+  version: number;
+}
+
+export type ProjectResponsibility =
+  | "responsible"
+  | "accountable"
+  | "consulted"
+  | "informed";
+
+export type ProjectResponsibilityContext =
+  | "project"
+  | "wbs_item"
+  | "domain_work_item";
+
+export interface ProjectRaciAssignmentViewModel {
+  globalId: string;
+  projectId: string;
+  contextType: ProjectResponsibilityContext;
+  contextId: string;
+  responsibilityKey: string;
+  roleAssignmentId: string;
+  raci: ProjectResponsibility;
+  version: number;
+}
+
+export type ProjectWbsStateKey = string;
+
+export interface ProjectWbsItemViewModel {
+  globalId: string;
+  projectId: string;
+  code: string;
+  title: string;
+  parentId?: string;
+  ownerRoleAssignmentId?: string;
+  plannedStart: string;
+  plannedFinish: string;
+  actualStart?: string;
+  actualFinish?: string;
+  milestone: boolean;
+  statusKey: ProjectWbsStateKey;
+  statusLabelSource: ProjectPolicyLabelSource;
+  progressPercent: number;
+  critical: boolean;
+  version: number;
+}
+
+export interface ProjectDependencyViewModel {
+  globalId: string;
+  projectId: string;
+  predecessorItemId: string;
+  successorItemId: string;
+  version: number;
+}
+
+export interface ProjectPlanBaselineViewModel {
+  globalId: string;
+  projectId: string;
+  projectVersion: number;
+  workPolicyRef: ProjectWorkPolicyReference;
+  label: string;
+  snapshotHash: string;
+  capturedAt: string;
+  capturedBy: string;
+  version: number;
+}
+
+export interface ProjectPlanBaselineComparisonItemViewModel {
+  wbsItemId: string;
+  baselinePlannedStart: string;
+  baselinePlannedFinish: string;
+  currentPlannedStart: string;
+  currentPlannedFinish: string;
+  startVarianceDays: number;
+  finishVarianceDays: number;
+  critical: boolean;
+}
+
+export interface ProjectPlanBaselineComparisonViewModel {
+  baselineId: string;
+  baselineProjectVersion: number;
+  currentProjectVersion: number;
+  items: readonly ProjectPlanBaselineComparisonItemViewModel[];
+}
+
+export interface ProjectWorkContextViewModel {
+  projectId: string;
+  projectVersion: number;
+  initialized: boolean;
+  workPolicyRef: ProjectWorkPolicyReference | null;
+  members: readonly ProjectMemberViewModel[];
+  roleAssignments: readonly ProjectRoleAssignmentViewModel[];
+  substitutions: readonly ProjectSubstitutionViewModel[];
+  raciAssignments: readonly ProjectRaciAssignmentViewModel[];
+  wbsItems: readonly ProjectWbsItemViewModel[];
+  dependencies: readonly ProjectDependencyViewModel[];
+  baselines: readonly ProjectPlanBaselineViewModel[];
+  baselineComparison: ProjectPlanBaselineComparisonViewModel | null;
+  permissions: ProjectCockpitViewModel["permissions"];
+}
+
+export type DomainWorkItemKind =
+  | "risk"
+  | "issue"
+  | "action"
+  | "decision_request";
+export type DomainWorkItemSeverity = "low" | "medium" | "high" | "critical";
+export type DomainWorkItemStateKey = string;
+
+export interface DomainWorkItemContextViewModel {
+  projectId: string;
+  stageId?: string;
+  wbsItemId?: string;
+}
+
+export interface DomainWorkItemViewModel {
+  globalId: string;
+  projectId: string;
+  kind: DomainWorkItemKind;
+  title: string;
+  detail?: string;
+  context: DomainWorkItemContextViewModel;
+  ownerUserId: string;
+  dueAt: string;
+  severity: DomainWorkItemSeverity;
+  blocking: boolean;
+  relatedWorkItemIds: readonly string[];
+  workPolicyRef: ProjectWorkPolicyReference;
+  stateKey: DomainWorkItemStateKey;
+  stateLabelSource: ProjectPolicyLabelSource;
+  overdue: boolean;
+  version: number;
+  createdAt: string;
+  lastChangedAt: string;
+  source: {
+    sourceSystem: "NPI_ONE";
+    editableIn: "NPI_ONE";
+    syncState: "local";
+  };
+}
+
+export interface DomainWorkItemPageViewModel {
+  projectId: string;
+  projectVersion: number;
+  items: readonly DomainWorkItemViewModel[];
+  nextCursor: string | null;
 }
 
 export interface LifecycleStep {

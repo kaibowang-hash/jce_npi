@@ -91,7 +91,10 @@ function unquoteYamlScalar(value) {
 }
 
 function placeholders(value) {
-  return [...value.matchAll(/\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g)]
+  return [
+    ...value.matchAll(/\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g),
+    ...value.matchAll(/(?<!\{)\{([A-Za-z][A-Za-z0-9_]*)\}(?!\})/g),
+  ]
     .map((match) => match[1])
     .sort();
 }
@@ -209,6 +212,10 @@ for (const locale of ["zh", "zh-TW"]) {
     }
     let languagePurityCandidate = translation.replace(
       /\{\{[A-Za-z][A-Za-z0-9_]*\}\}/gu,
+      "",
+    );
+    languagePurityCandidate = languagePurityCandidate.replace(
+      /(?<!\{)\{[A-Za-z][A-Za-z0-9_]*\}(?!\})/gu,
       "",
     );
     for (const term of [...retainTerms].sort(

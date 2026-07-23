@@ -4,7 +4,9 @@ import {
   actionLabel,
   activityLabel,
   assignmentLabel,
+  domainWorkItemKindLabel,
   gateLabel,
+  governedPolicyLabel,
   lifecycleLabel,
   operationLabel,
   scenarioLabel,
@@ -15,6 +17,10 @@ import {
   type Translator,
 } from "../../src/i18n/copy";
 import {
+  isProjectPolicyLabelSource,
+  projectPolicyLabelSources,
+} from "../../src/generated/project-policy-label-sources";
+import {
   formatCurrency,
   formatDate,
   formatDateTime,
@@ -22,6 +28,7 @@ import {
   formatNumber,
   formatPercent,
 } from "../../src/i18n/formatters";
+import { translate } from "../../src/i18n/runtime";
 import {
   activities,
   executionRows,
@@ -39,6 +46,46 @@ const identityTranslator: Translator = (source, values = {}) =>
   );
 
 describe("controlled display copy", () => {
+  it("translates governed policy labels and fails closed with a safe fallback", () => {
+    const translatedSources: string[] = [];
+    const translator: Translator = (source, values, context) => {
+      translatedSources.push(source);
+      return translate("zh", source, values, context);
+    };
+
+    expect(
+      projectPolicyLabelSources.map((source) =>
+        governedPolicyLabel(translator, source),
+      ),
+    ).toEqual(["草稿", "已识别", "未开始", "待处理", "已请求"]);
+    expect(translatedSources).toEqual(projectPolicyLabelSources);
+    translatedSources.length = 0;
+    expect(governedPolicyLabel(translator, "Draft")).toBe("草稿");
+    expect(translatedSources).toEqual(["Draft"]);
+
+    const fallbackSources: string[] = [];
+    const fallbackTranslator: Translator = (source) => {
+      fallbackSources.push(source);
+      return source;
+    };
+    expect(governedPolicyLabel(fallbackTranslator, "Unpublished state")).toBe(
+      "Policy label unavailable",
+    );
+    expect(fallbackSources).toEqual(["Policy label unavailable"]);
+    expect(fallbackSources).not.toContain("Unpublished state");
+
+    expect(domainWorkItemKindLabel(translator, "action")).toBe("行动项");
+  });
+
+  it("recognizes only generated canonical Project policy label sources", () => {
+    for (const source of projectPolicyLabelSources) {
+      expect(isProjectPolicyLabelSource(source)).toBe(true);
+    }
+    expect(isProjectPolicyLabelSource("Unpublished state")).toBe(false);
+    expect(isProjectPolicyLabelSource("")).toBe(false);
+    expect(isProjectPolicyLabelSource(null)).toBe(false);
+  });
+
   it("maps every stable fixture code to non-empty source copy", () => {
     for (const item of workItems) {
       expect(workKindLabel(identityTranslator, item.kind)).not.toHaveLength(0);

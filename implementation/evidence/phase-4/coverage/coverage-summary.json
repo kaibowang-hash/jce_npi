@@ -3,28 +3,28 @@
   "source": "vitest-v8-json-summary",
   "total": {
     "lines": {
-      "total": 5448,
-      "covered": 5101,
+      "total": 7825,
+      "covered": 7350,
       "skipped": 0,
-      "pct": 93.63
+      "pct": 93.92
     },
     "statements": {
-      "total": 5448,
-      "covered": 5101,
+      "total": 7825,
+      "covered": 7350,
       "skipped": 0,
-      "pct": 93.63
+      "pct": 93.92
     },
     "functions": {
-      "total": 190,
-      "covered": 173,
+      "total": 278,
+      "covered": 254,
       "skipped": 0,
-      "pct": 91.05
+      "pct": 91.36
     },
     "branches": {
-      "total": 1095,
-      "covered": 999,
+      "total": 1633,
+      "covered": 1461,
       "skipped": 0,
-      "pct": 91.23
+      "pct": 89.46
     },
     "branchesTrue": {
       "total": 0,

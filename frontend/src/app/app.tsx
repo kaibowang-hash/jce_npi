@@ -14,6 +14,10 @@ import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
 import { LiveProjectCockpitDataSource } from "../api/project-data-source";
+import {
+  LiveProjectDomainWorkItemsDataSource,
+  LiveProjectWorkContextDataSource,
+} from "../api/project-work-data-source";
 
 const WorkPage = lazy(() => import("../pages/work-page"));
 const ProjectPage = lazy(() => import("../pages/project-page"));
@@ -23,6 +27,9 @@ const ToolingPage = lazy(() => import("../pages/tooling-page"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
+const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
+const liveProjectDomainWorkItemsDataSource =
+  new LiveProjectDomainWorkItemsDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -79,7 +86,9 @@ export function App(): React.JSX.Element {
       <ProjectDemoPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "project" ? (
       <ProjectPage
+        contextDataSource={liveProjectWorkContextDataSource}
         dataSource={liveProjectDataSource}
+        domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
       />

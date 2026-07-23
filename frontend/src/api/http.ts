@@ -170,6 +170,7 @@ export function toRequestFailure(error: unknown): RequestFailure {
 
 interface RequestOptions<T> {
   csrfToken?: string | undefined;
+  query?: Readonly<Record<string, string>> | undefined;
   requireRequestIdEcho?: boolean | undefined;
   requireTraceId?: boolean | undefined;
   validate?: ((value: unknown) => value is T) | undefined;
@@ -225,11 +226,21 @@ export class NpiHttpClient {
     }
     let response: Response;
     try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        ...init,
-        credentials: "same-origin",
-        headers,
-      });
+      const query = new URLSearchParams();
+      for (const [key, value] of Object.entries(options.query ?? {}).sort(
+        ([left], [right]) => left.localeCompare(right),
+      )) {
+        query.set(key, value);
+      }
+      const queryString = query.toString();
+      response = await fetch(
+        `${this.baseUrl}${path}${queryString ? `?${queryString}` : ""}`,
+        {
+          ...init,
+          credentials: "same-origin",
+          headers,
+        },
+      );
     } catch (error) {
       throw new NpiTransportError("network", requestId, "request", {
         cause: error,

@@ -23,6 +23,32 @@ _ROUTES = {
 _PROJECT_COCKPIT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/cockpit$"
 )
+_PROJECT_WORK_CONTEXT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/work-context$"
+)
+_PROJECT_DOMAIN_WORK_ITEMS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/domain-work-items$"
+)
+_PROJECT_WORK_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):configure-team$"
+        ),
+        "npi_core.project_work_api.configure_project_team",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):apply-work-plan$"
+        ),
+        "npi_core.project_work_api.apply_project_work_plan",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):capture-plan-baseline$"
+        ),
+        "npi_core.project_work_api.capture_project_plan_baseline",
+    ),
+)
 
 
 def route_request() -> None:
@@ -39,6 +65,27 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.project_api.get_project_cockpit"
             route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_work_api.get_project_work_context"
+            route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.project_work_api.get_project_domain_work_items"
+                if request.method == "GET"
+                else "npi_core.project_work_api.create_project_domain_work_item"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        for route, candidate in _PROJECT_WORK_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -111,8 +158,20 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 
 
 def _requires_project_request_id(method: str, path: str) -> bool:
-    return (method == "POST" and path == "/api/npi/v1/projects") or (
-        method == "GET" and _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
+    if method == "POST" and path == "/api/npi/v1/projects":
+        return True
+    if method == "GET" and (
+        _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    return method == "POST" and any(
+        route.fullmatch(path) is not None
+        for route, _command in _PROJECT_WORK_COMMAND_ROUTES
     )
 
 

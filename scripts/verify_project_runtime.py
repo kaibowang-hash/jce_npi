@@ -14,7 +14,9 @@ from verify_frappe_runtime import (
     login,
     request,
     require,
+    secret_from_environment,
     user_resource_path,
+    validate_local_fixture_inputs,
     validate_disposable_user,
     validate_problem,
 )
@@ -29,6 +31,8 @@ BUSINESS_CODE = "P4-RUNTIME-001"
 IDEMPOTENCY_KEY = "p4-runtime-project-create-v1"
 CONFLICT_KEY = "p4-runtime-business-conflict-v1"
 VERSION_KEY = "p4-runtime-version-conflict-v1"
+OWNER_USER = "npi-project-runtime-owner@example.invalid"
+UNRELATED_USER = "npi-project-runtime-unrelated@example.invalid"
 
 
 def resource_path(doctype: str, name: str | None = None) -> str:
@@ -700,25 +704,18 @@ def verify_history_deletion_denied(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", required=True)
-    parser.add_argument("--administrator-user", default="Administrator")
-    parser.add_argument("--administrator-password", required=True)
-    parser.add_argument(
-        "--owner-user",
-        default="npi-project-runtime-owner@example.invalid",
-    )
-    parser.add_argument(
-        "--unrelated-user",
-        default="npi-project-runtime-unrelated@example.invalid",
-    )
-    parser.add_argument("--fixture-password", default="DevOnly_Project_Runtime_2026!")
     arguments = parser.parse_args()
-    base_url = arguments.base_url.rstrip("/")
-    require(
-        urllib.parse.urlparse(base_url).hostname in {"127.0.0.1", "localhost", "::1"},
-        "Project runtime verification is restricted to a local Site",
+    administrator_user = "Administrator"
+    administrator_password = secret_from_environment(
+        "NPI_RUNTIME_ADMINISTRATOR_PASSWORD"
     )
-    require(arguments.administrator_user == "Administrator", "Local Administrator is required")
-    users = (arguments.owner_user, arguments.unrelated_user)
+    fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
+    base_url = validate_local_fixture_inputs(
+        arguments.base_url,
+        administrator_user,
+        OWNER_USER,
+    )
+    users = (OWNER_USER, UNRELATED_USER)
     require(
         all(user.endswith("@example.invalid") for user in users),
         "Runtime Project users must use reserved example.invalid identities",
@@ -726,13 +723,13 @@ def main() -> None:
 
     administrator = login(
         base_url,
-        arguments.administrator_user,
-        arguments.administrator_password,
+        administrator_user,
+        administrator_password,
     )
     administrator_csrf = bootstrap_csrf(
         administrator,
         base_url,
-        arguments.administrator_user,
+        administrator_user,
     )
     ensure_synthetic_template(administrator, base_url, administrator_csrf)
 
@@ -748,18 +745,18 @@ def main() -> None:
                 administrator,
                 base_url,
                 user,
-                arguments.fixture_password,
+                fixture_password,
                 administrator_csrf,
             )
             validate_disposable_user(created, user)
             created_users.append(user)
 
-        owner = login(base_url, arguments.owner_user, arguments.fixture_password)
-        unrelated = login(base_url, arguments.unrelated_user, arguments.fixture_password)
-        owner_csrf = bootstrap_csrf(owner, base_url, arguments.owner_user)
-        bootstrap_csrf(unrelated, base_url, arguments.unrelated_user)
+        owner = login(base_url, OWNER_USER, fixture_password)
+        unrelated = login(base_url, UNRELATED_USER, fixture_password)
+        owner_csrf = bootstrap_csrf(owner, base_url, OWNER_USER)
+        bootstrap_csrf(unrelated, base_url, UNRELATED_USER)
 
-        payload = project_payload(arguments.owner_user)
+        payload = project_payload(OWNER_USER)
         set_template_enabled(
             administrator,
             base_url,
@@ -782,7 +779,7 @@ def main() -> None:
             verify_no_idempotency_record(
                 administrator,
                 base_url,
-                arguments.administrator_user,
+                administrator_user,
                 "p4-runtime-disabled-template-v1",
             )
         finally:
@@ -806,7 +803,7 @@ def main() -> None:
         verify_no_idempotency_record(
             administrator,
             base_url,
-            arguments.administrator_user,
+            administrator_user,
             "p4-runtime-tenant-mismatch-v1",
         )
 
@@ -857,7 +854,7 @@ def main() -> None:
         verify_no_idempotency_record(
             administrator,
             base_url,
-            arguments.administrator_user,
+            administrator_user,
             CONFLICT_KEY,
         )
 
@@ -875,7 +872,7 @@ def main() -> None:
         verify_no_idempotency_record(
             administrator,
             base_url,
-            arguments.administrator_user,
+            administrator_user,
             VERSION_KEY,
         )
 
@@ -905,7 +902,7 @@ def main() -> None:
         set_user_enabled(
             administrator,
             base_url,
-            arguments.owner_user,
+            OWNER_USER,
             False,
             administrator_csrf,
         )
@@ -927,7 +924,7 @@ def main() -> None:
             set_user_enabled(
                 administrator,
                 base_url,
-                arguments.owner_user,
+                OWNER_USER,
                 True,
                 administrator_csrf,
             )
@@ -973,18 +970,18 @@ def main() -> None:
             administrator,
             base_url,
             project_id,
-            arguments.owner_user,
+            OWNER_USER,
         )
     finally:
         cleanup = login(
             base_url,
-            arguments.administrator_user,
-            arguments.administrator_password,
+            administrator_user,
+            administrator_password,
         )
         cleanup_csrf = bootstrap_csrf(
             cleanup,
             base_url,
-            arguments.administrator_user,
+            administrator_user,
         )
         for user in reversed(created_users):
             delete_disposable_user(cleanup, base_url, user, cleanup_csrf)

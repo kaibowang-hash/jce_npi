@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `IN_PROGRESS`
+Status: `IN_PROGRESS — PAUSED_BY_USER`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -21,12 +21,18 @@ Phase 4 is explicitly activated for independent NPI-owned domain work. Therefore
 Phase 4 may continue without changing Phase 3 to `PASS` or concealing its UAT
 obligation.
 
-## Next safely executable Cloud task
+## Paused implementation checkpoint
 
 Current controller phase: `4 — Project Work Items and Stage Gates`.
 
-Implement atomic task `P4-02 — Team, RACI, WBS, and domain work items` from
-`implementation/phase-4-requirement-anchor.md`:
+Current unfinished atomic task: `P4-02 — Team, RACI, WBS, and domain work
+items`.
+
+The user paused continuous implementation on 2026-07-23 after requesting a
+recoverable checkpoint. Do not start P4-03. P4-02 remains `IN_PROGRESS` and is
+not a Gate `PASS`.
+
+The checkpoint contains the bounded P4-02 implementation:
 
 - add Project membership, explicit Project role assignments, substitute users,
   and bounded effective dates;
@@ -51,9 +57,22 @@ only. Do not invent production role-to-approval mappings, implement live
 notifications or the full My Work projection assigned to P4-05, contact
 production ERPNext, or weaken any Class-B hold in the Phase 4 anchor.
 
-Cloud must run and report only checks available in Cloud. Any acceptance step
-requiring Docker, a rebuilt Codespace, or the local Frappe runtime is retained
-as environment-specific external validation and must use the existing
-Codespaces evidence until a relevant toolchain/runtime change requires fresh
-Codespaces proof. Missing Docker or registry HTTP 403 in Cloud does not revoke
-or overwrite an earlier valid Codespaces Gate.
+## Exact resume point
+
+When the user explicitly resumes delivery, continue P4-02 only:
+
+1. review the checkpoint diff and the resolved HMAC-cursor and named-placeholder
+   findings;
+2. rerun the complete `make verify` aggregate against the final checkpoint
+   source;
+3. rerun the non-visual Playwright suite;
+4. force-regenerate and then clean-compare all 147 visual cases because the
+   final 1083-entry catalog changes the rendered catalog hash;
+5. perform representative original-resolution industrial UI and trilingual
+   review;
+6. run the independent `release-gate` review and write final P4-02 evidence;
+7. only after every applicable Gate passes, mark P4-02 `PASS` and activate
+   P4-03.
+
+The earlier Phase 3 business UAT remains the first incomplete external task.
+No Hard Blocker exists; this is an explicit user-requested pause.

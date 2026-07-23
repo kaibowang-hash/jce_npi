@@ -79,6 +79,33 @@ describe("NPI BFF client boundary", () => {
     expect(new Headers(request?.headers).get("X-Trace-ID")).toMatch(/^trace-/);
   });
 
+  it("encodes structured query options without weakening the normalized BFF path boundary", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ value: 7 }), { status: 200 }),
+        ),
+      ),
+    );
+
+    await new NpiHttpClient().request(
+      "/projects/11111111-1111-4111-8111-111111111111/domain-work-items",
+      {},
+      {
+        query: {
+          ownerUserId: "quality.lead@example.invalid",
+          cursor: "opaque+cursor/value",
+        },
+      },
+    );
+
+    const [url] = vi.mocked(globalThis.fetch).mock.calls[0] ?? [];
+    expect(url).toBe(
+      "/api/npi/v1/projects/11111111-1111-4111-8111-111111111111/domain-work-items?cursor=opaque%2Bcursor%2Fvalue&ownerUserId=quality.lead%40example.invalid",
+    );
+  });
+
   it("preserves separate canonical request and trace identities", async () => {
     const requestId = "11111111-1111-4111-8111-111111111111";
     vi.stubGlobal(

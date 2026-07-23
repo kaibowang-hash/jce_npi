@@ -9,8 +9,10 @@
     "npm": "10.8.2"
   },
   "scripts": {
-    "generate": "node scripts/generate-tokens.mjs && node scripts/build-catalog.mjs",
-    "generate:check": "node scripts/generate-tokens.mjs --check && node scripts/build-catalog.mjs --check",
+    "generate:policy-labels": "node scripts/generate-policy-label-sources.mjs",
+    "generate:policy-labels:check": "node scripts/generate-policy-label-sources.mjs --check",
+    "generate": "npm run generate:policy-labels && node scripts/generate-tokens.mjs && node scripts/build-catalog.mjs",
+    "generate:check": "npm run generate:policy-labels:check && node scripts/generate-tokens.mjs --check && node scripts/build-catalog.mjs --check",
     "dev": "npm run generate && vite",
     "build": "npm run generate && tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
@@ -19,7 +21,7 @@
     "lint:boundaries": "node scripts/verify-boundaries.mjs",
     "lint:styles": "stylelint \"src/**/*.css\"",
     "lint:ui": "node scripts/verify-ui.mjs",
-    "lint:i18n": "node scripts/verify-i18n.mjs",
+    "lint:i18n": "node --test scripts/shared.test.mjs && node scripts/verify-i18n.mjs",
     "lint": "npm run lint:code && npm run lint:format && npm run lint:styles && npm run lint:boundaries && npm run lint:ui && npm run lint:i18n",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage && node scripts/normalize-coverage-summary.mjs",

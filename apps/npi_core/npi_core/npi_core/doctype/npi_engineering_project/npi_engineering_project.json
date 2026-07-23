@@ -25,7 +25,12 @@
     {"fieldname": "template_snapshot_hash", "fieldtype": "Data", "label": "Template Snapshot Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "template_snapshot", "fieldtype": "JSON", "label": "Template Snapshot", "reqd": 1, "read_only": 1},
     {"fieldname": "references", "fieldtype": "Table", "label": "Project References", "options": "NPI Project Reference", "read_only": 1},
-    {"fieldname": "creation_payload_hash", "fieldtype": "Data", "label": "Creation Payload Hash", "reqd": 1, "read_only": 1}
+    {"fieldname": "creation_payload_hash", "fieldtype": "Data", "label": "Creation Payload Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "work_policy_global_id", "fieldtype": "Data", "label": "Work Policy Global ID", "read_only": 1},
+    {"fieldname": "work_policy_version", "fieldtype": "Int", "label": "Work Policy Version", "read_only": 1},
+    {"fieldname": "work_policy_snapshot_hash", "fieldtype": "Data", "label": "Work Policy Snapshot Hash", "read_only": 1},
+    {"fieldname": "work_plan_revision", "fieldtype": "Int", "label": "Work Plan Revision", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "active_plan_baseline_global_id", "fieldtype": "Data", "label": "Active Plan Baseline Global ID", "read_only": 1}
   ],
   "permissions": [
     {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
