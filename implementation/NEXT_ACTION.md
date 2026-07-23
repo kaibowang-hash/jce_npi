@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `IN_PROGRESS — PAUSED_BY_USER`
+Status: `IN_PROGRESS — CLOUD_BROWSER_VALIDATION_PENDING`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -28,9 +28,11 @@ Current controller phase: `4 — Project Work Items and Stage Gates`.
 Current unfinished atomic task: `P4-02 — Team, RACI, WBS, and domain work
 items`.
 
-The user paused continuous implementation on 2026-07-23 after requesting a
-recoverable checkpoint. Do not start P4-03. P4-02 remains `IN_PROGRESS` and is
-not a Gate `PASS`.
+Continuous implementation resumed on 2026-07-23. The complete aggregate
+`make verify` now passes on the Cloud host, but this host does not contain the
+pinned Playwright Chromium revision and the official browser download is
+denied by the Cloud network with HTTP 403. Do not start P4-03. P4-02 remains
+`IN_PROGRESS` and is not a Gate `PASS`.
 
 The checkpoint contains the bounded P4-02 implementation:
 
@@ -59,7 +61,7 @@ production ERPNext, or weaken any Class-B hold in the Phase 4 anchor.
 
 ## Exact resume point
 
-When the user explicitly resumes delivery, continue P4-02 only:
+Continue P4-02 only in a Codespace or runner with the pinned Playwright browser:
 
 1. review the checkpoint diff and the resolved HMAC-cursor and named-placeholder
    findings;
@@ -79,4 +81,7 @@ When the user explicitly resumes delivery, continue P4-02 only:
    P4-03.
 
 The earlier Phase 3 business UAT remains the first incomplete external task.
-No Hard Blocker exists; this is an explicit user-requested pause.
+The current Cloud browser limitation does not revoke committed CLI/Codespaces
+evidence and is not a product failure. Exact Cloud results and the affected-test
+map are recorded in
+`implementation/evidence/phase-4/p4-02-cloud-validation.md`.
