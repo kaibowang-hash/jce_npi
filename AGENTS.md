@@ -1,6 +1,6 @@
 # AGENTS.md — NPI One / Tooling & New Project Development Platform
 
-本文件对整个仓库生效。Codex 在任何分析、计划、编码、测试、迁移或发布操作前，必须先阅读本文件、`GOAL.md`、当前里程碑说明、相关领域规格和当前任务文件。子目录如存在更具体的 `AGENTS.md`，以更接近文件的规则为补充；不得覆盖本文件的安全边界。
+本文件对整个仓库生效。Codex 在任何分析、计划、编码、测试、迁移或发布操作前，必须先阅读本文件、`GOAL.md`、`implementation/AUTOPILOT_CONTROLLER.md`、当前里程碑说明、相关领域规格和当前任务文件。任何新 Codex 会话或 Cloud 任务都必须先按 Autopilot Controller 的恢复协议确认实际分支、状态和第一个未完成原子任务；不得以聊天记忆替代仓库事实。子目录如存在更具体的 `AGENTS.md`，以更接近文件的规则为补充；不得覆盖本文件的安全边界。
 
 ## 0. V1.2 持续交付授权与优先级
 
