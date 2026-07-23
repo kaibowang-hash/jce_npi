@@ -1,5 +1,25 @@
 # Last Run
 
+## P4-02 Cloud validation continuation — 2026-07-23T20:35:00Z
+
+- Added the missing `origin` remote, fetched
+  `codex/npi-v1.2-implementation`, and confirmed local/remote HEAD `ed348a0` is
+  a clean continuation of CLI checkpoint `53d7a5d`.
+- Renamed the environment-provided local `work` branch to the required
+  `codex/npi-v1.2-implementation` and set its upstream without resetting or
+  rewriting history.
+- Installed the locked frontend dependencies under Node 18.20.8 / npm 10.8.2.
+- `make verify` passed: 211 Python tests, 205 frontend tests, all static/type/
+  lint/style/boundary/UI/i18n checks, 1083-source direct trilingual coverage,
+  coverage, build, and both npm audits.
+- Non-visual Playwright could not produce a product result because the pinned
+  Chromium revision was absent. The official Playwright CDN returned HTTP 403
+  on every install attempt; generated failure-only artifacts were removed.
+- P4-02 remains `IN_PROGRESS`; P4-03 remains inactive. Complete commands,
+  changed-files-to-tests mapping, remaining visual work and the truthful Gate
+  decision are in
+  `implementation/evidence/phase-4/p4-02-cloud-validation.md`.
+
 ## P4-02 recoverable in-progress checkpoint — 2026-07-23T20:00:29Z
 
 - Branch: `codex/npi-v1.2-implementation`.
