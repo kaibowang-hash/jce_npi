@@ -73,9 +73,166 @@ describe("NPI BFF client boundary", () => {
       "application/json",
     );
     expect(new Headers(request?.headers).get("X-Frappe-CSRF-Token")).toBeNull();
-    expect(new Headers(request?.headers).get("X-Trace-ID")).toMatch(
-      /^request-/,
+    expect(new Headers(request?.headers).get("X-Request-ID")).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
     );
+    expect(new Headers(request?.headers).get("X-Trace-ID")).toMatch(/^trace-/);
+  });
+
+  it("preserves separate canonical request and trace identities", async () => {
+    const requestId = "11111111-1111-4111-8111-111111111111";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ value: 7 }), { status: 200 }),
+        ),
+      ),
+    );
+
+    await new NpiHttpClient().request("/fixture", {
+      headers: {
+        "X-Request-ID": requestId,
+        "X-Trace-ID": "trace-caller-owned",
+      },
+    });
+    const [, request] = vi.mocked(globalThis.fetch).mock.calls[0] ?? [];
+    const headers = new Headers(request?.headers);
+    expect(headers.get("X-Request-ID")).toBe(requestId);
+    expect(headers.get("X-Trace-ID")).toBe("trace-caller-owned");
+  });
+
+  it("rejects a malformed caller request ID before fetch", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(
+      new NpiHttpClient().request("/fixture", {
+        headers: { "X-Request-ID": "request-not-a-uuid" },
+      }),
+    ).rejects.toMatchObject({
+      kind: "request_not_ready",
+      referenceKind: "client",
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("requires an exact response request-ID echo when the endpoint contract enables it", async () => {
+    const requestId = "11111111-1111-4111-8111-111111111111";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ value: 7 }), {
+            status: 200,
+            headers: { "X-Request-ID": requestId },
+          }),
+        ),
+      ),
+    );
+
+    await expect(
+      new NpiHttpClient().request(
+        "/fixture",
+        { headers: { "X-Request-ID": requestId } },
+        { requireRequestIdEcho: true },
+      ),
+    ).resolves.toEqual({ value: 7 });
+
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ value: 8 }), {
+        status: 200,
+        headers: {
+          "X-Request-ID": "22222222-2222-4222-8222-222222222222",
+          "X-Trace-ID": "trace-request-mismatch",
+        },
+      }),
+    );
+    const failure = await new NpiHttpClient()
+      .request(
+        "/fixture",
+        { headers: { "X-Request-ID": requestId } },
+        { requireRequestIdEcho: true },
+      )
+      .catch((error: unknown) => error);
+    expect(failure).toMatchObject({
+      kind: "invalid_response",
+      referenceId: "trace-request-mismatch",
+      referenceKind: "trace",
+    });
+  });
+
+  it.each([undefined, "bad trace header"])(
+    "rejects a required missing or malformed response trace %s",
+    async (traceId) => {
+      const requestId = "11111111-1111-4111-8111-111111111111";
+      const headers: Record<string, string> = { "X-Request-ID": requestId };
+      if (traceId) headers["X-Trace-ID"] = traceId;
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            new Response(JSON.stringify({ value: 7 }), {
+              status: 200,
+              headers,
+            }),
+          ),
+        ),
+      );
+
+      const failure = await new NpiHttpClient()
+        .request(
+          "/fixture",
+          { headers: { "X-Request-ID": requestId } },
+          { requireRequestIdEcho: true, requireTraceId: true },
+        )
+        .catch((error: unknown) => error);
+
+      expect(failure).toMatchObject({
+        kind: "invalid_response",
+        referenceId: requestId,
+        referenceKind: "request",
+      });
+    },
+  );
+
+  it("rejects a problem response when its required trace header is missing", async () => {
+    const requestId = "11111111-1111-4111-8111-111111111111";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              type: "urn:npi:error:validation",
+              title: "The request failed validation.",
+              status: 422,
+              code: "VALIDATION_FAILED",
+              traceId: "trace-body-only",
+              retryable: false,
+            }),
+            {
+              status: 422,
+              headers: { "X-Request-ID": requestId },
+            },
+          ),
+        ),
+      ),
+    );
+
+    const failure = await new NpiHttpClient()
+      .request(
+        "/fixture",
+        { headers: { "X-Request-ID": requestId } },
+        { requireRequestIdEcho: true, requireTraceId: true },
+      )
+      .catch((error: unknown) => error);
+
+    expect(failure).toMatchObject({
+      kind: "invalid_response",
+      referenceId: requestId,
+      referenceKind: "request",
+    });
   });
 
   it("fails closed before an unsafe request when no in-memory CSRF token is available", async () => {
@@ -120,7 +277,9 @@ describe("NPI BFF client boundary", () => {
     expect(failure).toBeInstanceOf(NpiTransportError);
     expect((failure as NpiTransportError).kind).toBe("network");
     expect((failure as NpiTransportError).referenceKind).toBe("request");
-    expect((failure as NpiTransportError).referenceId).toMatch(/^request-/);
+    expect((failure as NpiTransportError).referenceId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+    );
     expect((failure as Error).message).not.toContain("secret");
   });
 
@@ -173,6 +332,126 @@ describe("NPI BFF client boundary", () => {
       .catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(NpiApiError);
     expect((failure as NpiApiError).problem).toEqual(problem);
+  });
+
+  it.each([
+    [
+      "an unknown top-level field",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+        untrustedDebugField: "secret",
+      },
+    ],
+    [
+      "a missing code",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        traceId: "trace-closed-contract",
+        retryable: false,
+      },
+    ],
+    [
+      "a missing retryable flag",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+      },
+    ],
+    [
+      "an unknown field-error property",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+        fieldErrors: [
+          { path: "title", message: "Enter a title.", raw: "secret" },
+        ],
+      },
+    ],
+    [
+      "too many field errors",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+        fieldErrors: Array.from({ length: 101 }, (_, index) => ({
+          path: `field-${String(index)}`,
+          message: "Enter a value.",
+        })),
+      },
+    ],
+    [
+      "a malformed problem type URI",
+      {
+        type: "not a URI reference",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+      },
+    ],
+    [
+      "a malformed instance URI",
+      {
+        type: "urn:npi:error:validation",
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+        instance: "%ZZ",
+      },
+    ],
+    [
+      "an oversized problem type URI",
+      {
+        type: `urn:npi:error:${"x".repeat(2048)}`,
+        title: "The request failed validation.",
+        status: 422,
+        code: "VALIDATION_FAILED",
+        traceId: "trace-closed-contract",
+        retryable: false,
+      },
+    ],
+  ])("rejects ProblemDetails containing %s", async (_label, body) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify(body), {
+            status: 422,
+            headers: { "X-Trace-ID": "trace-closed-contract" },
+          }),
+        ),
+      ),
+    );
+
+    const failure = await new NpiHttpClient()
+      .request("/fixture")
+      .catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(NpiTransportError);
+    expect((failure as NpiTransportError).kind).toBe("invalid_response");
+    expect((failure as NpiTransportError).referenceId).toBe(
+      "trace-closed-contract",
+    );
   });
 
   it("converts a malformed problem body into a safe transport failure", async () => {

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import re
 
 import frappe
 
 from .api import frappe_domain_call
 from .foundation.errors import ApiRouteNotFound, CsrfTokenInvalid, MalformedRequest
 from .foundation.tracing import resolve_trace_id
+from .request_security import response_request_id
 
 _ROUTES = {
     ("GET", "/api/npi/v1/session/bootstrap"): (
@@ -15,7 +17,12 @@ _ROUTES = {
     ("PUT", "/api/npi/v1/session/language"): (
         "npi_core.localization_api.set_current_user_language"
     ),
+    ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
 }
+
+_PROJECT_COCKPIT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/cockpit$"
+)
 
 
 def route_request() -> None:
@@ -26,8 +33,15 @@ def route_request() -> None:
         return
 
     command = _ROUTES.get((request.method, path))
+    route_params: dict[str, str] = {}
+    if command is None and request.method == "GET":
+        match = _PROJECT_COCKPIT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_api.get_project_cockpit"
+            route_params = match.groupdict()
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
+    frappe.flags.npi_route_params = route_params
 
 
 @frappe.whitelist(
@@ -85,6 +99,8 @@ def _normalize_pre_handler_problem(response, request) -> bool:
         "Content-Type": "application/problem+json",
         "X-Trace-ID": trace_id,
     }
+    if _requires_project_request_id(request.method, request.path.rstrip("/")):
+        headers["X-Request-ID"] = response_request_id()
     frappe.flags.npi_response_body = problem
     frappe.flags.npi_response_headers = headers
     response.status_code = problem["status"]
@@ -92,6 +108,12 @@ def _normalize_pre_handler_problem(response, request) -> bool:
     for name, value in headers.items():
         response.headers[name] = value
     return True
+
+
+def _requires_project_request_id(method: str, path: str) -> bool:
+    return (method == "POST" and path == "/api/npi/v1/projects") or (
+        method == "GET" and _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
+    )
 
 
 def attach_response_headers(response=None, request=None) -> None:

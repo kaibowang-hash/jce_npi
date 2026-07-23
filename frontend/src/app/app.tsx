@@ -13,13 +13,16 @@ import { ImpactReview } from "../components/primitives";
 import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
+import { LiveProjectCockpitDataSource } from "../api/project-data-source";
 
 const WorkPage = lazy(() => import("../pages/work-page"));
 const ProjectPage = lazy(() => import("../pages/project-page"));
+const ProjectDemoPage = lazy(() => import("../pages/project-demo-page"));
 const GatePage = lazy(() => import("../pages/gate-page"));
 const ToolingPage = lazy(() => import("../pages/tooling-page"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
+const liveProjectDataSource = new LiveProjectCockpitDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -72,8 +75,14 @@ export function App(): React.JSX.Element {
     [navigate, route.scenario],
   );
   const page =
-    route.screen === "project" ? (
-      <ProjectPage navigate={guardedNavigate} scenario={route.scenario} />
+    route.screen === "project" && route.projectMode === "demo" ? (
+      <ProjectDemoPage navigate={guardedNavigate} scenario={route.scenario} />
+    ) : route.screen === "project" ? (
+      <ProjectPage
+        dataSource={liveProjectDataSource}
+        globalId={route.projectGlobalId ?? ""}
+        navigate={guardedNavigate}
+      />
     ) : route.screen === "gate" ? (
       <GatePage
         navigate={guardedNavigate}
@@ -89,12 +98,9 @@ export function App(): React.JSX.Element {
     ) : (
       <WorkPage navigate={guardedNavigate} />
     );
-  const terminalScenario = ![
-    "normal",
-    "read_only",
-    "partial",
-    "dirty",
-  ].includes(route.scenario);
+  const terminalScenario =
+    route.projectMode !== "live" &&
+    !["normal", "read_only", "partial", "dirty"].includes(route.scenario);
   const pageClass =
     route.screen === "work"
       ? "page--work"

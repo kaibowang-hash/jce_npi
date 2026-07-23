@@ -11,13 +11,13 @@ security:
   - sessionAuth: []
   - oauth2: [npi.user]
 tags:
-  - {name: Session}
-  - {name: Work}
-  - {name: Projects}
-  - {name: Gates}
-  - {name: Tooling}
-  - {name: Trials}
-  - {name: Execution}
+  - { name: Session }
+  - { name: Work }
+  - { name: Projects }
+  - { name: Gates }
+  - { name: Tooling }
+  - { name: Trials }
+  - { name: Execution }
 paths:
   /session/bootstrap:
     get:
@@ -80,10 +80,14 @@ paths:
       parameters:
         - in: query
           name: view
-          schema: {type: string, enum: [today, overdue, approvals, blockers, waiting, integration]}
+          schema:
+            {
+              type: string,
+              enum: [today, overdue, approvals, blockers, waiting, integration],
+            }
         - in: query
           name: cursor
-          schema: {type: string}
+          schema: { type: string }
       responses:
         "200":
           description: Unified work queue
@@ -94,21 +98,120 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
-  /projects/{projectId}/cockpit:
-    get:
+  /projects:
+    post:
       tags: [Projects]
-      operationId: getProjectCockpit
+      operationId: createProjectDraft
+      description: >
+        Atomically creates one Engineering Project draft and its ordered Gate
+        shells from an explicit immutable published Project Template version.
+        Reusing an Idempotency-Key with the same canonical request replays the
+        original result; reusing it with a different request returns 409. P4-01
+        authorizes this command only for an authenticated internal System Manager
+        whose configured Site tenant exactly matches tenantId.
+      x-required-roles: [System Manager]
       parameters:
-        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectDraft"
       responses:
-        "200":
-          description: Aggregated project object page view model
+        "201":
+          description: Project draft and all Gate shells created atomically, or the original result replayed
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+            Idempotency-Replayed:
+              description: True when the original result was safely replayed for the same key and canonical payload
+              schema: { type: boolean }
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProjectCockpit"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
         default:
-          $ref: "#/components/responses/Error"
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/cockpit:
+    get:
+      tags: [Projects]
+      operationId: getProjectCockpit
+      description: >
+        Returns the live Project cockpit addressed by immutable Project global_id,
+        including the exact published template version and Gate shells ordered by
+        ascending sequence. P4-01 allows the Project owner or a System Manager to
+        read it. An absent Project and any unauthorized Project both return the
+        same 404 representation to prevent object-existence disclosure. Every read
+        must also match the authenticated principal's configured Site tenant.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Aggregated project object page view model
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectCockpit"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
 
   /projects/{projectId}/gates/{gateId}/review:
     get:
@@ -144,13 +247,18 @@ paths:
               additionalProperties: false
               required: [expectedVersion, decision, evidenceSnapshotHash]
               properties:
-                expectedVersion: {type: integer, minimum: 0}
-                decision: {type: string, enum: [pass, conditional_pass, reject, reopen]}
-                reason: {type: string, maxLength: 4000}
-                evidenceSnapshotHash: {type: string, pattern: "^[a-fA-F0-9]{64}$"}
+                expectedVersion: { type: integer, minimum: 0 }
+                decision:
+                  {
+                    type: string,
+                    enum: [pass, conditional_pass, reject, reopen],
+                  }
+                reason: { type: string, maxLength: 4000 }
+                evidenceSnapshotHash:
+                  { type: string, pattern: "^[a-fA-F0-9]{64}$" }
                 waiverIds:
                   type: array
-                  items: {type: string, format: uuid}
+                  items: { type: string, format: uuid }
       responses:
         "200":
           description: Gate decision and immutable snapshot
@@ -197,13 +305,13 @@ paths:
               additionalProperties: false
               required: [purpose, plannedAt, lockedInputIds]
               properties:
-                purpose: {type: string, maxLength: 500}
-                plannedAt: {type: string, format: date-time}
-                inheritFromTrialRoundId: {type: string, format: uuid}
+                purpose: { type: string, maxLength: 500 }
+                plannedAt: { type: string, format: date-time }
+                inheritFromTrialRoundId: { type: string, format: uuid }
                 lockedInputIds:
                   type: array
                   minItems: 1
-                  items: {type: string, format: uuid}
+                  items: { type: string, format: uuid }
       responses:
         "201":
           description: Trial round created
@@ -246,12 +354,22 @@ paths:
               additionalProperties: false
               required: [expectedVersion, conclusion, inputSnapshotHash]
               properties:
-                expectedVersion: {type: integer}
+                expectedVersion: { type: integer }
                 conclusion:
                   type: string
-                  enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled]
-                reason: {type: string, maxLength: 4000}
-                inputSnapshotHash: {type: string, pattern: "^[a-fA-F0-9]{64}$"}
+                  enum:
+                    [
+                      pass,
+                      conditional_pass,
+                      tooling_change,
+                      design_change,
+                      process_tuning,
+                      material_change,
+                      cancelled,
+                    ]
+                reason: { type: string, maxLength: 4000 }
+                inputSnapshotHash:
+                  { type: string, pattern: "^[a-fA-F0-9]{64}$" }
       responses:
         "202":
           description: Submission accepted
@@ -296,7 +414,7 @@ paths:
         - in: path
           name: requestId
           required: true
-          schema: {type: string, format: uuid}
+          schema: { type: string, format: uuid }
       responses:
         "200":
           description: Current execution truth
@@ -315,7 +433,7 @@ paths:
         - in: path
           name: requestId
           required: true
-          schema: {type: string, format: uuid}
+          schema: { type: string, format: uuid }
         - $ref: "#/components/parameters/IdempotencyKey"
       responses:
         "202":
@@ -349,61 +467,270 @@ components:
       in: path
       name: projectId
       required: true
-      schema: {type: string, format: uuid}
+      description: Immutable Engineering Project global_id; never a mutable business code
+      schema: { type: string, format: uuid }
     GateId:
       in: path
       name: gateId
       required: true
-      schema: {type: string, format: uuid}
+      schema: { type: string, format: uuid }
     ToolingId:
       in: path
       name: toolingId
       required: true
-      schema: {type: string, format: uuid}
+      schema: { type: string, format: uuid }
     TrialId:
       in: path
       name: trialId
       required: true
-      schema: {type: string, format: uuid}
+      schema: { type: string, format: uuid }
     IdempotencyKey:
       in: header
       name: Idempotency-Key
       required: true
-      schema: {type: string, minLength: 16, maxLength: 255}
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 255
+        pattern: "^[!-~]{16,255}$"
+    RequestId:
+      in: header
+      name: X-Request-ID
+      required: true
+      description: Caller-generated UUID used for request, audit, and support correlation
+      schema: { type: string, format: uuid }
     CsrfToken:
       in: header
       name: X-Frappe-CSRF-Token
       required: true
       description: Current Frappe session CSRF token returned by SessionBootstrap
-      schema: {type: string, minLength: 32, maxLength: 128}
+      schema: { type: string, minLength: 32, maxLength: 128 }
   responses:
     Error:
-      description: Error
+      description: Problem response for an otherwise undocumented error status
       headers:
         X-Trace-ID:
-          description: Stable trace identifier matching the Problem traceId
-          schema: {type: string}
+          description: Stable trace identifier matching ProblemDetails traceId
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
       content:
         application/problem+json:
-          schema: {$ref: "#/components/schemas/Problem"}
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    BadRequest:
+      description: The request syntax, headers, or JSON representation is malformed
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    AuthenticationError:
+      description: Authentication is required or no longer valid
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    PermissionError:
+      description: The authenticated principal is not permitted to access the tenant, Project, or command
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    NotFoundError:
+      description: The requested Project is unavailable without revealing another tenant's object existence
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
     Conflict:
-      description: Version or state conflict
+      description: Business code, idempotency payload, version, or state conflict
       headers:
         X-Trace-ID:
-          description: Stable trace identifier matching the Problem traceId
-          schema: {type: string}
+          description: Stable trace identifier matching ProblemDetails traceId
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
       content:
         application/problem+json:
-          schema: {$ref: "#/components/schemas/Problem"}
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
     ValidationError:
       description: Business validation failed
       headers:
         X-Trace-ID:
-          description: Stable trace identifier matching the Problem traceId
-          schema: {type: string}
+          description: Stable trace identifier matching ProblemDetails traceId
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
       content:
         application/problem+json:
-          schema: {$ref: "#/components/schemas/Problem"}
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ProjectError:
+      description: Project operation returned an otherwise undocumented problem status
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ProjectConflict:
+      description: Project business code, idempotency payload, template version, or state conflict
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ProjectValidationError:
+      description: Project input or published-template validation failed
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    InternalError:
+      description: An unexpected server failure occurred and no partial Project was committed
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
+    ServiceUnavailable:
+      description: A required NPI One service is temporarily unavailable; retryable declares whether replay is safe
+      headers:
+        X-Request-ID:
+          description: Request identifier echoed for audit and support correlation
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Stable trace identifier matching ProblemDetails traceId
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/ProblemDetails" }
   schemas:
     LanguageCode:
       type: string
@@ -428,7 +755,7 @@ components:
       additionalProperties: false
       required: [userId, language, allowedLanguages, csrfToken, catalog]
       properties:
-        userId: {type: string}
+        userId: { type: string }
         language:
           $ref: "#/components/schemas/LanguageCode"
         allowedLanguages:
@@ -457,77 +784,307 @@ components:
       additionalProperties: false
       required: [sourceSystem, editableIn, syncState]
       properties:
-        sourceSystem: {type: string, enum: [NPI_ONE, ERPNEXT, COMPUTED]}
-        editableIn: {type: string, enum: [NPI_ONE, ERPNEXT, NONE]}
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT, COMPUTED] }
+        editableIn: { type: string, enum: [NPI_ONE, ERPNEXT, NONE] }
         syncState:
           type: string
-          enum: [local, pending, processing, synced, partial, failed_retryable, failed_final, stale, conflict]
-        externalUrl: {type: string, format: uri}
-        lastSyncedAt: {type: string, format: date-time}
-    WorkItem:
+          enum:
+            [
+              local,
+              pending,
+              processing,
+              synced,
+              partial,
+              failed_retryable,
+              failed_final,
+              stale,
+              conflict,
+            ]
+        externalUrl: { type: string, format: uri }
+        lastSyncedAt: { type: string, format: date-time }
+    ProjectType:
+      type: string
+      description: Controlled Project classification; it must equal the selected published template version's Project type
+      enum: [customer_owned_tool, new_tool, tool_change]
+    ProjectTemplateReference:
       type: object
-      required: [id, kind, title, context, status, blocking]
+      additionalProperties: false
+      description: Exact immutable published template snapshot recorded by the Project
+      required: [globalId, code, version, snapshotHash]
       properties:
-        id: {type: string, format: uuid}
-        kind: {type: string, enum: [task, approval, blocker, risk, issue, decision, integration]}
-        title: {type: string}
-        whyMe: {type: string}
-        context: {type: string}
-        status: {type: string}
-        dueAt: {type: string, format: date-time}
-        severity: {type: string, enum: [low, medium, high, critical]}
-        blocking: {type: boolean}
-        source: {$ref: "#/components/schemas/SourceStatus"}
-        primaryAction: {type: string}
+        globalId:
+          type: string
+          format: uuid
+          description: Immutable identity of the versioned Project Template aggregate
+        code:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ProjectObjectReference:
+      type: object
+      additionalProperties: false
+      description: >
+        Explicit typed reference validated against the selected template's
+        required-reference policy. sourceSystem and source identifiers state
+        provenance without transferring field ownership to NPI One.
+      required: [type, sourceSystem, sourceObjectId]
+      properties:
+        globalId: { type: string, format: uuid }
+        type:
+          type: string
+          enum: [customer, product, part, tooling, order]
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+    CreateProjectDraft:
+      type: object
+      additionalProperties: false
+      description: >
+        Strict command payload. templateGlobalId and templateVersion must identify
+        an immutable published version, expectedVersion must match its current
+        optimistic version, projectType must be supported by it, businessCode
+        must be unique in its tenant, and references must satisfy that version's
+        explicit reference policy before any Project or Gate record is committed.
+      required:
+        [
+          tenantId,
+          businessCode,
+          title,
+          projectType,
+          ownerUserId,
+          targetSop,
+          templateGlobalId,
+          templateVersion,
+          expectedVersion,
+          references,
+        ]
+      properties:
+        tenantId:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+        businessCode:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+          description: Explicit human-readable code; never the cross-system identity
+        title: { type: string, minLength: 1, maxLength: 140 }
+        projectType: { $ref: "#/components/schemas/ProjectType" }
+        ownerUserId:
+          { type: string, format: email, minLength: 3, maxLength: 254 }
+        targetSop: { type: string, format: date }
+        templateGlobalId: { type: string, format: uuid }
+        templateVersion: { type: integer, minimum: 1 }
+        expectedVersion: { type: integer, minimum: 1 }
+        references:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProjectObjectReference" }
+    ProjectCockpitProject:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          businessCode,
+          title,
+          projectType,
+          state,
+          version,
+          tenantId,
+          ownerUserId,
+          targetSop,
+          createdAt,
+          lastChangedAt,
+          lastChangedBy,
+          source,
+        ]
+      properties:
+        globalId:
+          type: string
+          format: uuid
+          description: Immutable Project identity used by routes and cross-system references
+        businessCode:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        projectType: { $ref: "#/components/schemas/ProjectType" }
+        state: { type: string, enum: [draft] }
+        version: { type: integer, minimum: 1 }
+        tenantId:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$"
+        ownerUserId:
+          { type: string, format: email, minLength: 3, maxLength: 254 }
+        targetSop: { type: string, format: date }
+        createdAt: { type: string, format: date-time }
+        lastChangedAt: { type: string, format: date-time }
+        lastChangedBy: { type: string, minLength: 1, maxLength: 254 }
+        source: { $ref: "#/components/schemas/ProjectSourceStatus" }
+    ProjectSourceStatus:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, syncState]
+      properties:
+        sourceSystem: { type: string, enum: [NPI_ONE] }
+        editableIn: { type: string, enum: [NPI_ONE] }
+        syncState: { type: string, enum: [local] }
+    GateShell:
+      type: object
+      additionalProperties: false
+      required: [globalId, key, title, sequence, state, version]
+      properties:
+        globalId: { type: string, format: uuid }
+        key:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        sequence: { type: integer, minimum: 1 }
+        state: { type: string, enum: [not_started] }
+        version: { type: integer, minimum: 1 }
+    ProjectPermissions:
+      type: object
+      additionalProperties: false
+      required: [canView, canContribute, canAdminister]
+      properties:
+        canView: { type: boolean, const: true }
+        canContribute: { type: boolean }
+        canAdminister: { type: boolean }
+    DomainWorkItemKind:
+      type: string
+      description: Persisted domain semantic kind; lifecycle rules remain kind-specific
+      enum: [risk, issue, action, decision_request]
+    MyWorkCategory:
+      type: string
+      description: Read-only My Work projection category, not a persisted domain semantic kind
+      enum: [task, approval, blocker, risk, issue, decision, integration]
+    MyWorkItemProjection:
+      type: object
+      additionalProperties: false
+      description: Read-only task projection assembled from domain objects, approvals, and integration state
+      required: [id, category, title, context, status, blocking, source]
+      properties:
+        id: { type: string, format: uuid }
+        category: { $ref: "#/components/schemas/MyWorkCategory" }
+        domainKind: { $ref: "#/components/schemas/DomainWorkItemKind" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        whyMe: { type: string, maxLength: 500 }
+        context: { type: string, minLength: 1, maxLength: 280 }
+        status:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 40,
+            pattern: "^[a-z][a-z0-9_]*$",
+          }
+        dueAt: { type: string, format: date-time }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        blocking: { type: boolean }
+        source: { $ref: "#/components/schemas/SourceStatus" }
+        primaryAction:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 100,
+            pattern: "^[a-z][a-z0-9_]*$",
+          }
+    MyWorkCounts:
+      type: object
+      additionalProperties: false
+      required: [today, overdue, approvals, blockers, waiting, integration]
+      properties:
+        today: { type: integer, minimum: 0 }
+        overdue: { type: integer, minimum: 0 }
+        approvals: { type: integer, minimum: 0 }
+        blockers: { type: integer, minimum: 0 }
+        waiting: { type: integer, minimum: 0 }
+        integration: { type: integer, minimum: 0 }
     WorkPage:
       type: object
-      required: [items]
+      additionalProperties: false
+      required: [items, counts]
       properties:
-        items: {type: array, items: {$ref: "#/components/schemas/WorkItem"}}
-        nextCursor: {type: string}
-        counts: {type: object, additionalProperties: {type: integer}}
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MyWorkItemProjection" }
+        nextCursor: { type: string, minLength: 1, maxLength: 500 }
+        counts: { $ref: "#/components/schemas/MyWorkCounts" }
     ProjectCockpit:
       type: object
-      required: [project, gates, nextAction, source]
+      additionalProperties: false
+      required: [project, templateRef, references, gates, permissions]
       properties:
-        project: {type: object}
-        gates: {type: array, items: {type: object}}
-        nextAction: {type: object}
-        metrics: {type: object}
-        blockers: {type: array, items: {$ref: "#/components/schemas/WorkItem"}}
-        objectTree: {type: array, items: {type: object}}
-        source: {$ref: "#/components/schemas/SourceStatus"}
+        project: { $ref: "#/components/schemas/ProjectCockpitProject" }
+        templateRef: { $ref: "#/components/schemas/ProjectTemplateReference" }
+        references:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProjectObjectReference" }
+        gates:
+          type: array
+          description: Live Gate shells copied from templateRef, ordered by ascending sequence
+          x-order-by: sequence
+          minItems: 1
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/GateShell" }
+        permissions: { $ref: "#/components/schemas/ProjectPermissions" }
     GateReview:
       type: object
       required: [gate, deliverables, blockers, decisionOptions]
       properties:
-        gate: {type: object}
-        deliverables: {type: array, items: {type: object}}
-        blockers: {type: array, items: {$ref: "#/components/schemas/WorkItem"}}
-        changesSinceLastReview: {type: array, items: {type: object}}
-        decisionOptions: {type: array, items: {type: string}}
+        gate: { type: object }
+        deliverables: { type: array, items: { type: object } }
+        blockers:
+          {
+            type: array,
+            items: { $ref: "#/components/schemas/MyWorkItemProjection" },
+          }
+        changesSinceLastReview: { type: array, items: { type: object } }
+        decisionOptions: { type: array, items: { type: string } }
     ToolingCockpit:
       type: object
       required: [tooling, lifecycle, source]
       properties:
-        tooling: {type: object}
-        lifecycle: {type: array, items: {type: object}}
-        metrics: {type: object}
-        currentDesignRevision: {type: object}
-        trials: {type: array, items: {type: object}}
-        erpAsset: {type: object}
-        source: {$ref: "#/components/schemas/SourceStatus"}
+        tooling: { type: object }
+        lifecycle: { type: array, items: { type: object } }
+        metrics: { type: object }
+        currentDesignRevision: { type: object }
+        trials: { type: array, items: { type: object } }
+        erpAsset: { type: object }
+        source: { $ref: "#/components/schemas/SourceStatus" }
     TrialWorkspace:
       type: object
       required: [trial, lockedInputs, parameters, samples, defects]
       properties:
-        trial: {type: object}
-        lockedInputs: {type: array, items: {type: object}}
-        parameters: {type: array, items: {type: object}}
-        samples: {type: array, items: {type: object}}
-        defects: {type: array, items: {type: object}}
-        qualityResults: {type: array, items: {type: object}}
-        comparison: {type: object}
+        trial: { type: object }
+        lockedInputs: { type: array, items: { type: object } }
+        parameters: { type: array, items: { type: object } }
+        samples: { type: array, items: { type: object } }
+        defects: { type: array, items: { type: object } }
+        qualityResults: { type: array, items: { type: object } }
+        comparison: { type: object }
     CreateExecutionRequest:
       type: object
       additionalProperties: false
@@ -535,55 +1092,96 @@ components:
       properties:
         operation:
           type: string
-          enum: [create_item, update_item_engineering_fields, create_or_update_mbom, create_purchase_request, create_or_update_tool_asset, publish_controlled_file_reference, request_quality_inspection, update_project_handover_status]
-        globalId: {type: string, format: uuid}
-        objectVersion: {type: integer, minimum: 0}
-        inputSnapshotHash: {type: string, pattern: "^[a-fA-F0-9]{64}$"}
-        payload: {type: object}
+          enum:
+            [
+              create_item,
+              update_item_engineering_fields,
+              create_or_update_mbom,
+              create_purchase_request,
+              create_or_update_tool_asset,
+              publish_controlled_file_reference,
+              request_quality_inspection,
+              update_project_handover_status,
+            ]
+        globalId: { type: string, format: uuid }
+        objectVersion: { type: integer, minimum: 0 }
+        inputSnapshotHash: { type: string, pattern: "^[a-fA-F0-9]{64}$" }
+        payload: { type: object }
         approvalEvidenceIds:
           type: array
-          items: {type: string, format: uuid}
+          items: { type: string, format: uuid }
     ExecutionRequest:
       type: object
       required: [id, operation, state, globalId, createdAt]
       properties:
-        id: {type: string, format: uuid}
-        operation: {type: string}
+        id: { type: string, format: uuid }
+        operation: { type: string }
         state:
           type: string
-          enum: [draft, validated, queued, processing, succeeded, partially_succeeded, failed_retryable, failed_final, cancelled]
-        globalId: {type: string, format: uuid}
-        erpObjectType: {type: string}
-        erpObjectId: {type: string}
-        attemptCount: {type: integer}
-        nextRetryAt: {type: string, format: date-time}
-        userMessage: {type: string}
-        traceId: {type: string}
-        createdAt: {type: string, format: date-time}
-        updatedAt: {type: string, format: date-time}
+          enum:
+            [
+              draft,
+              validated,
+              queued,
+              processing,
+              succeeded,
+              partially_succeeded,
+              failed_retryable,
+              failed_final,
+              cancelled,
+            ]
+        globalId: { type: string, format: uuid }
+        erpObjectType: { type: string }
+        erpObjectId: { type: string }
+        attemptCount: { type: integer }
+        nextRetryAt: { type: string, format: date-time }
+        userMessage: { type: string }
+        traceId: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     CommandResult:
       type: object
       required: [globalId, version, status]
       properties:
-        globalId: {type: string, format: uuid}
-        version: {type: integer}
-        status: {type: string}
-        operationId: {type: string, format: uuid}
-    Problem:
+        globalId: { type: string, format: uuid }
+        version: { type: integer }
+        status: { type: string }
+        operationId: { type: string, format: uuid }
+    ProblemDetails:
       type: object
-      required: [type, title, status, traceId]
+      additionalProperties: false
+      description: Closed RFC 9457-style business error with stable NPI extensions
+      required: [type, title, status, code, traceId, retryable]
       properties:
-        type: {type: string, format: uri-reference}
-        title: {type: string}
-        status: {type: integer}
-        detail: {type: string}
-        code: {type: string}
-        traceId: {type: string}
-        retryable: {type: boolean}
+        type:
+          { type: string, format: uri-reference, minLength: 1, maxLength: 2048 }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string, maxLength: 4000 }
+        instance:
+          { type: string, format: uri-reference, minLength: 1, maxLength: 2048 }
+        code:
+          {
+            type: string,
+            minLength: 3,
+            maxLength: 100,
+            pattern: "^[A-Z][A-Z0-9_]*$",
+          }
+        traceId:
+          {
+            type: string,
+            minLength: 8,
+            maxLength: 128,
+            pattern: "^[A-Za-z0-9._:-]+$",
+          }
+        retryable: { type: boolean }
         fieldErrors:
           type: array
+          maxItems: 100
           items:
             type: object
+            additionalProperties: false
+            required: [path, message]
             properties:
-              path: {type: string}
-              message: {type: string}
+              path: { type: string, minLength: 1, maxLength: 500 }
+              message: { type: string, minLength: 1, maxLength: 1000 }

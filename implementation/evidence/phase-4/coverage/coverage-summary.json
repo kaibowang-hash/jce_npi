@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "source": "vitest-v8-json-summary",
+  "total": {
+    "lines": {
+      "total": 5448,
+      "covered": 5101,
+      "skipped": 0,
+      "pct": 93.63
+    },
+    "statements": {
+      "total": 5448,
+      "covered": 5101,
+      "skipped": 0,
+      "pct": 93.63
+    },
+    "functions": {
+      "total": 190,
+      "covered": 173,
+      "skipped": 0,
+      "pct": 91.05
+    },
+    "branches": {
+      "total": 1095,
+      "covered": 999,
+      "skipped": 0,
+      "pct": 91.23
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  }
+}

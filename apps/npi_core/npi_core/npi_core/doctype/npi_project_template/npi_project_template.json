@@ -1,0 +1,20 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Project Template",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "template_code,title",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "template_code", "fieldtype": "Data", "label": "Template Code", "reqd": 1, "unique": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Template Title", "reqd": 1},
+    {"fieldname": "enabled", "fieldtype": "Check", "label": "Enabled", "default": "1"}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const summaryUrl = new URL(
-  "../../implementation/evidence/phase-3/coverage/coverage-summary.json",
+  "../../implementation/evidence/phase-4/coverage/coverage-summary.json",
   import.meta.url,
 );
 const rawSummary = JSON.parse(await readFile(summaryUrl, "utf8"));

@@ -4,24 +4,28 @@ Status: `IN_PROGRESS`
 
 Current phase: `4 — Project Work Items and Stage Gates`.
 
-Implement atomic task `P4-01 — Project template and live cockpit vertical
-slice` from `implementation/phase-4-requirement-anchor.md`:
+Implement atomic task `P4-02 — Team, RACI, WBS, and domain work items` from
+`implementation/phase-4-requirement-anchor.md`:
 
-- add generic, versioned Project Template persistence and immutable published
-  versions without installing a production template;
-- atomically create an Engineering Project draft and G0/G1 Gate shells from an
-  explicit published template version;
-- require an explicit unique business code and typed object references while
-  keeping ERP/customer/order authority honest;
-- enforce stable UUID identity, expected version, retry-safe idempotency,
-  tenant/project authorization, external-user restrictions, Frappe CSRF, strict
-  request schemas, transaction rollback, audit, and trace identity;
-- add strict Project create/query/cockpit contracts under `/api/npi/v1`; and
-- replace the accepted Project cockpit fixture path with the live BFF while
-  covering all required states in English, Simplified Chinese, and Traditional
-  Chinese.
+- add Project membership, explicit Project role assignments, substitute users,
+  and bounded effective dates;
+- represent RACI explicitly and keep Project roles separate from Gate approval
+  authority unless a future versioned policy grants it;
+- add WBS parent/child work, dependencies, owners, planned/actual dates,
+  milestones, status, and progress with parent and dependency cycle rejection;
+- provide plan-baseline comparison and a critical-task indicator without adding
+  a Gantt dependency, resource optimizer, or OpenProject integration;
+- persist `risk`, `issue`, `action`, and `decision_request` as distinct domain
+  kinds that share context/owner/due/severity/blocking relations but do not
+  share one invented convenience lifecycle;
+- expose strict authorized queries by Project, stage, owner, and overdue state;
+  and
+- extend the live Project context only as required to prove this vertical slice,
+  with complete literal-English source and direct `zh`/`zh-TW` translations.
 
-Use only explicit synthetic templates in tests and fixtures. Do not propose or
-activate a Project, assign production RACI, decide a Gate, fabricate clean file
-scans or health/cost, claim ERP-created provenance, contact production ERPNext,
-or implement any Class-B rule held by the Phase 4 anchor.
+Retain P4-01's fail-closed per-Site tenant boundary, owner/admin authorization,
+CSRF, strict BFF contracts, expected version, audit, trace identity, and
+immutable history protections. Use explicit synthetic role/lifecycle fixtures
+only. Do not invent production role-to-approval mappings, implement live
+notifications or the full My Work projection assigned to P4-05, contact
+production ERPNext, or weaken any Class-B hold in the Phase 4 anchor.

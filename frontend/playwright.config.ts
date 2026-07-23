@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  outputDir: "../implementation/evidence/phase-3/playwright-results",
+  outputDir: "../implementation/evidence/phase-4/playwright-results",
   fullyParallel: true,
   forbidOnly: true,
   retries: 0,
@@ -12,7 +12,7 @@ export default defineConfig({
     [
       "html",
       {
-        outputFolder: "../implementation/evidence/phase-3/playwright-report",
+        outputFolder: "../implementation/evidence/phase-4/playwright-report",
         open: "never",
       },
     ],

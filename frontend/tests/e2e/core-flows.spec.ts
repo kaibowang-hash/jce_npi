@@ -26,7 +26,7 @@ test.describe("six clickable Phase 3 prototype flows", () => {
   test("Project Cockpit locates the major blocker and prepares a corrective action", async ({
     page,
   }) => {
-    await openPrototype(page, "/projects/PJ-26018");
+    await openPrototype(page, "/demo/projects/PJ-26018");
     const blocker = page
       .locator(".blocking-message")
       .filter({ hasText: "T1 cavity 3 flash" });
@@ -105,7 +105,7 @@ test.describe("six clickable Phase 3 prototype flows", () => {
   test("Project Gate track opens G6 and makes the failed formal quality result an explicit blocker", async ({
     page,
   }) => {
-    await openPrototype(page, "/projects/PJ-26018");
+    await openPrototype(page, "/demo/projects/PJ-26018");
     await page.getByRole("button", { name: /G6 NPI readiness/ }).click();
     await expect(page).toHaveURL(
       /\/projects\/PJ-26018\/gates\/G6\?quality=failed/,
@@ -213,13 +213,15 @@ test.describe("primary-action and high-risk interaction invariants", () => {
   test("dirty browser-history navigation is restored until the user reviews it", async ({
     page,
   }) => {
-    await openPrototype(page, "/projects/PJ-26018", { scenario: "dirty" });
+    await openPrototype(page, "/demo/projects/PJ-26018", {
+      scenario: "dirty",
+    });
     await page.evaluate(() => {
       globalThis.history.replaceState({}, "", "/work");
       globalThis.history.pushState(
         {},
         "",
-        "/projects/PJ-26018?lang=en&scenario=dirty",
+        "/demo/projects/PJ-26018?lang=en&scenario=dirty",
       );
       globalThis.history.back();
     });
@@ -227,7 +229,7 @@ test.describe("primary-action and high-risk interaction invariants", () => {
     const review = page.getByRole("dialog", { name: "Unsaved changes" });
     await expect(review).toBeVisible();
     await expect(page).toHaveURL(
-      /\/projects\/PJ-26018\?lang=en&scenario=dirty$/,
+      /\/demo\/projects\/PJ-26018\?lang=en&scenario=dirty$/,
     );
     await review.getByRole("button", { name: "Cancel" }).click();
     await expect(review).toHaveCount(0);

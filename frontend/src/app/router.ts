@@ -8,6 +8,8 @@ export interface AppRoute {
   pathname: string;
   scenario: Scenario;
   qualityFailure: boolean;
+  projectGlobalId: string | null;
+  projectMode: "live" | "demo" | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -17,23 +19,34 @@ function parseScenario(value: string | null): Scenario {
 export function parseRoute(location: Location = globalThis.location): AppRoute {
   const pathname = location.pathname;
   const parameters = new URLSearchParams(location.search);
+  const demoProjectMatch = /^\/demo\/projects\/([^/]+)\/?$/u.exec(pathname);
+  const liveProjectMatch = /^\/projects\/([^/]+)\/?$/u.exec(pathname);
   const screen: ScreenId =
     pathname.startsWith("/projects/") && pathname.includes("/gates/")
       ? "gate"
-      : pathname.startsWith("/projects/")
+      : demoProjectMatch
         ? "project"
-        : pathname.startsWith("/tooling/")
-          ? "tooling"
-          : pathname.startsWith("/trials/")
-            ? "trial"
-            : pathname.startsWith("/execution")
-              ? "execution"
-              : "work";
+        : pathname.startsWith("/projects/")
+          ? "project"
+          : pathname.startsWith("/tooling/")
+            ? "tooling"
+            : pathname.startsWith("/trials/")
+              ? "trial"
+              : pathname.startsWith("/execution")
+                ? "execution"
+                : "work";
+  const projectMode =
+    screen === "project" ? (demoProjectMatch ? "demo" : "live") : null;
   return {
     screen,
     pathname,
-    scenario: parseScenario(parameters.get("scenario")),
+    scenario:
+      projectMode === "live"
+        ? "normal"
+        : parseScenario(parameters.get("scenario")),
     qualityFailure: parameters.get("quality") === "failed",
+    projectGlobalId: liveProjectMatch?.[1] ?? null,
+    projectMode,
   };
 }
 

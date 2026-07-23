@@ -106,6 +106,66 @@ export interface GateStep {
   state: "completed" | "current" | "blocked" | "upcoming";
 }
 
+export type ProjectType = "customer_owned_tool" | "new_tool" | "tool_change";
+
+export type ProjectReferenceType =
+  | "customer"
+  | "product"
+  | "part"
+  | "tooling"
+  | "order";
+
+export interface ProjectReferenceViewModel {
+  type: ProjectReferenceType;
+  sourceSystem: "NPI_ONE" | "ERPNEXT";
+  sourceObjectId: string;
+  globalId?: string;
+}
+
+export interface ProjectGateShellViewModel {
+  globalId: string;
+  key: string;
+  title: string;
+  sequence: number;
+  state: "not_started";
+  version: number;
+}
+
+export interface ProjectCockpitViewModel {
+  project: {
+    globalId: string;
+    businessCode: string;
+    title: string;
+    projectType: ProjectType;
+    state: "draft";
+    version: number;
+    tenantId: string;
+    ownerUserId: string;
+    targetSop: string;
+    createdAt: string;
+    lastChangedAt: string;
+    lastChangedBy: string;
+    source: {
+      sourceSystem: "NPI_ONE";
+      editableIn: "NPI_ONE";
+      syncState: "local";
+    };
+  };
+  templateRef: {
+    globalId: string;
+    code: string;
+    version: number;
+    snapshotHash: string;
+  };
+  references: readonly ProjectReferenceViewModel[];
+  gates: readonly ProjectGateShellViewModel[];
+  permissions: {
+    canView: true;
+    canContribute: boolean;
+    canAdminister: boolean;
+  };
+}
+
 export interface LifecycleStep {
   code:
     | "requirement"

@@ -45,16 +45,23 @@ facts pause only formal logic that depends on those facts.
 ## Current checkpoint
 
 - Current phase: `4 — Project Work Items and Stage Gates`.
-- Current atomic task: `P4-01` Project template and live cockpit vertical slice.
-  Implement generic versioned templates, atomic Project/G0/G1 instantiation,
-  strict domain commands/queries, authorization/audit/concurrency, and the live
-  trilingual Project cockpit without installing guessed production rules.
-- State at 2026-07-22T15:40:11Z: `IN_PROGRESS`.
-- Latest result: `P4-00` passed. The requirement anchor freezes the Phase 4
-  Project/Gate boundary, remaps ERP creation/cost to Phase 8 and
-  portfolio/portal/notification extensions to Phase 9, separates persisted
-  Domain WorkItems from My Work projections, records eight scoped Class-B rule
-  holds, and defines P4-01 acceptance, migration, and rollback.
+- Current atomic task: `P4-02` Team, RACI, WBS, and domain work items. Implement
+  dated Project membership/substitution, explicit RACI without implicit
+  approval, acyclic WBS/dependencies with plan-baseline comparison and
+  critical-task indication, and distinct persisted
+  risk/issue/action/decision-request lifecycles plus
+  project/stage/owner/overdue queries.
+- State at 2026-07-23T03:21:16Z: `IN_PROGRESS`.
+- Latest result: bounded `P4-01` passed. It delivers immutable published Project
+  template snapshots, atomic idempotent Project/G0/G1 creation, strict Project
+  BFF contracts, owner/System Manager authorization, explicit fail-closed
+  per-Site `npi_tenant_id`, audit/concurrency/history protection, and the live
+  trilingual Project cockpit. The canonical catalogs now contain 738 entries
+  per Chinese locale, and all 141 visual cases were regenerated and compared
+  exactly because shared catalog hash/copy changes affect the global matrix.
+  FR-PM-001, FR-PM-003, and FR-PM-004 remain foundation/partial: template
+  deliverables/roles/duration, full production reference completeness, Project
+  charter fields, and an immutable G1 charter baseline are not delivered.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
   a global blocker. Phase 4 is active under automatic-transition authority.

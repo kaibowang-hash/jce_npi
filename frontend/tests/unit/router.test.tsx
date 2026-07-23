@@ -10,13 +10,33 @@ function locationFor(path: string): Location {
 describe("application routing", () => {
   it.each([
     ["/work", "work"],
-    ["/projects/PJ-26018", "project"],
+    ["/demo/projects/PJ-26018", "project"],
+    ["/projects/11111111-1111-4111-8111-111111111111", "project"],
     ["/projects/PJ-26018/gates/G5", "gate"],
     ["/tooling/TL-26018-01", "tooling"],
     ["/trials/T1", "trial"],
     ["/execution", "execution"],
   ] as const)("maps %s to the %s screen", (path, screen) => {
     expect(parseRoute(locationFor(path)).screen).toBe(screen);
+  });
+
+  it("separates the explicit demo route from the live UUID route", () => {
+    expect(parseRoute(locationFor("/demo/projects/PJ-26018"))).toMatchObject({
+      projectGlobalId: null,
+      projectMode: "demo",
+      scenario: "normal",
+    });
+    expect(
+      parseRoute(
+        locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111?scenario=error",
+        ),
+      ),
+    ).toMatchObject({
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      projectMode: "live",
+      scenario: "normal",
+    });
   });
 
   it("normalizes unknown scenarios and preserves the quality-failure fixture", () => {

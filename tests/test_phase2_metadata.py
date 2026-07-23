@@ -21,11 +21,13 @@ class FrappeMetadataTest(unittest.TestCase):
     def test_audit_is_append_only_for_business_roles(self) -> None:
         audit = self.load("apps/npi_core/npi_core/npi_core/doctype/npi_audit_event/npi_audit_event.json")
         self.assertEqual(audit["read_only"], 1)
-        expected = [{"role": "System Manager", "read": 1, "export": 0, "print": 0, "email": 0}]
+        expected = [{"role": "System Manager", "read": 1, "create": 1, "export": 0, "print": 0, "email": 0}]
         self.assertEqual(audit["permissions"], expected)
         fields = {field["fieldname"]: field for field in audit["fields"]}
         self.assertEqual(fields["event_id"]["unique"], 1)
         self.assertEqual(fields["trace_id"]["reqd"], 1)
+        controller = (ROOT / "apps/npi_core/npi_core/npi_core/doctype/npi_audit_event/npi_audit_event.py").read_text(encoding="utf-8")
+        self.assertIn('getattr(frappe.flags, "npi_audit_append", False)', controller)
 
     def test_message_ids_are_unique_and_never_default_to_success(self) -> None:
         paths = (

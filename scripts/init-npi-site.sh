@@ -9,6 +9,7 @@ database_host="${NPI_DATABASE_HOST:-127.0.0.1}"
 database_port="${NPI_DATABASE_PORT:-3306}"
 database_root_password="${NPI_DATABASE_ROOT_PASSWORD:-dev-only-root}"
 administrator_password="${NPI_ADMINISTRATOR_PASSWORD:-dev-only-admin}"
+tenant_id="${NPI_TENANT_ID:-runtime-tenant}"
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -23,6 +24,10 @@ done
 
 if [[ ! "${site_name}" =~ ^[A-Za-z0-9][A-Za-z0-9.-]*$ ]]; then
   echo "Invalid local Frappe Site name: ${site_name}" >&2
+  exit 2
+fi
+if [[ ! "${tenant_id}" =~ ^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$ ]]; then
+  echo "Invalid local NPI tenant ID" >&2
   exit 2
 fi
 if [[ ! -x "${bench_path}/env/bin/python" || ! -d "${bench_path}/apps/frappe/.git" ]]; then
@@ -94,6 +99,7 @@ for application in npi_core npi_integration; do
   fi
 done
 
+run_bench --site "${site_name}" set-config npi_tenant_id "${tenant_id}"
 run_bench --site "${site_name}" migrate
 run_bench --site "${site_name}" clear-cache
 

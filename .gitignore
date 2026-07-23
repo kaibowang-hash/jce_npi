@@ -15,6 +15,9 @@ coverage/
 !implementation/evidence/phase-3/coverage/
 implementation/evidence/phase-3/coverage/*
 !implementation/evidence/phase-3/coverage/coverage-summary.json
+!implementation/evidence/phase-4/coverage/
+implementation/evidence/phase-4/coverage/*
+!implementation/evidence/phase-4/coverage/coverage-summary.json
 .pytest_cache/
 __pycache__/
 *.py[cod]

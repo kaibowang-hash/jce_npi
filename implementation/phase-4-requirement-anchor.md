@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01 ACTIVE**
+Status: **ANCHORED — P4-01 PASS; P4-02 ACTIVE**
 
 Anchor date: 2026-07-22
 
@@ -136,9 +136,10 @@ fixtures, contracts, tests, UI, localization, or documentation.
 External facts remain requested only through
 `implementation/REQUIRED_INPUTS.md`. Production ERPNext access is prohibited.
 
-## 6. P4-01 minimum complete vertical slice
+## 6. P4-01 completed vertical slice
 
-P4-01 is the next active task. It will deliver:
+P4-01 passed its bounded technical gate at 2026-07-23T03:21:16Z. It
+delivered:
 
 - additive DocTypes/persistence adapters for a versioned Project Template,
   immutable published template version, Engineering Project, and instantiated
@@ -162,6 +163,20 @@ P4-01 is the next active task. It will deliver:
 
 P4-01 does not propose/activate the Project, assign production RACI, decide a
 Gate, claim ERP-created provenance, or report ERP cost.
+
+The completed slice is deliberately narrower than full acceptance of
+FR-PM-001, FR-PM-003, and FR-PM-004:
+
+- FR-PM-001 has a generic versioned template, applicable Project types, and
+  instantiated Gate shells, but template deliverables, roles, and standard
+  duration remain for later slices and approved production policy;
+- FR-PM-003 has an explicit tenant-scoped unique business code, owner, target
+  SOP, and typed references, but the full production
+  customer/product/part/tooling/order completeness rule and submission gate
+  remain unimplemented; and
+- FR-PM-004 has an exact immutable published-template snapshot, not the Project
+  charter fields or immutable G1 charter baseline required for full
+  acceptance.
 
 ## 7. Acceptance and evidence plan
 
@@ -236,4 +251,51 @@ remain scoped holds rather than silent defaults.
 
 **P4-00 PASS.** Phase 4 scope, non-scope, requirement allocation, vocabulary,
 Class-B holds, first vertical slice, test evidence, migration, and rollback are
-explicit. P4-01 is active under the existing automatic-transition authority.
+explicit. This decision activated P4-01 under the existing automatic-transition
+authority.
+
+## 11. P4-01 exit decision
+
+**P4-01 PASS; P4-02 ACTIVE.** The bounded Project-template and live-cockpit
+slice now provides:
+
+- immutable published template versions and an exact template snapshot on each
+  Project;
+- atomic and retry-safe Project/G0/G1 creation with stable UUID identity,
+  tenant-scoped business-code reservation, optimistic concurrency, audit, and
+  idempotency replay/conflict handling;
+- strict Project create/cockpit BFF contracts with CSRF, trace identity, and
+  IDOR-safe owner/System Manager authorization;
+- an explicit per-Site `npi_tenant_id` trust boundary that fails closed when
+  configuration is absent or invalid and rejects tenant mismatch;
+- a live industrial Project cockpit with reproducible loading, empty/not-found,
+  no-permission, read-only, validation, conflict, retryable/final-error, and
+  success behavior;
+- 738 direct entries in each Frappe-compatible `zh` and `zh-TW` catalog for the
+  shared literal-English source set; and
+- exact visual baseline regeneration and comparison across all 141 cases. The
+  global rebaseline was required because the shared catalog hash and shell copy
+  are rendered outside the new live Project cases as well.
+
+The command, runtime, permission, coverage, localization, visual, migration,
+rollback, and remaining-scope evidence is recorded in
+`implementation/evidence/phase-4/p4-01-validation.md`.
+
+No production Project template, role mapping, reference-completeness policy, or
+G1 charter baseline was installed. FR-PM-001, FR-PM-003, and FR-PM-004 remain
+truthfully traced as foundation/partial rather than complete; FR-CO-006 remains
+partial with P4-05 still responsible for the rest of the Phase 4 language
+surfaces.
+
+## 12. P4-02 active boundary
+
+P4-02 now owns Project membership and dated substitutes, explicit RACI
+assignments without implicit approval authority, WBS parent/dependency/date/
+milestone/progress behavior with cycle rejection, plan-baseline comparison and
+critical-task indication, and distinct persisted
+`risk`/`issue`/`action`/`decision_request` lifecycles with
+project/stage/owner/overdue queries.
+
+It does not add a resource optimizer, OpenProject dependency, guessed
+production role-to-approval defaults, live notification delivery, or the full
+My Work projection assigned to P4-05.

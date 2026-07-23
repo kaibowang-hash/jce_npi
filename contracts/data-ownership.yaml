@@ -31,7 +31,7 @@ objects:
     owner_system: NPI_ONE
     erp_view: summary_link
     fields:
-      project_code: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
+      business_code: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
       target_sop: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
       gate_status: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: OWNER_WINS}
       sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}

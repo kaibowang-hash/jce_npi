@@ -21,7 +21,7 @@ interface NavigationItem {
 }
 
 const prototypeSearchTargets: Readonly<Record<string, string>> = {
-  "PJ-26018": "/projects/PJ-26018",
+  "PJ-26018": "/demo/projects/PJ-26018",
   "TL-26018-01": "/tooling/TL-26018-01",
   T1: "/trials/T1",
 };
@@ -55,13 +55,22 @@ export function AppShell({
     catalogVersion,
   } = useI18n();
   const [utilityMessage, setUtilityMessage] = useState<string | null>(null);
+  const isLiveProject =
+    route.screen === "project" && route.projectMode === "live";
   const denied = route.scenario === "no_permission";
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
     : route.screen === "work"
       ? { exempt: false, value: t("Cross-object work queue") }
       : route.screen === "project"
-        ? { exempt: true, value: "PJ-26018" }
+        ? {
+            exempt:
+              route.projectMode === "demo" || route.projectGlobalId !== null,
+            value:
+              route.projectMode === "demo"
+                ? "PJ-26018"
+                : (route.projectGlobalId ?? t("Project")),
+          }
         : route.screen === "gate"
           ? {
               exempt: true,
@@ -90,12 +99,12 @@ export function AppShell({
     {
       id: "portfolio",
       label: t("Project Portfolio"),
-      path: "/projects/PJ-26018",
+      ...(isLiveProject ? {} : { path: "/demo/projects/PJ-26018" }),
     },
     {
       id: "project",
       label: t("Project"),
-      path: "/projects/PJ-26018",
+      path: isLiveProject ? route.pathname : "/demo/projects/PJ-26018",
       screen: "project",
     },
     {
@@ -153,6 +162,14 @@ export function AppShell({
             aria-label={t("Global search")}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
+              if (isLiveProject) {
+                setUtilityMessage(
+                  t(
+                    "Live global search is not available in this phase. Open this project from an authorized project link.",
+                  ),
+                );
+                return;
+              }
               const query = event.currentTarget.value.trim().toUpperCase();
               const target = prototypeSearchTargets[query];
               if (target) {
@@ -201,12 +218,18 @@ export function AppShell({
           icon="user"
           onClick={() => {
             setUtilityMessage(
-              t("Signed in for the test environment with prototype data."),
+              isLiveProject
+                ? t("The current identity is managed by the Frappe session.")
+                : t("Signed in for the test environment with prototype data."),
             );
           }}
           visual="ghost"
         >
-          <span data-language-exempt="business-data">Alex Chen</span>
+          {isLiveProject ? (
+            t("Signed-in user")
+          ) : (
+            <span data-language-exempt="business-data">Alex Chen</span>
+          )}
         </Button>
       </header>
       <aside className="domain-navigation">
@@ -243,7 +266,9 @@ export function AppShell({
         </nav>
         <div className="environment-marker">
           <strong>{t("Test environment")}</strong>
-          <span>{t("Prototype data")}</span>
+          <span>
+            {isLiveProject ? t("Live project data") : t("Prototype data")}
+          </span>
         </div>
       </aside>
       <div className="page-frame">
@@ -283,6 +308,15 @@ export function AppShell({
             <Button
               icon="refresh"
               onClick={() => {
+                if (isLiveProject) {
+                  globalThis.dispatchEvent(
+                    new CustomEvent("npi:refresh-project"),
+                  );
+                  setUtilityMessage(
+                    t("The live project request is being refreshed."),
+                  );
+                  return;
+                }
                 setUtilityMessage(
                   t(
                     "Prototype refresh is unavailable because this view uses fixed in-memory data.",
@@ -308,7 +342,11 @@ export function AppShell({
           >
             <Icon name="info" />
             <strong>
-              {t("Prototype data - no production system is connected.")}
+              {isLiveProject
+                ? t(
+                    "Live project data. No production ERPNext system is connected.",
+                  )
+                : t("Prototype data - no production system is connected.")}
             </strong>
             {localizationFailure ? (
               <div className="localization-failure">
@@ -373,22 +411,24 @@ export function AppShell({
               ))}
             </Select>
           </label>
-          <label>
-            <span>{t("Fixture state")}</span>
-            <Select
-              aria-label={t("Fixture state")}
-              onChange={(event) => {
-                updateScenario(event.currentTarget.value);
-              }}
-              value={route.scenario}
-            >
-              {scenarios.map((scenario) => (
-                <option key={scenario} value={scenario}>
-                  {scenarioLabel(t, scenario)}
-                </option>
-              ))}
-            </Select>
-          </label>
+          {isLiveProject ? null : (
+            <label>
+              <span>{t("Fixture state")}</span>
+              <Select
+                aria-label={t("Fixture state")}
+                onChange={(event) => {
+                  updateScenario(event.currentTarget.value);
+                }}
+                value={route.scenario}
+              >
+                {scenarios.map((scenario) => (
+                  <option key={scenario} value={scenario}>
+                    {scenarioLabel(t, scenario)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          )}
         </footer>
       </div>
     </div>

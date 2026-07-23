@@ -132,3 +132,12 @@ class LocalizationUnavailable(NpiProblem):
             "LOCALIZATION_UNAVAILABLE",
             _("Localization resources are unavailable."),
         )
+
+
+class TenantScopeUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "TENANT_SCOPE_UNAVAILABLE",
+            _("Project tenant authorization is unavailable."),
+        )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Mapping
 
 from .foundation.errors import InternalServerError, NpiProblem
 from .foundation.tracing import current_trace_id, resolve_trace_id
@@ -96,16 +96,27 @@ def _record_unexpected_error(error: Exception, trace_id: str) -> None:
 
 
 def frappe_domain_call(
-    handler: Callable[[], dict[str, Any]], *, cache_control: str | None = None
+    handler: Callable[[], dict[str, Any]],
+    *,
+    cache_control: str | None = None,
+    success_status: int = 200,
+    response_headers: Mapping[str, str] | None = None,
 ) -> dict[str, Any] | None:
     """Thin adapter for whitelisted methods; handler must perform domain authorization."""
     import frappe
+
+    if not 200 <= success_status < 300:
+        raise ValueError("The success status must be a 2xx HTTP status.")
 
     status, body, headers = execute_api(
         handler,
         frappe.get_request_header("X-Trace-ID"),
         _record_unexpected_error,
     )
+    if response_headers:
+        headers.update(response_headers)
+    if status == 200:
+        status = success_status
     if status >= 400 and getattr(frappe, "db", None) is not None:
         # Frappe commits unsafe methods when their handler returns normally. Every
         # controlled non-2xx response therefore rolls back before the framework's

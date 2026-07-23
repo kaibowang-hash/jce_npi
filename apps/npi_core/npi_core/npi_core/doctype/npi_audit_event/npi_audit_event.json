@@ -17,6 +17,6 @@
     {"fieldname": "input_summary", "fieldtype": "JSON", "label": "Input Summary"}
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "export": 0, "print": 0, "email": 0}
+    {"role": "System Manager", "read": 1, "create": 1, "export": 0, "print": 0, "email": 0}
   ]
 }

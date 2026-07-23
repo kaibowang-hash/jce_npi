@@ -63,3 +63,12 @@ if ! python "${repo_root}/scripts/verify_frappe_runtime.py" \
   tail -100 "${runtime_log}" >&2
   exit 1
 fi
+
+if ! python "${repo_root}/scripts/verify_project_runtime.py" \
+  --base-url "http://127.0.0.1:${port}" \
+  --administrator-user "${administrator_user}" \
+  --administrator-password "${administrator_password}"; then
+  echo "Local Frappe Project runtime verification failed." >&2
+  tail -100 "${runtime_log}" >&2
+  exit 1
+fi

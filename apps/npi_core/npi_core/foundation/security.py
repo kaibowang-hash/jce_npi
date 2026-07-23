@@ -37,12 +37,24 @@ def authorize_project(
     *,
     project_tenant_id: str | None = None,
 ) -> None:
-    if principal is None or not principal.user_id or principal.user_id == "Guest":
-        raise AuthenticationRequired()
-    if project_tenant_id and principal.tenant_id != project_tenant_id:
-        raise PermissionDenied()
+    _require_authenticated(principal)
+    if project_tenant_id:
+        authorize_tenant(principal, project_tenant_id)
+    assert principal is not None
     granted = principal.project_access.get(project_id)
     if granted is None or ACCESS_RANK[granted] < ACCESS_RANK[required]:
         raise PermissionDenied()
     if principal.is_external and required in {ProjectAccess.APPROVE, ProjectAccess.ADMINISTER}:
         raise PermissionDenied()
+
+
+def authorize_tenant(principal: Principal | None, tenant_id: str) -> None:
+    _require_authenticated(principal)
+    assert principal is not None
+    if not tenant_id or principal.tenant_id != tenant_id:
+        raise PermissionDenied()
+
+
+def _require_authenticated(principal: Principal | None) -> None:
+    if principal is None or not principal.user_id or principal.user_id == "Guest":
+        raise AuthenticationRequired()

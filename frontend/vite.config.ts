@@ -25,7 +25,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary", "html"],
-      reportsDirectory: "../implementation/evidence/phase-3/coverage",
+      reportsDirectory: "../implementation/evidence/phase-4/coverage",
       exclude: [
         "**/*.config.*",
         "dist/**",

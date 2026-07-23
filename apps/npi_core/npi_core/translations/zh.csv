@@ -554,3 +554,185 @@ An unexpected request error occurred.,发生意外的请求错误。
 The session language and catalog could not be loaded.,无法加载会话语言和目录。
 The language change could not be confirmed.,无法确认语言更改。
 "This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此页面保留了先前的语言和目录。请重试以核对会话状态，或将参考编号提供给支持人员。
+Live global search is not available in this phase. Open this project from an authorized project link.,实时全局搜索在当前阶段不可用。请通过获授权的项目链接打开此项目。
+The current identity is managed by the Frappe session.,当前身份由 Frappe 会话管理。
+Signed-in user,已登录用户
+Live project data,实时项目数据
+The live project request is being refreshed.,正在刷新实时项目请求。
+Live project data. No production ERPNext system is connected.,实时项目数据。未连接任何生产 ERPNext 系统。
+Customer-owned tool project,客户自有模具项目
+New tool project,新模具项目
+Tool change project,模具变更项目
+Product,产品
+Order,订单
+Loading project cockpit,正在加载项目驾驶舱
+Project unavailable,项目不可用
+The project was not found or is not available to your account.,未找到该项目，或您的账户无权访问该项目。
+Project access is not available,项目访问不可用
+Your account cannot open this project. No protected project data was displayed.,您的账户无法打开此项目。未显示任何受保护的项目数据。
+The project address is invalid,项目地址无效
+Open the project from an authorized work item or project link.,请从获授权的工作项或项目链接打开项目。
+The project view is out of date,项目视图已过期
+Reload the project before continuing with current data.,请先重新加载项目，再继续使用当前数据。
+The project could not be loaded,无法加载项目
+Retry the live project request or share the displayed reference ID with support.,请重试实时项目请求，或将显示的参考编号提供给支持人员。
+The project response could not be used safely,无法安全使用项目响应
+No project data was displayed. Share the displayed reference ID with support before trying another action.,未显示任何项目数据。请先将显示的参考编号提供给支持人员，再尝试其他操作。
+Reload project,重新加载项目
+You have view-only access. Project commands are not available in this cockpit.,您仅有查看权限。此驾驶舱不提供项目命令。
+This project has no governed object references.,此项目没有受治理的对象引用。
+Project type,项目类型
+Owner,负责人
+Draft,草稿
+Project version,项目版本
+Template version,模板版本
+Gate shells,阶段门框架
+Governed references,受治理引用
+Immutable project context,不可变项目上下文
+Sequence,序号
+Gate,阶段门
+Version,版本
+No Gate shells are instantiated for this project.,此项目尚未实例化任何阶段门框架。
+Reference type,引用类型
+Source object ID,源对象标识符
+No governed references are attached to this project.,此项目未关联任何受治理引用。
+Project template,项目模板
+Template snapshot hash,模板快照哈希
+Last changed by,最后更改者
+Access,访问权限
+View only,仅查看
+Contribute,可参与
+Audit events can only be appended by an authorized NPI command.,审计事件只能由获授权的 NPI 命令追加。
+Select a supported project type.,请选择受支持的项目类型。
+Enter a valid owner email address.,请输入有效的负责人电子邮件地址。
+Optimistic Version must be greater than zero.,乐观锁版本必须大于零。
+Template Snapshot must be a JSON object.,模板快照必须为结构化数据对象。
+Template Snapshot has an invalid structure.,模板快照结构无效。
+Template Snapshot does not match the selected template version.,模板快照与所选模板版本不匹配。
+Select a supported project reference type.,请选择受支持的项目引用类型。
+Select a supported reference source system.,请选择受支持的引用源系统。
+Enter a source object ID for every project reference.,请为每个项目引用输入源对象标识符。
+Project references must be unique.,项目引用必须唯一。
+Sequence must be greater than zero.,序号必须大于零。
+Template Gate Snapshot must be a JSON object.,模板阶段门快照必须为结构化数据对象。
+Template Gate Snapshot does not match this Gate shell.,模板阶段门快照与此阶段门框架不匹配。
+The Gate shell does not match its Engineering Project.,此阶段门框架与其工程项目不匹配。
+Reservation Key Hash does not match the tenant and business code.,预留键哈希与租户及业务编码不匹配。
+A hash field must be a lowercase SHA-256 value.,哈希字段必须为小写 SHA-256 值。
+Select an existing project template.,请选择现有项目模板。
+Template Version must be greater than zero.,模板版本必须大于零。
+Select at least one applicable project type.,请至少选择一种适用项目类型。
+A published project template version cannot be changed.,已发布的项目模板版本不可更改。
+Applicable Project Types must be a JSON array.,适用项目类型必须为结构化数据数组。
+Applicable Project Types contains an unsupported value.,适用项目类型包含不受支持的值。
+Applicable Project Types must be unique.,适用项目类型必须唯一。
+Reference rule types must be unique.,引用规则类型必须唯一。
+Gate keys must be unique.,阶段门键必须唯一。
+Gate sequences must be unique.,阶段门序号必须唯一。
+The selected project template version is unavailable.,所选项目模板版本不可用。
+Select an available project template version.,请选择可用的项目模板版本。
+The selected project template version is not published.,所选项目模板版本尚未发布。
+Select a published project template version.,请选择已发布的项目模板版本。
+The idempotency key was already used for a different request.,此幂等键已用于其他请求。
+The project business code is already in use.,项目业务编码已被使用。
+Enter a unique project business code.,请输入唯一的项目业务编码。
+Select a supported value.,请选择受支持的值。
+Enter a value.,请输入值。
+Enter a valid value.,请输入有效值。
+Enter valid reference rules.,请输入有效的引用规则。
+Enter a positive gate sequence.,请输入正的阶段门序号。
+Enter a valid global ID.,请输入有效的全局标识符。
+Enter a positive template version.,请输入正的模板版本号。
+Enter a positive expected version.,请输入正的预期版本号。
+Select at least one project type.,请至少选择一种项目类型。
+Project types must be unique.,项目类型必须唯一。
+Enter valid gate definitions.,请输入有效的阶段门定义。
+Publish the current template version before creating a revision.,请先发布当前模板版本，再创建修订版。
+Add at least one gate before publishing.,发布前请至少添加一个阶段门。
+Enter a valid target SOP date.,请输入有效的目标 SOP 日期。
+Enter valid project references.,请输入有效的项目引用。
+Select a project type supported by the template.,请选择模板支持的项目类型。
+Template version identity cannot be changed.,模板版本标识不可更改。
+Template codes must be unique.,模板编码必须唯一。
+Remove reference types that are not allowed by the template.,请移除模板不允许的引用类型。
+Add every reference required by the project template.,请添加项目模板要求的所有引用。
+Only one reference of this type is allowed by the template.,此类型仅允许一个引用。
+{0} must be a valid UUID.,{0} 必须为有效的 UUID。
+A protected field cannot be changed.,受保护字段无法更改。
+Project records can only be changed through an authorized NPI project command.,项目记录只能通过已授权的 NPI 项目命令更改。
+Project tenant authorization is unavailable.,项目租户授权不可用。
+Controlled NPI history cannot be deleted.,受控 NPI 历史记录无法删除。
+A child row can only be changed through its parent aggregate.,子行只能通过其父聚合进行更改。
+Audit events cannot be changed.,审计事件无法更改。
+The requested project is unavailable.,请求的项目不可用。
+Select an enabled project owner.,请选择已启用的项目负责人。
+Enter a canonical global ID.,请输入规范的全局标识符。
+Enter a positive integer.,请输入正整数。
+Enter a valid date.,请输入有效日期。
+Enter a valid project reference.,请输入有效的项目引用。
+NPI Engineering Project,NPI 工程项目
+Tenant ID,租户标识符
+Business Code,业务编码
+Project Title,项目标题
+Project Type,项目类型
+customer_owned_tool,客户自有模具
+new_tool,新模具
+tool_change,模具变更
+Owner User ID,负责人用户标识符
+Lifecycle State,生命周期状态
+draft,草稿
+proposed,已提议
+active,进行中
+on_hold,已暂停
+completed,已完成
+cancelled,已取消
+Optimistic Version,乐观锁版本
+NPI_ONE,NPI One
+Template Global ID,模板全局标识符
+Template Code,模板编码
+Template Version,模板版本
+Template Snapshot Hash,模板快照哈希
+Template Snapshot,模板快照
+Project References,项目引用
+Creation Payload Hash,创建载荷哈希
+NPI Gate Shell,NPI 阶段门框架
+Engineering Project,工程项目
+Project Global ID,项目全局标识符
+Gate Key,阶段门键
+Shell Key,框架键
+Gate Title,阶段门标题
+Gate State,阶段门状态
+not_started,未开始
+Template Gate Snapshot,模板阶段门快照
+NPI Project Business Code,NPI 项目业务编码
+Reservation Key Hash,预留键哈希
+NPI Project Idempotency,NPI 项目幂等记录
+Record ID,记录标识符
+Actor and Key Hash,操作人和键哈希
+NPI Project Reference,NPI 项目引用
+Reference Type,引用类型
+customer,客户
+product,产品
+part,零件
+tooling,模具开发
+order,订单
+ERPNEXT,ERPNext
+Source Object ID,源对象标识符
+NPI Project Template,NPI 项目模板
+Template Title,模板标题
+Enabled,已启用
+NPI Project Template Version,NPI 项目模板版本
+Project Template,项目模板
+Version Key,版本键
+Template Version Title,模板版本标题
+Publication State,发布状态
+published,已发布
+Applicable Project Types,适用项目类型
+Reference Rules,引用规则
+Gate Definitions,阶段门定义
+Snapshot Hash,快照哈希
+Published At,发布时间
+NPI Template Gate Definition,NPI 模板阶段门定义
+NPI Template Reference Rule,NPI 模板引用规则
+Required,必需
+Allow Multiple,允许多个

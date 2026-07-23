@@ -554,3 +554,185 @@ An unexpected request error occurred.,發生未預期的請求錯誤。
 The session language and catalog could not be loaded.,無法載入工作階段語言與目錄。
 The language change could not be confirmed.,無法確認語言變更。
 "This screen kept its previous language and catalog. Retry to reconcile with the session, or share the reference ID with support.",此頁面保留先前的語言與目錄。請重試以核對工作階段狀態，或將參考編號提供給支援人員。
+Live global search is not available in this phase. Open this project from an authorized project link.,即時全域搜尋在目前階段不可用。請透過獲授權的專案連結開啟此專案。
+The current identity is managed by the Frappe session.,目前身分由 Frappe 會話管理。
+Signed-in user,已登入使用者
+Live project data,即時專案資料
+The live project request is being refreshed.,正在重新整理即時專案請求。
+Live project data. No production ERPNext system is connected.,即時專案資料。未連接任何生產 ERPNext 系統。
+Customer-owned tool project,客戶自有模具專案
+New tool project,新模具專案
+Tool change project,模具變更專案
+Product,產品
+Order,訂單
+Loading project cockpit,正在載入專案駕駛艙
+Project unavailable,專案不可用
+The project was not found or is not available to your account.,找不到該專案，或您的帳戶無權存取該專案。
+Project access is not available,專案存取不可用
+Your account cannot open this project. No protected project data was displayed.,您的帳戶無法開啟此專案。未顯示任何受保護的專案資料。
+The project address is invalid,專案位址無效
+Open the project from an authorized work item or project link.,請從獲授權的工作項目或專案連結開啟專案。
+The project view is out of date,專案檢視已過期
+Reload the project before continuing with current data.,請先重新載入專案，再繼續使用目前資料。
+The project could not be loaded,無法載入專案
+Retry the live project request or share the displayed reference ID with support.,請重試即時專案請求，或將顯示的參考編號提供給支援人員。
+The project response could not be used safely,無法安全使用專案回應
+No project data was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何專案資料。請先將顯示的參考編號提供給支援人員，再嘗試其他操作。
+Reload project,重新載入專案
+You have view-only access. Project commands are not available in this cockpit.,您僅有檢視權限。此駕駛艙不提供專案命令。
+This project has no governed object references.,此專案沒有受治理的物件引用。
+Project type,專案類型
+Owner,負責人
+Draft,草稿
+Project version,專案版本
+Template version,模板版本
+Gate shells,階段門框架
+Governed references,受治理引用
+Immutable project context,不可變專案上下文
+Sequence,序號
+Gate,階段門
+Version,版本
+No Gate shells are instantiated for this project.,此專案尚未實例化任何階段門框架。
+Reference type,引用類型
+Source object ID,來源物件識別碼
+No governed references are attached to this project.,此專案未關聯任何受治理引用。
+Project template,專案模板
+Template snapshot hash,模板快照雜湊
+Last changed by,最後變更者
+Access,存取權限
+View only,僅檢視
+Contribute,可參與
+Audit events can only be appended by an authorized NPI command.,稽核事件只能由獲授權的 NPI 命令附加。
+Select a supported project type.,請選取受支援的專案類型。
+Enter a valid owner email address.,請輸入有效的負責人電子郵件地址。
+Optimistic Version must be greater than zero.,樂觀鎖版本必須大於零。
+Template Snapshot must be a JSON object.,模板快照必須為結構化資料物件。
+Template Snapshot has an invalid structure.,模板快照結構無效。
+Template Snapshot does not match the selected template version.,模板快照與所選模板版本不相符。
+Select a supported project reference type.,請選取受支援的專案引用類型。
+Select a supported reference source system.,請選取受支援的引用來源系統。
+Enter a source object ID for every project reference.,請為每個專案引用輸入來源物件識別碼。
+Project references must be unique.,專案引用必須唯一。
+Sequence must be greater than zero.,序號必須大於零。
+Template Gate Snapshot must be a JSON object.,模板階段門快照必須為結構化資料物件。
+Template Gate Snapshot does not match this Gate shell.,模板階段門快照與此階段門框架不相符。
+The Gate shell does not match its Engineering Project.,此階段門框架與其工程專案不相符。
+Reservation Key Hash does not match the tenant and business code.,保留鍵雜湊與租戶及業務編碼不相符。
+A hash field must be a lowercase SHA-256 value.,雜湊欄位必須為小寫 SHA-256 值。
+Select an existing project template.,請選取現有專案模板。
+Template Version must be greater than zero.,模板版本必須大於零。
+Select at least one applicable project type.,請至少選取一種適用專案類型。
+A published project template version cannot be changed.,已發布的專案模板版本不可變更。
+Applicable Project Types must be a JSON array.,適用專案類型必須為結構化資料陣列。
+Applicable Project Types contains an unsupported value.,適用專案類型包含不受支援的值。
+Applicable Project Types must be unique.,適用專案類型必須唯一。
+Reference rule types must be unique.,引用規則類型必須唯一。
+Gate keys must be unique.,階段門鍵必須唯一。
+Gate sequences must be unique.,階段門序號必須唯一。
+The selected project template version is unavailable.,所選專案模板版本不可用。
+Select an available project template version.,請選取可用的專案模板版本。
+The selected project template version is not published.,所選專案模板版本尚未發布。
+Select a published project template version.,請選取已發布的專案模板版本。
+The idempotency key was already used for a different request.,此冪等鍵已用於其他請求。
+The project business code is already in use.,專案業務編碼已被使用。
+Enter a unique project business code.,請輸入唯一的專案業務編碼。
+Select a supported value.,請選取受支援的值。
+Enter a value.,請輸入值。
+Enter a valid value.,請輸入有效值。
+Enter valid reference rules.,請輸入有效的引用規則。
+Enter a positive gate sequence.,請輸入正的階段門序號。
+Enter a valid global ID.,請輸入有效的全域識別碼。
+Enter a positive template version.,請輸入正的模板版本號。
+Enter a positive expected version.,請輸入正的預期版本號。
+Select at least one project type.,請至少選取一種專案類型。
+Project types must be unique.,專案類型必須唯一。
+Enter valid gate definitions.,請輸入有效的階段門定義。
+Publish the current template version before creating a revision.,請先發布目前模板版本，再建立修訂版。
+Add at least one gate before publishing.,發布前請至少新增一個階段門。
+Enter a valid target SOP date.,請輸入有效的目標 SOP 日期。
+Enter valid project references.,請輸入有效的專案引用。
+Select a project type supported by the template.,請選取模板支援的專案類型。
+Template version identity cannot be changed.,模板版本識別不可變更。
+Template codes must be unique.,模板編碼必須唯一。
+Remove reference types that are not allowed by the template.,請移除模板不允許的引用類型。
+Add every reference required by the project template.,請新增專案模板要求的所有引用。
+Only one reference of this type is allowed by the template.,此類型僅允許一個引用。
+{0} must be a valid UUID.,{0} 必須為有效的 UUID。
+A protected field cannot be changed.,受保護欄位無法變更。
+Project records can only be changed through an authorized NPI project command.,專案記錄只能透過已授權的 NPI 專案命令變更。
+Project tenant authorization is unavailable.,專案租戶授權不可用。
+Controlled NPI history cannot be deleted.,受控 NPI 歷史記錄無法刪除。
+A child row can only be changed through its parent aggregate.,子資料列只能透過其父彙總進行變更。
+Audit events cannot be changed.,稽核事件無法變更。
+The requested project is unavailable.,請求的專案不可用。
+Select an enabled project owner.,請選取已啟用的專案負責人。
+Enter a canonical global ID.,請輸入規範的全域識別碼。
+Enter a positive integer.,請輸入正整數。
+Enter a valid date.,請輸入有效日期。
+Enter a valid project reference.,請輸入有效的專案引用。
+NPI Engineering Project,NPI 工程專案
+Tenant ID,租戶識別碼
+Business Code,業務編碼
+Project Title,專案標題
+Project Type,專案類型
+customer_owned_tool,客戶自有模具
+new_tool,新模具
+tool_change,模具變更
+Owner User ID,負責人使用者識別碼
+Lifecycle State,生命週期狀態
+draft,草稿
+proposed,已提議
+active,進行中
+on_hold,已暫停
+completed,已完成
+cancelled,已取消
+Optimistic Version,樂觀鎖版本
+NPI_ONE,NPI One
+Template Global ID,模板全域識別碼
+Template Code,模板編碼
+Template Version,模板版本
+Template Snapshot Hash,模板快照雜湊
+Template Snapshot,模板快照
+Project References,專案引用
+Creation Payload Hash,建立酬載雜湊
+NPI Gate Shell,NPI 階段門框架
+Engineering Project,工程專案
+Project Global ID,專案全域識別碼
+Gate Key,階段門鍵
+Shell Key,框架鍵
+Gate Title,階段門標題
+Gate State,階段門狀態
+not_started,尚未開始
+Template Gate Snapshot,模板階段門快照
+NPI Project Business Code,NPI 專案業務編碼
+Reservation Key Hash,保留鍵雜湊
+NPI Project Idempotency,NPI 專案冪等記錄
+Record ID,記錄識別碼
+Actor and Key Hash,操作人與鍵雜湊
+NPI Project Reference,NPI 專案引用
+Reference Type,引用類型
+customer,客戶
+product,產品
+part,零件
+tooling,模具開發
+order,訂單
+ERPNEXT,ERPNext
+Source Object ID,來源物件識別碼
+NPI Project Template,NPI 專案模板
+Template Title,模板標題
+Enabled,已啟用
+NPI Project Template Version,NPI 專案模板版本
+Project Template,專案模板
+Version Key,版本鍵
+Template Version Title,模板版本標題
+Publication State,發布狀態
+published,已發布
+Applicable Project Types,適用專案類型
+Reference Rules,引用規則
+Gate Definitions,階段門定義
+Snapshot Hash,快照雜湊
+Published At,發布時間
+NPI Template Gate Definition,NPI 模板階段門定義
+NPI Template Reference Rule,NPI 模板引用規則
+Required,必須
+Allow Multiple,允許多個

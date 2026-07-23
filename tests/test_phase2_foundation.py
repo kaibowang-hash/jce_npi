@@ -11,7 +11,7 @@ from npi_core.foundation.concurrency import make_etag, next_version
 from npi_core.foundation.errors import AuthenticationRequired, PermissionDenied, VersionConflict
 from npi_core.foundation.files import FileRevision, ScanState
 from npi_core.foundation.identity import GlobalIdentity, assert_global_id_immutable
-from npi_core.foundation.security import Principal, ProjectAccess, authorize_project
+from npi_core.foundation.security import Principal, ProjectAccess, authorize_project, authorize_tenant
 from npi_core.api import execute_api
 from npi_integration.reliable import InboxRegistry, IntegrationEvent, MessageState, OutboxMessage
 
@@ -37,6 +37,7 @@ class PermissionTest(unittest.TestCase):
             authorize_project(None, "P1", ProjectAccess.VIEW)
         principal = Principal("user@example.invalid", project_access={"P1": ProjectAccess.CONTRIBUTE}, tenant_id="T1")
         authorize_project(principal, "P1", ProjectAccess.VIEW, project_tenant_id="T1")
+        authorize_tenant(principal, "T1")
         with self.assertRaises(PermissionDenied):
             authorize_project(principal, "P2", ProjectAccess.VIEW)
         with self.assertRaises(PermissionDenied):

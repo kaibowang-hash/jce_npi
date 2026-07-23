@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import secrets
 from pathlib import Path
 from typing import Any
 
@@ -11,8 +10,6 @@ from frappe.translate import get_all_translations, get_user_lang
 
 from .api import frappe_domain_call, record_safe_diagnostic
 from .foundation.errors import (
-    AuthenticationRequired,
-    CsrfTokenInvalid,
     LocalizationUnavailable,
     PermissionDenied,
     RequestValidationFailed,
@@ -25,42 +22,11 @@ from .foundation.localization import (
     load_runtime_catalog,
     validate_language_code,
 )
-
-_TRANSPORT_FIELDS = frozenset({"cmd"})
-
-
-def _authenticated_user() -> str:
-    user_id = frappe.session.user
-    if not user_id or user_id == "Guest":
-        raise AuthenticationRequired()
-    return user_id
-
-
-def _reject_unexpected_request_fields(
-    allowed_fields: frozenset[str], request_fields: dict[str, Any]
-) -> None:
-    form_dict = getattr(getattr(frappe, "local", None), "form_dict", None)
-    field_names = set(form_dict.keys()) if hasattr(form_dict, "keys") else set()
-    field_names.update(request_fields)
-    unexpected_fields = sorted(field_names - allowed_fields - _TRANSPORT_FIELDS)
-    if unexpected_fields:
-        raise RequestValidationFailed(
-            [
-                {"path": field, "message": _("This field is not allowed.")}
-                for field in unexpected_fields
-            ]
-        )
-
-
-def _require_csrf_token() -> None:
-    expected_token = get_csrf_token()
-    supplied_token = frappe.get_request_header("X-Frappe-CSRF-Token")
-    if (
-        not isinstance(expected_token, str)
-        or not isinstance(supplied_token, str)
-        or not secrets.compare_digest(supplied_token, expected_token)
-    ):
-        raise CsrfTokenInvalid()
+from .request_security import (
+    authenticated_user,
+    reject_unexpected_request_fields,
+    require_csrf_token,
+)
 
 
 def _translations_directory() -> Path:
@@ -139,8 +105,8 @@ def get_session_bootstrap(**request_fields: Any) -> dict[str, Any] | None:
     """Return the authenticated NPI session locale and its effective catalog."""
 
     def handle() -> dict[str, Any]:
-        user_id = _authenticated_user()
-        _reject_unexpected_request_fields(frozenset(), request_fields)
+        user_id = authenticated_user()
+        reject_unexpected_request_fields(frozenset(), request_fields)
         return _session_bootstrap(user_id)
 
     return frappe_domain_call(handle, cache_control="private, no-store")
@@ -153,9 +119,9 @@ def set_current_user_language(
     """Persist the authenticated user's supported Frappe language code."""
 
     def handle() -> dict[str, Any]:
-        user_id = _authenticated_user()
-        _require_csrf_token()
-        _reject_unexpected_request_fields(
+        user_id = authenticated_user()
+        require_csrf_token()
+        reject_unexpected_request_fields(
             frozenset({"language"}), request_fields
         )
         return _set_current_user_language(user_id, language)

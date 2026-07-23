@@ -138,7 +138,7 @@ export default function GatePage({
           </ul>
           <Button
             onClick={() => {
-              navigate("/projects/PJ-26018");
+              navigate("/demo/projects/PJ-26018");
             }}
           >
             {t("Return to project")}

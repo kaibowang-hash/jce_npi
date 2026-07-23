@@ -26,7 +26,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: phase-3-frontend-evidence
-          path: implementation/evidence/phase-3
+          name: phase-4-frontend-evidence
+          path: implementation/evidence/phase-4
           if-no-files-found: warn
       - uses: gitleaks/gitleaks-action@v2

@@ -112,7 +112,11 @@ export interface CoreScreen {
 
 export const coreScreens: readonly CoreScreen[] = [
   { id: "work", pageClass: "page--work", path: "/work" },
-  { id: "project", pageClass: "page--object", path: "/projects/PJ-26018" },
+  {
+    id: "project",
+    pageClass: "page--object",
+    path: "/demo/projects/PJ-26018",
+  },
   {
     id: "gate",
     pageClass: "page--object",

@@ -8,7 +8,7 @@ import type { AppRoute } from "../../src/app/router";
 import type { Locale } from "../../src/i18n/runtime";
 import ExecutionPage from "../../src/pages/execution-page";
 import GatePage from "../../src/pages/gate-page";
-import ProjectPage from "../../src/pages/project-page";
+import ProjectDemoPage from "../../src/pages/project-demo-page";
 import ToolingPage from "../../src/pages/tooling-page";
 import TrialPage from "../../src/pages/trial-page";
 import WorkPage from "../../src/pages/work-page";
@@ -20,7 +20,23 @@ function route(
   pathname: string,
   scenario: AppRoute["scenario"] = "normal",
 ): AppRoute {
-  return { pathname, qualityFailure: false, scenario, screen };
+  const liveProjectGlobalId =
+    screen === "project" && !pathname.startsWith("/demo/")
+      ? (pathname.split("/")[2] ?? null)
+      : null;
+  return {
+    pathname,
+    qualityFailure: false,
+    scenario,
+    screen,
+    projectGlobalId: liveProjectGlobalId,
+    projectMode:
+      screen === "project"
+        ? pathname.startsWith("/demo/")
+          ? "demo"
+          : "live"
+        : null,
+  };
 }
 
 function sessionBootstrap(
@@ -69,12 +85,12 @@ describe("application shell behavior", () => {
     renderWithLocale(
       <AppShell
         navigate={navigate}
-        route={route("project", "/projects/PJ-26018", "partial")}
+        route={route("project", "/demo/projects/PJ-26018", "partial")}
       >
         <p>Workspace fixture</p>
       </AppShell>,
       "en",
-      "/projects/PJ-26018?scenario=partial",
+      "/demo/projects/PJ-26018?scenario=partial",
     );
 
     expect(screen.getByRole("main")).toHaveTextContent("Workspace fixture");
@@ -103,7 +119,7 @@ describe("application shell behavior", () => {
     const scenarioTarget = navigate.mock.lastCall?.[0];
     expect(scenarioTarget).toBeDefined();
     const scenarioUrl = new URL(String(scenarioTarget), "https://npi.test");
-    expect(scenarioUrl.pathname).toBe("/projects/PJ-26018");
+    expect(scenarioUrl.pathname).toBe("/demo/projects/PJ-26018");
     expect(scenarioUrl.searchParams.get("scenario")).toBe("error");
     expect(scenarioUrl.searchParams.get("lang")).toBe("en");
 
@@ -136,6 +152,50 @@ describe("application shell behavior", () => {
     });
     expect(localStorage.getItem("npi-one-prototype-locale")).toBe("zh-TW");
     expect(screen.getByRole("combobox", { name: "語言" })).toHaveValue("zh-TW");
+  });
+
+  it("labels live Project data, hides fixture controls, and dispatches a real refresh", async () => {
+    const globalId = "11111111-1111-4111-8111-111111111111";
+    const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell
+        navigate={vi.fn()}
+        route={route("project", `/projects/${globalId}`)}
+      >
+        <p>Live project workspace</p>
+      </AppShell>,
+      "en",
+      `/projects/${globalId}`,
+    );
+
+    expect(
+      screen.getByText(
+        "Live project data. No production ERPNext system is connected.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("combobox", { name: "Fixture state" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Current user" }),
+    ).toHaveTextContent("Signed-in user");
+
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "npi:refresh-project" }),
+    );
+    expect(
+      screen.getByText("The live project request is being refreshed."),
+    ).toBeVisible();
+
+    const search = screen.getByRole("searchbox", { name: "Global search" });
+    await user.type(search, "PJ-26018{Enter}");
+    expect(
+      screen.getByText(
+        "Live global search is not available in this phase. Open this project from an authorized project link.",
+      ),
+    ).toBeVisible();
   });
 
   it("shows a localized bootstrap problem with its server trace and retries by keyboard", async () => {
@@ -330,12 +390,12 @@ describe("application shell behavior", () => {
     renderWithLocale(
       <AppShell
         navigate={vi.fn()}
-        route={route("project", "/projects/PJ-26018", "no_permission")}
+        route={route("project", "/demo/projects/PJ-26018", "no_permission")}
       >
         <p>Denied fixture</p>
       </AppShell>,
       "en",
-      "/projects/PJ-26018?scenario=no_permission",
+      "/demo/projects/PJ-26018?scenario=no_permission",
     );
 
     expect(screen.getAllByText("Protected object")).toHaveLength(2);
@@ -367,7 +427,7 @@ describe("application shell behavior", () => {
   it("guards dirty internal navigation and installs a browser-leave warning", async () => {
     const user = userEvent.setup();
     vi.stubGlobal("scrollTo", vi.fn());
-    renderWithLocale(<App />, "en", "/projects/PJ-26018?scenario=dirty");
+    renderWithLocale(<App />, "en", "/demo/projects/PJ-26018?scenario=dirty");
     await screen.findByRole("heading", {
       name: /PJ-26018 Valve cover new tool/,
     });
@@ -385,7 +445,7 @@ describe("application shell behavior", () => {
     const firstReview = screen.getByRole("dialog", { name: "Unsaved changes" });
     expect(firstReview).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(globalThis.location.pathname).toBe("/projects/PJ-26018");
+    expect(globalThis.location.pathname).toBe("/demo/projects/PJ-26018");
 
     await user.click(tooling);
     await user.type(
@@ -426,7 +486,7 @@ describe("core workspace page behavior", () => {
   it("prepares an honest project corrective action and opens selected Gates", async () => {
     const user = userEvent.setup();
     const navigate = vi.fn<(target: string) => void>();
-    renderWithLocale(<ProjectPage navigate={navigate} scenario="normal" />);
+    renderWithLocale(<ProjectDemoPage navigate={navigate} scenario="normal" />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "PJ-26018 Valve cover new tool",
@@ -482,7 +542,7 @@ describe("core workspace page behavior", () => {
       "Prototype command prepared. No gate decision was saved.",
     );
     await user.click(screen.getByRole("button", { name: "Return to project" }));
-    expect(navigate).toHaveBeenCalledWith("/projects/PJ-26018");
+    expect(navigate).toHaveBeenCalledWith("/demo/projects/PJ-26018");
   });
 
   it("shows a formal ERPNext quality failure as a non-score blocker", () => {
@@ -782,7 +842,7 @@ describe("core workspace page behavior", () => {
 describe("read-only mutation boundaries", () => {
   it("disables project and Gate decision mutations", () => {
     const project = renderWithLocale(
-      <ProjectPage navigate={vi.fn()} scenario="read_only" />,
+      <ProjectDemoPage navigate={vi.fn()} scenario="read_only" />,
     );
     expect(
       screen.getByRole("button", { name: "Prepare G5 review" }),

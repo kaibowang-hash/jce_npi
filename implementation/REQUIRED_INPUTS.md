@@ -1,7 +1,7 @@
 # Required External Inputs
 
 Status: **OPEN — partial external dependency, not a global blocker**
-Updated: 2026-07-22
+Updated: 2026-07-23
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
@@ -43,7 +43,8 @@ Provide:
    including the expected 43-column interpretation, A/B/C-face,
    overmold/insert rules, required/optional fields, units, validation, revision
    history, and approved sample rows.
-8. Master-data and coding rules: company/site/factory,
+8. Master-data and coding rules: company/site/factory, the trusted NPI tenant
+   identifier for each Site and any approved principal-to-tenant mapping,
    customer/supplier/item naming, UOM, currency, timezone, fiscal/calendar
    conventions, naming series, document retention, attachment classification,
    and controlled terminology.

@@ -28,11 +28,13 @@ export function Panel({
   children,
   className = "",
   id,
+  scrollableBody = false,
 }: PropsWithChildren<{
   title: string;
   actions?: ReactNode;
   className?: string;
   id?: string;
+  scrollableBody?: boolean;
 }>): React.JSX.Element {
   return (
     <section
@@ -44,7 +46,13 @@ export function Panel({
         <h2>{title}</h2>
         {actions ? <div className="panel__actions">{actions}</div> : null}
       </header>
-      <div className="panel__body">{children}</div>
+      <div
+        aria-label={scrollableBody ? title : undefined}
+        className="panel__body"
+        tabIndex={scrollableBody ? 0 : undefined}
+      >
+        {children}
+      </div>
     </section>
   );
 }
