@@ -79,13 +79,14 @@ continuation state and explicitly authorizes the transition; the pending item
 must remain visible and must not be relabelled `PASS`. Without that evidence,
 the next task stays in the first incomplete phase.
 
-For the first safely executable atomic task under that rule: read its Pack
+For the first safely executable atomic task under that rule: use committed
+requirement anchors and traceability as the index, read its related Pack
 requirements and applicable skills, map requirements to implementation and
-tests, implement one complete vertical slice, run every applicable quality
-check, review the diff and traceability, repair failures up to five complete
-rounds, run the release gate, update evidence and controller state, commit a
-Phase checkpoint, push this non-main branch and continue. A gate must never pass
-through skipped checks, weakened criteria, fake data or fake success.
+tests, implement one complete vertical slice, run the validation level defined
+below, review the diff and traceability, repair failures up to five genuine
+rounds, update evidence and controller state, commit the applicable checkpoint,
+push this non-main branch and continue. A gate must never pass through skipped
+checks, weakened criteria, fake data or fake success.
 
 Every Phase loop covers static/type/lint checks; unit, API, integration and
 permission tests; frontend/component/E2E tests; localization and mixed-language
@@ -96,6 +97,48 @@ Quality Gate. Failures receive up to five genuine repair rounds. Tests,
 thresholds, requirements, and evidence must never be deleted, skipped, weakened,
 hard-coded, or falsified to manufacture PASS. A checkpoint is pushed before
 automatic transition to the next Phase.
+
+## Context and validation levels
+
+Validation is cumulative across delivery boundaries: narrower checks optimize
+the repair loop but never remove tests, reduce coverage, lower PASS criteria,
+or replace a later Phase/PR/release gate.
+
+### Level 1 — Incremental Check
+
+Use for one small fix, local refactor, or test correction inside an active
+atomic task. Derive and record a `changed-files → affected-tests` mapping, then
+run only changed-file formatting/lint/type checks, directly related
+unit/component tests, affected page/language/visual cases, necessary targeted
+security or permission tests, and `git diff --check`. Shared components or
+catalog edits require the affected page matrix, not automatically the complete
+visual matrix.
+
+### Level 2 — Task Gate
+
+Use when an atomic task is complete. Run the current module's complete tests;
+all affected API, permission, integration, E2E, i18n, and visual checks; current
+Requirement ID traceability; the complete Task Diff Review; and every current
+task acceptance criterion. Preserve exact commands and results as task
+evidence. Level 2 does not declare a Phase or release complete.
+
+### Level 3 — Full Release Gate
+
+Use only at Phase completion, PR merge readiness, production release, changes
+to public architecture/contracts/Schema/authentication/permission models,
+changes to the shared design system/translation framework/core infrastructure,
+or changes with multi-domain impact that cannot be bounded reliably. Run the
+whole-repository type/lint/test suite; all API, permission, integration and E2E
+checks; the complete English/`zh`/`zh-TW` matrix; the complete visual regression
+matrix; security, migration, rollback, recovery; complete requirement
+traceability; and the `release-gate` Skill. Save complete reproducible evidence.
+If impact analysis is unreliable, escalate to Level 3 rather than guessing.
+
+Failures sharing one root cause may be repaired together in one repair round.
+After a related batch, rerun affected checks first; do not restart a complete
+Gate after every individual failure. Run the applicable Task, Phase, PR, or
+release Gate only after the batch is green. An Incremental Check can never be
+used to bypass the complete Phase-level Gate.
 
 Only a Hard Blocker defined by the governing instruction may stop the whole
 loop. Missing production ERPNext material does not block contracts, mock and
@@ -121,9 +164,11 @@ terminal controller states are `IMPLEMENTATION_COMPLETE` or `BLOCKED_EXTERNAL`.
 
 ## Durable recovery protocol
 
-1. Read `AGENTS.md`, `GOAL.md`, `PHASE_STATUS.yaml`, `QUALITY_GATE.md`, the
-   traceability/blocker/decision/risk/deviation logs, the current phase gate,
-   `NEXT_ACTION.md`, `LAST_RUN.md`, accepted ADRs and applicable skills.
+1. On a new session or Phase switch, read `AGENTS.md`, `GOAL.md`,
+   `PHASE_STATUS.yaml`, `QUALITY_GATE.md`, the
+   traceability/blocker/decision/risk/deviation logs, the current phase gate and
+   phase specification, `NEXT_ACTION.md`, `LAST_RUN.md`, accepted ADRs and
+   applicable skills.
 2. Confirm the branch is `codex/npi-v1.2-implementation`; do not develop on
    `main`. Inspect Git status and preserve unrelated user changes.
 3. Resume the first incomplete atomic task recorded in `NEXT_ACTION.md`; do not
@@ -131,6 +176,14 @@ terminal controller states are `IMPLEMENTATION_COMPLETE` or `BLOCKED_EXTERNAL`.
 4. Before interruption, update status, next action, last run, traceability and
    evidence, then commit and push a complete recoverable checkpoint when the
    environment permits it.
+
+At the start of an atomic task, read only its task record, indexed requirement
+anchor/traceability rows, related domain specifications, contracts/ADRs, and
+applicable Skills. Within that task, use the committed context and evidence;
+do not repeatedly reread the full DOCX, `GOAL.md`, all Pack files, or unrelated
+domains for small fixes. Expand reading only for a material ambiguity, contract
+conflict, cross-domain impact, or insufficient anchor. DOCX is a completeness
+cross-check, not a source to re-extract in every repair loop.
 
 If context or execution may end, perform step 4 before any further feature
 work. On resumption, trust committed evidence, start from the recorded first
