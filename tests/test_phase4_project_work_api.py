@@ -807,7 +807,6 @@ class Phase4ProjectWorkApiTest(unittest.TestCase):
             ({"limit": "0"}, "limit"),
             ({"limit": "101"}, "limit"),
             ({"limit": "01"}, "limit"),
-            ({"cursor": "cursor with spaces"}, "cursor"),
             ({"stageId": "not-a-uuid"}, "stageId"),
             ({"kind": "approval"}, "kind"),
         )
@@ -824,6 +823,28 @@ class Phase4ProjectWorkApiTest(unittest.TestCase):
                     "VALIDATION_FAILED",
                 )
                 self.assertEqual(problem["fieldErrors"][0]["path"], path)
+
+    def test_malformed_cursor_is_passed_to_authorized_repository_boundary(
+        self,
+    ) -> None:
+        self.reset_response(user="unrelated@example.invalid")
+        self.repository.unavailable = True
+
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.project_work_api.get_project_domain_work_items",
+                self.api.get_project_domain_work_items,
+                {"cursor": "cursor with spaces"},
+            ),
+            404,
+            "PROJECT_UNAVAILABLE",
+        )
+
+        self.assertEqual(problem["retryable"], False)
+        operation, project_id, values = self.repository.calls[-1]
+        self.assertEqual(operation, "list_domain_work_items")
+        self.assertEqual(project_id, UUID(PROJECT_ID))
+        self.assertEqual(values["cursor"], "cursor with spaces")
 
     def test_domain_work_item_cursor_signing_configuration_returns_503(
         self,

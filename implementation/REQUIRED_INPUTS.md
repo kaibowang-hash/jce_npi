@@ -49,8 +49,10 @@ Provide:
    conventions, naming series, document retention, attachment classification,
    and controlled terminology.
 9. Current Project, Gate, Tooling, Trial, Change, approval/release, and ERP
-   execution SOPs, plus named business owners empowered to resolve differences
-   between SOP, ERP configuration, V1.2 contracts, and representative data.
+   execution SOPs, including the temporal policy for disabled members and their
+   historical/future role or substitution relations, plus named business owners
+   empowered to resolve differences between SOP, ERP configuration, V1.2
+   contracts, and representative data.
 10. A provenance manifest for every export: source system/site, extraction
     command or report, timestamp and timezone, responsible owner, redaction
     method, record counts, and checksum.

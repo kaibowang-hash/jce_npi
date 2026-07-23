@@ -4,15 +4,6 @@
 
 None.
 
-## User-requested delivery pause
-
-Continuous feature implementation was paused by the user on 2026-07-23 after
-the current P4-02 work was made internally consistent. This is not a Hard
-Blocker and does not change Phase 3 or Phase 4 status. P4-02 remains
-`IN_PROGRESS`; its final aggregate, browser, exact visual, evidence, and
-release-gate steps remain open. P4-03 has not started. Resume only on explicit
-user direction and from the exact checklist in `NEXT_ACTION.md`.
-
 ## Open external acceptance and reconciliation inputs
 
 `implementation/REQUIRED_INPUTS.md` is the single complete request for external
@@ -34,6 +25,10 @@ RACI-to-approval mapping, per-kind Domain WorkItem lifecycle, health/cost
 thresholds, Gate waiver/invalidation authority, and project lifecycle approvals
 remain Class-B holds until authoritative facts exist. Only those ambiguous
 rules are held.
+The temporal policy for disabled members' historical or future
+role/substitution relations is also held. P4-02 permits only a
+non-expansive finite end date on an existing membership identity; it does not
+invent a broader retention or revocation rule.
 Generic/versioned NPI-owned Project/Gate infrastructure, explicit synthetic
 fixtures, contracts, automated tests, localization, UI and documentation can
 continue.
@@ -55,3 +50,14 @@ continue.
   secure signing is unavailable, rejects forged/tampered/cross-Site cursors,
   uses named placeholders, and statically rejects positional translation
   placeholders. Focused tests and the repaired real Frappe runtime passed.
+- Final P4-02 review also found configuration auto-provision, API
+  validation-order, related-object tenant, and disabled-member closure gaps.
+  The final repair reads only an existing Site key, authorizes before cursor
+  validation, checks Project plus tenant on tenant-bearing references, and
+  permits only non-expansive end-dating of an existing disabled membership.
+  Sixty-three affected Python tests and a fresh Frappe runtime passed.
+- The earlier Cloud browser restriction is closed for P4-02. Its complete
+  eight-case browser spec, supplemental shards, forced and clean exact
+  147-case visual runs, six original-resolution trilingual reviews, and
+  independent release review passed on 2026-07-23. P4-02 is `PASS`; P4-03 is
+  active.

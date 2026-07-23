@@ -211,23 +211,32 @@ pending until that proof is produced in Codespaces.
   NPI-owned domain work, and explicitly activates Phase 4. This is the narrow
   Pack-approved state that permits independent later work; it does not turn
   Phase 3 into `PASS`.
-- Safely executable Cloud task after this state correction: Phase 4 `P4-02`,
-  subject to `NEXT_ACTION.md` and only while its checks can be honestly run in
-  the active environment. Phase 3 UAT remains the earlier incomplete item.
-- State at 2026-07-23T08:06:04Z: `IN_PROGRESS`. Phase 1.1 remains supported by
+- Safely executable task after the latest Task Gate: Phase 4 `P4-03`, subject
+  to `NEXT_ACTION.md`. Phase 3 UAT remains the earlier incomplete external
+  item.
+- State at 2026-07-23T21:20:35Z: `IN_PROGRESS`. Phase 1.1 remains supported by
   the committed fresh-Codespaces evidence in `phase-1.1-gate.md`; this Cloud
   host's missing Docker and registry-tunnel 403 neither revalidate nor revoke
   that evidence.
-- Latest result: bounded `P4-01` passed. It delivers immutable published Project
-  template snapshots, atomic idempotent Project/G0/G1 creation, strict Project
-  BFF contracts, owner/System Manager authorization, explicit fail-closed
-  per-Site `npi_tenant_id`, audit/concurrency/history protection, and the live
-  trilingual Project cockpit. The canonical catalogs now contain 738 entries
-  per Chinese locale, and all 141 visual cases were regenerated and compared
-  exactly because shared catalog hash/copy changes affect the global matrix.
-  FR-PM-001, FR-PM-003, and FR-PM-004 remain foundation/partial: template
-  deliverables/roles/duration, full production reference completeness, Project
-  charter fields, and an immutable G1 charter baseline are not delivered.
+- Latest result: bounded `P4-02` passed its Level 2 Task Gate. It delivers
+  explicit Project membership/roles/substitutions/RACI, acyclic WBS and
+  dependencies, plan baselines and critical-task indication, distinct
+  risk/issue/action/decision-request persistence, strict authorized queries,
+  and live Team/Plan/Work Items workspaces. Cursor validation follows Project
+  authorization, uses an existing read-only Site key, fails closed without
+  configuration mutation, and binds tenant-bearing identities/references to
+  both Project and tenant.
+- Final cumulative evidence retained the committed 211-Python/205-frontend
+  aggregate and added 63 directly affected Python tests, a fresh real Frappe
+  runtime, the complete eight-case P4-02 browser spec, supplemental browser
+  shards, all 147 exact visual cases, six original-resolution trilingual
+  reviews, Task Diff/trace review, and independent release review. The
+  canonical catalogs contain 1083 direct entries per Chinese locale.
+- FR-PM-005, FR-PM-006, FR-PM-007, and FR-CO-002 remain foundation/partial:
+  production automatic assignments, template/bulk scheduling,
+  planned-versus-actual acceptance, and the unified My Work center are not
+  delivered. FR-PM-009 is verified only within its bounded Project-domain
+  acceptance. The later Phase/PR boundary still requires Level 3.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
   a global blocker. Phase 4 is active under automatic-transition authority.

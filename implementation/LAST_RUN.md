@@ -1,5 +1,60 @@
 # Last Run
 
+## P4-02 Task Gate PASS — 2026-07-23T21:20:35Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized HEAD: `67bf902`.
+- Atomic task: `P4-02 — Team, RACI, WBS, and domain work items`.
+- Result: `PASS — LEVEL 2 TASK GATE`; Phase 4 remains `IN_PROGRESS` and
+  P4-03 is active.
+- Phase 3 remains truthfully `TECHNICAL_PASS_PENDING_UAT`; its external
+  business UAT is still unsigned and is not a global blocker.
+
+### Final repair
+
+- Replaced the cursor signing path that could auto-provision Frappe Site
+  configuration with a read-only lookup of the already-persisted encryption
+  key. Missing/invalid configuration returns 503 before any WorkItem query,
+  including a first page without a next cursor.
+- Moved raw cursor validation behind Project authorization so malformed input
+  cannot distinguish an unavailable Project.
+- Required both Project and tenant identity for existing Project-work records,
+  WBS/Domain WorkItem context, RACI context, role owners, and related work.
+  Gate Shell remains linked through the already-authorized Project root because
+  its P4-01 Schema has no tenant field.
+- Permitted only an identity-preserving, start-preserving, non-expansive finite
+  end date on an existing disabled membership. Broader role/substitution
+  temporal behavior remains a recorded Class-B hold.
+
+### Cumulative targeted verification
+
+| Command / review | Result |
+|---|---|
+| committed P4-02 `make verify` | `PASS` — 211 Python, 205 frontend, all aggregate static/type/lint/style/boundary/i18n/coverage/build/audit checks, and 1083 direct entries per Chinese locale |
+| affected API/repository behavior suite | `PASS` — 29/29 |
+| adjacent repository/domain/runtime-verifier suite | `PASS` — 34/34 |
+| `make frappe-runtime-verify` | `PASS` — fresh run `91103668221d4cf49c26143fd1237ba1`, controlled DB identity, 1083-entry runtime catalogs, first-write, audit/idempotency, graph, baseline, tenant, IDOR, concurrency, history/CRUD, four work kinds, and sealed replay |
+| P4-02 live Playwright spec | `PASS` — 8/8 |
+| supplemental non-visual Playwright shards | `PASS` — 28/28 plus 28/28 |
+| forced visual update | `PASS` — 74/74 plus 73/73 |
+| clean exact visual comparison | `PASS` — 74/74 plus 73/73 at zero pixel tolerance |
+| original-resolution manual review | `PASS` — six Team/Plan/Work Items images across `en`, `zh`, and `zh-TW`, 1366×768/1920×1080, and 100%–150% |
+| Task Diff, traceability, whitespace, prohibited patterns, and independent release review | `PASS` |
+
+The first unsharded browser command exceeded the command orchestrator's
+180-second ceiling and its Vite server was terminated, so it produced no
+product result. The bounded spec and shard commands completed normally.
+Already-passing broad checks were not restarted after the four-file security
+repair, in accordance with the cumulative validation strategy and the user's
+explicit efficiency instruction. The complete final evidence and
+changed-files-to-tests map are in
+`implementation/evidence/phase-4/p4-02-validation.md`.
+
+Requirement state remains truthful: FR-PM-005/006/007 and FR-CO-002 are
+technically verified foundations; FR-PM-009 is verified for the bounded
+Project-domain acceptance; FR-CO-006 remains a Phase 4 foundation. A complete
+Level 3 gate remains required at the later Phase/PR boundary.
+
 ## P4-02 Cloud validation continuation — 2026-07-23T20:35:00Z
 
 - Added the missing `origin` remote, fetched

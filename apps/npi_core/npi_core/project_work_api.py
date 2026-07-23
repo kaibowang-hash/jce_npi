@@ -125,7 +125,6 @@ _EMAIL_PATTERN = re.compile(
 _CONTROLLED_KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
 _CODE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$")
 _SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
-_CURSOR_PATTERN = re.compile(r"^[A-Za-z0-9._~:-]{1,500}$")
 _DOMAIN_WORK_ITEM_KINDS = frozenset(
     {"risk", "issue", "action", "decision_request"}
 )
@@ -469,7 +468,10 @@ def get_project_domain_work_items(
                 if kind is None
                 else _enum_text(kind, "kind", _DOMAIN_WORK_ITEM_KINDS)
             ),
-            cursor=_optional_cursor(cursor),
+            # Cursor shape/signature validation intentionally remains inside
+            # the authorized repository boundary so an unavailable Project
+            # cannot be distinguished with malformed input.
+            cursor=cursor,
             limit=_query_limit(limit),
         )
         if response is None:
@@ -1132,14 +1134,6 @@ def _optional_query_boolean(value: object, path: str) -> bool | None:
     if value == "false":
         return False
     raise _field_problem(path, _("Select a supported value."))
-
-
-def _optional_cursor(value: object) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str) or _CURSOR_PATTERN.fullmatch(value) is None:
-        raise _field_problem("cursor", _("Enter a valid value."))
-    return value
 
 
 def _query_limit(value: object) -> int:

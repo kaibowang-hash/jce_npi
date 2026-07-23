@@ -140,6 +140,7 @@ class FrappeProjectWorkRepository:
         project = self._authorized_project(project_id, ProjectAccess.VIEW)
         if project is None:
             return None
+        cursor_signing_key = _domain_work_item_cursor_signing_key()
         filters: list[list[object]] = [
             ["tenant_id", "=", str(project.tenant_id)],
             ["project_global_id", "=", str(project_id)],
@@ -162,6 +163,7 @@ class FrappeProjectWorkRepository:
             _decode_cursor(
                 cursor,
                 expected_query_fingerprint=query_fingerprint,
+                signing_key=cursor_signing_key,
             )
             if cursor is not None
             else None
@@ -222,6 +224,7 @@ class FrappeProjectWorkRepository:
                 _work_item_sort_key(page[-1]),
                 as_of=as_of,
                 query_fingerprint=query_fingerprint,
+                signing_key=cursor_signing_key,
             )
             if has_more and page
             else None
@@ -816,27 +819,20 @@ class FrappeProjectWorkRepository:
                 item["effective_to"],
                 f"{path}.effectiveTo",
             )
-            if (
-                frappe.db.get_value("User", item["user_id"], "enabled")
-                != 1
-            ):
-                raise _field_problem(
-                    f"{path}.userId",
-                    _("Select an enabled Project member."),
-                )
             self._require_same_project_identity(
                 "NPI Project Member",
                 item["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(item["global_id"])
+            existing = merged_members.get(key)
             if key in {str(record["global_id"]) for record in prepared_members}:
                 raise _field_problem(
                     f"{path}.globalId",
                     _("Project member global IDs must be unique."),
                 )
-            existing = merged_members.get(key)
             if (
                 existing is not None
                 and existing["user_id"].casefold() != item["user_id"].casefold()
@@ -844,6 +840,23 @@ class FrappeProjectWorkRepository:
                 raise _field_problem(
                     f"{path}.userId",
                     _("An existing Project member identity cannot be changed."),
+                )
+            user_enabled = (
+                frappe.db.get_value("User", item["user_id"], "enabled") == 1
+            )
+            closes_disabled_membership = (
+                existing is not None
+                and item["effective_from"] == existing["effective_from"]
+                and item["effective_to"] is not None
+                and (
+                    existing["effective_to"] is None
+                    or item["effective_to"] <= existing["effective_to"]
+                )
+            )
+            if not user_enabled and not closes_disabled_membership:
+                raise _field_problem(
+                    f"{path}.userId",
+                    _("Select an enabled Project member."),
                 )
             merged_members[key] = item
             prepared_members.append(item)
@@ -929,6 +942,7 @@ class FrappeProjectWorkRepository:
                 item["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(item["global_id"])
             if key in {str(record["global_id"]) for record in prepared_roles}:
@@ -1046,6 +1060,7 @@ class FrappeProjectWorkRepository:
                 item["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(item["global_id"])
             if key in {
@@ -1148,6 +1163,7 @@ class FrappeProjectWorkRepository:
                 )
             self._validate_raci_context(
                 project_id,
+                tenant_id,
                 item["context_type"],
                 item["context_id"],
                 f"{path}.contextId",
@@ -1157,6 +1173,7 @@ class FrappeProjectWorkRepository:
                 item["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(item["global_id"])
             if key in {str(record["global_id"]) for record in prepared_raci}:
@@ -1440,12 +1457,14 @@ class FrappeProjectWorkRepository:
                     item["owner_role_assignment_id"],
                     project_id,
                     f"{path}.ownerRoleAssignmentId",
+                    tenant_id=tenant_id,
                 )
             self._require_same_project_identity(
                 "NPI WBS Item",
                 item["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(item["global_id"])
             if key in {str(record["global_id"]) for record in prepared_items}:
@@ -1529,6 +1548,7 @@ class FrappeProjectWorkRepository:
                 dependency["global_id"],
                 project_id,
                 f"{path}.globalId",
+                tenant_id=tenant_id,
             )
             key = str(dependency["global_id"])
             if key in {
@@ -1695,6 +1715,8 @@ class FrappeProjectWorkRepository:
                 project_id,
                 "context.stageId",
                 project_field="project_global_id",
+                tenant_id=str(project.tenant_id),
+                tenant_field=None,
             )
             known_stage_ids = frozenset((stage_id,))
         known_wbs_item_ids: frozenset[UUID] | None = None
@@ -1704,6 +1726,7 @@ class FrappeProjectWorkRepository:
                 wbs_item_id,
                 project_id,
                 "context.wbsItemId",
+                tenant_id=str(project.tenant_id),
             )
             known_wbs_item_ids = frozenset((wbs_item_id,))
         related_ids = tuple(UUID(str(value)) for value in related_work_item_ids)
@@ -1720,6 +1743,7 @@ class FrappeProjectWorkRepository:
                     related_id,
                     project_id,
                     f"relatedWorkItemIds[{index}]",
+                    tenant_id=str(project.tenant_id),
                 )
             )
         return build_domain_work_item(
@@ -2000,11 +2024,16 @@ class FrappeProjectWorkRepository:
         global_id: UUID,
         project_id: UUID,
         path: str,
+        *,
+        tenant_id: str,
     ) -> None:
         document = _optional_doc(doctype, str(global_id))
         if (
             document is not None
-            and str(document.project_global_id) != str(project_id)
+            and (
+                str(document.get("project_global_id")) != str(project_id)
+                or str(document.get("tenant_id")) != tenant_id
+            )
         ):
             raise _field_problem(
                 path,
@@ -2019,11 +2048,17 @@ class FrappeProjectWorkRepository:
         path: str,
         *,
         project_field: str = "project_global_id",
+        tenant_id: str,
+        tenant_field: str | None = "tenant_id",
     ):
         document = _optional_doc(doctype, str(global_id))
         if (
             document is None
             or str(document.get(project_field)) != str(project_id)
+            or (
+                tenant_field is not None
+                and str(document.get(tenant_field)) != tenant_id
+            )
         ):
             raise _field_problem(
                 path,
@@ -2034,6 +2069,7 @@ class FrappeProjectWorkRepository:
     def _validate_raci_context(
         self,
         project_id: UUID,
+        tenant_id: str,
         context_type: str,
         context_id: UUID,
         path: str,
@@ -2052,6 +2088,7 @@ class FrappeProjectWorkRepository:
             context_id,
             project_id,
             path,
+            tenant_id=tenant_id,
         )
 
     def _work_context_for(self, project) -> dict[str, Any]:
@@ -2740,6 +2777,7 @@ def _encode_cursor(
     *,
     as_of: object,
     query_fingerprint: str,
+    signing_key: bytes | None = None,
 ) -> str:
     if _HASH_PATTERN.fullmatch(query_fingerprint) is None:
         raise ValueError("A cursor query fingerprint must be a SHA-256 hash.")
@@ -2752,8 +2790,16 @@ def _encode_cursor(
             "version": _DOMAIN_WORK_ITEM_CURSOR_VERSION,
         }
     ).encode("utf-8")
-    signing_key = _domain_work_item_cursor_signing_key()
-    signature = hmac.new(signing_key, payload, hashlib.sha256).digest()
+    resolved_signing_key = (
+        signing_key
+        if signing_key is not None
+        else _domain_work_item_cursor_signing_key()
+    )
+    signature = hmac.new(
+        resolved_signing_key,
+        payload,
+        hashlib.sha256,
+    ).digest()
     cursor = f"{_base64url_encode(payload)}.{_base64url_encode(signature)}"
     if len(cursor) > 500:
         raise ValueError("The generated cursor exceeds the API limit.")
@@ -2764,8 +2810,13 @@ def _decode_cursor(
     value: str,
     *,
     expected_query_fingerprint: str,
+    signing_key: bytes | None = None,
 ) -> _DomainWorkItemCursor:
-    signing_key = _domain_work_item_cursor_signing_key()
+    resolved_signing_key = (
+        signing_key
+        if signing_key is not None
+        else _domain_work_item_cursor_signing_key()
+    )
     try:
         if (
             not isinstance(value, str)
@@ -2779,7 +2830,11 @@ def _decode_cursor(
         signature = _base64url_decode(encoded_signature)
         if len(signature) != hashlib.sha256().digest_size or not hmac.compare_digest(
             signature,
-            hmac.new(signing_key, decoded, hashlib.sha256).digest(),
+            hmac.new(
+                resolved_signing_key,
+                decoded,
+                hashlib.sha256,
+            ).digest(),
         ):
             raise ValueError
         payload = json.loads(decoded.decode("utf-8"))
@@ -2838,9 +2893,13 @@ def _decode_cursor(
 
 def _domain_work_item_cursor_signing_key() -> bytes:
     try:
-        from frappe.utils.password import get_encryption_key
-
-        persisted_key = get_encryption_key()
+        local = getattr(frappe, "local", None)
+        configuration = getattr(local, "conf", None)
+        if configuration is None:
+            configuration = getattr(frappe, "conf", None)
+        if configuration is None:
+            raise KeyError("encryption_key")
+        persisted_key = configuration.get("encryption_key")
         if not isinstance(persisted_key, str):
             raise ValueError
         encoded_key = persisted_key.encode("ascii")

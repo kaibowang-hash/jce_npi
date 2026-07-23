@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `IN_PROGRESS — CLOUD_BROWSER_VALIDATION_PENDING`
+Status: `IN_PROGRESS — P4-03 ACTIVE`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -21,67 +21,57 @@ Phase 4 is explicitly activated for independent NPI-owned domain work. Therefore
 Phase 4 may continue without changing Phase 3 to `PASS` or concealing its UAT
 obligation.
 
-## Paused implementation checkpoint
+## Current implementation checkpoint
 
 Current controller phase: `4 — Project Work Items and Stage Gates`.
 
-Current unfinished atomic task: `P4-02 — Team, RACI, WBS, and domain work
-items`.
+Completed atomic task: `P4-02 — Team, RACI, WBS, and domain work items`.
 
-Continuous implementation resumed on 2026-07-23. The complete aggregate
-`make verify` now passes on the Cloud host, but this host does not contain the
-pinned Playwright Chromium revision and the official browser download is
-denied by the Cloud network with HTTP 403. Do not start P4-03. P4-02 remains
-`IN_PROGRESS` and is not a Gate `PASS`.
+P4-02 passed its Level 2 Task Gate on 2026-07-23. The final cumulative evidence
+includes the committed 211-Python/205-frontend aggregate, 63 directly affected
+Python tests, a fresh real Frappe runtime, the complete eight-case P4-02 browser
+spec, supplemental browser shards, all 147 exact visual cases, six
+original-resolution trilingual reviews, Task Diff/trace review, and an
+independent release-gate `PASS`. The prior Cloud browser limitation is closed
+for this task.
 
-The checkpoint contains the bounded P4-02 implementation:
+Current atomic task: `P4-03 — Gate templates and controlled evidence`.
 
-- add Project membership, explicit Project role assignments, substitute users,
-  and bounded effective dates;
-- represent RACI explicitly and keep Project roles separate from Gate approval
-  authority unless a future versioned policy grants it;
-- add WBS parent/child work, dependencies, owners, planned/actual dates,
-  milestones, status, and progress with parent and dependency cycle rejection;
-- provide plan-baseline comparison and a critical-task indicator without adding
-  a Gantt dependency, resource optimizer, or OpenProject integration;
-- persist `risk`, `issue`, `action`, and `decision_request` as distinct domain
-  kinds that share context/owner/due/severity/blocking relations but do not
-  share one invented convenience lifecycle;
-- expose strict authorized queries by Project, stage, owner, and overdue state;
-  and
-- extend the live Project context only as required to prove this vertical slice,
-  with complete literal-English source and direct `zh`/`zh-TW` translations.
+P4-03 owns versioned Gate templates, frozen Gate requirement snapshots,
+explicit requirement owners/reviewers/dates/evidence types, structured
+references to exact domain-object revisions, and private-file revision
+references whose real scan state remains visible. It must preserve P4-01/P4-02
+authorization, tenant, CSRF, optimistic concurrency, idempotency, audit, trace,
+history, localization, and industrial UI boundaries.
 
-Retain P4-01's fail-closed per-Site tenant boundary, owner/admin authorization,
-CSRF, strict BFF contracts, expected version, audit, trace identity, and
-immutable history protections. Use explicit synthetic role/lifecycle fixtures
-only. Do not invent production role-to-approval mappings, implement live
-notifications or the full My Work projection assigned to P4-05, contact
-production ERPNext, or weaken any Class-B hold in the Phase 4 anchor.
+Do not implement Gate decisions, conditional pass/waiver policy, immutable
+decision snapshots, reopen/invalidation behavior, live notifications, the full
+My Work projection, production template contents, production ERPNext access,
+or any held production mapping in P4-03. Those remain assigned to P4-04,
+P4-05, later phases, or Class-B input.
 
 ## Exact resume point
 
-Continue P4-02 only in a Codespace or runner with the pinned Playwright browser:
+Start only the P4-03 atomic task:
 
-1. review the checkpoint diff and the resolved HMAC-cursor and named-placeholder
-   findings;
-2. record the P4-02 `changed-files → affected-tests` map and run a Level 2 Task
-   Gate: the complete Project-work module plus every affected API, permission,
-   integration, E2E, i18n, and visual check;
-3. use the catalog source-to-page mapping to run affected English, `zh`, and
-   `zh-TW` cases, then perform representative original-resolution industrial UI
-   and trilingual review; do not regenerate unrelated visual cases merely
-   because the catalog hash changed;
-4. review P4-02 Requirement ID traceability, the complete Task Diff, and every
-   acceptance criterion, and write durable Task Gate evidence;
-5. escalate to Level 3 if the impact boundary cannot be established reliably;
-   independently, run Level 3 at the later Phase-end, PR-merge, or release
-   boundary and retain its complete evidence;
-6. only after every applicable Gate passes, mark P4-02 `PASS` and activate
-   P4-03.
+1. read the P4-03 rows in the Phase 4 anchor, `FR-SG-001`,
+   `FR-SG-002`, `FR-SG-004`, the Gate/evidence domain specifications, current
+   OpenAPI/data-ownership contracts, accepted security/file ADRs, and the
+   applicable domain/safe-change/i18n/industrial-UX skills;
+2. inventory the existing P4-01 Gate Shell and file/version foundations before
+   choosing the smallest additive data and API surface;
+3. record P4-03 scope, non-scope, assumptions, risks, changed-files-to-tests
+   map, migration/rollback plan, and any Class-B decision hold before changing
+   product code;
+4. implement one complete vertical slice from a published versioned Gate
+   template to a frozen Project Gate-requirement snapshot and exact controlled
+   evidence reference;
+5. run affected incremental checks during repair and the complete P4-03 Level 2
+   Task Gate only when the slice is internally complete; and
+6. do not activate P4-04 until P4-03 has durable evidence, truthful traceability,
+   Task Diff review, and a passing Gate.
 
 The earlier Phase 3 business UAT remains the first incomplete external task.
-The current Cloud browser limitation does not revoke committed CLI/Codespaces
-evidence and is not a product failure. Exact Cloud results and the affected-test
-map are recorded in
-`implementation/evidence/phase-4/p4-02-cloud-validation.md`.
+P4-02's final evidence is in
+`implementation/evidence/phase-4/p4-02-validation.md`. A complete Level 3 gate
+remains required at the later Phase/PR boundary.

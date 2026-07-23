@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01 PASS; P4-02 ACTIVE**
+Status: **ANCHORED — P4-01/P4-02 PASS; P4-03 ACTIVE**
 
 Anchor date: 2026-07-22
 
@@ -127,6 +127,7 @@ fixtures, contracts, tests, UI, localization, or documentation.
 | Project numbering and authoritative Customer/Order source | Require an explicit unique `business_code` and typed references in Phase 4. Do not auto-number or claim ERP authority. ERP-triggered creation stays in Phase 8. |
 | Production project/Gate template contents, durations, skip conditions, and required references | Implement versioned configurable templates with immutable published versions. Repository tests create clearly synthetic templates; no default production template is installed. |
 | RACI role-to-approval mapping and segregation of duties | Store versioned assignment/review policies and enforce explicit policies. Do not infer that a project role grants approval. External users remain denied. |
+| Disabled-member role and substitution validity | Permit only an existing membership identity to receive a non-expansive finite end date. Do not invent whether historical roles/substitutions are retained or when future/new relationships must be rejected until the authoritative temporal policy is supplied. |
 | Domain WorkItem per-kind lifecycle details | Keep kinds distinct, validate shared invariants, and implement only transitions explicitly covered by the task contract. Do not install one convenience status machine for all kinds. |
 | Project health/cost formula and thresholds | Support a versioned rule reference and honest `unassessed`/unavailable dimensions. Red requires reason and recovery plan. Do not fabricate green health or ERP actual cost. |
 | Conditional-pass/waiver eligibility and authority | Default deny unless an explicit versioned policy names the exception type, eligible requirement, approver access, reason/risk/expiry/closure fields, and separation constraints. |
@@ -287,7 +288,7 @@ truthfully traced as foundation/partial rather than complete; FR-CO-006 remains
 partial with P4-05 still responsible for the rest of the Phase 4 language
 surfaces.
 
-## 12. P4-02 active boundary
+## 12. P4-02 completed boundary
 
 P4-02 now owns Project membership and dated substitutes, explicit RACI
 assignments without implicit approval authority, WBS parent/dependency/date/
@@ -299,3 +300,38 @@ project/stage/owner/overdue queries.
 It does not add a resource optimizer, OpenProject dependency, guessed
 production role-to-approval defaults, live notification delivery, or the full
 My Work projection assigned to P4-05.
+
+## 13. P4-02 exit decision
+
+**P4-02 PASS; P4-03 ACTIVE.** The bounded Team, RACI, WBS, baseline, and
+Domain WorkItem slice now provides:
+
+- explicit Project membership, dated role and substitute assignments, and RACI
+  without implying Gate approval authority;
+- parent/child WBS, dependencies, owners, planned/actual dates, milestones,
+  state, progress, graph-cycle rejection, immutable plan baselines, comparison,
+  and explicit critical-task indication;
+- distinct persisted `risk`, `issue`, `action`, and `decision_request` kinds
+  with strict Project, stage, owner, and overdue queries;
+- authorization-before-cursor-validation, an existing read-only Site key for
+  signed cursors, fail-closed 503 behavior without configuration mutation, and
+  Project-plus-tenant validation for every tenant-bearing identity/reference;
+- a live Team/Plan/Work Items Project workspace with direct English-source,
+  `zh`, and `zh-TW` coverage; and
+- current exact visual evidence across all 147 cases because the rendered
+  catalog version changed globally.
+
+The cumulative Task Gate passed 63 directly affected Python tests, a fresh
+real Frappe runtime, the complete eight-case P4-02 browser spec, supplemental
+browser shards, forced and clean 147-case visual runs, six original-resolution
+trilingual reviews, Task Diff/trace review, and independent release review.
+Complete evidence is recorded in
+`implementation/evidence/phase-4/p4-02-validation.md`.
+
+`FR-PM-005`, `FR-PM-006`, `FR-PM-007`, and `FR-CO-002` remain truthful
+foundations because their production assignment, template/bulk-scheduling,
+planned-versus-actual, and unified My Work acceptance remains later scope.
+`FR-PM-009` is technically verified only for its bounded Project-domain
+acceptance. P4-03 is activated under the existing automatic-transition
+authority; the complete Level 3 gate remains required at the later Phase/PR
+boundary.

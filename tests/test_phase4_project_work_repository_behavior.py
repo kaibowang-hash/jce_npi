@@ -142,8 +142,17 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         self.site_encryption_key = base64.urlsafe_b64encode(
             bytes(range(32))
         ).decode("ascii")
+        self.site_configuration = AttrDoc(
+            encryption_key=self.site_encryption_key
+        )
+        self.frappe.local = types.SimpleNamespace(
+            conf=self.site_configuration
+        )
+        self.frappe.conf = self.site_configuration
         password.get_encryption_key = mock.Mock(
-            return_value=self.site_encryption_key
+            side_effect=AssertionError(
+                "Cursor signing must not auto-provision Site configuration."
+            )
         )
         document.Document = AttrDoc
         model.document = document
@@ -274,10 +283,11 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         self,
         *,
         project_id: UUID = PROJECT_ID,
+        tenant_id: str = TENANT_ID,
     ) -> AttrDoc:
         return AttrDoc(
             global_id=str(RELATED_ID),
-            tenant_id=TENANT_ID,
+            tenant_id=tenant_id,
             project_global_id=str(project_id),
             kind="risk",
             title="Existing risk",
@@ -563,7 +573,10 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         repository, audits = self._repository(project)
         related = self._related_document()
         stage = AttrDoc(project_global_id=str(PROJECT_ID))
-        wbs = AttrDoc(project_global_id=str(PROJECT_ID))
+        wbs = AttrDoc(
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+        )
         inserted: list[AttrDoc] = []
 
         def optional_doc(doctype: str, name: str):
@@ -637,7 +650,7 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         self.assertEqual(outcome.response["stateLabelSource"], "Draft")
         self.assertEqual(audits[0]["result"], "created")
 
-    def test_cross_project_context_and_relation_fail_before_factory(
+    def test_cross_project_or_tenant_context_and_relation_fail_before_factory(
         self,
     ) -> None:
         project = self._project()
@@ -662,6 +675,27 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
                 {
                     ("NPI Domain Work Item", str(RELATED_ID)): (
                         self._related_document(project_id=OTHER_PROJECT_ID)
+                    )
+                },
+            ),
+            (
+                {"wbsItemId": str(WBS_ID)},
+                (),
+                "context.wbsItemId",
+                {
+                    ("NPI WBS Item", str(WBS_ID)): AttrDoc(
+                        tenant_id="TENANT-B",
+                        project_global_id=str(PROJECT_ID),
+                    )
+                },
+            ),
+            (
+                {},
+                (RELATED_ID,),
+                "relatedWorkItemIds[0]",
+                {
+                    ("NPI Domain Work Item", str(RELATED_ID)): (
+                        self._related_document(tenant_id="TENANT-B")
                     )
                 },
             ),
@@ -712,6 +746,132 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
                     caught.exception.field_errors[0]["path"],
                     expected_path,
                 )
+
+    def test_existing_identity_and_raci_context_reject_wrong_tenant(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        wrong_tenant = AttrDoc(
+            tenant_id="TENANT-B",
+            project_global_id=str(PROJECT_ID),
+        )
+
+        with mock.patch.object(
+            self.repository_module,
+            "_optional_doc",
+            return_value=wrong_tenant,
+        ):
+            with self.assertRaises(
+                self.repository_module.RequestValidationFailed
+            ) as identity_error:
+                repository._require_same_project_identity(
+                    "NPI WBS Item",
+                    WBS_ID,
+                    PROJECT_ID,
+                    "items[0].globalId",
+                    tenant_id=TENANT_ID,
+                )
+            with self.assertRaises(
+                self.repository_module.RequestValidationFailed
+            ) as context_error:
+                repository._validate_raci_context(
+                    PROJECT_ID,
+                    TENANT_ID,
+                    "wbs_item",
+                    WBS_ID,
+                    "raciAssignments[0].contextId",
+                )
+
+        self.assertEqual(
+            identity_error.exception.field_errors[0]["path"],
+            "items[0].globalId",
+        )
+        self.assertEqual(
+            context_error.exception.field_errors[0]["path"],
+            "raciAssignments[0].contextId",
+        )
+
+    def test_disabled_existing_member_can_only_be_non_expansively_ended(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        member_id = UUID("99000000-0000-4000-8000-000000000001")
+        member = AttrDoc(
+            global_id=str(member_id),
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+            user_id="disabled@example.invalid",
+            effective_from=date(2026, 7, 1),
+            effective_to=None,
+        )
+
+        def project_documents(
+            doctype: str,
+            _filters: object,
+            *,
+            order_by: str,
+        ) -> tuple[AttrDoc, ...]:
+            self.assertTrue(order_by)
+            return (member,) if doctype == "NPI Project Member" else ()
+
+        self.frappe.db.get_value = mock.Mock(return_value=0)
+        policy = {
+            **self._policy_mapping(),
+            "role_keys": frozenset(),
+        }
+        closing_member = {
+            "globalId": str(member_id),
+            "userId": "disabled@example.invalid",
+            "effectiveFrom": "2026-07-01",
+            "effectiveTo": "2026-07-23",
+        }
+        with (
+            mock.patch.object(
+                self.repository_module,
+                "_project_documents",
+                side_effect=project_documents,
+            ),
+            mock.patch.object(
+                self.repository_module,
+                "_optional_doc",
+                return_value=member,
+            ),
+        ):
+            prepared = repository._prepare_team(
+                project,
+                policy,
+                members=(closing_member,),
+                role_assignments=(),
+                substitutions=(),
+                raci_assignments=(),
+            )
+            with self.assertRaises(
+                self.repository_module.RequestValidationFailed
+            ) as active_error:
+                repository._prepare_team(
+                    project,
+                    policy,
+                    members=(
+                        {
+                            **closing_member,
+                            "effectiveTo": None,
+                        },
+                    ),
+                    role_assignments=(),
+                    substitutions=(),
+                    raci_assignments=(),
+                )
+
+        self.assertEqual(
+            prepared["members"][0]["effective_to"],
+            date(2026, 7, 23),
+        )
+        self.assertEqual(
+            active_error.exception.field_errors[0]["path"],
+            "members[0].userId",
+        )
 
     def test_work_item_limit_fails_before_domain_factory_and_insert(
         self,
@@ -1378,7 +1538,7 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
             bytes(reversed(range(32)))
         ).decode("ascii")
 
-        self.password.get_encryption_key.return_value = other_site_key
+        self.site_configuration.encryption_key = other_site_key
         with self.assertRaises(
             self.repository_module.RequestValidationFailed
         ):
@@ -1390,7 +1550,7 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
     def test_cursor_signing_configuration_fails_closed_as_503(self) -> None:
         fingerprint = "a" * 64
         invalid_keys = (
-            ("missing", KeyError("encryption_key")),
+            ("missing", None),
             (
                 "non-canonical",
                 base64.urlsafe_b64encode(bytes(32))
@@ -1403,11 +1563,10 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
 
         for label, configured in invalid_keys:
             with self.subTest(configuration=label):
-                if isinstance(configured, Exception):
-                    self.password.get_encryption_key.side_effect = configured
+                if configured is None:
+                    self.site_configuration.pop("encryption_key", None)
                 else:
-                    self.password.get_encryption_key.side_effect = None
-                    self.password.get_encryption_key.return_value = configured
+                    self.site_configuration.encryption_key = configured
                 with self.assertRaises(
                     self.repository_module.CursorSigningUnavailable
                 ) as caught:
@@ -1425,6 +1584,37 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
                     "CURSOR_SIGNING_UNAVAILABLE",
                 )
                 self.assertNotEqual(caught.exception.status, 422)
+                self.password.get_encryption_key.assert_not_called()
+
+    def test_first_page_requires_existing_cursor_key_before_item_query(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        self.site_configuration.pop("encryption_key")
+        get_all = mock.Mock(
+            side_effect=AssertionError(
+                "A missing signing key must fail before item queries."
+            )
+        )
+        self.frappe.get_all = get_all
+
+        with self.assertRaises(
+            self.repository_module.CursorSigningUnavailable
+        ):
+            repository.list_domain_work_items(
+                PROJECT_ID,
+                stage_id=None,
+                owner_user_id=None,
+                overdue=None,
+                kind=None,
+                cursor=None,
+                limit=50,
+            )
+
+        self.assertNotIn("encryption_key", self.site_configuration)
+        self.password.get_encryption_key.assert_not_called()
+        get_all.assert_not_called()
 
     def test_project_authorization_precedes_cursor_validation(self) -> None:
         project = self._project()
@@ -1438,22 +1628,29 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         )
         self.frappe.get_all = get_all
 
-        response = repository.list_domain_work_items(
-            OTHER_PROJECT_ID,
-            stage_id=None,
-            owner_user_id=None,
-            overdue=None,
-            kind=None,
-            cursor="malformed-cursor",
-            limit=50,
-        )
+        with mock.patch.object(
+            self.repository_module,
+            "_domain_work_item_cursor_signing_key",
+            side_effect=AssertionError(
+                "An unavailable Project must not read cursor configuration."
+            ),
+        ) as signing_key:
+            response = repository.list_domain_work_items(
+                OTHER_PROJECT_ID,
+                stage_id=None,
+                owner_user_id=None,
+                overdue=None,
+                kind=None,
+                cursor="malformed-cursor",
+                limit=50,
+            )
 
         self.assertIsNone(response)
         authorization.assert_called_once_with(
             OTHER_PROJECT_ID,
             self.repository_module.ProjectAccess.VIEW,
         )
-        self.password.get_encryption_key.assert_not_called()
+        signing_key.assert_not_called()
         get_all.assert_not_called()
 
     def test_locked_waiter_reloads_winner_version_before_any_aggregate_write(
