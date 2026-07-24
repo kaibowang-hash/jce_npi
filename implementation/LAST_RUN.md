@@ -1,5 +1,54 @@
 # Last Run
 
+## Codex Cloud handoff checkpoint — 2026-07-24T05:52:19Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized local/upstream HEAD:
+  `0fd4762a01fd10fe6851df07ead1c5e4e7a42473`; ahead/behind was `0/0`.
+- Current phase: `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
+- Latest completed atomic task: `P4-03 — Gate templates and controlled
+  evidence` (`PASS` at the committed Level 3 boundary).
+- Current unfinished atomic task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
+- Result: `CHECKPOINT — P4-04 PLANNED; IMPLEMENTATION NOT STARTED`.
+
+P4-04 completed only a read-only repository/specification inventory and the
+implementation boundary recorded in
+`implementation/evidence/phase-4/p4-04-plan.md`. All parallel P4-04 agents were
+interrupted before producing shared-file implementation changes. An incomplete
+local transport-role fixture/hooks draft was removed because it was not a
+minimum validated product slice. No P4-04 product, contract, Schema,
+permission, backend, frontend, translation, runtime, test, or visual change is
+retained, so P4-04 is not implemented, not validated, and not `PASS`.
+
+### Checkpoint validation
+
+The checkpoint changes recovery documentation only. Product tests, runtime,
+browser, visual, migration, and release suites were therefore not repeated.
+The committed P4-03 Level 3 evidence immediately below remains the applicable
+last product result and is not weakened by this documentation checkpoint.
+
+| Changed files → affected checks | Result |
+|---|---|
+| Recovery Markdown and P4-04 plan → state/wording consistency scan | `PASS` — checkpoint, unfinished-task, and no-P4-05 assertions agree |
+| `implementation/PHASE_STATUS.yaml` → safe YAML parse and required state assertions | `PASS` — Phase 3 pending UAT; Phase 4 in progress |
+| `implementation/REQUIREMENT_TRACEABILITY.csv` → CSV shape and P4-04 state assertions | `PASS` — 173 rows, six columns each; four P4-04 requirements remain planned |
+| Complete checkpoint diff → documentation-only path assertion and `git diff --check` | `PASS` — ten recovery/evidence documents only; no whitespace error |
+
+### Exact next action
+
+In Codex Cloud, fetch and check out
+`codex/npi-v1.2-implementation`, verify local HEAD equals its origin branch and
+the worktree is clean, then follow `implementation/NEXT_ACTION.md`. Resume only
+P4-04 from Section 3 of
+`implementation/evidence/phase-4/p4-04-plan.md`; do not restart P4-03 checks
+merely for migration and do not activate P4-05.
+
+Phase 3 named business UAT and provenance-backed sanitized-data review remain
+unsigned external work. All P4-04 implementation, targeted tests, runtime,
+trilingual UI/visual evidence, UAT where applicable, Task Diff/trace review,
+and its final required Gate remain pending.
+
 ## P4-03 Full Release Gate PASS — 2026-07-24T05:34:22Z
 
 - Branch: `codex/npi-v1.2-implementation`.

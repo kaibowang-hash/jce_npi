@@ -4,6 +4,17 @@
 
 None.
 
+## Codex Cloud handoff checkpoint
+
+P4-04 is paused by the explicit CLI-to-Cloud handoff instruction after
+read-only repository/specification inventory and implementation-boundary
+planning. This is an intentional recoverable checkpoint, not a Hard Blocker
+and not a Gate result. No P4-04 product, contract, Schema, permission, backend,
+frontend, translation, runtime, test, or visual change is retained. Resume
+only from `implementation/evidence/phase-4/p4-04-plan.md`; P4-04 remains
+unfinished and must not be marked `PASS` until its actual implementation and
+applicable validation pass.
+
 ## Open external acceptance and reconciliation inputs
 
 `implementation/REQUIRED_INPUTS.md` is the single complete request for external
@@ -67,11 +78,12 @@ not claim production approval authority.
   eight-case browser spec, supplemental shards, forced and clean exact
   147-case visual runs, six original-resolution trilingual reviews, and
   independent release review passed on 2026-07-23. P4-02 is `PASS`; P4-03 is
-  was activated.
+  complete.
 - P4-03's independent versioned Gate Template, frozen Project requirement
   snapshots, exact append-only WBS/private File Revision evidence, live scan
   truth, URL-free BFF, and trilingual live workspace passed the triggered Level
   3 gate on 2026-07-24. The final evidence includes additive/idempotent
   migrations, complete P4-01/P4-02/P4-03 runtime, 153 non-visual browser cases,
   159 forced and clean exact visual cases, original-resolution review, and
-  independent security/trace/release review. P4-04 is active.
+  independent security/trace/release review. P4-04 is the current unfinished
+  task and is paused at the Codex Cloud handoff checkpoint.

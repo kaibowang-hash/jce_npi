@@ -211,13 +211,18 @@ pending until that proof is produced in Codespaces.
   NPI-owned domain work, and explicitly activates Phase 4. This is the narrow
   Pack-approved state that permits independent later work; it does not turn
   Phase 3 into `PASS`.
-- Safely executable task after the latest Full Release Gate: Phase 4 `P4-04`, subject
-  to `NEXT_ACTION.md`. Phase 3 UAT remains the earlier incomplete external
-  item.
-- State at 2026-07-24T05:34:22Z: `IN_PROGRESS`. Phase 1.1 remains supported by
-  the committed fresh-Codespaces evidence in `phase-1.1-gate.md`; this Cloud
-  host's missing Docker and registry-tunnel 403 neither revalidate nor revoke
-  that evidence.
+- Current unfinished task after the latest Full Release Gate: Phase 4 `P4-04`,
+  subject to `NEXT_ACTION.md`. Only its read-only inventory and implementation
+  boundary are complete; no P4-04 product implementation or validation is
+  retained, and it is not `PASS`. Phase 3 UAT remains the earlier incomplete
+  external item.
+- State at 2026-07-24T05:52:19Z: `IN_PROGRESS`, paused at the explicit Codex
+  CLI-to-Cloud handoff checkpoint. Resume only from
+  `implementation/evidence/phase-4/p4-04-plan.md` and do not repeat the
+  committed P4-03 Level 3 evidence merely for handoff. Phase 1.1 remains
+  supported by the committed fresh-Codespaces evidence in
+  `phase-1.1-gate.md`; this Cloud host's missing Docker and registry-tunnel 403
+  neither revalidate nor revoke that evidence.
 - Latest result: bounded `P4-03` passed its triggered Level 3 Full Release
   Gate. It delivers independent versioned Gate Templates, exact Project
   Template bindings, frozen Project requirement assignments, append-only exact

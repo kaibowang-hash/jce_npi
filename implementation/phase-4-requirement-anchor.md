@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 ACTIVE**
+Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 PLANNED AND PAUSED**
 
 Anchor date: 2026-07-22
 
@@ -386,3 +386,17 @@ scope. `FR-CO-006` remains a foundation until later external-user,
 notification, email, print, and delivery surfaces exist. P4-04 is activated
 under the existing automatic-transition authority. Phase 3 remains
 `TECHNICAL_PASS_PENDING_UAT`.
+
+## 16. P4-04 Codex Cloud handoff checkpoint
+
+P4-04 has completed only the read-only repository/specification inventory and
+implementation-boundary plan in
+`implementation/evidence/phase-4/p4-04-plan.md`. No P4-04 product, contract,
+Schema, permission, backend, frontend, translation, runtime, test, or visual
+change is retained. Its `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and
+`FR-SG-007` trace rows are therefore `PLANNED_P4_04`, not verified evidence.
+
+Resume only P4-04 from the committed plan. P4-05 is not activated. P4-04 must
+remain unfinished until its complete vertical slice and applicable Gate pass;
+the prior P4-03 Level 3 evidence remains valid and must not be rerun solely to
+reconstruct this handoff.

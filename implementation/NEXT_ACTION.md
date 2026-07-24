@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `IN_PROGRESS — P4-04 ACTIVE`
+Status: `CHECKPOINT — P4-04 PLANNED; IMPLEMENTATION NOT STARTED`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -23,64 +23,93 @@ obligation.
 
 ## Current implementation checkpoint
 
-Current controller phase: `4 — Project Work Items and Stage Gates`.
+- Required development branch:
+  `codex/npi-v1.2-implementation`.
+- Current controller phase:
+  `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
+- Completed atomic tasks:
+  `P4-01`, `P4-02`, and `P4-03`.
+- Latest completed atomic task:
+  `P4-03 — Gate templates and controlled evidence`, committed at
+  `0fd4762a01fd10fe6851df07ead1c5e4e7a42473`.
+- Current unfinished atomic task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
 
-Completed atomic task: `P4-03 — Gate templates and controlled evidence`.
-
-P4-03 passed its triggered Level 3 Full Release Gate on 2026-07-24. It delivers
-versioned Gate templates, exact Project Template bindings, frozen requirement
-assignments, append-only exact WBS/private File Revision evidence, live
-scanner-state truth, URL-free metadata, and the trilingual live Gate evidence
-workspace. The evidence includes the 276-Python/237-frontend aggregate before
-the final two-file authorization-order repair, 20 directly affected tests
-after it, two successful Site migrations, the complete P4-01/P4-02/P4-03
-runtime, 153 non-visual browser cases, 159 forced and clean exact visual cases,
-trilingual original-resolution review, and independent security, trace, and
-release reviews.
-
-Current atomic task: `P4-04 — Review, decision, snapshot, and reopen`.
+P4-04 has completed only its read-only repository/specification inventory and
+the implementation boundary in
+`implementation/evidence/phase-4/p4-04-plan.md`. Its parallel implementation
+agents were stopped before producing shared-file changes, and the incomplete
+local transport-role draft was removed. No P4-04 product, contract, Schema,
+permission, backend, frontend, translation, runtime, test, or visual change is
+part of this checkpoint. P4-04 is **not implemented, not validated, and not
+PASS**.
 
 P4-04 owns `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` within a
-versioned, safe-default-denied Gate review and decision policy. It must preserve
-P4-03's frozen requirements and append-only exact evidence, distinguish review
-assignment from approval authority, record every reviewer/time/opinion/version,
-block unsafe normal pass, create immutable decision snapshots, preserve prior
-approvals, and control reopen/invalidation without rewriting history.
+synthetic, versioned, safe-default-denied Gate review/decision slice. It must
+preserve P4-03's immutable requirement/evidence history, separate assignment
+from authority, create server-owned immutable decisions, preserve every prior
+approval, and create controlled new cycles for reopen/invalidation.
 
 Do not implement P4-05 live My Work/activity/notification delivery, production
 template contents, guessed RACI-to-approval mappings, production waiver or
-invalidation rules, normal-user file upload/download, production scanner/DMS
-behavior, production ERPNext access, or any held production mapping in P4-04.
-Missing authoritative policies remain explicit Class-B holds; the executable
-slice must fail closed rather than invent them.
+invalidation rules, normal-user file routes, production scanner/DMS behavior,
+production ERPNext access, or any held production mapping in P4-04.
 
-## Exact resume point
+## Passed evidence — do not repeat for handoff
 
-Start only the P4-04 atomic task:
+The committed P4-03 Level 3 evidence remains valid and must not be rerun merely
+to resume in Codex Cloud:
 
-1. read the P4-04 rows in the Phase 4 anchor, `FR-SG-003`,
-   `FR-SG-005`, `FR-SG-006`, `FR-SG-007`, the Gate review/decision domain
-   specifications, current OpenAPI/data-ownership contracts, P4-03 evidence
-   contract, accepted security/file ADRs, and applicable domain/safe-change/
-   i18n/industrial-UX skills;
-2. inventory the current Gate Shell, frozen requirement snapshot, exact
-   evidence reference, membership/role, audit, idempotency, and prototype Gate
-   decision surfaces before selecting an additive policy and persistence
-   boundary;
-3. record P4-04 scope, non-scope, assumptions, risks, changed-files-to-tests
-   map, migration/rollback plan, and every unresolved approval/waiver/
-   invalidation Class-B hold before changing product code;
-4. implement one complete synthetic, versioned, safe-default-denied vertical
-   slice from review assignment through immutable decision snapshot and
-   controlled reopen/invalidation history without installing a production rule
-   package;
-5. use Level 1 affected checks during repair and run the required Task/Level 3
-   boundary only once after the slice stabilizes; and
-6. do not activate P4-05 until P4-04 has durable evidence, truthful
-   traceability, Task Diff review, and a passing Gate.
+- `make verify`: 276 Python and 237 frontend tests plus static/type/lint/style/
+  boundary/UI/i18n, coverage, build, and zero npm audit findings;
+- direct post-aggregate authorization repair: 20 affected tests;
+- two successful additive/idempotent Site migrations;
+- complete P4-01/P4-02/P4-03 runtime, including P4-03 run
+  `2e070c8599694beabb6f5cf679a8c54b`;
+- 153/153 non-visual browser cases;
+- 159/159 forced and clean exact visual cases;
+- trilingual original-resolution review; and
+- independent security, traceability, Task Diff, and release-gate review.
 
-The earlier Phase 3 business UAT remains the first incomplete external task.
-P4-03's final evidence is in
-`implementation/evidence/phase-4/p4-03-validation.md`. Its triggered Level 3
-does not waive any later P4-04/P4-05, Phase-exit, PR, or production Level 3
-boundary.
+These checks become applicable again only when later P4-04 changes actually
+affect them or at P4-04's final required boundary. They are not a substitute
+for any P4-04 test.
+
+## Exact Codex Cloud resume steps
+
+1. Open the repository on
+   `codex/npi-v1.2-implementation`; fetch origin and verify the local HEAD is
+   exactly `origin/codex/npi-v1.2-implementation` with a clean worktree.
+2. Read `AGENTS.md`, `implementation/AUTOPILOT_CONTROLLER.md`,
+   `implementation/PHASE_STATUS.yaml`, this file,
+   `implementation/LAST_RUN.md`, `implementation/BLOCKERS.md`,
+   `implementation/REQUIREMENT_TRACEABILITY.csv`, the Phase 4 anchor, and
+   `implementation/evidence/phase-4/p4-04-plan.md`.
+3. Confirm P4-03 remains the latest completed task and P4-04 has no product
+   implementation. Do not reinterpret the plan as acceptance evidence.
+4. Resume only P4-04 from Section 3 of its plan: first define the additive
+   review-policy/persistence/transport-permission boundary and its direct
+   tests; then add strict API/BFF, invalidation/impact-action/guard, and the live
+   trilingual review room as one vertical slice.
+5. Use Level 1 directly affected checks during repair. Because P4-04 changes
+   public OpenAPI, DocType Schema, authorization/permission, and an accepted
+   live route, run its applicable Level 3 exactly once after the complete slice
+   stabilizes; after a localized repair rerun only affected checks plus any
+   incomplete Gate lane.
+6. Update durable P4-04 evidence and traceability truthfully. Do not activate
+   P4-05 until P4-04 has a passing Gate and a pushed checkpoint.
+
+## Still pending
+
+- All P4-04 implementation and validation: domain, DocTypes, migration,
+  transport permission, repository, API/BFF, contract/ownership, source-change
+  invalidation, impact action/downstream guard, frontend, direct Chinese
+  catalogs, unit/API/permission/runtime/E2E/accessibility/visual evidence,
+  Task Diff review, trace review, and the applicable final Level 3.
+- Phase 3 `FR-UX-031` named business UAT and provenance-backed sanitized-data
+  review; it remains `TECHNICAL_PASS_PENDING_UAT`.
+- Authoritative production approval/RACI, exception/waiver, disabled-member,
+  dependency/downstream, scanner/DMS, and ERPNext mapping inputs.
+
+Production ERPNext remains prohibited. No unfinished item above may be marked
+PASS merely to complete a checkpoint.
