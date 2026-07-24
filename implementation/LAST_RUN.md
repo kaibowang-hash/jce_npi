@@ -364,3 +364,32 @@ confirmed that no template is installed by migration.
 Complete evidence is in
 `implementation/evidence/phase-4/p4-01-validation.md`. Phase 4 remains
 `IN_PROGRESS`; P4-02 is active under the automatic-transition authority.
+
+- Timestamp: `2026-07-24T06:16:24Z`
+- Cloud branch: `work` (environment-provided temporary branch at CLI handoff
+  `e87c525`; no Git remote is configured in this checkout)
+- Atomic task: `P4-04 — Review, decision, snapshot, and reopen`
+- Result: `IN_PROGRESS — recoverable domain checkpoint; not Task Gate PASS`
+- Current phase: `4 — Project Work Items and Stage Gates`
+- Next action: implement additive review persistence and authorized controllers,
+  including exception and invalidation event aggregates
+
+## P4-04 domain checkpoint outcome
+
+- Added a persistence-neutral Gate review domain aggregate with immutable
+  versioned policy snapshots bound to exact Gate Template versions/hashes.
+- Added allowlisted parallel, sequential, and P0-condition-selected steps with
+  frozen explicit authority bindings; review assignment remains separate from
+  final-decision and reopen authority.
+- Added optimistic version/exact-input conflict checks and fail-closed normal
+  pass conditions for approvals, required evidence, private-file safety, and
+  blocking items.
+- Added server-built immutable decision snapshots, controlled approval-free
+  reopen cycles, and an exact-input downstream pass guard.
+- Added eight direct unit cases; the 21-test-plus-3-subtest affected Gate domain lane passes.
+- No production policy, persistence, BFF, permission, exception, automatic
+  invalidation, UI, localization, runtime, browser, or visual acceptance is
+  claimed. P4-04 and Phase 4 remain `IN_PROGRESS`; P4-05 is not activated.
+
+Complete evidence and the changed-files → affected-tests map are in
+`implementation/evidence/phase-4/p4-04-domain-checkpoint.md`.
