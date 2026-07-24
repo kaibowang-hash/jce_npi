@@ -7,6 +7,16 @@ import type {
   ExecutionRow,
   GateEvidenceKind,
   GateEvidenceScanState,
+  GateDecisionOutcome,
+  GateReviewAuthorityPurpose,
+  GateReviewCycleState,
+  GateReviewCycleTrigger,
+  GateReviewDependencyEventType,
+  GateReviewDecisionBlockedReasonCode,
+  GateReviewExceptionState,
+  GateReviewOutcome,
+  GateReviewState,
+  GateReviewStepState,
   GateRequirementClassification,
   GateRequirementEvidenceState,
   GateStep,
@@ -30,6 +40,34 @@ export type Translator = (
   values?: TranslationValues,
   context?: string,
 ) => string;
+
+export function gateReviewDecisionBlockedReasonLabel(
+  t: Translator,
+  code: GateReviewDecisionBlockedReasonCode,
+): string {
+  switch (code) {
+    case "REVIEW_CYCLE_CLOSED":
+      return t("The review cycle is closed.");
+    case "GATE_INPUT_CHANGED":
+      return t("The Gate input changed.");
+    case "DECISION_AUTHORITY_REQUIRED":
+      return t("The assigned decision authority is required.");
+    case "REVIEWS_INCOMPLETE":
+      return t("Every selected review must approve this outcome.");
+    case "FILE_EVIDENCE_UNSAFE":
+      return t("File evidence is not safe and current.");
+    case "GATE_BLOCKED":
+      return t("Resolve every blocking item before this outcome.");
+    case "REQUIRED_P0_EVIDENCE_MISSING":
+      return t("Required P0 evidence is missing.");
+    case "REQUIRED_EVIDENCE_MISSING":
+      return t("Required evidence is missing.");
+    case "EXCEPTION_NOT_REQUIRED":
+      return t("This outcome does not require an exception.");
+    case "APPROVED_EXCEPTION_REQUIRED":
+      return t("A current approved exception is required.");
+  }
+}
 
 export function workKindLabel(t: Translator, code: WorkKind): string {
   switch (code) {
@@ -307,6 +345,152 @@ export function gateRequirementEvidenceStateLabel(
       return t("Evidence scan failed");
     case "scan_infected":
       return t("Evidence threat detected");
+  }
+}
+
+export function gateReviewStateLabel(
+  t: Translator,
+  state: GateReviewState,
+): string {
+  switch (state) {
+    case "not_started":
+      return t("Not started");
+    case "in_review":
+      return t("In review");
+    case "decided":
+      return t("Decided");
+    case "requires_review":
+      return t("Review required");
+  }
+}
+
+export function gateReviewCycleTriggerLabel(
+  t: Translator,
+  trigger: GateReviewCycleTrigger,
+): string {
+  switch (trigger) {
+    case "manual_start":
+      return t("Manual start");
+    case "manual_reopen":
+      return t("Manual reopen");
+    case "dependency_change":
+      return t("Dependency change");
+  }
+}
+
+export function gateReviewCycleStateLabel(
+  t: Translator,
+  state: GateReviewCycleState,
+): string {
+  switch (state) {
+    case "active":
+      return t("Active");
+    case "decided":
+      return t("Decided");
+    case "invalidated":
+      return t("Invalidated");
+    case "superseded":
+      return t("Superseded");
+  }
+}
+
+export function gateReviewDependencyEventTypeLabel(
+  t: Translator,
+  eventType: GateReviewDependencyEventType,
+): string {
+  switch (eventType) {
+    case "invalidated":
+      return t("Decision invalidated");
+    case "refreshed":
+      return t("Review cycle refreshed");
+  }
+}
+
+export function gateReviewDependencyReasonLabel(
+  t: Translator,
+  reason: string,
+): string {
+  switch (reason) {
+    case "GATE_SOURCE_CHANGED":
+      return t("A controlled Gate source object changed.");
+    case "GATE_WORK_ITEM_CHANGED":
+      return t("A controlled Gate work item changed.");
+    case "GATE_INPUT_CHANGED":
+      return t("The exact Gate input snapshot changed.");
+    default:
+      return t("A controlled Gate input dependency changed.");
+  }
+}
+
+export function gateReviewStepStateLabel(
+  t: Translator,
+  state: GateReviewStepState,
+): string {
+  switch (state) {
+    case "waiting":
+      return t("Waiting for prior sequence");
+    case "available":
+      return t("Available for review");
+    case "approved":
+      return t("Approved");
+    case "rejected":
+      return t("Rejected");
+  }
+}
+
+export function gateReviewOutcomeLabel(
+  t: Translator,
+  outcome: GateReviewOutcome,
+): string {
+  switch (outcome) {
+    case "approved":
+      return t("Approved");
+    case "rejected":
+      return t("Rejected");
+  }
+}
+
+export function gateDecisionOutcomeLabel(
+  t: Translator,
+  outcome: GateDecisionOutcome,
+): string {
+  switch (outcome) {
+    case "pass":
+      return t("Pass");
+    case "conditional_pass":
+      return t("Conditional pass");
+    case "reject":
+      return t("Reject");
+  }
+}
+
+export function gateReviewExceptionStateLabel(
+  t: Translator,
+  state: GateReviewExceptionState,
+): string {
+  switch (state) {
+    case "pending":
+      return t("Pending approval");
+    case "approved":
+      return t("Approved");
+    case "rejected":
+      return t("Rejected");
+  }
+}
+
+export function gateReviewAuthorityPurposeLabel(
+  t: Translator,
+  purpose: GateReviewAuthorityPurpose,
+): string {
+  switch (purpose) {
+    case "review":
+      return t("Review authority");
+    case "decision":
+      return t("Decision authority");
+    case "reopen":
+      return t("Reopen authority");
+    case "exception":
+      return t("Exception authority");
   }
 }
 

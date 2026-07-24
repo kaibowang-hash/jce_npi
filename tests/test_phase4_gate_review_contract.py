@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import unittest
 from pathlib import Path
-
+from typing import ClassVar
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
@@ -39,9 +39,7 @@ def _required(schema_name: str) -> tuple[str, ...]:
     match = re.search(r"^      required:\s*\[([^]]*)\]", block, re.MULTILINE)
     if match is None:
         raise AssertionError(f"{schema_name} has no flow required list")
-    return tuple(
-        item.strip() for item in match.group(1).split(",") if item.strip()
-    )
+    return tuple(item.strip() for item in match.group(1).split(",") if item.strip())
 
 
 def _property_names(schema_name: str) -> set[str]:
@@ -99,7 +97,7 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         ),
     )
 
-    REQUEST_FIELDS = {
+    REQUEST_FIELDS: ClassVar[dict[str, tuple[str, ...]]] = {
         "StartGateReview": (
             "expectedGateVersion",
             "policyGlobalId",
@@ -189,9 +187,7 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         review = _indented_block(self.ROUTES[0][0])
         self.assertNotIn("deliverables", review)
         self.assertNotIn("decisionOptions", review)
-        decide = _indented_block(
-            "  /projects/{projectId}/gates/{gateId}:decide:"
-        )
+        decide = _indented_block("  /projects/{projectId}/gates/{gateId}:decide:")
         for removed in (
             "expectedVersion",
             "evidenceSnapshotHash",
@@ -203,9 +199,7 @@ class Phase4GateReviewContractTest(unittest.TestCase):
     def test_management_and_transport_permissions_are_not_business_authority(
         self,
     ) -> None:
-        start = _indented_block(
-            "  /projects/{projectId}/gates/{gateId}:start-review:"
-        )
+        start = _indented_block("  /projects/{projectId}/gates/{gateId}:start-review:")
         self.assertIn("x-required-management-role: System Manager", start)
         self.assertIn("x-business-authority: management-command-only", start)
         self.assertIn("grant review, exception, decision", start)
@@ -227,8 +221,7 @@ class Phase4GateReviewContractTest(unittest.TestCase):
                 operation_id = operation.removeprefix("operationId: ")
                 self.assertIn("x-required-transport-role: NPI API User", block)
                 self.assertIn(
-                    "x-business-authority: "
-                    + expected_authorities[operation_id],
+                    "x-business-authority: " + expected_authorities[operation_id],
                     block,
                 )
         self.assertIn("transport role", _indented_block(self.ROUTES[2][0]))
@@ -320,6 +313,9 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         closed_outputs = (
             "GateReview",
             "GateReviewGate",
+            "GateReviewDecisionBlockedReason",
+            "GateReviewDecisionReadiness",
+            "GateReviewExceptionRequestOption",
             "GateReviewPolicyReference",
             "GateReviewAuthoritySlot",
             "GateReviewExceptionRuleOption",
@@ -328,13 +324,22 @@ class Phase4GateReviewContractTest(unittest.TestCase):
             "GateReviewAuthorityBinding",
             "GateReviewClosureAction",
             "GateReviewBlocker",
+            "GateReviewDependencyChange",
             "GateReviewRecord",
             "GateReviewSelectedStep",
+            "GateReviewExactObjectReference",
+            "GateReviewInputRequirement",
+            "GateReviewInputEvidence",
+            "GateReviewInputBlocker",
+            "GateReviewInputDependency",
+            "GateReviewInputSnapshot",
+            "GateDecisionDetail",
             "GateReviewExceptionDecision",
             "GateReviewException",
             "GateReviewCycle",
             "GateDecisionSummary",
             "GateReviewPermissions",
+            "GateReviewCommandReceipt",
         )
         for name in closed_outputs:
             with self.subTest(schema=name):
@@ -347,10 +352,13 @@ class Phase4GateReviewContractTest(unittest.TestCase):
                 "evidence",
                 "activeCycle",
                 "decisions",
+                "decisionReadiness",
+                "exceptionRequestOptions",
                 "availablePolicies",
                 "eligibleMembers",
                 "eligibleClosureActions",
                 "blockers",
+                "dependencyChanges",
                 "permissions",
             ),
         )
@@ -368,6 +376,7 @@ class Phase4GateReviewContractTest(unittest.TestCase):
 
         cycle = _schema("GateReviewCycle")
         self.assertIn("bindings", _required("GateReviewCycle"))
+        self.assertIn("policyDefinition", _required("GateReviewCycle"))
         self.assertEqual(
             _property_names("GateReviewAuthorityBinding"),
             {"slot", "memberGlobalId", "userId", "displayName"},
@@ -378,7 +387,11 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         )
         self.assertIn("maxItems: 64", cycle)
         self.assertIn(
-            "state: { type: string, enum: [active, decided, invalidated] }",
+            "enum: [active, decided, invalidated, superseded]",
+            cycle,
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewAvailablePolicy"',
             cycle,
         )
 
@@ -401,8 +414,144 @@ class Phase4GateReviewContractTest(unittest.TestCase):
             '$ref: "#/components/schemas/GateReviewBlocker"',
             workspace,
         )
-        for bound in ("maxItems: 100", "maxItems: 500", "maxItems: 256"):
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewDependencyChange"',
+            workspace,
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewDecisionReadiness"',
+            workspace,
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewExceptionRequestOption"',
+            workspace,
+        )
+        for bound in (
+            "maxItems: 100",
+            "maxItems: 500",
+            "maxItems: 256",
+            "maxItems: 1000",
+            "maxItems: 8192",
+        ):
             self.assertIn(bound, workspace)
+
+    def test_decision_readiness_and_exception_options_are_closed_domain_facts(
+        self,
+    ) -> None:
+        self.assertEqual(
+            _required("GateReviewDecisionReadiness"),
+            ("allowedOutcomes", "blockedReasons"),
+        )
+        readiness = _schema("GateReviewDecisionReadiness")
+        self.assertEqual(
+            _property_names("GateReviewDecisionReadiness"),
+            {"allowedOutcomes", "blockedReasons"},
+        )
+        self.assertIn(
+            "enum: [pass, conditional_pass, reject]",
+            readiness,
+        )
+        self.assertIn("maxItems: 3", readiness)
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewDecisionBlockedReason"',
+            readiness,
+        )
+
+        blocked = _schema("GateReviewDecisionBlockedReason")
+        self.assertEqual(
+            _required("GateReviewDecisionBlockedReason"), ("outcome", "code")
+        )
+        self.assertEqual(
+            _property_names("GateReviewDecisionBlockedReason"),
+            {"outcome", "code"},
+        )
+        match = re.search(
+            (
+                r"^        code:\n"
+                r"          type: string\n"
+                r"          enum:\n"
+                r"            \[\n"
+                r"(?P<codes>.*?)"
+                r"            \]"
+            ),
+            blocked,
+            re.MULTILINE | re.DOTALL,
+        )
+        self.assertIsNotNone(match)
+        assert match is not None
+        self.assertEqual(
+            {
+                value
+                for value in re.findall(
+                    r"^\s+([A-Z][A-Z0-9_]+),?$",
+                    match.group("codes"),
+                    re.MULTILINE,
+                )
+            },
+            {
+                "REVIEW_CYCLE_CLOSED",
+                "GATE_INPUT_CHANGED",
+                "DECISION_AUTHORITY_REQUIRED",
+                "REVIEWS_INCOMPLETE",
+                "FILE_EVIDENCE_UNSAFE",
+                "GATE_BLOCKED",
+                "REQUIRED_P0_EVIDENCE_MISSING",
+                "REQUIRED_EVIDENCE_MISSING",
+                "EXCEPTION_NOT_REQUIRED",
+                "APPROVED_EXCEPTION_REQUIRED",
+            },
+        )
+
+        self.assertEqual(
+            _required("GateReviewExceptionRequestOption"),
+            (
+                "requirementGlobalId",
+                "requirementKey",
+                "kind",
+                "maximumValidityDays",
+                "closureActionGlobalIds",
+            ),
+        )
+        option = _schema("GateReviewExceptionRequestOption")
+        self.assertEqual(
+            _property_names("GateReviewExceptionRequestOption"),
+            set(_required("GateReviewExceptionRequestOption")),
+        )
+        self.assertIn("maxItems: 500", option)
+        self.assertIn("maximum: 3650", option)
+
+        exception = _schema("GateReviewException")
+        self.assertIn("allowedOutcomes", _required("GateReviewException"))
+        self.assertIn("enum: [approved, rejected]", exception)
+        self.assertIn("maxItems: 2", exception)
+        self.assertIn("closureActionRef", _required("GateReviewException"))
+        self.assertNotIn(
+            "closureActionGlobalId",
+            _property_names("GateReviewException"),
+        )
+        self.assertEqual(
+            _required("GateReviewExactObjectReference"),
+            ("globalId", "version", "snapshotHash"),
+        )
+
+        decision = _schema("GateDecisionSummary")
+        self.assertIn("detail", _required("GateDecisionSummary"))
+        self.assertIn(
+            '$ref: "#/components/schemas/GateDecisionDetail"',
+            decision,
+        )
+        self.assertEqual(
+            _required("GateDecisionDetail"),
+            (
+                "lineageHash",
+                "cycleNumber",
+                "policyRef",
+                "inputSnapshot",
+                "reviewHashes",
+                "exceptionHashes",
+                "cycleVersion",
+            ),
+        )
 
     def test_policy_member_action_and_blocker_options_are_closed_exact_outputs(
         self,
@@ -434,29 +583,115 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         self.assertIn("const: action", exception_rule)
         self.assertEqual(
             _required("GateReviewClosureAction"),
-            ("globalId", "title", "state", "version"),
+            ("globalId", "title", "state", "stateLabelSource", "version"),
         )
         self.assertEqual(
             _required("GateReviewBlocker"),
-            ("globalId", "kind", "title", "state", "dueAt", "owner"),
+            (
+                "globalId",
+                "kind",
+                "title",
+                "state",
+                "stateLabelSource",
+                "dueAt",
+                "owner",
+            ),
         )
         blocker = _schema("GateReviewBlocker")
         self.assertIn("enum: [risk, issue, action, decision_request]", blocker)
         self.assertNotIn("readiness", blocker.casefold())
         self.assertNotIn("url", blocker.casefold())
+        self.assertIn("stateLabelSource", blocker)
+        self.assertIn("stateLabelSource", _schema("GateReviewClosureAction"))
 
-        command_schemas = "\n".join(
-            _schema(name) for name in self.REQUEST_FIELDS
+        dependency_change = _schema("GateReviewDependencyChange")
+        self.assertEqual(
+            _required("GateReviewDependencyChange"),
+            (
+                "eventGlobalId",
+                "eventType",
+                "priorCycleGlobalId",
+                "successorCycleGlobalId",
+                "oldInputHash",
+                "newInputHash",
+                "priorDecisionGlobalId",
+                "priorDecisionLineageHash",
+                "actorUserId",
+                "initiatedByUserId",
+                "occurredAt",
+                "reason",
+            ),
         )
+        self.assertEqual(
+            _property_names("GateReviewDependencyChange"),
+            {
+                *_required("GateReviewDependencyChange"),
+                "impactActionGlobalId",
+            },
+        )
+        self.assertIn('type: "null"', dependency_change)
+        self.assertIn("Optional legacy lineage only", dependency_change)
+        self.assertIn("enum: [invalidated, refreshed]", dependency_change)
+        self.assertIn("domain lineage hash", dependency_change)
+        self.assertIn("public persisted", dependency_change)
+        self.assertIn("?Z$'", dependency_change)
+
+        command_schemas = "\n".join(_schema(name) for name in self.REQUEST_FIELDS)
         for output_only in (
             "availablePolicies",
             "eligibleMembers",
             "eligibleClosureActions",
             "blockers",
+            "dependencyChanges",
+            "decisionReadiness",
+            "exceptionRequestOptions",
+            "allowedOutcomes",
             "authoritySlots",
             "exceptionRules",
         ):
             self.assertNotIn(f"        {output_only}:", command_schemas)
+
+    def test_command_receipt_reconciliation_is_closed_actor_bound_and_no_store(
+        self,
+    ) -> None:
+        route = _indented_block(
+            "  /projects/{projectId}/gates/{gateId}/"
+            "review-command-receipts/{operation}:"
+        )
+        self.assertIn("operationId: getGateReviewCommandReceipt", route)
+        self.assertIn(
+            "x-business-authority: exact-current-actor-command-receipt",
+            route,
+        )
+        self.assertIn("x-lock-order: [project, gate]", route)
+        self.assertIn('$ref: "#/components/parameters/IdempotencyKey"', route)
+        self.assertIn('$ref: "#/components/parameters/RequestId"', route)
+        self.assertNotIn('$ref: "#/components/parameters/CsrfToken"', route)
+        self.assertIn('const: "private, no-store"', route)
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewCommandReceipt"',
+            route,
+        )
+        for operation in (
+            "gate.review.start",
+            "gate.review.submit",
+            "gate.review.exception.request",
+            "gate.review.exception.decide",
+            "gate.review.decide",
+            "gate.review.reopen",
+        ):
+            self.assertIn(operation, route)
+        self.assertEqual(
+            _required("GateReviewCommandReceipt"),
+            ("operation", "status", "workspaceReloadRequired"),
+        )
+        receipt = _schema("GateReviewCommandReceipt")
+        self.assertEqual(
+            _property_names("GateReviewCommandReceipt"),
+            {"operation", "status", "workspaceReloadRequired"},
+        )
+        self.assertIn("enum: [completed, absent]", receipt)
+        self.assertIn("const: true", receipt)
 
     def test_review_history_ownership_is_append_only_and_fail_closed(self) -> None:
         expected_objects = (

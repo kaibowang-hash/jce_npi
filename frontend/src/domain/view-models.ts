@@ -206,6 +206,7 @@ export interface GateEvidenceReferenceViewModel {
 }
 
 export interface GateRequirementViewModel {
+  globalId: string;
   key: string;
   title: string;
   classification: GateRequirementClassification;
@@ -251,6 +252,311 @@ export interface GateEvidenceViewModel {
     canView: true;
     canAttachEvidence: boolean;
     canAdminister: boolean;
+  };
+}
+
+export type GateReviewState =
+  | "not_started"
+  | "in_review"
+  | "decided"
+  | "requires_review";
+export type GateReviewOutcome = "approved" | "rejected";
+export type GateDecisionOutcome = "pass" | "conditional_pass" | "reject";
+export type GateReviewCycleTrigger =
+  | "manual_start"
+  | "manual_reopen"
+  | "dependency_change";
+export type GateReviewCycleState =
+  | "active"
+  | "decided"
+  | "invalidated"
+  | "superseded";
+export type GateReviewStepState =
+  | "waiting"
+  | "available"
+  | "approved"
+  | "rejected";
+export type GateReviewExceptionState = "pending" | "approved" | "rejected";
+export type GateReviewExceptionDecisionOutcome = "approved" | "rejected";
+export type GateReviewAuthorityPurpose =
+  | "review"
+  | "decision"
+  | "reopen"
+  | "exception";
+
+export interface GateReviewPolicyReferenceViewModel {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+}
+
+export interface GateReviewMemberViewModel {
+  memberGlobalId: string;
+  userId: string;
+  displayName: string;
+}
+
+export interface GateReviewAuthoritySlotViewModel {
+  slot: string;
+  purpose: GateReviewAuthorityPurpose;
+}
+
+export interface GateReviewExceptionRuleViewModel {
+  kind: string;
+  eligibleRequirementKeys: readonly string[];
+  approvalAuthoritySlot: string;
+  maximumValidityDays: number;
+  requiredClosureActionKind: "action";
+}
+
+export interface GateReviewAvailablePolicyViewModel {
+  policyRef: GateReviewPolicyReferenceViewModel;
+  authoritySlots: readonly GateReviewAuthoritySlotViewModel[];
+  exceptionRules: readonly GateReviewExceptionRuleViewModel[];
+}
+
+export interface GateReviewAuthorityBindingViewModel {
+  slot: string;
+  memberGlobalId: string;
+  userId: string;
+  displayName: string;
+}
+
+export interface GateReviewRecordViewModel {
+  globalId: string;
+  stepKey: string;
+  outcome: GateReviewOutcome;
+  opinion: string;
+  actor: string;
+  reviewedAt: string;
+  inputHash: string;
+  snapshotHash: string;
+}
+
+export interface GateReviewSelectedStepViewModel {
+  stepKey: string;
+  sequence: number;
+  slot: string;
+  assignedMember: GateReviewMemberViewModel;
+  state: GateReviewStepState;
+  review: GateReviewRecordViewModel | null;
+}
+
+export interface GateReviewExceptionDecisionViewModel {
+  outcome: GateReviewOutcome;
+  approver: GateReviewMemberViewModel;
+  opinion: string;
+  decidedAt: string;
+  snapshotHash: string;
+}
+
+export interface GateReviewExactObjectReferenceViewModel {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+}
+
+export interface GateReviewExceptionViewModel {
+  globalId: string;
+  requirementGlobalId: string;
+  requirementKey: string;
+  kind: string;
+  reason: string;
+  risk: string;
+  requester: GateReviewMemberViewModel;
+  requestedAt: string;
+  expiresAt: string;
+  closureActionRef: GateReviewExactObjectReferenceViewModel;
+  state: GateReviewExceptionState;
+  version: number;
+  requestSnapshotHash: string;
+  decision: GateReviewExceptionDecisionViewModel | null;
+  allowedOutcomes: readonly GateReviewExceptionDecisionOutcome[];
+}
+
+export interface GateReviewExceptionRequestOptionViewModel {
+  requirementGlobalId: string;
+  requirementKey: string;
+  kind: string;
+  maximumValidityDays: number;
+  closureActionGlobalIds: readonly string[];
+}
+
+export interface GateReviewDecisionBlockedReasonViewModel {
+  outcome: GateDecisionOutcome;
+  code: GateReviewDecisionBlockedReasonCode;
+}
+
+export type GateReviewDecisionBlockedReasonCode =
+  | "REVIEW_CYCLE_CLOSED"
+  | "GATE_INPUT_CHANGED"
+  | "DECISION_AUTHORITY_REQUIRED"
+  | "REVIEWS_INCOMPLETE"
+  | "FILE_EVIDENCE_UNSAFE"
+  | "GATE_BLOCKED"
+  | "REQUIRED_P0_EVIDENCE_MISSING"
+  | "REQUIRED_EVIDENCE_MISSING"
+  | "EXCEPTION_NOT_REQUIRED"
+  | "APPROVED_EXCEPTION_REQUIRED";
+
+export interface GateReviewDecisionReadinessViewModel {
+  allowedOutcomes: readonly GateDecisionOutcome[];
+  blockedReasons: readonly GateReviewDecisionBlockedReasonViewModel[];
+}
+
+export interface GateReviewCycleViewModel {
+  globalId: string;
+  number: number;
+  trigger: GateReviewCycleTrigger;
+  state: GateReviewCycleState;
+  version: number;
+  policyRef: GateReviewPolicyReferenceViewModel;
+  policyDefinition: GateReviewAvailablePolicyViewModel;
+  inputHash: string;
+  bindings: readonly GateReviewAuthorityBindingViewModel[];
+  selectedSteps: readonly GateReviewSelectedStepViewModel[];
+  exceptions: readonly GateReviewExceptionViewModel[];
+  startedAt: string;
+  startedBy: string;
+}
+
+export interface GateReviewInputRequirementViewModel {
+  globalId: string;
+  requirementKey: string;
+  priority: GateRequirementPriority;
+  sourceVersion: number;
+  sourceHash: string;
+  evidenceComplete: boolean;
+}
+
+export interface GateReviewInputEvidenceViewModel {
+  globalId: string;
+  requirementGlobalId: string;
+  evidenceKind: GateEvidenceKind;
+  sourceGlobalId: string;
+  sourceVersion: number;
+  sourceHash: string;
+  isFile: boolean;
+  fileSafe: boolean;
+}
+
+export interface GateReviewInputBlockerViewModel {
+  globalId: string;
+  version: number;
+  state: string;
+  blocking: boolean;
+  terminal: boolean;
+}
+
+export interface GateReviewInputDependencyViewModel {
+  kind: "gate_input_snapshot";
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+}
+
+export interface GateReviewInputSnapshotViewModel {
+  schemaVersion: 1;
+  gateGlobalId: string;
+  projectGlobalId: string;
+  tenantId: string;
+  gateVersion: number;
+  requirements: readonly GateReviewInputRequirementViewModel[];
+  evidence: readonly GateReviewInputEvidenceViewModel[];
+  blockers: readonly GateReviewInputBlockerViewModel[];
+  dependencies: readonly GateReviewInputDependencyViewModel[];
+}
+
+export interface GateDecisionDetailViewModel {
+  lineageHash: string;
+  cycleNumber: number;
+  policyRef: GateReviewPolicyReferenceViewModel;
+  inputSnapshot: GateReviewInputSnapshotViewModel;
+  reviewHashes: readonly string[];
+  exceptionHashes: readonly string[];
+  cycleVersion: number;
+}
+
+export interface GateDecisionSummaryViewModel {
+  globalId: string;
+  cycleGlobalId: string;
+  outcome: GateDecisionOutcome;
+  inputHash: string;
+  snapshotHash: string;
+  decidedAt: string;
+  decidedBy: string;
+  current: boolean;
+  detail: GateDecisionDetailViewModel;
+}
+
+export interface GateReviewClosureActionViewModel {
+  globalId: string;
+  title: string;
+  state: string;
+  stateLabelSource: ProjectPolicyLabelSource;
+  version: number;
+}
+
+export interface GateReviewBlockerViewModel {
+  globalId: string;
+  kind: DomainWorkItemKind;
+  title: string;
+  state: string;
+  stateLabelSource: ProjectPolicyLabelSource;
+  dueAt: string;
+  owner: string;
+}
+
+export type GateReviewDependencyEventType = "invalidated" | "refreshed";
+
+export interface GateReviewDependencyChangeViewModel {
+  eventGlobalId: string;
+  eventType: GateReviewDependencyEventType;
+  priorCycleGlobalId: string;
+  successorCycleGlobalId: string;
+  impactActionGlobalId?: string | null;
+  oldInputHash: string;
+  newInputHash: string;
+  priorDecisionGlobalId: string | null;
+  priorDecisionLineageHash: string | null;
+  actorUserId: string;
+  initiatedByUserId: string | null;
+  occurredAt: string;
+  reason: string;
+}
+
+export interface GateReviewViewModel {
+  project: GateEvidenceViewModel["project"];
+  gate: {
+    globalId: string;
+    key: string;
+    title: string;
+    reviewState: GateReviewState;
+    version: number;
+    currentCycleGlobalId: string | null;
+    latestDecisionGlobalId: string | null;
+    latestDecisionHash: string | null;
+    latestDecisionOutcome: GateDecisionOutcome | null;
+    downstreamDecisionCurrent: boolean;
+  };
+  evidence: GateEvidenceViewModel;
+  activeCycle: GateReviewCycleViewModel | null;
+  decisions: readonly GateDecisionSummaryViewModel[];
+  availablePolicies: readonly GateReviewAvailablePolicyViewModel[];
+  eligibleMembers: readonly GateReviewMemberViewModel[];
+  eligibleClosureActions: readonly GateReviewClosureActionViewModel[];
+  exceptionRequestOptions: readonly GateReviewExceptionRequestOptionViewModel[];
+  decisionReadiness: GateReviewDecisionReadinessViewModel;
+  blockers: readonly GateReviewBlockerViewModel[];
+  dependencyChanges: readonly GateReviewDependencyChangeViewModel[];
+  permissions: {
+    canView: true;
+    canStartReview: boolean;
+    canReview: boolean;
+    canRequestException: boolean;
+    canApproveException: boolean;
+    canDecide: boolean;
+    canReopen: boolean;
   };
 }
 

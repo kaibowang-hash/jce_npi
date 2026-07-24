@@ -14,7 +14,7 @@ import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
 import { LiveProjectCockpitDataSource } from "../api/project-data-source";
-import { LiveGateEvidenceDataSource } from "../api/gate-evidence-data-source";
+import { LiveGateReviewDataSource } from "../api/gate-review-data-source";
 import {
   LiveProjectDomainWorkItemsDataSource,
   LiveProjectWorkContextDataSource,
@@ -32,7 +32,7 @@ const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
 const liveProjectDomainWorkItemsDataSource =
   new LiveProjectDomainWorkItemsDataSource();
-const liveGateEvidenceDataSource = new LiveGateEvidenceDataSource();
+const liveGateReviewDataSource = new LiveGateReviewDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -97,7 +97,7 @@ export function App(): React.JSX.Element {
       />
     ) : route.screen === "gate" && route.gateMode === "live" ? (
       <GateEvidencePage
-        dataSource={liveGateEvidenceDataSource}
+        dataSource={liveGateReviewDataSource}
         gateGlobalId={route.gateGlobalId ?? ""}
         navigate={guardedNavigate}
         projectGlobalId={route.projectGlobalId ?? ""}

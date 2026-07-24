@@ -1094,40 +1094,12 @@ Evidence scan pending,证据扫描待处理
 Evidence scan passed,证据扫描已通过
 Evidence scan failed,证据扫描失败
 Evidence threat detected,证据检测到威胁
-Loading Gate evidence workspace,正在加载阶段门证据工作区
-Gate evidence is unavailable,阶段门证据不可用
-The Gate evidence workspace was not found or is not available to your account.,未找到该阶段门证据工作区，或您的账户无权访问该工作区。
-Gate evidence access is not available,阶段门证据访问不可用
-Your account cannot open this Gate evidence workspace. No protected evidence data was displayed.,您的账户无法打开此阶段门证据工作区。未显示任何受保护的证据数据。
-The Gate evidence address is invalid,阶段门证据地址无效
-Open Gate evidence from an authorized Project Gate reference.,请从已授权的项目阶段门引用打开阶段门证据。
-The Gate evidence view is out of date,阶段门证据视图已过期
-Reload Gate evidence before continuing with current data.,请先重新加载阶段门证据，再继续使用当前数据。
-Gate evidence could not be loaded,无法加载阶段门证据
-Retry the live Gate evidence request or share the displayed reference ID with support.,请重试实时阶段门证据请求，或将显示的参考编号提供给支持人员。
-The Gate evidence response could not be used safely,无法安全使用阶段门证据响应
-No Gate evidence was displayed. Share the displayed reference ID with support before trying another action.,未显示任何阶段门证据。请先将显示的参考编号提供给支持人员，再尝试其他操作。
-Reload Gate evidence,重新加载阶段门证据
-Gate requirements,阶段门需求
 Classification,分类
 Controlled evidence,受控证据
 Evidence,证据
 Not applicable,不适用
 No controlled evidence is attached.,未关联任何受控证据。
-Required evidence is missing,缺少必需证据
-Evidence scan requires attention,证据扫描需要关注
-Exact evidence references recorded,已记录精确证据引用
-You have view-only access. Evidence attachment is not available in this workspace.,您仅有查看权限。此工作区不提供证据关联功能。
-No evidence,无证据
-This Gate has frozen requirements but no controlled evidence references.,此阶段门已冻结需求，但没有受控证据引用。
-Unsafe scan state remains visible,不安全的扫描状态仍然可见
-"Pending, failed, or infected file scans are not represented as clean evidence.",待处理、失败或已感染的文件扫描不会被视为未发现威胁的证据。
 Gate version,阶段门版本
-Required requirements,必需需求
-Missing required evidence,缺失的必需证据
-Unsafe scan results,不安全的扫描结果
-Evidence references,证据引用
-Frozen Gate context,已冻结的阶段门上下文
 Evidence kind,证据类别
 Source object type,源对象类型
 Source global ID,来源全局标识符
@@ -1141,17 +1113,7 @@ File size,文件大小
 Select a requirement with evidence to inspect its exact controlled reference.,选择一个包含证据的需求，以查看其精确的受控引用。
 Requirement key,需求键
 Requirement title,需求标题
-Priority,优先级
-Reviewers,评审人
 Allowed evidence kinds,允许的证据类别
-Evidence count,证据数量
-Gate template global ID,阶段门模板全局标识符
-Gate template version,阶段门模板版本
-Gate template snapshot hash,阶段门模板快照哈希
-Requirement snapshot hash,需求快照哈希
-Frozen,已冻结
-Frozen by,冻结人
-Requirement evidence completeness does not mean this Gate is ready for a decision.,需求证据完整性并不意味着此阶段门已具备决策条件。
 File revisions can only be changed through an authorized NPI file command.,文件修订版只能通过已授权的 NPI 文件命令更改。
 File scan results can only be changed by an authorized scanner operation.,文件扫描结果只能由已授权的扫描操作更改。
 Gate evidence references can only be added through an authorized NPI Gate command.,阶段门证据引用只能通过已授权的 NPI 阶段门命令添加。
@@ -1272,3 +1234,507 @@ NPI Gate Template Version,NPI 阶段门模板版本
 Gate Template,阶段门模板
 Gate Template Version Title,阶段门模板版本标题
 Gate Requirement Definitions,阶段门需求定义
+Enter a valid SHA-256 hash.,请输入有效的 SHA-256 哈希值。
+Enter a valid identifier.,请输入有效的标识符。
+Enter a non-negative integer.,请输入非负整数。
+Enter a timezone-aware date and time.,请输入包含时区的日期和时间。
+Select a supported requirement priority.,请选择支持的需求优先级。
+Only file evidence can have a file-safety failure.,只有文件证据才能存在文件安全失败。
+Select a supported schema version.,请选择支持的模式版本。
+Enter a valid Gate input snapshot.,请输入有效的阶段门输入快照。
+Too many Gate input records were supplied.,提供的阶段门输入记录过多。
+Gate input identities must be unique.,阶段门输入标识必须唯一。
+Evidence must reference a requirement in this snapshot.,证据必须引用此快照中的需求。
+Enter unique eligible requirement keys.,请输入唯一的合格需求键。
+The maximum exception validity is too long.,最大豁免有效期过长。
+The closure action kind must be action.,闭环行动类别必须为行动。
+This condition does not accept a priority.,此条件不接受优先级。
+Select supported requirement priorities.,请选择支持的需求优先级。
+The policy version identifier is not canonical.,策略版本标识符不是规范格式。
+Enter between one and 32 review steps.,请输入 1 至 32 个评审步骤。
+Review step keys must be unique.,评审步骤键必须唯一。
+Review authority slots must be unique.,评审权限槽位必须唯一。
+Decision and reopen authority must be separate from review assignments.,决策权限和重新打开权限必须与评审分配相分离。
+Enter unique supported exception rules.,请输入唯一且受支持的豁免规则。
+Select unique supported dependency evaluators.,请选择唯一且受支持的依赖评估器。
+A published review policy version cannot be changed.,已发布的评审策略版本不能更改。
+Only a published policy can create its next draft version.,只有已发布的策略才能创建下一草稿版本。
+The Gate decision identifier is not canonical.,阶段门决策标识符不是规范格式。
+The decision input scope does not match.,决策输入范围不匹配。
+The Gate decision snapshot hash is invalid.,阶段门决策快照哈希无效。
+The requester and exception approver must be different users.,请求人与豁免批准人必须是不同用户。
+The exception must reference a closure action.,豁免必须引用闭环行动。
+The expiry must be after the request time.,到期时间必须晚于请求时间。
+A pending exception cannot have a decision.,待处理的豁免不能包含决策。
+A closed exception requires an exact decision.,已关闭的豁免需要精确决策。
+The exception decision actor must match its approver.,豁免决策操作人必须与其批准人一致。
+The decision cannot predate the request.,决策时间不能早于请求时间。
+An approved exception must be decided before expiry.,已批准的豁免必须在到期前完成决策。
+This exception request already has a decision.,此豁免请求已有决策。
+The assigned exception approval authority is required.,需要已分配的豁免批准权限。
+An expired exception cannot be approved.,已过期的豁免不能批准。
+A transition must create a new cycle.,状态转换必须创建新周期。
+The review event identifier is not canonical.,评审事件标识符不是规范格式。
+The review event prior decision reference is incomplete.,评审事件的先前决策引用不完整。
+The review event hash is invalid.,评审事件哈希无效。
+The review cycle identifier is not canonical.,评审周期标识符不是规范格式。
+Enter a valid review policy.,请输入有效的评审策略。
+A published review policy is required.,需要已发布的评审策略。
+Enter a valid review cycle.,请输入有效的评审周期。
+The Gate input snapshot scope does not match.,阶段门输入快照范围不匹配。
+Selected review steps must match the frozen Gate input.,所选评审步骤必须与已冻结的阶段门输入一致。
+Bind every selected policy authority exactly once.,请将每项所选策略权限精确绑定一次。
+Review records must be unique.,评审记录必须唯一。
+Review records do not match this review cycle.,评审记录与此评审周期不匹配。
+Review records do not follow the selected sequence.,评审记录未遵循所选顺序。
+Exception records do not match this review cycle.,豁免记录与此评审周期不匹配。
+Exception approval binding does not match this review cycle.,豁免批准绑定与此评审周期不匹配。
+The first review cycle must be a manual start.,首个评审周期必须手动启动。
+A successor cycle requires its prior cycle.,后续周期需要其先前周期。
+The prior review cycle identifier is not canonical.,先前评审周期标识符不是规范格式。
+The successor prior decision reference is incomplete.,后续周期的先前决策引用不完整。
+Enter a valid Gate decision snapshot.,请输入有效的阶段门决策快照。
+An active or superseded cycle cannot have a decision.,活动或已取代的周期不能包含决策。
+A decided or invalidated cycle requires a decision.,已决策或已失效的周期需要决策。
+The decision does not match this review cycle.,决策与此评审周期不匹配。
+The decision version does not match this review cycle.,决策版本与此评审周期不匹配。
+A decision cannot predate its review records.,决策时间不能早于其评审记录。
+The decision outcome does not match the frozen Gate input.,决策结果与已冻结的阶段门输入不匹配。
+The conditional decision lacks an exact approved exception.,有条件决策缺少精确的已批准豁免。
+The current Gate input scope does not match.,当前阶段门输入范围不匹配。
+The Gate input changed and requires a new review cycle.,阶段门输入已变更，需要新的评审周期。
+This review cycle is not active.,此评审周期不是活动状态。
+This review step is not selected.,未选择此评审步骤。
+This review has already been recorded.,此评审已记录。
+The assigned reviewer is required.,需要已分配的评审人。
+Complete every earlier review sequence first.,请先完成之前的所有评审顺序。
+The published policy does not allow this exception.,已发布的策略不允许此豁免。
+This requirement is not in the frozen Gate input.,此需求不在已冻结的阶段门输入中。
+This requirement cannot use the selected exception.,此需求不能使用所选豁免。
+Unsafe file evidence cannot be excepted.,不安全的文件证据不能获得豁免。
+The required closure action is missing.,缺少所需的闭环行动。
+The exception expiry exceeds the published policy.,豁免到期时间超出已发布策略的限制。
+The exception requester and approver must be different users.,豁免请求人与批准人必须是不同用户。
+This exception request already exists.,此豁免请求已存在。
+The exception request was not found.,未找到豁免请求。
+The assigned decision authority is required.,需要已分配的决策权限。
+Every selected review must approve before this Gate can pass.,所有所选评审均须批准，此阶段门才能通过。
+File evidence is not safe and current.,文件证据不安全或不是当前版本。
+Resolve every blocking item before this Gate can pass.,请解决所有阻断项，此阶段门才能通过。
+Required P0 evidence cannot be excepted.,必需的 P0 证据不能获得豁免。
+Required evidence is missing.,缺少必需证据。
+A conditional pass requires an eligible evidence exception.,有条件通过需要符合条件的证据豁免。
+Every excepted requirement needs a current approved exception.,每项获豁免的需求都需要当前有效且已批准的豁免。
+A completed decision is required before reopening.,重新打开前需要已完成的决策。
+The assigned reopen authority is required.,需要已分配的重新打开权限。
+A current active or decided cycle is required before refresh.,刷新前需要当前活动或已决策的周期。
+The published policy does not allow this dependency evaluator.,已发布的策略不允许此依赖评估器。
+The Gate input has not changed.,阶段门输入未发生变更。
+Enter valid current authority bindings.,请输入有效的当前权限绑定。
+Enter a valid review cycle transition.,请输入有效的评审周期转换。
+Select an applicable published Gate Review Policy.,请选择适用且已发布的阶段门评审策略。
+Select the exact requirement from this review cycle.,请选择此评审周期中的精确需求。
+Select the current exact Gate Review Policy.,请选择当前精确的阶段门评审策略。
+Select current members from this Project.,请选择此项目的当前成员。
+Select a current same-Gate closure action.,请选择当前同一阶段门的闭环行动。
+{field} must contain a valid value.,{field} 必须包含有效值。
+{field} must contain valid canonical JSON.,{field} 必须包含有效的规范结构化数据。
+{field} must be a valid date and time.,{field} 必须是有效的日期和时间。
+A protected Gate review field cannot be changed.,受保护的阶段门评审字段不能更改。
+Gate review history can only be changed through an authorized NPI Gate command.,阶段门评审历史只能通过已授权的 NPI 阶段门命令更改。
+Controlled Gate review history cannot be deleted.,受控阶段门评审历史不能删除。
+Gate decision snapshots cannot be changed.,阶段门决策快照不能更改。
+Review Cycle Global ID,评审周期全局标识符
+Review Policy Global ID,评审策略全局标识符
+Review Cycle Number,评审周期编号
+Review Policy Version,评审策略版本
+Review Policy Snapshot Hash,评审策略快照哈希
+Review Cycle Version,评审周期版本
+Select a supported Gate decision outcome.,请选择支持的阶段门决策结果。
+Decision Actor,决策操作人
+Occurred At,发生时间
+Review Input Snapshot,评审输入快照
+Review Input Hash,评审输入哈希
+Review Input Snapshot does not match its hash.,评审输入快照与其哈希不匹配。
+Review Record Hashes,评审记录哈希
+Review Exception Hashes,评审豁免哈希
+A conditional pass requires an approved exception.,有条件通过需要已批准的豁免。
+{field} must not contain duplicate hashes.,{field} 不能包含重复哈希。
+Gate Decision Snapshot,阶段门决策快照
+Select a supported Gate review cycle state.,请选择支持的阶段门评审周期状态。
+A new Gate review cycle must start active at version one.,新的阶段门评审周期必须以版本一的活动状态开始。
+The Gate review cycle state transition is not allowed.,不允许此阶段门评审周期状态转换。
+Gate Shell must match the exact Gate Global ID.,阶段门框架必须与精确的阶段门全局标识符匹配。
+Started By,启动人
+Started At,启动时间
+Review Policy Snapshot,评审策略快照
+Review Policy Snapshot does not match its exact reference.,评审策略快照与其精确引用不匹配。
+Authority Bindings,权限绑定
+Selected Review Steps,所选评审步骤
+Bind every selected Gate review authority.,请绑定所有所选阶段门评审权限。
+Authority Bindings contain an invalid binding.,权限绑定包含无效绑定。
+Authority Slot,权限槽位
+Assigned User,已分配用户
+Assigned Member,已分配成员
+Authority Binding slots must be unique.,权限绑定槽位必须唯一。
+Select at least one Gate review step.,请至少选择一个阶段门评审步骤。
+Selected Review Steps contain an invalid step.,所选评审步骤包含无效步骤。
+Review Step Key,评审步骤键
+Review Step Sequence,评审步骤顺序
+Select a supported review activation.,请选择支持的评审激活条件。
+Select a supported review activation priority.,请选择支持的评审激活优先级。
+Selected Review Steps do not match their authority bindings.,所选评审步骤与其权限绑定不匹配。
+An initial review cycle cannot reference a prior decision.,初始评审周期不能引用先前决策。
+A successor review cycle requires the exact prior cycle.,后续评审周期需要精确的先前周期。
+Prior Review Cycle Global ID,先前评审周期全局标识符
+Prior Decision Snapshot Global ID,先前决策快照全局标识符
+Prior Decision Hash,先前决策哈希
+Gate review events cannot be changed.,阶段门评审事件不能更改。
+Review Event Key,评审事件键
+Event Actor,事件操作人
+Successor Review Cycle Global ID,后续评审周期全局标识符
+Impact Action Global ID,影响行动全局标识符
+Review Event references do not match its event type.,评审事件引用与其事件类型不匹配。
+Review Event Payload,评审事件载荷
+Review Event Payload does not match this event.,评审事件载荷与此事件不匹配。
+Review Event Payload must contain an exact event detail.,评审事件载荷必须包含精确的事件详情。
+Review Event Payload contains an invalid exception decision.,评审事件载荷包含无效的豁免决策。
+Review Exception Global ID,评审豁免全局标识符
+Exception Decision Snapshot Hash,豁免决策快照哈希
+Review Event Payload contains an invalid reopen detail.,评审事件载荷包含无效的重新打开详情。
+Reopen Reason,重新打开原因
+Review Event Payload contains an invalid dependency refresh detail.,评审事件载荷包含无效的依赖刷新详情。
+Dependency Refresh Reason,依赖刷新原因
+Old Review Input Hash,旧评审输入哈希
+New Review Input Hash,新评审输入哈希
+Review invalidation requires a changed input hash.,评审失效需要已变更的输入哈希。
+The dependency refresh prior decision is incomplete.,依赖刷新所需的先前决策不完整。
+Dependency Change Initiator,依赖变更发起人
+A new Gate review exception must start pending at version one.,新的阶段门评审豁免必须以版本一的待处理状态开始。
+A pending Gate review exception cannot contain a decision.,待处理的阶段门评审豁免不能包含决策。
+The Gate review exception state transition is not allowed.,不允许此阶段门评审豁免状态转换。
+Requester Member Global ID,请求人成员全局标识符
+Approver Member Global ID,批准人成员全局标识符
+Closure Action Global ID,闭环行动全局标识符
+Review Exception Kind,评审豁免类别
+Exception Reason,豁免原因
+Exception Risk,豁免风险
+Requester User,请求用户
+Approver Authority Slot,批准人权限槽位
+Approver User,批准用户
+The exception requester cannot approve the same exception.,豁免请求人不能批准同一豁免。
+Requested At,请求时间
+Expires At,到期时间
+Exception expiry must be later than its request time.,豁免到期时间必须晚于其请求时间。
+Exception Request Snapshot,豁免请求快照
+Select a supported exception decision.,请选择支持的豁免决策。
+Approval Opinion,批准意见
+Decided At,决策时间
+Exception Decision Snapshot,豁免决策快照
+A Gate review idempotency response must be sealed after the command succeeds.,阶段门评审幂等响应必须在命令成功后封存。
+Gate Review Policy Code,阶段门评审策略编码
+Gate Review Policy Title,阶段门评审策略标题
+A Gate Review Policy with version history cannot be deleted.,具有版本历史的阶段门评审策略不能删除。
+A published Gate Review Policy version cannot be changed.,已发布的阶段门评审策略版本不能更改。
+Gate Review Policy Version Title,阶段门评审策略版本标题
+Select an exact published Gate Template version.,请选择精确的已发布阶段门模板版本。
+Enter a valid Gate Review Policy.,请输入有效的阶段门评审策略。
+A published Gate Review Policy version cannot be deleted.,已发布的阶段门评审策略版本不能删除。
+Select an existing Gate Review Policy.,请选择现有阶段门评审策略。
+Enter a valid Gate Review Policy version.,请输入有效的阶段门评审策略版本。
+Publish each Gate Review Policy version before creating the next.,请先发布当前阶段门评审策略版本，再创建下一版本。
+Review Steps,评审步骤
+Review Steps contains an unsupported field.,评审步骤包含不支持的字段。
+Exception Rules,豁免规则
+Exception Rules contains an unsupported field.,豁免规则包含不支持的字段。
+Dependency Evaluators,依赖评估器
+Dependency Evaluators contains an unsupported value.,依赖评估器包含不支持的值。
+Canonical Policy Snapshot,规范策略快照
+Gate review records cannot be changed.,阶段门评审记录不能更改。
+Assigned Member Global ID,已分配成员全局标识符
+Review Actor,评审操作人
+The assigned reviewer must be the review actor.,已分配的评审人必须是评审操作人。
+Select a supported review outcome.,请选择支持的评审结果。
+Review Opinion,评审意见
+Reviewed Input Hash,已评审输入哈希
+Cycle Version Before,变更前周期版本
+Cycle Version After,变更后周期版本
+Cycle Version After must advance by one.,变更后周期版本必须递增一。
+Review Record Snapshot,评审记录快照
+Review Input Version,评审输入版本
+Review Input Version must advance by one.,评审输入版本必须递增一。
+Current Review Cycle,当前评审周期
+Current Review Cycle Global ID,当前评审周期全局标识符
+Latest Decision Snapshot,最新决策快照
+Latest Decision Snapshot Global ID,最新决策快照全局标识符
+Latest Decision Snapshot Hash,最新决策快照哈希
+Gate review state references are incomplete or inconsistent.,阶段门评审状态引用不完整或不一致。
+NPI Gate Decision Snapshot,NPI 阶段门决策快照
+Gate Decision Outcome,阶段门决策结果
+pass,通过
+reject,驳回
+conditional_pass,有条件通过
+Gate Decision Snapshot Hash,阶段门决策快照哈希
+NPI Gate Review Cycle,NPI 阶段门评审周期
+Review Cycle Key,评审周期键
+Gate Shell,阶段门框架
+Review Cycle Trigger,评审周期触发方式
+manual_start,手动启动
+manual_reopen,手动重新打开
+dependency_change,依赖变更
+Review Cycle State,评审周期状态
+decided,已决策
+invalidated,已失效
+superseded,已取代
+NPI Gate Review Event,NPI 阶段门评审事件
+Review Event Type,评审事件类型
+exception_decided,豁免已决策
+reopened,已重新打开
+refreshed,已刷新
+Review Event Payload Hash,评审事件载荷哈希
+NPI Gate Review Exception,NPI 阶段门评审豁免
+Review Exception Key,评审豁免键
+Review Exception State,评审豁免状态
+approved,已批准
+rejected,已驳回
+Exception Request Snapshot Hash,豁免请求快照哈希
+NPI Gate Review Idempotency,NPI 阶段门评审幂等记录
+NPI Gate Review Policy,NPI 阶段门评审策略
+NPI Gate Review Policy Version,NPI 阶段门评审策略版本
+Gate Review Policy,阶段门评审策略
+Decision Authority Slot,决策权限槽位
+Reopen Authority Slot,重新打开权限槽位
+NPI Gate Review Record,NPI 阶段门评审记录
+Review Key,评审键
+Review Outcome,评审结果
+Review Record Snapshot Hash,评审记录快照哈希
+Review State,评审状态
+in_review,评审中
+requires_review,需要评审
+Latest Decision Outcome,最新决策结果
+In review,评审中
+Decided,已决策
+Review required,需要评审
+Manual start,手动启动
+Manual reopen,手动重新打开
+Dependency change,依赖变更
+Invalidated,已失效
+Superseded,已取代
+Decision invalidated,决策已失效
+Review cycle refreshed,评审周期已刷新
+Waiting for prior sequence,等待前序步骤
+Available for review,可进行评审
+Rejected,已驳回
+Pass,通过
+Conditional pass,有条件通过
+Reject,驳回
+Review authority,评审权限
+Decision authority,决策权限
+Reopen authority,重新打开权限
+Exception authority,豁免权限
+Acknowledge change and start review,确认变更并开始评审
+Start review,开始评审
+Decide Gate,对阶段门作出决策
+Reopen Gate,重新打开阶段门
+Loading Gate Review Room,正在加载阶段门评审室
+Gate Review Room is unavailable,阶段门评审室不可用
+The Gate Review Room was not found or is not available to your account.,未找到阶段门评审室，或您的账户无权访问。
+Gate review access is not available,阶段门评审访问不可用
+Your account cannot open this Gate Review Room. No protected review or evidence data was displayed.,您的账户无法打开此阶段门评审室。未显示任何受保护的评审或证据数据。
+The Gate review address is invalid,阶段门评审地址无效
+Open the Gate Review Room from an authorized Project Gate reference.,请从已授权的项目阶段门引用打开阶段门评审室。
+The Gate review workspace is out of date,阶段门评审工作区已过期
+Reload the Gate Review Room before continuing.,继续前请重新加载阶段门评审室。
+The Gate Review Room could not be loaded,无法加载阶段门评审室
+Retry the live Gate review request or share the displayed reference ID with support.,请重试实时阶段门评审请求，或将显示的参考编号提供给支持人员。
+The Gate review response could not be used safely,无法安全使用阶段门评审响应
+No Gate review data was displayed. Share the displayed reference ID with support before trying another action.,未显示任何阶段门评审数据。请先将显示的参考编号提供给支持人员，再尝试其他操作。
+Reload Gate review,重新加载阶段门评审
+Frozen Gate requirements,已冻结的阶段门需求
+Selected review sequence,所选评审顺序
+Selected review steps,所选评审步骤
+Step,步骤
+Assignment,分配
+Review state,评审状态
+Steps with the same sequence are reviewed in parallel. Later sequences remain unavailable until prior selected steps approve.,相同顺序的步骤会并行评审。在先前所选步骤批准前，后续顺序仍不可用。
+No review sequence is active for this Gate.,此阶段门没有活动的评审顺序。
+The request will record a bounded exception against the selected frozen requirement and closure action.,该请求将针对所选已冻结需求和闭环行动记录一个范围受限的豁免。
+The server requires current exception-request permission under the exact review policy.,服务器要求具备精确评审策略下的当前豁免请求权限。
+A successful request is preserved as controlled review history and cannot be overwritten.,成功的请求将保留为受控评审历史，且不能覆盖。
+No exception is shown until the server returns the validated updated review workspace.,在服务器返回经验证的更新评审工作区前，不显示任何豁免。
+"The request records the authenticated actor, reason, risk, expiry, input hash, and trace identity.",该请求会记录已认证操作人、原因、风险、到期时间、输入哈希和跟踪标识。
+The selected pending exception will receive one final approval or rejection opinion.,所选待处理豁免将收到一项最终批准或驳回意见。
+The exact exception authority and current internal Project membership are required.,需要精确的豁免权限以及当前内部项目成员身份。
+A successful exception decision is append-only and cannot be replaced.,成功的豁免决策仅可追加，不能替换。
+No exception decision is shown until the server confirms the immutable result.,在服务器确认不可变结果前，不显示豁免决策。
+"The decision records the authenticated authority, complete opinion, versions, input hash, and trace identity.",该决策会记录已认证的权限操作人、完整意见、版本、输入哈希和跟踪标识。
+"The server will re-resolve evidence, blockers, exceptions, reviews, and input versions before creating an immutable decision snapshot.",服务器将在创建不可变决策快照前，重新解析证据、阻断项、豁免、评审和输入版本。
+The exact policy decision authority and current internal Project membership are required.,需要精确的策略决策权限以及当前内部项目成员身份。
+A successful decision creates immutable history; rejection does not delete evidence or reviews.,成功的决策会创建不可变历史；驳回不会删除证据或评审。
+No Gate decision is shown until the server returns a validated immutable snapshot and updated workspace.,在服务器返回经验证的不可变快照和更新后的工作区前，不显示阶段门决策。
+"The decision records the authenticated authority, exact outcome, versions, input hash, snapshot hash, and trace identity.",该决策会记录已认证的权限操作人、精确结果、版本、输入哈希、快照哈希和跟踪标识。
+A new review cycle will freeze current inputs and reset review progress without copying prior approvals.,新评审周期将冻结当前输入并重置评审进度，不复制先前批准。
+The exact reopen authority and current internal Project membership are required.,需要精确的重新打开权限以及当前内部项目成员身份。
+The prior decision and its immutable snapshot remain preserved in history.,先前决策及其不可变快照会保留在历史中。
+The existing decision remains unchanged unless the server confirms a new active cycle.,除非服务器确认新的活动周期，否则现有决策保持不变。
+"The reopen event records the authenticated authority, reason, prior decision, versions, input hash, and trace identity.",重新打开事件会记录已认证的权限操作人、原因、先前决策、版本、输入哈希和跟踪标识。
+The server confirmed the review workspace update.,服务器已确认评审工作区更新。
+The server rejected the prepared command. Review the controlled field details and reload current Gate data before changing the request.,服务器拒绝了准备的命令。请评审受控字段详情，并在更改请求前重新加载当前阶段门数据。
+"The Gate, review cycle, or input version changed. Reload current data before preparing another command.",阶段门、评审周期或输入版本已变更。请先重新加载当前数据，再准备其他命令。
+The command result is unconfirmed. Retry uses the same actor-bound idempotency key and does not claim success early.,命令结果尚未确认。重试会使用同一绑定操作人的幂等键，且不会提前宣称成功。
+The command did not complete. Share the reference ID with support before preparing another action.,命令未完成。准备其他操作前，请将参考编号提供给支持人员。
+The protected Gate review context is unavailable.,受保护的阶段门评审上下文不可用。
+Processing Gate review command,正在处理阶段门评审命令
+Review commands unavailable,评审命令不可用
+Review commands are unavailable while the authenticated session context is unavailable.,已认证会话上下文不可用时，评审命令不可用。
+No active review cycle,无活动评审周期
+Select an exact published policy and explicit authority bindings before starting review.,开始评审前，请选择精确的已发布策略和明确的权限绑定。
+This Gate has no active review cycle and your current server permissions do not allow one to be started.,此阶段门没有活动评审周期，且您当前的服务器权限不允许启动周期。
+Gate input snapshot changed,阶段门输入快照已变更
+The server recorded an exact Gate input snapshot hash change. This response does not claim a field-level object diff.,服务器已记录精确的阶段门输入快照哈希变更。此响应不声称存在字段级对象差异。
+The command is processing. Other Gate review commands remain disabled until the server response is validated.,正在处理命令。在验证服务器响应前，其他阶段门评审命令保持禁用。
+Server confirmed,服务器已确认
+Gate review command failure,阶段门评审命令失败
+Retry command,重试命令
+Dismiss command error,关闭命令错误
+Review cycle,评审周期
+Downstream guard,下游管控
+Current decision accepted,当前决策已接受
+Downstream use denied,下游使用已拒绝
+Unfinished review steps,未完成的评审步骤
+Open Gate blockers,未关闭的阶段门阻断项
+Pending exceptions,待处理豁免
+Decision history,决策历史
+Frozen review inputs,已冻结评审输入
+Review evidence and blockers,评审证据与阻断项
+Review inspector,评审检查器
+Frozen requirements and review sequence,已冻结需求与评审顺序
+Selected frozen requirement,所选已冻结需求
+Requirement global ID,需求全局标识符
+Current Gate blockers,当前阶段门阻断项
+Title,标题
+No current same-Gate blocking work items were returned.,未返回当前同一阶段门的阻断工作项。
+Input version and prior decisions,输入版本与先前决策
+Current frozen input hash,当前已冻结输入哈希
+Cycle trigger,周期触发方式
+Cycle state,周期状态
+Gate input snapshot change events,阶段门输入快照变更事件
+Event outcome,事件结果
+Event global ID,事件全局标识符
+Old input hash,旧输入哈希
+New input hash,新输入哈希
+Prior cycle global ID,先前周期全局标识符
+Successor cycle global ID,后续周期全局标识符
+Prior decision global ID,先前决策全局标识符
+Prior decision lineage hash,先前决策沿袭哈希
+Recorded actor,记录的操作人
+Initiated by,发起人
+System,系统
+Occurred,发生时间
+Recorded reason,记录的原因
+This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.,此事件证明阶段门输入快照哈希发生了精确变更，但不声称任何来源对象字段发生变更。
+No Gate input snapshot change event is recorded.,未记录阶段门输入快照变更事件。
+Immutable Gate decision history,不可变阶段门决策历史
+Decision global ID,决策全局标识符
+Snapshot hash,快照哈希
+Input hash,输入哈希
+Decided by,决策人
+Downstream current,下游当前有效
+Yes,是
+No,否
+No immutable Gate decision has been recorded.,尚未记录不可变阶段门决策。
+No active cycle,无活动周期
+Cycle version,周期版本
+Policy version,策略版本
+Current server action,当前服务器操作
+No permitted review action,无允许的评审操作
+Review action,评审操作
+Review policy and authority bindings,评审策略与权限绑定
+Starting review acknowledges the recorded input snapshot change. Prior approvals remain immutable and are not copied.,开始评审即确认已记录的输入快照变更。先前批准保持不可变且不会复制。
+Published review policy,已发布的评审策略
+No applicable published review policy is available.,没有可用的适用已发布评审策略。
+Authority assignment,权限分配
+No enabled internal Project member is available for authority binding.,没有可用于权限绑定的已启用内部项目成员。
+Assigned review opinion,已分配的评审意见
+Authority slot,权限槽位
+Assigned member,已分配成员
+Review outcome,评审结果
+Complete review opinion,完整评审意见
+Controlled exception request,受控豁免请求
+Exception kind,豁免类别
+Maximum validity,最长有效期
+Risk if accepted,接受后的风险
+Exception expiry date,豁免到期日期
+Required closure action,所需闭环行动
+Closure action state,闭环行动状态
+No eligible same-Project closure action is available for this exception.,此豁免没有可用的合格同项目闭环行动。
+Pending exception decision,待处理豁免决策
+Exception global ID,豁免全局标识符
+Request reason,请求原因
+Request risk,请求风险
+Exception decision,豁免决策
+Gate decision outcome,阶段门决策结果
+Decision outcome,决策结果
+"Decision readiness is determined again by the server. This page cannot override reviews, evidence safety, blockers, exceptions, or input drift.",服务器会重新判定决策就绪状态。本页面不能越过评审、证据安全性、阻断项、豁免或输入漂移。
+Reopen with preserved authority bindings,使用保留的权限绑定重新打开
+The server will preserve the prior immutable decision and start a new cycle from current frozen inputs.,服务器将保留先前的不可变决策，并根据当前已冻结输入启动新周期。
+The server returned view access without an applicable review command for this actor and state.,服务器为此操作人和状态返回了查看权限，但没有适用的评审命令。
+Exceptions,豁免
+Gate review exceptions,阶段门评审豁免
+No controlled exceptions are recorded in this cycle.,本周期中没有受控豁免记录。
+Cycle and immutable history,周期与不可变历史
+Cycle global ID,周期全局标识符
+Policy global ID,策略全局标识符
+Policy snapshot hash,策略快照哈希
+Started,启动时间
+Started by,启动人
+Latest decision hash,最新决策哈希
+Cycle history is unavailable until review starts.,评审开始前无法查看周期历史。
+Review controlled exception request,评审受控豁免请求
+Review exception decision,评审豁免决策
+Review immutable Gate decision,评审不可变阶段门决策
+Review Gate reopen,评审阶段门重新打开操作
+Command record not found,未找到命令记录
+No completed command record was found yet. The workspace was reloaded; verify its current state and re-enter the command inputs before submitting again.,尚未找到已完成的命令记录。工作区已重新加载；请核对其当前状态，并在再次提交前重新输入命令内容。
+Command result unconfirmed,命令结果尚未确认
+The command receipt could not be reconciled. The workspace was reloaded without claiming a command result; verify its current state before submitting another command.,无法核对命令回执。工作区已重新加载，且未声称命令结果；请在提交另一命令前核对其当前状态。
+Enter an exact closure action reference.,请输入精确的闭环行动引用。
+The closure action changed and the exception must be requested again.,闭环行动已更改，必须重新申请豁免。
+Closure Action Version,闭环行动版本
+Closure Action Snapshot Hash,闭环行动快照哈希
+The review cycle is closed.,评审周期已关闭。
+The Gate input changed.,阶段门输入已更改。
+Every selected review must approve this outcome.,每个已选评审都必须批准此结果。
+Resolve every blocking item before this outcome.,在选择此结果前解决所有阻断项。
+Required P0 evidence is missing.,缺少必需的 P0 证据。
+This outcome does not require an exception.,此结果不需要豁免。
+A current approved exception is required.,需要当前有效且已批准的豁免。
+Submit review,提交评审
+Submit review: {{step}},提交评审：{{step}}
+Request exception: {{requirement}} / {{kind}},申请豁免：{{requirement}} / {{kind}}
+Decide exception: {{requirement}} / {{kind}},决策豁免：{{requirement}} / {{kind}}
+Gate decision readiness,阶段门决策就绪状态
+A frozen authority binding is no longer eligible. The recorded policy and bindings cannot be substituted in this review cycle.,已冻结的权限绑定不再符合条件。在此评审周期内不得替换已记录的策略和绑定。
+A controlled Gate source object changed.,受控阶段门来源对象已更改。
+A controlled Gate work item changed.,受控阶段门工作项已更改。
+The exact Gate input snapshot changed.,精确阶段门输入快照已更改。
+A controlled Gate input dependency changed.,受控阶段门输入依赖项已更改。
+Immutable review records,不可变评审记录
+Reviewed At,评审时间
+No immutable review record has been captured in this cycle.,本周期尚未捕获不可变评审记录。
+Frozen decision input rows,已冻结决策输入明细
+Frozen requirements,已冻结需求
+Priority,优先级
+Evidence complete,证据完整
+Frozen evidence,已冻结证据
+Is file,是否文件
+File safe,文件安全
+Frozen blockers,已冻结阻断项
+Blocker global ID,阻断项全局标识符
+Terminal,终态
+Frozen dependencies,已冻结依赖项
+Dependency kind,依赖类别
+Exception validity,豁免有效性
+Approved through recorded expiry,"已批准，有效至记录的到期时间"
+Not valid,无效
+Decision opinion,决策意见

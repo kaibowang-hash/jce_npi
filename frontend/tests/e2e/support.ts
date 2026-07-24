@@ -293,7 +293,7 @@ export async function expectIndustrialComputedStyles(
       auditSquareSurface(panel, "panel");
     }
     for (const control of document.querySelectorAll(
-      ".page .npi-input, .page .npi-select, .page textarea, .photo-action__button, .section-anchors button, .rectangular-tabs button",
+      ".page .npi-input, .page .npi-select, .photo-action__button, .section-anchors button, .rectangular-tabs button",
     )) {
       auditSquareSurface(control, "ordinary control");
       if (isVisible(control)) {
@@ -301,6 +301,17 @@ export async function expectIndustrialComputedStyles(
         if (height < 28 || height > 40) {
           failures.push(
             `ordinary control height resolved to ${String(height)}px`,
+          );
+        }
+      }
+    }
+    for (const textarea of document.querySelectorAll(".page textarea")) {
+      auditSquareSurface(textarea, "multiline control");
+      if (isVisible(textarea)) {
+        const height = textarea.getBoundingClientRect().height;
+        if (height < 28 || height > 160) {
+          failures.push(
+            `multiline control height resolved to ${String(height)}px`,
           );
         }
       }

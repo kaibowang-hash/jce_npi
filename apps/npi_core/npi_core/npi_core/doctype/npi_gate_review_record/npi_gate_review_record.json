@@ -38,6 +38,7 @@
     {"fieldname": "record_snapshot_hash", "fieldtype": "Data", "label": "Review Record Snapshot Hash", "reqd": 1, "read_only": 1}
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
   ]
 }

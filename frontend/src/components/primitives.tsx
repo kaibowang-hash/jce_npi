@@ -140,12 +140,14 @@ export function ImpactReview({
   confirmLabel,
   onCancel,
   onConfirm,
+  reasonRequired = true,
 }: {
   title: string;
   details: ImpactReviewDetails;
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: (reason: string) => void;
+  reasonRequired?: boolean;
 }): React.JSX.Element {
   const { t } = useI18n();
   const headingId = useId();
@@ -240,30 +242,32 @@ export function ImpactReview({
             <dd>{details.audit}</dd>
           </div>
         </dl>
-        <label className="field-control">
-          <span>
-            {t("Reason")} <span aria-hidden="true">*</span>
-          </span>
-          <textarea
-            aria-describedby={reasonHelpId}
-            aria-label={t("Reason")}
-            onChange={(event) => {
-              setReason(event.currentTarget.value);
-            }}
-            required
-            rows={3}
-            value={reason}
-          />
-          <small id={reasonHelpId}>
-            {t("A reason is required to prepare this command.")}
-          </small>
-        </label>
+        {reasonRequired ? (
+          <label className="field-control">
+            <span>
+              {t("Reason")} <span aria-hidden="true">*</span>
+            </span>
+            <textarea
+              aria-describedby={reasonHelpId}
+              aria-label={t("Reason")}
+              onChange={(event) => {
+                setReason(event.currentTarget.value);
+              }}
+              required
+              rows={3}
+              value={reason}
+            />
+            <small id={reasonHelpId}>
+              {t("A reason is required to prepare this command.")}
+            </small>
+          </label>
+        ) : null}
         <footer className="impact-review__footer">
           <Button className="impact-review__cancel" onClick={onCancel}>
             {t("Cancel")}
           </Button>
           <Button
-            disabled={!reason.trim()}
+            disabled={reasonRequired && !reason.trim()}
             onClick={() => {
               onConfirm(reason.trim());
             }}

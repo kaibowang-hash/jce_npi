@@ -1309,12 +1309,161 @@ textarea::placeholder {
     );
 }
 
+.gate-review-layout {
+  grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.35fr) var(
+      --npi-inspector-width,
+      var(--npi-layout-contextInspector)
+    );
+}
+
+.gate-review-room {
+  min-width: 0;
+}
+
+.gate-review-room h3 {
+  margin: var(--npi-space-3) var(--npi-space-0) var(--npi-space-2);
+  color: var(--npi-color-text-primary);
+  font-size: var(--npi-typography-size-sm);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.gate-review-room h4 {
+  margin: var(--npi-space-3) var(--npi-space-0) var(--npi-space-2);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-sm);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.gate-review-room
+  :where(.panel__body > h3:first-child, .review-room-section > h3:first-child) {
+  margin-top: var(--npi-space-0);
+}
+
 .gate-requirements-table {
   min-width: 540px;
 }
 
+.gate-review-steps-table {
+  min-width: 620px;
+}
+
+.gate-review-records-table {
+  min-width: 1760px;
+}
+
+.gate-review-step-assignment {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
 .gate-evidence-table {
   min-width: 480px;
+}
+
+.gate-blockers-table {
+  min-width: 720px;
+}
+
+.review-room-section {
+  min-width: 0;
+  padding-block: var(--npi-space-3);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.review-room-section:first-child {
+  padding-top: var(--npi-space-0);
+  border-top: var(--npi-space-0);
+}
+
+.review-action-form {
+  margin-top: var(--npi-space-3);
+  padding-top: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.review-action-form .field-control {
+  margin-top: var(--npi-space-2);
+}
+
+.empty-inline {
+  margin: var(--npi-space-2) var(--npi-space-0);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-sm);
+}
+
+.gate-decision-history,
+.gate-dependency-history,
+.gate-exception-list {
+  display: grid;
+  margin: var(--npi-space-2) var(--npi-space-0) var(--npi-space-0);
+  padding: var(--npi-space-0);
+  gap: var(--npi-space-2);
+  list-style: none;
+}
+
+.gate-decision-history__item,
+.gate-dependency-history__item,
+.gate-exception-list__item {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-border-strong);
+  background: var(--npi-color-surface-subtle);
+}
+
+.gate-exception-list__item {
+  gap: var(--npi-space-1);
+}
+
+.controlled-code-value {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
+.controlled-code-value code {
+  color: var(--npi-color-text-muted);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.gate-decision-input-detail {
+  min-width: 0;
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.gate-decision-input-detail > summary {
+  min-height: var(--npi-density-control-compact);
+  padding: var(--npi-space-2);
+  color: var(--npi-color-brand-primary);
+  font-weight: var(--npi-typography-weight-semibold);
+  cursor: pointer;
+}
+
+.gate-decision-input-detail__section {
+  min-width: 0;
+  overflow-x: auto;
+  padding: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-default);
+}
+
+.gate-decision-input-detail__section .data-table {
+  min-width: 980px;
+}
+
+.command-failure {
+  display: grid;
+  justify-items: start;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-3);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-semantic-danger);
+  background: var(--npi-color-semantic-dangerSubtle);
+}
+
+.command-failure > p {
+  margin: var(--npi-space-0);
 }
 
 .table-selection-button {
@@ -1625,6 +1774,18 @@ textarea::placeholder {
 
   to {
     opacity: 1;
+  }
+}
+
+@media (width > 1180px) and (width <= 1500px) {
+  .gate-review-layout {
+    grid-template-columns:
+      minmax(300px, 0.9fr)
+      minmax(400px, 1.35fr)
+      minmax(
+        340px,
+        var(--npi-inspector-width, var(--npi-layout-contextInspector))
+      );
   }
 }
 

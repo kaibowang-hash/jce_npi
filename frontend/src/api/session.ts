@@ -22,6 +22,10 @@ export class SessionClient {
 
   constructor(private readonly http = new NpiHttpClient()) {}
 
+  clearSession(): void {
+    this.csrfToken = null;
+  }
+
   async getBootstrap(
     validate: SessionBootstrapValidator,
   ): Promise<SessionBootstrap> {

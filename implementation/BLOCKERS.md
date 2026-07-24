@@ -4,24 +4,33 @@
 
 None.
 
-## Final Codex Cloud handoff checkpoint
+## Final CLI-to-Cloud handoff checkpoint
 
-P4-04 is paused by the explicit final handoff instruction after a bounded
-backend-foundation checkpoint. This is not a Hard Blocker and not a Gate
-result. The pure domain, policy/history scaffolds, Gate Shell state boundary,
-transport-role definition, strict BFF/OpenAPI surface, and affected Level 1
-tests are retained. The core Frappe Gate review repository is deliberately not
-retained because the late draft called undefined helpers and had no tests.
-Consequently the API factory is an explicit future injection boundary, not a
-live success path.
+P4-04 is paused by the explicit final handoff instruction after the current
+minimum consistent implementation and repair batch. This is not a Hard
+Blocker and not a Gate result. The live repository/idempotency/permission
+boundary, strict BFF/OpenAPI surface, dependency hooks, focused runtime, live
+Review Room, complete direct `zh`/`zh-TW` catalogs, and directly affected Level
+1 tests are retained.
 
-The current localization check is a known failing criterion: 265 new source
-strings are missing from each Chinese catalog. Core repository/idempotency/
-DocPerm work, automatic invalidation, runtime migration, UI, trilingual
-browser/visual evidence, Task Gate, and triggered Level 3 also remain open.
+No directly affected Level 1 failure is waived. P4-04 remains `IN_PROGRESS`
+because its complete state-specific E2E/visual matrix, module coverage/build/
+audit lane, migration/runtime compatibility reruns, Level 2 Task Gate, and
+contract/Schema/authentication/permission/shared-catalog-triggered Level 3
+have not run. Production review/exception/invalidation/segregation policy is
+also still a scoped Class-B hold.
+
+The former P4-04 plan requirement to create an automatic impact Domain
+WorkItem was an overreach. Authoritative `FR-SG-007` requires invalidation and
+re-review, while P4-05 owns work/lifecycle projection. P4-04 therefore creates
+successor cycles and exact dependency events, keeps downstream use denied,
+and leaves the legacy action reference null. This scope correction is not a
+blocker and does not install a production policy.
+
 Resume only from
 `implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`; P4-04 must not be
-marked `PASS`, and P4-05 must not start, until those applicable criteria pass.
+marked `PASS`, and P4-05 must not start, until all applicable pending criteria
+pass.
 
 ## Open external acceptance and reconciliation inputs
 
@@ -95,3 +104,9 @@ not claim production approval authority.
   159 forced and clean exact visual cases, original-resolution review, and
   independent security/trace/release review. P4-04 is the current unfinished
   task and is paused at the Codex Cloud handoff checkpoint.
+- P4-04's earlier missing-repository and untranslated-catalog checkpoint gaps
+  are resolved in the current implementation checkpoint: the focused live
+  runtime, 116 Python tests, 93 frontend tests, four affected E2E cases, and
+  three trilingual exact visuals pass with 1740 complete direct catalog
+  entries. This closes those earlier implementation blockers but does not
+  substitute for the still-pending P4-04 Task and Release Gates.

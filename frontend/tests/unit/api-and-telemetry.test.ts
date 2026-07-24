@@ -546,6 +546,35 @@ describe("NPI BFF client boundary", () => {
     );
   });
 
+  it("removes the in-memory CSRF token when the session is cleared", async () => {
+    const bootstrap = {
+      allowedLanguages: ["en"] as const,
+      catalog: { language: "en" as const, messages: {}, version: "v1" },
+      csrfToken: "csrf-v1",
+      language: "en" as const,
+      userId: "phase3@example.invalid",
+    };
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(<T>(): Promise<T> => Promise.resolve(bootstrap as T));
+    const client = new SessionClient(http);
+
+    await client.getBootstrap(acceptBootstrapFixture);
+    client.clearSession();
+    await client.setLanguage("zh", acceptBootstrapFixture);
+
+    expect(request).toHaveBeenNthCalledWith(
+      2,
+      "/session/language",
+      expect.objectContaining({
+        body: JSON.stringify({ language: "zh" }),
+        method: "PUT",
+      }),
+      { csrfToken: undefined, validate: acceptBootstrapFixture },
+    );
+  });
+
   it("reconciles an indeterminate language result before issuing a duplicate PUT", async () => {
     const bootstrap = {
       allowedLanguages: ["en", "zh", "zh-TW"] as const,

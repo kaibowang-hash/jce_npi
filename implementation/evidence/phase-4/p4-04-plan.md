@@ -1,6 +1,6 @@
 # P4-04 Implementation Boundary — Review, Decision, Snapshot, and Reopen
 
-Status: **IN PROGRESS — backend foundation checkpoint retained; full slice not validated**
+Status: **IN PROGRESS — live implementation checkpoint retained; Task Gate not passed**
 
 Recorded: 2026-07-24
 
@@ -11,33 +11,36 @@ Atomic task: `P4-04 — Review, decision, snapshot, and reopen`
 Requirement allocation: `FR-SG-003`, `FR-SG-005`, `FR-SG-006`,
 `FR-SG-007`, with the current Phase 4 contribution to `FR-CO-006`
 
-## 0. Final Codex Cloud handoff checkpoint
+## 0. Final CLI-to-Cloud handoff checkpoint
 
-The final recoverable handoff retains a bounded P4-04 backend foundation:
-the pure review/exception/decision/reopen domain, versioned synthetic policy
-persistence, controlled review-history DocTypes, Gate Shell review-input and
-state fields, the non-Desk transport-role definition, seven BFF routes, and
-closed OpenAPI/data-ownership contracts. Directly affected Level 1 tests pass
-after removal of an unverified future-permission residue.
+The final recoverable handoff retains the current P4-04 implementation:
+the review/exception/decision/reopen domain, versioned synthetic policy,
+controlled immutable history, live Frappe repository, sealed actor-bound
+idempotency receipts, fixed aggregate locks, strict BFF/OpenAPI surface,
+dependency hooks, focused live runtime, and a live trilingual industrial
+Review Room. Directly affected Level 1 tests, receipt/requires-review E2E, and
+three normal-state exact visual baselines pass.
 
-This is not a live vertical slice. The default API factory intentionally names
-the future `npi_core.gate_review.frappe_repository`, which is not present at
-this checkpoint. No command can therefore be represented as end-to-end
-working. Actor-bound idempotency, transport DocPerms, Gate-root transactions,
-audit, automatic dependency invalidation/impact action, runtime migration,
-frontend review room, translations, browser/visual evidence, Task Gate, and
-triggered Level 3 remain unfinished.
+The implementation remains an unfinished atomic task, not an accepted vertical
+slice. Its complete state-specific E2E/visual matrix, module coverage/build/
+audit lane, migration/runtime compatibility reruns, Level 2 Task Gate, and the
+contract/Schema/authentication/permission/shared-catalog-triggered Level 3
+remain pending. P4-04 and Phase 4 stay `IN_PROGRESS`; P4-05 is not activated.
 
-The Frappe catalog check currently fails closed because the new backend and
-DocType sources add 265 untranslated entries in each of `zh` and `zh-TW`.
-This is recorded evidence, not a waived criterion. P4-04 and Phase 4 remain
-`IN_PROGRESS`; P4-05 is not activated.
+The generated plan originally overreached by requiring automatic creation of
+an impact Domain WorkItem. Authoritative `FR-SG-007` requires invalidation and
+re-review. P4-05 owns work/lifecycle projection. P4-04 therefore records exact
+dependency events, creates a successor cycle, denies downstream use, and keeps
+the legacy action reference nullable without creating a new DWI.
+
+The Frappe-compatible catalog now contains `1740` literal English sources with
+complete direct `zh` and `zh-TW` coverage. No fallback-English acceptance is
+claimed.
 
 Resume only from `p4-04-cloud-checkpoint.md` and the durable recovery files.
-Do not repeat the committed P4-03 Full Release Gate merely for handoff. Use
-Level 1 checks while completing the remaining P4-04 units, then run the
-applicable contract/Schema/auth-triggered Level 3 boundary once after the full
-slice and localization stabilize.
+Do not repeat the committed P4-03 Full Release Gate or the passing P4-04 Level
+1 lanes merely for handoff. Complete the missing P4-04 acceptance matrix, then
+run Level 2 and one triggered Level 3 boundary.
 
 ## 1. Repository facts
 
@@ -48,15 +51,13 @@ slice and localization stabilize.
   Manager administration do not by themselves confer Gate approval authority.
 - At task start, the OpenAPI `/review` and `:decide` definitions were Phase 3
   placeholders. This checkpoint replaces them with closed P4-04 contracts and
-  a strict API protocol, but the live repository implementation remains
-  intentionally absent and no end-to-end command success is claimed.
-- The `/demo/...` Gate page is an explicit in-memory prototype. The accepted
-  live Gate route currently renders the P4-03 evidence-only workspace and has
-  no decision control.
+  a strict live repository/API protocol with focused runtime evidence.
+- The accepted live Gate route now renders the P4-04 Review Room; `/demo/...`
+  remains an explicit in-memory prototype and is not runtime evidence.
 - Project-scoped Domain Work Items already carry exact Project, stage, policy,
   owner, blocking, terminal-state, optimistic-version, and audit identity.
-  They can therefore serve as Gate blockers and controlled impact actions
-  without creating a second generic task model.
+  They can therefore serve as Gate blockers. P4-04 does not create another
+  work item for dependency invalidation; P4-05 owns work projection.
 - Production approval, segregation, waiver, deviation, expiry, dependency,
   downstream-action, and disabled-member policies have not been supplied.
   They are scoped Class-B holds, not authority to invent rules.
@@ -70,8 +71,8 @@ P4-04 will implement:
 > review cycle → complete parallel, sequential, and condition-selected review
 > steps → enforce P0/evidence/scan/blocker and exception rules → create a
 > server-built immutable decision snapshot → manually reopen or automatically
-> invalidate into a new cycle while preserving the prior decision, creating an
-> impact action, and denying guarded downstream use until re-review
+> invalidate into a new cycle while preserving the prior decision and denying
+> guarded downstream use until re-review
 
 No policy is installed by migration or treated as a production default.
 Synthetic policies exist only in tests and disposable runtime evidence.
@@ -211,18 +212,18 @@ When a decided cycle's exact input changes, one transaction:
 1. preserves the old decision and snapshot;
 2. appends an exact old/new hash invalidation event;
 3. creates review cycle `n + 1` with trigger `dependency_change`;
-4. creates one same-Project, same-Gate blocking `action` under the Project's
-   exact existing Work Policy; and
-5. marks the Gate as requiring review.
+4. marks the Gate as requiring review; and
+5. denies downstream use until a new current decision exists.
 
 Repeated evaluation of the same change is idempotent and creates no duplicate
-cycle or action. If the Project has no exact current Work Policy, dependency
-invalidation fails closed instead of creating an ungoverned task.
+cycle or event. It does not require or create a Domain WorkItem. The event and
+workspace retain a nullable legacy action reference so historical data created
+under an older contract remains readable.
 
 A reusable server-side downstream guard accepts only a current non-invalidated
 decision snapshot. P4-04 tests the guard and exposes its result in the Gate
-workspace. P4-05 may project the impact action into live My Work, but P4-04
-does not implement a worklist, notification, activity feed, or escalation.
+workspace. P4-05 may project invalidation into live My Work, but P4-04 does not
+implement that work projection, notification, activity feed, or escalation.
 
 ## 7. BFF/API boundary
 
@@ -354,8 +355,8 @@ instead of treating the hold as an empty success.
 - `FR-SG-006` may reach `TECHNICAL_VERIFIED` for immutable decisions and
   preserved-cycle reopen semantics.
 - `FR-SG-007` may reach `TECHNICAL_VERIFIED_FOUNDATION` for exact-input
-  invalidation, review cycle, impact action, and guard, not the production
-  drawing/Tooling/Quality/ECN matrix.
+  invalidation, successor review cycle, and guard, not a P4-04 impact
+  WorkItem or the production drawing/Tooling/Quality/ECN matrix.
 - `FR-CO-006` remains a foundation until later notification, email, print,
   external-user, and delivery surfaces exist.
 

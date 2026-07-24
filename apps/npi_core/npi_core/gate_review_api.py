@@ -93,6 +93,16 @@ _UTC_DATETIME_PATTERN = re.compile(
 _REVIEW_OUTCOMES = frozenset({"approved", "rejected"})
 _EXCEPTION_OUTCOMES = frozenset({"approved", "rejected"})
 _DECISION_OUTCOMES = frozenset({"pass", "conditional_pass", "reject"})
+_COMMAND_RECEIPT_OPERATIONS = frozenset(
+    {
+        "gate.review.start",
+        "gate.review.submit",
+        "gate.review.exception.request",
+        "gate.review.exception.decide",
+        "gate.review.decide",
+        "gate.review.reopen",
+    }
+)
 _TRANSPORT_ROLE = "NPI API User"
 _MAX_BINDINGS = 64
 _MAX_OPINION_LENGTH = 4000
@@ -110,6 +120,15 @@ class GateReviewRepositoryLike(Protocol):
         project_id: UUID,
         gate_id: UUID,
     ) -> dict[str, Any] | None: ...
+
+    def command_receipt(
+        self,
+        project_id: UUID,
+        gate_id: UUID,
+        *,
+        operation: str,
+        actor_key_hash: str,
+    ) -> dict[str, object] | None: ...
 
     def start_review(
         self,
@@ -231,6 +250,51 @@ def get_gate_review(**request_fields: Any) -> dict[str, Any] | None:
         response = repository.review_workspace(
             _route_uuid("project_id", "projectId"),
             _route_uuid("gate_id", "gateId"),
+        )
+        if response is None:
+            raise GateUnavailable()
+        success_headers["X-Request-ID"] = request_id
+        return _response_dict(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_gate_review_command_receipt(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    """Reconcile one exact actor-bound command without replaying its payload."""
+    success_headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        actor = authenticated_user()
+        reject_unexpected_request_fields(frozenset(), request_fields)
+        principal = authenticated_principal(actor)
+        if (
+            principal.is_external
+            or not principal.roles.intersection({_TRANSPORT_ROLE, "System Manager"})
+        ):
+            raise PermissionDenied()
+        operation = _route_value("operation")
+        if (
+            not isinstance(operation, str)
+            or operation not in _COMMAND_RECEIPT_OPERATIONS
+        ):
+            raise GateUnavailable()
+        request_id = _request_id()
+        repository = _repository(principal=principal, request_id=request_id)
+        response = repository.command_receipt(
+            _route_uuid("project_id", "projectId"),
+            _route_uuid("gate_id", "gateId"),
+            operation=operation,
+            actor_key_hash=actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            ),
         )
         if response is None:
             raise GateUnavailable()

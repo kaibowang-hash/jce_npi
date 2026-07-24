@@ -1,5 +1,77 @@
 # Last Run
 
+## Final CLI-to-Cloud P4-04 implementation checkpoint — 2026-07-24T18:54:22Z
+
+- Branch: `codex/npi-v1.2-implementation` (the only local development branch).
+- Starting synchronized local/upstream HEAD:
+  `8c35784e63261ec4aad668d043af0bd7f9eeb7bc`; refreshed ahead/behind was
+  `0/0`.
+- Current phase: `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
+- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, and `P4-03`.
+- Current unfinished atomic task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
+- Result:
+  `CHECKPOINT — MINIMUM CONSISTENT P4-04 IMPLEMENTATION RETAINED; NOT TASK GATE PASS`.
+- P4-05 was not started.
+
+The explicit stop-and-handoff instruction ended new product development after
+the current P4-04 repair batch. The retained implementation includes the live
+Frappe Gate Review repository, fixed aggregate locks, actor-bound sealed
+idempotency receipts, authority/IDOR/rollback/audit/history enforcement,
+strict BFF/OpenAPI surfaces, dependency invalidation hooks, and the live
+trilingual industrial Review Room.
+
+The final repair batch closed the independently found correctness gaps:
+
+- an in-flight command now survives session/actor rotation until it settles;
+  an uncertain result retains its receipt marker and cannot be reported as
+  success;
+- a receipt for another Gate is reconciled against that Gate without claiming
+  that the current Gate changed;
+- strict parsing now enforces the ordered latest decision, exact invalidation
+  lineage, review actor/identity/hash/sequence invariants, policy-bounded P0
+  exceptions, requester/approver separation, and frozen decision/exception
+  authorities;
+- Review, Exception, and Decision history exposes the actor, time, opinion,
+  exact hashes, frozen policy/version, closure reference, and complete frozen
+  requirement/evidence/blocker/dependency rows needed to reconstruct the
+  immutable decision;
+- controlled dependency reason codes and the visible Submit Review action are
+  localized; the exact step identity remains available as an identifier and
+  accessible name rather than leaking ordinary English copy in Chinese UI.
+
+The runtime verifier initially failed
+`Dependency-refreshed Gate workspace drifted`. Review proved that the verifier,
+not production code, still expected the discarded automatic impact-DWI
+behavior. It now asserts the authoritative P4-04 scope: exact
+`invalidated`/`refreshed` events, successor cycles, no impact DWI, null legacy
+action references, and downstream denial. The focused live runtime then
+passed.
+
+### Level 1 result
+
+| Changed files → affected checks | Result |
+|---|---|
+| Gate review domain/repository/API/DocTypes/hooks and focused tests | `PASS` — 116/116 Gate Review Python tests |
+| Direct P4-02/P4-03 repository/controller/metadata boundary | `PASS` — 46/46; not restarted after frontend-only repairs |
+| Runtime verifier and no-impact-DWI scope correction | `PASS` — 11/11 unit tests, direct Python compilation, isolated-cache Black, and focused live Frappe runtime |
+| Strict frontend parser and Review Room command/audit repairs | `PASS` — 93/93 unit/component tests, TypeScript, targeted ESLint and Prettier |
+| Direct command-recovery and requires-review browser behavior | `PASS` — 4/4 targeted non-visual Playwright cases |
+| Affected trilingual normal Review Room | `PASS` — 3/3 forced baselines, 3/3 clean exact comparisons, mixed-language checks, and original-resolution inspection |
+| Frappe-compatible catalogs | `PASS` — 1740 literal English sources; 100% direct `zh` and `zh-TW` coverage |
+| Final checkpoint diff and recovery-file validation | `PASS` — YAML/CSV/Markdown consistency and `git diff --check` |
+
+The current Level 1 result is intentionally not a Task or Release Gate.
+P4-04's full state visual matrix, complete module/E2E/coverage/build/audit
+lane, additive/idempotent migration reruns, full runtime compatibility, Task
+Diff/security/trace review, Level 2 Task Gate, and the contract/Schema/auth/
+permission/shared-catalog-triggered Level 3 remain pending. Phase 3 external
+UAT remains unsigned. P4-04 therefore remains `IN_PROGRESS`.
+
+Complete evidence and exact recovery steps are in
+`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md` and
+`implementation/NEXT_ACTION.md`.
+
 ## Final Codex Cloud handoff checkpoint — 2026-07-24T09:02:26Z
 
 - Branch: `codex/npi-v1.2-implementation`.

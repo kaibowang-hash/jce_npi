@@ -45,6 +45,10 @@ _GATE_REVIEW_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
     r"(?P<gate_id>[^/:]+)/review$"
 )
+_GATE_REVIEW_COMMAND_RECEIPT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+    r"(?P<gate_id>[^/:]+)/review-command-receipts/(?P<operation>[^/]+)$"
+)
 _GATE_REVIEW_COMMAND_ROUTES = (
     (
         re.compile(
@@ -145,6 +149,11 @@ def route_request() -> None:
         match = _GATE_REVIEW_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_core.gate_review_api.get_gate_review"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _GATE_REVIEW_COMMAND_RECEIPT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.gate_review_api.get_gate_review_command_receipt"
             route_params = match.groupdict()
     if command is None and request.method == "POST":
         match = _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path)
@@ -257,6 +266,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "GET" and _GATE_EVIDENCE_ROUTE.fullmatch(path) is not None:
         return True
     if method == "GET" and _GATE_REVIEW_ROUTE.fullmatch(path) is not None:
+        return True
+    if (
+        method == "GET"
+        and _GATE_REVIEW_COMMAND_RECEIPT_ROUTE.fullmatch(path) is not None
+    ):
         return True
     if method == "POST" and (
         _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path) is not None

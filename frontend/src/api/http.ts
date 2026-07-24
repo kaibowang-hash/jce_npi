@@ -171,13 +171,16 @@ export function toRequestFailure(error: unknown): RequestFailure {
 interface RequestOptions<T> {
   csrfToken?: string | undefined;
   query?: Readonly<Record<string, string>> | undefined;
+  requireIdempotencyReplay?: boolean | undefined;
+  requirePrivateNoStore?: boolean | undefined;
   requireRequestIdEcho?: boolean | undefined;
   requireTraceId?: boolean | undefined;
   validate?: ((value: unknown) => value is T) | undefined;
 }
 
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
-const bffPathPattern = /^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/u;
+const bffPathPattern =
+  /^\/[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*(?::[a-z][a-z0-9-]*)?$/u;
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const traceIdPattern = /^[A-Za-z0-9._:-]{8,128}$/u;
@@ -190,7 +193,11 @@ export class NpiHttpClient {
     init: RequestInit = {},
     options: RequestOptions<T> = {},
   ): Promise<T> {
-    if (!bffPathPattern.test(path))
+    const pathSegments = path.split("/").slice(1);
+    if (
+      !bffPathPattern.test(path) ||
+      pathSegments.some((segment) => segment === "." || segment === "..")
+    )
       throw new Error(
         "NPI API paths must stay within the normalized BFF boundary.",
       );
@@ -252,10 +259,29 @@ export class NpiHttpClient {
         ? responseTraceIdHeader
         : null;
     const responseRequestId = response.headers.get("X-Request-ID");
+    const idempotencyReplay = response.headers.get("Idempotency-Replayed");
+    const cacheControl = response.headers.get("Cache-Control");
+    const cacheControlDirectives = new Set(
+      (cacheControl ?? "")
+        .split(",")
+        .map((directive) => directive.trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const privateNoStoreIsValid =
+      cacheControlDirectives.size === 2 &&
+      cacheControlDirectives.has("private") &&
+      cacheControlDirectives.has("no-store");
     if (
       (options.requireTraceId && !responseTraceId) ||
       (options.requireRequestIdEcho && !responseRequestId) ||
-      (responseRequestId !== null && responseRequestId !== requestId)
+      (responseRequestId !== null && responseRequestId !== requestId) ||
+      (response.ok &&
+        options.requirePrivateNoStore &&
+        !privateNoStoreIsValid) ||
+      (response.ok &&
+        options.requireIdempotencyReplay &&
+        idempotencyReplay !== "true" &&
+        idempotencyReplay !== "false")
     ) {
       throw new NpiTransportError(
         "invalid_response",

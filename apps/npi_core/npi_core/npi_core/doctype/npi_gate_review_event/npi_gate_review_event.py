@@ -107,7 +107,7 @@ class NPIGateReviewEvent(Document):
         valid = (
             (self.event_type == "exception_decided" and not successor and not action)
             or (self.event_type == "reopened" and successor and not action)
-            or (self.event_type == "invalidated" and successor and action)
+            or (self.event_type in {"invalidated", "refreshed"} and successor)
         )
         if not valid:
             frappe.throw(
@@ -197,17 +197,26 @@ class NPIGateReviewEvent(Document):
                 _("Prior Decision Hash"),
             )
             return
-        if self.event_type == "invalidated":
+        if self.event_type in {"invalidated", "refreshed"}:
             if set(detail) != {
+                "reason",
                 "oldInputHash",
                 "newInputHash",
                 "priorDecisionSnapshotGlobalId",
                 "priorDecisionHash",
+                "initiatedByUserId",
             }:
                 frappe.throw(
-                    _("Review Event Payload contains an invalid invalidation detail."),
+                    _(
+                        "Review Event Payload contains an invalid dependency refresh detail."
+                    ),
                     frappe.ValidationError,
                 )
+            required_text(
+                detail["reason"],
+                _("Dependency Refresh Reason"),
+                maximum=140,
+            )
             old_hash = lowercase_sha256(
                 detail["oldInputHash"],
                 _("Old Review Input Hash"),
@@ -221,11 +230,30 @@ class NPIGateReviewEvent(Document):
                     _("Review invalidation requires a changed input hash."),
                     frappe.ValidationError,
                 )
-            ensure_uuid(
-                detail["priorDecisionSnapshotGlobalId"],
-                _("Prior Decision Snapshot Global ID"),
-            )
-            lowercase_sha256(
-                detail["priorDecisionHash"],
-                _("Prior Decision Hash"),
-            )
+            prior_id = detail["priorDecisionSnapshotGlobalId"]
+            prior_hash = detail["priorDecisionHash"]
+            has_prior_id = prior_id not in (None, "")
+            has_prior_hash = prior_hash not in (None, "")
+            if has_prior_id != has_prior_hash or (
+                self.event_type == "invalidated" and not has_prior_id
+            ):
+                frappe.throw(
+                    _("The dependency refresh prior decision is incomplete."),
+                    frappe.ValidationError,
+                )
+            if has_prior_id:
+                ensure_uuid(
+                    prior_id,
+                    _("Prior Decision Snapshot Global ID"),
+                )
+                lowercase_sha256(
+                    prior_hash,
+                    _("Prior Decision Hash"),
+                )
+            initiator = detail["initiatedByUserId"]
+            if initiator is not None:
+                required_text(
+                    initiator,
+                    _("Dependency Change Initiator"),
+                    maximum=254,
+                )

@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 PLANNED AND PAUSED**
+Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 IN PROGRESS AT CHECKPOINT**
 
 Anchor date: 2026-07-22
 
@@ -387,16 +387,31 @@ notification, email, print, and delivery surfaces exist. P4-04 is activated
 under the existing automatic-transition authority. Phase 3 remains
 `TECHNICAL_PASS_PENDING_UAT`.
 
-## 16. P4-04 Codex Cloud handoff checkpoint
+## 16. P4-04 CLI-to-Cloud handoff checkpoint
 
-P4-04 has completed only the read-only repository/specification inventory and
-implementation-boundary plan in
-`implementation/evidence/phase-4/p4-04-plan.md`. No P4-04 product, contract,
-Schema, permission, backend, frontend, translation, runtime, test, or visual
-change is retained. Its `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and
-`FR-SG-007` trace rows are therefore `PLANNED_P4_04`, not verified evidence.
+P4-04 now retains a live but unaccepted implementation checkpoint: the
+review/decision/exception/reopen domain and repository, controlled persistence,
+strict BFF/OpenAPI/receipt surfaces, dependency invalidation hooks, focused
+Frappe runtime, strict trilingual Review Room, reconstructable immutable audit,
+and directly affected Level 1 tests.
 
-Resume only P4-04 from the committed plan. P4-05 is not activated. P4-04 must
-remain unfinished until its complete vertical slice and applicable Gate pass;
-the prior P4-03 Level 3 evidence remains valid and must not be rerun solely to
-reconstruct this handoff.
+The generated P4-04 plan is corrected to the authoritative `FR-SG-007` scope.
+Dependency change preserves the prior decision, records exact
+`invalidated`/`refreshed` events, creates a successor review cycle, and denies
+downstream use. It does not automatically create an impact Domain WorkItem;
+P4-05 owns work/lifecycle projection. The nullable action reference remains
+only for backward-compatible reads.
+
+`FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` remain
+`IN_PROGRESS_P4_04`. Passing Level 1 evidence includes 116 Gate Review Python
+tests, the focused live Frappe runtime, 93 frontend parser/Review Room tests,
+four affected E2E cases, complete 1740-entry direct Chinese catalogs, and three
+forced/clean exact trilingual normal-state visuals.
+
+This evidence does not pass the atomic task. The complete P4-04 state-specific
+E2E/visual matrix, coverage/build/audit, migration/runtime compatibility,
+Task Diff/security/trace review, Level 2 Task Gate, and triggered Level 3
+remain pending. Resume only P4-04 from
+`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`; P4-05 is not
+activated. The prior P4-03 Level 3 evidence remains valid and must not be
+rerun solely to reconstruct this handoff.

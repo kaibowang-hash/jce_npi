@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
-from typing import Any, Iterator, Mapping, Sequence
+from typing import Any
 from uuid import UUID, uuid4
 
 import frappe
@@ -44,7 +45,6 @@ from npi_core.npi_core.doctype.npi_gate_evidence_reference.npi_gate_evidence_ref
     wbs_item_source_snapshot,
 )
 from npi_core.project.domain import IdempotencyConflict, ProjectType
-
 
 _SUPPORTED_EVIDENCE_KINDS = frozenset({"wbs_item", "file_revision"})
 
@@ -292,6 +292,7 @@ class FrappeGateEvidenceRepository:
             ).insert()
             gate.optimistic_version = int(gate.optimistic_version) + 1
             gate.save()
+            self._refresh_gate_review_locked(project, gate)
             self._append_audit(
                 operation="gate.evidence.attach",
                 global_id=evidence_global_id,
@@ -311,6 +312,21 @@ class FrappeGateEvidenceRepository:
             response = self._workspace_for(project, gate)
             self._seal_idempotency(idempotency, response)
         return GateCommandOutcome(response)
+
+    def _refresh_gate_review_locked(self, project, gate) -> bool:
+        """Evaluate review input only after the new reference is persisted."""
+        from npi_core.gate_review.frappe_repository import (
+            refresh_gate_review_dependency_locked,
+        )
+
+        return refresh_gate_review_dependency_locked(
+            project,
+            gate,
+            request_id=self.request_id,
+            trace_id=self.trace_id,
+            reason="GATE_EVIDENCE_ATTACHED",
+            initiated_by_user_id=self.actor,
+        )
 
     def _workspace_for(self, project, gate) -> dict[str, Any]:
         snapshot = self._requirement_snapshot(gate)
@@ -379,6 +395,7 @@ class FrappeGateEvidenceRepository:
                     missing_required_count += 1
             requirement_responses.append(
                 {
+                    "globalId": str(UUID(str(requirement["globalId"]))),
                     "key": key,
                     "title": str(requirement["title"]),
                     "classification": str(requirement["classification"]),

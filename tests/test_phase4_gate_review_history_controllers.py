@@ -9,13 +9,12 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid5
 
-
 sys.path.insert(0, "apps/npi_core")
 
 TENANT_ID = "tenant-a"
 PROJECT_ID = UUID("54bccb5c-f681-4e9e-aa6b-57e995b26eb4")
 GATE_ID = UUID("7f5c61f7-09eb-41d1-808f-359f788e806c")
-CYCLE_ID = UUID("61b3ed2c-e78a-4c59-9390-42b3009e3f6a")
+CYCLE_ID = uuid5(GATE_ID, "review-cycle:1")
 POLICY_ID = UUID("084fd500-d4a5-4a61-8e29-66db7d504b8a")
 REVIEWER_ID = UUID("f696c526-abaa-4752-9821-af58a62fe104")
 DECIDER_ID = UUID("f34fcaaf-5d34-4e1d-b11f-d611553032b7")
@@ -23,8 +22,8 @@ REOPENER_ID = UUID("9008d33a-7640-4979-a47d-03449a2043a2")
 REQUIREMENT_ID = UUID("ef828729-44da-4ef4-8117-c66a9300ae35")
 EXCEPTION_ID = UUID("4aca9b21-776e-49eb-ad8c-e38ed2dbbdb2")
 ACTION_ID = UUID("976b69a2-8d38-4129-80ed-1b06190fb0f8")
-SUCCESSOR_CYCLE_ID = UUID("0e16ba6d-1325-4e3d-9dd5-c5aec674b8a4")
-PRIOR_DECISION_ID = UUID("d1545350-98d2-4fd8-9212-a6d213ea0fc3")
+SUCCESSOR_CYCLE_ID = uuid5(GATE_ID, "review-cycle:2")
+PRIOR_DECISION_ID = uuid5(CYCLE_ID, "decision-snapshot")
 OCCURRED_AT = datetime(2026, 7, 24, 8, 30, tzinfo=timezone.utc)
 
 
@@ -63,25 +62,20 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         "frappe.model",
         "frappe.model.document",
         "npi_core.gate_review.frappe_validation",
-        (
-            "npi_core.npi_core.doctype.npi_gate_review_cycle"
-            ".npi_gate_review_cycle"
-        ),
-        (
-            "npi_core.npi_core.doctype.npi_gate_review_record"
-            ".npi_gate_review_record"
-        ),
+        ("npi_core.npi_core.doctype.npi_gate_review_cycle" ".npi_gate_review_cycle"),
+        ("npi_core.npi_core.doctype.npi_gate_review_record" ".npi_gate_review_record"),
         (
             "npi_core.npi_core.doctype.npi_gate_review_exception"
             ".npi_gate_review_exception"
         ),
-        (
-            "npi_core.npi_core.doctype.npi_gate_review_event"
-            ".npi_gate_review_event"
-        ),
+        ("npi_core.npi_core.doctype.npi_gate_review_event" ".npi_gate_review_event"),
         (
             "npi_core.npi_core.doctype.npi_gate_decision_snapshot"
             ".npi_gate_decision_snapshot"
+        ),
+        (
+            "npi_core.npi_core.doctype.npi_gate_review_idempotency"
+            ".npi_gate_review_idempotency"
         ),
     )
 
@@ -118,25 +112,26 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             "npi_core.gate_review.frappe_validation"
         )
         self.Cycle = importlib.import_module(
-            "npi_core.npi_core.doctype.npi_gate_review_cycle"
-            ".npi_gate_review_cycle"
+            "npi_core.npi_core.doctype.npi_gate_review_cycle" ".npi_gate_review_cycle"
         ).NPIGateReviewCycle
         self.Record = importlib.import_module(
-            "npi_core.npi_core.doctype.npi_gate_review_record"
-            ".npi_gate_review_record"
+            "npi_core.npi_core.doctype.npi_gate_review_record" ".npi_gate_review_record"
         ).NPIGateReviewRecord
         self.Exception = importlib.import_module(
             "npi_core.npi_core.doctype.npi_gate_review_exception"
             ".npi_gate_review_exception"
         ).NPIGateReviewException
         self.Event = importlib.import_module(
-            "npi_core.npi_core.doctype.npi_gate_review_event"
-            ".npi_gate_review_event"
+            "npi_core.npi_core.doctype.npi_gate_review_event" ".npi_gate_review_event"
         ).NPIGateReviewEvent
         self.Decision = importlib.import_module(
             "npi_core.npi_core.doctype.npi_gate_decision_snapshot"
             ".npi_gate_decision_snapshot"
         ).NPIGateDecisionSnapshot
+        self.Idempotency = importlib.import_module(
+            "npi_core.npi_core.doctype.npi_gate_review_idempotency"
+            ".npi_gate_review_idempotency"
+        ).NPIGateReviewIdempotency
 
     def tearDown(self) -> None:
         for name in self.MODULES_TO_RELOAD:
@@ -302,6 +297,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
                     tzinfo=timezone.utc,
                 ),
                 "closure_action_global_id": str(ACTION_ID),
+                "closure_action_version": 4,
+                "closure_action_snapshot_hash": "8" * 64,
                 "state": "rejected",
                 "approver_authority_slot": "exception-approver",
                 "approver_member_global_id": str(DECIDER_ID),
@@ -316,13 +313,20 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             }
         )
 
-    def invalidation_event(self) -> StubDocument:
+    def invalidation_event(
+        self,
+        *,
+        event_type: str = "invalidated",
+        action_global_id: str | None = None,
+    ) -> StubDocument:
         occurred = OCCURRED_AT.isoformat()
         detail = {
+            "reason": "GATE_INPUT_CHANGED",
             "oldInputHash": "3" * 64,
             "newInputHash": "4" * 64,
             "priorDecisionSnapshotGlobalId": str(PRIOR_DECISION_ID),
             "priorDecisionHash": "5" * 64,
+            "initiatedByUserId": "initiator@example.invalid",
         }
         payload = {
             "schemaVersion": 1,
@@ -333,8 +337,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             "gateGlobalId": str(GATE_ID),
             "cycleGlobalId": str(CYCLE_ID),
             "successorCycleGlobalId": str(SUCCESSOR_CYCLE_ID),
-            "actionGlobalId": str(ACTION_ID),
-            "eventType": "invalidated",
+            "actionGlobalId": action_global_id,
+            "eventType": event_type,
             "actorUserId": "system@example.invalid",
             "occurredAt": occurred,
             "requestId": "request-event-001",
@@ -350,8 +354,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
                 "gate_global_id": str(GATE_ID),
                 "cycle_global_id": str(CYCLE_ID),
                 "successor_cycle_global_id": str(SUCCESSOR_CYCLE_ID),
-                "action_global_id": str(ACTION_ID),
-                "event_type": "invalidated",
+                "action_global_id": action_global_id,
+                "event_type": event_type,
                 "actor_user_id": "system@example.invalid",
                 "occurred_at": OCCURRED_AT,
                 "request_id": "request-event-001",
@@ -391,6 +395,22 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             }
         )
 
+    def idempotency(self) -> StubDocument:
+        return self.Idempotency(
+            {
+                "record_id": "956409fe-12bf-487b-869b-2b38be6db1cb",
+                "actor": "reviewer@example.invalid",
+                "tenant_id": TENANT_ID,
+                "project_global_id": str(PROJECT_ID),
+                "gate_global_id": str(GATE_ID),
+                "operation": "gate.review.submit",
+                "actor_key_hash": "8" * 64,
+                "payload_hash": "9" * 64,
+                "response_json": {},
+                "response_sealed": 0,
+            }
+        )
+
     def persist_new(self, document: StubDocument) -> None:
         setattr(
             self.frappe.flags,
@@ -410,6 +430,7 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             self.exception(),
             self.invalidation_event(),
             self.decision(),
+            self.idempotency(),
         )
         for document in documents:
             with self.subTest(document=document.__class__.__name__):
@@ -418,7 +439,9 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
                 with self.assertRaises(self.PermissionError):
                     document.on_trash()
 
-    def test_cycle_freezes_exact_snapshots_and_allows_only_two_transitions(self) -> None:
+    def test_cycle_freezes_exact_snapshots_and_allows_only_controlled_transitions(
+        self,
+    ) -> None:
         cycle = self.cycle()
         self.persist_new(cycle)
         self.assertEqual(cycle.name, str(CYCLE_ID))
@@ -437,15 +460,21 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
 
         active = clone(cycle)
         cycle._previous = active
-        cycle.state = "decided"
         cycle.optimistic_version = 2
+        cycle.before_validate()
+        cycle.validate()
+
+        active = clone(cycle)
+        cycle._previous = active
+        cycle.state = "decided"
+        cycle.optimistic_version = 3
         cycle.before_validate()
         cycle.validate()
 
         decided = clone(cycle)
         cycle._previous = decided
         cycle.state = "invalidated"
-        cycle.optimistic_version = 3
+        cycle.optimistic_version = 4
         cycle.before_validate()
         cycle.validate()
 
@@ -457,6 +486,100 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         invalid.before_validate()
         with self.assertRaises(self.ValidationError):
             invalid.validate()
+
+        superseded = self.cycle()
+        self.persist_new(superseded)
+        superseded._previous = clone(superseded)
+        superseded.state = "superseded"
+        superseded.optimistic_version = 2
+        superseded.before_validate()
+        superseded.validate()
+
+        successor_without_decision = self.cycle()
+        successor_without_decision.global_id = str(SUCCESSOR_CYCLE_ID)
+        successor_without_decision.cycle_number = 2
+        successor_without_decision.trigger = "dependency_change"
+        successor_without_decision.prior_cycle_global_id = str(CYCLE_ID)
+        successor_without_decision.prior_decision_snapshot_global_id = None
+        successor_without_decision.prior_decision_hash = None
+        self.persist_new(successor_without_decision)
+        self.assertEqual(successor_without_decision.state, "active")
+
+    def test_active_refresh_event_allows_exact_empty_decision_lineage(
+        self,
+    ) -> None:
+        event = self.invalidation_event(event_type="refreshed")
+        event.payload["detail"]["priorDecisionSnapshotGlobalId"] = None
+        event.payload["detail"]["priorDecisionHash"] = None
+        self.persist_new(event)
+        payload = json.loads(event.payload)
+        self.assertIsNone(payload["detail"]["priorDecisionSnapshotGlobalId"])
+        self.assertIsNone(payload["detail"]["priorDecisionHash"])
+        self.assertIsNone(payload["actionGlobalId"])
+
+    def test_dependency_events_require_successor_but_allow_nullable_legacy_action(
+        self,
+    ) -> None:
+        for event_type in ("invalidated", "refreshed"):
+            with self.subTest(event_type=event_type, action="none"):
+                current = self.invalidation_event(event_type=event_type)
+                self.persist_new(current)
+                self.assertIsNone(current.action_global_id)
+                self.assertIsNone(json.loads(current.payload)["actionGlobalId"])
+
+            with self.subTest(event_type=event_type, action="legacy"):
+                legacy = self.invalidation_event(
+                    event_type=event_type,
+                    action_global_id=str(ACTION_ID),
+                )
+                self.persist_new(legacy)
+                self.assertEqual(legacy.action_global_id, str(ACTION_ID))
+                self.assertEqual(
+                    json.loads(legacy.payload)["actionGlobalId"],
+                    str(ACTION_ID),
+                )
+
+            with self.subTest(event_type=event_type, successor="missing"):
+                missing_successor = self.invalidation_event(event_type=event_type)
+                missing_successor.successor_cycle_global_id = None
+                missing_successor.payload["successorCycleGlobalId"] = None
+                with self.assertRaises(self.ValidationError):
+                    self.persist_new(missing_successor)
+
+        invalid_action = self.invalidation_event(action_global_id="not-a-uuid")
+        with self.assertRaises(self.ValidationError):
+            self.persist_new(invalid_action)
+
+        other_event = self.invalidation_event(action_global_id=str(ACTION_ID))
+        other_event.event_type = "reopened"
+        other_event.payload["eventType"] = "reopened"
+        with self.assertRaises(self.ValidationError):
+            self.persist_new(other_event)
+
+    def test_idempotency_receipt_is_empty_then_sealed_exactly_once(self) -> None:
+        receipt = self.idempotency()
+        setattr(
+            self.frappe.flags,
+            self.validation.GATE_REVIEW_COMMAND_FLAG,
+            True,
+        )
+        receipt.before_insert()
+        receipt.validate()
+        receipt.before_save()
+        self.assertEqual(receipt.response_json, "{}")
+        self.assertEqual(receipt.response_sealed, 0)
+
+        receipt._previous = clone(receipt)
+        receipt.response_json = {"ok": True}
+        receipt.response_sealed = 1
+        receipt.validate()
+        receipt.before_save()
+        self.assertEqual(receipt.response_json, '{"ok":true}')
+
+        receipt._previous = clone(receipt)
+        receipt.response_json = {"ok": False}
+        with self.assertRaises(self.PermissionError):
+            receipt.validate()
 
     def test_cycle_rejects_mutated_frozen_input_even_with_a_matching_hash(self) -> None:
         cycle = self.cycle()
@@ -499,6 +622,14 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         self.assertEqual(exception.state, "pending")
         self.assertEqual(exception.optimistic_version, 1)
         request_snapshot = json.loads(exception.request_snapshot)
+        self.assertEqual(
+            request_snapshot["closureActionRef"],
+            {
+                "globalId": str(ACTION_ID),
+                "version": 4,
+                "snapshotHash": "8" * 64,
+            },
+        )
         self.assertEqual(
             exception.request_snapshot_hash,
             self.validation.canonical_json_hash(request_snapshot),
@@ -544,6 +675,7 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         self.persist_new(event)
         payload = json.loads(event.payload)
         self.assertEqual(payload["detail"]["oldInputHash"], "3" * 64)
+        self.assertIsNone(payload["actionGlobalId"])
         self.assertEqual(
             event.payload_hash,
             self.validation.canonical_json_hash(payload),

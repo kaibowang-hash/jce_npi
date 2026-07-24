@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID, uuid5
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -18,12 +20,12 @@ from npi_core.gate_review.frappe_validation import (
     required_text,
 )
 
-
 _TRIGGERS = {"manual_start", "manual_reopen", "dependency_change"}
-_STATES = {"active", "decided", "invalidated"}
+_STATES = {"active", "decided", "invalidated", "superseded"}
 _TRANSITIONS = {
     ("active", "active"),
     ("active", "decided"),
+    ("active", "superseded"),
     ("decided", "invalidated"),
 }
 
@@ -284,28 +286,50 @@ class NPIGateReviewCycle(Document):
             keys.add(key.casefold())
 
     def _validate_prior_decision(self) -> None:
-        values = (
-            self.prior_cycle_global_id,
+        prior_cycle = self.prior_cycle_global_id not in (None, "")
+        decision_values = (
             self.prior_decision_snapshot_global_id,
             self.prior_decision_hash,
         )
-        has_values = [value not in (None, "") for value in values]
-        if self.trigger == "manual_start":
-            if any(has_values):
+        has_decision = [value not in (None, "") for value in decision_values]
+        if self.cycle_number == 1:
+            if self.trigger != "manual_start" or prior_cycle or any(has_decision):
                 frappe.throw(
                     _("An initial review cycle cannot reference a prior decision."),
                     frappe.ValidationError,
                 )
             return
-        if not all(has_values):
+        if self.trigger == "manual_start" or not prior_cycle:
             frappe.throw(
-                _("A reopened review cycle requires the exact prior decision."),
+                _("A successor review cycle requires the exact prior cycle."),
                 frappe.ValidationError,
             )
         self.prior_cycle_global_id = ensure_uuid(
             self.prior_cycle_global_id,
             _("Prior Review Cycle Global ID"),
         )
+        expected_prior_cycle = str(
+            uuid5(
+                UUID(self.gate_global_id),
+                f"review-cycle:{self.cycle_number - 1}",
+            )
+        )
+        if self.prior_cycle_global_id != expected_prior_cycle:
+            frappe.throw(
+                _("The prior review cycle identifier is not canonical."),
+                frappe.ValidationError,
+            )
+        if any(has_decision) != all(has_decision) or (
+            self.trigger == "manual_reopen" and not all(has_decision)
+        ):
+            frappe.throw(
+                _("The successor prior decision reference is incomplete."),
+                frappe.ValidationError,
+            )
+        if not any(has_decision):
+            self.prior_decision_snapshot_global_id = None
+            self.prior_decision_hash = None
+            return
         self.prior_decision_snapshot_global_id = ensure_uuid(
             self.prior_decision_snapshot_global_id,
             _("Prior Decision Snapshot Global ID"),

@@ -4,7 +4,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DOCTYPE_ROOT = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
 CONTROLLER_ROOT = ROOT / "apps/npi_core/npi_core"
@@ -21,6 +20,17 @@ SYSTEM_MANAGER_ONLY = [
     }
 ]
 
+NPI_API_CREATE = {
+    "role": "NPI API User",
+    "read": 0,
+    "write": 0,
+    "create": 1,
+    "delete": 0,
+    "export": 0,
+    "print": 0,
+    "email": 0,
+}
+
 
 class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
     def load(self, folder: str) -> dict[str, object]:
@@ -35,14 +45,15 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
             for field in metadata["fields"]  # type: ignore[index]
         }
 
-    def test_history_doctypes_are_read_only_system_manager_scaffolds(self) -> None:
-        for folder in (
-            "npi_gate_review_cycle",
-            "npi_gate_review_record",
-            "npi_gate_review_exception",
-            "npi_gate_review_event",
-            "npi_gate_decision_snapshot",
-        ):
+    def test_history_doctypes_allow_only_controlled_api_writes(self) -> None:
+        expected_api_write = {
+            "npi_gate_review_cycle": 1,
+            "npi_gate_review_record": 0,
+            "npi_gate_review_exception": 1,
+            "npi_gate_review_event": 0,
+            "npi_gate_decision_snapshot": 0,
+        }
+        for folder, write in expected_api_write.items():
             with self.subTest(folder=folder):
                 metadata = self.load(folder)
                 fields = self.fields(metadata)
@@ -50,10 +61,43 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
                 self.assertEqual(metadata.get("allow_rename"), 0)
                 self.assertEqual(metadata.get("read_only"), 1)
                 self.assertEqual(metadata.get("track_changes"), 1)
-                self.assertEqual(metadata.get("permissions"), SYSTEM_MANAGER_ONLY)
+                api_permission = {**NPI_API_CREATE, "write": write}
+                self.assertEqual(
+                    metadata.get("permissions"),
+                    [*SYSTEM_MANAGER_ONLY, api_permission],
+                )
                 self.assertTrue(
                     all(field.get("read_only") == 1 for field in fields.values())
                 )
+
+    def test_idempotency_receipt_is_actor_scoped_and_sealed_once(self) -> None:
+        metadata = self.load("npi_gate_review_idempotency")
+        fields = self.fields(metadata)
+        self.assertEqual(metadata.get("autoname"), "field:record_id")
+        self.assertEqual(metadata.get("allow_rename"), 0)
+        self.assertEqual(metadata.get("read_only"), 1)
+        self.assertEqual(metadata.get("track_changes"), 0)
+        self.assertEqual(
+            set(fields),
+            {
+                "record_id",
+                "actor",
+                "tenant_id",
+                "project_global_id",
+                "gate_global_id",
+                "operation",
+                "actor_key_hash",
+                "payload_hash",
+                "response_json",
+                "response_sealed",
+            },
+        )
+        self.assertEqual(fields["record_id"].get("unique"), 1)
+        self.assertEqual(fields["actor_key_hash"].get("unique"), 1)
+        self.assertEqual(
+            metadata.get("permissions"),
+            [*SYSTEM_MANAGER_ONLY, {**NPI_API_CREATE, "write": 1}],
+        )
 
     def test_cycle_has_exact_frozen_review_boundary(self) -> None:
         metadata = self.load("npi_gate_review_cycle")
@@ -97,7 +141,7 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
         )
         self.assertEqual(
             fields["state"].get("options"),
-            "active\ndecided\ninvalidated",
+            "active\ndecided\ninvalidated\nsuperseded",
         )
 
     def test_append_only_record_event_and_decision_fields_are_exact(self) -> None:
@@ -183,15 +227,22 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
             1,
         )
         self.assertEqual(
-            self.fields(self.load("npi_gate_review_event"))["event_key"].get(
-                "unique"
-            ),
+            self.fields(self.load("npi_gate_review_event"))["event_key"].get("unique"),
             1,
         )
         self.assertEqual(
-            self.fields(self.load("npi_gate_decision_snapshot"))[
-                "cycle_global_id"
-            ].get("unique"),
+            self.fields(self.load("npi_gate_review_event"))["event_type"].get(
+                "options"
+            ),
+            "exception_decided\nreopened\ninvalidated\nrefreshed",
+        )
+        event_fields = self.fields(self.load("npi_gate_review_event"))
+        self.assertIsNone(event_fields["successor_cycle_global_id"].get("reqd"))
+        self.assertIsNone(event_fields["action_global_id"].get("reqd"))
+        self.assertEqual(
+            self.fields(self.load("npi_gate_decision_snapshot"))["cycle_global_id"].get(
+                "unique"
+            ),
             1,
         )
 
@@ -219,6 +270,8 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
                 "requested_at",
                 "expires_at",
                 "closure_action_global_id",
+                "closure_action_version",
+                "closure_action_snapshot_hash",
                 "state",
                 "approver_authority_slot",
                 "approver_member_global_id",
@@ -238,10 +291,12 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
             "pending\napproved\nrejected",
         )
 
-    def test_controllers_use_one_flag_and_never_import_domain_or_bypass_frappe(self) -> None:
-        validation = (
-            CONTROLLER_ROOT / "gate_review/frappe_validation.py"
-        ).read_text(encoding="utf-8")
+    def test_controllers_use_one_flag_and_never_import_domain_or_bypass_frappe(
+        self,
+    ) -> None:
+        validation = (CONTROLLER_ROOT / "gate_review/frappe_validation.py").read_text(
+            encoding="utf-8"
+        )
         sources = [validation]
         for folder in (
             "npi_gate_review_cycle",
@@ -249,13 +304,10 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
             "npi_gate_review_exception",
             "npi_gate_review_event",
             "npi_gate_decision_snapshot",
+            "npi_gate_review_idempotency",
         ):
             sources.append(
-                (
-                    DOCTYPE_ROOT
-                    / folder
-                    / f"{folder}.py"
-                ).read_text(encoding="utf-8")
+                (DOCTYPE_ROOT / folder / f"{folder}.py").read_text(encoding="utf-8")
             )
         combined = "\n".join(sources)
         self.assertIn(

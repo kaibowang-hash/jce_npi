@@ -42,6 +42,8 @@ class NPIGateReviewException(Document):
         "requested_at",
         "expires_at",
         "closure_action_global_id",
+        "closure_action_version",
+        "closure_action_snapshot_hash",
         "approver_authority_slot",
         "approver_member_global_id",
         "approver_user_id",
@@ -143,6 +145,14 @@ class NPIGateReviewException(Document):
             self.closure_action_global_id,
             _("Closure Action Global ID"),
         )
+        self.closure_action_version = positive_integer(
+            self.closure_action_version,
+            _("Closure Action Version"),
+        )
+        self.closure_action_snapshot_hash = lowercase_sha256(
+            self.closure_action_snapshot_hash,
+            _("Closure Action Snapshot Hash"),
+        )
         self.exception_key = f"{self.cycle_global_id}:{self.global_id}"
         self.tenant_id = required_text(
             self.tenant_id,
@@ -232,7 +242,11 @@ class NPIGateReviewException(Document):
                 _("Requested At"),
             ),
             "expiresAt": canonical_datetime(self.expires_at, _("Expires At")),
-            "closureActionGlobalId": self.closure_action_global_id,
+            "closureActionRef": {
+                "globalId": self.closure_action_global_id,
+                "version": self.closure_action_version,
+                "snapshotHash": self.closure_action_snapshot_hash,
+            },
             "approver": {
                 "authoritySlot": self.approver_authority_slot,
                 "memberGlobalId": self.approver_member_global_id,

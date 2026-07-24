@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-
 sys.path.insert(0, "apps/npi_core")
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,6 +28,7 @@ OWNER_ID = UUID("999d691f-b337-4cf4-b192-f96cc59ed08e")
 REVIEWER_ID = UUID("f696c526-abaa-4752-9821-af58a62fe104")
 CYCLE_ID = UUID("61b3ed2c-e78a-4c59-9390-42b3009e3f6a")
 SUCCESSOR_CYCLE_ID = UUID("0e16ba6d-1325-4e3d-9dd5-c5aec674b8a4")
+SECOND_SUCCESSOR_CYCLE_ID = UUID("bf3bb8d0-bbc8-4184-937e-b49c4972fb68")
 POLICY_ID = UUID("084fd500-d4a5-4a61-8e29-66db7d504b8a")
 DECISION_ID = UUID("d1545350-98d2-4fd8-9212-a6d213ea0fc3")
 
@@ -430,6 +430,25 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         self.validate_existing(reopened, requires_review, review=True)
         self.assertEqual(reopened.review_input_version, 1)
 
+        active_requires_review = clone(active)
+        active_requires_review.optimistic_version = 3
+        active_requires_review.review_state = "requires_review"
+        active_requires_review.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
+        active_requires_review.current_review_cycle_global_id = str(SUCCESSOR_CYCLE_ID)
+        self.validate_existing(active_requires_review, active, review=True)
+
+        refreshed_requires_review = clone(active_requires_review)
+        refreshed_requires_review.optimistic_version = 4
+        refreshed_requires_review.current_review_cycle = str(SECOND_SUCCESSOR_CYCLE_ID)
+        refreshed_requires_review.current_review_cycle_global_id = str(
+            SECOND_SUCCESSOR_CYCLE_ID
+        )
+        self.validate_existing(
+            refreshed_requires_review,
+            active_requires_review,
+            review=True,
+        )
+
     def test_review_pointer_drift_and_incoherent_decision_fail_closed(self) -> None:
         not_started = self.shell(frozen=True)
         active = clone(not_started)
@@ -453,9 +472,7 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
             cycle_id=SUCCESSOR_CYCLE_ID,
         )
         context_drift_at_decision.latest_decision_snapshot = str(DECISION_ID)
-        context_drift_at_decision.latest_decision_snapshot_global_id = str(
-            DECISION_ID
-        )
+        context_drift_at_decision.latest_decision_snapshot_global_id = str(DECISION_ID)
         context_drift_at_decision.latest_decision_snapshot_hash = "d" * 64
         context_drift_at_decision.latest_decision_outcome = "pass"
         with self.assertRaises(self.ValidationError):
@@ -499,6 +516,21 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         with self.assertRaises(self.ValidationError):
             self.validate_existing(
                 invented_invalidation,
+                active,
+                review=True,
+            )
+
+        policy_drift_at_invalidation = clone(active)
+        policy_drift_at_invalidation.optimistic_version = 3
+        policy_drift_at_invalidation.review_state = "requires_review"
+        policy_drift_at_invalidation.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
+        policy_drift_at_invalidation.current_review_cycle_global_id = str(
+            SUCCESSOR_CYCLE_ID
+        )
+        policy_drift_at_invalidation.review_policy_version = 2
+        with self.assertRaises(self.ValidationError):
+            self.validate_existing(
+                policy_drift_at_invalidation,
                 active,
                 review=True,
             )

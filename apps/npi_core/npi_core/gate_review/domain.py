@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -147,6 +148,7 @@ class CycleState(str, Enum):
     ACTIVE = "active"
     DECIDED = "decided"
     INVALIDATED = "invalidated"
+    SUPERSEDED = "superseded"
 
 
 class CycleTrigger(str, Enum):
@@ -170,6 +172,7 @@ class ReviewEventKind(str, Enum):
     EXCEPTION_DECIDED = "exception_decided"
     REOPENED = "reopened"
     INVALIDATED = "invalidated"
+    REFRESHED = "refreshed"
 
 
 class ReviewDenied(NpiProblem):
@@ -796,6 +799,25 @@ class ReviewRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class ClosureActionReference:
+    global_id: UUID
+    version: int
+    snapshot_hash: str
+
+    def __post_init__(self) -> None:
+        _uuid(self.global_id, "closureActionRef.globalId")
+        _positive_int(self.version, "closureActionRef.version")
+        _hash(self.snapshot_hash, "closureActionRef.snapshotHash")
+
+    def canonical_dict(self) -> dict[str, object]:
+        return {
+            "globalId": str(self.global_id),
+            "version": self.version,
+            "snapshotHash": self.snapshot_hash,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class DecisionSnapshot:
     global_id: UUID
     tenant_id: str
@@ -966,7 +988,7 @@ class ReviewException:
     requester_user_id: str
     reason: str
     risk: str
-    closure_action_global_id: UUID
+    closure_action_ref: ClosureActionReference
     closure_action_kind: str
     requested_at: datetime
     expires_at: datetime
@@ -1024,7 +1046,11 @@ class ReviewException:
             )
         object.__setattr__(self, "reason", _text(self.reason, "reason"))
         object.__setattr__(self, "risk", _text(self.risk, "risk"))
-        _uuid(self.closure_action_global_id, "closureActionGlobalId")
+        if type(self.closure_action_ref) is not ClosureActionReference:
+            raise _validation(
+                "closureActionRef",
+                _("Enter an exact closure action reference."),
+            )
         object.__setattr__(
             self,
             "closure_action_kind",
@@ -1127,7 +1153,7 @@ class ReviewException:
             "requesterUserId": self.requester_user_id,
             "reason": self.reason,
             "risk": self.risk,
-            "closureActionGlobalId": str(self.closure_action_global_id),
+            "closureActionRef": self.closure_action_ref.canonical_dict(),
             "closureActionKind": self.closure_action_kind,
             "requestedAt": self.requested_at.isoformat(),
             "expiresAt": self.expires_at.isoformat(),
@@ -1147,6 +1173,10 @@ class ReviewException:
     @property
     def snapshot_hash(self) -> str:
         return _canonical_hash(self.canonical_dict())
+
+    @property
+    def closure_action_global_id(self) -> UUID:
+        return self.closure_action_ref.global_id
 
     def decide(
         self,
@@ -1207,6 +1237,7 @@ class ReviewException:
         policy: ReviewPolicyVersion,
         input_hash: str,
         at: datetime,
+        current_closure_action_ref: ClosureActionReference | None,
     ) -> bool:
         now = _aware(at, "occurredAt")
         return (
@@ -1218,6 +1249,7 @@ class ReviewException:
             and self.policy_version == policy.policy_version
             and self.policy_hash == policy.snapshot_hash
             and self.input_hash == input_hash
+            and current_closure_action_ref == self.closure_action_ref
             and now < self.expires_at
         )
 
@@ -1232,8 +1264,10 @@ class ReviewEvent:
     new_cycle_global_id: UUID
     old_input_hash: str
     new_input_hash: str
-    prior_decision_hash: str
+    prior_decision_snapshot_global_id: UUID | None
+    prior_decision_hash: str | None
     actor_user_id: str
+    initiated_by_user_id: str | None
     reason: str
     occurred_at: datetime
     event_hash: str
@@ -1259,10 +1293,32 @@ class ReviewEvent:
             )
         _hash(self.old_input_hash, "oldInputHash")
         _hash(self.new_input_hash, "newInputHash")
-        _hash(self.prior_decision_hash, "priorDecisionHash")
+        has_prior_id = self.prior_decision_snapshot_global_id is not None
+        has_prior_hash = self.prior_decision_hash is not None
+        if has_prior_id != has_prior_hash or (
+            self.kind in {ReviewEventKind.REOPENED, ReviewEventKind.INVALIDATED}
+            and not has_prior_id
+        ):
+            raise _validation(
+                "priorDecisionHash",
+                _("The review event prior decision reference is incomplete."),
+            )
+        if self.prior_decision_snapshot_global_id is not None:
+            _uuid(
+                self.prior_decision_snapshot_global_id,
+                "priorDecisionSnapshotGlobalId",
+            )
+        if self.prior_decision_hash is not None:
+            _hash(self.prior_decision_hash, "priorDecisionHash")
         object.__setattr__(
             self, "actor_user_id", _text(self.actor_user_id, "actorUserId", 140)
         )
+        if self.initiated_by_user_id is not None:
+            object.__setattr__(
+                self,
+                "initiated_by_user_id",
+                _text(self.initiated_by_user_id, "initiatedByUserId", 140),
+            )
         object.__setattr__(self, "reason", _text(self.reason, "reason"))
         object.__setattr__(self, "occurred_at", _aware(self.occurred_at, "occurredAt"))
         _hash(self.event_hash, "eventHash")
@@ -1279,8 +1335,14 @@ class ReviewEvent:
             "newCycleGlobalId": str(self.new_cycle_global_id),
             "oldInputHash": self.old_input_hash,
             "newInputHash": self.new_input_hash,
+            "priorDecisionSnapshotGlobalId": (
+                str(self.prior_decision_snapshot_global_id)
+                if self.prior_decision_snapshot_global_id is not None
+                else None
+            ),
             "priorDecisionHash": self.prior_decision_hash,
             "actorUserId": self.actor_user_id,
+            "initiatedByUserId": self.initiated_by_user_id,
             "reason": self.reason,
             "occurredAt": self.occurred_at.isoformat(),
         }
@@ -1296,8 +1358,10 @@ class ReviewEvent:
         new_cycle_global_id: UUID,
         old_input_hash: str,
         new_input_hash: str,
-        prior_decision_hash: str,
+        prior_decision_snapshot_global_id: UUID | None,
+        prior_decision_hash: str | None,
         actor_user_id: str,
+        initiated_by_user_id: str | None,
         reason: str,
         occurred_at: datetime,
     ) -> ReviewEvent:
@@ -1316,8 +1380,14 @@ class ReviewEvent:
             "newCycleGlobalId": str(new_cycle_global_id),
             "oldInputHash": old_input_hash,
             "newInputHash": new_input_hash,
+            "priorDecisionSnapshotGlobalId": (
+                str(prior_decision_snapshot_global_id)
+                if prior_decision_snapshot_global_id is not None
+                else None
+            ),
             "priorDecisionHash": prior_decision_hash,
             "actorUserId": actor_user_id,
+            "initiatedByUserId": initiated_by_user_id,
             "reason": reason,
             "occurredAt": occurred.isoformat(),
         }
@@ -1330,8 +1400,10 @@ class ReviewEvent:
             new_cycle_global_id=new_cycle_global_id,
             old_input_hash=old_input_hash,
             new_input_hash=new_input_hash,
+            prior_decision_snapshot_global_id=prior_decision_snapshot_global_id,
             prior_decision_hash=prior_decision_hash,
             actor_user_id=actor_user_id,
+            initiated_by_user_id=initiated_by_user_id,
             reason=reason,
             occurred_at=occurred,
             event_hash=_canonical_hash(payload),
@@ -1356,6 +1428,7 @@ class ReviewCycle:
     exceptions: tuple[ReviewException, ...] = ()
     decision: DecisionSnapshot | None = None
     prior_cycle_global_id: UUID | None = None
+    prior_decision_snapshot_global_id: UUID | None = None
     prior_decision_hash: str | None = None
 
     def __post_init__(self) -> None:
@@ -1509,6 +1582,7 @@ class ReviewCycle:
             if (
                 self.trigger is not CycleTrigger.MANUAL_START
                 or self.prior_cycle_global_id is not None
+                or self.prior_decision_snapshot_global_id is not None
                 or self.prior_decision_hash is not None
             ):
                 raise _validation(
@@ -1518,14 +1592,12 @@ class ReviewCycle:
             if (
                 self.trigger is CycleTrigger.MANUAL_START
                 or self.prior_cycle_global_id is None
-                or self.prior_decision_hash is None
             ):
                 raise _validation(
                     "priorCycleGlobalId",
-                    _("A successor cycle requires its prior cycle and decision."),
+                    _("A successor cycle requires its prior cycle."),
                 )
             _uuid(self.prior_cycle_global_id, "priorCycleGlobalId")
-            _hash(self.prior_decision_hash, "priorDecisionHash")
             if self.prior_cycle_global_id != uuid5(
                 self.gate_global_id,
                 f"review-cycle:{self.cycle_number - 1}",
@@ -1534,14 +1606,34 @@ class ReviewCycle:
                     "priorCycleGlobalId",
                     _("The prior review cycle identifier is not canonical."),
                 )
+            has_prior_id = self.prior_decision_snapshot_global_id is not None
+            has_prior_hash = self.prior_decision_hash is not None
+            if has_prior_id != has_prior_hash or (
+                self.trigger is CycleTrigger.MANUAL_REOPEN and not has_prior_id
+            ):
+                raise _validation(
+                    "priorDecisionHash",
+                    _("The successor prior decision reference is incomplete."),
+                )
+            if self.prior_decision_snapshot_global_id is not None:
+                _uuid(
+                    self.prior_decision_snapshot_global_id,
+                    "priorDecisionSnapshotGlobalId",
+                )
+            if self.prior_decision_hash is not None:
+                _hash(self.prior_decision_hash, "priorDecisionHash")
         if self.decision is not None and type(self.decision) is not DecisionSnapshot:
             raise _validation("decision", _("Enter a valid Gate decision snapshot."))
-        if self.state is CycleState.ACTIVE and self.decision is not None:
-            raise _validation("state", _("An active cycle cannot have a decision."))
-        if self.state is not CycleState.ACTIVE:
+        if self.state in {CycleState.ACTIVE, CycleState.SUPERSEDED}:
+            if self.decision is not None:
+                raise _validation(
+                    "state",
+                    _("An active or superseded cycle cannot have a decision."),
+                )
+        else:
             if self.decision is None:
                 raise _validation(
-                    "state", _("A closed review cycle requires a decision.")
+                    "state", _("A decided or invalidated cycle requires a decision.")
                 )
             if (
                 self.decision.cycle_global_id != self.global_id
@@ -1618,6 +1710,7 @@ class ReviewCycle:
                             policy=self.policy,
                             input_hash=self.input_snapshot.snapshot_hash,
                             at=self.decision.occurred_at,
+                            current_closure_action_ref=exception.closure_action_ref,
                         )
                         for exception in exceptions
                     )
@@ -1651,6 +1744,7 @@ class ReviewCycle:
         bindings: tuple[AuthorityBinding, ...],
         input_snapshot: GateInputSnapshot,
         prior_cycle_global_id: UUID | None = None,
+        prior_decision_snapshot_global_id: UUID | None = None,
         prior_decision_hash: str | None = None,
     ) -> ReviewCycle:
         if type(policy) is not ReviewPolicyVersion:
@@ -1677,6 +1771,7 @@ class ReviewCycle:
             selected,
             input_snapshot,
             prior_cycle_global_id=prior_cycle_global_id,
+            prior_decision_snapshot_global_id=prior_decision_snapshot_global_id,
             prior_decision_hash=prior_decision_hash,
         )
 
@@ -1709,6 +1804,9 @@ class ReviewCycle:
                 "GATE_INPUT_CHANGED",
                 _("The Gate input changed and requires a new review cycle."),
             )
+
+    def ensure_current_input(self, current_input: GateInputSnapshot) -> None:
+        self._check_current_input(current_input)
 
     def submit_review(
         self,
@@ -1785,7 +1883,7 @@ class ReviewCycle:
         requirement_key: str,
         reason: str,
         risk: str,
-        closure_action_global_id: UUID,
+        closure_action_ref: ClosureActionReference,
         closure_action_kind: str,
         requested_at: datetime,
         expires_at: datetime,
@@ -1876,9 +1974,7 @@ class ReviewCycle:
             requester_user_id=actor,
             reason=reason,
             risk=risk,
-            closure_action_global_id=_uuid(
-                closure_action_global_id, "closureActionGlobalId"
-            ),
+            closure_action_ref=closure_action_ref,
             closure_action_kind=closure_action_kind,
             requested_at=requested,
             expires_at=expires,
@@ -1950,6 +2046,9 @@ class ReviewCycle:
         expected_version: int,
         expected_input_hash: str,
         current_input: GateInputSnapshot,
+        current_closure_action_refs: Mapping[
+            UUID, ClosureActionReference
+        ] | None = None,
     ) -> ReviewCycle:
         if self.state is not CycleState.ACTIVE:
             raise ReviewDenied(
@@ -2021,6 +2120,11 @@ class ReviewCycle:
                             policy=self.policy,
                             input_hash=self.input_hash,
                             at=decided_at,
+                            current_closure_action_ref=(
+                                (current_closure_action_refs or {}).get(
+                                    value.global_id
+                                )
+                            ),
                         )
                         for value in self.exceptions
                     ):
@@ -2105,6 +2209,7 @@ class ReviewCycle:
         self,
         *,
         actor_user_id: str,
+        initiated_by_user_id: str | None = None,
         reason: str,
         occurred_at: datetime,
         current_input: GateInputSnapshot,
@@ -2113,10 +2218,10 @@ class ReviewCycle:
         expected_version: int,
         expected_input_hash: str,
     ) -> ReviewTransition:
-        if self.state is not CycleState.DECIDED or self.decision is None:
+        if self.state not in {CycleState.ACTIVE, CycleState.DECIDED}:
             raise ReviewDenied(
-                "DECISION_REQUIRED",
-                _("A completed decision is required before invalidation."),
+                "CURRENT_CYCLE_REQUIRED",
+                _("A current active or decided cycle is required before refresh."),
             )
         self._check_precondition(
             expected_version=expected_version,
@@ -2144,9 +2249,18 @@ class ReviewCycle:
                 _("The Gate input has not changed."),
             )
         return self._transition(
-            kind=ReviewEventKind.INVALIDATED,
+            kind=(
+                ReviewEventKind.INVALIDATED
+                if self.state is CycleState.DECIDED
+                else ReviewEventKind.REFRESHED
+            ),
             trigger=CycleTrigger.DEPENDENCY_CHANGE,
             actor_user_id=_text(actor_user_id, "actorUserId", 140),
+            initiated_by_user_id=(
+                _text(initiated_by_user_id, "initiatedByUserId", 140)
+                if initiated_by_user_id is not None
+                else None
+            ),
             reason=_text(reason, "reason"),
             occurred_at=_aware(occurred_at, "occurredAt"),
             current_input=current_input,
@@ -2159,6 +2273,7 @@ class ReviewCycle:
         kind: ReviewEventKind,
         trigger: CycleTrigger,
         actor_user_id: str,
+        initiated_by_user_id: str | None = None,
         reason: str,
         occurred_at: datetime,
         current_input: GateInputSnapshot,
@@ -2178,7 +2293,17 @@ class ReviewCycle:
             raise _validation(
                 "currentBindings", _("Enter valid current authority bindings.")
             )
-        assert self.decision is not None
+        prior_decision = self.decision
+        prior_decision_snapshot_global_id = (
+            prior_decision.global_id
+            if prior_decision is not None
+            else self.prior_decision_snapshot_global_id
+        )
+        prior_decision_hash = (
+            prior_decision.snapshot_hash
+            if prior_decision is not None
+            else self.prior_decision_hash
+        )
         successor = ReviewCycle.start(
             gate_global_id=self.gate_global_id,
             project_global_id=self.project_global_id,
@@ -2189,11 +2314,16 @@ class ReviewCycle:
             bindings=tuple(current_bindings),
             input_snapshot=current_input,
             prior_cycle_global_id=self.global_id,
-            prior_decision_hash=self.decision.snapshot_hash,
+            prior_decision_snapshot_global_id=(prior_decision_snapshot_global_id),
+            prior_decision_hash=prior_decision_hash,
         )
-        invalidated = replace(
+        prior = replace(
             self,
-            state=CycleState.INVALIDATED,
+            state=(
+                CycleState.INVALIDATED
+                if prior_decision is not None
+                else CycleState.SUPERSEDED
+            ),
             version=next_version(self.version, self.version),
         )
         event = ReviewEvent.build(
@@ -2204,12 +2334,14 @@ class ReviewCycle:
             new_cycle_global_id=successor.global_id,
             old_input_hash=self.input_hash,
             new_input_hash=current_input.snapshot_hash,
-            prior_decision_hash=self.decision.snapshot_hash,
+            prior_decision_snapshot_global_id=(prior_decision_snapshot_global_id),
+            prior_decision_hash=prior_decision_hash,
             actor_user_id=actor_user_id,
+            initiated_by_user_id=initiated_by_user_id,
             reason=reason,
             occurred_at=occurred_at,
         )
-        return ReviewTransition(invalidated, successor, event)
+        return ReviewTransition(prior, successor, event)
 
 
 @dataclass(frozen=True, slots=True)
@@ -2221,7 +2353,14 @@ class ReviewTransition:
     def __post_init__(self) -> None:
         expected_event_kind = {
             CycleTrigger.MANUAL_REOPEN: ReviewEventKind.REOPENED,
-            CycleTrigger.DEPENDENCY_CHANGE: ReviewEventKind.INVALIDATED,
+            CycleTrigger.DEPENDENCY_CHANGE: (
+                ReviewEventKind.INVALIDATED
+                if (
+                    type(self.prior_cycle) is ReviewCycle
+                    and self.prior_cycle.state is CycleState.INVALIDATED
+                )
+                else ReviewEventKind.REFRESHED
+            ),
         }.get(
             self.current_cycle.trigger
             if type(self.current_cycle) is ReviewCycle
@@ -2231,12 +2370,30 @@ class ReviewTransition:
             type(self.prior_cycle) is not ReviewCycle
             or type(self.current_cycle) is not ReviewCycle
             or type(self.event) is not ReviewEvent
-            or self.prior_cycle.state is not CycleState.INVALIDATED
-            or self.prior_cycle.decision is None
+            or self.prior_cycle.state
+            not in {CycleState.INVALIDATED, CycleState.SUPERSEDED}
+            or (
+                self.prior_cycle.state is CycleState.INVALIDATED
+                and self.prior_cycle.decision is None
+            )
+            or (
+                self.prior_cycle.state is CycleState.SUPERSEDED
+                and self.prior_cycle.decision is not None
+            )
             or self.current_cycle.state is not CycleState.ACTIVE
             or self.current_cycle.prior_cycle_global_id != self.prior_cycle.global_id
+            or self.current_cycle.prior_decision_snapshot_global_id
+            != (
+                self.prior_cycle.decision.global_id
+                if self.prior_cycle.decision is not None
+                else self.prior_cycle.prior_decision_snapshot_global_id
+            )
             or self.current_cycle.prior_decision_hash
-            != self.prior_cycle.decision.snapshot_hash
+            != (
+                self.prior_cycle.decision.snapshot_hash
+                if self.prior_cycle.decision is not None
+                else self.prior_cycle.prior_decision_hash
+            )
             or self.current_cycle.cycle_number != self.prior_cycle.cycle_number + 1
             or self.current_cycle.gate_global_id != self.prior_cycle.gate_global_id
             or self.current_cycle.project_global_id
@@ -2251,7 +2408,9 @@ class ReviewTransition:
             or self.event.new_cycle_global_id != self.current_cycle.global_id
             or self.event.old_input_hash != self.prior_cycle.input_hash
             or self.event.new_input_hash != self.current_cycle.input_hash
-            or self.event.prior_decision_hash != self.prior_cycle.decision.snapshot_hash
+            or self.event.prior_decision_snapshot_global_id
+            != self.current_cycle.prior_decision_snapshot_global_id
+            or self.event.prior_decision_hash != self.current_cycle.prior_decision_hash
         ):
             raise _validation("transition", _("Enter a valid review cycle transition."))
 
@@ -2262,6 +2421,9 @@ def downstream_decision_is_current(
     gate_current_cycle_global_id: UUID,
     current_input: GateInputSnapshot,
     at: datetime,
+    current_closure_action_refs: Mapping[
+        UUID, ClosureActionReference
+    ] | None = None,
 ) -> bool:
     if type(cycle) is not ReviewCycle:
         raise _validation("cycle", _("Enter a valid review cycle."))
@@ -2301,6 +2463,9 @@ def downstream_decision_is_current(
                 policy=cycle.policy,
                 input_hash=current_input.snapshot_hash,
                 at=checked_at,
+                current_closure_action_ref=(
+                    (current_closure_action_refs or {}).get(value.global_id)
+                ),
             )
             for value in cycle.exceptions
         ):

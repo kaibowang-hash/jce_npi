@@ -133,10 +133,7 @@ class NPIGateShell(Document):
                 _("Optimistic Version must be greater than zero."),
                 frappe.ValidationError,
             )
-        if (
-            type(self.review_input_version) is not int
-            or self.review_input_version < 1
-        ):
+        if type(self.review_input_version) is not int or self.review_input_version < 1:
             frappe.throw(
                 _("{field} must be greater than zero.").format(
                     field=_("Review Input Version")
@@ -350,11 +347,23 @@ class NPIGateShell(Document):
         current_state = self.review_state
         transition = (previous_state, current_state)
         if previous_state == current_state:
+            if (
+                current_state == "requires_review"
+                and self.current_review_cycle_global_id
+                != previous.get("current_review_cycle_global_id")
+            ):
+                assert_immutable_fields(
+                    self,
+                    previous,
+                    self._REVIEW_CONTEXT_FIELDS[2:],
+                )
+                return
             self._assert_review_fields_unchanged(previous)
             return
 
         if transition not in {
             ("not_started", "in_review"),
+            ("in_review", "requires_review"),
             ("in_review", "decided"),
             ("decided", "requires_review"),
             ("decided", "in_review"),
@@ -371,10 +380,15 @@ class NPIGateShell(Document):
                 previous,
                 self._REVIEW_CONTEXT_FIELDS,
             )
-        if transition in {
-            ("decided", "in_review"),
-            ("decided", "requires_review"),
-        } and self.current_review_cycle_global_id == previous.get(
+        if current_state == "requires_review":
+            assert_immutable_fields(
+                self,
+                previous,
+                self._REVIEW_CONTEXT_FIELDS[2:],
+            )
+        if (
+            current_state == "requires_review" or transition == ("decided", "in_review")
+        ) and self.current_review_cycle_global_id == previous.get(
             "current_review_cycle_global_id"
         ):
             self._throw_incoherent_review_state()

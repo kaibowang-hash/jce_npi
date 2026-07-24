@@ -676,6 +676,80 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/{projectId}/gates/{gateId}/review-command-receipts/{operation}:
+    get:
+      tags: [Gates]
+      operationId: getGateReviewCommandReceipt
+      description: >
+        Reconciles one exact current-actor Gate review command after navigation
+        or hard reload. The raw idempotency key remains in the required header;
+        request payloads and sealed responses are never returned. This read
+        waits on the same Project then Gate locks used by commands, so a
+        committed effect has a completed sealed receipt and a rolled-back or
+        never-arrived effect is absent.
+      x-business-authority: exact-current-actor-command-receipt
+      x-lock-order: [project, gate]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - in: path
+          name: operation
+          required: true
+          schema:
+            {
+              type: string,
+              enum:
+                [
+                  gate.review.start,
+                  gate.review.submit,
+                  gate.review.exception.request,
+                  gate.review.exception.decide,
+                  gate.review.decide,
+                  gate.review.reopen,
+                ],
+            }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Exact actor-bound receipt reconciliation result
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GateReviewCommandReceipt"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /projects/{projectId}/gates/{gateId}:start-review:
     post:
       tags: [Gates]
@@ -2927,7 +3001,7 @@ components:
         Closed server-built review workspace. Permission fields are output
         facts only; every write re-authorizes the exact frozen assignment and
         current Project membership.
-      required: [project, gate, evidence, activeCycle, decisions, availablePolicies, eligibleMembers, eligibleClosureActions, blockers, permissions]
+      required: [project, gate, evidence, activeCycle, decisions, decisionReadiness, exceptionRequestOptions, availablePolicies, eligibleMembers, eligibleClosureActions, blockers, dependencyChanges, permissions]
       properties:
         project:
           $ref: "#/components/schemas/GateEvidenceProject"
@@ -2949,6 +3023,20 @@ components:
           maxItems: 1000
           items:
             $ref: "#/components/schemas/GateDecisionSummary"
+        decisionReadiness:
+          $ref: "#/components/schemas/GateReviewDecisionReadiness"
+        exceptionRequestOptions:
+          type: array
+          maxItems: 8192
+          uniqueItems: true
+          description: >
+            Exact requirement and published-rule combinations the current
+            actor can request now. Each option already enforces missing P1/P2
+            evidence, safe file evidence, requester/approver separation, and
+            at least one current same-Gate non-terminal closure action.
+            Commands re-authorize and re-resolve every input.
+          items:
+            $ref: "#/components/schemas/GateReviewExceptionRequestOption"
         availablePolicies:
           type: array
           maxItems: 100
@@ -2988,6 +3076,17 @@ components:
             input.
           items:
             $ref: "#/components/schemas/GateReviewBlocker"
+        dependencyChanges:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          description: >
+            Newest-first immutable invalidation/refresh lineage. Each row proves
+            that the exact Gate input snapshot changed and links the prior and
+            successor cycles. It does not claim which nested requirement,
+            evidence, or blocker changed.
+          items:
+            $ref: "#/components/schemas/GateReviewDependencyChange"
         permissions:
           $ref: "#/components/schemas/GateReviewPermissions"
     GateReviewGate:
@@ -3027,6 +3126,79 @@ components:
             - { type: string, enum: [pass, conditional_pass, reject] }
             - type: "null"
         downstreamDecisionCurrent: { type: boolean }
+    GateReviewDecisionBlockedReason:
+      type: object
+      additionalProperties: false
+      required: [outcome, code]
+      properties:
+        outcome:
+          { type: string, enum: [pass, conditional_pass, reject] }
+        code:
+          type: string
+          enum:
+            [
+              REVIEW_CYCLE_CLOSED,
+              GATE_INPUT_CHANGED,
+              DECISION_AUTHORITY_REQUIRED,
+              REVIEWS_INCOMPLETE,
+              FILE_EVIDENCE_UNSAFE,
+              GATE_BLOCKED,
+              REQUIRED_P0_EVIDENCE_MISSING,
+              REQUIRED_EVIDENCE_MISSING,
+              EXCEPTION_NOT_REQUIRED,
+              APPROVED_EXCEPTION_REQUIRED,
+            ]
+    GateReviewDecisionReadiness:
+      type: object
+      additionalProperties: false
+      description: >
+        Per-outcome server projection. Domain decision rules are trialed only
+        for the active exact current decision authority; all other states fail
+        closed without evaluating protected readiness details.
+      required: [allowedOutcomes, blockedReasons]
+      properties:
+        allowedOutcomes:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items:
+            { type: string, enum: [pass, conditional_pass, reject] }
+        blockedReasons:
+          type: array
+          maxItems: 3
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewDecisionBlockedReason"
+    GateReviewExceptionRequestOption:
+      type: object
+      additionalProperties: false
+      required: [requirementGlobalId, requirementKey, kind, maximumValidityDays, closureActionGlobalIds]
+      properties:
+        requirementGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        requirementKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        kind:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        maximumValidityDays:
+          { type: integer, minimum: 1, maximum: 3650 }
+        closureActionGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/CanonicalUuid"
     GateReviewPolicyReference:
       type: object
       additionalProperties: false
@@ -3035,6 +3207,139 @@ components:
         globalId: { type: string, format: uuid }
         version: { type: integer, minimum: 1 }
         snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewExactObjectReference:
+      type: object
+      additionalProperties: false
+      description: Exact immutable reference frozen from one persisted object version
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewInputRequirement:
+      type: object
+      additionalProperties: false
+      required: [globalId, requirementKey, priority, sourceVersion, sourceHash, evidenceComplete]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        requirementKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        priority: { type: string, enum: [P0, P1, P2] }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        evidenceComplete: { type: boolean }
+    GateReviewInputEvidence:
+      type: object
+      additionalProperties: false
+      required: [globalId, requirementGlobalId, evidenceKind, sourceGlobalId, sourceVersion, sourceHash, isFile, fileSafe]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        requirementGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        evidenceKind:
+          { type: string, enum: [wbs_item, file_revision] }
+        sourceGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        isFile: { type: boolean }
+        fileSafe: { type: boolean }
+    GateReviewInputBlocker:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, state, blocking, terminal]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        version: { type: integer, minimum: 1 }
+        state:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        blocking: { type: boolean }
+        terminal: { type: boolean }
+    GateReviewInputDependency:
+      type: object
+      additionalProperties: false
+      required: [kind, globalId, version, snapshotHash]
+      properties:
+        kind: { type: string, const: gate_input_snapshot }
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewInputSnapshot:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, gateGlobalId, projectGlobalId, tenantId, gateVersion, requirements, evidence, blockers, dependencies]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        gateGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        projectGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        tenantId: { type: string, minLength: 1, maxLength: 140 }
+        gateVersion: { type: integer, minimum: 1 }
+        requirements:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewInputRequirement"
+        evidence:
+          type: array
+          maxItems: 512
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewInputEvidence"
+        blockers:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewInputBlocker"
+        dependencies:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewInputDependency"
+    GateDecisionDetail:
+      type: object
+      additionalProperties: false
+      description: >
+        Exact immutable domain lineage frozen by the decision. lineageHash is
+        distinct from the request/trace-bearing public snapshotHash.
+      required: [lineageHash, cycleNumber, policyRef, inputSnapshot, reviewHashes, exceptionHashes, cycleVersion]
+      properties:
+        lineageHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cycleNumber: { type: integer, minimum: 1 }
+        policyRef:
+          $ref: "#/components/schemas/GateReviewPolicyReference"
+        inputSnapshot:
+          $ref: "#/components/schemas/GateReviewInputSnapshot"
+        reviewHashes:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, pattern: "^[a-f0-9]{64}$" }
+        exceptionHashes:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          items: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cycleVersion: { type: integer, minimum: 1 }
     GateReviewAuthoritySlot:
       type: object
       additionalProperties: false
@@ -3134,7 +3439,7 @@ components:
     GateReviewClosureAction:
       type: object
       additionalProperties: false
-      required: [globalId, title, state, version]
+      required: [globalId, title, state, stateLabelSource, version]
       properties:
         globalId:
           $ref: "#/components/schemas/CanonicalUuid"
@@ -3146,11 +3451,15 @@ components:
             maxLength: 64,
             pattern: "^[a-z][a-z0-9_.-]*$",
           }
+        stateLabelSource:
+          type: string
+          enum: [Draft, Identified, Not started, Open, Requested]
+          description: Literal English source string from the exact Project Work lifecycle
         version: { type: integer, minimum: 1 }
     GateReviewBlocker:
       type: object
       additionalProperties: false
-      required: [globalId, kind, title, state, dueAt, owner]
+      required: [globalId, kind, title, state, stateLabelSource, dueAt, owner]
       properties:
         globalId:
           $ref: "#/components/schemas/CanonicalUuid"
@@ -3167,6 +3476,10 @@ components:
             maxLength: 64,
             pattern: "^[a-z][a-z0-9_.-]*$",
           }
+        stateLabelSource:
+          type: string
+          enum: [Draft, Identified, Not started, Open, Requested]
+          description: Literal English source string from the exact Project Work lifecycle
         dueAt:
           {
             type: string,
@@ -3174,6 +3487,57 @@ components:
             pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]{1,6})?Z$",
           }
         owner: { type: string, minLength: 1, maxLength: 254 }
+    GateReviewDependencyChange:
+      type: object
+      additionalProperties: false
+      description: >
+        Exact immutable transition evidence for one Gate input-snapshot change.
+        priorDecisionLineageHash is the domain lineage hash and is intentionally
+        distinct from GateDecisionSummary.snapshotHash, the public persisted
+        decision snapshot hash.
+      required: [eventGlobalId, eventType, priorCycleGlobalId, successorCycleGlobalId, oldInputHash, newInputHash, priorDecisionGlobalId, priorDecisionLineageHash, actorUserId, initiatedByUserId, occurredAt, reason]
+      properties:
+        eventGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        eventType:
+          { type: string, enum: [invalidated, refreshed] }
+        priorCycleGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        successorCycleGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        impactActionGlobalId:
+          anyOf:
+            - $ref: "#/components/schemas/CanonicalUuid"
+            - type: "null"
+          description: >
+            Optional legacy lineage only. New dependency invalidations do not
+            create a Domain Work Item merely to represent the transition.
+        oldInputHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        newInputHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        priorDecisionGlobalId:
+          anyOf:
+            - $ref: "#/components/schemas/CanonicalUuid"
+            - type: "null"
+        priorDecisionLineageHash:
+          anyOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - type: "null"
+        actorUserId:
+          { type: string, minLength: 1, maxLength: 254 }
+        initiatedByUserId:
+          anyOf:
+            - { type: string, minLength: 1, maxLength: 254 }
+            - type: "null"
+        occurredAt:
+          {
+            type: string,
+            format: date-time,
+            pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$',
+          }
+        reason:
+          { type: string, minLength: 1, maxLength: 140 }
     GateReviewRecord:
       type: object
       additionalProperties: false
@@ -3235,7 +3599,7 @@ components:
     GateReviewException:
       type: object
       additionalProperties: false
-      required: [globalId, requirementGlobalId, requirementKey, kind, reason, risk, requester, requestedAt, expiresAt, closureActionGlobalId, state, version, requestSnapshotHash, decision]
+      required: [globalId, requirementGlobalId, requirementKey, kind, reason, risk, requester, requestedAt, expiresAt, closureActionRef, state, allowedOutcomes, version, requestSnapshotHash, decision]
       properties:
         globalId: { type: string, format: uuid }
         requirementGlobalId: { type: string, format: uuid }
@@ -3259,8 +3623,15 @@ components:
           $ref: "#/components/schemas/GateReviewMember"
         requestedAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time }
-        closureActionGlobalId: { type: string, format: uuid }
+        closureActionRef:
+          $ref: "#/components/schemas/GateReviewExactObjectReference"
         state: { type: string, enum: [pending, approved, rejected] }
+        allowedOutcomes:
+          type: array
+          maxItems: 2
+          uniqueItems: true
+          items:
+            { type: string, enum: [approved, rejected] }
         version: { type: integer, minimum: 1 }
         requestSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         decision:
@@ -3270,7 +3641,7 @@ components:
     GateReviewCycle:
       type: object
       additionalProperties: false
-      required: [globalId, number, trigger, state, version, policyRef, inputHash, bindings, selectedSteps, exceptions, startedAt, startedBy]
+      required: [globalId, number, trigger, state, version, policyRef, policyDefinition, inputHash, bindings, selectedSteps, exceptions, startedAt, startedBy]
       properties:
         globalId: { type: string, format: uuid }
         number: { type: integer, minimum: 1 }
@@ -3279,10 +3650,21 @@ components:
             type: string,
             enum: [manual_start, manual_reopen, dependency_change],
           }
-        state: { type: string, enum: [active, decided, invalidated] }
+        state:
+          {
+            type: string,
+            enum: [active, decided, invalidated, superseded],
+          }
         version: { type: integer, minimum: 1 }
         policyRef:
           $ref: "#/components/schemas/GateReviewPolicyReference"
+        policyDefinition:
+          allOf:
+            - $ref: "#/components/schemas/GateReviewAvailablePolicy"
+          description: >
+            Exact frozen policy presentation for this cycle. It remains
+            readable when the policy root is later disabled and its policyRef
+            must equal the cycle policyRef.
         inputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         bindings:
           type: array
@@ -3311,7 +3693,7 @@ components:
     GateDecisionSummary:
       type: object
       additionalProperties: false
-      required: [globalId, cycleGlobalId, outcome, inputHash, snapshotHash, decidedAt, decidedBy, current]
+      required: [globalId, cycleGlobalId, outcome, inputHash, snapshotHash, decidedAt, decidedBy, current, detail]
       properties:
         globalId: { type: string, format: uuid }
         cycleGlobalId: { type: string, format: uuid }
@@ -3322,6 +3704,8 @@ components:
         decidedAt: { type: string, format: date-time }
         decidedBy: { type: string, minLength: 1, maxLength: 254 }
         current: { type: boolean }
+        detail:
+          $ref: "#/components/schemas/GateDecisionDetail"
     GateReviewPermissions:
       type: object
       additionalProperties: false
@@ -3337,6 +3721,29 @@ components:
         canApproveException: { type: boolean }
         canDecide: { type: boolean }
         canReopen: { type: boolean }
+    GateReviewCommandReceipt:
+      type: object
+      additionalProperties: false
+      required: [operation, status, workspaceReloadRequired]
+      properties:
+        operation:
+          type: string
+          enum:
+            [
+              gate.review.start,
+              gate.review.submit,
+              gate.review.exception.request,
+              gate.review.exception.decide,
+              gate.review.decide,
+              gate.review.reopen,
+            ]
+        status:
+          type: string
+          enum: [completed, absent]
+          description: >
+            absent covers a rolled-back command, a command that never reached
+            the server, or no committed receipt for this exact actor key.
+        workspaceReloadRequired: { type: boolean, const: true }
     ToolingCockpit:
       type: object
       required: [tooling, lifecycle, source]

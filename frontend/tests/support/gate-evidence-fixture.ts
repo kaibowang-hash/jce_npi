@@ -27,6 +27,7 @@ export function gateEvidenceFixture(
     },
     requirements: [
       {
+        globalId: "12121212-1212-4212-8212-121212121212",
         key: "DESIGN_BASELINE",
         title: "Synthetic design baseline",
         classification: "required",
@@ -60,6 +61,7 @@ export function gateEvidenceFixture(
         ],
       },
       {
+        globalId: "23232323-2323-4232-8232-232323232323",
         key: "DIMENSIONAL_REPORT",
         title: "Synthetic dimensional report",
         classification: "required",
@@ -99,6 +101,7 @@ export function gateEvidenceFixture(
         ],
       },
       {
+        globalId: "34343434-3434-4343-8343-343434343434",
         key: "CUSTOMER_CONFIRMATION",
         title: "Synthetic customer confirmation",
         classification: "optional",

@@ -16,9 +16,15 @@ export const supportedLocales = ["en", "zh", "zh-TW"] as const;
 export type Locale = (typeof supportedLocales)[number];
 export type TranslationValues = Readonly<Record<string, string | number>>;
 
-interface I18nContextValue {
+export interface SessionCommandContext {
+  readonly userId: string;
+  readonly csrfToken: string;
+}
+
+export interface I18nContextValue {
   locale: Locale;
   catalogVersion: string;
+  sessionCommandContext: SessionCommandContext | null;
   isPrototypeFallback: boolean;
   isLocalizationUnavailable: boolean;
   isLocalizationPending: boolean;
@@ -146,6 +152,8 @@ export function I18nProvider({
   const [runtimeCatalog, setRuntimeCatalog] = useState<
     SessionBootstrap["catalog"] | null
   >(null);
+  const [sessionCommandContext, setSessionCommandContext] =
+    useState<SessionCommandContext | null>(null);
   const [isPrototypeFallback, setPrototypeFallback] = useState(true);
   const [isLocalizationUnavailable, setLocalizationUnavailable] =
     useState(false);
@@ -162,6 +170,7 @@ export function I18nProvider({
       refreshSession = false,
     ): Promise<void> => {
       setPendingOperation(operation);
+      setSessionCommandContext(null);
       try {
         let bootstrap: SessionBootstrap;
         if (operation === "bootstrap") {
@@ -189,10 +198,18 @@ export function I18nProvider({
         }
         updateLocale(bootstrap.language);
         setRuntimeCatalog(bootstrap.catalog);
+        setSessionCommandContext(
+          Object.freeze({
+            userId: bootstrap.userId,
+            csrfToken: bootstrap.csrfToken,
+          }),
+        );
         setPrototypeFallback(false);
         setLocalizationUnavailable(false);
         setLocalizationFailure(null);
       } catch (error) {
+        sessionClient.clearSession();
+        setSessionCommandContext(null);
         if (prototypeFallbackIsAllowed()) {
           if (operation === "set_language" && requestedLocale) {
             globalThis.localStorage.setItem(
@@ -232,6 +249,8 @@ export function I18nProvider({
         requestedLocale,
         refreshSession,
       ).catch((error: unknown) => {
+        sessionClient.clearSession();
+        setSessionCommandContext(null);
         setPendingOperation(null);
         setPrototypeFallback(false);
         setLocalizationUnavailable(true);
@@ -242,7 +261,7 @@ export function I18nProvider({
         });
       });
     },
-    [executeLocalizationRequest],
+    [executeLocalizationRequest, sessionClient],
   );
 
   useEffect(() => {
@@ -274,6 +293,7 @@ export function I18nProvider({
     () => ({
       locale,
       catalogVersion: runtimeCatalog?.version ?? catalogVersion,
+      sessionCommandContext,
       isPrototypeFallback,
       isLocalizationUnavailable,
       isLocalizationPending: pendingOperation !== null,
@@ -291,6 +311,7 @@ export function I18nProvider({
       pendingOperation,
       retryLocalization,
       runtimeCatalog,
+      sessionCommandContext,
       setLocale,
     ],
   );

@@ -5,7 +5,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DOCTYPE_ROOT = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
 
@@ -22,7 +21,9 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             for field in metadata["fields"]  # type: ignore[index]
         }
 
-    def test_top_level_doctypes_are_additive_system_manager_only(self) -> None:
+    def test_top_level_doctypes_keep_only_the_narrow_gate_transport_write(
+        self,
+    ) -> None:
         top_level = (
             "npi_project_template",
             "npi_project_template_version",
@@ -35,11 +36,38 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             with self.subTest(folder=folder):
                 metadata = self.load_doctype(folder)
                 permissions = metadata["permissions"]  # type: ignore[index]
-                self.assertEqual({item["role"] for item in permissions}, {"System Manager"})
+                expected_roles = (
+                    {"System Manager", "NPI API User"}
+                    if folder == "npi_gate_shell"
+                    else {"System Manager"}
+                )
+                self.assertEqual(
+                    {item["role"] for item in permissions},
+                    expected_roles,
+                )
+                if folder == "npi_gate_shell":
+                    transport = next(
+                        item for item in permissions if item["role"] == "NPI API User"
+                    )
+                    self.assertEqual(
+                        transport,
+                        {
+                            "role": "NPI API User",
+                            "read": 0,
+                            "write": 1,
+                            "create": 0,
+                            "delete": 0,
+                            "export": 0,
+                            "print": 0,
+                            "email": 0,
+                        },
+                    )
                 self.assertTrue(all(not item.get("delete") for item in permissions))
                 self.assertEqual(metadata.get("custom"), 0)
 
-    def test_template_version_has_deterministic_identity_and_immutable_snapshot_fields(self) -> None:
+    def test_template_version_has_deterministic_identity_and_immutable_snapshot_fields(
+        self,
+    ) -> None:
         root = self.fields(self.load_doctype("npi_project_template"))
         root_metadata = self.load_doctype("npi_project_template")
         version_metadata = self.load_doctype("npi_project_template_version")
@@ -52,12 +80,16 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         self.assertEqual(version["version_key"].get("unique"), 1)
         self.assertEqual(version["snapshot_hash"].get("read_only"), 1)
         self.assertEqual(version["optimistic_version"].get("read_only"), 1)
-        self.assertEqual(version["reference_rules"].get("options"), "NPI Template Reference Rule")
-        self.assertEqual(version["gates"].get("options"), "NPI Template Gate Definition")
+        self.assertEqual(
+            version["reference_rules"].get("options"), "NPI Template Reference Rule"
+        )
+        self.assertEqual(
+            version["gates"].get("options"), "NPI Template Gate Definition"
+        )
         root_source = (
             DOCTYPE_ROOT / "npi_project_template/npi_project_template.py"
         ).read_text(encoding="utf-8")
-        self.assertIn('(\"global_id\", \"template_code\")', root_source)
+        self.assertIn('("global_id", "template_code")', root_source)
         self.assertIn("validate_template_code(self.template_code)", root_source)
 
         version_source = (
@@ -68,7 +100,9 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         self.assertIn("domain_template.snapshot_hash", version_source)
         self.assertIn("throw_domain_validation(error)", version_source)
 
-    def test_project_and_gate_persist_stable_identity_exact_template_and_versions(self) -> None:
+    def test_project_and_gate_persist_stable_identity_exact_template_and_versions(
+        self,
+    ) -> None:
         project_metadata = self.load_doctype("npi_engineering_project")
         project = self.fields(project_metadata)
         gate_metadata = self.load_doctype("npi_gate_shell")
@@ -103,7 +137,9 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         self.assertIn("source_object_id", reference)
         self.assertNotIn("source_object_type", reference)
 
-    def test_idempotency_and_business_code_reservations_are_unique_append_only_hashes(self) -> None:
+    def test_idempotency_and_business_code_reservations_are_unique_append_only_hashes(
+        self,
+    ) -> None:
         idempotency_metadata = self.load_doctype("npi_project_idempotency")
         idempotency = self.fields(idempotency_metadata)
         reservation_metadata = self.load_doctype("npi_project_business_code")
@@ -128,17 +164,25 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
 
         for metadata in (idempotency_metadata, reservation_metadata):
             permissions = metadata["permissions"]  # type: ignore[index]
-            self.assertEqual(permissions, [
-                {
-                    "role": "System Manager",
-                    "read": 1,
-                    "create": 1,
-                    "export": 0,
-                    "print": 0,
-                    "email": 0,
-                }
-            ])
-            self.assertTrue(all(field.get("read_only") == 1 for field in self.fields(metadata).values()))
+            self.assertEqual(
+                permissions,
+                [
+                    {
+                        "role": "System Manager",
+                        "read": 1,
+                        "create": 1,
+                        "export": 0,
+                        "print": 0,
+                        "email": 0,
+                    }
+                ],
+            )
+            self.assertTrue(
+                all(
+                    field.get("read_only") == 1
+                    for field in self.fields(metadata).values()
+                )
+            )
 
     def test_command_owned_controllers_require_the_internal_write_guard(self) -> None:
         guarded = (
@@ -163,7 +207,9 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         helper = (
             ROOT / "apps/npi_core/npi_core/project/frappe_validation.py"
         ).read_text(encoding="utf-8")
-        self.assertIn('getattr(frappe.flags, "npi_project_command_write", False)', helper)
+        self.assertIn(
+            'getattr(frappe.flags, "npi_project_command_write", False)', helper
+        )
         self.assertIn("frappe.PermissionError", helper)
 
     def test_child_tables_deny_standalone_resource_mutation(self) -> None:
@@ -204,15 +250,17 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
                 self.assertIn("def on_trash(self)", source)
                 self.assertIn("deny_controlled_history_delete()", source)
 
-        audit = (
-            DOCTYPE_ROOT / "npi_audit_event/npi_audit_event.py"
-        ).read_text(encoding="utf-8")
+        audit = (DOCTYPE_ROOT / "npi_audit_event/npi_audit_event.py").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("def before_save(self)", audit)
         self.assertIn("if not self.is_new()", audit)
         self.assertIn("def on_trash(self)", audit)
         self.assertIn("deny_controlled_history_delete()", audit)
 
-    def test_published_controller_enforces_immutability_and_no_core_bypass(self) -> None:
+    def test_published_controller_enforces_immutability_and_no_core_bypass(
+        self,
+    ) -> None:
         version_source = (
             DOCTYPE_ROOT
             / "npi_project_template_version/npi_project_template_version.py"
@@ -222,9 +270,7 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
 
         phase4_source = "\n".join(
             path.read_text(encoding="utf-8")
-            for path in (
-                ROOT / "apps/npi_core/npi_core/project"
-            ).rglob("*.py")
+            for path in (ROOT / "apps/npi_core/npi_core/project").rglob("*.py")
         )
         for prohibited in (
             "ignore_" + "permissions",
@@ -243,9 +289,7 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             sorted(path.name for path in fixture_root.iterdir() if path.is_file()),
             ["role.json"],
         )
-        records = json.loads(
-            (fixture_root / "role.json").read_text(encoding="utf-8")
-        )
+        records = json.loads((fixture_root / "role.json").read_text(encoding="utf-8"))
         self.assertEqual({record["doctype"] for record in records}, {"Role"})
         self.assertNotIn("template", json.dumps(records).casefold())
 
@@ -254,8 +298,7 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             ROOT / "apps/npi_core/npi_core/project/frappe_validation.py"
         ).read_text(encoding="utf-8")
         idempotency = (
-            DOCTYPE_ROOT
-            / "npi_project_idempotency/npi_project_idempotency.py"
+            DOCTYPE_ROOT / "npi_project_idempotency/npi_project_idempotency.py"
         ).read_text(encoding="utf-8")
         self.assertNotIn("_(field_label)", helper)
         self.assertNotIn("meta.get_label", helper)
@@ -264,15 +307,11 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
         for language in ("zh", "zh-TW"):
             with self.subTest(language=language):
                 catalog_path = (
-                    ROOT
-                    / "apps/npi_core/npi_core/translations"
-                    / f"{language}.csv"
+                    ROOT / "apps/npi_core/npi_core/translations" / f"{language}.csv"
                 )
                 with catalog_path.open(encoding="utf-8", newline="") as file:
                     catalog = {row[0]: row[1] for row in csv.reader(file)}
-                uuid_message = catalog[
-                    "{field} must be a valid UUID."
-                ].format(
+                uuid_message = catalog["{field} must be a valid UUID."].format(
                     field=catalog["Global ID"]
                 )
                 hash_message = catalog[

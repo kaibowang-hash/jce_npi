@@ -1094,40 +1094,12 @@ Evidence scan pending,證據掃描待處理
 Evidence scan passed,證據掃描已通過
 Evidence scan failed,證據掃描失敗
 Evidence threat detected,證據偵測到威脅
-Loading Gate evidence workspace,正在載入階段門證據工作區
-Gate evidence is unavailable,階段門證據不可用
-The Gate evidence workspace was not found or is not available to your account.,找不到該階段門證據工作區，或您的帳戶無權存取該工作區。
-Gate evidence access is not available,階段門證據存取不可用
-Your account cannot open this Gate evidence workspace. No protected evidence data was displayed.,您的帳戶無法開啟此階段門證據工作區。未顯示任何受保護的證據資料。
-The Gate evidence address is invalid,階段門證據位址無效
-Open Gate evidence from an authorized Project Gate reference.,請從已授權的專案階段門參照開啟階段門證據。
-The Gate evidence view is out of date,階段門證據檢視已過期
-Reload Gate evidence before continuing with current data.,請先重新載入階段門證據，再繼續使用目前資料。
-Gate evidence could not be loaded,無法載入階段門證據
-Retry the live Gate evidence request or share the displayed reference ID with support.,請重試即時階段門證據請求，或將顯示的參考編號提供給支援人員。
-The Gate evidence response could not be used safely,無法安全使用階段門證據回應
-No Gate evidence was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何階段門證據。請先將顯示的參考編號提供給支援人員，再嘗試其他操作。
-Reload Gate evidence,重新載入階段門證據
-Gate requirements,階段門需求
 Classification,分類
 Controlled evidence,受控證據
 Evidence,證據
 Not applicable,不適用
 No controlled evidence is attached.,未關聯任何受控證據。
-Required evidence is missing,缺少必須證據
-Evidence scan requires attention,證據掃描需要關注
-Exact evidence references recorded,已記錄精確證據參照
-You have view-only access. Evidence attachment is not available in this workspace.,您僅有檢視權限。此工作區不提供證據關聯功能。
-No evidence,無證據
-This Gate has frozen requirements but no controlled evidence references.,此階段門已凍結需求，但沒有受控證據參照。
-Unsafe scan state remains visible,不安全的掃描狀態仍然可見
-"Pending, failed, or infected file scans are not represented as clean evidence.",待處理、失敗或已感染的檔案掃描不會被視為未發現威脅的證據。
 Gate version,階段門版本
-Required requirements,必須需求
-Missing required evidence,缺失的必須證據
-Unsafe scan results,不安全的掃描結果
-Evidence references,證據參照
-Frozen Gate context,已凍結的階段門上下文
 Evidence kind,證據類別
 Source object type,來源物件類型
 Source global ID,來源全域識別碼
@@ -1141,17 +1113,7 @@ File size,檔案大小
 Select a requirement with evidence to inspect its exact controlled reference.,選取一個包含證據的需求，以檢視其精確的受控參照。
 Requirement key,需求鍵
 Requirement title,需求標題
-Priority,優先順序
-Reviewers,評審人
 Allowed evidence kinds,允許的證據類別
-Evidence count,證據數量
-Gate template global ID,階段門模板全域識別碼
-Gate template version,階段門模板版本
-Gate template snapshot hash,階段門模板快照雜湊
-Requirement snapshot hash,需求快照雜湊
-Frozen,已凍結
-Frozen by,凍結人
-Requirement evidence completeness does not mean this Gate is ready for a decision.,需求證據完整性並不代表此階段門已具備決策條件。
 File revisions can only be changed through an authorized NPI file command.,檔案修訂版只能透過已授權的 NPI 檔案命令變更。
 File scan results can only be changed by an authorized scanner operation.,檔案掃描結果只能由已授權的掃描操作變更。
 Gate evidence references can only be added through an authorized NPI Gate command.,階段門證據參照只能透過已授權的 NPI 階段門命令新增。
@@ -1272,3 +1234,507 @@ NPI Gate Template Version,NPI 階段門模板版本
 Gate Template,階段門模板
 Gate Template Version Title,階段門模板版本標題
 Gate Requirement Definitions,階段門需求定義
+Enter a valid SHA-256 hash.,請輸入有效的 SHA-256 雜湊。
+Enter a valid identifier.,請輸入有效的識別碼。
+Enter a non-negative integer.,請輸入非負整數。
+Enter a timezone-aware date and time.,請輸入含時區的日期與時間。
+Select a supported requirement priority.,請選擇支援的需求優先順序。
+Only file evidence can have a file-safety failure.,只有檔案證據可以有檔案安全失敗。
+Select a supported schema version.,請選擇支援的結構版本。
+Enter a valid Gate input snapshot.,請輸入有效的階段門輸入快照。
+Too many Gate input records were supplied.,提供的階段門輸入記錄過多。
+Gate input identities must be unique.,階段門輸入識別必須唯一。
+Evidence must reference a requirement in this snapshot.,證據必須參照此快照中的需求。
+Enter unique eligible requirement keys.,請輸入唯一且符合資格的需求鍵。
+The maximum exception validity is too long.,豁免的最長有效期過長。
+The closure action kind must be action.,結案行動的類別必須為行動。
+This condition does not accept a priority.,此條件不接受優先順序。
+Select supported requirement priorities.,請選擇支援的需求優先順序。
+The policy version identifier is not canonical.,策略版本識別碼不符合標準格式。
+Enter between one and 32 review steps.,請輸入 1 至 32 個評審步驟。
+Review step keys must be unique.,評審步驟鍵必須唯一。
+Review authority slots must be unique.,評審權責槽位必須唯一。
+Decision and reopen authority must be separate from review assignments.,決策與重新開啟權責必須與評審指派分開。
+Enter unique supported exception rules.,請輸入唯一且支援的豁免規則。
+Select unique supported dependency evaluators.,請選擇唯一且支援的相依性評估器。
+A published review policy version cannot be changed.,已發布的評審策略版本不能變更。
+Only a published policy can create its next draft version.,只有已發布的策略才能建立其下一個草稿版本。
+The Gate decision identifier is not canonical.,階段門決策識別碼不符合標準格式。
+The decision input scope does not match.,決策輸入範圍不相符。
+The Gate decision snapshot hash is invalid.,階段門決策快照雜湊無效。
+The requester and exception approver must be different users.,申請人與豁免核准人必須是不同使用者。
+The exception must reference a closure action.,豁免必須參照一個結案行動。
+The expiry must be after the request time.,到期時間必須晚於申請時間。
+A pending exception cannot have a decision.,待處理的豁免不能含有決策。
+A closed exception requires an exact decision.,已結案的豁免需要確切決策。
+The exception decision actor must match its approver.,豁免決策執行人必須與其核准人相符。
+The decision cannot predate the request.,決策時間不能早於申請時間。
+An approved exception must be decided before expiry.,已核准的豁免必須在到期前完成決策。
+This exception request already has a decision.,此豁免申請已有決策。
+The assigned exception approval authority is required.,必須指定豁免核准權責。
+An expired exception cannot be approved.,已到期的豁免不能核准。
+A transition must create a new cycle.,轉換必須建立新的週期。
+The review event identifier is not canonical.,評審事件識別碼不符合標準格式。
+The review event prior decision reference is incomplete.,評審事件的先前決策參照不完整。
+The review event hash is invalid.,評審事件雜湊無效。
+The review cycle identifier is not canonical.,評審週期識別碼不符合標準格式。
+Enter a valid review policy.,請輸入有效的評審策略。
+A published review policy is required.,必須使用已發布的評審策略。
+Enter a valid review cycle.,請輸入有效的評審週期。
+The Gate input snapshot scope does not match.,階段門輸入快照範圍不相符。
+Selected review steps must match the frozen Gate input.,所選評審步驟必須與已凍結的階段門輸入相符。
+Bind every selected policy authority exactly once.,每個所選策略權責都必須且只能綁定一次。
+Review records must be unique.,評審記錄必須唯一。
+Review records do not match this review cycle.,評審記錄與此評審週期不相符。
+Review records do not follow the selected sequence.,評審記錄未依照所選順序。
+Exception records do not match this review cycle.,豁免記錄與此評審週期不相符。
+Exception approval binding does not match this review cycle.,豁免核准綁定與此評審週期不相符。
+The first review cycle must be a manual start.,第一個評審週期必須手動啟動。
+A successor cycle requires its prior cycle.,後續週期必須參照其先前週期。
+The prior review cycle identifier is not canonical.,先前評審週期識別碼不符合標準格式。
+The successor prior decision reference is incomplete.,後續週期的先前決策參照不完整。
+Enter a valid Gate decision snapshot.,請輸入有效的階段門決策快照。
+An active or superseded cycle cannot have a decision.,作用中或已取代的週期不能含有決策。
+A decided or invalidated cycle requires a decision.,已決策或已失效的週期必須含有決策。
+The decision does not match this review cycle.,決策與此評審週期不相符。
+The decision version does not match this review cycle.,決策版本與此評審週期不相符。
+A decision cannot predate its review records.,決策時間不能早於其評審記錄。
+The decision outcome does not match the frozen Gate input.,決策結果與已凍結的階段門輸入不相符。
+The conditional decision lacks an exact approved exception.,有條件決策缺少確切的已核准豁免。
+The current Gate input scope does not match.,目前階段門輸入範圍不相符。
+The Gate input changed and requires a new review cycle.,階段門輸入已變更，需要新的評審週期。
+This review cycle is not active.,此評審週期不是作用中。
+This review step is not selected.,未選取此評審步驟。
+This review has already been recorded.,此評審已記錄。
+The assigned reviewer is required.,必須指定評審人。
+Complete every earlier review sequence first.,請先完成所有較早的評審順序。
+The published policy does not allow this exception.,已發布的策略不允許此豁免。
+This requirement is not in the frozen Gate input.,此需求不在已凍結的階段門輸入中。
+This requirement cannot use the selected exception.,此需求不能使用所選豁免。
+Unsafe file evidence cannot be excepted.,不安全的檔案證據不能豁免。
+The required closure action is missing.,缺少必要的結案行動。
+The exception expiry exceeds the published policy.,豁免到期時間超過已發布策略的限制。
+The exception requester and approver must be different users.,豁免申請人與核准人必須是不同使用者。
+This exception request already exists.,此豁免申請已存在。
+The exception request was not found.,找不到豁免申請。
+The assigned decision authority is required.,必須指定決策權責。
+Every selected review must approve before this Gate can pass.,所有所選評審都必須核准，此階段門才能通過。
+File evidence is not safe and current.,檔案證據並非安全且為目前版本。
+Resolve every blocking item before this Gate can pass.,請先解決所有阻斷項，此階段門才能通過。
+Required P0 evidence cannot be excepted.,必要的 P0 證據不能豁免。
+Required evidence is missing.,缺少必要證據。
+A conditional pass requires an eligible evidence exception.,有條件通過需要符合資格的證據豁免。
+Every excepted requirement needs a current approved exception.,每個豁免需求都需要目前有效且已核准的豁免。
+A completed decision is required before reopening.,重新開啟前必須已有完成的決策。
+The assigned reopen authority is required.,必須指定重新開啟權責。
+A current active or decided cycle is required before refresh.,重新整理前必須有目前作用中或已決策的週期。
+The published policy does not allow this dependency evaluator.,已發布的策略不允許此相依性評估器。
+The Gate input has not changed.,階段門輸入尚未變更。
+Enter valid current authority bindings.,請輸入有效的目前權責綁定。
+Enter a valid review cycle transition.,請輸入有效的評審週期轉換。
+Select an applicable published Gate Review Policy.,請選擇適用且已發布的階段門評審策略。
+Select the exact requirement from this review cycle.,請從此評審週期中選擇確切的需求。
+Select the current exact Gate Review Policy.,請選擇目前確切的階段門評審策略。
+Select current members from this Project.,請選擇此專案的目前成員。
+Select a current same-Gate closure action.,請選擇目前同一階段門的結案行動。
+{field} must contain a valid value.,{field} 必須包含有效值。
+{field} must contain valid canonical JSON.,{field} 必須包含有效的標準化資料。
+{field} must be a valid date and time.,{field} 必須是有效的日期與時間。
+A protected Gate review field cannot be changed.,受保護的階段門評審欄位不能變更。
+Gate review history can only be changed through an authorized NPI Gate command.,階段門評審歷程只能透過已授權的 NPI 階段門命令變更。
+Controlled Gate review history cannot be deleted.,受控的階段門評審歷程不能刪除。
+Gate decision snapshots cannot be changed.,階段門決策快照不能變更。
+Review Cycle Global ID,評審週期全域識別碼
+Review Policy Global ID,評審策略全域識別碼
+Review Cycle Number,評審週期編號
+Review Policy Version,評審策略版本
+Review Policy Snapshot Hash,評審策略快照雜湊
+Review Cycle Version,評審週期版本
+Select a supported Gate decision outcome.,請選擇支援的階段門決策結果。
+Decision Actor,決策執行人
+Occurred At,發生時間
+Review Input Snapshot,評審輸入快照
+Review Input Hash,評審輸入雜湊
+Review Input Snapshot does not match its hash.,評審輸入快照與其雜湊不相符。
+Review Record Hashes,評審記錄雜湊
+Review Exception Hashes,評審豁免雜湊
+A conditional pass requires an approved exception.,有條件通過需要已核准的豁免。
+{field} must not contain duplicate hashes.,{field} 不能包含重複的雜湊。
+Gate Decision Snapshot,階段門決策快照
+Select a supported Gate review cycle state.,請選擇支援的階段門評審週期狀態。
+A new Gate review cycle must start active at version one.,新的階段門評審週期必須以版本一的作用中狀態開始。
+The Gate review cycle state transition is not allowed.,不允許此階段門評審週期狀態轉換。
+Gate Shell must match the exact Gate Global ID.,階段門框架必須與確切的階段門全域識別碼相符。
+Started By,啟動人
+Started At,啟動時間
+Review Policy Snapshot,評審策略快照
+Review Policy Snapshot does not match its exact reference.,評審策略快照與其確切參照不相符。
+Authority Bindings,權責綁定
+Selected Review Steps,所選評審步驟
+Bind every selected Gate review authority.,請綁定每個所選的階段門評審權責。
+Authority Bindings contain an invalid binding.,權責綁定包含無效的綁定。
+Authority Slot,權責槽位
+Assigned User,指派使用者
+Assigned Member,指派成員
+Authority Binding slots must be unique.,權責綁定槽位必須唯一。
+Select at least one Gate review step.,請至少選擇一個階段門評審步驟。
+Selected Review Steps contain an invalid step.,所選評審步驟包含無效步驟。
+Review Step Key,評審步驟鍵
+Review Step Sequence,評審步驟順序
+Select a supported review activation.,請選擇支援的評審啟用條件。
+Select a supported review activation priority.,請選擇支援的評審啟用優先順序。
+Selected Review Steps do not match their authority bindings.,所選評審步驟與其權責綁定不相符。
+An initial review cycle cannot reference a prior decision.,初始評審週期不能參照先前決策。
+A successor review cycle requires the exact prior cycle.,後續評審週期必須參照確切的先前週期。
+Prior Review Cycle Global ID,先前評審週期全域識別碼
+Prior Decision Snapshot Global ID,先前決策快照全域識別碼
+Prior Decision Hash,先前決策雜湊
+Gate review events cannot be changed.,階段門評審事件不能變更。
+Review Event Key,評審事件鍵
+Event Actor,事件執行人
+Successor Review Cycle Global ID,後續評審週期全域識別碼
+Impact Action Global ID,影響行動全域識別碼
+Review Event references do not match its event type.,評審事件參照與其事件類型不相符。
+Review Event Payload,評審事件酬載
+Review Event Payload does not match this event.,評審事件酬載與此事件不相符。
+Review Event Payload must contain an exact event detail.,評審事件酬載必須包含確切的事件明細。
+Review Event Payload contains an invalid exception decision.,評審事件酬載包含無效的豁免決策。
+Review Exception Global ID,評審豁免全域識別碼
+Exception Decision Snapshot Hash,豁免決策快照雜湊
+Review Event Payload contains an invalid reopen detail.,評審事件酬載包含無效的重新開啟明細。
+Reopen Reason,重新開啟原因
+Review Event Payload contains an invalid dependency refresh detail.,評審事件酬載包含無效的相依性重新整理明細。
+Dependency Refresh Reason,相依性重新整理原因
+Old Review Input Hash,舊評審輸入雜湊
+New Review Input Hash,新評審輸入雜湊
+Review invalidation requires a changed input hash.,評審失效需要已變更的輸入雜湊。
+The dependency refresh prior decision is incomplete.,相依性重新整理的先前決策不完整。
+Dependency Change Initiator,相依性變更發起人
+A new Gate review exception must start pending at version one.,新的階段門評審豁免必須以版本一的待處理狀態開始。
+A pending Gate review exception cannot contain a decision.,待處理的階段門評審豁免不能包含決策。
+The Gate review exception state transition is not allowed.,不允許此階段門評審豁免狀態轉換。
+Requester Member Global ID,申請人成員全域識別碼
+Approver Member Global ID,核准人成員全域識別碼
+Closure Action Global ID,結案行動全域識別碼
+Review Exception Kind,評審豁免類別
+Exception Reason,豁免原因
+Exception Risk,豁免風險
+Requester User,申請使用者
+Approver Authority Slot,核准人權責槽位
+Approver User,核准使用者
+The exception requester cannot approve the same exception.,豁免申請人不能核准同一項豁免。
+Requested At,申請時間
+Expires At,到期時間
+Exception expiry must be later than its request time.,豁免到期時間必須晚於其申請時間。
+Exception Request Snapshot,豁免申請快照
+Select a supported exception decision.,請選擇支援的豁免決策。
+Approval Opinion,核准意見
+Decided At,決策時間
+Exception Decision Snapshot,豁免決策快照
+A Gate review idempotency response must be sealed after the command succeeds.,階段門評審冪等回應必須在命令成功後封存。
+Gate Review Policy Code,階段門評審策略編碼
+Gate Review Policy Title,階段門評審策略標題
+A Gate Review Policy with version history cannot be deleted.,具有版本歷程的階段門評審策略不能刪除。
+A published Gate Review Policy version cannot be changed.,已發布的階段門評審策略版本不能變更。
+Gate Review Policy Version Title,階段門評審策略版本標題
+Select an exact published Gate Template version.,請選擇確切且已發布的階段門模板版本。
+Enter a valid Gate Review Policy.,請輸入有效的階段門評審策略。
+A published Gate Review Policy version cannot be deleted.,已發布的階段門評審策略版本不能刪除。
+Select an existing Gate Review Policy.,請選擇現有的階段門評審策略。
+Enter a valid Gate Review Policy version.,請輸入有效的階段門評審策略版本。
+Publish each Gate Review Policy version before creating the next.,請先發布目前的階段門評審策略版本，再建立下一版本。
+Review Steps,評審步驟
+Review Steps contains an unsupported field.,評審步驟包含不支援的欄位。
+Exception Rules,豁免規則
+Exception Rules contains an unsupported field.,豁免規則包含不支援的欄位。
+Dependency Evaluators,相依性評估器
+Dependency Evaluators contains an unsupported value.,相依性評估器包含不支援的值。
+Canonical Policy Snapshot,標準化策略快照
+Gate review records cannot be changed.,階段門評審記錄不能變更。
+Assigned Member Global ID,指派成員全域識別碼
+Review Actor,評審操作人
+The assigned reviewer must be the review actor.,指派的評審人必須是評審操作人。
+Select a supported review outcome.,請選擇支援的評審結果。
+Review Opinion,評審意見
+Reviewed Input Hash,已評審輸入雜湊
+Cycle Version Before,變更前週期版本
+Cycle Version After,變更後週期版本
+Cycle Version After must advance by one.,變更後週期版本必須遞增一。
+Review Record Snapshot,評審記錄快照
+Review Input Version,評審輸入版本
+Review Input Version must advance by one.,評審輸入版本必須遞增一。
+Current Review Cycle,目前評審週期
+Current Review Cycle Global ID,目前評審週期全域識別碼
+Latest Decision Snapshot,最新決策快照
+Latest Decision Snapshot Global ID,最新決策快照全域識別碼
+Latest Decision Snapshot Hash,最新決策快照雜湊
+Gate review state references are incomplete or inconsistent.,階段門評審狀態參照不完整或不一致。
+NPI Gate Decision Snapshot,NPI 階段門決策快照
+Gate Decision Outcome,階段門決策結果
+pass,通過
+reject,拒絕
+conditional_pass,有條件通過
+Gate Decision Snapshot Hash,階段門決策快照雜湊
+NPI Gate Review Cycle,NPI 階段門評審週期
+Review Cycle Key,評審週期鍵
+Gate Shell,階段門框架
+Review Cycle Trigger,評審週期觸發方式
+manual_start,手動啟動
+manual_reopen,手動重新開啟
+dependency_change,相依性變更
+Review Cycle State,評審週期狀態
+decided,已決策
+invalidated,已失效
+superseded,已取代
+NPI Gate Review Event,NPI 階段門評審事件
+Review Event Type,評審事件類型
+exception_decided,豁免已決策
+reopened,已重新開啟
+refreshed,已重新整理
+Review Event Payload Hash,評審事件酬載雜湊
+NPI Gate Review Exception,NPI 階段門評審豁免
+Review Exception Key,評審豁免鍵
+Review Exception State,評審豁免狀態
+approved,已核准
+rejected,已拒絕
+Exception Request Snapshot Hash,豁免申請快照雜湊
+NPI Gate Review Idempotency,NPI 階段門評審冪等記錄
+NPI Gate Review Policy,NPI 階段門評審策略
+NPI Gate Review Policy Version,NPI 階段門評審策略版本
+Gate Review Policy,階段門評審策略
+Decision Authority Slot,決策權責槽位
+Reopen Authority Slot,重新開啟權責槽位
+NPI Gate Review Record,NPI 階段門評審記錄
+Review Key,評審鍵
+Review Outcome,評審結果
+Review Record Snapshot Hash,評審記錄快照雜湊
+Review State,評審狀態
+in_review,評審中
+requires_review,需要評審
+Latest Decision Outcome,最新決策結果
+In review,評審中
+Decided,已決策
+Review required,需要評審
+Manual start,手動啟動
+Manual reopen,手動重新開啟
+Dependency change,相依性變更
+Invalidated,已失效
+Superseded,已取代
+Decision invalidated,決策已失效
+Review cycle refreshed,評審週期已重新整理
+Waiting for prior sequence,等待先前順序
+Available for review,可進行評審
+Rejected,已拒絕
+Pass,通過
+Conditional pass,有條件通過
+Reject,拒絕
+Review authority,評審權責
+Decision authority,決策權責
+Reopen authority,重新開啟權責
+Exception authority,豁免權責
+Acknowledge change and start review,確認變更並啟動評審
+Start review,啟動評審
+Decide Gate,作出階段門決策
+Reopen Gate,重新開啟階段門
+Loading Gate Review Room,正在載入階段門評審室
+Gate Review Room is unavailable,階段門評審室不可用
+The Gate Review Room was not found or is not available to your account.,找不到階段門評審室，或您的帳戶無權存取。
+Gate review access is not available,階段門評審存取不可用
+Your account cannot open this Gate Review Room. No protected review or evidence data was displayed.,您的帳戶無法開啟此階段門評審室。未顯示任何受保護的評審或證據資料。
+The Gate review address is invalid,階段門評審位址無效
+Open the Gate Review Room from an authorized Project Gate reference.,請從已授權的專案階段門參照開啟階段門評審室。
+The Gate review workspace is out of date,階段門評審工作區資料已過期
+Reload the Gate Review Room before continuing.,繼續前請重新載入階段門評審室。
+The Gate Review Room could not be loaded,無法載入階段門評審室
+Retry the live Gate review request or share the displayed reference ID with support.,請重試即時階段門評審請求，或將顯示的參照識別碼提供給支援人員。
+The Gate review response could not be used safely,無法安全使用階段門評審回應
+No Gate review data was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何階段門評審資料。請先將顯示的參照識別碼提供給支援人員，再嘗試其他操作。
+Reload Gate review,重新載入階段門評審
+Frozen Gate requirements,已凍結的階段門需求
+Selected review sequence,所選評審順序
+Selected review steps,所選評審步驟
+Step,步驟
+Assignment,指派
+Review state,評審狀態
+Steps with the same sequence are reviewed in parallel. Later sequences remain unavailable until prior selected steps approve.,相同順序的步驟會並行評審。在先前所選步驟核准前，後續順序仍不可執行。
+No review sequence is active for this Gate.,此階段門沒有作用中的評審順序。
+The request will record a bounded exception against the selected frozen requirement and closure action.,此申請將針對所選的已凍結需求與結案行動記錄有範圍限制的豁免。
+The server requires current exception-request permission under the exact review policy.,伺服器要求目前使用者具備確切評審策略下的豁免申請權限。
+A successful request is preserved as controlled review history and cannot be overwritten.,成功的申請會保留為受控評審歷程且不能覆寫。
+No exception is shown until the server returns the validated updated review workspace.,伺服器傳回已驗證且更新的評審工作區前不會顯示豁免。
+"The request records the authenticated actor, reason, risk, expiry, input hash, and trace identity.",申請會記錄已驗證身分的操作人、原因、風險、到期時間、輸入雜湊及追蹤識別。
+The selected pending exception will receive one final approval or rejection opinion.,所選待處理豁免將收到一項最終核准或拒絕意見。
+The exact exception authority and current internal Project membership are required.,必須具備確切的豁免權責及目前有效的內部專案成員資格。
+A successful exception decision is append-only and cannot be replaced.,成功的豁免決策只能附加且不能取代。
+No exception decision is shown until the server confirms the immutable result.,伺服器確認不可變結果前不會顯示豁免決策。
+"The decision records the authenticated authority, complete opinion, versions, input hash, and trace identity.",決策會記錄已驗證身分的權責人、完整意見、版本、輸入雜湊及追蹤識別。
+"The server will re-resolve evidence, blockers, exceptions, reviews, and input versions before creating an immutable decision snapshot.",伺服器會先重新解析證據、阻斷項、豁免、評審及輸入版本，再建立不可變的決策快照。
+The exact policy decision authority and current internal Project membership are required.,必須具備確切的策略決策權責及目前有效的內部專案成員資格。
+A successful decision creates immutable history; rejection does not delete evidence or reviews.,成功的決策會建立不可變歷程；拒絕不會刪除證據或評審。
+No Gate decision is shown until the server returns a validated immutable snapshot and updated workspace.,伺服器傳回已驗證的不可變快照及更新後的工作區前不會顯示階段門決策。
+"The decision records the authenticated authority, exact outcome, versions, input hash, snapshot hash, and trace identity.",決策會記錄已驗證身分的權責人、確切結果、版本、輸入雜湊、快照雜湊及追蹤識別。
+A new review cycle will freeze current inputs and reset review progress without copying prior approvals.,新的評審週期會凍結目前輸入並重設評審進度，不會複製先前核准。
+The exact reopen authority and current internal Project membership are required.,必須具備確切的重新開啟權責及目前有效的內部專案成員資格。
+The prior decision and its immutable snapshot remain preserved in history.,先前決策及其不可變快照會繼續保留在歷程中。
+The existing decision remains unchanged unless the server confirms a new active cycle.,除非伺服器確認新的作用中週期，否則現有決策保持不變。
+"The reopen event records the authenticated authority, reason, prior decision, versions, input hash, and trace identity.",重新開啟事件會記錄已驗證身分的權責人、原因、先前決策、版本、輸入雜湊及追蹤識別。
+The server confirmed the review workspace update.,伺服器已確認評審工作區更新。
+The server rejected the prepared command. Review the controlled field details and reload current Gate data before changing the request.,伺服器已拒絕準備好的命令。請檢視受控欄位明細並重新載入目前階段門資料，再變更申請。
+"The Gate, review cycle, or input version changed. Reload current data before preparing another command.",階段門、評審週期或輸入版本已變更。請先重新載入目前資料，再準備其他命令。
+The command result is unconfirmed. Retry uses the same actor-bound idempotency key and does not claim success early.,命令結果尚未確認。重試會使用相同的操作人綁定冪等鍵，不會提前宣稱成功。
+The command did not complete. Share the reference ID with support before preparing another action.,命令未完成。請先將參照識別碼提供給支援人員，再準備其他操作。
+The protected Gate review context is unavailable.,受保護的階段門評審內容不可用。
+Processing Gate review command,正在處理階段門評審命令
+Review commands unavailable,評審命令不可用
+Review commands are unavailable while the authenticated session context is unavailable.,已驗證的工作階段內容不可用時，評審命令也不可用。
+No active review cycle,沒有作用中的評審週期
+Select an exact published policy and explicit authority bindings before starting review.,啟動評審前請選擇確切的已發布策略並明確設定權責綁定。
+This Gate has no active review cycle and your current server permissions do not allow one to be started.,此階段門沒有作用中的評審週期，且您目前的伺服器權限不允許啟動週期。
+Gate input snapshot changed,階段門輸入快照已變更
+The server recorded an exact Gate input snapshot hash change. This response does not claim a field-level object diff.,伺服器已記錄確切的階段門輸入快照雜湊變更。此回應不宣稱存在欄位層級的物件差異。
+The command is processing. Other Gate review commands remain disabled until the server response is validated.,命令處理中。在伺服器回應通過驗證前，其他階段門評審命令仍停用。
+Server confirmed,伺服器已確認
+Gate review command failure,階段門評審命令失敗
+Retry command,重試命令
+Dismiss command error,關閉命令錯誤
+Review cycle,評審週期
+Downstream guard,下游防護
+Current decision accepted,接受目前決策
+Downstream use denied,拒絕下游使用
+Unfinished review steps,未完成的評審步驟
+Open Gate blockers,未解決的階段門阻斷項
+Pending exceptions,待處理豁免
+Decision history,決策歷程
+Frozen review inputs,已凍結的評審輸入
+Review evidence and blockers,評審證據與阻斷項
+Review inspector,評審檢查器
+Frozen requirements and review sequence,已凍結的需求與評審順序
+Selected frozen requirement,所選的已凍結需求
+Requirement global ID,需求全域識別碼
+Current Gate blockers,目前的階段門阻斷項
+Title,標題
+No current same-Gate blocking work items were returned.,未傳回目前同一階段門的阻斷工作項目。
+Input version and prior decisions,輸入版本與先前決策
+Current frozen input hash,目前已凍結的輸入雜湊
+Cycle trigger,週期觸發方式
+Cycle state,週期狀態
+Gate input snapshot change events,階段門輸入快照變更事件
+Event outcome,事件結果
+Event global ID,事件全域識別碼
+Old input hash,舊輸入雜湊
+New input hash,新輸入雜湊
+Prior cycle global ID,先前週期全域識別碼
+Successor cycle global ID,後續週期全域識別碼
+Prior decision global ID,先前決策全域識別碼
+Prior decision lineage hash,先前決策承繼雜湊
+Recorded actor,記錄的操作人
+Initiated by,發起人
+System,系統
+Occurred,發生時間
+Recorded reason,記錄原因
+This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.,此事件證明確切的階段門輸入快照雜湊已變更，但不宣稱哪些來源物件欄位已變更。
+No Gate input snapshot change event is recorded.,未記錄階段門輸入快照變更事件。
+Immutable Gate decision history,不可變的階段門決策歷程
+Decision global ID,決策全域識別碼
+Snapshot hash,快照雜湊
+Input hash,輸入雜湊
+Decided by,決策人
+Downstream current,下游目前有效
+Yes,是
+No,否
+No immutable Gate decision has been recorded.,尚未記錄不可變的階段門決策。
+No active cycle,沒有作用中週期
+Cycle version,週期版本
+Policy version,策略版本
+Current server action,目前伺服器操作
+No permitted review action,沒有允許的評審操作
+Review action,評審操作
+Review policy and authority bindings,評審策略與權責綁定
+Starting review acknowledges the recorded input snapshot change. Prior approvals remain immutable and are not copied.,啟動評審即確認已記錄的輸入快照變更。先前核准仍不可變且不會複製。
+Published review policy,已發布的評審策略
+No applicable published review policy is available.,沒有可用且適用的已發布評審策略。
+Authority assignment,權責指派
+No enabled internal Project member is available for authority binding.,沒有可供權責綁定的已啟用內部專案成員。
+Assigned review opinion,指派的評審意見
+Authority slot,權責槽位
+Assigned member,指派成員
+Review outcome,評審結果
+Complete review opinion,完整評審意見
+Controlled exception request,受控豁免申請
+Exception kind,豁免類別
+Maximum validity,最長有效期
+Risk if accepted,接受後的風險
+Exception expiry date,豁免到期日
+Required closure action,必要的結案行動
+Closure action state,結案行動狀態
+No eligible same-Project closure action is available for this exception.,沒有可供此豁免使用且符合資格的同一專案結案行動。
+Pending exception decision,待處理豁免決策
+Exception global ID,豁免全域識別碼
+Request reason,申請原因
+Request risk,申請風險
+Exception decision,豁免決策
+Gate decision outcome,階段門決策結果
+Decision outcome,決策結果
+"Decision readiness is determined again by the server. This page cannot override reviews, evidence safety, blockers, exceptions, or input drift.",伺服器會重新判定決策就緒狀態。此頁面不能覆寫評審、證據安全性、阻斷項、豁免或輸入漂移。
+Reopen with preserved authority bindings,保留權責綁定並重新開啟
+The server will preserve the prior immutable decision and start a new cycle from current frozen inputs.,伺服器會保留先前的不可變決策，並從目前已凍結的輸入啟動新週期。
+The server returned view access without an applicable review command for this actor and state.,伺服器已提供檢視權限，但此操作人與狀態沒有適用的評審命令。
+Exceptions,豁免
+Gate review exceptions,階段門評審豁免
+No controlled exceptions are recorded in this cycle.,此週期未記錄任何受控豁免。
+Cycle and immutable history,週期與不可變歷程
+Cycle global ID,週期全域識別碼
+Policy global ID,策略全域識別碼
+Policy snapshot hash,策略快照雜湊
+Started,已啟動
+Started by,啟動人
+Latest decision hash,最新決策雜湊
+Cycle history is unavailable until review starts.,啟動評審前無法使用週期歷程。
+Review controlled exception request,評審受控豁免申請
+Review exception decision,評審豁免決策
+Review immutable Gate decision,評審不可變的階段門決策
+Review Gate reopen,評審階段門重新開啟
+Command record not found,未找到命令記錄
+No completed command record was found yet. The workspace was reloaded; verify its current state and re-enter the command inputs before submitting again.,尚未找到已完成的命令記錄。工作區已重新載入；請核對目前狀態，並在再次提交前重新輸入命令內容。
+Command result unconfirmed,命令結果尚未確認
+The command receipt could not be reconciled. The workspace was reloaded without claiming a command result; verify its current state before submitting another command.,無法核對命令回執。工作區已重新載入，且未宣稱命令結果；請在提交另一個命令前核對其目前狀態。
+Enter an exact closure action reference.,請輸入確切的結案行動參照。
+The closure action changed and the exception must be requested again.,結案行動已變更，必須重新申請豁免。
+Closure Action Version,結案行動版本
+Closure Action Snapshot Hash,結案行動快照雜湊
+The review cycle is closed.,評審週期已關閉。
+The Gate input changed.,階段門輸入已變更。
+Every selected review must approve this outcome.,每個已選評審都必須核准此結果。
+Resolve every blocking item before this outcome.,在選擇此結果前解決所有阻斷項。
+Required P0 evidence is missing.,缺少必要的 P0 證據。
+This outcome does not require an exception.,此結果不需要豁免。
+A current approved exception is required.,需要目前有效且已核准的豁免。
+Submit review,提交評審
+Submit review: {{step}},提交評審：{{step}}
+Request exception: {{requirement}} / {{kind}},申請豁免：{{requirement}} / {{kind}}
+Decide exception: {{requirement}} / {{kind}},決策豁免：{{requirement}} / {{kind}}
+Gate decision readiness,階段門決策就緒狀態
+A frozen authority binding is no longer eligible. The recorded policy and bindings cannot be substituted in this review cycle.,已凍結的權責綁定不再符合資格。在此評審週期內不得替換已記錄的策略與綁定。
+A controlled Gate source object changed.,受控階段門來源物件已變更。
+A controlled Gate work item changed.,受控階段門工作項目已變更。
+The exact Gate input snapshot changed.,確切階段門輸入快照已變更。
+A controlled Gate input dependency changed.,受控階段門輸入相依項已變更。
+Immutable review records,不可變評審記錄
+Reviewed At,評審時間
+No immutable review record has been captured in this cycle.,此週期尚未擷取不可變評審記錄。
+Frozen decision input rows,已凍結決策輸入明細
+Frozen requirements,已凍結需求
+Priority,優先級
+Evidence complete,證據完整
+Frozen evidence,已凍結證據
+Is file,是否為檔案
+File safe,檔案安全
+Frozen blockers,已凍結阻斷項
+Blocker global ID,阻斷項全域識別碼
+Terminal,終態
+Frozen dependencies,已凍結相依項
+Dependency kind,相依類別
+Exception validity,豁免有效性
+Approved through recorded expiry,"已核准，有效至記錄的到期時間"
+Not valid,無效
+Decision opinion,決策意見

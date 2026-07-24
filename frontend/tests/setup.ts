@@ -21,6 +21,7 @@ globalThis.ResizeObserver = ResizeObserverStub;
 
 beforeEach(() => {
   globalThis.localStorage.clear();
+  globalThis.sessionStorage.clear();
   globalThis.history.replaceState({}, "", "/");
   vi.stubGlobal(
     "fetch",

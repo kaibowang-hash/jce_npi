@@ -94,6 +94,32 @@ class MockGateReviewRepository:
     def review_workspace(self, project_id: UUID, gate_id: UUID):
         return self._read("workspace", project_id, gate_id)
 
+    def command_receipt(
+        self,
+        project_id: UUID,
+        gate_id: UUID,
+        *,
+        operation: str,
+        actor_key_hash: str,
+    ):
+        self.calls.append(
+            (
+                "command_receipt",
+                (project_id, gate_id),
+                {
+                    "operation": operation,
+                    "actor_key_hash": actor_key_hash,
+                },
+            )
+        )
+        if self.unavailable:
+            return None
+        return {
+            "operation": operation,
+            "status": "completed",
+            "workspaceReloadRequired": True,
+        }
+
     def start_review(self, project_id: UUID, gate_id: UUID, **values: Any):
         return self._write("start", project_id, gate_id, **values)
 
@@ -513,6 +539,97 @@ class Phase4GateReviewApiTest(unittest.TestCase):
             ACTION_ID,
         )
         self.assertEqual(result["blockers"][0]["kind"], "action")
+
+    def test_command_receipt_is_internal_actor_bound_and_fail_closed(self) -> None:
+        operation = "gate.review.exception.request"
+        route_params = {
+            "project_id": PROJECT_ID,
+            "gate_id": GATE_ID,
+            "operation": operation,
+        }
+        self.reset_response(
+            user="reviewer@example.invalid",
+            route_params=route_params,
+        )
+        result = self.call(
+            "npi_core.gate_review_api.get_gate_review_command_receipt",
+            self.api.get_gate_review_command_receipt,
+            {},
+        )
+        self.assertEqual(
+            result,
+            {
+                "operation": operation,
+                "status": "completed",
+                "workspaceReloadRequired": True,
+            },
+        )
+        self.assertEqual(
+            self.repository.calls[-1][0:2],
+            (
+                "command_receipt",
+                (UUID(PROJECT_ID), UUID(GATE_ID)),
+            ),
+        )
+        self.assertEqual(
+            self.repository.calls[-1][2]["operation"],
+            operation,
+        )
+        self.assertEqual(
+            len(self.repository.calls[-1][2]["actor_key_hash"]),
+            64,
+        )
+        self.assertEqual(
+            self.frappe.flags.npi_response_headers["Cache-Control"],
+            "private, no-store",
+        )
+
+        for user in (
+            "ordinary@example.invalid",
+            "external-reviewer@example.invalid",
+        ):
+            with self.subTest(user=user):
+                self.reset_response(user=user, route_params=route_params)
+                self.assert_problem(
+                    self.call(
+                        "npi_core.gate_review_api.get_gate_review_command_receipt",
+                        self.api.get_gate_review_command_receipt,
+                        {},
+                    ),
+                    403,
+                    "PERMISSION_DENIED",
+                )
+                self.assertEqual(self.repository.calls, [])
+
+        self.reset_response(
+            user="reviewer@example.invalid",
+            route_params={**route_params, "operation": "gate.review.unknown"},
+        )
+        self.assert_problem(
+            self.call(
+                "npi_core.gate_review_api.get_gate_review_command_receipt",
+                self.api.get_gate_review_command_receipt,
+                {},
+            ),
+            404,
+            "GATE_UNAVAILABLE",
+        )
+        self.assertEqual(self.repository.calls, [])
+
+        self.reset_response(
+            user="reviewer@example.invalid",
+            route_params=route_params,
+        )
+        self.repository.unavailable = True
+        self.assert_problem(
+            self.call(
+                "npi_core.gate_review_api.get_gate_review_command_receipt",
+                self.api.get_gate_review_command_receipt,
+                {},
+            ),
+            404,
+            "GATE_UNAVAILABLE",
+        )
 
     def test_start_review_is_system_manager_only_and_exactly_typed(self) -> None:
         result = self.call(
@@ -945,7 +1062,7 @@ class Phase4GateReviewApiTest(unittest.TestCase):
             hashes.append(self.repository.calls[-1][2]["idempotency_key"])
         self.assertNotEqual(hashes[0], hashes[1])
 
-    def test_bff_maps_only_the_seven_exact_review_operations(self) -> None:
+    def test_bff_maps_only_the_eight_exact_review_operations(self) -> None:
         prefix = f"/api/npi/v1/projects/{PROJECT_ID}/gates/{GATE_ID}"
         routes = (
             (
@@ -953,6 +1070,19 @@ class Phase4GateReviewApiTest(unittest.TestCase):
                 f"{prefix}/review",
                 "npi_core.gate_review_api.get_gate_review",
                 {"project_id": PROJECT_ID, "gate_id": GATE_ID},
+            ),
+            (
+                "GET",
+                (
+                    f"{prefix}/review-command-receipts/"
+                    "gate.review.exception.request"
+                ),
+                "npi_core.gate_review_api.get_gate_review_command_receipt",
+                {
+                    "project_id": PROJECT_ID,
+                    "gate_id": GATE_ID,
+                    "operation": "gate.review.exception.request",
+                },
             ),
             (
                 "POST",
@@ -1041,6 +1171,7 @@ class Phase4GateReviewApiTest(unittest.TestCase):
     def test_endpoint_decorators_keep_transport_open_and_methods_exact(self) -> None:
         expected = {
             self.api.get_gate_review: ("GET",),
+            self.api.get_gate_review_command_receipt: ("GET",),
             self.api.start_gate_review: ("POST",),
             self.api.submit_gate_review: ("POST",),
             self.api.request_gate_review_exception: ("POST",),

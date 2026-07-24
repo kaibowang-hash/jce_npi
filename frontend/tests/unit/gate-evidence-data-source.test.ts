@@ -12,7 +12,26 @@ import type {
   GateEvidenceViewModel,
   GateRequirementEvidenceState,
 } from "../../src/domain/view-models";
-import { gateEvidenceFixture } from "../support/gate-evidence-fixture";
+import { gateEvidenceFixture as legacyGateEvidenceFixture } from "../support/gate-evidence-fixture";
+
+const requirementGlobalIds = [
+  "d1111111-1111-1111-1111-111111111111",
+  "d2222222-2222-2222-2222-222222222222",
+  "d3333333-3333-3333-3333-333333333333",
+] as const;
+
+function gateEvidenceFixture(): GateEvidenceViewModel {
+  const fixture =
+    legacyGateEvidenceFixture() as unknown as GateEvidenceViewModel;
+  return {
+    ...fixture,
+    requirements: fixture.requirements.map((requirement, index) => ({
+      ...requirement,
+      globalId:
+        requirementGlobalIds[index] ?? "dfffffff-ffff-ffff-ffff-ffffffffffff",
+    })),
+  };
+}
 
 function cloneFixture(): GateEvidenceViewModel {
   return structuredClone(gateEvidenceFixture());

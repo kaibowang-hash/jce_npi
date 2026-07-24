@@ -28,12 +28,13 @@
     {"fieldname": "prior_cycle_global_id", "fieldtype": "Data", "label": "Prior Review Cycle Global ID", "read_only": 1},
     {"fieldname": "prior_decision_snapshot_global_id", "fieldtype": "Data", "label": "Prior Decision Snapshot Global ID", "read_only": 1},
     {"fieldname": "prior_decision_hash", "fieldtype": "Data", "label": "Prior Decision Hash", "read_only": 1},
-    {"fieldname": "state", "fieldtype": "Select", "label": "Review Cycle State", "options": "active\ndecided\ninvalidated", "reqd": 1, "default": "active", "read_only": 1},
+    {"fieldname": "state", "fieldtype": "Select", "label": "Review Cycle State", "options": "active\ndecided\ninvalidated\nsuperseded", "reqd": 1, "default": "active", "read_only": 1},
     {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1},
     {"fieldname": "started_by", "fieldtype": "Data", "label": "Started By", "reqd": 1, "read_only": 1},
     {"fieldname": "started_at", "fieldtype": "Datetime", "label": "Started At", "reqd": 1, "read_only": 1}
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
   ]
 }

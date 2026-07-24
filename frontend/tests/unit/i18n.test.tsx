@@ -65,11 +65,13 @@ describe("Frappe-backed React localization", () => {
     );
     const { result } = renderHook(() => useI18n(), { wrapper });
 
+    expect(result.current.sessionCommandContext).toBeNull();
     await waitFor(() => {
       expect(result.current.locale).toBe("zh-TW");
     });
     expect(document.documentElement.lang).toBe("zh-TW");
     expect(result.current.isPrototypeFallback).toBe(true);
+    expect(result.current.sessionCommandContext).toBeNull();
   });
 
   it("persists a development fallback preference when the controlled API is unavailable", async () => {
@@ -82,6 +84,7 @@ describe("Frappe-backed React localization", () => {
     await waitFor(() => {
       expect(result.current.isLocalizationPending).toBe(false);
     });
+    expect(result.current.sessionCommandContext).toBeNull();
     act(() => {
       result.current.setLocale("zh");
     });
@@ -92,27 +95,103 @@ describe("Frappe-backed React localization", () => {
       "zh",
     );
     expect(document.documentElement.lang).toBe("zh");
+    expect(result.current.sessionCommandContext).toBeNull();
   });
 
-  it("uses the authenticated Frappe session response when available", async () => {
+  it("exposes and atomically rotates the authenticated command context", async () => {
     const bootstrap = {
       allowedLanguages: supportedLocales,
       catalog: {
-        language: "zh" as const,
+        language: "en" as const,
         messages: {},
         version: "a".repeat(64),
       },
-      csrfToken: "csrf-token-fixture-value-1234567890",
-      language: "zh" as const,
+      csrfToken: "bootstrap-csrf-token-fixture-123456",
+      language: "en" as const,
+      userId: "phase3@example.invalid",
+    };
+    const languageRefresh = {
+      ...bootstrap,
+      catalog: {
+        ...bootstrap.catalog,
+        language: "zh-TW" as const,
+        version: "b".repeat(64),
+      },
+      csrfToken: "language-csrf-token-fixture-1234567",
+      language: "zh-TW" as const,
+      userId: "phase4@example.invalid",
+    };
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(bootstrap), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(languageRefresh), { status: 200 }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+      <I18nProvider>{children}</I18nProvider>
+    );
+    const { result } = renderHook(() => useI18n(), { wrapper });
+
+    expect(result.current.sessionCommandContext).toBeNull();
+    await waitFor(() => {
+      expect(result.current.sessionCommandContext).toEqual({
+        csrfToken: bootstrap.csrfToken,
+        userId: bootstrap.userId,
+      });
+    });
+    expect(Object.isFrozen(result.current.sessionCommandContext)).toBe(true);
+    expect(result.current.isPrototypeFallback).toBe(false);
+    act(() => {
+      result.current.setLocale("zh-TW");
+    });
+    expect(result.current.sessionCommandContext).toBeNull();
+    await waitFor(() => {
+      expect(result.current.sessionCommandContext).toEqual({
+        csrfToken: languageRefresh.csrfToken,
+        userId: languageRefresh.userId,
+      });
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenLastCalledWith(
+      "/api/npi/v1/session/language",
+      expect.objectContaining({
+        body: JSON.stringify({ language: "zh-TW" }),
+        method: "PUT",
+      }),
+    );
+    const [, languageRequest] = vi.mocked(globalThis.fetch).mock.calls[1] ?? [];
+    expect(
+      new Headers(languageRequest?.headers).get("X-Frappe-CSRF-Token"),
+    ).toBe(bootstrap.csrfToken);
+    expect(result.current.locale).toBe("zh-TW");
+    expect(Object.isFrozen(result.current.sessionCommandContext)).toBe(true);
+  });
+
+  it("clears the command context when a production refresh is indeterminate", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    const bootstrap = {
+      allowedLanguages: supportedLocales,
+      catalog: {
+        language: "en" as const,
+        messages: {},
+        version: "a".repeat(64),
+      },
+      csrfToken: "bootstrap-csrf-token-fixture-123456",
+      language: "en" as const,
       userId: "phase3@example.invalid",
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(() =>
-        Promise.resolve(
+      vi
+        .fn()
+        .mockResolvedValueOnce(
           new Response(JSON.stringify(bootstrap), { status: 200 }),
-        ),
-      ),
+        )
+        .mockRejectedValueOnce(new Error("Indeterminate language request.")),
     );
     const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
       <I18nProvider>{children}</I18nProvider>
@@ -120,22 +199,18 @@ describe("Frappe-backed React localization", () => {
     const { result } = renderHook(() => useI18n(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current.locale).toBe("zh");
+      expect(result.current.sessionCommandContext).not.toBeNull();
     });
-    expect(result.current.isPrototypeFallback).toBe(false);
     act(() => {
-      result.current.setLocale("zh-TW");
+      result.current.setLocale("zh");
     });
     await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+      expect(result.current.localizationFailure?.operation).toBe(
+        "set_language",
+      );
     });
-    expect(globalThis.fetch).toHaveBeenLastCalledWith(
-      "/api/npi/v1/session/language",
-      expect.objectContaining({
-        body: JSON.stringify({ language: "zh-TW" }),
-        method: "PUT",
-      }),
-    );
+    expect(result.current.sessionCommandContext).toBeNull();
+    expect(result.current.isLocalizationUnavailable).toBe(true);
   });
 
   it.each([
@@ -198,6 +273,7 @@ describe("Frappe-backed React localization", () => {
       });
       expect(result.current.locale).toBe("en");
       expect(result.current.t("My Work")).toBe("My Work");
+      expect(result.current.sessionCommandContext).toBeNull();
       expect(
         result.current.localizationFailure?.requestFailure.referenceKind,
       ).toBe("request");

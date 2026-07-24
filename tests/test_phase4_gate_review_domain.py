@@ -12,6 +12,7 @@ from npi_core.foundation.errors import RequestValidationFailed, VersionConflict
 from npi_core.gate_review.domain import (
     ActivationKind,
     AuthorityBinding,
+    ClosureActionReference,
     CycleState,
     CycleTrigger,
     DecisionOutcome,
@@ -46,6 +47,7 @@ SOURCE_ID = UUID("d73df0ec-ef0e-444a-a8bc-a5e9a08c0014")
 DEPENDENCY_ID = UUID("4abcc093-5366-4a58-a6d2-7efcdf824840")
 EXCEPTION_ID = UUID("44f290f7-43a7-4453-a13a-2207131fb3c7")
 ACTION_ID = UUID("a05978ee-1e35-4340-a693-6e211bc0880c")
+ACTION_REF = ClosureActionReference(ACTION_ID, 3, "a" * 64)
 REQUESTER_MEMBER_ID = UUID("7be3a1c2-552f-4b38-af14-8b457c64409b")
 
 
@@ -513,7 +515,7 @@ class GateReviewCycleTest(unittest.TestCase):
                 requirement_key="supplier_timing",
                 reason="Supplier certificate will arrive after the Gate.",
                 risk="Timing risk is bounded by the closure action.",
-                closure_action_global_id=ACTION_ID,
+                closure_action_ref=ACTION_REF,
                 closure_action_kind="action",
                 requested_at=NOW,
                 expires_at=NOW + timedelta(days=7),
@@ -537,7 +539,7 @@ class GateReviewCycleTest(unittest.TestCase):
                 requirement_key="supplier_timing",
                 reason="Same member cannot request and approve.",
                 risk="Segregation risk.",
-                closure_action_global_id=ACTION_ID,
+                closure_action_ref=ACTION_REF,
                 closure_action_kind="action",
                 requested_at=NOW,
                 expires_at=NOW + timedelta(days=7),
@@ -556,7 +558,7 @@ class GateReviewCycleTest(unittest.TestCase):
             requirement_key="supplier_timing",
             reason="Supplier certificate will arrive after the Gate.",
             risk="Timing risk is bounded by the closure action.",
-            closure_action_global_id=ACTION_ID,
+            closure_action_ref=ACTION_REF,
             closure_action_kind="action",
             requested_at=NOW,
             expires_at=NOW + timedelta(days=7),
@@ -572,6 +574,7 @@ class GateReviewCycleTest(unittest.TestCase):
                 expected_version=value.version,
                 expected_input_hash=value.input_hash,
                 current_input=snapshot,
+                current_closure_action_refs={EXCEPTION_ID: ACTION_REF},
             )
         self.assertEqual(missing.exception.code, "APPROVED_EXCEPTION_REQUIRED")
         value = value.decide_exception(
@@ -597,6 +600,26 @@ class GateReviewCycleTest(unittest.TestCase):
                 expected_exception_version=2,
             )
         self.assertEqual(one_way.exception.code, "EXCEPTION_ALREADY_DECIDED")
+        changed_action_ref = replace(
+            ACTION_REF,
+            version=ACTION_REF.version + 1,
+        )
+        with self.assertRaises(ReviewDenied) as changed_action:
+            value.decide(
+                actor_user_id="decider@example.test",
+                outcome=DecisionOutcome.CONDITIONAL_PASS,
+                occurred_at=NOW + timedelta(hours=2),
+                expected_version=value.version,
+                expected_input_hash=value.input_hash,
+                current_input=snapshot,
+                current_closure_action_refs={
+                    EXCEPTION_ID: changed_action_ref,
+                },
+            )
+        self.assertEqual(
+            changed_action.exception.code,
+            "APPROVED_EXCEPTION_REQUIRED",
+        )
         decided = value.decide(
             actor_user_id="decider@example.test",
             outcome=DecisionOutcome.CONDITIONAL_PASS,
@@ -604,6 +627,7 @@ class GateReviewCycleTest(unittest.TestCase):
             expected_version=value.version,
             expected_input_hash=value.input_hash,
             current_input=snapshot,
+            current_closure_action_refs={EXCEPTION_ID: ACTION_REF},
         )
         self.assertEqual(
             decided.decision.outcome,  # type: ignore[union-attr]
@@ -615,6 +639,18 @@ class GateReviewCycleTest(unittest.TestCase):
                 decided,
                 gate_current_cycle_global_id=decided.global_id,
                 current_input=snapshot,
+                at=NOW + timedelta(days=6),
+                current_closure_action_refs={EXCEPTION_ID: ACTION_REF},
+            )
+        )
+        self.assertFalse(
+            downstream_decision_is_current(
+                decided,
+                gate_current_cycle_global_id=decided.global_id,
+                current_input=snapshot,
+                current_closure_action_refs={
+                    EXCEPTION_ID: changed_action_ref,
+                },
                 at=NOW + timedelta(days=6),
             )
         )
@@ -659,7 +695,7 @@ class GateReviewCycleTest(unittest.TestCase):
                     requirement_key=requirement_key,
                     reason="Controlled exception request.",
                     risk="Controlled residual risk.",
-                    closure_action_global_id=ACTION_ID,
+                    closure_action_ref=ACTION_REF,
                     closure_action_kind=action_kind,
                     requested_at=NOW,
                     expires_at=NOW + timedelta(days=7),
@@ -677,7 +713,7 @@ class GateReviewCycleTest(unittest.TestCase):
             requirement_key="supplier_timing",
             reason="Short-lived controlled exception.",
             risk="Expires before the delayed approval.",
-            closure_action_global_id=ACTION_ID,
+            closure_action_ref=ACTION_REF,
             closure_action_kind="action",
             requested_at=NOW,
             expires_at=NOW + timedelta(hours=1),
@@ -728,6 +764,10 @@ class GateReviewCycleTest(unittest.TestCase):
             expected_input_hash=decided.input_hash,
         )
         self.assertEqual(transition.event.kind, ReviewEventKind.INVALIDATED)
+        self.assertEqual(
+            transition.event.prior_decision_snapshot_global_id,
+            decided.decision.global_id,  # type: ignore[union-attr]
+        )
         self.assertEqual(transition.event.old_input_hash, original.snapshot_hash)
         self.assertEqual(transition.event.new_input_hash, changed.snapshot_hash)
         self.assertNotIn(
@@ -750,6 +790,104 @@ class GateReviewCycleTest(unittest.TestCase):
                 expected_version=decided.version,
                 expected_input_hash=decided.input_hash,
             )
+
+    def test_active_dependency_refresh_preserves_history_and_lineage(self) -> None:
+        original = input_snapshot()
+        active = cycle(original).submit_review(
+            step_key="engineering",
+            actor_user_id="eng@example.test",
+            outcome=ReviewOutcome.APPROVED,
+            opinion="This review remains frozen on the superseded cycle.",
+            occurred_at=NOW,
+            expected_version=1,
+            expected_input_hash=original.snapshot_hash,
+        )
+        changed = input_snapshot(
+            dependency_hash="d" * 64,
+            gate_version=2,
+        )
+        initial_refresh = active.invalidate_for_dependency_change(
+            actor_user_id="npi-gate-review-dependency-system",
+            initiated_by_user_id="disabled-initiator@example.test",
+            reason="The active Gate input changed.",
+            occurred_at=NOW + timedelta(minutes=5),
+            current_input=changed,
+            current_bindings=bindings(),
+            gate_current_cycle_global_id=active.global_id,
+            expected_version=active.version,
+            expected_input_hash=active.input_hash,
+        )
+        self.assertEqual(
+            initial_refresh.prior_cycle.state,
+            CycleState.SUPERSEDED,
+        )
+        self.assertEqual(initial_refresh.prior_cycle.reviews, active.reviews)
+        self.assertIsNone(initial_refresh.prior_cycle.decision)
+        self.assertEqual(initial_refresh.event.kind, ReviewEventKind.REFRESHED)
+        self.assertIsNone(initial_refresh.event.prior_decision_snapshot_global_id)
+        self.assertIsNone(initial_refresh.event.prior_decision_hash)
+        self.assertEqual(
+            initial_refresh.event.initiated_by_user_id,
+            "disabled-initiator@example.test",
+        )
+        self.assertIsNone(
+            initial_refresh.current_cycle.prior_decision_snapshot_global_id
+        )
+        self.assertIsNone(initial_refresh.current_cycle.prior_decision_hash)
+
+        decided = approve_all(cycle(original)).decide(
+            actor_user_id="decider@example.test",
+            outcome=DecisionOutcome.PASS,
+            occurred_at=NOW,
+            expected_version=4,
+            expected_input_hash=original.snapshot_hash,
+            current_input=original,
+        )
+        invalidated = decided.invalidate_for_dependency_change(
+            actor_user_id="npi-gate-review-dependency-system",
+            reason="The decided Gate input changed.",
+            occurred_at=NOW + timedelta(minutes=10),
+            current_input=changed,
+            current_bindings=bindings(),
+            gate_current_cycle_global_id=decided.global_id,
+            expected_version=decided.version,
+            expected_input_hash=decided.input_hash,
+        )
+        changed_again = input_snapshot(
+            dependency_hash="c" * 64,
+            gate_version=3,
+        )
+        inherited_refresh = invalidated.current_cycle.invalidate_for_dependency_change(
+            actor_user_id="npi-gate-review-dependency-system",
+            reason="The replacement Gate input changed again.",
+            occurred_at=NOW + timedelta(minutes=15),
+            current_input=changed_again,
+            current_bindings=bindings(),
+            gate_current_cycle_global_id=(invalidated.current_cycle.global_id),
+            expected_version=invalidated.current_cycle.version,
+            expected_input_hash=invalidated.current_cycle.input_hash,
+        )
+        assert decided.decision is not None
+        self.assertEqual(
+            inherited_refresh.prior_cycle.state,
+            CycleState.SUPERSEDED,
+        )
+        self.assertEqual(
+            inherited_refresh.current_cycle.prior_decision_snapshot_global_id,
+            decided.decision.global_id,
+        )
+        self.assertEqual(
+            inherited_refresh.current_cycle.prior_decision_hash,
+            decided.decision.snapshot_hash,
+        )
+        self.assertEqual(
+            inherited_refresh.event.prior_decision_snapshot_global_id,
+            decided.decision.global_id,
+        )
+        self.assertEqual(
+            inherited_refresh.event.prior_decision_hash,
+            decided.decision.snapshot_hash,
+        )
 
     def test_hydration_rejects_forged_review_decision_exception_and_event(
         self,
@@ -809,7 +947,7 @@ class GateReviewCycleTest(unittest.TestCase):
             requirement_key="supplier_timing",
             reason="Controlled exception request.",
             risk="Controlled residual risk.",
-            closure_action_global_id=ACTION_ID,
+            closure_action_ref=ACTION_REF,
             closure_action_kind="action",
             requested_at=NOW,
             expires_at=NOW + timedelta(days=1),
@@ -841,8 +979,12 @@ class GateReviewCycleTest(unittest.TestCase):
             new_cycle_global_id=transition.event.new_cycle_global_id,
             old_input_hash=transition.event.old_input_hash,
             new_input_hash=transition.event.new_input_hash,
+            prior_decision_snapshot_global_id=(
+                transition.event.prior_decision_snapshot_global_id
+            ),
             prior_decision_hash=transition.event.prior_decision_hash,
             actor_user_id=transition.event.actor_user_id,
+            initiated_by_user_id=transition.event.initiated_by_user_id,
             reason=transition.event.reason,
             occurred_at=transition.event.occurred_at,
         )

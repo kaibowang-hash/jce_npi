@@ -188,6 +188,7 @@ function isRequirement(value: unknown): value is GateRequirementViewModel {
   if (!isRecord(value)) return false;
   if (
     !hasExactKeys(value, [
+      "globalId",
       "key",
       "title",
       "classification",
@@ -199,6 +200,7 @@ function isRequirement(value: unknown): value is GateRequirementViewModel {
       "evidenceState",
       "evidence",
     ]) ||
+    !isUuid(value.globalId) ||
     !isConstrainedString(value.key, 64, controlledKeyPattern) ||
     !isConstrainedString(value.title, 280) ||
     (value.classification !== "required" &&
@@ -322,6 +324,11 @@ export function isGateEvidenceResponse(
     value.requirements.length < 1 ||
     value.requirements.length > 500 ||
     !value.requirements.every(isRequirement) ||
+    new Set(
+      value.requirements.map(
+        (requirement: GateRequirementViewModel) => requirement.globalId,
+      ),
+    ).size !== value.requirements.length ||
     new Set(
       value.requirements.map(
         (requirement: GateRequirementViewModel) => requirement.key,
