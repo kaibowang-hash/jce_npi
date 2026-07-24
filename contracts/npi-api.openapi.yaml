@@ -650,18 +650,221 @@ paths:
     get:
       tags: [Gates]
       operationId: getGateReview
+      description: >
+        Returns one server-built review workspace for the exact Project and
+        Gate identities. Missing, unauthorized, cross-tenant, and mismatched
+        identities return the same Gate-unavailable 404 representation.
       parameters:
         - $ref: "#/components/parameters/ProjectId"
         - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/RequestId"
       responses:
         "200":
-          description: Gate review room view model
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GateReview"
+          $ref: "#/components/responses/GateReviewQueryResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
         default:
-          $ref: "#/components/responses/Error"
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}:start-review:
+    post:
+      tags: [Gates]
+      operationId: startGateReview
+      description: >
+        Management command that starts one review cycle from an exact published
+        Gate Review Policy version and explicit current Project-member bindings.
+        System Manager authorizes only this management operation; it does not
+        grant review, exception, decision, or reopen authority.
+      x-required-management-role: System Manager
+      x-business-authority: management-command-only
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.start
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartGateReview"
+      responses:
+        "201":
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}/review-cycles/{cycleId}/reviews:
+    post:
+      tags: [Gates]
+      operationId: submitGateReview
+      description: >
+        Appends one opinion for the actor's exact selected current-sequence
+        frozen review-step binding. NPI API User is a non-Desk transport role
+        only and never supplies business authority.
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-frozen-review-step-member-binding
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.submit
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/ReviewCycleId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitGateReview"
+      responses:
+        "201":
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}/review-cycles/{cycleId}/exceptions:
+    post:
+      tags: [Gates]
+      operationId: requestGateReviewException
+      description: >
+        Requests one policy-eligible exception against the frozen cycle input.
+        The server resolves the requirement, policy rule, requester, expiry,
+        and same-Project closure action; caller-supplied authority, snapshots,
+        mutable URLs, and permission claims are not accepted.
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-current-cycle-member-and-policy-rule
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.exception.request
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/ReviewCycleId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestGateReviewException"
+      responses:
+        "201":
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}/review-cycles/{cycleId}/exceptions/{exceptionId}:decide:
+    post:
+      tags: [Gates]
+      operationId: decideGateReviewException
+      description: >
+        Appends an approve or reject decision by the exact frozen exception
+        authority. Transport admission, System Manager, Project ownership,
+        RACI, and review-step assignment do not grant this authority.
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-frozen-exception-authority-member-binding
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.exception.decide
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/ReviewCycleId"
+        - $ref: "#/components/parameters/ReviewExceptionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecideGateReviewException"
+      responses:
+        "200":
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
 
   /projects/{projectId}/gates/{gateId}/evidence:
     get:
@@ -869,44 +1072,93 @@ paths:
     post:
       tags: [Gates]
       operationId: decideGate
+      description: >
+        Resolves the exact live Gate input, reviews, blockers, exceptions,
+        policy, and dependencies and creates one server-built immutable
+        decision snapshot. The NPI API User role admits transport only.
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-frozen-final-decision-member-binding
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.decide
       parameters:
         - $ref: "#/components/parameters/ProjectId"
         - $ref: "#/components/parameters/GateId"
         - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: false
-              required: [expectedVersion, decision, evidenceSnapshotHash]
-              properties:
-                expectedVersion: { type: integer, minimum: 0 }
-                decision:
-                  {
-                    type: string,
-                    enum: [pass, conditional_pass, reject, reopen],
-                  }
-                reason: { type: string, maxLength: 4000 }
-                evidenceSnapshotHash:
-                  { type: string, pattern: "^[a-fA-F0-9]{64}$" }
-                waiverIds:
-                  type: array
-                  items: { type: string, format: uuid }
+              $ref: "#/components/schemas/DecideGate"
       responses:
         "200":
-          description: Gate decision and immutable snapshot
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CommandResult"
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
         "409":
-          $ref: "#/components/responses/Conflict"
+          $ref: "#/components/responses/ProjectConflict"
         "422":
-          $ref: "#/components/responses/ValidationError"
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
         default:
-          $ref: "#/components/responses/Error"
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}:reopen:
+    post:
+      tags: [Gates]
+      operationId: reopenGate
+      description: >
+        Preserves the prior immutable decision and history, appends a reopen
+        event, and creates a new review cycle from an exact policy and explicit
+        current Project-member bindings. It never copies prior approvals.
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-frozen-reopen-member-binding
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.review.reopen
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReopenGate"
+      responses:
+        "201":
+          $ref: "#/components/responses/GateReviewCommandResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
 
   /tooling/{toolingId}/cockpit:
     get:
@@ -1108,6 +1360,18 @@ components:
       in: path
       name: gateId
       required: true
+      schema: { type: string, format: uuid }
+    ReviewCycleId:
+      in: path
+      name: cycleId
+      required: true
+      description: Immutable Gate Review Cycle global_id
+      schema: { type: string, format: uuid }
+    ReviewExceptionId:
+      in: path
+      name: exceptionId
+      required: true
+      description: Immutable Gate Review Exception global_id
       schema: { type: string, format: uuid }
     ToolingId:
       in: path
@@ -1366,6 +1630,55 @@ components:
       content:
         application/problem+json:
           schema: { $ref: "#/components/schemas/ProblemDetails" }
+    GateReviewQueryResult:
+      description: Exact authorized Gate review workspace
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GateReview"
+    GateReviewCommandResult:
+      description: >
+        Exact server-built Gate review workspace after the command, or the
+        original result safely replayed for the same actor-bound key and
+        canonical request
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          description: True when the original command result was safely replayed
+          required: true
+          schema: { type: boolean }
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GateReview"
   schemas:
     LanguageCode:
       type: string
@@ -2276,6 +2589,139 @@ components:
         sourceGlobalId: { type: string, format: uuid }
         sourceVersion: { type: integer, minimum: 1 }
         sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CanonicalUuid:
+      type: string
+      format: uuid
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      not: { const: 00000000-0000-0000-0000-000000000000 }
+    GateReviewBindingInput:
+      type: object
+      additionalProperties: false
+      description: >
+        Explicit current Project-member binding for one exact policy slot. The
+        binding does not derive authority from a transport role, RACI, Project
+        ownership, or System Manager.
+      required: [slot, memberGlobalId]
+      properties:
+        slot:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        memberGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+    StartGateReview:
+      type: object
+      additionalProperties: false
+      required: [expectedGateVersion, policyGlobalId, policyVersion, policySnapshotHash, bindings]
+      properties:
+        expectedGateVersion: { type: integer, minimum: 1 }
+        policyGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        bindings:
+          type: array
+          minItems: 1
+          maxItems: 64
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewBindingInput"
+    SubmitGateReview:
+      type: object
+      additionalProperties: false
+      required: [expectedCycleVersion, expectedInputHash, stepKey, outcome, opinion]
+      properties:
+        expectedCycleVersion: { type: integer, minimum: 1 }
+        expectedInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        stepKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        outcome: { type: string, enum: [approved, rejected] }
+        opinion: { type: string, minLength: 1, maxLength: 4000 }
+    RequestGateReviewException:
+      type: object
+      additionalProperties: false
+      required: [expectedCycleVersion, expectedInputHash, requirementGlobalId, requirementKey, kind, reason, risk, expiresAt, closureActionGlobalId]
+      properties:
+        expectedCycleVersion: { type: integer, minimum: 1 }
+        expectedInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        requirementGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        requirementKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        kind:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        reason: { type: string, minLength: 1, maxLength: 4000 }
+        risk: { type: string, minLength: 1, maxLength: 4000 }
+        expiresAt:
+          {
+            type: string,
+            format: date-time,
+            pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$',
+          }
+        closureActionGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+    DecideGateReviewException:
+      type: object
+      additionalProperties: false
+      required: [expectedCycleVersion, expectedExceptionVersion, expectedInputHash, outcome, opinion]
+      properties:
+        expectedCycleVersion: { type: integer, minimum: 1 }
+        expectedExceptionVersion: { type: integer, minimum: 1 }
+        expectedInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        outcome: { type: string, enum: [approved, rejected] }
+        opinion: { type: string, minLength: 1, maxLength: 4000 }
+    DecideGate:
+      type: object
+      additionalProperties: false
+      description: >
+        expectedInputHash is only a stale-input precondition. The server
+        resolves and hashes the complete decision snapshot; no caller snapshot,
+        URL, blocker count, readiness score, or permission claim is accepted.
+      required: [expectedGateVersion, expectedCycleVersion, expectedInputHash, outcome]
+      properties:
+        expectedGateVersion: { type: integer, minimum: 1 }
+        expectedCycleVersion: { type: integer, minimum: 1 }
+        expectedInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        outcome:
+          { type: string, enum: [pass, conditional_pass, reject] }
+    ReopenGate:
+      type: object
+      additionalProperties: false
+      required: [expectedGateVersion, expectedCycleVersion, expectedInputHash, reason, policyGlobalId, policyVersion, policySnapshotHash, bindings]
+      properties:
+        expectedGateVersion: { type: integer, minimum: 1 }
+        expectedCycleVersion: { type: integer, minimum: 1 }
+        expectedInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 4000 }
+        policyGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        bindings:
+          type: array
+          minItems: 1
+          maxItems: 64
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewBindingInput"
     GateEvidenceProject:
       type: object
       additionalProperties: false
@@ -2394,8 +2840,10 @@ components:
         Exact frozen requirement plus explicit Project member assignments.
         evidenceState describes evidence presence/scan observation only and is
         not a Gate pass or satisfaction decision.
-      required: [key, title, classification, priority, owner, reviewers, dueDate, allowedEvidenceKinds, evidenceState, evidence]
+      required: [globalId, key, title, classification, priority, owner, reviewers, dueDate, allowedEvidenceKinds, evidenceState, evidence]
       properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
         key:
           {
             type: string,
@@ -2474,17 +2922,421 @@ components:
           $ref: "#/components/schemas/GateEvidencePermissions"
     GateReview:
       type: object
-      required: [gate, deliverables, blockers, decisionOptions]
+      additionalProperties: false
+      description: >
+        Closed server-built review workspace. Permission fields are output
+        facts only; every write re-authorizes the exact frozen assignment and
+        current Project membership.
+      required: [project, gate, evidence, activeCycle, decisions, availablePolicies, eligibleMembers, eligibleClosureActions, blockers, permissions]
       properties:
-        gate: { type: object }
-        deliverables: { type: array, items: { type: object } }
+        project:
+          $ref: "#/components/schemas/GateEvidenceProject"
+        gate:
+          $ref: "#/components/schemas/GateReviewGate"
+        evidence:
+          $ref: "#/components/schemas/GateEvidenceWorkspace"
+        activeCycle:
+          description: >
+            The Gate's exact current cycle. It remains present with state
+            decided after a decision so reopen can use its version, input hash,
+            policy reference, and complete frozen bindings. It becomes null
+            only when the Gate has never started a review cycle.
+          anyOf:
+            - $ref: "#/components/schemas/GateReviewCycle"
+            - type: "null"
+        decisions:
+          type: array
+          maxItems: 1000
+          items:
+            $ref: "#/components/schemas/GateDecisionSummary"
+        availablePolicies:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          description: >
+            Exact published policy versions currently applicable to this Gate
+            for a new cycle. Every command re-resolves applicability. A
+            historical current cycle remains readable through activeCycle even
+            if its policy root is later disabled.
+          items:
+            $ref: "#/components/schemas/GateReviewAvailablePolicy"
+        eligibleMembers:
+          type: array
+          maxItems: 500
+          uniqueItems: true
+          description: >
+            Current same-Project enabled internal member options. Selection is
+            not authority; start and reopen re-resolve every binding.
+          items:
+            $ref: "#/components/schemas/GateReviewMember"
+        eligibleClosureActions:
+          type: array
+          maxItems: 500
+          uniqueItems: true
+          description: >
+            Current same-Project, same-Gate non-terminal action options.
+            Exception request re-resolves kind, scope, state, and version.
+          items:
+            $ref: "#/components/schemas/GateReviewClosureAction"
         blockers:
+          type: array
+          maxItems: 256
+          uniqueItems: true
+          description: >
+            Exact same-Project, same-Gate active blocking work items used to
+            explain decision denial. This is not a readiness score or caller
+            input.
+          items:
+            $ref: "#/components/schemas/GateReviewBlocker"
+        permissions:
+          $ref: "#/components/schemas/GateReviewPermissions"
+    GateReviewGate:
+      type: object
+      additionalProperties: false
+      required: [globalId, key, title, reviewState, version, currentCycleGlobalId, latestDecisionGlobalId, latestDecisionHash, latestDecisionOutcome, downstreamDecisionCurrent]
+      properties:
+        globalId: { type: string, format: uuid }
+        key:
           {
-            type: array,
-            items: { $ref: "#/components/schemas/MyWorkItemProjection" },
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
           }
-        changesSinceLastReview: { type: array, items: { type: object } }
-        decisionOptions: { type: array, items: { type: string } }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        reviewState:
+          {
+            type: string,
+            enum: [not_started, in_review, decided, requires_review],
+          }
+        version: { type: integer, minimum: 1 }
+        currentCycleGlobalId:
+          anyOf:
+            - { type: string, format: uuid }
+            - type: "null"
+        latestDecisionGlobalId:
+          anyOf:
+            - { type: string, format: uuid }
+            - type: "null"
+        latestDecisionHash:
+          anyOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - type: "null"
+        latestDecisionOutcome:
+          anyOf:
+            - { type: string, enum: [pass, conditional_pass, reject] }
+            - type: "null"
+        downstreamDecisionCurrent: { type: boolean }
+    GateReviewPolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewAuthoritySlot:
+      type: object
+      additionalProperties: false
+      required: [slot, purpose]
+      properties:
+        slot:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        purpose:
+          { type: string, enum: [review, decision, reopen, exception] }
+    GateReviewExceptionRuleOption:
+      type: object
+      additionalProperties: false
+      required: [kind, eligibleRequirementKeys, approvalAuthoritySlot, maximumValidityDays, requiredClosureActionKind]
+      properties:
+        kind:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        eligibleRequirementKeys:
+          type: array
+          minItems: 1
+          maxItems: 256
+          uniqueItems: true
+          items:
+            {
+              type: string,
+              minLength: 1,
+              maxLength: 64,
+              pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            }
+        approvalAuthoritySlot:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        maximumValidityDays:
+          { type: integer, minimum: 1, maximum: 3650 }
+        requiredClosureActionKind: { type: string, const: action }
+    GateReviewAvailablePolicy:
+      type: object
+      additionalProperties: false
+      required: [policyRef, authoritySlots, exceptionRules]
+      properties:
+        policyRef:
+          $ref: "#/components/schemas/GateReviewPolicyReference"
+        authoritySlots:
+          type: array
+          minItems: 1
+          maxItems: 64
+          uniqueItems: true
+          description: >
+            Every review, decision, reopen, and exception authority slot
+            required to construct explicit bindings for this policy option.
+          items:
+            $ref: "#/components/schemas/GateReviewAuthoritySlot"
+        exceptionRules:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateReviewExceptionRuleOption"
+    GateReviewMember:
+      type: object
+      additionalProperties: false
+      required: [memberGlobalId, userId, displayName]
+      properties:
+        memberGlobalId: { type: string, format: uuid }
+        userId: { type: string, minLength: 1, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 280 }
+    GateReviewAuthorityBinding:
+      type: object
+      additionalProperties: false
+      description: Exact member identity frozen for one policy authority slot
+      required: [slot, memberGlobalId, userId, displayName]
+      properties:
+        slot:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        memberGlobalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        userId: { type: string, minLength: 1, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 280 }
+    GateReviewClosureAction:
+      type: object
+      additionalProperties: false
+      required: [globalId, title, state, version]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        title: { type: string, minLength: 1, maxLength: 280 }
+        state:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[a-z][a-z0-9_.-]*$",
+          }
+        version: { type: integer, minimum: 1 }
+    GateReviewBlocker:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, title, state, dueAt, owner]
+      properties:
+        globalId:
+          $ref: "#/components/schemas/CanonicalUuid"
+        kind:
+          {
+            type: string,
+            enum: [risk, issue, action, decision_request],
+          }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        state:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[a-z][a-z0-9_.-]*$",
+          }
+        dueAt:
+          {
+            type: string,
+            format: date-time,
+            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]{1,6})?Z$",
+          }
+        owner: { type: string, minLength: 1, maxLength: 254 }
+    GateReviewRecord:
+      type: object
+      additionalProperties: false
+      required: [globalId, stepKey, outcome, opinion, actor, reviewedAt, inputHash, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        stepKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        outcome: { type: string, enum: [approved, rejected] }
+        opinion: { type: string, minLength: 1, maxLength: 4000 }
+        actor: { type: string, minLength: 1, maxLength: 254 }
+        reviewedAt: { type: string, format: date-time }
+        inputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewSelectedStep:
+      type: object
+      additionalProperties: false
+      required: [stepKey, sequence, slot, assignedMember, state, review]
+      properties:
+        stepKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        sequence: { type: integer, minimum: 1 }
+        slot:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        assignedMember:
+          $ref: "#/components/schemas/GateReviewMember"
+        state:
+          { type: string, enum: [waiting, available, approved, rejected] }
+        review:
+          anyOf:
+            - $ref: "#/components/schemas/GateReviewRecord"
+            - type: "null"
+    GateReviewExceptionDecision:
+      type: object
+      additionalProperties: false
+      required: [outcome, approver, opinion, decidedAt, snapshotHash]
+      properties:
+        outcome: { type: string, enum: [approved, rejected] }
+        approver:
+          $ref: "#/components/schemas/GateReviewMember"
+        opinion: { type: string, minLength: 1, maxLength: 4000 }
+        decidedAt: { type: string, format: date-time }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewException:
+      type: object
+      additionalProperties: false
+      required: [globalId, requirementGlobalId, requirementKey, kind, reason, risk, requester, requestedAt, expiresAt, closureActionGlobalId, state, version, requestSnapshotHash, decision]
+      properties:
+        globalId: { type: string, format: uuid }
+        requirementGlobalId: { type: string, format: uuid }
+        requirementKey:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        kind:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        reason: { type: string, minLength: 1, maxLength: 4000 }
+        risk: { type: string, minLength: 1, maxLength: 4000 }
+        requester:
+          $ref: "#/components/schemas/GateReviewMember"
+        requestedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        closureActionGlobalId: { type: string, format: uuid }
+        state: { type: string, enum: [pending, approved, rejected] }
+        version: { type: integer, minimum: 1 }
+        requestSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        decision:
+          anyOf:
+            - $ref: "#/components/schemas/GateReviewExceptionDecision"
+            - type: "null"
+    GateReviewCycle:
+      type: object
+      additionalProperties: false
+      required: [globalId, number, trigger, state, version, policyRef, inputHash, bindings, selectedSteps, exceptions, startedAt, startedBy]
+      properties:
+        globalId: { type: string, format: uuid }
+        number: { type: integer, minimum: 1 }
+        trigger:
+          {
+            type: string,
+            enum: [manual_start, manual_reopen, dependency_change],
+          }
+        state: { type: string, enum: [active, decided, invalidated] }
+        version: { type: integer, minimum: 1 }
+        policyRef:
+          $ref: "#/components/schemas/GateReviewPolicyReference"
+        inputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        bindings:
+          type: array
+          minItems: 1
+          maxItems: 64
+          uniqueItems: true
+          description: >
+            Complete frozen bindings for every policy review, decision,
+            reopen, and exception authority slot in this cycle. These remain
+            immutable and readable after the policy root or member changes.
+          items:
+            $ref: "#/components/schemas/GateReviewAuthorityBinding"
+        selectedSteps:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            $ref: "#/components/schemas/GateReviewSelectedStep"
+        exceptions:
+          type: array
+          maxItems: 256
+          items:
+            $ref: "#/components/schemas/GateReviewException"
+        startedAt: { type: string, format: date-time }
+        startedBy: { type: string, minLength: 1, maxLength: 254 }
+    GateDecisionSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, cycleGlobalId, outcome, inputHash, snapshotHash, decidedAt, decidedBy, current]
+      properties:
+        globalId: { type: string, format: uuid }
+        cycleGlobalId: { type: string, format: uuid }
+        outcome:
+          { type: string, enum: [pass, conditional_pass, reject] }
+        inputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        decidedAt: { type: string, format: date-time }
+        decidedBy: { type: string, minLength: 1, maxLength: 254 }
+        current: { type: boolean }
+    GateReviewPermissions:
+      type: object
+      additionalProperties: false
+      description: >
+        Server-computed display facts; these fields are never accepted in a
+        command and do not replace command-time authorization.
+      required: [canView, canStartReview, canReview, canRequestException, canApproveException, canDecide, canReopen]
+      properties:
+        canView: { type: boolean, const: true }
+        canStartReview: { type: boolean }
+        canReview: { type: boolean }
+        canRequestException: { type: boolean }
+        canApproveException: { type: boolean }
+        canDecide: { type: boolean }
+        canReopen: { type: boolean }
     ToolingCockpit:
       type: object
       required: [tooling, lifecycle, source]

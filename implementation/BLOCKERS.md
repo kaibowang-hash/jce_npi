@@ -4,16 +4,24 @@
 
 None.
 
-## Codex Cloud handoff checkpoint
+## Final Codex Cloud handoff checkpoint
 
-P4-04 is paused by the explicit CLI-to-Cloud handoff instruction after
-read-only repository/specification inventory and implementation-boundary
-planning. This is an intentional recoverable checkpoint, not a Hard Blocker
-and not a Gate result. No P4-04 product, contract, Schema, permission, backend,
-frontend, translation, runtime, test, or visual change is retained. Resume
-only from `implementation/evidence/phase-4/p4-04-plan.md`; P4-04 remains
-unfinished and must not be marked `PASS` until its actual implementation and
-applicable validation pass.
+P4-04 is paused by the explicit final handoff instruction after a bounded
+backend-foundation checkpoint. This is not a Hard Blocker and not a Gate
+result. The pure domain, policy/history scaffolds, Gate Shell state boundary,
+transport-role definition, strict BFF/OpenAPI surface, and affected Level 1
+tests are retained. The core Frappe Gate review repository is deliberately not
+retained because the late draft called undefined helpers and had no tests.
+Consequently the API factory is an explicit future injection boundary, not a
+live success path.
+
+The current localization check is a known failing criterion: 265 new source
+strings are missing from each Chinese catalog. Core repository/idempotency/
+DocPerm work, automatic invalidation, runtime migration, UI, trilingual
+browser/visual evidence, Task Gate, and triggered Level 3 also remain open.
+Resume only from
+`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`; P4-04 must not be
+marked `PASS`, and P4-05 must not start, until those applicable criteria pass.
 
 ## Open external acceptance and reconciliation inputs
 

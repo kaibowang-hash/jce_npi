@@ -99,6 +99,59 @@ objects:
       attachment_audit: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       replacement_or_detach_policy: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
 
+  GateReviewPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_policy_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_policy_version: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      authority_slots_and_rules: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateReviewCycle:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      cycle_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_policy_and_input_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      frozen_member_bindings: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      lifecycle_state_and_version: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      prior_cycle_and_decision_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateReviewRecord:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      review_identity_and_assignment: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      reviewed_input_and_opinion: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actor_request_trace_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateReviewException:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      immutable_request: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_policy_rule_and_authority: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      one_way_decision: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: APPEND_ONLY}
+      expiry_and_closure_action_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  GateReviewEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      event_identity_and_type: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_old_new_and_successor_references: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      payload_hash_and_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  GateDecisionSnapshot:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      decision_identity_and_outcome: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_input_review_exception_policy_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      snapshot_hash_and_audit: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      downstream_current_guard: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
   FileRevision:
     owner_system: NPI_ONE
     erp_view: reference_only

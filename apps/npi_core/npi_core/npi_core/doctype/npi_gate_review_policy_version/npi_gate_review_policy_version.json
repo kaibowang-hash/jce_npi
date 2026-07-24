@@ -1,0 +1,36 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Gate Review Policy Version",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:version_key",
+  "track_changes": 1,
+  "title_field": "title",
+  "search_fields": "policy_code,title,version_key",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "gate_review_policy", "fieldtype": "Link", "label": "Gate Review Policy", "options": "NPI Gate Review Policy", "reqd": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_code", "fieldtype": "Data", "label": "Gate Review Policy Code", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "Policy Version", "reqd": 1},
+    {"fieldname": "version_key", "fieldtype": "Data", "label": "Version Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Gate Review Policy Version Title", "reqd": 1},
+    {"fieldname": "publication_state", "fieldtype": "Select", "label": "Publication State", "options": "draft\npublished", "reqd": 1, "default": "draft"},
+    {"fieldname": "gate_template_global_id", "fieldtype": "Data", "label": "Gate Template Global ID", "reqd": 1},
+    {"fieldname": "gate_template_version", "fieldtype": "Int", "label": "Gate Template Version", "reqd": 1},
+    {"fieldname": "gate_template_snapshot_hash", "fieldtype": "Data", "label": "Gate Template Snapshot Hash", "reqd": 1},
+    {"fieldname": "review_steps", "fieldtype": "JSON", "label": "Review Steps", "reqd": 1},
+    {"fieldname": "decision_authority_slot", "fieldtype": "Data", "label": "Decision Authority Slot", "reqd": 1},
+    {"fieldname": "reopen_authority_slot", "fieldtype": "Data", "label": "Reopen Authority Slot", "reqd": 1},
+    {"fieldname": "exception_rules", "fieldtype": "JSON", "label": "Exception Rules", "reqd": 1, "default": "[]"},
+    {"fieldname": "dependency_evaluators", "fieldtype": "JSON", "label": "Dependency Evaluators", "reqd": 1, "default": "[]"},
+    {"fieldname": "snapshot", "fieldtype": "JSON", "label": "Canonical Policy Snapshot", "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "read_only": 1},
+    {"fieldname": "published_at", "fieldtype": "Datetime", "label": "Published At", "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

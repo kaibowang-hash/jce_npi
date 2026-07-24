@@ -1,5 +1,55 @@
 # Last Run
 
+## Final Codex Cloud handoff checkpoint — 2026-07-24T09:02:26Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized local/upstream HEAD:
+  `ad4c3234c055066e21ff6fdd95dc40e33f222933`; ahead/behind was `0/0`.
+- Current phase: `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
+- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, and `P4-03`.
+- Current unfinished atomic task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
+- Result:
+  `CHECKPOINT — P4-04 BACKEND FOUNDATION RETAINED; NOT TASK GATE PASS`.
+
+The explicit final-handoff instruction stopped new product development. The
+retained minimum consistent unit comprises the tested pure review domain,
+versioned administrative policy persistence, controlled review-history
+DocTypes, Gate Shell review-input/state boundary, one exact non-Desk transport
+role, seven strict BFF routes, and closed OpenAPI/data-ownership contracts.
+No production policy is installed.
+
+The live repository boundary is intentionally unfinished:
+`npi_core.gate_review.frappe_repository` is absent. A late untested draft,
+future idempotency/DocPerm/audit changes, impact-action helper, and incomplete
+frontend data-source/UI changes were excluded rather than represented as
+working. The retained controlled DocTypes remain System-Manager-only. P4-04 is
+`IN_PROGRESS`; P4-05 was not started.
+
+### Level 1 result
+
+- The initial combined affected selection produced 121 passes and one
+  permission-metadata failure. The unverified future transport DocPerm and
+  idempotency residue was removed; the affected metadata file then passed
+  11/11.
+- Final pure-domain tests pass 16/16.
+- Final Project/Gate-evidence/Gate-review contract compatibility passes 29/29.
+- Component lanes also pass: Gate Shell 7 plus 23 direct P4-03 regressions;
+  policy 9; review history 11; transport role 3; strict API/contract 17.
+- Final domain Black, direct Python compilation, YAML/local `$ref` validation,
+  and prohibited-pattern review pass.
+- Frappe catalog generation truthfully fails: 265 direct entries are missing
+  from each of `zh` and `zh-TW` (1539 sources versus 1274 catalog entries).
+- Final checkpoint `git diff --check`: `PASS`.
+
+No Site migration/runtime, repository/permission/concurrency/idempotency,
+frontend component/E2E/accessibility, trilingual visual, P4-04 Level 2, or
+triggered Level 3 result is claimed. Phase 3 external UAT remains unsigned.
+
+Complete commands, changed-files-to-tests mapping, excluded-draft rationale,
+and exact recovery boundary are in
+`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`.
+
 ## Codex Cloud handoff checkpoint — 2026-07-24T05:52:19Z
 
 - Branch: `codex/npi-v1.2-implementation`.

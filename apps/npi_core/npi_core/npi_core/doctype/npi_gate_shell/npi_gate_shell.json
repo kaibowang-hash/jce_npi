@@ -30,7 +30,18 @@
     {"fieldname": "requirement_snapshot", "fieldtype": "JSON", "label": "Requirement Snapshot", "read_only": 1},
     {"fieldname": "requirement_snapshot_hash", "fieldtype": "Data", "label": "Requirement Snapshot Hash", "read_only": 1},
     {"fieldname": "requirements_frozen_at", "fieldtype": "Datetime", "label": "Requirements Frozen At", "read_only": 1},
-    {"fieldname": "requirements_frozen_by", "fieldtype": "Data", "label": "Requirements Frozen By", "read_only": 1}
+    {"fieldname": "requirements_frozen_by", "fieldtype": "Data", "label": "Requirements Frozen By", "read_only": 1},
+    {"fieldname": "review_input_version", "fieldtype": "Int", "label": "Review Input Version", "reqd": 1, "default": "1", "read_only": 1},
+    {"fieldname": "review_state", "fieldtype": "Select", "label": "Review State", "options": "not_started\nin_review\ndecided\nrequires_review", "default": "not_started", "read_only": 1},
+    {"fieldname": "current_review_cycle", "fieldtype": "Link", "label": "Current Review Cycle", "options": "NPI Gate Review Cycle", "read_only": 1},
+    {"fieldname": "current_review_cycle_global_id", "fieldtype": "Data", "label": "Current Review Cycle Global ID", "read_only": 1},
+    {"fieldname": "latest_decision_snapshot", "fieldtype": "Link", "label": "Latest Decision Snapshot", "options": "NPI Gate Decision Snapshot", "read_only": 1},
+    {"fieldname": "latest_decision_snapshot_global_id", "fieldtype": "Data", "label": "Latest Decision Snapshot Global ID", "read_only": 1},
+    {"fieldname": "latest_decision_snapshot_hash", "fieldtype": "Data", "label": "Latest Decision Snapshot Hash", "read_only": 1},
+    {"fieldname": "latest_decision_outcome", "fieldtype": "Select", "label": "Latest Decision Outcome", "options": "pass\nconditional_pass\nreject", "read_only": 1},
+    {"fieldname": "review_policy_global_id", "fieldtype": "Data", "label": "Review Policy Global ID", "read_only": 1},
+    {"fieldname": "review_policy_version", "fieldtype": "Int", "label": "Review Policy Version", "read_only": 1},
+    {"fieldname": "review_policy_snapshot_hash", "fieldtype": "Data", "label": "Review Policy Snapshot Hash", "read_only": 1}
   ],
   "permissions": [
     {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}

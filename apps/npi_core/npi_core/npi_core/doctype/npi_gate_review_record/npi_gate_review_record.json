@@ -1,0 +1,43 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Gate Review Record",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "read_only": 1,
+  "search_fields": "review_key,project_global_id,gate_global_id,cycle_global_id,review_step_key",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "review_key", "fieldtype": "Data", "label": "Review Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "gate_global_id", "fieldtype": "Data", "label": "Gate Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "cycle_global_id", "fieldtype": "Data", "label": "Review Cycle Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "cycle_number", "fieldtype": "Int", "label": "Review Cycle Number", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_global_id", "fieldtype": "Data", "label": "Review Policy Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_version", "fieldtype": "Int", "label": "Review Policy Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "policy_snapshot_hash", "fieldtype": "Data", "label": "Review Policy Snapshot Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "review_step_key", "fieldtype": "Data", "label": "Review Step Key", "reqd": 1, "read_only": 1},
+    {"fieldname": "review_step_sequence", "fieldtype": "Int", "label": "Review Step Sequence", "reqd": 1, "read_only": 1},
+    {"fieldname": "authority_slot", "fieldtype": "Data", "label": "Authority Slot", "reqd": 1, "read_only": 1},
+    {"fieldname": "assigned_member_global_id", "fieldtype": "Data", "label": "Assigned Member Global ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "assigned_user_id", "fieldtype": "Data", "label": "Assigned User", "reqd": 1, "read_only": 1},
+    {"fieldname": "assigned_display_name", "fieldtype": "Data", "label": "Assigned Member", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Review Actor", "reqd": 1, "read_only": 1},
+    {"fieldname": "outcome", "fieldtype": "Select", "label": "Review Outcome", "options": "approved\nrejected", "reqd": 1, "read_only": 1},
+    {"fieldname": "opinion", "fieldtype": "Text", "label": "Review Opinion", "reqd": 1, "read_only": 1},
+    {"fieldname": "occurred_at", "fieldtype": "Datetime", "label": "Occurred At", "reqd": 1, "read_only": 1},
+    {"fieldname": "reviewed_input_hash", "fieldtype": "Data", "label": "Reviewed Input Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "cycle_version_before", "fieldtype": "Int", "label": "Cycle Version Before", "reqd": 1, "read_only": 1},
+    {"fieldname": "cycle_version_after", "fieldtype": "Int", "label": "Cycle Version After", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "record_snapshot", "fieldtype": "JSON", "label": "Review Record Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "record_snapshot_hash", "fieldtype": "Data", "label": "Review Record Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+  ]
+}

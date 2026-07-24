@@ -41,6 +41,55 @@ _GATE_EVIDENCE_ATTACH_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
     r"(?P<gate_id>[^/:]+)/requirements/(?P<requirement_key>[^/]+)/evidence$"
 )
+_GATE_REVIEW_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+    r"(?P<gate_id>[^/:]+)/review$"
+)
+_GATE_REVIEW_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+):start-review$"
+        ),
+        "npi_core.gate_review_api.start_gate_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+)/review-cycles/(?P<cycle_id>[^/:]+)/reviews$"
+        ),
+        "npi_core.gate_review_api.submit_gate_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+)/review-cycles/(?P<cycle_id>[^/:]+)/exceptions$"
+        ),
+        "npi_core.gate_review_api.request_gate_review_exception",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+)/review-cycles/(?P<cycle_id>[^/:]+)/"
+            r"exceptions/(?P<exception_id>[^/:]+):decide$"
+        ),
+        "npi_core.gate_review_api.decide_gate_review_exception",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+):decide$"
+        ),
+        "npi_core.gate_review_api.decide_gate",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+            r"(?P<gate_id>[^/:]+):reopen$"
+        ),
+        "npi_core.gate_review_api.reopen_gate",
+    ),
+)
 _PROJECT_WORK_COMMAND_ROUTES = (
     (
         re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):configure-team$"),
@@ -92,6 +141,11 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.gate_evidence_api.get_gate_evidence_workspace"
             route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _GATE_REVIEW_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.gate_review_api.get_gate_review"
+            route_params = match.groupdict()
     if command is None and request.method == "POST":
         match = _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path)
         if match is not None:
@@ -102,6 +156,13 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.gate_evidence_api.attach_gate_evidence"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        for route, candidate in _GATE_REVIEW_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         for route, candidate in _PROJECT_WORK_COMMAND_ROUTES:
             match = route.fullmatch(path)
@@ -195,9 +256,16 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method == "GET" and _GATE_EVIDENCE_ROUTE.fullmatch(path) is not None:
         return True
+    if method == "GET" and _GATE_REVIEW_ROUTE.fullmatch(path) is not None:
+        return True
     if method == "POST" and (
         _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path) is not None
         or _GATE_EVIDENCE_ATTACH_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and any(
+        route.fullmatch(path) is not None
+        for route, _command in _GATE_REVIEW_COMMAND_ROUTES
     ):
         return True
     return method == "POST" and any(

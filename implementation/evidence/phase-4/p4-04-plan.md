@@ -1,6 +1,6 @@
 # P4-04 Implementation Boundary — Review, Decision, Snapshot, and Reopen
 
-Status: **IN PROGRESS — boundary and domain foundation complete; full slice not validated**
+Status: **IN PROGRESS — backend foundation checkpoint retained; full slice not validated**
 
 Recorded: 2026-07-24
 
@@ -11,28 +11,33 @@ Atomic task: `P4-04 — Review, decision, snapshot, and reopen`
 Requirement allocation: `FR-SG-003`, `FR-SG-005`, `FR-SG-006`,
 `FR-SG-007`, with the current Phase 4 contribution to `FR-CO-006`
 
-## 0. Codex Cloud handoff checkpoint
+## 0. Final Codex Cloud handoff checkpoint
 
-The repository/specification inventory and implementation boundary in this
-file are the complete minimum work unit at the handoff. No P4-04 product,
-OpenAPI, ownership, DocType, BFF, permission, backend, frontend, translation,
-runtime-verifier, test, or visual-baseline change has been retained.
+The final recoverable handoff retains a bounded P4-04 backend foundation:
+the pure review/exception/decision/reopen domain, versioned synthetic policy
+persistence, controlled review-history DocTypes, Gate Shell review-input and
+state fields, the non-Desk transport-role definition, seven BFF routes, and
+closed OpenAPI/data-ownership contracts. Directly affected Level 1 tests pass
+after removal of an unverified future-permission residue.
 
-Parallel implementation work was interrupted before it produced shared-file
-changes. A locally started transport-role draft was removed because the
-permission model was not yet a complete tested vertical slice. P4-04 is
-therefore **not implemented, not validated, and not PASS**.
+This is not a live vertical slice. The default API factory intentionally names
+the future `npi_core.gate_review.frappe_repository`, which is not present at
+this checkpoint. No command can therefore be represented as end-to-end
+working. Actor-bound idempotency, transport DocPerms, Gate-root transactions,
+audit, automatic dependency invalidation/impact action, runtime migration,
+frontend review room, translations, browser/visual evidence, Task Gate, and
+triggered Level 3 remain unfinished.
 
-Resume by reviewing this boundary against the latest committed recovery files,
-then implement only P4-04. Use Level 1 checks while repairing and run its
-applicable contract/Schema/auth-triggered Level 3 boundary once after the
-complete slice stabilizes. Do not activate P4-05 before that Gate passes.
+The Frappe catalog check currently fails closed because the new backend and
+DocType sources add 265 untranslated entries in each of `zh` and `zh-TW`.
+This is recorded evidence, not a waived criterion. P4-04 and Phase 4 remain
+`IN_PROGRESS`; P4-05 is not activated.
 
-The first implementation checkpoint is recorded in
-`p4-04-domain-checkpoint.md`: the persistence-neutral review policy/cycle
-domain foundation and its affected tests pass. Resume at persistence and
-authorized controllers; do not repeat the domain checkpoint or describe it as
-complete P4-04 acceptance.
+Resume only from `p4-04-cloud-checkpoint.md` and the durable recovery files.
+Do not repeat the committed P4-03 Full Release Gate merely for handoff. Use
+Level 1 checks while completing the remaining P4-04 units, then run the
+applicable contract/Schema/auth-triggered Level 3 boundary once after the full
+slice and localization stabilize.
 
 ## 1. Repository facts
 
@@ -41,10 +46,10 @@ complete P4-04 acceptance.
   evidence, live scan truth, and a strict URL-free evidence workspace.
 - Requirement owners/reviewers, Project RACI, the Project owner, and System
   Manager administration do not by themselves confer Gate approval authority.
-- The current OpenAPI `/review` and `:decide` definitions are Phase 3
-  placeholders: their responses are open objects, `reopen` is incorrectly
-  represented as a decision, and the caller-supplied evidence hash appears to
-  substitute for a server-built decision snapshot.
+- At task start, the OpenAPI `/review` and `:decide` definitions were Phase 3
+  placeholders. This checkpoint replaces them with closed P4-04 contracts and
+  a strict API protocol, but the live repository implementation remains
+  intentionally absent and no end-to-end command success is claimed.
 - The `/demo/...` Gate page is an explicit in-memory prototype. The accepted
   live Gate route currently renders the P4-03 evidence-only workspace and has
   no decision control.

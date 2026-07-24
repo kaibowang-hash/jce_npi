@@ -235,8 +235,19 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
 
     def test_repository_installs_no_production_template_fixture(self) -> None:
         hooks = (ROOT / "apps/npi_core/npi_core/hooks.py").read_text(encoding="utf-8")
-        self.assertNotIn("fixtures", hooks)
-        self.assertFalse((ROOT / "apps/npi_core/npi_core/fixtures").exists())
+        self.assertNotIn('"NPI Project Template"', hooks)
+        self.assertNotIn('"NPI Project Template Version"', hooks)
+
+        fixture_root = ROOT / "apps/npi_core/npi_core/fixtures"
+        self.assertEqual(
+            sorted(path.name for path in fixture_root.iterdir() if path.is_file()),
+            ["role.json"],
+        )
+        records = json.loads(
+            (fixture_root / "role.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual({record["doctype"] for record in records}, {"Role"})
+        self.assertNotIn("template", json.dumps(records).casefold())
 
     def test_composed_validation_messages_translate_field_labels(self) -> None:
         helper = (

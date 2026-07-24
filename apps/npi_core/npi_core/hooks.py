@@ -6,6 +6,13 @@ app_email = "engineering@example.invalid"
 app_license = "MIT"
 required_apps = []
 
+fixtures = [
+    {
+        "doctype": "Role",
+        "filters": [["role_name", "=", "NPI API User"]],
+    }
+]
+
 before_request = ["npi_core.bff.route_request"]
 after_request = ["npi_core.bff.attach_response_headers"]
 

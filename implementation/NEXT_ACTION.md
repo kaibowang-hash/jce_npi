@@ -1,121 +1,138 @@
 # Next Action
 
-Status: `CHECKPOINT — P4-04 DOMAIN FOUNDATION IMPLEMENTED; TASK IN PROGRESS`
+Status: `CHECKPOINT — P4-04 BACKEND FOUNDATION RETAINED; TASK IN PROGRESS`
 
-First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
+Checkpoint time: `2026-07-24T09:02:26Z`
 
-Phase 3 status: `TECHNICAL_PASS_PENDING_UAT` — **not** `PASS`.
+Required branch: `codex/npi-v1.2-implementation`
 
-## First pending task — external validation
+## Controller state
 
-Complete `FR-UX-031` business UAT with named Project Management,
-Engineering/Tooling, and Quality reviewers using provenance-backed sanitized
-data, then record signatures, findings, timings, context switches, and closure
-of every Severe finding. This task is environment/business specific and cannot
-be completed or signed by Codex. It remains the first incomplete requirement.
-
-`implementation/phase-3-gate.md` nevertheless records the exact Pack-approved
-continuation state: the technical release gate is `PASS`, the phase remains
-`TECHNICAL_PASS_PENDING_UAT`, the external inputs are not a global blocker, and
-Phase 4 is explicitly activated for independent NPI-owned domain work. Therefore
-Phase 4 may continue without changing Phase 3 to `PASS` or concealing its UAT
-obligation.
-
-## Current implementation checkpoint
-
-- Required development branch:
-  `codex/npi-v1.2-implementation`.
-- Current controller phase:
+- First incomplete phase:
+  `3 — React App Shell Siemens UI and i18n Foundation`.
+- Phase 3 status: `TECHNICAL_PASS_PENDING_UAT` — not `PASS`.
+- Current authorized implementation phase:
   `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
-- Completed atomic tasks:
-  `P4-01`, `P4-02`, and `P4-03`.
-- Latest completed atomic task:
-  `P4-03 — Gate templates and controlled evidence`, committed at
-  `0fd4762a01fd10fe6851df07ead1c5e4e7a42473`.
+- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, and `P4-03`.
 - Current unfinished atomic task:
   `P4-04 — Review, decision, snapshot, and reopen`.
+- `P4-05` is not active and must not start.
 
-P4-04 now has its read-only implementation boundary plus the first bounded
-domain checkpoint in
-`implementation/evidence/phase-4/p4-04-domain-checkpoint.md`. The pure domain
-model implements versioned synthetic review policies, frozen authority slots,
-parallel/sequential/conditional review selection, fail-closed normal decision
-preconditions, immutable server-built decision snapshots, new-cycle reopen,
-and a current-decision downstream guard. Its 21-test-plus-3-subtest affected domain lane and
-format/lint/whitespace checks pass. No persistence, API, permission, exception,
-automatic invalidation, impact action, UI, localization, runtime, browser, or
-visual acceptance is claimed. P4-04 remains **IN PROGRESS and not PASS**.
+Phase 4 remains authorized by `implementation/phase-3-gate.md`; this does not
+hide or sign the outstanding Phase 3 business UAT.
 
-P4-04 owns `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` within a
-synthetic, versioned, safe-default-denied Gate review/decision slice. It must
-preserve P4-03's immutable requirement/evidence history, separate assignment
-from authority, create server-owned immutable decisions, preserve every prior
-approval, and create controlled new cycles for reopen/invalidation.
+## Retained P4-04 checkpoint
 
-Do not implement P4-05 live My Work/activity/notification delivery, production
-template contents, guessed RACI-to-approval mappings, production waiver or
-invalidation rules, normal-user file routes, production scanner/DMS behavior,
-production ERPNext access, or any held production mapping in P4-04.
+The checkpoint contains a bounded backend foundation:
 
-Resume with the additive P4-04 DocTypes and repository/controller boundary,
-including exception and invalidation event persistence. Keep policy fixtures
-synthetic and do not activate P4-05 before the complete P4-04 Gate passes.
+- canonical pure-domain Gate input, policy, authority binding, parallel/
+  sequential review, exception, immutable decision, reopen/invalidation
+  transition, expiry-aware downstream-guard, and hydration invariants;
+- administrative versioned Gate Review Policy root/version DocTypes,
+  controllers, and exact policy loader;
+- controlled read-only Cycle, Review Record, Exception, Event, and Decision
+  Snapshot DocTypes/controllers;
+- Gate Shell `review_input_version`, review state, exact cycle/policy/decision
+  references, and controlled transition validation;
+- one exact, non-Desk, unassigned `NPI API User` transport-role fixture;
+- seven BFF routes plus strict request validation, authentication/CSRF,
+  request/trace/idempotency headers, uniform unavailable handling, closed
+  OpenAPI schemas, and data-ownership declarations.
 
-## Passed evidence — do not repeat for handoff
+No production Gate Review Policy is installed.
 
-The committed P4-03 Level 3 evidence remains valid and must not be rerun merely
-to resume in Codex Cloud:
+This is not a live vertical slice. The API factory references the future
+`npi_core.gate_review.frappe_repository`, which is deliberately absent because
+the late draft was incomplete and untested. The retained review/history
+DocTypes and Gate Shell remain System-Manager-only until the complete command
+repository and transport DocPerms have real permission/runtime evidence.
 
-- `make verify`: 276 Python and 237 frontend tests plus static/type/lint/style/
-  boundary/UI/i18n, coverage, build, and zero npm audit findings;
-- direct post-aggregate authorization repair: 20 affected tests;
-- two successful additive/idempotent Site migrations;
-- complete P4-01/P4-02/P4-03 runtime, including P4-03 run
-  `2e070c8599694beabb6f5cf679a8c54b`;
-- 153/153 non-visual browser cases;
-- 159/159 forced and clean exact visual cases;
-- trilingual original-resolution review; and
-- independent security, traceability, Task Diff, and release-gate review.
+## Passed evidence — do not repeat merely for handoff
 
-These checks become applicable again only when later P4-04 changes actually
-affect them or at P4-04's final required boundary. They are not a substitute
-for any P4-04 test.
+The committed P4-03 Level 3 evidence remains valid:
 
-## Exact Codex Cloud resume steps
+- `make verify`: 276 Python and 237 frontend tests plus aggregate static,
+  type, lint, style, boundary, UI, i18n, coverage, build, and audit checks;
+- 20 directly affected tests after its final authorization-order repair;
+- two additive/idempotent Site migrations;
+- complete P4-01/P4-02/P4-03 runtime;
+- 153 non-visual browser cases;
+- 159 forced and clean exact visual cases;
+- original-resolution trilingual review and independent security,
+  traceability, Task Diff, and release review.
 
-1. Open the repository on
-   `codex/npi-v1.2-implementation`; fetch origin and verify the local HEAD is
-   exactly `origin/codex/npi-v1.2-implementation` with a clean worktree.
+Do not rerun that complete P4-03 Gate solely because execution moves to
+another Codex surface.
+
+Current P4-04 Level 1 evidence is bounded and cumulative:
+
+- pure domain: 16 focused tests pass;
+- Gate Shell: 7 focused tests and 23 directly affected P4-03 metadata/
+  controller regressions pass;
+- policy metadata/controller/repository: 9 focused tests pass;
+- review-history metadata/controller: 11 focused tests pass;
+- transport-role fixture: 3 focused tests pass;
+- strict API/contract slice: 17 focused tests pass;
+- final affected contract trio: 29 tests pass;
+- a combined 122-test affected selection initially produced 121 passes and
+  one permission-metadata failure; the unverified future DocPerm/idempotency
+  residue was removed and the affected metadata file then passed 11/11;
+- final domain Black check and Python compilation pass;
+- OpenAPI/data-ownership YAML and local `$ref` validation pass.
+
+Exact commands and the changed-files-to-tests mapping are in
+`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`.
+
+## Known failing and unfinished criteria
+
+- Frappe catalog generation is blocked by 265 missing direct entries in each
+  of `zh` and `zh-TW` (1539 extracted sources versus 1274 catalog entries).
+  This is not waived.
+- The core Frappe Gate review repository, actor-bound idempotency receipt,
+  fixed Project→Gate→Cycle→Exception lock order, audit/seal transaction,
+  exact live member/authority resolution, IDOR-safe workspace hydration, and
+  transport DocPerms are not implemented.
+- Automatic dependency invalidation hooks and deterministic blocking impact
+  action creation are not implemented.
+- No P4-04 Site migration/runtime, live permission/CRUD denial, concurrency,
+  rollback, idempotent replay, or end-to-end endpoint evidence exists.
+- No live React Gate review room/data source is retained. No P4-04 component,
+  browser, accessibility, trilingual, or visual evidence exists.
+- P4-04 Level 2 Task Gate and its contract/Schema/auth-triggered Level 3 Full
+  Release Gate have not run.
+- Production approval, exception, invalidation, and segregation policy remains
+  a scoped Class-B hold. Production ERPNext access remains prohibited.
+- Phase 3 named-reviewer UAT and provenance-backed sanitized-data review remain
+  externally unsigned.
+
+P4-04 is `IN_PROGRESS` and must not be described as `PASS`.
+
+## Exact recovery steps
+
+1. Open the repository on `codex/npi-v1.2-implementation`, fetch `origin`, and
+   verify local `HEAD` equals
+   `origin/codex/npi-v1.2-implementation` with a clean worktree.
 2. Read `AGENTS.md`, `implementation/AUTOPILOT_CONTROLLER.md`,
    `implementation/PHASE_STATUS.yaml`, this file,
    `implementation/LAST_RUN.md`, `implementation/BLOCKERS.md`,
-   `implementation/REQUIREMENT_TRACEABILITY.csv`, the Phase 4 anchor, and
-   `implementation/evidence/phase-4/p4-04-plan.md`.
-3. Confirm P4-03 remains the latest completed task and P4-04 has no product
-   implementation. Do not reinterpret the plan as acceptance evidence.
-4. Resume only P4-04 from Section 3 of its plan: first define the additive
-   review-policy/persistence/transport-permission boundary and its direct
-   tests; then add strict API/BFF, invalidation/impact-action/guard, and the live
-   trilingual review room as one vertical slice.
-5. Use Level 1 directly affected checks during repair. Because P4-04 changes
-   public OpenAPI, DocType Schema, authorization/permission, and an accepted
-   live route, run its applicable Level 3 exactly once after the complete slice
-   stabilizes; after a localized repair rerun only affected checks plus any
-   incomplete Gate lane.
-6. Update durable P4-04 evidence and traceability truthfully. Do not activate
-   P4-05 until P4-04 has a passing Gate and a pushed checkpoint.
-
-## Still pending
-
-- All P4-04 implementation and validation: domain, DocTypes, migration,
-  transport permission, repository, API/BFF, contract/ownership, source-change
-  invalidation, impact action/downstream guard, frontend, direct Chinese
-  catalogs, unit/API/permission/runtime/E2E/accessibility/visual evidence,
-  Task Diff review, trace review, and the applicable final Level 3.
-- Phase 3 `FR-UX-031` named business UAT and provenance-backed sanitized-data
-  review; it remains `TECHNICAL_PASS_PENDING_UAT`.
-- Authoritative production approval/RACI, exception/waiver, disabled-member,
-  dependency/downstream, scanner/DMS, and ERPNext mapping inputs.
-
-Production ERPNext remains prohibited. No unfinished item above may be marked
-PASS merely to complete a checkpoint.
+   `implementation/REQUIREMENT_TRACEABILITY.csv`,
+   `implementation/phase-4-requirement-anchor.md`,
+   `implementation/evidence/phase-4/p4-04-plan.md`, and
+   `implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`.
+3. Confirm `P4-03` remains the latest completed atomic task and that P4-04 is
+   the only active product task. Do not start P4-05.
+4. Resume P4-04 with one bounded repository unit: implement
+   `npi_core.gate_review.frappe_repository`, actor-bound idempotency,
+   minimal controlled transport DocPerms, fixed lock order, exact
+   Project/member/policy/input hydration, audit/seal/rollback, and focused
+   repository/permission/concurrency tests. Do not reuse the excluded partial
+   draft and do not use `ignore_permissions`, `db_insert`, `set_user`, or
+   nested rollback.
+5. After backend source copy stabilizes, add all direct `zh` and `zh-TW`
+   translations in one batch, regenerate the shared catalog, and run the
+   affected i18n/mixed-language checks. Do not rely on fallback English.
+6. Continue the remaining automatic-invalidation/runtime/UI units only inside
+   P4-04, using Level 1 affected checks after each repair batch.
+7. At complete P4-04 acceptance, run the full Level 2 Task Gate and the
+   required contract/Schema/auth-triggered Level 3 once. Update traceability
+   and activate P4-05 only if that evidence passes.
