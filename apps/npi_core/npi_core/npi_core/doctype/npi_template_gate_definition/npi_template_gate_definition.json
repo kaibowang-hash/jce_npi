@@ -8,7 +8,10 @@
   "fields": [
     {"fieldname": "gate_key", "fieldtype": "Data", "label": "Gate Key", "reqd": 1},
     {"fieldname": "title", "fieldtype": "Data", "label": "Gate Title", "reqd": 1},
-    {"fieldname": "sequence", "fieldtype": "Int", "label": "Sequence", "reqd": 1}
+    {"fieldname": "sequence", "fieldtype": "Int", "label": "Sequence", "reqd": 1},
+    {"fieldname": "gate_template_global_id", "fieldtype": "Data", "label": "Gate Template Global ID"},
+    {"fieldname": "gate_template_version", "fieldtype": "Int", "label": "Gate Template Version"},
+    {"fieldname": "gate_template_snapshot_hash", "fieldtype": "Data", "label": "Gate Template Snapshot Hash"}
   ],
   "permissions": []
 }

@@ -9,6 +9,9 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 
 from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.gate_template.frappe_repository import (
+    load_available_gate_template_snapshot,
+)
 from npi_core.project.domain import (
     GateDefinition,
     ProjectReferenceType,
@@ -183,14 +186,51 @@ class NPIProjectTemplateVersion(Document):
             )
             gates = []
             for row in self.gates or ():
+                gate_template_global_id = getattr(
+                    row,
+                    "gate_template_global_id",
+                    None,
+                )
+                gate_template_version = getattr(
+                    row,
+                    "gate_template_version",
+                    None,
+                )
+                gate_template_snapshot_hash = getattr(
+                    row,
+                    "gate_template_snapshot_hash",
+                    None,
+                )
+                if (
+                    not gate_template_global_id
+                    and not gate_template_snapshot_hash
+                    and gate_template_version in (None, "", 0)
+                ):
+                    gate_template_version = None
                 gate = GateDefinition(
                     key=row.gate_key,
                     title=row.title,
                     sequence=row.sequence,
+                    gate_template_global_id=(
+                        UUID(str(gate_template_global_id))
+                        if gate_template_global_id
+                        else None
+                    ),
+                    gate_template_version=gate_template_version,
+                    gate_template_snapshot_hash=(
+                        gate_template_snapshot_hash
+                        if gate_template_snapshot_hash
+                        else None
+                    ),
                 )
+                self._validate_gate_template_binding(gate, project_types)
                 row.gate_key = gate.key
                 row.title = gate.title
                 row.sequence = gate.sequence
+                if gate.has_gate_template_ref:
+                    row.gate_template_global_id = str(gate.gate_template_global_id)
+                    row.gate_template_version = gate.gate_template_version
+                    row.gate_template_snapshot_hash = gate.gate_template_snapshot_hash
                 gates.append(gate)
             return ProjectTemplateVersion(
                 global_id=UUID(self.global_id),
@@ -209,3 +249,31 @@ class NPIProjectTemplateVersion(Document):
         except (TypeError, ValueError):
             frappe.throw(_("Enter a valid value."), frappe.ValidationError)
         raise AssertionError("Frappe validation must raise an exception.")
+
+    @staticmethod
+    def _validate_gate_template_binding(
+        gate: GateDefinition,
+        project_types: tuple[ProjectType, ...],
+    ) -> None:
+        if not gate.has_gate_template_ref:
+            return
+        assert gate.gate_template_global_id is not None
+        assert gate.gate_template_version is not None
+        assert gate.gate_template_snapshot_hash is not None
+        snapshot = load_available_gate_template_snapshot(
+            gate.gate_template_global_id,
+            gate.gate_template_version,
+            gate.gate_template_snapshot_hash,
+        )
+        if snapshot is None:
+            frappe.throw(
+                _("Select an available published Gate Template version."),
+                frappe.ValidationError,
+            )
+        if not set(project_types).issubset(snapshot.applicable_project_types):
+            frappe.throw(
+                _(
+                    "The Gate Template version does not support every applicable Project type."
+                ),
+                frappe.ValidationError,
+            )

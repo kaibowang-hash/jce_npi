@@ -1,5 +1,74 @@
 # Last Run
 
+## P4-03 Full Release Gate PASS — 2026-07-24T05:34:22Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized HEAD: `996edc3`.
+- Atomic task: `P4-03 — Gate templates and controlled evidence`.
+- Result: `PASS — LEVEL 3 FULL RELEASE GATE`; Phase 4 remains `IN_PROGRESS`
+  and P4-04 is active.
+- Phase 3 remains truthfully `TECHNICAL_PASS_PENDING_UAT`; its named business
+  UAT and sanitized-data provenance are still unsigned and are not a global
+  blocker.
+
+### Delivered boundary
+
+- Added independent deterministic versioned Gate Templates with applicable
+  Project types, ordered bounded requirement definitions, immutable published
+  snapshots, contiguous history, and historical exact reads after root
+  disablement.
+- Added optional exact Gate Template bindings for new Project Template versions
+  without changing historical P4-01 canonical hashes.
+- Added a retry-safe one-time freeze command for exact Gate Template identity,
+  Gate due date, explicit requirement owners/reviewers/dates/evidence kinds,
+  actor/time, audit, idempotency, optimistic concurrency, and immutable
+  requirement snapshots.
+- Added append-only exact same-Project/same-tenant WBS and private File Revision
+  evidence with source version/hash checks, live private Frappe File identity
+  revalidation, real scanner-owned state, and URL-free BFF metadata.
+- Added authorization-before-resolution, including external Website User owner
+  denial, and a strict live industrial Gate evidence workspace with complete
+  current `en`, `zh`, and `zh-TW` normal/non-normal states.
+
+P4-03 does not implement Gate decisions, P0 pass policy, approval mapping,
+conditional pass, waiver, immutable decision snapshot, reopen/invalidation,
+normal-user file routes, future evidence resolvers, production template
+contents, production scanner/DMS, notifications, or production ERPNext.
+
+### Final verification
+
+| Command or review | Result |
+|---|---|
+| `BLACK_CACHE_DIR=/tmp/npi-p403-black-cache make verify` | `PASS` — 276 Python, 237 frontend, static/type/lint/style/boundary/UI/i18n, 1274 direct entries per Chinese locale, coverage, build, and zero npm audit findings |
+| final two-file authorization-order repair | `PASS` — single-worker Black, 20 affected controller/metadata tests, and `git diff --check` |
+| `make frappe-site-init` plus idempotent rerun | `PASS` — additive DocType migration and repeat migrate at Frappe `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` |
+| `bash scripts/verify-frappe-runtime.sh --gate-evidence-only` | `PASS` — exact WBS/File evidence, disabled-template history, cross-Project/tenant denial, live infected scan, append-only guards, URL absence, and bounded cleanup |
+| final `make frappe-runtime-verify` | `PASS` — BFF, P4-01, P4-02 with cross-process sealed replay, and P4-03; P4-03 run `2e070c8599694beabb6f5cf679a8c54b` |
+| complete non-visual Playwright | `PASS` — 153/153 as 16 + 42 + 40 + 8 + 47 bounded specs |
+| forced exact visual generation | `PASS` — 80/80 + 79/79, 159/159 total |
+| clean exact visual comparison | `PASS` — 80/80 + 79/79 at zero pixel tolerance, 159/159 total |
+| original-resolution manual review | `PASS` — English, Simplified Chinese, and Traditional Chinese Gate evidence at 100%–150% equivalent layouts |
+| independent security, traceability, Task Diff, and release-gate review | `PASS` — no release blocker |
+
+The initial focused File evidence 422 was traced to an unmigrated disposable
+Site field and resolved by migration without weakening the identity check. The
+runtime verifier's idempotency conflict code was corrected to the existing
+`IDEMPOTENCY_KEY_CONFLICT` contract. The first complete runtime retry then
+exposed a Gate Shell authorization guard running after field validation; the
+guard now runs at the start of `before_validate`, restoring 403 and preventing
+validation-detail disclosure. Already-passing unrelated aggregate checks were
+not restarted after that two-file repair; affected tests and the complete
+runtime were rerun under the cumulative validation strategy.
+
+The first unsharded Playwright process was interrupted by session continuation
+and produced no result. It was not counted. All 153 cases subsequently passed
+once in five bounded specs.
+
+`FR-SG-001`, `FR-SG-002`, `FR-SG-004`, and `FR-CO-006` remain technically
+verified foundations for their bounded P4-03 acceptance. The complete evidence
+and changed-files-to-tests map are in
+`implementation/evidence/phase-4/p4-03-validation.md`.
+
 ## P4-02 Task Gate PASS — 2026-07-23T21:20:35Z
 
 - Branch: `codex/npi-v1.2-implementation`.

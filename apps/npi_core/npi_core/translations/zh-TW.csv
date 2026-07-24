@@ -1081,3 +1081,194 @@ Plan Baseline Snapshot,計畫基準快照
 Captured At,擷取時間
 Captured By,擷取人
 Secure pagination is unavailable.,安全分頁暫時無法使用。
+The live Gate evidence request is being refreshed.,正在重新整理即時階段門證據請求。
+Optional,可選
+Private file revision,私有檔案修訂版
+Scan pending,掃描待處理
+No threat found,未發現威脅
+Scan failed,掃描失敗
+Threat detected,偵測到威脅
+Missing evidence,缺失證據
+Exact evidence attached,已關聯精確證據
+Evidence scan pending,證據掃描待處理
+Evidence scan passed,證據掃描已通過
+Evidence scan failed,證據掃描失敗
+Evidence threat detected,證據偵測到威脅
+Loading Gate evidence workspace,正在載入階段門證據工作區
+Gate evidence is unavailable,階段門證據不可用
+The Gate evidence workspace was not found or is not available to your account.,找不到該階段門證據工作區，或您的帳戶無權存取該工作區。
+Gate evidence access is not available,階段門證據存取不可用
+Your account cannot open this Gate evidence workspace. No protected evidence data was displayed.,您的帳戶無法開啟此階段門證據工作區。未顯示任何受保護的證據資料。
+The Gate evidence address is invalid,階段門證據位址無效
+Open Gate evidence from an authorized Project Gate reference.,請從已授權的專案階段門參照開啟階段門證據。
+The Gate evidence view is out of date,階段門證據檢視已過期
+Reload Gate evidence before continuing with current data.,請先重新載入階段門證據，再繼續使用目前資料。
+Gate evidence could not be loaded,無法載入階段門證據
+Retry the live Gate evidence request or share the displayed reference ID with support.,請重試即時階段門證據請求，或將顯示的參考編號提供給支援人員。
+The Gate evidence response could not be used safely,無法安全使用階段門證據回應
+No Gate evidence was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何階段門證據。請先將顯示的參考編號提供給支援人員，再嘗試其他操作。
+Reload Gate evidence,重新載入階段門證據
+Gate requirements,階段門需求
+Classification,分類
+Controlled evidence,受控證據
+Evidence,證據
+Not applicable,不適用
+No controlled evidence is attached.,未關聯任何受控證據。
+Required evidence is missing,缺少必須證據
+Evidence scan requires attention,證據掃描需要關注
+Exact evidence references recorded,已記錄精確證據參照
+You have view-only access. Evidence attachment is not available in this workspace.,您僅有檢視權限。此工作區不提供證據關聯功能。
+No evidence,無證據
+This Gate has frozen requirements but no controlled evidence references.,此階段門已凍結需求，但沒有受控證據參照。
+Unsafe scan state remains visible,不安全的掃描狀態仍然可見
+"Pending, failed, or infected file scans are not represented as clean evidence.",待處理、失敗或已感染的檔案掃描不會被視為未發現威脅的證據。
+Gate version,階段門版本
+Required requirements,必須需求
+Missing required evidence,缺失的必須證據
+Unsafe scan results,不安全的掃描結果
+Evidence references,證據參照
+Frozen Gate context,已凍結的階段門上下文
+Evidence kind,證據類別
+Source object type,來源物件類型
+Source global ID,來源全域識別碼
+Exact revision,精確修訂版
+Object hash,物件雜湊
+Recorded,記錄時間
+Recorded by,記錄人
+File name,檔案名稱
+File media type,檔案媒體類型
+File size,檔案大小
+Select a requirement with evidence to inspect its exact controlled reference.,選取一個包含證據的需求，以檢視其精確的受控參照。
+Requirement key,需求鍵
+Requirement title,需求標題
+Priority,優先順序
+Reviewers,評審人
+Allowed evidence kinds,允許的證據類別
+Evidence count,證據數量
+Gate template global ID,階段門模板全域識別碼
+Gate template version,階段門模板版本
+Gate template snapshot hash,階段門模板快照雜湊
+Requirement snapshot hash,需求快照雜湊
+Frozen,已凍結
+Frozen by,凍結人
+Requirement evidence completeness does not mean this Gate is ready for a decision.,需求證據完整性並不代表此階段門已具備決策條件。
+File revisions can only be changed through an authorized NPI file command.,檔案修訂版只能透過已授權的 NPI 檔案命令變更。
+File scan results can only be changed by an authorized scanner operation.,檔案掃描結果只能由已授權的掃描操作變更。
+Gate evidence references can only be added through an authorized NPI Gate command.,階段門證據參照只能透過已授權的 NPI 階段門命令新增。
+Controlled Gate evidence history cannot be deleted.,受控階段門證據歷史不能刪除。
+{field} must be a JSON object.,{field} 必須為結構化資料物件。
+A controlled evidence snapshot cannot contain a raw file URL.,受控證據快照不能包含原始檔案位址。
+The Gate requirements are already frozen.,階段門需求已凍結。
+Freeze the Gate requirements before attaching evidence.,關聯證據前請先凍結階段門需求。
+The Gate Template version is unavailable.,階段門模板版本不可用。
+The exact evidence source is unavailable.,精確證據來源不可用。
+The evidence source version or hash has changed.,證據來源版本或雜湊已變更。
+The exact evidence reference is already attached.,已關聯該精確證據參照。
+Requirement assignment keys must be unique.,需求指派鍵必須唯一。
+Assign every requirement from the selected Gate Template version.,請為所選階段門模板版本中的每項需求進行指派。
+Enter a valid list.,請輸入有效列表。
+Enter unique Project member identities.,請輸入唯一的專案成員識別。
+Select an evidence kind allowed by this requirement.,請選取此需求允許的證據類別。
+This requirement already contains the maximum number of evidence references.,此需求的證據參照數量已達上限。
+Select Project members from this Project.,請選取此專案中的專案成員。
+Select enabled internal Project members.,請選取已啟用的內部專案成員。
+Select a requirement from this Gate.,請選取此階段門中的需求。
+The requested Gate is unavailable.,請求的階段門不可用。
+Values must be unique.,值必須唯一。
+Enter a lowercase SHA-256 hash.,請輸入小寫 SHA-256 雜湊。
+A published Gate Template version cannot be changed.,已發布的階段門模板版本不能變更。
+Select at least one supported evidence kind.,請至少選取一種受支援的證據類別。
+Evidence kinds must be unique.,證據類別必須唯一。
+Enter a positive Gate Template version.,請輸入正的階段門模板版本。
+Enter valid Gate requirement definitions.,請輸入有效的階段門需求定義。
+Gate requirement keys must be unique.,階段門需求鍵必須唯一。
+Publish the current Gate Template version before creating a revision.,建立修訂版前請先發布目前階段門模板版本。
+Select a published Gate Template version.,請選取已發布的階段門模板版本。
+Add at least one Gate requirement before publishing.,發布前請至少新增一項階段門需求。
+Add no more than 500 Gate requirements.,請新增不超過 500 項階段門需求。
+Select only evidence kinds supported by Gate requirement freezing.,請僅選取階段門需求凍結支援的證據類別。
+Publish each Gate Template version before creating the next.,請在建立下一版本前發布目前階段門模板版本。
+Document Global ID,文件全域識別碼
+Frappe Content Hash,Frappe 內容雜湊
+Select a private file.,請選取私有檔案。
+The file revision does not have a complete controlled identity.,檔案修訂版沒有完整的受控識別。
+The file revision does not match its Project and tenant.,檔案修訂版與其專案和租戶不相符。
+Select a supported scan state.,請選取受支援的掃描狀態。
+A pending file cannot have a completed scan observation.,待處理檔案不能具有已完成的掃描觀察結果。
+A completed scan state requires an observation time.,已完成的掃描狀態必須具有觀察時間。
+A released file revision cannot be reopened.,已發布的檔案修訂版不能重新開啟。
+Only a clean file revision can be released.,只有未發現威脅的檔案修訂版才能發布。
+The file revision is unavailable as controlled evidence.,該檔案修訂版不能用作受控證據。
+Gate evidence references cannot be changed.,階段門證據參照不能變更。
+Gate Global ID,階段門全域識別碼
+Requirement Global ID,需求全域識別碼
+Source Global ID,來源全域識別碼
+Requirement Key,需求鍵
+Source Version,來源版本
+Source Hash,來源雜湊
+Source Snapshot,來源快照
+Select a supported evidence source.,請選取受支援的證據來源。
+The evidence reference does not match its Project and Gate.,證據參照與其專案和階段門不相符。
+The evidence source version or hash does not match.,證據來源版本或雜湊不相符。
+Gate evidence records can only be changed through an authorized NPI Gate command.,階段門證據記錄只能透過已授權的 NPI 階段門命令變更。
+The Gate Template reference is incomplete.,階段門模板參照不完整。
+Gate Template Global ID,階段門模板全域識別碼
+Gate Template Version must be greater than zero.,階段門模板版本必須大於零。
+Gate Template Snapshot Hash,階段門模板快照雜湊
+Optimistic Version must advance by one.,樂觀版本必須遞增一。
+The Gate command must freeze its requirements.,階段門命令必須凍結其需求。
+Unfrozen Gate requirements cannot contain snapshot data.,未凍結的階段門需求不能包含快照資料。
+Only a configured Gate can freeze requirements.,只有已設定的階段門才能凍結需求。
+Frozen Gate requirement data is incomplete.,已凍結的階段門需求資料不完整。
+Requirement Snapshot must be a valid frozen snapshot.,需求快照必須是有效的凍結快照。
+Requirement Snapshot does not match this Gate.,需求快照與此階段門不相符。
+Requirement Snapshot contains an invalid requirement.,需求快照包含無效需求。
+Owner Member Global ID,負責人全域識別碼
+Reviewer Member Global ID,評審人全域識別碼
+Reviewer member identities must be unique.,評審人成員識別必須唯一。
+Requirement Snapshot Hash,需求快照雜湊
+Requirement Snapshot Hash does not match its content.,需求快照雜湊與其內容不相符。
+Select an existing Gate Template.,請選取現有階段門模板。
+Allowed Evidence Kinds must be a JSON array.,允許的證據類別必須為資料陣列。
+Enter a valid Gate Template.,請輸入有效的階段門模板。
+Select an available published Gate Template version.,請選取可用的已發布階段門模板版本。
+The Gate Template version does not support every applicable Project type.,階段門模板版本不支援所有適用的專案類型。
+Enter a complete Gate Template reference.,請輸入完整的階段門模板參照。
+Enter a valid Gate Template snapshot hash.,請輸入有效的階段門模板快照雜湊。
+Revision Key,修訂版鍵
+File Identity,檔案識別
+File Name,檔案名稱
+MIME Type,媒體類型
+Size in Bytes,位元組數
+Private,私有
+Scan Observed At,掃描觀察時間
+NPI Gate Evidence Reference,NPI 階段門證據參照
+Reference Key,參照鍵
+Evidence Kind,證據類別
+file_revision,檔案修訂版
+Source Object Type,來源物件類型
+Created By,建立者
+Created At,建立時間
+NPI Gate Requirement Definition,NPI 階段門需求定義
+Requirement Title,需求標題
+Requirement Classification,需求分類
+required,必須
+optional,可選
+Requirement Priority,需求優先順序
+P0,P0
+P1,P1
+P2,P2
+Allowed Evidence Kinds,允許的證據類別
+Gate Template Version,階段門模板版本
+Requirements Frozen,需求已凍結
+Gate Due Date,階段門截止日
+Requirement Snapshot,需求快照
+Requirements Frozen At,需求凍結時間
+Requirements Frozen By,需求凍結人
+NPI Gate Template,NPI 階段門模板
+Gate Template Code,階段門模板編碼
+Gate Template Title,階段門模板標題
+NPI Gate Template Version,NPI 階段門模板版本
+Gate Template,階段門模板
+Gate Template Version Title,階段門模板版本標題
+Gate Requirement Definitions,階段門需求定義

@@ -41,7 +41,7 @@ export default function ProjectDemoPage({
   const [actionPrepared, setActionPrepared] = useState(false);
   const openGate = (step: GateStep): void => {
     const qualityQuery = step.code === "G6" ? "?quality=failed" : "";
-    navigate(`/projects/PJ-26018/gates/${step.code}${qualityQuery}`);
+    navigate(`/demo/projects/PJ-26018/gates/${step.code}${qualityQuery}`);
   };
   return (
     <article className="page page--object">
@@ -64,7 +64,7 @@ export default function ProjectDemoPage({
           disabled: scenario === "read_only",
           label: t("Prepare G5 review"),
           onClick: () => {
-            navigate("/projects/PJ-26018/gates/G5");
+            navigate("/demo/projects/PJ-26018/gates/G5");
           },
         }}
         source={source}
@@ -169,7 +169,7 @@ export default function ProjectDemoPage({
               </Button>
               <Button
                 onClick={() => {
-                  navigate("/projects/PJ-26018/gates/G5");
+                  navigate("/demo/projects/PJ-26018/gates/G5");
                 }}
               >
                 {t("Open Gate review")}

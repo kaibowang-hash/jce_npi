@@ -21,7 +21,7 @@ export const workItems: readonly WorkItemViewModel[] = [
     dueAt: "2026-07-21T16:00:00Z",
     status: "pending_approval",
     actionCode: "open_review",
-    targetPath: "/projects/PJ-26018/gates/G5",
+    targetPath: "/demo/projects/PJ-26018/gates/G5",
     blocking: false,
     source: {
       sourceSystem: "NPI_ONE",
@@ -39,7 +39,7 @@ export const workItems: readonly WorkItemViewModel[] = [
     dueAt: "2026-07-20T12:00:00Z",
     status: "blocked",
     actionCode: "resolve_defect",
-    targetPath: "/projects/PJ-26018/gates/G5",
+    targetPath: "/demo/projects/PJ-26018/gates/G5",
     blocking: true,
     source: {
       sourceSystem: "NPI_ONE",
@@ -111,7 +111,7 @@ export const workItems: readonly WorkItemViewModel[] = [
     dueAt: "2026-07-25T08:00:00Z",
     status: "pending_approval",
     actionCode: "review_impact",
-    targetPath: "/projects/PJ-26018/gates/G5",
+    targetPath: "/demo/projects/PJ-26018/gates/G5",
     blocking: false,
     source: {
       sourceSystem: "NPI_ONE",

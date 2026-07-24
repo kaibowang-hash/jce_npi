@@ -5,6 +5,10 @@ import type {
   DomainWorkItemKind,
   DomainWorkItemSeverity,
   ExecutionRow,
+  GateEvidenceKind,
+  GateEvidenceScanState,
+  GateRequirementClassification,
+  GateRequirementEvidenceState,
   GateStep,
   LifecycleStep,
   ProjectResponsibility,
@@ -243,6 +247,66 @@ export function domainWorkItemSeverityLabel(
       return t("High");
     case "critical":
       return t("Critical");
+  }
+}
+
+export function gateRequirementClassificationLabel(
+  t: Translator,
+  classification: GateRequirementClassification,
+): string {
+  switch (classification) {
+    case "required":
+      return t("Required");
+    case "optional":
+      return t("Optional");
+  }
+}
+
+export function gateEvidenceKindLabel(
+  t: Translator,
+  kind: GateEvidenceKind,
+): string {
+  switch (kind) {
+    case "wbs_item":
+      return t("WBS item");
+    case "file_revision":
+      return t("Private file revision");
+  }
+}
+
+export function gateEvidenceScanStateLabel(
+  t: Translator,
+  state: GateEvidenceScanState,
+): string {
+  switch (state) {
+    case "pending":
+      return t("Scan pending");
+    case "clean":
+      return t("No threat found");
+    case "failed":
+      return t("Scan failed");
+    case "infected":
+      return t("Threat detected");
+  }
+}
+
+export function gateRequirementEvidenceStateLabel(
+  t: Translator,
+  state: GateRequirementEvidenceState,
+): string {
+  switch (state) {
+    case "missing":
+      return t("Missing evidence");
+    case "attached":
+      return t("Exact evidence attached");
+    case "scan_pending":
+      return t("Evidence scan pending");
+    case "scan_clean":
+      return t("Evidence scan passed");
+    case "scan_failed":
+      return t("Evidence scan failed");
+    case "scan_infected":
+      return t("Evidence threat detected");
   }
 }
 

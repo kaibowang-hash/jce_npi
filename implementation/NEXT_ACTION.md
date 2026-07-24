@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `IN_PROGRESS — P4-03 ACTIVE`
+Status: `IN_PROGRESS — P4-04 ACTIVE`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -25,53 +25,62 @@ obligation.
 
 Current controller phase: `4 — Project Work Items and Stage Gates`.
 
-Completed atomic task: `P4-02 — Team, RACI, WBS, and domain work items`.
+Completed atomic task: `P4-03 — Gate templates and controlled evidence`.
 
-P4-02 passed its Level 2 Task Gate on 2026-07-23. The final cumulative evidence
-includes the committed 211-Python/205-frontend aggregate, 63 directly affected
-Python tests, a fresh real Frappe runtime, the complete eight-case P4-02 browser
-spec, supplemental browser shards, all 147 exact visual cases, six
-original-resolution trilingual reviews, Task Diff/trace review, and an
-independent release-gate `PASS`. The prior Cloud browser limitation is closed
-for this task.
+P4-03 passed its triggered Level 3 Full Release Gate on 2026-07-24. It delivers
+versioned Gate templates, exact Project Template bindings, frozen requirement
+assignments, append-only exact WBS/private File Revision evidence, live
+scanner-state truth, URL-free metadata, and the trilingual live Gate evidence
+workspace. The evidence includes the 276-Python/237-frontend aggregate before
+the final two-file authorization-order repair, 20 directly affected tests
+after it, two successful Site migrations, the complete P4-01/P4-02/P4-03
+runtime, 153 non-visual browser cases, 159 forced and clean exact visual cases,
+trilingual original-resolution review, and independent security, trace, and
+release reviews.
 
-Current atomic task: `P4-03 — Gate templates and controlled evidence`.
+Current atomic task: `P4-04 — Review, decision, snapshot, and reopen`.
 
-P4-03 owns versioned Gate templates, frozen Gate requirement snapshots,
-explicit requirement owners/reviewers/dates/evidence types, structured
-references to exact domain-object revisions, and private-file revision
-references whose real scan state remains visible. It must preserve P4-01/P4-02
-authorization, tenant, CSRF, optimistic concurrency, idempotency, audit, trace,
-history, localization, and industrial UI boundaries.
+P4-04 owns `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` within a
+versioned, safe-default-denied Gate review and decision policy. It must preserve
+P4-03's frozen requirements and append-only exact evidence, distinguish review
+assignment from approval authority, record every reviewer/time/opinion/version,
+block unsafe normal pass, create immutable decision snapshots, preserve prior
+approvals, and control reopen/invalidation without rewriting history.
 
-Do not implement Gate decisions, conditional pass/waiver policy, immutable
-decision snapshots, reopen/invalidation behavior, live notifications, the full
-My Work projection, production template contents, production ERPNext access,
-or any held production mapping in P4-03. Those remain assigned to P4-04,
-P4-05, later phases, or Class-B input.
+Do not implement P4-05 live My Work/activity/notification delivery, production
+template contents, guessed RACI-to-approval mappings, production waiver or
+invalidation rules, normal-user file upload/download, production scanner/DMS
+behavior, production ERPNext access, or any held production mapping in P4-04.
+Missing authoritative policies remain explicit Class-B holds; the executable
+slice must fail closed rather than invent them.
 
 ## Exact resume point
 
-Start only the P4-03 atomic task:
+Start only the P4-04 atomic task:
 
-1. read the P4-03 rows in the Phase 4 anchor, `FR-SG-001`,
-   `FR-SG-002`, `FR-SG-004`, the Gate/evidence domain specifications, current
-   OpenAPI/data-ownership contracts, accepted security/file ADRs, and the
-   applicable domain/safe-change/i18n/industrial-UX skills;
-2. inventory the existing P4-01 Gate Shell and file/version foundations before
-   choosing the smallest additive data and API surface;
-3. record P4-03 scope, non-scope, assumptions, risks, changed-files-to-tests
-   map, migration/rollback plan, and any Class-B decision hold before changing
-   product code;
-4. implement one complete vertical slice from a published versioned Gate
-   template to a frozen Project Gate-requirement snapshot and exact controlled
-   evidence reference;
-5. run affected incremental checks during repair and the complete P4-03 Level 2
-   Task Gate only when the slice is internally complete; and
-6. do not activate P4-04 until P4-03 has durable evidence, truthful traceability,
-   Task Diff review, and a passing Gate.
+1. read the P4-04 rows in the Phase 4 anchor, `FR-SG-003`,
+   `FR-SG-005`, `FR-SG-006`, `FR-SG-007`, the Gate review/decision domain
+   specifications, current OpenAPI/data-ownership contracts, P4-03 evidence
+   contract, accepted security/file ADRs, and applicable domain/safe-change/
+   i18n/industrial-UX skills;
+2. inventory the current Gate Shell, frozen requirement snapshot, exact
+   evidence reference, membership/role, audit, idempotency, and prototype Gate
+   decision surfaces before selecting an additive policy and persistence
+   boundary;
+3. record P4-04 scope, non-scope, assumptions, risks, changed-files-to-tests
+   map, migration/rollback plan, and every unresolved approval/waiver/
+   invalidation Class-B hold before changing product code;
+4. implement one complete synthetic, versioned, safe-default-denied vertical
+   slice from review assignment through immutable decision snapshot and
+   controlled reopen/invalidation history without installing a production rule
+   package;
+5. use Level 1 affected checks during repair and run the required Task/Level 3
+   boundary only once after the slice stabilizes; and
+6. do not activate P4-05 until P4-04 has durable evidence, truthful
+   traceability, Task Diff review, and a passing Gate.
 
 The earlier Phase 3 business UAT remains the first incomplete external task.
-P4-02's final evidence is in
-`implementation/evidence/phase-4/p4-02-validation.md`. A complete Level 3 gate
-remains required at the later Phase/PR boundary.
+P4-03's final evidence is in
+`implementation/evidence/phase-4/p4-03-validation.md`. Its triggered Level 3
+does not waive any later P4-04/P4-05, Phase-exit, PR, or production Level 3
+boundary.

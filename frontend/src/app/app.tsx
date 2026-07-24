@@ -14,6 +14,7 @@ import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
 import { LiveProjectCockpitDataSource } from "../api/project-data-source";
+import { LiveGateEvidenceDataSource } from "../api/gate-evidence-data-source";
 import {
   LiveProjectDomainWorkItemsDataSource,
   LiveProjectWorkContextDataSource,
@@ -23,6 +24,7 @@ const WorkPage = lazy(() => import("../pages/work-page"));
 const ProjectPage = lazy(() => import("../pages/project-page"));
 const ProjectDemoPage = lazy(() => import("../pages/project-demo-page"));
 const GatePage = lazy(() => import("../pages/gate-page"));
+const GateEvidencePage = lazy(() => import("../pages/gate-evidence-page"));
 const ToolingPage = lazy(() => import("../pages/tooling-page"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
@@ -30,6 +32,7 @@ const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
 const liveProjectDomainWorkItemsDataSource =
   new LiveProjectDomainWorkItemsDataSource();
+const liveGateEvidenceDataSource = new LiveGateEvidenceDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -92,6 +95,13 @@ export function App(): React.JSX.Element {
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
       />
+    ) : route.screen === "gate" && route.gateMode === "live" ? (
+      <GateEvidencePage
+        dataSource={liveGateEvidenceDataSource}
+        gateGlobalId={route.gateGlobalId ?? ""}
+        navigate={guardedNavigate}
+        projectGlobalId={route.projectGlobalId ?? ""}
+      />
     ) : route.screen === "gate" ? (
       <GatePage
         navigate={guardedNavigate}
@@ -109,6 +119,7 @@ export function App(): React.JSX.Element {
     );
   const terminalScenario =
     route.projectMode !== "live" &&
+    route.gateMode !== "live" &&
     !["normal", "read_only", "partial", "dirty"].includes(route.scenario);
   const pageClass =
     route.screen === "work"

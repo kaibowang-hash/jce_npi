@@ -1302,6 +1302,54 @@ textarea::placeholder {
   min-width: 1160px;
 }
 
+.gate-evidence-layout {
+  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.15fr) var(
+      --npi-inspector-width,
+      var(--npi-layout-contextInspector)
+    );
+}
+
+.gate-requirements-table {
+  min-width: 540px;
+}
+
+.gate-evidence-table {
+  min-width: 480px;
+}
+
+.table-selection-button {
+  display: grid;
+  width: 100%;
+  min-height: var(--npi-density-control-compact);
+  align-content: center;
+  justify-items: start;
+  gap: var(--npi-space-1);
+  padding: var(--npi-space-1);
+  border: var(--npi-space-0);
+  border-radius: var(--npi-radius-none);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.table-selection-button:hover {
+  background: var(--npi-color-surface-sunken);
+}
+
+.table-selection-button:focus-visible {
+  outline: var(--npi-border-selected) solid var(--npi-color-focus);
+  outline-offset: calc(var(--npi-border-selected) * -1);
+}
+
+.gate-evidence-detail {
+  margin-top: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
 .engineering-layout--team > .panel:first-child .data-table {
   min-width: 330px;
 }
@@ -1595,6 +1643,7 @@ textarea::placeholder {
 
   .engineering-layout,
   .engineering-layout--project,
+  .gate-evidence-layout,
   .review-layout,
   .trial-layout {
     grid-template-columns: minmax(390px, 1fr) minmax(280px, 320px);
@@ -1641,6 +1690,7 @@ textarea::placeholder {
 
   .engineering-layout,
   .engineering-layout--project,
+  .gate-evidence-layout,
   .review-layout,
   .trial-layout,
   .worklist-layout,

@@ -29,17 +29,25 @@ _PROJECT_WORK_CONTEXT_ROUTE = re.compile(
 _PROJECT_DOMAIN_WORK_ITEMS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/domain-work-items$"
 )
+_GATE_EVIDENCE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+    r"(?P<gate_id>[^/:]+)/evidence$"
+)
+_GATE_REQUIREMENT_FREEZE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+    r"(?P<gate_id>[^/:]+):freeze-requirements$"
+)
+_GATE_EVIDENCE_ATTACH_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
+    r"(?P<gate_id>[^/:]+)/requirements/(?P<requirement_key>[^/]+)/evidence$"
+)
 _PROJECT_WORK_COMMAND_ROUTES = (
     (
-        re.compile(
-            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):configure-team$"
-        ),
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):configure-team$"),
         "npi_core.project_work_api.configure_project_team",
     ),
     (
-        re.compile(
-            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):apply-work-plan$"
-        ),
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):apply-work-plan$"),
         "npi_core.project_work_api.apply_project_work_plan",
     ),
     (
@@ -78,6 +86,21 @@ def route_request() -> None:
                 if request.method == "GET"
                 else "npi_core.project_work_api.create_project_domain_work_item"
             )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _GATE_EVIDENCE_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.gate_evidence_api.get_gate_evidence_workspace"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.gate_evidence_api.freeze_gate_requirements"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _GATE_EVIDENCE_ATTACH_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.gate_evidence_api.attach_gate_evidence"
             route_params = match.groupdict()
     if command is None and request.method == "POST":
         for route, candidate in _PROJECT_WORK_COMMAND_ROUTES:
@@ -118,23 +141,24 @@ def _normalize_pre_handler_problem(response, request) -> bool:
         return False
 
     flags = getattr(frappe, "flags", None)
-    if getattr(flags, "npi_response_headers", None) or getattr(
-        flags, "npi_response_body", None
-    ) is not None:
+    if (
+        getattr(flags, "npi_response_headers", None)
+        or getattr(flags, "npi_response_body", None) is not None
+    ):
         return False
 
     response_metadata = getattr(getattr(frappe, "local", None), "response", None)
     exception_type = (
-        response_metadata.get("exc_type")
-        if hasattr(response_metadata, "get")
-        else None
+        response_metadata.get("exc_type") if hasattr(response_metadata, "get") else None
     )
     response_status = getattr(response, "status_code", None)
     if exception_type == "CSRFTokenError" and response_status in {400, 403}:
         problem_error = CsrfTokenInvalid()
-    elif exception_type in {"JSONDecodeError", "ValidationError"} and isinstance(
-        response_status, int
-    ) and response_status >= 400:
+    elif (
+        exception_type in {"JSONDecodeError", "ValidationError"}
+        and isinstance(response_status, int)
+        and response_status >= 400
+    ):
         problem_error = MalformedRequest()
     else:
         return False
@@ -169,6 +193,13 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
     ):
         return True
+    if method == "GET" and _GATE_EVIDENCE_ROUTE.fullmatch(path) is not None:
+        return True
+    if method == "POST" and (
+        _GATE_REQUIREMENT_FREEZE_ROUTE.fullmatch(path) is not None
+        or _GATE_EVIDENCE_ATTACH_ROUTE.fullmatch(path) is not None
+    ):
+        return True
     return method == "POST" and any(
         route.fullmatch(path) is not None
         for route, _command in _PROJECT_WORK_COMMAND_ROUTES
@@ -183,9 +214,7 @@ def attach_response_headers(response=None, request=None) -> None:
         return
     body = getattr(getattr(frappe, "flags", None), "npi_response_body", None)
     if body is not None:
-        response.set_data(
-            json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-        )
+        response.set_data(json.dumps(body, ensure_ascii=False, separators=(",", ":")))
     headers = getattr(getattr(frappe, "flags", None), "npi_response_headers", None)
     if not headers:
         return

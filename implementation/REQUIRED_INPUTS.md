@@ -1,7 +1,7 @@
 # Required External Inputs
 
 Status: **OPEN — partial external dependency, not a global blocker**
-Updated: 2026-07-23
+Updated: 2026-07-24
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
@@ -49,10 +49,12 @@ Provide:
    conventions, naming series, document retention, attachment classification,
    and controlled terminology.
 9. Current Project, Gate, Tooling, Trial, Change, approval/release, and ERP
-   execution SOPs, including the temporal policy for disabled members and their
-   historical/future role or substitution relations, plus named business owners
-   empowered to resolve differences between SOP, ERP configuration, V1.2
-   contracts, and representative data.
+   execution SOPs, including Gate condition/skip rules, evidence eligibility,
+   P0 pass blocking, waiver/reopen/invalidation authority, scanner/provider and
+   file-retention policy, and the temporal policy for disabled members and
+   their historical/future role or substitution relations, plus named business
+   owners empowered to resolve differences between SOP, ERP configuration,
+   V1.2 contracts, and representative data.
 10. A provenance manifest for every export: source system/site, extraction
     command or report, timestamp and timezone, responsible owner, redaction
     method, record counts, and checksum.

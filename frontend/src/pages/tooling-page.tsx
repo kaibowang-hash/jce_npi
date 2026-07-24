@@ -276,7 +276,7 @@ export default function ToolingPage({
             <strong>{t("DEF-014: Flash on cavity 3 parting line")}</strong>
             <Button
               onClick={() => {
-                navigate("/projects/PJ-26018/gates/G5");
+                navigate("/demo/projects/PJ-26018/gates/G5");
               }}
             >
               {t("Open defect context")}

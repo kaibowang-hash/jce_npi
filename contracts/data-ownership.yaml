@@ -69,6 +69,46 @@ objects:
       owner_due_severity_blocking: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: VERSION_CONFLICT}
       evidence_references: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
 
+  GateTemplate:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      template_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      published_version: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      applicable_project_types: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION}
+      requirement_definitions: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION}
+      production_condition_policy: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateInstance:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      gate_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      gate_template_reference: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      requirement_snapshot: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      explicit_owner_reviewer_dates: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_BEFORE_FREEZE], direction: NONE, conflict: FREEZE_ONCE}
+      decision_state: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  GateEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      gate_requirement_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      evidence_source_identity: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      exact_version_hash_snapshot: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      attachment_audit: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      replacement_or_detach_policy: {owner: VERSIONED_GATE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  FileRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      project_document_revision_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      private_file_identity_and_metadata: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      sha256: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: HASH_MISMATCH_EXCEPTION}
+      scan_state: {owner: NPI_ONE_SCAN_SERVICE, editable_in: [NPI_ONE_SCAN_SERVICE], direction: NONE, conflict: VERSION_CONFLICT}
+      raw_private_url: {owner: FRAPPE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE_AS_PROJECT_AUTHORIZATION}
+
   Item:
     owner_system: ERPNEXT_AFTER_RELEASE
     phases:

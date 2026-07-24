@@ -21,7 +21,16 @@
     {"fieldname": "template_global_id", "fieldtype": "Data", "label": "Template Global ID", "reqd": 1, "read_only": 1},
     {"fieldname": "template_version", "fieldtype": "Int", "label": "Template Version", "reqd": 1, "read_only": 1},
     {"fieldname": "template_snapshot_hash", "fieldtype": "Data", "label": "Template Snapshot Hash", "reqd": 1, "read_only": 1},
-    {"fieldname": "template_gate_snapshot", "fieldtype": "JSON", "label": "Template Gate Snapshot", "reqd": 1, "read_only": 1}
+    {"fieldname": "template_gate_snapshot", "fieldtype": "JSON", "label": "Template Gate Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "gate_template_global_id", "fieldtype": "Data", "label": "Gate Template Global ID", "read_only": 1},
+    {"fieldname": "gate_template_version", "fieldtype": "Int", "label": "Gate Template Version", "read_only": 1},
+    {"fieldname": "gate_template_snapshot_hash", "fieldtype": "Data", "label": "Gate Template Snapshot Hash", "read_only": 1},
+    {"fieldname": "requirements_frozen", "fieldtype": "Check", "label": "Requirements Frozen", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "gate_due_date", "fieldtype": "Date", "label": "Gate Due Date", "read_only": 1},
+    {"fieldname": "requirement_snapshot", "fieldtype": "JSON", "label": "Requirement Snapshot", "read_only": 1},
+    {"fieldname": "requirement_snapshot_hash", "fieldtype": "Data", "label": "Requirement Snapshot Hash", "read_only": 1},
+    {"fieldname": "requirements_frozen_at", "fieldtype": "Datetime", "label": "Requirements Frozen At", "read_only": 1},
+    {"fieldname": "requirements_frozen_by", "fieldtype": "Data", "label": "Requirements Frozen By", "read_only": 1}
   ],
   "permissions": [
     {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}

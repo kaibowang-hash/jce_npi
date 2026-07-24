@@ -20,22 +20,23 @@ function route(
   pathname: string,
   scenario: AppRoute["scenario"] = "normal",
 ): AppRoute {
+  const demo = pathname.startsWith("/demo/");
+  const pathParts = pathname.split("/");
   const liveProjectGlobalId =
-    screen === "project" && !pathname.startsWith("/demo/")
-      ? (pathname.split("/")[2] ?? null)
+    (screen === "project" || screen === "gate") && !demo
+      ? (pathParts[2] ?? null)
       : null;
+  const liveGateGlobalId =
+    screen === "gate" && !demo ? (pathParts[4] ?? null) : null;
   return {
+    gateGlobalId: liveGateGlobalId,
+    gateMode: screen === "gate" ? (demo ? "demo" : "live") : null,
     pathname,
     qualityFailure: false,
     scenario,
     screen,
     projectGlobalId: liveProjectGlobalId,
-    projectMode:
-      screen === "project"
-        ? pathname.startsWith("/demo/")
-          ? "demo"
-          : "live"
-        : null,
+    projectMode: screen === "project" ? (demo ? "demo" : "live") : null,
   };
 }
 
@@ -195,6 +196,47 @@ describe("application shell behavior", () => {
       screen.getByText(
         "Live global search is not available in this phase. Open this project from an authorized project link.",
       ),
+    ).toBeVisible();
+  });
+
+  it("keeps a live Gate in Project context and dispatches its scoped refresh", async () => {
+    const projectGlobalId = "11111111-1111-4111-8111-111111111111";
+    const gateGlobalId = "44444444-4444-4444-8444-444444444444";
+    const path = `/projects/${projectGlobalId}/gates/${gateGlobalId}`;
+    const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
+    const navigate = vi.fn<(target: string) => void>();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell navigate={navigate} route={route("gate", path)}>
+        <p>Live Gate evidence workspace</p>
+      </AppShell>,
+      "en",
+      path,
+    );
+
+    const domainNavigation = screen.getByRole("navigation", {
+      name: "Domain navigation",
+    });
+    expect(
+      within(domainNavigation).getByRole("button", {
+        current: "page",
+        name: "Project",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("combobox", { name: "Fixture state" }),
+    ).toBeNull();
+    await user.click(
+      within(domainNavigation).getByRole("button", { name: "Project" }),
+    );
+    expect(navigate).toHaveBeenCalledWith(`/projects/${projectGlobalId}`);
+
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "npi:refresh-gate-evidence" }),
+    );
+    expect(
+      screen.getByText("The live Gate evidence request is being refreshed."),
     ).toBeVisible();
   });
 
@@ -411,7 +453,7 @@ describe("application shell behavior", () => {
     renderWithLocale(
       <App />,
       "en",
-      "/projects/PJ-26018/gates/G5?scenario=no_permission",
+      "/demo/projects/PJ-26018/gates/G5?scenario=no_permission",
     );
 
     await screen.findByRole("heading", {
@@ -470,12 +512,12 @@ describe("core workspace page behavior", () => {
     await within(worklist).findByRole("button", { name: "Open review" });
     expect(within(worklist).getAllByRole("row")).toHaveLength(7);
     const actionTargets = [
-      ["Open review", "/projects/PJ-26018/gates/G5"],
-      ["Resolve defect", "/projects/PJ-26018/gates/G5"],
+      ["Open review", "/demo/projects/PJ-26018/gates/G5"],
+      ["Resolve defect", "/demo/projects/PJ-26018/gates/G5"],
       ["View context", "/tooling/TL-26018-01"],
       ["View execution", "/execution?focus=EX-260721-0048"],
       ["Start", "/tooling/TL-26018-01"],
-      ["Review impact", "/projects/PJ-26018/gates/G5"],
+      ["Review impact", "/demo/projects/PJ-26018/gates/G5"],
     ] as const;
     for (const [label, target] of actionTargets) {
       await user.click(within(worklist).getByRole("button", { name: label }));
@@ -501,13 +543,17 @@ describe("core workspace page behavior", () => {
     await user.click(
       screen.getByRole("button", { name: /G4 Trial iteration/ }),
     );
-    expect(navigate).toHaveBeenLastCalledWith("/projects/PJ-26018/gates/G4");
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/demo/projects/PJ-26018/gates/G4",
+    );
     await user.click(screen.getByRole("button", { name: /G6 NPI readiness/ }));
     expect(navigate).toHaveBeenLastCalledWith(
-      "/projects/PJ-26018/gates/G6?quality=failed",
+      "/demo/projects/PJ-26018/gates/G6?quality=failed",
     );
     await user.click(screen.getByRole("button", { name: "Prepare G5 review" }));
-    expect(navigate).toHaveBeenLastCalledWith("/projects/PJ-26018/gates/G5");
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/demo/projects/PJ-26018/gates/G5",
+    );
   });
 
   it("reviews, cancels, and prepares a Gate decision without claiming persistence", async () => {
@@ -613,7 +659,9 @@ describe("core workspace page behavior", () => {
     await user.click(
       screen.getByRole("button", { name: "Open defect context" }),
     );
-    expect(navigate).toHaveBeenLastCalledWith("/projects/PJ-26018/gates/G5");
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/demo/projects/PJ-26018/gates/G5",
+    );
   });
 
   it("inherits a Trial plan, supports tab keyboarding, and prepares its conclusion", async () => {
@@ -669,7 +717,9 @@ describe("core workspace page behavior", () => {
       "Prototype conclusion command prepared. The Trial snapshot was not submitted.",
     );
     await user.click(screen.getByRole("button", { name: "View blockers" }));
-    expect(navigate).toHaveBeenLastCalledWith("/projects/PJ-26018/gates/G5");
+    expect(navigate).toHaveBeenLastCalledWith(
+      "/demo/projects/PJ-26018/gates/G5",
+    );
   });
 
   it("shows the default Trial as the next editable round", () => {

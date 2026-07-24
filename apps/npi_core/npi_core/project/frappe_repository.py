@@ -11,8 +11,11 @@ from uuid import UUID, uuid4, uuid5
 import frappe
 
 from npi_core.foundation.audit import create_audit_event
-from npi_core.foundation.errors import PermissionDenied
+from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal, ProjectAccess, authorize_project
+from npi_core.gate_template.frappe_repository import (
+    load_available_gate_template_snapshot,
+)
 from npi_core.project.domain import (
     BusinessCodeConflict,
     EngineeringProject,
@@ -60,12 +63,12 @@ class FrappeProjectRepository:
         )
         if template_root is None or int(template_root.enabled or 0) != 1:
             return None
-        if (
-            str(template_root.global_id) != str(document.template_global_id)
-            or str(template_root.template_code) != str(document.template_code)
-        ):
+        if str(template_root.global_id) != str(document.template_global_id) or str(
+            template_root.template_code
+        ) != str(document.template_code):
             raise ValueError("Persisted Project Template root integrity failed.")
         project_types = _json_array(document.applicable_project_types)
+        gates = tuple(_gate_definition_from_document(row) for row in document.gates)
         template = ProjectTemplateVersion(
             global_id=UUID(str(document.global_id)),
             template_global_id=UUID(str(document.template_global_id)),
@@ -73,9 +76,7 @@ class FrappeProjectRepository:
             template_version=int(document.template_version),
             version=int(document.optimistic_version),
             title=str(document.title),
-            publication_state=TemplatePublicationState(
-                str(document.publication_state)
-            ),
+            publication_state=TemplatePublicationState(str(document.publication_state)),
             applicable_project_types=tuple(
                 ProjectType(str(value)) for value in project_types
             ),
@@ -87,14 +88,7 @@ class FrappeProjectRepository:
                 )
                 for row in document.reference_rules
             ),
-            gates=tuple(
-                GateDefinition(
-                    key=str(row.gate_key),
-                    title=str(row.title),
-                    sequence=int(row.sequence),
-                )
-                for row in document.gates
-            ),
+            gates=gates,
         )
         if (
             template.template_global_id != template_global_id
@@ -102,6 +96,26 @@ class FrappeProjectRepository:
             or str(document.snapshot_hash) != template.snapshot_hash
         ):
             raise ValueError("Persisted Project Template version integrity failed.")
+        for gate in template.gates:
+            if not gate.has_gate_template_ref:
+                continue
+            assert gate.gate_template_global_id is not None
+            assert gate.gate_template_version is not None
+            assert gate.gate_template_snapshot_hash is not None
+            snapshot = load_available_gate_template_snapshot(
+                gate.gate_template_global_id,
+                gate.gate_template_version,
+                gate.gate_template_snapshot_hash,
+            )
+            if snapshot is None:
+                return None
+            if not set(template.applicable_project_types).issubset(
+                snapshot.applicable_project_types
+            ):
+                raise ValueError(
+                    "Persisted Gate Template applicability does not match "
+                    "the Project Template version."
+                )
         return template
 
     def get_idempotency_record(self, key: str) -> IdempotencyRecord | None:
@@ -197,9 +211,7 @@ class FrappeProjectRepository:
                     ),
                     "template_code": project.template_snapshot.template_code,
                     "template_version": project.template_snapshot.template_version,
-                    "template_snapshot_hash": (
-                        project.template_snapshot.snapshot_hash
-                    ),
+                    "template_snapshot_hash": (project.template_snapshot.snapshot_hash),
                     "template_snapshot": json.dumps(
                         snapshot_payload,
                         ensure_ascii=False,
@@ -238,12 +250,17 @@ class FrappeProjectRepository:
                         "template_global_id": str(gate.template_global_id),
                         "template_version": gate.template_version,
                         "template_snapshot_hash": gate.template_snapshot_hash,
+                        "gate_template_global_id": (
+                            str(gate.gate_template_global_id)
+                            if gate.gate_template_global_id is not None
+                            else None
+                        ),
+                        "gate_template_version": gate.gate_template_version,
+                        "gate_template_snapshot_hash": (
+                            gate.gate_template_snapshot_hash
+                        ),
                         "template_gate_snapshot": json.dumps(
-                            {
-                                "key": gate.key,
-                                "sequence": gate.sequence,
-                                "title": gate.title,
-                            },
+                            gate.template_gate_definition.canonical_dict(),
                             ensure_ascii=False,
                             separators=(",", ":"),
                             sort_keys=True,
@@ -294,8 +311,7 @@ class FrappeProjectRepository:
         if document is None:
             return None
         system_manager = (
-            not self.principal.is_external
-            and "System Manager" in self.principal.roles
+            not self.principal.is_external and "System Manager" in self.principal.roles
         )
         access = None
         if system_manager:
@@ -305,9 +321,7 @@ class FrappeProjectRepository:
         scoped_principal = replace(
             self.principal,
             project_access=(
-                {str(project_global_id): access}
-                if access is not None
-                else {}
+                {str(project_global_id): access} if access is not None else {}
             ),
         )
         try:
@@ -410,22 +424,13 @@ class FrappeProjectRepository:
             references=references,
             creation_payload_hash=str(document.creation_payload_hash),
         )
+        gate_documents = self._load_gate_documents(project_global_id, snapshot)
         gates = tuple(
-            GateShell(
-                global_id=UUID(str(row.global_id)),
-                project_global_id=UUID(str(row.project_global_id)),
-                key=str(row.gate_key),
-                title=str(row.title),
-                sequence=int(row.sequence),
-                state=GateShellState(str(row.state)),
-                version=int(row.optimistic_version),
-                template_global_id=UUID(str(row.template_global_id)),
-                template_version=int(row.template_version),
-                template_snapshot_hash=str(row.template_snapshot_hash),
-            )
-            for row in self._load_gate_documents(
-                project_global_id,
-                snapshot,
+            _gate_shell_from_document(row, definition)
+            for row, definition in zip(
+                gate_documents,
+                snapshot.gates,
+                strict=True,
             )
         )
         return ProjectInstantiation(project=project, gates=gates)
@@ -449,6 +454,9 @@ class FrappeProjectRepository:
                 str(document.project_global_id) != str(project_global_id)
                 or str(document.gate_key) != definition.key
                 or int(document.sequence) != definition.sequence
+                or str(document.template_global_id) != str(snapshot.template_global_id)
+                or int(document.template_version) != snapshot.template_version
+                or str(document.template_snapshot_hash) != snapshot.snapshot_hash
             ):
                 raise ValueError("Persisted Gate shell integrity failed.")
             documents.append(document)
@@ -492,10 +500,7 @@ def _snapshot_payload(snapshot: TemplateSnapshot) -> dict[str, Any]:
             }
             for rule in snapshot.reference_rules
         ],
-        "gates": [
-            {"key": gate.key, "title": gate.title, "sequence": gate.sequence}
-            for gate in snapshot.gates
-        ],
+        "gates": [gate.canonical_dict() for gate in snapshot.gates],
     }
 
 
@@ -517,14 +522,7 @@ def _snapshot_from_project_document(document) -> TemplateSnapshot:
             )
             for rule in payload["referenceRules"]
         ),
-        gates=tuple(
-            GateDefinition(
-                key=str(gate["key"]),
-                title=str(gate["title"]),
-                sequence=int(gate["sequence"]),
-            )
-            for gate in payload["gates"]
-        ),
+        gates=tuple(_gate_definition_from_snapshot(gate) for gate in payload["gates"]),
     )
     canonical_payload = json.dumps(
         payload,
@@ -539,6 +537,90 @@ def _snapshot_from_project_document(document) -> TemplateSnapshot:
     ):
         raise ValueError("Persisted Project template snapshot integrity failed.")
     return snapshot
+
+
+def _gate_definition_from_document(row) -> GateDefinition:
+    global_id = getattr(row, "gate_template_global_id", None)
+    version = getattr(row, "gate_template_version", None)
+    snapshot_hash = getattr(row, "gate_template_snapshot_hash", None)
+    if not global_id and not snapshot_hash and version in (None, "", 0):
+        version = None
+    return GateDefinition(
+        key=str(row.gate_key),
+        title=str(row.title),
+        sequence=int(row.sequence),
+        gate_template_global_id=UUID(str(global_id)) if global_id else None,
+        gate_template_version=int(version) if version is not None else None,
+        gate_template_snapshot_hash=(str(snapshot_hash) if snapshot_hash else None),
+    )
+
+
+def _gate_definition_from_snapshot(value: object) -> GateDefinition:
+    if not isinstance(value, dict):
+        raise ValueError("Persisted Project Template Gate snapshot is invalid.")
+    legacy_fields = {"key", "title", "sequence"}
+    configured_fields = legacy_fields | {"gateTemplateRef"}
+    fields = set(value)
+    if fields == legacy_fields:
+        return GateDefinition(
+            key=str(value["key"]),
+            title=str(value["title"]),
+            sequence=int(value["sequence"]),
+        )
+    if fields != configured_fields:
+        raise ValueError("Persisted Project Template Gate snapshot is invalid.")
+    template_ref = value["gateTemplateRef"]
+    if not isinstance(template_ref, dict) or set(template_ref) != {
+        "globalId",
+        "version",
+        "snapshotHash",
+    }:
+        raise ValueError("Persisted Gate Template reference is invalid.")
+    return GateDefinition(
+        key=str(value["key"]),
+        title=str(value["title"]),
+        sequence=int(value["sequence"]),
+        gate_template_global_id=UUID(str(template_ref["globalId"])),
+        gate_template_version=int(template_ref["version"]),
+        gate_template_snapshot_hash=str(template_ref["snapshotHash"]),
+    )
+
+
+def _gate_shell_from_document(
+    row,
+    definition: GateDefinition,
+) -> GateShell:
+    global_id = getattr(row, "gate_template_global_id", None)
+    version = getattr(row, "gate_template_version", None)
+    snapshot_hash = getattr(row, "gate_template_snapshot_hash", None)
+    if not global_id and not snapshot_hash and version in (None, "", 0):
+        version = None
+    try:
+        shell = GateShell(
+            global_id=UUID(str(row.global_id)),
+            project_global_id=UUID(str(row.project_global_id)),
+            key=str(row.gate_key),
+            title=str(row.title),
+            sequence=int(row.sequence),
+            state=GateShellState(str(row.state)),
+            version=int(row.optimistic_version),
+            template_global_id=UUID(str(row.template_global_id)),
+            template_version=int(row.template_version),
+            template_snapshot_hash=str(row.template_snapshot_hash),
+            gate_template_global_id=UUID(str(global_id)) if global_id else None,
+            gate_template_version=int(version) if version is not None else None,
+            gate_template_snapshot_hash=(str(snapshot_hash) if snapshot_hash else None),
+        )
+    except (TypeError, ValueError, RequestValidationFailed) as error:
+        raise ValueError(
+            "Persisted Gate shell template reference is invalid."
+        ) from error
+    if (
+        shell.template_gate_definition != definition
+        or _json_object(row.template_gate_snapshot) != definition.canonical_dict()
+    ):
+        raise ValueError("Persisted Gate shell template snapshot integrity failed.")
+    return shell
 
 
 def _date_iso(value: object) -> str:

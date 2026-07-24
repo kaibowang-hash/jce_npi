@@ -170,6 +170,90 @@ export interface ProjectCockpitViewModel {
   };
 }
 
+export type GateRequirementClassification = "required" | "optional";
+export type GateRequirementPriority = "P0" | "P1" | "P2";
+export type GateEvidenceKind = "wbs_item" | "file_revision";
+export type GateEvidenceScanState = "pending" | "clean" | "failed" | "infected";
+export type GateRequirementEvidenceState =
+  | "missing"
+  | "attached"
+  | "scan_pending"
+  | "scan_clean"
+  | "scan_failed"
+  | "scan_infected";
+
+export interface GateEvidencePersonViewModel {
+  memberId: string;
+  userId: string;
+  displayName: string;
+}
+
+export interface GateEvidenceReferenceViewModel {
+  globalId: string;
+  kind: GateEvidenceKind;
+  sourceObjectType: GateEvidenceKind;
+  sourceGlobalId: string;
+  revision: number;
+  objectHash: string;
+  createdAt: string;
+  createdBy: string;
+  file?: {
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    scanState: GateEvidenceScanState;
+  };
+}
+
+export interface GateRequirementViewModel {
+  key: string;
+  title: string;
+  classification: GateRequirementClassification;
+  priority: GateRequirementPriority;
+  owner: GateEvidencePersonViewModel;
+  reviewers: readonly GateEvidencePersonViewModel[];
+  dueDate: string;
+  allowedEvidenceKinds: readonly GateEvidenceKind[];
+  evidenceState: GateRequirementEvidenceState;
+  evidence: readonly GateEvidenceReferenceViewModel[];
+}
+
+export interface GateEvidenceViewModel {
+  project: {
+    globalId: string;
+    businessCode: string;
+    title: string;
+  };
+  gate: {
+    globalId: string;
+    key: string;
+    title: string;
+    state: "not_started";
+    version: number;
+    dueDate: string;
+    templateRef: {
+      globalId: string;
+      version: number;
+      snapshotHash: string;
+    };
+    requirementSnapshotHash: string;
+    frozenAt: string;
+    frozenBy: string;
+  };
+  requirements: readonly GateRequirementViewModel[];
+  summary: {
+    requiredCount: number;
+    missingRequiredCount: number;
+    unsafeScanCount: number;
+    evidenceCount: number;
+  };
+  permissions: {
+    canView: true;
+    canAttachEvidence: boolean;
+    canAdminister: boolean;
+  };
+}
+
 export interface ProjectWorkPolicyReference {
   globalId: string;
   version: number;

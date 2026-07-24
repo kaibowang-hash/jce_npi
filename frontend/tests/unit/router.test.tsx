@@ -12,7 +12,11 @@ describe("application routing", () => {
     ["/work", "work"],
     ["/demo/projects/PJ-26018", "project"],
     ["/projects/11111111-1111-4111-8111-111111111111", "project"],
-    ["/projects/PJ-26018/gates/G5", "gate"],
+    ["/demo/projects/PJ-26018/gates/G5", "gate"],
+    [
+      "/projects/11111111-1111-4111-8111-111111111111/gates/44444444-4444-4444-8444-444444444444",
+      "gate",
+    ],
     ["/tooling/TL-26018-01", "tooling"],
     ["/trials/T1", "trial"],
     ["/execution", "execution"],
@@ -37,6 +41,28 @@ describe("application routing", () => {
       projectMode: "live",
       scenario: "normal",
     });
+    expect(
+      parseRoute(
+        locationFor("/demo/projects/PJ-26018/gates/G5?scenario=partial"),
+      ),
+    ).toMatchObject({
+      gateGlobalId: null,
+      gateMode: "demo",
+      projectGlobalId: null,
+      scenario: "partial",
+    });
+    expect(
+      parseRoute(
+        locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/gates/44444444-4444-4444-8444-444444444444?scenario=error",
+        ),
+      ),
+    ).toMatchObject({
+      gateGlobalId: "44444444-4444-4444-8444-444444444444",
+      gateMode: "live",
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      scenario: "normal",
+    });
   });
 
   it("normalizes unknown scenarios and preserves the quality-failure fixture", () => {
@@ -46,7 +72,7 @@ describe("application routing", () => {
     expect(
       parseRoute(
         locationFor(
-          "/projects/PJ-26018/gates/G6?scenario=error&quality=failed",
+          "/demo/projects/PJ-26018/gates/G6?scenario=error&quality=failed",
         ),
       ),
     ).toMatchObject({

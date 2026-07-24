@@ -384,7 +384,7 @@ export default function TrialPage({
             </p>
             <Button
               onClick={() => {
-                navigate("/projects/PJ-26018/gates/G5");
+                navigate("/demo/projects/PJ-26018/gates/G5");
               }}
             >
               {t("View blockers")}

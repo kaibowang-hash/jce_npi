@@ -57,6 +57,12 @@ export function AppShell({
   const [utilityMessage, setUtilityMessage] = useState<string | null>(null);
   const isLiveProject =
     route.screen === "project" && route.projectMode === "live";
+  const isLiveGate = route.screen === "gate" && route.gateMode === "live";
+  const isLiveProjectContext = isLiveProject || isLiveGate;
+  const liveProjectPath =
+    route.projectGlobalId === null
+      ? null
+      : `/projects/${route.projectGlobalId}`;
   const denied = route.scenario === "no_permission";
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
@@ -74,7 +80,9 @@ export function AppShell({
         : route.screen === "gate"
           ? {
               exempt: true,
-              value: `${route.qualityFailure ? "G6" : "G5"} · PJ-26018`,
+              value: isLiveGate
+                ? `${route.gateGlobalId ?? ""} · ${route.projectGlobalId ?? ""}`
+                : `${route.qualityFailure ? "G6" : "G5"} · PJ-26018`,
             }
           : route.screen === "tooling"
             ? { exempt: true, value: "PJ-26018 · TL-26018-01" }
@@ -99,12 +107,15 @@ export function AppShell({
     {
       id: "portfolio",
       label: t("Project Portfolio"),
-      ...(isLiveProject ? {} : { path: "/demo/projects/PJ-26018" }),
+      ...(isLiveProjectContext ? {} : { path: "/demo/projects/PJ-26018" }),
     },
     {
       id: "project",
       label: t("Project"),
-      path: isLiveProject ? route.pathname : "/demo/projects/PJ-26018",
+      path:
+        isLiveProjectContext && liveProjectPath
+          ? liveProjectPath
+          : "/demo/projects/PJ-26018",
       screen: "project",
     },
     {
@@ -162,7 +173,7 @@ export function AppShell({
             aria-label={t("Global search")}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
-              if (isLiveProject) {
+              if (isLiveProjectContext) {
                 setUtilityMessage(
                   t(
                     "Live global search is not available in this phase. Open this project from an authorized project link.",
@@ -218,14 +229,14 @@ export function AppShell({
           icon="user"
           onClick={() => {
             setUtilityMessage(
-              isLiveProject
+              isLiveProjectContext
                 ? t("The current identity is managed by the Frappe session.")
                 : t("Signed in for the test environment with prototype data."),
             );
           }}
           visual="ghost"
         >
-          {isLiveProject ? (
+          {isLiveProjectContext ? (
             t("Signed-in user")
           ) : (
             <span data-language-exempt="business-data">Alex Chen</span>
@@ -240,10 +251,16 @@ export function AppShell({
                 {item.path ? (
                   <button
                     aria-current={
-                      route.screen === item.screen ? "page" : undefined
+                      route.screen === item.screen ||
+                      (item.id === "project" && route.screen === "gate")
+                        ? "page"
+                        : undefined
                     }
                     className={
-                      route.screen === item.screen ? "is-active" : undefined
+                      route.screen === item.screen ||
+                      (item.id === "project" && route.screen === "gate")
+                        ? "is-active"
+                        : undefined
                     }
                     onClick={() => {
                       if (item.path) navigate(item.path);
@@ -267,7 +284,9 @@ export function AppShell({
         <div className="environment-marker">
           <strong>{t("Test environment")}</strong>
           <span>
-            {isLiveProject ? t("Live project data") : t("Prototype data")}
+            {isLiveProjectContext
+              ? t("Live project data")
+              : t("Prototype data")}
           </span>
         </div>
       </aside>
@@ -308,7 +327,16 @@ export function AppShell({
             <Button
               icon="refresh"
               onClick={() => {
-                if (isLiveProject) {
+                if (isLiveProjectContext) {
+                  if (isLiveGate) {
+                    globalThis.dispatchEvent(
+                      new CustomEvent("npi:refresh-gate-evidence"),
+                    );
+                    setUtilityMessage(
+                      t("The live Gate evidence request is being refreshed."),
+                    );
+                    return;
+                  }
                   globalThis.dispatchEvent(
                     new CustomEvent("npi:refresh-project"),
                   );
@@ -342,7 +370,7 @@ export function AppShell({
           >
             <Icon name="info" />
             <strong>
-              {isLiveProject
+              {isLiveProjectContext
                 ? t(
                     "Live project data. No production ERPNext system is connected.",
                   )
@@ -411,7 +439,7 @@ export function AppShell({
               ))}
             </Select>
           </label>
-          {isLiveProject ? null : (
+          {isLiveProjectContext ? null : (
             <label>
               <span>{t("Fixture state")}</span>
               <Select

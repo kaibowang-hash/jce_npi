@@ -76,6 +76,30 @@ describe("live Project cockpit states", () => {
     ).toHaveLength(0);
   });
 
+  it("opens the selected live Gate evidence route from its exact identities", async () => {
+    const fixture = projectCockpitFixture();
+    const firstGate = fixture.gates[0];
+    if (!firstGate) throw new Error("The Project fixture must contain a Gate.");
+    const navigate = vi.fn<(target: string) => void>();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <ProjectPage
+        dataSource={resolvedDataSource(fixture)}
+        globalId={fixture.project.globalId}
+        navigate={navigate}
+      />,
+    );
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /G0 Synthetic feasibility shell/u,
+      }),
+    );
+    expect(navigate).toHaveBeenCalledWith(
+      `/projects/${fixture.project.globalId}/gates/${firstGate.globalId}`,
+    );
+  });
+
   it("renders an honest read-only banner from the permission projection", async () => {
     const fixture = projectCockpitFixture();
     const readOnlyFixture = {

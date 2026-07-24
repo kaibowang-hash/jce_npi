@@ -16,6 +16,7 @@ from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 try:
     from frappe import _
 except ImportError:  # Keeps the domain model testable without a Bench runtime.
+
     def _identity_translation(source: str) -> str:
         return source
 
@@ -28,6 +29,7 @@ _KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _ACTOR_PATTERN = re.compile(r"^[^\s\x00-\x1f\x7f]{1,254}$")
 _IDEMPOTENCY_HEADER_PATTERN = re.compile(r"^[\x21-\x7e]{16,255}$")
+_HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _EMAIL_PATTERN = re.compile(
     r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
     r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
@@ -187,6 +189,9 @@ class GateDefinition:
     key: str
     title: str
     sequence: int
+    gate_template_global_id: UUID | None = None
+    gate_template_version: int | None = None
+    gate_template_snapshot_hash: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -209,6 +214,58 @@ class GateDefinition:
                 "gates.sequence",
                 _("Enter a positive gate sequence."),
             )
+        template_ref = (
+            self.gate_template_global_id,
+            self.gate_template_version,
+            self.gate_template_snapshot_hash,
+        )
+        if any(value is not None for value in template_ref) and not all(
+            value is not None for value in template_ref
+        ):
+            raise _validation(
+                "gates.gateTemplateRef",
+                _("Enter a complete Gate Template reference."),
+            )
+        if self.gate_template_global_id is not None:
+            if not isinstance(self.gate_template_global_id, UUID):
+                raise _validation(
+                    "gates.gateTemplateRef.globalId",
+                    _("Enter a valid global ID."),
+                )
+            if (
+                type(self.gate_template_version) is not int
+                or self.gate_template_version < 1
+            ):
+                raise _validation(
+                    "gates.gateTemplateRef.version",
+                    _("Enter a positive Gate Template version."),
+                )
+            if (
+                not isinstance(self.gate_template_snapshot_hash, str)
+                or _HASH_PATTERN.fullmatch(self.gate_template_snapshot_hash) is None
+            ):
+                raise _validation(
+                    "gates.gateTemplateRef.snapshotHash",
+                    _("Enter a valid Gate Template snapshot hash."),
+                )
+
+    @property
+    def has_gate_template_ref(self) -> bool:
+        return self.gate_template_global_id is not None
+
+    def canonical_dict(self) -> dict[str, object]:
+        value: dict[str, object] = {
+            "key": self.key,
+            "title": self.title,
+            "sequence": self.sequence,
+        }
+        if self.has_gate_template_ref:
+            value["gateTemplateRef"] = {
+                "globalId": str(self.gate_template_global_id),
+                "version": self.gate_template_version,
+                "snapshotHash": self.gate_template_snapshot_hash,
+            }
+        return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -220,7 +277,9 @@ class TypedReference:
 
     def __post_init__(self) -> None:
         _require_enum(self.reference_type, ProjectReferenceType, "references.type")
-        _require_enum(self.source_system, ReferenceSourceSystem, "references.sourceSystem")
+        _require_enum(
+            self.source_system, ReferenceSourceSystem, "references.sourceSystem"
+        )
         object.__setattr__(
             self,
             "source_object_id",
@@ -449,10 +508,7 @@ class ProjectTemplateVersion:
                 }
                 for rule in self.reference_rules
             ],
-            "gates": [
-                {"key": gate.key, "title": gate.title, "sequence": gate.sequence}
-                for gate in self.gates
-            ],
+            "gates": [gate.canonical_dict() for gate in self.gates],
         }
         return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
@@ -601,6 +657,27 @@ class GateShell:
     template_global_id: UUID
     template_version: int
     template_snapshot_hash: str
+    gate_template_global_id: UUID | None = None
+    gate_template_version: int | None = None
+    gate_template_snapshot_hash: str | None = None
+
+    def __post_init__(self) -> None:
+        # Gate shells freeze the exact Project Template gate definition used at
+        # project creation. Reusing GateDefinition keeps the optional
+        # Gate-Template reference complete-or-empty and hash validation rules
+        # identical at both boundaries.
+        self.template_gate_definition
+
+    @property
+    def template_gate_definition(self) -> GateDefinition:
+        return GateDefinition(
+            key=self.key,
+            title=self.title,
+            sequence=self.sequence,
+            gate_template_global_id=self.gate_template_global_id,
+            gate_template_version=self.gate_template_version,
+            gate_template_snapshot_hash=self.gate_template_snapshot_hash,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -698,6 +775,9 @@ class ProjectInstantiationService:
                 template_global_id=snapshot.template_global_id,
                 template_version=snapshot.template_version,
                 template_snapshot_hash=snapshot.snapshot_hash,
+                gate_template_global_id=gate.gate_template_global_id,
+                gate_template_version=gate.gate_template_version,
+                gate_template_snapshot_hash=gate.gate_template_snapshot_hash,
             )
             for gate in snapshot.gates
         )

@@ -120,7 +120,7 @@ export const coreScreens: readonly CoreScreen[] = [
   {
     id: "gate",
     pageClass: "page--object",
-    path: "/projects/PJ-26018/gates/G5",
+    path: "/demo/projects/PJ-26018/gates/G5",
   },
   { id: "tooling", pageClass: "page--object", path: "/tooling/TL-26018-01" },
   { id: "trial", pageClass: "page--object", path: "/trials/T1" },

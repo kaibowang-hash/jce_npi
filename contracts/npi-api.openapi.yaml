@@ -663,6 +663,208 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
+  /projects/{projectId}/gates/{gateId}/evidence:
+    get:
+      tags: [Gates]
+      operationId: getGateEvidenceWorkspace
+      description: >
+        Returns one authorized Project Gate's exact published Gate Template
+        reference, frozen Project-specific requirement assignments, and
+        append-only exact evidence metadata. The internal Project owner and an
+        internal System Manager may read this view. An absent, unauthorized,
+        cross-tenant, or mismatched Gate returns the same 404 representation.
+        Raw private-file URLs and file content are never returned.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Frozen Gate requirements and exact evidence metadata
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GateEvidenceWorkspace"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}:freeze-requirements:
+    post:
+      tags: [Gates]
+      operationId: freezeGateRequirements
+      description: >
+        Freezes the exact published Gate Template requirements on one Project
+        Gate exactly once with explicit same-Project owner/reviewer member
+        identities and dates. No RACI mapping or approval authority is inferred.
+        P4-03 permits this command only to an authenticated internal System
+        Manager in the configured Site tenant.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.requirements.freeze
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FreezeGateRequirements"
+      responses:
+        "200":
+          description: Requirements frozen atomically, or the original result replayed
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+            Idempotency-Replayed:
+              description: True when the original result was safely replayed
+              required: true
+              schema: { type: boolean }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GateEvidenceWorkspace"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
+  /projects/{projectId}/gates/{gateId}/requirements/{requirementKey}/evidence:
+    post:
+      tags: [Gates]
+      operationId: attachGateEvidence
+      description: >
+        Appends one same-Project exact WBS-item or private File Revision
+        reference to a frozen requirement. The server resolves and verifies the
+        supplied exact version and lowercase SHA-256 before writing; it rejects
+        mutable latest references, raw URLs, client-selected scan state, and
+        unsupported future evidence resolvers.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: gate-root
+      x-audit-operation: gate.evidence.attach
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/GateId"
+        - in: path
+          name: requirementKey
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 1,
+              maxLength: 64,
+              pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttachGateEvidence"
+      responses:
+        "201":
+          description: Exact evidence reference appended, or the original result replayed
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+            Idempotency-Replayed:
+              description: True when the original result was safely replayed
+              required: true
+              schema: { type: boolean }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GateEvidenceWorkspace"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/AuthenticationError"
+        "403":
+          $ref: "#/components/responses/PermissionError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ProjectConflict"
+        "422":
+          $ref: "#/components/responses/ProjectValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /projects/{projectId}/gates/{gateId}:decide:
     post:
       tags: [Gates]
@@ -2022,6 +2224,254 @@ components:
           uniqueItems: true
           items: { $ref: "#/components/schemas/GateShell" }
         permissions: { $ref: "#/components/schemas/ProjectPermissions" }
+    GateRequirementAssignmentInput:
+      type: object
+      additionalProperties: false
+      description: Explicit Project-specific assignment; it does not grant approval authority
+      required: [key, ownerMemberId, reviewerMemberIds, dueDate]
+      properties:
+        key:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        ownerMemberId: { type: string, format: uuid }
+        reviewerMemberIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        dueDate: { type: string, format: date }
+    FreezeGateRequirements:
+      type: object
+      additionalProperties: false
+      description: >
+        One-time atomic freeze command. The assignment keys must exactly equal
+        the selected published Gate Template version's requirement keys.
+      required: [expectedGateVersion, gateDueDate, requirements]
+      properties:
+        expectedGateVersion: { type: integer, minimum: 1 }
+        gateDueDate: { type: string, format: date }
+        requirements:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateRequirementAssignmentInput"
+    AttachGateEvidence:
+      type: object
+      additionalProperties: false
+      description: >
+        Exact versioned evidence identity. sourceHash is verified against the
+        server-resolved source and never accepted as caller proof by itself.
+      required: [expectedGateVersion, evidenceKind, sourceGlobalId, sourceVersion, sourceHash]
+      properties:
+        expectedGateVersion: { type: integer, minimum: 1 }
+        evidenceKind:
+          { type: string, enum: [wbs_item, file_revision] }
+        sourceGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateEvidenceProject:
+      type: object
+      additionalProperties: false
+      required: [globalId, businessCode, title]
+      properties:
+        globalId: { type: string, format: uuid }
+        businessCode:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          }
+        title: { type: string, minLength: 1, maxLength: 140 }
+    GateTemplateReference:
+      type: object
+      additionalProperties: false
+      description: Exact immutable published Gate Template snapshot
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateEvidenceGate:
+      type: object
+      additionalProperties: false
+      required: [globalId, key, title, state, version, dueDate, templateRef, requirementSnapshotHash, frozenAt, frozenBy]
+      properties:
+        globalId: { type: string, format: uuid }
+        key:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        state: { type: string, enum: [not_started] }
+        version: { type: integer, minimum: 1 }
+        dueDate: { type: string, format: date }
+        templateRef:
+          $ref: "#/components/schemas/GateTemplateReference"
+        requirementSnapshotHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        frozenAt: { type: string, format: date-time }
+        frozenBy:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 254,
+            description: Authenticated Frappe actor identity; Administrator is valid,
+          }
+    GateRequirementMember:
+      type: object
+      additionalProperties: false
+      required: [memberId, userId, displayName]
+      properties:
+        memberId: { type: string, format: uuid }
+        userId: { type: string, format: email, minLength: 3, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 280 }
+    GateEvidenceFileMetadata:
+      type: object
+      additionalProperties: false
+      description: Safe private File Revision metadata without a raw file URL
+      required: [fileName, mimeType, sizeBytes, scanState]
+      properties:
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0 }
+        scanState:
+          { type: string, enum: [pending, clean, infected, failed] }
+    GateEvidenceReference:
+      description: Append-only exact source version snapshot; never a latest or mutable URL reference
+      oneOf:
+        - $ref: "#/components/schemas/GateWbsEvidenceReference"
+        - $ref: "#/components/schemas/GateFileEvidenceReference"
+      discriminator:
+        propertyName: kind
+        mapping:
+          wbs_item: "#/components/schemas/GateWbsEvidenceReference"
+          file_revision: "#/components/schemas/GateFileEvidenceReference"
+    GateWbsEvidenceReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, sourceObjectType, sourceGlobalId, revision, objectHash, createdAt, createdBy]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { type: string, const: wbs_item }
+        sourceObjectType: { type: string, const: wbs_item }
+        sourceGlobalId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        objectHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdAt: { type: string, format: date-time }
+        createdBy:
+          { type: string, minLength: 1, maxLength: 254 }
+    GateFileEvidenceReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, sourceObjectType, sourceGlobalId, revision, objectHash, createdAt, createdBy, file]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { type: string, const: file_revision }
+        sourceObjectType: { type: string, const: file_revision }
+        sourceGlobalId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        objectHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdAt: { type: string, format: date-time }
+        createdBy:
+          { type: string, minLength: 1, maxLength: 254 }
+        file:
+          $ref: "#/components/schemas/GateEvidenceFileMetadata"
+    GateFrozenRequirement:
+      type: object
+      additionalProperties: false
+      description: >
+        Exact frozen requirement plus explicit Project member assignments.
+        evidenceState describes evidence presence/scan observation only and is
+        not a Gate pass or satisfaction decision.
+      required: [key, title, classification, priority, owner, reviewers, dueDate, allowedEvidenceKinds, evidenceState, evidence]
+      properties:
+        key:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 64,
+            pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        classification:
+          { type: string, enum: [required, optional] }
+        priority: { type: string, enum: [P0, P1, P2] }
+        owner:
+          $ref: "#/components/schemas/GateRequirementMember"
+        reviewers:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateRequirementMember"
+        dueDate: { type: string, format: date }
+        allowedEvidenceKinds:
+          type: array
+          minItems: 1
+          maxItems: 10
+          uniqueItems: true
+          items:
+            { type: string, enum: [wbs_item, file_revision] }
+        evidenceState:
+          type: string
+          enum: [missing, attached, scan_pending, scan_clean, scan_failed, scan_infected]
+        evidence:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateEvidenceReference"
+    GateEvidenceSummary:
+      type: object
+      additionalProperties: false
+      description: Evidence counts only; not a Gate readiness or pass decision
+      required: [requiredCount, missingRequiredCount, unsafeScanCount, evidenceCount]
+      properties:
+        requiredCount: { type: integer, minimum: 0, maximum: 500 }
+        missingRequiredCount: { type: integer, minimum: 0, maximum: 500 }
+        unsafeScanCount: { type: integer, minimum: 0, maximum: 50000 }
+        evidenceCount: { type: integer, minimum: 0, maximum: 50000 }
+    GateEvidencePermissions:
+      type: object
+      additionalProperties: false
+      required: [canView, canAttachEvidence, canAdminister]
+      properties:
+        canView: { type: boolean, const: true }
+        canAttachEvidence: { type: boolean }
+        canAdminister: { type: boolean }
+    GateEvidenceWorkspace:
+      type: object
+      additionalProperties: false
+      description: Closed live P4-03 Gate evidence workspace with no decision controls
+      required: [project, gate, requirements, summary, permissions]
+      properties:
+        project:
+          $ref: "#/components/schemas/GateEvidenceProject"
+        gate:
+          $ref: "#/components/schemas/GateEvidenceGate"
+        requirements:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GateFrozenRequirement"
+        summary:
+          $ref: "#/components/schemas/GateEvidenceSummary"
+        permissions:
+          $ref: "#/components/schemas/GateEvidencePermissions"
     GateReview:
       type: object
       required: [gate, deliverables, blockers, decisionOptions]

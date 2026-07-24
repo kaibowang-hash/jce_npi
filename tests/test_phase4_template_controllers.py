@@ -6,6 +6,7 @@ import types
 import unittest
 from datetime import datetime
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -110,6 +111,7 @@ class Phase4TemplateControllerTest(unittest.TestCase):
         )
         self.RootController = root_module.NPIProjectTemplate
         self.VersionController = version_module.NPIProjectTemplateVersion
+        self.version_module = version_module
 
     def tearDown(self) -> None:
         for name in self.MODULES_TO_RELOAD:
@@ -151,9 +153,11 @@ class Phase4TemplateControllerTest(unittest.TestCase):
                 "publication_state": publication_state,
                 "applicable_project_types": applicable_project_types,
                 "reference_rules": reference_rules or [],
-                "gates": gates
-                if gates is not None
-                else [AttrDict(gate_key="G0", title="Feasibility", sequence=1)],
+                "gates": (
+                    gates
+                    if gates is not None
+                    else [AttrDict(gate_key="G0", title="Feasibility", sequence=1)]
+                ),
                 "snapshot_hash": None,
                 "published_at": published_at,
             }
@@ -271,9 +275,7 @@ class Phase4TemplateControllerTest(unittest.TestCase):
             ),
             self.version_document(applicable_project_types="[]"),
             self.version_document(applicable_project_types='["unsupported"]'),
-            self.version_document(
-                applicable_project_types='["new_tool","new_tool"]'
-            ),
+            self.version_document(applicable_project_types='["new_tool","new_tool"]'),
             self.version_document(applicable_project_types='{"new_tool":true}'),
             self.version_document(publication_state="retired"),
             self.version_document(gates=[]),
@@ -287,6 +289,82 @@ class Phase4TemplateControllerTest(unittest.TestCase):
         self.template_code = "bad code"
         document = self.version_document()
         self.assert_controller_rejects(document)
+
+    def test_gate_definition_binds_an_exact_published_gate_template_version(
+        self,
+    ) -> None:
+        gate_template_id = UUID("27a34964-9987-4e3c-b010-2e5165782c62")
+        snapshot_hash = "a" * 64
+        document = self.version_document(
+            gates=[
+                AttrDict(
+                    gate_key="G0",
+                    title="Feasibility",
+                    sequence=1,
+                    gate_template_global_id=str(gate_template_id),
+                    gate_template_version=3,
+                    gate_template_snapshot_hash=snapshot_hash,
+                )
+            ]
+        )
+        snapshot = types.SimpleNamespace(
+            applicable_project_types=frozenset(
+                {self.version_module.ProjectType.NEW_TOOL}
+            )
+        )
+        with patch.object(
+            self.version_module,
+            "load_available_gate_template_snapshot",
+            return_value=snapshot,
+        ) as loader:
+            document.validate()
+
+        loader.assert_called_once_with(gate_template_id, 3, snapshot_hash)
+        self.assertEqual(
+            document.gates[0].gate_template_global_id,
+            str(gate_template_id),
+        )
+        self.assertEqual(document.gates[0].gate_template_version, 3)
+        self.assertEqual(
+            document.gates[0].gate_template_snapshot_hash,
+            snapshot_hash,
+        )
+
+    def test_gate_template_binding_is_complete_and_legacy_zero_is_empty(self) -> None:
+        legacy = self.version_document(
+            gates=[
+                AttrDict(
+                    gate_key="G0",
+                    title="Feasibility",
+                    sequence=1,
+                    gate_template_global_id="",
+                    gate_template_version=0,
+                    gate_template_snapshot_hash="",
+                )
+            ]
+        )
+        with patch.object(
+            self.version_module,
+            "load_available_gate_template_snapshot",
+        ) as loader:
+            legacy.validate()
+        loader.assert_not_called()
+
+        incomplete = self.version_document(
+            gates=[
+                AttrDict(
+                    gate_key="G0",
+                    title="Feasibility",
+                    sequence=1,
+                    gate_template_global_id=str(
+                        UUID("27a34964-9987-4e3c-b010-2e5165782c62")
+                    ),
+                    gate_template_version=3,
+                    gate_template_snapshot_hash="",
+                )
+            ]
+        )
+        self.assert_controller_rejects(incomplete)
 
 
 if __name__ == "__main__":

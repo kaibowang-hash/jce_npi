@@ -196,10 +196,12 @@ function ProjectCockpit({
   cockpit,
   contextDataSource,
   domainWorkItemsDataSource,
+  navigate,
 }: {
   cockpit: ProjectCockpitViewModel;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
+  navigate: (target: string) => void;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
   const { project, templateRef, references, gates, permissions } = cockpit;
@@ -298,12 +300,21 @@ function ProjectCockpit({
                         <tr key={gate.globalId}>
                           <td>{formatNumber(locale, gate.sequence, 0)}</td>
                           <td>
-                            <strong data-language-exempt="identifier">
-                              {gate.key}
-                            </strong>{" "}
-                            <span data-language-exempt="business-data">
-                              {gate.title}
-                            </span>
+                            <Button
+                              onClick={() => {
+                                navigate(
+                                  `/projects/${project.globalId}/gates/${gate.globalId}`,
+                                );
+                              }}
+                              visual="ghost"
+                            >
+                              <strong data-language-exempt="identifier">
+                                {gate.key}
+                              </strong>{" "}
+                              <span data-language-exempt="business-data">
+                                {gate.title}
+                              </span>
+                            </Button>
                           </td>
                           <td>
                             <SemanticStatus label={t("Not started")} />
@@ -510,6 +521,7 @@ export default function ProjectPage({
       contextDataSource={contextDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
+      navigate={navigate}
     />
   );
 }

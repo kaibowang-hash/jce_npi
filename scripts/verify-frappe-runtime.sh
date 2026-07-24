@@ -12,6 +12,13 @@ base_url="http://127.0.0.1:${port}"
 runtime_administrator_password="${NPI_ADMINISTRATOR_PASSWORD:-dev-only-admin}"
 runtime_fixture_password="${NPI_RUNTIME_FIXTURE_PASSWORD:-DevOnly_Runtime_2026!}"
 site_guard="${repo_root}/scripts/verify_local_frappe_site.py"
+verification_mode="${1:-all}"
+
+if [[ "${verification_mode}" != "all" &&
+      "${verification_mode}" != "--gate-evidence-only" ]]; then
+  echo "Usage: scripts/verify-frappe-runtime.sh [--gate-evidence-only]" >&2
+  exit 2
+fi
 
 unset \
   FRAPPE_DB_HOST \
@@ -20,6 +27,7 @@ unset \
   FRAPPE_DB_TYPE \
   NPI_ADMINISTRATOR_PASSWORD \
   NPI_DATABASE_ROOT_PASSWORD \
+  NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
   NPI_PROJECT_WORK_RUNTIME_RUN_ID \
   NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
   NPI_RUNTIME_FIXTURE_PASSWORD
@@ -72,6 +80,7 @@ run_site_guard() {
       NPI_ADMINISTRATOR_PASSWORD \
       NPI_DATABASE_ROOT_PASSWORD \
       NPI_LOCAL_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
       NPI_PROJECT_WORK_RUNTIME_RUN_ID \
       NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
       NPI_RUNTIME_FIXTURE_PASSWORD
@@ -108,6 +117,7 @@ trap cleanup EXIT
     -u FRAPPE_DB_TYPE \
     -u NPI_ADMINISTRATOR_PASSWORD \
     -u NPI_DATABASE_ROOT_PASSWORD \
+    -u NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
     -u NPI_PROJECT_WORK_RUNTIME_RUN_ID \
     -u NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
     -u NPI_RUNTIME_FIXTURE_PASSWORD \
@@ -143,6 +153,7 @@ run_runtime_verifier() {
       FRAPPE_DB_TYPE \
       NPI_ADMINISTRATOR_PASSWORD \
       NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
       NPI_PROJECT_WORK_RUNTIME_RUN_ID \
       NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
       NPI_RUNTIME_FIXTURE_PASSWORD
@@ -191,26 +202,64 @@ run_project_work_runtime_verifier() {
   )
 }
 
-if ! run_runtime_verifier "${repo_root}/scripts/verify_frappe_runtime.py"; then
-  echo "Local Frappe runtime verification failed." >&2
-  tail -100 "${runtime_log}" >&2
-  exit 1
+gate_evidence_runtime_run_id="$(
+  "${bench_path}/env/bin/python" -c \
+    'from uuid import uuid4; print(uuid4().hex)'
+)"
+if [[ ! "${gate_evidence_runtime_run_id}" =~ ^[a-f0-9]{32}$ ]]; then
+  echo "Gate evidence runtime namespace generation failed." >&2
+  exit 2
 fi
 
-if ! run_runtime_verifier "${repo_root}/scripts/verify_project_runtime.py"; then
-  echo "Local Frappe Project runtime verification failed." >&2
-  tail -100 "${runtime_log}" >&2
-  exit 1
+run_gate_evidence_runtime_verifier() {
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_GATE_EVIDENCE_RUNTIME_RUN_ID="${gate_evidence_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_gate_evidence_runtime.py" \
+      --base-url "${base_url}"
+  )
+}
+
+if [[ "${verification_mode}" == "all" ]]; then
+  if ! run_runtime_verifier "${repo_root}/scripts/verify_frappe_runtime.py"; then
+    echo "Local Frappe runtime verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+
+  if ! run_runtime_verifier "${repo_root}/scripts/verify_project_runtime.py"; then
+    echo "Local Frappe Project runtime verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+
+  if ! run_project_work_runtime_verifier fresh; then
+    echo "Local Frappe Project work runtime verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+
+  if ! run_project_work_runtime_verifier replay-only; then
+    echo "Local Frappe Project work cross-process replay verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
 fi
 
-if ! run_project_work_runtime_verifier fresh; then
-  echo "Local Frappe Project work runtime verification failed." >&2
-  tail -100 "${runtime_log}" >&2
-  exit 1
-fi
-
-if ! run_project_work_runtime_verifier replay-only; then
-  echo "Local Frappe Project work cross-process replay verification failed." >&2
+if ! run_gate_evidence_runtime_verifier; then
+  echo "Local Frappe Gate evidence runtime verification failed." >&2
   tail -100 "${runtime_log}" >&2
   exit 1
 fi

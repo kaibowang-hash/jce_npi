@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01/P4-02 PASS; P4-03 ACTIVE**
+Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 ACTIVE**
 
 Anchor date: 2026-07-22
 
@@ -335,3 +335,54 @@ planned-versus-actual, and unified My Work acceptance remains later scope.
 acceptance. P4-03 is activated under the existing automatic-transition
 authority; the complete Level 3 gate remains required at the later Phase/PR
 boundary.
+
+## 14. P4-03 completed boundary
+
+P4-03 owns an independent versioned Gate Template aggregate, exact optional
+bindings from new Project Template versions, one-time frozen Project Gate
+requirement assignments, append-only exact WBS/File Revision evidence, and the
+live trilingual Gate evidence workspace.
+
+It does not add Gate review or approval authority, P0 normal-pass policy,
+conditional pass, waiver, decision snapshots, reopen/invalidation behavior,
+normal-user upload/download, production template contents, future evidence
+resolvers, live notifications, or production ERPNext/scanner integration.
+
+## 15. P4-03 exit decision
+
+**P4-03 PASS; P4-04 ACTIVE.** The bounded Gate Template and controlled-evidence
+slice now provides:
+
+- deterministic, contiguous, immutable published Gate Template versions with
+  applicable Project types, ordered requirement definitions, exact hashes, and
+  historical reads after root disablement;
+- legacy-compatible optional Gate Template references on Project Template
+  Gate definitions without rewriting historical P4-01 snapshots;
+- retry-safe one-time freezing of the exact Gate Template reference, explicit
+  Gate due date, requirement owner/reviewer identities, dates, evidence kinds,
+  actor, time, audit, and immutable snapshot;
+- append-only exact same-Project/same-tenant WBS and private File Revision
+  evidence with source version/hash checks, actor-bound idempotency, optimistic
+  concurrency, and rollback;
+- private File identity revalidation, real scanner-owned state, same-content
+  cross-Project denial, and URL-free BFF metadata;
+- authorization before protected-object resolution, including denial for an
+  external Website User whose identity equals the stored Project owner; and
+- a live industrial Gate evidence workspace with direct `en`, `zh`, and
+  `zh-TW` normal/non-normal coverage.
+
+The cumulative Level 3 gate passed the 276-Python/237-frontend aggregate before
+the final two-file authorization-order repair, 20 directly affected tests
+after that repair, two successful Site migrations, the complete P4-01/P4-02/
+P4-03 real runtime, 153 non-visual browser cases, forced and clean exact
+159-case visual matrices, trilingual original-resolution review, security,
+Task Diff/trace, and independent release review. Complete evidence is recorded
+in `implementation/evidence/phase-4/p4-03-validation.md`.
+
+`FR-SG-001`, `FR-SG-002`, and `FR-SG-004` remain technically verified
+foundations because production condition/skip policy, P0 normal-pass blocking,
+future evidence resolvers, and decision-time snapshots remain P4-04 or later
+scope. `FR-CO-006` remains a foundation until later external-user,
+notification, email, print, and delivery surfaces exist. P4-04 is activated
+under the existing automatic-transition authority. Phase 3 remains
+`TECHNICAL_PASS_PENDING_UAT`.

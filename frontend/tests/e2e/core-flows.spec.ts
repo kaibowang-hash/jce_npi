@@ -139,7 +139,7 @@ test.describe("primary-action and high-risk interaction invariants", () => {
   test("ImpactReview manages initial focus, Escape, focus return, and the focus boundary", async ({
     page,
   }) => {
-    await openPrototype(page, "/projects/PJ-26018/gates/G5");
+    await openPrototype(page, "/demo/projects/PJ-26018/gates/G5");
     const triggerHost = page.locator('[data-visual-primary="true"]');
     const trigger = page.getByRole("button", {
       name: "Review impact and decide",

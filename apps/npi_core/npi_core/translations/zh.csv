@@ -1081,3 +1081,194 @@ Plan Baseline Snapshot,计划基线快照
 Captured At,捕获时间
 Captured By,捕获人
 Secure pagination is unavailable.,安全分页暂不可用。
+The live Gate evidence request is being refreshed.,正在刷新实时阶段门证据请求。
+Optional,可选
+Private file revision,私有文件修订版
+Scan pending,扫描待处理
+No threat found,未发现威胁
+Scan failed,扫描失败
+Threat detected,检测到威胁
+Missing evidence,缺失证据
+Exact evidence attached,已关联精确证据
+Evidence scan pending,证据扫描待处理
+Evidence scan passed,证据扫描已通过
+Evidence scan failed,证据扫描失败
+Evidence threat detected,证据检测到威胁
+Loading Gate evidence workspace,正在加载阶段门证据工作区
+Gate evidence is unavailable,阶段门证据不可用
+The Gate evidence workspace was not found or is not available to your account.,未找到该阶段门证据工作区，或您的账户无权访问该工作区。
+Gate evidence access is not available,阶段门证据访问不可用
+Your account cannot open this Gate evidence workspace. No protected evidence data was displayed.,您的账户无法打开此阶段门证据工作区。未显示任何受保护的证据数据。
+The Gate evidence address is invalid,阶段门证据地址无效
+Open Gate evidence from an authorized Project Gate reference.,请从已授权的项目阶段门引用打开阶段门证据。
+The Gate evidence view is out of date,阶段门证据视图已过期
+Reload Gate evidence before continuing with current data.,请先重新加载阶段门证据，再继续使用当前数据。
+Gate evidence could not be loaded,无法加载阶段门证据
+Retry the live Gate evidence request or share the displayed reference ID with support.,请重试实时阶段门证据请求，或将显示的参考编号提供给支持人员。
+The Gate evidence response could not be used safely,无法安全使用阶段门证据响应
+No Gate evidence was displayed. Share the displayed reference ID with support before trying another action.,未显示任何阶段门证据。请先将显示的参考编号提供给支持人员，再尝试其他操作。
+Reload Gate evidence,重新加载阶段门证据
+Gate requirements,阶段门需求
+Classification,分类
+Controlled evidence,受控证据
+Evidence,证据
+Not applicable,不适用
+No controlled evidence is attached.,未关联任何受控证据。
+Required evidence is missing,缺少必需证据
+Evidence scan requires attention,证据扫描需要关注
+Exact evidence references recorded,已记录精确证据引用
+You have view-only access. Evidence attachment is not available in this workspace.,您仅有查看权限。此工作区不提供证据关联功能。
+No evidence,无证据
+This Gate has frozen requirements but no controlled evidence references.,此阶段门已冻结需求，但没有受控证据引用。
+Unsafe scan state remains visible,不安全的扫描状态仍然可见
+"Pending, failed, or infected file scans are not represented as clean evidence.",待处理、失败或已感染的文件扫描不会被视为未发现威胁的证据。
+Gate version,阶段门版本
+Required requirements,必需需求
+Missing required evidence,缺失的必需证据
+Unsafe scan results,不安全的扫描结果
+Evidence references,证据引用
+Frozen Gate context,已冻结的阶段门上下文
+Evidence kind,证据类别
+Source object type,源对象类型
+Source global ID,来源全局标识符
+Exact revision,精确修订版
+Object hash,对象哈希
+Recorded,记录时间
+Recorded by,记录人
+File name,文件名
+File media type,文件媒体类型
+File size,文件大小
+Select a requirement with evidence to inspect its exact controlled reference.,选择一个包含证据的需求，以查看其精确的受控引用。
+Requirement key,需求键
+Requirement title,需求标题
+Priority,优先级
+Reviewers,评审人
+Allowed evidence kinds,允许的证据类别
+Evidence count,证据数量
+Gate template global ID,阶段门模板全局标识符
+Gate template version,阶段门模板版本
+Gate template snapshot hash,阶段门模板快照哈希
+Requirement snapshot hash,需求快照哈希
+Frozen,已冻结
+Frozen by,冻结人
+Requirement evidence completeness does not mean this Gate is ready for a decision.,需求证据完整性并不意味着此阶段门已具备决策条件。
+File revisions can only be changed through an authorized NPI file command.,文件修订版只能通过已授权的 NPI 文件命令更改。
+File scan results can only be changed by an authorized scanner operation.,文件扫描结果只能由已授权的扫描操作更改。
+Gate evidence references can only be added through an authorized NPI Gate command.,阶段门证据引用只能通过已授权的 NPI 阶段门命令添加。
+Controlled Gate evidence history cannot be deleted.,受控阶段门证据历史不能删除。
+{field} must be a JSON object.,{field} 必须为结构化数据对象。
+A controlled evidence snapshot cannot contain a raw file URL.,受控证据快照不能包含原始文件地址。
+The Gate requirements are already frozen.,阶段门需求已冻结。
+Freeze the Gate requirements before attaching evidence.,关联证据前请先冻结阶段门需求。
+The Gate Template version is unavailable.,阶段门模板版本不可用。
+The exact evidence source is unavailable.,精确证据来源不可用。
+The evidence source version or hash has changed.,证据来源版本或哈希已更改。
+The exact evidence reference is already attached.,已关联该精确证据引用。
+Requirement assignment keys must be unique.,需求分配键必须唯一。
+Assign every requirement from the selected Gate Template version.,请为所选阶段门模板版本中的每项需求进行分配。
+Enter a valid list.,请输入有效列表。
+Enter unique Project member identities.,请输入唯一的项目成员标识。
+Select an evidence kind allowed by this requirement.,请选择此需求允许的证据类别。
+This requirement already contains the maximum number of evidence references.,此需求的证据引用数量已达到上限。
+Select Project members from this Project.,请选择此项目中的项目成员。
+Select enabled internal Project members.,请选择已启用的内部项目成员。
+Select a requirement from this Gate.,请选择此阶段门中的需求。
+The requested Gate is unavailable.,请求的阶段门不可用。
+Values must be unique.,值必须唯一。
+Enter a lowercase SHA-256 hash.,请输入小写 SHA-256 哈希。
+A published Gate Template version cannot be changed.,已发布的阶段门模板版本不能更改。
+Select at least one supported evidence kind.,请至少选择一种受支持的证据类别。
+Evidence kinds must be unique.,证据类别必须唯一。
+Enter a positive Gate Template version.,请输入正的阶段门模板版本。
+Enter valid Gate requirement definitions.,请输入有效的阶段门需求定义。
+Gate requirement keys must be unique.,阶段门需求键必须唯一。
+Publish the current Gate Template version before creating a revision.,创建修订版前请先发布当前阶段门模板版本。
+Select a published Gate Template version.,请选择已发布的阶段门模板版本。
+Add at least one Gate requirement before publishing.,发布前请至少添加一项阶段门需求。
+Add no more than 500 Gate requirements.,请添加不超过 500 项阶段门需求。
+Select only evidence kinds supported by Gate requirement freezing.,请仅选择阶段门需求冻结支持的证据类别。
+Publish each Gate Template version before creating the next.,请在创建下一版本前发布当前阶段门模板版本。
+Document Global ID,文档全局标识符
+Frappe Content Hash,Frappe 内容哈希
+Select a private file.,请选择私有文件。
+The file revision does not have a complete controlled identity.,文件修订版没有完整的受控标识。
+The file revision does not match its Project and tenant.,文件修订版与其项目和租户不匹配。
+Select a supported scan state.,请选择受支持的扫描状态。
+A pending file cannot have a completed scan observation.,待处理文件不能具有已完成的扫描观察结果。
+A completed scan state requires an observation time.,已完成的扫描状态必须具有观察时间。
+A released file revision cannot be reopened.,已发布的文件修订版不能重新打开。
+Only a clean file revision can be released.,只有未发现威胁的文件修订版才能发布。
+The file revision is unavailable as controlled evidence.,该文件修订版不能用作受控证据。
+Gate evidence references cannot be changed.,阶段门证据引用不能更改。
+Gate Global ID,阶段门全局标识符
+Requirement Global ID,需求全局标识符
+Source Global ID,来源全局标识符
+Requirement Key,需求键
+Source Version,来源版本
+Source Hash,来源哈希
+Source Snapshot,来源快照
+Select a supported evidence source.,请选择受支持的证据来源。
+The evidence reference does not match its Project and Gate.,证据引用与其项目和阶段门不匹配。
+The evidence source version or hash does not match.,证据来源版本或哈希不匹配。
+Gate evidence records can only be changed through an authorized NPI Gate command.,阶段门证据记录只能通过已授权的 NPI 阶段门命令更改。
+The Gate Template reference is incomplete.,阶段门模板引用不完整。
+Gate Template Global ID,阶段门模板全局标识符
+Gate Template Version must be greater than zero.,阶段门模板版本必须大于零。
+Gate Template Snapshot Hash,阶段门模板快照哈希
+Optimistic Version must advance by one.,乐观版本必须递增一。
+The Gate command must freeze its requirements.,阶段门命令必须冻结其需求。
+Unfrozen Gate requirements cannot contain snapshot data.,未冻结的阶段门需求不能包含快照数据。
+Only a configured Gate can freeze requirements.,只有已配置的阶段门才能冻结需求。
+Frozen Gate requirement data is incomplete.,已冻结的阶段门需求数据不完整。
+Requirement Snapshot must be a valid frozen snapshot.,需求快照必须是有效的冻结快照。
+Requirement Snapshot does not match this Gate.,需求快照与此阶段门不匹配。
+Requirement Snapshot contains an invalid requirement.,需求快照包含无效需求。
+Owner Member Global ID,负责人全局标识符
+Reviewer Member Global ID,评审人全局标识符
+Reviewer member identities must be unique.,评审人成员标识必须唯一。
+Requirement Snapshot Hash,需求快照哈希
+Requirement Snapshot Hash does not match its content.,需求快照哈希与其内容不匹配。
+Select an existing Gate Template.,请选择现有阶段门模板。
+Allowed Evidence Kinds must be a JSON array.,允许的证据类别必须为数据数组。
+Enter a valid Gate Template.,请输入有效的阶段门模板。
+Select an available published Gate Template version.,请选择可用的已发布阶段门模板版本。
+The Gate Template version does not support every applicable Project type.,阶段门模板版本不支持所有适用的项目类型。
+Enter a complete Gate Template reference.,请输入完整的阶段门模板引用。
+Enter a valid Gate Template snapshot hash.,请输入有效的阶段门模板快照哈希。
+Revision Key,修订版键
+File Identity,文件标识
+File Name,文件名
+MIME Type,媒体类型
+Size in Bytes,字节数
+Private,私有
+Scan Observed At,扫描观察时间
+NPI Gate Evidence Reference,NPI 阶段门证据引用
+Reference Key,引用键
+Evidence Kind,证据类别
+file_revision,文件修订版
+Source Object Type,来源对象类型
+Created By,创建人
+Created At,创建时间
+NPI Gate Requirement Definition,NPI 阶段门需求定义
+Requirement Title,需求标题
+Requirement Classification,需求分类
+required,必需
+optional,可选
+Requirement Priority,需求优先级
+P0,P0
+P1,P1
+P2,P2
+Allowed Evidence Kinds,允许的证据类别
+Gate Template Version,阶段门模板版本
+Requirements Frozen,需求已冻结
+Gate Due Date,阶段门截止日
+Requirement Snapshot,需求快照
+Requirements Frozen At,需求冻结时间
+Requirements Frozen By,需求冻结人
+NPI Gate Template,NPI 阶段门模板
+Gate Template Code,阶段门模板编码
+Gate Template Title,阶段门模板标题
+NPI Gate Template Version,NPI 阶段门模板版本
+Gate Template,阶段门模板
+Gate Template Version Title,阶段门模板版本标题
+Gate Requirement Definitions,阶段门需求定义

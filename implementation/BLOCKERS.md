@@ -33,6 +33,13 @@ Generic/versioned NPI-owned Project/Gate infrastructure, explicit synthetic
 fixtures, contracts, automated tests, localization, UI and documentation can
 continue.
 
+P4-03 deliberately did not install production Gate condition/skip/duration
+content, RACI-to-approval mapping, evidence-eligibility expansion,
+scanner/provider policy, P0 pass policy, waiver authority, or automatic
+invalidation rules. These remain scoped Class-B holds. P4-04 may continue only
+with a versioned synthetic policy and safe-default-denied behavior that does
+not claim production approval authority.
+
 ## Resolved checkpoints
 
 - Phase 1.1 fresh target-container validation passed on 2026-07-21 after repair
@@ -60,4 +67,11 @@ continue.
   eight-case browser spec, supplemental shards, forced and clean exact
   147-case visual runs, six original-resolution trilingual reviews, and
   independent release review passed on 2026-07-23. P4-02 is `PASS`; P4-03 is
-  active.
+  was activated.
+- P4-03's independent versioned Gate Template, frozen Project requirement
+  snapshots, exact append-only WBS/private File Revision evidence, live scan
+  truth, URL-free BFF, and trilingual live workspace passed the triggered Level
+  3 gate on 2026-07-24. The final evidence includes additive/idempotent
+  migrations, complete P4-01/P4-02/P4-03 runtime, 153 non-visual browser cases,
+  159 forced and clean exact visual cases, original-resolution review, and
+  independent security/trace/release review. P4-04 is active.

@@ -10,6 +10,8 @@ export interface AppRoute {
   qualityFailure: boolean;
   projectGlobalId: string | null;
   projectMode: "live" | "demo" | null;
+  gateGlobalId: string | null;
+  gateMode: "live" | "demo" | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -20,9 +22,15 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
   const pathname = location.pathname;
   const parameters = new URLSearchParams(location.search);
   const demoProjectMatch = /^\/demo\/projects\/([^/]+)\/?$/u.exec(pathname);
+  const demoGateMatch = /^\/demo\/projects\/([^/]+)\/gates\/([^/]+)\/?$/u.exec(
+    pathname,
+  );
   const liveProjectMatch = /^\/projects\/([^/]+)\/?$/u.exec(pathname);
+  const liveGateMatch = /^\/projects\/([^/]+)\/gates\/([^/]+)\/?$/u.exec(
+    pathname,
+  );
   const screen: ScreenId =
-    pathname.startsWith("/projects/") && pathname.includes("/gates/")
+    demoGateMatch || liveGateMatch
       ? "gate"
       : demoProjectMatch
         ? "project"
@@ -37,15 +45,16 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
                 : "work";
   const projectMode =
     screen === "project" ? (demoProjectMatch ? "demo" : "live") : null;
+  const gateMode = screen === "gate" ? (demoGateMatch ? "demo" : "live") : null;
+  const liveRoute = projectMode === "live" || gateMode === "live";
   return {
+    gateGlobalId: liveGateMatch?.[2] ?? null,
+    gateMode,
     screen,
     pathname,
-    scenario:
-      projectMode === "live"
-        ? "normal"
-        : parseScenario(parameters.get("scenario")),
+    scenario: liveRoute ? "normal" : parseScenario(parameters.get("scenario")),
     qualityFailure: parameters.get("quality") === "failed",
-    projectGlobalId: liveProjectMatch?.[1] ?? null,
+    projectGlobalId: liveProjectMatch?.[1] ?? liveGateMatch?.[1] ?? null,
     projectMode,
   };
 }
