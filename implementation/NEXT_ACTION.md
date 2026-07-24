@@ -1,6 +1,6 @@
 # Next Action
 
-Status: `CHECKPOINT — P4-04 PLANNED; IMPLEMENTATION NOT STARTED`
+Status: `CHECKPOINT — P4-04 DOMAIN FOUNDATION IMPLEMENTED; TASK IN PROGRESS`
 
 First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`.
 
@@ -35,14 +35,16 @@ obligation.
 - Current unfinished atomic task:
   `P4-04 — Review, decision, snapshot, and reopen`.
 
-P4-04 has completed only its read-only repository/specification inventory and
-the implementation boundary in
-`implementation/evidence/phase-4/p4-04-plan.md`. Its parallel implementation
-agents were stopped before producing shared-file changes, and the incomplete
-local transport-role draft was removed. No P4-04 product, contract, Schema,
-permission, backend, frontend, translation, runtime, test, or visual change is
-part of this checkpoint. P4-04 is **not implemented, not validated, and not
-PASS**.
+P4-04 now has its read-only implementation boundary plus the first bounded
+domain checkpoint in
+`implementation/evidence/phase-4/p4-04-domain-checkpoint.md`. The pure domain
+model implements versioned synthetic review policies, frozen authority slots,
+parallel/sequential/conditional review selection, fail-closed normal decision
+preconditions, immutable server-built decision snapshots, new-cycle reopen,
+and a current-decision downstream guard. Its 21-test-plus-3-subtest affected domain lane and
+format/lint/whitespace checks pass. No persistence, API, permission, exception,
+automatic invalidation, impact action, UI, localization, runtime, browser, or
+visual acceptance is claimed. P4-04 remains **IN PROGRESS and not PASS**.
 
 P4-04 owns `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` within a
 synthetic, versioned, safe-default-denied Gate review/decision slice. It must
@@ -54,6 +56,10 @@ Do not implement P4-05 live My Work/activity/notification delivery, production
 template contents, guessed RACI-to-approval mappings, production waiver or
 invalidation rules, normal-user file routes, production scanner/DMS behavior,
 production ERPNext access, or any held production mapping in P4-04.
+
+Resume with the additive P4-04 DocTypes and repository/controller boundary,
+including exception and invalidation event persistence. Keep policy fixtures
+synthetic and do not activate P4-05 before the complete P4-04 Gate passes.
 
 ## Passed evidence — do not repeat for handoff
 

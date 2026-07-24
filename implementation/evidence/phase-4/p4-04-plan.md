@@ -1,6 +1,6 @@
 # P4-04 Implementation Boundary — Review, Decision, Snapshot, and Reopen
 
-Status: **CHECKPOINTED — boundary complete; implementation and validation not started**
+Status: **IN PROGRESS — boundary and domain foundation complete; full slice not validated**
 
 Recorded: 2026-07-24
 
@@ -27,6 +27,12 @@ Resume by reviewing this boundary against the latest committed recovery files,
 then implement only P4-04. Use Level 1 checks while repairing and run its
 applicable contract/Schema/auth-triggered Level 3 boundary once after the
 complete slice stabilizes. Do not activate P4-05 before that Gate passes.
+
+The first implementation checkpoint is recorded in
+`p4-04-domain-checkpoint.md`: the persistence-neutral review policy/cycle
+domain foundation and its affected tests pass. Resume at persistence and
+authorized controllers; do not repeat the domain checkpoint or describe it as
+complete P4-04 acceptance.
 
 ## 1. Repository facts
 
