@@ -4,18 +4,23 @@
 
 None.
 
-## Current P5-00 scope
+## Current P5-01 scope
 
 Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.
 `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-EBOM` is active under `implementation/ACTIVE_EXECUTION_GOAL.md` and
+EBOM` is `PASS`. `P5-01 — Document and design revision` is active under
+`implementation/phase-5-requirement-anchor.md`,
+`implementation/ACTIVE_EXECUTION_GOAL.md`, and
 `implementation/NEXT_ACTION.md`.
 
-P5-00 is a controller/anchor task. It may allocate `FR-DS-001..FR-DS-014`,
-reconcile the M4 document/design/baseline/EBOM boundary and record Class-B
-holds, migration, rollback and atomic-task ordering. It must not start P5-01
-product code, invent production document/approval/retention/EBOM/CAD/PDM
-rules, connect ERPNext, or move formal Item/MBOM ownership into NPI One.
+P5-01 may implement the bounded Controlled Document/Document Revision/private
+File Revision vertical slice, Project-scoped confidentiality/download audit,
+locks, capability-truth preview/download fallback, and the optional
+connector-unavailable seam. It must not invent production document numbering,
+classification, retention, scanner/viewer, sharing, revision or CAD/PDM rules;
+review/release/baseline/EBOM/formal publish remain P5-02 through P5-05.
+Production ERPNext/CAD/PDM access and external file retrieval remain
+prohibited or fail closed.
 
 The open production Project-health formula, threshold, lifecycle authority,
 completion-prerequisite, notification-delivery and external-collaboration facts
@@ -110,4 +115,8 @@ must preserve that boundary.
   tests, 2,221 direct trilingual sources, additive/idempotent Site
   synchronization, complete cumulative runtime, 227 non-visual browser cases,
   forced and clean 188-case exact visual matrices, and independent review.
-  P4-05 and Phase 4 are `PASS`; P5-00 is active.
+  P4-05 and Phase 4 are `PASS`; that Gate activated P5-00.
+- P5-00 allocated all fourteen Phase 5 design/document requirements to the
+  Pack's five M4 tasks, froze file/document/baseline/EBOM/ERP ownership,
+  retained external-sharing, preview, CAD/PDM and ERP execution holds, and
+  activated only P5-01 without changing Schema or runtime behavior.

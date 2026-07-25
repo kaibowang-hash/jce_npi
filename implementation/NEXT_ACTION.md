@@ -1,8 +1,8 @@
 # Next Action
 
-Status: `PHASE 4 PASS — P5-00 ACTIVE`
+Status: `P5-00 PASS — P5-01 ACTIVE`
 
-Recovery time: `2026-07-25T17:54:13Z`
+Recovery time: `2026-07-25T18:21:56Z`
 
 Active execution goal:
 `implementation/ACTIVE_EXECUTION_GOAL.md`
@@ -22,10 +22,10 @@ Required and only development branch:
 - P4-05 result: `PASS — LEVEL 3 FULL RELEASE GATE`.
 - Current authorized implementation phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`).
-- Current unfinished atomic task:
+- Completed Phase 5 controller task:
   `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-  EBOM`.
-- First product task after P5-00 passes:
+  EBOM` (`PASS`).
+- Current unfinished atomic task:
   `P5-01 — Document and design revision`.
 - Compatibility Pack task:
   `M4-01 — Document and design revision`.
@@ -79,44 +79,67 @@ result is claimed.
 The host Node 18 `make verify` preflight rejection ran no product assertion.
 The retained Node 24 target evidence above is authoritative.
 
-## Current P5-00 task
+## Current P5-01 task
 
-Create `implementation/phase-5-requirement-anchor.md` before any Phase 5
-business code. P5-00 must:
+Implement only the minimum complete document/design-revision vertical slice
+defined by `implementation/phase-5-requirement-anchor.md`.
 
-1. read the Phase 5/M4 Pack boundary and relevant accepted ADRs/contracts;
-2. allocate `FR-DS-001` through `FR-DS-014` without changing their acceptance
-   meaning;
-3. reconcile document/design revision, controlled files, baselines, impact
-   invalidation, EBOM revision/comparison and formal publish-request scope;
-4. preserve ERPNext ownership of formal Item/MBOM/manufacturing execution and
-   prohibit production ERPNext access;
-5. explicitly allocate or hold external sharing (`FR-DS-008`), ERP publish
-   (`FR-DS-013`) and CAD/PDM connector (`FR-DS-014`);
-6. record Class-B holds, scope/non-scope, requirement-to-task mapping,
-   changed-files-to-tests expectations, migration and rollback;
-7. define the exact P5-01 through final Phase 5 task sequence using Pack M4;
-8. update trace/status/decision/risk/blocker/recovery records;
-9. run the applicable P5-00 documentation/trace Gate; and
-10. commit, push, confirm the remote SHA, then automatically activate P5-01.
+Primary Requirement IDs:
 
-P5-00 must not invent a production document classification, numbering,
-approval, retention, baseline, EBOM, Item/MBOM mapping, sharing, CAD/PDM or
-ERPNext rule. It must not start P5-01 product code early.
+- `FR-DS-001`
+- `FR-DS-003`
+- `FR-DS-004`
+- `FR-DS-007`
+- `FR-DS-008`
+- `FR-DS-009`
+- `FR-DS-014`
+
+P5-01 must:
+
+1. create `implementation/evidence/phase-5/p5-01-plan.md` with exact scope,
+   non-scope, Class-B holds, Requirement → Code → Test → Evidence and
+   changed-files → affected-tests;
+2. set only the seven P5-01 trace rows to `IN_PROGRESS_P5_01`;
+3. inventory and extend, without reinterpreting, the existing private
+   `FileRevision`, Project authorization, idempotency, audit, BFF, App Shell
+   and translation foundations;
+4. keep `ControlledDocument`, `DocumentRevision`, and exact private
+   `FileRevision` as distinct identities;
+5. deliver additive controlled-document/revision/relationship/lock/history
+   persistence with strict BFF contracts, server-side tenant/Project/object
+   authorization, CSRF, expected versions, actor-bound idempotency, audit and
+   transaction rollback;
+6. deliver Project-scoped confidentiality and authorized download audit,
+   capability-truth preview/download fallback, and explicit unavailable
+   external-retrieval/CAD-PDM states;
+7. deliver the live industrial Design/Documents workspace with complete
+   literal-English and direct `zh`/`zh-TW` coverage; and
+8. run the applicable Level 1 repair checks and one complete P5-01 Level 2
+   Task Gate, review the diff, update evidence/recovery, commit, push, confirm
+   the remote SHA, and automatically activate P5-02.
+
+P5-01 must not review, approve, release, supersede, obsolete, baseline,
+publish an EBOM, create an ERP execution request, enable external retrieval,
+claim an Office/CAD viewer, connect CAD/PDM/ERPNext, install a production
+document policy, or treat the existing `FileRevision.released` flag as a full
+document-release workflow. Bottom-level Frappe File retention for released
+content remains a mandatory P5-02 server-side release invariant.
 
 ## Exact recovery steps
 
 1. Fetch `origin`, check out `codex/npi-v1.2-implementation`, and compare local
    and remote HEAD/ahead-behind without reset, rebase or force push.
-2. Confirm the P4-05/Phase 4 checkpoint is committed and pushed; record its
-   exact remote SHA in `ACTIVE_EXECUTION_GOAL.md`.
-3. Reuse `implementation/phase-4-gate.md` and
-   `implementation/evidence/phase-4/p4-05-validation.md`; do not rerun their
-   complete Gates only to restore context.
-4. Read the Phase 5/M4 requirement sources, `FR-DS-001..FR-DS-014`, relevant
-   contracts, data ownership, accepted ADRs and applicable Skills.
-5. Create and validate `implementation/phase-5-requirement-anchor.md`.
-6. Keep Phase 3 external UAT and production ERPNext/rule packages as scoped
-   holds; they do not block safe NPI-owned P5-00 work.
-7. After P5-00 `PASS`, create a recoverable checkpoint, commit, push, confirm
-   the remote SHA and activate only `P5-01 — Document and design revision`.
+2. Confirm the P5-00 checkpoint is committed and pushed; record its exact
+   remote SHA in the P5-01 plan/recovery update.
+3. Reuse the complete Phase 4 Gate and P5-00 documentation/trace evidence; do
+   not rerun either merely to restore context.
+4. Read only the Phase 5 anchor, the seven P5-01 trace rows, their indexed
+   requirement text, directly related file/project/contracts/ADRs and the
+   applicable `frappe-safe-change`, `npi-domain-guard`, `industrial-ux`, and
+   `frappe-i18n` Skills.
+5. Create and validate the P5-01 plan before product code.
+6. Keep Phase 3 external UAT, production document/rule/provider packages,
+   external retrieval and production ERPNext/CAD/PDM as scoped holds; they do
+   not block the safe NPI-owned P5-01 slice.
+7. Implement and validate only P5-01, create a recoverable checkpoint, commit,
+   push, confirm the remote SHA and automatically activate P5-02.

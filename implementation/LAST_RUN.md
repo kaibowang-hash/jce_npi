@@ -1,5 +1,63 @@
 # Last Run
 
+## P5-00 requirement anchor PASS; P5-01 activated — 2026-07-25T18:21:56Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting and last confirmed remote checkpoint:
+  `028d551d4e02ad5700b165c21409e14b647babf0` (`0` ahead / `0` behind).
+- Atomic task:
+  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+  EBOM`.
+- Result:
+  `PASS — LEVEL 2 DOCUMENTATION/TRACE TASK GATE`.
+- Current task:
+  `P5-01 — Document and design revision`.
+- Current release checkpoint:
+  the P5-00 documentation/trace changes are in this commit; confirm and record
+  the exact remote SHA immediately after push.
+- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; named business UAT and
+  provenance-backed sanitized data remain externally unsigned.
+
+### Delivered boundary
+
+- Allocated `FR-DS-001..014` to exactly P5-01 through P5-05 under the M4 Pack,
+  without promoting any requirement to implemented.
+- Froze distinct Controlled Document, Document Revision and private File
+  Revision identities; immutable baseline semantics; NPI-owned EBOM revision
+  versus ERPNext-owned formal Item/MBOM; and explicit Mock/sandbox-ready
+  execution-request truth.
+- Recorded production document/revision/release/share/scanner/preview/
+  dependency/EBOM/ERP/CAD-PDM inputs as scoped Class-B holds.
+- Retained actual external retrieval, real Office/CAD preview, CAD/PDM
+  connectivity and ERPNext execution as held/later acceptance. The generic
+  Execution Request and in-memory reliable-message seed are not P5-05 evidence.
+- Added Phase 5 risk, decision, blocker, recovery, migration/rollback and
+  changed-files-to-tests records. No Schema, runtime, route, credential,
+  production policy, business record or external request changed.
+
+### Validation
+
+- Requirement/trace review: all fourteen `FR-DS` requirements retain their
+  original Pack acceptance and have one explicit primary task/evidence path.
+- Ownership/security review: `PASS` with no Hard Blocker; exact-file retention,
+  raw-URL denial, independent capabilities, fail-closed external access and
+  no-fake-ERP-success boundaries are frozen.
+- P5-00 checks: safe YAML parse; 173 unique trace IDs; exact DS allocation and
+  evidence paths; required anchor/current-state/hold/ownership assertions;
+  documentation-only change surface; fake-success/production-activation scan;
+  Markdown target checks; and `git diff --check`.
+- Product tests, migration, runtime, browser, i18n extraction and visual
+  matrices were not rerun because P5-00 changes only documentation and trace
+  state and the accepted Phase 4 evidence is unaffected.
+
+Complete evidence:
+
+- `implementation/phase-5-requirement-anchor.md`
+- `implementation/evidence/phase-5/p5-00-validation.md`
+
+Automatic continuation activates only P5-01. P5-02 through P5-05 remain
+inactive until their predecessors pass.
+
 ## P4-05 and Phase 4 Full Release Gate PASS; P5-00 activated — 2026-07-25T17:54:13Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -234,24 +234,29 @@ pending until that proof is produced in Codespaces.
   `FR-PM-004`; no open acceptance is silently promoted.
 - Current phase: `5 — Part Design, Documents, Baselines, and EBOM`
   (`IN_PROGRESS`).
-- Current unfinished controller task:
+- Completed Phase 5 controller task:
   `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-  EBOM`.
-- P5-00 must create `implementation/phase-5-requirement-anchor.md`, allocate
-  `FR-DS-001` through `FR-DS-014`, reconcile M4 document/file/baseline/EBOM and
-  ERP ownership, preserve Class-B holds, and define the Phase 5 task sequence
-  before product code begins.
-- First Phase 5 product task after P5-00 passes:
+  EBOM` (`PASS`). It changed documentation and trace state only.
+- Current unfinished controller task:
   `P5-01 — Document and design revision`, compatible with
   `M4-01 — Document and design revision`.
+- P5-01 delivers only the bounded Controlled Document/Document Revision/exact
+  private File Revision, relationship, lock, confidentiality/download-audit,
+  preview-capability and unavailable-connector slice defined in
+  `implementation/phase-5-requirement-anchor.md`.
+- Review/release, baselines, EBOM and formal publish requests remain P5-02
+  through P5-05. External retrieval, real Office/CAD preview, CAD/PDM and real
+  ERPNext execution remain held/later acceptance and cannot be represented as
+  operational.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
   a global blocker. Phase 5 is active under automatic-transition authority.
   Production ERPNext remains prohibited, and ambiguous production rules remain
   scoped holds rather than invented defaults.
 
-Resume P5-00 only from `implementation/NEXT_ACTION.md`,
-`implementation/phase-4-gate.md`, the Phase 5/M4 Pack boundary,
-`FR-DS-001..FR-DS-014`, relevant contracts/ownership/accepted ADRs and
-applicable Skills. Do not repeat the passing Phase 4 Full Release Gate merely
-to restore context. See `implementation/LAST_RUN.md` for exact evidence.
+Resume P5-01 only from `implementation/NEXT_ACTION.md`,
+`implementation/phase-5-requirement-anchor.md`, the seven P5-01 trace rows,
+their indexed requirements, directly related contracts/ownership/accepted ADRs
+and applicable Skills. Reuse the passing Phase 4 Full Release Gate and P5-00
+documentation/trace Gate; do not repeat either merely to restore context. See
+`implementation/LAST_RUN.md` for exact evidence.

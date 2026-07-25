@@ -86,7 +86,42 @@ continue to use versioned configurable rules, exact frozen authorities,
 synthetic fixtures, and fail-closed unavailable states. No production policy
 or default is installed.
 
-## 3. Phase 3 business acceptance package
+## 3. Phase 5 document, baseline, EBOM, and connector activation package
+
+Before production document/release, external sharing, CAD/PDM, or formal
+Item/MBOM behavior is activated, provide one owner-approved versioned package:
+
+1. Document types, required metadata, prefix/numbering series, uniqueness and
+   reservation scope, major/minor revision rules, effective dates, replacement
+   semantics, lifecycle transitions, and retention/destruction policy.
+2. Review/release roles, exact approval and segregation rules, delegation,
+   electronic-confirmation or reauthentication strength, release/baseline
+   authority, and the required G2/G5/G6/ECN baseline contents.
+3. Confidentiality classes, Project/customer access rules, download/export
+   audit and watermark requirements, external identity and share-delivery
+   mechanism, expiry/revocation rules, and incident response.
+4. File upload limits, MIME allowlist, antivirus/scanner provider and
+   quarantine behavior, PDF/image/Office preview policy, trusted derived-file
+   rules, viewer origins, signed-link lifetimes, and error/retention semantics.
+5. The authoritative document-to-Project/product/part/Tooling/Trial/Gate/change
+   relationship requirements and automatic impact/invalidation matrix.
+6. EBOM numbering, line identity, quantity precision, UOM, alternates,
+   effectivity, attribute set, review/release conditions, Item conversion, and
+   formal MBOM mapping rules.
+7. ERPNext Item/BOM schemas and customizations, operation-specific sandbox
+   endpoint definitions, expected versions, submitted-BOM restrictions,
+   per-node mapping/result and partial-success behavior, reconciliation, and
+   safe retry rules. Do not provide production credentials or endpoints.
+8. CAD/PDM provider and version, authentication design without secrets,
+   attribute/part-list mapping, derivative format, callback or polling
+   contract, retry/final-failure behavior, and sanitized representative files.
+
+Until this package passes intake validation, Phase 5 uses versioned synthetic
+policies, exact immutable references, explicit unavailable states, Mock-default
+Execution Requests, and fail-closed external/connector behavior. No production
+policy, connector, mapping, or formal ERP result is inferred.
+
+## 4. Phase 3 business acceptance package
 
 Provide the completed
 `implementation/evidence/phase-3/business-uat.md` record with:
@@ -99,7 +134,7 @@ Provide the completed
 - provenance-backed sanitized data for the two representative project types
   above, so fixture-only technical paths are not misrepresented as real UAT.
 
-## 4. Scope affected while inputs are open
+## 5. Scope affected while inputs are open
 
 The missing bundle does not block NPI-owned domain work, contracts, explicit
 mocks, sandbox-ready adapters, automated tests, UI, localization, or operating
@@ -111,7 +146,7 @@ real-data business result. Production activation, production credentials, and
 production data operations remain out of scope even after this package is
 provided unless separately authorized.
 
-## 5. Intake validation
+## 6. Intake validation
 
 The package is usable only when every file appears in the provenance manifest,
 checksums match, relationships survive redaction, secret scanning is clean, and
