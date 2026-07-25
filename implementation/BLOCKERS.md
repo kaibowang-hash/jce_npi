@@ -6,10 +6,11 @@ None.
 
 ## P4-04 thread-migration checkpoint
 
-P4-04 is paused by the explicit thread-migration instruction after completing
-the current repair and affected acceptance batch. This is not a Hard Blocker
-and not a Gate result. The bounded takeover conclusion is
-`DOMAIN_FOUNDATION_ACCEPTED`; P4-04 remains `IN_PROGRESS`.
+The historical thread-migration pause is retained for audit but is
+`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. P4-04 is actively
+continuing under `implementation/ACTIVE_EXECUTION_GOAL.md`. This supersession
+is not a Gate result: the bounded takeover conclusion remains
+`DOMAIN_FOUNDATION_ACCEPTED`, and P4-04 remains `IN_PROGRESS`.
 
 The current affected Level 1 evidence includes 123 Gate Review Python tests,
 46 shared P4-02/P4-03 boundary tests, 11 Gate Evidence/Gate Shell tests, 116
@@ -41,7 +42,8 @@ Resume from
 `implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`,
 `implementation/evidence/phase-4/p4-04-takeover-review.md`, and
 `implementation/NEXT_ACTION.md`. P4-04 must not be marked `PASS`, and P4-05
-must not start, until all applicable pending criteria pass.
+must not start, until all applicable pending criteria pass. Once they pass,
+P4-05 starts automatically without another prompt.
 
 ## Open external acceptance and reconciliation inputs
 

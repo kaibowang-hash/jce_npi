@@ -1,8 +1,17 @@
 # Next Action
 
-Status: `THREAD-MIGRATION CHECKPOINT — P4-04 IN PROGRESS; NOT PASS`
+Status: `AUTOPILOT RESUMED — P4-04 IN PROGRESS; NOT PASS`
 
-Checkpoint time: `2026-07-25T05:32:32Z`
+Recovery time: `2026-07-25T05:48:39Z`
+
+Active execution goal:
+`implementation/ACTIVE_EXECUTION_GOAL.md`
+
+The former thread-migration stop boundary is
+`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. Continuous delivery now
+proceeds automatically through P4-04, P4-05, and later phases after each
+applicable passing Gate. P4-05 remains inactive only while P4-04 is not yet a
+genuine Task/Release `PASS`.
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
@@ -22,7 +31,8 @@ Required and only development branch:
   `P4-04 — Review, decision, snapshot, and reopen`.
 - P4-04 takeover conclusion: `DOMAIN_FOUNDATION_ACCEPTED`; this is not a Task
   Gate `PASS`.
-- `P4-05` is inactive and must not start.
+- `P4-05` is inactive until P4-04 passes; it then starts automatically without
+  another prompt.
 
 ## Completed P4-04 units
 

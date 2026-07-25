@@ -1,5 +1,29 @@
 # Last Run
 
+## V1.2 Autopilot resumed from repository truth — 2026-07-25T05:48:39Z
+
+- Active execution goal:
+  `implementation/ACTIVE_EXECUTION_GOAL.md`.
+- Branch: `codex/npi-v1.2-implementation`.
+- Local and remote HEAD:
+  `f3d9c06f16b3ddbe907f517b61eb2d36e73d161c`.
+- Ahead/behind: `0/0`; worktree was clean after `git fetch origin --prune`.
+- Current task:
+  `P4-04 — Review, decision, snapshot, and reopen` (`IN_PROGRESS`, not
+  `PASS`).
+- P4-03 remains `EVIDENCE_CONFIRMED`; its full Gate is not repeated merely for
+  recovery.
+- Result:
+  `AUTOPILOT_RESUMED_FROM_REPOSITORY_TRUTH`.
+
+The latest user authorization resumes continuous delivery through P4-04,
+P4-05, and Phases 5–9 until `IMPLEMENTATION_COMPLETE` or a true Hard Blocker.
+All historical thread-local stop, pause, and handoff boundaries are retained
+but are now
+`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. P4-05 remains inactive
+only until P4-04 genuinely passes its applicable Gates, after which transition
+is automatic.
+
 ## P4-03/P4-04 bounded takeover thread-migration checkpoint — 2026-07-25T05:32:32Z
 
 - Branch: `codex/npi-v1.2-implementation`.

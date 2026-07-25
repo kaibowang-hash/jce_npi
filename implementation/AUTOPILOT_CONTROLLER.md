@@ -200,6 +200,11 @@ pending until that proof is produced in Codespaces.
 
 ## Current checkpoint
 
+- Active execution goal:
+  `implementation/ACTIVE_EXECUTION_GOAL.md`. The latest user authorization
+  marks historical thread-local stop, pause, and handoff boundaries
+  `SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`; automatic continuation
+  is enabled after every genuine atomic-task and Phase Gate `PASS`.
 - First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`,
   status `TECHNICAL_PASS_PENDING_UAT`; it is not an unqualified `PASS`.
 - Pending Phase 3 task: external business UAT and provenance-backed sanitized
