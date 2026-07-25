@@ -3217,6 +3217,25 @@ components:
           $ref: "#/components/schemas/CanonicalUuid"
         version: { type: integer, minimum: 1 }
         snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    GateReviewClosureActionReference:
+      description: >
+        Exact immutable closure-action reference for schema-v2 exceptions.
+        Schema-v1 history may be the original global-identity-only profile or
+        the later exact-reference collision profile. Nullable revision/hash
+        values are never inferred and cannot authorize approval or a
+        conditional pass.
+      oneOf:
+        - $ref: "#/components/schemas/GateReviewExactObjectReference"
+        - type: object
+          additionalProperties: false
+          required: [globalId, version, snapshotHash]
+          properties:
+            globalId:
+              $ref: "#/components/schemas/CanonicalUuid"
+            version:
+              type: "null"
+            snapshotHash:
+              type: "null"
     GateReviewInputRequirement:
       type: object
       additionalProperties: false
@@ -3599,7 +3618,18 @@ components:
     GateReviewException:
       type: object
       additionalProperties: false
-      required: [globalId, requirementGlobalId, requirementKey, kind, reason, risk, requester, requestedAt, expiresAt, closureActionRef, state, allowedOutcomes, version, requestSnapshotHash, decision]
+      required: [globalId, requirementGlobalId, requirementKey, kind, reason, risk, requester, requestedAt, expiresAt, requestSchemaVersion, closureActionRef, state, allowedOutcomes, version, requestSnapshotHash, decision]
+      oneOf:
+        - title: Schema v1 historical request
+          properties:
+            requestSchemaVersion: { const: 1 }
+            closureActionRef:
+              $ref: "#/components/schemas/GateReviewClosureActionReference"
+        - title: Schema v2 exact request
+          properties:
+            requestSchemaVersion: { const: 2 }
+            closureActionRef:
+              $ref: "#/components/schemas/GateReviewExactObjectReference"
       properties:
         globalId: { type: string, format: uuid }
         requirementGlobalId: { type: string, format: uuid }
@@ -3623,8 +3653,12 @@ components:
           $ref: "#/components/schemas/GateReviewMember"
         requestedAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time }
+        requestSchemaVersion:
+          type: integer
+          enum: [1, 2]
+          description: Closed immutable request snapshot schema discriminator. Version 1 may be either the historical global-ID-only profile or the exact-reference collision profile; version 2 requires an exact closure action reference.
         closureActionRef:
-          $ref: "#/components/schemas/GateReviewExactObjectReference"
+          $ref: "#/components/schemas/GateReviewClosureActionReference"
         state: { type: string, enum: [pending, approved, rejected] }
         allowedOutcomes:
           type: array

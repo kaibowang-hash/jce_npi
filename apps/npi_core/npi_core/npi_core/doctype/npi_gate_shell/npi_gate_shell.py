@@ -314,9 +314,9 @@ class NPIGateShell(Document):
             _("Review Policy Snapshot Hash"),
         )
 
-        if state != "decided":
-            if any(not _is_empty(value) for value in decision_values):
-                self._throw_incoherent_review_state()
+        if state != "decided" and not any(
+            not _is_empty(value) for value in decision_values
+        ):
             return
 
         if any(_is_empty(value) for value in decision_values):
@@ -357,6 +357,11 @@ class NPIGateShell(Document):
                     previous,
                     self._REVIEW_CONTEXT_FIELDS[2:],
                 )
+                assert_immutable_fields(
+                    self,
+                    previous,
+                    self._REVIEW_DECISION_FIELDS,
+                )
                 return
             self._assert_review_fields_unchanged(previous)
             return
@@ -371,6 +376,12 @@ class NPIGateShell(Document):
         }:
             self._throw_incoherent_review_state()
 
+        if transition != ("in_review", "decided"):
+            assert_immutable_fields(
+                self,
+                previous,
+                self._REVIEW_DECISION_FIELDS,
+            )
         if transition in {
             ("in_review", "decided"),
             ("requires_review", "in_review"),

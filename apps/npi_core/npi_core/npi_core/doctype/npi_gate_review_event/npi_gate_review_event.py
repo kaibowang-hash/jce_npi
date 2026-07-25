@@ -123,8 +123,9 @@ class NPIGateReviewEvent(Document):
         )
         detail = supplied.get("detail")
         self._validate_detail(detail)
+        schema_version = 2 if self.event_type in {"invalidated", "refreshed"} else 1
         payload = {
-            "schemaVersion": 1,
+            "schemaVersion": schema_version,
             "globalId": self.global_id,
             "eventKey": self.event_key,
             "tenantId": self.tenant_id,

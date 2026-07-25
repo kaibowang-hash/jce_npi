@@ -11,7 +11,30 @@ Atomic task: `P4-04 — Review, decision, snapshot, and reopen`
 Requirement allocation: `FR-SG-003`, `FR-SG-005`, `FR-SG-006`,
 `FR-SG-007`, with the current Phase 4 contribution to `FR-CO-006`
 
-## 0. Final CLI-to-Cloud handoff checkpoint
+## 0. Bounded takeover/thread-migration checkpoint
+
+The bounded takeover accepted the current domain/implementation foundation as
+`DOMAIN_FOUNDATION_ACCEPTED`; this is not a P4-04 Task `PASS`. The final repair
+batch preserves the Gate's latest immutable decision lineage across successor
+cycles, closes historical event and exception schema-version forms without
+guessing missing exact references, schedules File-delete dependency evaluation
+after commit, and keeps transport admission distinct from business authority.
+
+Current affected evidence passes 123 Gate Review Python tests, 46 shared
+backend boundary tests, 11 Gate Evidence/Gate Shell tests, 116 frontend tests,
+72 current Gate browser cases, 23 exact Review Room visuals, and complete
+direct `zh`/`zh-TW` coverage for 1742 literal English sources. P4-03 reconciled
+to `EVIDENCE_CONFIRMED` without repeating its full Level 3.
+
+Migration/idempotence, the final focused and complete runtime, coverage/build/
+audit, Task Diff/security/trace review, Level 2, and the single triggered Level
+3 remain pending. The current focused runtime did not execute because the
+stopped controlled MariaDB container could not be restored past a stale Docker
+OCI task. Resume from
+`implementation/evidence/phase-4/p4-04-takeover-review.md` and
+`implementation/NEXT_ACTION.md`; do not start P4-05.
+
+## 0.1 Historical final CLI-to-Cloud handoff checkpoint
 
 The final recoverable handoff retains the current P4-04 implementation:
 the review/exception/decision/reopen domain, versioned synthetic policy,

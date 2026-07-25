@@ -517,6 +517,21 @@ function actionLabel(t: Translator, action: ReviewAction): string {
     case "review":
       return t("Submit review");
     case "request_exception":
+      return t("Request controlled exception");
+    case "decide_exception":
+      return t("Decide exception");
+    case "decide_gate":
+      return t("Decide Gate");
+    case "reopen":
+      return t("Reopen Gate");
+  }
+}
+
+function actionAccessibleLabel(t: Translator, action: ReviewAction): string {
+  switch (action.kind) {
+    case "review":
+      return t("Submit review: {{step}}", { step: action.step.stepKey });
+    case "request_exception":
       return t("Request exception: {{requirement}} / {{kind}}", {
         kind: action.option.kind,
         requirement: action.option.requirementKey,
@@ -526,17 +541,29 @@ function actionLabel(t: Translator, action: ReviewAction): string {
         kind: action.exception.kind,
         requirement: action.exception.requirementKey,
       });
+    case "start":
     case "decide_gate":
-      return t("Decide Gate");
     case "reopen":
-      return t("Reopen Gate");
+      return actionLabel(t, action);
   }
 }
 
-function actionAccessibleLabel(t: Translator, action: ReviewAction): string {
-  return action.kind === "review"
-    ? t("Submit review: {{step}}", { step: action.step.stepKey })
-    : actionLabel(t, action);
+function actionIdentifierTokens(action: ReviewAction): string | undefined {
+  const tokens = (() => {
+    switch (action.kind) {
+      case "review":
+        return [action.step.stepKey];
+      case "request_exception":
+        return [action.option.requirementKey, action.option.kind];
+      case "decide_exception":
+        return [action.exception.requirementKey, action.exception.kind];
+      case "start":
+      case "decide_gate":
+      case "reopen":
+        return [];
+    }
+  })();
+  return tokens.length > 0 ? JSON.stringify(tokens) : undefined;
 }
 
 function GateReviewLoadingSurface(): React.JSX.Element {
@@ -2726,10 +2753,11 @@ function GateReviewWorkspace({
                 {actions.map((action) => (
                   <option
                     aria-label={actionAccessibleLabel(t, action)}
+                    data-language-exempt-tokens={actionIdentifierTokens(action)}
                     key={action.key}
                     value={action.key}
                   >
-                    {actionLabel(t, action)}
+                    {actionAccessibleLabel(t, action)}
                   </option>
                 ))}
               </Select>
@@ -3218,21 +3246,32 @@ function GateReviewWorkspace({
                           exempt: "identifier",
                         },
                         {
+                          label: t("Version"),
+                          value: formatNumber(
+                            locale,
+                            exception.requestSchemaVersion,
+                            0,
+                          ),
+                        },
+                        {
                           label: t("Closure Action Global ID"),
                           value: exception.closureActionRef.globalId,
                           exempt: "identifier",
                         },
                         {
                           label: t("Exact revision"),
-                          value: formatNumber(
-                            locale,
-                            exception.closureActionRef.version,
-                            0,
-                          ),
+                          value:
+                            exception.closureActionRef.version === null
+                              ? "—"
+                              : formatNumber(
+                                  locale,
+                                  exception.closureActionRef.version,
+                                  0,
+                                ),
                         },
                         {
                           label: t("Object hash"),
-                          value: exception.closureActionRef.snapshotHash,
+                          value: exception.closureActionRef.snapshotHash ?? "—",
                           exempt: "identifier",
                         },
                         ...(exception.decision

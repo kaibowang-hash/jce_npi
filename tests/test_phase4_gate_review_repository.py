@@ -756,21 +756,36 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         successor_cycle_id: UUID,
         event_type: str,
         occurred_at: datetime,
-        action_id: UUID,
+        action_id: UUID | None,
         old_input_hash: str,
         new_input_hash: str,
         prior_decision_id: UUID | None = None,
         prior_decision_hash: str | None = None,
         initiated_by_user_id: str | None = ACTOR,
         reason: str = "GATE_INPUT_CHANGED",
+        schema_version: int = 2,
+        legacy_detail: bool = False,
     ) -> AttrDoc:
         event_id = uuid5(
             prior_cycle_id,
             f"{event_type}:{successor_cycle_id}:{new_input_hash}",
         )
         event_key = f"{prior_cycle_id}:{event_type}:{successor_cycle_id}"
+        detail = {
+            "reason": reason,
+            "oldInputHash": old_input_hash,
+            "newInputHash": new_input_hash,
+            "priorDecisionSnapshotGlobalId": (
+                str(prior_decision_id) if prior_decision_id is not None else None
+            ),
+            "priorDecisionHash": prior_decision_hash,
+            "initiatedByUserId": initiated_by_user_id,
+        }
+        if legacy_detail:
+            detail.pop("reason")
+            detail.pop("initiatedByUserId")
         payload = {
-            "schemaVersion": 1,
+            "schemaVersion": schema_version,
             "globalId": str(event_id),
             "eventKey": event_key,
             "tenantId": TENANT_ID,
@@ -778,22 +793,13 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             "gateGlobalId": str(GATE_ID),
             "cycleGlobalId": str(prior_cycle_id),
             "successorCycleGlobalId": str(successor_cycle_id),
-            "actionGlobalId": str(action_id),
+            "actionGlobalId": str(action_id) if action_id is not None else None,
             "eventType": event_type,
             "actorUserId": (self.repository_module.GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR),
             "occurredAt": occurred_at.isoformat(),
             "requestId": "2ef22035-71df-4c07-a2ae-e88ea461d80c",
             "traceId": "trace-p4-04-repository",
-            "detail": {
-                "reason": reason,
-                "oldInputHash": old_input_hash,
-                "newInputHash": new_input_hash,
-                "priorDecisionSnapshotGlobalId": (
-                    str(prior_decision_id) if prior_decision_id is not None else None
-                ),
-                "priorDecisionHash": prior_decision_hash,
-                "initiatedByUserId": initiated_by_user_id,
-            },
+            "detail": detail,
         }
         return self.store.add(
             "NPI Gate Review Event",
@@ -805,7 +811,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             gate_global_id=str(GATE_ID),
             cycle_global_id=str(prior_cycle_id),
             successor_cycle_global_id=str(successor_cycle_id),
-            action_global_id=str(action_id),
+            action_global_id=str(action_id) if action_id is not None else None,
             event_type=event_type,
             actor_user_id=(self.repository_module.GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR),
             occurred_at=occurred_at.isoformat(),
@@ -1346,6 +1352,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                 self.assertEqual(queued["source_kind"], "file_revision")
                 self.assertEqual(queued["source_global_id"], str(SOURCE_ID))
                 self.assertEqual(queued["gate_id"], str(GATE_ID))
+                self.assertTrue(queued["enqueue_after_commit"])
 
         self.enqueued.clear()
         unrelated = AttrDoc(
@@ -1355,6 +1362,18 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         )
         self.repository_module.queue_gate_review_file_dependency_evaluation(unrelated)
         self.assertEqual(self.enqueued, [])
+
+        deleted = AttrDoc(previous)
+        self.repository_module.queue_gate_review_file_dependency_evaluation(
+            deleted,
+            method="on_trash",
+        )
+        self.assertEqual(len(self.enqueued), 1)
+        _args, deleted_job = self.enqueued[0]
+        self.assertTrue(deleted_job["enqueue_after_commit"])
+        self.assertEqual(deleted_job["reference_id"], str(REFERENCE_ID))
+        self.assertEqual(deleted_job["source_kind"], "file_revision")
+        self.assertEqual(deleted_job["source_global_id"], str(SOURCE_ID))
 
     def test_work_item_hook_queues_only_active_blocker_inserts(self) -> None:
         self.frappe.flags.npi_project_work_command_write = True
@@ -1880,6 +1899,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         )
         event = next(iter(self.store.documents["NPI Gate Review Event"].values()))
         self.assertEqual(event.event_type, "invalidated")
+        self.assertEqual(event.payload["schemaVersion"], 2)
         self.assertIsNone(event.action_global_id)
         self.assertEqual(
             event.payload["detail"]["reason"],
@@ -2040,11 +2060,19 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             self.gate.current_review_cycle_global_id,
             str(successor_id),
         )
-        self.assertIsNone(self.gate.latest_decision_snapshot_global_id)
+        self.assertEqual(
+            self.gate.latest_decision_snapshot_global_id,
+            str(decided.decision.global_id),
+        )
+        self.assertEqual(
+            self.gate.latest_decision_snapshot_hash,
+            original_decision_hash,
+        )
         events = self.store.documents["NPI Gate Review Event"]
         self.assertEqual(len(events), 1)
         event = next(iter(events.values()))
         self.assertEqual(event.event_type, "invalidated")
+        self.assertEqual(event.payload["schemaVersion"], 2)
         self.assertIsNone(event.action_global_id)
         self.assertIsNone(event.payload["actionGlobalId"])
         self.assertEqual(
@@ -2559,10 +2587,14 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         )
         response = approver._exception_response(
             cycle.exceptions[0],
-            types.SimpleNamespace(request_snapshot_hash="a" * 64),
+            types.SimpleNamespace(
+                request_snapshot={"schemaVersion": 2},
+                request_snapshot_hash="a" * 64,
+            ),
             allowed_outcomes=allowed[EXCEPTION_ID],
         )
         self.assertEqual(response["allowedOutcomes"], ["approved", "rejected"])
+        self.assertEqual(response["requestSchemaVersion"], 2)
 
         action = self.store.documents["NPI Domain Work Item"][str(UUID(int=106))]
         action.optimistic_version = 2
@@ -2674,6 +2706,137 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                 ),
             ),
             {EXCEPTION_ID: ()},
+        )
+
+    def test_non_start_workspace_capabilities_require_transport_role(self) -> None:
+        cycle = self._projection_cycle()
+        complete = self._approve_projection_review(cycle)
+        pending = self._request_projection_exception(complete)
+        closure_actions = self._repository()._closure_action_documents(
+            self.project,
+            self.gate,
+        )
+
+        requester = self._repository(self._principal(roles=frozenset()))
+        requester_member = requester._current_actor_member(self.project)
+        self.assertEqual(
+            requester._exception_request_options(
+                self.project,
+                self.gate,
+                cycle,
+                current_input=cycle.input_snapshot,
+                closure_actions=closure_actions,
+                actor_member=requester_member,
+                at=NOW,
+            ),
+            [],
+        )
+        readiness = requester._decision_readiness(
+            self.project,
+            self.gate,
+            complete,
+            current_input=complete.input_snapshot,
+            actor_member=requester_member,
+            at=NOW + timedelta(hours=1),
+            current_closure_action_refs={},
+        )
+        self.assertEqual(readiness["allowedOutcomes"], [])
+        self.assertEqual(
+            {value["code"] for value in readiness["blockedReasons"]},
+            {"DECISION_AUTHORITY_REQUIRED"},
+        )
+        permissions = requester._workspace_permissions(
+            self.project,
+            self.gate,
+            cycle,
+            available_policies=[],
+            current_input=cycle.input_snapshot,
+            exception_request_options=[{"kind": "p1_evidence_timing"}],
+            exception_allowed_outcomes={EXCEPTION_ID: ("approved", "rejected")},
+            decision_readiness={
+                "allowedOutcomes": ["reject"],
+                "blockedReasons": [],
+            },
+        )
+        for key in (
+            "canRequestException",
+            "canApproveException",
+            "canDecide",
+        ):
+            self.assertFalse(permissions[key])
+
+        reviewer = self._repository(self._principal(STEP_REVIEWER, roles=frozenset()))
+        self.assertFalse(
+            reviewer._workspace_permissions(
+                self.project,
+                self.gate,
+                cycle,
+                available_policies=[],
+                current_input=cycle.input_snapshot,
+            )["canReview"]
+        )
+
+        approver = self._repository(
+            self._principal(EXCEPTION_APPROVER, roles=frozenset())
+        )
+        approver_member = approver._current_actor_member(self.project)
+        self.assertEqual(
+            approver._exception_allowed_outcomes(
+                self.project,
+                self.gate,
+                pending,
+                current_input=pending.input_snapshot,
+                actor_member=approver_member,
+                at=NOW + timedelta(hours=1),
+                current_closure_action_refs=(
+                    approver._current_closure_action_references(
+                        self.project,
+                        self.gate,
+                        pending,
+                        lock=False,
+                    )
+                ),
+            ),
+            {EXCEPTION_ID: ()},
+        )
+
+        decided = complete.decide(
+            actor_user_id=ACTOR,
+            outcome=self.domain.DecisionOutcome.REJECT,
+            occurred_at=NOW + timedelta(hours=1),
+            expected_version=complete.version,
+            expected_input_hash=complete.input_hash,
+            current_input=complete.input_snapshot,
+        )
+        self.gate.review_state = "decided"
+        self.gate.review_policy_global_id = str(decided.policy.policy_global_id)
+        self.gate.review_policy_version = decided.policy.policy_version
+        self.gate.review_policy_snapshot_hash = decided.policy.snapshot_hash
+        reopener = self._repository(
+            self._principal("reopener@example.test", roles=frozenset())
+        )
+        self.assertFalse(
+            reopener._workspace_permissions(
+                self.project,
+                self.gate,
+                decided,
+                available_policies=[
+                    self.repository_module._policy_option(decided.policy)
+                ],
+            )["canReopen"]
+        )
+
+        self.gate.review_state = "requires_review"
+        manager = self._repository(self._principal(roles=frozenset({"System Manager"})))
+        self.assertTrue(
+            manager._workspace_permissions(
+                self.project,
+                self.gate,
+                decided,
+                available_policies=[
+                    self.repository_module._policy_option(decided.policy)
+                ],
+            )["canStartReview"]
         )
 
     def test_closure_action_reference_freezes_the_complete_stable_payload(
@@ -3865,11 +4028,182 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                 "reason",
             },
         )
-
         newest.payload["detail"]["rawDocument"] = {"unsafe": True}
         newest.payload_hash = self._canonical_hash(newest.payload)
         with self.assertRaisesRegex(ValueError, "detail is not closed"):
             self._repository()._dependency_changes(self.project, self.gate)
+
+    def test_dependency_reader_preserves_closed_legacy_v1_events(self) -> None:
+        prior_cycle_id = uuid5(GATE_ID, "review-cycle:40")
+        successor_cycle_id = uuid5(GATE_ID, "review-cycle:41")
+        decision_id = uuid5(prior_cycle_id, "decision-snapshot")
+        legacy = self._add_dependency_event(
+            prior_cycle_id=prior_cycle_id,
+            successor_cycle_id=successor_cycle_id,
+            event_type="invalidated",
+            occurred_at=NOW,
+            action_id=UUID(int=824),
+            old_input_hash="4" * 64,
+            new_input_hash="5" * 64,
+            prior_decision_id=decision_id,
+            prior_decision_hash="b" * 64,
+            schema_version=1,
+            legacy_detail=True,
+        )
+
+        public = self.repository_module.FrappeGateReviewRepository._dependency_change_response(
+            legacy
+        )
+        self.assertEqual(public["reason"], "GATE_INPUT_CHANGED")
+        self.assertIsNone(public["initiatedByUserId"])
+        self.assertEqual(public["impactActionGlobalId"], str(UUID(int=824)))
+
+        transitional = self._add_dependency_event(
+            prior_cycle_id=successor_cycle_id,
+            successor_cycle_id=uuid5(GATE_ID, "review-cycle:42"),
+            event_type="refreshed",
+            occurred_at=NOW + timedelta(minutes=1),
+            action_id=None,
+            old_input_hash="5" * 64,
+            new_input_hash="6" * 64,
+            prior_decision_id=decision_id,
+            prior_decision_hash="b" * 64,
+            schema_version=1,
+            reason="GATE_SOURCE_CHANGED",
+        )
+        transitional_public = self.repository_module.FrappeGateReviewRepository._dependency_change_response(
+            transitional
+        )
+        self.assertEqual(
+            transitional_public["reason"],
+            "GATE_SOURCE_CHANGED",
+        )
+
+    def test_exception_reader_preserves_legacy_v1_without_inventing_revision(
+        self,
+    ) -> None:
+        exception_key = f"{CYCLE_ID}:{EXCEPTION_ID}"
+        expires_at = NOW + timedelta(days=1)
+        document = AttrDoc(
+            global_id=str(EXCEPTION_ID),
+            exception_key=exception_key,
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+            gate_global_id=str(GATE_ID),
+            cycle_global_id=str(CYCLE_ID),
+            policy_global_id=str(POLICY_ID),
+            policy_version=1,
+            policy_snapshot_hash="a" * 64,
+            requirement_global_id=str(UUID(int=102)),
+            requirement_key="supplier_timing",
+            exception_kind="p1_evidence_timing",
+            reason="Legacy controlled reason.",
+            risk="Legacy controlled risk.",
+            requester_member_global_id=str(MEMBER_ID),
+            requester_user_id=ACTOR,
+            requested_at=NOW,
+            expires_at=expires_at,
+            closure_action_global_id=str(UUID(int=106)),
+            closure_action_version=None,
+            closure_action_snapshot_hash=None,
+            approver_authority_slot="exception_approver",
+            approver_member_global_id=str(UUID(int=53)),
+            approver_user_id=EXCEPTION_APPROVER,
+        )
+        legacy_snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(EXCEPTION_ID),
+            "exceptionKey": exception_key,
+            "tenantId": TENANT_ID,
+            "projectGlobalId": str(PROJECT_ID),
+            "gateGlobalId": str(GATE_ID),
+            "cycleGlobalId": str(CYCLE_ID),
+            "policyRef": {
+                "globalId": str(POLICY_ID),
+                "version": 1,
+                "snapshotHash": "a" * 64,
+            },
+            "requirementRef": {
+                "globalId": str(UUID(int=102)),
+                "key": "supplier_timing",
+            },
+            "kind": "p1_evidence_timing",
+            "reason": "Legacy controlled reason.",
+            "risk": "Legacy controlled risk.",
+            "requester": {
+                "memberGlobalId": str(MEMBER_ID),
+                "userId": ACTOR,
+            },
+            "requestedAt": NOW.isoformat(),
+            "expiresAt": expires_at.isoformat(),
+            "closureActionGlobalId": str(UUID(int=106)),
+            "approver": {
+                "authoritySlot": "exception_approver",
+                "memberGlobalId": str(UUID(int=53)),
+                "userId": EXCEPTION_APPROVER,
+            },
+        }
+
+        reference = self.repository_module._exception_closure_action_reference(
+            document,
+            legacy_snapshot,
+        )
+        self.assertEqual(reference.global_id, UUID(int=106))
+        self.assertIsNone(reference.version)
+        self.assertIsNone(reference.snapshot_hash)
+        self.assertFalse(reference.is_exact)
+
+        document.closure_action_version = 9
+        with self.assertRaises(ValueError):
+            self.repository_module._exception_closure_action_reference(
+                document,
+                legacy_snapshot,
+            )
+
+        pending = self._request_projection_exception(
+            self._approve_projection_review(self._projection_cycle())
+        )
+        exact_exception = pending.exceptions[0]
+        legacy_exception = replace(
+            exact_exception,
+            closure_action_ref=self.domain.ClosureActionReference(
+                exact_exception.closure_action_ref.global_id,
+                None,
+                None,
+            ),
+        )
+        public_document = types.SimpleNamespace(
+            request_snapshot={"schemaVersion": 1},
+            request_snapshot_hash="c" * 64,
+        )
+        legacy_public = (
+            self.repository_module.FrappeGateReviewRepository._exception_response(
+                legacy_exception,
+                public_document,
+                allowed_outcomes=(),
+            )
+        )
+        self.assertEqual(legacy_public["requestSchemaVersion"], 1)
+        self.assertIsNone(legacy_public["closureActionRef"]["version"])
+        self.assertEqual(legacy_public["allowedOutcomes"], [])
+
+        collision_public = (
+            self.repository_module.FrappeGateReviewRepository._exception_response(
+                exact_exception,
+                public_document,
+                allowed_outcomes=("approved", "rejected"),
+            )
+        )
+        self.assertEqual(collision_public["requestSchemaVersion"], 1)
+        self.assertEqual(collision_public["closureActionRef"]["version"], 1)
+
+        public_document.request_snapshot = {"schemaVersion": 2}
+        with self.assertRaisesRegex(ValueError, "profile"):
+            self.repository_module.FrappeGateReviewRepository._exception_response(
+                legacy_exception,
+                public_document,
+                allowed_outcomes=(),
+            )
 
 
 if __name__ == "__main__":

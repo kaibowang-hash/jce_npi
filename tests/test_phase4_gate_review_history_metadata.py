@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOCTYPE_ROOT = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
 CONTROLLER_ROOT = ROOT / "apps/npi_core/npi_core"
+HOOKS = CONTROLLER_ROOT / "hooks.py"
 
 SYSTEM_MANAGER_ONLY = [
     {
@@ -290,6 +291,8 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
             fields["state"].get("options"),
             "pending\napproved\nrejected",
         )
+        self.assertIsNone(fields["closure_action_version"].get("reqd"))
+        self.assertIsNone(fields["closure_action_snapshot_hash"].get("reqd"))
 
     def test_controllers_use_one_flag_and_never_import_domain_or_bypass_frappe(
         self,
@@ -319,6 +322,16 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
         self.assertNotIn("gate_review.domain", combined)
         self.assertNotIn("ignore_" + "permissions", combined)
         self.assertNotIn("frappe.db." + "sql", combined)
+
+    def test_file_update_and_delete_both_queue_dependency_evaluation(self) -> None:
+        hooks = HOOKS.read_text(encoding="utf-8")
+        self.assertIn('"File": {', hooks)
+        self.assertIn('"on_update": (', hooks)
+        self.assertIn('"on_trash": (', hooks)
+        self.assertEqual(
+            hooks.count('"queue_gate_review_file_dependency_evaluation"'),
+            2,
+        )
 
 
 if __name__ == "__main__":

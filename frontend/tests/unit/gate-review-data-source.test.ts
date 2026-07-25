@@ -37,6 +37,7 @@ const gateId = "22222222-2222-2222-2222-222222222222";
 const requirementId = "33333333-3333-3333-3333-333333333333";
 const cycleId = "44444444-4444-4444-4444-444444444444";
 const successorCycleId = "44444444-4444-4444-4444-555555555555";
+const refreshedSuccessorCycleId = "44444444-4444-4444-8444-666666666666";
 const policyId = "55555555-5555-5555-5555-555555555555";
 const templateId = "66666666-6666-6666-6666-666666666666";
 const reviewerId = "77777777-7777-7777-7777-777777777777";
@@ -358,6 +359,7 @@ function pendingException(): GateReviewExceptionViewModel {
     },
     requestedAt: "2026-07-24T10:03:00Z",
     expiresAt: "2026-08-01T10:03:00Z",
+    requestSchemaVersion: 2,
     closureActionRef: {
       globalId: closureActionId,
       snapshotHash: "9".repeat(64),
@@ -650,6 +652,86 @@ function dependencyFixture(): GateReviewViewModel {
   };
 }
 
+function refreshedWithoutDecisionFixture(): GateReviewViewModel {
+  const fixture = withGateVersion(activeFixture(), 2);
+  const cycle = fixture.activeCycle;
+  if (!cycle) throw new Error("The fixture requires an active cycle.");
+  const refreshedInputHash = "b".repeat(64);
+  return {
+    ...fixture,
+    activeCycle: {
+      ...cycle,
+      exceptions: [],
+      globalId: successorCycleId,
+      inputHash: refreshedInputHash,
+      number: 2,
+      selectedSteps: cycle.selectedSteps.map((step) => ({
+        ...step,
+        review: null,
+        state: "waiting",
+      })),
+      state: "active",
+      trigger: "dependency_change",
+      version: 1,
+    },
+    dependencyChanges: [
+      dependencyChange({
+        eventType: "refreshed",
+        newInputHash: refreshedInputHash,
+        priorDecisionGlobalId: null,
+        priorDecisionLineageHash: null,
+      }),
+    ],
+    exceptionRequestOptions: [],
+    gate: {
+      ...fixture.gate,
+      currentCycleGlobalId: successorCycleId,
+      reviewState: "requires_review",
+    },
+    permissions: {
+      canApproveException: false,
+      canDecide: false,
+      canRequestException: false,
+      canReopen: false,
+      canReview: false,
+      canStartReview: true,
+      canView: true,
+    },
+  };
+}
+
+function refreshedWithInheritedDecisionFixture(): GateReviewViewModel {
+  const fixture = withGateVersion(dependencyFixture(), 3);
+  const cycle = fixture.activeCycle;
+  if (!cycle) throw new Error("The fixture requires an active cycle.");
+  const refreshedInputHash = "c".repeat(64);
+  return {
+    ...fixture,
+    activeCycle: {
+      ...cycle,
+      globalId: refreshedSuccessorCycleId,
+      inputHash: refreshedInputHash,
+      number: 3,
+    },
+    dependencyChanges: [
+      dependencyChange({
+        eventGlobalId: "17171717-1717-4717-8717-171717171717",
+        eventType: "refreshed",
+        newInputHash: refreshedInputHash,
+        occurredAt: "2026-07-24T10:11:00Z",
+        oldInputHash: "b".repeat(64),
+        priorCycleGlobalId: successorCycleId,
+        successorCycleGlobalId: refreshedSuccessorCycleId,
+      }),
+      ...fixture.dependencyChanges,
+    ],
+    gate: {
+      ...fixture.gate,
+      currentCycleGlobalId: refreshedSuccessorCycleId,
+    },
+  };
+}
+
 function context(
   signal = new AbortController().signal,
 ): GateReviewCommandContext {
@@ -672,6 +754,49 @@ describe("Gate review response validation", () => {
 
   it("accepts preserved historical decisions after reopen without calling them current", () => {
     expect(isGateReviewResponse(reopenedFixture())).toBe(true);
+  });
+
+  it("accepts a decided Gate whose latest historical decision is no longer downstream-current", () => {
+    const fixture = structuredClone(decidedFixture());
+    fixture.gate.downstreamDecisionCurrent = false;
+    const decision = fixture.decisions[0];
+    if (!decision) throw new Error("The fixture requires a decision.");
+    decision.current = false;
+    expect(isGateReviewResponse(fixture)).toBe(true);
+  });
+
+  it("accepts closed v1 legacy, v1 exact-collision, and v2 exact exception profiles", () => {
+    const legacy = structuredClone(requestedExceptionFixture());
+    const legacyException = legacy.activeCycle?.exceptions[0];
+    if (!legacyException) throw new Error("The fixture requires an exception.");
+    legacyException.requestSchemaVersion = 1;
+    legacyException.closureActionRef = {
+      globalId: closureActionId,
+      version: null,
+      snapshotHash: null,
+    };
+    expect(isGateReviewResponse(legacy)).toBe(true);
+
+    const collision = structuredClone(exceptionFixture());
+    const collisionException = collision.activeCycle?.exceptions[0];
+    if (!collisionException)
+      throw new Error("The fixture requires an exception.");
+    collisionException.requestSchemaVersion = 1;
+    expect(isGateReviewResponse(collision)).toBe(true);
+
+    expect(isGateReviewResponse(exceptionFixture())).toBe(true);
+  });
+
+  it("rejects a v2 exception with a legacy closure-action reference", () => {
+    const fixture = structuredClone(requestedExceptionFixture());
+    const exception = fixture.activeCycle?.exceptions[0];
+    if (!exception) throw new Error("The fixture requires an exception.");
+    exception.closureActionRef = {
+      globalId: closureActionId,
+      version: null,
+      snapshotHash: null,
+    };
+    expect(isGateReviewResponse(fixture)).toBe(false);
   });
 
   it("accepts reconstructable review, exception, and decision audit projections", () => {
@@ -702,6 +827,13 @@ describe("Gate review response validation", () => {
         },
       }),
     ).toBe(false);
+  });
+
+  it("accepts active dependency refreshes with no decision history or an inherited latest decision", () => {
+    expect(isGateReviewResponse(refreshedWithoutDecisionFixture())).toBe(true);
+    expect(isGateReviewResponse(refreshedWithInheritedDecisionFixture())).toBe(
+      true,
+    );
   });
 
   it.each([
@@ -1012,16 +1144,25 @@ describe("Gate review response validation", () => {
       reviewRoomRequiresReviewFixture,
     ],
     [
-      "a requires-review successor whose current event is only refreshed",
+      "a refreshed requires-review successor that drops its retained decision lineage",
       (fixture: GateReviewViewModel) => {
         const change = fixture.dependencyChanges[0];
         if (!change)
           throw new Error("The fixture requires a dependency event.");
-        change.eventType = "refreshed";
         change.priorDecisionGlobalId = null;
         change.priorDecisionLineageHash = null;
       },
-      reviewRoomRequiresReviewFixture,
+      refreshedWithInheritedDecisionFixture,
+    ],
+    [
+      "an invalidated event whose prior cycle is later than its decision",
+      (fixture: GateReviewViewModel) => {
+        const change = fixture.dependencyChanges[0];
+        if (!change)
+          throw new Error("The fixture requires a dependency event.");
+        change.eventType = "invalidated";
+      },
+      refreshedWithInheritedDecisionFixture,
     ],
     [
       "a latest-decision pointer that is not the ordered last decision",

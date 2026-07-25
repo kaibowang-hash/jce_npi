@@ -1711,6 +1711,8 @@ This outcome does not require an exception.,此結果不需要豁免。
 A current approved exception is required.,需要目前有效且已核准的豁免。
 Submit review,提交評審
 Submit review: {{step}},提交評審：{{step}}
+Request controlled exception,申請受控豁免
+Decide exception,決策豁免
 Request exception: {{requirement}} / {{kind}},申請豁免：{{requirement}} / {{kind}}
 Decide exception: {{requirement}} / {{kind}},決策豁免：{{requirement}} / {{kind}}
 Gate decision readiness,階段門決策就緒狀態

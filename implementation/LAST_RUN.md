@@ -1,5 +1,64 @@
 # Last Run
 
+## P4-03/P4-04 bounded takeover thread-migration checkpoint — 2026-07-25T05:32:32Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Synchronized takeover starting HEAD:
+  `df8ccae3f87ff3afbf4d06696f4a69ca91de92d9`.
+- P4-03 final commit:
+  `0fd4762a01fd10fe6851df07ead1c5e4e7a42473`.
+- Current phase:
+  `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
+- Completed Phase 4 tasks: `P4-01`, `P4-02`, and `P4-03`.
+- Current unfinished task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
+- P4-05 was not started.
+- Result:
+  `THREAD-MIGRATION CHECKPOINT — P4-04 REMAINS IN_PROGRESS; NOT PASS`.
+
+The bounded takeover review did not repeat the repository-wide review or the
+P4-03 full Gate. P4-03's validation evidence is unchanged at Git blob
+`7272e5e9b5f0c99416ad9aef41becfd144b16f1d`. Shared Gate
+repository/contract/shell/route/i18n surfaces received targeted regression,
+and P4-03 reconciled to `EVIDENCE_CONFIRMED`.
+
+P4-04 reconciled to `DOMAIN_FOUNDATION_ACCEPTED`, which accepts only the
+domain/implementation foundation and current repair batch. The review found
+and closed high-risk decision-lineage, event-schema, legacy-exception,
+File-delete dependency, transport-capability, and historical downstream-state
+gaps. No production policy was installed, and no unfinished Gate criterion was
+waived.
+
+### Current Level 1 evidence
+
+| Changed files → affected checks | Result |
+|---|---|
+| Gate Review domain/repository/controllers/contracts and direct tests | `PASS — 123/123` |
+| Shared P4-02/P4-03 repository/controller/metadata boundary | `PASS — 46/46` |
+| Gate Evidence contract/current Gate Shell boundary | `PASS — 11/11` |
+| Evidence/review parsers and Review Room components | `PASS — 116/116` |
+| Generated artifacts, TypeScript, changed-file ESLint/Prettier, Python compilation, JSON parsing, and prohibited-pattern scan | `PASS` |
+| Frappe-compatible catalogs | `PASS — 1742` literal English sources and complete direct `zh`/`zh-TW` coverage |
+| Current live Gate non-visual browser spec | `PASS — 72/72` |
+| Current affected Review Room exact visual matrix | `PASS — 23/23`; representative original-resolution review complete |
+| Whitespace | `PASS — git diff --check` before recovery updates; repeated at final checkpoint |
+
+Python Black and a standalone PyYAML import were not available in the current
+base Python and are not claimed as passed.
+
+The focused Frappe runtime retry stopped at the database preflight because the
+controlled MariaDB container was not running. A bounded attempt to restore the
+existing Compose services failed at Docker's runtime layer with
+`container with given ID already exists`. No product runtime assertion ran.
+The current additive/idempotent migration, final File-delete commit/rollback
+runtime case, complete runtime compatibility, P4-04 Level 2 Task Gate, and the
+single triggered Level 3 remain pending.
+
+Detailed evidence and exact recovery are in
+`implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`,
+`implementation/evidence/phase-4/p4-04-takeover-review.md`, and
+`implementation/NEXT_ACTION.md`.
+
 ## Final CLI-to-Cloud P4-04 implementation checkpoint — 2026-07-24T18:54:22Z
 
 - Branch: `codex/npi-v1.2-implementation` (the only local development branch).

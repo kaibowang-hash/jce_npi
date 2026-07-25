@@ -733,6 +733,71 @@ class GateReviewCycleTest(unittest.TestCase):
             )
         self.assertEqual(expired.exception.code, "EXCEPTION_EXPIRED")
 
+    def test_legacy_exception_history_is_readable_but_never_current(self) -> None:
+        snapshot = input_snapshot(p1_complete=False)
+        value = approve_all(cycle(snapshot)).request_exception(
+            exception_global_id=EXCEPTION_ID,
+            requester_member_global_id=REQUESTER_MEMBER_ID,
+            actor_user_id="requester@example.test",
+            kind="p1_evidence_timing",
+            requirement_key="supplier_timing",
+            reason="Legacy controlled exception request.",
+            risk="Legacy controlled residual risk.",
+            closure_action_ref=ACTION_REF,
+            closure_action_kind="action",
+            requested_at=NOW,
+            expires_at=NOW + timedelta(days=7),
+            expected_version=4,
+            expected_input_hash=snapshot.snapshot_hash,
+        )
+        value = value.decide_exception(
+            exception_global_id=EXCEPTION_ID,
+            actor_user_id="exception@example.test",
+            outcome=ExceptionOutcome.APPROVED,
+            opinion="Legacy approval retained for history.",
+            occurred_at=NOW + timedelta(hours=1),
+            expected_version=value.version,
+            expected_input_hash=value.input_hash,
+            expected_exception_version=1,
+        )
+        legacy = replace(
+            value.exceptions[0],
+            closure_action_ref=ClosureActionReference(ACTION_ID, None, None),
+        )
+        historical = replace(value, exceptions=(legacy,))
+        requirement = snapshot.missing_requirements[0]
+
+        self.assertIn("closureActionGlobalId", legacy.canonical_dict())
+        self.assertNotIn("closureActionRef", legacy.canonical_dict())
+        self.assertTrue(
+            legacy.supports_recorded_decision(
+                requirement,
+                policy=historical.policy,
+                input_hash=historical.input_hash,
+                at=NOW + timedelta(hours=2),
+            )
+        )
+        self.assertFalse(
+            legacy.supports(
+                requirement,
+                policy=historical.policy,
+                input_hash=historical.input_hash,
+                at=NOW + timedelta(hours=2),
+                current_closure_action_ref=ACTION_REF,
+            )
+        )
+        with self.assertRaises(ReviewDenied) as denied:
+            historical.decide(
+                actor_user_id="decider@example.test",
+                outcome=DecisionOutcome.CONDITIONAL_PASS,
+                occurred_at=NOW + timedelta(hours=2),
+                expected_version=historical.version,
+                expected_input_hash=historical.input_hash,
+                current_input=snapshot,
+                current_closure_action_refs={EXCEPTION_ID: ACTION_REF},
+            )
+        self.assertEqual(denied.exception.code, "APPROVED_EXCEPTION_REQUIRED")
+
     def test_dependency_invalidation_uses_new_snapshot_bindings_and_guard(self) -> None:
         original = input_snapshot()
         decided = approve_all(cycle(original)).decide(

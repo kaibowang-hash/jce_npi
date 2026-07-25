@@ -8,7 +8,15 @@ import type {
 } from "../../src/domain/view-models";
 import { translate } from "../../src/i18n/runtime";
 import {
+  gateReviewDecidedFixture,
+  gateReviewDecisionReadyFixture,
+  gateReviewExceptionEligibleFixture,
+  gateReviewExceptionHistoryFixture,
   gateReviewFixture,
+  gateReviewNoCycleFixture,
+  gateReviewPendingExceptionFixture,
+  gateReviewReadOnlyFixture,
+  gateReviewReopenedFixture,
   gateReviewRequiresReviewFixture,
 } from "../support/gate-review-fixture";
 import {
@@ -16,6 +24,7 @@ import {
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,
   expectNoMixedLanguage,
+  expectSinglePrimaryAction,
   type TestLocale,
 } from "./support";
 
@@ -30,6 +39,22 @@ const submitReviewEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-cycles\/[^/?]+\/reviews(?:\?.*)?$/u;
 const receiptEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-command-receipts\/gate\.review\.submit(?:\?.*)?$/u;
+
+function syntheticReviewOpinion(locale: TestLocale): string {
+  return locale === "en"
+    ? "Synthetic controlled review opinion."
+    : locale === "zh"
+      ? "合成受控评审意见。"
+      : "合成受控評審意見。";
+}
+
+function syntheticExceptionRisk(locale: TestLocale): string {
+  return locale === "en"
+    ? "Synthetic bounded risk."
+    : locale === "zh"
+      ? "合成受控风险。"
+      : "合成受控風險。";
+}
 
 interface ObservedRequest {
   body: unknown;
@@ -108,12 +133,13 @@ function problem(
   code: string,
   traceId: string,
   retryable = false,
+  title = "The protected Gate review request could not be completed.",
 ): ProblemDetails {
   return {
     code,
     retryable,
     status,
-    title: "The protected Gate review request could not be completed.",
+    title,
     traceId,
     type: `urn:npi:problem:${code.toLowerCase()}`,
   };
@@ -193,6 +219,49 @@ async function installReview(
   return observed;
 }
 
+async function installDelayedReview(
+  page: Page,
+  view: GateReviewViewModel,
+): Promise<() => void> {
+  let releaseResponse: (() => void) | undefined;
+  const responseMayComplete = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+  await page.route(reviewEndpoint, async (route) => {
+    await responseMayComplete;
+    await fulfillApi(route, view);
+  });
+  return () => {
+    releaseResponse?.();
+  };
+}
+
+async function installReviewFailure(
+  page: Page,
+  locale: TestLocale,
+  options: {
+    code: string;
+    retryable?: boolean;
+    status: number;
+    titleSource: string;
+    traceId: string;
+  },
+): Promise<void> {
+  await page.route(reviewEndpoint, async (route) => {
+    await fulfillApi(
+      route,
+      problem(
+        options.status,
+        options.code,
+        options.traceId,
+        options.retryable ?? false,
+        translate(locale, options.titleSource),
+      ),
+      { status: options.status, traceId: options.traceId },
+    );
+  });
+}
+
 async function openGate(
   page: Page,
   locale: TestLocale = "en",
@@ -207,6 +276,20 @@ async function openGate(
   await expect(page.locator(".route-loading")).toHaveCount(0);
 }
 
+async function openGateLoading(page: Page, locale: TestLocale): Promise<void> {
+  await page.goto(
+    `/projects/${projectGlobalId}/gates/${gateGlobalId}?lang=${locale}`,
+    { waitUntil: "domcontentloaded" },
+  );
+  await expect(page.locator("#main-content")).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", locale);
+  await expect(
+    page.getByRole("status", {
+      name: translate(locale, "Loading Gate Review Room"),
+    }),
+  ).toBeVisible();
+}
+
 async function expectReviewRoomLoaded(page: Page): Promise<void> {
   await expect(
     page.getByRole("heading", {
@@ -216,6 +299,22 @@ async function expectReviewRoomLoaded(page: Page): Promise<void> {
   ).toBeVisible();
   await expect(
     page.getByRole("table", { name: "Frozen Gate requirements" }),
+  ).toBeVisible();
+}
+
+async function expectLocalizedReviewRoomLoaded(
+  page: Page,
+  locale: TestLocale,
+): Promise<void> {
+  await expect(
+    page.getByRole("table", {
+      name: translate(locale, "Frozen Gate requirements"),
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("complementary", {
+      name: translate(locale, "Review inspector"),
+    }),
   ).toBeVisible();
 }
 
@@ -469,7 +568,7 @@ test.describe("live Gate Review Room", () => {
       page.getByRole("button", { name: "Submit review" }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: /^Request exception:/u }),
+      page.getByRole("button", { name: "Request controlled exception" }),
     ).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Decide Gate" })).toHaveCount(
       0,
@@ -523,13 +622,14 @@ test.describe("live Gate Review Room", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "The Gate review response could not be used safely",
+        name: "The Gate Review Room could not be loaded",
       }),
     ).toBeVisible();
     await expect(page.getByText(traceId)).toBeVisible();
     await expect(page.getByText("Synthetic initiation evidence")).toHaveCount(
       0,
     );
+    await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
   });
 
   test("supports keyboard review selection and has no serious accessibility violations", async ({
@@ -598,10 +698,186 @@ test.describe("trilingual Gate Review Room state purity", () => {
   }
 });
 
+interface LoadedReviewStateCase {
+  expectedSource: string;
+  name: string;
+  view: () => GateReviewViewModel;
+}
+
+const loadedReviewStateCases: readonly LoadedReviewStateCase[] = [
+  {
+    expectedSource: "No active review cycle",
+    name: "no active cycle",
+    view: gateReviewNoCycleFixture,
+  },
+  {
+    expectedSource: "No permitted review action",
+    name: "read only",
+    view: gateReviewReadOnlyFixture,
+  },
+  {
+    expectedSource: "Pending approval",
+    name: "pending exception",
+    view: gateReviewPendingExceptionFixture,
+  },
+  {
+    expectedSource: "Approved",
+    name: "closed exception",
+    view: gateReviewExceptionHistoryFixture,
+  },
+  {
+    expectedSource: "Decided",
+    name: "decided",
+    view: gateReviewDecidedFixture,
+  },
+  {
+    expectedSource: "Manual reopen",
+    name: "reopened",
+    view: gateReviewReopenedFixture,
+  },
+  {
+    expectedSource: "Gate input snapshot changed",
+    name: "requires review",
+    view: gateReviewRequiresReviewFixture,
+  },
+];
+
+interface FailedReviewStateCase {
+  code: string;
+  expectedSource: string;
+  name: string;
+  retryable?: boolean;
+  status: number;
+}
+
+const failedReviewStateCases: readonly FailedReviewStateCase[] = [
+  {
+    code: "GATE_REVIEW_ACCESS_DENIED",
+    expectedSource: "Gate review access is not available",
+    name: "no permission",
+    status: 403,
+  },
+  {
+    code: "GATE_REVIEW_UNAVAILABLE",
+    expectedSource: "The Gate Review Room could not be loaded",
+    name: "retryable load error",
+    retryable: true,
+    status: 503,
+  },
+  {
+    code: "GATE_REVIEW_VERSION_CONFLICT",
+    expectedSource: "The Gate review workspace is out of date",
+    name: "load conflict",
+    status: 409,
+  },
+  {
+    code: "GATE_REVIEW_FINAL_FAILURE",
+    expectedSource: "The Gate review response could not be used safely",
+    name: "final error",
+    status: 500,
+  },
+  {
+    code: "GATE_REVIEW_UNAVAILABLE",
+    expectedSource: "Gate Review Room is unavailable",
+    name: "not found",
+    status: 404,
+  },
+];
+
+test.describe("trilingual Gate Review Room non-normal state matrix", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`renders loading without mixed language in ${locale}`, async ({
+      page,
+    }) => {
+      await installSession(page, locale);
+      const release = await installDelayedReview(page, gateReviewFixture());
+      try {
+        await openGateLoading(page, locale);
+        await expectNoMixedLanguage(page, locale);
+        await expectNoDocumentOverflow(page);
+      } finally {
+        release();
+      }
+      await expectLocalizedReviewRoomLoaded(page, locale);
+    });
+
+    for (const state of loadedReviewStateCases) {
+      test(`renders ${state.name} without mixed language in ${locale}`, async ({
+        page,
+      }) => {
+        await installSession(page, locale);
+        await installReview(page, state.view());
+        await openGate(page, locale);
+        await expectLocalizedReviewRoomLoaded(page, locale);
+        await expect(
+          page.getByText(translate(locale, state.expectedSource)).first(),
+        ).toBeVisible();
+        await expectNoMixedLanguage(page, locale);
+        await expectNoDocumentOverflow(page);
+      });
+    }
+
+    for (const state of failedReviewStateCases) {
+      test(`renders ${state.name} without protected data or mixed language in ${locale}`, async ({
+        page,
+      }) => {
+        const traceId = `trace-${state.name.replaceAll(" ", "-")}-${locale}`;
+        await installSession(page, locale);
+        await installReviewFailure(page, locale, {
+          code: state.code,
+          ...(state.retryable === undefined
+            ? {}
+            : { retryable: state.retryable }),
+          status: state.status,
+          titleSource: state.expectedSource,
+          traceId,
+        });
+        await openGate(page, locale);
+        await expect(
+          page.getByRole("heading", {
+            level: 1,
+            name: translate(locale, state.expectedSource),
+          }),
+        ).toBeVisible();
+        await expect(page.getByText(traceId)).toBeVisible();
+        await expect(
+          page.getByText("Synthetic initiation evidence"),
+        ).toHaveCount(0);
+        await expectNoMixedLanguage(page, locale);
+        await expectNoDocumentOverflow(page);
+      });
+    }
+  }
+});
+
+type ReviewRoomVisualState =
+  | "normal"
+  | "loading"
+  | "no_cycle"
+  | "read_only"
+  | "no_permission"
+  | "retryable"
+  | "final"
+  | "not_found"
+  | "validation"
+  | "command_conflict"
+  | "processing"
+  | "pending_exception"
+  | "closed_exception"
+  | "decided"
+  | "reopened"
+  | "requires_review"
+  | "dialog_request_exception"
+  | "dialog_decide_exception"
+  | "dialog_decide_gate"
+  | "dialog_reopen";
+
 interface ReviewRoomVisualCase {
+  dialogPosition?: "top" | "bottom";
   height: number;
   locale: TestLocale;
   name: string;
+  state: ReviewRoomVisualState;
   width: number;
   zoom: 1 | 1.25 | 1.5;
 }
@@ -611,6 +887,7 @@ const reviewRoomVisualCases: readonly ReviewRoomVisualCase[] = [
     height: 768,
     locale: "en",
     name: "gate-review-room-en-1366x768-100",
+    state: "normal",
     width: 1366,
     zoom: 1,
   },
@@ -618,6 +895,7 @@ const reviewRoomVisualCases: readonly ReviewRoomVisualCase[] = [
     height: 1080,
     locale: "zh",
     name: "gate-review-room-zh-1920x1080-125",
+    state: "normal",
     width: 1920,
     zoom: 1.25,
   },
@@ -625,45 +903,609 @@ const reviewRoomVisualCases: readonly ReviewRoomVisualCase[] = [
     height: 768,
     locale: "zh-TW",
     name: "gate-review-room-zh-TW-1366x768-150",
+    state: "normal",
     width: 1366,
+    zoom: 1.5,
+  },
+  {
+    dialogPosition: "bottom",
+    height: 768,
+    locale: "zh-TW",
+    name: "gate-review-dialog-decide-gate-confirm-zh-TW-1366x768-150",
+    state: "dialog_decide_gate",
+    width: 1366,
+    zoom: 1.5,
+  },
+  {
+    height: 1080,
+    locale: "en",
+    name: "gate-review-loading-en-1920x1080-150",
+    state: "loading",
+    width: 1920,
+    zoom: 1.5,
+  },
+  {
+    height: 768,
+    locale: "zh",
+    name: "gate-review-no-cycle-zh-1366x768-125",
+    state: "no_cycle",
+    width: 1366,
+    zoom: 1.25,
+  },
+  {
+    height: 1080,
+    locale: "zh-TW",
+    name: "gate-review-read-only-zh-TW-1920x1080-100",
+    state: "read_only",
+    width: 1920,
+    zoom: 1,
+  },
+  {
+    height: 1080,
+    locale: "zh",
+    name: "gate-review-no-permission-zh-1920x1080-125",
+    state: "no_permission",
+    width: 1920,
+    zoom: 1.25,
+  },
+  {
+    height: 768,
+    locale: "zh",
+    name: "gate-review-retryable-zh-1366x768-100",
+    state: "retryable",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 1080,
+    locale: "zh-TW",
+    name: "gate-review-final-zh-TW-1920x1080-125",
+    state: "final",
+    width: 1920,
+    zoom: 1.25,
+  },
+  {
+    height: 768,
+    locale: "en",
+    name: "gate-review-not-found-en-1366x768-150",
+    state: "not_found",
+    width: 1366,
+    zoom: 1.5,
+  },
+  {
+    height: 768,
+    locale: "zh-TW",
+    name: "gate-review-validation-zh-TW-1366x768-100",
+    state: "validation",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 1080,
+    locale: "en",
+    name: "gate-review-command-conflict-en-1920x1080-150",
+    state: "command_conflict",
+    width: 1920,
+    zoom: 1.5,
+  },
+  {
+    height: 768,
+    locale: "zh-TW",
+    name: "gate-review-processing-zh-TW-1366x768-150",
+    state: "processing",
+    width: 1366,
+    zoom: 1.5,
+  },
+  {
+    height: 768,
+    locale: "en",
+    name: "gate-review-exception-pending-en-1366x768-100",
+    state: "pending_exception",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 1080,
+    locale: "zh",
+    name: "gate-review-exception-closed-approved-zh-1920x1080-125",
+    state: "closed_exception",
+    width: 1920,
+    zoom: 1.25,
+  },
+  {
+    height: 768,
+    locale: "zh-TW",
+    name: "gate-review-decided-zh-TW-1366x768-150",
+    state: "decided",
+    width: 1366,
+    zoom: 1.5,
+  },
+  {
+    height: 1080,
+    locale: "en",
+    name: "gate-review-reopened-en-1920x1080-100",
+    state: "reopened",
+    width: 1920,
+    zoom: 1,
+  },
+  {
+    height: 768,
+    locale: "zh",
+    name: "gate-review-requires-review-zh-1366x768-125",
+    state: "requires_review",
+    width: 1366,
+    zoom: 1.25,
+  },
+  {
+    height: 768,
+    locale: "en",
+    name: "gate-review-dialog-request-exception-en-1366x768-100",
+    state: "dialog_request_exception",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 1080,
+    locale: "zh",
+    name: "gate-review-dialog-decide-exception-zh-1920x1080-125",
+    state: "dialog_decide_exception",
+    width: 1920,
+    zoom: 1.25,
+  },
+  {
+    height: 768,
+    locale: "zh-TW",
+    name: "gate-review-dialog-decide-gate-zh-TW-1366x768-150",
+    state: "dialog_decide_gate",
+    width: 1366,
+    zoom: 1.5,
+  },
+  {
+    height: 1080,
+    locale: "en",
+    name: "gate-review-dialog-reopen-en-1920x1080-150",
+    state: "dialog_reopen",
+    width: 1920,
     zoom: 1.5,
   },
 ];
 
+async function prepareReviewVisualCase(
+  page: Page,
+  visual: ReviewRoomVisualCase,
+): Promise<() => Promise<void>> {
+  const { locale, state } = visual;
+  const noCleanup = (): Promise<void> => Promise.resolve();
+  const openView = async (
+    view: GateReviewViewModel,
+    userId = "reviewer@example.invalid",
+  ): Promise<void> => {
+    await installSession(page, locale, userId);
+    await installReview(page, view);
+    await openGate(page, locale);
+    await expectLocalizedReviewRoomLoaded(page, locale);
+  };
+
+  if (state === "loading") {
+    await installSession(page, locale);
+    const release = await installDelayedReview(page, gateReviewFixture());
+    try {
+      await openGateLoading(page, locale);
+    } catch (error) {
+      release();
+      throw error;
+    }
+    return async () => {
+      release();
+      await expectLocalizedReviewRoomLoaded(page, locale);
+    };
+  }
+
+  if (
+    state === "no_permission" ||
+    state === "retryable" ||
+    state === "final" ||
+    state === "not_found"
+  ) {
+    const failure = {
+      final: {
+        code: "GATE_REVIEW_FINAL_FAILURE",
+        expectedSource: "The Gate review response could not be used safely",
+        status: 500,
+      },
+      no_permission: {
+        code: "GATE_REVIEW_ACCESS_DENIED",
+        expectedSource: "Gate review access is not available",
+        status: 403,
+      },
+      not_found: {
+        code: "GATE_REVIEW_UNAVAILABLE",
+        expectedSource: "Gate Review Room is unavailable",
+        status: 404,
+      },
+      retryable: {
+        code: "GATE_REVIEW_UNAVAILABLE",
+        expectedSource: "The Gate Review Room could not be loaded",
+        retryable: true,
+        status: 503,
+      },
+    }[state];
+    await installSession(page, locale);
+    await installReviewFailure(page, locale, {
+      code: failure.code,
+      retryable: "retryable" in failure ? failure.retryable : false,
+      status: failure.status,
+      titleSource: failure.expectedSource,
+      traceId: `trace-gate-review-${state}`,
+    });
+    await openGate(page, locale);
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: translate(locale, failure.expectedSource),
+      }),
+    ).toBeVisible();
+    return noCleanup;
+  }
+
+  if (state === "validation") {
+    await installSession(page, locale);
+    await installReview(page, gateReviewFixture());
+    await openGate(page, locale, "not-a-uuid");
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: translate(locale, "The Gate review address is invalid"),
+      }),
+    ).toBeVisible();
+    return noCleanup;
+  }
+
+  if (state === "command_conflict" || state === "processing") {
+    const view = gateReviewFixture();
+    let releaseResponse: (() => void) | undefined;
+    const responseMayComplete =
+      state === "processing"
+        ? new Promise<void>((resolve) => {
+            releaseResponse = resolve;
+          })
+        : Promise.resolve();
+    await installSession(page, locale);
+    await installReview(page, view);
+    await page.route(submitReviewEndpoint, async (route) => {
+      const body: unknown = route.request().postDataJSON();
+      if (!isSubmitReviewBody(body)) {
+        throw new Error("The browser submitted an invalid review command.");
+      }
+      if (state === "processing") {
+        await responseMayComplete;
+        await fulfillApi(route, submittedReviewView(view, body), {
+          idempotencyReplayed: false,
+        });
+        return;
+      }
+      await fulfillApi(
+        route,
+        problem(
+          409,
+          "GATE_REVIEW_VERSION_CONFLICT",
+          "trace-gate-review-command-conflict",
+          false,
+          translate(locale, "Version conflict"),
+        ),
+        { status: 409, traceId: "trace-gate-review-command-conflict" },
+      );
+    });
+    try {
+      await openGate(page, locale);
+      await expectLocalizedReviewRoomLoaded(page, locale);
+      await page
+        .getByRole("textbox", {
+          name: translate(locale, "Complete review opinion"),
+        })
+        .fill(syntheticReviewOpinion(locale));
+      await page
+        .getByRole("button", { name: translate(locale, "Submit review") })
+        .click();
+      const statusLabel = translate(
+        locale,
+        state === "processing"
+          ? "Processing Gate review command"
+          : "Version conflict",
+      );
+      await expect(
+        state === "processing"
+          ? page.getByText(statusLabel)
+          : page.getByRole("heading", { name: statusLabel }),
+      ).toBeVisible();
+    } catch (error) {
+      releaseResponse?.();
+      throw error;
+    }
+    return async () => {
+      if (state === "processing") {
+        releaseResponse?.();
+        await expect(
+          page.getByText(translate(locale, "Server confirmed"), {
+            exact: true,
+          }),
+        ).toBeVisible();
+      }
+    };
+  }
+
+  const view = {
+    closed_exception: gateReviewExceptionHistoryFixture,
+    decided: gateReviewDecidedFixture,
+    dialog_decide_exception: gateReviewPendingExceptionFixture,
+    dialog_decide_gate: gateReviewDecisionReadyFixture,
+    dialog_reopen: gateReviewDecidedFixture,
+    dialog_request_exception: gateReviewExceptionEligibleFixture,
+    no_cycle: gateReviewNoCycleFixture,
+    normal: gateReviewFixture,
+    pending_exception: gateReviewPendingExceptionFixture,
+    read_only: gateReviewReadOnlyFixture,
+    reopened: gateReviewReopenedFixture,
+    requires_review: gateReviewRequiresReviewFixture,
+  }[state]();
+  const userId =
+    state === "pending_exception" || state === "dialog_decide_exception"
+      ? "exception.authority@example.invalid"
+      : state === "decided" || state === "dialog_reopen"
+        ? "reopen.authority@example.invalid"
+        : state === "dialog_decide_gate"
+          ? "decision.authority@example.invalid"
+          : "reviewer@example.invalid";
+  await openView(view, userId);
+
+  const expectedSource = {
+    closed_exception: "Approved",
+    decided: "Decided",
+    no_cycle: "No active review cycle",
+    normal: undefined,
+    pending_exception: "Pending approval",
+    read_only: "No permitted review action",
+    reopened: "Manual reopen",
+    requires_review: "Gate input snapshot changed",
+  }[
+    state as
+      | "closed_exception"
+      | "decided"
+      | "no_cycle"
+      | "normal"
+      | "pending_exception"
+      | "read_only"
+      | "reopened"
+      | "requires_review"
+  ];
+  if (expectedSource) {
+    await expect(
+      page.getByText(translate(locale, expectedSource)).first(),
+    ).toBeVisible();
+  }
+
+  if (state === "pending_exception" || state === "closed_exception") {
+    const exceptions = page.getByRole("list", {
+      name: translate(locale, "Gate review exceptions"),
+    });
+    await expect(exceptions).toBeVisible();
+    await expect(
+      exceptions
+        .getByText(
+          translate(
+            locale,
+            state === "pending_exception" ? "Pending approval" : "Approved",
+          ),
+        )
+        .first(),
+    ).toBeVisible();
+    if (state === "closed_exception") {
+      await expect(
+        exceptions.getByText("The bounded synthetic exception is approved.", {
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+    await exceptions.scrollIntoViewIfNeeded();
+  } else if (state === "reopened") {
+    const historyHeading = page.getByRole("heading", {
+      name: translate(locale, "Input version and prior decisions"),
+    });
+    await historyHeading.scrollIntoViewIfNeeded();
+    const history = page.getByRole("list", {
+      name: translate(locale, "Immutable Gate decision history"),
+    });
+    await expect(history).toBeVisible();
+    const downstreamCurrent = history.getByText(
+      translate(locale, "Downstream current"),
+      { exact: true },
+    );
+    await expect(
+      downstreamCurrent
+        .locator("..")
+        .getByText(translate(locale, "No"), { exact: true }),
+    ).toBeVisible();
+  }
+
+  if (state === "dialog_request_exception") {
+    await page.getByRole("button", { name: /CUSTOMER_CONFIRMATION/u }).click();
+    const action = page.getByRole("combobox", {
+      name: translate(locale, "Review action"),
+    });
+    const reviewOption = action.locator(
+      'option[value="review:ENGINEERING_REVIEW"]',
+    );
+    const reviewOptionLabel = translate(locale, "Submit review: {{step}}", {
+      step: "ENGINEERING_REVIEW",
+    });
+    await expect(reviewOption).toHaveText(reviewOptionLabel);
+    await expect(reviewOption).toHaveAttribute("aria-label", reviewOptionLabel);
+    await expect(reviewOption).toHaveAttribute(
+      "data-language-exempt-tokens",
+      JSON.stringify(["ENGINEERING_REVIEW"]),
+    );
+    const requestOption = action.locator('option[value^="request_exception:"]');
+    const requestOptionLabel = translate(
+      locale,
+      "Request exception: {{requirement}} / {{kind}}",
+      {
+        kind: "controlled_deviation",
+        requirement: "CUSTOMER_CONFIRMATION",
+      },
+    );
+    await expect(requestOption).toHaveText(requestOptionLabel);
+    await expect(requestOption).toHaveAttribute(
+      "aria-label",
+      requestOptionLabel,
+    );
+    await expect(requestOption).toHaveAttribute(
+      "data-language-exempt-tokens",
+      JSON.stringify(["CUSTOMER_CONFIRMATION", "controlled_deviation"]),
+    );
+    const optionValue = await requestOption.getAttribute("value");
+    if (!optionValue) throw new Error("Missing exception-request action.");
+    await action.selectOption(optionValue);
+    await page
+      .getByRole("textbox", { name: translate(locale, "Risk if accepted") })
+      .fill(syntheticExceptionRisk(locale));
+    await page
+      .getByLabel(translate(locale, "Exception expiry date"))
+      .fill("2026-08-12");
+    await page.locator('[data-visual-primary="true"]:visible').click();
+    await expect(
+      page.getByRole("dialog", {
+        name: translate(locale, "Review controlled exception request"),
+      }),
+    ).toBeVisible();
+    await expectSinglePrimaryAction(page);
+  } else if (state === "dialog_decide_exception") {
+    await page
+      .getByRole("combobox", {
+        name: translate(locale, "Exception decision"),
+      })
+      .selectOption("rejected");
+    await page.locator('[data-visual-primary="true"]:visible').click();
+    await expect(
+      page.getByRole("dialog", {
+        name: translate(locale, "Review exception decision"),
+      }),
+    ).toBeVisible();
+    await expectSinglePrimaryAction(page);
+  } else if (state === "dialog_decide_gate") {
+    await page
+      .getByRole("combobox", {
+        name: translate(locale, "Decision outcome"),
+      })
+      .selectOption("pass");
+    await page.locator('[data-visual-primary="true"]:visible').click();
+    await expect(
+      page.getByRole("dialog", {
+        name: translate(locale, "Review immutable Gate decision"),
+      }),
+    ).toBeVisible();
+    await expectSinglePrimaryAction(page);
+  } else if (state === "dialog_reopen") {
+    await page.locator('[data-visual-primary="true"]:visible').click();
+    await expect(
+      page.getByRole("dialog", {
+        name: translate(locale, "Review Gate reopen"),
+      }),
+    ).toBeVisible();
+    await expectSinglePrimaryAction(page);
+  }
+
+  if (state.startsWith("dialog_")) {
+    const dialog = page.getByRole("dialog");
+    const surface = dialog.locator(".impact-review__surface");
+    await expect(surface).toBeVisible();
+    await surface.evaluate((element, position) => {
+      element.scrollTop = position === "bottom" ? element.scrollHeight : 0;
+    }, visual.dialogPosition ?? "top");
+    await expect
+      .poll(() => surface.evaluate((element) => element.scrollTop))
+      .toBe(
+        visual.dialogPosition === "bottom"
+          ? await surface.evaluate(
+              (element) => element.scrollHeight - element.clientHeight,
+            )
+          : 0,
+      );
+  }
+
+  return noCleanup;
+}
+
+const commandAndDialogStates: readonly ReviewRoomVisualState[] = [
+  "validation",
+  "command_conflict",
+  "processing",
+  "dialog_request_exception",
+  "dialog_decide_exception",
+  "dialog_decide_gate",
+  "dialog_reopen",
+];
+
+test.describe("trilingual Gate Review Room command and dialog matrix", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    for (const state of commandAndDialogStates) {
+      test(`renders ${state} without mixed language in ${locale}`, async ({
+        page,
+      }) => {
+        const visual: ReviewRoomVisualCase = {
+          height: 768,
+          locale,
+          name: `non-visual-${state}-${locale}`,
+          state,
+          width: 1366,
+          zoom: 1,
+        };
+        const cleanup = await prepareReviewVisualCase(page, visual);
+        try {
+          await expectNoMixedLanguage(page, locale);
+          await expectNoDocumentOverflow(page);
+        } finally {
+          await cleanup();
+        }
+      });
+    }
+  }
+});
+
 test.describe("@visual live Gate Review Room", () => {
-  for (const fixture of reviewRoomVisualCases) {
-    test(fixture.name, async ({ page }) => {
+  for (const visual of reviewRoomVisualCases) {
+    test(visual.name, async ({ page }) => {
       await page.setViewportSize(
         effectiveViewport(
-          { height: fixture.height, width: fixture.width },
-          fixture.zoom,
+          { height: visual.height, width: visual.width },
+          visual.zoom,
         ),
       );
       await page.emulateMedia({
         colorScheme: "light",
         reducedMotion: "reduce",
       });
-      await installSession(page, fixture.locale);
-      await installReview(page, gateReviewFixture());
-      await openGate(page, fixture.locale);
-      await expect(
-        page.getByRole("table", {
-          name: translate(fixture.locale, "Frozen Gate requirements"),
-        }),
-      ).toBeVisible();
-      await expectNoMixedLanguage(page, fixture.locale);
-      await expectNoDocumentOverflow(page);
-      await page.addStyleTag({
-        content:
-          "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
-      });
-      await page.evaluate(async () => document.fonts.ready);
-      await page.evaluate(() => {
-        globalThis.scrollTo(0, 0);
-      });
-      await expect(page).toHaveScreenshot(`${fixture.name}.png`, {
-        fullPage: false,
-      });
+      let cleanup = (): Promise<void> => Promise.resolve();
+      try {
+        cleanup = await prepareReviewVisualCase(page, visual);
+        await expectNoMixedLanguage(page, visual.locale);
+        await expectNoDocumentOverflow(page);
+        await page.addStyleTag({
+          content:
+            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+        });
+        await page.evaluate(async () => document.fonts.ready);
+        await page.evaluate(() => {
+          globalThis.scrollTo(0, 0);
+        });
+        await expect(page).toHaveScreenshot(`${visual.name}.png`, {
+          fullPage: false,
+          ...(visual.state === "validation"
+            ? { mask: [page.locator(".trace-reference code")] }
+            : {}),
+        });
+      } finally {
+        await cleanup();
+      }
     });
   }
 });

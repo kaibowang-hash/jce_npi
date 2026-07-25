@@ -12,6 +12,7 @@ import {
   locales,
   openPrototype,
   scenarios,
+  textWithoutLanguageExemptions,
 } from "./support";
 
 test.describe("normal, unavailable, conflict, and asynchronous state matrix", () => {
@@ -44,6 +45,27 @@ test.describe("three-language rendering and language purity", () => {
       });
     }
   }
+
+  test("scoped language exemptions remove only exact identifier tokens", async ({
+    page,
+  }) => {
+    await page.setContent(`
+      <div
+        aria-label="提交评审：ENGINEERING_REVIEW / ENGINEERING_REVIEWER / Submit"
+        data-language-exempt-tokens='["ENGINEERING_REVIEW"]'
+      >
+        提交评审：ENGINEERING_REVIEW / ENGINEERING_REVIEWER / Submit
+      </div>
+    `);
+
+    const scanned = await textWithoutLanguageExemptions(page);
+    expect(scanned).toContain("提交评审");
+    expect(scanned).toContain("ENGINEERING_REVIEWER");
+    expect(scanned).toContain("Submit");
+    expect(scanned).not.toMatch(
+      /(^|[^A-Za-z0-9._/-])ENGINEERING_REVIEW(?=$|[^A-Za-z0-9._/-])/u,
+    );
+  });
 
   test("the prototype fallback persists a selected Frappe language code across refresh", async ({
     page,

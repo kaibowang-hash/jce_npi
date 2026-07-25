@@ -213,8 +213,32 @@ class NPIGateReviewException(Document):
             )
 
     def _build_request_snapshot(self) -> None:
+        previous_snapshot = None
+        schema_version = 2
+        previous = self.get_doc_before_save()
+        if previous is not None:
+            previous_snapshot, _canonical_previous = canonical_json(
+                previous.request_snapshot,
+                _("Exception Request Snapshot"),
+                expected_type=dict,
+            )
+            schema_version = previous_snapshot.get("schemaVersion")
+            if type(schema_version) is not int or schema_version not in {1, 2}:
+                frappe.throw(
+                    _("Enter an exact closure action reference."),
+                    frappe.ValidationError,
+                )
+            if previous_snapshot.get("closureActionRef") != {
+                "globalId": self.closure_action_global_id,
+                "version": self.closure_action_version,
+                "snapshotHash": self.closure_action_snapshot_hash,
+            }:
+                frappe.throw(
+                    _("Enter an exact closure action reference."),
+                    frappe.ValidationError,
+                )
         snapshot = {
-            "schemaVersion": 1,
+            "schemaVersion": schema_version,
             "globalId": self.global_id,
             "exceptionKey": self.exception_key,
             "tenantId": self.tenant_id,

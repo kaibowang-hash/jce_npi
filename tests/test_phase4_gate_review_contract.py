@@ -525,6 +525,17 @@ class Phase4GateReviewContractTest(unittest.TestCase):
         self.assertIn("enum: [approved, rejected]", exception)
         self.assertIn("maxItems: 2", exception)
         self.assertIn("closureActionRef", _required("GateReviewException"))
+        self.assertIn("requestSchemaVersion", _required("GateReviewException"))
+        self.assertIn("enum: [1, 2]", exception)
+        self.assertIn("exact-reference collision profile", exception)
+        self.assertIn("Schema v1 historical request", exception)
+        self.assertIn("requestSchemaVersion: { const: 1 }", exception)
+        self.assertIn("Schema v2 exact request", exception)
+        self.assertIn("requestSchemaVersion: { const: 2 }", exception)
+        self.assertIn(
+            '$ref: "#/components/schemas/GateReviewExactObjectReference"',
+            exception,
+        )
         self.assertNotIn(
             "closureActionGlobalId",
             _property_names("GateReviewException"),

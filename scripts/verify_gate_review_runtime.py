@@ -465,6 +465,27 @@ def require_workspace(
                 and isinstance(active_cycle.get("exceptions"), list)
                 and all(
                     isinstance(exception, dict)
+                    and exception.get("requestSchemaVersion") in {1, 2}
+                    and isinstance(exception.get("closureActionRef"), dict)
+                    and (
+                        (
+                            exception["requestSchemaVersion"] == 1
+                            and exception["closureActionRef"].get("version") is None
+                            and exception["closureActionRef"].get("snapshotHash")
+                            is None
+                            and exception.get("allowedOutcomes") == []
+                        )
+                        or (
+                            isinstance(
+                                exception["closureActionRef"].get("version"),
+                                int,
+                            )
+                            and isinstance(
+                                exception["closureActionRef"].get("snapshotHash"),
+                                str,
+                            )
+                        )
+                    )
                     and isinstance(exception.get("allowedOutcomes"), list)
                     and set(exception["allowedOutcomes"]) <= {"approved", "rejected"}
                     for exception in active_cycle["exceptions"]
@@ -1251,6 +1272,293 @@ def trigger_dependency_refresh(
     }
 
 
+def verify_file_delete_transactions(
+    fixture_run_id: str,
+    project_id: str,
+    gate_id: str,
+    file_revision_id: str,
+    expected_cycle_id: str,
+) -> dict[str, object]:
+    """Prove File.on_trash is rollback-safe and refreshes only after commit."""
+
+    from unittest.mock import patch
+
+    import frappe
+    import frappe.utils.background_jobs as background_jobs
+    from npi_core.gate_review.frappe_repository import (
+        GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR,
+        evaluate_gate_review_dependency,
+    )
+
+    _validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "File deletion fixture namespace is invalid",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    gate = frappe.get_doc("NPI Gate Shell", gate_id)
+    prior = frappe.get_doc("NPI Gate Review Cycle", expected_cycle_id)
+    revision = frappe.get_doc("NPI File Revision", file_revision_id)
+    file_id = str(revision.frappe_file_id)
+    require(
+        str(project.tenant_id) == TENANT_ID
+        and str(gate.project_global_id) == project_id
+        and str(gate.current_review_cycle_global_id) == expected_cycle_id
+        and str(prior.state) == "active"
+        and str(prior.project_global_id) == project_id
+        and str(revision.project_global_id) == project_id
+        and frappe.db.exists("File", file_id),
+        "File deletion fixture scope drifted",
+    )
+    references = frappe.get_all(
+        "NPI Gate Evidence Reference",
+        filters={
+            "tenant_id": TENANT_ID,
+            "project_global_id": project_id,
+            "gate_global_id": gate_id,
+            "source_object_type": "file_revision",
+            "source_global_id": file_revision_id,
+        },
+        fields=[
+            "global_id",
+            "tenant_id",
+            "project_global_id",
+            "gate_global_id",
+            "source_object_type",
+            "source_global_id",
+        ],
+        limit_page_length=2,
+    )
+    require(len(references) == 1, "Exact File dependency reference is unavailable")
+    reference = references[0]
+    latest_decision_id = str(gate.latest_decision_snapshot_global_id or "")
+    latest_decision_hash = str(gate.latest_decision_snapshot_hash or "")
+    require(
+        re.fullmatch(r"[a-f0-9-]{36}", latest_decision_id) is not None
+        and re.fullmatch(r"[a-f0-9]{64}", latest_decision_hash) is not None,
+        "File deletion fixture has no retained latest decision lineage",
+    )
+    baseline_cycles = set(
+        frappe.get_all(
+            "NPI Gate Review Cycle",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=65,
+        )
+    )
+    baseline_events = set(
+        frappe.get_all(
+            "NPI Gate Review Event",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=129,
+        )
+    )
+
+    queue_requests: list[tuple[str, bool]] = []
+    published_jobs: list[dict[str, object]] = []
+    worker_path = (
+        "npi_core.gate_review.frappe_repository.evaluate_gate_review_dependency"
+    )
+
+    class FakePublisherQueue:
+        count = 0
+
+        def __init__(self, queue_name: str) -> None:
+            self.queue_name = queue_name
+
+        def enqueue_call(self, function, **kwargs):
+            published_jobs.append(
+                {
+                    "function": function,
+                    "options": kwargs,
+                    "queue": self.queue_name,
+                }
+            )
+            return None
+
+    def fake_get_queue(queue_name: str, is_async: bool = True):
+        queue_requests.append((queue_name, is_async))
+        return FakePublisherQueue(queue_name)
+
+    with patch.object(
+        background_jobs,
+        "get_queue",
+        side_effect=fake_get_queue,
+    ):
+        frappe.get_doc("File", file_id).delete(
+            ignore_permissions=True,
+            force=True,
+        )
+        require(
+            not frappe.db.exists("File", file_id)
+            and queue_requests.count(("short", True)) == 1
+            and published_jobs == [],
+            "File rollback probe did not execute the real delete hook",
+        )
+        frappe.db.rollback()
+        gate_after_rollback = frappe.get_doc("NPI Gate Shell", gate_id)
+        require(
+            frappe.db.exists("File", file_id)
+            and published_jobs == []
+            and str(gate_after_rollback.current_review_cycle_global_id)
+            == expected_cycle_id
+            and set(
+                frappe.get_all(
+                    "NPI Gate Review Cycle",
+                    filters={
+                        "project_global_id": project_id,
+                        "gate_global_id": gate_id,
+                    },
+                    pluck="name",
+                    limit_page_length=65,
+                )
+            )
+            == baseline_cycles
+            and set(
+                frappe.get_all(
+                    "NPI Gate Review Event",
+                    filters={
+                        "project_global_id": project_id,
+                        "gate_global_id": gate_id,
+                    },
+                    pluck="name",
+                    limit_page_length=129,
+                )
+            )
+            == baseline_events,
+            "Rolled-back File deletion created Gate review lineage",
+        )
+
+        frappe.get_doc("File", file_id).delete(
+            ignore_permissions=True,
+            force=True,
+        )
+        require(
+            not frappe.db.exists("File", file_id)
+            and queue_requests.count(("short", True)) == 2,
+            "Committed File deletion did not execute the real delete hook",
+        )
+        frappe.db.commit()
+
+    target_jobs = [
+        published
+        for published in published_jobs
+        if published["queue"] == "short"
+        and published["options"]["kwargs"]["method"] == worker_path
+    ]
+    require(len(target_jobs) == 1, "File deletion dependency publish is not unique")
+    published = target_jobs[0]
+    queue_arguments = published["options"]["kwargs"]
+    committed_job = queue_arguments["kwargs"]
+    require(
+        published["function"] is background_jobs.execute_job
+        and set(queue_arguments)
+        == {
+            "site",
+            "user",
+            "method",
+            "event",
+            "job_name",
+            "is_async",
+            "kwargs",
+        }
+        and queue_arguments["site"] == SITE_NAME
+        and queue_arguments["user"] == "Administrator"
+        and queue_arguments["method"] == worker_path
+        and queue_arguments["event"] is None
+        and queue_arguments["job_name"] == worker_path
+        and queue_arguments["is_async"] is True
+        and committed_job
+        == {
+            "reference_id": str(reference.global_id),
+            "tenant_id": TENANT_ID,
+            "project_id": project_id,
+            "gate_id": gate_id,
+            "source_kind": "file_revision",
+            "source_global_id": file_revision_id,
+            "initiated_by_user_id": "Administrator",
+        },
+        "File deletion did not publish one exact post-commit dependency job",
+    )
+    require(
+        evaluate_gate_review_dependency(**committed_job) is True,
+        "Committed File deletion dependency job did not refresh the Gate",
+    )
+    frappe.db.commit()
+
+    gate_after_commit = frappe.get_doc("NPI Gate Shell", gate_id)
+    successor_id = str(gate_after_commit.current_review_cycle_global_id)
+    prior_after_commit = frappe.get_doc("NPI Gate Review Cycle", expected_cycle_id)
+    successor = frappe.get_doc("NPI Gate Review Cycle", successor_id)
+    events = frappe.get_all(
+        "NPI Gate Review Event",
+        filters={
+            "cycle_global_id": expected_cycle_id,
+            "successor_cycle_global_id": successor_id,
+        },
+        fields=[
+            "global_id",
+            "event_type",
+            "actor_user_id",
+            "action_global_id",
+            "payload",
+            "payload_hash",
+        ],
+        limit_page_length=2,
+    )
+    require(len(events) == 1, "File deletion refresh event is not unique")
+    event = events[0]
+    payload = json_value(event.payload)
+    input_snapshot = json_value(successor.input_snapshot)
+    deleted_file_evidence = next(
+        (
+            value
+            for value in input_snapshot["evidence"]
+            if value.get("sourceGlobalId") == file_revision_id
+        ),
+        None,
+    )
+    require(
+        not frappe.db.exists("File", file_id)
+        and successor_id != expected_cycle_id
+        and str(gate_after_commit.latest_decision_snapshot_global_id)
+        == latest_decision_id
+        and str(gate_after_commit.latest_decision_snapshot_hash) == latest_decision_hash
+        and str(prior_after_commit.state) == "superseded"
+        and str(successor.state) == "active"
+        and str(successor.trigger) == "dependency_change"
+        and str(successor.prior_cycle_global_id) == expected_cycle_id
+        and str(successor.input_hash) != str(prior_after_commit.input_hash)
+        and isinstance(deleted_file_evidence, dict)
+        and deleted_file_evidence.get("fileSafe") is False
+        and str(event.event_type) == "refreshed"
+        and str(event.actor_user_id) == GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR
+        and event.action_global_id in (None, "")
+        and isinstance(payload, dict)
+        and payload.get("schemaVersion") == 2
+        and payload.get("actionGlobalId") is None
+        and payload.get("detail", {}).get("oldInputHash")
+        == str(prior_after_commit.input_hash)
+        and payload.get("detail", {}).get("newInputHash") == str(successor.input_hash)
+        and canonical_hash(payload) == str(event.payload_hash),
+        "Committed File deletion did not create exact Gate refresh lineage",
+    )
+    return {
+        "eventId": str(event.global_id),
+        "eventType": str(event.event_type),
+        "oldCycleId": expected_cycle_id,
+        "rollbackNoSuccessor": True,
+        "successorCycleId": successor_id,
+    }
+
+
 def verify_requires_review_command_rejections(
     fixture_run_id: str,
     project_id: str,
@@ -1498,6 +1806,7 @@ def verify_persisted_review_history(
     exception_request = json_value(exception.request_snapshot)
     require(
         isinstance(exception_request, dict)
+        and exception_request.get("schemaVersion") == 2
         and exception_request.get("closureActionRef")
         == {
             "globalId": str(exception.closure_action_global_id),
@@ -1642,6 +1951,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     fixtures = {
         "mark_wrong_tenant_project": mark_wrong_tenant_project,
         "trigger_dependency_refresh": trigger_dependency_refresh,
+        "verify_file_delete_transactions": verify_file_delete_transactions,
         "verify_persisted_review_history": verify_persisted_review_history,
         "verify_requires_review_command_rejections": (
             verify_requires_review_command_rejections
@@ -1681,6 +1991,7 @@ def main() -> None:
         choices=(
             "mark_wrong_tenant_project",
             "trigger_dependency_refresh",
+            "verify_file_delete_transactions",
             "verify_persisted_review_history",
             "verify_requires_review_command_rejections",
             "verify_runtime_schema",
@@ -2225,6 +2536,7 @@ def main() -> None:
         require(
             exception_cycle["version"] == 3
             and exception["state"] == "pending"
+            and exception["requestSchemaVersion"] == 2
             and exception["requester"]["userId"] == evidence_runtime.REVIEWER_USER
             and exception["closureActionRef"]["globalId"] == closure_action_id
             and exception["closureActionRef"]["version"] == 1
@@ -2533,6 +2845,100 @@ def main() -> None:
             },
         )
 
+        evidence_runtime.run_bench_fixture(
+            "seed_private_file_revisions",
+            {
+                "main_project_id": project_id,
+                "cross_project_id": _cross_project_id,
+                "fixture_run_id": FIXTURE_RUN_ID,
+            },
+        )
+        main_file = evidence_runtime.validate_file_revision(
+            administrator,
+            arguments.base_url,
+            evidence_runtime.FILE_REVISION_ID,
+            project_id,
+        )
+        cross_file = evidence_runtime.validate_file_revision(
+            administrator,
+            arguments.base_url,
+            evidence_runtime.CROSS_FILE_REVISION_ID,
+            _cross_project_id,
+        )
+        require(
+            main_file["sha256"] == cross_file["sha256"],
+            "Rollback-safe duplicate File fixture hash drifted",
+        )
+        before_file_attach = require_workspace(
+            get_gate_review(
+                administrator,
+                arguments.base_url,
+                project_id,
+                gate_id,
+            ),
+            expected_status=200,
+            project_id=project_id,
+            gate_id=gate_id,
+        )
+        before_file_cycle_id = str(before_file_attach["activeCycle"]["globalId"])
+        file_attach = evidence_runtime.attach_evidence(
+            administrator,
+            arguments.base_url,
+            project_id,
+            gate_id,
+            evidence_runtime.REQUIREMENT_FILE,
+            {
+                "expectedGateVersion": int(before_file_attach["gate"]["version"]),
+                "evidenceKind": "file_revision",
+                "sourceGlobalId": evidence_runtime.FILE_REVISION_ID,
+                "sourceVersion": 1,
+                "sourceHash": str(main_file["sha256"]),
+            },
+            csrf_token=administrator_csrf,
+            idempotency_key=evidence_runtime.FILE_ATTACH_KEY,
+        )
+        require(
+            file_attach.status == 201
+            and file_attach.headers.get("Idempotency-Replayed") == "false",
+            f"File deletion proof attach returned HTTP {file_attach.status}",
+        )
+        file_attached_workspace = require_workspace(
+            get_gate_review(
+                administrator,
+                arguments.base_url,
+                project_id,
+                gate_id,
+            ),
+            expected_status=200,
+            project_id=project_id,
+            gate_id=gate_id,
+        )
+        file_baseline_cycle_id = str(file_attached_workspace["activeCycle"]["globalId"])
+        require(
+            file_attached_workspace["gate"]["reviewState"] == "requires_review"
+            and file_baseline_cycle_id != before_file_cycle_id
+            and file_attached_workspace["activeCycle"]["state"] == "active"
+            and file_attached_workspace["activeCycle"]["trigger"]
+            == "dependency_change",
+            "File attachment did not establish the deletion proof baseline",
+        )
+        file_delete = run_bench_fixture(
+            "verify_file_delete_transactions",
+            {
+                "expected_cycle_id": file_baseline_cycle_id,
+                "file_revision_id": evidence_runtime.FILE_REVISION_ID,
+                "fixture_run_id": FIXTURE_RUN_ID,
+                "gate_id": gate_id,
+                "project_id": project_id,
+            },
+        )
+        require(
+            file_delete["oldCycleId"] == file_baseline_cycle_id
+            and file_delete["eventType"] == "refreshed"
+            and file_delete["rollbackNoSuccessor"] is True,
+            "File deletion transaction evidence drifted",
+        )
+
         print(
             json.dumps(
                 {
@@ -2547,6 +2953,7 @@ def main() -> None:
                     "fixtureAbsenceBeforeWrite": fixture_absence,
                     "fixtureRevision": FIXTURE_REVISION,
                     "fixtureRunId": FIXTURE_RUN_ID,
+                    "fileDeleteDependencyRefresh": file_delete,
                     "happyPath": [
                         "start",
                         "review",

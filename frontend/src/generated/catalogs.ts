@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '6ff771657535db15';
+export const catalogVersion = 'fe87273ddba85cf7';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -323,6 +323,7 @@ export const catalogs = {
     "Cycle Version After must advance by one.": "变更后周期版本必须递增一。",
     "Cycle Version Before": "变更前周期版本",
     "Date": "日期",
+    "Decide exception": "决策豁免",
     "Decide exception: {{requirement}} / {{kind}}": "决策豁免：{{requirement}} / {{kind}}",
     "Decide Gate": "对阶段门作出决策",
     "decided": "已决策",
@@ -1096,6 +1097,7 @@ export const catalogs = {
     "reopened": "已重新打开",
     "Repeat trial required": "需要再次试模",
     "Replay ID": "回放编号",
+    "Request controlled exception": "申请受控豁免",
     "Request exception: {{requirement}} / {{kind}}": "申请豁免：{{requirement}} / {{kind}}",
     "Request ID": "请求编号",
     "Request number": "请求编号",
@@ -2065,6 +2067,7 @@ export const catalogs = {
     "Cycle Version After must advance by one.": "變更後週期版本必須遞增一。",
     "Cycle Version Before": "變更前週期版本",
     "Date": "日期",
+    "Decide exception": "決策豁免",
     "Decide exception: {{requirement}} / {{kind}}": "決策豁免：{{requirement}} / {{kind}}",
     "Decide Gate": "作出階段門決策",
     "decided": "已決策",
@@ -2838,6 +2841,7 @@ export const catalogs = {
     "reopened": "已重新開啟",
     "Repeat trial required": "需要再次試模",
     "Replay ID": "重播編號",
+    "Request controlled exception": "申請受控豁免",
     "Request exception: {{requirement}} / {{kind}}": "申請豁免：{{requirement}} / {{kind}}",
     "Request ID": "請求編號",
     "Request number": "請求編號",

@@ -801,15 +801,28 @@ class ReviewRecord:
 @dataclass(frozen=True, slots=True)
 class ClosureActionReference:
     global_id: UUID
-    version: int
-    snapshot_hash: str
+    version: int | None
+    snapshot_hash: str | None
 
     def __post_init__(self) -> None:
         _uuid(self.global_id, "closureActionRef.globalId")
-        _positive_int(self.version, "closureActionRef.version")
-        _hash(self.snapshot_hash, "closureActionRef.snapshotHash")
+        has_version = self.version is not None
+        has_hash = self.snapshot_hash is not None
+        if has_version != has_hash:
+            raise _validation(
+                "closureActionRef",
+                _("The required closure action is missing."),
+            )
+        if self.version is not None:
+            _positive_int(self.version, "closureActionRef.version")
+        if self.snapshot_hash is not None:
+            _hash(self.snapshot_hash, "closureActionRef.snapshotHash")
 
-    def canonical_dict(self) -> dict[str, object]:
+    @property
+    def is_exact(self) -> bool:
+        return self.version is not None and self.snapshot_hash is not None
+
+    def canonical_dict(self) -> dict[str, object | None]:
         return {
             "globalId": str(self.global_id),
             "version": self.version,
@@ -1135,7 +1148,7 @@ class ReviewException:
                 )
 
     def canonical_dict(self) -> dict[str, object]:
-        return {
+        value: dict[str, object] = {
             "globalId": str(self.global_id),
             "cycleGlobalId": str(self.cycle_global_id),
             "gateGlobalId": str(self.gate_global_id),
@@ -1153,7 +1166,6 @@ class ReviewException:
             "requesterUserId": self.requester_user_id,
             "reason": self.reason,
             "risk": self.risk,
-            "closureActionRef": self.closure_action_ref.canonical_dict(),
             "closureActionKind": self.closure_action_kind,
             "requestedAt": self.requested_at.isoformat(),
             "expiresAt": self.expires_at.isoformat(),
@@ -1169,6 +1181,14 @@ class ReviewException:
                 self.decided_at.isoformat() if self.decided_at is not None else None
             ),
         }
+        if self.closure_action_ref.is_exact:
+            value["closureActionRef"] = self.closure_action_ref.canonical_dict()
+        else:
+            # Preserve the semantic hash of the immutable schema-v1 request.
+            # Missing historical version/hash values are never inferred from
+            # the current mutable action.
+            value["closureActionGlobalId"] = str(self.closure_action_ref.global_id)
+        return value
 
     @property
     def snapshot_hash(self) -> str:
@@ -1241,7 +1261,8 @@ class ReviewException:
     ) -> bool:
         now = _aware(at, "occurredAt")
         return (
-            self.state is ExceptionState.APPROVED
+            self.closure_action_ref.is_exact
+            and self.state is ExceptionState.APPROVED
             and self.outcome is ExceptionOutcome.APPROVED
             and self.requirement_global_id == requirement.global_id
             and self.requirement_key == requirement.requirement_key
@@ -1251,6 +1272,29 @@ class ReviewException:
             and self.input_hash == input_hash
             and current_closure_action_ref == self.closure_action_ref
             and now < self.expires_at
+        )
+
+    def supports_recorded_decision(
+        self,
+        requirement: GateRequirementInput,
+        *,
+        policy: ReviewPolicyVersion,
+        input_hash: str,
+        at: datetime,
+    ) -> bool:
+        """Validate immutable decision-time history without current-action claims."""
+
+        decided_at = _aware(at, "occurredAt")
+        return (
+            self.state is ExceptionState.APPROVED
+            and self.outcome is ExceptionOutcome.APPROVED
+            and self.requirement_global_id == requirement.global_id
+            and self.requirement_key == requirement.requirement_key
+            and self.requirement_priority == requirement.priority
+            and self.policy_version == policy.policy_version
+            and self.policy_hash == policy.snapshot_hash
+            and self.input_hash == input_hash
+            and decided_at < self.expires_at
         )
 
 
@@ -1705,12 +1749,11 @@ class ReviewCycle:
                     )
                 if self.decision.outcome is DecisionOutcome.CONDITIONAL_PASS and any(
                     not any(
-                        exception.supports(
+                        exception.supports_recorded_decision(
                             requirement,
                             policy=self.policy,
                             input_hash=self.input_snapshot.snapshot_hash,
                             at=self.decision.occurred_at,
-                            current_closure_action_ref=exception.closure_action_ref,
                         )
                         for exception in exceptions
                     )
@@ -1941,6 +1984,14 @@ class ReviewCycle:
                 "CLOSURE_ACTION_REQUIRED",
                 _("The required closure action is missing."),
             )
+        if (
+            type(closure_action_ref) is not ClosureActionReference
+            or not closure_action_ref.is_exact
+        ):
+            raise ReviewDenied(
+                "CLOSURE_ACTION_REQUIRED",
+                _("The required closure action is missing."),
+            )
         requested = _aware(requested_at, "requestedAt")
         expires = _aware(expires_at, "expiresAt")
         if expires > requested + timedelta(days=rule.maximum_validity_days):
@@ -2046,9 +2097,9 @@ class ReviewCycle:
         expected_version: int,
         expected_input_hash: str,
         current_input: GateInputSnapshot,
-        current_closure_action_refs: Mapping[
-            UUID, ClosureActionReference
-        ] | None = None,
+        current_closure_action_refs: (
+            Mapping[UUID, ClosureActionReference] | None
+        ) = None,
     ) -> ReviewCycle:
         if self.state is not CycleState.ACTIVE:
             raise ReviewDenied(
@@ -2121,9 +2172,7 @@ class ReviewCycle:
                             input_hash=self.input_hash,
                             at=decided_at,
                             current_closure_action_ref=(
-                                (current_closure_action_refs or {}).get(
-                                    value.global_id
-                                )
+                                (current_closure_action_refs or {}).get(value.global_id)
                             ),
                         )
                         for value in self.exceptions
@@ -2421,9 +2470,7 @@ def downstream_decision_is_current(
     gate_current_cycle_global_id: UUID,
     current_input: GateInputSnapshot,
     at: datetime,
-    current_closure_action_refs: Mapping[
-        UUID, ClosureActionReference
-    ] | None = None,
+    current_closure_action_refs: Mapping[UUID, ClosureActionReference] | None = None,
 ) -> bool:
     if type(cycle) is not ReviewCycle:
         raise _validation("cycle", _("Enter a valid review cycle."))

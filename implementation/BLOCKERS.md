@@ -4,21 +4,31 @@
 
 None.
 
-## Final CLI-to-Cloud handoff checkpoint
+## P4-04 thread-migration checkpoint
 
-P4-04 is paused by the explicit final handoff instruction after the current
-minimum consistent implementation and repair batch. This is not a Hard
-Blocker and not a Gate result. The live repository/idempotency/permission
-boundary, strict BFF/OpenAPI surface, dependency hooks, focused runtime, live
-Review Room, complete direct `zh`/`zh-TW` catalogs, and directly affected Level
-1 tests are retained.
+P4-04 is paused by the explicit thread-migration instruction after completing
+the current repair and affected acceptance batch. This is not a Hard Blocker
+and not a Gate result. The bounded takeover conclusion is
+`DOMAIN_FOUNDATION_ACCEPTED`; P4-04 remains `IN_PROGRESS`.
 
-No directly affected Level 1 failure is waived. P4-04 remains `IN_PROGRESS`
-because its complete state-specific E2E/visual matrix, module coverage/build/
-audit lane, migration/runtime compatibility reruns, Level 2 Task Gate, and
-contract/Schema/authentication/permission/shared-catalog-triggered Level 3
-have not run. Production review/exception/invalidation/segregation policy is
-also still a scoped Class-B hold.
+The current affected Level 1 evidence includes 123 Gate Review Python tests,
+46 shared P4-02/P4-03 boundary tests, 11 Gate Evidence/Gate Shell tests, 116
+frontend tests, 72 current Gate browser cases, 23 exact Review Room visuals,
+and complete direct translation coverage for 1742 literal English sources.
+P4-03 reconciled to `EVIDENCE_CONFIRMED`; its full Level 3 is not repeated.
+
+No failure is waived. Current additive/idempotent migration, final focused and
+complete runtime compatibility, module coverage/build/audit, Level 2 Task
+Gate, and the contract/Schema/authentication/permission/hook/shared-catalog
+triggered Level 3 remain pending. Production review/exception/invalidation/
+segregation policy is also still a scoped Class-B hold.
+
+The focused live runtime retry did not enter product execution because the
+controlled MariaDB container was stopped. Restoring the existing Compose
+services failed with Docker's stale OCI task error
+`container with given ID already exists`. This is a recoverable local runtime
+prerequisite, not an active Hard Blocker and not a product test result. Do not
+reset or delete the controlled database volume to bypass it.
 
 The former P4-04 plan requirement to create an automatic impact Domain
 WorkItem was an overreach. Authoritative `FR-SG-007` requires invalidation and
@@ -27,10 +37,11 @@ successor cycles and exact dependency events, keeps downstream use denied,
 and leaves the legacy action reference null. This scope correction is not a
 blocker and does not install a production policy.
 
-Resume only from
-`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`; P4-04 must not be
-marked `PASS`, and P4-05 must not start, until all applicable pending criteria
-pass.
+Resume from
+`implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`,
+`implementation/evidence/phase-4/p4-04-takeover-review.md`, and
+`implementation/NEXT_ACTION.md`. P4-04 must not be marked `PASS`, and P4-05
+must not start, until all applicable pending criteria pass.
 
 ## Open external acceptance and reconciliation inputs
 

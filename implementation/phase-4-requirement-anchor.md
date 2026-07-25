@@ -387,13 +387,13 @@ notification, email, print, and delivery surfaces exist. P4-04 is activated
 under the existing automatic-transition authority. Phase 3 remains
 `TECHNICAL_PASS_PENDING_UAT`.
 
-## 16. P4-04 CLI-to-Cloud handoff checkpoint
+## 16. P4-04 bounded takeover/thread-migration checkpoint
 
 P4-04 now retains a live but unaccepted implementation checkpoint: the
 review/decision/exception/reopen domain and repository, controlled persistence,
-strict BFF/OpenAPI/receipt surfaces, dependency invalidation hooks, focused
-Frappe runtime, strict trilingual Review Room, reconstructable immutable audit,
-and directly affected Level 1 tests.
+strict BFF/OpenAPI/receipt surfaces, dependency invalidation hooks, strict
+trilingual Review Room, reconstructable immutable audit, legacy-history
+compatibility repairs, and directly affected Level 1 tests.
 
 The generated P4-04 plan is corrected to the authoritative `FR-SG-007` scope.
 Dependency change preserves the prior decision, records exact
@@ -403,15 +403,20 @@ P4-05 owns work/lifecycle projection. The nullable action reference remains
 only for backward-compatible reads.
 
 `FR-SG-003`, `FR-SG-005`, `FR-SG-006`, and `FR-SG-007` remain
-`IN_PROGRESS_P4_04`. Passing Level 1 evidence includes 116 Gate Review Python
-tests, the focused live Frappe runtime, 93 frontend parser/Review Room tests,
-four affected E2E cases, complete 1740-entry direct Chinese catalogs, and three
-forced/clean exact trilingual normal-state visuals.
+`IN_PROGRESS_P4_04`. The takeover conclusion is
+`DOMAIN_FOUNDATION_ACCEPTED`, not P4-04 `PASS`. Passing current affected
+evidence includes 123 Gate Review Python tests, 46 shared backend boundary
+tests, 11 Gate Evidence/Gate Shell tests, 116 frontend parser/Review Room
+tests, 72 live Gate browser cases, complete 1742-entry direct Chinese
+catalogs, and 23 clean exact Review Room visuals. P4-03 reconciled separately
+to `EVIDENCE_CONFIRMED`.
 
-This evidence does not pass the atomic task. The complete P4-04 state-specific
-E2E/visual matrix, coverage/build/audit, migration/runtime compatibility,
+This evidence does not pass the atomic task. Current migration/idempotence,
+final focused and complete runtime compatibility, coverage/build/audit,
 Task Diff/security/trace review, Level 2 Task Gate, and triggered Level 3
-remain pending. Resume only P4-04 from
-`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md`; P4-05 is not
+remain pending. The focused runtime retry did not execute because the stopped
+controlled MariaDB container could not be restored past a stale Docker OCI
+task. Resume only P4-04 from
+`implementation/evidence/phase-4/p4-04-takeover-review.md`; P4-05 is not
 activated. The prior P4-03 Level 3 evidence remains valid and must not be
-rerun solely to reconstruct this handoff.
+rerun solely to reconstruct this checkpoint.

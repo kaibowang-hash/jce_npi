@@ -195,28 +195,70 @@ export async function textWithoutLanguageExemptions(
   return page.locator("body").evaluate((body) => {
     const values: string[] = [];
     const visibleAttributes = ["aria-label", "title", "placeholder", "alt"];
-    const visit = (node: Node, inheritedExemption = false): void => {
+    const stripScopedTokens = (
+      value: string,
+      tokens: readonly string[],
+    ): string =>
+      [...new Set(tokens)]
+        .sort((left, right) => right.length - left.length)
+        .reduce((candidate, token) => {
+          const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          return candidate.replace(
+            new RegExp(
+              `(^|[^A-Za-z0-9._/-])${escaped}(?=$|[^A-Za-z0-9._/-])`,
+              "gu",
+            ),
+            "$1",
+          );
+        }, value);
+    const visit = (
+      node: Node,
+      inheritedExemption = false,
+      inheritedTokens: readonly string[] = [],
+    ): void => {
       if (node instanceof Text) {
         if (!inheritedExemption && node.textContent)
-          values.push(node.textContent);
+          values.push(stripScopedTokens(node.textContent, inheritedTokens));
         return;
       }
       if (!(node instanceof Element) && !(node instanceof ShadowRoot)) return;
       const element = node instanceof Element ? node : null;
       if (element?.matches("script, style")) return;
+      const tokenAttribute = element?.getAttribute(
+        "data-language-exempt-tokens",
+      );
+      const ownTokens: string[] = [];
+      if (tokenAttribute) {
+        const parsed: unknown = JSON.parse(tokenAttribute);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          throw new Error("Invalid scoped language-exemption token list.");
+        }
+        for (const token of parsed as unknown[]) {
+          if (
+            typeof token !== "string" ||
+            token.length === 0 ||
+            token.trim() !== token
+          ) {
+            throw new Error("Invalid scoped language-exemption token list.");
+          }
+          ownTokens.push(token);
+        }
+      }
+      const scopedTokens = [...inheritedTokens, ...ownTokens];
       const exempt =
         inheritedExemption ||
         element?.hasAttribute("data-language-exempt") === true;
       if (element && !exempt) {
         for (const attribute of visibleAttributes) {
           const value = element.getAttribute(attribute);
-          if (value) values.push(value);
+          if (value) values.push(stripScopedTokens(value, scopedTokens));
         }
       }
       if (element?.shadowRoot) {
-        for (const child of element.shadowRoot.childNodes) visit(child, exempt);
+        for (const child of element.shadowRoot.childNodes)
+          visit(child, exempt, scopedTokens);
       }
-      for (const child of node.childNodes) visit(child, exempt);
+      for (const child of node.childNodes) visit(child, exempt, scopedTokens);
     };
     visit(body);
     return values.join(" ").replace(/\s+/g, " ").trim();

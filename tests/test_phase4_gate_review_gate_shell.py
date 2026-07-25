@@ -405,20 +405,12 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         manual_reopen.review_state = "in_review"
         manual_reopen.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
         manual_reopen.current_review_cycle_global_id = str(SUCCESSOR_CYCLE_ID)
-        manual_reopen.latest_decision_snapshot = None
-        manual_reopen.latest_decision_snapshot_global_id = None
-        manual_reopen.latest_decision_snapshot_hash = None
-        manual_reopen.latest_decision_outcome = None
         self.validate_existing(manual_reopen, decided, review=True)
         self.assertEqual(manual_reopen.review_input_version, 1)
 
         requires_review = clone(decided)
         requires_review.optimistic_version = 4
         requires_review.review_state = "requires_review"
-        requires_review.latest_decision_snapshot = None
-        requires_review.latest_decision_snapshot_global_id = None
-        requires_review.latest_decision_snapshot_hash = None
-        requires_review.latest_decision_outcome = None
         requires_review.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
         requires_review.current_review_cycle_global_id = str(SUCCESSOR_CYCLE_ID)
         self.validate_existing(requires_review, decided, review=True)
@@ -547,10 +539,6 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         same_cycle_reopen = clone(decided)
         same_cycle_reopen.optimistic_version = 4
         same_cycle_reopen.review_state = "in_review"
-        same_cycle_reopen.latest_decision_snapshot = None
-        same_cycle_reopen.latest_decision_snapshot_global_id = None
-        same_cycle_reopen.latest_decision_snapshot_hash = None
-        same_cycle_reopen.latest_decision_outcome = None
         with self.assertRaises(self.ValidationError):
             self.validate_existing(same_cycle_reopen, decided, review=True)
 
@@ -559,11 +547,20 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         requires_review.review_state = "requires_review"
         requires_review.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
         requires_review.current_review_cycle_global_id = str(SUCCESSOR_CYCLE_ID)
-        requires_review.latest_decision_snapshot = None
-        requires_review.latest_decision_snapshot_global_id = None
-        requires_review.latest_decision_snapshot_hash = None
-        requires_review.latest_decision_outcome = None
         self.validate_existing(requires_review, decided, review=True)
+
+        cleared_history = clone(requires_review)
+        cleared_history.optimistic_version = 5
+        cleared_history.latest_decision_snapshot = None
+        cleared_history.latest_decision_snapshot_global_id = None
+        cleared_history.latest_decision_snapshot_hash = None
+        cleared_history.latest_decision_outcome = None
+        with self.assertRaises(self.ValidationError):
+            self.validate_existing(
+                cleared_history,
+                requires_review,
+                review=True,
+            )
 
         changed_successor = clone(requires_review)
         changed_successor.optimistic_version = 5

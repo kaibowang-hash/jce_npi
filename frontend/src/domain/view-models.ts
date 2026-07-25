@@ -356,6 +356,12 @@ export interface GateReviewExactObjectReferenceViewModel {
   snapshotHash: string;
 }
 
+export interface GateReviewClosureActionReferenceViewModel {
+  globalId: string;
+  version: number | null;
+  snapshotHash: string | null;
+}
+
 export interface GateReviewExceptionViewModel {
   globalId: string;
   requirementGlobalId: string;
@@ -366,7 +372,8 @@ export interface GateReviewExceptionViewModel {
   requester: GateReviewMemberViewModel;
   requestedAt: string;
   expiresAt: string;
-  closureActionRef: GateReviewExactObjectReferenceViewModel;
+  requestSchemaVersion: 1 | 2;
+  closureActionRef: GateReviewClosureActionReferenceViewModel;
   state: GateReviewExceptionState;
   version: number;
   requestSnapshotHash: string;

@@ -329,7 +329,7 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             "initiatedByUserId": "initiator@example.invalid",
         }
         payload = {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "globalId": "b2924a46-4423-4527-a821-82857013d66d",
             "eventKey": "invalidation:cycle-001",
             "tenantId": TENANT_ID,
@@ -524,6 +524,7 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             with self.subTest(event_type=event_type, action="none"):
                 current = self.invalidation_event(event_type=event_type)
                 self.persist_new(current)
+                self.assertEqual(json.loads(current.payload)["schemaVersion"], 2)
                 self.assertIsNone(current.action_global_id)
                 self.assertIsNone(json.loads(current.payload)["actionGlobalId"])
 
@@ -622,6 +623,7 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         self.assertEqual(exception.state, "pending")
         self.assertEqual(exception.optimistic_version, 1)
         request_snapshot = json.loads(exception.request_snapshot)
+        self.assertEqual(request_snapshot["schemaVersion"], 2)
         self.assertEqual(
             request_snapshot["closureActionRef"],
             {
@@ -669,6 +671,68 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         changed.before_validate()
         with self.assertRaises(self.ValidationError):
             changed.validate()
+
+    def test_exception_update_preserves_exact_v1_collision_without_rehashing(
+        self,
+    ) -> None:
+        collision = self.exception()
+        self.persist_new(collision)
+        request_snapshot = json.loads(collision.request_snapshot)
+        request_snapshot["schemaVersion"] = 1
+        _parsed, collision.request_snapshot = self.validation.canonical_json(
+            request_snapshot,
+            "Exception Request Snapshot",
+            expected_type=dict,
+        )
+        collision.request_snapshot_hash = self.validation.canonical_json_hash(
+            request_snapshot
+        )
+        original_snapshot = collision.request_snapshot
+        original_hash = collision.request_snapshot_hash
+
+        collision._previous = clone(collision)
+        collision.state = "approved"
+        collision.optimistic_version = 2
+        collision.approval_opinion = "The exact historical request is accepted."
+        collision.decided_at = OCCURRED_AT
+        collision.before_validate()
+        collision.validate()
+
+        self.assertEqual(
+            json.loads(collision.request_snapshot)["schemaVersion"],
+            1,
+        )
+        self.assertEqual(collision.request_snapshot, original_snapshot)
+        self.assertEqual(collision.request_snapshot_hash, original_hash)
+        self.assertEqual(
+            json.loads(collision.decision_snapshot)["requestSnapshotHash"],
+            original_hash,
+        )
+
+        legacy = self.exception()
+        self.persist_new(legacy)
+        legacy_snapshot = json.loads(legacy.request_snapshot)
+        legacy_snapshot["schemaVersion"] = 1
+        legacy_snapshot["closureActionGlobalId"] = legacy_snapshot.pop(
+            "closureActionRef"
+        )["globalId"]
+        _parsed, legacy.request_snapshot = self.validation.canonical_json(
+            legacy_snapshot,
+            "Exception Request Snapshot",
+            expected_type=dict,
+        )
+        legacy.request_snapshot_hash = self.validation.canonical_json_hash(
+            legacy_snapshot
+        )
+        legacy.closure_action_version = None
+        legacy.closure_action_snapshot_hash = None
+        legacy._previous = clone(legacy)
+        legacy.state = "approved"
+        legacy.optimistic_version = 2
+        legacy.approval_opinion = "Must remain read-only."
+        legacy.decided_at = OCCURRED_AT
+        with self.assertRaises(self.ValidationError):
+            legacy.before_validate()
 
     def test_event_and_decision_snapshots_are_full_hashed_and_append_only(self) -> None:
         event = self.invalidation_event()

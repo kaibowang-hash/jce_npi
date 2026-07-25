@@ -39,7 +39,11 @@ doc_events = {
         "on_update": (
             "npi_core.gate_review.frappe_repository."
             "queue_gate_review_file_dependency_evaluation"
-        )
+        ),
+        "on_trash": (
+            "npi_core.gate_review.frappe_repository."
+            "queue_gate_review_file_dependency_evaluation"
+        ),
     },
 }
 

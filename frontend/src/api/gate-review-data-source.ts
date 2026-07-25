@@ -11,6 +11,7 @@ import type {
   GateReviewAuthorityPurpose,
   GateReviewAvailablePolicyViewModel,
   GateReviewBlockerViewModel,
+  GateReviewClosureActionReferenceViewModel,
   GateReviewClosureActionViewModel,
   GateReviewCycleState,
   GateReviewCycleTrigger,
@@ -380,10 +381,16 @@ function isPolicyReference(
   );
 }
 
-function isExactObjectReference(
+function isClosureActionReference(
   value: unknown,
-): value is GateReviewExactObjectReferenceViewModel {
-  return isPolicyReference(value);
+): value is GateReviewClosureActionReferenceViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["globalId", "version", "snapshotHash"]) &&
+    isUuid(value.globalId) &&
+    ((isPositiveInteger(value.version) && isHash(value.snapshotHash)) ||
+      (value.version === null && value.snapshotHash === null))
+  );
 }
 
 function exactReferencesMatch(
@@ -790,6 +797,7 @@ function isReviewException(
       "requester",
       "requestedAt",
       "expiresAt",
+      "requestSchemaVersion",
       "closureActionRef",
       "state",
       "version",
@@ -808,7 +816,8 @@ function isReviewException(
     !isUtcTimestamp(value.expiresAt) ||
     utcTimestampSortKey(value.requestedAt) >=
       utcTimestampSortKey(value.expiresAt) ||
-    !isExactObjectReference(value.closureActionRef) ||
+    (value.requestSchemaVersion !== 1 && value.requestSchemaVersion !== 2) ||
+    !isClosureActionReference(value.closureActionRef) ||
     typeof value.state !== "string" ||
     !exceptionStates.has(value.state as GateReviewExceptionState) ||
     !isPositiveInteger(value.version) ||
@@ -822,6 +831,15 @@ function isReviewException(
         reviewOutcomes.has(outcome as GateReviewOutcome),
     ) ||
     new Set(value.allowedOutcomes).size !== value.allowedOutcomes.length
+  ) {
+    return false;
+  }
+  if (
+    (value.closureActionRef.version === null &&
+      (value.requestSchemaVersion !== 1 ||
+        value.allowedOutcomes.length !== 0)) ||
+    (value.requestSchemaVersion === 2 &&
+      value.closureActionRef.version === null)
   ) {
     return false;
   }
@@ -1356,17 +1374,22 @@ export function isGateReviewResponse(
           : decisions.find(
               (decision) => decision.globalId === change.priorDecisionGlobalId,
             );
+      const priorDecisionLineageMatches =
+        change.priorDecisionGlobalId === null
+          ? change.eventType === "refreshed"
+          : priorDecision?.detail.lineageHash ===
+              change.priorDecisionLineageHash &&
+            utcTimestampSortKey(priorDecision.decidedAt) <=
+              utcTimestampSortKey(change.occurredAt) &&
+            (change.eventType === "invalidated"
+              ? priorDecision.cycleGlobalId === change.priorCycleGlobalId &&
+                priorDecision.inputHash === change.oldInputHash
+              : priorDecision.cycleGlobalId !== change.priorCycleGlobalId);
       return (
         (!previous ||
           utcTimestampSortKey(previous.occurredAt) >=
             utcTimestampSortKey(change.occurredAt)) &&
-        (change.priorDecisionGlobalId === null ||
-          (priorDecision?.cycleGlobalId === change.priorCycleGlobalId &&
-            priorDecision.inputHash === change.oldInputHash &&
-            priorDecision.detail.lineageHash ===
-              change.priorDecisionLineageHash &&
-            utcTimestampSortKey(priorDecision.decidedAt) <=
-              utcTimestampSortKey(change.occurredAt)))
+        priorDecisionLineageMatches
       );
     })
   ) {
@@ -1616,7 +1639,6 @@ export function isGateReviewResponse(
         activeCycle?.state === "decided" &&
         latestDecision?.cycleGlobalId === activeCycle.globalId &&
         latestDecision.inputHash === activeCycle.inputHash &&
-        gate.downstreamDecisionCurrent &&
         noInReviewActions &&
         !permissions.canStartReview &&
         noActionAvailability &&
@@ -1626,22 +1648,37 @@ export function isGateReviewResponse(
     case "requires_review": {
       if (activeCycle === null) return false;
       const currentDependency = value.dependencyChanges[0];
+      const invalidatedLineage =
+        currentDependency?.eventType === "invalidated" &&
+        latestDecision !== undefined &&
+        activeCycle.number === latestDecision.detail.cycleNumber + 1 &&
+        currentDependency.priorCycleGlobalId === latestDecision.cycleGlobalId &&
+        currentDependency.priorDecisionGlobalId === latestDecision.globalId &&
+        currentDependency.priorDecisionLineageHash ===
+          latestDecision.detail.lineageHash &&
+        currentDependency.oldInputHash === latestDecision.inputHash;
+      const refreshedLineage =
+        currentDependency?.eventType === "refreshed" &&
+        (latestDecision === undefined
+          ? activeCycle.number >= 2 &&
+            currentDependency.priorDecisionGlobalId === null &&
+            currentDependency.priorDecisionLineageHash === null
+          : activeCycle.number >= latestDecision.detail.cycleNumber + 2 &&
+            currentDependency.priorCycleGlobalId !==
+              latestDecision.cycleGlobalId &&
+            currentDependency.priorDecisionGlobalId ===
+              latestDecision.globalId &&
+            currentDependency.priorDecisionLineageHash ===
+              latestDecision.detail.lineageHash);
       return (
         activeCycle.state === "active" &&
         activeCycle.trigger === "dependency_change" &&
         activeCycle.version === 1 &&
-        latestDecision !== undefined &&
-        activeCycle.number === latestDecision.detail.cycleNumber + 1 &&
         activeCycle.exceptions.length === 0 &&
         activeCycle.selectedSteps.every(
           (step) => step.state === "waiting" && step.review === null,
         ) &&
-        currentDependency?.eventType === "invalidated" &&
-        currentDependency.priorDecisionGlobalId === latestDecision.globalId &&
-        currentDependency.priorDecisionLineageHash ===
-          latestDecision.detail.lineageHash &&
-        currentDependency.priorCycleGlobalId === latestDecision.cycleGlobalId &&
-        currentDependency.oldInputHash === latestDecision.inputHash &&
+        (invalidatedLineage || refreshedLineage) &&
         currentDependency.successorCycleGlobalId === activeCycle.globalId &&
         currentDependency.newInputHash === activeCycle.inputHash &&
         !gate.downstreamDecisionCurrent &&

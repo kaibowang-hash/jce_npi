@@ -304,6 +304,22 @@ export function gateReviewNoCycleFixture(): GateReviewViewModel {
   };
 }
 
+export function gateReviewReadOnlyFixture(): GateReviewViewModel {
+  const fixture = gateReviewFixture();
+  return {
+    ...fixture,
+    permissions: {
+      canApproveException: false,
+      canDecide: false,
+      canRequestException: false,
+      canReopen: false,
+      canReview: false,
+      canStartReview: false,
+      canView: true,
+    },
+  };
+}
+
 export function gateReviewExceptionEligibleFixture(): GateReviewViewModel {
   const fixture = gateReviewFixture();
   const evidence: GateReviewViewModel["evidence"] = {
@@ -637,6 +653,7 @@ export function pendingExceptionFixture(): GateReviewExceptionViewModel {
     globalId: gateReviewFixtureIds.exception,
     kind: "controlled_deviation",
     reason: "A bounded synthetic exception is required.",
+    requestSchemaVersion: 2,
     requestSnapshotHash: "b".repeat(64),
     requestedAt: "2026-07-24T10:10:00Z",
     requester: engineeringMember,
@@ -645,6 +662,35 @@ export function pendingExceptionFixture(): GateReviewExceptionViewModel {
     risk: "The synthetic deviation remains visible until closure.",
     state: "pending",
     version: 1,
+  };
+}
+
+export function gateReviewPendingExceptionFixture(): GateReviewViewModel {
+  const fixture = gateReviewExceptionEligibleFixture();
+  return {
+    ...fixture,
+    activeCycle: fixture.activeCycle
+      ? {
+          ...fixture.activeCycle,
+          exceptions: [
+            {
+              ...pendingExceptionFixture(),
+              allowedOutcomes: ["approved", "rejected"],
+            },
+          ],
+          version: fixture.activeCycle.version + 1,
+        }
+      : null,
+    exceptionRequestOptions: [],
+    permissions: {
+      canApproveException: true,
+      canDecide: false,
+      canRequestException: false,
+      canReopen: false,
+      canReview: false,
+      canStartReview: false,
+      canView: true,
+    },
   };
 }
 

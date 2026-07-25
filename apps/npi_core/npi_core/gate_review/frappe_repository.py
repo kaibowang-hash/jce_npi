@@ -538,6 +538,13 @@ class FrappeGateReviewRepository:
             )
         except StopIteration:
             return None
+        if not exception.closure_action_ref.is_exact:
+            raise ReviewDenied(
+                "APPROVED_EXCEPTION_REQUIRED",
+                _(
+                    "The closure action changed and the exception must be requested again."
+                ),
+            )
         self._require_current_binding_actor(
             project, cycle, exception.approval_authority_slot
         )
@@ -1019,10 +1026,13 @@ class FrappeGateReviewRepository:
             or cycle.state is not CycleState.ACTIVE
         ):
             return _blocked_decision_readiness(outcomes, "REVIEW_CYCLE_CLOSED")
-        if not self._actor_has_frozen_binding(
-            cycle,
-            cycle.policy.decision_authority_slot,
-            actor_member=actor_member,
+        if (
+            not self._actor_has_frozen_binding(
+                cycle,
+                cycle.policy.decision_authority_slot,
+                actor_member=actor_member,
+            )
+            or not self._has_command_transport_role()
         ):
             return _blocked_decision_readiness(outcomes, "DECISION_AUTHORITY_REQUIRED")
 
@@ -1065,6 +1075,7 @@ class FrappeGateReviewRepository:
             or cycle is None
             or cycle.state is not CycleState.ACTIVE
             or actor_member is None
+            or not self._has_command_transport_role()
             or not closure_actions
             or current_input.snapshot_hash != cycle.input_hash
             or not current_input.file_evidence_safe
@@ -1157,9 +1168,13 @@ class FrappeGateReviewRepository:
             str(gate.review_state or "not_started") == "in_review"
             and cycle.state is CycleState.ACTIVE
             and current_input.snapshot_hash == cycle.input_hash
+            and self._has_command_transport_role()
         )
         for value in cycle.exceptions:
             allowed: list[str] = []
+            if not value.closure_action_ref.is_exact:
+                result[value.global_id] = ()
+                continue
             exact_approver = self._actor_has_frozen_binding(
                 cycle,
                 value.approval_authority_slot,
@@ -1245,6 +1260,7 @@ class FrappeGateReviewRepository:
             )
 
         gate_state = str(gate.review_state or "not_started")
+        transport_admitted = self._has_command_transport_role()
         review_open = gate_state == "in_review"
         active = review_open and cycle is not None and cycle.state is CycleState.ACTIVE
         decided = (
@@ -1270,7 +1286,8 @@ class FrappeGateReviewRepository:
             else set()
         )
         can_review = bool(
-            active
+            transport_admitted
+            and active
             and cycle is not None
             and current_input is not None
             and current_input.snapshot_hash == cycle.input_hash
@@ -1299,15 +1316,22 @@ class FrappeGateReviewRepository:
                 )
             ),
             "canReview": can_review,
-            "canRequestException": bool(exception_request_options),
+            "canRequestException": bool(
+                transport_admitted and exception_request_options
+            ),
             "canApproveException": bool(
-                exception_allowed_outcomes and any(exception_allowed_outcomes.values())
+                transport_admitted
+                and exception_allowed_outcomes
+                and any(exception_allowed_outcomes.values())
             ),
             "canDecide": bool(
-                decision_readiness and decision_readiness.get("allowedOutcomes")
+                transport_admitted
+                and decision_readiness
+                and decision_readiness.get("allowedOutcomes")
             ),
             "canReopen": bool(
-                decided
+                transport_admitted
+                and decided
                 and cycle is not None
                 and exact_current_policy_available
                 and bound(cycle.policy.reopen_authority_slot)
@@ -1417,6 +1441,17 @@ class FrappeGateReviewRepository:
         *,
         allowed_outcomes: Sequence[str],
     ) -> dict[str, Any]:
+        request_snapshot = _json_object(document.request_snapshot)
+        request_schema_version = request_snapshot.get("schemaVersion")
+        if type(request_schema_version) is not int or request_schema_version not in {
+            1,
+            2,
+        }:
+            raise ValueError("Persisted Gate exception request schema is unsupported.")
+        if request_schema_version == 2 and not value.closure_action_ref.is_exact:
+            raise ValueError("Persisted Gate exception request profile is invalid.")
+        if not value.closure_action_ref.is_exact and allowed_outcomes:
+            raise ValueError("Legacy Gate exception cannot expose command outcomes.")
         decision = None
         if value.state is not ExceptionState.PENDING:
             assert value.outcome is not None
@@ -1445,6 +1480,7 @@ class FrappeGateReviewRepository:
             },
             "requestedAt": _datetime_iso(value.requested_at),
             "expiresAt": _datetime_iso(value.expires_at),
+            "requestSchemaVersion": request_schema_version,
             "closureActionRef": value.closure_action_ref.canonical_dict(),
             "state": value.state.value,
             "allowedOutcomes": list(allowed_outcomes),
@@ -1524,7 +1560,8 @@ class FrappeGateReviewRepository:
         if event_type not in {"invalidated", "refreshed"}:
             raise ValueError("Persisted Gate dependency event type is invalid.")
         detail = payload["detail"]
-        expected_detail_keys = {
+        schema_version = payload["schemaVersion"]
+        extended_detail_keys = {
             "reason",
             "oldInputHash",
             "newInputHash",
@@ -1532,8 +1569,27 @@ class FrappeGateReviewRepository:
             "priorDecisionHash",
             "initiatedByUserId",
         }
-        if not isinstance(detail, dict) or set(detail) != expected_detail_keys:
+        legacy_detail_keys = {
+            "oldInputHash",
+            "newInputHash",
+            "priorDecisionSnapshotGlobalId",
+            "priorDecisionHash",
+        }
+        if (
+            not isinstance(detail, dict)
+            or schema_version not in {1, 2}
+            or (schema_version == 2 and set(detail) != extended_detail_keys)
+            or (
+                schema_version == 1
+                and frozenset(detail)
+                not in {
+                    frozenset(legacy_detail_keys),
+                    frozenset(extended_detail_keys),
+                }
+            )
+        ):
             raise ValueError("Persisted Gate dependency event detail is not closed.")
+        legacy_v1 = schema_version == 1 and set(detail) == legacy_detail_keys
 
         event_global_id = UUID(str(payload["globalId"]))
         project_global_id = UUID(str(payload["projectGlobalId"]))
@@ -1595,8 +1651,8 @@ class FrappeGateReviewRepository:
                 "Persisted Gate dependency event decision lineage is incomplete."
             )
         actor_user_id = payload["actorUserId"]
-        initiated_by_user_id = detail["initiatedByUserId"]
-        reason = detail["reason"]
+        initiated_by_user_id = None if legacy_v1 else detail["initiatedByUserId"]
+        reason = "GATE_INPUT_CHANGED" if legacy_v1 else detail["reason"]
         if (
             not isinstance(reason, str)
             or not actor_user_id.strip()
@@ -1615,8 +1671,7 @@ class FrappeGateReviewRepository:
             raise ValueError("Persisted Gate dependency event text is invalid.")
         occurred_at = _datetime_value(document.occurred_at)
         if (
-            payload["schemaVersion"] != 1
-            or str(event_global_id) != str(UUID(str(document.global_id)))
+            str(event_global_id) != str(UUID(str(document.global_id)))
             or str(project_global_id) != str(UUID(str(document.project_global_id)))
             or str(gate_global_id) != str(UUID(str(document.gate_global_id)))
             or str(prior_cycle_global_id) != str(UUID(str(document.cycle_global_id)))
@@ -1920,8 +1975,9 @@ class FrappeGateReviewRepository:
         rules = {value.kind: value for value in policy.exception_rules}
         exceptions: list[ReviewException] = []
         for exception_document in exception_documents:
+            request_snapshot = _json_object(exception_document.request_snapshot)
             _verify_json_hash(
-                exception_document.request_snapshot,
+                request_snapshot,
                 str(exception_document.request_snapshot_hash),
             )
             if not _history_matches_cycle(exception_document, document):
@@ -1938,6 +1994,10 @@ class FrappeGateReviewRepository:
                     exception_document.decision_snapshot,
                     str(exception_document.decision_snapshot_hash),
                 )
+            closure_action_ref = _exception_closure_action_reference(
+                exception_document,
+                request_snapshot,
+            )
             exceptions.append(
                 ReviewException(
                     global_id=UUID(str(exception_document.global_id)),
@@ -1963,15 +2023,7 @@ class FrappeGateReviewRepository:
                     requester_user_id=str(exception_document.requester_user_id),
                     reason=str(exception_document.reason),
                     risk=str(exception_document.risk),
-                    closure_action_ref=ClosureActionReference(
-                        global_id=UUID(
-                            str(exception_document.closure_action_global_id)
-                        ),
-                        version=int(exception_document.closure_action_version),
-                        snapshot_hash=str(
-                            exception_document.closure_action_snapshot_hash
-                        ),
-                    ),
+                    closure_action_ref=closure_action_ref,
                     closure_action_kind=rule.required_closure_action_kind,
                     requested_at=_datetime_value(exception_document.requested_at),
                     expires_at=_datetime_value(exception_document.expires_at),
@@ -2380,7 +2432,7 @@ class FrappeGateReviewRepository:
             f"{event.old_cycle_global_id}:{event_type}:{event.new_cycle_global_id}"
         )
         payload = {
-            "schemaVersion": 1,
+            "schemaVersion": 1 if event_type == "reopened" else 2,
             "globalId": str(event.global_id),
             "eventKey": event_key,
             "tenantId": tenant_id,
@@ -2425,10 +2477,6 @@ class FrappeGateReviewRepository:
         gate.review_policy_global_id = str(policy.policy_global_id)
         gate.review_policy_version = policy.policy_version
         gate.review_policy_snapshot_hash = policy.snapshot_hash
-        gate.latest_decision_snapshot = None
-        gate.latest_decision_snapshot_global_id = None
-        gate.latest_decision_snapshot_hash = None
-        gate.latest_decision_outcome = None
         gate.optimistic_version = int(gate.optimistic_version) + 1
         gate.save()
 
@@ -2687,6 +2735,11 @@ class FrappeGateReviewRepository:
     def _is_internal_system_manager(self) -> bool:
         return bool(
             not self.principal.is_external and "System Manager" in self.principal.roles
+        )
+
+    def _has_command_transport_role(self) -> bool:
+        return bool(
+            not self.principal.is_external and "NPI API User" in self.principal.roles
         )
 
     def _current_members(self, project, *, maximum: int) -> tuple[Any, ...]:
@@ -3169,6 +3222,88 @@ def _source_matches_project(source, project) -> bool:
     )
 
 
+def _exception_closure_action_reference(
+    document,
+    request_snapshot: Mapping[str, object],
+) -> ClosureActionReference:
+    """Read immutable v1/v2 requests without inventing historical revisions."""
+
+    schema_version = request_snapshot.get("schemaVersion")
+    if type(schema_version) is not int or schema_version not in {1, 2}:
+        raise ValueError("Persisted Gate exception request schema is unsupported.")
+    has_legacy_identity = "closureActionGlobalId" in request_snapshot
+    has_exact_reference = "closureActionRef" in request_snapshot
+    if has_legacy_identity == has_exact_reference or (
+        schema_version == 2 and has_legacy_identity
+    ):
+        raise ValueError("Persisted Gate exception closure reference is invalid.")
+
+    global_id = UUID(str(document.closure_action_global_id))
+    version_value = _document_value(document, "closure_action_version")
+    hash_value = _document_value(document, "closure_action_snapshot_hash")
+    if has_legacy_identity:
+        if version_value not in (None, "") or hash_value not in (None, ""):
+            raise ValueError(
+                "Persisted legacy Gate exception closure reference drifted."
+            )
+        closure_reference: dict[str, object] | str = str(global_id)
+        result = ClosureActionReference(global_id, None, None)
+    else:
+        if version_value in (None, "") or hash_value in (None, ""):
+            raise ValueError(
+                "Persisted Gate exception closure reference is incomplete."
+            )
+        result = ClosureActionReference(
+            global_id,
+            int(version_value),
+            _strict_sha256(hash_value, "closure action snapshot hash"),
+        )
+        closure_reference = result.canonical_dict()
+
+    expected: dict[str, object] = {
+        "schemaVersion": schema_version,
+        "globalId": str(UUID(str(document.global_id))),
+        "exceptionKey": str(document.exception_key),
+        "tenantId": str(document.tenant_id),
+        "projectGlobalId": str(UUID(str(document.project_global_id))),
+        "gateGlobalId": str(UUID(str(document.gate_global_id))),
+        "cycleGlobalId": str(UUID(str(document.cycle_global_id))),
+        "policyRef": {
+            "globalId": str(UUID(str(document.policy_global_id))),
+            "version": int(document.policy_version),
+            "snapshotHash": _strict_sha256(
+                document.policy_snapshot_hash,
+                "exception policy snapshot hash",
+            ),
+        },
+        "requirementRef": {
+            "globalId": str(UUID(str(document.requirement_global_id))),
+            "key": str(document.requirement_key),
+        },
+        "kind": str(document.exception_kind),
+        "reason": str(document.reason),
+        "risk": str(document.risk),
+        "requester": {
+            "memberGlobalId": str(UUID(str(document.requester_member_global_id))),
+            "userId": str(document.requester_user_id),
+        },
+        "requestedAt": _datetime_canonical(document.requested_at),
+        "expiresAt": _datetime_canonical(document.expires_at),
+        "approver": {
+            "authoritySlot": str(document.approver_authority_slot),
+            "memberGlobalId": str(UUID(str(document.approver_member_global_id))),
+            "userId": str(document.approver_user_id),
+        },
+    }
+    if has_legacy_identity:
+        expected["closureActionGlobalId"] = closure_reference
+    else:
+        expected["closureActionRef"] = closure_reference
+    if dict(request_snapshot) != expected:
+        raise ValueError("Persisted Gate exception request snapshot drifted.")
+    return result
+
+
 def _closure_action_matches_scope(document, project, gate) -> bool:
     return bool(
         document is not None
@@ -3512,10 +3647,10 @@ def queue_gate_review_file_dependency_evaluation(
     document, method: str | None = None
 ) -> None:
     """Map live Frappe File identity drift to exact Gate evidence references."""
-    del method
     if str(getattr(document, "doctype", "")) != "File":
         return
-    previous = document.get_doc_before_save()
+    deleting = method == "on_trash"
+    previous = None if deleting else document.get_doc_before_save()
     identity_fields = (
         "is_private",
         "is_remote_file",
@@ -3524,9 +3659,13 @@ def queue_gate_review_file_dependency_evaluation(
         "file_size",
         "file_name",
     )
-    if previous is not None and all(
-        _document_value(previous, field) == _document_value(document, field)
-        for field in identity_fields
+    if (
+        not deleting
+        and previous is not None
+        and all(
+            _document_value(previous, field) == _document_value(document, field)
+            for field in identity_fields
+        )
     ):
         return
     file_id = str(_document_value(document, "name") or "").strip()

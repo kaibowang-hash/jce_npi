@@ -624,7 +624,7 @@ describe("live Gate Review Room", () => {
     );
     await user.click(
       screen.getByRole("button", {
-        name: "Request exception: CUSTOMER_CONFIRMATION / controlled_deviation",
+        name: "Request controlled exception",
       }),
     );
 
@@ -640,7 +640,7 @@ describe("live Gate Review Room", () => {
     ).toHaveLength(1);
     await user.click(
       within(dialog).getByRole("button", {
-        name: "Request exception: CUSTOMER_CONFIRMATION / controlled_deviation",
+        name: "Request controlled exception",
       }),
     );
 
@@ -710,7 +710,7 @@ describe("live Gate Review Room", () => {
     );
     await user.click(
       screen.getByRole("button", {
-        name: "Decide exception: CUSTOMER_CONFIRMATION / controlled_deviation",
+        name: "Decide exception",
       }),
     );
     const dialog = screen.getByRole("dialog", {
@@ -722,7 +722,7 @@ describe("live Gate Review Room", () => {
     );
     await user.click(
       within(dialog).getByRole("button", {
-        name: "Decide exception: CUSTOMER_CONFIRMATION / controlled_deviation",
+        name: "Decide exception",
       }),
     );
 

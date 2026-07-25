@@ -195,7 +195,7 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"invalidated" if expected_old_state == "decided"', refresh)
         self.assertIn("prior_decision_snapshot_global_id", refresh)
         self.assertIn("GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR", refresh)
-        self.assertIn("event.action_global_id in (None, \"\")", refresh)
+        self.assertIn('event.action_global_id in (None, "")', refresh)
         self.assertIn('payload.get("actionGlobalId") is None', refresh)
         self.assertNotIn('frappe.get_doc(\n        "NPI Domain Work Item"', refresh)
         main = self.functions["main"]
@@ -213,6 +213,54 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertIn('"expected_event_type": "invalidated"', main)
         self.assertIn('"expected_event_type": "refreshed"', main)
+
+    def test_file_delete_hook_proves_commit_and_rollback_transactions(self) -> None:
+        deletion = self.functions["verify_file_delete_transactions"]
+        self.assertIn('frappe.get_doc("File", file_id).delete(', deletion)
+        self.assertIn("force=True", deletion)
+        self.assertNotIn('patch.object(frappe, "enqueue"', deletion)
+        self.assertIn(
+            'patch.object(\n        background_jobs,\n        "get_queue"', deletion
+        )
+        self.assertIn("class FakePublisherQueue:", deletion)
+        self.assertIn('queue_requests.count(("short", True)) == 1', deletion)
+        self.assertIn("published_jobs == []", deletion)
+        self.assertIn("frappe.db.rollback()", deletion)
+        self.assertIn("frappe.db.commit()", deletion)
+        self.assertIn(
+            'published["function"] is background_jobs.execute_job',
+            deletion,
+        )
+        self.assertIn('queue_arguments["method"] == worker_path', deletion)
+        self.assertIn("evaluate_gate_review_dependency(**committed_job)", deletion)
+        self.assertIn(
+            "gate_after_commit.latest_decision_snapshot_global_id",
+            deletion,
+        )
+        self.assertIn(
+            "gate_after_commit.latest_decision_snapshot_hash",
+            deletion,
+        )
+        self.assertIn('str(prior_after_commit.state) == "superseded"', deletion)
+        self.assertIn('str(event.event_type) == "refreshed"', deletion)
+        self.assertIn('payload.get("schemaVersion") == 2', deletion)
+        self.assertIn('"rollbackNoSuccessor": True', deletion)
+
+        main = self.functions["main"]
+        self.assertIn('"seed_private_file_revisions"', main)
+        self.assertIn("evidence_runtime.FILE_ATTACH_KEY", main)
+        self.assertIn('"verify_file_delete_transactions"', main)
+        self.assertIn('"fileDeleteDependencyRefresh": file_delete', main)
+        self.assertGreater(
+            main.index(
+                "file_delete = run_bench_fixture(\n"
+                '            "verify_file_delete_transactions"'
+            ),
+            main.index(
+                "persisted = run_bench_fixture(\n"
+                '            "verify_persisted_review_history"'
+            ),
+        )
 
     def test_requires_review_blocks_commands_until_explicit_revalidation(
         self,
@@ -238,6 +286,7 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
 
     def test_history_is_hash_sealed_immutable_and_cleanup_is_bounded(self) -> None:
         persistence = self.functions["verify_persisted_review_history"]
+        self.assertIn('exception_request.get("schemaVersion") == 2', persistence)
         self.assertIn('"closureActionRef"', persistence)
         self.assertIn("exception.closure_action_version", persistence)
         self.assertIn("exception.closure_action_snapshot_hash", persistence)
