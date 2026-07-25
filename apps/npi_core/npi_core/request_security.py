@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from .foundation.errors import (
     AuthenticationRequired,
     CsrfTokenInvalid,
+    DocumentRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
@@ -16,6 +17,27 @@ from .foundation.security import Principal
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
+
+
+def document_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P5-01 emergency switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p5_01_routes_disabled")
+        if hasattr(configuration, "get")
+        else False
+    )
+    return value is True
+
+
+def require_document_routes_enabled() -> None:
+    """Close P5-01 handlers even when generic Frappe routing is attempted."""
+
+    if document_routes_are_disabled():
+        raise DocumentRoutesDisabled()
 
 
 def project_collaboration_routes_are_disabled() -> bool:
@@ -87,7 +109,9 @@ def configured_tenant_id() -> str:
     import frappe
 
     configuration = getattr(frappe, "conf", None)
-    tenant_id = configuration.get("npi_tenant_id") if hasattr(configuration, "get") else None
+    tenant_id = (
+        configuration.get("npi_tenant_id") if hasattr(configuration, "get") else None
+    )
     if not isinstance(tenant_id, str) or TENANT_ID_PATTERN.fullmatch(tenant_id) is None:
         raise TenantScopeUnavailable()
     return tenant_id

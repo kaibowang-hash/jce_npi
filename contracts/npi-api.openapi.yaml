@@ -15,6 +15,7 @@ tags:
   - { name: Work }
   - { name: Projects }
   - { name: Gates }
+  - { name: Documents }
   - { name: Tooling }
   - { name: Trials }
   - { name: Execution }
@@ -1694,6 +1695,375 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/documents:
+    get:
+      tags: [Documents]
+      operationId: listControlledDocuments
+      description: >
+        Returns a bounded, signed-keyset page of Controlled Documents only
+        after exact tenant and Project authorization. Missing, unauthorized,
+        cross-tenant, and unavailable Projects use the same 404 representation.
+        An optional relationship filter is an exact same-Project typed identity;
+        raw DocType names, filter expressions, private-file URLs, and future
+        object types are never accepted.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+        - in: query
+          name: cursor
+          schema: { type: string, minLength: 1, maxLength: 500 }
+        - in: query
+          name: relationshipKind
+          schema: { $ref: "#/components/schemas/DocumentRelationshipKind" }
+        - in: query
+          name: targetIdentity
+          schema: { type: string, minLength: 1, maxLength: 512 }
+        - in: query
+          name: targetVersion
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: projectReferenceType
+          schema: { $ref: "#/components/schemas/ProjectReferenceType" }
+        - in: query
+          name: targetSourceSystem
+          schema: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        - in: query
+          name: targetReferenceGlobalId
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentListResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Documents]
+      operationId: createControlledDocument
+      description: >
+        Atomically creates one stable Controlled Document identity from an
+        exact enabled published policy and optional exact same-Project
+        relationships. The server generates the document global ID, number,
+        and unique policy-scoped number key. It creates no fake revision or
+        file and installs no production numbering policy.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: controlled-document-root
+      x-audit-operation: document.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateControlledDocument"
+      responses:
+        "201":
+          $ref: "#/components/responses/DocumentCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}:
+    get:
+      tags: [Documents]
+      operationId: getControlledDocument
+      description: >
+        Returns the exact authorized document, immutable revision/file history,
+        typed relationships, append-only lock history, independent permissions,
+        and explicit external/connector unavailability. It never returns a raw
+        private-file URL, token, or share-grant authority.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentQueryResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}:check-out:
+    post:
+      tags: [Documents]
+      operationId: checkOutControlledDocument
+      description: >
+        Acquires one bounded edit lease using the exact current document
+        version. An expired lease is first closed by an immutable event; an
+        active lease held by any actor fails without silent overwrite.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: controlled-document-root
+      x-audit-operation: document.lock.acquire
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentVersionCommand" }
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}:check-in:
+    post:
+      tags: [Documents]
+      operationId: checkInControlledDocument
+      description: >
+        Releases the exact unexpired actor-held edit lease. Check-in never
+        changes a Document Revision and never overwrites lock history.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: controlled-document-root
+      x-audit-operation: document.lock.release
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentLockCommand" }
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}:recover-lock:
+    post:
+      tags: [Documents]
+      operationId: recoverControlledDocumentLock
+      description: >
+        Administratively closes the exact current lease with a bounded reason,
+        preserving the former holder and complete acquisition/recovery history.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: controlled-document-root
+      x-audit-operation: document.lock.recover
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecoverDocumentLock" }
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions:
+    post:
+      tags: [Documents]
+      operationId: createDocumentRevision
+      description: >
+        Atomically observes one bounded binary, saves a private Frappe File,
+        creates one scanner-pending exact File Revision and immutable Document
+        Revision, and advances only the current-revision pointer. Browser input
+        cannot select hash, MIME, size, privacy, scan/release state, actor,
+        tenant, storage identity, URL, connector success, or source system.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: controlled-document-revision-file
+      x-audit-operation: document.revision.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [metadata, file]
+              properties:
+                metadata:
+                  type: string
+                  contentMediaType: application/json
+                  contentSchema:
+                    $ref: "#/components/schemas/CreateDocumentRevisionMetadata"
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              metadata: { contentType: application/json }
+              file: { contentType: application/octet-stream }
+      responses:
+        "201":
+          $ref: "#/components/responses/DocumentCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}/files/{fileRevisionId}/capabilities:
+    get:
+      tags: [Documents]
+      operationId: getDocumentFileCapabilities
+      description: >
+        Reauthorizes the exact Project/document/revision/file association and
+        recomputes live private-file identity and SHA-256 before returning
+        independent preview, download, integrity, external-retrieval, and
+        connector truth. The response contains no content, raw URL, or token.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/FileRevisionId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentCapabilityResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}/files/{fileRevisionId}:content:
+    post:
+      tags: [Documents]
+      operationId: getDocumentFileContent
+      description: >
+        Reauthorizes and revalidates the exact clean private file, appends and
+        commits an audit event plus sealed actor-bound command receipt, then
+        returns the verified bytes directly without a redirect or stable URL.
+        Inline and attachment authority are independent; share-grant rows never
+        authorize this route.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: audited-document-content
+      x-audit-operation: document.content
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/FileRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentContentRequest" }
+      responses:
+        "200":
+          description: Exact verified private bytes after committed access audit
+          headers:
+            X-Request-ID:
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
+            Idempotency-Replayed:
+              required: true
+              schema: { type: boolean }
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            Content-Security-Policy:
+              required: true
+              schema:
+                {
+                  type: string,
+                  const: "sandbox; default-src 'none'",
+                }
+            Referrer-Policy:
+              required: true
+              schema: { type: string, const: no-referrer }
+            X-Content-Type-Options:
+              required: true
+              schema: { type: string, const: nosniff }
+            Content-Disposition:
+              required: true
+              schema: { type: string }
+            Content-Length:
+              required: true
+              schema: { type: integer, minimum: 1, maximum: 67108864 }
+          content:
+            "*/*":
+              schema: { type: string, format: binary }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /tooling/{toolingId}/cockpit:
     get:
       tags: [Tooling]
@@ -1906,6 +2276,24 @@ components:
       name: exceptionId
       required: true
       description: Immutable Gate Review Exception global_id
+      schema: { type: string, format: uuid }
+    DocumentId:
+      in: path
+      name: documentId
+      required: true
+      description: Immutable Controlled Document global_id
+      schema: { type: string, format: uuid }
+    DocumentRevisionId:
+      in: path
+      name: revisionId
+      required: true
+      description: Immutable Document Revision global_id
+      schema: { type: string, format: uuid }
+    FileRevisionId:
+      in: path
+      name: fileRevisionId
+      required: true
+      description: Immutable exact private File Revision global_id
       schema: { type: string, format: uuid }
     ToolingId:
       in: path
@@ -2399,6 +2787,96 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ProjectLearningGlobalPage" }
+    DocumentListResult:
+      description: Authorized bounded Controlled Document page
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ControlledDocumentPage" }
+    DocumentQueryResult:
+      description: Authorized exact Controlled Document workspace
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ControlledDocumentWorkspace" }
+    DocumentCommandResult:
+      description: >
+        Exact Controlled Document workspace after one atomic command, or the
+        original result safely replayed for the same actor-bound key and
+        canonical payload
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ControlledDocumentWorkspace" }
+    DocumentCapabilityResult:
+      description: URL-free exact file capability truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
     LanguageCode:
       type: string
@@ -5291,6 +5769,688 @@ components:
             absent covers a rolled-back command, a command that never reached
             the server, or no committed receipt for this exact actor key.
         workspaceReloadRequired: { type: boolean, const: true }
+    ProjectReferenceType:
+      type: string
+      enum: [customer, product, part, tooling, order]
+    DocumentRelationshipKind:
+      type: string
+      enum: [project, project_reference, gate, wbs_item, domain_work_item]
+    DocumentObjectRelationshipInput:
+      type: object
+      additionalProperties: false
+      required: [kind, targetIdentity, targetVersion]
+      properties:
+        kind:
+          type: string
+          enum: [project, gate, wbs_item, domain_work_item]
+        targetIdentity: { type: string, format: uuid }
+        targetVersion: { type: integer, minimum: 1 }
+    DocumentProjectReferenceInput:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          kind,
+          targetIdentity,
+          targetVersion,
+          projectReferenceType,
+          targetSourceSystem,
+          targetReferenceGlobalId,
+        ]
+      properties:
+        kind: { type: string, const: project_reference }
+        targetIdentity: { type: string, minLength: 1, maxLength: 512 }
+        targetVersion: { type: integer, minimum: 1 }
+        projectReferenceType:
+          $ref: "#/components/schemas/ProjectReferenceType"
+        targetSourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        targetReferenceGlobalId:
+          type: [string, "null"]
+          format: uuid
+    DocumentRelationshipInput:
+      oneOf:
+        - $ref: "#/components/schemas/DocumentObjectRelationshipInput"
+        - $ref: "#/components/schemas/DocumentProjectReferenceInput"
+      discriminator:
+        propertyName: kind
+        mapping:
+          project: "#/components/schemas/DocumentObjectRelationshipInput"
+          gate: "#/components/schemas/DocumentObjectRelationshipInput"
+          wbs_item: "#/components/schemas/DocumentObjectRelationshipInput"
+          domain_work_item: "#/components/schemas/DocumentObjectRelationshipInput"
+          project_reference: "#/components/schemas/DocumentProjectReferenceInput"
+    CreateControlledDocument:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          documentTypeKey,
+          title,
+          confidentialityKey,
+          objectLinks,
+        ]
+      properties:
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        documentTypeKey:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 280 }
+        confidentialityKey:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        objectLinks:
+          type: array
+          maxItems: 64
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/DocumentRelationshipInput" }
+    DocumentVersionCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedDocumentVersion]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+    DocumentLockCommand:
+      type: object
+      additionalProperties: false
+      required: [expectedDocumentVersion, expectedLockVersion]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLockVersion: { type: integer, minimum: 1 }
+    RecoverDocumentLock:
+      type: object
+      additionalProperties: false
+      required: [expectedDocumentVersion, expectedLockVersion, reason]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLockVersion: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateDocumentRevisionMetadata:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLockVersion,
+          major,
+          minor,
+          reason,
+          effectiveDate,
+          predecessorRevisionId,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLockVersion: { type: integer, minimum: 1 }
+        major: { type: integer, minimum: 0 }
+        minor: { type: integer, minimum: 0 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        effectiveDate:
+          type: [string, "null"]
+          format: date
+        predecessorRevisionId:
+          type: [string, "null"]
+          format: uuid
+    DocumentContentRequest:
+      type: object
+      additionalProperties: false
+      required: [expectedDocumentVersion, expectedFileVersion, disposition]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedFileVersion: { type: integer, minimum: 1 }
+        disposition: { type: string, enum: [inline, attachment] }
+    DocumentProject:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, businessCode, title, lifecycleState, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        lifecycleState:
+          type: string
+          enum: [draft, proposed, active, on_hold, completed, cancelled]
+        optimisticVersion: { type: integer, minimum: 1 }
+    DocumentPolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentTypeOption:
+      type: object
+      additionalProperties: false
+      required: [key, prefix, titleSource]
+      properties:
+        key:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        prefix:
+          type: string
+          pattern: "^[A-Z0-9][A-Z0-9-]{0,15}$"
+        titleSource: { type: string, minLength: 1, maxLength: 140 }
+    DocumentPolicyOption:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          versionId,
+          version,
+          snapshotHash,
+          key,
+          title,
+          documentTypes,
+          confidentialityKeys,
+          allowedMimeTypes,
+          previewMimeTypes,
+          maximumFileBytes,
+          lockLeaseMinutes,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        versionId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        key:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 140 }
+        documentTypes:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items: { $ref: "#/components/schemas/DocumentTypeOption" }
+        confidentialityKeys:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            type: string
+            pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        allowedMimeTypes:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items: { type: string, minLength: 3, maxLength: 255 }
+        previewMimeTypes:
+          type: array
+          maxItems: 64
+          items:
+            type: string
+            enum:
+              [
+                application/pdf,
+                image/gif,
+                image/jpeg,
+                image/png,
+                image/webp,
+              ]
+        maximumFileBytes:
+          type: integer
+          minimum: 1
+          maximum: 67108864
+        lockLeaseMinutes: { type: integer, minimum: 1, maximum: 1440 }
+    CurrentDocumentRevision:
+      type: object
+      additionalProperties: false
+      required: [globalId, major, minor, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        major: { type: integer, minimum: 0 }
+        minor: { type: integer, minimum: 0 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    CurrentDocumentLock:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, holderUserId, expiresAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        holderUserId: { type: string, minLength: 1, maxLength: 254 }
+        expiresAt: { type: string, format: date-time }
+    ControlledDocumentSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          documentNumber,
+          documentTypeKey,
+          title,
+          confidentialityKey,
+          documentPolicyRef,
+          currentRevision,
+          currentLock,
+          source,
+          optimisticVersion,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        documentNumber: { type: string, minLength: 1, maxLength: 64 }
+        documentTypeKey:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 280 }
+        confidentialityKey:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        documentPolicyRef:
+          $ref: "#/components/schemas/DocumentPolicyReference"
+        currentRevision:
+          oneOf:
+            - $ref: "#/components/schemas/CurrentDocumentRevision"
+            - type: "null"
+        currentLock:
+          oneOf:
+            - $ref: "#/components/schemas/CurrentDocumentLock"
+            - type: "null"
+        source: { $ref: "#/components/schemas/ProjectSourceStatus" }
+        optimisticVersion: { type: integer, minimum: 1 }
+    DocumentPermissions:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          view,
+          create,
+          revise,
+          lock,
+          recoverLock,
+          preview,
+          download,
+          share,
+          review,
+          release,
+        ]
+      properties:
+        view: { type: boolean }
+        create: { type: boolean }
+        revise: { type: boolean }
+        lock: { type: boolean }
+        recoverLock: { type: boolean }
+        preview: { type: boolean }
+        download: { type: boolean }
+        share: { type: boolean, const: false }
+        review: { type: boolean, const: false }
+        release: { type: boolean, const: false }
+    ControlledDocumentPage:
+      type: object
+      additionalProperties: false
+      required: [project, permissions, policies, items, nextCursor]
+      properties:
+        project: { $ref: "#/components/schemas/DocumentProject" }
+        permissions: { $ref: "#/components/schemas/DocumentPermissions" }
+        policies:
+          type: array
+          maxItems: 64
+          items: { $ref: "#/components/schemas/DocumentPolicyOption" }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ControlledDocumentSummary" }
+        nextCursor:
+          type: [string, "null"]
+          maxLength: 500
+    DocumentCapabilityState:
+      type: string
+      enum: [available, unavailable, blocked]
+    DocumentCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { $ref: "#/components/schemas/DocumentCapabilityState" }
+        reasonCode:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+    DocumentPreviewCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode, mode]
+      properties:
+        state: { $ref: "#/components/schemas/DocumentCapabilityState" }
+        reasonCode:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        mode: { type: string, enum: [native_pdf, native_image, none] }
+    DocumentExternalRetrievalCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode:
+          {
+            type: string,
+            const: external_access_policy_unavailable,
+          }
+    DocumentConnectorCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, enum: [unavailable, failed] }
+        reasonCode:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+    DocumentFileCapabilities:
+      type: object
+      additionalProperties: false
+      required:
+        [integrity, preview, download, externalRetrieval, connector]
+      properties:
+        integrity: { $ref: "#/components/schemas/DocumentCapability" }
+        preview: { $ref: "#/components/schemas/DocumentPreviewCapability" }
+        download: { $ref: "#/components/schemas/DocumentCapability" }
+        externalRetrieval:
+          $ref: "#/components/schemas/DocumentExternalRetrievalCapability"
+        connector:
+          $ref: "#/components/schemas/DocumentConnectorCapability"
+    DocumentFileMetadata:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          fileDocumentId,
+          revision,
+          optimisticVersion,
+          fileName,
+          mimeType,
+          sizeBytes,
+          sha256,
+          scanState,
+          scanObservedAt,
+          private,
+          released,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        fileDocumentId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 3, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0, maximum: 67108864 }
+        sha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        scanState:
+          type: string
+          enum: [pending, clean, infected, failed]
+        scanObservedAt:
+          type: [string, "null"]
+          format: date-time
+        private: { type: boolean, const: true }
+        released: { type: boolean }
+    DocumentConnectorStatus:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, enum: [unavailable, failed] }
+        reasonCode:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+    DocumentRevisionFile:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          associationId,
+          role,
+          provenance,
+          connector,
+          globalId,
+          fileDocumentId,
+          revision,
+          optimisticVersion,
+          fileName,
+          mimeType,
+          sizeBytes,
+          sha256,
+          scanState,
+          scanObservedAt,
+          private,
+          released,
+          capabilities,
+        ]
+      properties:
+        associationId: { type: string, format: uuid }
+        role: { type: string, enum: [primary, source, derivative] }
+        provenance:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        connector: { $ref: "#/components/schemas/DocumentConnectorStatus" }
+        globalId: { type: string, format: uuid }
+        fileDocumentId: { type: string, format: uuid }
+        revision: { type: integer, minimum: 1 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 3, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0, maximum: 67108864 }
+        sha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        scanState:
+          type: string
+          enum: [pending, clean, infected, failed]
+        scanObservedAt:
+          type: [string, "null"]
+          format: date-time
+        private: { type: boolean, const: true }
+        released: { type: boolean }
+        capabilities:
+          $ref: "#/components/schemas/DocumentFileCapabilities"
+    DocumentRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          major,
+          minor,
+          state,
+          reason,
+          effectiveDate,
+          predecessorRevisionId,
+          snapshotHash,
+          optimisticVersion,
+          createdByUserId,
+          createdAt,
+          files,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        major: { type: integer, minimum: 0 }
+        minor: { type: integer, minimum: 0 }
+        state: { type: string, const: draft }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        effectiveDate:
+          type: [string, "null"]
+          format: date
+        predecessorRevisionId:
+          type: [string, "null"]
+          format: uuid
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        optimisticVersion: { type: integer, minimum: 1 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        files:
+          type: array
+          minItems: 1
+          maxItems: 256
+          items: { $ref: "#/components/schemas/DocumentRevisionFile" }
+    DocumentObjectRelationship:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          kind,
+          projectReferenceType,
+          targetSourceSystem,
+          targetReferenceGlobalId,
+          targetIdentity,
+          targetVersion,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind:
+          type: string
+          enum: [project, gate, wbs_item, domain_work_item]
+        projectReferenceType: { type: "null" }
+        targetSourceSystem: { type: "null" }
+        targetReferenceGlobalId: { type: "null" }
+        targetIdentity: { type: string, format: uuid }
+        targetVersion: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentProjectReferenceRelationship:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          kind,
+          projectReferenceType,
+          targetSourceSystem,
+          targetReferenceGlobalId,
+          targetIdentity,
+          targetVersion,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { type: string, const: project_reference }
+        projectReferenceType:
+          $ref: "#/components/schemas/ProjectReferenceType"
+        targetSourceSystem:
+          type: string
+          enum: [NPI_ONE, ERPNEXT]
+        targetReferenceGlobalId:
+          type: [string, "null"]
+          format: uuid
+        targetIdentity: { type: string, minLength: 1, maxLength: 512 }
+        targetVersion: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentRelationship:
+      oneOf:
+        - $ref: "#/components/schemas/DocumentObjectRelationship"
+        - $ref: "#/components/schemas/DocumentProjectReferenceRelationship"
+      discriminator:
+        propertyName: kind
+        mapping:
+          project: "#/components/schemas/DocumentObjectRelationship"
+          gate: "#/components/schemas/DocumentObjectRelationship"
+          wbs_item: "#/components/schemas/DocumentObjectRelationship"
+          domain_work_item: "#/components/schemas/DocumentObjectRelationship"
+          project_reference: "#/components/schemas/DocumentProjectReferenceRelationship"
+    DocumentLockEvent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          lockId,
+          version,
+          eventType,
+          holderUserId,
+          actorUserId,
+          acquiredAt,
+          expiresAt,
+          occurredAt,
+          reason,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        lockId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1, maximum: 2 }
+        eventType:
+          type: string
+          enum: [acquired, released, recovered, expired]
+        holderUserId: { type: string, minLength: 1, maxLength: 254 }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        acquiredAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        occurredAt: { type: string, format: date-time }
+        reason: { type: [string, "null"], maxLength: 1000 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    ControlledDocumentWorkspace:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          project,
+          permissions,
+          document,
+          revisions,
+          relationships,
+          lockHistory,
+          externalRetrieval,
+        ]
+      properties:
+        project: { $ref: "#/components/schemas/DocumentProject" }
+        permissions: { $ref: "#/components/schemas/DocumentPermissions" }
+        document: { $ref: "#/components/schemas/ControlledDocumentSummary" }
+        revisions:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/DocumentRevision" }
+        relationships:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/DocumentRelationship" }
+        lockHistory:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/DocumentLockEvent" }
+        externalRetrieval:
+          $ref: "#/components/schemas/DocumentExternalRetrievalCapability"
+    DocumentFileCapabilityResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          projectId,
+          documentId,
+          revisionId,
+          fileRevisionId,
+          file,
+          capabilities,
+        ]
+      properties:
+        projectId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        revisionId: { type: string, format: uuid }
+        fileRevisionId: { type: string, format: uuid }
+        file: { $ref: "#/components/schemas/DocumentFileMetadata" }
+        capabilities:
+          $ref: "#/components/schemas/DocumentFileCapabilities"
     ToolingCockpit:
       type: object
       required: [tooling, lifecycle, source]

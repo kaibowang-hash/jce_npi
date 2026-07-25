@@ -9,11 +9,13 @@ from .api import frappe_domain_call
 from .foundation.errors import (
     ApiRouteNotFound,
     CsrfTokenInvalid,
+    DocumentRoutesDisabled,
     MalformedRequest,
     ProjectCollaborationRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
+    document_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
 )
@@ -52,6 +54,39 @@ _PROJECT_COMMENTS_ROUTE = re.compile(
 )
 _PROJECT_LEARNING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/learning$"
+)
+_PROJECT_DOCUMENTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents$"
+)
+_PROJECT_DOCUMENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+)$"
+)
+_DOCUMENT_CHECK_OUT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+):check-out$"
+)
+_DOCUMENT_CHECK_IN_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+):check-in$"
+)
+_DOCUMENT_RECOVER_LOCK_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+):recover-lock$"
+)
+_DOCUMENT_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+)/revisions$"
+)
+_DOCUMENT_FILE_CAPABILITIES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)/files/"
+    r"(?P<file_revision_id>[^/:]+)/capabilities$"
+)
+_DOCUMENT_FILE_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+    r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)/files/"
+    r"(?P<file_revision_id>[^/:]+):content$"
 )
 _GATE_EVIDENCE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
@@ -211,6 +246,50 @@ def route_request() -> None:
                 else "npi_core.project_controls_api.create_project_learning"
             )
             route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_DOCUMENTS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.document_api.get_documents"
+                if request.method == "GET"
+                else "npi_core.document_api.create_document"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _DOCUMENT_FILE_CAPABILITIES_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.document_api.get_file_capabilities"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _DOCUMENT_FILE_CONTENT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.document_api.get_file_content"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _DOCUMENT_REVISIONS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.document_api.create_document_revision"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        document_commands = (
+            (_DOCUMENT_CHECK_OUT_ROUTE, "npi_core.document_api.check_out_document"),
+            (_DOCUMENT_CHECK_IN_ROUTE, "npi_core.document_api.check_in_document"),
+            (
+                _DOCUMENT_RECOVER_LOCK_ROUTE,
+                "npi_core.document_api.recover_document_lock",
+            ),
+        )
+        for route, candidate in document_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
+        match = _PROJECT_DOCUMENT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.document_api.get_document"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _GATE_EVIDENCE_ROUTE.fullmatch(path)
         if match is not None:
@@ -260,6 +339,9 @@ def route_request() -> None:
     if _p4_05_routes_disabled(command):
         command = "npi_core.bff.project_collaboration_routes_disabled"
         route_params = {}
+    if _p5_01_routes_disabled(command):
+        command = "npi_core.bff.document_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -295,6 +377,23 @@ def project_collaboration_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def document_routes_disabled() -> dict[str, object] | None:
+    """Fail closed while P5-01 routes await a reviewed forward fix."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise DocumentRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -302,6 +401,12 @@ def _p4_05_routes_disabled(command: str | None) -> bool:
             isinstance(command, str)
             and command.startswith("npi_core.project_controls_api.")
         )
+    )
+
+
+def _p5_01_routes_disabled(command: str | None) -> bool:
+    return document_routes_are_disabled() and (
+        isinstance(command, str) and command.startswith("npi_core.document_api.")
     )
 
 
@@ -390,6 +495,23 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method == "GET" and _GATE_REVIEW_ROUTE.fullmatch(path) is not None:
         return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_DOCUMENTS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "GET" and (
+        _PROJECT_DOCUMENT_ROUTE.fullmatch(path) is not None
+        or _DOCUMENT_FILE_CAPABILITIES_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and (
+        _DOCUMENT_CHECK_OUT_ROUTE.fullmatch(path) is not None
+        or _DOCUMENT_CHECK_IN_ROUTE.fullmatch(path) is not None
+        or _DOCUMENT_RECOVER_LOCK_ROUTE.fullmatch(path) is not None
+        or _DOCUMENT_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _DOCUMENT_FILE_CONTENT_ROUTE.fullmatch(path) is not None
+    ):
+        return True
     if (
         method == "GET"
         and _GATE_REVIEW_COMMAND_RECEIPT_ROUTE.fullmatch(path) is not None
@@ -422,10 +544,22 @@ def attach_response_headers(response=None, request=None) -> None:
         return
     if _normalize_pre_handler_problem(response, request):
         return
-    body = getattr(getattr(frappe, "flags", None), "npi_response_body", None)
+    flags = getattr(frappe, "flags", None)
+    body = getattr(flags, "npi_response_body", None)
+    headers = getattr(flags, "npi_response_headers", None)
     if body is not None:
         response.set_data(json.dumps(body, ensure_ascii=False, separators=(",", ":")))
-    headers = getattr(getattr(frappe, "flags", None), "npi_response_headers", None)
+        body_status = body.get("status") if isinstance(body, dict) else None
+        body_type = body.get("type") if isinstance(body, dict) else None
+        if (
+            isinstance(headers, dict)
+            and headers.get("Content-Type") == "application/problem+json"
+            and type(body_status) is int
+            and 400 <= body_status <= 599
+            and isinstance(body_type, str)
+            and body_type.startswith("urn:npi:problem:")
+        ):
+            response.status_code = body_status
     if not headers:
         return
     for name, value in headers.items():

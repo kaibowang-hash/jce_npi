@@ -2219,3 +2219,260 @@ Current state,目前狀態
 An exact WorkItem identity cannot be combined with collection filters or a cursor.,精確工作項目識別碼不能與集合篩選條件或游標組合使用。
 Project collaboration is temporarily unavailable.,專案協作暫時無法使用。
 The routes are disabled while a reviewed forward fix is applied.,套用經審查的前向修正期間，這些路由已停用。
+Enter a positive whole number.,請輸入正整數。
+Enter zero or a positive whole number.,請輸入零或正整數。
+Enter a valid SHA-256 value.,請輸入有效的 SHA-256 值。
+Enter a shorter value.,請輸入較短的值。
+Enter no more than 64 related objects.,請輸入不超過 64 個關聯物件。
+Enter a valid related object.,請輸入有效的關聯物件。
+The related object contains unsupported fields.,關聯物件包含不支援的欄位。
+Attach each related object once.,每個關聯物件只能附加一次。
+Only a Project reference can use typed reference filters.,只有專案參照可以使用類型化參照篩選條件。
+Enter valid revision metadata.,請輸入有效的修訂中繼資料。
+Revision metadata contains unsupported fields.,修訂中繼資料包含不支援的欄位。
+Select one file.,請選擇一個檔案。
+Select exactly one file.,請僅選擇一個檔案。
+Select one binary file.,請選擇一個二進位檔案。
+The file exceeds the supported infrastructure limit.,檔案超出基礎設施支援的限制。
+The requested document is unavailable.,要求的文件無法使用。
+The selected document policy version is unavailable.,所選文件策略版本無法使用。
+The generated document number is already in use.,產生的文件編號已被使用。
+The document was changed by another user.,文件已被其他使用者變更。
+The document edit lock has changed or is held by another user.,文件編輯鎖已變更或由其他使用者持有。
+The exact document file is unavailable.,確切的文件檔案無法使用。
+Enter valid document type rules.,請輸入有效的文件類型規則。
+Document type keys and prefixes must be unique.,文件類型鍵和前綴必須唯一。
+Preview formats must also be allowed file formats.,預覽格式也必須是允許的檔案格式。
+Select browser-native PDF or image preview formats.,請選擇瀏覽器原生支援的可攜式文件格式或影像預覽格式。
+The document policy snapshot hash does not match its content.,文件策略快照雜湊與其內容不相符。
+Select a document type from the exact policy version.,請從確切的策略版本中選擇文件類型。
+Select a confidentiality level from the exact policy version.,請從確切的策略版本中選擇機密等級。
+Enter unique supported values.,請輸入唯一的支援值。
+Enter unique supported file formats.,請輸入唯一的支援檔案格式。
+Enter a valid policy reference.,請輸入有效的策略參照。
+The current revision identity is incomplete.,目前修訂版識別不完整。
+The current edit lock identity is incomplete.,目前編輯鎖識別不完整。
+Enter a date and time with a time zone.,請輸入包含時區的日期和時間。
+The edit lock expiry must follow its acquisition time.,編輯鎖到期時間必須晚於取得時間。
+An active edit lock cannot contain closure details.,作用中的編輯鎖不能包含關閉明細。
+A closed edit lock requires closure details.,已關閉的編輯鎖需要關閉明細。
+The edit lock cannot close before it is acquired.,編輯鎖不能在取得前關閉。
+Only a recovered edit lock records a recovery reason.,只有已復原的編輯鎖才記錄復原原因。
+Select a non-empty file.,請選擇非空白檔案。
+The file exceeds the limit in the exact document policy version.,檔案超出確切文件策略版本規定的限制。
+The file name extension does not match the observed file content.,副檔名與偵測到的檔案內容不相符。
+Select a file format allowed by the exact document policy version.,請選擇確切文件策略版本允許的檔案格式。
+Enter a safe file name.,請輸入安全的檔案名稱。
+The file size exceeds the supported infrastructure limit.,檔案大小超出基礎設施支援的限制。
+The exact file must remain private.,確切檔案必須保持私密。
+Enter a valid release observation.,請輸入有效的發布觀察結果。
+Enter a valid file revision.,請輸入有效的檔案修訂版。
+Select a supported file role.,請選擇支援的檔案角色。
+Select a supported connector state.,請選擇支援的連接器狀態。
+The first revision cannot have a predecessor.,第一版修訂不能有前置修訂版。
+The successor revision must be later than the current revision.,後續修訂版必須晚於目前修訂版。
+Select a supported link type.,請選擇支援的連結類型。
+Select a supported typed Project reference.,請選擇支援的類型化專案參照。
+Only a Project reference can contain a target subtype.,只有專案參照可以包含目標子類型。
+Enter a valid request payload.,請輸入有效的請求酬載。
+The file exceeds the configured upload limit.,檔案超出設定的上傳限制。
+Controlled documents can only be changed through an authorized NPI document command.,受控文件只能透過已授權的 NPI 文件命令變更。
+Document policy versions can only be changed through authorized administration.,文件策略版本只能透過已授權的管理操作變更。
+{field} must be a valid global ID.,{field} 必須是有效的全域識別碼。
+{field} is required.,{field} 為必填項目。
+{field} is invalid.,{field} 無效。
+{field} must be a valid SHA-256 value.,{field} 必須是有效的 SHA-256 值。
+{field} must be a positive whole number.,{field} 必須是正整數。
+{field} must be zero or a positive whole number.,{field} 必須是零或正整數。
+Controlled document history cannot be changed.,受控文件歷程不能變更。
+Controlled document history cannot be deleted.,受控文件歷程不能刪除。
+Document and design revision is temporarily unavailable.,文件和設計修訂暫時無法使用。
+The controlled document does not match its Project and tenant.,受控文件與其專案和租戶不相符。
+The controlled document identity does not match its exact published policy.,受控文件識別與其確切的已發布策略不相符。
+A new controlled document must start without a revision or edit lock at version one.,新受控文件的版本必須為一且不得包含修訂版或編輯鎖。
+Current Lock Expires At,目前鎖到期時間
+Select an enabled document policy.,請選擇已啟用的文件策略。
+Select an exact published document policy version.,請選擇確切的已發布文件策略版本。
+Document Types,文件類型
+Confidentiality Keys,機密等級鍵
+Allowed File Formats,允許的檔案格式
+Preview File Formats,預覽檔案格式
+The current document revision cannot be cleared.,目前文件修訂版不能清除。
+The current revision projection does not match an exact successor.,目前修訂版投影與確切的後續修訂版不相符。
+The prior edit lock does not have an exact terminal event.,先前的編輯鎖沒有確切的終止事件。
+An active edit lock cannot be rewritten.,作用中的編輯鎖不能重寫。
+The current edit lock does not match an exact acquisition event.,目前編輯鎖與確切的取得事件不相符。
+Select a supported document command operation.,請選擇支援的文件命令操作。
+Document Global ID does not match the command operation.,文件全域識別碼與命令操作不相符。
+The document command receipt does not match its Project and tenant.,文件命令收據與其專案和租戶不相符。
+The document command receipt does not match its controlled document.,文件命令收據與其受控文件不相符。
+Response Snapshot,回應快照
+A document command response must be sealed after the command succeeds.,文件命令成功後必須封存其回應。
+A document command response can only be sealed once.,文件命令回應只能封存一次。
+Controlled Document,受控文件
+Lock Global ID,鎖全域識別碼
+Prior Lock Event Global ID,先前鎖事件全域識別碼
+Controlled Document must match the exact Document Global ID.,受控文件必須與確切的文件全域識別碼相符。
+The lock event does not match its controlled document.,鎖事件與其受控文件不相符。
+Select a supported document lock event type.,請選擇支援的文件鎖事件類型。
+Lock Version does not match the lock event type.,鎖版本與鎖事件類型不相符。
+The lock acquisition event is invalid.,鎖取得事件無效。
+A terminal lock event requires its exact acquisition event.,終止鎖事件需要其確切的取得事件。
+The terminal lock event does not match its acquisition event.,終止鎖事件與其取得事件不相符。
+Only the current holder can release an unexpired edit lock.,只有目前持有人可以釋放未到期的編輯鎖。
+An edit lock cannot expire before its expiry time.,編輯鎖不能在其到期時間之前到期。
+Lock Event Key does not match the exact lock version.,鎖事件鍵與確切的鎖版本不相符。
+Lock Event Snapshot,鎖事件快照
+Lock Event Snapshot does not match the exact lock event.,鎖事件快照與確切的鎖事件不相符。
+Acquired At,取得時間
+Enabled must be a checkbox value.,已啟用必須是核取方塊值。
+A published document policy version cannot be changed.,已發布的文件策略版本不能變更。
+Document Types must contain only valid rules.,文件類型必須僅包含有效規則。
+Select a supported document policy publication state.,請選擇支援的文件策略發布狀態。
+A new document policy version must start as a draft.,新文件策略版本必須以草稿狀態開始。
+Enable the document policy before publishing this version.,發布此版本前請先啟用文件策略。
+Select an existing document policy.,請選擇現有文件策略。
+Enter a valid document policy version.,請輸入有效的文件策略版本。
+Publish each document policy version before creating the next.,建立下一版本前請發布每個文件策略版本。
+A published document policy version cannot return to draft.,已發布的文件策略版本不能恢復為草稿。
+Target Reference Global ID,目標參照全域識別碼
+The document relationship does not match its controlled document.,文件關係與其受控文件不相符。
+Select a supported document relationship kind.,請選擇支援的文件關係種類。
+Target Identity,目標識別
+Target Version,目標版本
+Relationship Key does not match the exact relationship.,關係鍵與確切的關係不相符。
+Target Snapshot,目標快照
+Target Snapshot does not match the exact related object.,目標快照與確切的關聯物件不相符。
+A new document relationship must remain at version one.,新文件關係必須保持版本一。
+The related Project is unavailable.,關聯專案無法使用。
+The related Project must be the current Project.,關聯專案必須是目前專案。
+The related Project reference is unavailable.,關聯專案參照無法使用。
+The related object type is unavailable.,關聯物件類型無法使用。
+The related object is unavailable.,關聯物件無法使用。
+Predecessor Revision Global ID,前置修訂版全域識別碼
+Effective Date,生效日期
+Edit Lock Global ID,編輯鎖全域識別碼
+Edit Lock Version,編輯鎖版本
+The document revision does not match its controlled document.,文件修訂版與其受控文件不相符。
+The first revision cannot replace an existing revision.,第一版修訂不能取代現有修訂版。
+Predecessor Revision must be the exact current revision.,前置修訂版必須是確切的目前修訂版。
+The document revision does not match an active edit lock.,文件修訂版與作用中的編輯鎖不相符。
+Select a supported document revision state.,請選擇支援的文件修訂狀態。
+Revision Key does not match the exact document revision.,修訂鍵與確切的文件修訂版不相符。
+Revision Snapshot,修訂快照
+Revision Snapshot does not match the exact revision content.,修訂快照與確切的修訂內容不相符。
+A new document revision must remain draft at version one.,新文件修訂版的版本必須為一且保持草稿狀態。
+Revision Snapshot contains an invalid file association.,修訂快照包含無效的檔案關聯。
+Revision Snapshot contains an invalid file revision.,修訂快照包含無效的檔案修訂版。
+Revision Snapshot contains an invalid connector state.,修訂快照包含無效的連接器狀態。
+Revision Snapshot contains unsupported file state values.,修訂快照包含不支援的檔案狀態值。
+Revision Snapshot file does not match the exact revision.,修訂快照中的檔案與確切的修訂版不相符。
+The unavailable connector must report that no provider is configured.,無法使用的連接器必須報告尚未設定提供者。
+Document Revision,文件修訂版
+Document Revision Global ID,文件修訂版全域識別碼
+File Revision,檔案修訂版
+File Revision Global ID,檔案修訂版全域識別碼
+File Document Global ID,檔案文件全域識別碼
+Document Revision must match its exact Global ID.,文件修訂版必須與其確切的全域識別碼相符。
+File Revision must match its exact Global ID.,檔案修訂版必須與其確切的全域識別碼相符。
+The file association does not match its document revision.,檔案關聯與其文件修訂版不相符。
+The file association does not match its exact private file revision.,檔案關聯與其確切的私密檔案修訂版不相符。
+Select supported file association states.,請選擇支援的檔案關聯狀態。
+The exact file revision must remain private.,確切的檔案修訂版必須保持私密。
+Released must be a checkbox value.,已發布必須是核取方塊值。
+File Association Key does not match the exact file revision.,檔案關聯鍵與確切的檔案修訂版不相符。
+File Revision Source Snapshot,檔案修訂版來源快照
+File Revision Source Snapshot does not match the exact file.,檔案修訂版來源快照與確切的檔案不相符。
+File Association Snapshot,檔案關聯快照
+File Association Snapshot does not match the exact file revision.,檔案關聯快照與確切的檔案修訂版不相符。
+A new file association must remain at version one.,新檔案關聯必須保持版本一。
+Revision File,修訂版檔案
+Document Revision Snapshot Hash,文件修訂版快照雜湊
+Revision File Snapshot Hash,修訂版檔案快照雜湊
+The share grant does not match its controlled document.,共用授權與其受控文件不相符。
+The share grant does not match its document revision.,共用授權與其文件修訂版不相符。
+The share grant does not match its exact file revision.,共用授權與其確切的檔案修訂版不相符。
+Share Label,共用標籤
+Share Label Hash,共用標籤雜湊
+Share Label Hash does not match the normalized Share Label.,共用標籤雜湊與標準化的共用標籤不相符。
+The disabled share grant expiry must follow creation within the bounded synthetic limit.,已停用共用授權的到期時間必須在建立後的有界合成期限內。
+Share Grant Key does not match the exact share grant.,共用授權鍵與確切的共用授權不相符。
+External document retrieval is unavailable.,外部文件擷取無法使用。
+Share Grant Snapshot,共用授權快照
+Share Grant Snapshot does not match its exact scope.,共用授權快照與其確切範圍不相符。
+Select a supported share grant state.,請選擇支援的共用授權狀態。
+A new share grant must start prepared at version one.,新共用授權的版本必須為一且以已準備狀態開始。
+The share grant state transition is not allowed.,不允許此共用授權狀態轉換。
+A prepared share grant cannot contain closure details.,已準備的共用授權不能包含關閉明細。
+Closed At,關閉時間
+Closed By,關閉人
+Closure Reason,關閉原因
+Only a revoked share grant records a closure reason.,只有已撤銷的共用授權才記錄關閉原因。
+A share grant cannot expire before its expiry time.,共用授權不能在其到期時間之前到期。
+NPI Controlled Document,NPI 受控文件
+Document Number,文件編號
+Document Number Key,文件編號鍵
+Document Type Key,文件類型鍵
+Confidentiality Key,機密等級鍵
+Current Revision Global ID,目前修訂版全域識別碼
+Current Revision Major,目前主要修訂號
+Current Revision Minor,目前次要修訂號
+Current Revision Snapshot Hash,目前修訂版快照雜湊
+Current Lock Global ID,目前鎖全域識別碼
+Current Lock Version,目前鎖版本
+Current Lock Holder,目前鎖持有人
+NPI Document Command Idempotency,NPI 文件命令冪等記錄
+NPI Document Lock Event,NPI 文件鎖事件
+Lock Event Key,鎖事件鍵
+Lock Version,鎖版本
+Lock Event Type,鎖事件類型
+acquired,已取得
+released,已釋放
+recovered,已復原
+expired,已到期
+Lock Holder,鎖持有人
+Recovery Reason,復原原因
+Lock Event Snapshot Hash,鎖事件快照雜湊
+NPI Document Policy,NPI 文件策略
+Policy Key Hash,策略鍵雜湊
+NPI Document Policy Version,NPI 文件策略版本
+Document Policy,文件策略
+Maximum File Bytes,最大檔案位元組數
+Edit Lock Lease Minutes,編輯鎖租期分鐘數
+NPI Document Relationship,NPI 文件關係
+Relationship Key,關係鍵
+Relationship Kind,關係種類
+project_reference,專案參照
+gate,階段門
+Project Reference Type,專案參照類型
+Target Source System,目標來源系統
+Target Snapshot Hash,目標快照雜湊
+NPI Document Revision,NPI 文件修訂版
+Major Revision,主要修訂號
+Minor Revision,次要修訂號
+Revision Reason,修訂原因
+Revision State,修訂狀態
+Revision Snapshot Hash,修訂快照雜湊
+NPI Document Revision File,NPI 文件修訂版檔案
+File Association Key,檔案關聯鍵
+File Revision Number,檔案修訂號
+File Optimistic Version,檔案樂觀鎖版本
+Display File Name,顯示檔案名稱
+Observed File Format,偵測到的檔案格式
+File Size Bytes,檔案大小位元組數
+File Role,檔案角色
+primary,主要檔案
+source,來源檔案
+derivative,衍生檔案
+File Provenance,檔案來源
+External Design Connector State,外部設計連接器狀態
+Connector Reason Code,連接器原因代碼
+Association Snapshot Hash,關聯快照雜湊
+NPI Document Share Grant,NPI 文件共用授權
+Share Grant Key,共用授權鍵
+Share Grant State,共用授權狀態
+prepared,已準備
+revoked,已撤銷
+External Retrieval State,外部擷取狀態
+External Retrieval Reason Code,外部擷取原因代碼
+Share Grant Snapshot Hash,共用授權快照雜湊

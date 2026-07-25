@@ -6,6 +6,7 @@ from typing import Any
 try:
     from frappe import _
 except ImportError:  # Keeps domain helpers testable before a bench is initialized.
+
     def _identity_translation(source: str) -> str:
         return source
 
@@ -39,7 +40,9 @@ class NpiProblem(Exception):
 
 class AuthenticationRequired(NpiProblem):
     def __init__(self) -> None:
-        super().__init__(401, "AUTHENTICATION_REQUIRED", _("Authentication is required."))
+        super().__init__(
+            401, "AUTHENTICATION_REQUIRED", _("Authentication is required.")
+        )
 
 
 class PermissionDenied(NpiProblem):
@@ -158,8 +161,17 @@ class ProjectCollaborationRoutesDisabled(NpiProblem):
             503,
             "PROJECT_COLLABORATION_ROUTES_DISABLED",
             _("Project collaboration is temporarily unavailable."),
-            _(
-                "The routes are disabled while a reviewed forward fix is applied."
-            ),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )
+
+
+class DocumentRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "DOCUMENT_ROUTES_DISABLED",
+            _("Document and design revision is temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )

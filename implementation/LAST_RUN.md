@@ -1,5 +1,44 @@
 # Last Run
 
+## P5-01 backend checkpoint held for DOCX–Pack reconciliation — 2026-07-25T20:46:57Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting remote checkpoint:
+  `6099ac2351567665478ff911bc07c4ef55ab3ee1`.
+- Atomic task:
+  `P5-01 — Document and design revision`.
+- Result:
+  `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`.
+- Phase 5 remains `IN_PROGRESS`; P5-02 and Phase 6 were not activated.
+- This is a user-directed recoverable pause for authoritative V1.2
+  DOCX–Pack reconciliation, not a controller Hard Blocker and not a product
+  requirement change.
+
+### Implemented checkpoint boundary
+
+- Added the pure controlled-document policy/revision/file/relationship/lock
+  domain and controlled DocType/controller metadata.
+- Added the Frappe repository, exact Project/object authorization, strict BFF
+  routes, actor-bound idempotency, optimistic versions, audit, private-file
+  integrity/capability truth, safe binary commit boundary and unavailable
+  external/connector states.
+- Extended OpenAPI and data ownership for the bounded P5-01 backend slice.
+- Added focused domain, metadata, controller, repository, API and contract
+  tests. The last combined affected run passed `63/63`; the binary API failure
+  matrix passed `15/15`.
+- Removed all unfinished/unvalidated frontend workspace, dirty-guard and
+  Phase 5 frontend-evidence-path drafts before this checkpoint.
+
+### Unfinished checkpoint boundary
+
+- No live Project Design/Documents workspace, multipart/blob browser
+  transport, frontend parser/component/E2E/visual evidence, focused real Site
+  migration/runtime evidence, or complete P5-01 Level 2 Task Gate is claimed.
+- P5-01 remains incomplete; none of its seven trace rows is `VERIFIED`.
+- Complete details, changed files, reusable evidence and the exact first
+  resume action are recorded in
+  `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
+
 ## P5-00 requirement anchor PASS; P5-01 activated — 2026-07-25T18:21:56Z
 
 - Branch: `codex/npi-v1.2-implementation`.
@@ -12,9 +51,9 @@
   `PASS — LEVEL 2 DOCUMENTATION/TRACE TASK GATE`.
 - Current task:
   `P5-01 — Document and design revision`.
-- Current release checkpoint:
-  the P5-00 documentation/trace changes are in this commit; confirm and record
-  the exact remote SHA immediately after push.
+- Final P5-00 remote checkpoint:
+  `6099ac2351567665478ff911bc07c4ef55ab3ee1` (`0` ahead / `0` behind after
+  push and fetch).
 - Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; named business UAT and
   provenance-backed sanitized data remain externally unsigned.
 

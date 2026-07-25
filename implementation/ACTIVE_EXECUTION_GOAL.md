@@ -1,19 +1,20 @@
 # Active Execution Goal
 
-Updated: `2026-07-25T18:21:56Z`
+Updated: `2026-07-25T20:46:57Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f97ce-d6ad-74f2-8f14-68f2d0d5e962`
-- Mode: `NPI One V1.2 AUTOPILOT CONTINUOUS DELIVERY`
+- Mode: `V1_2_RECONCILIATION_HOLD` within
+  `NPI One V1.2 AUTOPILOT CONTINUOUS DELIVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Last confirmed remote checkpoint before this release commit:
-  `028d551d4e02ad5700b165c21409e14b647babf0` (`0` ahead / `0` behind at
-  P5-00 recovery)
-- Current release checkpoint: P5-00 anchor/trace/recovery changes in this
-  commit;
-  confirm and record the exact remote SHA immediately after push
+- Last confirmed remote checkpoint:
+  `6099ac2351567665478ff911bc07c4ef55ab3ee1` (`0` ahead / `0` behind;
+  P5-00 is committed and pushed)
+- Current release checkpoint: P5-01 is
+  `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`; its bounded backend/domain/contract
+  work is checkpointed, but no P5-01 PASS is claimed
 - Current Phase: `5 — Part Design, Documents, Baselines, and EBOM`
   (`IN_PROGRESS`)
 - Current atomic task:
@@ -31,13 +32,12 @@ Updated: `2026-07-25T18:21:56Z`
 - External state retained: Phase 3 remains
   `TECHNICAL_PASS_PENDING_UAT`; production rule packages and ERPNext facts
   remain scoped holds, not a global blocker
-- First incomplete action: create
-  `implementation/evidence/phase-5/p5-01-plan.md`, set only the P5-01
-  traceability rows to `IN_PROGRESS_P5_01`, inventory the existing private
-  File Revision and Project/BFF/UI foundations, then implement the bounded
-  Controlled Document/Document Revision vertical slice from
-  `implementation/phase-5-requirement-anchor.md`
-- Automatic transition: enabled after each passing atomic task and Phase Gate
+- First resume action: after the hold is explicitly lifted, compare the
+  checkpointed backend/domain/contract implementation against the accepted
+  DOCX–Pack reconciliation result before resuming the unfinished
+  frontend/runtime/i18n slice
+- Automatic transition: suspended by the current reconciliation hold; P5-02
+  and Phase 6 must not activate
 - Source of truth: `AGENTS.md`, `GOAL.md`,
   `implementation/AUTOPILOT_CONTROLLER.md`,
   `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
@@ -51,13 +51,14 @@ Updated: `2026-07-25T18:21:56Z`
 - Permanent product, architecture, domain, permission, UI, i18n, ownership and
   quality requirements: unchanged
 
-Historical thread-local stop, pause, handoff, and single-Phase boundaries
-remain history with status
-`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`.
+The latest user-directed DOCX–Pack reconciliation hold is active. It does not
+cancel V1.2, change product requirements, mark a Hard Blocker, or supersede
+the final goal.
 
-P5-00 passed as a documentation/trace-only controller task. P5-01 is the only
-active Phase 5 product task. Review/release, baselines, EBOM and formal publish
-requests remain P5-02 through P5-05 and must not begin early.
+P5-00 passed as a documentation/trace-only controller task. P5-01 remains the
+only unfinished Phase 5 product task and is paused before its next sub-slice.
+Review/release, baselines, EBOM and formal publish requests remain P5-02
+through P5-05 and must not begin early.
 
 This file records execution intent and recovery behavior only. It does not add,
 remove, reinterpret, or replace a product requirement, contract, accepted ADR,

@@ -1,0 +1,37 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Document Lock Event",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "read_only": 1,
+  "search_fields": "event_key,lock_global_id,document_global_id,holder_user_id",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "event_key", "fieldtype": "Data", "label": "Lock Event Key", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "controlled_document", "fieldtype": "Link", "label": "Controlled Document", "options": "NPI Controlled Document", "reqd": 1, "read_only": 1},
+    {"fieldname": "document_global_id", "fieldtype": "Data", "label": "Document Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "lock_global_id", "fieldtype": "Data", "label": "Lock Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "lock_version", "fieldtype": "Int", "label": "Lock Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "event_type", "fieldtype": "Select", "label": "Lock Event Type", "options": "acquired\nreleased\nrecovered\nexpired", "reqd": 1, "read_only": 1},
+    {"fieldname": "holder_user_id", "fieldtype": "Data", "label": "Lock Holder", "reqd": 1, "read_only": 1},
+    {"fieldname": "acquired_at", "fieldtype": "Datetime", "label": "Acquired At", "reqd": 1, "read_only": 1},
+    {"fieldname": "expires_at", "fieldtype": "Datetime", "label": "Expires At", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Actor", "reqd": 1, "read_only": 1},
+    {"fieldname": "occurred_at", "fieldtype": "Datetime", "label": "Occurred At", "reqd": 1, "read_only": 1},
+    {"fieldname": "prior_event_global_id", "fieldtype": "Data", "label": "Prior Lock Event Global ID", "read_only": 1},
+    {"fieldname": "closure_reason", "fieldtype": "Text", "label": "Recovery Reason", "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "event_snapshot", "fieldtype": "JSON", "label": "Lock Event Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Lock Event Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

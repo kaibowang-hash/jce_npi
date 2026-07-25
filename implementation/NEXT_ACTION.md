@@ -1,14 +1,29 @@
 # Next Action
 
-Status: `P5-00 PASS — P5-01 ACTIVE`
+Status: `P5-01 IN_PROGRESS — V1_2_RECONCILIATION_HOLD`
 
-Recovery time: `2026-07-25T18:21:56Z`
+Recovery time: `2026-07-25T20:46:57Z`
+
+P5-01 starting remote checkpoint:
+`6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
 Active execution goal:
 `implementation/ACTIVE_EXECUTION_GOAL.md`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
+
+## Reconciliation hold
+
+- Product expansion is paused at a recoverable P5-01 backend/domain/contract
+  checkpoint while the authoritative V1.2 DOCX is reconciled with the
+  machine-executable Pack.
+- This is an explicit execution hold, not a P5-01 PASS, Phase Gate, product
+  requirement change, or controller Hard Blocker.
+- Do not begin another P5-01 sub-slice, activate P5-02, or activate Phase 6.
+- The complete hold evidence, exact implemented/unfinished boundary,
+  changed-file inventory, reusable checks and first resume action are in
+  `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
 
 ## Controller state
 
@@ -27,6 +42,8 @@ Required and only development branch:
   EBOM` (`PASS`).
 - Current unfinished atomic task:
   `P5-01 — Document and design revision`.
+- Current task state:
+  `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`.
 - Compatibility Pack task:
   `M4-01 — Document and design revision`.
 
@@ -96,27 +113,26 @@ Primary Requirement IDs:
 
 P5-01 must:
 
-1. create `implementation/evidence/phase-5/p5-01-plan.md` with exact scope,
-   non-scope, Class-B holds, Requirement → Code → Test → Evidence and
-   changed-files → affected-tests;
-2. set only the seven P5-01 trace rows to `IN_PROGRESS_P5_01`;
-3. inventory and extend, without reinterpreting, the existing private
+1. use `implementation/evidence/phase-5/p5-01-plan.md` as the bounded task
+   plan; the seven P5-01 trace rows are
+   `IN_PROGRESS_V1_2_RECONCILIATION_HOLD`;
+2. inventory and extend, without reinterpreting, the existing private
    `FileRevision`, Project authorization, idempotency, audit, BFF, App Shell
    and translation foundations;
-4. keep `ControlledDocument`, `DocumentRevision`, and exact private
+3. keep `ControlledDocument`, `DocumentRevision`, and exact private
    `FileRevision` as distinct identities;
-5. deliver additive controlled-document/revision/relationship/lock/history
+4. deliver additive controlled-document/revision/relationship/lock/history
    persistence with strict BFF contracts, server-side tenant/Project/object
    authorization, CSRF, expected versions, actor-bound idempotency, audit and
    transaction rollback;
-6. deliver Project-scoped confidentiality and authorized download audit,
+5. deliver Project-scoped confidentiality and authorized download audit,
    capability-truth preview/download fallback, and explicit unavailable
    external-retrieval/CAD-PDM states;
-7. deliver the live industrial Design/Documents workspace with complete
+6. deliver the live industrial Design/Documents workspace with complete
    literal-English and direct `zh`/`zh-TW` coverage; and
-8. run the applicable Level 1 repair checks and one complete P5-01 Level 2
-   Task Gate, review the diff, update evidence/recovery, commit, push, confirm
-   the remote SHA, and automatically activate P5-02.
+7. after the DOCX–Pack reconciliation hold is explicitly lifted, finish the
+   remaining UI/runtime/i18n evidence, run one complete P5-01 Level 2 Task
+   Gate, and activate P5-02 only if that complete Gate passes.
 
 P5-01 must not review, approve, release, supersede, obsolete, baseline,
 publish an EBOM, create an ERP execution request, enable external retrieval,
@@ -125,21 +141,25 @@ document policy, or treat the existing `FileRevision.released` flag as a full
 document-release workflow. Bottom-level Frappe File retention for released
 content remains a mandatory P5-02 server-side release invariant.
 
-## Exact recovery steps
+## Exact resume steps after DOCX–Pack reconciliation
 
 1. Fetch `origin`, check out `codex/npi-v1.2-implementation`, and compare local
    and remote HEAD/ahead-behind without reset, rebase or force push.
-2. Confirm the P5-00 checkpoint is committed and pushed; record its exact
-   remote SHA in the P5-01 plan/recovery update.
+2. Confirm the reconciliation checkpoint recorded in
+   `implementation/ACTIVE_EXECUTION_GOAL.md` is the synchronized remote
+   starting point.
 3. Reuse the complete Phase 4 Gate and P5-00 documentation/trace evidence; do
    not rerun either merely to restore context.
 4. Read only the Phase 5 anchor, the seven P5-01 trace rows, their indexed
    requirement text, directly related file/project/contracts/ADRs and the
    applicable `frappe-safe-change`, `npi-domain-guard`, `industrial-ux`, and
    `frappe-i18n` Skills.
-5. Create and validate the P5-01 plan before product code.
+5. Read the accepted DOCX–Pack reconciliation result and update the Pack
+   deviation record if required; do not infer a product rule.
 6. Keep Phase 3 external UAT, production document/rule/provider packages,
    external retrieval and production ERPNext/CAD/PDM as scoped holds; they do
    not block the safe NPI-owned P5-01 slice.
-7. Implement and validate only P5-01, create a recoverable checkpoint, commit,
-   push, confirm the remote SHA and automatically activate P5-02.
+7. First resume action: compare the implemented backend/domain/contract
+   checkpoint against the accepted reconciliation result, then either retain
+   it or apply the smallest required correction before resuming the unfinished
+   P5-01 frontend/runtime/i18n slice.

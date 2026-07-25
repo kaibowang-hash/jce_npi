@@ -4,23 +4,40 @@
 
 None.
 
+## Active execution hold
+
+`P5-01` is `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`.
+
+The user directed a recoverable pause before the machine-executable Pack is
+reconciled with the authoritative V1.2 DOCX. This hold:
+
+- does not cancel V1.2 or change any product requirement;
+- is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
+- does not permit P5-01 to be marked `PASS`;
+- prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting; and
+- resumes first with a reconciliation comparison against the checkpoint
+  evidence in
+  `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
+
 ## Current P5-01 scope
 
 Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.
 `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-EBOM` is `PASS`. `P5-01 — Document and design revision` is active under
+EBOM` is `PASS`. `P5-01 — Document and design revision` remains incomplete
+under the current reconciliation hold and is governed by
 `implementation/phase-5-requirement-anchor.md`,
 `implementation/ACTIVE_EXECUTION_GOAL.md`, and
 `implementation/NEXT_ACTION.md`.
 
-P5-01 may implement the bounded Controlled Document/Document Revision/private
-File Revision vertical slice, Project-scoped confidentiality/download audit,
-locks, capability-truth preview/download fallback, and the optional
-connector-unavailable seam. It must not invent production document numbering,
-classification, retention, scanner/viewer, sharing, revision or CAD/PDM rules;
-review/release/baseline/EBOM/formal publish remain P5-02 through P5-05.
-Production ERPNext/CAD/PDM access and external file retrieval remain
-prohibited or fail closed.
+The retained checkpoint contains the bounded Controlled Document/Document
+Revision/private File Revision backend slice, Project-scoped
+confidentiality/download audit, locks, capability-truth preview/download
+fallback, and the connector-unavailable seam. No further P5-01 implementation
+may begin while this hold is active. On resume, P5-01 must not invent
+production document numbering, classification, retention, scanner/viewer,
+sharing, revision or CAD/PDM rules; review/release/baseline/EBOM/formal
+publish remain P5-02 through P5-05. Production ERPNext/CAD/PDM access and
+external file retrieval remain prohibited or fail closed.
 
 The open production Project-health formula, threshold, lifecycle authority,
 completion-prerequisite, notification-delivery and external-collaboration facts
