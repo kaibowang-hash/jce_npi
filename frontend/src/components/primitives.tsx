@@ -134,23 +134,33 @@ export interface ImpactReviewDetails {
   audit: string;
 }
 
+export interface ImpactReviewContextRow {
+  label: string;
+  value: ReactNode;
+  exempt?: "business-data" | "identifier" | "unit";
+}
+
 const IMPACT_REVIEW_REASON_MAX_LENGTH = 4000;
 
 export function ImpactReview({
   title,
   details,
+  contextRows = [],
   confirmLabel,
   onCancel,
   onConfirm,
   reasonRequired = true,
+  reasonMaxLength = IMPACT_REVIEW_REASON_MAX_LENGTH,
   returnFocusTarget,
 }: {
   title: string;
   details: ImpactReviewDetails;
+  contextRows?: readonly ImpactReviewContextRow[];
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: (reason: string) => void;
   reasonRequired?: boolean;
+  reasonMaxLength?: number;
   returnFocusTarget?: () => HTMLElement | null;
 }): React.JSX.Element {
   const { t } = useI18n();
@@ -158,6 +168,7 @@ export function ImpactReview({
   const reasonHelpId = useId();
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(
     document.activeElement instanceof HTMLElement
       ? document.activeElement
@@ -173,10 +184,7 @@ export function ImpactReview({
       ...(dialogRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ??
         []),
     ];
-    void focusControl(
-      dialogRef.current?.querySelector<HTMLElement>(".impact-review__cancel") ??
-        null,
-    );
+    void focusControl(headingRef.current);
     const handleKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") onCancel();
       if (event.key === "Tab") {
@@ -185,7 +193,11 @@ export function ImpactReview({
         const first = controls[0];
         const last = controls.at(-1);
         if (!first || !last) return;
-        if (event.shiftKey && document.activeElement === first) {
+        if (
+          event.shiftKey &&
+          (document.activeElement === first ||
+            document.activeElement === headingRef.current)
+        ) {
           event.preventDefault();
           void focusControl(last);
         } else if (!event.shiftKey && document.activeElement === last) {
@@ -219,7 +231,9 @@ export function ImpactReview({
       <div className="impact-review__surface">
         <header className="impact-review__header">
           <Icon name="warning" />
-          <h2 id={headingId}>{title}</h2>
+          <h2 id={headingId} ref={headingRef} tabIndex={-1}>
+            {title}
+          </h2>
         </header>
         <dl className="field-list">
           <div>
@@ -230,6 +244,12 @@ export function ImpactReview({
             <dt>{t("Locked version")}</dt>
             <dd data-language-exempt="identifier">{details.version}</dd>
           </div>
+          {contextRows.map((row) => (
+            <div key={row.label}>
+              <dt>{row.label}</dt>
+              <dd data-language-exempt={row.exempt}>{row.value}</dd>
+            </div>
+          ))}
           <div>
             <dt>{t("Impact")}</dt>
             <dd>{details.impact}</dd>
@@ -259,7 +279,7 @@ export function ImpactReview({
             <textarea
               aria-describedby={reasonHelpId}
               aria-label={t("Reason")}
-              maxLength={IMPACT_REVIEW_REASON_MAX_LENGTH}
+              maxLength={reasonMaxLength}
               onChange={(event) => {
                 setReason(
                   event.currentTarget.value.slice(

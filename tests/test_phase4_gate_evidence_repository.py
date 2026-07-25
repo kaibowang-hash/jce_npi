@@ -336,6 +336,7 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             str(PROJECT_ID),
             global_id=str(PROJECT_ID),
             tenant_id=TENANT_ID,
+            lifecycle_state="active",
             business_code="SYN-P403",
             title="Synthetic P4-03 Project",
             owner_user_id="owner@example.invalid",
@@ -346,6 +347,7 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             str(OTHER_PROJECT_ID),
             global_id=str(OTHER_PROJECT_ID),
             tenant_id=TENANT_ID,
+            lifecycle_state="active",
             business_code="OTHER",
             title="Other Project",
             owner_user_id="other@example.invalid",
@@ -564,6 +566,70 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             len(self.store.documents["NPI Audit Event"]),
             1,
         )
+
+    def test_terminal_workspace_is_read_only_and_sealed_replay_survives(self) -> None:
+        repository = self._repository()
+        outcome = self._freeze(repository)
+        self.assertIsNotNone(outcome)
+        assert outcome is not None
+        source = self.store.documents["NPI WBS Item"][str(WBS_ID)]
+        source_snapshot = self.repository_module.wbs_item_source_snapshot(source)
+        source_hash = self.repository_module.canonical_snapshot_hash(source_snapshot)
+        attached = repository.attach_evidence(
+            PROJECT_ID,
+            GATE_ID,
+            "drawing",
+            idempotency_key="terminal-attach-replay",
+            expected_gate_version=2,
+            evidence_kind="wbs_item",
+            source_global_id=WBS_ID,
+            source_version=3,
+            source_hash=source_hash,
+        )
+        self.assertIsNotNone(attached)
+        assert attached is not None
+
+        self.project.lifecycle_state = "cancelled"
+        workspace = repository.evidence_workspace(PROJECT_ID, GATE_ID)
+        self.assertIsNotNone(workspace)
+        assert workspace is not None
+        self.assertTrue(workspace["permissions"]["canView"])
+        self.assertFalse(workspace["permissions"]["canAttachEvidence"])
+        self.assertFalse(workspace["permissions"]["canAdminister"])
+
+        replay = self._freeze(repository)
+        self.assertIsNotNone(replay)
+        assert replay is not None
+        self.assertTrue(replay.replayed)
+        self.assertEqual(replay.response, outcome.response)
+        attach_replay = repository.attach_evidence(
+            PROJECT_ID,
+            GATE_ID,
+            "drawing",
+            idempotency_key="terminal-attach-replay",
+            expected_gate_version=2,
+            evidence_kind="wbs_item",
+            source_global_id=WBS_ID,
+            source_version=3,
+            source_hash=source_hash,
+        )
+        self.assertIsNotNone(attach_replay)
+        assert attach_replay is not None
+        self.assertTrue(attach_replay.replayed)
+        self.assertEqual(attach_replay.response, attached.response)
+
+        ProjectHistoryLocked = importlib.import_module(
+            "npi_core.project_controls.terminal_guard"
+        ).ProjectHistoryLocked
+        with self.assertRaises(ProjectHistoryLocked):
+            repository.freeze_requirements(
+                PROJECT_ID,
+                GATE_ID,
+                idempotency_key="terminal-new-freeze",
+                expected_gate_version=3,
+                gate_due_date=date(2026, 8, 31),
+                assignments=self._assignments(),
+            )
 
     def test_freeze_rejects_stale_duplicate_and_invalid_members(self) -> None:
         VersionConflict = importlib.import_module(

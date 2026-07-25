@@ -141,7 +141,7 @@ export interface ProjectCockpitViewModel {
     businessCode: string;
     title: string;
     projectType: ProjectType;
-    state: "draft";
+    state: ProjectLifecycleState;
     version: number;
     tenantId: string;
     ownerUserId: string;
@@ -786,4 +786,436 @@ export interface ExecutionRow {
   createdAt: string;
   state: SyncState | "queued" | "cancelled" | "succeeded";
   traceId: string;
+}
+
+export type MyWorkCategory =
+  | "task"
+  | "approval"
+  | "blocker"
+  | "risk"
+  | "issue"
+  | "decision";
+
+export type MyWorkContextType = "domain_work_item" | "gate";
+
+export type MyWorkSourceType =
+  | "domain_work_item"
+  | "gate_review_assignment"
+  | "gate_review_invalidation";
+
+export type MyWorkWhy =
+  | "domain_work_item_owner"
+  | "gate_review_step"
+  | "gate_final_decision"
+  | "gate_reopen"
+  | "gate_exception"
+  | "gate_dependency_change";
+
+export type MyWorkStatus = "ready" | "waiting" | "blocked" | "in_review";
+
+export type MyWorkDueState = "overdue" | "today" | "upcoming" | "unscheduled";
+
+export type MyWorkAction = "view_work_item" | "open_gate_review";
+
+export interface MyWorkProjectViewModel {
+  globalId: string;
+  businessCode: string;
+  title: string;
+}
+
+export interface MyWorkContextViewModel {
+  type: MyWorkContextType;
+  globalId: string;
+  code: string;
+  title: string;
+}
+
+export interface MyWorkSourceReferenceViewModel {
+  type: MyWorkSourceType;
+  globalId: string;
+  version: number;
+}
+
+export type MyWorkPriorityViewModel =
+  | {
+      scheme: "domain_severity";
+      value: DomainWorkItemSeverity;
+    }
+  | {
+      scheme: "gate_requirement_priority";
+      value: GateRequirementPriority;
+    };
+
+export type MyWorkTargetViewModel =
+  | {
+      kind: "my_work_item";
+      workItemId: string;
+    }
+  | {
+      kind: "gate_review";
+      projectId: string;
+      gateId: string;
+    };
+
+export interface MyWorkItemViewModel {
+  id: string;
+  category: MyWorkCategory;
+  title: string;
+  project: MyWorkProjectViewModel;
+  context: MyWorkContextViewModel;
+  source: MyWorkSourceReferenceViewModel;
+  why: MyWorkWhy;
+  status: MyWorkStatus;
+  dueAt: string | null;
+  dueState: MyWorkDueState;
+  priority: MyWorkPriorityViewModel | null;
+  blocking: boolean;
+  action: MyWorkAction;
+  target: MyWorkTargetViewModel;
+  sourceStatus: SourceStatus;
+}
+
+export interface MyWorkAvailableCountViewModel {
+  availability: "available";
+  value: number;
+}
+
+export interface MyWorkUnavailableCountViewModel {
+  availability: "unavailable";
+  reason: "source_not_available";
+}
+
+export type MyWorkCountViewModel =
+  | MyWorkAvailableCountViewModel
+  | MyWorkUnavailableCountViewModel;
+
+export interface MyWorkCountsViewModel {
+  all: MyWorkAvailableCountViewModel;
+  today: MyWorkAvailableCountViewModel;
+  overdue: MyWorkAvailableCountViewModel;
+  approvals: MyWorkAvailableCountViewModel;
+  blockers: MyWorkAvailableCountViewModel;
+  waiting: MyWorkAvailableCountViewModel;
+  integration: MyWorkUnavailableCountViewModel;
+}
+
+export interface MyWorkPageViewModel {
+  asOf: string;
+  timeZone: string;
+  projectOptions: readonly MyWorkProjectViewModel[];
+  items: readonly MyWorkItemViewModel[];
+  nextCursor: string | null;
+  counts: MyWorkCountsViewModel;
+}
+
+export type ProjectLifecycleState =
+  | "draft"
+  | "proposed"
+  | "active"
+  | "on_hold"
+  | "completed"
+  | "cancelled";
+
+export type ProjectControlAction = "pause" | "cancel" | "resume" | "complete";
+export type ProjectHealthDimension = "progress" | "cost" | "quality" | "risk";
+export type ProjectHealthStatus =
+  | "unassessed"
+  | "unavailable"
+  | "green"
+  | "yellow"
+  | "red";
+export type ProjectHealthRuleMode =
+  | "manual"
+  | "higher_is_better"
+  | "lower_is_better"
+  | "unavailable";
+export type ProjectLifecyclePrerequisiteKey =
+  | "open_blockers"
+  | "controlled_files"
+  | "handover"
+  | "cost";
+export type ProjectLifecyclePrerequisiteStatus =
+  | "satisfied"
+  | "blocked"
+  | "unavailable";
+export type ProjectLifecycleReasonCode =
+  | "available"
+  | "policy_missing"
+  | "project_terminal"
+  | "transition_not_defined"
+  | "command_access_required"
+  | "authority_required"
+  | "prerequisite_unavailable"
+  | "prerequisite_blocked";
+
+export interface ProjectControlPolicyReferenceViewModel {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+}
+
+export interface ProjectControlAuthorityViewModel {
+  slot: string;
+  memberGlobalId: string;
+  userId: string;
+  displayName: string;
+}
+
+export interface ProjectControlBindingOptionsViewModel {
+  policies: readonly {
+    policyRef: ProjectControlPolicyReferenceViewModel;
+    code: string;
+    title: string;
+    authoritySlots: readonly string[];
+  }[];
+  eligibleMembers: readonly {
+    memberGlobalId: string;
+    userId: string;
+    displayName: string;
+  }[];
+}
+
+export interface ProjectHealthDimensionResultViewModel {
+  dimension: ProjectHealthDimension;
+  ruleMode: ProjectHealthRuleMode;
+  status: ProjectHealthStatus;
+  numericValue: string | null;
+}
+
+export interface ProjectHealthAssessmentSummaryViewModel {
+  globalId: string;
+  assessedAt: string;
+  actor: ProjectControlAuthorityViewModel;
+  reason: string | null;
+  recoveryPlan: string | null;
+}
+
+export interface ProjectLifecyclePrerequisiteViewModel {
+  key: ProjectLifecyclePrerequisiteKey;
+  status: ProjectLifecyclePrerequisiteStatus;
+}
+
+export interface ProjectLifecycleActionViewModel {
+  action: ProjectControlAction;
+  available: boolean;
+  targetState: Extract<
+    ProjectLifecycleState,
+    "on_hold" | "cancelled" | "active" | "completed"
+  >;
+  authoritySlot: string | null;
+  reasonCode: ProjectLifecycleReasonCode;
+  prerequisites: readonly ProjectLifecyclePrerequisiteViewModel[];
+}
+
+export interface ProjectControlsViewModel {
+  project: {
+    globalId: string;
+    businessCode: string;
+    title: string;
+    state: ProjectLifecycleState;
+    version: number;
+    tenantId: string;
+  };
+  policy: {
+    globalId: string;
+    code: string;
+    version: number;
+    snapshotHash: string;
+    title: string;
+    healthAssessmentSlot: string;
+  } | null;
+  binding: {
+    globalId: string;
+    version: number;
+    authorities: readonly ProjectControlAuthorityViewModel[];
+  } | null;
+  bindingOptions: ProjectControlBindingOptionsViewModel | null;
+  health: {
+    overallStatus: ProjectHealthStatus;
+    dimensions: readonly ProjectHealthDimensionResultViewModel[];
+    assessment: ProjectHealthAssessmentSummaryViewModel | null;
+  };
+  lifecycleActions: readonly ProjectLifecycleActionViewModel[];
+  permissions: {
+    canBindPolicy: boolean;
+    canAssessHealth: boolean;
+    canTransition: boolean;
+  };
+}
+
+export type ProjectObjectTargetViewModel =
+  | { kind: "project"; projectId: string }
+  | { kind: "gate"; projectId: string; gateId: string }
+  | {
+      kind: "project_work_item";
+      projectId: string;
+      workItemId: string;
+    }
+  | {
+      kind: "project_learning";
+      projectId: string;
+      learningId: string;
+    };
+
+export interface ProjectMentionViewModel {
+  memberGlobalId: string;
+  userId: string;
+  displayName: string;
+}
+
+export interface ProjectActivityAttachmentViewModel {
+  globalId: string;
+  version: number;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanState: "clean";
+}
+
+export type ProjectObjectLinkType =
+  | "project"
+  | "gate"
+  | "domain_work_item"
+  | "file_revision"
+  | "learning";
+
+export interface ProjectObjectLinkViewModel {
+  type: ProjectObjectLinkType;
+  globalId: string;
+  version: number;
+  code: string;
+  title: string;
+  target: ProjectObjectTargetViewModel;
+}
+
+export interface ProjectCommentDetailViewModel {
+  body: string;
+  mentions: readonly ProjectMentionViewModel[];
+  attachments: readonly ProjectActivityAttachmentViewModel[];
+  objectLinks: readonly ProjectObjectLinkViewModel[];
+}
+
+export interface ProjectHealthEvaluationViewModel {
+  policyRef: ProjectControlPolicyReferenceViewModel;
+  dimensionResults: readonly ProjectHealthDimensionResultViewModel[];
+  overallStatus: ProjectHealthStatus;
+  reason: string | null;
+  recoveryPlan: string | null;
+}
+
+export type ProjectLearningKind =
+  | "retrospective"
+  | "lesson"
+  | "template_improvement";
+
+export type ProjectActivityItemViewModel =
+  | {
+      globalId: string;
+      eventType: "comment_added";
+      actorUserId: string;
+      occurredAt: string;
+      detail: ProjectCommentDetailViewModel;
+    }
+  | {
+      globalId: string;
+      eventType: "followed";
+      actorUserId: string;
+      occurredAt: string;
+      detail: { active: boolean };
+    }
+  | {
+      globalId: string;
+      eventType: "unfollowed";
+      actorUserId: string;
+      occurredAt: string;
+      detail: { active: boolean };
+    }
+  | {
+      globalId: string;
+      eventType: "health_assessed";
+      actorUserId: string;
+      occurredAt: string;
+      detail: {
+        assessment: ProjectHealthEvaluationViewModel;
+        policyRef: ProjectControlPolicyReferenceViewModel;
+        bindingGlobalId: string;
+        projectVersion: number;
+      };
+    }
+  | {
+      globalId: string;
+      eventType: "lifecycle_transition";
+      actorUserId: string;
+      occurredAt: string;
+      detail: {
+        action: ProjectControlAction;
+        fromState: ProjectLifecycleState;
+        toState: ProjectLifecycleState;
+        reason: string;
+        approvedBy: ProjectControlAuthorityViewModel;
+        policyRef: ProjectControlPolicyReferenceViewModel;
+        bindingGlobalId: string;
+        prerequisites: readonly ProjectLifecyclePrerequisiteViewModel[];
+        projectVersion: number;
+      };
+    }
+  | {
+      globalId: string;
+      eventType: "learning_created";
+      actorUserId: string;
+      occurredAt: string;
+      detail: {
+        learningGlobalId: string;
+        kind: ProjectLearningKind;
+        title: string;
+      };
+    };
+
+export interface ProjectActivityPageViewModel {
+  projectId: string;
+  items: readonly ProjectActivityItemViewModel[];
+  nextCursor: string | null;
+  permissions: {
+    canComment: boolean;
+    canFollow: boolean;
+  };
+  following: boolean;
+  followerVersion: number;
+  commentOptions: {
+    truncated: boolean;
+    mentions: readonly ProjectMentionViewModel[];
+    attachments: readonly ProjectActivityAttachmentViewModel[];
+    objectLinks: readonly ProjectObjectLinkViewModel[];
+  };
+}
+
+export interface ProjectFollowStateViewModel {
+  projectId: string;
+  following: boolean;
+  version: number;
+  changedAt: string;
+}
+
+export interface ProjectLearningViewModel {
+  globalId: string;
+  projectGlobalId: string;
+  kind: ProjectLearningKind;
+  title: string;
+  content: string;
+  recommendation: string;
+  tags: readonly string[];
+  templateRef: ProjectControlPolicyReferenceViewModel;
+  createdBy: string;
+  createdAt: string;
+  version: number;
+  target: Extract<ProjectObjectTargetViewModel, { kind: "project_learning" }>;
+}
+
+export interface ProjectLearningPageViewModel {
+  projectId: string;
+  items: readonly ProjectLearningViewModel[];
+  permissions: {
+    canCreate: boolean;
+  };
 }

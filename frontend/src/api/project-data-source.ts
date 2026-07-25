@@ -2,6 +2,7 @@ import { NpiHttpClient, NpiTransportError } from "./http";
 import type {
   ProjectCockpitViewModel,
   ProjectGateShellViewModel,
+  ProjectLifecycleState,
   ProjectReferenceViewModel,
   ProjectType,
 } from "../domain/view-models";
@@ -35,6 +36,14 @@ const projectTypes = new Set<ProjectType>([
   "customer_owned_tool",
   "new_tool",
   "tool_change",
+]);
+const projectStates = new Set<ProjectLifecycleState>([
+  "draft",
+  "proposed",
+  "active",
+  "on_hold",
+  "completed",
+  "cancelled",
 ]);
 const referenceTypes = new Set<ProjectReferenceViewModel["type"]>([
   "customer",
@@ -137,7 +146,8 @@ function isProject(value: unknown): boolean {
     isConstrainedString(value.title, 140) &&
     typeof value.projectType === "string" &&
     projectTypes.has(value.projectType as ProjectType) &&
-    value.state === "draft" &&
+    typeof value.state === "string" &&
+    projectStates.has(value.state as ProjectLifecycleState) &&
     isPositiveInteger(value.version) &&
     isConstrainedString(value.tenantId, 128, tenantIdPattern) &&
     typeof value.ownerUserId === "string" &&

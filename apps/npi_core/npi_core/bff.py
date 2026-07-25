@@ -6,9 +6,17 @@ import re
 import frappe
 
 from .api import frappe_domain_call
-from .foundation.errors import ApiRouteNotFound, CsrfTokenInvalid, MalformedRequest
+from .foundation.errors import (
+    ApiRouteNotFound,
+    CsrfTokenInvalid,
+    MalformedRequest,
+    ProjectCollaborationRoutesDisabled,
+)
 from .foundation.tracing import resolve_trace_id
-from .request_security import response_request_id
+from .request_security import (
+    project_collaboration_routes_are_disabled,
+    response_request_id,
+)
 
 _ROUTES = {
     ("GET", "/api/npi/v1/session/bootstrap"): (
@@ -18,6 +26,10 @@ _ROUTES = {
         "npi_core.localization_api.set_current_user_language"
     ),
     ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
+    ("GET", "/api/npi/v1/me/work"): "npi_core.my_work_api.get_my_work",
+    ("GET", "/api/npi/v1/learning"): (
+        "npi_core.project_controls_api.search_project_learning"
+    ),
 }
 
 _PROJECT_COCKPIT_ROUTE = re.compile(
@@ -28,6 +40,18 @@ _PROJECT_WORK_CONTEXT_ROUTE = re.compile(
 )
 _PROJECT_DOMAIN_WORK_ITEMS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/domain-work-items$"
+)
+_PROJECT_CONTROLS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/controls$"
+)
+_PROJECT_ACTIVITY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/activity$"
+)
+_PROJECT_COMMENTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/comments$"
+)
+_PROJECT_LEARNING_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/learning$"
 )
 _GATE_EVIDENCE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
@@ -42,8 +66,7 @@ _GATE_EVIDENCE_ATTACH_ROUTE = re.compile(
     r"(?P<gate_id>[^/:]+)/requirements/(?P<requirement_key>[^/]+)/evidence$"
 )
 _GATE_REVIEW_ROUTE = re.compile(
-    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
-    r"(?P<gate_id>[^/:]+)/review$"
+    r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/" r"(?P<gate_id>[^/:]+)/review$"
 )
 _GATE_REVIEW_COMMAND_RECEIPT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/gates/"
@@ -110,6 +133,30 @@ _PROJECT_WORK_COMMAND_ROUTES = (
         "npi_core.project_work_api.capture_project_plan_baseline",
     ),
 )
+_PROJECT_CONTROL_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/" r"(?P<project_id>[^/:]+):bind-control-policy$"
+        ),
+        "npi_core.project_controls_api.bind_project_control_policy",
+    ),
+    (
+        re.compile(r"^/api/npi/v1/projects/" r"(?P<project_id>[^/:]+):assess-health$"),
+        "npi_core.project_controls_api.assess_project_health",
+    ),
+    (
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):transition$"),
+        "npi_core.project_controls_api.transition_project",
+    ),
+    (
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):follow$"),
+        "npi_core.project_controls_api.follow_project",
+    ),
+    (
+        re.compile(r"^/api/npi/v1/projects/(?P<project_id>[^/:]+):unfollow$"),
+        "npi_core.project_controls_api.unfollow_project",
+    ),
+)
 
 
 def route_request() -> None:
@@ -138,6 +185,30 @@ def route_request() -> None:
                 "npi_core.project_work_api.get_project_domain_work_items"
                 if request.method == "GET"
                 else "npi_core.project_work_api.create_project_domain_work_item"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_CONTROLS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_controls_api.get_project_controls"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_ACTIVITY_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_controls_api.get_project_activity"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _PROJECT_COMMENTS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.project_controls_api.add_project_comment"
+            route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_LEARNING_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.project_controls_api.get_project_learning"
+                if request.method == "GET"
+                else "npi_core.project_controls_api.create_project_learning"
             )
             route_params = match.groupdict()
     if command is None and request.method == "GET":
@@ -179,6 +250,16 @@ def route_request() -> None:
                 command = candidate
                 route_params = match.groupdict()
                 break
+    if command is None and request.method == "POST":
+        for route, candidate in _PROJECT_CONTROL_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if _p4_05_routes_disabled(command):
+        command = "npi_core.bff.project_collaboration_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -195,6 +276,33 @@ def route_not_found() -> dict[str, object] | None:
         raise ApiRouteNotFound()
 
     return frappe_domain_call(raise_not_found)
+
+
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def project_collaboration_routes_disabled() -> dict[str, object] | None:
+    """Fail closed while P4-05 routes await a reviewed forward fix."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ProjectCollaborationRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
+def _p4_05_routes_disabled(command: str | None) -> bool:
+    return project_collaboration_routes_are_disabled() and (
+        command == "npi_core.my_work_api.get_my_work"
+        or (
+            isinstance(command, str)
+            and command.startswith("npi_core.project_controls_api.")
+        )
+    )
 
 
 def _is_npi_api_path(path: str) -> bool:
@@ -254,6 +362,8 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "POST" and path == "/api/npi/v1/projects":
         return True
+    if method == "GET" and path == "/api/npi/v1/me/work":
+        return True
     if method == "GET" and (
         _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
         or _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path) is not None
@@ -261,6 +371,19 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "GET" and (
+        path == "/api/npi/v1/learning"
+        or _PROJECT_CONTROLS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_ACTIVITY_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "POST" and _PROJECT_COMMENTS_ROUTE.fullmatch(path) is not None:
+        return True
+    if (
+        method in {"GET", "POST"}
+        and _PROJECT_LEARNING_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method == "GET" and _GATE_EVIDENCE_ROUTE.fullmatch(path) is not None:
@@ -282,9 +405,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         for route, _command in _GATE_REVIEW_COMMAND_ROUTES
     ):
         return True
-    return method == "POST" and any(
+    if method == "POST" and any(
         route.fullmatch(path) is not None
         for route, _command in _PROJECT_WORK_COMMAND_ROUTES
+    ):
+        return True
+    return method == "POST" and any(
+        route.fullmatch(path) is not None
+        for route, _command in _PROJECT_CONTROL_COMMAND_ROUTES
     )
 
 

@@ -366,6 +366,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             PROJECT_ID,
             global_id=str(PROJECT_ID),
             tenant_id=TENANT_ID,
+            lifecycle_state="active",
             owner_user_id="owner@example.test",
             business_code="P4-04",
             title="Repository Gate",
@@ -678,7 +679,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             expected_input_hash=cycle.input_hash,
         )
 
-    def _request_projection_exception(self, cycle):
+    def _request_projection_exception(self, cycle, *, requested_at=NOW):
         action = self._closure_action(UUID(int=106))
         return cycle.request_exception(
             exception_global_id=EXCEPTION_ID,
@@ -690,8 +691,8 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             risk="Controlled residual risk.",
             closure_action_ref=self.repository_module._closure_action_reference(action),
             closure_action_kind="action",
-            requested_at=NOW,
-            expires_at=NOW + timedelta(days=1),
+            requested_at=requested_at,
+            expires_at=requested_at + timedelta(days=1),
             expected_version=cycle.version,
             expected_input_hash=cycle.input_hash,
         )
@@ -1139,10 +1140,163 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             )
         self.assertEqual(self.store.rollback_count, 0)
 
+    def test_terminal_project_allows_every_sealed_command_replay_first(
+        self,
+    ) -> None:
+        repository = self._repository(
+            self._principal(roles=frozenset({"NPI API User", "System Manager"}))
+        )
+        self.project.lifecycle_state = "completed"
+        sealed_response = {"gate": {"globalId": str(GATE_ID)}, "sealed": True}
+        repository._idempotency_replay = lambda *_args, **_kwargs: sealed_response
+        commands = (
+            lambda: repository.start_review(
+                PROJECT_ID,
+                GATE_ID,
+                idempotency_key="terminal-start-replay",
+                expected_gate_version=3,
+                policy_global_id=POLICY_ID,
+                policy_version=1,
+                policy_snapshot_hash="a" * 64,
+                bindings=(),
+            ),
+            lambda: repository.submit_review(
+                PROJECT_ID,
+                GATE_ID,
+                CYCLE_ID,
+                idempotency_key="terminal-submit-replay",
+                expected_cycle_version=1,
+                expected_input_hash="b" * 64,
+                step_key="engineering",
+                outcome="approved",
+                opinion="Sealed opinion.",
+            ),
+            lambda: repository.request_exception(
+                PROJECT_ID,
+                GATE_ID,
+                CYCLE_ID,
+                idempotency_key="terminal-request-replay",
+                expected_cycle_version=1,
+                expected_input_hash="b" * 64,
+                requirement_global_id=UUID(int=901),
+                requirement_key="drawing",
+                kind="waiver",
+                reason="Sealed reason.",
+                risk="Sealed risk.",
+                expires_at=NOW + timedelta(days=1),
+                closure_action_global_id=UUID(int=902),
+            ),
+            lambda: repository.decide_exception(
+                PROJECT_ID,
+                GATE_ID,
+                CYCLE_ID,
+                EXCEPTION_ID,
+                idempotency_key="terminal-exception-replay",
+                expected_cycle_version=1,
+                expected_exception_version=1,
+                expected_input_hash="b" * 64,
+                outcome="approved",
+                opinion="Sealed decision.",
+            ),
+            lambda: repository.decide_gate(
+                PROJECT_ID,
+                GATE_ID,
+                idempotency_key="terminal-decision-replay",
+                expected_gate_version=3,
+                expected_cycle_version=1,
+                expected_input_hash="b" * 64,
+                outcome="pass",
+            ),
+            lambda: repository.reopen_gate(
+                PROJECT_ID,
+                GATE_ID,
+                idempotency_key="terminal-reopen-replay",
+                expected_gate_version=3,
+                expected_cycle_version=1,
+                expected_input_hash="b" * 64,
+                reason="Sealed reopen reason.",
+                policy_global_id=POLICY_ID,
+                policy_version=1,
+                policy_snapshot_hash="a" * 64,
+                bindings=(),
+            ),
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                outcome = command()
+                self.assertIsNotNone(outcome)
+                assert outcome is not None
+                self.assertTrue(outcome.replayed)
+                self.assertEqual(outcome.response, sealed_response)
+
+    def test_actual_sealed_submit_replay_survives_later_terminal_state(
+        self,
+    ) -> None:
+        repository = self._repository()
+        payload = {
+            "operation": "gate.review.submit",
+            "projectId": PROJECT_ID,
+            "gateId": GATE_ID,
+            "cycleId": CYCLE_ID,
+            "expectedCycleVersion": 1,
+            "expectedInputHash": "b" * 64,
+            "stepKey": "engineering",
+            "outcome": "approved",
+            "opinion": "The sealed review remains authoritative.",
+        }
+        sealed_response = {"gate": {"globalId": str(GATE_ID)}, "sealed": True}
+        self.store.add(
+            "NPI Gate Review Idempotency",
+            "terminal-sealed-submit",
+            record_id="terminal-sealed-submit",
+            actor=ACTOR,
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+            gate_global_id=str(GATE_ID),
+            operation="gate.review.submit",
+            actor_key_hash="terminal-sealed-submit",
+            payload_hash=self.repository_module._payload_hash(payload),
+            response_json=sealed_response,
+            response_sealed=1,
+        )
+        self.project.lifecycle_state = "cancelled"
+        replay = repository.submit_review(
+            PROJECT_ID,
+            GATE_ID,
+            CYCLE_ID,
+            idempotency_key="terminal-sealed-submit",
+            expected_cycle_version=1,
+            expected_input_hash="b" * 64,
+            step_key="engineering",
+            outcome="approved",
+            opinion="The sealed review remains authoritative.",
+        )
+        self.assertIsNotNone(replay)
+        assert replay is not None
+        self.assertTrue(replay.replayed)
+        self.assertEqual(replay.response, sealed_response)
+
+        ProjectHistoryLocked = importlib.import_module(
+            "npi_core.project_controls.terminal_guard"
+        ).ProjectHistoryLocked
+        with self.assertRaises(ProjectHistoryLocked):
+            repository.submit_review(
+                PROJECT_ID,
+                GATE_ID,
+                CYCLE_ID,
+                idempotency_key="terminal-new-submit",
+                expected_cycle_version=1,
+                expected_input_hash="b" * 64,
+                step_key="engineering",
+                outcome="approved",
+                opinion="This is a new terminal command.",
+            )
+
     def test_command_receipt_reconciles_only_the_exact_sealed_actor_scope(
         self,
     ) -> None:
         repository = self._repository()
+        self.project.lifecycle_state = "completed"
         operation = "gate.review.submit"
         actor_key_hash = "a" * 64
 
@@ -1228,6 +1382,76 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                 operation="gate.review.unknown",
                 actor_key_hash=actor_key_hash,
             )
+
+    def test_terminal_permissions_and_dependency_workers_fail_closed_as_noop(
+        self,
+    ) -> None:
+        self.project.lifecycle_state = "cancelled"
+        self.gate.review_state = "not_started"
+        manager = self._repository(
+            self._principal(roles=frozenset({"NPI API User", "System Manager"}))
+        )
+        permissions = manager._workspace_permissions(
+            self.project,
+            self.gate,
+            None,
+            available_policies=[{"policyRef": {"globalId": str(POLICY_ID)}}],
+        )
+        self.assertTrue(permissions["canView"])
+        self.assertTrue(
+            all(not allowed for key, allowed in permissions.items() if key != "canView")
+        )
+
+        dependency_repository = self._repository(dependency_system=True)
+        dependency_repository._locked_current_cycle = lambda *_args: (
+            self.fail("Terminal dependency work must not load a review cycle.")
+        )
+        self.assertFalse(
+            dependency_repository.refresh_gate_for_dependency_change_locked(
+                self.project,
+                self.gate,
+            )
+        )
+        self.assertFalse(
+            dependency_repository.refresh_gate_for_work_item_dependency_locked(
+                self.project,
+                self.gate,
+                work_item_global_id=UUID(int=903),
+            )
+        )
+
+        self.store.add(
+            "NPI Gate Evidence Reference",
+            REFERENCE_ID,
+            global_id=str(REFERENCE_ID),
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+            gate_global_id=str(GATE_ID),
+            evidence_kind="wbs_item",
+            source_object_type="wbs_item",
+            source_global_id=str(SOURCE_ID),
+        )
+        self.assertFalse(
+            self.repository_module.evaluate_gate_review_dependency(
+                reference_id=str(REFERENCE_ID),
+                tenant_id=TENANT_ID,
+                project_id=str(PROJECT_ID),
+                gate_id=str(GATE_ID),
+                source_kind="wbs_item",
+                source_global_id=str(SOURCE_ID),
+                initiated_by_user_id=ACTOR,
+            )
+        )
+        self.assertFalse(
+            self.repository_module.evaluate_gate_review_work_item_dependency(
+                work_item_id=str(UUID(int=903)),
+                tenant_id=TENANT_ID,
+                project_id=str(PROJECT_ID),
+                gate_id=str(GATE_ID),
+                observed_version=1,
+                initiated_by_user_id=ACTOR,
+            )
+        )
 
     def test_dependency_worker_validates_reference_and_uses_no_initiator_authority(
         self,
@@ -3388,7 +3612,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             kind="p1_evidence_timing",
             reason="Lock the exact action before freezing it.",
             risk="An unlocked action could drift during the request.",
-            expires_at=NOW + timedelta(days=1),
+            expires_at=datetime.now(UTC) + timedelta(days=1),
             closure_action_global_id=UUID(int=106),
         )
         self.assertEqual(requested.response, {"acknowledged": True})
@@ -3398,7 +3622,8 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         )
 
         pending = self._request_projection_exception(
-            self._approve_projection_review(self._projection_cycle())
+            self._approve_projection_review(self._projection_cycle()),
+            requested_at=datetime.now(UTC),
         )
         approver = self._repository(self._principal(EXCEPTION_APPROVER))
         approver._hydrate_cycle = lambda *_args, **_kwargs: pending
@@ -3435,15 +3660,17 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
     def test_gate_decision_locks_actions_and_fails_closed_on_drift_or_terminal_state(
         self,
     ) -> None:
+        requested_at = datetime.now(UTC)
         conditional = self._request_projection_exception(
-            self._approve_projection_review(self._projection_cycle())
+            self._approve_projection_review(self._projection_cycle()),
+            requested_at=requested_at,
         )
         conditional = conditional.decide_exception(
             exception_global_id=EXCEPTION_ID,
             actor_user_id=EXCEPTION_APPROVER,
             outcome=self.domain.ExceptionOutcome.APPROVED,
             opinion="Approved for the exact action.",
-            occurred_at=NOW + timedelta(minutes=30),
+            occurred_at=requested_at + timedelta(minutes=30),
             expected_version=conditional.version,
             expected_input_hash=conditional.input_hash,
             expected_exception_version=1,

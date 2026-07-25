@@ -12,8 +12,9 @@ Task, Phase, PR, or release boundary.
 
 Every change records a `changed-files → affected-tests` impact map. Prefer
 affected checks when the boundary is reliable; shared component or translation
-changes initially exercise affected pages only. The complete visual matrix
-(currently 141/147+ cases as the suite evolves) runs at Level 3 or when the
+changes initially exercise affected pages only. The complete visual matrix,
+whose actual case count is recorded in each Level 3 evidence report, runs at
+Level 3 or when the
 change is demonstrably global. Uncertain impact escalates to Level 3.
 
 Related failures from one root cause may be fixed as a batch. Rerun affected

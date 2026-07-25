@@ -1,5 +1,85 @@
 # Last Run
 
+## P4-05 and Phase 4 Full Release Gate PASS; P5-00 activated — 2026-07-25T17:54:13Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting checkpoint:
+  `71d628e028a7ac225df562e21ad44cd11beddb3d`.
+- Atomic task:
+  `P4-05 — Live My Work, activity, and Project controls`.
+- Result:
+  `PASS — LEVEL 3 FULL RELEASE GATE`.
+- Phase result:
+  `4 — Project Work Items and Stage Gates` is `PASS`.
+- Current task:
+  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+  EBOM`.
+- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; named business UAT and
+  provenance-backed sanitized data remain externally unsigned.
+
+### Delivered boundary
+
+- Replaced the prototype Worklist with a live current-actor My Work BFF and
+  SPA over exact Domain Work Item, Gate Review assignment and invalidation
+  sources, with query-time source/tenant/Project/assignment/capability
+  revalidation and stable keyset paging.
+- Added immutable Project Control Policy versions, exact frozen authority
+  bindings, closed four-dimensional health evaluators, append-only
+  assessments and fail-closed lifecycle controls. No production policy or
+  threshold is installed.
+- Added internal comments, same-Project mentions, controlled URL-free
+  attachment references, object links, follow state, persisted activity and
+  reusable learning. Template improvements remain visible proposals and never
+  mutate/publish a Project Template.
+- Added additive controlled DocTypes, exact BFF/OpenAPI/data-ownership
+  contracts, actor-bound sealed idempotency, transaction rollback, terminal
+  Project guards and a fourteen-route disable/recovery switch.
+- Completed the trilingual industrial My Work, Controls, Activity and Learning
+  surfaces, including explicit 409 reload, row-local keyboard activation,
+  Due/System time-zone labels, health/lifecycle detail and proposal truth.
+
+No production health/lifecycle/completion rules, external collaboration,
+notification/mail/print/portal delivery, ERPNext connection, or business-UAT
+result is claimed.
+
+### Final evidence
+
+| Command / review | Result |
+|---|---|
+| complete Python | `PASS` — 587 tests |
+| focused hook-failure semantics | `PASS` — 26 tests |
+| Node 24 frontend verification | `PASS` — 492 tests; type/lint/format/style/boundary/UI; coverage; build; strict install scripts; zero full/production audit findings |
+| Frappe-compatible i18n | `PASS` — 2,221 literal English sources; complete direct `zh` and `zh-TW` |
+| frontend coverage | `PASS` — 84.87% statements, 84.01% branches, 89.66% functions, 86.79% lines |
+| guarded Site synchronization and idempotent rerun | `PASS` — additive DocTypes and derived-index rebuild patch; no production policy/data installed |
+| complete cumulative live Frappe runtime | `PASS` — base, Project, Project Work, Gate Evidence, Gate Review and Project Controls/My Work compatibility |
+| My Work rebuild | `PASS` — 296 sources, 184 rows, 127 active; injected rollback atomic; second rebuild identical |
+| terminal/transaction/replay recovery | `PASS` — exact deactivation, no rollback residue, sealed second-process replay without duplicate history |
+| route disable/recovery | `PASS` — 14 P4-05 routes; prior routes unaffected; persisted switch restored to absent |
+| complete non-visual Playwright | `PASS` — 227/227 |
+| forced complete visuals | `PASS` — 188/188 |
+| clean complete visuals | `PASS` — 188/188 at unchanged zero tolerance |
+| original-resolution and independent review | `PASS` — 0 blocker, 0 major, 0 minor |
+| final trace distribution | `PASS` — Phase 4: 6 verified, 13 verified foundations, 1 partial foundation |
+
+The first clean global visual comparison correctly exposed stale Catalog
+fingerprints on prior shared screenshots after the final 2,221-entry catalog
+change. Expected/actual/diff inspection showed no layout, content or language
+drift. The complete 188-case baseline set was regenerated once and a separate
+clean 188-case comparison passed. No tolerance or assertion changed.
+
+The host Node 18 `make verify` attempt stopped before product checks at the
+ADR-011 toolchain preflight. Direct Node 24 verification is the authoritative
+frontend result; no stale-host result is promoted.
+
+Complete evidence:
+
+- `implementation/evidence/phase-4/p4-05-validation.md`
+- `implementation/phase-4-gate.md`
+
+Automatic continuation activates only P5-00. Phase 5 product implementation
+must wait for `implementation/phase-5-requirement-anchor.md` to pass.
+
 ## P4-04 Full Release Gate PASS; P4-05 activated — 2026-07-25T09:09:22Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -10,6 +10,7 @@ function locationFor(path: string): Location {
 describe("application routing", () => {
   it.each([
     ["/work", "work"],
+    ["/demo/work", "work"],
     ["/demo/projects/PJ-26018", "project"],
     ["/projects/11111111-1111-4111-8111-111111111111", "project"],
     ["/demo/projects/PJ-26018/gates/G5", "gate"],
@@ -25,6 +26,20 @@ describe("application routing", () => {
   });
 
   it("separates the explicit demo route from the live UUID route", () => {
+    expect(parseRoute(locationFor("/demo/work?scenario=error"))).toMatchObject({
+      scenario: "error",
+      workMode: "demo",
+    });
+    expect(parseRoute(locationFor("/work?scenario=error"))).toMatchObject({
+      scenario: "normal",
+      workMode: "live",
+    });
+    expect(
+      parseRoute(locationFor("/demo/not-a-work-fixture?scenario=error")),
+    ).toMatchObject({
+      scenario: "normal",
+      workMode: "live",
+    });
     expect(parseRoute(locationFor("/demo/projects/PJ-26018"))).toMatchObject({
       projectGlobalId: null,
       projectMode: "demo",

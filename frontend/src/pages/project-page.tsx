@@ -8,6 +8,7 @@ import type {
   ProjectDomainWorkItemsDataSource,
   ProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
+import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import {
   DockedInspector,
@@ -23,6 +24,7 @@ import {
 } from "../components/primitives";
 import type {
   ProjectCockpitViewModel,
+  ProjectLifecycleState,
   ProjectReferenceType,
   ProjectType,
 } from "../domain/view-models";
@@ -91,6 +93,26 @@ function referenceTypeLabel(
       return t("Tooling");
     case "order":
       return t("Order");
+  }
+}
+
+function projectStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ProjectLifecycleState,
+): string {
+  switch (state) {
+    case "draft":
+      return t("Draft");
+    case "proposed":
+      return t("Proposed");
+    case "active":
+      return t("Active");
+    case "on_hold":
+      return t("On hold");
+    case "completed":
+      return t("Completed");
+    case "cancelled":
+      return t("Cancelled");
   }
 }
 
@@ -194,17 +216,55 @@ function ProjectFailureSurface({
 
 function ProjectCockpit({
   cockpit,
+  controlsDataSource,
   contextDataSource,
   domainWorkItemsDataSource,
   navigate,
 }: {
   cockpit: ProjectCockpitViewModel;
+  controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   navigate: (target: string) => void;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
-  const { project, templateRef, references, gates, permissions } = cockpit;
+  const {
+    project: sourceProject,
+    templateRef,
+    references,
+    gates,
+    permissions,
+  } = cockpit;
+  const [projectControlState, setProjectControlState] = useState({
+    state: sourceProject.state,
+    version: sourceProject.version,
+  });
+  const synchronizeProjectControlState = useCallback(
+    (changedProject: {
+      globalId: string;
+      state: ProjectLifecycleState;
+      version: number;
+    }): void => {
+      if (changedProject.globalId !== sourceProject.globalId) return;
+      setProjectControlState((current) =>
+        changedProject.version < current.version ||
+        (changedProject.version === current.version &&
+          changedProject.state === current.state)
+          ? current
+          : {
+              state: changedProject.state,
+              version: changedProject.version,
+            },
+      );
+    },
+    [sourceProject.globalId],
+  );
+  const project = {
+    ...sourceProject,
+    state: projectControlState.state,
+    version: projectControlState.version,
+  };
+  const currentCockpit = { ...cockpit, project };
   const readOnly = !permissions.canContribute;
   const empty = references.length === 0;
   return (
@@ -245,12 +305,28 @@ function ProjectCockpit({
         }
         name={project.title}
         source={project.source}
-        status={<SemanticStatus label={t("Draft")} tone="info" />}
+        status={
+          <SemanticStatus
+            label={projectStateLabel(t, project.state)}
+            tone={
+              project.state === "cancelled"
+                ? "danger"
+                : project.state === "completed"
+                  ? "success"
+                  : project.state === "on_hold"
+                    ? "warning"
+                    : "info"
+            }
+          />
+        }
       />
       <ProjectWorkspace
-        cockpit={cockpit}
+        cockpit={currentCockpit}
+        controlsDataSource={controlsDataSource}
         contextDataSource={contextDataSource}
         domainWorkItemsDataSource={domainWorkItemsDataSource}
+        navigate={navigate}
+        onProjectChanged={synchronizeProjectControlState}
         overview={
           <>
             <MetricStrip
@@ -433,12 +509,14 @@ function ProjectCockpit({
 
 export default function ProjectPage({
   dataSource,
+  controlsDataSource,
   contextDataSource,
   domainWorkItemsDataSource,
   globalId,
   navigate,
 }: {
   dataSource: ProjectCockpitDataSource;
+  controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   globalId: string;
@@ -518,6 +596,7 @@ export default function ProjectPage({
   return (
     <ProjectCockpit
       cockpit={state.cockpit}
+      controlsDataSource={controlsDataSource}
       contextDataSource={contextDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}

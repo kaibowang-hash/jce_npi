@@ -77,26 +77,96 @@ paths:
     get:
       tags: [Work]
       operationId: getMyWork
+      description: >
+        Returns the authenticated internal actor's bounded, read-only My Work
+        projection after revalidating every candidate against its live source
+        and source-specific authorization. Counts are calculated at one fixed
+        asOf instant in the actor's effective IANA time zone. The opaque v1
+        keyset cursor is bound to the Site, tenant, normalized actor, view,
+        Project and priority filters, search, fixed asOf instant, and time
+        zone; changing limit does not invalidate the cursor. Unknown, stale,
+        inaccessible, cross-tenant, and unsupported sources fail closed.
       parameters:
+        - $ref: "#/components/parameters/RequestId"
         - in: query
           name: view
+          required: true
           schema:
             {
               type: string,
-              enum: [today, overdue, approvals, blockers, waiting, integration],
+              enum:
+                [all, today, overdue, approvals, blockers, waiting, integration],
             }
         - in: query
+          name: projectId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: priorityScheme
+          description: Must be supplied together with priorityValue.
+          schema:
+            {
+              type: string,
+              enum: [domain_severity, gate_requirement_priority],
+            }
+        - in: query
+          name: priorityValue
+          description: >
+            Exact value in the selected priorityScheme: low, medium, high, or
+            critical for domain_severity; P0, P1, or P2 for
+            gate_requirement_priority.
+          schema:
+            {
+              type: string,
+              enum: [low, medium, high, critical, P0, P1, P2],
+            }
+        - in: query
+          name: search
+          schema: { type: string, minLength: 0, maxLength: 140 }
+        - in: query
           name: cursor
-          schema: { type: string }
+          description: >
+            Opaque, Site-bound, tenant-bound, actor-bound HMAC-SHA256 keyset
+            cursor returned by the preceding page for the same filters.
+          schema:
+            {
+              type: string,
+              minLength: 1,
+              maxLength: 500,
+              pattern: "^[A-Za-z0-9._~:-]{1,500}$",
+            }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
       responses:
         "200":
-          description: Unified work queue
+          description: Exact current-actor work projection and availability-aware counts
+          headers:
+            X-Request-ID:
+              description: Validated request identifier supplied by the caller
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support and audit correlation
+              required: true
+              schema:
+                {
+                  type: string,
+                  minLength: 8,
+                  maxLength: 128,
+                  pattern: "^[A-Za-z0-9._:-]+$",
+                }
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkPage"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default:
-          $ref: "#/components/responses/Error"
+          $ref: "#/components/responses/ProjectError"
 
   /projects:
     post:
@@ -482,7 +552,11 @@ paths:
         Project. This is not the My Work projection. The Project path is the
         mandatory Project filter; optional stage, owner, overdue, and kind
         filters never expand authorization or reveal another Project's object
-        existence. Results use bounded keyset pagination ordered by dueAt and
+        existence. The optional workItemId exact-target mode is resolved only
+        after Project authorization, cannot be combined with collection filters
+        or a cursor, returns exactly the same-Project item with nextCursor null,
+        and returns the same 404 representation for an absent, cross-Project, or
+        cross-tenant identity. Results otherwise use bounded keyset pagination ordered by dueAt and
         globalId. One server-clock instant defines overdue for the complete
         cursor chain and is fixed asOf on the first page: true selects
         non-terminal items before that instant, while false selects terminal
@@ -508,6 +582,13 @@ paths:
       parameters:
         - $ref: "#/components/parameters/ProjectId"
         - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: workItemId
+          description: >
+            Exact Domain WorkItem target resolved only after Project
+            authorization. It cannot be combined with stageId, ownerUserId,
+            overdue, kind, or cursor.
+          schema: { type: string, format: uuid }
         - in: query
           name: stageId
           schema: { type: string, format: uuid }
@@ -1234,6 +1315,385 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/{projectId}/controls:
+    get:
+      tags: [Projects]
+      operationId: getProjectControls
+      description: >
+        Returns the exact bound Project Control Policy, frozen authority
+        assignments, honest four-dimension health state, and policy-derived
+        lifecycle availability. Missing policy or readiness data is never
+        represented as green or ready.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectControlsQueryResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:bind-control-policy:
+    post:
+      tags: [Projects]
+      operationId: bindProjectControlPolicy
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-root
+      x-audit-operation: project.control_policy.bind
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              { $ref: "#/components/schemas/BindProjectControlPolicy" }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectControlsCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:assess-health:
+    post:
+      tags: [Projects]
+      operationId: assessProjectHealth
+      x-required-transport-role: NPI API User
+      x-business-authority: exact-frozen-health-assessment-slot
+      x-transaction-boundary: project-root
+      x-audit-operation: project.health.assess
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssessProjectHealth" }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectControlsCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:transition:
+    post:
+      tags: [Projects]
+      operationId: transitionProjectLifecycle
+      x-required-transport-role: NPI API User
+      description: >
+        Executes only a transition in the bound published policy. Every
+        prerequisite is resolved by the server; completion fails closed while
+        handover or cost readiness is unavailable.
+      x-business-authority: exact-frozen-transition-slot
+      x-transaction-boundary: project-root
+      x-audit-operation-prefix: project.lifecycle.
+      x-audit-operation-values:
+        - project.lifecycle.pause
+        - project.lifecycle.cancel
+        - project.lifecycle.resume
+        - project.lifecycle.complete
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransitionProject" }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectControlsCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/activity:
+    get:
+      tags: [Projects]
+      operationId: getProjectActivity
+      description: >
+        Lists immutable Project activity inside one already-authorized Project,
+        ordered by occurredAt descending and globalId descending. The first page
+        fixes a server-clock asOf instant, and subsequent pages use a strict
+        occurredAt/globalId keyset seek so later appends neither displace nor
+        duplicate records in that cursor chain. The opaque v1 cursor binds the
+        tenant, normalized actor identity, and projectId through a SHA-256 query
+        fingerprint; limit is intentionally excluded. A domain-separated
+        HMAC-SHA256 key derived from the current Site's persistent Frappe
+        encryption key signs the complete canonical cursor payload. Cursor
+        validation occurs only after Project authorization. A malformed,
+        other-version, query-mismatched, or signature-invalid cursor returns
+        the 422 cursor validation representation without querying activity.
+        A missing or invalid Site encryption key fails closed with the 503
+        service-unavailable representation.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: cursor
+          description: >
+            Opaque, Site-bound, actor-bound, HMAC-SHA256-signed v1 keyset
+            cursor returned by the preceding page. Replay it for the same
+            authorized Project; limit may change.
+          schema:
+            {
+              type: string,
+              minLength: 1,
+              maxLength: 500,
+              pattern: "^[A-Za-z0-9._~:-]{1,500}$",
+            }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectActivityQueryResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/comments:
+    post:
+      tags: [Projects]
+      operationId: addProjectComment
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: project-root
+      x-audit-operation: project.comment.add
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddProjectComment" }
+      responses:
+        "201":
+          $ref: "#/components/responses/ProjectActivityCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:follow:
+    post:
+      tags: [Projects]
+      operationId: followProject
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: project-root
+      x-audit-operation: project.follow
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeProjectFollowState" }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectFollowCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}:unfollow:
+    post:
+      tags: [Projects]
+      operationId: unfollowProject
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: project-root
+      x-audit-operation: project.unfollow
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeProjectFollowState" }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectFollowCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/learning:
+    get:
+      tags: [Projects]
+      operationId: getProjectLearning
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: kind
+          schema: { $ref: "#/components/schemas/ProjectLearningKind" }
+        - in: query
+          name: search
+          schema: { type: string, maxLength: 140 }
+        - in: query
+          name: learningId
+          description: >
+            Exact same-Project learning identity used by stable SPA targets.
+            Exact mode cannot be combined with kind or search, returns exactly
+            one item, and uses the same non-disclosing 404 for missing,
+            cross-Project, cross-tenant, or unauthorized identities.
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectLearningQueryResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Projects]
+      operationId: createProjectLearning
+      x-required-transport-role: NPI API User
+      x-transaction-boundary: project-root
+      x-audit-operation: project.learning.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProjectLearning" }
+      responses:
+        "201":
+          $ref: "#/components/responses/ProjectLearningCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /learning:
+    get:
+      tags: [Projects]
+      operationId: searchProjectLearning
+      description: >
+        Searches learning only across Projects accessible to the authenticated
+        internal user. External users are denied before secondary filters are
+        parsed. When projectId is supplied, that exact Project is authorized
+        before kind, tag, search, or template filters are parsed; a missing,
+        unauthorized, or tenant-mismatched Project returns the same 404
+        representation. templateGlobalId and templateVersion form one exact
+        immutable Project Template version filter and must be supplied together.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: kind
+          schema: { $ref: "#/components/schemas/ProjectLearningKind" }
+        - in: query
+          name: tag
+          schema: { type: string, maxLength: 64 }
+        - in: query
+          name: search
+          schema: { type: string, maxLength: 140 }
+        - in: query
+          name: projectId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: templateGlobalId
+          description: Must be supplied together with templateVersion.
+          schema: { type: string, format: uuid }
+        - in: query
+          name: templateVersion
+          description: Must be supplied together with templateGlobalId.
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          $ref: "#/components/responses/ProjectLearningGlobalQueryResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /tooling/{toolingId}/cockpit:
     get:
       tags: [Tooling]
@@ -1753,6 +2213,192 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/GateReview"
+    ProjectControlsQueryResult:
+      description: Exact authorized Project controls view
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectControls" }
+    ProjectControlsCommandResult:
+      description: >
+        Exact server-built Project controls view after the command, or the
+        original result safely replayed for the same actor-bound key and
+        canonical request
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          description: True when the original command result was safely replayed
+          required: true
+          schema: { type: boolean }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectControls" }
+    ProjectActivityQueryResult:
+      description: URL-free immutable Project activity visible to the caller
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectActivityPage" }
+    ProjectActivityCommandResult:
+      description: >
+        Immutable Project activity appended by the command, or the original
+        result safely replayed for the same actor-bound key and canonical request
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          description: True when the original command result was safely replayed
+          required: true
+          schema: { type: boolean }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectActivityItem" }
+    ProjectFollowCommandResult:
+      description: >
+        Exact following state after the command, or the original result safely
+        replayed for the same actor-bound key and canonical request
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          description: True when the original command result was safely replayed
+          required: true
+          schema: { type: boolean }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectFollowState" }
+    ProjectLearningQueryResult:
+      description: Project-scoped retrospective and learning records
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectLearningPage" }
+    ProjectLearningCommandResult:
+      description: >
+        Immutable Project learning record created by the command, or the
+        original result safely replayed for the same actor-bound key and
+        canonical request
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          description: True when the original command result was safely replayed
+          required: true
+          schema: { type: boolean }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectLearning" }
+    ProjectLearningGlobalQueryResult:
+      description: Learning records visible through authorized source Projects
+      headers:
+        X-Request-ID:
+          description: Validated request identifier supplied by the caller
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          description: Trace identifier for support and audit correlation
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProjectLearningGlobalPage" }
   schemas:
     LanguageCode:
       type: string
@@ -2536,60 +3182,927 @@ components:
             - { $ref: "#/components/schemas/ProjectPlanBaselineComparison" }
             - { type: "null" }
         permissions: { $ref: "#/components/schemas/ProjectPermissions" }
-    MyWorkCategory:
+    ProjectControlPolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          { type: string, pattern: "^[a-f0-9]{64}$", minLength: 64, maxLength: 64 }
+    ProjectControlAuthority:
+      type: object
+      additionalProperties: false
+      required: [slot, memberGlobalId, userId, displayName]
+      properties:
+        slot:
+          { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$", maxLength: 64 }
+        memberGlobalId: { type: string, format: uuid }
+        userId: { type: string, format: email, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 140 }
+    ProjectHealthStatus:
       type: string
-      description: Read-only My Work projection category, not a persisted domain semantic kind
-      enum: [task, approval, blocker, risk, issue, decision, integration]
-    MyWorkItemProjection:
+      enum: [unassessed, unavailable, green, yellow, red]
+    ProjectHealthDimensionResult:
       type: object
       additionalProperties: false
-      description: Read-only task projection assembled from domain objects, approvals, and integration state
-      required: [id, category, title, context, status, blocking, source]
+      required: [dimension, ruleMode, status, numericValue]
       properties:
-        id: { type: string, format: uuid }
-        category: { $ref: "#/components/schemas/MyWorkCategory" }
-        domainKind: { $ref: "#/components/schemas/DomainWorkItemKind" }
+        dimension: { type: string, enum: [progress, cost, quality, risk] }
+        ruleMode:
+          {
+            type: string,
+            enum: [manual, higher_is_better, lower_is_better, unavailable],
+          }
+        status: { $ref: "#/components/schemas/ProjectHealthStatus" }
+        numericValue:
+          description: Canonical fixed-point value with at most 38 digits and 18 fractional digits
+          oneOf:
+            - { type: string, maxLength: 64, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+            - { type: "null" }
+    ProjectHealthAssessmentSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, assessedAt, actor, reason, recoveryPlan]
+      properties:
+        globalId: { type: string, format: uuid }
+        assessedAt: { type: string, format: date-time }
+        actor: { $ref: "#/components/schemas/ProjectControlAuthority" }
+        reason:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 2000 }
+            - { type: "null" }
+        recoveryPlan:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 4000 }
+            - { type: "null" }
+    ProjectLifecyclePrerequisite:
+      type: object
+      additionalProperties: false
+      required: [key, status]
+      properties:
+        key:
+          {
+            type: string,
+            enum: [open_blockers, controlled_files, handover, cost],
+          }
+        status: { type: string, enum: [satisfied, blocked, unavailable] }
+    ProjectLifecycleActionAvailability:
+      type: object
+      additionalProperties: false
+      required:
+        [action, available, targetState, authoritySlot, reasonCode, prerequisites]
+      properties:
+        action: { type: string, enum: [pause, cancel, resume, complete] }
+        available: { type: boolean }
+        targetState:
+          { type: string, enum: [on_hold, cancelled, active, completed] }
+        authoritySlot:
+          oneOf:
+            - { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+            - { type: "null" }
+        reasonCode:
+          {
+            type: string,
+            enum:
+              [
+                available,
+                policy_missing,
+                project_terminal,
+                transition_not_defined,
+                command_access_required,
+                authority_required,
+                prerequisite_unavailable,
+                prerequisite_blocked,
+              ],
+          }
+        prerequisites:
+          type: array
+          maxItems: 4
+          uniqueItems: true
+          items:
+            { $ref: "#/components/schemas/ProjectLifecyclePrerequisite" }
+    ProjectControls:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          project,
+          policy,
+          binding,
+          health,
+          lifecycleActions,
+          bindingOptions,
+          permissions,
+        ]
+      properties:
+        project:
+          type: object
+          additionalProperties: false
+          required: [globalId, businessCode, title, state, version, tenantId]
+          properties:
+            globalId: { type: string, format: uuid }
+            businessCode: { type: string, minLength: 1, maxLength: 64 }
+            title: { type: string, minLength: 1, maxLength: 140 }
+            state:
+              {
+                type: string,
+                enum: [draft, proposed, active, on_hold, completed, cancelled],
+              }
+            version: { type: integer, minimum: 1 }
+            tenantId: { type: string, minLength: 1, maxLength: 128 }
+        policy:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required:
+                [
+                  globalId,
+                  code,
+                  version,
+                  snapshotHash,
+                  title,
+                  healthAssessmentSlot,
+                ]
+              properties:
+                globalId: { type: string, format: uuid }
+                code: { type: string, minLength: 1, maxLength: 64 }
+                version: { type: integer, minimum: 1 }
+                snapshotHash:
+                  { type: string, pattern: "^[a-f0-9]{64}$" }
+                title: { type: string, minLength: 1, maxLength: 140 }
+                healthAssessmentSlot:
+                  { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+            - { type: "null" }
+        binding:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [globalId, version, authorities]
+              properties:
+                globalId: { type: string, format: uuid }
+                version: { type: integer, minimum: 1 }
+                authorities:
+                  type: array
+                  minItems: 1
+                  maxItems: 64
+                  items:
+                    { $ref: "#/components/schemas/ProjectControlAuthority" }
+            - { type: "null" }
+        health:
+          type: object
+          additionalProperties: false
+          required: [overallStatus, dimensions, assessment]
+          properties:
+            overallStatus:
+              { $ref: "#/components/schemas/ProjectHealthStatus" }
+            dimensions:
+              type: array
+              minItems: 4
+              maxItems: 4
+              items:
+                { $ref: "#/components/schemas/ProjectHealthDimensionResult" }
+            assessment:
+              oneOf:
+                - { $ref: "#/components/schemas/ProjectHealthAssessmentSummary" }
+                - { type: "null" }
+        lifecycleActions:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            { $ref: "#/components/schemas/ProjectLifecycleActionAvailability" }
+        bindingOptions:
+          oneOf:
+            - { $ref: "#/components/schemas/ProjectControlBindingOptions" }
+            - { type: "null" }
+        permissions:
+          type: object
+          additionalProperties: false
+          required: [canBindPolicy, canAssessHealth, canTransition]
+          properties:
+            canBindPolicy: { type: boolean }
+            canAssessHealth: { type: boolean }
+            canTransition: { type: boolean }
+    ProjectControlBindingOptions:
+      type: object
+      additionalProperties: false
+      required: [policies, eligibleMembers]
+      properties:
+        policies:
+          type: array
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required: [policyRef, code, title, authoritySlots]
+            properties:
+              policyRef:
+                { $ref: "#/components/schemas/ProjectControlPolicyReference" }
+              code: { type: string, minLength: 1, maxLength: 64 }
+              title: { type: string, minLength: 1, maxLength: 140 }
+              authoritySlots:
+                type: array
+                minItems: 1
+                maxItems: 64
+                uniqueItems: true
+                items:
+                  {
+                    type: string,
+                    pattern: "^[a-z][a-z0-9_.-]{0,63}$",
+                  }
+        eligibleMembers:
+          type: array
+          description: >
+            Current enabled internal Project members who hold NPI API User
+            transport admission and are either the Project owner or a current
+            System Manager. The bind command revalidates every selection.
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required: [memberGlobalId, userId, displayName]
+            properties:
+              memberGlobalId: { type: string, format: uuid }
+              userId:
+                {
+                  type: string,
+                  format: email,
+                  minLength: 3,
+                  maxLength: 254,
+                }
+              displayName: { type: string, minLength: 1, maxLength: 140 }
+    BindProjectControlPolicy:
+      type: object
+      additionalProperties: false
+      required: [expectedProjectVersion, policyRef, bindings]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        policyRef:
+          { $ref: "#/components/schemas/ProjectControlPolicyReference" }
+        bindings:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items:
+            type: object
+            additionalProperties: false
+            required: [slot, memberGlobalId]
+            properties:
+              slot:
+                { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+              memberGlobalId: { type: string, format: uuid }
+    ProjectHealthMeasurement:
+      type: object
+      additionalProperties: false
+      required: [dimension, numericValue, manualStatus]
+      properties:
+        dimension: { type: string, enum: [progress, cost, quality, risk] }
+        numericValue:
+          description: Finite fixed-point value with at most 38 digits and 18 fractional digits
+          oneOf:
+            - { type: number, exclusiveMinimum: -1.0e38, exclusiveMaximum: 1.0e38 }
+            - { type: string, maxLength: 64, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+            - { type: "null" }
+        manualStatus:
+          oneOf:
+            - { type: string, enum: [green, yellow, red] }
+            - { type: "null" }
+    AssessProjectHealth:
+      type: object
+      additionalProperties: false
+      required: [expectedProjectVersion, measurements, reason, recoveryPlan]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        measurements:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/ProjectHealthMeasurement" }
+        reason:
+          oneOf:
+            - { type: string, maxLength: 2000 }
+            - { type: "null" }
+        recoveryPlan:
+          oneOf:
+            - { type: string, maxLength: 4000 }
+            - { type: "null" }
+    TransitionProject:
+      type: object
+      additionalProperties: false
+      required: [expectedProjectVersion, action, reason]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        action: { type: string, enum: [pause, cancel, resume, complete] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    ProjectMention:
+      type: object
+      additionalProperties: false
+      required: [memberGlobalId, userId, displayName]
+      properties:
+        memberGlobalId: { type: string, format: uuid }
+        userId: { type: string, format: email, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 140 }
+    ProjectActivityAttachment:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, version, fileName, mimeType, sizeBytes, sha256, scanState]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        scanState: { type: string, const: clean }
+    ProjectObjectTarget:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, projectId]
+          properties:
+            kind: { type: string, const: project }
+            projectId: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [kind, projectId, gateId]
+          properties:
+            kind: { type: string, const: gate }
+            projectId: { type: string, format: uuid }
+            gateId: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [kind, projectId, workItemId]
+          properties:
+            kind: { type: string, const: project_work_item }
+            projectId: { type: string, format: uuid }
+            workItemId: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [kind, projectId, learningId]
+          properties:
+            kind: { type: string, const: project_learning }
+            projectId: { type: string, format: uuid }
+            learningId: { type: string, format: uuid }
+    ProjectObjectLink:
+      type: object
+      additionalProperties: false
+      required: [type, globalId, version, code, title, target]
+      properties:
+        type:
+          {
+            type: string,
+            enum: [project, gate, domain_work_item, file_revision, learning],
+          }
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        code: { type: string, minLength: 1, maxLength: 64 }
         title: { type: string, minLength: 1, maxLength: 280 }
-        whyMe: { type: string, maxLength: 500 }
-        context: { type: string, minLength: 1, maxLength: 280 }
-        status:
-          {
-            type: string,
-            minLength: 1,
-            maxLength: 40,
-            pattern: "^[a-z][a-z0-9_]*$",
-          }
-        dueAt: { type: string, format: date-time }
-        severity: { type: string, enum: [low, medium, high, critical] }
-        blocking: { type: boolean }
-        source: { $ref: "#/components/schemas/SourceStatus" }
-        primaryAction:
-          {
-            type: string,
-            minLength: 1,
-            maxLength: 100,
-            pattern: "^[a-z][a-z0-9_]*$",
-          }
-    MyWorkCounts:
+        target: { $ref: "#/components/schemas/ProjectObjectTarget" }
+    ProjectCommentDetail:
       type: object
       additionalProperties: false
-      required: [today, overdue, approvals, blockers, waiting, integration]
+      required: [body, mentions, attachments, objectLinks]
       properties:
-        today: { type: integer, minimum: 0 }
-        overdue: { type: integer, minimum: 0 }
-        approvals: { type: integer, minimum: 0 }
-        blockers: { type: integer, minimum: 0 }
-        waiting: { type: integer, minimum: 0 }
-        integration: { type: integer, minimum: 0 }
-    WorkPage:
+        body: { type: string, minLength: 1, maxLength: 4000 }
+        mentions:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ProjectMention" }
+        attachments:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ProjectActivityAttachment" }
+        objectLinks:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ProjectObjectLink" }
+    ProjectHealthEvaluation:
       type: object
       additionalProperties: false
-      required: [items, counts]
+      required:
+        [policyRef, dimensionResults, overallStatus, reason, recoveryPlan]
+      properties:
+        policyRef:
+          { $ref: "#/components/schemas/ProjectControlPolicyReference" }
+        dimensionResults:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            { $ref: "#/components/schemas/ProjectHealthDimensionResult" }
+        overallStatus: { $ref: "#/components/schemas/ProjectHealthStatus" }
+        reason:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 2000 }
+            - { type: "null" }
+        recoveryPlan:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 4000 }
+            - { type: "null" }
+    ProjectHealthActivityDetail:
+      type: object
+      additionalProperties: false
+      required: [assessment, policyRef, bindingGlobalId, projectVersion]
+      properties:
+        assessment:
+          { $ref: "#/components/schemas/ProjectHealthEvaluation" }
+        policyRef:
+          { $ref: "#/components/schemas/ProjectControlPolicyReference" }
+        bindingGlobalId: { type: string, format: uuid }
+        projectVersion: { type: integer, minimum: 1 }
+    ProjectLifecycleActivityDetail:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          action,
+          fromState,
+          toState,
+          reason,
+          approvedBy,
+          policyRef,
+          bindingGlobalId,
+          prerequisites,
+          projectVersion,
+        ]
+      properties:
+        action: { type: string, enum: [pause, cancel, resume, complete] }
+        fromState:
+          {
+            type: string,
+            enum: [draft, proposed, active, on_hold, completed, cancelled],
+          }
+        toState:
+          {
+            type: string,
+            enum: [draft, proposed, active, on_hold, completed, cancelled],
+          }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        approvedBy:
+          { $ref: "#/components/schemas/ProjectControlAuthority" }
+        policyRef:
+          { $ref: "#/components/schemas/ProjectControlPolicyReference" }
+        bindingGlobalId: { type: string, format: uuid }
+        prerequisites:
+          type: array
+          maxItems: 4
+          items:
+            { $ref: "#/components/schemas/ProjectLifecyclePrerequisite" }
+        projectVersion: { type: integer, minimum: 1 }
+    ProjectActivityItem:
+      type: object
+      additionalProperties: false
+      required: [globalId, eventType, actorUserId, occurredAt, detail]
+      properties:
+        globalId: { type: string, format: uuid }
+        eventType:
+          {
+            type: string,
+            enum:
+              [
+                comment_added,
+                followed,
+                unfollowed,
+                health_assessed,
+                lifecycle_transition,
+                learning_created,
+              ],
+          }
+        actorUserId:
+          type: string
+          minLength: 1
+          maxLength: 254
+          description: Authenticated Frappe actor identity; Administrator is valid
+        occurredAt: { type: string, format: date-time }
+        detail:
+          oneOf:
+            - { $ref: "#/components/schemas/ProjectCommentDetail" }
+            - type: object
+              additionalProperties: false
+              required: [active]
+              properties: { active: { type: boolean } }
+            - { $ref: "#/components/schemas/ProjectHealthActivityDetail" }
+            - { $ref: "#/components/schemas/ProjectLifecycleActivityDetail" }
+            - type: object
+              additionalProperties: false
+              required: [learningGlobalId, kind, title]
+              properties:
+                learningGlobalId: { type: string, format: uuid }
+                kind: { $ref: "#/components/schemas/ProjectLearningKind" }
+                title: { type: string, minLength: 1, maxLength: 280 }
+    ProjectActivityPage:
+      type: object
+      additionalProperties: false
+      description: >
+        Immutable Project activity ordered by occurredAt descending and globalId
+        descending. A non-null nextCursor continues the fixed first-page asOf
+        chain without binding the requested limit.
+      required:
+        [projectId, items, nextCursor, permissions, commentOptions, following, followerVersion]
+      properties:
+        projectId: { type: string, format: uuid }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProjectActivityItem" }
+        nextCursor:
+          description: Opaque, Site-bound, actor-bound, HMAC-SHA256-signed v1 continuation token, or null when this cursor chain is exhausted
+          oneOf:
+            - {
+                type: string,
+                minLength: 1,
+                maxLength: 500,
+                pattern: "^[A-Za-z0-9._~:-]{1,500}$",
+              }
+            - { type: "null" }
+        permissions:
+          type: object
+          additionalProperties: false
+          required: [canComment, canFollow]
+          properties:
+            canComment: { type: boolean }
+            canFollow: { type: boolean }
+        commentOptions:
+          { $ref: "#/components/schemas/ProjectCommentOptions" }
+        following: { type: boolean }
+        followerVersion: { type: integer, minimum: 0 }
+    ProjectCommentOptions:
+      type: object
+      additionalProperties: false
+      required: [truncated, mentions, attachments, objectLinks]
+      properties:
+        truncated:
+          type: boolean
+          description: True when one or more server-resolved choice sets were bounded
+        mentions:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ProjectMention" }
+        attachments:
+          type: array
+          maxItems: 500
+          items:
+            { $ref: "#/components/schemas/ProjectActivityAttachment" }
+        objectLinks:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ProjectObjectLink" }
+    AddProjectComment:
+      type: object
+      additionalProperties: false
+      required: [body, mentions, attachments, objectLinks]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 4000 }
+        mentions:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [memberGlobalId]
+            properties:
+              memberGlobalId: { type: string, format: uuid }
+        attachments:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required: [globalId, version]
+            properties:
+              globalId: { type: string, format: uuid }
+              version: { type: integer, minimum: 1 }
+        objectLinks:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            additionalProperties: false
+            required: [type, globalId, version]
+            properties:
+              type:
+                {
+                  type: string,
+                  enum:
+                    [project, gate, domain_work_item, file_revision, learning],
+                }
+              globalId: { type: string, format: uuid }
+              version: { type: integer, minimum: 1 }
+    ChangeProjectFollowState:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion]
+      properties:
+        expectedVersion: { type: integer, minimum: 0 }
+    ProjectFollowState:
+      type: object
+      additionalProperties: false
+      required: [projectId, following, version, changedAt]
+      properties:
+        projectId: { type: string, format: uuid }
+        following: { type: boolean }
+        version: { type: integer, minimum: 1 }
+        changedAt: { type: string, format: date-time }
+    ProjectLearningKind:
+      type: string
+      enum: [retrospective, lesson, template_improvement]
+    ProjectLearning:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          projectGlobalId,
+          kind,
+          title,
+          content,
+          recommendation,
+          tags,
+          templateRef,
+          createdBy,
+          createdAt,
+          version,
+          target,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/ProjectLearningKind" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        content: { type: string, minLength: 1, maxLength: 4000 }
+        recommendation: { type: string, maxLength: 4000 }
+        tags:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 64 }
+        templateRef:
+          type: object
+          additionalProperties: false
+          required: [globalId, version, snapshotHash]
+          properties:
+            globalId: { type: string, format: uuid }
+            version: { type: integer, minimum: 1 }
+            snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdBy:
+          type: string
+          minLength: 1
+          maxLength: 254
+          description: Authenticated Frappe actor identity; Administrator is valid
+        createdAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+        target:
+          type: object
+          additionalProperties: false
+          required: [kind, projectId, learningId]
+          properties:
+            kind: { type: string, const: project_learning }
+            projectId: { type: string, format: uuid }
+            learningId: { type: string, format: uuid }
+    ProjectLearningPage:
+      type: object
+      additionalProperties: false
+      required: [projectId, items, permissions]
+      properties:
+        projectId: { type: string, format: uuid }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProjectLearning" }
+        permissions:
+          type: object
+          additionalProperties: false
+          required: [canCreate]
+          properties:
+            canCreate: { type: boolean }
+    ProjectLearningGlobalPage:
+      type: object
+      additionalProperties: false
+      required: [items]
       properties:
         items:
           type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProjectLearning" }
+    CreateProjectLearning:
+      type: object
+      additionalProperties: false
+      required: [kind, title, content, recommendation, tags]
+      properties:
+        kind: { $ref: "#/components/schemas/ProjectLearningKind" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        content: { type: string, minLength: 1, maxLength: 4000 }
+        recommendation:
+          oneOf:
+            - { type: string, maxLength: 4000 }
+            - { type: "null" }
+        tags:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 64 }
+    MyWorkCategory:
+      type: string
+      description: Read-only My Work projection category, not a persisted domain semantic kind
+      enum: [task, approval, blocker, risk, issue, decision]
+    MyWorkContextType:
+      type: string
+      enum: [domain_work_item, gate]
+    MyWorkSourceType:
+      type: string
+      enum: [domain_work_item, gate_review_assignment, gate_review_invalidation]
+    MyWorkWhy:
+      type: string
+      enum:
+        [
+          domain_work_item_owner,
+          gate_review_step,
+          gate_final_decision,
+          gate_reopen,
+          gate_exception,
+          gate_dependency_change,
+        ]
+    MyWorkStatus:
+      type: string
+      enum: [ready, waiting, blocked, in_review]
+    MyWorkAction:
+      type: string
+      enum: [view_work_item, open_gate_review]
+    MyWorkProject:
+      type: object
+      additionalProperties: false
+      required: [globalId, businessCode, title]
+      properties:
+        globalId: { type: string, format: uuid }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 280 }
+    MyWorkContext:
+      type: object
+      additionalProperties: false
+      required: [type, globalId, code, title]
+      properties:
+        type: { $ref: "#/components/schemas/MyWorkContextType" }
+        globalId: { type: string, format: uuid }
+        code: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 280 }
+    MyWorkSourceReference:
+      type: object
+      additionalProperties: false
+      required: [type, globalId, version]
+      properties:
+        type: { $ref: "#/components/schemas/MyWorkSourceType" }
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+    MyWorkDomainPriority:
+      type: object
+      additionalProperties: false
+      required: [scheme, value]
+      properties:
+        scheme: { type: string, const: domain_severity }
+        value: { type: string, enum: [low, medium, high, critical] }
+    MyWorkGatePriority:
+      type: object
+      additionalProperties: false
+      required: [scheme, value]
+      properties:
+        scheme: { type: string, const: gate_requirement_priority }
+        value: { type: string, enum: [P0, P1, P2] }
+    MyWorkPriority:
+      oneOf:
+        - { $ref: "#/components/schemas/MyWorkDomainPriority" }
+        - { $ref: "#/components/schemas/MyWorkGatePriority" }
+    MyWorkDomainTarget:
+      type: object
+      additionalProperties: false
+      required: [kind, workItemId]
+      properties:
+        kind: { type: string, const: my_work_item }
+        workItemId: { type: string, format: uuid }
+    MyWorkGateTarget:
+      type: object
+      additionalProperties: false
+      required: [kind, projectId, gateId]
+      properties:
+        kind: { type: string, const: gate_review }
+        projectId: { type: string, format: uuid }
+        gateId: { type: string, format: uuid }
+    MyWorkTarget:
+      oneOf:
+        - { $ref: "#/components/schemas/MyWorkDomainTarget" }
+        - { $ref: "#/components/schemas/MyWorkGateTarget" }
+    MyWorkSourceStatus:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, syncState]
+      properties:
+        sourceSystem: { type: string, const: NPI_ONE }
+        editableIn: { type: string, const: NPI_ONE }
+        syncState: { type: string, const: local }
+    MyWorkItemProjection:
+      type: object
+      additionalProperties: false
+      description: >
+        Read-only projection revalidated from one exact owned source. Category,
+        why, action, target, priority vocabulary, and source type are
+        consistency-checked by the server and strict client.
+      required:
+        [
+          id,
+          category,
+          title,
+          project,
+          context,
+          source,
+          why,
+          status,
+          dueAt,
+          dueState,
+          priority,
+          blocking,
+          action,
+          target,
+          sourceStatus,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        category: { $ref: "#/components/schemas/MyWorkCategory" }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        project: { $ref: "#/components/schemas/MyWorkProject" }
+        context: { $ref: "#/components/schemas/MyWorkContext" }
+        source: { $ref: "#/components/schemas/MyWorkSourceReference" }
+        why: { $ref: "#/components/schemas/MyWorkWhy" }
+        status: { $ref: "#/components/schemas/MyWorkStatus" }
+        dueAt:
+          oneOf:
+            - { type: string, format: date-time }
+            - { type: "null" }
+        dueState:
+          type: string
+          enum: [overdue, today, upcoming, unscheduled]
+        priority:
+          oneOf:
+            - { $ref: "#/components/schemas/MyWorkPriority" }
+            - { type: "null" }
+        blocking: { type: boolean }
+        action: { $ref: "#/components/schemas/MyWorkAction" }
+        target: { $ref: "#/components/schemas/MyWorkTarget" }
+        sourceStatus: { $ref: "#/components/schemas/MyWorkSourceStatus" }
+    AvailableMyWorkCount:
+      type: object
+      additionalProperties: false
+      required: [availability, value]
+      properties:
+        availability: { type: string, const: available }
+        value: { type: integer, minimum: 0 }
+    UnavailableMyWorkCount:
+      type: object
+      additionalProperties: false
+      required: [availability, reason]
+      properties:
+        availability: { type: string, const: unavailable }
+        reason: { type: string, const: source_not_available }
+    MyWorkCounts:
+      type: object
+      additionalProperties: false
+      required: [all, today, overdue, approvals, blockers, waiting, integration]
+      properties:
+        all: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        today: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        overdue: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        approvals: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        blockers: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        waiting: { $ref: "#/components/schemas/AvailableMyWorkCount" }
+        integration: { $ref: "#/components/schemas/UnavailableMyWorkCount" }
+    WorkPage:
+      type: object
+      additionalProperties: false
+      required: [asOf, timeZone, projectOptions, items, nextCursor, counts]
+      properties:
+        asOf: { type: string, format: date-time }
+        timeZone: { type: string, minLength: 1, maxLength: 64 }
+        projectOptions:
+          type: array
+          maxItems: 2000
+          description: >
+            Complete deduplicated set of Projects represented by the current
+            actor's revalidated assignments, independent of the current page
+            and filters.
+          items: { $ref: "#/components/schemas/MyWorkProject" }
+        items:
+          type: array
+          maxItems: 100
           items: { $ref: "#/components/schemas/MyWorkItemProjection" }
-        nextCursor: { type: string, minLength: 1, maxLength: 500 }
+        nextCursor:
+          oneOf:
+            - {
+                type: string,
+                minLength: 1,
+                maxLength: 500,
+                pattern: "^[A-Za-z0-9._~:-]{1,500}$",
+              }
+            - { type: "null" }
         counts: { $ref: "#/components/schemas/MyWorkCounts" }
     ProjectCockpit:
       type: object

@@ -24,6 +24,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatDecimal,
   formatList,
   formatNumber,
   formatPercent,
@@ -164,5 +165,13 @@ describe("locale-aware value formatting", () => {
     expect(formatDateTime("zh-TW", instant)).not.toBe(
       formatDateTime("en", instant),
     );
+  });
+
+  it("formats canonical fixed-point decimals without losing precision", () => {
+    const exact = "12345678901234567890.00123";
+    expect(formatDecimal("en", exact)).toBe("12,345,678,901,234,567,890.00123");
+    expect(formatDecimal("zh", exact)).toBe("12,345,678,901,234,567,890.00123");
+    expect(formatDecimal("zh-TW", "-0.00123")).toBe("-0.00123");
+    expect(() => formatDecimal("en", "1e3")).toThrow(RangeError);
   });
 });

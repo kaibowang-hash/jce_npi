@@ -166,8 +166,10 @@ export function LifecycleTrack({
 }
 
 export function MetricStrip({
+  className = "",
   metrics,
 }: {
+  className?: string;
   metrics: readonly {
     label: string;
     value: ReactNode;
@@ -175,7 +177,7 @@ export function MetricStrip({
   }[];
 }): React.JSX.Element {
   return (
-    <dl className="metric-strip">
+    <dl className={`metric-strip ${className}`.trim()}>
       {metrics.map((metric) => (
         <div
           className={`metric-strip__item metric-strip__item--${metric.tone ?? "neutral"}`}

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { AppShell } from "../../src/app/app-shell";
 import { App } from "../../src/app/app";
 import type { AppRoute } from "../../src/app/router";
+import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
 import type { Locale } from "../../src/i18n/runtime";
 import ExecutionPage from "../../src/pages/execution-page";
 import GatePage from "../../src/pages/gate-page";
@@ -37,6 +38,7 @@ function route(
     screen,
     projectGlobalId: liveProjectGlobalId,
     projectMode: screen === "project" ? (demo ? "demo" : "live") : null,
+    workMode: screen === "work" ? (demo ? "demo" : "live") : null,
   };
 }
 
@@ -68,6 +70,25 @@ describe("application shell behavior", () => {
     const record = vi
       .spyOn(UsabilityRecorder.prototype, "record")
       .mockResolvedValue(undefined);
+    vi.spyOn(LiveMyWorkDataSource.prototype, "load").mockResolvedValue({
+      asOf: "2026-07-25T12:00:00Z",
+      timeZone: "UTC",
+      projectOptions: [],
+      items: [],
+      nextCursor: null,
+      counts: {
+        all: { availability: "available", value: 0 },
+        today: { availability: "available", value: 0 },
+        overdue: { availability: "available", value: 0 },
+        approvals: { availability: "available", value: 0 },
+        blockers: { availability: "available", value: 0 },
+        waiting: { availability: "available", value: 0 },
+        integration: {
+          availability: "unavailable",
+          reason: "source_not_available",
+        },
+      },
+    });
     renderWithLocale(<App />, "en", "/work");
 
     await screen.findByRole("heading", { name: "My Work" });
@@ -195,6 +216,46 @@ describe("application shell behavior", () => {
     expect(
       screen.getByText(
         "Live global search is not available in this phase. Open this project from an authorized project link.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("labels live My Work, hides fixture controls, and dispatches its scoped refresh", async () => {
+    const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+        <p>Live My Work workspace</p>
+      </AppShell>,
+      "en",
+      "/work",
+    );
+
+    expect(
+      screen.getByText(
+        "Live My Work data. No production ERPNext system is connected.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("combobox", { name: "Fixture state" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Current user" }),
+    ).toHaveTextContent("Signed-in user");
+
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "npi:refresh-my-work" }),
+    );
+    expect(
+      screen.getByText("The live My Work request is being refreshed."),
+    ).toBeVisible();
+
+    const search = screen.getByRole("searchbox", { name: "Global search" });
+    await user.type(search, "PJ-26018{Enter}");
+    expect(
+      screen.getByText(
+        "Live global search is not available in this phase. Open an authorized work item or project link.",
       ),
     ).toBeVisible();
   });
@@ -393,11 +454,11 @@ describe("application shell behavior", () => {
     const user = userEvent.setup();
     const navigate = vi.fn<(target: string) => void>();
     renderWithLocale(
-      <AppShell navigate={navigate} route={route("work", "/work")}>
+      <AppShell navigate={navigate} route={route("work", "/demo/work")}>
         <p>Workspace fixture</p>
       </AppShell>,
       "en",
-      "/work",
+      "/demo/work",
     );
     const search = screen.getByRole("searchbox", { name: "Global search" });
 

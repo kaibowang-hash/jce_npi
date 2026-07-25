@@ -142,6 +142,37 @@ class ProjectWorkRepositorySeamTest(unittest.TestCase):
         self.assertIn("for_update", keywords)
         self.assertIs(ast.literal_eval(keywords["for_update"]), True)
 
+    def test_terminal_guard_follows_replay_and_is_not_part_of_locking(self) -> None:
+        command_names = (
+            "configure_team",
+            "apply_work_plan",
+            "capture_plan_baseline",
+            "create_domain_work_item",
+        )
+        for method_name in command_names:
+            with self.subTest(method=method_name):
+                replay_calls = self.calls(
+                    method_name,
+                    "self._idempotency_replay",
+                )
+                terminal_guards = self.calls(
+                    method_name,
+                    "require_mutable_project",
+                )
+                self.assertEqual(len(replay_calls), 1)
+                self.assertEqual(len(terminal_guards), 1)
+                self.assertLess(
+                    replay_calls[0].lineno,
+                    terminal_guards[0].lineno,
+                )
+        self.assertEqual(
+            self.calls(
+                "_locked_authorized_project",
+                "require_mutable_project",
+            ),
+            [],
+        )
+
     def test_domain_work_item_bound_is_checked_before_domain_build_and_write(
         self,
     ) -> None:

@@ -45,6 +45,7 @@ from npi_core.npi_core.doctype.npi_gate_evidence_reference.npi_gate_evidence_ref
     wbs_item_source_snapshot,
 )
 from npi_core.project.domain import IdempotencyConflict, ProjectType
+from npi_core.project_controls.terminal_guard import require_mutable_project
 
 _SUPPORTED_EVIDENCE_KINDS = frozenset({"wbs_item", "file_revision"})
 
@@ -114,6 +115,7 @@ class FrappeGateEvidenceRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return GateCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_gate_version(gate, expected_gate_version)
         if int(gate.requirements_frozen or 0) == 1:
             raise GateRequirementsAlreadyFrozen()
@@ -203,6 +205,7 @@ class FrappeGateEvidenceRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return GateCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_gate_version(gate, expected_gate_version)
         snapshot = self._requirement_snapshot(gate)
         requirement = _requirement_by_key(snapshot, requirement_key)
@@ -414,6 +417,10 @@ class FrappeGateEvidenceRepository:
                 }
             )
         system_manager = self._is_internal_system_manager()
+        project_mutable = str(project.get("lifecycle_state") or "") not in {
+            "cancelled",
+            "completed",
+        }
         return {
             "project": {
                 "globalId": str(UUID(str(project.global_id))),
@@ -445,8 +452,8 @@ class FrappeGateEvidenceRepository:
             },
             "permissions": {
                 "canView": True,
-                "canAttachEvidence": system_manager,
-                "canAdminister": system_manager,
+                "canAttachEvidence": system_manager and project_mutable,
+                "canAdminister": system_manager and project_mutable,
             },
         }
 
@@ -711,7 +718,11 @@ class FrappeGateEvidenceRepository:
             )
         except frappe.DoesNotExistError:
             return None
-        return self._authorize_project_document(project, project_id, required)
+        return self._authorize_project_document(
+            project,
+            project_id,
+            required,
+        )
 
     def _authorize_project_document(
         self,

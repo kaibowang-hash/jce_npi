@@ -93,6 +93,52 @@ describe("live Project work data sources", () => {
     ).toBe(false);
   });
 
+  it("loads one exact deep-link target and rejects unrelated or paginated responses", async () => {
+    const fixture = projectDomainWorkItemsFixture();
+    const target = fixture.items[1];
+    if (!target) throw new Error("The exact-target fixture is unavailable.");
+    const exactPage = {
+      ...fixture,
+      items: [target],
+      nextCursor: null,
+    };
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(<T>(): Promise<T> => Promise.resolve(exactPage as T));
+    const source = new LiveProjectDomainWorkItemsDataSource(http);
+    const controller = new AbortController();
+
+    await expect(
+      source.load(
+        fixture.projectId,
+        fixture.projectVersion,
+        { workItemId: target.globalId },
+        controller.signal,
+      ),
+    ).resolves.toEqual(exactPage);
+    const options = request.mock.calls[0]?.[2];
+    expect(options?.query).toEqual({ workItemId: target.globalId });
+    expect(
+      options?.validate?.({
+        ...exactPage,
+        items: [fixture.items[0]],
+      }),
+    ).toBe(false);
+    expect(
+      options?.validate?.({
+        ...exactPage,
+        nextCursor: "unexpected-cursor",
+      }),
+    ).toBe(false);
+    expect(
+      options?.validate?.({
+        ...exactPage,
+        items: [],
+      }),
+    ).toBe(false);
+  });
+
   it.each([
     ["invalid Project ID", "not-a-uuid", {}, "context"],
     [
@@ -111,6 +157,21 @@ describe("live Project work data sources", () => {
       "non-contract cursor characters",
       projectWorkContextFixture().projectId,
       { cursor: "opaque+cursor/value" },
+      "items",
+    ],
+    [
+      "invalid exact work item identity",
+      projectWorkContextFixture().projectId,
+      { workItemId: "not-a-uuid" },
+      "items",
+    ],
+    [
+      "exact work item combined with a collection filter",
+      projectWorkContextFixture().projectId,
+      {
+        workItemId: "80000000-0000-4000-8000-000000000002",
+        kind: "issue",
+      },
       "items",
     ],
   ] as const)(

@@ -67,6 +67,11 @@ class TemplatePublicationState(str, Enum):
 
 class ProjectLifecycleState(str, Enum):
     DRAFT = "draft"
+    PROPOSED = "proposed"
+    ACTIVE = "active"
+    ON_HOLD = "on_hold"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 
 class GateShellState(str, Enum):

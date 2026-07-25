@@ -111,7 +111,7 @@ export interface CoreScreen {
 }
 
 export const coreScreens: readonly CoreScreen[] = [
-  { id: "work", pageClass: "page--work", path: "/work" },
+  { id: "work", pageClass: "page--work", path: "/demo/work" },
   {
     id: "project",
     pageClass: "page--object",
@@ -153,7 +153,7 @@ export async function openPrototype(
   await expect(page.locator("html")).toHaveAttribute("lang", locale);
   await expect(page.locator(".route-loading")).toHaveCount(0);
   if (
-    path.startsWith("/work") &&
+    path.startsWith("/demo/work") &&
     ["normal", "read_only", "partial", "dirty"].includes(scenario)
   ) {
     await expect(page.locator(".worklist-panel")).toBeVisible();

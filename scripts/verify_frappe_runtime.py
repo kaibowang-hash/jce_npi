@@ -101,7 +101,13 @@ def validate_bootstrap(
     language: str,
     expected_count: int,
 ) -> None:
-    require(result.status == 200, f"Bootstrap returned HTTP {result.status}")
+    require(
+        result.status == 200,
+        (
+            f"Bootstrap returned HTTP {result.status}: "
+            f"{json.dumps(result.body, sort_keys=True)}"
+        ),
+    )
     require(set(result.body) == EXPECTED_KEYS, "Bootstrap response keys drifted")
     require(result.body.get("userId") == expected_user, "Unexpected bootstrap user")
     require(

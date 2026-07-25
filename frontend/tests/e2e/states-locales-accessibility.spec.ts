@@ -70,7 +70,7 @@ test.describe("three-language rendering and language purity", () => {
   test("the prototype fallback persists a selected Frappe language code across refresh", async ({
     page,
   }) => {
-    await page.goto("/work", { waitUntil: "domcontentloaded" });
+    await page.goto("/demo/work", { waitUntil: "domcontentloaded" });
     await expect(page.locator("#main-content")).toBeVisible();
     const language = page.getByRole("combobox", { name: "Language" });
     await language.selectOption("zh-TW");
@@ -85,7 +85,7 @@ test.describe("three-language rendering and language purity", () => {
     test(`${locale} URL locale survives cross-object navigation and refresh`, async ({
       page,
     }) => {
-      await openPrototype(page, "/work", { locale });
+      await openPrototype(page, "/demo/work", { locale });
       await page.locator(".domain-navigation li:nth-child(4) button").click();
       await expect(page).toHaveURL(/\/tooling\/TL-26018-01$/);
       await page.reload({ waitUntil: "domcontentloaded" });

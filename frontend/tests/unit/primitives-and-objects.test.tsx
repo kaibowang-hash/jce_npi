@@ -240,7 +240,9 @@ describe("high-risk impact review", () => {
       name: "Gate decision impact review",
     });
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    expect(
+      screen.getByRole("heading", { name: "Gate decision impact review" }),
+    ).toHaveFocus();
     expect(screen.getByLabelText("Reason")).toBeVisible();
     expect(dialog).toHaveTextContent(
       "Five exact evidence versions will be locked.",

@@ -29,6 +29,7 @@ from npi_core.foundation.security import (
 )
 from npi_core.project.domain import IdempotencyConflict
 from npi_core.project.frappe_validation import canonical_json
+from npi_core.project_controls.terminal_guard import require_mutable_project
 from npi_core.project_work.domain import (
     BaselineEntry,
     DomainWorkItem,
@@ -136,10 +137,50 @@ class FrappeProjectWorkRepository:
         kind: object | None,
         cursor: str | None,
         limit: int,
+        work_item_id: object | None = None,
     ) -> dict[str, Any] | None:
         project = self._authorized_project(project_id, ProjectAccess.VIEW)
         if project is None:
             return None
+        if work_item_id is not None:
+            exact_id = _uuid_value(work_item_id, "workItemId")
+            if any(
+                value is not None
+                for value in (stage_id, owner_user_id, overdue, kind, cursor)
+            ):
+                raise _field_problem(
+                    "workItemId",
+                    _(
+                        "An exact WorkItem identity cannot be combined with collection filters or a cursor."
+                    ),
+                )
+            exact_documents = frappe.get_all(
+                "NPI Domain Work Item",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project_id),
+                    "global_id": str(exact_id),
+                },
+                fields=list(_DOMAIN_WORK_ITEM_PAGE_FIELDS),
+                order_by="global_id asc",
+                limit_page_length=2,
+            )
+            if not exact_documents:
+                return None
+            if len(exact_documents) != 1:
+                raise RuntimeError("Exact Domain WorkItem identity is ambiguous.")
+            as_of = datetime.now(UTC)
+            return {
+                "projectId": str(project_id),
+                "projectVersion": int(project.optimistic_version),
+                "items": [
+                    self._domain_work_item_response(
+                        exact_documents[0],
+                        now=as_of,
+                    )
+                ],
+                "nextCursor": None,
+            }
         cursor_signing_key = _domain_work_item_cursor_signing_key()
         filters: list[list[object]] = [
             ["tenant_id", "=", str(project.tenant_id)],
@@ -270,6 +311,7 @@ class FrappeProjectWorkRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return WorkCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_project_version(project, expected_project_version)
         policy = self._load_policy(work_policy_ref)
         self._require_current_policy(project, policy["ref"])
@@ -336,6 +378,7 @@ class FrappeProjectWorkRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return WorkCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_project_version(project, expected_project_version)
         policy = self._load_policy(work_policy_ref)
         self._require_current_policy(project, policy["ref"])
@@ -400,6 +443,7 @@ class FrappeProjectWorkRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return WorkCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_project_version(project, expected_project_version)
         policy = self._load_policy(work_policy_ref)
         self._require_current_policy(project, policy["ref"])
@@ -551,6 +595,7 @@ class FrappeProjectWorkRepository:
         replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return WorkCommandOutcome(replay, replayed=True)
+        require_mutable_project(project)
         self._require_project_version(project, expected_project_version)
         policy = self._load_policy(work_policy_ref)
         self._require_current_policy(project, policy["ref"])
@@ -2166,6 +2211,10 @@ class FrappeProjectWorkRepository:
                 current_plan,
             )
         system_manager = self._is_internal_system_manager()
+        project_mutable = str(project.get("lifecycle_state") or "") not in {
+            "cancelled",
+            "completed",
+        }
         return {
             "projectId": str(project_id),
             "projectVersion": int(project.optimistic_version),
@@ -2191,8 +2240,8 @@ class FrappeProjectWorkRepository:
             "baselineComparison": baseline_comparison,
             "permissions": {
                 "canView": True,
-                "canContribute": system_manager,
-                "canAdminister": system_manager,
+                "canContribute": system_manager and project_mutable,
+                "canAdminister": system_manager and project_mutable,
             },
         }
 
@@ -2266,7 +2315,11 @@ class FrappeProjectWorkRepository:
             )
         except frappe.DoesNotExistError:
             return None
-        return self._authorize_project_document(document, project_id, required)
+        return self._authorize_project_document(
+            document,
+            project_id,
+            required,
+        )
 
     def _authorize_project_document(
         self,

@@ -801,6 +801,7 @@ class Phase4ProjectWorkApiTest(unittest.TestCase):
         self.assertEqual(values["kind"], "risk")
         self.assertEqual(values["cursor"], "cursor.v1:abc_123")
         self.assertEqual(values["limit"], 100)
+        self.assertIsNone(values["work_item_id"])
 
         invalid_queries = (
             ({"overdue": "yes"}, "overdue"),
@@ -823,6 +824,38 @@ class Phase4ProjectWorkApiTest(unittest.TestCase):
                     "VALIDATION_FAILED",
                 )
                 self.assertEqual(problem["fieldErrors"][0]["path"], path)
+
+    def test_exact_work_item_identity_remains_raw_until_repository_authorization(
+        self,
+    ) -> None:
+        self.reset_response(user="owner@example.invalid")
+        result = self.call(
+            "npi_core.project_work_api.get_project_domain_work_items",
+            self.api.get_project_domain_work_items,
+            {"workItemId": WORK_ITEM_ID},
+        )
+        self.assertEqual(result["projectId"], PROJECT_ID)
+        operation, project_id, values = self.repository.calls[-1]
+        self.assertEqual(operation, "list_domain_work_items")
+        self.assertEqual(project_id, UUID(PROJECT_ID))
+        self.assertEqual(values["work_item_id"], WORK_ITEM_ID)
+
+        self.reset_response(user="unrelated@example.invalid")
+        self.repository.unavailable = True
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.project_work_api.get_project_domain_work_items",
+                self.api.get_project_domain_work_items,
+                {"workItemId": "not-a-global-id"},
+            ),
+            404,
+            "PROJECT_UNAVAILABLE",
+        )
+        self.assertEqual(problem["retryable"], False)
+        self.assertEqual(
+            self.repository.calls[-1][2]["work_item_id"],
+            "not-a-global-id",
+        )
 
     def test_malformed_cursor_is_passed_to_authorized_repository_boundary(
         self,

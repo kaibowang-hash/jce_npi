@@ -4,20 +4,24 @@
 
 None.
 
-## P4-05 active scope
+## Current P5-00 scope
 
-P4-04 passed its complete triggered Level 3 Full Release Gate; the former
-thread-migration pause and pending-Gate checklist are resolved. P4-05 is active
-under `implementation/ACTIVE_EXECUTION_GOAL.md` and
+Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.
+`P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+EBOM` is active under `implementation/ACTIVE_EXECUTION_GOAL.md` and
 `implementation/NEXT_ACTION.md`.
 
+P5-00 is a controller/anchor task. It may allocate `FR-DS-001..FR-DS-014`,
+reconcile the M4 document/design/baseline/EBOM boundary and record Class-B
+holds, migration, rollback and atomic-task ordering. It must not start P5-01
+product code, invent production document/approval/retention/EBOM/CAD/PDM
+rules, connect ERPNext, or move formal Item/MBOM ownership into NPI One.
+
 The open production Project-health formula, threshold, lifecycle authority,
-completion-prerequisite, notification-delivery, and external-collaboration
-facts remain scoped Class-B holds. P4-05 may implement versioned,
-safe-default-denied infrastructure, honest unavailable/unassessed states,
-explicit synthetic fixtures, internal activity, live My Work projection,
-tests, localization, and documentation. It must not infer those missing rules
-or represent external delivery as operational.
+completion-prerequisite, notification-delivery and external-collaboration facts
+remain scoped activation holds. Their generic versioned/fail-closed Phase 4
+foundation is complete; no missing rule is inferred and no external delivery
+is represented as operational.
 
 Phase 3 named business UAT and sanitized-data provenance remain externally
 unsigned. They are not a global blocker and cannot be signed by Codex.
@@ -99,4 +103,11 @@ must preserve that boundary.
   417 Python tests, 337 frontend tests, two migrations, all six live runtime
   lanes, 1,746 direct trilingual sources, 204 non-visual browser cases, forced
   and clean 170-case exact visual matrices, zero npm vulnerabilities, and
-  independent release review. P4-04 is `PASS`; P4-05 is active.
+  independent release review. P4-04 is `PASS`; that Gate activated P4-05.
+- P4-05's derived-assignment failure semantics, keyboard bubbling, 409 reload,
+  proposal-truth, time-zone copy and shared-catalog visual findings are
+  resolved. Its complete evidence includes 587 Python tests, 492 frontend
+  tests, 2,221 direct trilingual sources, additive/idempotent Site
+  synchronization, complete cumulative runtime, 227 non-visual browser cases,
+  forced and clean 188-case exact visual matrices, and independent review.
+  P4-05 and Phase 4 are `PASS`; P5-00 is active.

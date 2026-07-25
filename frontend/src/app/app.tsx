@@ -14,13 +14,16 @@ import { ScenarioBoundary } from "../components/scenario-boundary";
 import { useI18n } from "../i18n/runtime";
 import { prototypeUsabilityRecorder } from "../telemetry/recorder";
 import { LiveProjectCockpitDataSource } from "../api/project-data-source";
+import { LiveProjectControlsDataSource } from "../api/project-controls-data-source";
 import { LiveGateReviewDataSource } from "../api/gate-review-data-source";
+import { LiveMyWorkDataSource } from "../api/my-work-data-source";
 import {
   LiveProjectDomainWorkItemsDataSource,
   LiveProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
 
 const WorkPage = lazy(() => import("../pages/work-page"));
+const LiveWorkPage = lazy(() => import("../pages/live-work-page"));
 const ProjectPage = lazy(() => import("../pages/project-page"));
 const ProjectDemoPage = lazy(() => import("../pages/project-demo-page"));
 const GatePage = lazy(() => import("../pages/gate-page"));
@@ -29,10 +32,12 @@ const ToolingPage = lazy(() => import("../pages/tooling-page"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
+const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
 const liveProjectDomainWorkItemsDataSource =
   new LiveProjectDomainWorkItemsDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
+const liveMyWorkDataSource = new LiveMyWorkDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -90,6 +95,7 @@ export function App(): React.JSX.Element {
     ) : route.screen === "project" ? (
       <ProjectPage
         contextDataSource={liveProjectWorkContextDataSource}
+        controlsDataSource={liveProjectControlsDataSource}
         dataSource={liveProjectDataSource}
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
         globalId={route.projectGlobalId ?? ""}
@@ -114,10 +120,16 @@ export function App(): React.JSX.Element {
       <TrialPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "execution" ? (
       <ExecutionPage scenario={route.scenario} />
-    ) : (
+    ) : route.workMode === "demo" ? (
       <WorkPage navigate={guardedNavigate} />
+    ) : (
+      <LiveWorkPage
+        dataSource={liveMyWorkDataSource}
+        navigate={guardedNavigate}
+      />
     );
   const terminalScenario =
+    route.workMode !== "live" &&
     route.projectMode !== "live" &&
     route.gateMode !== "live" &&
     !["normal", "read_only", "partial", "dirty"].includes(route.scenario);

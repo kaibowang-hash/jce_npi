@@ -21,6 +21,13 @@ import type {
   GateRequirementEvidenceState,
   GateStep,
   LifecycleStep,
+  MyWorkAction,
+  MyWorkCategory,
+  MyWorkDueState,
+  MyWorkPriorityViewModel,
+  MyWorkSourceType,
+  MyWorkStatus,
+  MyWorkWhy,
   ProjectResponsibility,
   ProjectResponsibilityContext,
   Scenario,
@@ -135,6 +142,110 @@ export function actionLabel(t: Translator, code: ActionCode): string {
     case "review_impact":
       return t("Review impact");
   }
+}
+
+export function myWorkCategoryLabel(
+  t: Translator,
+  category: MyWorkCategory,
+): string {
+  switch (category) {
+    case "task":
+      return t("Task");
+    case "approval":
+      return t("Approval");
+    case "blocker":
+      return t("Blocker");
+    case "risk":
+      return t("Risk");
+    case "issue":
+      return t("Issue");
+    case "decision":
+      return t("Decision");
+  }
+}
+
+export function myWorkWhyLabel(t: Translator, why: MyWorkWhy): string {
+  switch (why) {
+    case "domain_work_item_owner":
+      return t("You own this domain work item.");
+    case "gate_review_step":
+      return t("You are assigned to a Gate review step.");
+    case "gate_final_decision":
+      return t("You are assigned the final Gate decision.");
+    case "gate_reopen":
+      return t("You are assigned to reopen this Gate review.");
+    case "gate_exception":
+      return t("You are assigned to a Gate exception.");
+    case "gate_dependency_change":
+      return t("A Gate dependency change requires your review.");
+  }
+}
+
+export function myWorkStatusLabel(t: Translator, status: MyWorkStatus): string {
+  switch (status) {
+    case "ready":
+      return t("Ready");
+    case "waiting":
+      return t("Waiting");
+    case "blocked":
+      return t("Blocked");
+    case "in_review":
+      return t("In review");
+  }
+}
+
+export function myWorkDueStateLabel(
+  t: Translator,
+  dueState: MyWorkDueState,
+): string {
+  switch (dueState) {
+    case "overdue":
+      return t("Overdue");
+    case "today":
+      return t("Due today");
+    case "upcoming":
+      return t("Upcoming");
+    case "unscheduled":
+      return t("No due date");
+  }
+}
+
+export function myWorkActionLabel(t: Translator, action: MyWorkAction): string {
+  switch (action) {
+    case "view_work_item":
+      return t("View work item");
+    case "open_gate_review":
+      return t("Open Gate review");
+  }
+}
+
+export function myWorkSourceTypeLabel(
+  t: Translator,
+  sourceType: MyWorkSourceType,
+): string {
+  switch (sourceType) {
+    case "domain_work_item":
+      return t("Domain work item");
+    case "gate_review_assignment":
+      return t("Gate review assignment");
+    case "gate_review_invalidation":
+      return t("Gate review invalidation");
+  }
+}
+
+export function myWorkPriorityLabel(
+  t: Translator,
+  priority: MyWorkPriorityViewModel | null,
+): string {
+  if (priority === null) return t("No priority");
+  if (priority.scheme === "domain_severity") {
+    return t("Domain severity: {{value}}", {
+      value: domainWorkItemSeverityLabel(t, priority.value),
+    });
+  }
+  return t("Gate requirement priority: {{value}}", {
+    value: priority.value,
+  });
 }
 
 export function syncStateLabel(

@@ -1,7 +1,7 @@
 # Required External Inputs
 
 Status: **OPEN — partial external dependency, not a global blocker**
-Updated: 2026-07-24
+Updated: 2026-07-25
 
 This is the single complete request for external facts that are not present in
 the repository. Supply one dated, owner-identified, sanitized, read-only bundle
@@ -59,7 +59,34 @@ Provide:
     command or report, timestamp and timezone, responsible owner, redaction
     method, record counts, and checksum.
 
-## 2. Phase 3 business acceptance package
+## 2. Project control and collaboration production-activation package
+
+The generic versioned/fail-closed Phase 4 foundation is complete. Provide one
+owner-approved, versioned package before activating these production rules:
+
+1. Project health formulas, dimension inputs, units, green/yellow/red
+   thresholds, aggregation, manual-assessment authority, red recovery
+   requirements, and the exact ERP-owned actual-cost source plus unavailable
+   and stale-data semantics.
+2. The allowed pause, cancel, resume, and complete transitions for each
+   Project state; exact authority slots and segregation constraints; and the
+   authoritative blocker, controlled-file, handover, and cost-readiness
+   prerequisites for completion.
+3. Project collaboration retention, notification-delivery, mention,
+   attachment, and external-user participation rules. Until supplied,
+   notifications remain explicitly unavailable and collaboration remains
+   internal and contextual.
+4. Project-learning classification, retention, search visibility, and the
+   named governance path that may accept a `template_improvement` proposal
+   into a future immutable Project Template version. The implemented proposal
+   record must not be applied automatically.
+
+Until this package passes the intake validation below, the implementation must
+continue to use versioned configurable rules, exact frozen authorities,
+synthetic fixtures, and fail-closed unavailable states. No production policy
+or default is installed.
+
+## 3. Phase 3 business acceptance package
 
 Provide the completed
 `implementation/evidence/phase-3/business-uat.md` record with:
@@ -72,7 +99,7 @@ Provide the completed
 - provenance-backed sanitized data for the two representative project types
   above, so fixture-only technical paths are not misrepresented as real UAT.
 
-## 3. Scope affected while inputs are open
+## 4. Scope affected while inputs are open
 
 The missing bundle does not block NPI-owned domain work, contracts, explicit
 mocks, sandbox-ready adapters, automated tests, UI, localization, or operating
@@ -84,7 +111,7 @@ real-data business result. Production activation, production credentials, and
 production data operations remain out of scope even after this package is
 provided unless separately authorized.
 
-## 4. Intake validation
+## 5. Intake validation
 
 The package is usable only when every file appears in the provenance manifest,
 checksums match, relationships survive redaction, secret scanning is clean, and

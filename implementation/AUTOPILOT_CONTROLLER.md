@@ -213,40 +213,45 @@ pending until that proof is produced in Codespaces.
 - Exact continuation authority: `implementation/phase-3-gate.md` records a
   release-gate technical `PASS`, preserves
   `TECHNICAL_PASS_PENDING_UAT`, states that its external items do not block
-  NPI-owned domain work, and explicitly activates Phase 4. This is the narrow
-  Pack-approved state that permits independent later work; it does not turn
-  Phase 3 into `PASS`.
-- Latest completed task: Phase 4 `P4-04 — Review, decision, snapshot, and
-  reopen`. P4-01 through P4-04 are `PASS`; P4-05 is active under
-  `NEXT_ACTION.md`.
-- P4-04's triggered Level 3 Full Release Gate passed on 2026-07-25. The final
-  evidence includes 417 Python and 337 frontend tests, 1,746 literal English
-  sources with complete direct `zh`/`zh-TW` coverage, two additive Site
-  migrations, all six live Frappe runtime lanes, 204 non-visual browser cases,
-  forced and clean 170-case zero-tolerance visual matrices, fresh Node 24
-  target proof, zero full/production npm audit findings, and independent
-  security/release review.
-- P4-04 delivers the bounded synthetic-policy review mechanism, immutable
-  decisions and preserved-cycle reopen, exact dependency invalidation,
-  successor cycles, downstream denial, and live trilingual Review Room. It
-  creates no impact Domain WorkItem and installs no production approval,
-  exception, segregation, scanner, DMS, or dependency policy.
-- `FR-SG-003`, `FR-SG-005`, and `FR-SG-007` are technically verified
-  foundations; `FR-SG-006` is technically verified. `FR-SG-002`, `FR-SG-004`,
-  and `FR-CO-006` retain their truthful foundation status and open later scope.
-- Current unfinished task: `P4-05 — Live My Work, activity, and Project
-  controls`, allocated to `FR-PM-008`, `FR-PM-011`, `FR-PM-012`, `FR-CO-001`,
-  `FR-CO-002`, and `FR-CO-006`. Begin from the committed requirement anchor,
-  trace rows, related domain specifications, and applicable Skills; do not
-  infer the held production health/lifecycle/approval rules.
+  NPI-owned domain work, and permits independent later phases. This does not
+  turn Phase 3 into `PASS`.
+- Latest completed phase: `4 — Project Work Items and Stage Gates`.
+  P4-01 through P4-05 and `implementation/phase-4-gate.md` are `PASS`.
+- P4-05's triggered Level 3 Full Release Gate passed on 2026-07-25. The final
+  evidence includes 587 Python and 492 frontend tests, 2,221 literal English
+  sources with complete direct `zh`/`zh-TW` coverage, additive/idempotent Site
+  synchronization, complete cumulative live Frappe runtime, 227 non-visual
+  browser cases, forced and clean 188-case zero-tolerance visual matrices,
+  zero complete/production npm audit findings, original-resolution
+  trilingual review, and independent requirement/security/release review.
+- P4-05 delivers the bounded live My Work projection, versioned Project
+  Control Policy and four-dimensional health/lifecycle foundation, internal
+  activity, follow state and reusable learning. It installs no production
+  formula/authority/prerequisite, notification/external-user delivery,
+  learning-acceptance workflow or ERPNext connection.
+- The final 20-row Phase 4 distribution is 6 `TECHNICAL_VERIFIED`,
+  13 `TECHNICAL_VERIFIED_FOUNDATION`, and 1 `PARTIAL_FOUNDATION`. The latter is
+  `FR-PM-004`; no open acceptance is silently promoted.
+- Current phase: `5 — Part Design, Documents, Baselines, and EBOM`
+  (`IN_PROGRESS`).
+- Current unfinished controller task:
+  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+  EBOM`.
+- P5-00 must create `implementation/phase-5-requirement-anchor.md`, allocate
+  `FR-DS-001` through `FR-DS-014`, reconcile M4 document/file/baseline/EBOM and
+  ERP ownership, preserve Class-B holds, and define the Phase 5 task sequence
+  before product code begins.
+- First Phase 5 product task after P5-00 passes:
+  `P5-01 — Document and design revision`, compatible with
+  `M4-01 — Document and design revision`.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
-  a global blocker. Phase 4 is active under automatic-transition authority.
+  a global blocker. Phase 5 is active under automatic-transition authority.
   Production ERPNext remains prohibited, and ambiguous production rules remain
   scoped holds rather than invented defaults.
 
-Resume P4-05 only from `implementation/NEXT_ACTION.md`,
-`implementation/phase-4-requirement-anchor.md`, the six allocated requirement
-rows, and `implementation/evidence/phase-4/p4-04-validation.md`. Do not repeat
-the passing P4-04 Full Release Gate merely to restore context. See
-`implementation/LAST_RUN.md` for exact evidence.
+Resume P5-00 only from `implementation/NEXT_ACTION.md`,
+`implementation/phase-4-gate.md`, the Phase 5/M4 Pack boundary,
+`FR-DS-001..FR-DS-014`, relevant contracts/ownership/accepted ADRs and
+applicable Skills. Do not repeat the passing Phase 4 Full Release Gate merely
+to restore context. See `implementation/LAST_RUN.md` for exact evidence.

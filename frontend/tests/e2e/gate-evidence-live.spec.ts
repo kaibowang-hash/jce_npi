@@ -1598,9 +1598,10 @@ test.describe("Gate Review Room impact dialog accessibility", () => {
       const cleanup = await prepareReviewVisualCase(page, visual);
       try {
         const dialog = page.getByRole("dialog");
-        const cancel = dialog.getByRole("button", { name: "Cancel" });
+        const heading = dialog.getByRole("heading", { level: 2 });
         await expect(dialog).toBeVisible();
-        await expect(cancel).toBeFocused();
+        await expect(heading).toBeFocused();
+        await expect(heading).toHaveAttribute("tabindex", "-1");
         await expect(page.getByRole("alert")).toHaveCount(0);
 
         const results = await new AxeBuilder({ page })

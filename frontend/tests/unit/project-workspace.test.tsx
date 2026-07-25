@@ -30,10 +30,12 @@ function renderWorkspace({
   cockpit = projectWorkCockpitFixture(),
   contextDataSource,
   domainWorkItemsDataSource,
+  path = "/",
 }: {
   cockpit?: ProjectCockpitViewModel;
   contextDataSource?: ProjectWorkContextDataSource;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource;
+  path?: string;
 } = {}): void {
   const dataSource: ProjectCockpitDataSource = {
     load: vi.fn(() => Promise.resolve(cockpit)),
@@ -46,6 +48,8 @@ function renderWorkspace({
       globalId={cockpit.project.globalId}
       navigate={vi.fn()}
     />,
+    "en",
+    path,
   );
 }
 
@@ -83,6 +87,64 @@ describe("live Project workspace tabs", () => {
     expect(screen.getByText("Synthetic feasibility shell")).toBeVisible();
     expect(contextLoad).not.toHaveBeenCalled();
     expect(workItemsLoad).not.toHaveBeenCalled();
+  });
+
+  it("loads a protected Project tab selected by an authorized deep link", async () => {
+    const cockpit = projectWorkCockpitFixture();
+    const selectedWorkItemId = "80000000-0000-4000-8000-000000000002";
+    const fixture = projectDomainWorkItemsFixture();
+    const selected = fixture.items.find(
+      (item) => item.globalId === selectedWorkItemId,
+    );
+    if (!selected) throw new Error("The selected WorkItem fixture is missing.");
+    const workItemsLoad = vi.fn<ProjectDomainWorkItemsDataSource["load"]>(() =>
+      Promise.resolve({ ...fixture, items: [selected], nextCursor: null }),
+    );
+    renderWorkspace({
+      cockpit,
+      domainWorkItemsDataSource: { load: workItemsLoad },
+      path: `/projects/${cockpit.project.globalId}?tab=work-items&workItem=${selectedWorkItemId}`,
+    });
+
+    expect(
+      await screen.findByRole("tab", { name: "Work items" }),
+    ).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByText(selectedWorkItemId)).toBeVisible();
+    expect(workItemsLoad).toHaveBeenCalledTimes(1);
+    expect(workItemsLoad).toHaveBeenCalledWith(
+      cockpit.project.globalId,
+      cockpit.project.version,
+      { limit: 1, workItemId: selectedWorkItemId },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("never substitutes an unrelated WorkItem when an exact deep link is unavailable", async () => {
+    const cockpit = projectWorkCockpitFixture();
+    const requested = "80000000-0000-4000-8000-000000000099";
+    const workItemsLoad = vi
+      .fn<ProjectDomainWorkItemsDataSource["load"]>()
+      .mockRejectedValue(problem(404, "PROJECT_UNAVAILABLE"));
+    renderWorkspace({
+      cockpit,
+      domainWorkItemsDataSource: { load: workItemsLoad },
+      path: `/projects/${cockpit.project.globalId}?tab=work-items&workItem=${requested}`,
+    });
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Domain work items are unavailable",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("Synthetic resin availability risk"),
+    ).not.toBeInTheDocument();
+    expect(workItemsLoad).toHaveBeenCalledWith(
+      cockpit.project.globalId,
+      cockpit.project.version,
+      { limit: 1, workItemId: requested },
+      expect.any(AbortSignal),
+    );
   });
 
   it("lazy-loads one work context for the Team and Plan tabs and exposes no write command", async () => {
@@ -684,7 +746,7 @@ describe("live Project workspace tabs", () => {
       screen.getByRole("tab", { name: "Team and responsibilities" }),
     ).toHaveFocus();
     await user.keyboard("{End}");
-    expect(screen.getByRole("tab", { name: "Work items" })).toHaveFocus();
+    expect(screen.getByRole("tab", { name: "Learning" })).toHaveFocus();
     await user.keyboard("{Home}");
     expect(overview).toHaveFocus();
     expect(

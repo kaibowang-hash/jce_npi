@@ -479,6 +479,7 @@ Worklist filters and column controls are focused.,工作清單篩選器和欄控
 This workspace has no configurable table columns.,此工程工作區沒有可設定的表格欄。
 Prototype refresh is unavailable because this view uses fixed in-memory data.,此檢視使用固定的記憶體資料，因此原型重新整理不可用。
 Time zone,時區
+System time zone,系統時區
 Discard changes and leave,放棄變更並離開
 Your unsaved changes in the current workspace will be discarded.,目前工程工作區中未儲存的變更將被放棄。
 No additional permission is required.,無需額外權限。
@@ -837,6 +838,7 @@ Owner email,負責人電子郵件
 Apply owner filter,套用負責人篩選
 All kinds,所有類別
 Due state,到期狀態
+Due time zone,到期時間時區
 All due states,所有到期狀態
 Overdue only,僅逾期
 Not overdue,未逾期
@@ -1744,3 +1746,476 @@ Exception validity,豁免有效性
 Approved through recorded expiry,"已核准，有效至記錄的到期時間"
 Not valid,無效
 Decision opinion,決策意見
+A Gate dependency change requires your review.,階段門相依項發生變更，需要您評審。
+All priorities,所有優先級
+All projects,所有專案
+Assignment source,指派來源
+Context title,上下文標題
+"Current-user queue for owned work, Gate reviews, blockers, risks, issues, and decisions.",目前使用者工作佇列，包含負責的工作、階段門評審、阻斷項、風險、問題與決策。
+Domain severity,領域嚴重程度
+Domain severity: {{value}},領域嚴重程度：{{value}}
+Gate requirement priority,階段門需求優先級
+Gate requirement priority: {{value}},階段門需求優先級：{{value}}
+Gate review assignment,階段門評審指派
+Gate review invalidation,階段門評審失效
+Integration unavailable,整合無法使用
+Live My Work data,即時「我的工作」資料
+Live My Work data. No production ERPNext system is connected.,即時「我的工作」資料。未連線生產 ERPNext 系統。
+Live global search is not available in this phase. Open an authorized work item or project link.,本階段不提供即時全域搜尋。請開啟已獲授權的工作項或專案連結。
+Loading My Work,正在載入「我的工作」
+My Work access is not available,無法存取「我的工作」
+My Work changed,「我的工作」已變更
+My Work could not be loaded,無法載入「我的工作」
+My Work is unavailable,「我的工作」無法使用
+My Work pages,「我的工作」分頁
+No assigned work is available in this view.,此檢視中沒有可用的已指派工作。
+No due date,無到期日
+Upcoming,即將到期
+Member global identifier,成員全域識別碼
+Select an exact learning record without additional filters.,請選擇精確的學習記錄且不要加入其他篩選條件。
+Enter a positive Project version.,請輸入正整數的專案版本。
+No live notification feed is connected in this phase. Use My Work for assigned actions.,本階段未連線即時通知摘要。請在「我的工作」中處理已指派操作。
+No priority,無優先級
+No work data was displayed. Share the displayed reference ID with support before trying another action.,未顯示任何工作資料。請先將顯示的參考識別碼提供給支援人員，再嘗試其他操作。
+No work data was displayed. Share the displayed reference ID with support.,未顯示任何工作資料。請將顯示的參考識別碼提供給支援人員。
+Project title,專案標題
+Ready,就緒
+Reload the live My Work queue to review current assignments before continuing.,請重新載入即時「我的工作」佇列，查看目前指派後再繼續。
+Retry the live My Work request or share the displayed reference ID with support.,請重試即時「我的工作」請求，或將顯示的參考識別碼提供給支援人員。
+Search assigned work,搜尋已指派工作
+The My Work response could not be used safely,「我的工作」回應無法安全使用
+The live My Work request is being refreshed.,正在重新整理即時「我的工作」請求。
+View work item,檢視工作項
+You are assigned the final Gate decision.,您被指派負責階段門最終決策。
+You are assigned to a Gate exception.,您被指派處理階段門豁免。
+You are assigned to a Gate review step.,您被指派至階段門評審步驟。
+You are assigned to reopen this Gate review.,您被指派負責重新開啟此階段門評審。
+You own this domain work item.,您負責此領域工作項。
+Your account cannot open this work queue. No assigned work data was displayed.,您的帳戶無法開啟此工作佇列。未顯示任何已指派工作資料。
+Unassessed,未評估
+Green,綠色
+Yellow,黃色
+Red,紅色
+Cost,成本
+Manual status,手動狀態
+Higher is better,數值越高越好
+Lower is better,數值越低越好
+Source unavailable,來源無法使用
+Proposed,擬議
+On hold,已暫停
+Pause project,暫停專案
+Cancel project,取消專案
+Resume project,恢復專案
+Complete project,完成專案
+Available,可用
+A bound published policy is required.,需要已綁定的已發布策略。
+The project is already terminal.,專案已處於終態。
+The bound policy does not define this transition.,已綁定策略未定義此轉換。
+The exact frozen authority is required.,需要確切的已凍結權責。
+A required readiness source is unavailable.,必要的就緒來源無法使用。
+A required prerequisite is blocked.,必要的前置條件受到阻斷。
+Controlled files,受控檔案
+Handover readiness,移交就緒度
+Cost readiness,成本就緒度
+Satisfied,已滿足
+Retrospective,回顧
+Lesson learned,經驗教訓
+Template improvement,模板改善
+Comment added,已新增評論
+Project followed,已關注專案
+Project unfollowed,已取消關注專案
+Project health assessed,已評估專案健康度
+Project lifecycle changed,專案生命週期已變更
+Learning record created,已建立經驗記錄
+Work item,工作項目
+File revision,檔案修訂版
+Learning record,經驗記錄
+Project collaboration access is not available,無法存取專案協作
+The project collaboration view is out of date,專案協作檢視已過期
+The project collaboration response could not be used safely,專案協作回應無法安全使用
+Project collaboration data is unavailable,專案協作資料無法使用
+No protected collaboration data was displayed.,未顯示任何受保護的協作資料。
+Use the reference ID for support or retry when available.,請使用參考識別碼取得支援，或在可用時重試。
+Reload latest data,重新載入最新資料
+The live project collaboration data source is not configured.,尚未設定即時專案協作資料來源。
+The server is validating the exact project version.,伺服器正在驗證確切的專案版本。
+Succeeded,已成功
+Retry same command,重試相同指令
+Loading project controls,正在載入專案管控
+Select an eligible member for every authority slot.,請為每個權責槽位選擇符合條件的成員。
+Exact Project Control Policy binding recorded.,已記錄確切的專案管控策略綁定。
+Enter at least one available health measurement.,請至少輸入一項可用的健康度量值。
+A red health assessment requires a reason and recovery plan.,紅色健康評估需要原因與復原計畫。
+Project health assessment recorded.,已記錄專案健康評估。
+Project lifecycle transition recorded.,已記錄專案生命週期轉換。
+Updated,已更新
+The controls view contains the latest server lifecycle state.,管控檢視包含伺服器最新的生命週期狀態。
+Terminal project,終態專案
+Mutable project controls are locked. Append-only comments and learning records remain available to authorized contributors.,可變專案管控已鎖定。獲授權的參與者仍可新增僅附加評論與經驗記錄。
+Control policy and authority,管控策略與權責
+Policy,策略
+Policy code,策略代碼
+Binding version,綁定版本
+Policy unavailable,策略無法使用
+No published Project Control Policy is bound. Health remains unassessed and lifecycle actions remain unavailable.,未綁定已發布的專案管控策略。健康度保持未評估，生命週期操作無法使用。
+Bind Project Control Policy,綁定專案管控策略
+No published policy versions,沒有已發布的策略版本
+No enabled published Project Control Policy version is available for binding.,沒有可供綁定的已啟用且已發布專案管控策略版本。
+No eligible project members,沒有符合條件的專案成員
+No current project member is eligible for the required authority slots. Ask a project administrator to review membership and authority eligibility.,目前沒有專案成員符合所需權責槽位的條件。請聯絡專案管理員審查成員資格與權責資格。
+Published policy version,已發布策略版本
+Select eligible member,選擇符合條件的成員
+The server revalidates the exact published policy version and current eligible project members before binding.,伺服器會在綁定前重新驗證確切的已發布策略版本與目前符合條件的專案成員。
+Replace policy binding,取代策略綁定
+Bind policy,綁定策略
+Dimension,維度
+Rule,規則
+Current status,目前狀態
+Measured value,測量值
+New manual health status,新的手動健康狀態
+No new measurement,無新測量值
+New numeric health value,新的健康數值
+Assessment reason,評估原因
+Recovery plan,復原計畫
+Assess project health,評估專案健康度
+Only the exact frozen health authority can assess health.,只有確切的已凍結健康評估權責方可以評估健康度。
+Health assessment is unavailable until a policy is bound.,綁定策略前無法進行健康評估。
+Assessed at,評估時間
+Assessed by,評估人
+Not provided,未提供
+No immutable health assessment has been recorded.,尚未記錄不可變健康評估。
+Lifecycle actions,生命週期操作
+Select,選擇
+Target state,目標狀態
+Availability,可用性
+Prerequisites,前置條件
+Review lifecycle action,審查生命週期操作
+Execute lifecycle action,執行生命週期操作
+"The server records the actor, exact policy, binding, prerequisites, reason, project version, request ID, and trace ID.",伺服器會記錄操作人、確切策略、綁定、前置條件、原因、專案版本、請求識別碼與追蹤識別碼。
+A failed command changes no displayed state. Reload current server data before choosing another action.,失敗的指令不會變更任何顯示狀態。請在選擇其他操作前重新載入目前的伺服器資料。
+The transition is auditable. Any later state change requires another policy-authorized server action.,此轉換可稽核。此後的任何狀態變更都需要另一次策略授權的伺服器操作。
+The exact frozen authority assigned by the bound policy is required.,需要已綁定策略指派的確切已凍結權責方。
+Review project lifecycle transition,審查專案生命週期轉換
+Activity details,活動明細
+Select an activity event to inspect its immutable detail.,請選擇活動事件以檢查其不可變明細。
+Mentions,提及
+No mentions,未提及成員
+Clean file revisions,掃描通過的檔案修訂版
+File,檔案
+Scan state,掃描狀態
+Clean,掃描通過
+No file revisions,沒有檔案修訂版
+Object links,物件連結
+No object links,沒有物件連結
+The actor started following this project.,操作人已開始關注此專案。
+The actor stopped following this project.,操作人已停止關注此專案。
+From state,原狀態
+To state,目標狀態
+Approved by,核准人
+Learning kind,經驗類別
+Open learning record,開啟經驗記錄
+Occurred at,發生時間
+Loading project activity,正在載入專案活動
+Load more activity,載入更多專案活動
+Loading more activity,正在載入更多專案活動
+More project activity could not be loaded.,無法載入更多專案活動。
+You are now following this project.,您正在關注此專案。
+You are no longer following this project.,您已不再關注此專案。
+Enter a comment.,請輸入評論。
+Append-only project comment recorded.,已記錄僅附加專案評論。
+Append-only collaboration,僅附加協作
+This terminal project still accepts authorized comments without reopening mutable project history.,此終態專案仍接受獲授權的評論，且不會重新開啟可變專案歷程。
+You can view activity but cannot add project collaboration records.,您可以檢視活動，但不能新增專案協作記錄。
+Unfollow project,取消關注專案
+Follow project,關注專案
+Project activity,專案活動
+Event,事件
+No project activity has been recorded.,尚未記錄專案活動。
+Add project comment,新增專案評論
+Comment,評論
+Mention project members,提及專案成員
+Attach clean file revisions,附加掃描通過的檔案修訂版
+Link project objects,連結專案物件
+No optional comment references are currently available. You can still add a body-only comment.,目前沒有可用的選用評論參照。您仍可新增僅含本文的評論。
+Comment choices limited,評論選項受限
+Only the first 500 eligible comment choices are shown. You can still read activity and add a comment with the available choices.,僅顯示前 500 個符合條件的評論選項。您仍可檢視活動，並使用可用選項新增評論。
+Add comment,新增評論
+Learning details,經驗明細
+Select a learning record to inspect its immutable context.,請選擇經驗記錄以檢查其不可變上下文。
+Learning content,經驗內容
+Recommendation,建議
+Tags,標籤
+Created by,建立人
+Created at,建立時間
+Loading project learning,正在載入專案經驗
+Enter a title and learning content.,請輸入標題與經驗內容。
+Enter no more than twenty unique learning tags.,請輸入不超過二十個互不重複的經驗標籤。
+Append-only project learning record created.,已建立僅附加專案經驗記錄。
+Append-only learning,僅附加經驗
+This terminal project still accepts authorized retrospective and learning records without changing project history.,此終態專案仍接受獲授權的回顧與經驗記錄，且不會變更專案歷程。
+You can view learning records but cannot create them.,您可以檢視經驗記錄，但不能建立記錄。
+All learning kinds,所有經驗類別
+Search learning,搜尋經驗
+Apply filters,套用篩選條件
+Project learning,專案經驗
+No learning records match the current filters.,沒有經驗記錄符合目前的篩選條件。
+Create learning record,建立經驗記錄
+Comma-separated tags,以逗號分隔的標籤
+The exact project template version and snapshot are captured automatically.,系統會自動擷取確切的專案模板版本與快照。
+This feedback is proposed only. It does not change or publish a Project Template.,此回饋僅為提議內容，不會變更或發佈專案模板。
+Controls,管控
+Learning,經驗
+Select a supported Project lifecycle state.,請選擇受支援的專案生命週期狀態。
+Project Control Binding Version cannot be negative.,專案管控綁定版本不能為負數。
+Project Control Policy identity must be complete.,專案管控策略識別必須完整。
+Project Control Binding Global ID,專案管控綁定全域識別碼
+Project Control Policy Global ID,專案管控策略全域識別碼
+Project Control Policy Version must be greater than zero.,專案管控策略版本必須大於零。
+Project Control Policy Snapshot Hash,專案管控策略快照雜湊
+Project Control Binding Version must be greater than zero.,專案管控綁定版本必須大於零。
+Project Control Binding Version requires a policy binding.,專案管控綁定版本需要策略綁定。
+Select a supported Project health status.,請選擇受支援的專案健康狀態。
+Current Project health identity must be complete.,目前專案健康識別必須完整。
+Current Health Assessment Global ID,目前健康評估全域識別碼
+An assessed Project health result cannot be unassessed.,已評估的專案健康結果不能為未評估。
+Current Health Snapshot must be a JSON object.,目前健康快照必須是結構化資料物件。
+Current Health At,目前健康狀態時間
+Current Health Snapshot does not match the Project.,目前健康快照與專案不相符。
+Project health remains unassessed until an assessment is recorded.,記錄評估前，專案健康度保持未評估。
+Project Control Binding Version must advance one version at a time.,專案管控綁定版本每次只能遞增一個版本。
+Assigned User ID,獲指派使用者識別碼
+My Work Assignment Key must be valid.,「我的工作」指派鍵必須有效。
+Select a supported My Work source type.,請選擇受支援的「我的工作」來源類型。
+Select a supported assignment reason.,請選擇受支援的指派原因。
+Select a supported My Work category.,請選擇受支援的「我的工作」類別。
+Blocking must be a valid true or false value.,阻斷標記必須是有效的真或假值。
+Active must be a valid true or false value.,有效標記必須是有效的真或假值。
+My Work Source Snapshot,「我的工作」來源快照
+My Work Source Snapshot has an invalid structure.,「我的工作」來源快照結構無效。
+Indexed At,索引時間
+My Work Source Snapshot does not match the assignment.,「我的工作」來源快照與指派不相符。
+"My Work source, reason, and category do not match.",「我的工作」的來源、原因與類別不相符。
+My Work priority vocabulary and value do not match.,「我的工作」優先級詞彙與值不相符。
+A Project Activity Event is immutable.,專案活動事件不可變。
+Activity Event Key must be valid.,活動事件鍵必須有效。
+Select a supported Project activity event type.,請選擇受支援的專案活動事件類型。
+Actor User ID,操作人使用者識別碼
+Activity Payload,活動酬載
+Activity Payload has an invalid structure.,活動酬載結構無效。
+Activity Payload does not match the event record.,活動酬載與事件記錄不相符。
+Project activity detail has an invalid structure.,專案活動明細結構無效。
+A Project Control Binding is immutable.,專案管控綁定不可變。
+Control Binding Version,管控綁定版本
+Policy Snapshot,策略快照
+Policy Snapshot Hash,策略快照雜湊
+Project Control Authority Bindings,專案管控權責綁定
+Bound By,綁定人
+Control Binding Snapshot,管控綁定快照
+Bound At,綁定時間
+Control Binding Snapshot does not match the binding record.,管控綁定快照與綁定記錄不相符。
+Add one valid Project Control authority binding per slot.,請為每個槽位新增一項有效的專案管控權責綁定。
+Enter valid Project Control authority bindings.,請輸入有效的專案管控權責綁定。
+Operation must be a valid controlled key.,操作必須是有效的受控鍵。
+A Project control idempotency response must be sealed after the command succeeds.,專案管控冪等回應必須在指令成功後封存。
+A Project control idempotency response can only be sealed once.,專案管控冪等回應只能封存一次。
+Project Control Policy Code,專案管控策略代碼
+Project Control Policy Title,專案管控策略標題
+A Project Control Policy with version history cannot be deleted.,具有版本歷程的專案管控策略不能刪除。
+A published Project Control Policy version cannot be changed.,已發布的專案管控策略版本不能變更。
+Enter a valid Project Control Policy version.,請輸入有效的專案管控策略版本。
+A published Project Control Policy version cannot be deleted.,已發布的專案管控策略版本不能刪除。
+Select an enabled Project Control Policy.,請選擇已啟用的專案管控策略。
+Project Control Policy,專案管控策略
+The first Project Control Policy version cannot have a prior version.,首個專案管控策略版本不能具有先前版本。
+Prior Policy Snapshot,先前策略快照
+The prior Project Control Policy version reference does not match the published predecessor.,先前專案管控策略版本參照與已發布的前一版本不相符。
+The prior Project Control Policy version reference is required.,需要先前專案管控策略版本參照。
+Project Control Authority Slots,專案管控權責槽位
+Project Control Authority Slots contains an unsupported value.,專案管控權責槽位包含不受支援的值。
+Project Health Rules,專案健康規則
+Project Health Rules contains an unsupported field.,專案健康規則包含不受支援的欄位。
+Project Health Rules contains an unsupported value.,專案健康規則包含不受支援的值。
+Require All Health Dimensions must be a valid true or false value.,要求所有健康維度的標記必須是有效的真或假值。
+Project Lifecycle Transitions,專案生命週期轉換
+Project Lifecycle Transitions contains an unsupported field.,專案生命週期轉換包含不受支援的欄位。
+Project Lifecycle Transitions contains an unsupported value.,專案生命週期轉換包含不受支援的值。
+Prior Policy Version Reference,先前策略版本參照
+Prior Policy Version Reference contains an unsupported field.,先前策略版本參照包含不受支援的欄位。
+Enter a valid Prior Policy Version Reference.,請輸入有效的先前策略版本參照。
+{field} must contain valid JSON.,{field} 必須包含有效的結構化資料。
+{field} must be valid text.,{field} 必須是有效文字。
+The Project Control Policy version does not match its policy root.,專案管控策略版本與其策略根記錄不相符。
+Publish each Project Control Policy version before creating the next.,請先發布每個專案管控策略版本，再建立下一版本。
+Follower,關注者
+Project Follower Key does not match its identities.,專案關注者鍵與其識別不相符。
+Last Changed By,最後變更人
+Follower Version must advance one version at a time.,關注者版本每次只能遞增一個版本。
+Follower state must change before a new version is saved.,儲存新版本前必須變更關注狀態。
+A Project Health Assessment is immutable.,專案健康評估不可變。
+Actor Authority Slot,操作人權責槽位
+Actor Display Name,操作人顯示名稱
+Project Health Assessment Snapshot,專案健康評估快照
+Assessed At,評估時間
+Project Health Assessment Snapshot does not match the record.,專案健康評估快照與記錄不相符。
+Project Health Assessment Snapshot has an invalid structure.,專案健康評估快照結構無效。
+A Project Learning record is immutable.,專案經驗記錄不可變。
+Select a supported Project learning kind.,請選擇受支援的專案經驗類別。
+Project Learning Title,專案經驗標題
+Project Learning Content,專案經驗內容
+Project Learning Recommendation,專案經驗建議
+Project Learning Tags,專案經驗標籤
+Project Learning Snapshot,專案經驗快照
+Project Learning Snapshot does not match the record.,專案經驗快照與記錄不相符。
+Add no more than twenty Project learning tags.,請新增不超過二十個專案經驗標籤。
+Enter valid Project learning tags.,請輸入有效的專案經驗標籤。
+Project learning tags must be unique.,專案經驗標籤必須互不重複。
+A published Project Control Policy version is required.,需要已發布的專案管控策略版本。
+The Project Control Policy binding is not current.,專案管控策略綁定不是目前版本。
+The assigned Project control authority is required.,需要已指派的專案管控權責方。
+The requested Project lifecycle action is unavailable.,請求的專案生命週期操作無法使用。
+The Project lifecycle action is blocked by unmet prerequisites.,專案生命週期操作因未滿足前置條件而受到阻斷。
+Resolve every blocking prerequisite before trying again.,請先解決所有阻斷性前置條件，再重試。
+Resolve this prerequisite.,請解決此前置條件。
+The Project lifecycle action cannot be evaluated because a prerequisite is unavailable.,由於一項前置條件無法使用，無法評估專案生命週期操作。
+Wait until every required readiness source is available.,請等待所有必要的就緒來源可用。
+This readiness source is unavailable.,此就緒來源無法使用。
+Enter a finite number.,請輸入有限數值。
+This health rule mode does not accept thresholds.,此健康規則模式不接受閾值。
+A higher-is-better rule requires the yellow threshold below the green threshold.,數值越高越好的規則要求黃色閾值低於綠色閾值。
+A lower-is-better rule requires the green threshold below the yellow threshold.,數值越低越好的規則要求綠色閾值低於黃色閾值。
+This health dimension is unavailable.,此健康維度無法使用。
+The health measurement dimension does not match its rule.,健康度量維度與其規則不相符。
+Enter a supported manual health status.,請輸入受支援的手動健康狀態。
+Enter a numeric health measurement.,請輸入數值型健康度量值。
+Evaluate every required health dimension exactly once.,請對每個必要的健康維度恰好評估一次。
+Select unique supported Project prerequisites.,請選擇互不重複且受支援的專案前置條件。
+Select a non-terminal Project transition.,請選擇非終態專案轉換。
+Select the lifecycle state required by this action.,請選擇此操作所需的生命週期狀態。
+Resume is only available for a Project that is on hold.,只有已暫停的專案才能恢復。
+A Project that is already on hold cannot be paused.,已暫停的專案不能再次暫停。
+The Project Control Policy snapshot hash is invalid.,專案管控策略快照雜湊無效。
+The first Project Control Policy version must be version 1.,首個專案管控策略版本必須為版本 1。
+Project Control Policy versions must be contiguous within one policy.,同一策略內的專案管控策略版本必須連續。
+The Project Control Policy version identifier is not canonical.,專案管控策略版本識別碼不符合標準。
+The first policy version cannot have a prior version.,首個策略版本不能具有先前版本。
+The prior Project Control Policy version is incomplete.,先前專案管控策略版本不完整。
+The prior Project Control Policy version identifier is not canonical.,先前專案管控策略版本識別碼不符合標準。
+Project control authority slots must be unique.,專案管控權責槽位必須互不重複。
+Enter valid Project health rules.,請輸入有效的專案健康規則。
+Project health rule dimensions must be unique.,專案健康規則維度必須互不重複。
+Enter a valid Project health aggregation rule.,請輸入有效的專案健康彙總規則。
+Enter valid Project lifecycle transitions.,請輸入有效的專案生命週期轉換。
+A Project state and action can select only one transition.,一個專案狀態與操作只能選擇一項轉換。
+Add at least one Project control authority slot.,請至少新增一個專案管控權責槽位。
+Select a declared Project control authority slot.,請選擇已宣告的專案管控權責槽位。
+"Define progress, cost, quality, and risk health rules.",請定義進度、成本、品質與風險健康規則。
+"Define pause, cancel, resume, and complete transitions.",請定義暫停、取消、恢復與完成轉換。
+"Every complete transition must check open blockers, controlled files, handover, and cost.",每項完成轉換都必須檢查未解決阻斷項、受控檔案、移交與成本。
+Enter valid Project control authority bindings.,請輸入有效的專案管控權責綁定。
+Bind each Project control authority slot exactly once.,請對每個專案管控權責槽位恰好綁定一次。
+Bind every Project control authority slot exactly once.,請對所有專案管控權責槽位各綁定一次。
+Enter either a numeric value or a manual status.,請輸入數值或手動狀態。
+Enter the reason for red Project health.,請輸入專案健康度為紅色的原因。
+Enter the recovery plan for red Project health.,請輸入專案健康度為紅色時的復原計畫。
+Enter each health measurement at most once.,每項健康度量最多只能輸入一次。
+The Project version must advance by one.,專案版本必須遞增一。
+Enter server-resolved Project prerequisites.,請輸入伺服器解析的專案前置條件。
+Enter every server-resolved Project prerequisite exactly once.,請對伺服器解析的每個專案前置條件恰好輸入一次。
+A current published Project Control Policy binding is required.,需要目前已發布的專案管控策略綁定。
+Enter a non-negative expected version.,請輸入非負的預期版本。
+Select a valid follow state.,請選擇有效的關注狀態。
+The Project follow state is already selected.,專案已處於所選關注狀態。
+Narrow the Project learning search.,請縮小專案經驗搜尋範圍。
+Enter valid Project member mentions.,請輸入有效的專案成員提及項。
+Mention each Project member once.,每個專案成員只能提及一次。
+Enter valid controlled file revision references.,請輸入有效的受控檔案修訂版參照。
+Select an exact controlled File Revision.,請選擇確切的受控檔案修訂版。
+Attach each File Revision once.,每個檔案修訂版只能附加一次。
+Select an available File Revision from this Project.,請選擇此專案中可用的檔案修訂版。
+Select a clean private File Revision.,請選擇掃描通過的私有檔案修訂版。
+Enter valid Project object links.,請輸入有效的專案物件連結。
+Select an exact Project object.,請選擇確切的專案物件。
+Select a supported Project object type.,請選擇受支援的專案物件類型。
+Link each Project object once.,每個專案物件只能連結一次。
+Select an available exact object from this Project.,請選擇此專案中可用的確切物件。
+Narrow the enabled Project Control Policy scope.,請縮小已啟用專案管控策略的範圍。
+Narrow the published Project Control Policy scope.,請縮小已發布專案管控策略的範圍。
+Narrow the current Project member scope.,請縮小目前專案成員的範圍。
+Select an exact published Project Control Policy version.,請選擇確切的已發布專案管控策略版本。
+Enter a valid Project control authority binding.,請輸入有效的專案管控權責綁定。
+Bind each authority slot once.,每個權責槽位只能綁定一次。
+Select a current internal member of this Project.,請選擇此專案目前的內部成員。
+Enter a valid Project learning tag.,請輸入有效的專案經驗標籤。
+Enter a limit from one to one hundred.,請輸入一至一百的限制數量。
+Enter valid Project health measurements.,請輸入有效的專案健康度量值。
+Enter a valid Project health measurement.,請輸入有效的專案健康度量值。
+Select an enabled internal Project member.,請選擇已啟用的內部專案成員。
+Select a supported controlled key.,請選擇受支援的受控鍵。
+Enter valid text.,請輸入有效文字。
+Project control records can only be changed through an authorized NPI project command.,專案管控記錄只能透過獲授權的 NPI 專案指令變更。
+My Work assignments can only be changed by the controlled projection service.,「我的工作」指派只能由受控投影服務變更。
+Controlled Project activity and governance history cannot be deleted.,受控專案活動與治理歷程不能刪除。
+My Work projection records are retained and deactivated instead of deleted.,「我的工作」投影記錄會保留並停用，而不會刪除。
+{field} cannot be negative.,{field} 不能為負數。
+{field} must be a valid user identity.,{field} 必須是有效的使用者識別。
+Trace ID must be a valid trace identity.,追蹤識別碼必須是有效的追蹤識別。
+a JSON array,結構化資料陣列
+a JSON object,結構化資料物件
+{field} must be {expected}.,{field} 必須是{expected}。
+{field} does not match its canonical snapshot.,{field} 與其標準快照不相符。
+A cancelled or completed Project is protected history.,已取消或已完成的專案屬於受保護歷程。
+Select an exact Project Template version.,請選擇確切的專案模板版本。
+Enter a valid request ID.,請輸入有效的請求識別碼。
+Project Control Policy Version,專案管控策略版本
+Project Control Binding Version,專案管控綁定版本
+Current Health Status,目前健康狀態
+unassessed,未評估
+unavailable,無法使用
+green,綠色
+yellow,黃色
+red,紅色
+Current Health Snapshot,目前健康快照
+NPI My Work Assignment,NPI「我的工作」指派
+My Work Assignment Key,「我的工作」指派鍵
+My Work Source Type,「我的工作」來源類型
+gate_review_assignment,階段門評審指派
+gate_review_invalidation,階段門評審失效
+Assignment Reason Code,指派原因代碼
+My Work Category,「我的工作」類別
+task,任務
+approval,核准
+blocker,阻斷項
+decision,決策
+Priority Scheme,優先級體系
+domain_severity,領域嚴重程度
+gate_requirement_priority,階段門需求優先級
+Priority Value,優先級值
+NPI Project Activity Event,NPI 專案活動事件
+Activity Event Key,活動事件鍵
+Project Activity Event Type,專案活動事件類型
+comment_added,已新增評論
+followed,已關注
+unfollowed,已取消關注
+health_assessed,已評估健康度
+lifecycle_transition,生命週期轉換
+learning_created,已建立經驗記錄
+NPI Project Control Binding,NPI 專案管控綁定
+NPI Project Control Idempotency,NPI 專案管控冪等記錄
+NPI Project Control Policy,NPI 專案管控策略
+NPI Project Control Policy Version,NPI 專案管控策略版本
+Health Assessment Authority Slot,健康評估權責槽位
+Require All Health Dimensions,要求所有健康維度
+NPI Project Follower,NPI 專案關注者
+Project Follower Key,專案關注者鍵
+Last Changed At,最後變更時間
+NPI Project Health Assessment,NPI 專案健康評估
+Actor Member Global ID,操作人成員全域識別碼
+NPI Project Learning,NPI 專案經驗記錄
+Project Learning Kind,專案經驗類別
+retrospective,回顧
+lesson,經驗教訓
+template_improvement,模板改善
+Current state,目前狀態
+An exact WorkItem identity cannot be combined with collection filters or a cursor.,精確工作項目識別碼不能與集合篩選條件或游標組合使用。
+Project collaboration is temporarily unavailable.,專案協作暫時無法使用。
+The routes are disabled while a reviewed forward fix is applied.,套用經審查的前向修正期間，這些路由已停用。

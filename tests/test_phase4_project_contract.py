@@ -350,17 +350,99 @@ class Phase4ProjectContractTests(unittest.TestCase):
         )
         self.assertEqual(
             _flow_enum(_schema("MyWorkCategory")),
-            ("task", "approval", "blocker", "risk", "issue", "decision", "integration"),
+            ("task", "approval", "blocker", "risk", "issue", "decision"),
+        )
+        self.assertEqual(
+            _flow_enum(_schema("MyWorkSourceType")),
+            (
+                "domain_work_item",
+                "gate_review_assignment",
+                "gate_review_invalidation",
+            ),
         )
         projection = _schema("MyWorkItemProjection")
         self.assertIn("additionalProperties: false", projection)
         self.assertIn('$ref: "#/components/schemas/MyWorkCategory"', projection)
-        self.assertIn('$ref: "#/components/schemas/DomainWorkItemKind"', projection)
+        self.assertEqual(
+            set(_required_fields("MyWorkItemProjection")),
+            {
+                "id",
+                "category",
+                "title",
+                "project",
+                "context",
+                "source",
+                "why",
+                "status",
+                "dueAt",
+                "dueState",
+                "priority",
+                "blocking",
+                "action",
+                "target",
+                "sourceStatus",
+            },
+        )
+        self.assertEqual(
+            _flow_enum(_field("MyWorkItemProjection", "dueState")),
+            ("overdue", "today", "upcoming", "unscheduled"),
+        )
+        self.assertEqual(
+            set(_required_fields("WorkPage")),
+            {
+                "asOf",
+                "timeZone",
+                "projectOptions",
+                "items",
+                "nextCursor",
+                "counts",
+            },
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/MyWorkProject"',
+            _field("WorkPage", "projectOptions"),
+        )
+        self.assertEqual(
+            set(_required_fields("MyWorkCounts")),
+            {
+                "all",
+                "today",
+                "overdue",
+                "approvals",
+                "blockers",
+                "waiting",
+                "integration",
+            },
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/UnavailableMyWorkCount"',
+            _field("MyWorkCounts", "integration"),
+        )
+        self.assertIn(
+            "const: source_not_available",
+            _schema("UnavailableMyWorkCount"),
+        )
         self.assertIn(
             '$ref: "#/components/schemas/MyWorkItemProjection"',
             _schema("WorkPage"),
         )
         paths = _indented_block("paths:")
+        my_work_path = _indented_block("  /me/work:")
+        self.assertRegex(
+            my_work_path,
+            r"enum:\s*\[all, today, overdue, approvals, blockers, waiting, integration\]",
+        )
+        for parameter in (
+            "projectId",
+            "priorityScheme",
+            "priorityValue",
+            "search",
+            "cursor",
+            "limit",
+        ):
+            self.assertIn(f"name: {parameter}", my_work_path)
+        self.assertIn("actor-bound HMAC-SHA256", my_work_path)
+        self.assertIn("maximum: 100", my_work_path)
         self.assertIn("  /projects/{projectId}/domain-work-items:", paths)
         self.assertNotRegex(paths, r"(?m)^  /(?:domain-)?work-items(?:[/:{]|$)")
         self.assertNotIn(
@@ -503,6 +585,11 @@ class Phase4ProjectContractTests(unittest.TestCase):
         self.assertIn('$ref: "#/components/parameters/RequestId"', query)
         self.assertIn("mandatory Project filter", query)
         self.assertIn("never expand authorization", query)
+        self.assertIn("workItemId exact-target mode", query)
+        self.assertIn("only after Project authorization", query)
+        self.assertIn("cannot be combined with collection filters", query)
+        self.assertIn("absent, cross-Project, or", query)
+        self.assertIn("cross-tenant identity", query)
         self.assertIn("bounded keyset pagination ordered by dueAt and", query)
         self.assertIn("One server-clock instant defines overdue", query)
         self.assertIn("fixed asOf on the first page", query)
@@ -554,6 +641,7 @@ class Phase4ProjectContractTests(unittest.TestCase):
             r"concurrent creates or\s+updates may affect later\s+pages",
         )
         for filter_name in (
+            "workItemId",
             "stageId",
             "ownerUserId",
             "overdue",
@@ -562,6 +650,11 @@ class Phase4ProjectContractTests(unittest.TestCase):
             "limit",
         ):
             self.assertRegex(query, rf"(?m)^          name: {filter_name}$")
+        self.assertRegex(
+            query,
+            r"(?ms)name: workItemId.*?only after Project\s+"
+            r"authorization.*?format: uuid",
+        )
         self.assertRegex(
             query,
             r"(?ms)name: stageId.*?format: uuid",

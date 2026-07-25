@@ -30,10 +30,39 @@ doc_events = {
         )
     },
     "NPI Domain Work Item": {
+        "on_update": [
+            (
+                "npi_core.gate_review.frappe_repository."
+                "queue_gate_review_work_item_evaluation"
+            ),
+            "npi_core.my_work.frappe_repository.refresh_domain_work_item_assignment",
+        ]
+    },
+    "NPI Engineering Project": {
         "on_update": (
-            "npi_core.gate_review.frappe_repository."
-            "queue_gate_review_work_item_evaluation"
+            "npi_core.my_work.frappe_repository." "refresh_project_my_work_assignments"
         )
+    },
+    "NPI Gate Shell": {
+        "on_update": (
+            "npi_core.my_work.frappe_repository." "refresh_gate_review_assignments"
+        )
+    },
+    "NPI Gate Review Cycle": {
+        "on_update": (
+            "npi_core.my_work.frappe_repository."
+            "refresh_gate_review_assignments_for_cycle"
+        )
+    },
+    "NPI Project Member": {
+        "on_update": (
+            "npi_core.my_work.frappe_repository."
+            "refresh_project_member_my_work_assignments"
+        ),
+        "after_delete": (
+            "npi_core.my_work.frappe_repository."
+            "refresh_project_member_my_work_assignments"
+        ),
     },
     "File": {
         "on_update": (

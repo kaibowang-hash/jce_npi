@@ -150,3 +150,16 @@ class CursorSigningUnavailable(NpiProblem):
             "CURSOR_SIGNING_UNAVAILABLE",
             _("Secure pagination is unavailable."),
         )
+
+
+class ProjectCollaborationRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "PROJECT_COLLABORATION_ROUTES_DISABLED",
+            _("Project collaboration is temporarily unavailable."),
+            _(
+                "The routes are disabled while a reviewed forward fix is applied."
+            ),
+            retryable=True,
+        )

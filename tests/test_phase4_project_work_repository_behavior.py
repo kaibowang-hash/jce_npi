@@ -21,6 +21,8 @@ POLICY_ID = UUID("edebac00-2520-4327-8b39-0722c97396cc")
 WBS_ID = UUID("4d94688f-b3bb-43c1-839a-69cd0f280791")
 STAGE_ID = UUID("8e497b7e-5090-4eb6-b118-25ecaee44390")
 RELATED_ID = UUID("68f9e45c-22c8-4981-a8b7-4643729e7eae")
+WORK_ITEM_ID = UUID("faee945d-6ea6-4852-a168-a125d55f06b7")
+OTHER_WORK_ITEM_ID = UUID("b1861fba-eeb4-4518-80e8-6dcd6d179832")
 TENANT_ID = "TENANT-A"
 
 
@@ -240,6 +242,7 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         return AttrDoc(
             global_id=str(PROJECT_ID),
             tenant_id=TENANT_ID,
+            lifecycle_state="active",
             optimistic_version=4,
             work_plan_revision=2,
             work_policy_global_id=str(self.policy.policy_global_id),
@@ -1653,6 +1656,142 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         signing_key.assert_not_called()
         get_all.assert_not_called()
 
+    def test_exact_work_item_target_is_authorized_then_resolved_without_pagination(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        item = self._work_item_document(
+            global_id=WORK_ITEM_ID,
+            due_at=datetime(2026, 8, 1, 12, tzinfo=UTC),
+            terminal=False,
+            title="Exact target",
+        )
+        get_all = mock.Mock(return_value=[item])
+        self.frappe.get_all = get_all
+
+        with mock.patch.object(
+            self.repository_module,
+            "_domain_work_item_cursor_signing_key",
+            side_effect=AssertionError(
+                "An exact target must not depend on pagination signing."
+            ),
+        ) as signing_key:
+            response = repository.list_domain_work_items(
+                PROJECT_ID,
+                stage_id=None,
+                owner_user_id=None,
+                overdue=None,
+                kind=None,
+                cursor=None,
+                limit=50,
+                work_item_id=str(WORK_ITEM_ID),
+            )
+
+        self.assertIsNotNone(response)
+        self.assertEqual(response["nextCursor"], None)
+        self.assertEqual(
+            [value["globalId"] for value in response["items"]],
+            [str(WORK_ITEM_ID)],
+        )
+        signing_key.assert_not_called()
+        get_all.assert_called_once()
+        query = get_all.call_args.kwargs
+        self.assertEqual(
+            query["filters"],
+            {
+                "tenant_id": TENANT_ID,
+                "project_global_id": str(PROJECT_ID),
+                "global_id": str(WORK_ITEM_ID),
+            },
+        )
+        self.assertEqual(query["limit_page_length"], 2)
+        self.assertEqual(query["order_by"], "global_id asc")
+
+    def test_exact_work_item_target_hides_absent_and_cross_project_identities(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        self.frappe.get_all = mock.Mock(return_value=[])
+
+        for selected_id in (WORK_ITEM_ID, OTHER_WORK_ITEM_ID):
+            with self.subTest(work_item_id=selected_id):
+                response = repository.list_domain_work_items(
+                    PROJECT_ID,
+                    stage_id=None,
+                    owner_user_id=None,
+                    overdue=None,
+                    kind=None,
+                    cursor=None,
+                    limit=50,
+                    work_item_id=str(selected_id),
+                )
+                self.assertIsNone(response)
+
+    def test_exact_work_item_validation_occurs_only_after_project_authorization(
+        self,
+    ) -> None:
+        project = self._project()
+        repository, _audits = self._repository(project)
+        get_all = mock.Mock(
+            side_effect=AssertionError("Invalid exact targets must not query.")
+        )
+        self.frappe.get_all = get_all
+
+        repository._authorized_project = mock.Mock(return_value=None)
+        response = repository.list_domain_work_items(
+            OTHER_PROJECT_ID,
+            stage_id=None,
+            owner_user_id=None,
+            overdue=None,
+            kind=None,
+            cursor=None,
+            limit=50,
+            work_item_id="not-a-global-id",
+        )
+        self.assertIsNone(response)
+        get_all.assert_not_called()
+
+        repository._authorized_project = mock.Mock(return_value=project)
+        with self.assertRaises(
+            self.repository_module.RequestValidationFailed
+        ) as invalid:
+            repository.list_domain_work_items(
+                PROJECT_ID,
+                stage_id=None,
+                owner_user_id=None,
+                overdue=None,
+                kind=None,
+                cursor=None,
+                limit=50,
+                work_item_id="not-a-global-id",
+            )
+        self.assertEqual(
+            invalid.exception.field_errors[0]["path"],
+            "workItemId",
+        )
+        get_all.assert_not_called()
+
+        with self.assertRaises(
+            self.repository_module.RequestValidationFailed
+        ) as combined:
+            repository.list_domain_work_items(
+                PROJECT_ID,
+                stage_id=STAGE_ID,
+                owner_user_id=None,
+                overdue=None,
+                kind=None,
+                cursor=None,
+                limit=50,
+                work_item_id=str(WORK_ITEM_ID),
+            )
+        self.assertEqual(
+            combined.exception.field_errors[0]["path"],
+            "workItemId",
+        )
+        get_all.assert_not_called()
+
     def test_locked_waiter_reloads_winner_version_before_any_aggregate_write(
         self,
     ) -> None:
@@ -1707,6 +1846,81 @@ class Phase4ProjectWorkRepositoryBehaviorTest(unittest.TestCase):
         self.assertEqual(events, ["locked-load", "replay"])
         prepare.assert_not_called()
         insert.assert_not_called()
+
+    def test_terminal_context_is_read_only_and_sealed_replay_survives(self) -> None:
+        project = self._project()
+        project.lifecycle_state = "completed"
+        repository, _audits = self._repository(project)
+        with mock.patch.object(
+            self.repository_module,
+            "_project_documents",
+            return_value=(),
+        ):
+            context = repository._work_context_for(project)
+        self.assertTrue(context["permissions"]["canView"])
+        self.assertFalse(context["permissions"]["canContribute"])
+        self.assertFalse(context["permissions"]["canAdminister"])
+
+        del repository._idempotency_replay
+        work_policy_ref: dict[str, object] = {}
+        payload = {
+            "projectId": PROJECT_ID,
+            "expectedProjectVersion": 4,
+            "workPolicyRef": work_policy_ref,
+            "members": (),
+            "roleAssignments": (),
+            "substitutions": (),
+            "raciAssignments": (),
+        }
+        sealed_response = {"projectId": str(PROJECT_ID), "sealed": True}
+        sealed_record = AttrDoc(
+            payload_hash=self.repository_module._payload_hash(payload),
+            response_json=sealed_response,
+            response_sealed=1,
+        )
+        with (
+            mock.patch.object(
+                self.frappe.db,
+                "get_value",
+                return_value=sealed_record,
+            ),
+            mock.patch.object(
+                self.repository_module,
+                "require_mutable_project",
+                side_effect=AssertionError(
+                    "A sealed replay must precede the terminal guard."
+                ),
+            ),
+        ):
+            replay = repository.configure_team(
+                PROJECT_ID,
+                idempotency_key="terminal-sealed-replay",
+                expected_project_version=4,
+                work_policy_ref=work_policy_ref,
+                members=(),
+                role_assignments=(),
+                substitutions=(),
+                raci_assignments=(),
+            )
+        self.assertIsNotNone(replay)
+        assert replay is not None
+        self.assertTrue(replay.replayed)
+        self.assertEqual(replay.response, sealed_response)
+
+        ProjectHistoryLocked = importlib.import_module(
+            "npi_core.project_controls.terminal_guard"
+        ).ProjectHistoryLocked
+        with self.assertRaises(ProjectHistoryLocked):
+            repository.configure_team(
+                PROJECT_ID,
+                idempotency_key="terminal-new-command",
+                expected_project_version=4,
+                work_policy_ref=work_policy_ref,
+                members=(),
+                role_assignments=(),
+                substitutions=(),
+                raci_assignments=(),
+            )
 
     def test_baseline_controller_accepts_administrator_actor_identity(
         self,

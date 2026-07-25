@@ -10,7 +10,7 @@ test.describe("six clickable Phase 3 prototype flows", () => {
   test("My Work opens an overdue blocking Gate deliverable in context", async ({
     page,
   }) => {
-    await openPrototype(page, "/work");
+    await openPrototype(page, "/demo/work");
     const item = page
       .getByRole("row")
       .filter({ hasText: "Close the major T1 flash defect" });
@@ -148,8 +148,9 @@ test.describe("primary-action and high-risk interaction invariants", () => {
     const dialog = page.getByRole("dialog", {
       name: "Gate decision impact review",
     });
-    const cancelHost = dialog.locator(".impact-review__cancel");
-    await expect(cancelHost).toBeFocused();
+    await expect(
+      dialog.getByRole("heading", { name: "Gate decision impact review" }),
+    ).toBeFocused();
 
     const reason = dialog.getByRole("textbox", { name: "Reason" });
     await reason.fill("Evidence reviewed");
@@ -168,7 +169,7 @@ test.describe("primary-action and high-risk interaction invariants", () => {
   test("worklist rows support Enter and Space selection without activating navigation", async ({
     page,
   }) => {
-    await openPrototype(page, "/work");
+    await openPrototype(page, "/demo/work");
     const bodyRows = page.locator(".worklist-panel tbody tr");
     await expect(bodyRows).toHaveCount(6);
     await bodyRows.nth(1).focus();
@@ -178,7 +179,7 @@ test.describe("primary-action and high-risk interaction invariants", () => {
     await bodyRows.nth(2).focus();
     await page.keyboard.press("Space");
     await expect(bodyRows.nth(2)).toHaveAttribute("aria-selected", "true");
-    await expect(page).toHaveURL(/\/work/);
+    await expect(page).toHaveURL(/\/demo\/work(?:\?lang=en)?$/);
   });
 
   test("the real iX adapter preserves accessible names and disclosure attributes", async ({

@@ -1,0 +1,4 @@
+[pre_model_sync]
+
+[post_model_sync]
+npi_core.patches.v1_2.rebuild_my_work_projection

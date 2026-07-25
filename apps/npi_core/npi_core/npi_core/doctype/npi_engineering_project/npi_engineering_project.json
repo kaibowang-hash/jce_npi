@@ -30,9 +30,19 @@
     {"fieldname": "work_policy_version", "fieldtype": "Int", "label": "Work Policy Version", "read_only": 1},
     {"fieldname": "work_policy_snapshot_hash", "fieldtype": "Data", "label": "Work Policy Snapshot Hash", "read_only": 1},
     {"fieldname": "work_plan_revision", "fieldtype": "Int", "label": "Work Plan Revision", "reqd": 1, "default": "0", "read_only": 1},
-    {"fieldname": "active_plan_baseline_global_id", "fieldtype": "Data", "label": "Active Plan Baseline Global ID", "read_only": 1}
+    {"fieldname": "active_plan_baseline_global_id", "fieldtype": "Data", "label": "Active Plan Baseline Global ID", "read_only": 1},
+    {"fieldname": "control_binding_global_id", "fieldtype": "Data", "label": "Project Control Binding Global ID", "read_only": 1},
+    {"fieldname": "control_policy_global_id", "fieldtype": "Data", "label": "Project Control Policy Global ID", "read_only": 1},
+    {"fieldname": "control_policy_version", "fieldtype": "Int", "label": "Project Control Policy Version", "read_only": 1},
+    {"fieldname": "control_policy_snapshot_hash", "fieldtype": "Data", "label": "Project Control Policy Snapshot Hash", "read_only": 1},
+    {"fieldname": "control_binding_version", "fieldtype": "Int", "label": "Project Control Binding Version", "reqd": 1, "default": "0", "read_only": 1},
+    {"fieldname": "current_health_assessment_global_id", "fieldtype": "Data", "label": "Current Health Assessment Global ID", "read_only": 1},
+    {"fieldname": "current_health_status", "fieldtype": "Select", "label": "Current Health Status", "options": "unassessed\nunavailable\ngreen\nyellow\nred", "reqd": 1, "default": "unassessed", "read_only": 1},
+    {"fieldname": "current_health_snapshot", "fieldtype": "JSON", "label": "Current Health Snapshot", "read_only": 1},
+    {"fieldname": "current_health_at", "fieldtype": "Datetime", "label": "Current Health At", "read_only": 1}
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0}
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
   ]
 }

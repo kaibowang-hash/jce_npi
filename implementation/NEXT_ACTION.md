@@ -1,126 +1,122 @@
 # Next Action
 
-Status: `P4-04 LEVEL 3 PASS — P4-05 ACTIVE`
+Status: `PHASE 4 PASS — P5-00 ACTIVE`
 
-Recovery time: `2026-07-25T09:09:22Z`
+Recovery time: `2026-07-25T17:54:13Z`
 
 Active execution goal:
 `implementation/ACTIVE_EXECUTION_GOAL.md`
-
-The former thread-migration stop boundary is
-`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. Continuous delivery now
-proceeds automatically through P4-05 and later phases after each applicable
-passing Gate. P4-04 is complete and must not be rerun merely to restore context.
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
 
 ## Controller state
 
-- First incomplete phase:
+- First incomplete acceptance phase:
   `3 — React App Shell Siemens UI and i18n Foundation`.
 - Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; named business UAT and
-  provenance-backed sanitized-data review are still externally unsigned.
+  provenance-backed sanitized-data review are externally unsigned.
+- Latest completed implementation phase:
+  `4 — Project Work Items and Stage Gates` (`PASS`).
+- Completed Phase 4 atomic tasks: `P4-01` through `P4-05`.
+- P4-05 result: `PASS — LEVEL 3 FULL RELEASE GATE`.
 - Current authorized implementation phase:
-  `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
-- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, `P4-03`, and `P4-04`.
-- P4-04 result: `PASS — LEVEL 3 FULL RELEASE GATE`; do not repeat its complete
-  Gate.
+  `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`).
 - Current unfinished atomic task:
-  `P4-05 — Live My Work, activity, and Project controls`.
-- P4-05 allocation: `FR-PM-008`, `FR-PM-011`, `FR-PM-012`, `FR-CO-001`,
-  `FR-CO-002`, and `FR-CO-006`.
+  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+  EBOM`.
+- First product task after P5-00 passes:
+  `P5-01 — Document and design revision`.
+- Compatibility Pack task:
+  `M4-01 — Document and design revision`.
 
-## Completed P4-04 boundary
+## Completed Phase 4 boundary
 
-- Versioned synthetic Gate Review Policy, closed condition evaluator, explicit
-  frozen review/final-decision/reopen/exception authorities, and
-  parallel/sequential/conditional review domain.
-- Additive controlled review persistence, live repository/controllers,
-  Project→Gate→Cycle→Exception locks, actor-bound sealed idempotency,
-  immutable history/audit, generic CRUD denial, and strict BFF/OpenAPI.
-- Fail-closed normal pass, bounded non-P0 exception handling, exact closure
-  action references, server-built immutable decisions, new-cycle reopen,
-  dependency invalidation/refresh, and current-decision downstream guard.
-- Compatibility repair for preserved latest-decision lineage, historical
-  event schema v1 forms, legacy/exact exception request references, File
-  deletion dependency scheduling, and transport capability projection.
-- Live trilingual industrial Review Room with strict parsing, server-driven
-  permissions, command/receipt reconciliation, immutable-history detail, and
-  current loading/non-normal/command/dialog fixtures and snapshots.
+P4-01 through P4-05 deliver the bounded Project/Gate technical foundation:
 
-No production Gate Review Policy is installed. Production approval, waiver,
-invalidation, delegation, and segregation rules remain scoped Class-B holds.
-P4-04 creates no impact Domain WorkItem; P4-05 owns work projection. Complete
-evidence is in `implementation/evidence/phase-4/p4-04-validation.md`.
+- immutable versioned Project templates and live Project cockpit;
+- explicit Team/RACI, WBS, plan baseline and distinct Domain Work Items;
+- immutable Gate templates, frozen requirements and controlled evidence;
+- versioned review policies, exact frozen authority, immutable decisions,
+  preserved-cycle reopen, dependency invalidation and downstream denial;
+- live current-actor My Work projection with exact source revalidation;
+- versioned Project Control Policy, four-dimensional health, fail-closed
+  lifecycle control, internal activity and reusable learning; and
+- complete strict BFF, audit, permission, English-source/`zh`/`zh-TW`, browser
+  and industrial visual evidence.
+
+Complete Phase evidence:
+
+- `implementation/phase-4-gate.md`
+- `implementation/evidence/phase-4/p4-05-validation.md`
+
+No production Project/Gate/control policy, production ERPNext connection,
+notification/external-user/mail/print/portal delivery, or Phase 3 business-UAT
+result is claimed.
 
 ## Passed evidence — do not repeat merely to restore context
 
-- Final `make verify`: `PASS` — 417 Python tests, 337 frontend tests, complete
-  static/type/lint/style/boundary/industrial-UI checks, coverage, production
-  build, strict install-script review, and zero full/production npm audit
-  findings.
-- Frappe-compatible i18n: `PASS` — 1,746 literal English sources with complete
-  direct `zh` and `zh-TW` coverage.
-- Additive Site migration and idempotent rerun: `PASS` at exact Frappe commit
-  `a3d8090ba80cb91d3ed72ea90bec67df201db5c1`.
-- Complete live Frappe runtime: `PASS` — BFF, Project, Project Work fresh,
-  cross-process sealed replay, Gate Evidence, and Gate Review.
-- Complete non-visual Playwright: `204/204 PASS`.
-- Affected command/dialog browser lane: `26/26 PASS`.
-- Forced visual update: `170/170 PASS`; immediate clean comparison:
-  `170/170 PASS` at unchanged `maxDiffPixelRatio: 0`.
-- Fresh Node `v24.18.0`/npm `11.16.0` target, exact dependency/install-script
-  policy, and zero-vulnerability audits: `PASS`.
-- Independent code/security/release review: `PASS`, with no remaining blocker,
-  major, or minor finding.
+- Python: `587/587 PASS`.
+- Frontend unit/component: `492/492 PASS`.
+- Frappe-compatible i18n: `2,221` literal English sources with complete direct
+  `zh` and `zh-TW`.
+- Frontend coverage: 84.87% statements, 84.01% branches, 89.66% functions,
+  86.79% lines.
+- Build/audit: 404 modules; strict install-script policy; zero complete and
+  production-only npm vulnerabilities; visible bundle warning retained.
+- Additive/idempotent Site synchronization: `PASS`.
+- Complete cumulative live Frappe runtime: `PASS`, including a 296-source /
+  184-row / 127-active My Work rebuild, injected rollback, terminal
+  deactivation, fourteen-route disable/recovery and cross-process replay.
+- Complete non-visual Playwright: `227/227 PASS`.
+- Forced full visual regeneration: `188/188 PASS`.
+- Separate clean visual comparison:
+  `188/188 PASS` at unchanged `maxDiffPixelRatio: 0`.
+- Original-resolution three-language visual review: `PASS`.
+- Independent requirement, domain, permission/security, migration/rollback and
+  release reviews: `PASS`, no blocker/major/minor finding.
 
-Exact commands, changed-files→affected-tests mapping, repair history, review
-findings, and rollback evidence are in
-`implementation/evidence/phase-4/p4-04-validation.md`.
+The host Node 18 `make verify` preflight rejection ran no product assertion.
+The retained Node 24 target evidence above is authoritative.
 
-## Current unfinished atomic work
+## Current P5-00 task
 
-P4-05 is active. Its bounded outcome must combine:
+Create `implementation/phase-5-requirement-anchor.md` before any Phase 5
+business code. P5-00 must:
 
-- a live, current-user My Work projection over the already-governed Project,
-  Domain WorkItem, Gate assignment, and invalidated Gate sources;
-- contextual internal activity/comments/attachments without claiming mail,
-  in-app delivery, portal, or external collaboration;
-- honest Project health and policy-driven lifecycle controls that remain
-  unavailable when the recorded production formulas, thresholds, authorities,
-  or completion prerequisites are absent;
-- lessons/template feedback at the boundary authorized by `FR-PM-012`; and
-- complete English-source, direct `zh`, and direct `zh-TW` UI/API copy.
+1. read the Phase 5/M4 Pack boundary and relevant accepted ADRs/contracts;
+2. allocate `FR-DS-001` through `FR-DS-014` without changing their acceptance
+   meaning;
+3. reconcile document/design revision, controlled files, baselines, impact
+   invalidation, EBOM revision/comparison and formal publish-request scope;
+4. preserve ERPNext ownership of formal Item/MBOM/manufacturing execution and
+   prohibit production ERPNext access;
+5. explicitly allocate or hold external sharing (`FR-DS-008`), ERP publish
+   (`FR-DS-013`) and CAD/PDM connector (`FR-DS-014`);
+6. record Class-B holds, scope/non-scope, requirement-to-task mapping,
+   changed-files-to-tests expectations, migration and rollback;
+7. define the exact P5-01 through final Phase 5 task sequence using Pack M4;
+8. update trace/status/decision/risk/blocker/recovery records;
+9. run the applicable P5-00 documentation/trace Gate; and
+10. commit, push, confirm the remote SHA, then automatically activate P5-01.
 
-Production health formulas, lifecycle authorities, notification delivery,
-external users, ERPNext actuals, and other scoped Class-B holds must not be
-invented. Phase 3 external UAT remains unsigned and does not block the safe
-NPI-owned P4-05 foundation.
+P5-00 must not invent a production document classification, numbering,
+approval, retention, baseline, EBOM, Item/MBOM mapping, sharing, CAD/PDM or
+ERPNext rule. It must not start P5-01 product code early.
 
 ## Exact recovery steps
 
-1. Fetch `origin`, check out `codex/npi-v1.2-implementation`, and verify local
-   `HEAD` equals `origin/codex/npi-v1.2-implementation` with a clean worktree.
-2. Read `AGENTS.md`, `implementation/AUTOPILOT_CONTROLLER.md`,
-   `implementation/PHASE_STATUS.yaml`, this file,
-   `implementation/LAST_RUN.md`, `implementation/BLOCKERS.md`,
-   `implementation/REQUIREMENT_TRACEABILITY.csv`,
-   `implementation/DECISION_LOG.md`, `implementation/RISK_REGISTER.md`,
-   `implementation/phase-4-requirement-anchor.md`,
-   `implementation/evidence/phase-4/p4-04-validation.md`, and the six allocated
-   requirement rows in `docs/DETAILED_REQUIREMENTS.md`.
-3. Confirm P4-01 through P4-04 are complete and P4-05 is the only active Phase
-   4 atomic task. Reuse the passing P4-04 evidence above.
-4. Read only the P4-05-related domain/UX/API contracts and applicable
-   `npi-domain-guard`, `frappe-safe-change`, `industrial-ux`, and
-   `frappe-i18n` Skills; expand scope only for a material ambiguity or
-   cross-domain conflict.
-5. Create `implementation/evidence/phase-4/p4-05-plan.md` with exact scope,
-   non-scope, Class-B holds, changed-files→tests mapping, migration/rollback,
-   and truthful acceptance targets before business code.
-6. Set the six P4-05 trace rows to `IN_PROGRESS_P4_05` when implementation
-   actually begins, then implement the minimum complete vertical slice and use
-   cumulative Level 1/2/3 validation.
-7. Do not create `phase-4-gate.md` or enter Phase 5 until P4-05 and the complete
-   Phase 4 Gate genuinely pass.
+1. Fetch `origin`, check out `codex/npi-v1.2-implementation`, and compare local
+   and remote HEAD/ahead-behind without reset, rebase or force push.
+2. Confirm the P4-05/Phase 4 checkpoint is committed and pushed; record its
+   exact remote SHA in `ACTIVE_EXECUTION_GOAL.md`.
+3. Reuse `implementation/phase-4-gate.md` and
+   `implementation/evidence/phase-4/p4-05-validation.md`; do not rerun their
+   complete Gates only to restore context.
+4. Read the Phase 5/M4 requirement sources, `FR-DS-001..FR-DS-014`, relevant
+   contracts, data ownership, accepted ADRs and applicable Skills.
+5. Create and validate `implementation/phase-5-requirement-anchor.md`.
+6. Keep Phase 3 external UAT and production ERPNext/rule packages as scoped
+   holds; they do not block safe NPI-owned P5-00 work.
+7. After P5-00 `PASS`, create a recoverable checkpoint, commit, push, confirm
+   the remote SHA and activate only `P5-01 — Document and design revision`.

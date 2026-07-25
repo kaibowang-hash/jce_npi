@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from .foundation.errors import (
     AuthenticationRequired,
     CsrfTokenInvalid,
+    ProjectCollaborationRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
 )
@@ -15,6 +16,27 @@ from .foundation.security import Principal
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
+
+
+def project_collaboration_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P4-05 emergency switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p4_05_routes_disabled")
+        if hasattr(configuration, "get")
+        else False
+    )
+    return value is True
+
+
+def require_project_collaboration_routes_enabled() -> None:
+    """Close P4-05 handlers even when generic Frappe routing is attempted."""
+
+    if project_collaboration_routes_are_disabled():
+        raise ProjectCollaborationRoutesDisabled()
 
 
 def response_request_id() -> str:
@@ -87,6 +109,26 @@ def reject_unexpected_request_fields(
             [
                 {"path": field, "message": _("This field is not allowed.")}
                 for field in unexpected_fields
+            ]
+        )
+
+
+def require_request_fields(
+    required_fields: frozenset[str], request_fields: dict[str, Any]
+) -> None:
+    """Require explicit request keys while preserving explicit null values."""
+    import frappe
+    from frappe import _
+
+    form_dict = getattr(getattr(frappe, "local", None), "form_dict", None)
+    field_names = set(form_dict.keys()) if hasattr(form_dict, "keys") else set()
+    field_names.update(request_fields)
+    missing_fields = sorted(required_fields - field_names)
+    if missing_fields:
+        raise RequestValidationFailed(
+            [
+                {"path": field, "message": _("This field is required.")}
+                for field in missing_fields
             ]
         )
 

@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01/P4-02/P4-03/P4-04 PASS; P4-05 ACTIVE**
+Status: **COMPLETE — P4-01 THROUGH P4-05 PASS; PHASE 4 PASS**
 
 Anchor date: 2026-07-22
 
@@ -467,3 +467,61 @@ P4-05 activates automatically under the continuous-delivery authority with
 `FR-CO-006`. Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its named external
 business sign-off and provenance-backed sanitized-data review are not replaced
 by technical P4-04 evidence.
+
+## 19. P4-05 completed boundary
+
+P4-05 owns the technically verified live current-actor My Work projection,
+internal contextual activity, four-dimensional Project-health infrastructure,
+policy-driven lifecycle controls, and reusable Project learning boundary.
+
+The My Work index is only a rebuildable locator over exact source records.
+Every read revalidates source, tenant, Project, actor assignment, membership,
+capability, terminal state and target route. Domain Work Items, current Gate
+Review assignments and exact invalidation responsibilities are projected;
+unknown, stale, inaccessible or ambiguous sources fail closed. Phase 8
+integration exceptions remain explicitly unavailable.
+
+Versioned Project Control Policies freeze authority bindings and closed health
+and lifecycle rules. No policy is installed by migration. Health is
+`unassessed`/`unavailable` when its source or rule is absent; completion stays
+unavailable while authoritative controlled-file, handover or cost-readiness
+facts are missing. Internal comments, mentions, controlled attachment
+references, object links, follow state, activity and learning are append-only.
+A template-improvement record is visibly proposed only and never mutates or
+publishes a Project Template.
+
+P4-05 does not provide production health formulas/thresholds/actuals,
+lifecycle or completion authority, notification delivery, external users,
+portal/mail/print, production learning governance, production ERPNext access,
+or named business UAT.
+
+## 20. P4-05 and Phase 4 exit decision
+
+**P4-05 PASS; PHASE 4 PASS; P5-00 ACTIVE.**
+
+The final Level 3 Gate passed 587 Python tests, 492 frontend tests, complete
+2,221-entry direct `zh`/`zh-TW` catalogs, additive/idempotent Site
+synchronization, the complete live Frappe runtime, 227 non-visual browser
+cases, forced and clean 188-case exact visual matrices, original-resolution
+trilingual review, and independent requirement/domain/permission/security/
+migration/release reviews.
+
+My Work rebuild evidence covered 296 source records, 184 retained projection
+rows and 127 active assignments, including injected rollback and idempotence.
+All 14 P4-05 BFF/direct routes passed persisted disable/recovery, prior routes
+remained available, and cross-process sealed command replay produced no
+duplicate history.
+
+Complete evidence is recorded in
+`implementation/evidence/phase-4/p4-05-validation.md`; the Phase decision is
+recorded in `implementation/phase-4-gate.md`.
+
+The 20 Phase 4 trace rows close truthfully as 6 `TECHNICAL_VERIFIED`,
+13 `TECHNICAL_VERIFIED_FOUNDATION`, and 1 `PARTIAL_FOUNDATION`. Production
+Class-B rules and Phase 3 external UAT remain scoped holds rather than inferred
+facts.
+
+Automatic continuation activates only
+`P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
+EBOM`. P5-00 must pass before `P5-01 — Document and design revision` or any
+other Phase 5 product code begins.

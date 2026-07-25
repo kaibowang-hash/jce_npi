@@ -159,7 +159,7 @@ describe("Project cockpit response validation", () => {
         ...fixture,
         project: {
           ...(fixture.project as Record<string, unknown>),
-          state: "active",
+          state: "archived",
         },
       }),
     ],

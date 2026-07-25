@@ -21,7 +21,7 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             for field in metadata["fields"]  # type: ignore[index]
         }
 
-    def test_top_level_doctypes_keep_only_the_narrow_gate_transport_write(
+    def test_top_level_doctypes_keep_only_narrow_controller_transport_writes(
         self,
     ) -> None:
         top_level = (
@@ -36,16 +36,20 @@ class Phase4ProjectMetadataTest(unittest.TestCase):
             with self.subTest(folder=folder):
                 metadata = self.load_doctype(folder)
                 permissions = metadata["permissions"]  # type: ignore[index]
+                transport_doctypes = {
+                    "npi_engineering_project",
+                    "npi_gate_shell",
+                }
                 expected_roles = (
                     {"System Manager", "NPI API User"}
-                    if folder == "npi_gate_shell"
+                    if folder in transport_doctypes
                     else {"System Manager"}
                 )
                 self.assertEqual(
                     {item["role"] for item in permissions},
                     expected_roles,
                 )
-                if folder == "npi_gate_shell":
+                if folder in transport_doctypes:
                     transport = next(
                         item for item in permissions if item["role"] == "NPI API User"
                     )

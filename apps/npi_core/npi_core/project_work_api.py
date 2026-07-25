@@ -63,7 +63,15 @@ _CREATE_DOMAIN_WORK_ITEM_FIELDS = frozenset(
     }
 )
 _LIST_DOMAIN_WORK_ITEM_FIELDS = frozenset(
-    {"stageId", "ownerUserId", "overdue", "kind", "cursor", "limit"}
+    {
+        "workItemId",
+        "stageId",
+        "ownerUserId",
+        "overdue",
+        "kind",
+        "cursor",
+        "limit",
+    }
 )
 _WORK_POLICY_FIELDS = frozenset({"globalId", "version", "snapshotHash"})
 _MEMBER_FIELDS = frozenset(
@@ -207,6 +215,7 @@ class ProjectWorkRepositoryLike(Protocol):
         kind: str | None,
         cursor: str | None,
         limit: int,
+        work_item_id: object | None = None,
     ) -> dict[str, Any] | None: ...
 
 
@@ -435,6 +444,7 @@ def create_project_domain_work_item(
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_project_domain_work_items(
+    workItemId: Any = None,
     stageId: Any = None,
     ownerUserId: Any = None,
     overdue: Any = None,
@@ -473,6 +483,9 @@ def get_project_domain_work_items(
             # cannot be distinguished with malformed input.
             cursor=cursor,
             limit=_query_limit(limit),
+            # Exact target identity remains raw until after Project
+            # authorization inside the repository.
+            work_item_id=workItemId,
         )
         if response is None:
             raise ProjectUnavailable()

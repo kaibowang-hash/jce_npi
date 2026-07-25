@@ -28,6 +28,7 @@ export interface ProjectWorkContextDataSource {
 }
 
 export interface DomainWorkItemQuery {
+  workItemId?: string;
   stageId?: string;
   ownerUserId?: string;
   overdue?: boolean;
@@ -812,7 +813,16 @@ function clientReference(): string {
 }
 
 function isDomainWorkItemQuery(query: DomainWorkItemQuery): boolean {
+  const exactTarget =
+    query.workItemId === undefined ||
+    (isUuid(query.workItemId) &&
+      query.stageId === undefined &&
+      query.ownerUserId === undefined &&
+      query.overdue === undefined &&
+      query.kind === undefined &&
+      query.cursor === undefined);
   return (
+    exactTarget &&
     (query.stageId === undefined || isUuid(query.stageId)) &&
     (query.ownerUserId === undefined || isEmail(query.ownerUserId)) &&
     (query.overdue === undefined || typeof query.overdue === "boolean") &&
@@ -828,6 +838,7 @@ function domainWorkItemQueryParameters(
   query: DomainWorkItemQuery,
 ): Readonly<Record<string, string>> {
   const parameters: Record<string, string> = {};
+  if (query.workItemId !== undefined) parameters.workItemId = query.workItemId;
   if (query.stageId !== undefined) parameters.stageId = query.stageId;
   if (query.ownerUserId !== undefined)
     parameters.ownerUserId = query.ownerUserId.toLowerCase();
@@ -849,6 +860,10 @@ function matchesDomainWorkItemQuery(
     page.projectId === projectId &&
     page.projectVersion === expectedProjectVersion &&
     (query.limit === undefined || page.items.length <= query.limit) &&
+    (query.workItemId === undefined ||
+      (page.items.length === 1 &&
+        page.items[0]?.globalId === query.workItemId &&
+        page.nextCursor === null)) &&
     page.items.every(
       (item) =>
         (query.stageId === undefined ||

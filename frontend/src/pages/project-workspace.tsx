@@ -6,6 +6,7 @@ import type {
   ProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
 import { ProjectWorkRequestCancelledError } from "../api/project-work-data-source";
+import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { DockedInspector } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
@@ -24,6 +25,7 @@ import type {
   ProjectRoleAssignmentViewModel,
   ProjectWbsItemViewModel,
   ProjectWorkContextViewModel,
+  ProjectControlsViewModel,
 } from "../domain/view-models";
 import {
   domainWorkItemKindLabel,
@@ -36,8 +38,34 @@ import {
 import { formatDate, formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n, type Locale } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import {
+  ProjectGovernanceWorkspace,
+  type ProjectGovernanceSection,
+} from "./project-governance-workspace";
 
-type ProjectWorkspaceTab = "overview" | "team" | "plan" | "work-items";
+type ProjectWorkspaceTab =
+  | "overview"
+  | "team"
+  | "plan"
+  | "work-items"
+  | ProjectGovernanceSection;
+
+const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
+  "overview",
+  "team",
+  "plan",
+  "work-items",
+  "controls",
+  "activity",
+  "learning",
+]);
+
+function initialProjectWorkspaceTab(): ProjectWorkspaceTab {
+  const requested = new URLSearchParams(globalThis.location.search).get("tab");
+  return requested && projectWorkspaceTabs.has(requested as ProjectWorkspaceTab)
+    ? (requested as ProjectWorkspaceTab)
+    : "overview";
+}
 
 type ResourceState<T> =
   | { kind: "idle" }
@@ -954,7 +982,15 @@ function DomainWorkItemsWorkspace({
   setQuery: (query: DomainWorkItemQuery) => void;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
-  const [selectedId, setSelectedId] = useState(page.items[0]?.globalId ?? "");
+  const requestedWorkItemId = new URLSearchParams(
+    globalThis.location.search,
+  ).get("workItem");
+  const [selectedId, setSelectedId] = useState(() =>
+    requestedWorkItemId &&
+    page.items.some((item) => item.globalId === requestedWorkItemId)
+      ? requestedWorkItemId
+      : (page.items[0]?.globalId ?? ""),
+  );
   const [ownerFilter, setOwnerFilter] = useState(query.ownerUserId ?? "");
   const selected =
     page.items.find((item) => item.globalId === selectedId) ?? page.items[0];
@@ -1216,19 +1252,38 @@ function DomainWorkItemsWorkspace({
 
 export function ProjectWorkspace({
   cockpit,
+  controlsDataSource,
   contextDataSource,
   domainWorkItemsDataSource,
+  navigate,
+  onProjectChanged,
   overview,
 }: {
   cockpit: ProjectCockpitViewModel;
+  controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
+  navigate: (target: string) => void;
+  onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
   overview: ReactNode;
 }): React.JSX.Element {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<ProjectWorkspaceTab>("overview");
-  const [contextRequested, setContextRequested] = useState(false);
-  const [workItemsRequested, setWorkItemsRequested] = useState(false);
+  const routeSearch = globalThis.location.search;
+  const routeTab = initialProjectWorkspaceTab();
+  const requestedWorkItemId =
+    new URLSearchParams(routeSearch).get("workItem") ?? undefined;
+  const [tabSelection, setTabSelection] = useState<{
+    routeSearch: string;
+    tab: ProjectWorkspaceTab;
+  }>(() => ({ routeSearch, tab: routeTab }));
+  const activeTab =
+    tabSelection.routeSearch === routeSearch ? tabSelection.tab : routeTab;
+  const [contextRequested, setContextRequested] = useState(
+    routeTab === "team" || routeTab === "plan",
+  );
+  const [workItemsRequested, setWorkItemsRequested] = useState(
+    routeTab === "work-items",
+  );
   const [contextAttempt, setContextAttempt] = useState(0);
   const [workItemsAttempt, setWorkItemsAttempt] = useState(0);
   const [workItemsPageNumber, setWorkItemsPageNumber] = useState(1);
@@ -1243,13 +1298,19 @@ export function ProjectWorkspace({
   const [workItemsState, setWorkItemsState] = useState<
     ResourceState<DomainWorkItemPageViewModel>
   >({ kind: "idle" });
-  const [workItemsQuery, setWorkItemsQuery] = useState<DomainWorkItemQuery>({
-    limit: 100,
-  });
+  const [workItemsQuery, setWorkItemsQuery] = useState<DomainWorkItemQuery>(
+    requestedWorkItemId
+      ? { limit: 1, workItemId: requestedWorkItemId }
+      : { limit: 100 },
+  );
   const workItemsQuerySignature = JSON.stringify(workItemsQuery);
+  const contextIsRequested =
+    contextRequested || activeTab === "team" || activeTab === "plan";
+  const workItemsAreRequested =
+    workItemsRequested || activeTab === "work-items";
 
   useEffect(() => {
-    if (!contextRequested || !contextDataSource) return undefined;
+    if (!contextIsRequested || !contextDataSource) return undefined;
     const controller = new AbortController();
     const requestGeneration = contextGeneration.current + 1;
     contextGeneration.current = requestGeneration;
@@ -1295,11 +1356,11 @@ export function ProjectWorkspace({
     cockpit.project.version,
     contextAttempt,
     contextDataSource,
-    contextRequested,
+    contextIsRequested,
   ]);
 
   useEffect(() => {
-    if (!workItemsRequested || !domainWorkItemsDataSource) return undefined;
+    if (!workItemsAreRequested || !domainWorkItemsDataSource) return undefined;
     const controller = new AbortController();
     const requestGeneration = workItemsGeneration.current + 1;
     workItemsGeneration.current = requestGeneration;
@@ -1356,7 +1417,7 @@ export function ProjectWorkspace({
     workItemsAttempt,
     workItemsQuery,
     workItemsQuerySignature,
-    workItemsRequested,
+    workItemsAreRequested,
   ]);
 
   const tabs = [
@@ -1364,13 +1425,16 @@ export function ProjectWorkspace({
     { id: "team", label: t("Team and responsibilities") },
     { id: "plan", label: t("Plan") },
     { id: "work-items", label: t("Work items") },
+    { id: "controls", label: t("Controls") },
+    { id: "activity", label: t("Activity") },
+    { id: "learning", label: t("Learning") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
     label: string;
   }>[];
 
   const selectTab = (tab: ProjectWorkspaceTab): void => {
-    setActiveTab(tab);
+    setTabSelection({ routeSearch, tab });
     if (tab === "team" || tab === "plan") setContextRequested(true);
     if (tab === "work-items") setWorkItemsRequested(true);
   };
@@ -1388,6 +1452,8 @@ export function ProjectWorkspace({
   const setFilteredWorkItemsQuery = (query: DomainWorkItemQuery): void => {
     const firstPageQuery = { ...query };
     delete firstPageQuery.cursor;
+    delete firstPageQuery.workItemId;
+    firstPageQuery.limit = 100;
     workItemsCursorStack.current = [undefined];
     setWorkItemsPageNumber(1);
     setWorkItemsQuery(firstPageQuery);
@@ -1483,6 +1549,10 @@ export function ProjectWorkspace({
           cockpit={cockpit}
           goToNextPage={goToNextWorkItemsPage}
           goToPreviousPage={goToPreviousWorkItemsPage}
+          key={
+            new URLSearchParams(routeSearch).get("workItem") ??
+            "default-work-item"
+          }
           page={workItemsState.value}
           pageNumber={workItemsPageNumber}
           query={workItemsQuery}
@@ -1490,6 +1560,21 @@ export function ProjectWorkspace({
         />
       );
     }
+  } else if (
+    activeTab === "controls" ||
+    activeTab === "activity" ||
+    activeTab === "learning"
+  ) {
+    content = (
+      <ProjectGovernanceWorkspace
+        cockpitState={cockpit.project.state}
+        dataSource={controlsDataSource}
+        navigate={navigate}
+        onProjectChanged={onProjectChanged}
+        projectId={cockpit.project.globalId}
+        section={activeTab}
+      />
+    );
   }
 
   return (
@@ -1526,9 +1611,9 @@ export function ProjectWorkspace({
               }
               if (event.key === "End") {
                 event.preventDefault();
-                selectTab("work-items");
+                selectTab("learning");
                 document
-                  .getElementById("project-workspace-tab-work-items")
+                  .getElementById("project-workspace-tab-learning")
                   ?.focus();
               }
             }}

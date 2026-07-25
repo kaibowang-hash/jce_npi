@@ -64,6 +64,7 @@ from npi_core.npi_core.doctype.npi_gate_evidence_reference.npi_gate_evidence_ref
     wbs_item_source_snapshot,
 )
 from npi_core.project.domain import IdempotencyConflict
+from npi_core.project_controls.terminal_guard import require_mutable_project
 
 _MAX_CYCLES = 1000
 _MAX_EXCEPTIONS = 256
@@ -247,6 +248,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_gate_version(gate, expected_gate_version)
         policy = load_available_gate_review_policy_version(
             policy_global_id, policy_version, policy_snapshot_hash
@@ -344,6 +346,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_in_review_state(gate)
         cycle = self._hydrate_cycle(cycle_document, lock_exceptions=True)
         try:
@@ -429,6 +432,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_in_review_state(gate)
         cycle = self._hydrate_cycle(cycle_document, lock_exceptions=True)
         if not any(
@@ -527,6 +531,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_in_review_state(gate)
         cycle = self._hydrate_cycle(
             cycle_document,
@@ -632,6 +637,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_in_review_state(gate)
         self._require_gate_version(gate, expected_gate_version)
         cycle = self._hydrate_cycle(cycle_document, lock_exceptions=True)
@@ -714,6 +720,7 @@ class FrappeGateReviewRepository:
         )
         if replay is not None:
             return GateReviewCommandOutcome(replay, True)
+        require_mutable_project(project)
         self._require_gate_version(gate, expected_gate_version)
         cycle = self._hydrate_cycle(cycle_document, lock_exceptions=True)
         self._require_current_binding_actor(
@@ -775,6 +782,8 @@ class FrappeGateReviewRepository:
     ) -> bool:
         if not self._dependency_system:
             raise PermissionDenied()
+        if _project_is_terminal(project):
+            return False
         if str(gate.get("review_state") or "not_started") not in {
             "in_review",
             "decided",
@@ -854,6 +863,8 @@ class FrappeGateReviewRepository:
         """Refresh one blocker or exact closure-action dependency under Gate locks."""
         if not self._dependency_system:
             raise PermissionDenied()
+        if _project_is_terminal(project):
+            return False
         if str(gate.get("review_state") or "not_started") not in {
             "in_review",
             "decided",
@@ -1341,6 +1352,16 @@ class FrappeGateReviewRepository:
         exception_allowed_outcomes: Mapping[UUID, Sequence[str]] | None = None,
         current_input: GateInputSnapshot | None = None,
     ) -> dict[str, bool]:
+        if _project_is_terminal(project):
+            return {
+                "canView": True,
+                "canStartReview": False,
+                "canReview": False,
+                "canRequestException": False,
+                "canApproveException": False,
+                "canDecide": False,
+                "canReopen": False,
+            }
         member = self._current_actor_member(project)
 
         def bound(slot: str) -> bool:
@@ -3273,6 +3294,13 @@ def _payload_list(payload: Mapping[str, object], key: str) -> list[dict[str, Any
     if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
         raise ValueError("Persisted Gate input collection is invalid.")
     return value
+
+
+def _project_is_terminal(project) -> bool:
+    return str(getattr(project, "lifecycle_state", "") or "") in {
+        "cancelled",
+        "completed",
+    }
 
 
 def _gate_matches(project, gate, gate_id: UUID) -> bool:

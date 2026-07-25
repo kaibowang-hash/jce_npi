@@ -58,7 +58,9 @@ export function AppShell({
   const isLiveProject =
     route.screen === "project" && route.projectMode === "live";
   const isLiveGate = route.screen === "gate" && route.gateMode === "live";
+  const isLiveWork = route.screen === "work" && route.workMode === "live";
   const isLiveProjectContext = isLiveProject || isLiveGate;
+  const isLiveDataContext = isLiveWork || isLiveProjectContext;
   const liveProjectPath =
     route.projectGlobalId === null
       ? null
@@ -173,11 +175,15 @@ export function AppShell({
             aria-label={t("Global search")}
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
-              if (isLiveProjectContext) {
+              if (isLiveDataContext) {
                 setUtilityMessage(
-                  t(
-                    "Live global search is not available in this phase. Open this project from an authorized project link.",
-                  ),
+                  isLiveWork
+                    ? t(
+                        "Live global search is not available in this phase. Open an authorized work item or project link.",
+                      )
+                    : t(
+                        "Live global search is not available in this phase. Open this project from an authorized project link.",
+                      ),
                 );
                 return;
               }
@@ -201,9 +207,13 @@ export function AppShell({
           icon="alarm"
           onClick={() => {
             setUtilityMessage(
-              t(
-                "No prototype notification feed is connected. Use My Work for assigned actions.",
-              ),
+              isLiveDataContext
+                ? t(
+                    "No live notification feed is connected in this phase. Use My Work for assigned actions.",
+                  )
+                : t(
+                    "No prototype notification feed is connected. Use My Work for assigned actions.",
+                  ),
             );
           }}
           visual="ghost"
@@ -229,14 +239,14 @@ export function AppShell({
           icon="user"
           onClick={() => {
             setUtilityMessage(
-              isLiveProjectContext
+              isLiveDataContext
                 ? t("The current identity is managed by the Frappe session.")
                 : t("Signed in for the test environment with prototype data."),
             );
           }}
           visual="ghost"
         >
-          {isLiveProjectContext ? (
+          {isLiveDataContext ? (
             t("Signed-in user")
           ) : (
             <span data-language-exempt="business-data">Alex Chen</span>
@@ -284,9 +294,11 @@ export function AppShell({
         <div className="environment-marker">
           <strong>{t("Test environment")}</strong>
           <span>
-            {isLiveProjectContext
-              ? t("Live project data")
-              : t("Prototype data")}
+            {isLiveWork
+              ? t("Live My Work data")
+              : isLiveProjectContext
+                ? t("Live project data")
+                : t("Prototype data")}
           </span>
         </div>
       </aside>
@@ -327,6 +339,15 @@ export function AppShell({
             <Button
               icon="refresh"
               onClick={() => {
+                if (isLiveWork) {
+                  globalThis.dispatchEvent(
+                    new CustomEvent("npi:refresh-my-work"),
+                  );
+                  setUtilityMessage(
+                    t("The live My Work request is being refreshed."),
+                  );
+                  return;
+                }
                 if (isLiveProjectContext) {
                   if (isLiveGate) {
                     globalThis.dispatchEvent(
@@ -370,11 +391,15 @@ export function AppShell({
           >
             <Icon name="info" />
             <strong>
-              {isLiveProjectContext
+              {isLiveWork
                 ? t(
-                    "Live project data. No production ERPNext system is connected.",
+                    "Live My Work data. No production ERPNext system is connected.",
                   )
-                : t("Prototype data - no production system is connected.")}
+                : isLiveProjectContext
+                  ? t(
+                      "Live project data. No production ERPNext system is connected.",
+                    )
+                  : t("Prototype data - no production system is connected.")}
             </strong>
             {localizationFailure ? (
               <div className="localization-failure">
@@ -420,7 +445,8 @@ export function AppShell({
             <code data-language-exempt="identifier">{catalogVersion}</code>
           </span>
           <span>
-            {t("Time zone")}: <span data-language-exempt="identifier">UTC</span>
+            {isLiveWork ? t("System time zone") : t("Time zone")}:{" "}
+            <span data-language-exempt="identifier">UTC</span>
           </span>
           <label>
             <span>{t("Language")}</span>
@@ -439,7 +465,7 @@ export function AppShell({
               ))}
             </Select>
           </label>
-          {isLiveProjectContext ? null : (
+          {isLiveDataContext ? null : (
             <label>
               <span>{t("Fixture state")}</span>
               <Select
