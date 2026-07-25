@@ -20,14 +20,34 @@
 - Acceptance: `docs/ACCEPTANCE_TESTS.md`
 - Contracts: `contracts/data-ownership.yaml`, `contracts/npi-api.openapi.yaml`, `contracts/integration-event.schema.json`, `contracts/terminology-allowlist.yaml`
 - Roadmap/backlog: `implementation/ROADMAP.md`, `implementation/backlog.yaml`
-- Reference-only source: `docs/reference/NPI_Tooling_Product_Spec_V1.2.docx`
-- Skills: `.agents/skills/*/SKILL.md`; `industrial-ux` is the Siemens-classic industrial UX guard and `frappe-i18n` is the zero-mixed-language guard.
+- Authoritative DOCX and accepted additive reconciliation:
+  `docs/reference/NPI_Tooling_Product_Spec_V1.2.docx`,
+  `docs/V1_2_RECONCILIATION_ADDENDUM.md`
+- Machine requirement artifacts:
+  `implementation/V1_2_DOCX_REQUIREMENTS.csv`,
+  `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`,
+  `implementation/REQUIREMENT_TRACEABILITY.csv`
+- Tooling import:
+  `docs/TOOLING_LIST_IMPORT_SPEC.md`,
+  `docs/reference/TOOLING_LIST_FIELD_MAPPING.csv`
+- Reconciliation decisions:
+  `implementation/V1_2_RECONCILIATION_DECISIONS.md`
+- Brand sole source:
+  `docs/Brand Asset/Brand Asset Instruction.csv` and the exact five SVGs in
+  that folder
+- Skills: `.agents/skills/*/SKILL.md`; `industrial-ux` is the Siemens-classic
+  industrial UX guard, `frappe-i18n` is the zero-mixed-language guard, and
+  `xlsx-tooling-import` is the controlled workbook-import guard.
 
 ## Import verification
 
 - ZIP integrity: `unzip -t` passed; every entry in `SHA256SUMS.txt` passed on 2026-07-21.
 - Pack root resolved by `AGENTS.md` at `NPI_Codex_Execution_Pack_V1.2/` inside the archive.
 - All Markdown, YAML, CSV, JSON, OpenAPI, schema, skill and reference index files were read.
-- DOCX XML text (105,147 bytes extracted) was read as a cross-check; machine execution remains based on canonical text specifications and contracts.
+- The historical 2026-07-21 DOCX XML cross-check remains import evidence.
+- On 2026-07-25 deterministic OOXML extraction produced 229 unique
+  requirements and 43 Tooling source columns; the reviewed crosswalk produced
+  a 281-ID typed trace. `scripts/verify_v1_2_reconciliation.py` validates
+  generated artifacts, set arithmetic, the original Pack-ID digest, and the
+  exact brand package.
 - Original input artifacts remain at repository root and are ignored; the normalized DOCX copy is retained under `docs/reference/`.
-

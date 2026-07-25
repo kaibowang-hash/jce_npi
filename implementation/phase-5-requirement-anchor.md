@@ -1,6 +1,6 @@
 # Phase 5 Requirement Anchor — Design, Documents, Baselines, and EBOM
 
-Status: **ANCHORED — P5-01 ACTIVE**
+Status: **ANCHORED — P5-01 CHECKPOINTED AND HELD FOR R1 BRIDGE**
 
 Anchor date: 2026-07-25
 
@@ -10,6 +10,30 @@ Compatibility milestone: M4 — Design and baselines
 
 Starting checkpoint:
 `028d551d4e02ad5700b165c21409e14b647babf0`
+
+## 2026-07-25 reconciliation amendment
+
+P5-00 and the original five-task allocation below remain truthful historical
+Gate evidence. The current typed trace contains 281 IDs rather than the
+pre-reconciliation 173, and the retained P5-01 backend checkpoint is
+`930b5a28cb995df12f251994a36f7502525ed94a`.
+
+Before any further P5-01 product work:
+
+1. complete R1-01 documentation/trace reconciliation;
+2. deliver R1-02 through R1-06 shared brand/UX/governance remediation;
+3. keep R1-07 scoped to DR-REC-001; and
+4. pass the triggered Level 3 shared Shell/design/i18n bridge Gate.
+
+The amended M4 plan adds:
+
+- M4-06 for `FR-PRN-001/002`: a generic server-side Print Format registry and
+  immutable controlled-output snapshot foundation; and
+- M4-07 for `FR-PRN-003`: exact forms, signers and copy policy only after
+  DR-REC-003/004.
+
+This amendment does not mark P5-01 complete, activate P5-02, rewrite the
+historical 173-ID P5-00 validation, or install a production print policy.
 
 ## 1. Authority and bounded outcome
 

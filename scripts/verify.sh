@@ -17,11 +17,7 @@ find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/nul
 python -m compileall -q apps/npi_core apps/npi_integration scripts tests
 python -m unittest discover -s tests -v
 npm --prefix frontend run verify
-python - <<'PY'
-import csv
-r=list(csv.DictReader(open('implementation/REQUIREMENT_TRACEABILITY.csv')))
-assert len(r)==173 and len({x['requirement_id'] for x in r})==173
-PY
+python scripts/verify_v1_2_reconciliation.py
 if ! command -v rg >/dev/null 2>&1; then
   echo "required verification command missing: rg" >&2
   exit 1

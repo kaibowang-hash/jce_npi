@@ -1,5 +1,65 @@
 # Last Run
 
+## R1-01 DOCX / Pack reconciliation PASS; R1-02 activated — 2026-07-25T21:47:16Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized product checkpoint:
+  `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind).
+- Atomic task:
+  `R1-01 — DOCX Pack reconciliation addendum and machine trace`.
+- Result:
+  `PASS — LEVEL 2 DOCUMENTATION/TRACE/TOOLING TASK GATE`.
+- Current task:
+  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`.
+- Held product task:
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED`; not `PASS`).
+
+### Delivered boundary
+
+- Deterministically extracted 229 DOCX requirements and the 43-column Tooling
+  mapping.
+- Reproduced the accepted 173 Pack / 134 same / 95 DOCX-only / 39 Pack-only
+  inventory and ten coverage categories at immutable checkpoint `930b5a2`.
+- Produced a 281-ID typed trace: 173 `PACK_CANONICAL`, 95
+  `DOCX_RECONCILED`, 13 `ADDENDUM_DIRECT`; locked the exact original Pack ID
+  digest and canonical mappings.
+- Allocated every diluted/isolated UX requirement to a concrete R1, later
+  product or final-UAT task; added 1440×900 as a future additive trilingual
+  target without changing historical visual evidence.
+- Added the reconciliation/domain/Tooling import/print/brand specifications,
+  decisions, risks, required inputs, roadmap/backlog and recovery errata.
+- Added the `xlsx-tooling-import` Skill, bounded passive inspector and
+  adversarial regression tests.
+- Registered only the exact supplied brand CSV/five SVGs; no LaunchFlow/JCE
+  asset was invented or substituted.
+
+No product runtime, public API, event schema, DocType, database migration,
+data-ownership contract, translation allowlist or external integration
+behavior changed. Existing Phase 3/4/P5-00 and P5-01 checkpoint evidence was
+not rewritten.
+
+### Validation
+
+- Deterministic reconciliation verifier: `PASS`.
+- Focused unittest: `16/16 PASS`.
+- Skill Creator validator: `PASS — Skill is valid`.
+- Black, repository-compatible flake8, Bandit and py_compile: `PASS`.
+- Complete repository YAML safe parse: `PASS`.
+- Brand file/CSV/hash/passive-SVG validation: `PASS`.
+- Historical Phase 4 evidence preservation and `git diff --check`: `PASS`.
+- Independent reconciliation and adversarial Skill reviews returned all
+  actionable findings for repair before this PASS.
+
+Complete evidence:
+
+- `implementation/evidence/reconciliation/r1-01-plan.md`
+- `implementation/evidence/reconciliation/r1-01-validation.md`
+
+Automatic continuation activates only R1-02. R1-07 remains scoped to
+DR-REC-001. P5-01 resumes only after the shared R1 Shell/design/i18n Level 3
+bridge Gate passes.
+
 ## P5-01 backend checkpoint held for DOCX–Pack reconciliation — 2026-07-25T20:46:57Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -1,7 +1,12 @@
 # DOCX / Execution Pack Deviations
 
-Date: 2026-07-21  
-Decision: The repository V1.2 Execution Pack is the sole machine-execution baseline. The V1.2 DOCX is supplementary background and cannot enlarge or override the current Pack scope.
+Historical snapshot date: 2026-07-21
+
+Historical decision: The repository V1.2 Execution Pack was treated as the
+sole machine-execution baseline. This decision and the table below are retained
+as evidence of the then-current Phase 3/P5 planning state. They were
+`SUPERSEDED_FOR_REQUIREMENT_COMPLETENESS` by the accepted 2026-07-25 additive
+reconciliation; they must not be used as current recovery instructions.
 
 | Area | DOCX content | Pack content | Current decision | Future human review | Current code impact |
 |---|---|---|---|---|---|
@@ -14,4 +19,42 @@ Decision: The repository V1.2 Execution Pack is the sole machine-execution basel
 
 ## Recording rule
 
-Future DOCX/Pack differences must be appended here with the same six fields. A DOCX difference alone is not a blocker. A conflict between Pack files remains a blocker and must be reported without silently choosing one source.
+Future DOCX/Pack differences must be appended here with the same six fields. A
+difference alone is not a global blocker. A material authority conflict pauses
+only its dependent work and is reported without silently choosing a rule.
+
+## 2026-07-25 accepted reconciliation resolution
+
+| Measure | Accepted result |
+|---|---:|
+| Authoritative DOCX IDs | 229 |
+| Pre-reconciliation Pack IDs | 173 |
+| Same IDs | 134 |
+| DOCX-only IDs | 95 |
+| Pack-only normalized IDs | 39 |
+| Addendum clarification IDs | 13 |
+| Current trace union | 281 |
+
+The pre-reconciliation assessment is reproducible at immutable checkpoint
+`930b5a28cb995df12f251994a36f7502525ed94a`. Source paths in
+`implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv` are interpreted at that
+checkpoint, not at their later amended contents. The verifier also locks the
+exact original 173-ID set digest.
+
+Current resolutions:
+
+- `UX-001..036`, `ARCH-001..012`, `FR-TX-001..018`, `COD-001..022` and
+  `I18N-001..007` now have direct machine-trace rows. Alias rows link to
+  normalized Pack IDs; they do not duplicate implementations.
+- The controller keeps its established Phase numbering. Requirement/task
+  placement is crosswalked in the amended backlog rather than renumbering
+  historical evidence.
+- Existing Phase 3/4/P5-00 Gate reports retain their original counts and
+  conclusions. The 281-ID trace does not retroactively mark new aliases or
+  acceptance deltas as implemented.
+- 1440×900 is added to the future trilingual P0 visual matrix alongside
+  1366×768 and 1920×1080. It does not invalidate the already accepted
+  1366×768/1920×1080 evidence.
+- The seven unique Tooling List gaps are scheduled into the specialized Phase
+  6 import task with a safe inspection Skill, while production column
+  semantics and rollback cutoffs remain scoped decisions.

@@ -11,8 +11,24 @@
 ### DesignItem / DocumentRevision / Baseline
 设计对象与文件版本。发布后不可覆盖；Baseline 固定一组版本与哈希。任何下游 Trial/Gate 应引用 Baseline/Revision，而不是“最新文件”。
 
-### ToolingDevelopment
-Tooling 开发聚合。覆盖所有权、规格、设计修订、制造计划、供应商、ERP 采购投影、试模、问题、验收和资产移交。
+### ToolingRequirement
+项目为什么需要 Tooling 的需求聚合：新制、客户来模、复制、改模、维修或产能补充。持有目标产能、所有权、预算、目标日期和验收标准，但不充当逻辑 Tooling 身份或物理套数。
+
+### ToolingMaster / ToolingApplicability
+`ToolingMaster` 是可跨项目、机型、产品和零件复用的逻辑身份。项目通过有版本和生效期的 `ToolingApplicability` 使用它；共用模不得按项目复制 Master。
+
+### ToolingRevision
+有版本的设计/制造规格与受控文件集合。状态机和授权来自未来批准的
+Tooling policy；释放 Revision 不可覆盖。
+
+### ToolingSet
+一套可触摸的物理模具/复制模。每套独立记录序列号、来源 Revision、供应商、状态、位置和 ERP 资产映射。计划复制数量不能替代实体 Set。
+
+### CavityMap / InsertApplicability / ProcessChain
+`CavityMap` 将 Revision/Set 的具体穴号映射到 Part Applicability，并记录封穴/启用状态和穴级试验结果。镶件/换镶件、双色/双射/包胶工序通过有版本的结构化关系表达，不写在编号或备注中。
+
+### ProcessBaseline / CapacityScenario
+Customer Standard、Trial Actual 和 Approved Process Baseline 是三个不同事实层。Capacity Scenario 以有版本的可用时间、工作日、OEE、良率、节拍、穴数、用量和有效套数计算零件/整机产量、瓶颈和缺口，不在 Tooling Master 上写死结果。
 
 ### Trial / TrialRound
 Trial 是一组试模计划和目标，TrialRound 表示 T0/T1/T2… 实际轮次。轮次提交时冻结输入版本、参数、样件、缺陷和结论。
@@ -56,9 +72,16 @@ NPI 对 ERPNext 的正式执行意图。状态与业务批准分离；包含输�
 - 新修订通过 `revise` 命令创建。
 - supersede 必须引用替代修订和生效点。
 
-### Tooling
-`draft → feasibility → design → manufacturing → trial → acceptance → transferred → closed`
-另有 `on_hold/cancelled`。不同项目类型可跳过阶段，但跳过规则来自模板并留痕。
+### Tooling Requirement / Revision / Set
+
+三个对象必须各有独立、可版本化的生命周期策略，不能共享一个方便状态
+字段。精确状态码、转换、跳过条件、授权和终止语义尚未批准，由
+`DR-REC-010` 和 Phase 6 requirement anchor 决定。当前只冻结以下不变量：
+
+- Requirement 状态不得伪装成设计/制造 Revision 状态；
+- Revision 的释放与替代不得隐式改变物理 Set 的现场状态；
+- Set 的制造、试模、生产资产和维护事实不得反写成 Revision 状态；以及
+- 任何跳过或恢复都必须由精确策略版本授权并留痕。
 
 ### Trial Round
 `planned → prepared → running → analysis → submitted → approved/rejected/cancelled`
@@ -88,8 +111,12 @@ NPI 对 ERPNext 的正式执行意图。状态与业务批准分离；包含输�
 ## 5. 不变量
 
 - Gate 决策快照不能引用可变“最新版本”。
-- Tooling 验收前必须有有效设计/制造/试模和重大缺陷处理结论。
-- Trial Round 不能同时属于两个 Tooling。
+- Tooling 验收前必须有有效 Revision、具体 Tooling Set、试模和重大缺陷处理结论。
+- 一个 Tooling Master 可以有多个 Applicability；一个 Project Applicability 不能暗中复制 Master。
+- 每个物理 Tooling Set 独立追踪，套数不能只保存为计数器。
+- Trial Round 只能绑定一个具体 Tooling Master/Revision/Set 上下文和一个 Project 执行上下文。
+- Trial Actual 未测量时保持 `not_measured`；复制 Customer Standard 不得伪装成测量值。
+- Approved Process Baseline 只能从批准的 Trial 证据产生并保留不可变版本。
 - 正式质量结果的真值来自 ERPNext；NPI 只保留引用、投影和门禁解释。
 - ERPNext 正式 Item/BOM/Asset 编号只有成功 Execution Request 才能写入映射。
 - 任何映射变更必须审计；同一 global_id 不得映射到多个相同类型正式对象，除非领域明确允许（例如复制模）。

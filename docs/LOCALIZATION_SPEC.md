@@ -35,6 +35,11 @@ M0 必须根据实际 Frappe/ERPNext 版本确认翻译工具链和语言代码�
 
 具体 Frappe language code 由 M0 从部署事实确认，不能凭记忆硬编码。确认后同时更新 ADR、catalog 路径、测试矩阵和 `contracts/terminology-allowlist.yaml`。
 
+LaunchFlow 显示品牌仍遵守同一翻译链。品牌图标/wordmark 的视觉文字不作为
+新的翻译事实源；标题、替代文本、tooltip、source identity accessible
+name 和相关完整句子使用英文 literal source + 直接 `zh`/`zh-TW` catalog。
+稳定系统码 `NPI_ONE` 不翻译，也不因显示品牌迁移而改值。
+
 ## 4. React 翻译适配层
 
 `frontend/src/i18n/` 至少提供：

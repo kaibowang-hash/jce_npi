@@ -1,165 +1,84 @@
 # Next Action
 
-Status: `P5-01 IN_PROGRESS — V1_2_RECONCILIATION_HOLD`
+Status: `R1-02 READY — R1 SHARED BRIDGE`
 
-Recovery time: `2026-07-25T20:46:57Z`
+Recovery time: `2026-07-25T21:47:16Z`
 
-P5-01 starting remote checkpoint:
-`6099ac2351567665478ff911bc07c4ef55ab3ee1`
-
-Active execution goal:
-`implementation/ACTIVE_EXECUTION_GOAL.md`
+Last synchronized product checkpoint:
+`930b5a28cb995df12f251994a36f7502525ed94a`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
 
-## Reconciliation hold
-
-- Product expansion is paused at a recoverable P5-01 backend/domain/contract
-  checkpoint while the authoritative V1.2 DOCX is reconciled with the
-  machine-executable Pack.
-- This is an explicit execution hold, not a P5-01 PASS, Phase Gate, product
-  requirement change, or controller Hard Blocker.
-- Do not begin another P5-01 sub-slice, activate P5-02, or activate Phase 6.
-- The complete hold evidence, exact implemented/unfinished boundary,
-  changed-file inventory, reusable checks and first resume action are in
-  `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
-
 ## Controller state
 
-- First incomplete acceptance phase:
-  `3 — React App Shell Siemens UI and i18n Foundation`.
-- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; named business UAT and
-  provenance-backed sanitized-data review are externally unsigned.
-- Latest completed implementation phase:
-  `4 — Project Work Items and Stage Gates` (`PASS`).
-- Completed Phase 4 atomic tasks: `P4-01` through `P4-05`.
-- P4-05 result: `PASS — LEVEL 3 FULL RELEASE GATE`.
-- Current authorized implementation phase:
-  `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`).
-- Completed Phase 5 controller task:
-  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-  EBOM` (`PASS`).
-- Current unfinished atomic task:
-  `P5-01 — Document and design revision`.
-- Current task state:
-  `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`.
-- Compatibility Pack task:
-  `M4-01 — Document and design revision`.
+- R1-01 passed its Level 2 documentation/trace/tooling Gate.
+- The current typed trace contains 281 unique IDs: 173 `PACK_CANONICAL`, 95
+  `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+- R1 is an inserted bridge, not a new controller Phase.
+- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its external UAT is unsigned.
+- Phase 4 remains `PASS` and its historical evidence is unchanged.
+- Phase 5 remains `IN_PROGRESS`.
+- P5-01 remains `IN_PROGRESS_CHECKPOINTED` at the retained backend boundary;
+  it is not the active product task and is not `PASS`.
+- P5-02 and Phase 6 remain inactive.
 
-## Completed Phase 4 boundary
+## Current task
 
-P4-01 through P4-05 deliver the bounded Project/Gate technical foundation:
+Execute only:
 
-- immutable versioned Project templates and live Project cockpit;
-- explicit Team/RACI, WBS, plan baseline and distinct Domain Work Items;
-- immutable Gate templates, frozen requirements and controlled evidence;
-- versioned review policies, exact frozen authority, immutable decisions,
-  preserved-cycle reopen, dependency invalidation and downstream denial;
-- live current-actor My Work projection with exact source revalidation;
-- versioned Project Control Policy, four-dimensional health, fail-closed
-  lifecycle control, internal activity and reusable learning; and
-- complete strict BFF, audit, permission, English-source/`zh`/`zh-TW`, browser
-  and industrial visual evidence.
+`R1-02 — LaunchFlow display brand adapter and exact supplied assets`
 
-Complete Phase evidence:
+Primary Requirement ID:
 
-- `implementation/phase-4-gate.md`
-- `implementation/evidence/phase-4/p4-05-validation.md`
+- `FR-BR-001`
 
-No production Project/Gate/control policy, production ERPNext connection,
-notification/external-user/mail/print/portal delivery, or Phase 3 business-UAT
-result is claimed.
+Use:
 
-## Passed evidence — do not repeat merely to restore context
+- `docs/Brand Asset/Brand Asset Instruction.csv`;
+- the exact five SVGs beside that CSV;
+- `docs/decisions/ADR-012-launchflow-display-brand.md`;
+- `docs/UX_INTERACTION_SPEC.md`;
+- `docs/LOCALIZATION_SPEC.md`;
+- `design/UI_VISUAL_BASELINE.md`;
+- the `industrial-ux` and `frappe-i18n` Skills; and
+- the existing local UI/icon/i18n adapter boundaries.
 
-- Python: `587/587 PASS`.
-- Frontend unit/component: `492/492 PASS`.
-- Frappe-compatible i18n: `2,221` literal English sources with complete direct
-  `zh` and `zh-TW`.
-- Frontend coverage: 84.87% statements, 84.01% branches, 89.66% functions,
-  86.79% lines.
-- Build/audit: 404 modules; strict install-script policy; zero complete and
-  production-only npm vulnerabilities; visible bundle warning retained.
-- Additive/idempotent Site synchronization: `PASS`.
-- Complete cumulative live Frappe runtime: `PASS`, including a 296-source /
-  184-row / 127-active My Work rebuild, injected rollback, terminal
-  deactivation, fourteen-route disable/recovery and cross-process replay.
-- Complete non-visual Playwright: `227/227 PASS`.
-- Forced full visual regeneration: `188/188 PASS`.
-- Separate clean visual comparison:
-  `188/188 PASS` at unchanged `maxDiffPixelRatio: 0`.
-- Original-resolution three-language visual review: `PASS`.
-- Independent requirement, domain, permission/security, migration/rollback and
-  release reviews: `PASS`, no blocker/major/minor finding.
+## R1-02 required behavior
 
-The host Node 18 `make verify` preflight rejection ran no product assertion.
-The retained Node 24 target evidence above is authoritative.
+1. Add one local display-brand adapter; do not scatter asset-path decisions.
+2. Use the white wordmark on the existing dark application header and the
+   standard wordmark only on light backgrounds.
+3. Use the square LaunchFlow icon for favicon and compact platform/source
+   identity with translated accessible names.
+4. Use `Loading.svg` only for blank entry/start/full-surface loading, not
+   routine inline loading.
+5. Use `Company LOGO.svg` only in the persistent website footer on a
+   contrast-safe neutral light surface.
+6. Preserve stable `NPI_ONE`, `ERPNEXT`, `/api/npi/v1`, package, DocType and
+   database identities.
+7. Add literal-English source text and complete direct `zh`/`zh-TW` coverage;
+   no mixed-language release fallback.
+8. Add affected component/browser/visual/accessibility tests and exact asset
+   scope assertions.
 
-## Current P5-01 task
+## Prohibited or held behavior
 
-Implement only the minimum complete document/design-revision vertical slice
-defined by `implementation/phase-5-requirement-anchor.md`.
+- Do not redraw, recolor, crop or replace a supplied asset.
+- Do not infer component colors from logo colors or change industrial
+  teal/neutral tokens.
+- Do not use Company LOGO as the product, source or ERP/JCE mark.
+- Do not invent, search for or substitute an ERP/JCE asset or legal display
+  identity; `FR-BR-002` remains held by DR-REC-006.
+- Do not rename internal identifiers, connect ERPNext/JCE, resume P5-01, or
+  begin another R1 task early.
 
-Primary Requirement IDs:
+## Validation and transition
 
-- `FR-DS-001`
-- `FR-DS-003`
-- `FR-DS-004`
-- `FR-DS-007`
-- `FR-DS-008`
-- `FR-DS-009`
-- `FR-DS-014`
+R1-02 is a shared Shell/i18n task. Run affected Level 2 checks and retain the
+changed-files-to-tests map. R1-02 does not itself satisfy the R1 Level 3 bridge
+Gate; that Gate runs after the accepted shared R1 tasks are complete.
 
-P5-01 must:
-
-1. use `implementation/evidence/phase-5/p5-01-plan.md` as the bounded task
-   plan; the seven P5-01 trace rows are
-   `IN_PROGRESS_V1_2_RECONCILIATION_HOLD`;
-2. inventory and extend, without reinterpreting, the existing private
-   `FileRevision`, Project authorization, idempotency, audit, BFF, App Shell
-   and translation foundations;
-3. keep `ControlledDocument`, `DocumentRevision`, and exact private
-   `FileRevision` as distinct identities;
-4. deliver additive controlled-document/revision/relationship/lock/history
-   persistence with strict BFF contracts, server-side tenant/Project/object
-   authorization, CSRF, expected versions, actor-bound idempotency, audit and
-   transaction rollback;
-5. deliver Project-scoped confidentiality and authorized download audit,
-   capability-truth preview/download fallback, and explicit unavailable
-   external-retrieval/CAD-PDM states;
-6. deliver the live industrial Design/Documents workspace with complete
-   literal-English and direct `zh`/`zh-TW` coverage; and
-7. after the DOCX–Pack reconciliation hold is explicitly lifted, finish the
-   remaining UI/runtime/i18n evidence, run one complete P5-01 Level 2 Task
-   Gate, and activate P5-02 only if that complete Gate passes.
-
-P5-01 must not review, approve, release, supersede, obsolete, baseline,
-publish an EBOM, create an ERP execution request, enable external retrieval,
-claim an Office/CAD viewer, connect CAD/PDM/ERPNext, install a production
-document policy, or treat the existing `FileRevision.released` flag as a full
-document-release workflow. Bottom-level Frappe File retention for released
-content remains a mandatory P5-02 server-side release invariant.
-
-## Exact resume steps after DOCX–Pack reconciliation
-
-1. Fetch `origin`, check out `codex/npi-v1.2-implementation`, and compare local
-   and remote HEAD/ahead-behind without reset, rebase or force push.
-2. Confirm the reconciliation checkpoint recorded in
-   `implementation/ACTIVE_EXECUTION_GOAL.md` is the synchronized remote
-   starting point.
-3. Reuse the complete Phase 4 Gate and P5-00 documentation/trace evidence; do
-   not rerun either merely to restore context.
-4. Read only the Phase 5 anchor, the seven P5-01 trace rows, their indexed
-   requirement text, directly related file/project/contracts/ADRs and the
-   applicable `frappe-safe-change`, `npi-domain-guard`, `industrial-ux`, and
-   `frappe-i18n` Skills.
-5. Read the accepted DOCX–Pack reconciliation result and update the Pack
-   deviation record if required; do not infer a product rule.
-6. Keep Phase 3 external UAT, production document/rule/provider packages,
-   external retrieval and production ERPNext/CAD/PDM as scoped holds; they do
-   not block the safe NPI-owned P5-01 slice.
-7. First resume action: compare the implemented backend/domain/contract
-   checkpoint against the accepted reconciliation result, then either retain
-   it or apply the smallest required correction before resuming the unfinished
-   P5-01 frontend/runtime/i18n slice.
+After R1-02 passes, activate only R1-03. R1-07 remains disabled unless
+DR-REC-001 is approved. P5-01 resumes only after the complete R1 shared
+Shell/design/i18n Level 3 Gate passes.

@@ -2,6 +2,14 @@
 
 以下需求按业务模块编号。P0 为首个可用版本必须，P1 为后续优先，P2 为增强。所有实现必须遵守根目录 `AGENTS.md`、机器可读契约和当前里程碑边界。
 
+2026-07-25 的 V1.2 reconciliation 通过
+`docs/V1_2_RECONCILIATION_ADDENDUM.md` 将原 DOCX 的 229 个 ID 全部纳入
+机器 Pack。精确原文与验收在
+`implementation/V1_2_DOCX_REQUIREMENTS.csv`，历史覆盖分类在
+`implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`。本文件保留原 173
+Pack 需求并列出 13 个新增澄清 ID；不得把 consolidated Pack ID 当作删除
+原 DOCX ID 的理由。
+
 
 ## 5.0 统一 UI、交互与领域 API
 
@@ -44,6 +52,11 @@
 | FR-UX-035 | P0 | 语言切换遵循 Frappe 用户语言并持久化，React 与 Frappe/邮件/打印共享同一翻译事实源。 | 切换后无需重新登录；刷新、通知、导出和后续会话语言一致。 |
 | FR-UX-036 | P0 | 至少支持 英文、简体中文和繁体中文；实际 Frappe language code 在 M0 经部署事实确认。 | 三种语言核心流程 E2E、截图、覆盖率和混用扫描全部通过。 |
 | FR-UX-037 | P0 | 第三方组件的内置标签、校验、分页、上传和空状态也必须经翻译 adapter。 | 中文页面不得因组件默认值残留普通英文。 |
+| FR-UX-038 | P0 | 表格支持拖动并持久化列宽、双击自适应、最小/最大宽度、重置及固定列兼容。 | 按用户+视图+表版本保存；横向滚动不破坏固定列，并提供键盘替代。 |
+| FR-UX-039 | P0 | 左侧域导航支持完整与仅图标折叠模式，且不丢失项目上下文。 | 每用户持久化；响应式自动折叠时仍有 tooltip、活动态和键盘访问。 |
+| FR-UX-040 | P0 | 停靠面板/检查器通过实际边界拖动调整并记住布局。 | 支持边界拖动、双击重置、集成折叠和键盘调整；抽屉仅用于短时任务。 |
+| FR-UX-041 | P0 | 字段和附件明确必填、可编辑性、来源、锁定原因、校验/单位及上传/扫描状态。 | 上传支持清除、拖放、选择器、进度/失败；注册后显示精确修订/哈希/密级且无原始私有URL授权。 |
+| FR-UX-042 | P0 | My Work 可按页使用行内展开快速分诊，复杂/持续工作回退抽屉或对象页。 | 展开和回退保留筛选、滚动、分组和选中状态；待 DR-REC-001 批准。 |
 
 
 
@@ -100,6 +113,20 @@
 | FR-TL-016 | P1 | 支持维修授权、报价、责任归属、停机影响和维修验证。 | 客户来模维修必须保留客户授权证据。 |
 | FR-TL-017 | P2 | 支持IoT/机台模次自动回写和寿命预警。 | 手工与自动计数有来源标识和校准规则。 |
 | FR-TL-018 | P2 | 支持模具健康评分和预防维护建议。 | 评分由寿命、缺陷、维修、停机和保养逾期构成。 |
+
+### 5.3.1 DOCX Tooling 模型、产能与专用导入
+
+`FR-TX-001..018` 按
+`implementation/V1_2_DOCX_REQUIREMENTS.csv` 的原文和验收直接生效。
+它们要求区分 Part/Requirement/Master/Applicability/Revision/Set/Trial，
+逐套及穴位/镶件/多工序追踪，有版本的过程基线与产能情景，以及完整
+Tooling List 导入 provenance、校验、图片确认和回滚。详细实施边界见
+`docs/TOOLING_LIST_IMPORT_SPEC.md`。
+
+| 需求ID | 优先级 | 新增澄清 | 验收要点 |
+| --- | --- | --- | --- |
+| FR-TX-019 | P0 | 分离 Customer Standard、TP Trial Actual 和 Approved Process Baseline。 | 复制标准值不能伪装为测量；值、单位、来源、上下文和有效版本完整。 |
+| FR-TX-020 | P0 | 使用有版本的 tolerance/rule 计算差值并显示 `not_measured` / `within_tolerance` / `outside_tolerance` / `unavailable`。 | 未经 DR-REC-002 批准，不把任意非零差异自动显示为红色异常。 |
 
 ## 5.4 设计、文档与EBOM
 
@@ -211,6 +238,17 @@
 | ECN周期 | ECR提出至新版本正式生效的自然日/工作日 |
 | 客户来模完整追溯率 | 所有权、接收检查、位置、试模、批准、维护/返还信息完整的来模数 ÷ 在管来模数 |
 | SOP观察期稳定率 | 观察期内达到良率、节拍、投诉和模具稳定目标的项目数 ÷ 完成观察期项目数 |
+
+## 5.11 受控打印、Trial Summary 与显示品牌
+
+| 需求ID | 优先级 | 功能要求 | 验收要点 |
+| --- | --- | --- | --- |
+| FR-PRN-001 | P0 | 通过 BFF/服务端 Frappe Print Format registry 按对象、项目类型、Gate/状态、语言、生效版本和 copy control 选择模板。 | 普通用户不进入 Desk；未批准映射时 fail closed。 |
+| FR-PRN-002 | P0 | 从不可变快照渲染受控输出，包含源对象/版本、语言、打印人/时间、QR/hash、水印/copy 状态和审计。 | 重印可追溯且不会静默替换为最新实时数据。 |
+| FR-PRN-003 | P0 | 定义各领域受控表单、权限和签字覆盖。 | 每个启用表单有 owner、签字/保留/copy 规则和三语言证据；待 DR-REC-003/004。 |
+| FR-INT-015 | P1 | 发布不可变 Trial Summary，供 ERP/JCE 质量区域只读投影。 | 包含精确输入、参数、穴位、问题、结论和受控引用；目标端不得编辑 NPI Trial 真值。 |
+| FR-BR-001 | P0 | 使用唯一受批品牌包和 CSV 规则配置 LaunchFlow 显示品牌。 | 明/暗/加载/favicon/footer/source 场景使用精确资产；内部 app/API/DocType 名称不迁移。 |
+| FR-BR-002 | P1 | 显示 ERP/JCE 身份但保持稳定集成系统码。 | 必须来自另行提供的批准资产/法律文案；当前无资产，待 DR-REC-006。 |
 
 # 6. 接口与集成需求
 

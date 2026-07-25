@@ -39,10 +39,12 @@ Provide:
    purchase/manufacturing references, and failed/pending integration examples.
    Preserve stable surrogate relationships while removing personal,
    commercial, and secret data.
-7. The authoritative Tooling List workbook/template and column dictionary,
-   including the expected 43-column interpretation, A/B/C-face,
+7. The authoritative Tooling List workbook/template and owner-approved column
+   dictionary, including the expected 43-column interpretation, A/B/C-face,
    overmold/insert rules, required/optional fields, units, validation, revision
-   history, and approved sample rows.
+   history, and approved sample rows. The checked-in
+   `docs/reference/TOOLING_LIST_FIELD_MAPPING.csv` is the DOCX-proposed mapping
+   and trace source; it is not production column-semantics approval.
 8. Master-data and coding rules: company/site/factory, the trusted NPI tenant
    identifier for each Site and any approved principal-to-tenant mapping,
    customer/supplier/item naming, UOM, currency, timezone, fiscal/calendar
@@ -121,7 +123,37 @@ policies, exact immutable references, explicit unavailable states, Mock-default
 Execution Requests, and fail-closed external/connector behavior. No production
 policy, connector, mapping, or formal ERP result is inferred.
 
-## 4. Phase 3 business acceptance package
+## 4. Reconciliation decision and display-identity package
+
+Provide owner-approved decisions for:
+
+1. `DR-REC-001`: whether My Work uses page-specific inline expansion with
+   drawer/Object Page fallback;
+2. `DR-REC-002`: tolerance/rule ownership and when a Tooling/process variance
+   receives exception color;
+3. `DR-REC-003/004`: exact controlled forms, owners/signers, wet/electronic
+   signature, PDF/browser-print and numbered-copy/retention policy;
+4. `DR-REC-006`: approved ERP/JCE display text, exact asset package, usage
+   rules and legal wording; no LaunchFlow/company asset will be substituted;
+5. `DR-REC-007/008`: source-column Standard/estimate/actual/calculated
+   classification and the downstream-use rollback cutoff;
+6. `DR-REC-009`: Released Trial Summary authority, dotted event identity,
+   payload/version, redaction and read-only consumer mapping; and
+7. `DR-REC-010`: independent Tooling Requirement, Tooling Revision and
+   physical Tooling Set states, transitions, skip/reopen/terminal rules and
+   authority.
+
+The LaunchFlow package is already complete for its bounded purpose:
+`docs/Brand Asset/Brand Asset Instruction.csv` and its exact five SVGs are the
+sole source. Do not send or retrieve substitute LaunchFlow marks. The folder
+contains no approved ERP/JCE display asset or legal identity.
+
+Each open decision pauses only the dependent behavior named in
+`implementation/V1_2_RECONCILIATION_DECISIONS.md`. Safe parser/provenance,
+immutable snapshots, generic print registry, Mock/sandbox-ready contracts and
+unrelated NPI-owned work continue.
+
+## 5. Phase 3 business acceptance package
 
 Provide the completed
 `implementation/evidence/phase-3/business-uat.md` record with:
@@ -134,11 +166,12 @@ Provide the completed
 - provenance-backed sanitized data for the two representative project types
   above, so fixture-only technical paths are not misrepresented as real UAT.
 
-## 5. Scope affected while inputs are open
+## 6. Scope affected while inputs are open
 
 The missing bundle does not block NPI-owned domain work, contracts, explicit
 mocks, sandbox-ready adapters, automated tests, UI, localization, or operating
-documentation. Continue those tasks under the approved Pack.
+documentation. Continue those tasks under the reconciled Pack and accepted
+addendum.
 
 Pause only implementation or acceptance that would otherwise guess an existing
 ERP customization, field mapping, numbering/state rule, sandbox behavior, or
@@ -146,7 +179,7 @@ real-data business result. Production activation, production credentials, and
 production data operations remain out of scope even after this package is
 provided unless separately authorized.
 
-## 6. Intake validation
+## 7. Intake validation
 
 The package is usable only when every file appears in the provenance manifest,
 checksums match, relationships survive redaction, secret scanning is clean, and

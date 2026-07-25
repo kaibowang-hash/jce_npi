@@ -44,6 +44,47 @@ EBOM 发布创建 10 个 Item，其中目标系统报告部分成功。
 - 重试只处理安全的失败节点；
 - 对账可验证最终一致。
 
+### AT-06 客户 Tooling List 受控导入
+
+上传一个脱敏 43 列 XLSX，包含插入的标题行、共用 Tooling 分段、多值
+外部编号、`New Tooling` 混入编号、`#REF!`、未定义 A/B/C、双射/镶件备注、
+一个确定和一个不确定图片锚点。
+
+验收：
+
+- 不依赖固定行号识别数据/分段/共用/汇总区域；
+- 预览明确 create/update/skip/错误/待确认；
+- `#REF!` 不进入正式产能结果，A/B/C 不被自动解释；
+- 共用模只建立 Applicability，复制套数创建独立 physical Set；
+- 图片不确定时不自动绑定；
+- 每个结果可反查文件/hash/批次/行/列/原值/转换；
+- 部分成功不显示完整成功，安全 retry 幂等；
+- downstream-used 对象的破坏性 rollback 被拒绝并给出 forward-fix 路径。
+
+### AT-07 共享 UX 与 LaunchFlow bridge
+
+验收：
+
+- 列宽拖动/auto-fit/reset/键盘调整按用户+视图+表版本持久化；
+- 折叠导航和 resizable pane 保留项目、选中、筛选、滚动和焦点上下文；
+- 字段/附件显示 required/editability/source/lock reason/scan/progress/hash；
+- LaunchFlow 仅使用品牌 CSV 允许的精确资产/场景，技术身份保持不变；
+- favicon、pre-shell loading、dark/light logo、compact source identity 和
+  website footer 均有可访问名称与对比度证据；
+- `NPI_ONE`、`ERPNEXT` 和 `/api/npi/v1` 的稳定契约值不变；
+- My Work inline expansion 仅在 DR-REC-001 批准后纳入。
+
+### AT-08 受控打印与 Released Trial Summary
+
+验收：
+
+- 普通用户从 SPA/BFF 发起，不进入 Desk；
+- 输出来自不可变对象/版本快照，含语言、打印人/时间、QR/hash 和审计；
+- 未配置/未批准模板或权限时 fail closed；
+- Released Trial Summary 包含精确输入、参数、穴位、问题、结论和受控引用；
+- ERP/JCE 侧契约只读，不得编辑 NPI Trial 真值；
+- 未批准表单、签字、copy numbering 和目标事件名不被冒充为完成。
+
 ## 2. UI 状态矩阵
 
 每个核心页面至少验证：
@@ -75,6 +116,8 @@ EBOM 发布创建 10 个 Item，其中目标系统报告部分成功。
 - Performance：驾驶舱聚合、列表、队列和大文件。
 - Security：越权、IDOR、上传、XSS/CSRF、密钥、重放、日志泄漏。
 - Resilience：ERP 不可用、队列重启、重复/乱序事件、网络超时。
+- Import/Data Exchange：XLSX archive safety、区域识别、映射、公式/图片、
+  provenance、partial result、retry、correction artifact、rollback denial。
 
 ## 4. 发布阻断
 
@@ -100,7 +143,9 @@ EBOM 发布创建 10 个 Item，其中目标系统报告部分成功。
 - 普通组件圆角不超过 2px；
 - 面板无阴影，浮层阴影克制；
 - 表格/树/分栏承载主要信息；
-- 1366×768、1920×1080、125% 和 150% 缩放下可操作。
+- 1366×768、1440×900、1920×1080、125% 和 150% 缩放下可操作；
+- 1440×900 下核心工作页无需滚动即可同时看到对象上下文、主要动作、
+  工作列表和属性区。
 
 以下任一为发布阻断：大圆角卡片墙、渐变/玻璃效果、强阴影、装饰插画主导、Frappe Desk 泄漏、多个非语义强调色竞争。
 

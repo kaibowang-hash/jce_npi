@@ -1,0 +1,44 @@
+source_column,target_object,suggested_field,mapping_validation_rule,priority
+Item,Import Row,source_row_seq,仅作为客户清单行序，不作为系统主键。,P0
+Mold No.,Tooling Master / External ID,customer_mold_no,允许空但必须通过关系解释；不可把空值自动当作上一行模具。,P0
+Part Name English,Part Revision,part_name_en,名称字段；与唯一Part Code分开。,P0
+Chinese name,Part Revision,part_name_zh,支持中英文名称。,P0
+Picture,Part / File,primary_image,浮动图片需按锚点匹配；不确定时人工确认。,P1
+appearance part Y/N,Part Revision,is_appearance_part,布尔值，影响外观风险和检验要求。,P0
+Model,Applicability,product_model / variant,按“/”拆分为多对多关系，保留原始文本。,P0
+SN P/N,External Identifier,identifier_value,identifier_system=SN；支持一个单元格多值和换行。,P0
+KW P/N,External Identifier,identifier_value,identifier_system=KW；支持一个单元格多值和换行。,P0
+TH Part Number,External Identifier,identifier_value,identifier_system=TH；支持一个单元格多值和换行。,P0
+KW Tooling No.,Tooling External ID,identifier_value,编号与(New Tooling)状态分离；多个物理编号拆分。,P0
+Cavity,Tooling Revision / Cavity Map,cavity_count,必须与穴位映射一致。,P0
+Usage Per Unit,Part Applicability,usage_per_assembly,用于整机产能换算，不属于模具主数据。,P0
+Part Material,Material Spec,material_family,规范化枚举并允许客户原始值。,P0
+Material trademark,Material Spec,brand_or_trade_name,与材料家族分开。,P0
+FDA,Compliance Requirement,compliance_type/status,不要只保留Yes/No；可扩展证书与有效期。,P0
+secondary process,Secondary Process,process_type,No转换为空集合；其他值建立工序。,P0
+Material Grade,Material Spec,grade,与Revision和批准状态关联。,P0
+Color Master CN,Color Spec / External ID,color_master_cn,按来源管理，支持多供应商编码。,P0
+Color description,Color Spec / External ID,color_description,按来源管理，支持多供应商编码。,P0
+Lijun code,Color Spec / External ID,supplier_color_code_lijun,按来源管理，支持多供应商编码。,P0
+Color Master Thailand,Color Spec / External ID,color_master_th,按来源管理，支持多供应商编码。,P0
+calculated weight,Process Baseline,calculated_net_weight,记录单位、来源、版本和试模依据。,P0
+actual weight,Process Baseline,actual_net_weight,记录单位、来源、版本和试模依据。,P0
+runner weight,Process Baseline,runner_weight,记录单位、来源、版本和试模依据。,P0
+allocated runner + net per cavity,Process Baseline,gross_weight_per_cavity,记录单位、来源、版本和试模依据。,P0
+injection cycle seconds,Process Baseline,cycle_time_sec,标题中的日期不得成为字段名；基线有生效日期。,P0
+Supplier,Tooling Build / Supplier Link,supplier,正式供应商主数据来自ERPNext。,P0
+tonnage,Machine Requirement,clamp_tonnage / machine_type,解析纯吨位与“双色机/直立机”等类型，禁止一个文本字段混用。,P0
+initial tooling set quantity,Tooling Requirement,initial_set_qty,批准后创建对应Tooling Set。,P0
+single-set daily output,Capacity Scenario Result,daily_part_output_per_set,作为计算结果，不作为人工主数据。,P0
+single-set daily assembly units,Capacity Scenario Result,daily_assembly_units_per_set,作为计算结果，不作为人工主数据。,P0
+copied tooling sets,Tooling Requirement / Tooling Set,copy_set_qty,每套复制模创建物理对象；数量仅用于计划。,P0
+total tooling sets,Capacity Scenario Input,active_set_count,由有效物理套数计算，可在情景中调整。,P0
+total daily output,Capacity Scenario Result,total_daily_part_output,由受控参数计算；禁止导入#REF!为正式结果。,P0
+total daily assembly units,Capacity Scenario Result,total_daily_assembly_units,由受控参数计算；禁止导入#REF!为正式结果。,P0
+monthly capacity,Capacity Scenario Result,monthly_assembly_capacity,由受控参数计算；禁止导入#REF!为正式结果。,P0
+common tooling Y/N,Tooling Applicability,is_shared,建立跨项目/产品适用关系，不复制Tooling Master。,P0
+A,Legacy Classification,legacy_a,保留原值，含义未确认前不做推断。,P0
+B,Legacy Classification,legacy_b,保留原值，含义未确认前不做推断。,P0
+C,Legacy Classification,legacy_c,保留原值，含义未确认前不做推断。,P0
+remarks,Notes / Structured Relations,remarks_raw,解析双射、换镶件、保护膜等候选关系，但必须人工确认。,P0
+unnamed trailing note,Import Raw Field,unmapped_extra,标记未映射字段并要求确认，不静默丢弃。,P0

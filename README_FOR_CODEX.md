@@ -2,6 +2,21 @@
 
 这是一个“先约束、后规划、再逐任务实现”的 Codex 执行包。它不是让 Codex 一次性生成整个系统的提示词。
 
+## 当前仓库恢复前置
+
+本仓库已经完成多个 Phase，不能从 M0 重启。新会话必须先按
+`implementation/AUTOPILOT_CONTROLLER.md` 的恢复协议读取
+`PHASE_STATUS.yaml`、`NEXT_ACTION.md`、`LAST_RUN.md` 和当前 Requirement
+Anchor；聊天记忆不构成状态事实。
+
+2026-07-25 的 additive reconciliation 已用 281-ID typed trace 取代旧的
+Pack-only completeness 结论，但不回写既有 Gate 证据。R1 bridge 完成前，
+P5-01 产品任务保持 checkpointed/held。
+
+品牌开发只允许使用 `docs/Brand Asset/Brand Asset Instruction.csv` 和同
+目录五个精确 SVG。不得从外部寻找、重画或替换 LaunchFlow/JCE 标志；
+稳定 `NPI_ONE`、`ERPNEXT` 和 `/api/npi/v1` 不因显示品牌变化。
+
 ## 推荐投入仓库的方式
 
 1. 将本包内容复制到目标代码仓库根目录并提交为基线。
@@ -14,15 +29,9 @@
 
 ## 资料优先级
 
-发生冲突时按以下顺序处理：
-1. 当前人工明确决定；
-2. `AGENTS.md` 的安全与边界规则；
-3. 已批准 ADR；
-4. `contracts/` 的机器可读契约；
-5. `GOAL.md`；
-6. `docs/` 产品和领域规格；
-7. 当前任务文件；
-8. Codex 的实现偏好。
+发生冲突时使用 `AGENTS.md` 和
+`docs/specification/SPEC_INDEX.md` 当前记录的权威顺序；不要在本文件
+维护第三套顺序。
 
 不得为了赶进度跳过冲突说明。
 

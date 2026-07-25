@@ -9,19 +9,23 @@ architecture, industrial-UX, localization, security, ownership and release
 rules remain mandatory. Production ERPNext must not be contacted.
 
 The execution authority order is the latest compatible user instruction,
-`AGENTS.md`, the V1.2 Execution Pack, accepted ADRs, the V1.2 DOCX completeness
-check and reversible implementation choices. Pack/DOCX numbering or evidence
-dimension differences are recorded in `DOCX_PACK_DEVIATIONS.md` and do not stop
-work. A material conflict pauses only affected work unless it blocks everything.
+`AGENTS.md`, the authoritative V1.2 DOCX together with the accepted additive
+reconciliation, the V1.2 Execution Pack, contracts/accepted ADRs, applicable
+Skills, and reversible implementation choices. The current DOCX/Pack
+crosswalk is machine-readable in
+`implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`; historical differences
+remain in `DOCX_PACK_DEVIATIONS.md`. A material conflict pauses only affected
+work unless it blocks everything.
 
 The Execution Pack means the repository's actual `GOAL.md`, contracts, docs,
 design rules, specifications, implementation records, prompts, localization
 material, and Skills; this controller coordinates that Pack and never replaces
-it with a second product specification. Accepted ADRs govern after the Pack,
-the DOCX is a completeness cross-check, and only reversible implementation
-details may be selected without a business decision. A material conflict is
-recorded as a Decision Request and never resolved by silently overwriting the
-Pack.
+it with a second product specification. The 2026-07-25 reconciliation addendum
+amends the Pack additively: all 229 DOCX IDs, 39 Pack-only normalized IDs and
+13 clarification IDs remain visible in the 281-row trace. Only reversible
+implementation details may be selected without a business decision. A
+material conflict is recorded as a Decision Request and never resolved by
+silently overwriting an authority.
 
 ## Permanent product and ownership boundaries
 
@@ -74,10 +78,11 @@ contracts, fault/retry evidence, and Sandbox-ready preparation.
 Derive the next task by scanning `PHASE_STATUS.yaml` in phase order for the
 first status other than `PASS`. A non-`PASS` phase remains the first incomplete
 phase even when its Gate explicitly permits independent later work. Later-phase
-work may start only when that phase's committed Gate names an exact Pack-approved
-continuation state and explicitly authorizes the transition; the pending item
-must remain visible and must not be relabelled `PASS`. Without that evidence,
-the next task stays in the first incomplete phase.
+work may start only when that phase's committed Gate names an exact
+trace/addendum-approved continuation state and explicitly authorizes the
+transition; the pending item must remain visible and must not be relabelled
+`PASS`. Without that evidence, the next task stays in the first incomplete
+phase.
 
 For the first safely executable atomic task under that rule: use committed
 requirement anchors and traceability as the index, read its related Pack
@@ -182,8 +187,9 @@ anchor/traceability rows, related domain specifications, contracts/ADRs, and
 applicable Skills. Within that task, use the committed context and evidence;
 do not repeatedly reread the full DOCX, `GOAL.md`, all Pack files, or unrelated
 domains for small fixes. Expand reading only for a material ambiguity, contract
-conflict, cross-domain impact, or insufficient anchor. DOCX is a completeness
-cross-check, not a source to re-extract in every repair loop.
+conflict, cross-domain impact, or insufficient anchor. The checked-in 229-row
+DOCX extraction and coverage matrix are the normal requirement index; do not
+re-read or re-extract the complete DOCX in every repair loop.
 
 If context or execution may end, perform step 4 before any further feature
 work. On resumption, trust committed evidence, start from the recorded first
@@ -200,63 +206,42 @@ pending until that proof is produced in Codespaces.
 
 ## Current checkpoint
 
-- Active execution goal:
-  `implementation/ACTIVE_EXECUTION_GOAL.md`. The latest user authorization
-  marks historical thread-local stop, pause, and handoff boundaries
-  `SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`; automatic continuation
-  is enabled after every genuine atomic-task and Phase Gate `PASS`.
-- First incomplete phase: `3 — React App Shell Siemens UI and i18n Foundation`,
-  status `TECHNICAL_PASS_PENDING_UAT`; it is not an unqualified `PASS`.
-- Pending Phase 3 task: external business UAT and provenance-backed sanitized
-  data for `FR-UX-031`. It requires the named business reviewers and cannot be
-  signed or represented as complete by Codex.
-- Exact continuation authority: `implementation/phase-3-gate.md` records a
-  release-gate technical `PASS`, preserves
-  `TECHNICAL_PASS_PENDING_UAT`, states that its external items do not block
-  NPI-owned domain work, and permits independent later phases. This does not
-  turn Phase 3 into `PASS`.
-- Latest completed phase: `4 — Project Work Items and Stage Gates`.
-  P4-01 through P4-05 and `implementation/phase-4-gate.md` are `PASS`.
-- P4-05's triggered Level 3 Full Release Gate passed on 2026-07-25. The final
-  evidence includes 587 Python and 492 frontend tests, 2,221 literal English
-  sources with complete direct `zh`/`zh-TW` coverage, additive/idempotent Site
-  synchronization, complete cumulative live Frappe runtime, 227 non-visual
-  browser cases, forced and clean 188-case zero-tolerance visual matrices,
-  zero complete/production npm audit findings, original-resolution
-  trilingual review, and independent requirement/security/release review.
-- P4-05 delivers the bounded live My Work projection, versioned Project
-  Control Policy and four-dimensional health/lifecycle foundation, internal
-  activity, follow state and reusable learning. It installs no production
-  formula/authority/prerequisite, notification/external-user delivery,
-  learning-acceptance workflow or ERPNext connection.
-- The final 20-row Phase 4 distribution is 6 `TECHNICAL_VERIFIED`,
-  13 `TECHNICAL_VERIFIED_FOUNDATION`, and 1 `PARTIAL_FOUNDATION`. The latter is
-  `FR-PM-004`; no open acceptance is silently promoted.
-- Current phase: `5 — Part Design, Documents, Baselines, and EBOM`
-  (`IN_PROGRESS`).
-- Completed Phase 5 controller task:
-  `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
-  EBOM` (`PASS`). It changed documentation and trace state only.
-- Current unfinished controller task:
-  `P5-01 — Document and design revision`, compatible with
-  `M4-01 — Document and design revision`.
-- P5-01 delivers only the bounded Controlled Document/Document Revision/exact
-  private File Revision, relationship, lock, confidentiality/download-audit,
-  preview-capability and unavailable-connector slice defined in
-  `implementation/phase-5-requirement-anchor.md`.
-- Review/release, baselines, EBOM and formal publish requests remain P5-02
-  through P5-05. External retrieval, real Office/CAD preview, CAD/PDM and real
-  ERPNext execution remain held/later acceptance and cannot be represented as
-  operational.
-- Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
-  sign-off and provenance-backed sanitized sample review remain open but are not
-  a global blocker. Phase 5 is active under automatic-transition authority.
-  Production ERPNext remains prohibited, and ambiguous production rules remain
-  scoped holds rather than invented defaults.
+- Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
+- Completed bridge task: `R1-01 — DOCX Pack reconciliation addendum and
+  machine trace` (`PASS — LEVEL 2`). R1 is an inserted bridge, not a
+  replacement controller Phase.
+- Current controller task:
+  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`.
+- Held product task: `P5-01 — Document and design revision`. Its bounded
+  backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
+  `PASS`, and no further P5-01 product slice may start during the R1 bridge.
+- Current requirement inventory: 281 unique trace rows — 173
+  `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+- Current reconciliation authorities:
+  `docs/V1_2_RECONCILIATION_ADDENDUM.md`,
+  `implementation/V1_2_DOCX_REQUIREMENTS.csv`,
+  `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`,
+  `docs/reference/TOOLING_LIST_FIELD_MAPPING.csv`, and
+  `implementation/V1_2_RECONCILIATION_DECISIONS.md`.
+- Brand authority: only `docs/Brand Asset/Brand Asset Instruction.csv` and
+  the exact five SVGs beside it. No alternative LaunchFlow/JCE mark, inferred
+  palette, redrawn asset, or substitute is authorized. Stable technical codes
+  `NPI_ONE`, `ERPNEXT` and `/api/npi/v1` remain unchanged.
+- First incomplete Phase remains Phase 3
+  `TECHNICAL_PASS_PENDING_UAT`; the named business UAT is external and does
+  not invalidate its technical evidence or block safe later work.
+- Latest completed product Phase remains Phase 4 `PASS`; its historical Gate
+  evidence is immutable and is not recalculated against the amended trace.
+- Phase 5 remains `IN_PROGRESS`; P5-00 remains a historical `PASS`, P5-01 is
+  held, and P5-02 through P5-05 remain inactive.
+- R1-01 changed specifications, trace/index metadata, planning and safe
+  inspection tooling only. It changed no product runtime, public API,
+  database schema, event schema or external integration behavior.
+- Execute R1-02 through R1-06. R1-07 remains scoped to `DR-REC-001`. The
+  shared Shell/design/i18n bridge requires its triggered Level 3 Gate before
+  P5-01 resumes.
 
-Resume P5-01 only from `implementation/NEXT_ACTION.md`,
-`implementation/phase-5-requirement-anchor.md`, the seven P5-01 trace rows,
-their indexed requirements, directly related contracts/ownership/accepted ADRs
-and applicable Skills. Reuse the passing Phase 4 Full Release Gate and P5-00
-documentation/trace Gate; do not repeat either merely to restore context. See
-`implementation/LAST_RUN.md` for exact evidence.
+Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
+Reuse the passing Phase 4, P5-00 and P5-01 checkpoint evidence; do not repeat or
+rewrite them merely to restore context. See `implementation/LAST_RUN.md` for
+the exact latest result.

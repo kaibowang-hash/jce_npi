@@ -188,6 +188,84 @@ milestones:
     title: "Gate review, snapshot and reopening"
   - id: M3-05
     title: My Work integration and contextual activity
+- id: R1
+  name: V1.2 reconciliation and shared UX bridge
+  exit_gate: Reconciled 281-ID trace and accepted shared UX/brand changes pass a Level 3 bridge gate before P5-01 resumes
+  tasks:
+  - id: R1-01
+    title: DOCX Pack reconciliation addendum and machine trace
+    skills:
+    - repo-discovery
+    - npi-domain-guard
+    - industrial-ux
+    - frappe-i18n
+    - xlsx-tooling-import
+    outputs:
+    - 229-row DOCX requirements CSV
+    - 229-row coverage matrix
+    - 43-column Tooling List mapping
+    - reconciliation decisions and task plan
+    product_runtime_code_allowed: false
+    reconciliation_tooling_allowed: true
+  - id: R1-02
+    title: LaunchFlow display brand adapter and exact supplied assets
+    requirements:
+    - FR-BR-001
+    skills:
+    - industrial-ux
+    - frappe-i18n
+    - release-gate
+  - id: R1-03
+    title: App Shell collapsed navigation command and contextual quick-create
+    requirements:
+    - FR-UX-039
+    - UX-011
+    - UX-018
+    skills:
+    - industrial-ux
+    - frappe-i18n
+  - id: R1-04
+    title: Shared grid sizing personalization views and export foundation
+    requirements:
+    - FR-UX-038
+    - UX-007
+    - UX-027
+    - UX-028
+    - UX-035
+    skills:
+    - industrial-ux
+    - frappe-i18n
+  - id: R1-05
+    title: Resizable panes and field attachment primitives
+    requirements:
+    - FR-UX-040
+    - FR-UX-041
+    skills:
+    - industrial-ux
+    - frappe-i18n
+  - id: R1-06
+    title: Controlled undo prototype gate and 1440 visual governance
+    requirements:
+    - UX-026
+    - UX-030
+    - UX-035
+    - UX-036
+    outputs:
+    - Low-risk timed-undo contract with explicit ineligible-action recovery
+    - Prototype-before-business-implementation task gate
+    - Additive 1440x900 trilingual P0 visual matrix
+    skills:
+    - industrial-ux
+    - frappe-i18n
+    - release-gate
+  - id: R1-07
+    title: My Work inline expansion page amendment
+    requirements:
+    - FR-UX-042
+    decision_required: DR-REC-001
+    skills:
+    - industrial-ux
+    - frappe-i18n
 - id: M4
   name: Design and baselines
   tasks:
@@ -201,21 +279,93 @@ milestones:
     title: EBOM revision and comparison
   - id: M4-05
     title: Formal publish request stub and contract
+  - id: M4-06
+    title: Controlled Frappe print registry and immutable snapshot foundation
+    requirements:
+    - FR-PRN-001
+    - FR-PRN-002
+    skills:
+    - frappe-safe-change
+    - frappe-i18n
+    - npi-domain-guard
+  - id: M4-07
+    title: Approved controlled print forms signatures and copy policy
+    requirements:
+    - FR-PRN-003
+    decisions_required:
+    - DR-REC-003
+    - DR-REC-004
+    skills:
+    - frappe-safe-change
+    - frappe-i18n
+    - npi-domain-guard
 - id: M5
   name: Tooling
   tasks:
   - id: M5-01
-    title: Tooling aggregate and cockpit
+    title: Tooling Requirement Master Applicability aggregate and cockpit
+    requirements:
+    - FR-TX-001
+    - FR-TX-002
+    - UX-004
+    scoped_decisions:
+    - id: DR-REC-010
+      applies_to: exact lifecycle states transitions and commands only
   - id: M5-02
-    title: Customer-owned tool intake
+    title: Customer-owned tool intake and physical Tooling Sets
+    requirements:
+    - FR-TX-003
   - id: M5-03
-    title: New tool specification and design
+    title: New tool specification cavities inserts and process chain
+    requirements:
+    - FR-TX-004
+    - FR-TX-005
+    - FR-TX-006
+    - FR-TX-007
+    - FR-TX-008
   - id: M5-04
     title: Manufacturing supplier and ERP cost projection
   - id: M5-05
-    title: Tool defects and lifecycle controls
+    title: Tool defects process baselines capacity and lifecycle controls
+    requirements:
+    - FR-TX-009
+    - FR-TX-010
+    - FR-TX-011
+    - FR-TX-019
+    - FR-TX-020
+    scoped_decisions:
+    - id: DR-REC-002
+      applies_to: FR-TX-020 exception-color semantics only
   - id: M5-06
     title: Acceptance and asset execution request
+  - id: M5-07
+    title: Specialized Tooling List controlled import
+    requirements:
+    - FR-TX-012
+    - FR-TX-013
+    - FR-TX-014
+    - FR-TX-015
+    - FR-TX-016
+    - FR-TX-017
+    - FR-TX-018
+    - UX-016
+    skills:
+    - xlsx-tooling-import
+    - npi-domain-guard
+    - frappe-safe-change
+    - frappe-i18n
+    scoped_decisions:
+    - id: DR-REC-007
+      applies_to: production mapping activation only
+    - id: DR-REC-008
+      applies_to: destructive downstream rollback only
+  - id: M5-08
+    title: Tooling selection filter and controlled object-package exports
+    requirements:
+    - UX-007
+    skills:
+    - npi-domain-guard
+    - frappe-i18n
 - id: M6
   name: Trial and NPI
   tasks:
@@ -231,6 +381,22 @@ milestones:
     title: NPI checklist readiness and blockers
   - id: M6-06
     title: Handover and observation period
+  - id: M6-07
+    title: Immutable Released Trial Summary and Trial print output
+    foundation_requirements:
+    - FR-INT-015
+    requirements:
+    - FR-PRN-002
+    skills:
+    - npi-domain-guard
+    - frappe-i18n
+  - id: M6-08
+    title: Mobile field approval issue photo and scan actions
+    requirements:
+    - UX-020
+    skills:
+    - industrial-ux
+    - frappe-i18n
 - id: M7
   name: ERPNext reliable integration
   tasks:
@@ -248,6 +414,26 @@ milestones:
     title: Quality linkage
   - id: M7-07
     title: Operations DLQ replay and reconciliation
+    requirements:
+    - UX-016
+  - id: M7-08
+    title: ERP JCE read-only Trial Summary contract and sandbox readiness
+    requirements:
+    - FR-INT-015
+    decisions_required:
+    - DR-REC-009
+    skills:
+    - erpnext-integration
+    - npi-domain-guard
+  - id: M7-09
+    title: Approved ERP JCE display identity adapter
+    requirements:
+    - FR-BR-002
+    decisions_required:
+    - DR-REC-006
+    skills:
+    - industrial-ux
+    - frappe-i18n
 - id: M8
   name: Change portfolio and external collaboration
   tasks:
@@ -274,3 +460,16 @@ milestones:
     title: New-tool pilot
   - id: M9-06
     title: Go-live and rollback rehearsal
+  - id: M9-07
+    title: Generic Data Exchange enterprise export and print hardening
+    skills:
+    - xlsx-tooling-import
+    - erpnext-integration
+    - frappe-i18n
+  - id: M9-08
+    title: Full-product Project workspace 80-percent workflow UAT
+    requirements:
+    - UX-003
+    skills:
+    - industrial-ux
+    - frappe-i18n

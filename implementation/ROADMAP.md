@@ -65,6 +65,23 @@ Exit：安全、API 和迁移基线通过；没有业务用户依赖 Desk。
 范围：项目、团队、RACI、WorkItem、Gate、Evidence、评论/活动。
 非范围：复杂资源计划、正式 ERP 发布。
 
+## R1 — V1.2 reconciliation 与共享体验桥接
+
+在 P5-01 后端 checkpoint 后、继续产品代码前完成：
+
+1. DOCX–Pack additive addendum、229 行原需求、coverage matrix、281 行带
+   trace kind 的机器追踪和 43 列 Tooling mapping；
+2. 只使用 `docs/Brand Asset/` CSV/资产的 LaunchFlow display adapter；
+3. 可折叠域导航、上下文 quick-create/command foundation；
+4. 可拖动/持久化列宽、个人/共享视图和受控 export foundation；
+5. 边界拖动分栏、字段可编辑性及附件状态 primitives；
+6. 低风险限时撤销契约、模块 prototype gate，以及在既有尺寸之外新增
+   1440×900 三语言 P0 视觉矩阵；
+7. My Work inline expansion 仅在 DR-REC-001 批准后执行。
+
+R1-01 是 documentation/trace only。其后共享 Shell/design/i18n 变更触发
+Level 3 bridge gate；通过后才恢复未完成的 P5-01。
+
 ## M4 — 设计、文档、基线与 EBOM
 
 最小演示：
@@ -72,12 +89,23 @@ Exit：安全、API 和迁移基线通过；没有业务用户依赖 Desk。
 
 正式 Item/MBOM 创建先用 Execution Request 契约和 sandbox stub，M7 接 ERPNext。
 
+增加受控打印 foundation：SPA/BFF 调用服务端 Frappe Print Format registry，
+从不可变快照输出带版本/hash/语言/审计的受控 PDF。具体表单、签字、浏览器
+打印和 copy numbering 等待 DR-REC-003/004。
+
 ## M5 — Tooling
 
-分三个纵切：
-1. 客户来模接收/差异/授权；
-2. 新制模具规格/设计/制造/供应商/成本投影；
-3. 验收/资产执行请求。
+分五个纵切：
+1. Tooling Requirement/Master/Applicability/Revision/physical Set；
+2. 客户来模接收/差异/授权及逐套追踪；
+3. 穴位/封穴/镶件/双色包胶、受控规格、过程基线和 Capacity Scenario；
+4. 新制模具设计/制造/供应商/成本投影、缺陷及验收/资产请求；
+5. 43 列客户 Tooling List 专用导入和 selection/filter/object-package 导出。
+
+专用导入执行上传、识别、映射、转换、校验、预览、异步执行、
+审计/回滚八步，保留原文件/批次/行/原值/转换/确认 provenance，
+并使用 `xlsx-tooling-import` Skill。未批准的列语义和 downstream rollback
+cutoff 保持 scoped hold。
 
 Exit：模具开发驾驶舱覆盖完整生命周期，设计释放和重大缺陷规则有效。
 
@@ -91,6 +119,8 @@ Exit：模具开发驾驶舱覆盖完整生命周期，设计释放和重大缺�
 - 质量引用；
 - NPI 清单/阻断/评分；
 - G6/G7 移交和观察期。
+- 不可变 Released Trial Summary、一页式 Trial output 和只读投影契约输入。
+- 手机现场审批、状态更新、拍照上传、问题记录和扫码；复杂表格仍在桌面。
 
 Exit：AT-01/02 的 NPI 侧黄金路径通过。
 
@@ -104,6 +134,8 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
 5. Tool Asset 移交；
 6. 质量请求/结果；
 7. DLQ、回放、对账和运维页面。
+8. NPI 侧 Released Trial Summary 只读 projection contract 与 sandbox-ready
+   adapter；正式目标显示身份等待批准资产，禁止生产连接。
 
 每种写操作独立幂等和契约测试。不得用一个“通用写 DocType API”绕过业务规则。
 
@@ -120,10 +152,12 @@ Exit：AT-01/02 的 NPI 侧黄金路径通过。
 
 - 性能、安全、灾备、备份恢复；
 - 历史数据映射与预演；
+- 通用 Data Exchange、enterprise export、correction artifact 和 print coverage 加固；
 - 操作/支持手册；
 - 一个客户来模 + 一个新制模具真实试点；
 - 两个项目跑完 Gate/Trial/ERP 移交；
 - 指标与可用性复测；
+- 在完整产品和两类试点上量化 Project Workspace 80% 日常工作目标；
 - 分批上线和回滚演练。
 
 ## 任务粒度

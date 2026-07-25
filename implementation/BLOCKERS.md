@@ -6,31 +6,35 @@ None.
 
 ## Active execution hold
 
-`P5-01` is `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`.
+`R1_SHARED_BRIDGE` is active.
 
-The user directed a recoverable pause before the machine-executable Pack is
-reconciled with the authoritative V1.2 DOCX. This hold:
+R1-01 passed its documentation/trace/tooling Gate and R1-02 is current.
+P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
-- does not cancel V1.2 or change any product requirement;
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
 - does not permit P5-01 to be marked `PASS`;
-- prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting; and
-- resumes first with a reconciliation comparison against the checkpoint
-  evidence in
+- prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting;
+- executes R1-02 through R1-06 before the shared Level 3 bridge Gate;
+- keeps R1-07 disabled unless DR-REC-001 is approved; and
+- preserves the exact P5-01 product boundary in
   `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
+
+The former `V1_2_RECONCILIATION_HOLD` is resolved by
+`implementation/evidence/reconciliation/r1-01-validation.md`; it is replaced
+by this bounded shared-bridge hold rather than removed.
 
 ## Current P5-01 scope
 
 Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.
 `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
 EBOM` is `PASS`. `P5-01 — Document and design revision` remains incomplete
-under the current reconciliation hold and is governed by
+under the current R1 bridge hold and is governed by
 `implementation/phase-5-requirement-anchor.md`,
 `implementation/ACTIVE_EXECUTION_GOAL.md`, and
 `implementation/NEXT_ACTION.md`.
 
-The retained checkpoint contains the bounded Controlled Document/Document
-Revision/private File Revision backend slice, Project-scoped
+The retained checkpoint at `930b5a2` contains the bounded Controlled
+Document/Document Revision/private File Revision backend slice, Project-scoped
 confidentiality/download audit, locks, capability-truth preview/download
 fallback, and the connector-unavailable seam. No further P5-01 implementation
 may begin while this hold is active. On resume, P5-01 must not invent
@@ -38,6 +42,16 @@ production document numbering, classification, retention, scanner/viewer,
 sharing, revision or CAD/PDM rules; review/release/baseline/EBOM/formal
 publish remain P5-02 through P5-05. Production ERPNext/CAD/PDM access and
 external file retrieval remain prohibited or fail closed.
+
+R1-02 may use only the supplied LaunchFlow brand package. The missing ERP/JCE
+display asset remains scoped to FR-BR-002/DR-REC-006 and cannot be replaced by
+the Company LOGO, a reconstructed mark or an external search.
+
+DR-REC-001..010 in
+`implementation/V1_2_RECONCILIATION_DECISIONS.md` pause only their named
+dependent behavior. Exact Tooling lifecycle commands, production spreadsheet
+semantics/destructive rollback, controlled form signature/copy rules and the
+Released Trial Summary event remain unapproved.
 
 The open production Project-health formula, threshold, lifecycle authority,
 completion-prerequisite, notification-delivery and external-collaboration facts

@@ -4,6 +4,29 @@ Status: **TECHNICAL_PASS_PENDING_UAT — release-gated technical evidence comple
 Baseline date: 2026-07-22
 Machine execution baseline: repository V1.2 Execution Pack
 
+## 2026-07-25 reconciliation erratum
+
+The “Current governing decision” and count statements below record the
+historical 2026-07-22 Phase 3 Gate basis; they are not current recovery
+instructions and are not rewritten.
+
+- Deterministic OOXML extraction resolves the former 228 count as 229 unique
+  DOCX requirements.
+- The former 173-row Pack trace is the immutable pre-reconciliation inventory.
+  The current union has 281 IDs: 173 `PACK_CANONICAL`, 95
+  `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+- The former DOCX-only families now have machine rows and executable task
+  placement. Existing Phase 3 evidence does not automatically mark their
+  aliases or acceptance deltas implemented.
+- The accepted R1 bridge adds shared remediation and an additive 1440×900
+  trilingual P0 matrix. It does not retroactively fail the accepted
+  1366×768/1920×1080 Phase 3 evidence.
+- Phase 3 remains exactly `TECHNICAL_PASS_PENDING_UAT`; external business UAT
+  and sanitized-data provenance are still unsigned.
+
+Current authority is `docs/V1_2_RECONCILIATION_ADDENDUM.md` and the typed
+trace/crosswalk artifacts it names.
+
 ## Current governing decision
 
 The user's 2026-07-21 decision makes the repository V1.2 Execution Pack the sole machine-execution baseline for the current implementation. The V1.2 DOCX remains product background and a future reconciliation source only.

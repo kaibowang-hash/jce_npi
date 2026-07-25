@@ -1,65 +1,60 @@
 # Active Execution Goal
 
-Updated: `2026-07-25T20:46:57Z`
+Updated: `2026-07-25T21:47:16Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f97ce-d6ad-74f2-8f14-68f2d0d5e962`
-- Mode: `V1_2_RECONCILIATION_HOLD` within
+- Mode: `R1_SHARED_BRIDGE` within
   `NPI One V1.2 AUTOPILOT CONTINUOUS DELIVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Last confirmed remote checkpoint:
-  `6099ac2351567665478ff911bc07c4ef55ab3ee1` (`0` ahead / `0` behind;
-  P5-00 is committed and pushed)
-- Current release checkpoint: P5-01 is
-  `IN_PROGRESS — V1_2_RECONCILIATION_HOLD`; its bounded backend/domain/contract
-  work is checkpointed, but no P5-01 PASS is claimed
-- Current Phase: `5 — Part Design, Documents, Baselines, and EBOM`
-  (`IN_PROGRESS`)
-- Current atomic task:
+- Last synchronized product checkpoint:
+  `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
+  the R1-01 task checkpoint)
+- Current bridge checkpoint: R1-01 is
+  `PASS — LEVEL 2 DOCUMENTATION/TRACE/TOOLING GATE`
+- Current controller task:
+  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`
+- Held product task:
   `P5-01 — Document and design revision`
-- Completed scope: Phase 4 P4-01 through P4-05 and the Phase 4 Gate are
-  `PASS`; Phase 5 controller task P5-00 is `PASS`
-- Current accepted P4-05 evidence: 587 Python tests; 492 frontend tests;
-  2,221 literal English sources with complete direct `zh`/`zh-TW`; additive
-  and idempotent Site synchronization; complete cumulative Frappe runtime;
-  227/227 non-visual Playwright; forced and clean 188/188 zero-tolerance
-  visuals; original-resolution trilingual and independent release reviews
-- Reusable prior evidence: every accepted P4-01 through P4-04 task report;
-  P4-05/Phase 4 Level 3 evidence; and the P5-00 documentation/trace Gate;
-  do not repeat them merely to restore context
+  (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
+- Current product Phase:
+  `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
+- Latest complete product Phase:
+  `4 — Project Work Items and Stage Gates` (`PASS`)
 - External state retained: Phase 3 remains
-  `TECHNICAL_PASS_PENDING_UAT`; production rule packages and ERPNext facts
-  remain scoped holds, not a global blocker
-- First resume action: after the hold is explicitly lifted, compare the
-  checkpointed backend/domain/contract implementation against the accepted
-  DOCX–Pack reconciliation result before resuming the unfinished
-  frontend/runtime/i18n slice
-- Automatic transition: suspended by the current reconciliation hold; P5-02
-  and Phase 6 must not activate
-- Source of truth: `AGENTS.md`, `GOAL.md`,
-  `implementation/AUTOPILOT_CONTROLLER.md`,
-  `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
-  `implementation/LAST_RUN.md`, Requirement Anchors, Requirement Traceability,
-  the Execution Pack, contracts, and accepted ADRs
-- Compact/recovery rule: reread this file,
-  `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
-  `implementation/LAST_RUN.md` before replanning after compaction, model
-  switch, tool interruption, automatic replanning, or agent handoff
-- Chat memory: non-authoritative
-- Permanent product, architecture, domain, permission, UI, i18n, ownership and
-  quality requirements: unchanged
+  `TECHNICAL_PASS_PENDING_UAT`; production rules, ERPNext/JCE/CAD/PDM access,
+  and externally owned business decisions remain scoped holds, not a global
+  blocker.
 
-The latest user-directed DOCX–Pack reconciliation hold is active. It does not
-cancel V1.2, change product requirements, mark a Hard Blocker, or supersede
-the final goal.
+## Current authority
 
-P5-00 passed as a documentation/trace-only controller task. P5-01 remains the
-only unfinished Phase 5 product task and is paused before its next sub-slice.
-Review/release, baselines, EBOM and formal publish requests remain P5-02
-through P5-05 and must not begin early.
+- `AGENTS.md` and `implementation/AUTOPILOT_CONTROLLER.md`
+- `docs/V1_2_RECONCILIATION_ADDENDUM.md`
+- `implementation/V1_2_DOCX_REQUIREMENTS.csv`
+- `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`
+- `implementation/REQUIREMENT_TRACEABILITY.csv`
+- `implementation/V1_2_RECONCILIATION_DECISIONS.md`
+- the current Requirement Anchors, contracts and accepted ADRs
 
-This file records execution intent and recovery behavior only. It does not add,
-remove, reinterpret, or replace a product requirement, contract, accepted ADR,
-quality criterion, security boundary, data-ownership rule, or Phase Gate.
+Brand development has one sole source:
+`docs/Brand Asset/Brand Asset Instruction.csv` and the exact five SVGs beside
+it. No external/substitute/reconstructed LaunchFlow or ERP/JCE asset is
+authorized. Stable technical identifiers remain unchanged.
+
+## Recovery boundary
+
+R1-01 preserved all historical Gate evidence and changed no product runtime,
+public API, database schema, event schema, data-ownership contract,
+translation allowlist or external integration behavior.
+
+R1-02 through R1-06 implement the accepted shared bridge. R1-07 remains scoped
+to DR-REC-001. Their shared Shell/design/i18n changes must pass the complete
+triggered Level 3 bridge Gate before P5-01 product work resumes.
+
+On compaction, model switch, tool interruption or handoff, reread this file,
+`implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
+`implementation/LAST_RUN.md`. Chat memory is non-authoritative. Reuse accepted
+Phase 4, P5-00, P5-01 checkpoint and R1-01 evidence; do not repeat or rewrite
+them merely to restore context.

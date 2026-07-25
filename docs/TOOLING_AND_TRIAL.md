@@ -1,5 +1,22 @@
 # Tooling 与试模领域规格
 
+## 0. 身份与项目上下文
+
+项目是主要工作上下文，但不是所有 Tooling 数据的所有者。必须区分：
+
+- `Part` / `Part Revision`;
+- `Tooling Requirement`;
+- `Tooling Master`;
+- 有版本和生效期的 `Tooling Applicability`;
+- `Tooling Revision`;
+- 每个物理 `Tooling Set / Copy`;
+- `Cavity Map`、`Insert Applicability` 和多工序链；以及
+- 绑定上述精确版本的 `Trial / Trial Round`。
+
+共用模通过 Applicability 被多个项目/产品/零件引用，不重复创建
+Tooling Master。复制模/新增套数创建独立 Tooling Set，不只增加计数器。
+`My Work` 是上述源对象的投影，不建立另一份业务事实。
+
 ## 1. Tooling 项目类型
 
 ### A. 客户来模
@@ -73,6 +90,39 @@
 - 客户标准、接口、备件、交付文件。
 
 字段可按模板扩展，但核心语义与单位统一。修改已批准规格需要修订和影响分析。
+
+### 3.1 穴位、镶件与多工序
+
+- 家族模/多穴模使用穴号到 Part Applicability 的结构化映射；
+- 穴位状态、封穴、启用/停用和穴级 Trial/缺陷结果独立记录；
+- 镶件/换镶件记录适用机型、版本、换型时间和验证状态；
+- 双色、双射、包胶/Overmold 记录母件/包胶件、工序顺序、机台类型和组合 Trial；
+- 空 Tooling No.、自由备注或拼接编码不得替代这些关系。
+
+### 3.2 外部标识和受控规格
+
+Part 与 Tooling 的客户、SN、KW、TH、供应商等标识是一对多关系，
+包含来源和有效期。材料、牌号、商标、颜色/色母、FDA/合规及二次工艺
+属于 Part Revision 的有版本受控规格；原始客户文本作为 provenance
+保留，不能代替规范化关系。
+
+### 3.3 过程值与产能
+
+每个可比较指标分为：
+
+1. Customer Standard / Provided Specification（只读来源事实）；
+2. TP Trial Actual（仅在精确 Trial 上下文编辑，初始
+   `not_measured`）；以及
+3. Approved Process Baseline（从批准证据生成的不可变版本）。
+
+记录值、单位、来源、上下文、差值/百分比、规则版本和
+`not_measured / within_tolerance / outside_tolerance / unavailable`。
+是否使用红色异常语义由 DR-REC-002 的批准策略决定，不能把任意差异
+自动判红。
+
+Capacity Scenario 显式版本化可用小时、工作日、OEE、良率、节拍、
+穴数、用量和有效套数，输出零件日/月产量、可装配整机数、瓶颈和缺口。
+禁止隐藏 `22` 小时、`26` 天等常数。
 
 ## 4. 设计管理
 
@@ -169,3 +219,14 @@
 - 资产和位置数据。
 
 批准后创建 `ExecutionRequest: create_or_update_tool_asset`。工程验收不等于 ERP 资产已建立；两种状态必须分别显示。
+
+## 9. Tooling List 导入与导出
+
+专用客户 Tooling List 导入遵循
+`docs/TOOLING_LIST_IMPORT_SPEC.md`、完整 43 列映射和
+`FR-TX-012..018`。导入必须保留文件/批次/行/原值/转换/确认 provenance，
+异步显示逐行结果，且不把宽表行当作聚合。
+
+Phase 6 Tooling 导出至少支持当前选择、当前过滤结果和受控对象包；
+格式按用途选择 CSV/XLSX/PDF/ZIP。权限、密级脱敏、导出审计、有效期、
+语言化列头和不可变版本引用是验收的一部分。
