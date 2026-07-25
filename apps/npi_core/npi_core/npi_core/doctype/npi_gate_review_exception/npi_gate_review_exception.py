@@ -62,7 +62,11 @@ class NPIGateReviewException(Document):
         require_gate_review_command_write()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.global_id,
+            target_version=self.optimistic_version,
+        )
 
     def before_validate(self) -> None:
         self._normalize_request()
@@ -175,8 +179,16 @@ class NPIGateReviewException(Document):
             self.exception_kind,
             _("Review Exception Kind"),
         )
-        self.reason = required_text(self.reason, _("Exception Reason"))
-        self.risk = required_text(self.risk, _("Exception Risk"))
+        self.reason = required_text(
+            self.reason,
+            _("Exception Reason"),
+            maximum=4000,
+        )
+        self.risk = required_text(
+            self.risk,
+            _("Exception Risk"),
+            maximum=4000,
+        )
         self.requester_user_id = required_text(
             self.requester_user_id,
             _("Requester User"),
@@ -293,6 +305,7 @@ class NPIGateReviewException(Document):
         self.approval_opinion = required_text(
             self.approval_opinion,
             _("Approval Opinion"),
+            maximum=4000,
         )
         snapshot = {
             "schemaVersion": 1,

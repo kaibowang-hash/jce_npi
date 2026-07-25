@@ -216,58 +216,37 @@ pending until that proof is produced in Codespaces.
   NPI-owned domain work, and explicitly activates Phase 4. This is the narrow
   Pack-approved state that permits independent later work; it does not turn
   Phase 3 into `PASS`.
-- Current unfinished task: Phase 4 `P4-04`, subject to `NEXT_ACTION.md`.
-  P4-01, P4-02, and P4-03 are complete; P4-05 is inactive.
-- State at 2026-07-24T18:54:22Z: `IN_PROGRESS`, paused at the explicit final
-  CLI-to-Cloud handoff checkpoint. The current minimum consistent unit retains
-  the live Gate Review domain/repository, controlled persistence and
-  permissions, sealed actor-bound receipts, strict BFF/OpenAPI surfaces,
-  dependency hooks, focused runtime, trilingual industrial Review Room, and
-  directly affected Level 1 evidence. It is not a Task Gate `PASS`.
-- The P4-04 plan's former automatic impact-DWI requirement is corrected to the
-  authoritative `FR-SG-007` boundary: exact dependency invalidation,
-  successor review cycle, and downstream denial. P4-05 owns work/lifecycle
-  projection; P4-04 keeps the legacy action reference nullable and creates no
-  new impact DWI.
-- Latest result: bounded `P4-03` passed its triggered Level 3 Full Release
-  Gate. It delivers independent versioned Gate Templates, exact Project
-  Template bindings, frozen Project requirement assignments, append-only exact
-  WBS/private File Revision evidence, live scanner-state truth, URL-free BFF
-  metadata, and a trilingual live Gate evidence workspace. Authorization
-  precedes protected-object validation, and historical exact template versions
-  remain readable after their root is disabled while new bindings fail closed.
-- Committed P4-03 cumulative evidence includes the 276-Python/237-frontend
-  aggregate
-  before the final two-file authorization-order repair, 20 directly affected
-  tests after it, two successful Site migrations, the complete P4-01/P4-02/
-  P4-03 real runtime, 153 non-visual browser cases, forced and clean 159-case
-  exact visual matrices, original-resolution trilingual reviews, Task
-  Diff/trace, security, and independent release review. The canonical catalogs
-  then contained 1274 direct entries per Chinese locale; the current shared
-  catalogs contain 1740 direct entries.
-- Current P4-04 Level 1 evidence includes 116 Gate Review Python tests, 46
-  directly affected P4-02/P4-03 boundary tests, 11 runtime-verifier unit tests,
-  a passing focused live Frappe runtime, 93 frontend parser/Review Room tests,
-  four affected non-visual browser cases, and forced plus clean exact
-  comparisons for three English/`zh`/`zh-TW` Review Room baselines.
-- FR-SG-001, FR-SG-002, FR-SG-004, and FR-CO-006 remain technically verified
-  foundations. FR-SG-003, FR-SG-005, FR-SG-006, and FR-SG-007 remain
-  `IN_PROGRESS_P4_04`. Production Gate condition/skip content, production
-  review/waiver/reopen/invalidation authority, future evidence resolvers,
-  external-user notification/email/print delivery, and production scanner/DMS
-  behavior are not delivered.
-- P4-04 still requires its complete state-specific E2E/visual matrix,
-  coverage/build/audit, additive/idempotent migration and complete runtime
-  compatibility reruns, Task Diff/security/trace review, Level 2 Task Gate,
-  and the public contract/Schema/authentication/permission/shared-catalog
-  triggered Level 3. None is waived.
+- Latest completed task: Phase 4 `P4-04 — Review, decision, snapshot, and
+  reopen`. P4-01 through P4-04 are `PASS`; P4-05 is active under
+  `NEXT_ACTION.md`.
+- P4-04's triggered Level 3 Full Release Gate passed on 2026-07-25. The final
+  evidence includes 417 Python and 337 frontend tests, 1,746 literal English
+  sources with complete direct `zh`/`zh-TW` coverage, two additive Site
+  migrations, all six live Frappe runtime lanes, 204 non-visual browser cases,
+  forced and clean 170-case zero-tolerance visual matrices, fresh Node 24
+  target proof, zero full/production npm audit findings, and independent
+  security/release review.
+- P4-04 delivers the bounded synthetic-policy review mechanism, immutable
+  decisions and preserved-cycle reopen, exact dependency invalidation,
+  successor cycles, downstream denial, and live trilingual Review Room. It
+  creates no impact Domain WorkItem and installs no production approval,
+  exception, segregation, scanner, DMS, or dependency policy.
+- `FR-SG-003`, `FR-SG-005`, and `FR-SG-007` are technically verified
+  foundations; `FR-SG-006` is technically verified. `FR-SG-002`, `FR-SG-004`,
+  and `FR-CO-006` retain their truthful foundation status and open later scope.
+- Current unfinished task: `P4-05 — Live My Work, activity, and Project
+  controls`, allocated to `FR-PM-008`, `FR-PM-011`, `FR-PM-012`, `FR-CO-001`,
+  `FR-CO-002`, and `FR-CO-006`. Begin from the committed requirement anchor,
+  trace rows, related domain specifications, and applicable Skills; do not
+  infer the held production health/lifecycle/approval rules.
 - Phase 3 is truthfully retained as `TECHNICAL_PASS_PENDING_UAT`: named business
   sign-off and provenance-backed sanitized sample review remain open but are not
   a global blocker. Phase 4 is active under automatic-transition authority.
   Production ERPNext remains prohibited, and ambiguous production rules remain
   scoped holds rather than invented defaults.
 
-Resume only from
-`implementation/evidence/phase-4/p4-04-cloud-checkpoint.md` and
-`NEXT_ACTION.md`. Do not repeat the passing P4-03 Gate or P4-04 Level 1 lanes
-merely to reconstruct handoff. See `LAST_RUN.md` for exact evidence.
+Resume P4-05 only from `implementation/NEXT_ACTION.md`,
+`implementation/phase-4-requirement-anchor.md`, the six allocated requirement
+rows, and `implementation/evidence/phase-4/p4-04-validation.md`. Do not repeat
+the passing P4-04 Full Release Gate merely to restore context. See
+`implementation/LAST_RUN.md` for exact evidence.

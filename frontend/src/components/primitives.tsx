@@ -134,6 +134,8 @@ export interface ImpactReviewDetails {
   audit: string;
 }
 
+const IMPACT_REVIEW_REASON_MAX_LENGTH = 4000;
+
 export function ImpactReview({
   title,
   details,
@@ -141,6 +143,7 @@ export function ImpactReview({
   onCancel,
   onConfirm,
   reasonRequired = true,
+  returnFocusTarget,
 }: {
   title: string;
   details: ImpactReviewDetails;
@@ -148,6 +151,7 @@ export function ImpactReview({
   onCancel: () => void;
   onConfirm: (reason: string) => void;
   reasonRequired?: boolean;
+  returnFocusTarget?: () => HTMLElement | null;
 }): React.JSX.Element {
   const { t } = useI18n();
   const headingId = useId();
@@ -159,7 +163,6 @@ export function ImpactReview({
       ? document.activeElement
       : null,
   );
-
   useEffect(() => {
     const root = document.querySelector<HTMLElement>("#root");
     const returnFocus = returnFocusRef.current;
@@ -195,9 +198,15 @@ export function ImpactReview({
     return () => {
       document.removeEventListener("keydown", handleKey);
       if (root) root.inert = false;
-      void focusControl(returnFocus);
+      if (returnFocusTarget) {
+        globalThis.queueMicrotask(() => {
+          void focusControl(returnFocusTarget());
+        });
+      } else {
+        void focusControl(returnFocus);
+      }
     };
-  }, [onCancel]);
+  }, [onCancel, returnFocusTarget]);
 
   return createPortal(
     <div
@@ -250,8 +259,14 @@ export function ImpactReview({
             <textarea
               aria-describedby={reasonHelpId}
               aria-label={t("Reason")}
+              maxLength={IMPACT_REVIEW_REASON_MAX_LENGTH}
               onChange={(event) => {
-                setReason(event.currentTarget.value);
+                setReason(
+                  event.currentTarget.value.slice(
+                    0,
+                    IMPACT_REVIEW_REASON_MAX_LENGTH,
+                  ),
+                );
               }}
               required
               rows={3}

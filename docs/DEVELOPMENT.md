@@ -8,18 +8,24 @@ GitHub Codespaces / VS Code Dev Containers is the authoritative development path
   pinned image contains an obsolete Yarn APT source, which the Dockerfile
   removes from `/etc/apt/sources.list` and
   `/etc/apt/sources.list.d/*yarn*` before the first package-index refresh;
-- Node.js 18.20.8 and npm 10.8.2 through the pinned official Node feature, plus Yarn 1.22.22 already present in the digest-pinned base image for Frappe dependency installation;
+- Node.js 24.18.0 LTS and its bundled npm 11.16.0 through the pinned official Node feature, plus Yarn 1.22.22 already present in the digest-pinned base image for Frappe dependency installation;
 - Docker/Moby semantic version 28.3.3 and Compose v2 through the digest-locked official Docker-in-Docker feature (the verified fresh target resolved package `28.3.3-debian12u1`, Engine/CLI `28.3.3-1` and Compose `2.40.3`);
 - Frappe Bench CLI 5.31.0 and pinned uv 0.11.30 installed in its environment and exposed by post-create;
-- Vite 5.4.14 installed by the idempotent post-create bootstrap;
+- Vite 5.4.14 and its exact esbuild 0.21.5 runtime installed by the
+  idempotent post-create bootstrap with npm's strict install-script policy;
 - digest-pinned MariaDB 10.6 and Redis 7.2 through repository Compose services;
 - Frappe `version-15` pinned to commit `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` for local Bench initialization.
 
 The Dev Container Features are additionally locked to their OCI digests in
 `.devcontainer/devcontainer-lock.json`. The selected Frappe commit declares
 Python `>=3.10,<3.15` and Node `>=18`; the pinned toolchain is within those
-supported ranges. This remediation does not change the accepted independent-site,
-React SPA or ERPNext boundary decisions.
+supported ranges. ADR-011 records the 2026-07-25 security move from the
+end-of-life Node 18 baseline after a newly published High-severity
+`brace-expansion` advisory. The application lock now resolves only the patched
+`brace-expansion` 5.0.8, explicitly allows only the exact existing esbuild
+install script and requires both complete and production-only npm audits. This
+remediation does not change the accepted independent-site, React SPA or ERPNext
+boundary decisions.
 
 ## Creation failure evidence
 
@@ -44,6 +50,16 @@ npm-lockfile-backed SPA under `frontend/`; its exact dependencies are isolated
 from the Yarn 1.x invocation used internally by the pinned Frappe Bench setup.
 Node and npm come from the locked Node Dev Container Feature. The invalid Yarn
 APT repository must not be restored.
+
+The global Vite smoke installation explicitly permits only the reviewed exact
+esbuild 0.21.5 postinstall and Vite's exact optional fsevents 2.3.3 install
+hook; strict mode fails any newly introduced script. fsevents remains absent
+on Linux. The application workspace has a separate exact `allowScripts` entry
+for its locked esbuild 0.25.12 and a name-wide reviewed denial for fsevents,
+including the lock's optional 2.3.2 and 2.3.3 hooks. Its checked-in `.npmrc`,
+Make target and CI command enforce npm 11 strict install-script handling, and
+the frontend audit also fails unless the read-only pending-script report is
+empty.
 
 ## Create and verify
 
@@ -86,7 +102,8 @@ make frontend-e2e
 make frontend-visual
 ```
 
-`frontend-install` uses `npm ci` and refuses lock drift. Browser installation is
+`frontend-install` uses strict `npm ci`, refuses lock drift and rejects any
+install script outside the exact reviewed application allowlist. Browser installation is
 a separate reproducible provisioning step because Playwright's Chromium and OS
 libraries are larger than ordinary npm dependencies. `make verify` includes the
 frontend type, lint, unit/coverage, production build and audit gates once the

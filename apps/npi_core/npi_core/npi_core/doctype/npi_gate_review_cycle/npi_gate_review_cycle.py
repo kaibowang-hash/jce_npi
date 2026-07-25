@@ -68,7 +68,11 @@ class NPIGateReviewCycle(Document):
         require_gate_review_command_write()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.global_id,
+            target_version=self.optimistic_version,
+        )
 
     def before_validate(self) -> None:
         self._normalize()

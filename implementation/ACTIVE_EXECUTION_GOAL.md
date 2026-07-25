@@ -1,13 +1,12 @@
 # Active Execution Goal
 
-Updated: `2026-07-25T05:48:39Z`
+Updated: `2026-07-25T09:09:22Z`
 
 - Mode: `NPI One V1.2 AUTOPILOT CONTINUOUS DELIVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
-- Current work: complete the remaining P4-04 migration, live Frappe runtime,
-  Level 2 Task Gate, and triggered Level 3 Full Release Gate from repository
-  checkpoint `f3d9c06`; P4-03 remains `EVIDENCE_CONFIRMED`
+- Current work: execute `P4-05 — Live My Work, activity, and Project controls`
+  from the passing P4-04 Level 3 checkpoint; P4-01 through P4-04 are complete
 - Automatic transition: enabled after each passing atomic task and Phase Gate
 - Stop-after-P4-04: disabled
 - P4-05 and later phases: automatically continue after each applicable Gate
@@ -26,9 +25,8 @@ Updated: `2026-07-25T05:48:39Z`
 
 Historical thread-local stop, pause, handoff, and “P4-05 forbidden” boundaries
 are retained as history but have status
-`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. P4-05 remains inactive only
-until P4-04 genuinely passes all applicable Gates; it then activates
-automatically without another prompt.
+`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. P4-04 has now passed all
+applicable Gates, so P4-05 is active without another prompt.
 
 This file records execution intent and recovery behavior only. It does not add,
 remove, reinterpret, or replace a product requirement, contract, accepted ADR,

@@ -376,9 +376,7 @@ class Phase4GateReviewApiTest(unittest.TestCase):
         payload: dict[str, Any],
         **extra: Any,
     ) -> dict[str, Any] | None:
-        self.frappe.local.form_dict = AttrDict(
-            {"cmd": command, **payload, **extra}
-        )
+        self.frappe.local.form_dict = AttrDict({"cmd": command, **payload, **extra})
         return function(**payload, **extra)
 
     def assert_problem(
@@ -824,6 +822,123 @@ class Phase4GateReviewApiTest(unittest.TestCase):
         self.assertEqual(self.repository.calls[-1][0], "reopen")
         self.assertEqual(self.frappe.local.response.http_status_code, 201)
 
+    def test_public_long_text_commands_accept_4000_and_reject_4001(self) -> None:
+        maximum = "x" * 4000
+        too_long = "x" * 4001
+        cycle_route = {
+            "project_id": PROJECT_ID,
+            "gate_id": GATE_ID,
+            "cycle_id": CYCLE_ID,
+        }
+        exception_route = {
+            **cycle_route,
+            "exception_id": EXCEPTION_ID,
+        }
+
+        accepted = (
+            (
+                self.api.submit_gate_review,
+                "npi_core.gate_review_api.submit_gate_review",
+                {**self.review_payload(), "opinion": maximum},
+                cycle_route,
+                "opinion",
+            ),
+            (
+                self.api.request_gate_review_exception,
+                "npi_core.gate_review_api.request_gate_review_exception",
+                {
+                    **self.exception_payload(),
+                    "reason": maximum,
+                    "risk": maximum,
+                },
+                cycle_route,
+                "reason",
+            ),
+            (
+                self.api.decide_gate_review_exception,
+                "npi_core.gate_review_api.decide_gate_review_exception",
+                {**self.decide_exception_payload(), "opinion": maximum},
+                exception_route,
+                "opinion",
+            ),
+            (
+                self.api.reopen_gate,
+                "npi_core.gate_review_api.reopen_gate",
+                {**self.reopen_payload(), "reason": maximum},
+                {
+                    "project_id": PROJECT_ID,
+                    "gate_id": GATE_ID,
+                },
+                "reason",
+            ),
+        )
+        for function, command, payload, route, field in accepted:
+            with self.subTest(boundary=4000, command=command, field=field):
+                self.reset_response(
+                    user="reviewer@example.invalid",
+                    route_params=route,
+                )
+                self.call(command, function, payload)
+                self.assertEqual(
+                    self.repository.calls[-1][2][field],
+                    maximum,
+                )
+
+        rejected = (
+            (
+                self.api.submit_gate_review,
+                "npi_core.gate_review_api.submit_gate_review",
+                self.review_payload(),
+                cycle_route,
+                "opinion",
+            ),
+            (
+                self.api.request_gate_review_exception,
+                "npi_core.gate_review_api.request_gate_review_exception",
+                self.exception_payload(),
+                cycle_route,
+                "reason",
+            ),
+            (
+                self.api.request_gate_review_exception,
+                "npi_core.gate_review_api.request_gate_review_exception",
+                self.exception_payload(),
+                cycle_route,
+                "risk",
+            ),
+            (
+                self.api.decide_gate_review_exception,
+                "npi_core.gate_review_api.decide_gate_review_exception",
+                self.decide_exception_payload(),
+                exception_route,
+                "opinion",
+            ),
+            (
+                self.api.reopen_gate,
+                "npi_core.gate_review_api.reopen_gate",
+                self.reopen_payload(),
+                {
+                    "project_id": PROJECT_ID,
+                    "gate_id": GATE_ID,
+                },
+                "reason",
+            ),
+        )
+        for function, command, base, route, field in rejected:
+            with self.subTest(boundary=4001, command=command, field=field):
+                self.reset_response(
+                    user="reviewer@example.invalid",
+                    route_params=route,
+                )
+                payload = {**base, field: too_long}
+                problem = self.assert_problem(
+                    self.call(command, function, payload),
+                    422,
+                    "VALIDATION_FAILED",
+                )
+                self.assertEqual(problem["fieldErrors"][0]["path"], field)
+                self.assertEqual(self.repository.calls, [])
+
     def test_closed_payloads_reject_forged_state_and_reopen_decision(self) -> None:
         cases = (
             (
@@ -1073,10 +1188,7 @@ class Phase4GateReviewApiTest(unittest.TestCase):
             ),
             (
                 "GET",
-                (
-                    f"{prefix}/review-command-receipts/"
-                    "gate.review.exception.request"
-                ),
+                (f"{prefix}/review-command-receipts/" "gate.review.exception.request"),
                 "npi_core.gate_review_api.get_gate_review_command_receipt",
                 {
                     "project_id": PROJECT_ID,
@@ -1147,9 +1259,7 @@ class Phase4GateReviewApiTest(unittest.TestCase):
                 self.router.route_request()
                 self.assertEqual(self.frappe.local.form_dict.cmd, command)
                 self.assertEqual(self.frappe.flags.npi_route_params, params)
-                self.assertTrue(
-                    self.router._requires_project_request_id(method, path)
-                )
+                self.assertTrue(self.router._requires_project_request_id(method, path))
 
         for method, suffix in (
             ("PUT", "/review"),

@@ -1,17 +1,16 @@
 # Next Action
 
-Status: `AUTOPILOT RESUMED — P4-04 IN PROGRESS; NOT PASS`
+Status: `P4-04 LEVEL 3 PASS — P4-05 ACTIVE`
 
-Recovery time: `2026-07-25T05:48:39Z`
+Recovery time: `2026-07-25T09:09:22Z`
 
 Active execution goal:
 `implementation/ACTIVE_EXECUTION_GOAL.md`
 
 The former thread-migration stop boundary is
 `SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. Continuous delivery now
-proceeds automatically through P4-04, P4-05, and later phases after each
-applicable passing Gate. P4-05 remains inactive only while P4-04 is not yet a
-genuine Task/Release `PASS`.
+proceeds automatically through P4-05 and later phases after each applicable
+passing Gate. P4-04 is complete and must not be rerun merely to restore context.
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
@@ -24,17 +23,15 @@ Required and only development branch:
   provenance-backed sanitized-data review are still externally unsigned.
 - Current authorized implementation phase:
   `4 — Project Work Items and Stage Gates` (`IN_PROGRESS`).
-- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, and `P4-03`.
-- P4-03 takeover result: `EVIDENCE_CONFIRMED`; do not repeat its complete
-  Level 3 Gate.
+- Completed Phase 4 atomic tasks: `P4-01`, `P4-02`, `P4-03`, and `P4-04`.
+- P4-04 result: `PASS — LEVEL 3 FULL RELEASE GATE`; do not repeat its complete
+  Gate.
 - Current unfinished atomic task:
-  `P4-04 — Review, decision, snapshot, and reopen`.
-- P4-04 takeover conclusion: `DOMAIN_FOUNDATION_ACCEPTED`; this is not a Task
-  Gate `PASS`.
-- `P4-05` is inactive until P4-04 passes; it then starts automatically without
-  another prompt.
+  `P4-05 — Live My Work, activity, and Project controls`.
+- P4-05 allocation: `FR-PM-008`, `FR-PM-011`, `FR-PM-012`, `FR-CO-001`,
+  `FR-CO-002`, and `FR-CO-006`.
 
-## Completed P4-04 units
+## Completed P4-04 boundary
 
 - Versioned synthetic Gate Review Policy, closed condition evaluator, explicit
   frozen review/final-decision/reopen/exception authorities, and
@@ -54,65 +51,52 @@ Required and only development branch:
 
 No production Gate Review Policy is installed. Production approval, waiver,
 invalidation, delegation, and segregation rules remain scoped Class-B holds.
-P4-04 creates no impact Domain WorkItem; P4-05 owns work projection.
+P4-04 creates no impact Domain WorkItem; P4-05 owns work projection. Complete
+evidence is in `implementation/evidence/phase-4/p4-04-validation.md`.
 
 ## Passed evidence — do not repeat merely to restore context
 
-- P4-03 final commit:
-  `0fd4762a01fd10fe6851df07ead1c5e4e7a42473`.
-- P4-03 evidence blob is unchanged, and bounded reconciliation is
-  `EVIDENCE_CONFIRMED` in
-  `implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`.
-- Current P4-02/P4-03 shared repository/controller/metadata boundary:
-  `46/46 PASS`.
-- Gate Evidence contract/current Gate Shell boundary: `11/11 PASS`.
-- Current P4-04 affected Python suite: `123/123 PASS`.
-- Evidence parser, review parser, and Review Room unit/component lane:
-  `116/116 PASS`.
-- Generated artifacts and TypeScript: `PASS`.
-- Direct changed-file ESLint, Prettier, Python compilation, JSON parsing, and
-  prohibited-pattern scan: `PASS`.
-- Frappe-compatible i18n audit: `1742` literal English sources with complete
+- Final `make verify`: `PASS` — 417 Python tests, 337 frontend tests, complete
+  static/type/lint/style/boundary/industrial-UI checks, coverage, production
+  build, strict install-script review, and zero full/production npm audit
+  findings.
+- Frappe-compatible i18n: `PASS` — 1,746 literal English sources with complete
   direct `zh` and `zh-TW` coverage.
-- Current Gate Review/Evidence non-visual browser spec: `72/72 PASS`.
-- Current affected Review Room visual matrix: `23/23 PASS` at zero pixel
-  tolerance; representative normal, no-permission, and high-risk confirmation
-  images were reviewed at original resolution.
-- `git diff --check`: `PASS` before recovery-document updates; rerun at the
-  final checkpoint boundary.
+- Additive Site migration and idempotent rerun: `PASS` at exact Frappe commit
+  `a3d8090ba80cb91d3ed72ea90bec67df201db5c1`.
+- Complete live Frappe runtime: `PASS` — BFF, Project, Project Work fresh,
+  cross-process sealed replay, Gate Evidence, and Gate Review.
+- Complete non-visual Playwright: `204/204 PASS`.
+- Affected command/dialog browser lane: `26/26 PASS`.
+- Forced visual update: `170/170 PASS`; immediate clean comparison:
+  `170/170 PASS` at unchanged `maxDiffPixelRatio: 0`.
+- Fresh Node `v24.18.0`/npm `11.16.0` target, exact dependency/install-script
+  policy, and zero-vulnerability audits: `PASS`.
+- Independent code/security/release review: `PASS`, with no remaining blocker,
+  major, or minor finding.
 
-Exact commands, changed-files→affected-tests mapping, review findings, and
-repairs are in:
-
-- `implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`;
-- `implementation/evidence/phase-4/p4-04-takeover-review.md`.
+Exact commands, changed-files→affected-tests mapping, repair history, review
+findings, and rollback evidence are in
+`implementation/evidence/phase-4/p4-04-validation.md`.
 
 ## Current unfinished atomic work
 
-P4-04 remains `IN_PROGRESS`. The following are not passed or waived:
+P4-05 is active. Its bounded outcome must combine:
 
-- current additive Site migration and its idempotent rerun;
-- focused live Frappe verification of final File-delete commit/rollback,
-  legacy-history compatibility, preserved latest-decision lineage, and
-  complete P4-01/P4-02/P4-03/P4-04 runtime compatibility;
-- complete P4-04 module coverage, production build, npm audit, Task Diff,
-  final security/permission/rollback/recovery review, and final requirement
-  review;
-- P4-04 Level 2 Task Gate;
-- the one OpenAPI/Schema/permission/hook/shared-UI/catalog-triggered Level 3
-  Full Release Gate and `release-gate` review;
-- production policy inputs and Phase 3 external UAT.
+- a live, current-user My Work projection over the already-governed Project,
+  Domain WorkItem, Gate assignment, and invalidated Gate sources;
+- contextual internal activity/comments/attachments without claiming mail,
+  in-app delivery, portal, or external collaboration;
+- honest Project health and policy-driven lifecycle controls that remain
+  unavailable when the recorded production formulas, thresholds, authorities,
+  or completion prerequisites are absent;
+- lessons/template feedback at the boundary authorized by `FR-PM-012`; and
+- complete English-source, direct `zh`, and direct `zh-TW` UI/API copy.
 
-The focused runtime retry at this checkpoint did not enter product execution:
-the controlled MariaDB container was stopped, and `docker compose up -d`
-failed with a stale OCI task (`container with given ID already exists`).
-This is a local runtime prerequisite, not a product pass or product failure.
-Do not reset or delete the controlled database volume to work around it.
-
-Python Black and a standalone PyYAML parse were unavailable in the current
-base Python. Do not claim those invocations passed. Direct Python compilation,
-the affected Python suite, changed JSON parse, and closed OpenAPI contract
-tests did pass.
+Production health formulas, lifecycle authorities, notification delivery,
+external users, ERPNext actuals, and other scoped Class-B holds must not be
+invented. Phase 3 external UAT remains unsigned and does not block the safe
+NPI-owned P4-05 foundation.
 
 ## Exact recovery steps
 
@@ -124,17 +108,19 @@ tests did pass.
    `implementation/REQUIREMENT_TRACEABILITY.csv`,
    `implementation/DECISION_LOG.md`, `implementation/RISK_REGISTER.md`,
    `implementation/phase-4-requirement-anchor.md`,
-   `implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`, and
-   `implementation/evidence/phase-4/p4-04-takeover-review.md`.
-3. Confirm P4-03 is still the latest completed task, P4-04 is the only active
-   task, and P4-05 is inactive. Reuse the passing evidence above.
-4. Restore the existing MariaDB/Redis containers without resetting, deleting,
-   or replacing their controlled volumes. Resolve the stale OCI task at the
-   Docker runtime layer.
-5. Run the additive migration and idempotent rerun, then run
-   `bash scripts/verify-frappe-runtime.sh --gate-review-only`.
-6. Continue only the remaining P4-04 acceptance work: one Level 2 Task Gate,
-   affected repairs if any, then the single required Level 3 Gate and
-   `release-gate` review.
-7. Keep P4-04 `IN_PROGRESS` on any incomplete criterion. Activate P4-05 only
-   after genuine P4-04 Task/Release evidence passes.
+   `implementation/evidence/phase-4/p4-04-validation.md`, and the six allocated
+   requirement rows in `docs/DETAILED_REQUIREMENTS.md`.
+3. Confirm P4-01 through P4-04 are complete and P4-05 is the only active Phase
+   4 atomic task. Reuse the passing P4-04 evidence above.
+4. Read only the P4-05-related domain/UX/API contracts and applicable
+   `npi-domain-guard`, `frappe-safe-change`, `industrial-ux`, and
+   `frappe-i18n` Skills; expand scope only for a material ambiguity or
+   cross-domain conflict.
+5. Create `implementation/evidence/phase-4/p4-05-plan.md` with exact scope,
+   non-scope, Class-B holds, changed-files→tests mapping, migration/rollback,
+   and truthful acceptance targets before business code.
+6. Set the six P4-05 trace rows to `IN_PROGRESS_P4_05` when implementation
+   actually begins, then implement the minimum complete vertical slice and use
+   cumulative Level 1/2/3 validation.
+7. Do not create `phase-4-gate.md` or enter Phase 5 until P4-05 and the complete
+   Phase 4 Gate genuinely pass.

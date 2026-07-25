@@ -98,6 +98,7 @@ GATE_REVIEW_COMMAND_OPERATIONS = frozenset(
     }
 )
 GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR = "npi-gate-review-dependency-system"
+GATE_REVIEW_DEPENDENCY_INPUT_FLAG = "npi_gate_review_dependency_input_write"
 _DEPENDENCY_SYSTEM_CAPABILITY = object()
 
 
@@ -839,6 +840,101 @@ class FrappeGateReviewRepository:
                 summary,
             )
         return True
+
+    def refresh_gate_for_work_item_dependency_locked(
+        self,
+        project,
+        gate,
+        *,
+        work_item_global_id: UUID,
+        reason: str = "GATE_WORK_ITEM_CHANGED",
+        occurred_at: datetime | None = None,
+        initiated_by_user_id: str | None = None,
+    ) -> bool:
+        """Refresh one blocker or exact closure-action dependency under Gate locks."""
+        if not self._dependency_system:
+            raise PermissionDenied()
+        if str(gate.get("review_state") or "not_started") not in {
+            "in_review",
+            "decided",
+            "requires_review",
+        }:
+            return False
+        now = occurred_at or datetime.now(UTC)
+        cycle_document = self._locked_current_cycle(project, gate)
+        if cycle_document is not None:
+            cycle = self._hydrate_cycle(cycle_document, lock_exceptions=True)
+            if self._closure_action_reference_drifted_locked(
+                project,
+                gate,
+                cycle,
+                work_item_global_id,
+            ):
+                # Authority substitution is a held business policy. Revalidate every
+                # frozen binding before changing persisted input truth, and let a
+                # failure surface to the background job without replacing anyone.
+                tuple(
+                    self._resolve_frozen_binding(project, binding, now=now)
+                    for binding in cycle.bindings
+                )
+                gate.review_input_version = (
+                    int(gate.get("review_input_version") or 1) + 1
+                )
+                with _controlled_dependency_input_write_scope():
+                    return self.refresh_gate_for_dependency_change_locked(
+                        project,
+                        gate,
+                        reason=reason,
+                        occurred_at=now,
+                        initiated_by_user_id=initiated_by_user_id,
+                    )
+        return self.refresh_gate_for_dependency_change_locked(
+            project,
+            gate,
+            reason=reason,
+            occurred_at=now,
+            initiated_by_user_id=initiated_by_user_id,
+        )
+
+    @staticmethod
+    def _closure_action_reference_drifted_locked(
+        project,
+        gate,
+        cycle: ReviewCycle,
+        work_item_global_id: UUID,
+    ) -> bool:
+        if cycle.state not in {CycleState.ACTIVE, CycleState.DECIDED}:
+            return False
+        decision_hashes = (
+            set(cycle.decision.exception_hashes)
+            if cycle.state is CycleState.DECIDED and cycle.decision is not None
+            else None
+        )
+        references = tuple(
+            value.closure_action_ref
+            for value in cycle.exceptions
+            if value.closure_action_ref.is_exact
+            and value.closure_action_ref.global_id == work_item_global_id
+            and (decision_hashes is None or value.snapshot_hash in decision_hashes)
+        )
+        if not references:
+            return False
+        try:
+            document = frappe.get_doc(
+                "NPI Domain Work Item",
+                str(work_item_global_id),
+                for_update=True,
+            )
+        except frappe.DoesNotExistError:
+            document = None
+        current_reference = (
+            _closure_action_reference(document)
+            if document is not None
+            and str(document.global_id) == str(work_item_global_id)
+            and _closure_action_matches_scope(document, project, gate)
+            else None
+        )
+        return any(reference != current_reference for reference in references)
 
     def _workspace_for(self, project, gate) -> dict[str, Any]:
         current_input = self._build_current_input(project, gate)
@@ -3752,25 +3848,22 @@ def evaluate_gate_review_dependency(
 
 
 def queue_gate_review_work_item_evaluation(document, method: str | None = None) -> None:
-    """Queue the before/after active-blocker Gate union after a controlled write."""
+    """Queue the before/after blocker or NPI action Gate union after commit."""
     del method
     if str(getattr(document, "doctype", "")) != "NPI Domain Work Item" or not bool(
         getattr(frappe.flags, "npi_project_work_command_write", False)
     ):
         return
     previous = document.get_doc_before_save()
-    candidates = tuple(
-        value
-        for value in (previous, document)
-        if _active_blocker_gate_identity(value) is not None
+    identities = tuple(
+        identity
+        for identity in (
+            _gate_review_work_item_identity(previous),
+            _gate_review_work_item_identity(document),
+        )
+        if identity is not None
     )
-    gate_roots = sorted(
-        {
-            _active_blocker_gate_identity(value)
-            for value in candidates
-            if _active_blocker_gate_identity(value) is not None
-        }
-    )
+    gate_roots = sorted(set(identities))
     if len(gate_roots) > 2:
         raise ValueError("Work Item Gate dependency fan-out exceeds its safe bound.")
     initiator = str(getattr(frappe.session, "user", "") or "").strip() or None
@@ -3827,9 +3920,10 @@ def evaluate_gate_review_work_item_dependency(
     if locked is None:
         return False
     project, gate = locked
-    return repository.refresh_gate_for_dependency_change_locked(
+    return repository.refresh_gate_for_work_item_dependency_locked(
         project,
         gate,
+        work_item_global_id=identities[0],
         reason="GATE_WORK_ITEM_CHANGED",
         initiated_by_user_id=initiated_by_user_id,
     )
@@ -3921,15 +4015,20 @@ def _document_value(document, fieldname: str) -> object:
     return getattr(document, fieldname, None)
 
 
-def _active_blocker_gate_identity(
+def _gate_review_work_item_identity(
     document,
 ) -> tuple[str, str, str] | None:
     if (
         document is None
         or str(_document_value(document, "source_system")) != "NPI_ONE"
-        or not bool(_document_value(document, "blocking"))
-        or bool(_document_value(document, "state_terminal"))
         or not _document_value(document, "stage_global_id")
+        or not (
+            (
+                bool(_document_value(document, "blocking"))
+                and not bool(_document_value(document, "state_terminal"))
+            )
+            or str(_document_value(document, "kind")) == "action"
+        )
     ):
         return None
     try:
@@ -3942,6 +4041,27 @@ def _active_blocker_gate_identity(
     if work_item_id.int == 0 or not tenant_id:
         return None
     return tenant_id, project_id, gate_id
+
+
+@contextmanager
+def _controlled_dependency_input_write_scope() -> Iterator[None]:
+    missing = object()
+    previous = getattr(
+        frappe.flags,
+        GATE_REVIEW_DEPENDENCY_INPUT_FLAG,
+        missing,
+    )
+    setattr(frappe.flags, GATE_REVIEW_DEPENDENCY_INPUT_FLAG, True)
+    try:
+        yield
+    finally:
+        if previous is missing:
+            try:
+                delattr(frappe.flags, GATE_REVIEW_DEPENDENCY_INPUT_FLAG)
+            except AttributeError:
+                pass
+        else:
+            setattr(frappe.flags, GATE_REVIEW_DEPENDENCY_INPUT_FLAG, previous)
 
 
 @contextmanager

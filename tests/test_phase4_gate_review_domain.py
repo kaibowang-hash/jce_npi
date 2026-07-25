@@ -347,6 +347,120 @@ class GateReviewPolicyTest(unittest.TestCase):
 
 
 class GateReviewCycleTest(unittest.TestCase):
+    def test_public_long_text_boundary_matches_the_openapi_contract(self) -> None:
+        maximum = "x" * 4000
+        too_long = "x" * 4001
+
+        reviewed = cycle().submit_review(
+            step_key="engineering",
+            actor_user_id="eng@example.test",
+            outcome=ReviewOutcome.APPROVED,
+            opinion=maximum,
+            occurred_at=NOW,
+            expected_version=1,
+            expected_input_hash=INPUT_HASH,
+        )
+        self.assertEqual(reviewed.reviews[0].opinion, maximum)
+        with self.assertRaises(RequestValidationFailed):
+            cycle().submit_review(
+                step_key="engineering",
+                actor_user_id="eng@example.test",
+                outcome=ReviewOutcome.APPROVED,
+                opinion=too_long,
+                occurred_at=NOW,
+                expected_version=1,
+                expected_input_hash=INPUT_HASH,
+            )
+
+        exception_input = input_snapshot(p1_complete=False)
+
+        def pending_exception(reason: str, risk: str) -> ReviewCycle:
+            value = approve_all(cycle(exception_input))
+            return value.request_exception(
+                exception_global_id=EXCEPTION_ID,
+                requester_member_global_id=REQUESTER_MEMBER_ID,
+                actor_user_id="requester@example.test",
+                kind="p1_evidence_timing",
+                requirement_key="supplier_timing",
+                reason=reason,
+                risk=risk,
+                closure_action_ref=ACTION_REF,
+                closure_action_kind="action",
+                requested_at=NOW,
+                expires_at=NOW + timedelta(days=7),
+                expected_version=value.version,
+                expected_input_hash=value.input_hash,
+            )
+
+        pending = pending_exception(maximum, maximum)
+        self.assertEqual(pending.exceptions[0].reason, maximum)
+        self.assertEqual(pending.exceptions[0].risk, maximum)
+        for field in ("reason", "risk"):
+            with self.subTest(field=field), self.assertRaises(RequestValidationFailed):
+                pending_exception(
+                    too_long if field == "reason" else "Bounded reason.",
+                    too_long if field == "risk" else "Bounded risk.",
+                )
+
+        decided_exception = pending.decide_exception(
+            exception_global_id=EXCEPTION_ID,
+            actor_user_id="exception@example.test",
+            outcome=ExceptionOutcome.APPROVED,
+            opinion=maximum,
+            occurred_at=NOW + timedelta(hours=1),
+            expected_version=pending.version,
+            expected_input_hash=pending.input_hash,
+            expected_exception_version=1,
+        )
+        self.assertEqual(
+            decided_exception.exceptions[0].decision_opinion,
+            maximum,
+        )
+        pending_for_rejection = pending_exception("Bounded reason.", "Bounded risk.")
+        with self.assertRaises(RequestValidationFailed):
+            pending_for_rejection.decide_exception(
+                exception_global_id=EXCEPTION_ID,
+                actor_user_id="exception@example.test",
+                outcome=ExceptionOutcome.APPROVED,
+                opinion=too_long,
+                occurred_at=NOW + timedelta(hours=1),
+                expected_version=pending_for_rejection.version,
+                expected_input_hash=pending_for_rejection.input_hash,
+                expected_exception_version=1,
+            )
+
+        base = approve_all(cycle()).decide(
+            actor_user_id="decider@example.test",
+            outcome=DecisionOutcome.PASS,
+            occurred_at=NOW,
+            expected_version=4,
+            expected_input_hash=INPUT_HASH,
+            current_input=input_snapshot(),
+        )
+        changed = input_snapshot(dependency_hash="d" * 64, gate_version=2)
+        reopened = base.reopen(
+            actor_user_id="reopen@example.test",
+            reason=maximum,
+            occurred_at=NOW + timedelta(hours=1),
+            current_input=changed,
+            current_bindings=bindings(),
+            gate_current_cycle_global_id=base.global_id,
+            expected_version=base.version,
+            expected_input_hash=base.input_hash,
+        )
+        self.assertEqual(reopened.event.reason, maximum)
+        with self.assertRaises(RequestValidationFailed):
+            base.reopen(
+                actor_user_id="reopen@example.test",
+                reason=too_long,
+                occurred_at=NOW + timedelta(hours=1),
+                current_input=changed,
+                current_bindings=bindings(),
+                gate_current_cycle_global_id=base.global_id,
+                expected_version=base.version,
+                expected_input_hash=base.input_hash,
+            )
+
     def test_parallel_reviews_then_conditional_sequential_review(self) -> None:
         value = cycle()
         with self.assertRaises(ReviewDenied) as blocked:

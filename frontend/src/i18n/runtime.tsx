@@ -265,7 +265,13 @@ export function I18nProvider({
   );
 
   useEffect(() => {
-    launchLocalizationRequest("bootstrap");
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) launchLocalizationRequest("bootstrap");
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [launchLocalizationRequest]);
 
   useEffect(() => {

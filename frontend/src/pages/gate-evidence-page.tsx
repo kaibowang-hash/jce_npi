@@ -129,9 +129,18 @@ type ReviewAction =
   | { key: "decide_gate"; kind: "decide_gate" }
   | { key: "reopen"; kind: "reopen" };
 
+type GateReviewCommandActionCode =
+  | "start"
+  | "acknowledge_change_and_start"
+  | "review"
+  | "request_exception"
+  | "decide_exception"
+  | "decide_gate"
+  | "reopen";
+
 interface PreparedCommand {
   actorUserId: string;
-  actionLabel: string;
+  actionCode: GateReviewCommandActionCode;
   idempotencyKey: string;
   issuedAt: string;
   operation: GateReviewCommandOperation;
@@ -139,7 +148,7 @@ interface PreparedCommand {
 }
 
 interface CommandFailureState {
-  actionLabel: string;
+  actionCode: GateReviewCommandActionCode;
   failure: RequestFailure;
   failureKind: FailureKind;
 }
@@ -433,6 +442,17 @@ function classifyFailure(failure: RequestFailure): FailureKind {
   return "final";
 }
 
+function commandWriteConfirmation(
+  t: Translator,
+  failure: RequestFailure,
+): string {
+  return failure.kind === "problem" || failure.kind === "request_not_ready"
+    ? t("No successful write was confirmed for this command.")
+    : t(
+        "The write status is unknown because the command result could not be confirmed. Verify the current Gate review state before preparing another command.",
+      );
+}
+
 function evidenceStateTone(
   state: GateRequirementEvidenceState,
 ): "neutral" | "info" | "success" | "warning" | "danger" {
@@ -508,12 +528,21 @@ function cycleStateTone(
   }
 }
 
-function actionLabel(t: Translator, action: ReviewAction): string {
-  switch (action.kind) {
+function commandActionCode(action: ReviewAction): GateReviewCommandActionCode {
+  return action.kind === "start" && action.acknowledgeInputChange
+    ? "acknowledge_change_and_start"
+    : action.kind;
+}
+
+function commandActionLabel(
+  t: Translator,
+  actionCode: GateReviewCommandActionCode,
+): string {
+  switch (actionCode) {
+    case "acknowledge_change_and_start":
+      return t("Acknowledge change and start review");
     case "start":
-      return action.acknowledgeInputChange
-        ? t("Acknowledge change and start review")
-        : t("Start review");
+      return t("Start review");
     case "review":
       return t("Submit review");
     case "request_exception":
@@ -525,6 +554,10 @@ function actionLabel(t: Translator, action: ReviewAction): string {
     case "reopen":
       return t("Reopen Gate");
   }
+}
+
+function actionLabel(t: Translator, action: ReviewAction): string {
+  return commandActionLabel(t, commandActionCode(action));
 }
 
 function actionAccessibleLabel(t: Translator, action: ReviewAction): string {
@@ -1339,9 +1372,10 @@ function GateReviewWorkspace({
   const [gateDecisionOutcome, setGateDecisionOutcome] =
     useState<GateDecisionOutcome>("pass");
   const [impactAction, setImpactAction] = useState<ReviewAction | null>(null);
-  const [processingLabel, setProcessingLabel] = useState<string | null>(
-    coordinatedCommand?.prepared.actionLabel ?? null,
-  );
+  const [processingActionCode, setProcessingActionCode] =
+    useState<GateReviewCommandActionCode | null>(
+      coordinatedCommand?.prepared.actionCode ?? null,
+    );
   const [commandFailure, setCommandFailure] =
     useState<CommandFailureState | null>(null);
   const [confirmedMessage, setConfirmedMessage] = useState<string | null>(null);
@@ -1531,10 +1565,10 @@ function GateReviewWorkspace({
           onReceiptRecoveryRequired();
           return;
         }
-        setProcessingLabel(null);
+        setProcessingActionCode(null);
         return;
       }
-      setProcessingLabel(command.prepared.actionLabel);
+      setProcessingActionCode(command.prepared.actionCode);
       if (!sessionCommandContext) return;
       if (
         sessionCommandContext.userId.toLowerCase() !==
@@ -1565,7 +1599,7 @@ function GateReviewWorkspace({
             }
           }
           clearCoordinatedCommand(commandKey, command);
-          setProcessingLabel(null);
+          setProcessingActionCode(null);
           setCommandFailure(null);
           setConfirmedMessage(null);
           setRetryCommand(null);
@@ -1587,7 +1621,7 @@ function GateReviewWorkspace({
           return;
         }
         clearCoordinatedCommand(commandKey, command);
-        setProcessingLabel(null);
+        setProcessingActionCode(null);
         const receiptMarker = markerForCommand(
           project.globalId,
           gate.globalId,
@@ -1615,7 +1649,7 @@ function GateReviewWorkspace({
           return;
         }
         setCommandFailure({
-          actionLabel: command.prepared.actionLabel,
+          actionCode: command.prepared.actionCode,
           failure,
           failureKind,
         });
@@ -1673,14 +1707,14 @@ function GateReviewWorkspace({
           referenceKind: "client",
         };
         setCommandFailure({
-          actionLabel: prepared.actionLabel,
+          actionCode: prepared.actionCode,
           failure,
           failureKind: "validation",
         });
         setRetryCommand(null);
         return;
       }
-      setProcessingLabel(prepared.actionLabel);
+      setProcessingActionCode(prepared.actionCode);
       setCommandFailure(null);
       setConfirmedMessage(null);
       startCoordinatedCommand(commandKey, prepared, commandContext.csrfToken);
@@ -1697,7 +1731,7 @@ function GateReviewWorkspace({
     const actorUserId = sessionCommandContext.userId;
     const idempotencyKey = `gate-review:${globalThis.crypto.randomUUID()}`;
     const issuedAt = new Date().toISOString();
-    const preparedLabel = actionLabel(t, action);
+    const preparedActionCode = commandActionCode(action);
     if (action.kind === "start") {
       const commandPolicy = action.acknowledgeInputChange
         ? activeCycle?.policyDefinition
@@ -1722,7 +1756,7 @@ function GateReviewWorkspace({
       }
       return {
         actorUserId,
-        actionLabel: preparedLabel,
+        actionCode: preparedActionCode,
         idempotencyKey,
         issuedAt,
         operation: "gate.review.start",
@@ -1747,7 +1781,7 @@ function GateReviewWorkspace({
         if (!reviewOpinion.trim()) return null;
         return {
           actorUserId,
-          actionLabel: preparedLabel,
+          actionCode: preparedActionCode,
           idempotencyKey,
           issuedAt,
           operation: "gate.review.submit",
@@ -1777,7 +1811,7 @@ function GateReviewWorkspace({
         }
         return {
           actorUserId,
-          actionLabel: preparedLabel,
+          actionCode: preparedActionCode,
           idempotencyKey,
           issuedAt,
           operation: "gate.review.exception.request",
@@ -1812,7 +1846,7 @@ function GateReviewWorkspace({
         }
         return {
           actorUserId,
-          actionLabel: preparedLabel,
+          actionCode: preparedActionCode,
           idempotencyKey,
           issuedAt,
           operation: "gate.review.exception.decide",
@@ -1842,7 +1876,7 @@ function GateReviewWorkspace({
         }
         return {
           actorUserId,
-          actionLabel: preparedLabel,
+          actionCode: preparedActionCode,
           idempotencyKey,
           issuedAt,
           operation: "gate.review.decide",
@@ -1868,7 +1902,7 @@ function GateReviewWorkspace({
           }));
         return {
           actorUserId,
-          actionLabel: preparedLabel,
+          actionCode: preparedActionCode,
           idempotencyKey,
           issuedAt,
           operation: "gate.review.reopen",
@@ -1894,7 +1928,7 @@ function GateReviewWorkspace({
   };
 
   const actionReady = (() => {
-    if (!selectedAction || !sessionCommandContext || processingLabel) {
+    if (!selectedAction || !sessionCommandContext || processingActionCode) {
       return false;
     }
     switch (selectedAction.kind) {
@@ -1989,7 +2023,8 @@ function GateReviewWorkspace({
     selectedAction && !impactAction && !commandFailure
       ? {
           disabled: !actionReady,
-          label: processingLabel
+          id: "gate-review-primary-action",
+          label: processingActionCode
             ? t("Processing Gate review command")
             : actionLabel(t, selectedAction),
           onClick: invokePrimaryAction,
@@ -2041,7 +2076,7 @@ function GateReviewWorkspace({
           </span>
         </div>
       ) : null}
-      {processingLabel ? (
+      {processingActionCode ? (
         <div
           aria-busy="true"
           className="scenario-banner scenario-banner--queued"
@@ -2109,7 +2144,22 @@ function GateReviewWorkspace({
             }
           />
           <p>{commandFailureContent.detail}</p>
-          <RequestFailurePanel failure={commandFailure.failure} />
+          <DefinitionList
+            rows={[
+              {
+                label: t("Failed step"),
+                value: commandActionLabel(t, commandFailure.actionCode),
+              },
+              {
+                label: t("Write confirmation"),
+                value: commandWriteConfirmation(t, commandFailure.failure),
+              },
+            ]}
+          />
+          <RequestFailurePanel
+            announce={false}
+            failure={commandFailure.failure}
+          />
           <div className="detail-actions">
             {retryCommand ? (
               <Button
@@ -2743,7 +2793,7 @@ function GateReviewWorkspace({
               <span>{t("Review action")}</span>
               <Select
                 aria-label={t("Review action")}
-                disabled={Boolean(processingLabel)}
+                disabled={Boolean(processingActionCode)}
                 onChange={(event) => {
                   setSelectedActionKey(event.currentTarget.value);
                   setCommandFailure(null);
@@ -2828,7 +2878,7 @@ function GateReviewWorkspace({
                       <Select
                         aria-label={t("Published review policy")}
                         data-language-exempt="identifier"
-                        disabled={Boolean(processingLabel)}
+                        disabled={Boolean(processingActionCode)}
                         onChange={(event) => {
                           setSelectedPolicyKey(event.currentTarget.value);
                         }}
@@ -2865,7 +2915,7 @@ function GateReviewWorkspace({
                       </span>
                       <Select
                         aria-label={t("Authority assignment")}
-                        disabled={Boolean(processingLabel)}
+                        disabled={Boolean(processingActionCode)}
                         onChange={(event) => {
                           const memberGlobalId = event.currentTarget.value;
                           setBindingSelections((current) => ({
@@ -2924,7 +2974,7 @@ function GateReviewWorkspace({
                 <span>{t("Review outcome")}</span>
                 <Select
                   aria-label={t("Review outcome")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   onChange={(event) => {
                     setReviewOutcome(
                       event.currentTarget.value as GateReviewOutcome,
@@ -2944,7 +2994,7 @@ function GateReviewWorkspace({
                 <span>{t("Complete review opinion")}</span>
                 <textarea
                   aria-label={t("Complete review opinion")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   maxLength={4000}
                   onChange={(event) => {
                     setReviewOpinion(event.currentTarget.value);
@@ -2985,7 +3035,7 @@ function GateReviewWorkspace({
                 <span>{t("Risk if accepted")}</span>
                 <textarea
                   aria-label={t("Risk if accepted")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   maxLength={4000}
                   onChange={(event) => {
                     setExceptionRisk(event.currentTarget.value);
@@ -2999,7 +3049,7 @@ function GateReviewWorkspace({
                 <span>{t("Exception expiry date")}</span>
                 <TextInput
                   aria-label={t("Exception expiry date")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   onChange={(event) => {
                     setExceptionExpiryDate(event.currentTarget.value);
                   }}
@@ -3012,7 +3062,7 @@ function GateReviewWorkspace({
                 <span>{t("Required closure action")}</span>
                 <Select
                   aria-label={t("Required closure action")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   onChange={(event) => {
                     setSelectedClosureActionId(event.currentTarget.value);
                   }}
@@ -3082,7 +3132,7 @@ function GateReviewWorkspace({
                 <span>{t("Exception decision")}</span>
                 <Select
                   aria-label={t("Exception decision")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   onChange={(event) => {
                     setExceptionDecisionOutcome(
                       event.currentTarget.value as GateReviewOutcome,
@@ -3106,7 +3156,7 @@ function GateReviewWorkspace({
                 <span>{t("Decision outcome")}</span>
                 <Select
                   aria-label={t("Decision outcome")}
-                  disabled={Boolean(processingLabel)}
+                  disabled={Boolean(processingActionCode)}
                   onChange={(event) => {
                     setGateDecisionOutcome(
                       event.currentTarget.value as GateDecisionOutcome,
@@ -3381,6 +3431,9 @@ function GateReviewWorkspace({
             if (prepared) executeCommand(prepared);
           }}
           reasonRequired={impactAction.kind !== "decide_gate"}
+          returnFocusTarget={() =>
+            document.getElementById("gate-review-primary-action")
+          }
           title={
             impactAction.kind === "request_exception"
               ? t("Review controlled exception request")

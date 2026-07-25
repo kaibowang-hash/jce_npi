@@ -1,6 +1,6 @@
 # P4-04 Implementation Boundary — Review, Decision, Snapshot, and Reopen
 
-Status: **IN PROGRESS — live implementation checkpoint retained; Task Gate not passed**
+Status: **ACCEPTED — see `p4-04-validation.md`**
 
 Recorded: 2026-07-24
 
@@ -12,6 +12,9 @@ Requirement allocation: `FR-SG-003`, `FR-SG-005`, `FR-SG-006`,
 `FR-SG-007`, with the current Phase 4 contribution to `FR-CO-006`
 
 ## 0. Bounded takeover/thread-migration checkpoint
+
+Historical checkpoint: the pending statements in §§0–0.1 describe the
+takeover state and are superseded by the final `p4-04-validation.md` decision.
 
 The bounded takeover accepted the current domain/implementation foundation as
 `DOMAIN_FOUNDATION_ACCEPTED`; this is not a P4-04 Task `PASS`. The final repair

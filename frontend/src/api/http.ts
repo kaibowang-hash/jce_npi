@@ -309,7 +309,7 @@ export class NpiHttpClient {
         responseTraceId ? "trace" : "request",
       );
     }
-    let responseIsValid = true;
+    let responseIsValid: boolean;
     try {
       responseIsValid = options.validate?.(body) ?? true;
     } catch {

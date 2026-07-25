@@ -32,7 +32,12 @@ export function ObjectHeader({
   metadata: ReactNode;
   status: ReactNode;
   source: SourceStatus;
-  primaryAction?: { label: string; onClick: () => void; disabled?: boolean };
+  primaryAction?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    id?: string;
+  };
   nameIsBusinessData?: boolean;
 }): React.JSX.Element {
   return (
@@ -60,6 +65,7 @@ export function ObjectHeader({
       {primaryAction ? (
         <Button
           disabled={primaryAction.disabled}
+          id={primaryAction.id}
           onClick={primaryAction.onClick}
           visual="primary"
         >

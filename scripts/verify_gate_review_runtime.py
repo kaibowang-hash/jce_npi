@@ -826,12 +826,37 @@ def verify_immutable_history(
     targets: list[tuple[str, str, str, object]],
 ) -> int:
     denials = 0
+    version_fields = {
+        "NPI Gate Review Record": "cycle_version_after",
+        "NPI Gate Review Exception": "optimistic_version",
+        "NPI Gate Decision Snapshot": "cycle_version",
+        "NPI Gate Review Cycle": "optimistic_version",
+        "NPI Gate Review Event": None,
+        "NPI Gate Review Idempotency": None,
+    }
     for doctype, name, fieldname, replacement in targets:
         before = get_resource(administrator, base_url, doctype, name)
         require(
             before.status == 200,
             f"Controlled Gate review history is unavailable: {doctype}/{name}",
         )
+        before_data = before.body.get("data", {})
+        version_field = version_fields[doctype]
+        target_version = (
+            int(before_data[version_field]) if version_field is not None else 1
+        )
+        audit_filters = [
+            ["operation", "=", "gate.review.history.delete_attempt"],
+            ["global_id", "=", name],
+        ]
+        prior_audits = list_resources(
+            administrator,
+            base_url,
+            "NPI Audit Event",
+            filters=audit_filters,
+            fields=["event_id"],
+        )
+        prior_event_ids = {str(value["event_id"]) for value in prior_audits}
         update = update_resource(
             administrator,
             base_url,
@@ -857,6 +882,46 @@ def verify_immutable_history(
             f"{doctype} generic delete returned HTTP {deletion.status}",
         )
         denials += 1
+        audit_rows = list_resources(
+            administrator,
+            base_url,
+            "NPI Audit Event",
+            filters=audit_filters,
+            fields=[
+                "event_id",
+                "global_id",
+                "object_version",
+                "actor",
+                "trace_id",
+                "operation",
+                "result",
+                "input_summary",
+            ],
+        )
+        delete_audits = [
+            value
+            for value in audit_rows
+            if str(value["event_id"]) not in prior_event_ids
+        ]
+        require(
+            len(delete_audits) == 1,
+            f"{doctype} denied delete audit did not survive request rollback",
+        )
+        delete_audit = delete_audits[0]
+        require(
+            str(delete_audit["global_id"]) == name
+            and int(delete_audit["object_version"]) == target_version
+            and str(delete_audit["actor"]) == "Administrator"
+            and re.fullmatch(
+                r"[a-f0-9]{32}",
+                str(delete_audit["trace_id"]),
+            )
+            is not None
+            and str(delete_audit["operation"]) == "gate.review.history.delete_attempt"
+            and str(delete_audit["result"]) == "denied"
+            and json_value(delete_audit["input_summary"]) == {"doctype": doctype},
+            f"{doctype} denied delete audit content drifted",
+        )
         after = get_resource(administrator, base_url, doctype, name)
         require(
             after.status == 200
@@ -1269,6 +1334,427 @@ def trigger_dependency_refresh(
             else None
         ),
         "successorCycleId": successor_id,
+    }
+
+
+def verify_closure_action_drift_rollback(
+    fixture_run_id: str,
+    project_id: str,
+    gate_id: str,
+    closure_action_id: str,
+    expected_cycle_id: str,
+    expected_decision_id: str,
+) -> dict[str, object]:
+    """Invalidate exact closure-action lineage, prove idempotency, then roll it back."""
+
+    import frappe
+    from npi_core.foundation.security import Principal
+    from npi_core.gate_review.frappe_repository import (
+        GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR,
+        FrappeGateReviewRepository,
+        evaluate_gate_review_work_item_dependency,
+    )
+
+    _validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID
+        and all(
+            UUID(value).int != 0
+            for value in (
+                project_id,
+                gate_id,
+                closure_action_id,
+                expected_cycle_id,
+                expected_decision_id,
+            )
+        ),
+        "Closure-action drift fixture input is invalid",
+    )
+
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    gate = frappe.get_doc("NPI Gate Shell", gate_id)
+    prior = frappe.get_doc("NPI Gate Review Cycle", expected_cycle_id)
+    action = frappe.get_doc("NPI Domain Work Item", closure_action_id)
+    decision = frappe.get_doc("NPI Gate Decision Snapshot", expected_decision_id)
+    exception_names = frappe.get_all(
+        "NPI Gate Review Exception",
+        filters={
+            "project_global_id": project_id,
+            "gate_global_id": gate_id,
+            "cycle_global_id": expected_cycle_id,
+            "closure_action_global_id": closure_action_id,
+        },
+        pluck="name",
+        limit_page_length=2,
+    )
+    require(
+        len(exception_names) == 1,
+        "Closure-action drift fixture exception is unavailable",
+    )
+    exception_id = str(exception_names[0])
+    exception = frappe.get_doc("NPI Gate Review Exception", exception_id)
+
+    baseline_cycles = set(
+        frappe.get_all(
+            "NPI Gate Review Cycle",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=65,
+        )
+    )
+    baseline_events = set(
+        frappe.get_all(
+            "NPI Gate Review Event",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=129,
+        )
+    )
+    baseline = {
+        "actionDetail": str(action.detail or ""),
+        "actionVersion": int(action.optimistic_version),
+        "cycleInputHash": str(prior.input_hash),
+        "cycleState": str(prior.state),
+        "cycleVersion": int(prior.optimistic_version),
+        "decisionHash": str(decision.snapshot_hash),
+        "exceptionClosureHash": str(exception.closure_action_snapshot_hash),
+        "exceptionClosureVersion": int(exception.closure_action_version),
+        "gateInputVersion": int(gate.review_input_version),
+        "gateLatestDecisionHash": str(gate.latest_decision_snapshot_hash),
+        "gateLatestDecisionId": str(gate.latest_decision_snapshot_global_id),
+        "gateLatestDecisionOutcome": str(gate.latest_decision_outcome),
+        "gateLatestDecisionPointer": str(gate.latest_decision_snapshot),
+        "gateOptimisticVersion": int(gate.optimistic_version),
+        "gateReviewState": str(gate.review_state),
+    }
+    require(
+        str(project.tenant_id) == TENANT_ID
+        and str(project.global_id) == project_id
+        and str(gate.project_global_id) == project_id
+        and str(gate.current_review_cycle_global_id) == expected_cycle_id
+        and str(action.tenant_id) == TENANT_ID
+        and str(action.project_global_id) == project_id
+        and str(action.stage_global_id) == gate_id
+        and str(action.kind) == "action"
+        and str(action.source_system) == "NPI_ONE"
+        and not bool(action.state_terminal)
+        and baseline["gateReviewState"] == "decided"
+        and baseline["cycleState"] == "decided"
+        and str(decision.cycle_global_id) == expected_cycle_id
+        and str(decision.outcome) == "conditional_pass"
+        and baseline["gateLatestDecisionId"] == expected_decision_id
+        and str(exception.state) == "approved"
+        and baseline["exceptionClosureVersion"] == baseline["actionVersion"]
+        and re.fullmatch(
+            r"[a-f0-9]{64}",
+            baseline["exceptionClosureHash"],
+        )
+        is not None,
+        "Closure-action drift fixture lineage is not conditional and current",
+    )
+
+    def workspace() -> dict[str, Any]:
+        repository = FrappeGateReviewRepository(
+            principal=Principal(
+                user_id="Administrator",
+                roles=frozenset({"System Manager", "NPI API User"}),
+                project_access={},
+                is_external=False,
+                tenant_id=TENANT_ID,
+            ),
+            request_id=str(uuid4()),
+            trace_id=f"trace-{uuid4().hex}",
+        )
+        result = repository.review_workspace(UUID(project_id), UUID(gate_id))
+        require(
+            isinstance(result, dict),
+            "Closure-action drift workspace is unavailable",
+        )
+        return result
+
+    current_workspace = workspace()
+    require(
+        current_workspace["gate"]["downstreamDecisionCurrent"] is True
+        and current_workspace["decisions"][0]["globalId"] == expected_decision_id
+        and current_workspace["decisions"][0]["current"] is True,
+        "Closure-action drift baseline decision is not current",
+    )
+
+    missing = object()
+    previous_flag = getattr(
+        frappe.flags,
+        "npi_project_work_command_write",
+        missing,
+    )
+    frappe.flags.npi_project_work_command_write = True
+    try:
+        action.detail = (
+            f"{baseline['actionDetail']}\n"
+            "Synthetic closure-action drift rollback probe."
+        ).strip()
+        action.save()
+    finally:
+        if previous_flag is missing:
+            try:
+                delattr(frappe.flags, "npi_project_work_command_write")
+            except AttributeError:
+                pass
+        else:
+            frappe.flags.npi_project_work_command_write = previous_flag
+
+    changed_action_version = int(action.optimistic_version)
+    require(
+        changed_action_version == baseline["actionVersion"] + 1
+        and str(action.detail) != baseline["actionDetail"],
+        "Closure-action drift mutation did not advance exactly one version",
+    )
+    worker_values = {
+        "work_item_id": closure_action_id,
+        "tenant_id": TENANT_ID,
+        "project_id": project_id,
+        "gate_id": gate_id,
+        "observed_version": changed_action_version,
+        "initiated_by_user_id": "Administrator",
+    }
+    require(
+        evaluate_gate_review_work_item_dependency(**worker_values) is True,
+        "Closure-action drift worker did not invalidate the Gate",
+    )
+
+    changed_gate = frappe.get_doc("NPI Gate Shell", gate_id)
+    changed_prior = frappe.get_doc("NPI Gate Review Cycle", expected_cycle_id)
+    successor_id = str(changed_gate.current_review_cycle_global_id)
+    successor = frappe.get_doc("NPI Gate Review Cycle", successor_id)
+    changed_cycles = set(
+        frappe.get_all(
+            "NPI Gate Review Cycle",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=65,
+        )
+    )
+    changed_events = set(
+        frappe.get_all(
+            "NPI Gate Review Event",
+            filters={
+                "project_global_id": project_id,
+                "gate_global_id": gate_id,
+            },
+            pluck="name",
+            limit_page_length=129,
+        )
+    )
+    new_cycle_ids = changed_cycles - baseline_cycles
+    new_event_ids = changed_events - baseline_events
+    require(
+        new_cycle_ids == {successor_id} and len(new_event_ids) == 1,
+        "Closure-action drift did not create one unique successor and event",
+    )
+    event_id = next(iter(new_event_ids))
+    event = frappe.get_doc("NPI Gate Review Event", event_id)
+    payload = json_value(event.payload)
+    successor_input = json_value(successor.input_snapshot)
+    gate_dependencies = (
+        [
+            value
+            for value in successor_input.get("dependencies", [])
+            if isinstance(value, dict)
+            and value.get("kind") == "gate_input_snapshot"
+            and value.get("globalId") == gate_id
+        ]
+        if isinstance(successor_input, dict)
+        else []
+    )
+    require(
+        int(changed_gate.review_input_version) == baseline["gateInputVersion"] + 1
+        and int(changed_gate.optimistic_version)
+        == baseline["gateOptimisticVersion"] + 1
+        and str(changed_gate.review_state) == "requires_review"
+        and str(changed_gate.latest_decision_snapshot_global_id)
+        == baseline["gateLatestDecisionId"]
+        and str(changed_gate.latest_decision_snapshot_hash)
+        == baseline["gateLatestDecisionHash"]
+        and str(changed_gate.latest_decision_outcome)
+        == baseline["gateLatestDecisionOutcome"]
+        and str(changed_gate.latest_decision_snapshot)
+        == baseline["gateLatestDecisionPointer"]
+        and str(changed_prior.state) == "invalidated"
+        and int(changed_prior.optimistic_version) == baseline["cycleVersion"] + 1
+        and str(successor.prior_cycle_global_id) == expected_cycle_id
+        and str(successor.prior_decision_snapshot_global_id) == expected_decision_id
+        and re.fullmatch(r"[a-f0-9]{64}", str(successor.prior_decision_hash))
+        is not None
+        and str(successor.trigger) == "dependency_change"
+        and str(successor.state) == "active"
+        and int(successor.optimistic_version) == 1
+        and str(successor.input_hash) != baseline["cycleInputHash"]
+        and successor_id
+        == str(
+            uuid5(
+                UUID(gate_id),
+                f"review-cycle:{int(prior.cycle_number) + 1}",
+            )
+        )
+        and isinstance(successor_input, dict)
+        and successor_input.get("gateVersion") == baseline["gateInputVersion"] + 1
+        and len(gate_dependencies) == 1
+        and gate_dependencies[0].get("version") == baseline["gateInputVersion"] + 1
+        and str(event.event_type) == "invalidated"
+        and str(event.actor_user_id) == GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR
+        and event.action_global_id in (None, "")
+        and isinstance(payload, dict)
+        and payload.get("actionGlobalId") is None
+        and payload.get("detail", {}).get("reason") == "GATE_WORK_ITEM_CHANGED"
+        and payload.get("detail", {}).get("oldInputHash") == baseline["cycleInputHash"]
+        and payload.get("detail", {}).get("newInputHash") == str(successor.input_hash)
+        and payload.get("detail", {}).get("priorDecisionSnapshotGlobalId")
+        == expected_decision_id
+        and payload.get("detail", {}).get("priorDecisionHash")
+        == str(successor.prior_decision_hash)
+        and payload.get("detail", {}).get("initiatedByUserId") == "Administrator"
+        and canonical_hash(payload) == str(event.payload_hash),
+        "Closure-action drift invalidation lineage drifted",
+    )
+    changed_workspace = workspace()
+    require(
+        changed_workspace["gate"]["reviewState"] == "requires_review"
+        and changed_workspace["gate"]["downstreamDecisionCurrent"] is False
+        and changed_workspace["activeCycle"]["globalId"] == successor_id
+        and changed_workspace["activeCycle"]["state"] == "active"
+        and changed_workspace["decisions"][0]["globalId"] == expected_decision_id
+        and changed_workspace["decisions"][0]["current"] is False,
+        "Closure-action drift workspace did not invalidate downstream use",
+    )
+
+    require(
+        evaluate_gate_review_work_item_dependency(**worker_values) is False,
+        "Closure-action drift worker replay was not idempotent",
+    )
+    replay_gate = frappe.get_doc("NPI Gate Shell", gate_id)
+    require(
+        int(replay_gate.review_input_version) == baseline["gateInputVersion"] + 1
+        and int(replay_gate.optimistic_version) == baseline["gateOptimisticVersion"] + 1
+        and set(
+            frappe.get_all(
+                "NPI Gate Review Cycle",
+                filters={
+                    "project_global_id": project_id,
+                    "gate_global_id": gate_id,
+                },
+                pluck="name",
+                limit_page_length=65,
+            )
+        )
+        == changed_cycles
+        and set(
+            frappe.get_all(
+                "NPI Gate Review Event",
+                filters={
+                    "project_global_id": project_id,
+                    "gate_global_id": gate_id,
+                },
+                pluck="name",
+                limit_page_length=129,
+            )
+        )
+        == changed_events,
+        "Closure-action drift worker replay changed persisted state",
+    )
+
+    frappe.db.rollback()
+
+    restored_action = frappe.get_doc("NPI Domain Work Item", closure_action_id)
+    restored_gate = frappe.get_doc("NPI Gate Shell", gate_id)
+    restored_cycle = frappe.get_doc("NPI Gate Review Cycle", expected_cycle_id)
+    restored_decision = frappe.get_doc(
+        "NPI Gate Decision Snapshot",
+        expected_decision_id,
+    )
+    restored_exception = frappe.get_doc(
+        "NPI Gate Review Exception",
+        exception_id,
+    )
+    restored_workspace = workspace()
+    require(
+        str(restored_action.detail or "") == baseline["actionDetail"]
+        and int(restored_action.optimistic_version) == baseline["actionVersion"]
+        and int(restored_gate.review_input_version) == baseline["gateInputVersion"]
+        and int(restored_gate.optimistic_version) == baseline["gateOptimisticVersion"]
+        and str(restored_gate.review_state) == baseline["gateReviewState"]
+        and str(restored_gate.current_review_cycle_global_id) == expected_cycle_id
+        and str(restored_gate.latest_decision_snapshot_global_id)
+        == baseline["gateLatestDecisionId"]
+        and str(restored_gate.latest_decision_snapshot_hash)
+        == baseline["gateLatestDecisionHash"]
+        and str(restored_gate.latest_decision_outcome)
+        == baseline["gateLatestDecisionOutcome"]
+        and str(restored_gate.latest_decision_snapshot)
+        == baseline["gateLatestDecisionPointer"]
+        and str(restored_cycle.state) == baseline["cycleState"]
+        and int(restored_cycle.optimistic_version) == baseline["cycleVersion"]
+        and str(restored_cycle.input_hash) == baseline["cycleInputHash"]
+        and str(restored_decision.snapshot_hash) == baseline["decisionHash"]
+        and int(restored_exception.closure_action_version)
+        == baseline["exceptionClosureVersion"]
+        and str(restored_exception.closure_action_snapshot_hash)
+        == baseline["exceptionClosureHash"]
+        and set(
+            frappe.get_all(
+                "NPI Gate Review Cycle",
+                filters={
+                    "project_global_id": project_id,
+                    "gate_global_id": gate_id,
+                },
+                pluck="name",
+                limit_page_length=65,
+            )
+        )
+        == baseline_cycles
+        and set(
+            frappe.get_all(
+                "NPI Gate Review Event",
+                filters={
+                    "project_global_id": project_id,
+                    "gate_global_id": gate_id,
+                },
+                pluck="name",
+                limit_page_length=129,
+            )
+        )
+        == baseline_events
+        and not frappe.db.exists("NPI Gate Review Cycle", successor_id)
+        and not frappe.db.exists("NPI Gate Review Event", event_id)
+        and not frappe.db.exists(
+            "NPI Audit Event",
+            {
+                "global_id": event_id,
+                "operation": "gate.review.invalidate",
+            },
+        )
+        and restored_workspace["gate"]["reviewState"] == "decided"
+        and restored_workspace["gate"]["downstreamDecisionCurrent"] is True
+        and restored_workspace["activeCycle"]["globalId"] == expected_cycle_id
+        and restored_workspace["activeCycle"]["state"] == "decided"
+        and restored_workspace["decisions"][0]["globalId"] == expected_decision_id
+        and restored_workspace["decisions"][0]["outcome"] == "conditional_pass"
+        and restored_workspace["decisions"][0]["current"] is True,
+        "Closure-action drift rollback did not restore exact conditional lineage",
+    )
+    return {
+        "actionVersionRestored": baseline["actionVersion"],
+        "duplicateWorkerNoOp": True,
+        "gateInputVersionDelta": 1,
+        "gateOptimisticVersionDelta": 1,
+        "rollbackRestoredConditionalDecision": True,
     }
 
 
@@ -1951,6 +2437,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     fixtures = {
         "mark_wrong_tenant_project": mark_wrong_tenant_project,
         "trigger_dependency_refresh": trigger_dependency_refresh,
+        "verify_closure_action_drift_rollback": (verify_closure_action_drift_rollback),
         "verify_file_delete_transactions": verify_file_delete_transactions,
         "verify_persisted_review_history": verify_persisted_review_history,
         "verify_requires_review_command_rejections": (
@@ -1991,6 +2478,7 @@ def main() -> None:
         choices=(
             "mark_wrong_tenant_project",
             "trigger_dependency_refresh",
+            "verify_closure_action_drift_rollback",
             "verify_file_delete_transactions",
             "verify_persisted_review_history",
             "verify_requires_review_command_rejections",
@@ -2628,6 +3116,51 @@ def main() -> None:
         )
         first_decision_id = str(first_decision["globalId"])
 
+        closure_action_drift = run_bench_fixture(
+            "verify_closure_action_drift_rollback",
+            {
+                "closure_action_id": closure_action_id,
+                "expected_cycle_id": cycle_id,
+                "expected_decision_id": first_decision_id,
+                "fixture_run_id": FIXTURE_RUN_ID,
+                "gate_id": gate_id,
+                "project_id": project_id,
+            },
+        )
+        require(
+            closure_action_drift["duplicateWorkerNoOp"] is True
+            and closure_action_drift["rollbackRestoredConditionalDecision"] is True
+            and closure_action_drift["gateInputVersionDelta"] == 1
+            and closure_action_drift["gateOptimisticVersionDelta"] == 1,
+            "Closure-action drift rollback evidence drifted",
+        )
+        restored_after_closure_drift = require_workspace(
+            get_gate_review(
+                authority,
+                arguments.base_url,
+                project_id,
+                gate_id,
+            ),
+            expected_status=200,
+            project_id=project_id,
+            gate_id=gate_id,
+        )
+        require(
+            restored_after_closure_drift["gate"]["reviewState"] == "decided"
+            and restored_after_closure_drift["gate"]["version"] == 5
+            and restored_after_closure_drift["gate"]["downstreamDecisionCurrent"]
+            is True
+            and restored_after_closure_drift["activeCycle"]["globalId"] == cycle_id
+            and restored_after_closure_drift["activeCycle"]["state"] == "decided"
+            and restored_after_closure_drift["activeCycle"]["version"] == 5
+            and restored_after_closure_drift["decisions"][0]["globalId"]
+            == first_decision_id
+            and restored_after_closure_drift["decisions"][0]["outcome"]
+            == "conditional_pass"
+            and restored_after_closure_drift["decisions"][0]["current"] is True,
+            "Closure-action drift probe did not restore the HTTP workspace",
+        )
+
         reopened = reopen_gate(
             authority,
             arguments.base_url,
@@ -2798,6 +3331,23 @@ def main() -> None:
             },
             "Gate review transition event history drifted",
         )
+        idempotency_rows = list_resources(
+            administrator,
+            arguments.base_url,
+            "NPI Gate Review Idempotency",
+            filters=[
+                ["project_global_id", "=", project_id],
+                ["gate_global_id", "=", gate_id],
+                ["actor", "=", "Administrator"],
+                ["operation", "=", "gate.review.start"],
+            ],
+            fields=["record_id"],
+        )
+        require(
+            len(idempotency_rows) == 1,
+            "Gate review retained idempotency target is unavailable",
+        )
+        retained_receipt_id = str(idempotency_rows[0]["record_id"])
         immutable_denials = verify_immutable_history(
             administrator,
             arguments.base_url,
@@ -2832,6 +3382,12 @@ def main() -> None:
                     event_ids["invalidated"],
                     "event_type",
                     "refreshed",
+                ),
+                (
+                    "NPI Gate Review Idempotency",
+                    retained_receipt_id,
+                    "payload_hash",
+                    "0" * 64,
                 ),
             ],
         )
@@ -2949,6 +3505,7 @@ def main() -> None:
                         "unreferencedTransportUserRemoved": True,
                     },
                     "crossProjectTenantNonDisclosure": 404,
+                    "closureActionDriftRollback": closure_action_drift,
                     "decidedDependencyInvalidation": decided_refresh,
                     "fixtureAbsenceBeforeWrite": fixture_absence,
                     "fixtureRevision": FIXTURE_REVISION,

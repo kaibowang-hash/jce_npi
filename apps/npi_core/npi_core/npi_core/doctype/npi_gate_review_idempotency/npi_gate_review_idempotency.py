@@ -26,7 +26,11 @@ class NPIGateReviewIdempotency(Document):
         require_gate_review_command_write()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.record_id,
+            target_version=1,
+        )
 
     def validate(self) -> None:
         self.record_id = ensure_uuid(self.record_id, _("Record ID"))

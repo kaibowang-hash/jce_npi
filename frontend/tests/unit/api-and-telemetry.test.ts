@@ -625,7 +625,7 @@ describe("privacy-safe usability telemetry", () => {
       validateUsabilityEvent({
         ...event,
         bodyText: "secret",
-      } as UsabilityEvent);
+      });
     }).toThrow("Sensitive telemetry field is forbidden: bodyText");
     for (const route of [
       "/projects/PJ-26018",

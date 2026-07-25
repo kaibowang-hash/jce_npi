@@ -825,7 +825,12 @@ class Phase4ProjectContractTests(unittest.TestCase):
         label_fields = _policy_label_source_fields()
         self.assertEqual(
             tuple(name for name, _line, _block in label_fields),
-            ("statusLabelSource", "stateLabelSource"),
+            (
+                "statusLabelSource",
+                "stateLabelSource",
+                "stateLabelSource",
+                "stateLabelSource",
+            ),
         )
         for field_name, line, field in label_fields:
             with self.subTest(field=field_name, line=line):

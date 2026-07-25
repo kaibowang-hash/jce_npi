@@ -21,7 +21,26 @@ class FrappeMetadataTest(unittest.TestCase):
     def test_audit_is_append_only_for_business_roles(self) -> None:
         audit = self.load("apps/npi_core/npi_core/npi_core/doctype/npi_audit_event/npi_audit_event.json")
         self.assertEqual(audit["read_only"], 1)
-        expected = [{"role": "System Manager", "read": 1, "create": 1, "export": 0, "print": 0, "email": 0}]
+        expected = [
+            {
+                "role": "System Manager",
+                "read": 1,
+                "create": 1,
+                "export": 0,
+                "print": 0,
+                "email": 0,
+            },
+            {
+                "role": "NPI API User",
+                "read": 0,
+                "write": 0,
+                "create": 1,
+                "delete": 0,
+                "export": 0,
+                "print": 0,
+                "email": 0,
+            },
+        ]
         self.assertEqual(audit["permissions"], expected)
         fields = {field["fieldname"]: field for field in audit["fields"]}
         self.assertEqual(fields["event_id"]["unique"], 1)

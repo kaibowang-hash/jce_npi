@@ -1595,6 +1595,10 @@ The server recorded an exact Gate input snapshot hash change. This response does
 The command is processing. Other Gate review commands remain disabled until the server response is validated.,正在处理命令。在验证服务器响应前，其他阶段门评审命令保持禁用。
 Server confirmed,服务器已确认
 Gate review command failure,阶段门评审命令失败
+Failed step,失败步骤
+Write confirmation,写入确认
+The write status is unknown because the command result could not be confirmed. Verify the current Gate review state before preparing another command.,由于无法确认命令结果，写入状态未知。准备其他命令前，请核对当前阶段门评审状态。
+No successful write was confirmed for this command.,未确认此命令有任何成功写入。
 Retry command,重试命令
 Dismiss command error,关闭命令错误
 Review cycle,评审周期

@@ -105,8 +105,7 @@ _COMMAND_RECEIPT_OPERATIONS = frozenset(
 )
 _TRANSPORT_ROLE = "NPI API User"
 _MAX_BINDINGS = 64
-_MAX_OPINION_LENGTH = 4000
-_MAX_EXCEPTION_TEXT_LENGTH = 4000
+_MAX_PUBLIC_LONG_TEXT_LENGTH = 4000
 
 
 class GateReviewCommandOutcomeLike(Protocol):
@@ -274,9 +273,8 @@ def get_gate_review_command_receipt(
         actor = authenticated_user()
         reject_unexpected_request_fields(frozenset(), request_fields)
         principal = authenticated_principal(actor)
-        if (
-            principal.is_external
-            or not principal.roles.intersection({_TRANSPORT_ROLE, "System Manager"})
+        if principal.is_external or not principal.roles.intersection(
+            {_TRANSPORT_ROLE, "System Manager"}
         ):
             raise PermissionDenied()
         operation = _route_value("operation")
@@ -391,7 +389,7 @@ def submit_gate_review(
             opinion=_text_value(
                 opinion,
                 "opinion",
-                maximum_length=_MAX_OPINION_LENGTH,
+                maximum_length=_MAX_PUBLIC_LONG_TEXT_LENGTH,
             ),
         )
         return _command_response(
@@ -451,12 +449,12 @@ def request_gate_review_exception(
             reason=_text_value(
                 reason,
                 "reason",
-                maximum_length=_MAX_EXCEPTION_TEXT_LENGTH,
+                maximum_length=_MAX_PUBLIC_LONG_TEXT_LENGTH,
             ),
             risk=_text_value(
                 risk,
                 "risk",
-                maximum_length=_MAX_EXCEPTION_TEXT_LENGTH,
+                maximum_length=_MAX_PUBLIC_LONG_TEXT_LENGTH,
             ),
             expires_at=_utc_timestamp(expiresAt, "expiresAt"),
             closure_action_global_id=_uuid_value(
@@ -517,7 +515,7 @@ def decide_gate_review_exception(
             opinion=_text_value(
                 opinion,
                 "opinion",
-                maximum_length=_MAX_OPINION_LENGTH,
+                maximum_length=_MAX_PUBLIC_LONG_TEXT_LENGTH,
             ),
         )
         return _command_response(
@@ -619,7 +617,7 @@ def reopen_gate(
             reason=_text_value(
                 reason,
                 "reason",
-                maximum_length=_MAX_EXCEPTION_TEXT_LENGTH,
+                maximum_length=_MAX_PUBLIC_LONG_TEXT_LENGTH,
             ),
             policy_global_id=_uuid_value(policyGlobalId, "policyGlobalId"),
             policy_version=_positive_integer(policyVersion, "policyVersion"),
@@ -867,10 +865,7 @@ def _hash_value(value: object, path: str) -> str:
 
 
 def _utc_timestamp(value: object, path: str) -> datetime:
-    if (
-        not isinstance(value, str)
-        or _UTC_DATETIME_PATTERN.fullmatch(value) is None
-    ):
+    if not isinstance(value, str) or _UTC_DATETIME_PATTERN.fullmatch(value) is None:
         raise _field_problem(path, _("Enter a valid date and time."))
     try:
         parsed = datetime.fromisoformat(value[:-1] + "+00:00")

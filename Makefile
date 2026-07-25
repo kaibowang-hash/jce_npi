@@ -21,7 +21,7 @@ frappe-site-init:
 frappe-runtime-verify:
 	bash scripts/verify-frappe-runtime.sh
 frontend-install:
-	npm --prefix frontend ci
+	cd frontend && npm ci --strict-allow-scripts
 frontend-browser-install:
 	cd frontend && npx playwright install --with-deps chromium
 frontend-verify:

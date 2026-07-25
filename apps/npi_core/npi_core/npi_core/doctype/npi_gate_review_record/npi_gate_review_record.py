@@ -33,7 +33,11 @@ class NPIGateReviewRecord(Document):
         self._deny_update()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.global_id,
+            target_version=self.cycle_version_after,
+        )
 
     def before_validate(self) -> None:
         self._normalize()
@@ -123,7 +127,11 @@ class NPIGateReviewRecord(Document):
                 _("Select a supported review outcome."),
                 frappe.ValidationError,
             )
-        self.opinion = required_text(self.opinion, _("Review Opinion"))
+        self.opinion = required_text(
+            self.opinion,
+            _("Review Opinion"),
+            maximum=4000,
+        )
         canonical_datetime(self.occurred_at, _("Occurred At"))
         self.policy_snapshot_hash = lowercase_sha256(
             self.policy_snapshot_hash,

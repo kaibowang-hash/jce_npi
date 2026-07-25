@@ -293,12 +293,14 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
         *,
         review: bool = False,
         evidence: bool = False,
+        dependency_input: bool = False,
     ) -> None:
         document._previous = previous
         self.frappe.flags = types.SimpleNamespace(
             npi_gate_review_command_write=review,
             npi_gate_evidence_command_write=evidence,
             npi_project_command_write=evidence,
+            npi_gate_review_dependency_input_write=dependency_input,
         )
         document.before_validate()
         document.validate()
@@ -378,6 +380,62 @@ class GateReviewGateShellControllerTest(unittest.TestCase):
                 stale_gate_version,
                 attached,
                 evidence=True,
+            )
+
+    def test_dependency_input_command_advances_only_the_input_version(self) -> None:
+        previous = self.shell(frozen=True)
+        previous.optimistic_version = 3
+        previous.review_input_version = 4
+        previous.review_state = "decided"
+        self.set_review_context(previous)
+        previous.latest_decision_snapshot = str(DECISION_ID)
+        previous.latest_decision_snapshot_global_id = str(DECISION_ID)
+        previous.latest_decision_snapshot_hash = "d" * 64
+        previous.latest_decision_outcome = "conditional_pass"
+
+        advanced = clone(previous)
+        advanced.optimistic_version = 4
+        advanced.review_input_version = 99
+        self.validate_existing(
+            advanced,
+            previous,
+            dependency_input=True,
+        )
+        self.assertEqual(advanced.review_input_version, 5)
+        self.assertEqual(advanced.review_state, "decided")
+        self.assertEqual(
+            advanced.current_review_cycle_global_id,
+            previous.current_review_cycle_global_id,
+        )
+        self.assertEqual(
+            advanced.latest_decision_snapshot_hash,
+            previous.latest_decision_snapshot_hash,
+        )
+
+        invalidated = clone(previous)
+        invalidated.optimistic_version = 4
+        invalidated.review_input_version = 99
+        invalidated.review_state = "requires_review"
+        invalidated.current_review_cycle = str(SUCCESSOR_CYCLE_ID)
+        invalidated.current_review_cycle_global_id = str(SUCCESSOR_CYCLE_ID)
+        self.validate_existing(
+            invalidated,
+            previous,
+            review=True,
+            dependency_input=True,
+        )
+        self.assertEqual(invalidated.review_input_version, 5)
+        self.assertEqual(invalidated.optimistic_version, 4)
+        self.assertEqual(invalidated.review_state, "requires_review")
+
+        ordinary_review = clone(previous)
+        ordinary_review.optimistic_version = 4
+        ordinary_review.review_input_version = 5
+        with self.assertRaises(self.ValidationError):
+            self.validate_existing(
+                ordinary_review,
+                previous,
+                review=True,
             )
 
     def test_review_command_can_start_decide_invalidate_and_reopen(self) -> None:

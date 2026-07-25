@@ -2,8 +2,10 @@ import type { ProblemDetails, RequestFailure } from "../api/http";
 import { useI18n } from "../i18n/runtime";
 
 export function ProblemDetailsPanel({
+  announce = true,
   problem,
 }: {
+  announce?: boolean;
   problem: ProblemDetails;
 }): React.JSX.Element {
   const { t } = useI18n();
@@ -11,7 +13,7 @@ export function ProblemDetailsPanel({
     <section
       aria-label={t("Error details")}
       className="problem-details"
-      role="alert"
+      role={announce ? "alert" : undefined}
     >
       <h3>{problem.title}</h3>
       {problem.detail ? <p>{problem.detail}</p> : null}
@@ -46,12 +48,17 @@ function referenceLabel(
 }
 
 export function RequestFailurePanel({
+  announce = true,
   failure,
 }: {
+  announce?: boolean;
   failure: RequestFailure;
 }): React.JSX.Element {
   const { t } = useI18n();
-  if (failure.problem) return <ProblemDetailsPanel problem={failure.problem} />;
+  if (failure.problem)
+    return (
+      <ProblemDetailsPanel announce={announce} problem={failure.problem} />
+    );
   const title =
     failure.kind === "network"
       ? t("The service could not be reached.")
@@ -64,7 +71,7 @@ export function RequestFailurePanel({
     <section
       aria-label={t("Error details")}
       className="problem-details"
-      role="alert"
+      role={announce ? "alert" : undefined}
     >
       <h3>{title}</h3>
       <p className="trace-reference">

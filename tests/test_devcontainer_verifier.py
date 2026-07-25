@@ -1,13 +1,19 @@
 import unittest
+import urllib.request
 
 from scripts.verify_devcontainer import (
+    REPO_ROOT,
+    ScopedAuthorizationRedirectHandler,
     VerificationError,
     parse_pinned_from,
     parse_toolchain,
+    upstream_request_headers,
     validate_apt_source_sanitization,
     validate_bootstrap_vite_installation,
     validate_bootstrap_uv_installation,
+    validate_frontend_install_policy,
     validate_local_configuration,
+    validate_repository_verifier,
 )
 
 
@@ -61,11 +67,63 @@ class DevcontainerVerifierTest(unittest.TestCase):
     def test_repository_devcontainer_is_internally_consistent(self):
         config, toolchain, base_reference = validate_local_configuration()
         self.assertEqual(config["remoteUser"], "vscode")
-        self.assertEqual(toolchain["NPM_EXPECTED_VERSION"], "10.8.2")
+        self.assertEqual(toolchain["NODE_EXPECTED_VERSION"], "v24.18.0")
+        self.assertEqual(toolchain["NPM_EXPECTED_VERSION"], "11.16.0")
         self.assertEqual(toolchain["YARN_EXPECTED_VERSION"], "1.22.22")
         self.assertEqual(toolchain["DOCKER_EXPECTED_VERSION"], "28.3.3")
         self.assertEqual(toolchain["UV_EXPECTED_VERSION"], "0.11.30")
+        self.assertEqual(toolchain["VITE_ESBUILD_EXPECTED_VERSION"], "0.21.5")
+        self.assertEqual(toolchain["VITE_FSEVENTS_EXPECTED_VERSION"], "2.3.3")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
+
+    def test_upstream_token_is_scoped_to_github_api(self):
+        github_headers = upstream_request_headers(
+            "https://api.github.com/repos/frappe/frappe/commits/example",
+            "secret-token",
+        )
+        self.assertEqual(github_headers["Authorization"], "Bearer secret-token")
+        for url in (
+            "http://api.github.com/repos/frappe/frappe",
+            "https://github.com/frappe/frappe",
+            "https://registry.npmjs.org/vite/5.4.14",
+            "https://api.github.com:444/repos/frappe/frappe",
+            "https://api.github.com.evil.example/repos/frappe/frappe",
+        ):
+            with self.subTest(url=url):
+                self.assertNotIn(
+                    "Authorization",
+                    upstream_request_headers(url, "secret-token"),
+                )
+
+    def test_authenticated_github_redirect_cannot_leave_exact_https_origin(self):
+        handler = ScopedAuthorizationRedirectHandler()
+        request = urllib.request.Request(
+            "https://api.github.com/repos/frappe/frappe/commits/example",
+            headers={"Authorization": "Bearer sentinel-secret"},
+        )
+        for url in (
+            "https://example.invalid/steal",
+            "http://api.github.com/steal",
+            "https://api.github.com:444/steal",
+            "https://api.github.com.evil.example/steal",
+        ):
+            with self.subTest(url=url), self.assertRaises(VerificationError):
+                handler.redirect_request(request, None, 302, "Found", {}, url)
+
+        redirected = handler.redirect_request(
+            request,
+            None,
+            302,
+            "Found",
+            {},
+            "https://api.github.com/repositories/1/commits/example",
+        )
+        self.assertIsNotNone(redirected)
+        assert redirected is not None
+        self.assertEqual(
+            redirected.get_header("Authorization"),
+            "Bearer sentinel-secret",
+        )
 
     def test_uv_installation_is_pinned_and_exposed(self):
         safe_bootstrap = """uv_command="/opt/frappe-bench/bin/uv"
@@ -81,10 +139,19 @@ sudo ln -sfn "${uv_command}" /usr/local/bin/uv
 
     def test_vite_install_rejects_sudo_sanitized_node_path(self):
         safe_bootstrap = """installed_vite_version="${installed_vite%% *}"
-if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]; then
+installed_esbuild="$(esbuild --version 2>/dev/null || true)"
+if [[
+  "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ||
+  "${installed_esbuild}" != "${VITE_ESBUILD_EXPECTED_VERSION}"
+]]; then
 npm_prefix="$("${npm_command}" prefix --global)"
 [[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]
-"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+"${npm_command}" install \\
+    --global \\
+    --strict-allow-scripts \\
+    "--allow-scripts=esbuild@${VITE_ESBUILD_EXPECTED_VERSION},fsevents@${VITE_FSEVENTS_EXPECTED_VERSION}" \\
+    "vite@${VITE_EXPECTED_VERSION}" \\
+    "esbuild@${VITE_ESBUILD_EXPECTED_VERSION}"
 fi
 """
         validate_bootstrap_vite_installation(safe_bootstrap)
@@ -96,14 +163,101 @@ fi
 
     def test_vite_install_rejects_longer_version_prefix(self):
         unsafe_bootstrap = """installed_vite_version="${installed_vite%% *}"
-if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}"* ]]; then
+installed_esbuild="$(esbuild --version 2>/dev/null || true)"
+if [[
+  "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}"* ||
+  "${installed_esbuild}" != "${VITE_ESBUILD_EXPECTED_VERSION}"
+]]; then
 npm_prefix="$("${npm_command}" prefix --global)"
 [[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]
-"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+"${npm_command}" install \\
+    --global \\
+    --strict-allow-scripts \\
+    "--allow-scripts=esbuild@${VITE_ESBUILD_EXPECTED_VERSION},fsevents@${VITE_FSEVENTS_EXPECTED_VERSION}" \\
+    "vite@${VITE_EXPECTED_VERSION}" \\
+    "esbuild@${VITE_ESBUILD_EXPECTED_VERSION}"
 fi
 """
         with self.assertRaises(VerificationError):
             validate_bootstrap_vite_installation(unsafe_bootstrap)
+
+    def test_vite_install_requires_strict_exact_script_allowlist(self):
+        bootstrap = (REPO_ROOT / "scripts/bootstrap-dev.sh").read_text(encoding="utf-8")
+        for unsafe in (
+            bootstrap.replace("--strict-allow-scripts \\\n", ""),
+            bootstrap.replace(
+                "--allow-scripts=esbuild@${VITE_ESBUILD_EXPECTED_VERSION},"
+                "fsevents@${VITE_FSEVENTS_EXPECTED_VERSION}",
+                "--dangerously-allow-all-scripts",
+            ),
+            bootstrap.replace('"esbuild@${VITE_ESBUILD_EXPECTED_VERSION}"', '"esbuild"'),
+        ):
+            with self.assertRaises(VerificationError):
+                validate_bootstrap_vite_installation(unsafe)
+
+    def test_repository_verifier_rejects_prohibited_scan_false_success(self):
+        repository_verify = (REPO_ROOT / "scripts/verify.sh").read_text(encoding="utf-8")
+        validate_repository_verifier(repository_verify)
+        unsafe_variants = (
+            repository_verify.replace(
+                'node_actual="$(node --version 2>/dev/null || true)"',
+                'node_actual="${NODE_EXPECTED_VERSION}"',
+            ),
+            repository_verify.replace("if ! command -v rg >/dev/null 2>&1; then", "if false; then"),
+            repository_verify.replace("|| scan_status=$?", ""),
+            repository_verify.replace('exit "${scan_status}"', "true"),
+            repository_verify.replace(
+                "scan_status=0\nrg -n",
+                "scan_status=0\nif rg -n",
+            ),
+        )
+        for unsafe in unsafe_variants:
+            with self.assertRaises(VerificationError):
+                validate_repository_verifier(unsafe)
+
+    def test_frontend_install_policy_is_strict_and_exact(self):
+        package = {
+            "allowScripts": {
+                "esbuild@0.25.12": True,
+                "fsevents": False,
+            },
+            "scripts": {
+                "verify:install-scripts": "bash scripts/verify-install-scripts.sh",
+                "audit": (
+                    "npm run verify:install-scripts && "
+                    "npm audit && npm audit --omit=dev"
+                ),
+            },
+        }
+        npmrc = "engine-strict=true\nstrict-allow-scripts=true\n"
+        validate_frontend_install_policy(npmrc, package)
+        unsafe_variants = (
+            (npmrc.replace("strict-allow-scripts=true\n", ""), package),
+            (
+                npmrc,
+                {
+                    **package,
+                    "allowScripts": {
+                        "esbuild@0.25.12": True,
+                        "fsevents": False,
+                        "unreviewed@1.0.0": True,
+                    },
+                },
+            ),
+            (
+                npmrc,
+                {
+                    **package,
+                    "scripts": {
+                        **package["scripts"],
+                        "audit": "npm audit",
+                    },
+                },
+            ),
+        )
+        for unsafe_npmrc, unsafe_package in unsafe_variants:
+            with self.assertRaises(VerificationError):
+                validate_frontend_install_policy(unsafe_npmrc, unsafe_package)
 
     def test_toolchain_rejects_duplicate_key(self):
         with self.assertRaises(VerificationError):

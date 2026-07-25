@@ -3,6 +3,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { ProblemDetails } from "../../src/api/http";
 import type {
+  GateReviewDecisionBlockedReasonCode,
   GateReviewOutcome,
   GateReviewViewModel,
 } from "../../src/domain/view-models";
@@ -39,6 +40,49 @@ const submitReviewEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-cycles\/[^/?]+\/reviews(?:\?.*)?$/u;
 const receiptEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-command-receipts\/gate\.review\.submit(?:\?.*)?$/u;
+const browserDecisionBlockedReasonCases = [
+  ["REQUIRED_P0_EVIDENCE_MISSING", "Required P0 evidence is missing."],
+  ["FILE_EVIDENCE_UNSAFE", "File evidence is not safe and current."],
+  ["GATE_BLOCKED", "Resolve every blocking item before this outcome."],
+  ["GATE_INPUT_CHANGED", "The Gate input changed."],
+] as const satisfies readonly (readonly [
+  GateReviewDecisionBlockedReasonCode,
+  string,
+])[];
+const commandFailureAccessibilityCases = [
+  {
+    code: "REQUEST_VALIDATION_FAILED",
+    failureSource: "Validation error",
+    name: "validation",
+    retryable: false,
+    status: 422,
+    writeSource: "No successful write was confirmed for this command.",
+  },
+  {
+    code: "GATE_REVIEW_VERSION_CONFLICT",
+    failureSource: "Version conflict",
+    name: "conflict",
+    retryable: false,
+    status: 409,
+    writeSource: "No successful write was confirmed for this command.",
+  },
+  {
+    code: "GATE_REVIEW_UNAVAILABLE",
+    failureSource: "Retryable failure",
+    name: "retryable",
+    retryable: true,
+    status: 503,
+    writeSource: "No successful write was confirmed for this command.",
+  },
+  {
+    code: "GATE_REVIEW_FINAL_FAILURE",
+    failureSource: "Final failure",
+    name: "final",
+    retryable: false,
+    status: 500,
+    writeSource: "No successful write was confirmed for this command.",
+  },
+] as const;
 
 function syntheticReviewOpinion(locale: TestLocale): string {
   return locale === "en"
@@ -675,6 +719,70 @@ test.describe("live Gate Review Room", () => {
   });
 });
 
+test.describe("Gate Review Room command failure accessibility", () => {
+  for (const failureCase of commandFailureAccessibilityCases) {
+    test(`renders one accessible ${failureCase.name} command alert with honest write status`, async ({
+      page,
+    }) => {
+      const locale = "en";
+      const view = gateReviewFixture();
+      const traceId = `trace-gate-review-command-${failureCase.name}`;
+      await installSession(page, locale);
+      await installReview(page, view);
+      await page.route(submitReviewEndpoint, async (route) => {
+        const body: unknown = route.request().postDataJSON();
+        if (!isSubmitReviewBody(body)) {
+          throw new Error("The browser submitted an invalid review command.");
+        }
+        await fulfillApi(
+          route,
+          problem(
+            failureCase.status,
+            failureCase.code,
+            traceId,
+            failureCase.retryable,
+            translate(locale, failureCase.failureSource),
+          ),
+          { status: failureCase.status, traceId },
+        );
+      });
+      await openGate(page, locale);
+      await expectLocalizedReviewRoomLoaded(page, locale);
+      await page
+        .getByRole("textbox", {
+          name: translate(locale, "Complete review opinion"),
+        })
+        .fill(syntheticReviewOpinion(locale));
+      await page
+        .getByRole("button", { name: translate(locale, "Submit review") })
+        .click();
+
+      const alert = page.getByRole("alert", {
+        name: translate(locale, "Gate review command failure"),
+      });
+      await expect(alert).toBeVisible();
+      await expect(page.getByRole("alert")).toHaveCount(1);
+      await expect(alert).toContainText(
+        translate(locale, failureCase.failureSource),
+      );
+      await expect(alert).toContainText(translate(locale, "Failed step"));
+      await expect(alert).toContainText(translate(locale, "Submit review"));
+      await expect(alert).toContainText(
+        translate(locale, "Write confirmation"),
+      );
+      await expect(alert).toContainText(
+        translate(locale, failureCase.writeSource),
+      );
+      await expect(alert).toContainText(traceId);
+
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+      expect(results.violations).toEqual([]);
+    });
+  }
+});
+
 test.describe("trilingual Gate Review Room state purity", () => {
   for (const locale of ["en", "zh", "zh-TW"] as const) {
     test(`renders the accepted review state without mixed language in ${locale}`, async ({
@@ -695,6 +803,40 @@ test.describe("trilingual Gate Review Room state purity", () => {
       ).toBeVisible();
       await expectNoMixedLanguage(page, locale);
     });
+  }
+});
+
+test.describe("trilingual Gate decision-readiness denial reasons", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    for (const [code, source] of browserDecisionBlockedReasonCases) {
+      test(`renders ${code} without mixed language in ${locale}`, async ({
+        page,
+      }) => {
+        const fixture = gateReviewFixture();
+        const view: GateReviewViewModel = {
+          ...fixture,
+          decisionReadiness: {
+            allowedOutcomes: [],
+            blockedReasons: (
+              ["pass", "conditional_pass", "reject"] as const
+            ).map((outcome) => ({ code, outcome })),
+          },
+        };
+        await installSession(page, locale);
+        await installReview(page, view);
+        await openGate(page, locale);
+        await expectLocalizedReviewRoomLoaded(page, locale);
+
+        const readiness = page
+          .getByRole("heading", {
+            name: translate(locale, "Gate decision readiness"),
+          })
+          .locator("..");
+        await expect(readiness).toContainText(translate(locale, source));
+        await expectNoMixedLanguage(page, locale);
+        await expectNoDocumentOverflow(page);
+      });
+    }
   }
 });
 
@@ -1434,6 +1576,74 @@ async function prepareReviewVisualCase(
 
   return noCleanup;
 }
+
+const dialogAccessibilityStates = [
+  "dialog_request_exception",
+  "dialog_decide_exception",
+  "dialog_decide_gate",
+  "dialog_reopen",
+] as const satisfies readonly ReviewRoomVisualState[];
+
+test.describe("Gate Review Room impact dialog accessibility", () => {
+  for (const state of dialogAccessibilityStates) {
+    test(`manages focus and passes Axe for ${state}`, async ({ page }) => {
+      const visual: ReviewRoomVisualCase = {
+        height: 768,
+        locale: "en",
+        name: `non-visual-accessibility-${state}`,
+        state,
+        width: 1366,
+        zoom: 1,
+      };
+      const cleanup = await prepareReviewVisualCase(page, visual);
+      try {
+        const dialog = page.getByRole("dialog");
+        const cancel = dialog.getByRole("button", { name: "Cancel" });
+        await expect(dialog).toBeVisible();
+        await expect(cancel).toBeFocused();
+        await expect(page.getByRole("alert")).toHaveCount(0);
+
+        const results = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+          .analyze();
+        expect(results.violations).toEqual([]);
+
+        await page.keyboard.press("Shift+Tab");
+        await expect
+          .poll(() =>
+            page.evaluate(() => {
+              const currentDialog = document.querySelector('[role="dialog"]');
+              return Boolean(
+                currentDialog?.contains(document.activeElement) &&
+                document.activeElement !== currentDialog,
+              );
+            }),
+          )
+          .toBe(true);
+        await page.keyboard.press("Tab");
+        await expect
+          .poll(() =>
+            page.evaluate(() => {
+              const currentDialog = document.querySelector('[role="dialog"]');
+              return Boolean(
+                currentDialog?.contains(document.activeElement) &&
+                document.activeElement !== currentDialog,
+              );
+            }),
+          )
+          .toBe(true);
+
+        await page.keyboard.press("Escape");
+        await expect(dialog).toHaveCount(0);
+        await expect(
+          page.locator('[data-visual-primary="true"]:visible'),
+        ).toBeFocused();
+      } finally {
+        await cleanup();
+      }
+    });
+  }
+});
 
 const commandAndDialogStates: readonly ReviewRoomVisualState[] = [
   "validation",

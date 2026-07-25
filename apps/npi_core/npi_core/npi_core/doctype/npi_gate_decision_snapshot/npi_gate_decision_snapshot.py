@@ -34,7 +34,11 @@ class NPIGateDecisionSnapshot(Document):
         self._deny_update()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.global_id,
+            target_version=self.cycle_version,
+        )
 
     def before_validate(self) -> None:
         self._normalize()
@@ -65,9 +69,7 @@ class NPIGateDecisionSnapshot(Document):
             self.cycle_global_id,
             _("Review Cycle Global ID"),
         )
-        self.global_id = str(
-            uuid5(UUID(self.cycle_global_id), "decision-snapshot")
-        )
+        self.global_id = str(uuid5(UUID(self.cycle_global_id), "decision-snapshot"))
         self.policy_global_id = ensure_uuid(
             self.policy_global_id,
             _("Review Policy Global ID"),

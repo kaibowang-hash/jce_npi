@@ -1,6 +1,6 @@
 # Phase 4 Requirement Anchor — Project, Work Items, and Stage Gates
 
-Status: **ANCHORED — P4-01/P4-02/P4-03 PASS; P4-04 IN PROGRESS AT CHECKPOINT**
+Status: **ANCHORED — P4-01/P4-02/P4-03/P4-04 PASS; P4-05 ACTIVE**
 
 Anchor date: 2026-07-22
 
@@ -420,3 +420,50 @@ task. Resume only P4-04 from
 `implementation/evidence/phase-4/p4-04-takeover-review.md`; P4-05 is not
 activated. The prior P4-03 Level 3 evidence remains valid and must not be
 rerun solely to reconstruct this checkpoint.
+
+## 17. P4-04 completed boundary
+
+P4-04 now owns the technically verified review-cycle mechanism: immutable
+published synthetic policy versions, exact frozen authorities and inputs,
+parallel/sequential/conditional steps, append-only opinions and exceptions,
+server-built decision snapshots, preserved prior-cycle lineage, controlled
+reopen, exact dependency invalidation, successor review cycles, and the
+current-decision downstream guard.
+
+It also closes the live trilingual Review Room command boundary: strict BFF and
+OpenAPI schemas, actor-bound idempotency, optimistic versions, authorization
+before protected resolution, reconstructable immutable history, one honest
+write-status alert, high-risk confirmation focus handling, and stable
+retranslation after locale changes.
+
+P4-04 does not install production Gate contents, approval/segregation/waiver
+maps, disabled-member substitution, production dependency resolvers, a
+dependency-generated Domain WorkItem, live notification delivery, production
+scanner/DMS behavior, or ERPNext access. Those remain P4-05, later-phase, or
+Class-B scope.
+
+## 18. P4-04 exit decision
+
+**P4-04 PASS; P4-05 ACTIVE.** The triggered Level 3 Full Release Gate passed:
+417 Python tests, 337 frontend tests, 1,746 literal English sources with
+complete direct `zh` and `zh-TW` coverage, additive and idempotent Site
+migration, all six complete live Frappe runtime lanes, 204 non-visual browser
+cases, forced and clean 170-case exact visual matrices, zero full and
+production-only npm audit findings, fresh Node 24 target proof, security and
+rollback review, Task Diff/trace review, and independent release review.
+Complete evidence is recorded in
+`implementation/evidence/phase-4/p4-04-validation.md`.
+
+`FR-SG-003` and `FR-SG-005` are technically verified foundations because
+production review and exception policy remains held. `FR-SG-006` is
+technically verified for immutable decisions and preserved-cycle reopen.
+`FR-SG-007` is a technically verified foundation for exact-input invalidation,
+successor cycles, and downstream denial; P4-05 owns work projection and no
+production dependency matrix is claimed. `FR-SG-002`, `FR-SG-004`, and
+`FR-CO-006` retain their truthful foundation status and later open scope.
+
+P4-05 activates automatically under the continuous-delivery authority with
+`FR-PM-008`, `FR-PM-011`, `FR-PM-012`, `FR-CO-001`, `FR-CO-002`, and
+`FR-CO-006`. Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its named external
+business sign-off and provenance-backed sanitized-data review are not replaced
+by technical P4-04 evidence.

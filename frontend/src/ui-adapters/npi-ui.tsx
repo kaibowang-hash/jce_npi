@@ -142,7 +142,7 @@ export function Button({
   const buttonHostRef = useRef<HydratableElement | null>(null);
   const synchronizedAriaNamesRef = useRef<Set<string>>(new Set());
   const setButtonHostRef = useCallback((element: HTMLElement | null) => {
-    buttonHostRef.current = element as HydratableElement | null;
+    buttonHostRef.current = element;
   }, []);
   const { hostProperties: nonAriaHostProperties, shadowAriaAttributes } =
     partitionButtonProperties(hostProperties);

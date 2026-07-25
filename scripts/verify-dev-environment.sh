@@ -19,7 +19,7 @@ require_command() {
   fi
 }
 
-for command_name in node npm yarn python docker bench uv vite; do
+for command_name in node npm yarn python docker bench uv vite esbuild; do
   require_command "${command_name}"
 done
 
@@ -33,6 +33,7 @@ compose_actual="$(docker compose version --short)"
 bench_actual="$(bench --version)"
 uv_actual="$(uv --version)"
 vite_actual="$(vite --version)"
+esbuild_actual="$(esbuild --version)"
 uv_version_actual="${uv_actual#uv }"
 uv_version_actual="${uv_version_actual%% *}"
 vite_version_actual="${vite_actual%% *}"
@@ -48,6 +49,7 @@ docker_runtime_pattern="^${DOCKER_EXPECTED_VERSION//./\\.}(-[0-9]+)?$"
 [[ "${bench_actual}" == "${BENCH_EXPECTED_VERSION}" ]] || { echo "Bench mismatch: ${bench_actual}" >&2; exit 1; }
 [[ "${uv_version_actual}" == "${UV_EXPECTED_VERSION}" ]] || { echo "uv mismatch: ${uv_actual}" >&2; exit 1; }
 [[ "${vite_version_actual}" == "vite/${VITE_EXPECTED_VERSION}" ]] || { echo "Vite mismatch: ${vite_actual}" >&2; exit 1; }
+[[ "${esbuild_actual}" == "${VITE_ESBUILD_EXPECTED_VERSION}" ]] || { echo "esbuild mismatch: ${esbuild_actual}" >&2; exit 1; }
 
 docker info >/dev/null
 docker compose -f "${repo_root}/docker-compose.yml" config -q
@@ -62,6 +64,7 @@ printf 'compose=%s\n' "${compose_actual}"
 printf 'bench=%s\n' "${bench_actual}"
 printf 'uv=%s\n' "${uv_actual}"
 printf 'vite=%s\n' "${vite_actual}"
+printf 'esbuild=%s\n' "${esbuild_actual}"
 printf 'frappe_branch=%s\n' "${FRAPPE_BRANCH}"
 printf 'frappe_commit=%s\n' "${FRAPPE_COMMIT}"
 echo "development environment verification passed"

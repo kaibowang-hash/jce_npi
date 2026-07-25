@@ -214,6 +214,53 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"expected_event_type": "invalidated"', main)
         self.assertIn('"expected_event_type": "refreshed"', main)
 
+    def test_closure_action_drift_is_invalidated_idempotently_then_rolled_back(
+        self,
+    ) -> None:
+        drift = self.functions["verify_closure_action_drift_rollback"]
+        self.assertIn('"npi_project_work_command_write"', drift)
+        self.assertIn("action.save()", drift)
+        self.assertIn(
+            "evaluate_gate_review_work_item_dependency(**worker_values) is True",
+            drift,
+        )
+        self.assertIn(
+            "evaluate_gate_review_work_item_dependency(**worker_values) is False",
+            drift,
+        )
+        self.assertIn(
+            'str(changed_gate.review_state) == "requires_review"',
+            drift,
+        )
+        self.assertIn(
+            'str(changed_prior.state) == "invalidated"',
+            drift,
+        )
+        self.assertIn('str(successor.trigger) == "dependency_change"', drift)
+        self.assertIn(
+            'changed_workspace["gate"]["downstreamDecisionCurrent"] is False', drift
+        )
+        self.assertIn("frappe.db.rollback()", drift)
+        self.assertIn(
+            'restored_workspace["gate"]["downstreamDecisionCurrent"] is True',
+            drift,
+        )
+        self.assertIn('"duplicateWorkerNoOp": True', drift)
+        self.assertIn('"gateInputVersionDelta": 1', drift)
+        self.assertIn('"gateOptimisticVersionDelta": 1', drift)
+
+        main = self.functions["main"]
+        call_index = main.index(
+            "closure_action_drift = run_bench_fixture(\n"
+            '            "verify_closure_action_drift_rollback"'
+        )
+        self.assertGreater(call_index, main.index("first_decision_id ="))
+        self.assertLess(call_index, main.index("reopened = reopen_gate("))
+        self.assertIn(
+            '"closureActionDriftRollback": closure_action_drift',
+            main,
+        )
+
     def test_file_delete_hook_proves_commit_and_rollback_transactions(self) -> None:
         deletion = self.functions["verify_file_delete_transactions"]
         self.assertIn('frappe.get_doc("File", file_id).delete(', deletion)
@@ -304,6 +351,48 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("delete_resource(", immutable)
         self.assertIn("update.status in {403, 417}", immutable)
         self.assertIn("deletion.status in {403, 417}", immutable)
+        self.assertIn('"gate.review.history.delete_attempt"', immutable)
+        self.assertIn('"NPI Audit Event"', immutable)
+        self.assertIn("prior_event_ids", immutable)
+        self.assertIn("delete_audits", immutable)
+        self.assertIn('str(delete_audit["result"]) == "denied"', immutable)
+        self.assertIn(
+            'json_value(delete_audit["input_summary"])',
+            immutable,
+        )
+        calls = [
+            node
+            for node in ast.walk(self.tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "verify_immutable_history"
+        ]
+        self.assertEqual(len(calls), 1)
+        targets = calls[0].args[3]
+        self.assertIsInstance(targets, ast.List)
+        assert isinstance(targets, ast.List)
+        self.assertTrue(
+            all(
+                isinstance(target, ast.Tuple) and len(target.elts) == 4
+                for target in targets.elts
+            )
+        )
+        self.assertEqual(
+            {
+                target.elts[0].value
+                for target in targets.elts
+                if isinstance(target, ast.Tuple)
+                and isinstance(target.elts[0], ast.Constant)
+            },
+            {
+                "NPI Gate Review Record",
+                "NPI Gate Review Exception",
+                "NPI Gate Decision Snapshot",
+                "NPI Gate Review Cycle",
+                "NPI Gate Review Event",
+                "NPI Gate Review Idempotency",
+            },
+        )
         main = self.functions["main"]
         self.assertIn("cleanup_runtime_users(", main)
         self.assertIn("controlled_history_retained or retained_projects", main)
@@ -322,6 +411,11 @@ class Phase4GateReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('"verify_runtime_schema":', local)
         self.assertIn('"verify_transaction_rollback":', local)
         self.assertIn('"trigger_dependency_refresh":', local)
+        self.assertIn('"verify_closure_action_drift_rollback":', local)
+        self.assertIn(
+            '"verify_closure_action_drift_rollback",',
+            self.source,
+        )
         self.assertIn("frappe.init(", local)
         self.assertIn('frappe.set_user("Administrator")', local)
         self.assertIn("frappe.db.rollback()", local)

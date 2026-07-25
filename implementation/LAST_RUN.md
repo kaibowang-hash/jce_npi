@@ -1,5 +1,85 @@
 # Last Run
 
+## P4-04 Full Release Gate PASS; P4-05 activated — 2026-07-25T09:09:22Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting checkpoint:
+  `5244a65805ac10e88cad3f7b9902a5fb191cca8c`.
+- Atomic task:
+  `P4-04 — Review, decision, snapshot, and reopen`.
+- Result:
+  `PASS — LEVEL 3 FULL RELEASE GATE`.
+- Current task:
+  `P4-05 — Live My Work, activity, and Project controls`.
+- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; Phase 4 remains
+  `IN_PROGRESS`.
+
+### Delivered boundary
+
+- Closed the exact closure-action drift and disabled-authority paths, retained
+  latest immutable decision lineage, and made repeated dependency evaluation
+  idempotent with one successor cycle/version delta.
+- Enforced exact 4,000-character public long-text limits and fail-closed
+  4,001-character rejection across domain, API, controllers, and UI.
+- Persisted rollback-safe denied-delete audits for all six retained review
+  history families with current trace/actor/target version and fixed
+  operation/result semantics.
+- Completed the live trilingual Review Room's honest command-failure step,
+  single alert/write status, stable reason/action translation, and dialog focus
+  return without optimistic success.
+- Replaced the vulnerable/end-of-life Node 18/npm 10 toolchain with exact Node
+  24.18.0/npm 11.16.0 under ADR-011, resolved all `brace-expansion` paths to
+  5.0.8, and added strict exact install-script admission.
+- Made repository verification fail closed on a missing/failing `rg`, wrong
+  Node/npm runtime, and unauthenticated GitHub API rate limiting while scoping
+  the existing token only to exact `api.github.com`.
+
+No production Gate policy, approval/waiver/segregation map, production
+dependency resolver, impact Domain WorkItem, scanner/DMS behavior, ERPNext
+access, or external UAT result is claimed.
+
+### Final evidence
+
+| Command / review | Result |
+|---|---|
+| final `make verify` | `PASS` — 417 Python tests; 337 frontend tests; config/static/type/ESLint/Prettier/style/boundary/UI checks; 1,746 direct `zh`/`zh-TW` sources; coverage; build; strict install-script report; full and production audits |
+| frontend coverage | `PASS` — 87.11% statements, 87.26% branches, 91.86% functions, 89.42% lines |
+| production build | `PASS` — 398 modules; main 988.60 kB / 249.59 kB gzip; Gate evidence/review route 57.65 kB / 13.75 kB gzip; R-010 remains open |
+| npm security | `PASS` — no unreviewed install scripts; zero full-tree and production-only vulnerabilities |
+| first and second `make frappe-site-init` | `PASS` — additive migration and idempotent rerun at Frappe `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` |
+| focused Gate Evidence / Gate Review runtime | `PASS` — exact evidence, scan truth, immutable history, closure drift rollback, duplicate-worker no-op, and transaction rollback |
+| final `make frappe-runtime-verify` | `PASS` — BFF, Project, Project Work fresh, cross-process sealed replay, Gate Evidence, and Gate Review |
+| affected browser lane | `PASS` — 26/26 command/dialog/focus cases |
+| complete non-visual Playwright | `PASS` — 204/204 in 7.0 minutes |
+| forced visual update | `PASS` — complete rerun 170/170 |
+| clean exact visual comparison | `PASS` — 170/170 at unchanged `maxDiffPixelRatio: 0` |
+| fresh target | `PASS` — retained target `ec87589840647a343123667c386f0f9ff5a9e34fb14e7f0af158c5d766061cb4`, label `npi.fresh-target=p4-04-node24`, exact Node/npm/Docker/Bench/uv/Vite/esbuild/Frappe checks |
+| independent review | `PASS` — no remaining blocker, major, or minor code/security/release finding |
+
+The controlled MariaDB/Redis services briefly exited with status 255 before
+the final runtime. Their existing named volumes were preserved, both services
+were restored to healthy, and the one complete runtime then passed. No volume
+was reset or deleted.
+
+The first complete visual update had one transient 5-second blank-page timeout;
+it was not counted. A full from-start update then passed 170/170, followed
+immediately by a clean 170/170 comparison. The resulting 153 modified PNGs are
+the reviewed catalog/UI rebaseline.
+
+The first non-visual attempt executed zero tests because the default sandbox
+denied Vite's loopback bind with `EPERM`; it was not counted. The same exact
+204-case command passed under the approved local-bind permission. The first
+final `make verify` stopped before product tests when GitHub's anonymous API
+limit rejected the pinned Frappe commit query. Independent review then
+reproduced default redirect forwarding of the new authorization header; the
+final repair restricts both the first hop and every authenticated redirect to
+the exact HTTPS GitHub API origin. Nineteen focused tests and the complete
+417-test rerun passed.
+
+Complete scope, changed-files→tests, repair, rollback, security, and
+requirement evidence is in
+`implementation/evidence/phase-4/p4-04-validation.md`.
+
 ## V1.2 Autopilot resumed from repository truth — 2026-07-25T05:48:39Z
 
 - Active execution goal:

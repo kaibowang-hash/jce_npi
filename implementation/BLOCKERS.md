@@ -4,46 +4,23 @@
 
 None.
 
-## P4-04 thread-migration checkpoint
+## P4-05 active scope
 
-The historical thread-migration pause is retained for audit but is
-`SUPERSEDED_BY_LATEST_USER_AUTOPILOT_AUTHORIZATION`. P4-04 is actively
-continuing under `implementation/ACTIVE_EXECUTION_GOAL.md`. This supersession
-is not a Gate result: the bounded takeover conclusion remains
-`DOMAIN_FOUNDATION_ACCEPTED`, and P4-04 remains `IN_PROGRESS`.
+P4-04 passed its complete triggered Level 3 Full Release Gate; the former
+thread-migration pause and pending-Gate checklist are resolved. P4-05 is active
+under `implementation/ACTIVE_EXECUTION_GOAL.md` and
+`implementation/NEXT_ACTION.md`.
 
-The current affected Level 1 evidence includes 123 Gate Review Python tests,
-46 shared P4-02/P4-03 boundary tests, 11 Gate Evidence/Gate Shell tests, 116
-frontend tests, 72 current Gate browser cases, 23 exact Review Room visuals,
-and complete direct translation coverage for 1742 literal English sources.
-P4-03 reconciled to `EVIDENCE_CONFIRMED`; its full Level 3 is not repeated.
+The open production Project-health formula, threshold, lifecycle authority,
+completion-prerequisite, notification-delivery, and external-collaboration
+facts remain scoped Class-B holds. P4-05 may implement versioned,
+safe-default-denied infrastructure, honest unavailable/unassessed states,
+explicit synthetic fixtures, internal activity, live My Work projection,
+tests, localization, and documentation. It must not infer those missing rules
+or represent external delivery as operational.
 
-No failure is waived. Current additive/idempotent migration, final focused and
-complete runtime compatibility, module coverage/build/audit, Level 2 Task
-Gate, and the contract/Schema/authentication/permission/hook/shared-catalog
-triggered Level 3 remain pending. Production review/exception/invalidation/
-segregation policy is also still a scoped Class-B hold.
-
-The focused live runtime retry did not enter product execution because the
-controlled MariaDB container was stopped. Restoring the existing Compose
-services failed with Docker's stale OCI task error
-`container with given ID already exists`. This is a recoverable local runtime
-prerequisite, not an active Hard Blocker and not a product test result. Do not
-reset or delete the controlled database volume to bypass it.
-
-The former P4-04 plan requirement to create an automatic impact Domain
-WorkItem was an overreach. Authoritative `FR-SG-007` requires invalidation and
-re-review, while P4-05 owns work/lifecycle projection. P4-04 therefore creates
-successor cycles and exact dependency events, keeps downstream use denied,
-and leaves the legacy action reference null. This scope correction is not a
-blocker and does not install a production policy.
-
-Resume from
-`implementation/evidence/phase-4/p4-03-takeover-reconciliation.md`,
-`implementation/evidence/phase-4/p4-04-takeover-review.md`, and
-`implementation/NEXT_ACTION.md`. P4-04 must not be marked `PASS`, and P4-05
-must not start, until all applicable pending criteria pass. Once they pass,
-P4-05 starts automatically without another prompt.
+Phase 3 named business UAT and sanitized-data provenance remain externally
+unsigned. They are not a global blocker and cannot be signed by Codex.
 
 ## Open external acceptance and reconciliation inputs
 
@@ -77,9 +54,9 @@ continue.
 P4-03 deliberately did not install production Gate condition/skip/duration
 content, RACI-to-approval mapping, evidence-eligibility expansion,
 scanner/provider policy, P0 pass policy, waiver authority, or automatic
-invalidation rules. These remain scoped Class-B holds. P4-04 may continue only
-with a versioned synthetic policy and safe-default-denied behavior that does
-not claim production approval authority.
+invalidation rules. These remain scoped Class-B holds. The passing P4-04 slice
+uses only a versioned synthetic policy and safe-default-denied behavior; P4-05
+must preserve that boundary.
 
 ## Resolved checkpoints
 
@@ -115,11 +92,11 @@ not claim production approval authority.
   3 gate on 2026-07-24. The final evidence includes additive/idempotent
   migrations, complete P4-01/P4-02/P4-03 runtime, 153 non-visual browser cases,
   159 forced and clean exact visual cases, original-resolution review, and
-  independent security/trace/release review. P4-04 is the current unfinished
-  task and is paused at the Codex Cloud handoff checkpoint.
-- P4-04's earlier missing-repository and untranslated-catalog checkpoint gaps
-  are resolved in the current implementation checkpoint: the focused live
-  runtime, 116 Python tests, 93 frontend tests, four affected E2E cases, and
-  three trilingual exact visuals pass with 1740 complete direct catalog
-  entries. This closes those earlier implementation blockers but does not
-  substitute for the still-pending P4-04 Task and Release Gates.
+  independent security/trace/release review.
+- P4-04's missing-repository, history-retention, long-text, closure-drift,
+  Docker-runtime, npm-vulnerability, install-policy, localization, browser,
+  and visual-baseline findings are resolved. Its complete evidence includes
+  417 Python tests, 337 frontend tests, two migrations, all six live runtime
+  lanes, 1,746 direct trilingual sources, 204 non-visual browser cases, forced
+  and clean 170-case exact visual matrices, zero npm vulnerabilities, and
+  independent release review. P4-04 is `PASS`; P4-05 is active.

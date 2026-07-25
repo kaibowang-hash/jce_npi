@@ -6,6 +6,7 @@ from __future__ import annotations
 import gzip
 import io
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -14,7 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -122,8 +123,9 @@ def validate_bootstrap_vite_installation(bootstrap: str) -> None:
         "Bootstrap must isolate the Vite version token",
     )
     require(
-        '[[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]' in bootstrap,
-        "Bootstrap must compare the complete Vite version token",
+        '[[\n  "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ||\n'
+        '  "${installed_esbuild}" != "${VITE_ESBUILD_EXPECTED_VERSION}"\n]]' in bootstrap,
+        "Bootstrap must compare the exact Vite and esbuild versions",
     )
     require(
         'npm_prefix="$("${npm_command}" prefix --global)"' in bootstrap,
@@ -134,8 +136,16 @@ def validate_bootstrap_vite_installation(bootstrap: str) -> None:
         "Bootstrap must reject a non-writable npm global prefix",
     )
     require(
-        '"${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"' in bootstrap,
+        '"${npm_command}" install \\\n    --global \\\n    --strict-allow-scripts \\\n'
+        '    "--allow-scripts=esbuild@${VITE_ESBUILD_EXPECTED_VERSION},'
+        'fsevents@${VITE_FSEVENTS_EXPECTED_VERSION}" \\\n'
+        '    "vite@${VITE_EXPECTED_VERSION}" \\\n'
+        '    "esbuild@${VITE_ESBUILD_EXPECTED_VERSION}"' in bootstrap,
         "Pinned Vite installation path is missing",
+    )
+    require(
+        "--dangerously-allow-all-scripts" not in bootstrap,
+        "Bootstrap must not allow every npm install script",
     )
     require(
         'sudo "${npm_command}"' not in bootstrap,
@@ -151,6 +161,88 @@ def validate_bootstrap_uv_installation(bootstrap: str) -> None:
         "Bootstrap must enforce the selected uv version",
     )
     require('/usr/local/bin/uv' in bootstrap, "Bootstrap must expose uv on the lifecycle PATH")
+
+
+def validate_repository_verifier(repository_verify: str) -> None:
+    require(
+        'source "${repo_root}/.devcontainer/toolchain.env"' in repository_verify,
+        "Repository verifier must load the pinned toolchain",
+    )
+    require(
+        'node_actual="$(node --version 2>/dev/null || true)"'
+        in repository_verify
+        and 'npm_actual="$(npm --version 2>/dev/null || true)"'
+        in repository_verify,
+        "Repository verifier must inspect the executing Node and npm",
+    )
+    require(
+        '"${node_actual}" != "${NODE_EXPECTED_VERSION}"'
+        in repository_verify
+        and '"${npm_actual}" != "${NPM_EXPECTED_VERSION}"'
+        in repository_verify,
+        "Repository verifier must reject Node or npm runtime drift",
+    )
+    dependency_check = repository_verify.find("command -v rg")
+    scan = repository_verify.find("rg -n 'ignore_permissions")
+    require(dependency_check >= 0, "Repository verifier must require ripgrep")
+    require(scan >= 0, "Repository verifier must run the prohibited-pattern scan")
+    require(
+        dependency_check < scan,
+        "Repository verifier must require ripgrep before the prohibited-pattern scan",
+    )
+    require(
+        "|| scan_status=$?" in repository_verify,
+        "Repository verifier must capture prohibited-pattern scan failures",
+    )
+    require(
+        'case "${scan_status}" in' in repository_verify
+        and 'exit "${scan_status}"' in repository_verify,
+        "Repository verifier must fail when the prohibited-pattern scan cannot run",
+    )
+    require(
+        "if rg -n 'ignore_permissions" not in repository_verify,
+        "Repository verifier must not treat every non-match status as success",
+    )
+
+
+def validate_frontend_install_policy(
+    npmrc: str,
+    package: Mapping[str, Any],
+) -> None:
+    settings: dict[str, str] = {}
+    for line_number, raw_line in enumerate(npmrc.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        require("=" in line, f"Invalid frontend .npmrc line {line_number}")
+        key, value = line.split("=", 1)
+        require(key not in settings, f"Duplicate frontend .npmrc key: {key}")
+        settings[key] = value
+    require(
+        settings.get("strict-allow-scripts") == "true",
+        "Frontend installs must reject unreviewed dependency scripts",
+    )
+    require(
+        package.get("allowScripts")
+        == {
+            "esbuild@0.25.12": True,
+            "fsevents": False,
+        },
+        "Frontend install-script policy must allow exact esbuild and deny fsevents",
+    )
+    scripts = package.get("scripts")
+    require(isinstance(scripts, dict), "Frontend package scripts are unavailable")
+    require(
+        scripts.get("verify:install-scripts")
+        == "bash scripts/verify-install-scripts.sh",
+        "Frontend must inspect pending install scripts",
+    )
+    require(
+        str(scripts.get("audit", "")).startswith(
+            "npm run verify:install-scripts && "
+        ),
+        "Frontend audit must reject pending install scripts before vulnerability scans",
+    )
 
 
 def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tuple[str, str, str]]:
@@ -170,6 +262,8 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
         "BENCH_EXPECTED_VERSION",
         "UV_EXPECTED_VERSION",
         "VITE_EXPECTED_VERSION",
+        "VITE_ESBUILD_EXPECTED_VERSION",
+        "VITE_FSEVENTS_EXPECTED_VERSION",
         "FRAPPE_BRANCH",
         "FRAPPE_COMMIT",
     }
@@ -214,6 +308,38 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     require(set(script_paths) >= required_scripts, "A required development script is missing")
     for script_path in script_paths:
         require(git_mode(script_path) == "100755", f"Script is not executable in Git: {script_path.name}")
+    validate_repository_verifier(
+        (REPO_ROOT / "scripts/verify.sh").read_text(encoding="utf-8")
+    )
+    frontend_package = read_json(REPO_ROOT / "frontend/package.json")
+    validate_frontend_install_policy(
+        (REPO_ROOT / "frontend/.npmrc").read_text(encoding="utf-8"),
+        frontend_package,
+    )
+    require(
+        frontend_package.get("packageManager")
+        == f"npm@{toolchain['NPM_EXPECTED_VERSION']}",
+        "Frontend package manager pin must match the toolchain",
+    )
+    require(
+        "cd frontend && npm ci --strict-allow-scripts"
+        in (REPO_ROOT / "Makefile").read_text(encoding="utf-8"),
+        "Frontend Make install must enter the project and enforce strict dependency scripts",
+    )
+    require(
+        "run: npm ci --strict-allow-scripts"
+        in (REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"),
+        "Frontend CI install must enforce strict dependency scripts",
+    )
+    pending_script_verifier = (
+        REPO_ROOT / "frontend/scripts/verify-install-scripts.sh"
+    ).read_text(encoding="utf-8")
+    require(
+        "approve-scripts" in pending_script_verifier
+        and "--allow-scripts-pending" in pending_script_verifier
+        and "No packages with unreviewed install scripts." in pending_script_verifier,
+        "Frontend pending install-script verifier is incomplete",
+    )
 
     features = config.get("features")
     require(isinstance(features, dict), "devcontainer.json requires a features object")
@@ -276,6 +402,10 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     require(
         '"${vite_version_actual}" == "vite/${VITE_EXPECTED_VERSION}"' in dynamic_check,
         "Dynamic Vite check must compare the complete version token",
+    )
+    require(
+        '"${esbuild_actual}" == "${VITE_ESBUILD_EXPECTED_VERSION}"' in dynamic_check,
+        "Dynamic esbuild check must compare the complete version token",
     )
     require(
         '"${uv_version_actual}" == "${UV_EXPECTED_VERSION}"' in dynamic_check,
@@ -396,10 +526,51 @@ def validate_features(config: dict[str, Any]) -> None:
         print(f"feature={feature_ref}@{digest}")
 
 
+def is_exact_github_api_origin(url: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        return (
+            parsed.scheme == "https"
+            and parsed.hostname == "api.github.com"
+            and parsed.port in (None, 443)
+            and parsed.username is None
+            and parsed.password is None
+        )
+    except ValueError:
+        return False
+
+
+class ScopedAuthorizationRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: Any,
+        code: int,
+        msg: str,
+        headers: Any,
+        newurl: str,
+    ) -> urllib.request.Request | None:
+        if req.get_header("Authorization") and not is_exact_github_api_origin(newurl):
+            raise VerificationError(
+                "Authenticated GitHub API request refused a redirect outside "
+                "https://api.github.com"
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def upstream_request_headers(url: str, token: str | None = None) -> dict[str, str]:
+    headers = {"Accept": "application/json", "User-Agent": USER_AGENT}
+    if is_exact_github_api_origin(url) and token:
+        headers["Authorization"] = "Bearer " + token
+    return headers
+
+
 def request_json(url: str) -> Any:
     try:
-        request = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": USER_AGENT})
-        with urllib.request.urlopen(request, timeout=60) as response:
+        token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+        request = urllib.request.Request(url, headers=upstream_request_headers(url, token))
+        opener = urllib.request.build_opener(ScopedAuthorizationRedirectHandler())
+        with opener.open(request, timeout=60) as response:
             return json.load(response)
     except (OSError, json.JSONDecodeError) as exc:
         raise VerificationError(f"Unable to read upstream metadata: {url}: {exc}") from exc
@@ -419,6 +590,20 @@ def validate_tool_versions(toolchain: dict[str, str]) -> None:
     require(uv.get("info", {}).get("version") == toolchain["UV_EXPECTED_VERSION"], "Pinned uv release does not exist")
     vite = request_json(f"https://registry.npmjs.org/vite/{toolchain['VITE_EXPECTED_VERSION']}")
     require(vite.get("version") == toolchain["VITE_EXPECTED_VERSION"], "Pinned Vite release does not exist")
+    vite_esbuild = request_json(
+        f"https://registry.npmjs.org/esbuild/{toolchain['VITE_ESBUILD_EXPECTED_VERSION']}"
+    )
+    require(
+        vite_esbuild.get("version") == toolchain["VITE_ESBUILD_EXPECTED_VERSION"],
+        "Pinned global esbuild release does not exist",
+    )
+    vite_fsevents = request_json(
+        f"https://registry.npmjs.org/fsevents/{toolchain['VITE_FSEVENTS_EXPECTED_VERSION']}"
+    )
+    require(
+        vite_fsevents.get("version") == toolchain["VITE_FSEVENTS_EXPECTED_VERSION"],
+        "Pinned optional fsevents release does not exist",
+    )
 
     package_index_url = "https://packages.microsoft.com/debian/12/prod/dists/bookworm/main/binary-amd64/Packages.gz"
     try:
@@ -458,6 +643,7 @@ def validate_tool_versions(toolchain: dict[str, str]) -> None:
                 "bench-" + toolchain["BENCH_EXPECTED_VERSION"],
                 "uv-" + toolchain["UV_EXPECTED_VERSION"],
                 "vite-" + toolchain["VITE_EXPECTED_VERSION"],
+                "esbuild-" + toolchain["VITE_ESBUILD_EXPECTED_VERSION"],
             )
         )
     )

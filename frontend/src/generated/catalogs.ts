@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'fe87273ddba85cf7';
+export const catalogVersion = 'a35cf1717e9e4a04';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -529,6 +529,7 @@ export const catalogs = {
     "Explicit indicator": "明确标记",
     "failed": "失败",
     "Failed in ERPNext": "在 ERPNext 中失败",
+    "Failed step": "失败步骤",
     "failed_final": "最终失败",
     "failed_retryable": "可重试失败",
     "Failed, manual action required": "失败，需要人工处理",
@@ -776,6 +777,7 @@ export const catalogs = {
     "No retry was queued. Follow the recovery guidance and use the trace ID.": "未排队任何重试。请按恢复指南处理并使用跟踪编号。",
     "No review sequence is active for this Gate.": "此阶段门没有活动的评审顺序。",
     "No role assignment": "无角色分配",
+    "No successful write was confirmed for this command.": "未确认此命令有任何成功写入。",
     "No system is editable": "所有系统均不可编辑",
     "No team members are assigned to this project.": "此项目尚未分配团队成员。",
     "No Team, responsibility, or plan data was displayed. Use the reference ID for support.": "未显示任何团队、职责或计划数据。请使用参考标识符联系支持人员。",
@@ -1611,6 +1613,7 @@ export const catalogs = {
     "The work policy does not define this work item kind.": "工作策略未定义此工作项类别。",
     "The work policy snapshot hash does not match its contents.": "工作策略快照哈希与其内容不匹配。",
     "The worklist query failed. No data was changed. Change a filter or retry.": "工作清单查询失败。未更改任何数据。请更改筛选条件或重试。",
+    "The write status is unknown because the command result could not be confirmed. Verify the current Gate review state before preparing another command.": "由于无法确认命令结果，写入状态未知。准备其他命令前，请核对当前阶段门评审状态。",
     "This blocks G5 and you own the corrective action.": "此项阻断 G5，且您负责纠正措施。",
     "This condition does not accept a priority.": "此条件不接受优先级。",
     "This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.": "此事件证明阶段门输入快照哈希发生了精确变更，但不声称任何来源对象字段发生变更。",
@@ -1733,6 +1736,7 @@ export const catalogs = {
     "Work Policy Version must be greater than zero.": "工作策略版本必须大于零。",
     "Worklist": "工作清单",
     "Worklist filters and column controls are focused.": "工作清单筛选器和列控件已获得焦点。",
+    "Write confirmation": "写入确认",
     "Yes": "是",
     "Yes, measurements were replaced": "是，测量结果已替换",
     "Yield": "良率",
@@ -2273,6 +2277,7 @@ export const catalogs = {
     "Explicit indicator": "明確標記",
     "failed": "失敗",
     "Failed in ERPNext": "在 ERPNext 中失敗",
+    "Failed step": "失敗步驟",
     "failed_final": "最終失敗",
     "failed_retryable": "可重試失敗",
     "Failed, manual action required": "失敗，需要人工處理",
@@ -2520,6 +2525,7 @@ export const catalogs = {
     "No retry was queued. Follow the recovery guidance and use the trace ID.": "未排隊任何重試。請依復原指南處理並使用追蹤編號。",
     "No review sequence is active for this Gate.": "此階段門沒有作用中的評審順序。",
     "No role assignment": "無角色指派",
+    "No successful write was confirmed for this command.": "未確認此命令有任何成功寫入。",
     "No system is editable": "所有系統均不可編輯",
     "No team members are assigned to this project.": "此專案尚未指派團隊成員。",
     "No Team, responsibility, or plan data was displayed. Use the reference ID for support.": "未顯示任何團隊、職責或計畫資料。請使用參考識別碼聯絡支援人員。",
@@ -3355,6 +3361,7 @@ export const catalogs = {
     "The work policy does not define this work item kind.": "工作策略未定義此工作項目類別。",
     "The work policy snapshot hash does not match its contents.": "工作策略快照雜湊與其內容不相符。",
     "The worklist query failed. No data was changed. Change a filter or retry.": "工作清單查詢失敗。未變更任何資料。請變更篩選條件或重試。",
+    "The write status is unknown because the command result could not be confirmed. Verify the current Gate review state before preparing another command.": "由於無法確認命令結果，寫入狀態未知。準備其他命令前，請核對目前的階段門評審狀態。",
     "This blocks G5 and you own the corrective action.": "此項阻斷 G5，且您負責矯正措施。",
     "This condition does not accept a priority.": "此條件不接受優先順序。",
     "This event proves an exact Gate input snapshot hash change. It does not claim which source-object fields changed.": "此事件證明確切的階段門輸入快照雜湊已變更，但不宣稱哪些來源物件欄位已變更。",
@@ -3477,6 +3484,7 @@ export const catalogs = {
     "Work Policy Version must be greater than zero.": "工作策略版本必須大於零。",
     "Worklist": "工作清單",
     "Worklist filters and column controls are focused.": "工作清單篩選器和欄控制項已取得焦點。",
+    "Write confirmation": "寫入確認",
     "Yes": "是",
     "Yes, measurements were replaced": "是，測量結果已替換",
     "Yield": "良率",

@@ -31,7 +31,11 @@ class NPIGateReviewEvent(Document):
         self._deny_update()
 
     def on_trash(self) -> None:
-        deny_gate_review_history_delete()
+        deny_gate_review_history_delete(
+            self,
+            target_global_id=self.global_id,
+            target_version=1,
+        )
 
     def before_validate(self) -> None:
         self._normalize()
@@ -188,7 +192,11 @@ class NPIGateReviewEvent(Document):
                     _("Review Event Payload contains an invalid reopen detail."),
                     frappe.ValidationError,
                 )
-            required_text(detail["reason"], _("Reopen Reason"))
+            required_text(
+                detail["reason"],
+                _("Reopen Reason"),
+                maximum=4000,
+            )
             ensure_uuid(
                 detail["priorDecisionSnapshotGlobalId"],
                 _("Prior Decision Snapshot Global ID"),

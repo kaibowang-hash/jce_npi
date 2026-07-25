@@ -12,7 +12,10 @@ import {
   NpiTransportError,
   type ProblemDetails,
 } from "../../src/api/http";
-import type { GateReviewViewModel } from "../../src/domain/view-models";
+import type {
+  GateReviewDecisionBlockedReasonCode,
+  GateReviewViewModel,
+} from "../../src/domain/view-models";
 import { I18nProvider, type Locale, useI18n } from "../../src/i18n/runtime";
 import GateEvidencePage, {
   GATE_REVIEW_RECEIPT_STORAGE_KEY,
@@ -31,6 +34,18 @@ import {
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "c".repeat(32);
+const decisionBlockedReasonCases = [
+  ["REVIEWS_INCOMPLETE", "Every selected review must approve this outcome."],
+  ["FILE_EVIDENCE_UNSAFE", "File evidence is not safe and current."],
+  ["GATE_BLOCKED", "Resolve every blocking item before this outcome."],
+  ["REQUIRED_P0_EVIDENCE_MISSING", "Required P0 evidence is missing."],
+  ["REQUIRED_EVIDENCE_MISSING", "Required evidence is missing."],
+  ["GATE_INPUT_CHANGED", "The Gate input changed."],
+  ["APPROVED_EXCEPTION_REQUIRED", "A current approved exception is required."],
+] as const satisfies readonly (readonly [
+  GateReviewDecisionBlockedReasonCode,
+  string,
+])[];
 
 function sessionBootstrap(
   userId = "reviewer@example.invalid",
@@ -348,6 +363,32 @@ describe("live Gate Review Room", () => {
       ),
     ).toBeVisible();
   });
+
+  it.each(decisionBlockedReasonCases)(
+    "renders the controlled decision-readiness reason %s",
+    async (code, expected) => {
+      const fixture = gateReviewFixture();
+      const view: GateReviewViewModel = {
+        ...fixture,
+        decisionReadiness: {
+          allowedOutcomes: [],
+          blockedReasons: (["pass", "conditional_pass", "reject"] as const).map(
+            (outcome) => ({ code, outcome }),
+          ),
+        },
+      };
+      renderPage(resolvedDataSource(view));
+
+      const heading = await screen.findByRole("heading", {
+        name: "Gate decision readiness",
+      });
+      const readiness = heading.closest("section");
+      if (!readiness) {
+        throw new Error("The Gate decision readiness section is missing.");
+      }
+      expect(within(readiness).getAllByText(expected)).toHaveLength(3);
+    },
+  );
 
   it("shows sequential wait and read-only states without inferring authority", async () => {
     const fixture = gateReviewFixture();
@@ -899,7 +940,19 @@ describe("live Gate Review Room", () => {
         name: "Submit review",
       }),
     );
-    expect(await screen.findByText("Retryable failure")).toBeVisible();
+    const failureAlert = await screen.findByRole("alert", {
+      name: "Gate review command failure",
+    });
+    expect(within(failureAlert).getByText("Retryable failure")).toBeVisible();
+    expect(within(failureAlert).getByText("Failed step")).toBeVisible();
+    expect(within(failureAlert).getByText("Submit review")).toBeVisible();
+    expect(within(failureAlert).getByText("Write confirmation")).toBeVisible();
+    expect(
+      within(failureAlert).getByText(
+        "No successful write was confirmed for this command.",
+      ),
+    ).toBeVisible();
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
     expect(screen.queryByText("Server confirmed")).toBeNull();
     const firstContext = submitReview.mock.calls[0]?.[4];
 
@@ -912,6 +965,63 @@ describe("live Gate Review Room", () => {
     );
     expect(await screen.findByText("Server confirmed")).toBeVisible();
   });
+
+  it.each([
+    [
+      "invalid response",
+      new NpiTransportError(
+        "invalid_response",
+        "request-invalid-command-response",
+        "request",
+      ),
+      "Retryable failure",
+    ],
+    [
+      "unexpected final failure",
+      new Error("Synthetic unexpected command failure."),
+      "Final failure",
+    ],
+  ] as const)(
+    "keeps the receipt and reports an unknown write status for %s",
+    async (_caseName, error, failureLabel) => {
+      const fixture = gateReviewFixture();
+      const submitReview = vi
+        .fn<GateReviewDataSource["submitReview"]>()
+        .mockRejectedValue(error);
+      renderPage(resolvedDataSource(fixture, { submitReview }));
+      const user = userEvent.setup();
+
+      await user.type(
+        await screen.findByRole("textbox", {
+          name: "Complete review opinion",
+        }),
+        "The exact input is acceptable.",
+      );
+      await user.click(
+        screen.getByRole("button", {
+          name: "Submit review",
+        }),
+      );
+
+      const failureAlert = await screen.findByRole("alert", {
+        name: "Gate review command failure",
+      });
+      expect(within(failureAlert).getByText(failureLabel)).toBeVisible();
+      expect(within(failureAlert).getByText("Failed step")).toBeVisible();
+      expect(within(failureAlert).getByText("Submit review")).toBeVisible();
+      expect(
+        within(failureAlert).getByText(
+          "The write status is unknown because the command result could not be confirmed. Verify the current Gate review state before preparing another command.",
+        ),
+      ).toBeVisible();
+      expect(
+        globalThis.sessionStorage.getItem(GATE_REVIEW_RECEIPT_STORAGE_KEY),
+      ).not.toBeNull();
+      expect(screen.getAllByRole("alert")).toHaveLength(1);
+
+      globalThis.sessionStorage.removeItem(GATE_REVIEW_RECEIPT_STORAGE_KEY);
+    },
+  );
 
   it("keeps one in-flight command through a language refresh and protects ordinary unload", async () => {
     const fixture = gateReviewFixture();
@@ -1008,6 +1118,89 @@ describe("live Gate Review Room", () => {
     const releasedUnload = new Event("beforeunload", { cancelable: true });
     expect(globalThis.dispatchEvent(releasedUnload)).toBe(true);
     expect(releasedUnload.defaultPrevented).toBe(false);
+  });
+
+  it("retranslates a failed command from its stable action code after a language refresh", async () => {
+    const fixture = gateReviewFixture();
+    const languageResponse = deferred<Response>();
+    const pending = deferred<GateReviewViewModel>();
+    const submitReview = vi.fn<GateReviewDataSource["submitReview"]>(
+      () => pending.promise,
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(sessionBootstrap()), { status: 200 }),
+        )
+        .mockReturnValueOnce(languageResponse.promise),
+    );
+    render(
+      <I18nProvider>
+        <LocaleSwitchControl locale="zh" />
+        <GateEvidencePage
+          dataSource={resolvedDataSource(fixture, { submitReview })}
+          gateGlobalId={fixture.gate.globalId}
+          navigate={vi.fn()}
+          projectGlobalId={fixture.project.globalId}
+        />
+      </I18nProvider>,
+    );
+    const user = userEvent.setup();
+
+    await user.type(
+      await screen.findByRole("textbox", {
+        name: "Complete review opinion",
+      }),
+      "The exact input remains acceptable during localization.",
+    );
+    await user.click(
+      screen.getByRole("button", {
+        name: "Submit review",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Switch test locale" }),
+    );
+    await act(async () => {
+      languageResponse.resolve(
+        new Response(
+          JSON.stringify(
+            sessionBootstrap("reviewer@example.invalid", "zh", "d".repeat(32)),
+          ),
+          { status: 200 },
+        ),
+      );
+      await languageResponse.promise;
+    });
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe("zh");
+    });
+
+    await act(async () => {
+      pending.reject(
+        new NpiTransportError(
+          "network",
+          "request-command-language-refresh",
+          "request",
+        ),
+      );
+      await pending.promise.catch(() => undefined);
+    });
+    const failureAlert = await screen.findByRole("alert", {
+      name: "阶段门评审命令失败",
+    });
+    expect(within(failureAlert).getByText("失败步骤")).toBeVisible();
+    expect(within(failureAlert).getByText("提交评审")).toBeVisible();
+    expect(within(failureAlert).getByText("写入确认")).toBeVisible();
+    expect(
+      within(failureAlert).getByText(
+        "由于无法确认命令结果，写入状态未知。准备其他命令前，请核对当前阶段门评审状态。",
+      ),
+    ).toBeVisible();
+    expect(within(failureAlert).queryByText("Submit review")).toBeNull();
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
   });
 
   it("reconciles a completed persisted receipt before loading authoritative workspace", async () => {
@@ -1383,7 +1576,18 @@ describe("live Gate Review Room", () => {
         name: "Submit review",
       }),
     );
-    expect(await screen.findByText("Version conflict")).toBeVisible();
+    const failureAlert = await screen.findByRole("alert", {
+      name: "Gate review command failure",
+    });
+    expect(within(failureAlert).getByText("Version conflict")).toBeVisible();
+    expect(within(failureAlert).getByText("Failed step")).toBeVisible();
+    expect(within(failureAlert).getByText("Submit review")).toBeVisible();
+    expect(
+      within(failureAlert).getByText(
+        "No successful write was confirmed for this command.",
+      ),
+    ).toBeVisible();
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
     expect(screen.queryByRole("button", { name: "Retry command" })).toBeNull();
     await user.click(
       screen.getByRole("button", { name: "Reload Gate review" }),

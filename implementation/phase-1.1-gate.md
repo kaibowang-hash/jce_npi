@@ -108,3 +108,41 @@ source repair, then create a fresh Codespace. Named local Compose volumes are
 unchanged unless a user separately runs the guarded reset command. No production
 or ERPNext data is touched. If rollback would reintroduce a known build failure,
 use a forward fix instead.
+
+## Node 24 security revalidation addendum — 2026-07-25
+
+ADR-011 supersedes the historical Node 18/npm 10 runtime lines above with the
+supported security baseline Node `v24.18.0` and bundled npm `11.16.0`. The
+base-image digest, locked Node and Docker Feature artifacts, Python, Docker,
+Bench, uv, Vite and Frappe selections remain governed by the same Phase 1.1
+controls. The historical evidence is retained as evidence of the original
+repair; it is not the current toolchain.
+
+An actual fresh privileged devcontainer target was created from the pinned
+definition at `2026-07-25T07:39:09Z`. Its retained disposable container identity
+is `ec87589840647a343123667c386f0f9ff5a9e34fb14e7f0af158c5d766061cb4`
+with label `npi.fresh-target=p4-04-node24`. In that target:
+
+- the global Vite/esbuild installation was removed and the repaired bootstrap
+  proved the missing-state path with npm's strict script policy, exact
+  `esbuild@0.21.5`, and only the exact optional `fsevents@2.3.3` hook;
+- a second bootstrap proved idempotence without reinstalling the tools;
+- the formal dynamic environment gate passed; and
+- the target was stopped, not deleted, after verification.
+
+The target was restarted and revalidated again against the final working tree:
+
+| Command | Result | Evidence |
+|---|---|---|
+| `bash scripts/bootstrap-dev.sh` | **PASS** | Idempotent lifecycle; Docker readiness and the complete dynamic verifier passed |
+| `make verify-dev-environment` | **PASS** | Node `v24.18.0`; npm `11.16.0`; Yarn `1.22.22`; Python `3.11.13`; Docker client/server `28.3.3-1`; Compose `2.40.3`; Bench `5.31.0`; uv `0.11.30`; Vite `5.4.14`; esbuild `0.21.5`; Frappe `version-15` at `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` |
+
+The official Linux x64 Node archive used for the independent application Gate
+was also checked against Node's published `SHASUMS256.txt`; both reported
+`55aa7153f9d88f28d765fcdad5ae6945b5c0f98a36881703817e4c450fa76742`.
+Application clean-install, audit and browser evidence belongs to the P4-04
+release record rather than this environment-only addendum.
+
+Rollback must not restore Node 18 or another end-of-life or known-vulnerable
+runtime. Any replacement must select a supported LTS line and repeat the same
+registry, missing-state bootstrap, idempotence and fresh-target dynamic gates.

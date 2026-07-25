@@ -696,6 +696,38 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             expected_input_hash=cycle.input_hash,
         )
 
+    def _conditional_projection_decision(self):
+        cycle = self._request_projection_exception(
+            self._approve_projection_review(self._projection_cycle())
+        )
+        cycle = cycle.decide_exception(
+            exception_global_id=EXCEPTION_ID,
+            actor_user_id=EXCEPTION_APPROVER,
+            outcome=self.domain.ExceptionOutcome.APPROVED,
+            opinion="Approved with the exact closure action.",
+            occurred_at=NOW + timedelta(minutes=30),
+            expected_version=cycle.version,
+            expected_input_hash=cycle.input_hash,
+            expected_exception_version=1,
+        )
+        action = self.store.documents["NPI Domain Work Item"][str(UUID(int=106))]
+        return (
+            cycle.decide(
+                actor_user_id=ACTOR,
+                outcome=self.domain.DecisionOutcome.CONDITIONAL_PASS,
+                occurred_at=NOW + timedelta(hours=1),
+                expected_version=cycle.version,
+                expected_input_hash=cycle.input_hash,
+                current_input=cycle.input_snapshot,
+                current_closure_action_refs={
+                    EXCEPTION_ID: self.repository_module._closure_action_reference(
+                        action
+                    )
+                },
+            ),
+            action,
+        )
+
     def _closure_action(
         self,
         identity: UUID = UUID(int=106),
@@ -1375,7 +1407,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         self.assertEqual(deleted_job["source_kind"], "file_revision")
         self.assertEqual(deleted_job["source_global_id"], str(SOURCE_ID))
 
-    def test_work_item_hook_queues_only_active_blocker_inserts(self) -> None:
+    def test_work_item_hook_queues_active_blockers_and_npi_actions(self) -> None:
         self.frappe.flags.npi_project_work_command_write = True
         base = {
             "doctype": "NPI Domain Work Item",
@@ -1388,11 +1420,23 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             "state_terminal": 0,
             "state_key": "open",
             "optimistic_version": 1,
+            "kind": "issue",
         }
         cases = (
             ("active", {}, 1),
             ("nonblocking", {"blocking": 0}, 0),
             ("terminal", {"state_terminal": 1}, 0),
+            ("nonblocking_action", {"blocking": 0, "kind": "action"}, 1),
+            (
+                "terminal_action",
+                {"blocking": 0, "kind": "action", "state_terminal": 1},
+                1,
+            ),
+            (
+                "external_action",
+                {"blocking": 0, "kind": "action", "source_system": "ERP_NEXT"},
+                0,
+            ),
         )
         for label, changes, expected_count in cases:
             with self.subTest(label=label):
@@ -1467,13 +1511,14 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         self.store.users[ACTOR].enabled = 0
         captured: list[tuple[object, object, object, object]] = []
         repository_type = self.repository_module.FrappeGateReviewRepository
-        original_refresh = repository_type.refresh_gate_for_dependency_change_locked
+        original_refresh = repository_type.refresh_gate_for_work_item_dependency_locked
 
         def refresh(
             repository,
             project,
             gate,
             *,
+            work_item_global_id,
             reason,
             occurred_at=None,
             initiated_by_user_id=None,
@@ -1484,12 +1529,16 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                     repository,
                     project,
                     gate,
-                    (reason, initiated_by_user_id),
+                    (
+                        work_item_global_id,
+                        reason,
+                        initiated_by_user_id,
+                    ),
                 )
             )
             return True
 
-        repository_type.refresh_gate_for_dependency_change_locked = refresh
+        repository_type.refresh_gate_for_work_item_dependency_locked = refresh
         worker_values = {
             key: value
             for key, value in self.enqueued[0][1].items()
@@ -1509,7 +1558,11 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             self.assertTrue(repository._dependency_system)
             self.assertEqual(
                 captured[0][3],
-                ("GATE_WORK_ITEM_CHANGED", ACTOR),
+                (
+                    RESOLVED_ACTION_ID,
+                    "GATE_WORK_ITEM_CHANGED",
+                    ACTOR,
+                ),
             )
             self.assertFalse(
                 self.repository_module.evaluate_gate_review_work_item_dependency(
@@ -1518,7 +1571,282 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             )
             self.assertEqual(len(captured), 1)
         finally:
-            repository_type.refresh_gate_for_dependency_change_locked = original_refresh
+            repository_type.refresh_gate_for_work_item_dependency_locked = (
+                original_refresh
+            )
+
+    def test_closure_action_drift_covers_exact_version_terminal_and_scope(self) -> None:
+        decided, action = self._conditional_projection_decision()
+        repository = self._repository(dependency_system=True)
+        action_id = UUID(str(action.global_id))
+
+        self.assertFalse(
+            repository._closure_action_reference_drifted_locked(
+                self.project,
+                self.gate,
+                decided,
+                action_id,
+            )
+        )
+        original = {
+            fieldname: action.get(fieldname)
+            for fieldname in (
+                "detail",
+                "optimistic_version",
+                "state_terminal",
+                "state_key",
+                "stage_global_id",
+                "project_global_id",
+            )
+        }
+        cases = (
+            ("version", {"optimistic_version": 2}),
+            (
+                "content",
+                {
+                    "detail": "Changed exact closure action detail.",
+                    "optimistic_version": 2,
+                },
+            ),
+            (
+                "terminal",
+                {
+                    "state_terminal": 1,
+                    "state_key": "resolved",
+                    "optimistic_version": 2,
+                },
+            ),
+            (
+                "moved_gate",
+                {
+                    "stage_global_id": str(OTHER_GATE_ID),
+                    "optimistic_version": 2,
+                },
+            ),
+            (
+                "moved_project",
+                {
+                    "project_global_id": str(OTHER_PROJECT_ID),
+                    "optimistic_version": 2,
+                },
+            ),
+        )
+        for label, changes in cases:
+            with self.subTest(label=label):
+                action.update(original)
+                action.update(changes)
+                self.assertTrue(
+                    repository._closure_action_reference_drifted_locked(
+                        self.project,
+                        self.gate,
+                        decided,
+                        action_id,
+                    )
+                )
+
+        action.update(original)
+        removed = self.store.documents["NPI Domain Work Item"].pop(str(action_id))
+        try:
+            self.assertTrue(
+                repository._closure_action_reference_drifted_locked(
+                    self.project,
+                    self.gate,
+                    decided,
+                    action_id,
+                )
+            )
+        finally:
+            self.store.documents["NPI Domain Work Item"][str(action_id)] = removed
+
+    def test_closure_action_job_invalidates_once_and_requires_review(self) -> None:
+        domain = self.domain
+        decided, action = self._conditional_projection_decision()
+        assert decided.decision is not None
+        self.cycle_document.update(
+            state="decided",
+            optimistic_version=decided.version,
+        )
+        decision_document = self.store.add(
+            "NPI Gate Decision Snapshot",
+            decided.decision.global_id,
+            global_id=str(decided.decision.global_id),
+            cycle_global_id=str(decided.global_id),
+            snapshot_hash=decided.decision.snapshot_hash,
+            outcome=decided.decision.outcome.value,
+        )
+        self.gate.update(
+            review_state="decided",
+            current_review_cycle=str(decided.global_id),
+            current_review_cycle_global_id=str(decided.global_id),
+            latest_decision_snapshot=str(decided.decision.global_id),
+            latest_decision_snapshot_global_id=str(decided.decision.global_id),
+            latest_decision_snapshot_hash=decided.decision.snapshot_hash,
+            latest_decision_outcome=decided.decision.outcome.value,
+            review_input_version=1,
+            optimistic_version=5,
+        )
+        action.detail = "Changed exact closure action detail."
+        action.optimistic_version = 2
+        changed_input = replace(
+            decided.input_snapshot,
+            gate_version=2,
+            dependencies=(
+                replace(
+                    decided.input_snapshot.dependencies[0],
+                    version=2,
+                    snapshot_hash="f" * 64,
+                ),
+            ),
+        )
+        cycles = {decided.global_id: decided}
+        repository_type = self.repository_module.FrappeGateReviewRepository
+        original_hydrate = repository_type._hydrate_cycle
+        original_build = repository_type._build_current_input
+        original_audit = repository_type._audit
+        repository_type._hydrate_cycle = (
+            lambda _repository, document, **_values: cycles[
+                UUID(str(document.global_id))
+            ]
+        )
+        repository_type._build_current_input = (
+            lambda _repository, _project, _gate: changed_input
+        )
+        repository_type._audit = lambda *_args, **_kwargs: None
+        worker_values = {
+            "work_item_id": str(action.global_id),
+            "tenant_id": TENANT_ID,
+            "project_id": str(PROJECT_ID),
+            "gate_id": str(GATE_ID),
+            "observed_version": 2,
+            "initiated_by_user_id": ACTOR,
+        }
+        try:
+            self.assertTrue(
+                self.repository_module.evaluate_gate_review_work_item_dependency(
+                    **worker_values
+                )
+            )
+            successor_id = uuid5(GATE_ID, "review-cycle:2")
+            cycles[successor_id] = decided.invalidate_for_dependency_change(
+                actor_user_id=(
+                    self.repository_module.GATE_REVIEW_DEPENDENCY_SYSTEM_ACTOR
+                ),
+                initiated_by_user_id=ACTOR,
+                reason="GATE_WORK_ITEM_CHANGED",
+                occurred_at=NOW,
+                current_input=changed_input,
+                current_bindings=decided.bindings,
+                gate_current_cycle_global_id=decided.global_id,
+                expected_version=decided.version,
+                expected_input_hash=decided.input_hash,
+            ).current_cycle
+
+            self.assertEqual(self.gate.review_input_version, 2)
+            self.assertEqual(self.gate.optimistic_version, 6)
+            self.assertEqual(self.gate.review_state, "requires_review")
+            self.assertEqual(
+                self.gate.current_review_cycle_global_id,
+                str(successor_id),
+            )
+            self.assertEqual(
+                self.gate.latest_decision_snapshot_global_id,
+                str(decided.decision.global_id),
+            )
+            self.assertIs(
+                self.store.documents["NPI Gate Decision Snapshot"][
+                    str(decided.decision.global_id)
+                ],
+                decision_document,
+            )
+            self.assertEqual(
+                len(self.store.documents["NPI Gate Review Event"]),
+                1,
+            )
+            self.assertEqual(
+                len(self.store.documents["NPI Gate Review Cycle"]),
+                2,
+            )
+            self.assertFalse(
+                self.repository_module.evaluate_gate_review_work_item_dependency(
+                    **worker_values
+                )
+            )
+            self.assertEqual(self.gate.review_input_version, 2)
+            self.assertEqual(self.gate.optimistic_version, 6)
+            self.assertEqual(
+                len(self.store.documents["NPI Gate Review Event"]),
+                1,
+            )
+            self.assertEqual(
+                len(self.store.documents["NPI Gate Review Cycle"]),
+                2,
+            )
+        finally:
+            repository_type._hydrate_cycle = original_hydrate
+            repository_type._build_current_input = original_build
+            repository_type._audit = original_audit
+
+    def test_closure_action_job_exposes_disabled_authority_without_substitution(
+        self,
+    ) -> None:
+        domain = self.domain
+        decided, action = self._conditional_projection_decision()
+        action.detail = "Changed exact closure action detail."
+        action.optimistic_version = 2
+        self.cycle_document.update(
+            state="decided",
+            optimistic_version=decided.version,
+        )
+        self.gate.update(
+            review_state="decided",
+            current_review_cycle=str(decided.global_id),
+            current_review_cycle_global_id=str(decided.global_id),
+            review_input_version=1,
+        )
+        self.store.users[STEP_REVIEWER].enabled = 0
+        repository_type = self.repository_module.FrappeGateReviewRepository
+        original_hydrate = repository_type._hydrate_cycle
+        repository_type._hydrate_cycle = (
+            lambda _repository, _document, **_values: decided
+        )
+        original_bindings = decided.bindings
+        try:
+            with self.assertRaises(self.errors.PermissionDenied):
+                self.repository_module.evaluate_gate_review_work_item_dependency(
+                    work_item_id=str(action.global_id),
+                    tenant_id=TENANT_ID,
+                    project_id=str(PROJECT_ID),
+                    gate_id=str(GATE_ID),
+                    observed_version=2,
+                    initiated_by_user_id=ACTOR,
+                )
+        finally:
+            repository_type._hydrate_cycle = original_hydrate
+
+        self.assertEqual(decided.bindings, original_bindings)
+        self.assertEqual(self.gate.review_input_version, 1)
+        self.assertEqual(self.gate.review_state, "decided")
+        self.assertEqual(
+            len(self.store.documents["NPI Gate Review Cycle"]),
+            1,
+        )
+        self.assertEqual(
+            len(self.store.documents.get("NPI Gate Review Event", {})),
+            0,
+        )
+        self.assertFalse(
+            domain.downstream_decision_is_current(
+                decided,
+                gate_current_cycle_global_id=decided.global_id,
+                current_input=decided.input_snapshot,
+                at=NOW + timedelta(hours=2),
+                current_closure_action_refs={
+                    EXCEPTION_ID: self.repository_module._closure_action_reference(
+                        action
+                    )
+                },
+            )
+        )
 
     def test_concurrent_blocker_resolutions_refresh_once_without_an_impact_action(
         self,

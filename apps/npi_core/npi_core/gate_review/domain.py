@@ -49,6 +49,9 @@ def _text(value: object, path: str, maximum: int = 2000) -> str:
     return value.strip()
 
 
+_MAX_PUBLIC_LONG_TEXT_LENGTH = 4000
+
+
 def _key(value: object, path: str) -> str:
     result = _text(value, path, 64)
     if _KEY.fullmatch(result) is None:
@@ -775,7 +778,11 @@ class ReviewRecord:
             self, "actor_user_id", _text(self.actor_user_id, "actorUserId", 140)
         )
         _enum(self.outcome, ReviewOutcome, "outcome")
-        object.__setattr__(self, "opinion", _text(self.opinion, "opinion"))
+        object.__setattr__(
+            self,
+            "opinion",
+            _text(self.opinion, "opinion", _MAX_PUBLIC_LONG_TEXT_LENGTH),
+        )
         object.__setattr__(self, "occurred_at", _aware(self.occurred_at, "occurredAt"))
         _hash(self.reviewed_input_hash, "reviewedInputHash")
         _positive_int(self.policy_version, "policyVersion")
@@ -1057,8 +1064,16 @@ class ReviewException:
                 "requesterUserId",
                 _("The requester and exception approver must be different users."),
             )
-        object.__setattr__(self, "reason", _text(self.reason, "reason"))
-        object.__setattr__(self, "risk", _text(self.risk, "risk"))
+        object.__setattr__(
+            self,
+            "reason",
+            _text(self.reason, "reason", _MAX_PUBLIC_LONG_TEXT_LENGTH),
+        )
+        object.__setattr__(
+            self,
+            "risk",
+            _text(self.risk, "risk", _MAX_PUBLIC_LONG_TEXT_LENGTH),
+        )
         if type(self.closure_action_ref) is not ClosureActionReference:
             raise _validation(
                 "closureActionRef",
@@ -1126,7 +1141,11 @@ class ReviewException:
             object.__setattr__(
                 self,
                 "decision_opinion",
-                _text(self.decision_opinion, "decisionOpinion"),
+                _text(
+                    self.decision_opinion,
+                    "decisionOpinion",
+                    _MAX_PUBLIC_LONG_TEXT_LENGTH,
+                ),
             )
             object.__setattr__(self, "decided_at", _aware(self.decided_at, "decidedAt"))
             if self.decision_actor_user_id != self.approval_user_id:
@@ -1246,7 +1265,11 @@ class ReviewException:
             ),
             outcome=selected_outcome,
             decision_actor_user_id=actor,
-            decision_opinion=_text(opinion, "opinion"),
+            decision_opinion=_text(
+                opinion,
+                "opinion",
+                _MAX_PUBLIC_LONG_TEXT_LENGTH,
+            ),
             decided_at=decided_at,
         )
 
@@ -1363,7 +1386,19 @@ class ReviewEvent:
                 "initiated_by_user_id",
                 _text(self.initiated_by_user_id, "initiatedByUserId", 140),
             )
-        object.__setattr__(self, "reason", _text(self.reason, "reason"))
+        object.__setattr__(
+            self,
+            "reason",
+            (
+                _text(
+                    self.reason,
+                    "reason",
+                    _MAX_PUBLIC_LONG_TEXT_LENGTH,
+                )
+                if self.kind is ReviewEventKind.REOPENED
+                else _text(self.reason, "reason")
+            ),
+        )
         object.__setattr__(self, "occurred_at", _aware(self.occurred_at, "occurredAt"))
         _hash(self.event_hash, "eventHash")
         if self.event_hash != _canonical_hash(self.canonical_payload()):
@@ -1904,7 +1939,7 @@ class ReviewCycle:
             step.key,
             actor,
             selected_outcome,
-            _text(opinion, "opinion"),
+            _text(opinion, "opinion", _MAX_PUBLIC_LONG_TEXT_LENGTH),
             _aware(occurred_at, "occurredAt"),
             self.input_hash,
             self.policy.policy_version,
@@ -2248,7 +2283,7 @@ class ReviewCycle:
             kind=ReviewEventKind.REOPENED,
             trigger=CycleTrigger.MANUAL_REOPEN,
             actor_user_id=actor,
-            reason=_text(reason, "reason"),
+            reason=_text(reason, "reason", _MAX_PUBLIC_LONG_TEXT_LENGTH),
             occurred_at=_aware(occurred_at, "occurredAt"),
             current_input=current_input,
             current_bindings=current_bindings,

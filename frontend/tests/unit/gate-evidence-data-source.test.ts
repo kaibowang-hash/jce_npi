@@ -7,11 +7,7 @@ import {
   LiveGateEvidenceDataSource,
 } from "../../src/api/gate-evidence-data-source";
 import { NpiHttpClient, NpiTransportError } from "../../src/api/http";
-import type {
-  GateEvidenceScanState,
-  GateEvidenceViewModel,
-  GateRequirementEvidenceState,
-} from "../../src/domain/view-models";
+import type { GateEvidenceViewModel } from "../../src/domain/view-models";
 import { gateEvidenceFixture as legacyGateEvidenceFixture } from "../support/gate-evidence-fixture";
 
 const requirementGlobalIds = [
@@ -21,8 +17,7 @@ const requirementGlobalIds = [
 ] as const;
 
 function gateEvidenceFixture(): GateEvidenceViewModel {
-  const fixture =
-    legacyGateEvidenceFixture() as unknown as GateEvidenceViewModel;
+  const fixture = legacyGateEvidenceFixture();
   return {
     ...fixture,
     requirements: fixture.requirements.map((requirement, index) => ({
@@ -283,13 +278,13 @@ describe("Gate evidence response validation", () => {
           index === 1
             ? {
                 ...candidate,
-                evidenceState: evidenceState as GateRequirementEvidenceState,
+                evidenceState,
                 evidence: [
                   {
                     ...reference,
                     file: {
                       ...file,
-                      scanState: scanState as GateEvidenceScanState,
+                      scanState,
                     },
                   },
                 ],

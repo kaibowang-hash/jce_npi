@@ -16,6 +16,8 @@ from npi_core.project.frappe_validation import (
     require_project_command_write,
 )
 
+GATE_REVIEW_DEPENDENCY_INPUT_FLAG = "npi_gate_review_dependency_input_write"
+
 
 class NPIGateShell(Document):
     """Ordered Gate shell created atomically with an Engineering Project draft."""
@@ -63,7 +65,10 @@ class NPIGateShell(Document):
         require_project_command_write()
 
     def before_save(self) -> None:
-        if not self._is_gate_review_command():
+        if (
+            not self._is_gate_review_command()
+            and not self._is_gate_review_dependency_input_command()
+        ):
             require_project_command_write()
         self._require_authorized_update()
 
@@ -72,6 +77,7 @@ class NPIGateShell(Document):
             not self.is_new()
             and not self._is_gate_evidence_command()
             and not self._is_gate_review_command()
+            and not self._is_gate_review_dependency_input_command()
         ):
             frappe.throw(
                 _(
@@ -100,7 +106,11 @@ class NPIGateShell(Document):
                 self.set(fieldname, None)
         else:
             previous = self.get_doc_before_save()
-            if (
+            if previous is not None and self._is_gate_review_dependency_input_command():
+                self.review_input_version = (
+                    _persisted_review_input_version(previous) + 1
+                )
+            elif (
                 previous is not None
                 and self._is_gate_evidence_command()
                 and not self._is_gate_review_command()
@@ -219,7 +229,18 @@ class NPIGateShell(Document):
                     frappe.ValidationError,
                 )
             previous_input_version = _persisted_review_input_version(previous)
-            if self._is_gate_review_command():
+            if self._is_gate_review_dependency_input_command():
+                if int(self.review_input_version) != previous_input_version + 1:
+                    frappe.throw(
+                        _("Review Input Version must advance by one."),
+                        frappe.ValidationError,
+                    )
+                assert_immutable_fields(self, previous, self._FROZEN_FIELDS)
+                if self._is_gate_review_command():
+                    self._validate_review_transition(previous)
+                else:
+                    self._assert_review_fields_unchanged(previous)
+            elif self._is_gate_review_command():
                 if int(self.review_input_version) != previous_input_version:
                     frappe.throw(
                         _("A protected field cannot be changed."),
@@ -437,6 +458,16 @@ class NPIGateShell(Document):
     @staticmethod
     def _is_gate_evidence_command() -> bool:
         return bool(getattr(frappe.flags, GATE_EVIDENCE_COMMAND_FLAG, False))
+
+    @staticmethod
+    def _is_gate_review_dependency_input_command() -> bool:
+        return bool(
+            getattr(
+                frappe.flags,
+                GATE_REVIEW_DEPENDENCY_INPUT_FLAG,
+                False,
+            )
+        )
 
     def _validate_frozen_requirements(self) -> None:
         frozen = int(self.requirements_frozen or 0)

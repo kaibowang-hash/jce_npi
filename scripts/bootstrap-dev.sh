@@ -31,14 +31,23 @@ fi
 
 installed_vite="$(vite --version 2>/dev/null || true)"
 installed_vite_version="${installed_vite%% *}"
-if [[ "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ]]; then
+installed_esbuild="$(esbuild --version 2>/dev/null || true)"
+if [[
+  "${installed_vite_version}" != "vite/${VITE_EXPECTED_VERSION}" ||
+  "${installed_esbuild}" != "${VITE_ESBUILD_EXPECTED_VERSION}"
+]]; then
   npm_command="$(command -v npm)"
   npm_prefix="$("${npm_command}" prefix --global)"
   if [[ ! -d "${npm_prefix}" || ! -w "${npm_prefix}" ]]; then
     echo "npm global prefix is not writable by the remote user: ${npm_prefix}" >&2
     exit 1
   fi
-  "${npm_command}" install --global "vite@${VITE_EXPECTED_VERSION}"
+  "${npm_command}" install \
+    --global \
+    --strict-allow-scripts \
+    "--allow-scripts=esbuild@${VITE_ESBUILD_EXPECTED_VERSION},fsevents@${VITE_FSEVENTS_EXPECTED_VERSION}" \
+    "vite@${VITE_EXPECTED_VERSION}" \
+    "esbuild@${VITE_ESBUILD_EXPECTED_VERSION}"
 fi
 
 uv_command="/opt/frappe-bench/bin/uv"

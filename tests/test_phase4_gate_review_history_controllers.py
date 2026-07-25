@@ -93,6 +93,59 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         frappe.ValidationError = self.ValidationError
         frappe.PermissionError = self.PermissionError
         frappe.flags = types.SimpleNamespace()
+        frappe.session = types.SimpleNamespace(user="Administrator")
+        self.request_headers = {"X-Trace-ID": "trace-delete-attempt-001"}
+        frappe.get_request_header = lambda name: self.request_headers.get(name)
+        self.audit_inserts: list[dict[str, Any]] = []
+        self.audit_append_flags: list[bool] = []
+        self.transaction_events: list[str] = []
+
+        class CallbackQueue:
+            def __init__(queue_self) -> None:
+                queue_self.functions: list[Any] = []
+
+            def add(queue_self, function) -> None:
+                queue_self.functions.append(function)
+
+            def run(queue_self) -> None:
+                while queue_self.functions:
+                    function = queue_self.functions.pop(0)
+                    function()
+
+            def reset(queue_self) -> None:
+                queue_self.functions.clear()
+
+        class StubDatabase:
+            def __init__(database_self) -> None:
+                database_self.after_rollback = CallbackQueue()
+
+            def commit(database_self) -> None:
+                self.transaction_events.append("commit")
+                # Match pinned Frappe v15: commit clears rollback callbacks.
+                database_self.after_rollback.reset()
+
+            def rollback(database_self) -> None:
+                self.transaction_events.append("rollback")
+                database_self.after_rollback.run()
+
+        frappe.db = StubDatabase()
+
+        class AuditDocument:
+            def __init__(audit_self, values: dict[str, Any]) -> None:
+                audit_self.values = values
+
+            def insert(audit_self):
+                self.transaction_events.append("audit_insert")
+                self.audit_append_flags.append(
+                    bool(getattr(frappe.flags, "npi_audit_append", False))
+                )
+                self.audit_inserts.append(dict(audit_self.values))
+                return audit_self
+
+        def get_doc(values: dict[str, Any]) -> AuditDocument:
+            return AuditDocument(values)
+
+        frappe.get_doc = get_doc
 
         def throw(message: str, exception: type[Exception]) -> None:
             raise exception(message)
@@ -176,6 +229,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         input_snapshot = self.input_snapshot()
         return self.Cycle(
             {
+                "doctype": "NPI Gate Review Cycle",
+                "name": str(CYCLE_ID),
                 "global_id": str(CYCLE_ID),
                 "cycle_key": "spoofed",
                 "tenant_id": TENANT_ID,
@@ -232,6 +287,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
     def record(self) -> StubDocument:
         return self.Record(
             {
+                "doctype": "NPI Gate Review Record",
+                "name": "b686089d-f5cd-4322-810e-e5facd788fa4",
                 "global_id": "b686089d-f5cd-4322-810e-e5facd788fa4",
                 "review_key": "spoofed",
                 "tenant_id": TENANT_ID,
@@ -269,6 +326,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
     def exception(self) -> StubDocument:
         return self.Exception(
             {
+                "doctype": "NPI Gate Review Exception",
+                "name": str(EXCEPTION_ID),
                 "global_id": str(EXCEPTION_ID),
                 "exception_key": "spoofed",
                 "tenant_id": TENANT_ID,
@@ -347,6 +406,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         }
         return self.Event(
             {
+                "doctype": "NPI Gate Review Event",
+                "name": payload["globalId"],
                 "global_id": payload["globalId"],
                 "event_key": payload["eventKey"],
                 "tenant_id": TENANT_ID,
@@ -365,10 +426,58 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             }
         )
 
+    def reopen_event(self, reason: str) -> StubDocument:
+        global_id = "b4b3db38-a983-439f-87a1-25d31c980f37"
+        occurred = OCCURRED_AT.isoformat()
+        payload = {
+            "schemaVersion": 1,
+            "globalId": global_id,
+            "eventKey": "reopened:cycle-001",
+            "tenantId": TENANT_ID,
+            "projectGlobalId": str(PROJECT_ID),
+            "gateGlobalId": str(GATE_ID),
+            "cycleGlobalId": str(CYCLE_ID),
+            "successorCycleGlobalId": str(SUCCESSOR_CYCLE_ID),
+            "actionGlobalId": None,
+            "eventType": "reopened",
+            "actorUserId": "reopener@example.invalid",
+            "occurredAt": occurred,
+            "requestId": "request-reopen-001",
+            "traceId": "trace-reopen-001",
+            "detail": {
+                "reason": reason,
+                "priorDecisionSnapshotGlobalId": str(PRIOR_DECISION_ID),
+                "priorDecisionHash": "5" * 64,
+            },
+        }
+        return self.Event(
+            {
+                "doctype": "NPI Gate Review Event",
+                "name": global_id,
+                "global_id": global_id,
+                "event_key": payload["eventKey"],
+                "tenant_id": TENANT_ID,
+                "project_global_id": str(PROJECT_ID),
+                "gate_global_id": str(GATE_ID),
+                "cycle_global_id": str(CYCLE_ID),
+                "successor_cycle_global_id": str(SUCCESSOR_CYCLE_ID),
+                "action_global_id": None,
+                "event_type": "reopened",
+                "actor_user_id": "reopener@example.invalid",
+                "occurred_at": OCCURRED_AT,
+                "request_id": "request-reopen-001",
+                "trace_id": "trace-reopen-001",
+                "payload": payload,
+                "payload_hash": None,
+            }
+        )
+
     def decision(self, *, outcome: str = "pass") -> StubDocument:
         input_snapshot = self.input_snapshot()
         return self.Decision(
             {
+                "doctype": "NPI Gate Decision Snapshot",
+                "name": str(uuid5(CYCLE_ID, "decision-snapshot")),
                 "global_id": "spoofed",
                 "tenant_id": TENANT_ID,
                 "project_global_id": str(PROJECT_ID),
@@ -398,6 +507,8 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
     def idempotency(self) -> StubDocument:
         return self.Idempotency(
             {
+                "doctype": "NPI Gate Review Idempotency",
+                "name": "956409fe-12bf-487b-869b-2b38be6db1cb",
                 "record_id": "956409fe-12bf-487b-869b-2b38be6db1cb",
                 "actor": "reviewer@example.invalid",
                 "tenant_id": TENANT_ID,
@@ -436,8 +547,119 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
             with self.subTest(document=document.__class__.__name__):
                 with self.assertRaises(self.PermissionError):
                     document.before_insert()
+                queued_before = len(self.frappe.db.after_rollback.functions)
                 with self.assertRaises(self.PermissionError):
                     document.on_trash()
+                self.assertEqual(
+                    len(self.frappe.db.after_rollback.functions),
+                    queued_before + 1,
+                )
+                self.assertEqual(self.audit_inserts, [])
+                self.assertNotIn("commit", self.transaction_events)
+
+    def test_denied_delete_audit_persists_last_after_full_rollback(self) -> None:
+        from npi_core.foundation.tracing import current_trace_id
+
+        self.frappe.db.after_rollback.add(
+            lambda: self.transaction_events.append("earlier_callback")
+        )
+        token = current_trace_id.set("stale-trace-from-prior-request")
+        try:
+            with self.assertRaises(self.PermissionError):
+                self.cycle().on_trash()
+            self.assertEqual(
+                len(self.frappe.db.after_rollback.functions),
+                2,
+            )
+            self.assertEqual(self.audit_inserts, [])
+            self.assertEqual(self.transaction_events, [])
+
+            self.frappe.db.rollback()
+        finally:
+            current_trace_id.reset(token)
+
+        self.assertEqual(
+            self.transaction_events,
+            [
+                "rollback",
+                "earlier_callback",
+                "audit_insert",
+                "commit",
+            ],
+        )
+        self.assertEqual(self.audit_append_flags, [True])
+        self.assertFalse(hasattr(self.frappe.flags, "npi_audit_append"))
+        self.assertEqual(len(self.audit_inserts), 1)
+        audit = self.audit_inserts[0]
+        UUID(audit["event_id"])
+        self.assertEqual(
+            audit,
+            {
+                "doctype": "NPI Audit Event",
+                "event_id": audit["event_id"],
+                "global_id": str(CYCLE_ID),
+                "object_version": 99,
+                "actor": "Administrator",
+                "trace_id": "trace-delete-attempt-001",
+                "operation": "gate.review.history.delete_attempt",
+                "result": "denied",
+                "input_summary": {
+                    "doctype": "NPI Gate Review Cycle",
+                },
+            },
+        )
+
+    def test_delete_audit_generates_a_fresh_trace_without_a_request_header(
+        self,
+    ) -> None:
+        from npi_core.foundation.tracing import current_trace_id
+
+        self.request_headers.clear()
+        token = current_trace_id.set("stale-trace-from-prior-request")
+        try:
+            with self.assertRaises(self.PermissionError):
+                self.exception().on_trash()
+            self.frappe.db.rollback()
+        finally:
+            current_trace_id.reset(token)
+
+        trace_id = self.audit_inserts[0]["trace_id"]
+        self.assertNotEqual(trace_id, "stale-trace-from-prior-request")
+        self.assertEqual(len(trace_id), 32)
+
+    def test_delete_audit_generates_a_fresh_trace_without_a_bound_request(
+        self,
+    ) -> None:
+        from npi_core.foundation.tracing import current_trace_id
+
+        def unavailable_request_header(_name: str) -> None:
+            raise RuntimeError("object is not bound")
+
+        self.frappe.get_request_header = unavailable_request_header
+        token = current_trace_id.set("stale-trace-from-prior-request")
+        try:
+            with self.assertRaises(self.PermissionError):
+                self.record().on_trash()
+            self.frappe.db.rollback()
+        finally:
+            current_trace_id.reset(token)
+
+        trace_id = self.audit_inserts[0]["trace_id"]
+        self.assertNotEqual(trace_id, "stale-trace-from-prior-request")
+        self.assertEqual(len(trace_id), 32)
+        self.assertEqual(
+            self.audit_inserts[0]["input_summary"],
+            {"doctype": "NPI Gate Review Record"},
+        )
+
+    def test_damaged_target_is_still_denied_before_delete(self) -> None:
+        damaged = self.cycle()
+        damaged.global_id = "not-a-uuid"
+        damaged.name = "also-not-a-uuid"
+        with self.assertRaises(self.PermissionError):
+            damaged.on_trash()
+        self.assertEqual(self.frappe.db.after_rollback.functions, [])
+        self.assertEqual(self.audit_inserts, [])
 
     def test_cycle_freezes_exact_snapshots_and_allows_only_controlled_transitions(
         self,
@@ -594,6 +816,64 @@ class GateReviewHistoryControllerTest(unittest.TestCase):
         cycle.before_validate()
         with self.assertRaises(self.ValidationError):
             cycle.validate()
+
+    def test_public_long_text_controllers_accept_4000_and_reject_4001(
+        self,
+    ) -> None:
+        maximum = "x" * 4000
+        too_long = "x" * 4001
+
+        record = self.record()
+        record.opinion = maximum
+        self.persist_new(record)
+        self.assertEqual(record.opinion, maximum)
+        oversized_record = self.record()
+        oversized_record.opinion = too_long
+        with self.assertRaises(self.ValidationError):
+            oversized_record.autoname()
+
+        exception = self.exception()
+        exception.reason = maximum
+        exception.risk = maximum
+        self.persist_new(exception)
+        self.assertEqual(exception.reason, maximum)
+        self.assertEqual(exception.risk, maximum)
+        for field in ("reason", "risk"):
+            with self.subTest(field=field):
+                oversized_exception = self.exception()
+                setattr(oversized_exception, field, too_long)
+                with self.assertRaises(self.ValidationError):
+                    oversized_exception.autoname()
+
+        exception._previous = clone(exception)
+        exception.state = "approved"
+        exception.optimistic_version = 2
+        exception.approval_opinion = maximum
+        exception.decided_at = OCCURRED_AT
+        exception.before_validate()
+        exception.validate()
+        self.assertEqual(exception.approval_opinion, maximum)
+
+        oversized_decision = self.exception()
+        self.persist_new(oversized_decision)
+        oversized_decision._previous = clone(oversized_decision)
+        oversized_decision.state = "approved"
+        oversized_decision.optimistic_version = 2
+        oversized_decision.approval_opinion = too_long
+        oversized_decision.decided_at = OCCURRED_AT
+        with self.assertRaises(self.ValidationError):
+            oversized_decision.before_validate()
+
+        reopened = self.reopen_event(maximum)
+        self.persist_new(reopened)
+        self.assertEqual(json.loads(reopened.payload)["detail"]["reason"], maximum)
+        with self.assertRaises(self.ValidationError):
+            self.persist_new(self.reopen_event(too_long))
+
+        dependency_event = self.invalidation_event()
+        dependency_event.payload["detail"]["reason"] = "x" * 141
+        with self.assertRaises(self.ValidationError):
+            self.persist_new(dependency_event)
 
     def test_review_record_is_actor_bound_canonical_and_append_only(self) -> None:
         record = self.record()

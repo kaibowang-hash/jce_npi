@@ -254,4 +254,29 @@ describe("high-risk impact review", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     expect(onCancel).toHaveBeenCalledOnce();
   });
+
+  it("accepts 4000 reason characters and constrains a 4001-character change", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
+    renderWithLocale(
+      <ImpactReview
+        confirmLabel="Prepare command"
+        details={details}
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+        title="Gate decision impact review"
+      />,
+    );
+    const reason = screen.getByLabelText("Reason");
+    const maximum = `${"x".repeat(3999)}a`;
+    fireEvent.change(reason, { target: { value: maximum } });
+    expect(reason).toHaveAttribute("maxlength", "4000");
+    expect(reason).toHaveValue(maximum);
+
+    const tooLong = "y".repeat(4001);
+    fireEvent.change(reason, { target: { value: tooLong } });
+    expect(reason).toHaveValue("y".repeat(4000));
+    await user.click(screen.getByRole("button", { name: "Prepare command" }));
+    expect(onConfirm).toHaveBeenCalledWith("y".repeat(4000));
+  });
 });
