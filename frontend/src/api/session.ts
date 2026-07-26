@@ -6,6 +6,9 @@ export interface SessionBootstrap {
   language: Locale;
   allowedLanguages: readonly Locale[];
   csrfToken: string;
+  preferences: {
+    navigationCollapsed: boolean;
+  };
   catalog: {
     language: Locale;
     version: string;
@@ -122,6 +125,25 @@ export class SessionClient {
     return bootstrap;
   }
 
+  async setNavigationCollapsed(
+    collapsed: boolean,
+    validate: SessionBootstrapValidator,
+  ): Promise<SessionBootstrap> {
+    const bootstrap = await this.http.request<SessionBootstrap>(
+      "/session/preferences/navigation",
+      {
+        method: "PUT",
+        body: JSON.stringify({ collapsed }),
+      },
+      {
+        csrfToken: this.csrfToken ?? undefined,
+        validate,
+      },
+    );
+    this.csrfToken = bootstrap.csrfToken;
+    return bootstrap;
+  }
+
   async refreshAndSetLanguage(
     language: Locale,
     validateBootstrap: SessionBootstrapValidator,
@@ -130,5 +152,17 @@ export class SessionClient {
     const bootstrap = await this.getBootstrap(validateBootstrap);
     if (bootstrap.language === language) return bootstrap;
     return this.setLanguage(language, validateLanguage);
+  }
+
+  async refreshAndSetNavigationCollapsed(
+    collapsed: boolean,
+    validateBootstrap: SessionBootstrapValidator,
+    validatePreference: SessionBootstrapValidator,
+  ): Promise<SessionBootstrap> {
+    const bootstrap = await this.getBootstrap(validateBootstrap);
+    if (bootstrap.preferences.navigationCollapsed === collapsed) {
+      return bootstrap;
+    }
+    return this.setNavigationCollapsed(collapsed, validatePreference);
   }
 }

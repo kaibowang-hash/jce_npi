@@ -54,7 +54,7 @@ import {
   formatNumber,
 } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
-import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import { Button, focusControl, Select, TextInput } from "../ui-adapters/npi-ui";
 
 export type ProjectGovernanceSection = "controls" | "activity" | "learning";
 
@@ -2226,6 +2226,11 @@ function LearningWorkspace({
   const requestedLearningId = new URLSearchParams(
     globalThis.location.search,
   ).get("learning");
+  const requestedQuickCreate =
+    new URLSearchParams(globalThis.location.search).get("quickCreate") ===
+    "learning";
+  const quickCreateTitleRef = useRef<HTMLInputElement | null>(null);
+  const quickCreateFocusTransferred = useRef(false);
   const [query, setQuery] = useState<ProjectLearningQuery>({
     ...(requestedLearningId ? { learningId: requestedLearningId } : {}),
     limit: requestedLearningId ? 1 : 50,
@@ -2285,6 +2290,25 @@ function LearningWorkspace({
       controller.abort();
     };
   }, [attempt, dataSource, projectId, query, requestedLearningId]);
+
+  const quickCreateCanReceiveFocus =
+    state.kind === "loaded" && state.value.permissions.canCreate;
+  useEffect(() => {
+    quickCreateFocusTransferred.current = false;
+  }, [projectId, requestedQuickCreate]);
+  useEffect(() => {
+    if (
+      !requestedQuickCreate ||
+      !quickCreateCanReceiveFocus ||
+      quickCreateFocusTransferred.current
+    ) {
+      return;
+    }
+    quickCreateFocusTransferred.current = true;
+    queueMicrotask(() => {
+      void focusControl(quickCreateTitleRef.current);
+    });
+  }, [quickCreateCanReceiveFocus, requestedQuickCreate]);
 
   if (state.kind === "loading") {
     return <ResourceLoading label={t("Loading project learning")} />;
@@ -2484,7 +2508,10 @@ function LearningWorkspace({
             )}
           </Panel>
           {canCreate ? (
-            <Panel title={t("Create learning record")}>
+            <Panel
+              id="project-learning-quick-create"
+              title={t("Create learning record")}
+            >
               <form onSubmit={createLearning}>
                 <div className="governance-form-grid">
                   <label className="field-control">
@@ -2515,6 +2542,7 @@ function LearningWorkspace({
                       onChange={(event) => {
                         setTitle(event.currentTarget.value);
                       }}
+                      ref={quickCreateTitleRef}
                       required
                       value={title}
                     />

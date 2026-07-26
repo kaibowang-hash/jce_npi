@@ -236,6 +236,7 @@ async function installSession(
         },
         csrfToken,
         language: locale,
+        preferences: { navigationCollapsed: false },
         userId,
       });
     },

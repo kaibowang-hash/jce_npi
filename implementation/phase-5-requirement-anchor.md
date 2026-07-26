@@ -20,8 +20,9 @@ pre-reconciliation 173, and the retained P5-01 backend checkpoint is
 
 Before any further P5-01 product work:
 
-1. retain the completed R1-01 reconciliation and R1-02 display-brand evidence;
-2. deliver R1-03 through R1-06 shared UX/governance remediation;
+1. retain the completed R1-01 reconciliation, R1-02 display-brand and R1-03
+   navigation/command evidence;
+2. deliver R1-04 through R1-06 shared UX/governance remediation;
 3. keep R1-07 scoped to DR-REC-001; and
 4. pass the triggered Level 3 shared Shell/design/i18n bridge Gate.
 

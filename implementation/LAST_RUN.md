@@ -1,5 +1,92 @@
 # Last Run
 
+## R1-03 navigation/commands PASS; R1-04 activated — 2026-07-26T10:51:54Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized bridge checkpoint:
+  `07eb5f8b6cf859c406be2aaff3aa218fbf0bf61d`.
+- Atomic task:
+  `R1-03 — App Shell collapsed navigation command and contextual quick-create`.
+- Requirements: `FR-UX-039`, `UX-011`, `UX-018`.
+- Result:
+  `PASS — LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`.
+- Current task:
+  `R1-04 — Shared grid sizing personalization views and export foundation`.
+- Held product task:
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED`; not `PASS`).
+
+### Delivered boundary
+
+- Added full and compact industrial domain navigation, independent responsive
+  collapse, translated focus/hover tooltips and authenticated per-user
+  persistence of only the explicit desktop choice.
+- Added the closed `preferences.navigationCollapsed:boolean` bootstrap member
+  and exact CSRF-protected navigation PUT with `{collapsed:boolean}`. Actor and
+  namespaced key are server-fixed; no generic preference surface exists.
+- Added a keyboard-first command palette, approved internal return-context
+  validation and explicit unavailable results for unproven Part/live-domain
+  routes.
+- Added Project learning quick-create only after the existing live BFF proves
+  `canCreate`; the governed destination rechecks capability before write.
+- Closed final review findings for the ambiguous `Open` translation,
+  quick-create-to-command focus restoration and platform-neutral Ctrl/Meta
+  shortcut discoverability.
+- Marked `FR-UX-039` and `UX-011` `TECHNICAL_VERIFIED`; marked `UX-018`
+  `TECHNICAL_VERIFIED_FOUNDATION` because unrestricted global/Part/live object
+  search remains deliberately unavailable.
+
+No DocType, schema, patch, role, permission model, ownership/event contract,
+dependency, ERPNext/JCE connection, Desk product path or production write was
+added. `Core.png` remains inactive.
+
+### Validation
+
+- Scoped whole-repository Gate: `PASS` — 684 Python tests, 520 frontend tests,
+  type/lint/format/style/boundary/UI/generated checks, production build,
+  prohibited-pattern scan and reconciliation.
+- Frappe-compatible i18n: `PASS` — 2,539 literal English sources with complete
+  direct `zh`/`zh-TW` coverage.
+- Frontend coverage: `PASS` — 84.77% statements, 83.53% branches, 89.65%
+  functions and 86.70% lines.
+- Controlled Frappe runtime: `PASS` — 2,539 entries per Chinese locale; exact
+  bootstrap/PUT agreement; guest/CSRF/shape rejection; current-user
+  persistence; Website User isolation; unchanged Administrator preference;
+  disposable-user cleanup; all existing runtime lanes preserved.
+- Complete non-visual Playwright: `PASS — 244/244` in a direct persistent
+  final run.
+- Clean no-update visual Playwright: `PASS — 201/201` at exact zero tolerance.
+  R1-03 changed 195 existing and added 12 new baselines.
+- Original-resolution trilingual/zoom review: `PASS`.
+- Independent final code/security review: `PASS — no actionable findings`.
+- Independent final UX/i18n/accessibility review:
+  `PASS — 0 blocker / 0 major / 0 minor`.
+- Migration: `N/A`; rollback is the single R1-03 commit, with harmless
+  namespaced defaults requiring no destructive cleanup.
+- Historical Phase 3/4 evidence preservation, generated trace freshness,
+  evidence-file existence, `git diff --check` and repository safety scans:
+  `PASS`.
+
+Durable evidence:
+
+- `implementation/evidence/reconciliation/r1-03-plan.md`
+- `implementation/evidence/reconciliation/r1-03-validation.md`
+- `implementation/evidence/reconciliation/r1-03/coverage/coverage-summary.json`
+  — SHA-256
+  `2919b5d219e0000c45ed3b30d3285dcf2a2059b081bdd42086c74e4dd991981f`
+- `implementation/evidence/reconciliation/r1-03/playwright-results/.last-run.json`
+  — SHA-256
+  `91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903`
+
+The final dot reporter intentionally retained no HTML report. The terminal
+244/201 summaries are recorded in the validation document; `.last-run.json`
+is only the passing terminal-status artifact.
+
+R1-03 does not claim the cumulative R1 Level 3 bridge Gate. Automatic
+continuation activates only R1-04. R1-07 remains scoped to DR-REC-001, and
+P5-01 resumes only after R1-04 through R1-06 and the shared Level 3 bridge Gate
+pass.
+
 ## R1-02 LaunchFlow display brand PASS; R1-03 activated — 2026-07-26T05:54:51Z
 
 - Branch: `codex/npi-v1.2-implementation`.

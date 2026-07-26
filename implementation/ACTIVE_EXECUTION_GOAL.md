@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-26T05:54:51Z`
+Updated: `2026-07-26T10:30:54Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f97ce-d6ad-74f2-8f14-68f2d0d5e962`
@@ -12,10 +12,10 @@ Updated: `2026-07-26T05:54:51Z`
 - Last synchronized product checkpoint:
   `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
   the R1-01 task checkpoint)
-- Current bridge checkpoint: R1-01 and R1-02 are `PASS`; R1-02 passed its
-  `LEVEL 2 SHARED-SHELL/I18N TASK GATE`
+- Current bridge checkpoint: R1-01, R1-02 and R1-03 are `PASS`; R1-03 passed
+  its triggered `LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`
 - Current controller task:
-  `R1-03 — App Shell collapsed navigation command and contextual quick-create`
+  `R1-04 — Shared grid sizing personalization views and export foundation`
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -51,13 +51,16 @@ R1-01 preserved all historical Gate evidence and changed no product runtime,
 public API, database schema, event schema, data-ownership contract,
 translation allowlist or external integration behavior.
 
-R1-02 implemented the accepted LaunchFlow display-brand boundary. R1-03
-through R1-06 remain in the shared bridge; R1-07 remains scoped to DR-REC-001.
-Their cumulative Shell/design/i18n changes must pass the complete triggered
-Level 3 bridge Gate before P5-01 product work resumes.
+R1-02 implemented the accepted LaunchFlow display-brand boundary. R1-03 added
+only the fixed authenticated navigation-preference contract plus collapsed
+navigation, command and server-proven Project quick-create foundations. It
+changed no schema, migration, role, permission model or external integration.
+R1-04 through R1-06 remain in the shared bridge; R1-07 remains scoped to
+DR-REC-001. Their cumulative Shell/design/i18n changes must pass the complete
+triggered Level 3 bridge Gate before P5-01 product work resumes.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
 `implementation/LAST_RUN.md`. Chat memory is non-authoritative. Reuse accepted
-Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02 evidence; do not repeat or
-rewrite them merely to restore context.
+Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02/R1-03 evidence; do not repeat
+or rewrite them merely to restore context.

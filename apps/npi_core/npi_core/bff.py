@@ -27,6 +27,9 @@ _ROUTES = {
     ("PUT", "/api/npi/v1/session/language"): (
         "npi_core.localization_api.set_current_user_language"
     ),
+    ("PUT", "/api/npi/v1/session/preferences/navigation"): (
+        "npi_core.localization_api.set_current_user_navigation_preference"
+    ),
     ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
     ("GET", "/api/npi/v1/me/work"): "npi_core.my_work_api.get_my_work",
     ("GET", "/api/npi/v1/learning"): (

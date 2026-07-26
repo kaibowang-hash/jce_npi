@@ -5,6 +5,7 @@ from typing import Any
 
 import frappe
 from frappe import _
+from frappe.defaults import get_defaults_for, set_user_default
 from frappe.sessions import get_csrf_token
 from frappe.translate import get_all_translations, get_user_lang
 
@@ -27,6 +28,11 @@ from .request_security import (
     reject_unexpected_request_fields,
     require_csrf_token,
 )
+
+APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY = (
+    "npi_one_app_shell_navigation_collapsed"
+)
+_STORED_BOOLEAN_VALUES = {True: "true", False: "false"}
 
 
 def _translations_directory() -> Path:
@@ -58,14 +64,38 @@ def _catalog_for(language: str) -> dict[str, object]:
         raise LocalizationUnavailable() from error
 
 
-def _session_bootstrap(user_id: str, language: str | None = None) -> dict[str, Any]:
+def _navigation_collapsed_preference(user_id: str) -> bool:
+    stored_value = get_defaults_for(parent=user_id).get(
+        APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY
+    )
+    if stored_value == _STORED_BOOLEAN_VALUES[True]:
+        return True
+    if stored_value == _STORED_BOOLEAN_VALUES[False]:
+        return False
+    return False
+
+
+def _session_bootstrap(
+    user_id: str,
+    language: str | None = None,
+    *,
+    navigation_collapsed: bool | None = None,
+) -> dict[str, Any]:
     resolved_language = validate_language_code(language or get_user_lang(user_id))
+    resolved_navigation_collapsed = (
+        _navigation_collapsed_preference(user_id)
+        if navigation_collapsed is None
+        else navigation_collapsed
+    )
     return {
         "userId": user_id,
         "language": resolved_language,
         "allowedLanguages": list(ALLOWED_LANGUAGE_CODES),
         "csrfToken": get_csrf_token(),
         "catalog": _catalog_for(resolved_language),
+        "preferences": {
+            "navigationCollapsed": resolved_navigation_collapsed,
+        },
     }
 
 
@@ -100,6 +130,34 @@ def _set_current_user_language(user_id: str, language: Any) -> dict[str, Any]:
     return bootstrap
 
 
+def _set_current_user_navigation_preference(
+    user_id: str, collapsed: Any
+) -> dict[str, Any]:
+    if collapsed is None:
+        raise RequestValidationFailed(
+            [{"path": "collapsed", "message": _("This field is required.")}]
+        )
+    if type(collapsed) is not bool:
+        raise RequestValidationFailed(
+            [
+                {
+                    "path": "collapsed",
+                    "message": _("Select a valid true or false value."),
+                }
+            ]
+        )
+    bootstrap = _session_bootstrap(
+        user_id,
+        navigation_collapsed=collapsed,
+    )
+    set_user_default(
+        APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY,
+        _STORED_BOOLEAN_VALUES[collapsed],
+        user=user_id,
+    )
+    return bootstrap
+
+
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_session_bootstrap(**request_fields: Any) -> dict[str, Any] | None:
     """Return the authenticated NPI session locale and its effective catalog."""
@@ -108,6 +166,23 @@ def get_session_bootstrap(**request_fields: Any) -> dict[str, Any] | None:
         user_id = authenticated_user()
         reject_unexpected_request_fields(frozenset(), request_fields)
         return _session_bootstrap(user_id)
+
+    return frappe_domain_call(handle, cache_control="private, no-store")
+
+
+@frappe.whitelist(allow_guest=True, methods=["PUT"])
+def set_current_user_navigation_preference(
+    collapsed: Any = None, **request_fields: Any
+) -> dict[str, Any] | None:
+    """Persist the authenticated user's explicit App Shell navigation preference."""
+
+    def handle() -> dict[str, Any]:
+        user_id = authenticated_user()
+        require_csrf_token()
+        reject_unexpected_request_fields(
+            frozenset({"collapsed"}), request_fields
+        )
+        return _set_current_user_navigation_preference(user_id, collapsed)
 
     return frappe_domain_call(handle, cache_control="private, no-store")
 

@@ -44,6 +44,7 @@
   --npi-shadow-overlay: 0 2px 8px rgba(23, 33, 38, 0.18);
   --npi-typography-font-family: Arial, Noto Sans SC, Noto Sans, system-ui, sans-serif;
   --npi-typography-font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --npi-typography-size-xxs: 10px;
   --npi-typography-size-xs: 12px;
   --npi-typography-size-sm: 13px;
   --npi-typography-size-md: 14px;
@@ -55,6 +56,7 @@
   --npi-typography-weight-semibold: 600;
   --npi-layout-appHeader: 48px;
   --npi-layout-sideNav: 216px;
+  --npi-layout-sideNavCompact: 64px;
   --npi-layout-pageToolbar: 40px;
   --npi-layout-objectHeader: 72px;
   --npi-layout-contextInspector: 340px;

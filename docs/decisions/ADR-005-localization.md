@@ -63,7 +63,11 @@ canonical no-header NPI app CSV files; it does not create a second translation
 database.
 
 The NPI BFF returns exactly `userId`, `language`, `allowedLanguages`,
-`csrfToken`, and the catalog resolved for the authenticated Frappe session.
+`csrfToken`, the catalog resolved for the authenticated Frappe session, and
+the closed `preferences` object. The current preferences contract contains
+only `navigationCollapsed`. Its dedicated controlled `PUT` binds the actor to
+the authenticated session and persists only the canonical boolean through
+Frappe's per-user defaults; responsive presentation never calls that mutation.
 Session responses use `Cache-Control: private, no-store` and an `X-Trace-ID`;
 Problem Details responses carry the same trace in their body. `getLocale()`
 reads that session fact, and `setLocale()` uses a controlled NPI BFF `PUT` with

@@ -142,6 +142,7 @@ async function installSession(page: Page, locale: TestLocale): Promise<void> {
         },
         csrfToken,
         language: locale,
+        preferences: { navigationCollapsed: false },
         userId: "manager@example.invalid",
       });
     },

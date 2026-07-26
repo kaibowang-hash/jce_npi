@@ -75,6 +75,27 @@ class V12ReconciliationTests(unittest.TestCase):
             row["evidence"],
         )
 
+    def test_r1_03_trace_is_verified_with_runtime_evidence(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        self.assertEqual(by_id["FR-UX-039"]["status"], "TECHNICAL_VERIFIED")
+        self.assertEqual(by_id["UX-011"]["status"], "TECHNICAL_VERIFIED")
+        self.assertEqual(
+            by_id["UX-018"]["status"],
+            "TECHNICAL_VERIFIED_FOUNDATION",
+        )
+        for requirement_id in ("FR-UX-039", "UX-011", "UX-018"):
+            self.assertIn(
+                "implementation/evidence/reconciliation/r1-03-validation.md",
+                by_id[requirement_id]["evidence"],
+            )
+        for _, expected_evidence in self.verifier.EXPECTED_R1_03_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
 

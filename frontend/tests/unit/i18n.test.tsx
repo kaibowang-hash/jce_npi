@@ -109,6 +109,7 @@ describe("Frappe-backed React localization", () => {
       },
       csrfToken: "bootstrap-csrf-token-fixture-123456",
       language: "en" as const,
+      preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
     };
     const languageRefresh = {
@@ -171,6 +172,138 @@ describe("Frappe-backed React localization", () => {
     expect(Object.isFrozen(result.current.sessionCommandContext)).toBe(true);
   });
 
+  it("persists navigation collapse through the authenticated session and updates only after confirmation", async () => {
+    const bootstrap = {
+      allowedLanguages: supportedLocales,
+      catalog: {
+        language: "en" as const,
+        messages: {},
+        version: "a".repeat(64),
+      },
+      csrfToken: "bootstrap-csrf-token-fixture-123456",
+      language: "en" as const,
+      preferences: { navigationCollapsed: false },
+      userId: "phase3@example.invalid",
+    };
+    const confirmed = {
+      ...bootstrap,
+      csrfToken: "preference-csrf-token-fixture-12345",
+      preferences: { navigationCollapsed: true },
+    };
+    let confirmPreference: ((response: Response) => void) | undefined;
+    const preferenceResponse = new Promise<Response>((resolve) => {
+      confirmPreference = resolve;
+    });
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(bootstrap), { status: 200 }),
+      )
+      .mockReturnValueOnce(preferenceResponse);
+    vi.stubGlobal("fetch", fetch);
+    const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+      <I18nProvider>{children}</I18nProvider>
+    );
+    const { result } = renderHook(() => useI18n(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.sessionCommandContext).not.toBeNull();
+    });
+    expect(result.current.navigationCollapsed).toBe(false);
+    act(() => {
+      result.current.setNavigationCollapsed(true);
+    });
+    expect(result.current.navigationCollapsed).toBe(false);
+    expect(result.current.isNavigationPreferencePending).toBe(true);
+    expect(result.current.sessionCommandContext).toBeNull();
+
+    await act(async () => {
+      confirmPreference?.(
+        new Response(JSON.stringify(confirmed), { status: 200 }),
+      );
+      await preferenceResponse;
+    });
+    await waitFor(() => {
+      expect(result.current.navigationCollapsed).toBe(true);
+    });
+    expect(result.current.isNavigationPreferencePending).toBe(false);
+    expect(result.current.navigationPreferenceFailure).toBeNull();
+    expect(fetch).toHaveBeenLastCalledWith(
+      "/api/npi/v1/session/preferences/navigation",
+      expect.objectContaining({
+        body: JSON.stringify({ collapsed: true }),
+        method: "PUT",
+      }),
+    );
+    const [, preferenceRequest] =
+      vi.mocked(globalThis.fetch).mock.calls[1] ?? [];
+    expect(
+      new Headers(preferenceRequest?.headers).get("X-Frappe-CSRF-Token"),
+    ).toBe(bootstrap.csrfToken);
+  });
+
+  it("keeps the confirmed navigation mode and reconciles an indeterminate save before retrying", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    const bootstrap = {
+      allowedLanguages: supportedLocales,
+      catalog: {
+        language: "en" as const,
+        messages: {},
+        version: "a".repeat(64),
+      },
+      csrfToken: "bootstrap-csrf-token-fixture-123456",
+      language: "en" as const,
+      preferences: { navigationCollapsed: false },
+      userId: "phase3@example.invalid",
+    };
+    const reconciled = {
+      ...bootstrap,
+      csrfToken: "reconciled-csrf-token-fixture-1234",
+      preferences: { navigationCollapsed: true },
+    };
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(bootstrap), { status: 200 }),
+      )
+      .mockRejectedValueOnce(new Error("Indeterminate preference request."))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(reconciled), { status: 200 }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+      <I18nProvider>{children}</I18nProvider>
+    );
+    const { result } = renderHook(() => useI18n(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.sessionCommandContext).not.toBeNull();
+    });
+    act(() => {
+      result.current.setNavigationCollapsed(true);
+    });
+    await waitFor(() => {
+      expect(result.current.navigationPreferenceFailure).not.toBeNull();
+    });
+    expect(result.current.navigationCollapsed).toBe(false);
+    expect(result.current.sessionCommandContext).toBeNull();
+
+    act(() => {
+      result.current.retryNavigationPreference();
+    });
+    await waitFor(() => {
+      expect(result.current.navigationPreferenceFailure).toBeNull();
+    });
+    expect(result.current.navigationCollapsed).toBe(true);
+    expect(result.current.sessionCommandContext).toEqual({
+      csrfToken: reconciled.csrfToken,
+      userId: reconciled.userId,
+    });
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch.mock.calls[2]?.[0]).toBe("/api/npi/v1/session/bootstrap");
+  });
+
   it("clears the command context when a production refresh is indeterminate", async () => {
     vi.stubEnv("DEV", false);
     vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
@@ -183,6 +316,7 @@ describe("Frappe-backed React localization", () => {
       },
       csrfToken: "bootstrap-csrf-token-fixture-123456",
       language: "en" as const,
+      preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
     };
     vi.stubGlobal(
@@ -273,6 +407,7 @@ describe("Frappe-backed React localization", () => {
         },
         csrfToken: "retry-csrf-token-fixture-123456789",
         language: "en" as const,
+        preferences: { navigationCollapsed: false },
         userId: "recovered@example.invalid",
       };
       const fetch = vi
@@ -356,6 +491,10 @@ describe("Frappe-backed React localization", () => {
     ["non-string messages", { messages: { "My Work": 7 } }],
     ["invalid catalog version", { version: "not-a-catalog-version" }],
     ["invalid language set", { allowedLanguages: ["en", "zh", "zh"] }],
+    [
+      "invalid navigation preference",
+      { preferences: { navigationCollapsed: "yes" } },
+    ],
     ["short CSRF token", { csrfToken: "short" }],
     ["empty user identity", { userId: "" }],
   ])(
@@ -372,6 +511,7 @@ describe("Frappe-backed React localization", () => {
         },
         csrfToken: "a".repeat(32),
         language: "en",
+        preferences: { navigationCollapsed: false },
         userId: "phase3@example.invalid",
       };
       const changeRecord = change as Record<string, unknown>;

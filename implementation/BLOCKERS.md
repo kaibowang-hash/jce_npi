@@ -8,13 +8,14 @@ None.
 
 `R1_SHARED_BRIDGE` is active.
 
-R1-01 and R1-02 passed their Level 2 Gates and R1-03 is current.
+R1-01 and R1-02 passed their Level 2 Gates, R1-03 passed its triggered
+task-level Level 3 Gate, and R1-04 is current.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
 - does not permit P5-01 to be marked `PASS`;
 - prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting;
-- executes R1-03 through R1-06 before the shared Level 3 bridge Gate;
+- executes R1-04 through R1-06 before the shared Level 3 bridge Gate;
 - keeps R1-07 disabled unless DR-REC-001 is approved; and
 - preserves the exact P5-01 product boundary in
   `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.

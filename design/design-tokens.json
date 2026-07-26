@@ -150,6 +150,9 @@
     "font.mono": {
       "value": "ui-monospace, SFMono-Regular, Consolas, monospace"
     },
+    "size.xxs": {
+      "value": "10px"
+    },
     "size.xs": {
       "value": "12px"
     },
@@ -184,6 +187,9 @@
     },
     "sideNav": {
       "value": "216px"
+    },
+    "sideNavCompact": {
+      "value": "64px"
     },
     "pageToolbar": {
       "value": "40px"

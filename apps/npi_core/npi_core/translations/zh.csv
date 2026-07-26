@@ -756,6 +756,7 @@ High,高
 Critical,严重
 Identified,已识别
 Open,待处理
+Open selected command,打开所选命令
 Requested,已请求
 Policy label unavailable,策略标签不可用
 The project work context response could not be used safely,项目工作上下文响应无法安全使用
@@ -2480,3 +2481,59 @@ revoked,已撤销
 External Retrieval State,外部检索状态
 External Retrieval Reason Code,外部检索原因代码
 Share Grant Snapshot Hash,共享授权快照哈希
+Prototype navigation is unavailable from live data. Open an authorized link instead.,实时数据上下文中无法使用原型导航。请改为打开已授权链接。
+Open a Project from an authorized link.,从已授权链接打开项目。
+Open My Work,打开我的工作
+Open the authorized cross-object work queue.,打开已授权的跨对象工作队列。
+Work,工作
+Actions,操作
+Approvals,审批
+Open current Project,打开当前项目
+Open Project prototype,打开项目原型
+Return to the current authorized Project cockpit.,返回当前已授权的项目驾驶舱。
+Open the governed Project prototype workspace.,打开受控的项目原型工作区。
+Cockpit,驾驶舱
+Open Part,打开零件
+Open a Part workspace.,打开零件工作区。
+Drawing,图纸
+Part navigation is unavailable because no approved Part route exists.,零件导航不可用，因为尚无已批准的零件路由。
+Open Tooling prototype,打开模具开发原型
+Open the existing Tooling prototype workspace.,打开现有的模具开发原型工作区。
+Mould,模具
+Open Trial prototype,打开试模原型
+Open the existing Trial prototype workspace.,打开现有的试模原型工作区。
+Open Execution prototype,打开执行原型
+Open the existing execution and reconciliation prototype.,打开现有的执行与对账原型。
+Execution,执行
+Reconciliation,对账
+Creation capabilities for this Project are unavailable.,此项目的创建能力不可用。
+Open an authorized live Project before using contextual quick-create.,使用上下文快捷创建前，请先打开已授权的实时项目。
+The authenticated session is not ready. Reconcile the session before creating a record.,身份验证会话尚未就绪。创建记录前请先对账会话状态。
+Your current Project capability does not allow creating a learning record.,您在当前项目中的能力不允许创建学习记录。
+Open command palette,打开命令面板
+Commands,命令
+Current Project {{project}},当前项目 {{project}}
+Expand domain navigation,展开领域导航
+Collapse domain navigation,折叠领域导航
+Navigation is compact at this window size.,此窗口尺寸下导航自动使用紧凑模式。
+Saving navigation preference,正在保存导航偏好
+Expand navigation,展开导航
+Collapse navigation,折叠导航
+Return to previous context,返回上一工作上下文
+Quick create,快捷创建
+Contextual quick-create,上下文快捷创建
+Current Project,当前项目
+No authorized Project context,没有已授权的项目上下文
+Checking current Project capabilities,正在检查当前项目能力
+Create Project learning record,创建项目学习记录
+The current Project capabilities could not be checked.,无法检查当前项目能力。
+The navigation preference could not be confirmed.,无法确认导航偏好。
+The last confirmed navigation mode was kept. Retry to reconcile with the current Frappe session.,已保留上次确认的导航模式。请重试以与当前 Frappe 会话对账。
+Command palette,命令面板
+Navigate approved workspaces with the keyboard.,使用键盘导航至已批准的工作区。
+Search commands,搜索命令
+Type a workspace or action,输入工作区或操作
+Command results,命令结果
+No approved command matches this query.,没有与此查询匹配的已批准命令。
+Move,移动
+Close,关闭

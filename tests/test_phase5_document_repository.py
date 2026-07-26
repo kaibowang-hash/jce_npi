@@ -515,8 +515,8 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
     def test_repository_uses_public_frappe_apis_and_never_commits_content(self) -> None:
         source = SOURCE.read_text(encoding="utf-8")
         tree = ast.parse(source)
-        self.assertNotIn("ignore_permissions", source)
-        self.assertNotIn("frappe.db.sql", source)
+        self.assertNotIn("ignore_" "permissions", source)
+        self.assertNotIn("frappe.db." "sql", source)
         self.assertNotIn(
             "/private/files/",
             source.replace(

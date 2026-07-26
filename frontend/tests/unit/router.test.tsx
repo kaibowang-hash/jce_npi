@@ -1,7 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { parseRoute, useAppRouter } from "../../src/app/router";
+import {
+  buildContextualNavigationTarget,
+  currentReturnTarget,
+  parseRoute,
+  useAppRouter,
+  validateInternalNavigationTarget,
+} from "../../src/app/router";
 
 function locationFor(path: string): Location {
   return new URL(path, "https://npi.example.test") as unknown as Location;
@@ -78,6 +84,23 @@ describe("application routing", () => {
       projectGlobalId: "11111111-1111-4111-8111-111111111111",
       scenario: "normal",
     });
+    expect(parseRoute(locationFor("/projects/not-a-uuid"))).toMatchObject({
+      projectGlobalId: null,
+      projectMode: "live",
+      screen: "project",
+    });
+    expect(
+      parseRoute(
+        locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/gates/not-a-uuid",
+        ),
+      ),
+    ).toMatchObject({
+      gateGlobalId: null,
+      gateMode: "live",
+      projectGlobalId: null,
+      screen: "gate",
+    });
   });
 
   it("normalizes unknown scenarios and preserves the quality-failure fixture", () => {
@@ -95,6 +118,62 @@ describe("application routing", () => {
       scenario: "error",
       screen: "gate",
     });
+  });
+
+  it("accepts only exact same-origin return routes", () => {
+    const origin = "https://npi.example.test";
+    const projectId = "11111111-1111-4111-8111-111111111111";
+    const gateId = "44444444-4444-4444-8444-444444444444";
+    for (const target of [
+      "/work",
+      "/demo/work?scenario=partial",
+      "/demo/projects/PJ-26018",
+      "/demo/projects/PJ-26018/gates/G5",
+      `/projects/${projectId}?tab=learning`,
+      `/projects/${projectId}/gates/${gateId}`,
+      "/tooling/TL-26018-01",
+      "/trials/T1",
+      "/execution",
+    ]) {
+      expect(validateInternalNavigationTarget(target, origin)).toBe(target);
+    }
+  });
+
+  it.each([
+    "https://attacker.invalid/work",
+    "//attacker.invalid/work",
+    "/unknown",
+    "/projects/not-a-uuid",
+    "/projects/11111111-1111-4111-8111-111111111111/extra",
+    "/work?returnTo=%2Fexecution",
+    "/work\u0000",
+    `/work?value=${"x".repeat(1100)}`,
+  ])("rejects unsafe return target %s", (target) => {
+    expect(
+      validateInternalNavigationTarget(target, "https://npi.example.test"),
+    ).toBeNull();
+  });
+
+  it("adds one validated return path and reads it without nesting", () => {
+    const current = locationFor(
+      "/projects/11111111-1111-4111-8111-111111111111?tab=activity",
+    );
+    const target = buildContextualNavigationTarget("/work", current);
+    const targetUrl = new URL(target, current.origin);
+    expect(targetUrl.pathname).toBe("/work");
+    expect(targetUrl.searchParams.get("returnTo")).toBe(
+      "/projects/11111111-1111-4111-8111-111111111111?tab=activity",
+    );
+    expect(currentReturnTarget(locationFor(target))).toBe(
+      "/projects/11111111-1111-4111-8111-111111111111?tab=activity",
+    );
+
+    expect(
+      buildContextualNavigationTarget(
+        "/execution",
+        locationFor("/work?returnTo=%2Ftrials%2FT1"),
+      ),
+    ).toBe("/execution?returnTo=%2Fwork");
   });
 
   it("navigates without reloading and follows browser history", () => {

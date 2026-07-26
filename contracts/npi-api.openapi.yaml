@@ -74,6 +74,40 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
+  /session/preferences/navigation:
+    put:
+      tags: [Session]
+      operationId: setSessionNavigationPreference
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetSessionNavigationPreference"
+      responses:
+        "200":
+          description: Persisted explicit App Shell navigation preference and refreshed session bootstrap
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionBootstrap"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "503":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+
   /me/work:
     get:
       tags: [Work]
@@ -2899,7 +2933,7 @@ components:
     SessionBootstrap:
       type: object
       additionalProperties: false
-      required: [userId, language, allowedLanguages, csrfToken, catalog]
+      required: [userId, language, allowedLanguages, csrfToken, catalog, preferences]
       properties:
         userId: { type: string }
         language:
@@ -2918,6 +2952,16 @@ components:
           description: Current token for X-Frappe-CSRF-Token on unsafe session requests
         catalog:
           $ref: "#/components/schemas/TranslationCatalog"
+        preferences:
+          $ref: "#/components/schemas/SessionPreferences"
+    SessionPreferences:
+      type: object
+      additionalProperties: false
+      required: [navigationCollapsed]
+      properties:
+        navigationCollapsed:
+          type: boolean
+          description: Authenticated user's explicit full or icon-only choice; responsive presentation changes are not persisted here
     SetSessionLanguage:
       type: object
       additionalProperties: false
@@ -2925,6 +2969,13 @@ components:
       properties:
         language:
           $ref: "#/components/schemas/LanguageCode"
+    SetSessionNavigationPreference:
+      type: object
+      additionalProperties: false
+      required: [collapsed]
+      properties:
+        collapsed:
+          type: boolean
     SourceStatus:
       type: object
       additionalProperties: false

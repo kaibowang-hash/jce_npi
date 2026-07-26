@@ -208,11 +208,13 @@ pending until that proof is produced in Codespaces.
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
-  machine trace` and `R1-02 — LaunchFlow display brand adapter and exact
-  supplied assets` (`PASS — LEVEL 2`). R1 is an inserted bridge, not a
-  replacement controller Phase.
+  machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
+  assets` (`PASS — LEVEL 2`), and `R1-03 — App Shell collapsed navigation
+  command and contextual quick-create`
+  (`PASS — LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`). R1 is an inserted
+  bridge, not a replacement controller Phase.
 - Current controller task:
-  `R1-03 — App Shell collapsed navigation command and contextual quick-create`.
+  `R1-04 — Shared grid sizing personalization views and export foundation`.
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
@@ -239,13 +241,15 @@ pending until that proof is produced in Codespaces.
   held, and P5-02 through P5-05 remain inactive.
 - R1-01 changed specifications, trace/index metadata, planning and safe
   inspection tooling only. R1-02 changed the shared frontend Shell,
-  Frappe-compatible catalogs and display-brand build guard, but no public API,
-  database schema, event schema or external integration behavior.
-- Execute R1-03 through R1-06. R1-07 remains scoped to `DR-REC-001`. The
+  Frappe-compatible catalogs and display-brand build guard. R1-03 added only
+  the fixed authenticated navigation-preference bootstrap/PUT contract and
+  shared Shell command/quick-create foundations; it added no schema, migration,
+  role, permission model, event schema or external integration behavior.
+- Execute R1-04 through R1-06. R1-07 remains scoped to `DR-REC-001`. The
   shared Shell/design/i18n bridge requires its triggered Level 3 Gate before
   P5-01 resumes.
 
 Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
-Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02 evidence;
-do not repeat or rewrite them merely to restore context. See
+Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02/R1-03
+evidence; do not repeat or rewrite them merely to restore context. See
 `implementation/LAST_RUN.md` for the exact latest result.

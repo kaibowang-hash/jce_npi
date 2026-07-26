@@ -19,7 +19,14 @@ BENCH_PATH = ROOT / "tmp" / "frappe-bench"
 RUNTIME_BASE_URL = "http://127.0.0.1:8003"
 ADMINISTRATOR_USER = "Administrator"
 DISPOSABLE_USER = "npi-runtime-user@example.invalid"
-EXPECTED_KEYS = {"userId", "language", "allowedLanguages", "csrfToken", "catalog"}
+EXPECTED_KEYS = {
+    "userId",
+    "language",
+    "allowedLanguages",
+    "csrfToken",
+    "catalog",
+    "preferences",
+}
 LANGUAGES = ("en", "zh", "zh-TW")
 
 
@@ -100,6 +107,7 @@ def validate_bootstrap(
     expected_user: str,
     language: str,
     expected_count: int,
+    navigation_collapsed: bool = False,
 ) -> None:
     require(
         result.status == 200,
@@ -131,6 +139,18 @@ def validate_bootstrap(
     require(
         bool(re.fullmatch(r"[a-f0-9]{64}", catalog.get("version", ""))),
         "Catalog version is invalid",
+    )
+    preferences = result.body.get("preferences")
+    require(
+        isinstance(preferences, dict)
+        and set(preferences) == {"navigationCollapsed"},
+        "Session preference contract drifted",
+    )
+    collapsed = preferences.get("navigationCollapsed")
+    require(type(collapsed) is bool, "Navigation preference is not an exact boolean")
+    require(
+        collapsed is navigation_collapsed,
+        "Navigation preference did not persist",
     )
     require(
         "message" not in result.body and "headers" not in result.body,
@@ -200,6 +220,43 @@ def set_language(
     csrf_token: str,
 ) -> HttpResult:
     return put_language(opener, base_url, {"language": language}, csrf_token)
+
+
+def put_navigation_preference(
+    opener: urllib.request.OpenerDirector,
+    base_url: str,
+    payload: Any,
+    csrf_token: str | None,
+    *,
+    trace_id: str | None = None,
+) -> HttpResult:
+    headers = {}
+    if csrf_token is not None:
+        headers["X-Frappe-CSRF-Token"] = csrf_token
+    if trace_id is not None:
+        headers["X-Trace-ID"] = trace_id
+    return request(
+        opener,
+        base_url,
+        "/api/npi/v1/session/preferences/navigation",
+        method="PUT",
+        payload=payload,
+        request_headers=headers,
+    )
+
+
+def set_navigation_preference(
+    opener: urllib.request.OpenerDirector,
+    base_url: str,
+    collapsed: bool,
+    csrf_token: str,
+) -> HttpResult:
+    return put_navigation_preference(
+        opener,
+        base_url,
+        {"collapsed": collapsed},
+        csrf_token,
+    )
 
 
 def user_resource_path(user: str) -> str:
@@ -424,6 +481,13 @@ def main() -> None:
         urllib.request.build_opener(), base_url, "/api/npi/v1/session/bootstrap"
     )
     validate_problem(guest, 401, "AUTHENTICATION_REQUIRED")
+    guest_preference = put_navigation_preference(
+        urllib.request.build_opener(),
+        base_url,
+        {"collapsed": True},
+        "guest-csrf-token",
+    )
+    validate_problem(guest_preference, 401, "AUTHENTICATION_REQUIRED")
 
     unknown = request(urllib.request.build_opener(), base_url, "/api/npi/v1/unknown")
     validate_problem(unknown, 404, "API_ROUTE_NOT_FOUND")
@@ -437,11 +501,19 @@ def main() -> None:
         administrator_opener, base_url, "/api/npi/v1/session/bootstrap"
     )
     administrator_language = str(administrator_initial.body.get("language"))
+    administrator_navigation_collapsed = administrator_initial.body.get(
+        "preferences", {}
+    ).get("navigationCollapsed")
+    require(
+        type(administrator_navigation_collapsed) is bool,
+        "Administrator navigation preference is not an exact boolean",
+    )
     validate_bootstrap(
         administrator_initial,
         ADMINISTRATOR_USER,
         administrator_language,
         expected_count,
+        administrator_navigation_collapsed,
     )
     administrator_csrf_token = str(administrator_initial.body["csrfToken"])
 
@@ -506,6 +578,33 @@ def main() -> None:
             expected_trace_id="trace-csrf-wrong",
         )
 
+        navigation_csrf_missing = put_navigation_preference(
+            fixture_opener,
+            base_url,
+            {"collapsed": True},
+            None,
+            trace_id="trace-navigation-csrf-missing",
+        )
+        validate_problem(
+            navigation_csrf_missing,
+            403,
+            "CSRF_TOKEN_INVALID",
+            expected_trace_id="trace-navigation-csrf-missing",
+        )
+        navigation_csrf_wrong = put_navigation_preference(
+            fixture_opener,
+            base_url,
+            {"collapsed": True},
+            "wrong-csrf-token",
+            trace_id="trace-navigation-csrf-wrong",
+        )
+        validate_problem(
+            navigation_csrf_wrong,
+            403,
+            "CSRF_TOKEN_INVALID",
+            expected_trace_id="trace-navigation-csrf-wrong",
+        )
+
         malformed = request(
             fixture_opener,
             base_url,
@@ -522,6 +621,23 @@ def main() -> None:
             400,
             "MALFORMED_REQUEST",
             expected_trace_id="trace-malformed-json",
+        )
+        navigation_malformed = request(
+            fixture_opener,
+            base_url,
+            "/api/npi/v1/session/preferences/navigation",
+            method="PUT",
+            raw_payload="{",
+            request_headers={
+                "X-Frappe-CSRF-Token": fixture_csrf_token,
+                "X-Trace-ID": "trace-navigation-malformed-json",
+            },
+        )
+        validate_problem(
+            navigation_malformed,
+            400,
+            "MALFORMED_REQUEST",
+            expected_trace_id="trace-navigation-malformed-json",
         )
 
         missing_language = put_language(
@@ -555,6 +671,64 @@ def main() -> None:
         )
         validate_problem(wrong_type, 422, "LANGUAGE_NOT_SUPPORTED")
 
+        missing_navigation_preference = put_navigation_preference(
+            fixture_opener,
+            base_url,
+            {},
+            fixture_csrf_token,
+        )
+        validate_problem(
+            missing_navigation_preference,
+            422,
+            "VALIDATION_FAILED",
+        )
+        require(
+            missing_navigation_preference.body.get(
+                "fieldErrors", [{}]
+            )[0].get("path")
+            == "collapsed",
+            "Missing navigation preference field error drifted",
+        )
+
+        extra_navigation_field = put_navigation_preference(
+            fixture_opener,
+            base_url,
+            {"collapsed": True, "user": ADMINISTRATOR_USER},
+            fixture_csrf_token,
+        )
+        validate_problem(
+            extra_navigation_field,
+            422,
+            "VALIDATION_FAILED",
+        )
+        require(
+            extra_navigation_field.body.get("fieldErrors", [{}])[0].get(
+                "path"
+            )
+            == "user",
+            "Navigation preference additional-property error drifted",
+        )
+
+        for invalid_collapsed in (1, 0, "true", None):
+            invalid_navigation_preference = put_navigation_preference(
+                fixture_opener,
+                base_url,
+                {"collapsed": invalid_collapsed},
+                fixture_csrf_token,
+            )
+            validate_problem(
+                invalid_navigation_preference,
+                422,
+                "VALIDATION_FAILED",
+            )
+            require(
+                invalid_navigation_preference.body.get(
+                    "fieldErrors", [{}]
+                )[0].get("path")
+                == "collapsed",
+                "Navigation preference type validation drifted",
+            )
+
         bootstrap_extra = request(
             fixture_opener,
             base_url,
@@ -572,6 +746,81 @@ def main() -> None:
         )
         validate_bootstrap(unchanged, DISPOSABLE_USER, "en", expected_count)
         fixture_csrf_token = str(unchanged.body["csrfToken"])
+
+        navigation_collapsed = set_navigation_preference(
+            fixture_opener,
+            base_url,
+            True,
+            fixture_csrf_token,
+        )
+        validate_bootstrap(
+            navigation_collapsed,
+            DISPOSABLE_USER,
+            "en",
+            expected_count,
+            True,
+        )
+        collapsed_session = login(
+            base_url,
+            DISPOSABLE_USER,
+            fixture_password,
+        )
+        collapsed_bootstrap = request(
+            collapsed_session,
+            base_url,
+            "/api/npi/v1/session/bootstrap",
+        )
+        validate_bootstrap(
+            collapsed_bootstrap,
+            DISPOSABLE_USER,
+            "en",
+            expected_count,
+            True,
+        )
+        navigation_expanded = set_navigation_preference(
+            collapsed_session,
+            base_url,
+            False,
+            str(collapsed_bootstrap.body["csrfToken"]),
+        )
+        validate_bootstrap(
+            navigation_expanded,
+            DISPOSABLE_USER,
+            "en",
+            expected_count,
+            False,
+        )
+        expanded_session = login(
+            base_url,
+            DISPOSABLE_USER,
+            fixture_password,
+        )
+        validate_bootstrap(
+            request(
+                expanded_session,
+                base_url,
+                "/api/npi/v1/session/bootstrap",
+            ),
+            DISPOSABLE_USER,
+            "en",
+            expected_count,
+            False,
+        )
+        fixture_after_navigation = request(
+            fixture_opener,
+            base_url,
+            "/api/npi/v1/session/bootstrap",
+        )
+        validate_bootstrap(
+            fixture_after_navigation,
+            DISPOSABLE_USER,
+            "en",
+            expected_count,
+            False,
+        )
+        fixture_csrf_token = str(
+            fixture_after_navigation.body["csrfToken"]
+        )
 
         simplified = set_language(
             fixture_opener, base_url, "zh", fixture_csrf_token
@@ -649,6 +898,7 @@ def main() -> None:
             ADMINISTRATOR_USER,
             administrator_language,
             expected_count,
+            administrator_navigation_collapsed,
         )
     finally:
         if fixture_created:
@@ -665,6 +915,7 @@ def main() -> None:
                 ADMINISTRATOR_USER,
                 administrator_language,
                 expected_count,
+                administrator_navigation_collapsed,
             )
             delete_disposable_user(
                 cleanup_opener,
@@ -679,11 +930,13 @@ def main() -> None:
             {
                 "administratorLanguage": administrator_language,
                 "administratorLanguageUnchanged": True,
+                "administratorNavigationPreferenceUnchanged": True,
                 "catalogEntriesPerLocale": expected_count,
                 "disposableUserDeleted": fixture_deleted,
                 "disposableUserId": DISPOSABLE_USER,
                 "disposableUserType": "Website User",
                 "guest": 401,
+                "guestPreference": 401,
                 "csrfMissing": 403,
                 "csrfWrong": 403,
                 "extraField": 422,
@@ -691,6 +944,14 @@ def main() -> None:
                 "languages": list(LANGUAGES),
                 "malformedJson": 400,
                 "missingLanguage": 422,
+                "navigationCsrfMissing": 403,
+                "navigationCsrfWrong": 403,
+                "navigationExtraField": 422,
+                "navigationMalformedJson": 400,
+                "navigationMissingField": 422,
+                "navigationPersistence": True,
+                "navigationUserIsolation": True,
+                "navigationWrongTypes": 422,
                 "unknownRoute": 404,
                 "wrongTypeLanguage": 422,
             },

@@ -26,12 +26,17 @@ export interface I18nContextValue {
   locale: Locale;
   catalogVersion: string;
   sessionCommandContext: SessionCommandContext | null;
+  navigationCollapsed: boolean;
+  isNavigationPreferencePending: boolean;
+  navigationPreferenceFailure: NavigationPreferenceFailure | null;
   isPrototypeFallback: boolean;
   isLocalizationBootstrapping: boolean;
   isLocalizationUnavailable: boolean;
   isLocalizationPending: boolean;
   localizationFailure: LocalizationFailure | null;
+  retryNavigationPreference: () => void;
   retryLocalization: () => void;
+  setNavigationCollapsed: (collapsed: boolean) => void;
   setLocale: (locale: Locale) => void;
   t: (source: string, values?: TranslationValues, context?: string) => string;
 }
@@ -40,6 +45,11 @@ export interface LocalizationFailure {
   operation: "bootstrap" | "set_language";
   requestFailure: RequestFailure;
   requestedLocale?: Locale | undefined;
+}
+
+export interface NavigationPreferenceFailure {
+  requestFailure: RequestFailure;
+  requestedCollapsed: boolean;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -84,6 +94,15 @@ function isConsistentBootstrap(
   if (!catalog || typeof catalog !== "object" || Array.isArray(catalog))
     return false;
   const catalogRecord = catalog as Record<string, unknown>;
+  const preferences = candidate.preferences;
+  if (
+    !preferences ||
+    typeof preferences !== "object" ||
+    Array.isArray(preferences)
+  ) {
+    return false;
+  }
+  const preferenceRecord = preferences as Record<string, unknown>;
   const messages = catalogRecord.messages;
   if (!messages || typeof messages !== "object" || Array.isArray(messages))
     return false;
@@ -103,8 +122,11 @@ function isConsistentBootstrap(
       "language",
       "allowedLanguages",
       "csrfToken",
+      "preferences",
       "catalog",
     ]) &&
+    hasExactKeys(preferenceRecord, ["navigationCollapsed"]) &&
+    typeof preferenceRecord.navigationCollapsed === "boolean" &&
     hasExactKeys(catalogRecord, ["language", "version", "messages"]) &&
     isLocale(candidate.language as string) &&
     (!expectedLocale || candidate.language === expectedLocale) &&
@@ -157,6 +179,11 @@ export function I18nProvider({
   >(null);
   const [sessionCommandContext, setSessionCommandContext] =
     useState<SessionCommandContext | null>(null);
+  const [navigationCollapsed, updateNavigationCollapsed] = useState(false);
+  const [isNavigationPreferencePending, setNavigationPreferencePending] =
+    useState(false);
+  const [navigationPreferenceFailure, setNavigationPreferenceFailure] =
+    useState<NavigationPreferenceFailure | null>(null);
   const [isPrototypeFallback, setPrototypeFallback] = useState(true);
   const [isLocalizationUnavailable, setLocalizationUnavailable] =
     useState(false);
@@ -202,6 +229,7 @@ export function I18nProvider({
         if (!providerActive.current) return;
         updateLocale(bootstrap.language);
         setRuntimeCatalog(bootstrap.catalog);
+        updateNavigationCollapsed(bootstrap.preferences.navigationCollapsed);
         setSessionCommandContext(
           Object.freeze({
             userId: bootstrap.userId,
@@ -211,6 +239,7 @@ export function I18nProvider({
         setPrototypeFallback(false);
         setLocalizationUnavailable(false);
         setLocalizationFailure(null);
+        setNavigationPreferenceFailure(null);
       } catch (error) {
         if (!providerActive.current) return;
         sessionClient.clearSession();
@@ -289,11 +318,117 @@ export function I18nProvider({
 
   const setLocale = useCallback(
     (nextLocale: Locale): void => {
-      if (pendingOperation) return;
+      if (
+        pendingOperation ||
+        isNavigationPreferencePending ||
+        navigationPreferenceFailure
+      ) {
+        return;
+      }
       launchLocalizationRequest("set_language", nextLocale);
     },
-    [launchLocalizationRequest, pendingOperation],
+    [
+      isNavigationPreferencePending,
+      launchLocalizationRequest,
+      navigationPreferenceFailure,
+      pendingOperation,
+    ],
   );
+
+  const executeNavigationPreferenceRequest = useCallback(
+    async (collapsed: boolean, refreshSession = false): Promise<void> => {
+      setNavigationPreferencePending(true);
+      setSessionCommandContext(null);
+      try {
+        const bootstrap = refreshSession
+          ? await sessionClient.refreshAndSetNavigationCollapsed(
+              collapsed,
+              (value) => isConsistentBootstrap(value),
+              (value): value is SessionBootstrap =>
+                isConsistentBootstrap(value) &&
+                value.preferences.navigationCollapsed === collapsed,
+            )
+          : await sessionClient.setNavigationCollapsed(
+              collapsed,
+              (value): value is SessionBootstrap => {
+                return (
+                  isConsistentBootstrap(value) &&
+                  value.preferences.navigationCollapsed === collapsed
+                );
+              },
+            );
+        if (
+          !isConsistentBootstrap(bootstrap) ||
+          bootstrap.preferences.navigationCollapsed !== collapsed
+        ) {
+          throw new Error(
+            "The session navigation preference response is inconsistent.",
+          );
+        }
+        if (!providerActive.current) return;
+        updateLocale(bootstrap.language);
+        setRuntimeCatalog(bootstrap.catalog);
+        updateNavigationCollapsed(bootstrap.preferences.navigationCollapsed);
+        setSessionCommandContext(
+          Object.freeze({
+            userId: bootstrap.userId,
+            csrfToken: bootstrap.csrfToken,
+          }),
+        );
+        setPrototypeFallback(false);
+        setLocalizationUnavailable(false);
+        setLocalizationFailure(null);
+        setNavigationPreferenceFailure(null);
+      } catch (error) {
+        if (!providerActive.current) return;
+        sessionClient.clearSession();
+        setSessionCommandContext(null);
+        setNavigationPreferenceFailure({
+          requestFailure: toRequestFailure(error),
+          requestedCollapsed: collapsed,
+        });
+      } finally {
+        if (providerActive.current) setNavigationPreferencePending(false);
+      }
+    },
+    [sessionClient],
+  );
+
+  const setNavigationCollapsed = useCallback(
+    (collapsed: boolean): void => {
+      if (
+        pendingOperation ||
+        isNavigationPreferencePending ||
+        navigationPreferenceFailure
+      ) {
+        return;
+      }
+      if (isPrototypeFallback) {
+        updateNavigationCollapsed(collapsed);
+        return;
+      }
+      void executeNavigationPreferenceRequest(collapsed);
+    },
+    [
+      executeNavigationPreferenceRequest,
+      isNavigationPreferencePending,
+      isPrototypeFallback,
+      navigationPreferenceFailure,
+      pendingOperation,
+    ],
+  );
+
+  const retryNavigationPreference = useCallback((): void => {
+    if (!navigationPreferenceFailure || isNavigationPreferencePending) return;
+    void executeNavigationPreferenceRequest(
+      navigationPreferenceFailure.requestedCollapsed,
+      true,
+    );
+  }, [
+    executeNavigationPreferenceRequest,
+    isNavigationPreferencePending,
+    navigationPreferenceFailure,
+  ]);
 
   const retryLocalization = useCallback((): void => {
     if (!localizationFailure || pendingOperation) return;
@@ -309,25 +444,35 @@ export function I18nProvider({
       locale,
       catalogVersion: runtimeCatalog?.version ?? catalogVersion,
       sessionCommandContext,
+      navigationCollapsed,
+      isNavigationPreferencePending,
+      navigationPreferenceFailure,
       isPrototypeFallback,
       isLocalizationBootstrapping: pendingOperation === "bootstrap",
       isLocalizationUnavailable,
       isLocalizationPending: pendingOperation !== null,
       localizationFailure,
+      retryNavigationPreference,
       retryLocalization,
+      setNavigationCollapsed,
       setLocale,
       t: (source, values, context) =>
         translate(locale, source, values, context, runtimeCatalog?.messages),
     }),
     [
       isLocalizationUnavailable,
+      isNavigationPreferencePending,
       isPrototypeFallback,
       locale,
       localizationFailure,
+      navigationCollapsed,
+      navigationPreferenceFailure,
       pendingOperation,
+      retryNavigationPreference,
       retryLocalization,
       runtimeCatalog,
       sessionCommandContext,
+      setNavigationCollapsed,
       setLocale,
     ],
   );

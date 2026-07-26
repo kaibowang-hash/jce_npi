@@ -77,6 +77,23 @@ function definedHash(value: string | undefined): string {
   return value;
 }
 
+async function expectBrandImagesDecoded(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page
+        .locator("img[data-brand-asset]")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+}
+
 for (const locale of ["en", "zh", "zh-TW"] as const) {
   test(`uses the exact Loading asset only for the ${locale} pre-Shell bootstrap`, async ({
     page,
@@ -239,6 +256,7 @@ test("shows the keyboard source tooltip in the industrial Shell @visual", async 
 }) => {
   await page.setViewportSize({ height: 900, width: 1440 });
   await openPrototype(page, "/demo/projects/PJ-26018", { locale: "en" });
+  await expectBrandImagesDecoded(page);
   const sourceIcon = page
     .locator(".source-badge")
     .getByRole("img", { name: localeCopy.en.platform })
@@ -262,6 +280,7 @@ for (const profile of visualProfiles) {
     await openPrototype(page, "/demo/projects/PJ-26018", {
       locale: profile.locale,
     });
+    await expectBrandImagesDecoded(page);
     await expectNoDocumentOverflow(page);
     await expect(page).toHaveScreenshot(
       `r1-02-launchflow-shell-${profile.locale}-${String(profile.nominal.width)}x${String(profile.nominal.height)}-${String(profile.zoom * 100)}.png`,

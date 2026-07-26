@@ -62,9 +62,9 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
     "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
     "UX-007": ("5", "PLANNED_R1_04_GRID_PERSONALIZATION"),
-    "UX-011": ("5", "PLANNED_R1_03_CONTEXT_QUICK_CREATE"),
+    "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
-    "UX-018": ("5", "PLANNED_R1_03_COMMAND_FOUNDATION"),
+    "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
     "UX-027": ("5", "PLANNED_R1_04_PERSONALIZATION"),
@@ -72,6 +72,41 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
     "UX-035": ("5", "PLANNED_R1_04_R1_06_DENSITY"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
+}
+EXPECTED_R1_03_TRACE = {
+    "FR-UX-039": (
+        "TECHNICAL_VERIFIED",
+        {
+            "apps/npi_core/npi_core/localization_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/api/session.ts",
+            "frontend/src/app/app-shell.tsx",
+            "frontend/tests/e2e/r1-03-shell.spec.ts",
+            "scripts/verify_frappe_runtime.py",
+            "implementation/evidence/reconciliation/r1-03-validation.md",
+        },
+    ),
+    "UX-011": (
+        "TECHNICAL_VERIFIED",
+        {
+            "frontend/src/app/app-shell.tsx",
+            "frontend/src/pages/project-governance-workspace.tsx",
+            "frontend/tests/unit/project-governance-workspace.test.tsx",
+            "frontend/tests/e2e/r1-03-shell.spec.ts",
+            "implementation/evidence/reconciliation/r1-03-validation.md",
+        },
+    ),
+    "UX-018": (
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        {
+            "frontend/src/app/command-palette.tsx",
+            "frontend/src/app/router.ts",
+            "frontend/tests/unit/pages-and-shell.test.tsx",
+            "frontend/tests/unit/router.test.tsx",
+            "frontend/tests/e2e/r1-03-shell.spec.ts",
+            "implementation/evidence/reconciliation/r1-03-validation.md",
+        },
+    ),
 }
 EXPECTED_BRAND_INSTRUCTIONS = {
     "Company LOGO.svg": (
@@ -226,6 +261,43 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "FR-BR-001 must retain its complete R1-02 runtime evidence set"
         )
+    for requirement_id, (expected_status, expected_evidence) in (
+        EXPECTED_R1_03_TRACE.items()
+    ):
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if (
+            row["phase"],
+            row["status"],
+            row["trace_kind"],
+        ) != (
+            "5",
+            expected_status,
+            (
+                "ADDENDUM_DIRECT"
+                if requirement_id == "FR-UX-039"
+                else "DOCX_RECONCILED"
+            ),
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the verified R1-03 trace state"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-03 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-03 evidence files: "
+                f"{missing_evidence}"
+            )
     canonical_ids = {
         requirement_id
         for requirement_id, row in by_id.items()

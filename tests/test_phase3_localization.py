@@ -144,6 +144,11 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.get_doc_calls: list[tuple[str, str]] = []
         self.clear_cache_calls: list[str] = []
         self.logged_errors: list[dict[str, str]] = []
+        self.user_defaults: dict[str, dict[str, object]] = {}
+        self.preference_read_calls: list[str] = []
+        self.preference_write_calls: list[tuple[str, object, str]] = []
+        self.preference_read_error: Exception | None = None
+        self.preference_write_error: Exception | None = None
         self.csrf_token = "csrf-token-" + ("a" * 48)
         self.request_headers = {
             "X-Frappe-CSRF-Token": self.csrf_token,
@@ -209,11 +214,22 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         sessions.get_csrf_token = lambda: self.csrf_token
         self.frappe.sessions = sessions
 
+        defaults = types.ModuleType("frappe.defaults")
+        defaults.get_defaults_for = self._get_defaults_for
+        defaults.set_user_default = self._set_user_default
+        self.frappe.defaults = defaults
+
         self.saved_modules = {
             name: sys.modules.get(name)
-            for name in ("frappe", "frappe.sessions", "frappe.translate")
+            for name in (
+                "frappe",
+                "frappe.defaults",
+                "frappe.sessions",
+                "frappe.translate",
+            )
         }
         sys.modules["frappe"] = self.frappe
+        sys.modules["frappe.defaults"] = defaults
         sys.modules["frappe.sessions"] = sessions
         sys.modules["frappe.translate"] = translate
         sys.modules.pop("npi_core.localization_api", None)
@@ -234,6 +250,26 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.get_doc_calls.append((doctype, name))
         return self.user
 
+    def _get_defaults_for(self, parent: str = "__default") -> dict[str, object]:
+        self.preference_read_calls.append(parent)
+        if self.preference_read_error is not None:
+            raise self.preference_read_error
+        return dict(self.user_defaults.get(parent, {}))
+
+    def _set_user_default(
+        self,
+        key: str,
+        value: object,
+        user: str | None = None,
+        parenttype: str | None = None,
+    ) -> None:
+        self.assertIsNone(parenttype)
+        resolved_user = user or self.frappe.session.user
+        self.preference_write_calls.append((key, value, resolved_user))
+        if self.preference_write_error is not None:
+            raise self.preference_write_error
+        self.user_defaults.setdefault(resolved_user, {})[key] = value
+
     def assert_problem(
         self, result: dict[str, object], status: int, code: str
     ) -> None:
@@ -248,9 +284,28 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         result = self.adapter.get_session_bootstrap()
 
         self.assertEqual(self.frappe.local.response.http_status_code, 200)
+        self.assertEqual(
+            set(result),
+            {
+                "userId",
+                "language",
+                "allowedLanguages",
+                "csrfToken",
+                "catalog",
+                "preferences",
+            },
+        )
         self.assertEqual(result["language"], "zh-TW")
         self.assertEqual(result["allowedLanguages"], ["en", "zh", "zh-TW"])
         self.assertEqual(result["csrfToken"], self.csrf_token)
+        self.assertEqual(
+            result["preferences"],
+            {"navigationCollapsed": False},
+        )
+        self.assertIs(
+            result["preferences"]["navigationCollapsed"],
+            False,
+        )
         self.assertEqual(
             result["catalog"]["messages"],
             {
@@ -260,6 +315,11 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         )
         self.assertEqual(self.adapter.get_session_bootstrap.allowed_methods, ("GET",))
         self.assertTrue(self.adapter.get_session_bootstrap.allow_guest)
+        self.assertEqual(
+            self.preference_read_calls,
+            ["engineer@example.invalid"],
+        )
+        self.assertEqual(self.preference_write_calls, [])
         self.assertEqual(
             self.frappe.flags.npi_response_headers["Cache-Control"],
             "private, no-store",
@@ -272,6 +332,236 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.assertEqual(self.frappe.local.response.http_status_code, 401)
         self.assertEqual(result["code"], "AUTHENTICATION_REQUIRED")
         self.assertEqual(self.get_doc_calls, [])
+        self.assertEqual(self.preference_read_calls, [])
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_bootstrap_ignores_global_and_corrupt_navigation_preferences_without_repair(
+        self,
+    ) -> None:
+        preference_key = (
+            self.adapter.APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY
+        )
+        self.user_defaults["__default"] = {preference_key: "true"}
+        self.user_defaults["engineer@example.invalid"] = {
+            preference_key: "corrupt"
+        }
+
+        result = self.adapter.get_session_bootstrap()
+
+        self.assertEqual(
+            result["preferences"],
+            {"navigationCollapsed": False},
+        )
+        self.assertEqual(
+            self.user_defaults["engineer@example.invalid"][preference_key],
+            "corrupt",
+        )
+        self.assertEqual(
+            self.preference_read_calls,
+            ["engineer@example.invalid"],
+        )
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_navigation_preference_is_persisted_for_authenticated_user_only(
+        self,
+    ) -> None:
+        result = self.adapter.set_current_user_navigation_preference(True)
+
+        preference_key = (
+            self.adapter.APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY
+        )
+        self.assertEqual(
+            result["preferences"],
+            {"navigationCollapsed": True},
+        )
+        self.assertEqual(
+            self.preference_write_calls,
+            [
+                (
+                    preference_key,
+                    "true",
+                    "engineer@example.invalid",
+                )
+            ],
+        )
+        self.assertEqual(
+            self.user_defaults["engineer@example.invalid"][preference_key],
+            "true",
+        )
+        self.assertEqual(
+            self.adapter.set_current_user_navigation_preference.allowed_methods,
+            ("PUT",),
+        )
+        self.assertTrue(
+            self.adapter.set_current_user_navigation_preference.allow_guest
+        )
+        self.assertEqual(result["userId"], "engineer@example.invalid")
+        self.assertEqual(result["csrfToken"], self.csrf_token)
+        self.assertEqual(
+            self.frappe.flags.npi_response_headers["Cache-Control"],
+            "private, no-store",
+        )
+
+    def test_navigation_preference_false_is_confirmed_and_persists(
+        self,
+    ) -> None:
+        preference_key = (
+            self.adapter.APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY
+        )
+        self.user_defaults["engineer@example.invalid"] = {
+            preference_key: "true"
+        }
+
+        result = self.adapter.set_current_user_navigation_preference(False)
+        later = self.adapter.get_session_bootstrap()
+
+        self.assertEqual(
+            result["preferences"],
+            {"navigationCollapsed": False},
+        )
+        self.assertEqual(
+            later["preferences"],
+            {"navigationCollapsed": False},
+        )
+        self.assertEqual(
+            self.user_defaults["engineer@example.invalid"][preference_key],
+            "false",
+        )
+
+    def test_navigation_preference_rejects_missing_and_non_boolean_values(
+        self,
+    ) -> None:
+        invalid_values = (None, 0, 1, "false", [], {})
+        for collapsed in invalid_values:
+            with self.subTest(collapsed=collapsed):
+                result = self.adapter.set_current_user_navigation_preference(
+                    collapsed
+                )
+
+                self.assert_problem(result, 422, "VALIDATION_FAILED")
+                self.assertEqual(
+                    result["fieldErrors"][0]["path"],
+                    "collapsed",
+                )
+        self.assertEqual(self.preference_read_calls, [])
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_navigation_preference_rejects_extra_fields_before_write(
+        self,
+    ) -> None:
+        result = self.adapter.set_current_user_navigation_preference(
+            True, user="another@example.invalid"
+        )
+
+        self.assert_problem(result, 422, "VALIDATION_FAILED")
+        self.assertEqual(
+            result["fieldErrors"],
+            [{"path": "user", "message": "This field is not allowed."}],
+        )
+        self.assertEqual(self.preference_read_calls, [])
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_navigation_preference_requires_csrf_before_read_or_write(
+        self,
+    ) -> None:
+        self.request_headers.pop("X-Frappe-CSRF-Token")
+
+        result = self.adapter.set_current_user_navigation_preference(True)
+
+        self.assert_problem(result, 403, "CSRF_TOKEN_INVALID")
+        self.assertTrue(result["retryable"])
+        self.assertEqual(self.preference_read_calls, [])
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_navigation_preference_does_not_cross_user_boundaries(self) -> None:
+        preference_key = (
+            self.adapter.APP_SHELL_NAVIGATION_COLLAPSED_DEFAULT_KEY
+        )
+        self.user_defaults["engineer@example.invalid"] = {
+            preference_key: "true"
+        }
+        self.user_defaults["planner@example.invalid"] = {
+            preference_key: "false"
+        }
+
+        engineer_bootstrap = self.adapter.get_session_bootstrap()
+        self.frappe.session.user = "planner@example.invalid"
+        planner_bootstrap = self.adapter.get_session_bootstrap()
+        planner_update = (
+            self.adapter.set_current_user_navigation_preference(True)
+        )
+
+        self.assertTrue(
+            engineer_bootstrap["preferences"]["navigationCollapsed"]
+        )
+        self.assertFalse(
+            planner_bootstrap["preferences"]["navigationCollapsed"]
+        )
+        self.assertTrue(
+            planner_update["preferences"]["navigationCollapsed"]
+        )
+        self.assertEqual(
+            self.user_defaults["engineer@example.invalid"][preference_key],
+            "true",
+        )
+        self.assertEqual(
+            self.user_defaults["planner@example.invalid"][preference_key],
+            "true",
+        )
+        self.assertEqual(
+            self.preference_write_calls,
+            [
+                (
+                    preference_key,
+                    "true",
+                    "planner@example.invalid",
+                )
+            ],
+        )
+
+    def test_navigation_preference_storage_failures_are_not_success(
+        self,
+    ) -> None:
+        self.preference_write_error = RuntimeError(
+            "preference store unavailable"
+        )
+
+        result = self.adapter.set_current_user_navigation_preference(True)
+
+        self.assert_problem(result, 500, "INTERNAL_SERVER_ERROR")
+        self.assertTrue(result["retryable"])
+        self.assertEqual(self.database.rollback_count, 1)
+        self.assertNotIn(
+            "engineer@example.invalid",
+            self.user_defaults,
+        )
+
+    def test_navigation_preference_read_failures_are_not_silent_defaults(
+        self,
+    ) -> None:
+        self.preference_read_error = RuntimeError(
+            "preference store unavailable"
+        )
+
+        result = self.adapter.get_session_bootstrap()
+
+        self.assert_problem(result, 500, "INTERNAL_SERVER_ERROR")
+        self.assertTrue(result["retryable"])
+        self.assertEqual(self.database.rollback_count, 1)
+        self.assertEqual(self.preference_write_calls, [])
+
+    def test_navigation_preference_catalog_failure_happens_before_write(
+        self,
+    ) -> None:
+        (self.translations_directory / "zh-TW.csv").write_text(
+            "Save,儲存,\n",
+            encoding="utf-8",
+        )
+
+        result = self.adapter.set_current_user_navigation_preference(True)
+
+        self.assert_problem(result, 503, "LOCALIZATION_UNAVAILABLE")
+        self.assertEqual(self.preference_write_calls, [])
 
     def test_language_change_uses_normal_user_save_and_refreshes_locale(self) -> None:
         result = self.adapter.set_current_user_language("zh")
@@ -404,6 +694,26 @@ class FrappeLocalizationAdapterTest(unittest.TestCase):
         self.assertEqual(
             self.frappe.local.form_dict.cmd,
             "npi_core.localization_api.get_session_bootstrap",
+        )
+        self.assertTrue(self.frappe.flags.npi_bff_request)
+
+    def test_fixed_bff_route_maps_navigation_preference_only_to_its_handler(
+        self,
+    ) -> None:
+        self.frappe.local.request = types.SimpleNamespace(
+            path="/api/npi/v1/session/preferences/navigation",
+            method="PUT",
+        )
+        router = importlib.import_module("npi_core.bff")
+
+        router.route_request()
+
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            (
+                "npi_core.localization_api."
+                "set_current_user_navigation_preference"
+            ),
         )
         self.assertTrue(self.frappe.flags.npi_bff_request)
 
@@ -552,14 +862,22 @@ class LocalizationContractTest(unittest.TestCase):
         self.assertIn("  version: 1.2.0", contract)
         self.assertIn("  /session/bootstrap:", contract)
         self.assertIn("  /session/language:", contract)
+        self.assertIn("  /session/preferences/navigation:", contract)
         self.assertIn("enum: [en, zh, zh-TW]", contract)
         self.assertIn("SessionBootstrap:", contract)
+        self.assertIn("SessionPreferences:", contract)
+        self.assertIn("SetSessionNavigationPreference:", contract)
         self.assertIn("TranslationCatalog:", contract)
         self.assertIn("name: X-Frappe-CSRF-Token", contract)
         self.assertIn(
-            "required: [userId, language, allowedLanguages, csrfToken, catalog]",
+            (
+                "required: [userId, language, allowedLanguages, "
+                "csrfToken, catalog, preferences]"
+            ),
             contract,
         )
+        self.assertIn("required: [navigationCollapsed]", contract)
+        self.assertIn("required: [collapsed]", contract)
         self.assertIn("additionalProperties: false", contract)
 
     def test_translation_csv_is_in_package_data(self) -> None:
@@ -574,6 +892,26 @@ class LocalizationContractTest(unittest.TestCase):
         )
         self.assertIn('run_bench --site "${site_name}" clear-cache', site_initializer)
         self.assertNotIn("build-message-files", site_initializer)
+
+    def test_runtime_verifier_refreshes_csrf_on_the_session_it_mutates(
+        self,
+    ) -> None:
+        runtime_verifier = (
+            ROOT / "scripts/verify_frappe_runtime.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "fixture_after_navigation = request(\n"
+            "            fixture_opener,",
+            runtime_verifier,
+        )
+        self.assertIn(
+            'fixture_after_navigation.body["csrfToken"]',
+            runtime_verifier,
+        )
+        self.assertNotIn(
+            'fixture_csrf_token = str(navigation_expanded.body["csrfToken"])',
+            runtime_verifier,
+        )
 
 
 if __name__ == "__main__":

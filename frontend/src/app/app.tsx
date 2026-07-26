@@ -45,6 +45,12 @@ export function App(): React.JSX.Element {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
     null,
   );
+  const navigationReturnFocusTarget = useCallback(
+    (): HTMLElement | null =>
+      document.getElementById("command-palette-trigger") ??
+      document.getElementById("main-content"),
+    [],
+  );
   useEffect(() => {
     if (import.meta.env.DEV || import.meta.env.VITE_NPI_PROTOTYPE === "true") {
       void prototypeUsabilityRecorder.record({
@@ -141,7 +147,11 @@ export function App(): React.JSX.Element {
         : "page--object";
   return (
     <>
-      <AppShell navigate={guardedNavigate} route={route}>
+      <AppShell
+        navigate={guardedNavigate}
+        projectControlsDataSource={liveProjectControlsDataSource}
+        route={route}
+      >
         <Suspense
           fallback={
             <div aria-busy="true" className="route-loading">
@@ -188,6 +198,7 @@ export function App(): React.JSX.Element {
             setPendingNavigation(null);
             navigate(target);
           }}
+          returnFocusTarget={navigationReturnFocusTarget}
           title={t("Unsaved changes")}
         />
       ) : null}

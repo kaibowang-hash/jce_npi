@@ -6,6 +6,7 @@ import { AppShell } from "../../src/app/app-shell";
 import { App } from "../../src/app/app";
 import type { AppRoute } from "../../src/app/router";
 import { LiveMyWorkDataSource } from "../../src/api/my-work-data-source";
+import type { ProjectControlsDataSource } from "../../src/api/project-controls-data-source";
 import type { Locale } from "../../src/i18n/runtime";
 import ExecutionPage from "../../src/pages/execution-page";
 import GatePage from "../../src/pages/gate-page";
@@ -45,6 +46,7 @@ function route(
 function sessionBootstrap(
   language: Locale,
   csrfToken: string,
+  navigationCollapsed = false,
 ): Readonly<Record<string, unknown>> {
   return {
     allowedLanguages: ["en", "zh", "zh-TW"],
@@ -55,6 +57,7 @@ function sessionBootstrap(
     },
     csrfToken,
     language,
+    preferences: { navigationCollapsed },
     userId: "phase3@example.invalid",
   };
 }
@@ -125,8 +128,10 @@ describe("application shell behavior", () => {
     expect(currentEntries).toHaveLength(1);
     expect(currentEntries[0]).toHaveAccessibleName("Project");
     expect(
-      within(domainNavigation).getByText("Design and Baselines"),
-    ).toHaveAttribute("aria-disabled", "true");
+      within(domainNavigation)
+        .getByText("Design and Baselines")
+        .closest('[aria-disabled="true"]'),
+    ).not.toBeNull();
     expect(
       screen.getByRole("searchbox", { name: "Global search" }),
     ).toHaveAttribute(
@@ -168,6 +173,343 @@ describe("application shell behavior", () => {
       within(domainNavigation).getByRole("button", { name: "Tooling" }),
     );
     expect(navigate).toHaveBeenLastCalledWith("/tooling/TL-26018-01");
+  });
+
+  it("confirms an explicit compact navigation preference through the session boundary", async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(response(sessionBootstrap("en", "a".repeat(32))))
+      .mockResolvedValueOnce(
+        response(sessionBootstrap("en", "b".repeat(32), true)),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell
+        navigate={vi.fn()}
+        route={route("project", "/demo/projects/PJ-26018")}
+      >
+        <p>Workspace fixture</p>
+      </AppShell>,
+      "en",
+      "/demo/projects/PJ-26018",
+    );
+
+    expect(
+      await screen.findByText("Language is managed by the Frappe session."),
+    ).toBeVisible();
+    const shell = document.querySelector(".app-shell");
+    expect(shell).toHaveAttribute("data-navigation-collapsed", "false");
+    await user.click(
+      screen.getByRole("button", { name: "Collapse domain navigation" }),
+    );
+    await waitFor(() => {
+      expect(shell).toHaveAttribute("data-navigation-collapsed", "true");
+    });
+    expect(fetch).toHaveBeenLastCalledWith(
+      "/api/npi/v1/session/preferences/navigation",
+      expect.objectContaining({
+        body: JSON.stringify({ collapsed: true }),
+        method: "PUT",
+      }),
+    );
+    const project = screen.getByRole("button", {
+      current: "page",
+      name: "Project",
+    });
+    expect(project).toHaveAttribute(
+      "aria-describedby",
+      "navigation-project-tooltip",
+    );
+    await user.hover(project);
+    expect(
+      screen.getByRole("tooltip", {
+        name: "Project",
+      }),
+    ).toBeVisible();
+  });
+
+  it("uses responsive compact presentation without writing the explicit preference", async () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({
+        addEventListener: vi.fn(),
+        addListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+        matches: true,
+        media: "(max-width: 720px)",
+        onchange: null,
+        removeEventListener: vi.fn(),
+        removeListener: vi.fn(),
+      })),
+    );
+    const fetch = vi.fn<typeof globalThis.fetch>(() =>
+      Promise.reject(new Error("No Frappe Site is active.")),
+    );
+    vi.stubGlobal("fetch", fetch);
+    renderWithLocale(
+      <AppShell navigate={vi.fn()} route={route("work", "/demo/work")}>
+        <p>Workspace fixture</p>
+      </AppShell>,
+      "en",
+      "/demo/work",
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector(".app-shell")).toHaveAttribute(
+        "data-navigation-collapsed",
+        "true",
+      );
+    });
+    expect(
+      screen.getByRole("button", {
+        name: "Navigation is compact at this window size.",
+      }),
+    ).toBeDisabled();
+    expect(
+      fetch.mock.calls.some(
+        ([target]) => target === "/api/npi/v1/session/preferences/navigation",
+      ),
+    ).toBe(false);
+    expect(localStorage.getItem("npi-one-navigation-collapsed")).toBeNull();
+  });
+
+  it("provides keyboard-first approved commands and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    const navigate = vi.fn<(target: string) => void>();
+    renderWithLocale(
+      <AppShell
+        navigate={navigate}
+        route={route("project", "/demo/projects/PJ-26018")}
+      >
+        <p>Workspace fixture</p>
+      </AppShell>,
+      "en",
+      "/demo/projects/PJ-26018",
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: "Open command palette",
+    });
+    expect(trigger).toHaveAttribute("aria-keyshortcuts", "Control+K Meta+K");
+    expect(trigger).toHaveTextContent("Ctrl/⌘+K");
+    trigger.focus();
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = screen.getByRole("dialog", { name: "Command palette" });
+    const search = within(dialog).getByRole("searchbox", {
+      name: "Search commands",
+    });
+    expect(search).toHaveFocus();
+    expect(dialog).toHaveTextContent("Enter Open selected command");
+    await user.type(search, "Part");
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(navigate).not.toHaveBeenCalled();
+    expect(
+      within(dialog).getByRole("button", { name: /Open Part/u }),
+    ).toHaveAttribute("aria-disabled", "true");
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(trigger).toHaveFocus();
+    });
+
+    await user.keyboard("{Control>}k{/Control}");
+    const reopenedSearch = screen.getByRole("searchbox", {
+      name: "Search commands",
+    });
+    await user.type(reopenedSearch, "Tooling");
+    await user.keyboard("{ArrowDown}{Enter}");
+    const target = navigate.mock.lastCall?.[0];
+    expect(target).toBeDefined();
+    const targetUrl = new URL(String(target), "https://npi.test");
+    expect(targetUrl.pathname).toBe("/tooling/TL-26018-01");
+    expect(targetUrl.searchParams.get("returnTo")).toContain(
+      "/demo/projects/PJ-26018",
+    );
+  });
+
+  it("disables the navigation preference toggle while a failed save requires reconciliation", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(response(sessionBootstrap("en", "a".repeat(32))))
+      .mockResolvedValueOnce(
+        response(
+          {
+            code: "LOCALIZATION_UNAVAILABLE",
+            retryable: true,
+            status: 503,
+            title: "The session preference service is unavailable.",
+            traceId: "trace-navigation-preference-failure",
+            type: "urn:npi:problem:localization_unavailable",
+          },
+          503,
+          "trace-navigation-preference-failure",
+        ),
+      );
+    vi.stubGlobal("fetch", fetch);
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell navigate={vi.fn()} route={route("work", "/work")}>
+        <p>Workspace fixture</p>
+      </AppShell>,
+      "en",
+      "/work",
+    );
+
+    const toggle = await screen.findByRole("button", {
+      name: "Collapse domain navigation",
+    });
+    await waitFor(() => {
+      expect(toggle).toBeEnabled();
+    });
+    await user.click(toggle);
+
+    expect(
+      await screen.findByText(
+        "The navigation preference could not be confirmed.",
+      ),
+    ).toBeVisible();
+    expect(toggle).toBeDisabled();
+    expect(document.querySelector(".app-shell")).toHaveAttribute(
+      "data-navigation-collapsed",
+      "false",
+    );
+  });
+
+  it("shows contextual Project learning creation only after the live capability allows it", async () => {
+    const projectId = "11111111-1111-4111-8111-111111111111";
+    const loadLearning = vi.fn().mockResolvedValue({
+      items: [],
+      permissions: { canCreate: true },
+      projectId,
+    });
+    const dataSource = {
+      loadLearning,
+    } as unknown as ProjectControlsDataSource;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValue(response(sessionBootstrap("en", "a".repeat(32)))),
+    );
+    const navigate = vi.fn<(target: string) => void>();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell
+        navigate={navigate}
+        projectControlsDataSource={dataSource}
+        route={route("project", `/projects/${projectId}`)}
+      >
+        <p>Live Project workspace</p>
+      </AppShell>,
+      "en",
+      `/projects/${projectId}`,
+    );
+
+    expect(
+      await screen.findByText("Language is managed by the Frappe session."),
+    ).toBeVisible();
+    const quickCreate = screen.getByRole("button", { name: "Quick create" });
+    await user.click(quickCreate);
+    let create = await screen.findByRole("button", {
+      name: "Create Project learning record",
+    });
+    expect(loadLearning).toHaveBeenCalledWith(
+      projectId,
+      { limit: 1 },
+      expect.any(AbortSignal),
+    );
+    create.focus();
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(quickCreate).toHaveFocus();
+    });
+    expect(
+      screen.queryByRole("dialog", { name: "Contextual quick-create" }),
+    ).toBeNull();
+
+    await user.click(quickCreate);
+    create = await screen.findByRole("button", {
+      name: "Create Project learning record",
+    });
+    create.focus();
+    await user.keyboard("{Control>}k{/Control}");
+    const commandDialog = screen.getByRole("dialog", {
+      name: "Command palette",
+    });
+    expect(
+      within(commandDialog).getByRole("searchbox", {
+        name: "Search commands",
+      }),
+    ).toHaveFocus();
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Open command palette" }),
+      ).toHaveFocus();
+    });
+    expect(document.body).not.toHaveFocus();
+
+    await user.click(quickCreate);
+    create = await screen.findByRole("button", {
+      name: "Create Project learning record",
+    });
+    expect(loadLearning).toHaveBeenCalledTimes(3);
+    await user.click(create);
+    const target = navigate.mock.lastCall?.[0];
+    expect(target).toBeDefined();
+    const targetUrl = new URL(String(target), "https://npi.test");
+    expect(targetUrl.pathname).toBe(`/projects/${projectId}`);
+    expect(targetUrl.searchParams.get("tab")).toBe("learning");
+    expect(targetUrl.searchParams.get("quickCreate")).toBe("learning");
+    expect(targetUrl.searchParams.get("returnTo")).toContain(
+      `/projects/${projectId}`,
+    );
+  });
+
+  it("does not expose a Project learning command when the live capability denies it", async () => {
+    const projectId = "11111111-1111-4111-8111-111111111111";
+    const dataSource = {
+      loadLearning: vi.fn().mockResolvedValue({
+        items: [],
+        permissions: { canCreate: false },
+        projectId,
+      }),
+    } as unknown as ProjectControlsDataSource;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValue(response(sessionBootstrap("en", "a".repeat(32)))),
+    );
+    const user = userEvent.setup();
+    renderWithLocale(
+      <AppShell
+        navigate={vi.fn()}
+        projectControlsDataSource={dataSource}
+        route={route("project", `/projects/${projectId}`)}
+      >
+        <p>Live Project workspace</p>
+      </AppShell>,
+      "en",
+      `/projects/${projectId}`,
+    );
+
+    expect(
+      await screen.findByText("Language is managed by the Frappe session."),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Quick create" }));
+    expect(
+      await screen.findByText(
+        "Your current Project capability does not allow creating a learning record.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", {
+        name: "Create Project learning record",
+      }),
+    ).toBeNull();
   });
 
   it("persists a language choice through the visible selector fallback", async () => {
@@ -219,6 +561,15 @@ describe("application shell behavior", () => {
     expect(
       screen.getByRole("button", { name: "Current user" }),
     ).toHaveTextContent("Signed-in user");
+    const domainNavigation = screen.getByRole("navigation", {
+      name: "Domain navigation",
+    });
+    expect(
+      within(domainNavigation).getByLabelText("Project Portfolio"),
+    ).toHaveAttribute("aria-disabled", "true");
+    expect(
+      within(domainNavigation).getByRole("button", { name: "Tooling" }),
+    ).toHaveAttribute("aria-disabled", "true");
 
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(dispatchEvent).toHaveBeenCalledWith(
@@ -558,15 +909,37 @@ describe("application shell behavior", () => {
     globalThis.dispatchEvent(leaveEvent);
     expect(leaveEvent.defaultPrevented).toBe(true);
 
+    const commandTrigger = screen.getByRole("button", {
+      name: "Open command palette",
+    });
+    commandTrigger.focus();
+    await user.keyboard("{Control>}k{/Control}");
+    const commandDialog = screen.getByRole("dialog", {
+      name: "Command palette",
+    });
+    await user.type(
+      within(commandDialog).getByRole("searchbox", {
+        name: "Search commands",
+      }),
+      "Tooling",
+    );
+    await user.keyboard("{ArrowDown}{Enter}");
+    const firstReview = screen.getByRole("dialog", { name: "Unsaved changes" });
+    expect(firstReview).toBeVisible();
+    await user.keyboard("{Control>}k{/Control}");
+    expect(
+      screen.queryByRole("dialog", { name: "Command palette" }),
+    ).toBeNull();
+    expect(firstReview).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => {
+      expect(commandTrigger).toHaveFocus();
+    });
+    expect(globalThis.location.pathname).toBe("/demo/projects/PJ-26018");
+
     const tooling = within(
       screen.getByRole("navigation", { name: "Domain navigation" }),
     ).getByRole("button", { name: "Tooling" });
-    await user.click(tooling);
-    const firstReview = screen.getByRole("dialog", { name: "Unsaved changes" });
-    expect(firstReview).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(globalThis.location.pathname).toBe("/demo/projects/PJ-26018");
-
     await user.click(tooling);
     await user.type(
       screen.getByRole("textbox", { name: "Reason" }),

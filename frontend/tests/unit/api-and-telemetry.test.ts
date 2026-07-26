@@ -520,6 +520,7 @@ describe("NPI BFF client boundary", () => {
       catalog: { language: "en" as const, messages: {}, version: "v1" },
       csrfToken: "csrf-v1",
       language: "en" as const,
+      preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
     };
     const http = new NpiHttpClient();
@@ -529,6 +530,7 @@ describe("NPI BFF client boundary", () => {
     const client = new SessionClient(http);
     await client.getBootstrap(acceptBootstrapFixture);
     await client.setLanguage("zh-TW", acceptBootstrapFixture);
+    await client.setNavigationCollapsed(true, acceptBootstrapFixture);
     expect(request.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
     expect(request).toHaveBeenNthCalledWith(
       1,
@@ -545,6 +547,15 @@ describe("NPI BFF client boundary", () => {
       }),
       { csrfToken: "csrf-v1", validate: acceptBootstrapFixture },
     );
+    expect(request).toHaveBeenNthCalledWith(
+      3,
+      "/session/preferences/navigation",
+      {
+        body: JSON.stringify({ collapsed: true }),
+        method: "PUT",
+      },
+      { csrfToken: "csrf-v1", validate: acceptBootstrapFixture },
+    );
   });
 
   it("removes the in-memory CSRF token when the session is cleared", async () => {
@@ -553,6 +564,7 @@ describe("NPI BFF client boundary", () => {
       catalog: { language: "en" as const, messages: {}, version: "v1" },
       csrfToken: "csrf-v1",
       language: "en" as const,
+      preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
     };
     const http = new NpiHttpClient();
@@ -586,6 +598,7 @@ describe("NPI BFF client boundary", () => {
       },
       csrfToken: "a".repeat(32),
       language: "zh" as const,
+      preferences: { navigationCollapsed: false },
       userId: "phase3@example.invalid",
     };
     const http = new NpiHttpClient();
@@ -603,6 +616,40 @@ describe("NPI BFF client boundary", () => {
     ).resolves.toEqual(bootstrap);
     expect(request).toHaveBeenCalledOnce();
     expect(request.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
+    expect(request).toHaveBeenCalledWith(
+      "/session/bootstrap",
+      { signal: request.mock.calls[0]?.[1]?.signal },
+      { validate: acceptBootstrapFixture },
+    );
+  });
+
+  it("reconciles an indeterminate navigation preference before issuing a duplicate PUT", async () => {
+    const bootstrap = {
+      allowedLanguages: ["en", "zh", "zh-TW"] as const,
+      catalog: {
+        language: "en" as const,
+        messages: {},
+        version: "a".repeat(64),
+      },
+      csrfToken: "a".repeat(32),
+      language: "en" as const,
+      preferences: { navigationCollapsed: true },
+      userId: "phase3@example.invalid",
+    };
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(<T>(): Promise<T> => Promise.resolve(bootstrap as T));
+    const client = new SessionClient(http);
+
+    await expect(
+      client.refreshAndSetNavigationCollapsed(
+        true,
+        acceptBootstrapFixture,
+        acceptBootstrapFixture,
+      ),
+    ).resolves.toEqual(bootstrap);
+    expect(request).toHaveBeenCalledOnce();
     expect(request).toHaveBeenCalledWith(
       "/session/bootstrap",
       { signal: request.mock.calls[0]?.[1]?.signal },

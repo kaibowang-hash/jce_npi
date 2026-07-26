@@ -24,7 +24,7 @@ DOCX_ONLY_PREFIXES = ("UX-", "ARCH-", "COD-", "I18N-", "FR-TX-")
 
 ADDENDUM_REQUIREMENTS = (
     ("FR-UX-038", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
-    ("FR-UX-039", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
+    ("FR-UX-039", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-040", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-041", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
@@ -41,9 +41,9 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
     "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
     "UX-007": ("5", "PLANNED_R1_04_GRID_PERSONALIZATION"),
-    "UX-011": ("5", "PLANNED_R1_03_CONTEXT_QUICK_CREATE"),
+    "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
-    "UX-018": ("5", "PLANNED_R1_03_COMMAND_FOUNDATION"),
+    "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
     "UX-027": ("5", "PLANNED_R1_04_PERSONALIZATION"),
@@ -51,6 +51,32 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
     "UX-035": ("5", "PLANNED_R1_04_R1_06_DENSITY"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
+}
+R1_03_EVIDENCE = {
+    "FR-UX-039": (
+        "apps/npi_core/npi_core/localization_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/api/session.ts",
+        "frontend/src/app/app-shell.tsx",
+        "frontend/tests/e2e/r1-03-shell.spec.ts",
+        "scripts/verify_frappe_runtime.py",
+        "implementation/evidence/reconciliation/r1-03-validation.md",
+    ),
+    "UX-011": (
+        "frontend/src/app/app-shell.tsx",
+        "frontend/src/pages/project-governance-workspace.tsx",
+        "frontend/tests/unit/project-governance-workspace.test.tsx",
+        "frontend/tests/e2e/r1-03-shell.spec.ts",
+        "implementation/evidence/reconciliation/r1-03-validation.md",
+    ),
+    "UX-018": (
+        "frontend/src/app/command-palette.tsx",
+        "frontend/src/app/router.ts",
+        "frontend/tests/unit/pages-and-shell.test.tsx",
+        "frontend/tests/unit/router.test.tsx",
+        "frontend/tests/e2e/r1-03-shell.spec.ts",
+        "implementation/evidence/reconciliation/r1-03-validation.md",
+    ),
 }
 
 
@@ -134,6 +160,8 @@ def _expanded_rows(
         )
         if requirement_id.startswith("FR-TX-"):
             evidence += "; docs/TOOLING_LIST_IMPORT_SPEC.md"
+        if requirement_id in R1_03_EVIDENCE:
+            evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -162,6 +190,8 @@ def _expanded_rows(
                 "frontend/tests/e2e/display-brand.spec.ts; "
                 "implementation/evidence/reconciliation/r1-02-validation.md"
             )
+        if requirement_id in R1_03_EVIDENCE:
+            evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

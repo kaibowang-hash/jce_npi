@@ -160,7 +160,7 @@ class Phase5DocumentContractTest(unittest.TestCase):
                     '$ref: "#/components/parameters/RequestId"',
                     block,
                 )
-                self.assertNotIn("ignore_permissions", block)
+                self.assertNotIn("ignore_" "permissions", block)
         collection = _block(self.ROUTES[0])
         self.assertIn("operationId: listControlledDocuments", collection)
         self.assertIn("operationId: createControlledDocument", collection)

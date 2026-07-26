@@ -61,6 +61,7 @@ function sessionBootstrap(
     },
     csrfToken: token,
     language,
+    preferences: { navigationCollapsed: false },
     userId,
   };
 }

@@ -40,6 +40,7 @@ function enableCommandSession(): void {
           },
           csrfToken,
           language: "en",
+          preferences: { navigationCollapsed: false },
           userId: "manager@example.invalid",
         }),
         { status: 200 },
@@ -725,6 +726,21 @@ describe("Project governance workspace", () => {
     expect(
       screen.queryByText("Hot runner sourcing retrospective"),
     ).not.toBeInTheDocument();
+  });
+
+  it("transfers quick-create focus only after the authorized learning form loads", async () => {
+    enableCommandSession();
+    renderWorkspace(createDataSource(), "learning", {
+      path: `/projects/${projectControlIds.project}?tab=learning&quickCreate=learning`,
+    });
+
+    const title = await screen.findByRole("textbox", { name: "Title" });
+    await waitFor(() => {
+      expect(title).toHaveFocus();
+    });
+    expect(
+      document.getElementById("project-learning-quick-create"),
+    ).toContainElement(title);
   });
 
   it("shows empty read-only activity without exposing contribution controls", async () => {

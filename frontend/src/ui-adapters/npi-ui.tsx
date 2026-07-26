@@ -6,48 +6,86 @@ import type {
   PropsWithChildren,
   SelectHTMLAttributes,
 } from "react";
-import { useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useRef } from "react";
 import { IxButton, IxIcon } from "@siemens/ix-react";
 import {
   iconAlarmBell,
+  iconAdd,
+  iconAnalysis,
+  iconApps,
   iconCheck,
+  iconChevronLeftSmall,
   iconChevronRightSmall,
+  iconDocument,
   iconError,
   iconFilter,
+  iconHistory,
   iconQuestion,
   iconInfo,
+  iconKeyboard,
+  iconMaintenance,
+  iconPlay,
+  iconProject,
+  iconProjects,
   iconRefresh,
   iconSearch,
   iconUser,
   iconWarning,
+  iconWorkCase,
 } from "@siemens/ix-icons/icons";
 import "@siemens/ix/dist/siemens-ix/siemens-ix.css";
 
 export type NpiIconName =
+  | "add"
   | "alarm"
+  | "analysis"
+  | "apps"
   | "check"
   | "chevron"
+  | "collapse"
+  | "document"
   | "error"
+  | "expand"
   | "filter"
   | "help"
+  | "history"
   | "info"
+  | "keyboard"
+  | "maintenance"
+  | "play"
+  | "project"
+  | "projects"
   | "refresh"
   | "search"
   | "user"
-  | "warning";
+  | "warning"
+  | "work";
 
 const icons: Record<NpiIconName, string> = {
+  add: iconAdd,
   alarm: iconAlarmBell,
+  analysis: iconAnalysis,
+  apps: iconApps,
   check: iconCheck,
   chevron: iconChevronRightSmall,
+  collapse: iconChevronLeftSmall,
+  document: iconDocument,
   error: iconError,
+  expand: iconChevronRightSmall,
   filter: iconFilter,
   help: iconQuestion,
+  history: iconHistory,
   info: iconInfo,
+  keyboard: iconKeyboard,
+  maintenance: iconMaintenance,
+  play: iconPlay,
+  project: iconProject,
+  projects: iconProjects,
   refresh: iconRefresh,
   search: iconSearch,
   user: iconUser,
   warning: iconWarning,
+  work: iconWorkCase,
 };
 
 type HydratableElement = HTMLElement & {
@@ -209,12 +247,14 @@ export function Button({
   );
 }
 
-export function TextInput({
-  className = "",
-  ...props
-}: InputHTMLAttributes<HTMLInputElement>): React.JSX.Element {
-  return <input className={`npi-input ${className}`.trim()} {...props} />;
-}
+export const TextInput = forwardRef<
+  HTMLInputElement,
+  InputHTMLAttributes<HTMLInputElement>
+>(function TextInput({ className = "", ...props }, ref): React.JSX.Element {
+  return (
+    <input className={`npi-input ${className}`.trim()} ref={ref} {...props} />
+  );
+});
 
 export function Select({
   className = "",

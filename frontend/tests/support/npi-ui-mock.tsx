@@ -5,19 +5,33 @@ import type {
   PropsWithChildren,
   SelectHTMLAttributes,
 } from "react";
+import { forwardRef } from "react";
 
 export type NpiIconName =
+  | "add"
   | "alarm"
+  | "analysis"
+  | "apps"
   | "check"
   | "chevron"
+  | "collapse"
+  | "document"
   | "error"
+  | "expand"
   | "filter"
   | "help"
+  | "history"
   | "info"
+  | "keyboard"
+  | "maintenance"
+  | "play"
+  | "project"
+  | "projects"
   | "refresh"
   | "search"
   | "user"
-  | "warning";
+  | "warning"
+  | "work";
 
 // The test adapter intentionally mirrors both component and imperative exports.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -66,11 +80,12 @@ export function Icon({
   );
 }
 
-export function TextInput(
-  properties: InputHTMLAttributes<HTMLInputElement>,
-): JSX.Element {
-  return <input {...properties} />;
-}
+export const TextInput = forwardRef<
+  HTMLInputElement,
+  InputHTMLAttributes<HTMLInputElement>
+>(function TextInput(properties, ref): JSX.Element {
+  return <input ref={ref} {...properties} />;
+});
 
 export function Select(
   properties: SelectHTMLAttributes<HTMLSelectElement>,

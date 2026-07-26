@@ -756,6 +756,7 @@ High,高
 Critical,嚴重
 Identified,已識別
 Open,待處理
+Open selected command,開啟所選命令
 Requested,已請求
 Policy label unavailable,策略標籤無法使用
 The project work context response could not be used safely,專案工作上下文回應無法安全使用
@@ -2480,3 +2481,59 @@ revoked,已撤銷
 External Retrieval State,外部擷取狀態
 External Retrieval Reason Code,外部擷取原因代碼
 Share Grant Snapshot Hash,共用授權快照雜湊
+Prototype navigation is unavailable from live data. Open an authorized link instead.,即時資料情境中無法使用原型導覽。請改為開啟已授權連結。
+Open a Project from an authorized link.,從已授權連結開啟專案。
+Open My Work,開啟我的工作
+Open the authorized cross-object work queue.,開啟已授權的跨物件工作佇列。
+Work,工作
+Actions,操作
+Approvals,核准
+Open current Project,開啟目前專案
+Open Project prototype,開啟專案原型
+Return to the current authorized Project cockpit.,返回目前已授權的專案駕駛艙。
+Open the governed Project prototype workspace.,開啟受控的專案原型工作區。
+Cockpit,駕駛艙
+Open Part,開啟零件
+Open a Part workspace.,開啟零件工作區。
+Drawing,圖面
+Part navigation is unavailable because no approved Part route exists.,零件導覽無法使用，因為尚無已核准的零件路由。
+Open Tooling prototype,開啟模具開發原型
+Open the existing Tooling prototype workspace.,開啟現有的模具開發原型工作區。
+Mould,模具
+Open Trial prototype,開啟試模原型
+Open the existing Trial prototype workspace.,開啟現有的試模原型工作區。
+Open Execution prototype,開啟執行原型
+Open the existing execution and reconciliation prototype.,開啟現有的執行與對帳原型。
+Execution,執行
+Reconciliation,對帳
+Creation capabilities for this Project are unavailable.,此專案的建立能力無法使用。
+Open an authorized live Project before using contextual quick-create.,使用情境快速建立前，請先開啟已授權的即時專案。
+The authenticated session is not ready. Reconcile the session before creating a record.,驗證身分的工作階段尚未就緒。建立記錄前請先對帳工作階段狀態。
+Your current Project capability does not allow creating a learning record.,您在目前專案中的能力不允許建立學習記錄。
+Open command palette,開啟命令面板
+Commands,命令
+Current Project {{project}},目前專案 {{project}}
+Expand domain navigation,展開領域導覽
+Collapse domain navigation,摺疊領域導覽
+Navigation is compact at this window size.,此視窗尺寸下導覽自動使用精簡模式。
+Saving navigation preference,正在儲存導覽偏好
+Expand navigation,展開導覽
+Collapse navigation,摺疊導覽
+Return to previous context,返回上一個工作情境
+Quick create,快速建立
+Contextual quick-create,情境快速建立
+Current Project,目前專案
+No authorized Project context,沒有已授權的專案情境
+Checking current Project capabilities,正在檢查目前專案能力
+Create Project learning record,建立專案學習記錄
+The current Project capabilities could not be checked.,無法檢查目前專案能力。
+The navigation preference could not be confirmed.,無法確認導覽偏好。
+The last confirmed navigation mode was kept. Retry to reconcile with the current Frappe session.,已保留上次確認的導覽模式。請重試以與目前 Frappe 工作階段對帳。
+Command palette,命令面板
+Navigate approved workspaces with the keyboard.,使用鍵盤導覽至已核准的工作區。
+Search commands,搜尋命令
+Type a workspace or action,輸入工作區或操作
+Command results,命令結果
+No approved command matches this query.,沒有與此查詢相符的已核准命令。
+Move,移動
+Close,關閉
