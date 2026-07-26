@@ -1,5 +1,78 @@
 # Last Run
 
+## R1-02 LaunchFlow display brand PASS; R1-03 activated — 2026-07-26T05:54:51Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized bridge checkpoint:
+  `0955dca7a6776734d4d864a3b5db6ef44b676ec4`.
+- Atomic task:
+  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`.
+- Primary requirement: `FR-BR-001`.
+- Result:
+  `PASS — LEVEL 2 SHARED-SHELL/I18N TASK GATE`.
+- Current task:
+  `R1-03 — App Shell collapsed navigation command and contextual quick-create`.
+- Held product task:
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED`; not `PASS`).
+
+### Delivered boundary
+
+- Added one display-brand adapter over the five exact supplied LaunchFlow SVGs
+  and enforced their CSV-authorized header, light-footer, loading, favicon and
+  compact source-identity contexts.
+- Added a pre-React favicon, LaunchFlow document title, bounded/cancellable
+  localization bootstrap with honest retry/fallback states, and a persistent
+  neutral-light Company footer without weakening the industrial Shell.
+- Kept `NPI_ONE`, `ERPNEXT`, `/api/npi/v1`, packages, DocTypes and database
+  identities stable. Registered the approved `Core.png` input and retained an
+  executable build guard that prevents its activation before Phase 8/M7-09.
+- Added complete direct English-source/`zh`/`zh-TW` catalogs, keyboard
+  source-identity tooltip semantics, accessibility coverage and exact
+  brand/Core negative tests.
+- Regenerated the affected shared-Shell baselines once, then passed a separate
+  clean zero-tolerance visual comparison. The 198 changed baselines comprise
+  seven new R1-02 brand/focus cases and 191 existing shared-Shell cases.
+- Marked `FR-BR-001` `TECHNICAL_VERIFIED` with runtime, verifier, unit, browser
+  and Task Gate evidence.
+
+No public API, event schema, DocType, database migration, permission model,
+data ownership, external integration behavior or production connection
+changed.
+
+### Validation
+
+- Node 24 complete frontend verification: `PASS` — generation, TypeScript,
+  ESLint, Prettier, Stylelint, boundary/UI checks, 499/499 unit tests,
+  production build and strict install-script/dependency audits.
+- Frappe-compatible i18n: `PASS` — 2,482 literal English sources with complete
+  direct `zh` and `zh-TW` coverage.
+- Frontend coverage: `PASS` — 84.98% statements, 84.02% branches, 89.71%
+  functions and 86.93% lines.
+- Complete non-visual Playwright: `PASS` — 234/234.
+- Clean complete visual Playwright: `PASS` — 195/195 at unchanged zero
+  tolerance; final `.last-run.json` status is `passed`.
+- Exact asset/build guard: `PASS` — five immutable LaunchFlow SVGs only;
+  exact-byte renames, changed-byte Core stems and changed-byte renamed binaries
+  outside the strict source/public/output manifest are rejected.
+- Reconciliation/trace verifier and focused unittest: `PASS`.
+- Historical Phase 3/4 evidence preservation and `git diff --check`: `PASS`.
+- Independent code and original-resolution visual reviews closed all findings;
+  final result is 0 blocker / 0 major / 0 minor.
+
+Complete evidence:
+
+- `implementation/evidence/reconciliation/r1-02-plan.md`
+- `implementation/evidence/reconciliation/r1-02-validation.md`
+- `implementation/evidence/reconciliation/r1-02/coverage/coverage-summary.json`
+- `implementation/evidence/reconciliation/r1-02/playwright-report/index.html`
+- `implementation/evidence/reconciliation/r1-02/playwright-results/.last-run.json`
+
+R1-02 does not claim the cumulative R1 Level 3 bridge Gate. Automatic
+continuation activates only R1-03. R1-07 remains scoped to DR-REC-001, and
+P5-01 resumes only after R1-03 through R1-06 and the shared Level 3 bridge Gate
+pass.
+
 ## R1-01 DOCX / Pack reconciliation PASS; R1-02 activated — 2026-07-25T21:47:16Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -1,11 +1,47 @@
 from __future__ import annotations
 
+import csv
 import importlib.util
+import struct
+import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts/verify_v1_2_reconciliation.py"
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _png_chunk(chunk_type: bytes, payload: bytes) -> bytes:
+    crc = zlib.crc32(chunk_type)
+    crc = zlib.crc32(payload, crc) & 0xFFFFFFFF
+    return (
+        struct.pack(">I", len(payload))
+        + chunk_type
+        + payload
+        + struct.pack(">I", crc)
+    )
+
+
+def _png_document(
+    *,
+    width: int = 1,
+    height: int = 1,
+    extra_chunks: tuple[bytes, ...] = (),
+    include_iend: bool = True,
+) -> bytes:
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    idat = zlib.compress(b"\x00\x00\x00\x00\x00")
+    payload = (
+        PNG_SIGNATURE
+        + _png_chunk(b"IHDR", ihdr)
+        + b"".join(extra_chunks)
+        + _png_chunk(b"IDAT", idat)
+    )
+    if include_iend:
+        payload += _png_chunk(b"IEND", b"")
+    return payload
 
 
 def _load_verifier():
@@ -30,8 +66,115 @@ class V12ReconciliationTests(unittest.TestCase):
     def test_trace_sets_are_complete_and_consistent(self) -> None:
         self.verifier.verify_trace_sets()
 
+    def test_launchflow_trace_is_verified_with_runtime_evidence(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        row = next(item for item in rows if item["requirement_id"] == "FR-BR-001")
+        self.assertEqual(row["status"], "TECHNICAL_VERIFIED")
+        self.assertIn(
+            "implementation/evidence/reconciliation/r1-02-validation.md",
+            row["evidence"],
+        )
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
+
+    def test_csv_reader_rejects_malformed_quoted_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "invalid.csv"
+            path.write_text('name,value\nCore.png,"unterminated\n', encoding="utf-8")
+            with self.assertRaises(csv.Error):
+                self.verifier._read_csv(path)
+
+    def test_brand_png_rejects_size_dimension_and_pixel_budgets(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            cases = (
+                (
+                    "encoded-size",
+                    b"x" * (self.verifier.MAX_BRAND_PNG_FILE_BYTES + 1),
+                    "file size",
+                ),
+                (
+                    "dimension",
+                    _png_document(
+                        width=self.verifier.MAX_BRAND_PNG_DIMENSION + 1
+                    ),
+                    "dimensions",
+                ),
+                (
+                    "pixels",
+                    _png_document(width=4097, height=4097),
+                    "pixel budget",
+                ),
+            )
+            for name, payload, error_pattern in cases:
+                with self.subTest(name=name):
+                    path = Path(directory) / f"{name}.png"
+                    path.write_bytes(payload)
+                    with self.assertRaisesRegex(
+                        self.verifier.ReconciliationVerificationError,
+                        error_pattern,
+                    ):
+                        self.verifier._verify_png_is_safe(path)
+
+    def test_brand_png_rejects_invalid_structure_crc_and_termination(self) -> None:
+        valid = _png_document()
+        bad_crc = bytearray(valid)
+        bad_crc[32] ^= 1
+        cases = (
+            ("signature", b"not-png!", "signature"),
+            ("truncated", valid[:-1], "truncated chunk"),
+            ("crc", bytes(bad_crc), "CRC differs"),
+            ("missing-iend", _png_document(include_iend=False), "unique IEND"),
+            ("trailing", valid + b"x", "trailing data"),
+            (
+                "multiple-iend",
+                valid + _png_chunk(b"IEND", b""),
+                "multiple IEND",
+            ),
+            (
+                "short-ihdr",
+                PNG_SIGNATURE + _png_chunk(b"IHDR", b"\x00" * 12),
+                "13-byte leading IHDR",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, payload, error_pattern in cases:
+                with self.subTest(name=name):
+                    path = Path(directory) / f"{name}.png"
+                    path.write_bytes(payload)
+                    with self.assertRaisesRegex(
+                        self.verifier.ReconciliationVerificationError,
+                        error_pattern,
+                    ):
+                        self.verifier._verify_png_is_safe(path)
+
+    def test_brand_png_rejects_animation_and_unknown_critical_chunks(self) -> None:
+        cases = (
+            (
+                "animation",
+                _png_document(
+                    extra_chunks=(
+                        _png_chunk(b"acTL", struct.pack(">II", 1, 0)),
+                    )
+                ),
+                "animated PNG chunks",
+            ),
+            (
+                "unknown-critical",
+                _png_document(extra_chunks=(_png_chunk(b"ABCD", b""),)),
+                "unsupported critical chunk ABCD",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, payload, error_pattern in cases:
+                with self.subTest(name=name):
+                    path = Path(directory) / f"{name}.png"
+                    path.write_bytes(payload)
+                    with self.assertRaisesRegex(
+                        self.verifier.ReconciliationVerificationError,
+                        error_pattern,
+                    ):
+                        self.verifier._verify_png_is_safe(path)
 
 
 if __name__ == "__main__":

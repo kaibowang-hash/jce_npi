@@ -1,8 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const evidenceScope = process.env.NPI_EVIDENCE_SCOPE?.trim() || "phase-4";
+if (
+  !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/u.test(
+    evidenceScope,
+  )
+) {
+  throw new Error("NPI_EVIDENCE_SCOPE contains an unsafe path segment.");
+}
+const evidenceDirectory = `../implementation/evidence/${evidenceScope}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
-  outputDir: "../implementation/evidence/phase-4/playwright-results",
+  outputDir: `${evidenceDirectory}/playwright-results`,
   fullyParallel: true,
   forbidOnly: true,
   retries: 0,
@@ -12,7 +22,7 @@ export default defineConfig({
     [
       "html",
       {
-        outputFolder: "../implementation/evidence/phase-4/playwright-report",
+        outputFolder: `${evidenceDirectory}/playwright-report`,
         open: "never",
       },
     ],

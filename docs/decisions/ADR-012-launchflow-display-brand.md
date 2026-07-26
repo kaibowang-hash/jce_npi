@@ -4,6 +4,9 @@ Status: Accepted for the bounded LaunchFlow display brand
 
 Date: 2026-07-25
 
+Amended: 2026-07-25 — deferred `Core.png` / `JCE Core` registration under the
+user-approved plan dated 2026-07-26; the R1-02 boundary remains unchanged.
+
 ## Context
 
 The product currently uses stable internal names such as `npi_core`,
@@ -11,7 +14,8 @@ The product currently uses stable internal names such as `npi_core`,
 would create migration and contract risk without user value.
 
 The user supplied `docs/Brand Asset/` and directed that its CSV and exact
-assets be the only source for brand-related development. The folder contains:
+assets be the only source for brand-related development. At this ADR's initial
+acceptance, the folder contained:
 
 - `Brand Asset Instruction.csv`;
 - `Company LOGO.svg`;
@@ -20,7 +24,10 @@ assets be the only source for brand-related development. The folder contains:
 - `LaunchFlow-logo_Standard.svg`; and
 - `LaunchFlow-logo_White.svg`.
 
-It contains no JCE Core/Era icon, display wording or usage instruction.
+After initial acceptance, the user supplied `Core.png`, added its CSV usage
+rule and approved the `JCE Core` display name. That later input resolves
+DR-REC-006 but is allocated to FR-BR-002/Phase 8/M7-09; it does not expand the
+R1-02 LaunchFlow implementation boundary.
 
 ## Decision
 
@@ -38,9 +45,9 @@ It contains no JCE Core/Era icon, display wording or usage instruction.
 5. Do not derive a new product palette, redraw/modify a mark, use an unrelated
    company asset as an ERP/JCE icon, browse for substitute branding, or add a
    second design system.
-6. Keep ERP/JCE display identity unchanged until an approved asset package and
-   legal display wording are supplied. That scoped hold does not block
-   LaunchFlow display-brand work.
+6. Keep ERP/JCE runtime display identity unchanged during R1-02. The later
+   approved `Core.png`/`JCE Core` input is registered now and activated only by
+   FR-BR-002/Phase 8/M7-09; that allocation does not block LaunchFlow work.
 7. Treat colors inside the unchanged supplied SVGs as a narrow brand-mark
    exception. They do not alter the industrial teal/neutral component tokens.
 8. Use `Loading.svg` only for a blank entry/start/full-surface loading state,
@@ -67,7 +74,8 @@ It contains no JCE Core/Era icon, display wording or usage instruction.
 - Reuse `Company LOGO.svg` as an ERP/JCE icon: contradicts its footer-only CSV
   scope.
 - Invent or retrieve a JCE Core asset: contradicts the user's sole-source
-  instruction.
+  instruction. The subsequently supplied `Core.png` is the only approved
+  Phase 8 source.
 - Keep brand references scattered across pages: makes usage rules difficult to
   enforce and audit.
 

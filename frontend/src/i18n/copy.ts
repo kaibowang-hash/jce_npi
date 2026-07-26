@@ -261,7 +261,7 @@ export function syncStateLabel(
 ): string {
   switch (code) {
     case "local":
-      return t("Saved in NPI One");
+      return t("Saved in LaunchFlow");
     case "pending":
       return t("Pending");
     case "pending_approval":
@@ -296,7 +296,7 @@ export function syncStateLabel(
 export function sourceSystemLabel(t: Translator, source: SourceSystem): string {
   switch (source) {
     case "NPI_ONE":
-      return t("NPI One");
+      return t("LaunchFlow");
     case "ERPNEXT":
       return t("ERPNext");
     case "COMPUTED":

@@ -123,13 +123,13 @@ normalized aggregate model.
 | FR-PRN-003 | P0 | Define controlled domain print-form coverage, permissions and required signatures. | Every enabled form has an owner, signer rule, locale evidence and retention/copy policy. | Pending DR-REC-003/004 |
 | FR-INT-015 | P1 | Release an immutable Trial Summary for read-only projection to the quality area of the ERP/JCE system. | The event/contract contains exact Trial inputs, parameters, cavities, issues, conclusions and controlled references; the target cannot edit NPI Trial truth. | Accepted NPI-side readiness only; exact contract/event held by DR-REC-009 |
 | FR-BR-001 | P0 | Introduce LaunchFlow display-brand configuration using only the supplied brand package and its CSV usage rules. | User-facing display assets follow the exact light/dark/loading/favicon/footer/source contexts; stable internal names and `/api/npi/v1` do not change. | Accepted |
-| FR-BR-002 | P1 | Map the ERP/JCE display identity without changing the stable integration system code. | Display text and icon come from an explicitly supplied approved package; internal `ERPNEXT` identity and ownership remain stable. | Pending DR-REC-006; no asset supplied |
+| FR-BR-002 | P1 | Map the ERP/JCE display identity without changing the stable integration system code. | Display text and icon come from an explicitly supplied approved package; internal `ERPNEXT` identity and ownership remain stable. | Approved `JCE Core` display name and `Core.png` supplied; implementation allocated to Phase 8/M7-09 |
 | FR-TX-019 | P0 | Separate Customer Standard/Provided Specification, TP Trial Actual and immutable Approved Process Baseline. | Copying a standard never becomes measured actual; every comparable value has unit, provenance, context and effective version. | Accepted |
 | FR-TX-020 | P0 | Calculate delta/variance against a versioned tolerance/rule and display `not_measured`, `within_tolerance`, `outside_tolerance` or `unavailable`. | Difference is not automatically shown as an exception unless the approved policy says so. | Pending DR-REC-002 for red semantics |
 
 ## 6. Brand boundary
 
-The supplied folder contains five usage-governed SVGs:
+The supplied folder contains five usage-governed LaunchFlow SVGs:
 
 - `Company LOGO.svg` — website footer only;
 - `Loading.svg` — blank entry/start/loading page;
@@ -144,8 +144,10 @@ inside the unchanged SVGs are a narrow brand-mark exception and do not retheme
 the industrial teal/neutral UI. Accessible names remain translated text even
 where the visible source identity uses the LaunchFlow icon.
 
-The brand package does not contain a JCE Core asset or legal display string.
-That portion of `FR-BR-002` remains scoped and cannot block LaunchFlow work.
+The subsequently supplied `Core.png` and CSV usage rule approve the `JCE Core`
+display identity. They resolve DR-REC-006 but remain allocated to Phase 8/M7-09;
+R1-02 does not activate them, and the stable `ERPNEXT` system code remains
+unchanged.
 
 ## 7. Delivery sequence
 

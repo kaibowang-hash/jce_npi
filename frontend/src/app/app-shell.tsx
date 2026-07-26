@@ -11,6 +11,11 @@ import {
   Select,
   TextInput,
 } from "../ui-adapters/npi-ui";
+import {
+  DisplayBrandCompanyMark,
+  DisplayBrandPlatformIcon,
+  DisplayBrandWordmark,
+} from "../ui-adapters/display-brand";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 
 interface NavigationItem {
@@ -154,13 +159,22 @@ export function AppShell({
     <div className="app-shell">
       <header className="app-header">
         <button
+          aria-label={t("Open LaunchFlow home")}
           className="app-header__brand"
           onClick={() => {
             navigate("/work");
           }}
           type="button"
         >
-          {t("NPI One")}
+          <DisplayBrandWordmark
+            accessibleName={t("LaunchFlow")}
+            decorative
+            surface="dark"
+          />
+          <DisplayBrandPlatformIcon
+            accessibleName={t("LaunchFlow")}
+            decorative
+          />
         </button>
         <span
           className="app-header__context"
@@ -439,12 +453,22 @@ export function AppShell({
         </div>
         <main id="main-content">{children}</main>
         <footer className="status-bar">
+          <div className="status-bar__brand">
+            <DisplayBrandWordmark
+              accessibleName={t("LaunchFlow")}
+              surface="light"
+            />
+            <span aria-hidden="true" className="status-bar__brand-divider" />
+            <DisplayBrandCompanyMark
+              accessibleName={t("Company ownership mark")}
+            />
+          </div>
           <span>{t("Test environment")}</span>
-          <span>
+          <span className="status-bar__catalog">
             {t("Catalog")}:{" "}
             <code data-language-exempt="identifier">{catalogVersion}</code>
           </span>
-          <span>
+          <span className="status-bar__timezone">
             {isLiveWork ? t("System time zone") : t("Time zone")}:{" "}
             <span data-language-exempt="identifier">UTC</span>
           </span>

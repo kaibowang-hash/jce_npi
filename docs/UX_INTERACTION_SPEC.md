@@ -230,12 +230,15 @@ Review step 要显示对象、版本、影响、权限、不可逆部分、失�
 - square icon 用作 favicon 与紧凑 platform/source identity；
 - Loading 资产只用于 blank entry/start/full-page loading，不替代表格/
   对象 skeleton；
-- Company LOGO 只用于 persistent website footer。
+- Company LOGO 只用于 persistent website footer；
+- `Core.png` 仅分配给 FR-BR-002/Phase 8/M7-09 的 JCE Core 显示身份，
+  R1-02 不提前启用。
 
 资产颜色是 logo 内部的窄范围例外，不改变工业深青 action/navigation
 token。不得重画/改色资产、把 Company LOGO 当作 ERP/JCE icon，或从外部
 寻找替代品牌。图标替代可见 source text 时仍提供当前语言的 accessible
-name。稳定 `NPI_ONE`/`ERPNEXT` 代码、内部 app 名和 `/api/npi/v1` 不变。
+name。`Core.png` 的后续显示适配不得改变稳定 `NPI_ONE`/`ERPNEXT` 代码、
+内部 app 名和 `/api/npi/v1`。
 
 ## 11. 语言与翻译
 

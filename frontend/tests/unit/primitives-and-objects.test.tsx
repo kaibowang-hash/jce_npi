@@ -16,6 +16,7 @@ import {
   Panel,
   SemanticStatus,
   SourceBadge,
+  SourceSystemIdentity,
   SyncBadge,
 } from "../../src/components/primitives";
 import {
@@ -52,6 +53,8 @@ describe("industrial reusable components", () => {
         title="Fixture panel"
       >
         <SourceBadge source={source} />
+        <SourceSystemIdentity sourceSystem="ERPNEXT" />
+        <SourceSystemIdentity sourceSystem="COMPUTED" />
         <SyncBadge state="processing" />
         <DefinitionList
           rows={[{ label: "Code", value: "PJ-26018", exempt: "identifier" }]}
@@ -61,7 +64,11 @@ describe("industrial reusable components", () => {
     expect(
       screen.getByRole("heading", { name: "Fixture panel" }),
     ).toBeVisible();
-    expect(screen.getByText("NPI One")).toBeVisible();
+    expect(
+      screen.getByRole("img", { name: "LaunchFlow platform" }),
+    ).toHaveAttribute("data-brand-context", "platform-source");
+    expect(screen.getByText("ERPNext")).toBeVisible();
+    expect(screen.getByText("Computed")).toBeVisible();
     expect(screen.getByText("Processing")).toBeVisible();
     expect(screen.getByText("PJ-26018")).toHaveAttribute(
       "data-language-exempt",

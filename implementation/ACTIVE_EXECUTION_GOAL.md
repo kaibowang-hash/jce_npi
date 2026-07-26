@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-25T21:47:16Z`
+Updated: `2026-07-26T05:54:51Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f97ce-d6ad-74f2-8f14-68f2d0d5e962`
@@ -12,10 +12,10 @@ Updated: `2026-07-25T21:47:16Z`
 - Last synchronized product checkpoint:
   `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
   the R1-01 task checkpoint)
-- Current bridge checkpoint: R1-01 is
-  `PASS — LEVEL 2 DOCUMENTATION/TRACE/TOOLING GATE`
+- Current bridge checkpoint: R1-01 and R1-02 are `PASS`; R1-02 passed its
+  `LEVEL 2 SHARED-SHELL/I18N TASK GATE`
 - Current controller task:
-  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`
+  `R1-03 — App Shell collapsed navigation command and contextual quick-create`
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -39,9 +39,11 @@ Updated: `2026-07-25T21:47:16Z`
 - the current Requirement Anchors, contracts and accepted ADRs
 
 Brand development has one sole source:
-`docs/Brand Asset/Brand Asset Instruction.csv` and the exact five SVGs beside
-it. No external/substitute/reconstructed LaunchFlow or ERP/JCE asset is
-authorized. Stable technical identifiers remain unchanged.
+`docs/Brand Asset/Brand Asset Instruction.csv`, the exact five LaunchFlow SVGs
+and subsequently supplied `Core.png` beside it. R1-02 uses only the LaunchFlow
+assets; `Core.png` is allocated to FR-BR-002/Phase 8/M7-09. No
+external/substitute/reconstructed asset is authorized. Stable technical
+identifiers remain unchanged.
 
 ## Recovery boundary
 
@@ -49,12 +51,13 @@ R1-01 preserved all historical Gate evidence and changed no product runtime,
 public API, database schema, event schema, data-ownership contract,
 translation allowlist or external integration behavior.
 
-R1-02 through R1-06 implement the accepted shared bridge. R1-07 remains scoped
-to DR-REC-001. Their shared Shell/design/i18n changes must pass the complete
-triggered Level 3 bridge Gate before P5-01 product work resumes.
+R1-02 implemented the accepted LaunchFlow display-brand boundary. R1-03
+through R1-06 remain in the shared bridge; R1-07 remains scoped to DR-REC-001.
+Their cumulative Shell/design/i18n changes must pass the complete triggered
+Level 3 bridge Gate before P5-01 product work resumes.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
 `implementation/LAST_RUN.md`. Chat memory is non-authoritative. Reuse accepted
-Phase 4, P5-00, P5-01 checkpoint and R1-01 evidence; do not repeat or rewrite
-them merely to restore context.
+Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02 evidence; do not repeat or
+rewrite them merely to restore context.

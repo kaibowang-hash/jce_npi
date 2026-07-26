@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -68,6 +68,11 @@ describe("live Project cockpit states", () => {
     for (const label of ["Gate shells", "Governed references"]) {
       expect(screen.getByLabelText(label)).toHaveAttribute("tabindex", "0");
     }
+    expect(
+      within(screen.getByLabelText("Governed references")).getAllByRole("img", {
+        name: "LaunchFlow platform",
+      }),
+    ).toHaveLength(2);
     expect(document.body).not.toHaveTextContent("Project health");
     expect(document.body).not.toHaveTextContent("Budget");
     expect(document.body).not.toHaveTextContent("Gate decision");
@@ -139,7 +144,12 @@ describe("live Project cockpit states", () => {
         '<img src=x onerror="globalThis.compromised=true">',
       ),
     ).toBeVisible();
-    expect(document.querySelector(".object-header img")).toBeNull();
+    expect(document.querySelector('.object-header img[src="x"]')).toBeNull();
+    expect(
+      document.querySelector(
+        '.object-header img[data-brand-context="platform-source"]',
+      ),
+    ).toBeVisible();
     expect(
       (globalThis as typeof globalThis & { compromised?: boolean }).compromised,
     ).toBeUndefined();

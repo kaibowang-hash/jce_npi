@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from "react";
@@ -26,6 +27,7 @@ export interface I18nContextValue {
   catalogVersion: string;
   sessionCommandContext: SessionCommandContext | null;
   isPrototypeFallback: boolean;
+  isLocalizationBootstrapping: boolean;
   isLocalizationUnavailable: boolean;
   isLocalizationPending: boolean;
   localizationFailure: LocalizationFailure | null;
@@ -148,6 +150,7 @@ export function I18nProvider({
   children,
 }: PropsWithChildren): React.JSX.Element {
   const [sessionClient] = useState(() => new SessionClient());
+  const providerActive = useRef(true);
   const [locale, updateLocale] = useState<Locale>(resolvePrototypeLocale);
   const [runtimeCatalog, setRuntimeCatalog] = useState<
     SessionBootstrap["catalog"] | null
@@ -196,6 +199,7 @@ export function I18nProvider({
         if (!isConsistentBootstrap(bootstrap, requestedLocale)) {
           throw new Error("The session localization response is inconsistent.");
         }
+        if (!providerActive.current) return;
         updateLocale(bootstrap.language);
         setRuntimeCatalog(bootstrap.catalog);
         setSessionCommandContext(
@@ -208,6 +212,7 @@ export function I18nProvider({
         setLocalizationUnavailable(false);
         setLocalizationFailure(null);
       } catch (error) {
+        if (!providerActive.current) return;
         sessionClient.clearSession();
         setSessionCommandContext(null);
         if (prototypeFallbackIsAllowed()) {
@@ -232,7 +237,7 @@ export function I18nProvider({
           });
         }
       } finally {
-        setPendingOperation(null);
+        if (providerActive.current) setPendingOperation(null);
       }
     },
     [sessionClient],
@@ -249,6 +254,7 @@ export function I18nProvider({
         requestedLocale,
         refreshSession,
       ).catch((error: unknown) => {
+        if (!providerActive.current) return;
         sessionClient.clearSession();
         setSessionCommandContext(null);
         setPendingOperation(null);
@@ -266,13 +272,16 @@ export function I18nProvider({
 
   useEffect(() => {
     let cancelled = false;
+    providerActive.current = true;
     queueMicrotask(() => {
       if (!cancelled) launchLocalizationRequest("bootstrap");
     });
     return () => {
       cancelled = true;
+      providerActive.current = false;
+      sessionClient.cancelPendingBootstrap();
     };
-  }, [launchLocalizationRequest]);
+  }, [launchLocalizationRequest, sessionClient]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -301,6 +310,7 @@ export function I18nProvider({
       catalogVersion: runtimeCatalog?.version ?? catalogVersion,
       sessionCommandContext,
       isPrototypeFallback,
+      isLocalizationBootstrapping: pendingOperation === "bootstrap",
       isLocalizationUnavailable,
       isLocalizationPending: pendingOperation !== null,
       localizationFailure,

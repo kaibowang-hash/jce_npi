@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 
 import type {
   SemanticTone,
+  SourceSystem,
   SourceStatus as SourceStatusModel,
   SyncState,
 } from "../domain/view-models";
@@ -21,6 +22,7 @@ import {
   Icon,
   type NpiIconName,
 } from "../ui-adapters/npi-ui";
+import { DisplayBrandPlatformIcon } from "../ui-adapters/display-brand";
 
 export function Panel({
   title,
@@ -105,9 +107,26 @@ export function SourceBadge({
   return (
     <span className="source-badge">
       <span>{t("Source")}</span>
-      <strong>{sourceSystemLabel(t, source.sourceSystem)}</strong>
+      <SourceSystemIdentity emphasized sourceSystem={source.sourceSystem} />
     </span>
   );
+}
+
+export function SourceSystemIdentity({
+  emphasized = false,
+  sourceSystem,
+}: {
+  emphasized?: boolean;
+  sourceSystem: SourceSystem;
+}): React.JSX.Element {
+  const { t } = useI18n();
+  if (sourceSystem === "NPI_ONE") {
+    return (
+      <DisplayBrandPlatformIcon accessibleName={t("LaunchFlow platform")} />
+    );
+  }
+  const label = sourceSystemLabel(t, sourceSystem);
+  return emphasized ? <strong>{label}</strong> : <span>{label}</span>;
 }
 
 export function SyncBadge({

@@ -529,10 +529,11 @@ describe("NPI BFF client boundary", () => {
     const client = new SessionClient(http);
     await client.getBootstrap(acceptBootstrapFixture);
     await client.setLanguage("zh-TW", acceptBootstrapFixture);
+    expect(request.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
     expect(request).toHaveBeenNthCalledWith(
       1,
       "/session/bootstrap",
-      {},
+      { signal: request.mock.calls[0]?.[1]?.signal },
       { validate: acceptBootstrapFixture },
     );
     expect(request).toHaveBeenNthCalledWith(
@@ -601,9 +602,10 @@ describe("NPI BFF client boundary", () => {
       ),
     ).resolves.toEqual(bootstrap);
     expect(request).toHaveBeenCalledOnce();
+    expect(request.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
     expect(request).toHaveBeenCalledWith(
       "/session/bootstrap",
-      {},
+      { signal: request.mock.calls[0]?.[1]?.signal },
       { validate: acceptBootstrapFixture },
     );
   });

@@ -33,8 +33,9 @@
 - Reconciliation decisions:
   `implementation/V1_2_RECONCILIATION_DECISIONS.md`
 - Brand sole source:
-  `docs/Brand Asset/Brand Asset Instruction.csv` and the exact five SVGs in
-  that folder
+  `docs/Brand Asset/Brand Asset Instruction.csv`, the exact five LaunchFlow
+  SVGs and `Core.png` in that folder; `Core.png` remains allocated to
+  FR-BR-002/Phase 8/M7-09
 - Skills: `.agents/skills/*/SKILL.md`; `industrial-ux` is the Siemens-classic
   industrial UX guard, `frappe-i18n` is the zero-mixed-language guard, and
   `xlsx-tooling-import` is the controlled workbook-import guard.

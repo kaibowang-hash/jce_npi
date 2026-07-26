@@ -429,8 +429,8 @@ milestones:
     title: Approved ERP JCE display identity adapter
     requirements:
     - FR-BR-002
-    decisions_required:
-    - DR-REC-006
+    resolved_decision: DR-REC-006
+    supplied_asset: docs/Brand Asset/Core.png
     skills:
     - industrial-ux
     - frappe-i18n

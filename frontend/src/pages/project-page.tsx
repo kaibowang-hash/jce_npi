@@ -21,6 +21,7 @@ import {
   DefinitionList,
   Panel,
   SemanticStatus,
+  SourceSystemIdentity,
 } from "../components/primitives";
 import type {
   ProjectCockpitViewModel,
@@ -28,7 +29,6 @@ import type {
   ProjectReferenceType,
   ProjectType,
 } from "../domain/view-models";
-import { sourceSystemLabel } from "../i18n/copy";
 import { formatDate, formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button } from "../ui-adapters/npi-ui";
@@ -432,7 +432,9 @@ function ProjectCockpit({
                         >
                           <td>{referenceTypeLabel(t, reference.type)}</td>
                           <td>
-                            {sourceSystemLabel(t, reference.sourceSystem)}
+                            <SourceSystemIdentity
+                              sourceSystem={reference.sourceSystem}
+                            />
                           </td>
                           <td data-language-exempt="identifier">
                             {reference.sourceObjectId}

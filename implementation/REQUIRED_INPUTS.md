@@ -133,20 +133,19 @@ Provide owner-approved decisions for:
    receives exception color;
 3. `DR-REC-003/004`: exact controlled forms, owners/signers, wet/electronic
    signature, PDF/browser-print and numbered-copy/retention policy;
-4. `DR-REC-006`: approved ERP/JCE display text, exact asset package, usage
-   rules and legal wording; no LaunchFlow/company asset will be substituted;
-5. `DR-REC-007/008`: source-column Standard/estimate/actual/calculated
+4. `DR-REC-007/008`: source-column Standard/estimate/actual/calculated
    classification and the downstream-use rollback cutoff;
-6. `DR-REC-009`: Released Trial Summary authority, dotted event identity,
+5. `DR-REC-009`: Released Trial Summary authority, dotted event identity,
    payload/version, redaction and read-only consumer mapping; and
-7. `DR-REC-010`: independent Tooling Requirement, Tooling Revision and
+6. `DR-REC-010`: independent Tooling Requirement, Tooling Revision and
    physical Tooling Set states, transitions, skip/reopen/terminal rules and
    authority.
 
-The LaunchFlow package is already complete for its bounded purpose:
-`docs/Brand Asset/Brand Asset Instruction.csv` and its exact five SVGs are the
-sole source. Do not send or retrieve substitute LaunchFlow marks. The folder
-contains no approved ERP/JCE display asset or legal identity.
+The brand package is complete for its currently approved purposes:
+`docs/Brand Asset/Brand Asset Instruction.csv`, its exact five LaunchFlow SVGs
+and `Core.png` are the sole source. The approved `JCE Core` display name,
+`Core.png` and its usage rule resolve DR-REC-006; runtime activation remains
+allocated to Phase 8/M7-09. Do not send, retrieve or create substitute marks.
 
 Each open decision pauses only the dependent behavior named in
 `implementation/V1_2_RECONCILIATION_DECISIONS.md`. Safe parser/provenance,

@@ -145,7 +145,24 @@ describe("application shell behavior", () => {
     expect(scenarioUrl.searchParams.get("scenario")).toBe("error");
     expect(scenarioUrl.searchParams.get("lang")).toBe("en");
 
-    await user.click(screen.getByRole("button", { name: "NPI One" }));
+    const brandButton = screen.getByRole("button", {
+      name: "Open LaunchFlow home",
+    });
+    expect(
+      brandButton.querySelector('[data-brand-context="wordmark-dark"]'),
+    ).toHaveAttribute("data-brand-asset", "LaunchFlow-logo_White.svg");
+    const footer = document.querySelector("footer.status-bar");
+    expect(footer).not.toBeNull();
+    expect(
+      within(footer as HTMLElement).getByRole("img", { name: "LaunchFlow" }),
+    ).toHaveAttribute("data-brand-context", "wordmark-light");
+    expect(
+      within(footer as HTMLElement).getByRole("img", {
+        name: "Company ownership mark",
+      }),
+    ).toHaveAttribute("data-brand-context", "company-footer");
+
+    await user.click(brandButton);
     expect(navigate).toHaveBeenLastCalledWith("/work");
     await user.click(
       within(domainNavigation).getByRole("button", { name: "Tooling" }),
@@ -843,7 +860,7 @@ describe("core workspace page behavior", () => {
     );
     await user.click(screen.getByRole("button", { name: "Queue safe retry" }));
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype retry command prepared. No request was queued in NPI One or ERPNext.",
+      "Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.",
     );
 
     await user.click(
@@ -864,7 +881,7 @@ describe("core workspace page behavior", () => {
       screen.getByRole("button", { name: "Prepare execution request" }),
     );
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype execution command prepared. No request was queued in NPI One or ERPNext.",
+      "Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.",
     );
   });
 
@@ -924,7 +941,7 @@ describe("core workspace page behavior", () => {
       name: "Reconciliation impact review",
     });
     expect(review).toHaveTextContent(
-      "Reconciliation compares NPI One requests with ERPNext responses. It does not overwrite either system.",
+      "Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.",
     );
     const prepare = within(review).getByRole("button", {
       name: "Prepare reconciliation",
@@ -942,7 +959,7 @@ describe("core workspace page behavior", () => {
     await user.click(prepare);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Prototype reconciliation prepared. No ERPNext or NPI One record was changed.",
+      "Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.",
     );
     expect(screen.getByRole("status")).toHaveTextContent(
       "The in-memory prototype command captured a reason; no audit record was persisted.",

@@ -18,6 +18,13 @@ implementation/evidence/phase-3/coverage/*
 !implementation/evidence/phase-4/coverage/
 implementation/evidence/phase-4/coverage/*
 !implementation/evidence/phase-4/coverage/coverage-summary.json
+!implementation/evidence/reconciliation/r1-02/coverage/
+implementation/evidence/reconciliation/r1-02/coverage/*
+!implementation/evidence/reconciliation/r1-02/coverage/coverage-summary.json
+implementation/evidence/reconciliation/r1-02/playwright-results/*
+!implementation/evidence/reconciliation/r1-02/playwright-results/.last-run.json
+implementation/evidence/reconciliation/r1-02/playwright-report/*
+!implementation/evidence/reconciliation/r1-02/playwright-report/index.html
 .pytest_cache/
 __pycache__/
 *.py[cod]

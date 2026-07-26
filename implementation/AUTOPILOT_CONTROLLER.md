@@ -207,11 +207,12 @@ pending until that proof is produced in Codespaces.
 ## Current checkpoint
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
-- Completed bridge task: `R1-01 — DOCX Pack reconciliation addendum and
-  machine trace` (`PASS — LEVEL 2`). R1 is an inserted bridge, not a
+- Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
+  machine trace` and `R1-02 — LaunchFlow display brand adapter and exact
+  supplied assets` (`PASS — LEVEL 2`). R1 is an inserted bridge, not a
   replacement controller Phase.
 - Current controller task:
-  `R1-02 — LaunchFlow display brand adapter and exact supplied assets`.
+  `R1-03 — App Shell collapsed navigation command and contextual quick-create`.
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
@@ -223,10 +224,12 @@ pending until that proof is produced in Codespaces.
   `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`,
   `docs/reference/TOOLING_LIST_FIELD_MAPPING.csv`, and
   `implementation/V1_2_RECONCILIATION_DECISIONS.md`.
-- Brand authority: only `docs/Brand Asset/Brand Asset Instruction.csv` and
-  the exact five SVGs beside it. No alternative LaunchFlow/JCE mark, inferred
-  palette, redrawn asset, or substitute is authorized. Stable technical codes
-  `NPI_ONE`, `ERPNEXT` and `/api/npi/v1` remain unchanged.
+- Brand authority: only `docs/Brand Asset/Brand Asset Instruction.csv`, the
+  exact five LaunchFlow SVGs and subsequently supplied `Core.png` beside it.
+  R1-02 completed the five-SVG LaunchFlow display boundary; `Core.png` remains
+  allocated to FR-BR-002/Phase 8/M7-09. No alternative mark, inferred palette,
+  redrawn asset or substitute is authorized. Stable technical codes `NPI_ONE`,
+  `ERPNEXT` and `/api/npi/v1` remain unchanged.
 - First incomplete Phase remains Phase 3
   `TECHNICAL_PASS_PENDING_UAT`; the named business UAT is external and does
   not invalidate its technical evidence or block safe later work.
@@ -235,13 +238,14 @@ pending until that proof is produced in Codespaces.
 - Phase 5 remains `IN_PROGRESS`; P5-00 remains a historical `PASS`, P5-01 is
   held, and P5-02 through P5-05 remain inactive.
 - R1-01 changed specifications, trace/index metadata, planning and safe
-  inspection tooling only. It changed no product runtime, public API,
+  inspection tooling only. R1-02 changed the shared frontend Shell,
+  Frappe-compatible catalogs and display-brand build guard, but no public API,
   database schema, event schema or external integration behavior.
-- Execute R1-02 through R1-06. R1-07 remains scoped to `DR-REC-001`. The
+- Execute R1-03 through R1-06. R1-07 remains scoped to `DR-REC-001`. The
   shared Shell/design/i18n bridge requires its triggered Level 3 Gate before
   P5-01 resumes.
 
 Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
-Reuse the passing Phase 4, P5-00 and P5-01 checkpoint evidence; do not repeat or
-rewrite them merely to restore context. See `implementation/LAST_RUN.md` for
-the exact latest result.
+Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01/R1-02 evidence;
+do not repeat or rewrite them merely to restore context. See
+`implementation/LAST_RUN.md` for the exact latest result.

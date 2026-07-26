@@ -53,7 +53,11 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/i18n/runtime.tsx", "src/ui-adapters/npi-ui.tsx"],
+    files: [
+      "src/i18n/runtime.tsx",
+      "src/ui-adapters/display-brand.tsx",
+      "src/ui-adapters/npi-ui.tsx",
+    ],
     rules: {
       "react-refresh/only-export-components": "off",
     },

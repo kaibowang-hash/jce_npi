@@ -17,6 +17,10 @@ retain_terms:
     zh_cn: NPI One
     zh_tw: NPI One
     category: product
+  - source: LaunchFlow
+    zh_cn: LaunchFlow
+    zh_tw: LaunchFlow
+    category: product
   - source: ERPNext
     zh_cn: ERPNext
     zh_tw: ERPNext

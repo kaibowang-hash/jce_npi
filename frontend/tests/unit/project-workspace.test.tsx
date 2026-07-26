@@ -110,6 +110,13 @@ describe("live Project workspace tabs", () => {
       await screen.findByRole("tab", { name: "Work items" }),
     ).toHaveAttribute("aria-selected", "true");
     expect(await screen.findByText(selectedWorkItemId)).toBeVisible();
+    expect(
+      within(
+        screen.getByRole("complementary", {
+          name: "Domain work item details",
+        }),
+      ).getByRole("img", { name: "LaunchFlow platform" }),
+    ).toHaveAttribute("data-brand-context", "platform-source");
     expect(workItemsLoad).toHaveBeenCalledTimes(1);
     expect(workItemsLoad).toHaveBeenCalledWith(
       cockpit.project.globalId,

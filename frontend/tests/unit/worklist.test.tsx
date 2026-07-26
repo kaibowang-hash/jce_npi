@@ -67,7 +67,10 @@ describe("dense cross-object worklist", () => {
     expect(
       screen.queryByText("11111111-1111-4111-8111-111111111111"),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByText("NPI One")).toHaveLength(2);
+    expect(screen.getByText("LaunchFlow")).toBeVisible();
+    expect(
+      screen.getByRole("img", { name: "LaunchFlow platform" }),
+    ).toHaveAttribute("data-brand-context", "platform-source");
   });
 
   it("filters by object context and opens the selected next action", async () => {

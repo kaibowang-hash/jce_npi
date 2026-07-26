@@ -133,14 +133,14 @@ export default function ExecutionPage({
           <span>
             {preparedOperation.mode === "retry"
               ? t(
-                  "Prototype retry command prepared. No request was queued in NPI One or ERPNext.",
+                  "Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.",
                 )
               : preparedOperation.mode === "reconcile"
                 ? t(
-                    "Prototype reconciliation prepared. No ERPNext or NPI One record was changed.",
+                    "Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.",
                   )
                 : t(
-                    "Prototype execution command prepared. No request was queued in NPI One or ERPNext.",
+                    "Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.",
                   )}
           </span>
           <span>
@@ -388,7 +388,7 @@ export default function ExecutionPage({
                     objectIdentity: "NPI-ERP-RECONCILIATION",
                     version: "2026-07-21T14:20:00Z",
                     impact: t(
-                      "Reconciliation compares NPI One requests with ERPNext responses. It does not overwrite either system.",
+                      "Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.",
                     ),
                     permission: t(
                       "Integration operator permission is required.",

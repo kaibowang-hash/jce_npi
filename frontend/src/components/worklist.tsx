@@ -641,7 +641,7 @@ export function Worklist({
                   selected.source.editableIn === "ERPNEXT"
                     ? t("ERPNext")
                     : selected.source.editableIn === "NPI_ONE"
-                      ? t("NPI One")
+                      ? t("LaunchFlow")
                       : t("No system is editable"),
               },
             ]}

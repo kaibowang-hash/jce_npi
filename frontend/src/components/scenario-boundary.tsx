@@ -29,7 +29,7 @@ export function ScenarioBoundary({
           )
         : scenario === "partial"
           ? t(
-              "Some ERPNext projections are unavailable. NPI One data remains available.",
+              "Some ERPNext projections are unavailable. LaunchFlow data remains available.",
             )
           : t("You have unsaved changes. Leave protection is active.");
     return (

@@ -32,8 +32,8 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-PRN-002", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
     ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
-    ("FR-BR-001", "P0", "5", "PLANNED_LAUNCHFLOW_DISPLAY_BRAND"),
-    ("FR-BR-002", "P1", "8", "HELD_MISSING_APPROVED_ASSET_AND_LEGAL_TEXT"),
+    ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
+    ("FR-BR-002", "P1", "8", "PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET"),
     ("FR-TX-019", "P0", "6", "PLANNED_PHASE_6_RECONCILED"),
     ("FR-TX-020", "P0", "6", "DECISION_REQUIRED_DR_REC_002"),
 )
@@ -153,13 +153,22 @@ def _expanded_rows(
         existing_ids.add(requirement_id)
 
     for requirement_id, priority, phase, status in ADDENDUM_REQUIREMENTS:
+        evidence = "implementation/V1_2_RECONCILIATION_DECISIONS.md"
+        if requirement_id == "FR-BR-001":
+            evidence = (
+                "frontend/src/ui-adapters/display-brand.tsx; "
+                "frontend/scripts/verify-display-brand.mjs; "
+                "frontend/tests/unit/display-brand.test.tsx; "
+                "frontend/tests/e2e/display-brand.spec.ts; "
+                "implementation/evidence/reconciliation/r1-02-validation.md"
+            )
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,
             "phase": phase,
             "status": status,
             "source": "docs/V1_2_RECONCILIATION_ADDENDUM.md",
-            "evidence": "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+            "evidence": evidence,
             "trace_kind": "ADDENDUM_DIRECT",
             "canonical_ids": requirement_id,
         }

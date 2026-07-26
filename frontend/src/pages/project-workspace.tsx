@@ -14,6 +14,7 @@ import {
   DefinitionList,
   Panel,
   SemanticStatus,
+  SourceSystemIdentity,
 } from "../components/primitives";
 import type {
   DomainWorkItemKind,
@@ -33,7 +34,6 @@ import {
   governedPolicyLabel,
   projectResponsibilityContextLabel,
   projectResponsibilityLabel,
-  sourceSystemLabel,
 } from "../i18n/copy";
 import { formatDate, formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n, type Locale } from "../i18n/runtime";
@@ -932,7 +932,9 @@ function WorkItemInspector({
           },
           {
             label: t("Source"),
-            value: sourceSystemLabel(t, item.source.sourceSystem),
+            value: (
+              <SourceSystemIdentity sourceSystem={item.source.sourceSystem} />
+            ),
           },
         ]}
       />

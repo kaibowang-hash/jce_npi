@@ -8,13 +8,13 @@ None.
 
 `R1_SHARED_BRIDGE` is active.
 
-R1-01 passed its documentation/trace/tooling Gate and R1-02 is current.
+R1-01 and R1-02 passed their Level 2 Gates and R1-03 is current.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
 - does not permit P5-01 to be marked `PASS`;
 - prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting;
-- executes R1-02 through R1-06 before the shared Level 3 bridge Gate;
+- executes R1-03 through R1-06 before the shared Level 3 bridge Gate;
 - keeps R1-07 disabled unless DR-REC-001 is approved; and
 - preserves the exact P5-01 product boundary in
   `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
@@ -43,9 +43,11 @@ sharing, revision or CAD/PDM rules; review/release/baseline/EBOM/formal
 publish remain P5-02 through P5-05. Production ERPNext/CAD/PDM access and
 external file retrieval remain prohibited or fail closed.
 
-R1-02 may use only the supplied LaunchFlow brand package. The missing ERP/JCE
-display asset remains scoped to FR-BR-002/DR-REC-006 and cannot be replaced by
-the Company LOGO, a reconstructed mark or an external search.
+R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
+and passed its exact-scope asset guard. The subsequently supplied `Core.png`
+and approved `JCE Core` display name resolve DR-REC-006 but remain allocated to
+FR-BR-002/Phase 8/M7-09; they must not be activated by the remaining R1 tasks
+or replaced by the Company LOGO, a reconstructed mark or an external search.
 
 DR-REC-001..010 in
 `implementation/V1_2_RECONCILIATION_DECISIONS.md` pause only their named

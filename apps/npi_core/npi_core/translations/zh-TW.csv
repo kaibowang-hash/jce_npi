@@ -223,7 +223,11 @@ NPI Core,NPI 核心
 NPI File Revision,NPI 檔案修訂版
 NPI Inbox Message,NPI 收件匣訊息
 NPI Integration,NPI 整合
-NPI One,NPI One
+LaunchFlow,LaunchFlow
+Open LaunchFlow home,開啟 LaunchFlow 首頁
+Loading LaunchFlow,正在載入 LaunchFlow
+LaunchFlow platform,LaunchFlow 平台
+Company ownership mark,公司所有權標識
 NPI Outbox Message,NPI 寄件匣訊息
 NPI readiness,NPI 就緒度
 NPI readiness review,NPI 就緒度評審
@@ -349,7 +353,7 @@ Run reconciliation,執行對帳
 Sample approval,樣件核准
 Sample approval review,樣件核准評審
 Samples and cavities,樣件與型腔
-Saved in NPI One,已儲存在 NPI One
+Saved in LaunchFlow,已儲存在 LaunchFlow
 Saved view,已儲存檢視
 Scan State,掃描狀態
 Schedule variance,進度偏差
@@ -359,7 +363,7 @@ Selected evidence,已選證據
 SHA-256,SHA-256
 Showing {{start}}–{{end}} of {{total}} items,顯示第 {{start}}–{{end}} 項，共 {{total}} 項
 Simplified Chinese,簡體中文
-Some ERPNext projections are unavailable. NPI One data remains available.,部分 ERPNext 投影不可用。NPI One 資料仍可用。
+Some ERPNext projections are unavailable. LaunchFlow data remains available.,部分 ERPNext 投影無法使用。LaunchFlow 資料仍可用。
 SOP handover,SOP 交接
 Source,來源
 Source object,源物件
@@ -522,9 +526,9 @@ Review the controlled evidence and complete the assigned Gate decision before {{
 Project review package,專案評審套件
 Generated {{generatedAt}},產生於 {{generatedAt}}
 Work item export,工作項目匯出
-Prototype retry command prepared. No request was queued in NPI One or ERPNext.,已準備原型重試命令。未在 NPI One 或 ERPNext 中排隊任何請求。
-Prototype reconciliation prepared. No ERPNext or NPI One record was changed.,已準備原型對帳。未變更 ERPNext 或 NPI One 中的任何記錄。
-Prototype execution command prepared. No request was queued in NPI One or ERPNext.,已準備原型執行命令。未在 NPI One 或 ERPNext 中排隊任何請求。
+Prototype retry command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型重試命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
+Prototype reconciliation prepared. No ERPNext or LaunchFlow record was changed.,已準備原型對帳。未變更 ERPNext 或 LaunchFlow 中的任何記錄。
+Prototype execution command prepared. No request was queued in LaunchFlow or ERPNext.,已準備原型執行命令。未在 LaunchFlow 或 ERPNext 中排隊任何請求。
 The in-memory prototype command captured a reason; no audit record was persisted.,記憶體中的原型命令已記錄原因，但未持久儲存稽核記錄。
 Close field mapping,關閉欄位對應
 Field mapping preview,欄位對應預覽
@@ -534,7 +538,7 @@ Mapping result,對應結果
 No approved target value is available. Correct the governed mapping before preparing another request.,沒有可用的已核准目標值。請更正受治理的對應後再準備請求。
 Prepare reconciliation,準備對帳
 "A submitted command would record the idempotency key, actor, reason, attempt, result, and trace ID.",提交後的命令會記錄冪等鍵、操作人、原因、嘗試、結果和追蹤編號。
-Reconciliation compares NPI One requests with ERPNext responses. It does not overwrite either system.,對帳會比較 NPI One 請求與 ERPNext 回應，不會覆寫任一系統。
+Reconciliation compares LaunchFlow requests with ERPNext responses. It does not overwrite either system.,對帳會比較 LaunchFlow 請求與 ERPNext 回應，不會覆寫任一系統。
 No formal ERPNext object is created or changed by this prototype reconciliation.,此原型對帳不會建立或變更任何正式 ERPNext 物件。
 Unmatched operations remain visible with their trace IDs and recovery state.,未配對的操作及其追蹤編號與復原狀態將保持可見。
 "A submitted command would record the comparison scope, actor, timestamp, result, and trace IDs.",提交後的命令會記錄比較範圍、操作人、時間戳記、結果和追蹤編號。

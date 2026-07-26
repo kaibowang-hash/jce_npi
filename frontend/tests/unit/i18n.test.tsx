@@ -8,6 +8,7 @@ import {
   translate,
   useI18n,
 } from "../../src/i18n/runtime";
+import { sessionBootstrapTimeoutMilliseconds } from "../../src/api/session";
 import { buildLocalizedOperationalSurfaces } from "../../src/i18n/surfaces";
 
 describe("Frappe-backed React localization", () => {
@@ -211,6 +212,143 @@ describe("Frappe-backed React localization", () => {
     });
     expect(result.current.sessionCommandContext).toBeNull();
     expect(result.current.isLocalizationUnavailable).toBe(true);
+  });
+
+  it("bounds a never-resolving bootstrap and uses the prototype fallback", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("DEV", true);
+      vi.stubEnv("VITE_NPI_PROTOTYPE", "true");
+      const bootstrapRequest = { signal: null as AbortSignal | null };
+      const fetch = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+        bootstrapRequest.signal = init?.signal ?? null;
+        return new Promise<Response>(() => undefined);
+      });
+      vi.stubGlobal("fetch", fetch);
+      const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+        <I18nProvider>{children}</I18nProvider>
+      );
+      const { result } = renderHook(() => useI18n(), { wrapper });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(sessionBootstrapTimeoutMilliseconds).toBe(15_000);
+      expect(result.current.isLocalizationBootstrapping).toBe(true);
+      expect(bootstrapRequest.signal?.aborted).toBe(false);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(14_999);
+      });
+      expect(result.current.isLocalizationBootstrapping).toBe(true);
+      expect(bootstrapRequest.signal?.aborted).toBe(false);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(result.current.isLocalizationBootstrapping).toBe(false);
+      expect(bootstrapRequest.signal?.aborted).toBe(true);
+      expect(result.current.isLocalizationPending).toBe(false);
+      expect(result.current.isPrototypeFallback).toBe(true);
+      expect(result.current.isLocalizationUnavailable).toBe(false);
+      expect(result.current.localizationFailure).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("exposes a timed-out production bootstrap and recovers through retry", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubEnv("DEV", false);
+      vi.stubEnv("VITE_NPI_PROTOTYPE", "false");
+      const bootstrap = {
+        allowedLanguages: supportedLocales,
+        catalog: {
+          language: "en" as const,
+          messages: {},
+          version: "c".repeat(64),
+        },
+        csrfToken: "retry-csrf-token-fixture-123456789",
+        language: "en" as const,
+        userId: "recovered@example.invalid",
+      };
+      const fetch = vi
+        .fn()
+        .mockImplementationOnce(() => new Promise<Response>(() => undefined))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(bootstrap), { status: 200 }),
+        );
+      vi.stubGlobal("fetch", fetch);
+      const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+        <I18nProvider>{children}</I18nProvider>
+      );
+      const { result } = renderHook(() => useI18n(), { wrapper });
+
+      await act(async () => {
+        await Promise.resolve();
+        await vi.advanceTimersByTimeAsync(sessionBootstrapTimeoutMilliseconds);
+      });
+      expect(result.current.isLocalizationPending).toBe(false);
+      expect(result.current.isLocalizationUnavailable).toBe(true);
+      expect(result.current.localizationFailure?.operation).toBe("bootstrap");
+      expect(result.current.sessionCommandContext).toBeNull();
+
+      await act(async () => {
+        result.current.retryLocalization();
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(result.current.isLocalizationPending).toBe(false);
+      expect(result.current.isLocalizationUnavailable).toBe(false);
+      expect(result.current.localizationFailure).toBeNull();
+      expect(result.current.isPrototypeFallback).toBe(false);
+      expect(result.current.sessionCommandContext).toEqual({
+        csrfToken: bootstrap.csrfToken,
+        userId: bootstrap.userId,
+      });
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels and cleans up an in-flight bootstrap when the provider unmounts", async () => {
+    vi.useFakeTimers();
+    try {
+      const request = { signal: null as AbortSignal | null };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+          request.signal = init?.signal ?? null;
+          return new Promise<Response>(() => undefined);
+        }),
+      );
+      const wrapper = ({ children }: PropsWithChildren): JSX.Element => (
+        <I18nProvider>{children}</I18nProvider>
+      );
+      const { unmount } = renderHook(() => useI18n(), { wrapper });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(request.signal).not.toBeNull();
+      expect(request.signal?.aborted).toBe(false);
+      expect(vi.getTimerCount()).toBe(1);
+
+      await act(async () => {
+        unmount();
+        await Promise.resolve();
+      });
+
+      expect(request.signal?.aborted).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it.each([

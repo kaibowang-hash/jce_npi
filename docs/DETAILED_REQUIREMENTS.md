@@ -248,7 +248,7 @@ Tooling List 导入 provenance、校验、图片确认和回滚。详细实施�
 | FR-PRN-003 | P0 | 定义各领域受控表单、权限和签字覆盖。 | 每个启用表单有 owner、签字/保留/copy 规则和三语言证据；待 DR-REC-003/004。 |
 | FR-INT-015 | P1 | 发布不可变 Trial Summary，供 ERP/JCE 质量区域只读投影。 | 包含精确输入、参数、穴位、问题、结论和受控引用；目标端不得编辑 NPI Trial 真值。 |
 | FR-BR-001 | P0 | 使用唯一受批品牌包和 CSV 规则配置 LaunchFlow 显示品牌。 | 明/暗/加载/favicon/footer/source 场景使用精确资产；内部 app/API/DocType 名称不迁移。 |
-| FR-BR-002 | P1 | 显示 ERP/JCE 身份但保持稳定集成系统码。 | 必须来自另行提供的批准资产/法律文案；当前无资产，待 DR-REC-006。 |
+| FR-BR-002 | P1 | 显示 ERP/JCE 身份但保持稳定集成系统码。 | 已提供批准的 `JCE Core` 显示名、`Core.png` 和 CSV 使用规则；Phase 8/M7-09 实施，内部 `ERPNEXT` 码不变。 |
 
 # 6. 接口与集成需求
 
