@@ -267,6 +267,23 @@ run_runtime_verifier() {
   )
 }
 
+run_grid_controller_runtime_verifier() {
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    cd "${bench_path}/sites"
+    exec "${bench_path}/env/bin/python" \
+      "${repo_root}/scripts/verify_grid_personalization_runtime.py"
+  )
+}
+
 project_work_runtime_run_id="$(
   "${bench_path}/env/bin/python" -c \
     'from uuid import uuid4; print(uuid4().hex)'
@@ -444,6 +461,12 @@ run_project_controls_route_probe() {
 if [[ "${verification_mode}" == "all" ]]; then
   if ! run_runtime_verifier "${repo_root}/scripts/verify_frappe_runtime.py"; then
     echo "Local Frappe runtime verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+
+  if ! run_grid_controller_runtime_verifier; then
+    echo "Local Frappe grid controller runtime verification failed." >&2
     tail -100 "${runtime_log}" >&2
     exit 1
   fi

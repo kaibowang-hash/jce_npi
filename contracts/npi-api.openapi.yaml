@@ -108,6 +108,89 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
+  /me/preferences/my-work-grid:
+    get:
+      tags: [Work]
+      operationId: getMyWorkGridPreferences
+      description: >-
+        Returns the authenticated internal actor's fixed My Work grid
+        personalization. Site tenant, actor, grid identity, closed view set and
+        table schema are server-owned. Inaccessible Project references are
+        removed from the effective response.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Effective server-confirmed personal My Work grid settings
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              description: Validated or server-generated request identifier
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support correlation
+              required: true
+              schema: { type: string, minLength: 8, maxLength: 128 }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyWorkGridPreferences"
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+    put:
+      tags: [Work]
+      operationId: setMyWorkGridPreferences
+      description: >-
+        Replaces one closed view's validated personal layout and saved filter
+        snapshot while updating bounded personal view metadata. The actor and
+        storage identity are derived from the authenticated session. The
+        expected version prevents stale-tab overwrite.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMyWorkGridPreferences"
+      responses:
+        "200":
+          description: Persisted server-confirmed personal My Work grid settings
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              description: Validated or server-generated request identifier
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support correlation
+              required: true
+              schema: { type: string, minLength: 8, maxLength: 128 }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyWorkGridPreferences"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /me/work:
     get:
       tags: [Work]
@@ -4432,6 +4515,223 @@ components:
           maxItems: 20
           uniqueItems: true
           items: { type: string, minLength: 1, maxLength: 64 }
+    MyWorkGridViewId:
+      type: string
+      enum: [all, today, overdue, approvals, blockers, waiting, integration]
+    MyWorkGridColumnId:
+      type: string
+      enum: [type, item, context, assignment, priority, due, status, action]
+    MyWorkGridWidths:
+      type: object
+      additionalProperties: false
+      required: [type, item, context, assignment, priority, due, status, action]
+      properties:
+        type: { type: integer, minimum: 88, maximum: 180 }
+        item: { type: integer, minimum: 180, maximum: 480 }
+        context: { type: integer, minimum: 160, maximum: 420 }
+        assignment: { type: integer, minimum: 140, maximum: 320 }
+        priority: { type: integer, minimum: 96, maximum: 180 }
+        due: { type: integer, minimum: 120, maximum: 220 }
+        status: { type: integer, minimum: 112, maximum: 220 }
+        action: { type: integer, minimum: 120, maximum: 260 }
+    MyWorkGridLayout:
+      type: object
+      additionalProperties: false
+      required: [columnOrder, widths, hiddenColumnIds, fixedColumnCount]
+      properties:
+        columnOrder:
+          type: array
+          minItems: 8
+          maxItems: 8
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/MyWorkGridColumnId" }
+        widths: { $ref: "#/components/schemas/MyWorkGridWidths" }
+        hiddenColumnIds:
+          type: array
+          maxItems: 6
+          uniqueItems: true
+          description: Item and action are required and cannot be hidden.
+          items:
+            type: string
+            enum: [type, context, assignment, priority, due, status]
+        fixedColumnCount: { type: integer, minimum: 0, maximum: 2 }
+    MyWorkGridDomainPriority:
+      type: object
+      additionalProperties: false
+      required: [scheme, value]
+      properties:
+        scheme: { type: string, const: domain_severity }
+        value: { type: string, enum: [low, medium, high, critical] }
+    MyWorkGridGatePriority:
+      type: object
+      additionalProperties: false
+      required: [scheme, value]
+      properties:
+        scheme: { type: string, const: gate_requirement_priority }
+        value: { type: string, enum: [P0, P1, P2] }
+    MyWorkGridPriority:
+      oneOf:
+        - { $ref: "#/components/schemas/MyWorkGridDomainPriority" }
+        - { $ref: "#/components/schemas/MyWorkGridGatePriority" }
+    MyWorkGridFilter:
+      type: object
+      additionalProperties: false
+      required: [projectId, priority, search]
+      properties:
+        projectId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        priority:
+          oneOf:
+            - { $ref: "#/components/schemas/MyWorkGridPriority" }
+            - { type: "null" }
+        search: { type: string, maxLength: 140 }
+    MyWorkGridViewPreference:
+      type: object
+      additionalProperties: false
+      required: [viewId, layout, filter, hasSavedFilter]
+      properties:
+        viewId: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        layout: { $ref: "#/components/schemas/MyWorkGridLayout" }
+        filter: { $ref: "#/components/schemas/MyWorkGridFilter" }
+        hasSavedFilter: { type: boolean }
+    MyWorkGridCapabilities:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          canPublishSharedView,
+          canRollbackSharedView,
+          canExport,
+          canRunBulkActions,
+          publishUnavailableReason,
+          rollbackUnavailableReason,
+          exportUnavailableReason,
+          bulkUnavailableReason,
+        ]
+      properties:
+        canPublishSharedView: { type: boolean, const: false }
+        canRollbackSharedView: { type: boolean, const: false }
+        canExport: { type: boolean, const: false }
+        canRunBulkActions: { type: boolean, const: false }
+        publishUnavailableReason:
+          { type: string, const: publisher_authority_policy_required }
+        rollbackUnavailableReason:
+          { type: string, const: publisher_authority_policy_required }
+        exportUnavailableReason:
+          { type: string, const: export_contract_required }
+        bulkUnavailableReason:
+          { type: string, const: bulk_action_contract_required }
+    MyWorkGridPreferences:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          gridId,
+          tableSchemaVersion,
+          version,
+          viewLayouts,
+          favoriteViewIds,
+          recentViewIds,
+          defaultProjectId,
+          recoveryReason,
+          capabilities,
+        ]
+      properties:
+        gridId: { type: string, const: my-work }
+        tableSchemaVersion: { type: string, const: my-work-grid-v1 }
+        version: { type: integer, minimum: 0 }
+        viewLayouts:
+          type: array
+          minItems: 7
+          maxItems: 7
+          prefixItems:
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: all }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: today }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: overdue }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: approvals }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: blockers }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: waiting }
+            - allOf:
+                - { $ref: "#/components/schemas/MyWorkGridViewPreference" }
+                - properties:
+                    viewId: { const: integration }
+          items: false
+        favoriteViewIds:
+          type: array
+          maxItems: 7
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        recentViewIds:
+          type: array
+          maxItems: 5
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        defaultProjectId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        recoveryReason:
+          oneOf:
+            - { type: string, const: stored_preference_invalid }
+            - { type: "null" }
+        capabilities:
+          $ref: "#/components/schemas/MyWorkGridCapabilities"
+    SetMyWorkGridPreferences:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedVersion,
+          tableSchemaVersion,
+          viewId,
+          layout,
+          filter,
+          saveFilter,
+          favoriteViewIds,
+          recentViewIds,
+          defaultProjectId,
+        ]
+      properties:
+        expectedVersion: { type: integer, minimum: 0 }
+        tableSchemaVersion: { type: string, const: my-work-grid-v1 }
+        viewId: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        layout: { $ref: "#/components/schemas/MyWorkGridLayout" }
+        filter: { $ref: "#/components/schemas/MyWorkGridFilter" }
+        saveFilter: { type: boolean }
+        favoriteViewIds:
+          type: array
+          maxItems: 7
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        recentViewIds:
+          type: array
+          maxItems: 5
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/MyWorkGridViewId" }
+        defaultProjectId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
     MyWorkCategory:
       type: string
       description: Read-only My Work projection category, not a persisted domain semantic kind

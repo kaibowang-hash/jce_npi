@@ -32,6 +32,12 @@ _ROUTES = {
     ),
     ("POST", "/api/npi/v1/projects"): "npi_core.project_api.create_project",
     ("GET", "/api/npi/v1/me/work"): "npi_core.my_work_api.get_my_work",
+    ("GET", "/api/npi/v1/me/preferences/my-work-grid"): (
+        "npi_core.grid_personalization_api.get_my_work_grid_preferences"
+    ),
+    ("PUT", "/api/npi/v1/me/preferences/my-work-grid"): (
+        "npi_core.grid_personalization_api.set_my_work_grid_preferences"
+    ),
     ("GET", "/api/npi/v1/learning"): (
         "npi_core.project_controls_api.search_project_learning"
     ),
@@ -471,6 +477,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "POST" and path == "/api/npi/v1/projects":
         return True
     if method == "GET" and path == "/api/npi/v1/me/work":
+        return True
+    if (
+        method in {"GET", "PUT"}
+        and path == "/api/npi/v1/me/preferences/my-work-grid"
+    ):
         return True
     if method == "GET" and (
         _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None

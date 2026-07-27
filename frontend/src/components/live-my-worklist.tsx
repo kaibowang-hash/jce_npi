@@ -6,6 +6,17 @@ import {
   type MyWorkQuery,
   type MyWorkView,
 } from "../api/my-work-data-source";
+import {
+  defaultMyWorkGridLayout,
+  myWorkGridColumnWidthSpecs,
+  truncateMyWorkGridSearch,
+  type MyWorkGridColumnId,
+  type MyWorkGridFilter,
+  type MyWorkGridLayout,
+  type MyWorkGridPreferencesDataSource,
+  type MyWorkGridPriority,
+  type MyWorkGridViewId,
+} from "../api/grid-preferences-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { myWorkTargetPath } from "../app/my-work-navigation";
 import type {
@@ -28,8 +39,17 @@ import {
   myWorkWhyLabel,
 } from "../i18n/copy";
 import { formatDateTime, formatNumber } from "../i18n/formatters";
-import { useI18n } from "../i18n/runtime";
+import { useI18n, type I18nContextValue } from "../i18n/runtime";
+import {
+  DenseGrid,
+  type DenseGridColumn,
+  type DenseGridLayoutChange,
+} from "../ui-adapters/dense-grid";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import {
+  useMyWorkGridPersonalization,
+  type MyWorkGridPersonalizationController,
+} from "./my-work-grid-personalization";
 import { DockedInspector, MetricStrip } from "./object-components";
 import { RequestFailurePanel } from "./problem-details-panel";
 import {
@@ -95,6 +115,64 @@ const priorityValues = new Map<PriorityFilter, MyWorkPriorityViewModel | null>([
     { scheme: "gate_requirement_priority", value: "P2" },
   ],
 ]);
+
+const requiredGridColumns = new Set<MyWorkGridColumnId>(["item", "action"]);
+
+function viewLabel(t: I18nContextValue["t"], view: MyWorkGridViewId): string {
+  switch (view) {
+    case "all":
+      return t("All assigned work");
+    case "today":
+      return t("Due today");
+    case "overdue":
+      return t("Overdue");
+    case "approvals":
+      return t("Pending approvals");
+    case "blockers":
+      return t("Blocking");
+    case "waiting":
+      return t("Waiting");
+    case "integration":
+      return t("Integration unavailable");
+  }
+}
+
+function gridColumnLabel(
+  t: I18nContextValue["t"],
+  columnId: MyWorkGridColumnId,
+): string {
+  switch (columnId) {
+    case "type":
+      return t("Type");
+    case "item":
+      return t("Item");
+    case "context":
+      return t("Project or object");
+    case "assignment":
+      return t("Why assigned");
+    case "priority":
+      return t("Priority");
+    case "due":
+      return t("Due");
+    case "status":
+      return t("Status");
+    case "action":
+      return t("Next action");
+  }
+}
+
+function toGridPriority(
+  priorityFilter: PriorityFilter,
+): MyWorkGridPriority | null {
+  const priority = priorityValues.get(priorityFilter);
+  return priority ? { ...priority } : null;
+}
+
+function fromGridPriority(priority: MyWorkGridPriority | null): PriorityFilter {
+  return priority
+    ? (`${priority.scheme}:${priority.value}` as PriorityFilter)
+    : "all";
+}
 
 function parseView(value: string): MyWorkView {
   return viewValues.has(value as MyWorkView) ? (value as MyWorkView) : "all";
@@ -227,15 +305,388 @@ function FailureState({
   );
 }
 
+function moveGridColumn(
+  layout: MyWorkGridLayout,
+  columnId: MyWorkGridColumnId,
+  direction: -1 | 1,
+): MyWorkGridLayout {
+  const currentIndex = layout.columnOrder.indexOf(columnId);
+  const nextIndex = currentIndex + direction;
+  if (
+    currentIndex < 0 ||
+    nextIndex < 0 ||
+    nextIndex >= layout.columnOrder.length
+  ) {
+    return layout;
+  }
+  const columnOrder = [...layout.columnOrder];
+  const displaced = columnOrder[nextIndex];
+  if (!displaced) return layout;
+  columnOrder[currentIndex] = displaced;
+  columnOrder[nextIndex] = columnId;
+  return { ...layout, columnOrder };
+}
+
+function GridSettings({
+  controller,
+  currentView,
+  onClose,
+  onLayoutChange,
+  onSaveCurrentFilters,
+  onSelectView,
+  projectOptions,
+}: {
+  controller: MyWorkGridPersonalizationController;
+  currentView: MyWorkGridViewId;
+  onClose: () => void;
+  onLayoutChange: (layout: MyWorkGridLayout) => void;
+  onSaveCurrentFilters: () => void;
+  onSelectView: (view: MyWorkGridViewId) => void;
+  projectOptions: readonly MyWorkItemViewModel["project"][];
+}): React.JSX.Element {
+  const { t } = useI18n();
+  const currentPreference =
+    controller.preferences.viewLayouts.find(
+      (candidate) => candidate.viewId === currentView,
+    ) ?? controller.preferences.viewLayouts[0];
+  const layout = currentPreference?.layout ?? defaultMyWorkGridLayout();
+  const hidden = new Set(layout.hiddenColumnIds);
+  const isFavorite =
+    controller.preferences.favoriteViewIds.includes(currentView);
+  const controlsDisabled = !controller.canUpdate;
+  const statusCopy = {
+    failed: {
+      label: t("Not saved"),
+      tone: "danger" as const,
+      text: t(
+        "Personal grid settings were not saved. The last confirmed settings remain active.",
+      ),
+    },
+    loading: {
+      label: t("Loading"),
+      tone: "info" as const,
+      text: t("Loading personal grid settings"),
+    },
+    ready:
+      controller.preferences.recoveryReason === "stored_preference_invalid"
+        ? {
+            label: t("Defaults active"),
+            tone: "warning" as const,
+            text: t(
+              "Stored grid settings were invalid. Code-owned defaults are active.",
+            ),
+          }
+        : {
+            label: t("Confirmed"),
+            tone: "neutral" as const,
+            text: t("Personal grid settings are confirmed by the server."),
+          },
+    saving: {
+      label: t("Saving"),
+      tone: "info" as const,
+      text: t("Saving personal grid settings"),
+    },
+    unavailable: {
+      label: t("Unavailable"),
+      tone: "warning" as const,
+      text: t(
+        "Session verification is required before personal grid settings can be saved.",
+      ),
+    },
+  }[controller.status];
+  const toggleFavorite = (): void => {
+    const favoriteViewIds = isFavorite
+      ? controller.preferences.favoriteViewIds.filter(
+          (viewId) => viewId !== currentView,
+        )
+      : [...controller.preferences.favoriteViewIds, currentView];
+    controller.update({ favoriteViewIds, viewId: currentView });
+  };
+  const setHidden = (columnId: MyWorkGridColumnId, visible: boolean): void => {
+    const hiddenColumnIds = visible
+      ? layout.hiddenColumnIds.filter((candidate) => candidate !== columnId)
+      : layout.columnOrder.filter(
+          (candidate) => candidate === columnId || hidden.has(candidate),
+        );
+    onLayoutChange({ ...layout, hiddenColumnIds });
+  };
+
+  return (
+    <section aria-label={t("Personal grid settings")} className="grid-settings">
+      <header className="grid-settings__header">
+        <div className="grid-settings__title">
+          <strong>{t("Personal grid settings")}</strong>
+          <span
+            aria-atomic="true"
+            aria-live="polite"
+            className="grid-settings__status-copy"
+            role="status"
+          >
+            {statusCopy.text}
+          </span>
+        </div>
+        <SemanticStatus label={statusCopy.label} tone={statusCopy.tone} />
+        <Button onClick={onClose} visual="ghost">
+          {t("Close settings")}
+        </Button>
+      </header>
+      {controller.failure ? (
+        <div className="grid-settings__failure">
+          <RequestFailurePanel failure={controller.failure} />
+          <Button icon="refresh" onClick={controller.reload} visual="secondary">
+            {t("Reload personal settings")}
+          </Button>
+        </div>
+      ) : null}
+      <div className="grid-settings__body">
+        <fieldset
+          className="grid-settings__columns"
+          disabled={controlsDisabled}
+        >
+          <legend>{t("Columns and widths")}</legend>
+          {layout.columnOrder.map((columnId, index) => {
+            const label = gridColumnLabel(t, columnId);
+            const required = requiredGridColumns.has(columnId);
+            return (
+              <div className="grid-settings__column" key={columnId}>
+                <label>
+                  <input
+                    checked={!hidden.has(columnId)}
+                    disabled={controlsDisabled || required}
+                    onChange={(event) => {
+                      setHidden(columnId, event.currentTarget.checked);
+                    }}
+                    type="checkbox"
+                  />
+                  <span>{label}</span>
+                </label>
+                <span className="grid-settings__width">
+                  {t("{{width}} pixels", {
+                    width: layout.widths[columnId],
+                  })}
+                </span>
+                <div className="grid-settings__column-actions">
+                  <Button
+                    aria-label={t("Move {{column}} left", {
+                      column: label,
+                    })}
+                    disabled={controlsDisabled || index === 0}
+                    onClick={() => {
+                      onLayoutChange(moveGridColumn(layout, columnId, -1));
+                    }}
+                    visual="ghost"
+                  >
+                    ←
+                  </Button>
+                  <Button
+                    aria-label={t("Move {{column}} right", {
+                      column: label,
+                    })}
+                    disabled={
+                      controlsDisabled ||
+                      index === layout.columnOrder.length - 1
+                    }
+                    onClick={() => {
+                      onLayoutChange(moveGridColumn(layout, columnId, 1));
+                    }}
+                    visual="ghost"
+                  >
+                    →
+                  </Button>
+                  <Button
+                    aria-label={t("Reset {{column}} width", {
+                      column: label,
+                    })}
+                    disabled={controlsDisabled}
+                    onClick={() => {
+                      onLayoutChange({
+                        ...layout,
+                        widths: {
+                          ...layout.widths,
+                          [columnId]:
+                            myWorkGridColumnWidthSpecs[columnId].default,
+                        },
+                      });
+                    }}
+                    visual="ghost"
+                  >
+                    {t("Reset")}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </fieldset>
+        <fieldset
+          className="grid-settings__personal"
+          disabled={controlsDisabled}
+        >
+          <legend>{t("Personal view")}</legend>
+          <label>
+            <span>{t("Fixed columns")}</span>
+            <Select
+              aria-label={t("Fixed columns")}
+              disabled={controlsDisabled}
+              onChange={(event) => {
+                onLayoutChange({
+                  ...layout,
+                  fixedColumnCount: Number.parseInt(
+                    event.currentTarget.value,
+                    10,
+                  ),
+                });
+              }}
+              value={String(layout.fixedColumnCount)}
+            >
+              <option value="0">{t("No fixed columns")}</option>
+              <option value="1">{t("One fixed column")}</option>
+              <option value="2">{t("Two fixed columns")}</option>
+            </Select>
+          </label>
+          <label>
+            <input
+              checked={isFavorite}
+              onChange={toggleFavorite}
+              type="checkbox"
+            />
+            <span>{t("Favorite this view")}</span>
+          </label>
+          <label>
+            <span>{t("Default Project")}</span>
+            <Select
+              aria-label={t("Default Project")}
+              disabled={controlsDisabled}
+              onChange={(event) => {
+                const candidate = event.currentTarget.value;
+                controller.update({
+                  defaultProjectId: projectOptions.some(
+                    (project) => project.globalId === candidate,
+                  )
+                    ? candidate
+                    : null,
+                  viewId: currentView,
+                });
+              }}
+              value={controller.preferences.defaultProjectId ?? ""}
+            >
+              <option value="">{t("No default Project")}</option>
+              {projectOptions.map((project) => (
+                <option
+                  data-language-exempt="business-data"
+                  key={project.globalId}
+                  value={project.globalId}
+                >
+                  {project.businessCode} · {project.title}
+                </option>
+              ))}
+            </Select>
+          </label>
+          <Button
+            disabled={controlsDisabled}
+            onClick={onSaveCurrentFilters}
+            visual="secondary"
+          >
+            {t("Save current filters")}
+          </Button>
+          <Button
+            disabled={controlsDisabled}
+            onClick={() => {
+              onLayoutChange(defaultMyWorkGridLayout());
+            }}
+            visual="secondary"
+          >
+            {t("Reset grid layout")}
+          </Button>
+        </fieldset>
+        <div className="grid-settings__access">
+          <section>
+            <h3>{t("Favorite views")}</h3>
+            <div className="grid-settings__view-links">
+              {controller.preferences.favoriteViewIds.length === 0 ? (
+                <span>{t("No favorite views")}</span>
+              ) : (
+                controller.preferences.favoriteViewIds.map((viewId) => (
+                  <Button
+                    disabled={controlsDisabled}
+                    key={viewId}
+                    onClick={() => {
+                      onSelectView(viewId);
+                    }}
+                    visual="ghost"
+                  >
+                    {viewLabel(t, viewId)}
+                  </Button>
+                ))
+              )}
+            </div>
+          </section>
+          <section>
+            <h3>{t("Recent views")}</h3>
+            <div className="grid-settings__view-links">
+              {controller.preferences.recentViewIds.length === 0 ? (
+                <span>{t("No recent views")}</span>
+              ) : (
+                controller.preferences.recentViewIds.map((viewId) => (
+                  <Button
+                    disabled={controlsDisabled}
+                    key={viewId}
+                    onClick={() => {
+                      onSelectView(viewId);
+                    }}
+                    visual="ghost"
+                  >
+                    {viewLabel(t, viewId)}
+                  </Button>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+        <div className="grid-settings__capabilities">
+          <DefinitionList
+            rows={[
+              {
+                label: t("Sorting and grouping"),
+                value: t("Server-defined for this live worklist"),
+              },
+              {
+                label: t("Bulk actions"),
+                value: t("Domain bulk-action contract required"),
+              },
+              {
+                label: t("Export"),
+                value: t("Export contract required"),
+              },
+              {
+                label: t("Shared view publishing"),
+                value: t("Publisher authority policy required"),
+              },
+            ]}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function LiveMyWorklist({
   dataSource,
+  gridPreferencesDataSource,
   navigate,
 }: {
   dataSource: MyWorkDataSource;
+  gridPreferencesDataSource?: MyWorkGridPreferencesDataSource;
   navigate: (target: string) => void;
 }): React.JSX.Element {
-  const { locale, t } = useI18n();
+  const { locale, sessionCommandContext, t } = useI18n();
+  const personalization = useMyWorkGridPersonalization({
+    ...(gridPreferencesDataSource
+      ? { dataSource: gridPreferencesDataSource }
+      : {}),
+    session: sessionCommandContext,
+  });
   const generation = useRef(0);
+  const appliedPreferenceLoad = useRef(0);
   const [view, setView] = useState<MyWorkView>("all");
   const [projectId, setProjectId] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
@@ -245,16 +696,31 @@ export function LiveMyWorklist({
   >([undefined]);
   const [attempt, setAttempt] = useState(0);
   const [selectedId, setSelectedId] = useState("");
+  const [gridSettingsOpen, setGridSettingsOpen] = useState(false);
   const [knownProjects, setKnownProjects] = useState<
     readonly MyWorkItemViewModel["project"][]
   >([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (
+      personalization.failure ||
+      personalization.preferences.recoveryReason === "stored_preference_invalid"
+    ) {
+      queueMicrotask(() => {
+        if (!cancelled) setGridSettingsOpen(true);
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [personalization.failure, personalization.preferences.recoveryReason]);
   const priority = priorityValues.get(priorityFilter) ?? null;
   const cursor = cursorStack.at(-1);
   const query = useMemo<MyWorkQuery>(() => {
     const nextQuery: MyWorkQuery = { limit: liveMyWorkPageSize, view };
     if (projectId) nextQuery.projectId = projectId;
     if (priority) nextQuery.priority = priority;
-    const boundedSearch = search.trim().slice(0, 140);
+    const boundedSearch = truncateMyWorkGridSearch(search.trim());
     if (boundedSearch) nextQuery.search = boundedSearch;
     if (cursor !== undefined) nextQuery.cursor = cursor;
     return nextQuery;
@@ -357,6 +823,51 @@ export function LiveMyWorklist({
     };
   }, [cursorStack, dataSource, query, requestSignature]);
 
+  useEffect(() => {
+    if (
+      personalization.loadEpoch === 0 ||
+      personalization.loadEpoch <= appliedPreferenceLoad.current
+    ) {
+      return;
+    }
+    const stored = personalization.preferences.viewLayouts.find(
+      (candidate) => candidate.viewId === view,
+    );
+    if (!stored) return;
+    const preferredProjectId = stored.hasSavedFilter
+      ? stored.filter.projectId
+      : personalization.preferences.defaultProjectId;
+    if (preferredProjectId && knownProjects.length === 0) {
+      return;
+    }
+    const loadEpoch = personalization.loadEpoch;
+    const nextProjectId =
+      preferredProjectId &&
+      knownProjects.some((project) => project.globalId === preferredProjectId)
+        ? preferredProjectId
+        : "";
+    const nextPriorityFilter = fromGridPriority(stored.filter.priority);
+    const nextSearch = stored.filter.search;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || loadEpoch <= appliedPreferenceLoad.current) return;
+      appliedPreferenceLoad.current = loadEpoch;
+      setProjectId(nextProjectId);
+      setPriorityFilter(nextPriorityFilter);
+      setSearch(nextSearch);
+      setCursorStack([undefined]);
+      setSelectedId("");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    knownProjects,
+    personalization.loadEpoch,
+    personalization.preferences,
+    view,
+  ]);
+
   const currentState =
     state.signature === requestSignature
       ? state
@@ -380,6 +891,195 @@ export function LiveMyWorklist({
     resetPagination();
   };
   const metrics = page?.counts;
+  const currentViewPreference =
+    personalization.preferences.viewLayouts.find(
+      (candidate) => candidate.viewId === view,
+    ) ?? personalization.preferences.viewLayouts[0];
+  const currentLayout =
+    currentViewPreference?.layout ?? defaultMyWorkGridLayout();
+  const currentGridFilter: MyWorkGridFilter = {
+    priority: toGridPriority(priorityFilter),
+    projectId: projectId || null,
+    search: truncateMyWorkGridSearch(search.trim()),
+  };
+  const selectGridView = (nextView: MyWorkGridViewId): void => {
+    setView(nextView);
+    const stored = personalization.preferences.viewLayouts.find(
+      (candidate) => candidate.viewId === nextView,
+    );
+    if (stored) {
+      const preferredProjectId = stored.hasSavedFilter
+        ? stored.filter.projectId
+        : personalization.preferences.defaultProjectId;
+      setProjectId(
+        preferredProjectId &&
+          knownProjects.some(
+            (project) => project.globalId === preferredProjectId,
+          )
+          ? preferredProjectId
+          : "",
+      );
+      setPriorityFilter(fromGridPriority(stored.filter.priority));
+      setSearch(stored.filter.search);
+    }
+    resetPagination();
+    personalization.update({
+      recentViewIds: [
+        nextView,
+        ...personalization.preferences.recentViewIds.filter(
+          (candidate) => candidate !== nextView,
+        ),
+      ].slice(0, 5),
+      viewId: nextView,
+    });
+  };
+  const updateGridLayout = (layout: MyWorkGridLayout): void => {
+    personalization.update({ layout, viewId: view });
+  };
+  const gridColumns = useMemo<
+    readonly DenseGridColumn<MyWorkItemViewModel, MyWorkGridColumnId>[]
+  >(
+    () => [
+      {
+        accessibilityLabel: t("Type"),
+        defaultWidth: myWorkGridColumnWidthSpecs.type.default,
+        id: "type",
+        label: t("Type"),
+        maximumWidth: myWorkGridColumnWidthSpecs.type.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.type.minimum,
+        renderCell: (item) => (
+          <SemanticStatus
+            label={myWorkCategoryLabel(t, item.category)}
+            tone={categoryTone(item)}
+          />
+        ),
+      },
+      {
+        accessibilityLabel: t("Item"),
+        defaultWidth: myWorkGridColumnWidthSpecs.item.default,
+        id: "item",
+        label: t("Item"),
+        maximumWidth: myWorkGridColumnWidthSpecs.item.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.item.minimum,
+        renderCell: (item) => (
+          <strong data-language-exempt="business-data">{item.title}</strong>
+        ),
+      },
+      {
+        accessibilityLabel: t("Project or object"),
+        defaultWidth: myWorkGridColumnWidthSpecs.context.default,
+        id: "context",
+        label: t("Project or object"),
+        maximumWidth: myWorkGridColumnWidthSpecs.context.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.context.minimum,
+        renderCell: (item) => (
+          <>
+            <span data-language-exempt="identifier">
+              {item.project.businessCode}
+            </span>
+            <br />
+            <span data-language-exempt="business-data">
+              {item.context.title}
+            </span>
+          </>
+        ),
+      },
+      {
+        accessibilityLabel: t("Why assigned"),
+        defaultWidth: myWorkGridColumnWidthSpecs.assignment.default,
+        id: "assignment",
+        label: t("Why assigned"),
+        maximumWidth: myWorkGridColumnWidthSpecs.assignment.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.assignment.minimum,
+        renderCell: (item) => myWorkWhyLabel(t, item.why),
+      },
+      {
+        accessibilityLabel: t("Priority"),
+        defaultWidth: myWorkGridColumnWidthSpecs.priority.default,
+        id: "priority",
+        label: t("Priority"),
+        maximumWidth: myWorkGridColumnWidthSpecs.priority.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.priority.minimum,
+        renderCell: (item) => myWorkPriorityLabel(t, item.priority),
+      },
+      {
+        accessibilityLabel: t("Due"),
+        defaultWidth: myWorkGridColumnWidthSpecs.due.default,
+        id: "due",
+        label: t("Due"),
+        maximumWidth: myWorkGridColumnWidthSpecs.due.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.due.minimum,
+        renderCell: (item) => (
+          <div className="my-work-due">
+            {item.dueAt === null ? null : (
+              <time dateTime={item.dueAt}>
+                {formatDateTime(locale, item.dueAt, page?.timeZone)}
+              </time>
+            )}
+            <SemanticStatus
+              label={myWorkDueStateLabel(t, item.dueState)}
+              tone={dueStateTone(item.dueState)}
+            />
+          </div>
+        ),
+      },
+      {
+        accessibilityLabel: t("Status"),
+        defaultWidth: myWorkGridColumnWidthSpecs.status.default,
+        id: "status",
+        label: t("Status"),
+        maximumWidth: myWorkGridColumnWidthSpecs.status.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.status.minimum,
+        renderCell: (item) => (
+          <SemanticStatus
+            label={myWorkStatusLabel(t, item.status)}
+            tone={statusTone(item.status)}
+          />
+        ),
+      },
+      {
+        accessibilityLabel: t("Next action"),
+        defaultWidth: myWorkGridColumnWidthSpecs.action.default,
+        id: "action",
+        label: t("Next action"),
+        maximumWidth: myWorkGridColumnWidthSpecs.action.maximum,
+        minimumWidth: myWorkGridColumnWidthSpecs.action.minimum,
+        renderCell: (item) => (
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              navigate(myWorkTargetPath(item));
+            }}
+            visual="ghost"
+          >
+            {myWorkActionLabel(t, item.action)}
+          </Button>
+        ),
+      },
+    ],
+    [locale, navigate, page?.timeZone, t],
+  );
+  const gridRows =
+    currentState.kind === "loaded" ? currentState.page.items : [];
+  const gridEmptyContent =
+    currentState.kind === "loading" ? (
+      <div className="table-empty" role="status">
+        {t("Loading My Work")}
+      </div>
+    ) : currentState.kind === "failed" ? (
+      <FailureState
+        failure={currentState.failure}
+        reload={reload}
+        retry={retry}
+      />
+    ) : (
+      <div className="table-empty">
+        <span>{t("No assigned work is available in this view.")}</span>
+        {filtersApplied ? (
+          <Button onClick={clearFilters}>{t("Clear filters")}</Button>
+        ) : null}
+      </div>
+    );
 
   return (
     <>
@@ -432,8 +1132,7 @@ export function LiveMyWorklist({
                 <Select
                   aria-label={t("Saved view")}
                   onChange={(event) => {
-                    setView(parseView(event.currentTarget.value));
-                    resetPagination();
+                    selectGridView(parseView(event.currentTarget.value));
                   }}
                   value={view}
                 >
@@ -517,9 +1216,10 @@ export function LiveMyWorklist({
                 <span className="visually-hidden">{t("Filter")}</span>
                 <TextInput
                   aria-label={t("Filter")}
-                  maxLength={140}
                   onChange={(event) => {
-                    setSearch(event.currentTarget.value.slice(0, 140));
+                    setSearch(
+                      truncateMyWorkGridSearch(event.currentTarget.value),
+                    );
                     resetPagination();
                   }}
                   placeholder={t("Search assigned work")}
@@ -527,146 +1227,78 @@ export function LiveMyWorklist({
                   value={search}
                 />
               </label>
+              <Button
+                aria-expanded={gridSettingsOpen}
+                icon="maintenance"
+                onClick={() => {
+                  setGridSettingsOpen((current) => !current);
+                }}
+                visual="secondary"
+              >
+                {t("Grid settings")}
+              </Button>
             </div>
           }
           className="worklist-panel"
           title={t("Worklist")}
         >
-          <div
-            aria-busy={currentState.kind === "loading"}
+          {gridSettingsOpen ? (
+            <div id="my-work-grid-settings">
+              <GridSettings
+                controller={personalization}
+                currentView={view}
+                onClose={() => {
+                  setGridSettingsOpen(false);
+                }}
+                onLayoutChange={updateGridLayout}
+                onSaveCurrentFilters={() => {
+                  personalization.update({
+                    filter: currentGridFilter,
+                    viewId: view,
+                  });
+                }}
+                onSelectView={selectGridView}
+                projectOptions={knownProjects}
+              />
+            </div>
+          ) : null}
+          <DenseGrid
+            ariaBusy={currentState.kind === "loading"}
+            ariaLabel={t("My Work grid")}
             className="table-scroll"
-          >
-            <table className="data-table data-table--compact">
-              <thead>
-                <tr>
-                  <th scope="col">{t("Type")}</th>
-                  <th scope="col">{t("Item")}</th>
-                  <th scope="col">{t("Project or object")}</th>
-                  <th scope="col">{t("Why assigned")}</th>
-                  <th scope="col">{t("Priority")}</th>
-                  <th scope="col">{t("Due")}</th>
-                  <th scope="col">{t("Status")}</th>
-                  <th scope="col">{t("Next action")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentState.kind === "loading" ? (
-                  <tr>
-                    <td colSpan={8}>
-                      <div className="table-empty" role="status">
-                        {t("Loading My Work")}
-                      </div>
-                    </td>
-                  </tr>
-                ) : currentState.kind === "failed" ? (
-                  <tr>
-                    <td colSpan={8}>
-                      <FailureState
-                        failure={currentState.failure}
-                        reload={reload}
-                        retry={retry}
-                      />
-                    </td>
-                  </tr>
-                ) : currentState.page.items.length === 0 ? (
-                  <tr>
-                    <td colSpan={8}>
-                      <div className="table-empty">
-                        <span>
-                          {t("No assigned work is available in this view.")}
-                        </span>
-                        {filtersApplied ? (
-                          <Button onClick={clearFilters}>
-                            {t("Clear filters")}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  currentState.page.items.map((item) => (
-                    <tr
-                      aria-selected={item.id === selected?.id}
-                      className={
-                        item.id === selected?.id ? "is-selected" : undefined
-                      }
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedId(item.id);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.target !== event.currentTarget) {
-                          return;
-                        }
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          setSelectedId(item.id);
-                        }
-                      }}
-                      tabIndex={0}
-                    >
-                      <td>
-                        <SemanticStatus
-                          label={myWorkCategoryLabel(t, item.category)}
-                          tone={categoryTone(item)}
-                        />
-                      </td>
-                      <td>
-                        <strong data-language-exempt="business-data">
-                          {item.title}
-                        </strong>
-                      </td>
-                      <td>
-                        <span data-language-exempt="identifier">
-                          {item.project.businessCode}
-                        </span>
-                        <br />
-                        <span data-language-exempt="business-data">
-                          {item.context.title}
-                        </span>
-                      </td>
-                      <td>{myWorkWhyLabel(t, item.why)}</td>
-                      <td>{myWorkPriorityLabel(t, item.priority)}</td>
-                      <td>
-                        <div className="my-work-due">
-                          {item.dueAt === null ? null : (
-                            <time dateTime={item.dueAt}>
-                              {formatDateTime(
-                                locale,
-                                item.dueAt,
-                                currentState.page.timeZone,
-                              )}
-                            </time>
-                          )}
-                          <SemanticStatus
-                            label={myWorkDueStateLabel(t, item.dueState)}
-                            tone={dueStateTone(item.dueState)}
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <SemanticStatus
-                          label={myWorkStatusLabel(t, item.status)}
-                          tone={statusTone(item.status)}
-                        />
-                      </td>
-                      <td>
-                        <Button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            navigate(myWorkTargetPath(item));
-                          }}
-                          visual="ghost"
-                        >
-                          {myWorkActionLabel(t, item.action)}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+            columns={gridColumns}
+            emptyContent={gridEmptyContent}
+            getRowKey={(item) => item.id}
+            getRowProperties={(item) => ({
+              "aria-selected": item.id === selected?.id,
+              className: item.id === selected?.id ? "is-selected" : undefined,
+              onClick: () => {
+                setSelectedId(item.id);
+              },
+              onKeyDown: (event) => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setSelectedId(item.id);
+                }
+              },
+              tabIndex: 0,
+            })}
+            interactionDisabled={!personalization.canUpdate}
+            layout={currentLayout}
+            onLayoutChange={(
+              change: DenseGridLayoutChange<MyWorkGridColumnId>,
+            ) => {
+              updateGridLayout(change.layout);
+            }}
+            resizeColumnLabel={(column) =>
+              t("Resize {{column}} column", { column })
+            }
+            resizeHelp={t(
+              "Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.",
+            )}
+            rows={gridRows}
+          />
           <footer className="table-footer">
             <span>
               {t("Page {{page}}", {

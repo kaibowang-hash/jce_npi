@@ -23,7 +23,7 @@ LEGACY_HEADER = TRACE_HEADER[:6]
 DOCX_ONLY_PREFIXES = ("UX-", "ARCH-", "COD-", "I18N-", "FR-TX-")
 
 ADDENDUM_REQUIREMENTS = (
-    ("FR-UX-038", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
+    ("FR-UX-038", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-039", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-040", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-041", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
@@ -40,16 +40,16 @@ ADDENDUM_REQUIREMENTS = (
 UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
     "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
-    "UX-007": ("5", "PLANNED_R1_04_GRID_PERSONALIZATION"),
+    "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
-    "UX-027": ("5", "PLANNED_R1_04_PERSONALIZATION"),
-    "UX-028": ("5", "PLANNED_R1_04_PUBLISHED_VIEWS"),
+    "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
     "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
-    "UX-035": ("5", "PLANNED_R1_04_R1_06_DENSITY"),
+    "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
 }
 R1_03_EVIDENCE = {
@@ -76,6 +76,65 @@ R1_03_EVIDENCE = {
         "frontend/tests/unit/router.test.tsx",
         "frontend/tests/e2e/r1-03-shell.spec.ts",
         "implementation/evidence/reconciliation/r1-03-validation.md",
+    ),
+}
+R1_04_EVIDENCE = {
+    "FR-UX-038": (
+        "apps/npi_core/npi_core/grid_personalization/domain.py",
+        "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+        "apps/npi_core/npi_core/grid_personalization_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/ui-adapters/dense-grid-layout.ts",
+        "frontend/src/ui-adapters/dense-grid.tsx",
+        "frontend/src/components/live-my-worklist.tsx",
+        "frontend/tests/unit/dense-grid.test.tsx",
+        "frontend/tests/e2e/r1-04-grid.spec.ts",
+        "scripts/verify_grid_personalization_runtime.py",
+        "implementation/evidence/reconciliation/r1-04-validation.md",
+    ),
+    "UX-007": (
+        "frontend/src/ui-adapters/dense-grid.tsx",
+        "frontend/src/components/live-my-worklist.tsx",
+        "frontend/src/components/worklist.tsx",
+        "frontend/tests/unit/dense-grid.test.tsx",
+        "frontend/tests/e2e/r1-04-grid.spec.ts",
+        "implementation/evidence/reconciliation/r1-04-validation.md",
+    ),
+    "UX-027": (
+        "apps/npi_core/npi_core/grid_personalization/controller.py",
+        "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+        "apps/npi_core/npi_core/grid_personalization_api.py",
+        "apps/npi_core/npi_core/npi_core/doctype/npi_my_work_grid_preference/npi_my_work_grid_preference.json",
+        "frontend/src/api/grid-preferences-data-source.ts",
+        "frontend/src/components/my-work-grid-personalization.ts",
+        "frontend/src/components/live-my-worklist.tsx",
+        "frontend/tests/unit/grid-preferences-data-source.test.ts",
+        "frontend/tests/unit/my-work-grid-personalization.test.tsx",
+        "tests/test_r1_04_grid_personalization_repository_api.py",
+        "frontend/tests/e2e/r1-04-grid.spec.ts",
+        "scripts/verify_grid_personalization_runtime.py",
+        "implementation/evidence/reconciliation/r1-04-validation.md",
+    ),
+    "UX-028": (
+        "apps/npi_core/npi_core/grid_personalization/controller.py",
+        "apps/npi_core/npi_core/grid_personalization/domain.py",
+        "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+        "apps/npi_core/npi_core/npi_core/doctype/npi_published_grid_view/npi_published_grid_view.json",
+        "apps/npi_core/npi_core/npi_core/doctype/npi_published_grid_view_revision/npi_published_grid_view_revision.json",
+        "tests/test_r1_04_grid_personalization_domain.py",
+        "tests/test_r1_04_grid_personalization_repository_api.py",
+        "scripts/verify_grid_personalization_runtime.py",
+        "implementation/evidence/reconciliation/r1-04-plan.md",
+        "implementation/evidence/reconciliation/r1-04-validation.md",
+    ),
+    "UX-035": (
+        "frontend/src/components/live-my-worklist.tsx",
+        "frontend/src/styles/app.css",
+        "frontend/tests/e2e/r1-04-grid.spec.ts",
+        "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-en-1440x900-100-linux.png",
+        "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-1440x900-100-linux.png",
+        "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-TW-1440x900-100-linux.png",
+        "implementation/evidence/reconciliation/r1-04-validation.md",
     ),
 }
 
@@ -162,6 +221,8 @@ def _expanded_rows(
             evidence += "; docs/TOOLING_LIST_IMPORT_SPEC.md"
         if requirement_id in R1_03_EVIDENCE:
             evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
+        if requirement_id in R1_04_EVIDENCE:
+            evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -192,6 +253,8 @@ def _expanded_rows(
             )
         if requirement_id in R1_03_EVIDENCE:
             evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
+        if requirement_id in R1_04_EVIDENCE:
+            evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

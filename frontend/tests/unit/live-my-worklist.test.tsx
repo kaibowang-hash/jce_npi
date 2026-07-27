@@ -166,6 +166,26 @@ function deferred<T>(): {
 }
 
 describe("live My Work worklist", () => {
+  it("announces personal-grid persistence changes through one polite status region", async () => {
+    const user = userEvent.setup();
+    renderWithLocale(
+      <LiveMyWorklist dataSource={resolvedDataSource()} navigate={vi.fn()} />,
+    );
+    await within(screen.getByRole("table")).findByRole("button", {
+      name: "View work item",
+    });
+
+    await user.click(screen.getByRole("button", { name: "Grid settings" }));
+
+    const persistenceStatus = screen.getByRole("status");
+    expect(persistenceStatus).toHaveAttribute("aria-live", "polite");
+    expect(persistenceStatus).toHaveAttribute("aria-atomic", "true");
+    expect(persistenceStatus).toHaveTextContent(
+      "Session verification is required before personal grid settings can be saved.",
+    );
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+  });
+
   it("renders validated assignments, honest counts, keyboard selection, and typed target navigation", async () => {
     const navigate = vi.fn<(target: string) => void>();
     const user = userEvent.setup();

@@ -514,7 +514,7 @@ Columns,欄
 Grouped by {{field}},依 {{field}} 分組
 Loading worklist,正在載入工作清單
 The worklist query failed. No data was changed. Change a filter or retry.,工作清單查詢失敗。未變更任何資料。請變更篩選條件或重試。
-Toggle group,切換分組
+Toggle group: {{group}},切換分組：{{group}}
 No system is editable,所有系統均不可編輯
 Review G5 sample approval,評審 G5 樣件核准
 Added a controlled engineering comment.,已新增受控工程評論。
@@ -2537,3 +2537,123 @@ Command results,命令結果
 No approved command matches this query.,沒有與此查詢相符的已核准命令。
 Move,移動
 Close,關閉
+Not saved,未儲存
+Personal grid settings were not saved. The last confirmed settings remain active.,個人網格設定未儲存。上次確認的設定仍然有效。
+Loading personal grid settings,正在載入個人網格設定
+Personal grid settings are confirmed by the server.,個人網格設定已由伺服器確認。
+Defaults active,預設設定已啟用
+Stored grid settings were invalid. Code-owned defaults are active.,已儲存的網格設定無效。目前使用程式碼定義的預設設定。
+Saving,正在儲存
+Saving personal grid settings,正在儲存個人網格設定
+Session verification is required before personal grid settings can be saved.,儲存個人網格設定前需要驗證工作階段。
+Personal grid settings,個人網格設定
+Close settings,關閉設定
+Reload personal settings,重新載入個人設定
+Columns and widths,欄與寬度
+{{width}} pixels,{{width}} 像素
+Move {{column}} left,將{{column}}向左移動
+Move {{column}} right,將{{column}}向右移動
+Reset {{column}} width,重設{{column}}寬度
+Reset,重設
+Personal view,個人檢視
+Fixed columns,固定欄
+No fixed columns,無固定欄
+One fixed column,一個固定欄
+Two fixed columns,兩個固定欄
+Favorite this view,收藏此檢視
+Default Project,預設專案
+No default Project,無預設專案
+Save current filters,儲存目前篩選條件
+Reset grid layout,重設網格版面配置
+Favorite views,收藏的檢視
+No favorite views,無收藏檢視
+Recent views,最近使用的檢視
+No recent views,無最近使用的檢視
+Sorting and grouping,排序與分組
+Server-defined for this live worklist,由伺服器為此即時工作清單定義
+Bulk actions,批次操作
+Domain bulk-action contract required,需要領域批次操作合約
+Export,匯出
+Export contract required,需要匯出合約
+Shared view publishing,共享檢視發佈
+Publisher authority policy required,需要發佈者權限策略
+Grid settings,網格設定
+My Work grid,我的工作網格
+Resize {{column}} column,調整{{column}}欄的寬度
+"Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.","使用左方向鍵和右方向鍵調整寬度。按起始鍵或結束鍵設為邊界值，或按輸入鍵配合已呈現的資料列。"
+Worklist grid,工作清單網格
+Select the supported My Work table schema.,請選擇支援的「我的工作」表格結構描述。
+Select a Project available in My Work.,請選擇「我的工作」中可用的專案。
+Enter a valid tenant identity.,請輸入有效的租戶識別。
+Enter a valid user identity.,請輸入有效的使用者識別。
+Enter a canonical UUID.,請輸入標準 UUID。
+Enter an object with the exact supported fields.,請輸入僅包含支援欄位的物件。
+Select a supported My Work view.,請選擇支援的「我的工作」檢視。
+Select no more than the supported number of views.,所選檢視數量不得超過支援的上限。
+Select each My Work view only once.,每個「我的工作」檢視只能選擇一次。
+Provide every supported column exactly once.,請提供全部支援的欄且每欄僅一次。
+Enter a column width within the supported range.,請輸入支援範圍內的欄寬。
+Select only supported columns.,只能選擇支援的欄。
+Select each supported column no more than once.,每個支援的欄最多只能選擇一次。
+Required columns cannot be hidden.,必要欄不能隱藏。
+Select a supported fixed-column count.,請選擇支援的固定欄數量。
+Select a supported My Work priority.,請選擇支援的「我的工作」優先順序。
+Enter valid search text.,請輸入有效的搜尋文字。
+Enter a non-negative version.,請輸入非負版本號。
+Provide every supported My Work view exactly once.,請提供全部支援的「我的工作」檢視且每個僅一次。
+Provide My Work views in the supported order.,請依支援的順序提供「我的工作」檢視。
+A published grid view filter must stay within its Project boundary.,已發佈網格檢視的篩選條件必須保持在其專案邊界內。
+The first published view revision cannot have a prior revision.,已發佈檢視的首個修訂不能有前序修訂。
+Select the exact preceding published view revision.,請選擇緊鄰的前一個已發佈檢視修訂。
+Select an earlier published view revision to restore.,請選擇要還原的較早已發佈檢視修訂。
+Enter a valid trace identity.,請輸入有效的追蹤識別。
+Grid personalization records can only be changed through an authorized NPI command.,網格個人化記錄只能透過已授權的 NPI 命令變更。
+Grid personalization and published view history cannot be deleted.,網格個人化記錄和已發佈檢視歷程不能刪除。
+{field} must not be the nil UUID.,{field}不能是空 UUID。
+Tenant ID must be a valid tenant identity.,租戶識別必須有效。
+Authority Reason Code must be a valid controlled key.,權限原因代碼必須是有效的受控鍵。
+Published View Global ID,已發佈檢視全域識別
+Prior Revision Global ID,前序修訂全域識別
+Restored From Revision Global ID,還原來源修訂全域識別
+Preference Key Hash does not match its identities.,偏好設定鍵雜湊與其識別不相符。
+Select the supported My Work grid schema.,請選擇支援的「我的工作」網格結構描述。
+Preference Snapshot Hash does not match its canonical snapshot.,偏好設定快照雜湊與其標準快照不相符。
+The first preference version must be one.,首個偏好設定版本必須為一。
+Preference Version must advance one version at a time.,偏好設定版本每次必須遞增一個版本。
+Current Revision Number,目前修訂號
+A published view must begin with revision one.,已發佈檢視必須從修訂一開始。
+The published view pointer must advance to one exact successor.,已發佈檢視指標必須推進到唯一的下一修訂。
+A published grid view revision cannot be changed.,已發佈網格檢視修訂不能變更。
+Revision Number,修訂號
+Revision Key does not match its identities.,修訂鍵與其識別不相符。
+Select the supported Project permission boundary.,請選擇支援的專案權限邊界。
+Published View Name must be valid text.,已發佈檢視名稱必須是有效文字。
+Published View Description must be valid text.,已發佈檢視說明必須是有效文字。
+Definition Hash does not match its canonical snapshot.,定義雜湊與其標準快照不相符。
+Published By,發佈者
+Authority Evidence,權限證據
+Revision Snapshot Hash does not match its canonical snapshot.,修訂快照雜湊與其標準快照不相符。
+Prior Revision Snapshot Hash,前序修訂快照雜湊
+Restored revision evidence must be complete.,還原修訂證據必須完整。
+Restored From Revision Snapshot Hash,還原來源修訂快照雜湊
+NPI My Work Grid Preference,NPI 我的工作網格偏好設定
+Preference Key Hash,偏好設定鍵雜湊
+Grid ID,網格識別
+my-work,我的工作
+Table Schema Version,表格結構描述版本
+Preference Snapshot,偏好設定快照
+NPI Published Grid View,NPI 已發佈網格檢視
+NPI Published Grid View Revision,NPI 已發佈網格檢視修訂
+Published Grid View,已發佈網格檢視
+Prior Revision Number,前序修訂號
+Restored From Revision Number,還原來源修訂號
+Published View Name,已發佈檢視名稱
+Published View Description,已發佈檢視說明
+Permission Boundary,權限邊界
+project_viewers,專案檢視者
+Definition Snapshot,定義快照
+Definition Hash,定義雜湊
+Authority Reason Code,權限原因代碼
+Select whether this view has a saved filter.,選擇此檢視是否具有已儲存的篩選條件。
+An unsaved filter must use code-owned defaults.,未儲存的篩選條件必須使用程式碼定義的預設值。
+Select whether to save the current filter.,選擇是否儲存目前的篩選條件。

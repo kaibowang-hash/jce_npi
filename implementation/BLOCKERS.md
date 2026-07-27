@@ -8,14 +8,14 @@ None.
 
 `R1_SHARED_BRIDGE` is active.
 
-R1-01 and R1-02 passed their Level 2 Gates, R1-03 passed its triggered
-task-level Level 3 Gate, and R1-04 is current.
+R1-01 and R1-02 passed their Level 2 Gates, and R1-03 and R1-04 passed their
+triggered task-level Level 3 Gates. R1-05 is current.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
 - does not permit P5-01 to be marked `PASS`;
 - prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting;
-- executes R1-04 through R1-06 before the shared Level 3 bridge Gate;
+- executes R1-05 and R1-06 before the shared Level 3 bridge Gate;
 - keeps R1-07 disabled unless DR-REC-001 is approved; and
 - preserves the exact P5-01 product boundary in
   `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
@@ -23,6 +23,13 @@ P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 The former `V1_2_RECONCILIATION_HOLD` is resolved by
 `implementation/evidence/reconciliation/r1-01-validation.md`; it is replaced
 by this bounded shared-bridge hold rather than removed.
+
+R1-04's `UX-028` publisher authority remains a scoped Class-B hold, not a
+global blocker. The immutable published-view root/revision, hash, lineage and
+rollback-as-new-revision foundation passed, but no live publish/rollback route
+or actor mapping exists until the exact “administrator” and “Project lead”
+authority policy is approved. Personal preferences, R1-05 and other
+independent bridge work continue without inferring that policy.
 
 ## Current P5-01 scope
 
@@ -154,3 +161,10 @@ must preserve that boundary.
   Pack's five M4 tasks, froze file/document/baseline/EBOM/ERP ownership,
   retained external-sharing, preview, CAD/PDM and ERP execution holds, and
   activated only P5-01 without changing Schema or runtime behavior.
+- R1-04 passed its triggered Level 3 grid-personalization/schema Gate on
+  2026-07-27. The final evidence includes 727 Python tests, 549 frontend tests,
+  two additive/idempotent migrations, the complete controlled Frappe runtime,
+  251 non-visual browser cases, a clean 207-case exact visual matrix, a fresh
+  13-case task run, complete trilingual coverage and independent code,
+  security, UX, accessibility and visual review. Only the explicit UX-028
+  publisher-authority decision remains held; R1-05 is active.

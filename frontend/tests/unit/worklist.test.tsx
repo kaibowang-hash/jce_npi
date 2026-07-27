@@ -196,8 +196,13 @@ describe("dense cross-object worklist", () => {
     expect(screen.getByText("Grouped by Type")).toBeVisible();
     const treegrid = screen.getByRole("treegrid");
     const groupToggle = within(treegrid).getByRole("button", {
-      name: "Toggle group",
+      name: "Toggle group: Integration",
     });
+    expect(
+      within(treegrid).queryByRole("button", {
+        name: "Toggle group",
+      }),
+    ).not.toBeInTheDocument();
     expect(groupToggle).toHaveAttribute("aria-expanded", "true");
     await user.click(groupToggle);
     expect(

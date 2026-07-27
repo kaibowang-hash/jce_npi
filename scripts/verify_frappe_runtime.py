@@ -28,6 +28,27 @@ EXPECTED_KEYS = {
     "preferences",
 }
 LANGUAGES = ("en", "zh", "zh-TW")
+GRID_PREFERENCE_PATH = "/api/npi/v1/me/preferences/my-work-grid"
+GRID_PREFERENCE_KEYS = {
+    "gridId",
+    "tableSchemaVersion",
+    "version",
+    "viewLayouts",
+    "favoriteViewIds",
+    "recentViewIds",
+    "defaultProjectId",
+    "recoveryReason",
+    "capabilities",
+}
+GRID_VIEW_IDS = (
+    "all",
+    "today",
+    "overdue",
+    "approvals",
+    "blockers",
+    "waiting",
+    "integration",
+)
 
 
 @dataclass(frozen=True)
@@ -188,6 +209,263 @@ def validate_problem(
         not {"exc", "exception", "exc_type", "message"}.intersection(result.body),
         "Frappe error envelope leaked into NPI problem body",
     )
+
+
+def validate_grid_preferences(result: HttpResult) -> None:
+    require(
+        result.status == 200,
+        (
+            f"Grid preferences returned HTTP {result.status}: "
+            f"{json.dumps(result.body, sort_keys=True)}"
+        ),
+    )
+    require(
+        set(result.body) == GRID_PREFERENCE_KEYS,
+        "Grid preference response keys drifted",
+    )
+    require(result.body.get("gridId") == "my-work", "Grid identity drifted")
+    require(
+        result.body.get("tableSchemaVersion") == "my-work-grid-v1",
+        "Grid table schema drifted",
+    )
+    require(
+        type(result.body.get("version")) is int and result.body["version"] >= 0,
+        "Grid preference version is invalid",
+    )
+    require(
+        result.body.get("recoveryReason")
+        in {None, "stored_preference_invalid"},
+        "Grid preference recovery reason drifted",
+    )
+    view_layouts = result.body.get("viewLayouts")
+    require(
+        isinstance(view_layouts, list)
+        and tuple(value.get("viewId") for value in view_layouts) == GRID_VIEW_IDS,
+        "Grid preference closed views drifted",
+    )
+    require(
+        all(
+            isinstance(value, dict)
+            and set(value)
+            == {"viewId", "layout", "filter", "hasSavedFilter"}
+            and type(value.get("hasSavedFilter")) is bool
+            for value in view_layouts
+        ),
+        "Grid preference saved-filter state drifted",
+    )
+    capabilities = result.body.get("capabilities")
+    require(
+        isinstance(capabilities, dict)
+        and capabilities.get("canPublishSharedView") is False
+        and capabilities.get("canRollbackSharedView") is False
+        and capabilities.get("canExport") is False
+        and capabilities.get("canRunBulkActions") is False
+        and capabilities.get("publishUnavailableReason")
+        == "publisher_authority_policy_required",
+        "Grid preference capabilities did not fail closed",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        "Grid preference cache control drifted",
+    )
+    require(
+        bool(result.headers.get("X-Request-ID")),
+        "Grid preference request header is missing",
+    )
+    require(
+        bool(result.headers.get("X-Trace-ID")),
+        "Grid preference trace header is missing",
+    )
+
+
+def put_grid_preferences(
+    opener: urllib.request.OpenerDirector,
+    base_url: str,
+    payload: dict[str, Any],
+    csrf_token: str | None,
+    *,
+    trace_id: str | None = None,
+) -> HttpResult:
+    headers: dict[str, str] = {}
+    if csrf_token is not None:
+        headers["X-Frappe-CSRF-Token"] = csrf_token
+    if trace_id is not None:
+        headers["X-Trace-ID"] = trace_id
+    return request(
+        opener,
+        base_url,
+        GRID_PREFERENCE_PATH,
+        method="PUT",
+        payload=payload,
+        request_headers=headers,
+    )
+
+
+def grid_preference_payload(
+    preferences: dict[str, Any],
+    *,
+    expected_version: int,
+    favorite_view_ids: list[str] | None = None,
+    recent_view_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    selected = preferences["viewLayouts"][0]
+    return {
+        "expectedVersion": expected_version,
+        "tableSchemaVersion": "my-work-grid-v1",
+        "viewId": "all",
+        "layout": selected["layout"],
+        "filter": selected["filter"],
+        "saveFilter": False,
+        "favoriteViewIds": (
+            preferences["favoriteViewIds"]
+            if favorite_view_ids is None
+            else favorite_view_ids
+        ),
+        "recentViewIds": (
+            preferences["recentViewIds"]
+            if recent_view_ids is None
+            else recent_view_ids
+        ),
+        "defaultProjectId": preferences["defaultProjectId"],
+    }
+
+
+def verify_grid_preferences_runtime(
+    administrator_opener: urllib.request.OpenerDirector,
+    base_url: str,
+    administrator_password: str,
+    csrf_token: str,
+) -> dict[str, Any]:
+    initial = request(administrator_opener, base_url, GRID_PREFERENCE_PATH)
+    validate_grid_preferences(initial)
+    initial_version = int(initial.body["version"])
+
+    csrf_missing = put_grid_preferences(
+        administrator_opener,
+        base_url,
+        grid_preference_payload(
+            initial.body,
+            expected_version=initial_version,
+        ),
+        None,
+        trace_id="trace-grid-csrf-missing",
+    )
+    validate_problem(
+        csrf_missing,
+        403,
+        "CSRF_TOKEN_INVALID",
+        expected_trace_id="trace-grid-csrf-missing",
+    )
+
+    stale = put_grid_preferences(
+        administrator_opener,
+        base_url,
+        grid_preference_payload(
+            initial.body,
+            expected_version=initial_version + 1,
+        ),
+        csrf_token,
+    )
+    validate_problem(stale, 409, "VERSION_CONFLICT")
+
+    fresh_session = login(
+        base_url,
+        ADMINISTRATOR_USER,
+        administrator_password,
+    )
+    fresh = request(fresh_session, base_url, GRID_PREFERENCE_PATH)
+    validate_grid_preferences(fresh)
+    require(
+        fresh.body == initial.body,
+        "Read-only grid verification changed the preference across sessions",
+    )
+
+    invalid_schema_payload = grid_preference_payload(
+        fresh.body,
+        expected_version=initial_version,
+    )
+    invalid_schema_payload["tableSchemaVersion"] = "unsupported-grid-schema"
+    fresh_bootstrap = request(
+        fresh_session,
+        base_url,
+        "/api/npi/v1/session/bootstrap",
+    )
+    invalid_schema = put_grid_preferences(
+        fresh_session,
+        base_url,
+        invalid_schema_payload,
+        str(fresh_bootstrap.body["csrfToken"]),
+    )
+    validate_problem(invalid_schema, 422, "VALIDATION_FAILED")
+
+    unchanged = request(
+        fresh_session,
+        base_url,
+        GRID_PREFERENCE_PATH,
+    )
+    validate_grid_preferences(unchanged)
+    require(
+        unchanged.body == initial.body,
+        "Rejected grid preference probes changed stored state",
+    )
+    return {
+        "gridPreferenceCsrfMissing": 403,
+        "gridPreferenceReadIsolation": True,
+        "gridPreferenceSchemaMismatch": 422,
+        "gridPreferenceVersionConflict": 409,
+    }
+
+
+def verify_grid_generic_create_denied(
+    administrator_opener: urllib.request.OpenerDirector,
+    base_url: str,
+    csrf_token: str,
+) -> bool:
+    cases = (
+        (
+            "NPI My Work Grid Preference",
+            "73000000-0000-4000-8000-000000000001",
+        ),
+        (
+            "NPI Published Grid View",
+            "73000000-0000-4000-8000-000000000002",
+        ),
+        (
+            "NPI Published Grid View Revision",
+            "73000000-0000-4000-8000-000000000003",
+        ),
+    )
+    for doctype, global_id in cases:
+        collection_path = (
+            "/api/resource/" + urllib.parse.quote(doctype, safe="")
+        )
+        created = request(
+            administrator_opener,
+            base_url,
+            collection_path,
+            method="POST",
+            payload={"global_id": global_id},
+            request_headers={"X-Frappe-CSRF-Token": csrf_token},
+        )
+        require(
+            created.status == 403,
+            f"Generic create was not denied for {doctype}",
+        )
+        resource_path = collection_path + "/" + urllib.parse.quote(
+            global_id,
+            safe="",
+        )
+        require(
+            request(
+                administrator_opener,
+                base_url,
+                resource_path,
+            ).status
+            == 404,
+            f"Denied generic create left a {doctype} record",
+        )
+
+    return True
 
 
 def put_language(
@@ -488,6 +766,37 @@ def main() -> None:
         "guest-csrf-token",
     )
     validate_problem(guest_preference, 401, "AUTHENTICATION_REQUIRED")
+    guest_grid_preferences = request(
+        urllib.request.build_opener(),
+        base_url,
+        GRID_PREFERENCE_PATH,
+    )
+    validate_problem(
+        guest_grid_preferences,
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
+    guest_grid_preferences_extra = request(
+        urllib.request.build_opener(),
+        base_url,
+        f"{GRID_PREFERENCE_PATH}?owner=Administrator",
+    )
+    validate_problem(
+        guest_grid_preferences_extra,
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
+    guest_grid_preference_write = put_grid_preferences(
+        urllib.request.build_opener(),
+        base_url,
+        {},
+        "guest-csrf-token",
+    )
+    validate_problem(
+        guest_grid_preference_write,
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
 
     unknown = request(urllib.request.build_opener(), base_url, "/api/npi/v1/unknown")
     validate_problem(unknown, 404, "API_ROUTE_NOT_FOUND")
@@ -516,6 +825,17 @@ def main() -> None:
         administrator_navigation_collapsed,
     )
     administrator_csrf_token = str(administrator_initial.body["csrfToken"])
+    grid_preference_evidence = verify_grid_preferences_runtime(
+        administrator_opener,
+        base_url,
+        administrator_password,
+        administrator_csrf_token,
+    )
+    grid_generic_create_denied = verify_grid_generic_create_denied(
+        administrator_opener,
+        base_url,
+        administrator_csrf_token,
+    )
 
     fixture_path = user_resource_path(DISPOSABLE_USER)
     fixture_before = request(administrator_opener, base_url, fixture_path)
@@ -937,6 +1257,9 @@ def main() -> None:
                 "disposableUserType": "Website User",
                 "guest": 401,
                 "guestPreference": 401,
+                "guestGridPreference": 401,
+                "guestGridPreferenceWrite": 401,
+                "gridGenericCreateDenied": grid_generic_create_denied,
                 "csrfMissing": 403,
                 "csrfWrong": 403,
                 "extraField": 422,
@@ -954,6 +1277,7 @@ def main() -> None:
                 "navigationWrongTypes": 422,
                 "unknownRoute": 404,
                 "wrongTypeLanguage": 422,
+                **grid_preference_evidence,
             },
             sort_keys=True,
         )

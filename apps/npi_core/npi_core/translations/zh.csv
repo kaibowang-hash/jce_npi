@@ -514,7 +514,7 @@ Columns,列
 Grouped by {{field}},按 {{field}} 分组
 Loading worklist,正在加载工作清单
 The worklist query failed. No data was changed. Change a filter or retry.,工作清单查询失败。未更改任何数据。请更改筛选条件或重试。
-Toggle group,切换分组
+Toggle group: {{group}},切换分组：{{group}}
 No system is editable,所有系统均不可编辑
 Review G5 sample approval,评审 G5 样件批准
 Added a controlled engineering comment.,已添加受控工程评论。
@@ -2537,3 +2537,123 @@ Command results,命令结果
 No approved command matches this query.,没有与此查询匹配的已批准命令。
 Move,移动
 Close,关闭
+Not saved,未保存
+Personal grid settings were not saved. The last confirmed settings remain active.,个人网格设置未保存。上次确认的设置仍然有效。
+Loading personal grid settings,正在加载个人网格设置
+Personal grid settings are confirmed by the server.,个人网格设置已由服务器确认。
+Defaults active,默认设置已启用
+Stored grid settings were invalid. Code-owned defaults are active.,已存储的网格设置无效。当前使用代码定义的默认设置。
+Saving,正在保存
+Saving personal grid settings,正在保存个人网格设置
+Session verification is required before personal grid settings can be saved.,保存个人网格设置前需要验证会话。
+Personal grid settings,个人网格设置
+Close settings,关闭设置
+Reload personal settings,重新加载个人设置
+Columns and widths,列与宽度
+{{width}} pixels,{{width}} 像素
+Move {{column}} left,将{{column}}向左移动
+Move {{column}} right,将{{column}}向右移动
+Reset {{column}} width,重置{{column}}宽度
+Reset,重置
+Personal view,个人视图
+Fixed columns,固定列
+No fixed columns,无固定列
+One fixed column,一个固定列
+Two fixed columns,两个固定列
+Favorite this view,收藏此视图
+Default Project,默认项目
+No default Project,无默认项目
+Save current filters,保存当前筛选条件
+Reset grid layout,重置网格布局
+Favorite views,收藏的视图
+No favorite views,无收藏视图
+Recent views,最近使用的视图
+No recent views,无最近使用的视图
+Sorting and grouping,排序与分组
+Server-defined for this live worklist,由服务器为此实时工作清单定义
+Bulk actions,批量操作
+Domain bulk-action contract required,需要领域批量操作合同
+Export,导出
+Export contract required,需要导出合同
+Shared view publishing,共享视图发布
+Publisher authority policy required,需要发布者权限策略
+Grid settings,网格设置
+My Work grid,我的工作网格
+Resize {{column}} column,调整{{column}}列的宽度
+"Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.","使用左方向键和右方向键调整宽度。按起始键或结束键设为边界值，或按回车键适配已渲染的行。"
+Worklist grid,工作清单网格
+Select the supported My Work table schema.,请选择受支持的“我的工作”表格架构。
+Select a Project available in My Work.,请选择“我的工作”中可用的项目。
+Enter a valid tenant identity.,请输入有效的租户标识。
+Enter a valid user identity.,请输入有效的用户标识。
+Enter a canonical UUID.,请输入规范 UUID。
+Enter an object with the exact supported fields.,请输入仅包含受支持字段的对象。
+Select a supported My Work view.,请选择受支持的“我的工作”视图。
+Select no more than the supported number of views.,所选视图数量不得超过支持的上限。
+Select each My Work view only once.,每个“我的工作”视图只能选择一次。
+Provide every supported column exactly once.,请提供全部受支持的列且每列仅一次。
+Enter a column width within the supported range.,请输入支持范围内的列宽。
+Select only supported columns.,只能选择受支持的列。
+Select each supported column no more than once.,每个受支持的列最多只能选择一次。
+Required columns cannot be hidden.,必需列不能隐藏。
+Select a supported fixed-column count.,请选择受支持的固定列数量。
+Select a supported My Work priority.,请选择受支持的“我的工作”优先级。
+Enter valid search text.,请输入有效的搜索文本。
+Enter a non-negative version.,请输入非负版本号。
+Provide every supported My Work view exactly once.,请提供全部受支持的“我的工作”视图且每个仅一次。
+Provide My Work views in the supported order.,请按受支持的顺序提供“我的工作”视图。
+A published grid view filter must stay within its Project boundary.,已发布网格视图的筛选条件必须保持在其项目边界内。
+The first published view revision cannot have a prior revision.,已发布视图的首个修订不能有前序修订。
+Select the exact preceding published view revision.,请选择紧邻的前一个已发布视图修订。
+Select an earlier published view revision to restore.,请选择要恢复的较早已发布视图修订。
+Enter a valid trace identity.,请输入有效的跟踪标识。
+Grid personalization records can only be changed through an authorized NPI command.,网格个性化记录只能通过已授权的 NPI 命令更改。
+Grid personalization and published view history cannot be deleted.,网格个性化记录和已发布视图历史不能删除。
+{field} must not be the nil UUID.,{field}不能是空 UUID。
+Tenant ID must be a valid tenant identity.,租户标识必须有效。
+Authority Reason Code must be a valid controlled key.,权限原因代码必须是有效的受控键。
+Published View Global ID,已发布视图全局标识
+Prior Revision Global ID,前序修订全局标识
+Restored From Revision Global ID,恢复来源修订全局标识
+Preference Key Hash does not match its identities.,偏好键哈希与其标识不匹配。
+Select the supported My Work grid schema.,请选择受支持的“我的工作”网格架构。
+Preference Snapshot Hash does not match its canonical snapshot.,偏好快照哈希与其规范快照不匹配。
+The first preference version must be one.,首个偏好版本必须为一。
+Preference Version must advance one version at a time.,偏好版本每次必须递增一个版本。
+Current Revision Number,当前修订号
+A published view must begin with revision one.,已发布视图必须从修订一开始。
+The published view pointer must advance to one exact successor.,已发布视图指针必须推进到唯一的下一修订。
+A published grid view revision cannot be changed.,已发布网格视图修订不能更改。
+Revision Number,修订号
+Revision Key does not match its identities.,修订键与其标识不匹配。
+Select the supported Project permission boundary.,请选择受支持的项目权限边界。
+Published View Name must be valid text.,已发布视图名称必须是有效文本。
+Published View Description must be valid text.,已发布视图说明必须是有效文本。
+Definition Hash does not match its canonical snapshot.,定义哈希与其规范快照不匹配。
+Published By,发布者
+Authority Evidence,权限证据
+Revision Snapshot Hash does not match its canonical snapshot.,修订快照哈希与其规范快照不匹配。
+Prior Revision Snapshot Hash,前序修订快照哈希
+Restored revision evidence must be complete.,恢复修订证据必须完整。
+Restored From Revision Snapshot Hash,恢复来源修订快照哈希
+NPI My Work Grid Preference,NPI 我的工作网格偏好
+Preference Key Hash,偏好键哈希
+Grid ID,网格标识
+my-work,我的工作
+Table Schema Version,表格架构版本
+Preference Snapshot,偏好快照
+NPI Published Grid View,NPI 已发布网格视图
+NPI Published Grid View Revision,NPI 已发布网格视图修订
+Published Grid View,已发布网格视图
+Prior Revision Number,前序修订号
+Restored From Revision Number,恢复来源修订号
+Published View Name,已发布视图名称
+Published View Description,已发布视图说明
+Permission Boundary,权限边界
+project_viewers,项目查看者
+Definition Snapshot,定义快照
+Definition Hash,定义哈希
+Authority Reason Code,权限原因代码
+Select whether this view has a saved filter.,选择此视图是否具有已保存的筛选条件。
+An unsaved filter must use code-owned defaults.,未保存的筛选条件必须使用代码定义的默认值。
+Select whether to save the current filter.,选择是否保存当前筛选条件。

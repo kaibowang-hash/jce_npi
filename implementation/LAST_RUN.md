@@ -1,5 +1,92 @@
 # Last Run
 
+## R1-04 grid personalization PASS; R1-05 activated — 2026-07-27T06:44:34Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized bridge checkpoint:
+  `3e0721a1b8be8dbd1b618d78a635b74d28cd0178`.
+- Atomic task:
+  `R1-04 — Shared grid sizing personalization views and export foundation`.
+- Requirements: `FR-UX-038`, `UX-007`, `UX-027`, `UX-028`, `UX-035`.
+- Result:
+  `PASS — LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`.
+- Current task:
+  `R1-05 — Resizable panes and field attachment primitives`.
+- Held product task:
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED`; not `PASS`).
+
+### Delivered boundary
+
+- Added one repository-owned `DenseGrid` to live My Work and the prototype
+  Worklist with bounded pointer/keyboard sizing, rendered-row auto-fit,
+  visibility, fixed-start columns, reset and grid-owned scrolling.
+- Added the fixed authenticated
+  `GET/PUT /api/npi/v1/me/preferences/my-work-grid` boundary with exact
+  actor/tenant binding, code-owned schema, optimistic concurrency,
+  authoritative reconciliation, personal view/filter metadata and accessible
+  Project defaults.
+- Added three additive DocTypes for personal preferences plus immutable
+  published-view roots/revisions. Recursive evidence snapshots, canonical
+  hashes, reference/root lineage and rollback-as-new-revision are immutable;
+  cyclic/corrupt evidence fails closed.
+- Kept failed pointer previews and persistence attempts anchored to the last
+  confirmed visual/ARIA width, including net-zero, cancel, lost-capture and
+  non-active-pointer cases.
+- Kept the rendered table, offsets and ARIA geometry at exact persisted pixel
+  widths, including the 420px required-column-only state, and serialized
+  preference writes through a version-confirmed FIFO with safe same-view
+  coalescing.
+- Closed the OpenAPI layout to the seven ordered views and aligned search
+  validation/truncation to 140 Unicode code points.
+- Kept publisher, export and bulk authority visibly fail closed. The exact
+  UX-028 administrator/Project-lead authority remains a scoped Class-B hold;
+  no live publish/rollback route or production policy was installed.
+- Added complete direct English-source/`zh`/`zh-TW` copy, accessibility,
+  runtime, browser and exact trilingual visual evidence.
+
+### Validation
+
+- Scoped full repository Gate: `PASS` — 727 Python tests, 549 frontend tests,
+  type/lint/format/style/boundary/UI/generated checks, production build,
+  prohibited-pattern scan, dependency audits and reconciliation.
+- Frappe-compatible i18n: `PASS` — 2,659 literal English sources with complete
+  direct `zh`/`zh-TW` coverage.
+- Frontend coverage: `PASS` — 84.32% statements, 82.85% branches, 88.43%
+  functions and 86.32% lines.
+- Controlled Frappe runtime: `PASS` after two additive/idempotent migrations.
+  Exact actor/tenant/CSRF/schema/version/generic-CRUD/corrupt-storage controls,
+  immutable three-revision lineage and all prior runtime lanes passed.
+- Runtime recovery preserved the named MariaDB/Redis containers and volumes.
+  A stale projection left by an interrupted fixture run converged
+  deterministically, the focused Project-controls lane passed, and the final
+  complete runtime passed without deletion or reset.
+- Complete non-visual Playwright: `PASS — 251/251`.
+- Clean no-update visual Playwright:
+  `PASS — 207/207` at unchanged zero tolerance. The accepted set contains 113
+  reviewed replacement baselines and nine new R1-04 images.
+- Final post-repair focused browser run: `PASS — 13/13`.
+- Independent code/security, UX/i18n/accessibility and complete visual reviews:
+  `PASS — 0 blocker / 0 major / 0 minor`.
+- Historical Phase 3/4 evidence preservation, requirement traceability,
+  generated-artifact freshness and `git diff --check`: `PASS`.
+
+Durable evidence:
+
+- `implementation/evidence/reconciliation/r1-04-plan.md`
+- `implementation/evidence/reconciliation/r1-04-validation.md`
+- `implementation/evidence/reconciliation/r1-04/coverage/coverage-summary.json`
+  — SHA-256
+  `6c00713fcd43542f7b78a1847ab20cc41778de93745551749ef99c7824f3dd18`
+- `implementation/evidence/reconciliation/r1-04/playwright-results/.last-run.json`
+  — SHA-256
+  `91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903`
+
+R1-04 does not claim the cumulative R1 shared Shell/design/i18n Level 3 bridge
+Gate. Automatic continuation activates only R1-05. R1-07 remains scoped to
+DR-REC-001, and P5-01 resumes only after R1-05/R1-06 and the complete bridge
+Gate pass.
+
 ## R1-03 navigation/commands PASS; R1-04 activated — 2026-07-26T10:51:54Z
 
 - Branch: `codex/npi-v1.2-implementation`.

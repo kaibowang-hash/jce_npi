@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   SavedWorklistView,
@@ -17,6 +17,11 @@ import {
 } from "../i18n/copy";
 import { formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
+import {
+  DenseGrid,
+  type DenseGridColumn,
+  type DenseGridLayout,
+} from "../ui-adapters/dense-grid";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
 import { DockedInspector } from "./object-components";
 import { RequestFailurePanel } from "./problem-details-panel";
@@ -44,6 +49,76 @@ interface WorklistNavigationState {
   offset: number;
   scrollTop: number;
   selectedId: string;
+}
+
+type PrototypeGridColumnId =
+  | "type"
+  | "item"
+  | "context"
+  | "assignment"
+  | "due"
+  | "status"
+  | "action";
+
+type PrototypeGridRow =
+  | {
+      readonly id: string;
+      readonly item: WorkItemViewModel;
+      readonly kind: "group";
+    }
+  | {
+      readonly item: WorkItemViewModel;
+      readonly kind: "item";
+    };
+
+const prototypeGridColumnOrder: readonly PrototypeGridColumnId[] = [
+  "type",
+  "item",
+  "context",
+  "assignment",
+  "due",
+  "status",
+  "action",
+];
+
+const prototypeGridDefaultWidths: Readonly<
+  Record<PrototypeGridColumnId, number>
+> = {
+  action: 160,
+  assignment: 180,
+  context: 240,
+  due: 144,
+  item: 260,
+  status: 136,
+  type: 112,
+};
+
+function prototypeGridLayout(
+  configuration: WorklistConfiguration,
+): DenseGridLayout<PrototypeGridColumnId> {
+  return {
+    columnOrder: prototypeGridColumnOrder,
+    fixedColumnCount: 2,
+    hiddenColumnIds: [
+      ...(configuration.showAssignment ? [] : (["assignment"] as const)),
+      ...(configuration.showDue ? [] : (["due"] as const)),
+    ],
+    widths: prototypeGridDefaultWidths,
+  };
+}
+
+function setPrototypeGridColumnVisible(
+  layout: DenseGridLayout<PrototypeGridColumnId>,
+  columnId: PrototypeGridColumnId,
+  visible: boolean,
+): DenseGridLayout<PrototypeGridColumnId> {
+  const hidden = new Set(layout.hiddenColumnIds);
+  if (visible) hidden.delete(columnId);
+  else hidden.add(columnId);
+  return {
+    ...layout,
+    hiddenColumnIds: layout.columnOrder.filter((id) => hidden.has(id)),
+  };
 }
 
 function initialSavedView(): SavedWorklistView {
@@ -155,6 +230,9 @@ export function Worklist({
     initialPreferences.showAssignment,
   );
   const [showDue, setShowDue] = useState(initialPreferences.showDue);
+  const [gridLayout, setGridLayout] = useState(() =>
+    prototypeGridLayout(initialPreferences),
+  );
   const [queryResult, setQueryResult] = useState<{
     dataSource: WorklistDataSource | null;
     failure: RequestFailure | null;
@@ -256,6 +334,181 @@ export function Worklist({
   const queryFailure = hasCurrentQuery ? queryResult.failure : null;
   const visible = page?.items ?? [];
   const selected = visible.find((item) => item.id === selectedId) ?? visible[0];
+  const gridColumns = useMemo<
+    readonly DenseGridColumn<PrototypeGridRow, PrototypeGridColumnId>[]
+  >(
+    () => [
+      {
+        accessibilityLabel: t("Type"),
+        defaultWidth: prototypeGridDefaultWidths.type,
+        id: "type",
+        label: t("Type"),
+        maximumWidth: 180,
+        minimumWidth: 88,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <SemanticStatus
+              label={workKindLabel(t, row.item.kind)}
+              tone={row.item.blocking ? "danger" : "neutral"}
+            />
+          ) : null,
+      },
+      {
+        accessibilityLabel: t("Item"),
+        defaultWidth: prototypeGridDefaultWidths.item,
+        id: "item",
+        label: t("Item"),
+        maximumWidth: 480,
+        minimumWidth: 180,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <strong>{workTitleLabel(t, row.item.titleCode)}</strong>
+          ) : null,
+      },
+      {
+        accessibilityLabel: t("Project or object"),
+        defaultWidth: prototypeGridDefaultWidths.context,
+        id: "context",
+        label: t("Project or object"),
+        maximumWidth: 420,
+        minimumWidth: 160,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <>
+              <span data-language-exempt="identifier">
+                {row.item.contextCode}
+              </span>
+              <br />
+              <span data-language-exempt="business-data">
+                {row.item.contextName}
+              </span>
+            </>
+          ) : null,
+      },
+      {
+        accessibilityLabel: t("Why assigned"),
+        defaultWidth: prototypeGridDefaultWidths.assignment,
+        id: "assignment",
+        label: t("Why assigned"),
+        maximumWidth: 320,
+        minimumWidth: 140,
+        renderCell: (row) =>
+          row.kind === "item"
+            ? assignmentLabel(t, row.item.assignmentCode)
+            : null,
+      },
+      {
+        accessibilityLabel: t("Due"),
+        defaultWidth: prototypeGridDefaultWidths.due,
+        id: "due",
+        label: t("Due"),
+        maximumWidth: 220,
+        minimumWidth: 120,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <time dateTime={row.item.dueAt}>
+              {formatDateTime(locale, row.item.dueAt)}
+            </time>
+          ) : null,
+      },
+      {
+        accessibilityLabel: t("Status"),
+        defaultWidth: prototypeGridDefaultWidths.status,
+        id: "status",
+        label: t("Status"),
+        maximumWidth: 220,
+        minimumWidth: 112,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <SemanticStatus
+              label={syncStateLabel(t, row.item.status)}
+              tone={statusTone(row.item)}
+            />
+          ) : null,
+      },
+      {
+        accessibilityLabel: t("Next action"),
+        defaultWidth: prototypeGridDefaultWidths.action,
+        id: "action",
+        label: t("Next action"),
+        maximumWidth: 260,
+        minimumWidth: 120,
+        renderCell: (row) =>
+          row.kind === "item" ? (
+            <Button
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpen(row.item);
+              }}
+              visual="ghost"
+            >
+              {actionLabel(t, row.item.actionCode)}
+            </Button>
+          ) : null,
+      },
+    ],
+    [locale, onOpen, t],
+  );
+  const gridRows: PrototypeGridRow[] = [];
+  visible.forEach((item, index) => {
+    const groupKey =
+      groupBy === "context"
+        ? item.contextCode
+        : groupBy === "kind"
+          ? item.kind
+          : "";
+    const previousGroupKey =
+      groupBy === "context"
+        ? visible[index - 1]?.contextCode
+        : groupBy === "kind"
+          ? visible[index - 1]?.kind
+          : "";
+    if (groupBy !== "none" && groupKey !== previousGroupKey) {
+      gridRows.push({
+        id: `group:${groupBy}:${groupKey}`,
+        item,
+        kind: "group",
+      });
+    }
+    if (!collapsedGroups.includes(groupKey)) {
+      gridRows.push({ item, kind: "item" });
+    }
+  });
+  const gridEmptyContent =
+    !page && !queryFailure ? (
+      <div aria-busy="true" className="table-empty">
+        <span>{t("Loading worklist")}</span>
+      </div>
+    ) : queryFailure ? (
+      <div className="table-empty table-empty--error">
+        <span>
+          {t(
+            "The worklist query failed. No data was changed. Change a filter or retry.",
+          )}
+        </span>
+        <RequestFailurePanel failure={queryFailure} />
+        <Button
+          onClick={() => {
+            setQueryNonce((current) => current + 1);
+          }}
+        >
+          {t("Retry")}
+        </Button>
+      </div>
+    ) : (
+      <div className="table-empty">
+        <span>{t("No items match this view.")}</span>
+        <Button
+          onClick={() => {
+            setFilter("");
+            setSavedView("focus");
+            setWindowStart(0);
+          }}
+        >
+          {t("Clear filters")}
+        </Button>
+      </div>
+    );
 
   return (
     <div className="worklist-layout">
@@ -338,7 +591,15 @@ export function Worklist({
               <input
                 checked={showAssignment}
                 onChange={(event) => {
-                  setShowAssignment(event.currentTarget.checked);
+                  const visible = event.currentTarget.checked;
+                  setShowAssignment(visible);
+                  setGridLayout((current) =>
+                    setPrototypeGridColumnVisible(
+                      current,
+                      "assignment",
+                      visible,
+                    ),
+                  );
                 }}
                 type="checkbox"
               />
@@ -348,7 +609,11 @@ export function Worklist({
               <input
                 checked={showDue}
                 onChange={(event) => {
-                  setShowDue(event.currentTarget.checked);
+                  const visible = event.currentTarget.checked;
+                  setShowDue(visible);
+                  setGridLayout((current) =>
+                    setPrototypeGridColumnVisible(current, "due", visible),
+                  );
                 }}
                 type="checkbox"
               />
@@ -356,10 +621,50 @@ export function Worklist({
             </label>
           </fieldset>
         ) : null}
-        <div
+        <DenseGrid
+          ariaBusy={!page && !queryFailure}
+          ariaLabel={t("Worklist grid")}
+          caption={
+            groupBy === "none"
+              ? undefined
+              : t("Grouped by {{field}}", {
+                  field:
+                    groupBy === "context" ? t("Project or object") : t("Type"),
+                })
+          }
           className="table-scroll"
-          data-window-size={worklistWindowSize}
-          onScroll={(event) => {
+          columns={gridColumns}
+          emptyContent={gridEmptyContent}
+          getRowKey={(row) => (row.kind === "group" ? row.id : row.item.id)}
+          getRowProperties={(row) =>
+            row.kind === "group"
+              ? {
+                  "aria-level": 1,
+                  className: "worklist-group-row",
+                }
+              : {
+                  "aria-level": groupBy === "none" ? undefined : 2,
+                  "aria-selected": selected?.id === row.item.id,
+                  className:
+                    selected?.id === row.item.id ? "is-selected" : undefined,
+                  onClick: () => {
+                    setSelectedId(row.item.id);
+                  },
+                  onKeyDown: (event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedId(row.item.id);
+                    }
+                  },
+                  tabIndex: 0,
+                }
+          }
+          layout={gridLayout}
+          onLayoutChange={(change) => {
+            setGridLayout(change.layout);
+          }}
+          onViewportScroll={(event) => {
             globalThis.localStorage.setItem(
               worklistNavigationKey,
               JSON.stringify({
@@ -369,215 +674,56 @@ export function Worklist({
               }),
             );
           }}
-          ref={tableScrollRef}
-        >
-          <table
-            className="data-table"
-            role={groupBy === "none" ? undefined : "treegrid"}
-          >
-            {groupBy === "none" ? null : (
-              <caption>
-                {t("Grouped by {{field}}", {
-                  field:
-                    groupBy === "context" ? t("Project or object") : t("Type"),
+          renderSpanningRow={(row) => {
+            if (row.kind !== "group") return null;
+            const groupKey =
+              groupBy === "context" ? row.item.contextCode : row.item.kind;
+            const collapsed = collapsedGroups.includes(groupKey);
+            const accessibleGroupName =
+              groupBy === "context"
+                ? row.item.contextCode
+                : workKindLabel(t, row.item.kind);
+            return (
+              <button
+                aria-expanded={!collapsed}
+                aria-label={t("Toggle group: {{group}}", {
+                  group: accessibleGroupName,
                 })}
-              </caption>
-            )}
-            <thead>
-              <tr>
-                <th scope="col">{t("Type")}</th>
-                <th scope="col">{t("Item")}</th>
-                <th scope="col">{t("Project or object")}</th>
-                {showAssignment ? (
-                  <th scope="col">{t("Why assigned")}</th>
-                ) : null}
-                {showDue ? <th scope="col">{t("Due")}</th> : null}
-                <th scope="col">{t("Status")}</th>
-                <th scope="col">{t("Next action")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!page && !queryFailure ? (
-                <tr>
-                  <td colSpan={5 + Number(showAssignment) + Number(showDue)}>
-                    <div aria-busy="true" className="table-empty">
-                      <span>{t("Loading worklist")}</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : queryFailure ? (
-                <tr>
-                  <td colSpan={5 + Number(showAssignment) + Number(showDue)}>
-                    <div className="table-empty table-empty--error">
-                      <span>
-                        {t(
-                          "The worklist query failed. No data was changed. Change a filter or retry.",
-                        )}
-                      </span>
-                      <RequestFailurePanel failure={queryFailure} />
-                      <Button
-                        onClick={() => {
-                          setQueryNonce((current) => current + 1);
-                        }}
-                      >
-                        {t("Retry")}
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ) : visible.length === 0 ? (
-                <tr>
-                  <td colSpan={5 + Number(showAssignment) + Number(showDue)}>
-                    <div className="table-empty">
-                      <span>{t("No items match this view.")}</span>
-                      <Button
-                        onClick={() => {
-                          setFilter("");
-                          setSavedView("focus");
-                          setWindowStart(0);
-                        }}
-                      >
-                        {t("Clear filters")}
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                visible.map((item, index) => {
-                  const groupKey =
-                    groupBy === "context"
-                      ? item.contextCode
-                      : groupBy === "kind"
-                        ? item.kind
-                        : "";
-                  const previousGroupKey =
-                    groupBy === "context"
-                      ? visible[index - 1]?.contextCode
-                      : groupBy === "kind"
-                        ? visible[index - 1]?.kind
-                        : "";
-                  const groupStart =
-                    groupBy !== "none" && groupKey !== previousGroupKey;
-                  const collapsed = collapsedGroups.includes(groupKey);
-                  return (
-                    <Fragment key={item.id}>
-                      {groupStart ? (
-                        <tr aria-level={1} className="worklist-group-row">
-                          <th
-                            colSpan={
-                              5 + Number(showAssignment) + Number(showDue)
-                            }
-                            scope="rowgroup"
-                          >
-                            <button
-                              aria-expanded={!collapsed}
-                              aria-label={t("Toggle group")}
-                              className="worklist-group-toggle"
-                              onClick={() => {
-                                setCollapsedGroups((current) =>
-                                  current.includes(groupKey)
-                                    ? current.filter((key) => key !== groupKey)
-                                    : [...current, groupKey],
-                                );
-                              }}
-                              type="button"
-                            >
-                              {groupBy === "context" ? (
-                                <>
-                                  <span data-language-exempt="identifier">
-                                    {item.contextCode}
-                                  </span>{" "}
-                                  <span data-language-exempt="business-data">
-                                    {item.contextName}
-                                  </span>
-                                </>
-                              ) : (
-                                workKindLabel(t, item.kind)
-                              )}
-                            </button>
-                          </th>
-                        </tr>
-                      ) : null}
-                      {collapsed ? null : (
-                        <tr
-                          aria-level={groupBy === "none" ? undefined : 2}
-                          aria-selected={selected?.id === item.id}
-                          className={
-                            selected?.id === item.id ? "is-selected" : undefined
-                          }
-                          data-group-start={
-                            groupBy === "context"
-                              ? visible[index - 1]?.contextCode !==
-                                item.contextCode
-                              : groupBy === "kind"
-                                ? visible[index - 1]?.kind !== item.kind
-                                : undefined
-                          }
-                          onClick={() => {
-                            setSelectedId(item.id);
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setSelectedId(item.id);
-                            }
-                          }}
-                          tabIndex={0}
-                        >
-                          <td>
-                            <SemanticStatus
-                              label={workKindLabel(t, item.kind)}
-                              tone={item.blocking ? "danger" : "neutral"}
-                            />
-                          </td>
-                          <td>
-                            <strong>{workTitleLabel(t, item.titleCode)}</strong>
-                          </td>
-                          <td>
-                            <span data-language-exempt="identifier">
-                              {item.contextCode}
-                            </span>
-                            <br />
-                            <span data-language-exempt="business-data">
-                              {item.contextName}
-                            </span>
-                          </td>
-                          {showAssignment ? (
-                            <td>{assignmentLabel(t, item.assignmentCode)}</td>
-                          ) : null}
-                          {showDue ? (
-                            <td>
-                              <time dateTime={item.dueAt}>
-                                {formatDateTime(locale, item.dueAt)}
-                              </time>
-                            </td>
-                          ) : null}
-                          <td>
-                            <SemanticStatus
-                              label={syncStateLabel(t, item.status)}
-                              tone={statusTone(item)}
-                            />
-                          </td>
-                          <td>
-                            <Button
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                onOpen(item);
-                              }}
-                              visual="ghost"
-                            >
-                              {actionLabel(t, item.actionCode)}
-                            </Button>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                className="worklist-group-toggle"
+                onClick={() => {
+                  setCollapsedGroups((current) =>
+                    current.includes(groupKey)
+                      ? current.filter((key) => key !== groupKey)
+                      : [...current, groupKey],
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                }}
+                type="button"
+              >
+                {groupBy === "context" ? (
+                  <>
+                    <span data-language-exempt="identifier">
+                      {row.item.contextCode}
+                    </span>{" "}
+                    <span data-language-exempt="business-data">
+                      {row.item.contextName}
+                    </span>
+                  </>
+                ) : (
+                  workKindLabel(t, row.item.kind)
+                )}
+              </button>
+            );
+          }}
+          resizeColumnLabel={(column) =>
+            t("Resize {{column}} column", { column })
+          }
+          resizeHelp={t(
+            "Use Left and Right Arrow keys to resize. Press Home or End for the limit, or Enter to fit the rendered rows.",
+          )}
+          rows={gridRows}
+          tableRole={groupBy === "none" ? "table" : "treegrid"}
+          viewportRef={tableScrollRef}
+        />
         <footer className="table-footer">
           <span>
             {t("Showing {{start}}–{{end}} of {{total}} items", {

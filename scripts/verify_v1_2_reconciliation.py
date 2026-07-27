@@ -61,16 +61,16 @@ ADDENDUM_IDS = {
 EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
     "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
-    "UX-007": ("5", "PLANNED_R1_04_GRID_PERSONALIZATION"),
+    "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
-    "UX-027": ("5", "PLANNED_R1_04_PERSONALIZATION"),
-    "UX-028": ("5", "PLANNED_R1_04_PUBLISHED_VIEWS"),
+    "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
     "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
-    "UX-035": ("5", "PLANNED_R1_04_R1_06_DENSITY"),
+    "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
 }
 EXPECTED_R1_03_TRACE = {
@@ -105,6 +105,80 @@ EXPECTED_R1_03_TRACE = {
             "frontend/tests/unit/router.test.tsx",
             "frontend/tests/e2e/r1-03-shell.spec.ts",
             "implementation/evidence/reconciliation/r1-03-validation.md",
+        },
+    ),
+}
+EXPECTED_R1_04_TRACE = {
+    "FR-UX-038": (
+        "TECHNICAL_VERIFIED",
+        {
+            "apps/npi_core/npi_core/grid_personalization/domain.py",
+            "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+            "apps/npi_core/npi_core/grid_personalization_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/ui-adapters/dense-grid-layout.ts",
+            "frontend/src/ui-adapters/dense-grid.tsx",
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/tests/unit/dense-grid.test.tsx",
+            "frontend/tests/e2e/r1-04-grid.spec.ts",
+            "scripts/verify_grid_personalization_runtime.py",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+        },
+    ),
+    "UX-007": (
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        {
+            "frontend/src/ui-adapters/dense-grid.tsx",
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/src/components/worklist.tsx",
+            "frontend/tests/unit/dense-grid.test.tsx",
+            "frontend/tests/e2e/r1-04-grid.spec.ts",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+        },
+    ),
+    "UX-027": (
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        {
+            "apps/npi_core/npi_core/grid_personalization/controller.py",
+            "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+            "apps/npi_core/npi_core/grid_personalization_api.py",
+            "apps/npi_core/npi_core/npi_core/doctype/npi_my_work_grid_preference/npi_my_work_grid_preference.json",
+            "frontend/src/api/grid-preferences-data-source.ts",
+            "frontend/src/components/my-work-grid-personalization.ts",
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/tests/unit/grid-preferences-data-source.test.ts",
+            "frontend/tests/unit/my-work-grid-personalization.test.tsx",
+            "tests/test_r1_04_grid_personalization_repository_api.py",
+            "frontend/tests/e2e/r1-04-grid.spec.ts",
+            "scripts/verify_grid_personalization_runtime.py",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+        },
+    ),
+    "UX-028": (
+        "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD",
+        {
+            "apps/npi_core/npi_core/grid_personalization/controller.py",
+            "apps/npi_core/npi_core/grid_personalization/domain.py",
+            "apps/npi_core/npi_core/grid_personalization/frappe_repository.py",
+            "apps/npi_core/npi_core/npi_core/doctype/npi_published_grid_view/npi_published_grid_view.json",
+            "apps/npi_core/npi_core/npi_core/doctype/npi_published_grid_view_revision/npi_published_grid_view_revision.json",
+            "tests/test_r1_04_grid_personalization_domain.py",
+            "tests/test_r1_04_grid_personalization_repository_api.py",
+            "scripts/verify_grid_personalization_runtime.py",
+            "implementation/evidence/reconciliation/r1-04-plan.md",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+        },
+    ),
+    "UX-035": (
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        {
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/src/styles/app.css",
+            "frontend/tests/e2e/r1-04-grid.spec.ts",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-en-1440x900-100-linux.png",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-1440x900-100-linux.png",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-TW-1440x900-100-linux.png",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
         },
     ),
 }
@@ -296,6 +370,43 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing R1-03 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (expected_status, expected_evidence) in (
+        EXPECTED_R1_04_TRACE.items()
+    ):
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if (
+            row["phase"],
+            row["status"],
+            row["trace_kind"],
+        ) != (
+            "5",
+            expected_status,
+            (
+                "ADDENDUM_DIRECT"
+                if requirement_id == "FR-UX-038"
+                else "DOCX_RECONCILED"
+            ),
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the verified R1-04 trace state"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-04 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-04 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

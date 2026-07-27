@@ -1,6 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
+import {
+  defaultMyWorkGridPreferences,
+  isMyWorkGridFilter,
+  isMyWorkGridLayout,
+  myWorkGridViewIds,
+  type MyWorkGridPreferences,
+  type SaveMyWorkGridPreference,
+} from "../../src/api/grid-preferences-data-source";
 import type { ProblemDetails } from "../../src/api/http";
 import type {
   MyWorkPageViewModel,
@@ -35,6 +43,8 @@ const requestIdPattern =
 const idempotencyKeyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const myWorkEndpoint = /\/api\/npi\/v1\/me\/work(?:\?.*)?$/u;
+const gridPreferenceEndpoint =
+  /\/api\/npi\/v1\/me\/preferences\/my-work-grid(?:\?.*)?$/u;
 const cockpitEndpoint = /\/api\/npi\/v1\/projects\/[^/?]+\/cockpit(?:\?.*)?$/u;
 const controlsEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/controls(?:\?.*)?$/u;
@@ -122,7 +132,91 @@ async function fulfillApi(
   });
 }
 
+function gridPreferenceFixture(): MyWorkGridPreferences {
+  const defaults = defaultMyWorkGridPreferences();
+  return {
+    ...defaults,
+    version: 4,
+    viewLayouts: defaults.viewLayouts.map((candidate) =>
+      candidate.viewId === "overdue"
+        ? {
+            ...candidate,
+            filter: {
+              priority: { scheme: "domain_severity", value: "high" },
+              projectId,
+              search: "",
+            },
+            hasSavedFilter: true,
+          }
+        : candidate,
+    ),
+  };
+}
+
+function applyGridPreferencePut(
+  current: MyWorkGridPreferences,
+  command: SaveMyWorkGridPreference,
+): MyWorkGridPreferences {
+  return {
+    ...current,
+    defaultProjectId: command.defaultProjectId,
+    favoriteViewIds: [...command.favoriteViewIds],
+    recentViewIds: [...command.recentViewIds],
+    version: current.version + 1,
+    viewLayouts: current.viewLayouts.map((candidate) =>
+      candidate.viewId === command.viewId
+        ? {
+            ...candidate,
+            filter: command.saveFilter ? command.filter : candidate.filter,
+            hasSavedFilter: command.saveFilter
+              ? true
+              : candidate.hasSavedFilter,
+            layout: command.layout,
+          }
+        : candidate,
+    ),
+  };
+}
+
 async function installSession(page: Page, locale: TestLocale): Promise<void> {
+  let preferences = gridPreferenceFixture();
+  await page.route(gridPreferenceEndpoint, async (route) => {
+    const request = observe(route);
+    if (request.method === "GET") {
+      expect(request).toMatchObject({
+        accept: "application/json, application/problem+json",
+        csrf: undefined,
+        idempotencyKey: undefined,
+      });
+      await fulfillApi(route, preferences, {
+        traceId: "trace-p4-05-grid-preferences",
+      });
+      return;
+    }
+
+    expect(request).toMatchObject({
+      accept: "application/json, application/problem+json",
+      csrf: csrfToken,
+      idempotencyKey: undefined,
+      method: "PUT",
+    });
+    const candidate: unknown = route.request().postDataJSON();
+    expect(candidate).not.toBeNull();
+    expect(typeof candidate).toBe("object");
+    expect(Array.isArray(candidate)).toBe(false);
+    const command = candidate as SaveMyWorkGridPreference;
+    expect(command.expectedVersion).toBe(preferences.version);
+    expect(command.tableSchemaVersion).toBe(preferences.tableSchemaVersion);
+    expect(myWorkGridViewIds).toContain(command.viewId);
+    expect(isMyWorkGridFilter(command.filter)).toBe(true);
+    expect(isMyWorkGridLayout(command.layout)).toBe(true);
+    expect(candidate).not.toHaveProperty("userId");
+    expect(candidate).not.toHaveProperty("preferenceKey");
+    preferences = applyGridPreferencePut(preferences, command);
+    await fulfillApi(route, preferences, {
+      traceId: "trace-p4-05-grid-preferences-put",
+    });
+  });
   await page.route(
     /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u,
     async (route) => {
