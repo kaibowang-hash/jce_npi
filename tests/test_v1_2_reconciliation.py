@@ -116,6 +116,55 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
+    def test_r1_05_stage_1_trace_is_verified_without_advancing_later_stages(
+        self,
+    ) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        pane_row = by_id["FR-UX-040"]
+        self.assertEqual(
+            (
+                pane_row["priority"],
+                pane_row["phase"],
+                pane_row["status"],
+                pane_row["source"],
+                pane_row["trace_kind"],
+                pane_row["canonical_ids"],
+            ),
+            (
+                "P0",
+                "5",
+                "TECHNICAL_VERIFIED",
+                "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+                "ADDENDUM_DIRECT",
+                "FR-UX-040",
+            ),
+        )
+        self.assertEqual(
+            {
+                value.strip()
+                for value in pane_row["evidence"].split(";")
+                if value.strip()
+            },
+            self.verifier.EXPECTED_R1_05_STAGE_1_TRACE["FR-UX-040"][1],
+        )
+        for requirement_id in ("FR-UX-041", "FR-UX-043"):
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(
+                    by_id[requirement_id]["status"],
+                    "PLANNED_SHARED_UX_REMEDIATION",
+                )
+                self.assertEqual(
+                    by_id[requirement_id]["evidence"],
+                    "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+                )
+        for _, expected_evidence in self.verifier.EXPECTED_R1_05_STAGE_1_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
     def test_fr_ux_043_is_allocated_to_r1_05(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}

@@ -18,6 +18,7 @@ import {
   type MyWorkGridViewId,
 } from "../api/grid-preferences-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
+import type { MyWorkInspectorPreferencesDataSource } from "../api/my-work-inspector-preferences-data-source";
 import { myWorkTargetPath } from "../app/my-work-navigation";
 import type {
   DomainWorkItemSeverity,
@@ -50,6 +51,7 @@ import {
   useMyWorkGridPersonalization,
   type MyWorkGridPersonalizationController,
 } from "./my-work-grid-personalization";
+import { useMyWorkInspectorPersonalization } from "./my-work-inspector-personalization";
 import { DockedInspector, MetricStrip } from "./object-components";
 import { RequestFailurePanel } from "./problem-details-panel";
 import {
@@ -673,15 +675,23 @@ export function LiveMyWorklist({
   dataSource,
   gridPreferencesDataSource,
   navigate,
+  panePreferencesDataSource,
 }: {
   dataSource: MyWorkDataSource;
   gridPreferencesDataSource?: MyWorkGridPreferencesDataSource;
   navigate: (target: string) => void;
+  panePreferencesDataSource?: MyWorkInspectorPreferencesDataSource;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
   const personalization = useMyWorkGridPersonalization({
     ...(gridPreferencesDataSource
       ? { dataSource: gridPreferencesDataSource }
+      : {}),
+    session: sessionCommandContext,
+  });
+  const inspectorPersonalization = useMyWorkInspectorPersonalization({
+    ...(panePreferencesDataSource
+      ? { dataSource: panePreferencesDataSource }
       : {}),
     session: sessionCommandContext,
   });
@@ -1338,44 +1348,65 @@ export function LiveMyWorklist({
           </footer>
         </Panel>
         {selected ? (
-          <DockedInspector title={t("Work item details")}>
+          <DockedInspector
+            layout={{
+              canUpdate: inspectorPersonalization.canUpdate,
+              collapsed: inspectorPersonalization.preference.collapsed,
+              failure: inspectorPersonalization.failure,
+              onChange: inspectorPersonalization.update,
+              onReload: inspectorPersonalization.reload,
+              recoveryReason:
+                inspectorPersonalization.preference.recoveryReason,
+              status: inspectorPersonalization.status,
+              widthPx: inspectorPersonalization.preference.widthPx,
+            }}
+            title={t("Work item details")}
+          >
             <DefinitionList
               rows={[
                 {
                   exempt: "business-data",
                   label: t("Item"),
+                  rowKey: "item",
                   value: selected.title,
                 },
                 {
                   exempt: "identifier",
                   label: t("Project"),
+                  rowKey: "project",
                   value: selected.project.businessCode,
                 },
                 {
                   exempt: "business-data",
                   label: t("Project title"),
+                  rowKey: "project-title",
                   value: selected.project.title,
                 },
                 {
                   exempt: "identifier",
                   label: t("Context"),
+                  rowKey: "context",
                   value: selected.context.code,
                 },
                 {
                   exempt: "business-data",
                   label: t("Context title"),
+                  rowKey: "context-title",
                   value: selected.context.title,
                 },
                 {
                   label: t("Why assigned"),
+                  rowKey: "why-assigned",
                   value: myWorkWhyLabel(t, selected.why),
                 },
                 {
                   label: t("Priority"),
+                  rowKey: "priority",
                   value: myWorkPriorityLabel(t, selected.priority),
                 },
                 {
                   label: t("Due"),
+                  rowKey: "due",
                   value:
                     selected.dueAt === null
                       ? t("No due date")
@@ -1383,15 +1414,18 @@ export function LiveMyWorklist({
                 },
                 {
                   label: t("Due state"),
+                  rowKey: "due-state",
                   value: myWorkDueStateLabel(t, selected.dueState),
                 },
                 {
                   exempt: "identifier",
                   label: t("Due time zone"),
+                  rowKey: "due-time-zone",
                   value: page?.timeZone ?? "UTC",
                 },
                 {
                   label: t("Assignment source"),
+                  rowKey: "assignment-source",
                   value: myWorkSourceTypeLabel(t, selected.source.type),
                 },
               ]}

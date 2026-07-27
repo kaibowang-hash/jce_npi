@@ -1,5 +1,77 @@
 # Last Run
 
+## R1-05 Stage 1 inspector pane Level 3 PASS; Stage 2 ready — 2026-07-27T11:08:13Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized bridge checkpoint:
+  `88fca2bd898ca08432c5a5f5eec9f25dc963fc14`.
+- Atomic slice:
+  `R1-05 Stage 1 — FR-UX-040 live My Work inspector pane`.
+- Result:
+  `PASS — LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT`.
+- R1-05 remains the current task and remains `IN_PROGRESS`.
+- Next and only active slice:
+  `R1-05 Stage 2 — FR-UX-041 field and attachment truth primitives`
+  (`READY`).
+- Stage 3 `FR-UX-043` remains planned/inactive, R1-06 remains inactive, and
+  P5-01 remains `IN_PROGRESS_CHECKPOINTED`.
+
+### Delivered boundary
+
+- Replaced the live My Work range approximation with a visible bounded
+  pointer/keyboard separator, double-click reset and integrated
+  collapse/expand while retaining selection, filter, scroll and focus truth.
+- Added one fixed authenticated actor-bound My Work inspector preference with
+  a server-owned key, pane and schema, exact `260..480px` bounds, a `340px`
+  default, corrupt-storage recovery and confirmed-write rollback behavior.
+- Kept responsive stacking presentation-only and preserved the prior
+  uncontrolled compatibility path outside the live My Work slice.
+- Added the closed GET/PUT BFF/OpenAPI contract, controlled runtime
+  disable/recovery probes, literal-English source copy, complete direct
+  `zh`/`zh-TW` translations and focused unit/browser/accessibility/visual
+  coverage.
+- Added no DocType, migration, production dependency, permission widening,
+  generic preference API, external integration or production ERPNext
+  connection.
+- Advanced only `FR-UX-040` to `TECHNICAL_VERIFIED`.
+  `FR-UX-041` and `FR-UX-043` remain
+  `PLANNED_SHARED_UX_REMEDIATION`; the trace remains 282 rows with the
+  unchanged 173/95/14 kind distribution and historical R1-04 evidence.
+
+### Validation
+
+- Terminal canonical `make verify`: `PASS` — 747 Python tests, 577 frontend
+  unit tests, 2,671 literal English sources with complete direct
+  `zh`/`zh-TW` coverage, production build and static/audit lanes.
+- Frontend coverage: `PASS` — 85.23% statements, 83.31% branches, 89.03%
+  functions and 87.24% lines.
+- Post-document reconciliation generator freshness, 12/12 reconciliation
+  tests, standalone verifier and exact trace state: `PASS`.
+- Controlled Frappe runtime: one complete `make frappe-runtime-verify`
+  command `PASS`; all 18 controlled routes returned their exact disabled and
+  recovered contracts, with 0 residual inspector `DefaultValue` rows.
+- Browser behavior: focused `5/5 PASS`; affected repair replay `11/11 PASS`;
+  final complete single-worker matrix `256/256 PASS`.
+- Trilingual exact visuals: focused `3/3 PASS`; final clean no-update
+  single-worker matrix `210/210 PASS` at unchanged zero tolerance, including
+  original-resolution review.
+- Independent source/API/security, User-default/CSRF, UX/i18n/accessibility
+  and complete visual-diff audits:
+  `PASS — 0 blocker / 0 major / 0 minor`.
+- Migration, security, rollback, recovery, historical-evidence preservation
+  and final diff/whitespace review: `PASS`.
+
+Durable evidence:
+
+- `implementation/evidence/reconciliation/r1-05-stage-1-validation.md`
+- `implementation/evidence/reconciliation/r1-05/stage-1/coverage/coverage-summary.json`
+- `implementation/evidence/reconciliation/r1-05/stage-1/playwright-results/.last-run.json`
+
+This checkpoint completes only R1-05 Stage 1. It does not make R1-05 a
+completed bridge task, activate Stage 3 or R1-06, resume P5-01, or claim
+overall R1 bridge PASS. There is no active Hard Blocker; automatic
+continuation activates only Stage 2.
+
 ## R1-05 FR-UX-043 requirement re-anchor PASS; product task ready — 2026-07-27T08:06:38Z
 
 - Branch: `codex/npi-v1.2-implementation`.

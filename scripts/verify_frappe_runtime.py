@@ -19,6 +19,7 @@ BENCH_PATH = ROOT / "tmp" / "frappe-bench"
 RUNTIME_BASE_URL = "http://127.0.0.1:8003"
 ADMINISTRATOR_USER = "Administrator"
 DISPOSABLE_USER = "npi-runtime-user@example.invalid"
+INSPECTOR_DISPOSABLE_USER = "npi-runtime-inspector@example.invalid"
 EXPECTED_KEYS = {
     "userId",
     "language",
@@ -49,6 +50,17 @@ GRID_VIEW_IDS = (
     "waiting",
     "integration",
 )
+INSPECTOR_PREFERENCE_PATH = (
+    "/api/npi/v1/me/preferences/my-work-inspector"
+)
+INSPECTOR_PREFERENCE_KEY = "npi_one_my_work_inspector_layout_v1"
+INSPECTOR_PREFERENCE_KEYS = {
+    "paneId",
+    "schemaVersion",
+    "widthPx",
+    "collapsed",
+    "recoveryReason",
+}
 
 
 @dataclass(frozen=True)
@@ -416,6 +428,175 @@ def verify_grid_preferences_runtime(
     }
 
 
+def validate_inspector_preference(
+    result: HttpResult,
+    *,
+    expected_width_px: int,
+    expected_collapsed: bool,
+    expected_recovery_reason: str | None,
+) -> None:
+    require(
+        result.status == 200,
+        (
+            f"Inspector preference returned HTTP {result.status}: "
+            f"{json.dumps(result.body, sort_keys=True)}"
+        ),
+    )
+    require(
+        set(result.body) == INSPECTOR_PREFERENCE_KEYS,
+        "Inspector preference response keys drifted",
+    )
+    require(
+        result.body.get("paneId") == "my-work-inspector",
+        "Inspector pane identity drifted",
+    )
+    require(
+        result.body.get("schemaVersion") == "my-work-inspector-v1",
+        "Inspector preference schema drifted",
+    )
+    require(
+        type(result.body.get("widthPx")) is int
+        and 260 <= result.body["widthPx"] <= 480
+        and result.body["widthPx"] == expected_width_px,
+        "Inspector preference width drifted",
+    )
+    require(
+        type(result.body.get("collapsed")) is bool
+        and result.body["collapsed"] is expected_collapsed,
+        "Inspector preference collapsed state drifted",
+    )
+    require(
+        result.body.get("recoveryReason") == expected_recovery_reason,
+        "Inspector preference recovery reason drifted",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        "Inspector preference cache control drifted",
+    )
+    require(
+        bool(result.headers.get("X-Request-ID")),
+        "Inspector preference request header is missing",
+    )
+    require(
+        bool(result.headers.get("X-Trace-ID")),
+        "Inspector preference trace header is missing",
+    )
+
+
+def put_inspector_preference(
+    opener: urllib.request.OpenerDirector,
+    base_url: str,
+    payload: dict[str, Any],
+    csrf_token: str | None,
+    *,
+    trace_id: str | None = None,
+) -> HttpResult:
+    headers: dict[str, str] = {}
+    if csrf_token is not None:
+        headers["X-Frappe-CSRF-Token"] = csrf_token
+    if trace_id is not None:
+        headers["X-Trace-ID"] = trace_id
+    return request(
+        opener,
+        base_url,
+        INSPECTOR_PREFERENCE_PATH,
+        method="PUT",
+        payload=payload,
+        request_headers=headers,
+    )
+
+
+def inspector_preference_payload(
+    *,
+    width_px: int,
+    collapsed: bool,
+) -> dict[str, Any]:
+    return {
+        "schemaVersion": "my-work-inspector-v1",
+        "widthPx": width_px,
+        "collapsed": collapsed,
+    }
+
+
+def verify_inspector_preference_runtime(
+    opener: urllib.request.OpenerDirector,
+    base_url: str,
+    password: str,
+    csrf_token: str,
+) -> dict[str, Any]:
+    corrupt = request(opener, base_url, INSPECTOR_PREFERENCE_PATH)
+    validate_inspector_preference(
+        corrupt,
+        expected_width_px=340,
+        expected_collapsed=False,
+        expected_recovery_reason="stored_preference_invalid",
+    )
+    corrupt_again = request(opener, base_url, INSPECTOR_PREFERENCE_PATH)
+    validate_inspector_preference(
+        corrupt_again,
+        expected_width_px=340,
+        expected_collapsed=False,
+        expected_recovery_reason="stored_preference_invalid",
+    )
+    require(
+        corrupt_again.body == corrupt.body,
+        "Inspector corrupt-storage GET repaired or changed the stored value",
+    )
+
+    csrf_missing = put_inspector_preference(
+        opener,
+        base_url,
+        inspector_preference_payload(width_px=420, collapsed=True),
+        None,
+        trace_id="trace-inspector-csrf-missing",
+    )
+    validate_problem(
+        csrf_missing,
+        403,
+        "CSRF_TOKEN_INVALID",
+        expected_trace_id="trace-inspector-csrf-missing",
+    )
+
+    saved = put_inspector_preference(
+        opener,
+        base_url,
+        inspector_preference_payload(width_px=420, collapsed=True),
+        csrf_token,
+    )
+    validate_inspector_preference(
+        saved,
+        expected_width_px=420,
+        expected_collapsed=True,
+        expected_recovery_reason=None,
+    )
+
+    fresh_session = login(
+        base_url,
+        INSPECTOR_DISPOSABLE_USER,
+        password,
+    )
+    persisted = request(
+        fresh_session,
+        base_url,
+        INSPECTOR_PREFERENCE_PATH,
+    )
+    validate_inspector_preference(
+        persisted,
+        expected_width_px=420,
+        expected_collapsed=True,
+        expected_recovery_reason=None,
+    )
+    require(
+        persisted.body == saved.body,
+        "Inspector preference did not persist across authenticated sessions",
+    )
+    return {
+        "inspectorPreferenceCorruptNoRepair": True,
+        "inspectorPreferenceCsrfMissing": 403,
+        "inspectorPreferencePersistence": True,
+    }
+
+
 def verify_grid_generic_create_denied(
     administrator_opener: urllib.request.OpenerDirector,
     base_url: str,
@@ -683,6 +864,43 @@ def create_disposable_user(
     )
 
 
+def create_disposable_inspector_user(
+    administrator_opener: urllib.request.OpenerDirector,
+    base_url: str,
+    user: str,
+    password: str,
+    csrf_token: str,
+) -> HttpResult:
+    corrupt_preference = (
+        '{"collapsed":false,"schemaVersion":"my-work-inspector-v1",'
+        '"unexpected":true,"widthPx":360}'
+    )
+    return request(
+        administrator_opener,
+        base_url,
+        "/api/resource/User",
+        method="POST",
+        request_headers={"X-Frappe-CSRF-Token": csrf_token},
+        payload={
+            "email": user,
+            "enabled": 1,
+            "first_name": "NPI Inspector",
+            "language": "en",
+            "last_name": "Runtime Fixture",
+            "new_password": password,
+            "send_welcome_email": 0,
+            "user_type": "System User",
+            "roles": [{"role": "Desk User"}],
+            "defaults": [
+                {
+                    "defkey": INSPECTOR_PREFERENCE_KEY,
+                    "defvalue": corrupt_preference,
+                }
+            ],
+        },
+    )
+
+
 def validate_disposable_user(result: HttpResult, expected_user: str) -> None:
     require(
         result.status in {200, 201},
@@ -703,6 +921,35 @@ def validate_disposable_user(result: HttpResult, expected_user: str) -> None:
     require(
         "System Manager" not in roles,
         "Disposable user unexpectedly has System Manager privileges",
+    )
+
+
+def validate_disposable_inspector_user(
+    result: HttpResult,
+    expected_user: str,
+) -> None:
+    require(
+        result.status in {200, 201},
+        f"Disposable inspector user creation returned HTTP {result.status}",
+    )
+    user = result.body.get("data", {})
+    require(
+        user.get("name") == expected_user
+        and user.get("email") == expected_user,
+        "Disposable inspector user identity drifted",
+    )
+    require(
+        user.get("user_type") == "System User",
+        "Disposable inspector user is not internal",
+    )
+    roles = {
+        role.get("role")
+        for role in user.get("roles", [])
+        if isinstance(role, dict)
+    }
+    require(
+        "Desk User" in roles and "System Manager" not in roles,
+        "Disposable inspector user authority drifted",
     )
 
 
@@ -749,6 +996,15 @@ def main() -> None:
         arguments.base_url,
         ADMINISTRATOR_USER,
         DISPOSABLE_USER,
+    )
+    require(
+        validate_local_fixture_inputs(
+            arguments.base_url,
+            ADMINISTRATOR_USER,
+            INSPECTOR_DISPOSABLE_USER,
+        )
+        == base_url,
+        "Inspector runtime fixture base URL drifted",
     )
 
     catalogs = {language: catalog_rows(language) for language in ("zh", "zh-TW")}
@@ -797,6 +1053,27 @@ def main() -> None:
         401,
         "AUTHENTICATION_REQUIRED",
     )
+    guest_inspector_preference = request(
+        urllib.request.build_opener(),
+        base_url,
+        INSPECTOR_PREFERENCE_PATH,
+    )
+    validate_problem(
+        guest_inspector_preference,
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
+    guest_inspector_preference_write = put_inspector_preference(
+        urllib.request.build_opener(),
+        base_url,
+        {},
+        "guest-csrf-token",
+    )
+    validate_problem(
+        guest_inspector_preference_write,
+        401,
+        "AUTHENTICATION_REQUIRED",
+    )
 
     unknown = request(urllib.request.build_opener(), base_url, "/api/npi/v1/unknown")
     validate_problem(unknown, 404, "API_ROUTE_NOT_FOUND")
@@ -825,6 +1102,23 @@ def main() -> None:
         administrator_navigation_collapsed,
     )
     administrator_csrf_token = str(administrator_initial.body["csrfToken"])
+    administrator_inspector_initial = request(
+        administrator_opener,
+        base_url,
+        INSPECTOR_PREFERENCE_PATH,
+    )
+    validate_inspector_preference(
+        administrator_inspector_initial,
+        expected_width_px=int(
+            administrator_inspector_initial.body.get("widthPx", -1)
+        ),
+        expected_collapsed=administrator_inspector_initial.body.get(
+            "collapsed"
+        ),
+        expected_recovery_reason=administrator_inspector_initial.body.get(
+            "recoveryReason"
+        ),
+    )
     grid_preference_evidence = verify_grid_preferences_runtime(
         administrator_opener,
         base_url,
@@ -843,11 +1137,64 @@ def main() -> None:
         fixture_before.status == 404,
         "Disposable fixture user already exists; refusing to delete a pre-existing user",
     )
+    inspector_fixture_path = user_resource_path(INSPECTOR_DISPOSABLE_USER)
+    inspector_fixture_before = request(
+        administrator_opener,
+        base_url,
+        inspector_fixture_path,
+    )
+    require(
+        inspector_fixture_before.status == 404,
+        (
+            "Disposable inspector user already exists; refusing to delete "
+            "a pre-existing user"
+        ),
+    )
 
     fixture_created = False
     fixture_deleted = False
+    inspector_fixture_created = False
+    inspector_fixture_deleted = False
+    inspector_preference_evidence: dict[str, Any] = {}
 
     try:
+        inspector_created = create_disposable_inspector_user(
+            administrator_opener,
+            base_url,
+            INSPECTOR_DISPOSABLE_USER,
+            fixture_password,
+            administrator_csrf_token,
+        )
+        inspector_fixture_created = inspector_created.status in {200, 201}
+        validate_disposable_inspector_user(
+            inspector_created,
+            INSPECTOR_DISPOSABLE_USER,
+        )
+        inspector_opener = login(
+            base_url,
+            INSPECTOR_DISPOSABLE_USER,
+            fixture_password,
+        )
+        inspector_bootstrap = request(
+            inspector_opener,
+            base_url,
+            "/api/npi/v1/session/bootstrap",
+        )
+        validate_bootstrap(
+            inspector_bootstrap,
+            INSPECTOR_DISPOSABLE_USER,
+            "en",
+            expected_count,
+        )
+        inspector_preference_evidence = (
+            verify_inspector_preference_runtime(
+                inspector_opener,
+                base_url,
+                fixture_password,
+                str(inspector_bootstrap.body["csrfToken"]),
+            )
+        )
+
         created = create_disposable_user(
             administrator_opener,
             base_url,
@@ -868,6 +1215,16 @@ def main() -> None:
             fixture_initial, DISPOSABLE_USER, "en", expected_count
         )
         fixture_csrf_token = str(fixture_initial.body["csrfToken"])
+        external_inspector_preference = request(
+            fixture_opener,
+            base_url,
+            INSPECTOR_PREFERENCE_PATH,
+        )
+        validate_problem(
+            external_inspector_preference,
+            403,
+            "PERMISSION_DENIED",
+        )
 
         csrf_missing = put_language(
             fixture_opener,
@@ -1220,8 +1577,18 @@ def main() -> None:
             expected_count,
             administrator_navigation_collapsed,
         )
+        administrator_inspector_after = request(
+            fresh_administrator_opener,
+            base_url,
+            INSPECTOR_PREFERENCE_PATH,
+        )
+        require(
+            administrator_inspector_after.body
+            == administrator_inspector_initial.body,
+            "Inspector preference crossed the authenticated actor boundary",
+        )
     finally:
-        if fixture_created:
+        if fixture_created or inspector_fixture_created:
             cleanup_opener = login(
                 base_url,
                 ADMINISTRATOR_USER,
@@ -1237,13 +1604,23 @@ def main() -> None:
                 expected_count,
                 administrator_navigation_collapsed,
             )
-            delete_disposable_user(
-                cleanup_opener,
-                base_url,
-                DISPOSABLE_USER,
-                str(cleanup_bootstrap.body["csrfToken"]),
-            )
-            fixture_deleted = True
+            cleanup_csrf = str(cleanup_bootstrap.body["csrfToken"])
+            if fixture_created:
+                delete_disposable_user(
+                    cleanup_opener,
+                    base_url,
+                    DISPOSABLE_USER,
+                    cleanup_csrf,
+                )
+                fixture_deleted = True
+            if inspector_fixture_created:
+                delete_disposable_user(
+                    cleanup_opener,
+                    base_url,
+                    INSPECTOR_DISPOSABLE_USER,
+                    cleanup_csrf,
+                )
+                inspector_fixture_deleted = True
 
     print(
         json.dumps(
@@ -1259,7 +1636,13 @@ def main() -> None:
                 "guestPreference": 401,
                 "guestGridPreference": 401,
                 "guestGridPreferenceWrite": 401,
+                "guestInspectorPreference": 401,
+                "guestInspectorPreferenceWrite": 401,
                 "gridGenericCreateDenied": grid_generic_create_denied,
+                "inspectorDisposableUserDeleted": inspector_fixture_deleted,
+                "inspectorDisposableUserId": INSPECTOR_DISPOSABLE_USER,
+                "inspectorExternalDenied": 403,
+                "inspectorPreferenceActorIsolation": True,
                 "csrfMissing": 403,
                 "csrfWrong": 403,
                 "extraField": 422,
@@ -1278,6 +1661,7 @@ def main() -> None:
                 "unknownRoute": 404,
                 "wrongTypeLanguage": 422,
                 **grid_preference_evidence,
+                **inspector_preference_evidence,
             },
             sort_keys=True,
         )

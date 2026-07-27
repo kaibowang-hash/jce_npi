@@ -1,11 +1,14 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-27T08:06:38Z'
+updated_at: '2026-07-27T11:08:13Z'
 authorization: automatic_transition_after_pass
 execution_hold: R1_SHARED_BRIDGE
 current_task: R1-05
-current_task_status: READY
+current_task_status: IN_PROGRESS
+current_task_completed_stage: R1-05-STAGE-1
+current_task_next_stage: R1-05-STAGE-2
+current_task_next_stage_status: READY
 held_product_task: P5-01
 held_product_task_status: IN_PROGRESS_CHECKPOINTED
 bridge:

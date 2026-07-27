@@ -5,7 +5,7 @@ Branch: `codex/npi-v1.2-implementation`
 Task:
 `R1-05 — Resizable panes, field attachment, and icon action primitives`
 Requirements: `FR-UX-040`, `FR-UX-041`, `FR-UX-043`
-Status: `PASS — STAGE 0; PRODUCT IMPLEMENTATION AFTER CHECKPOINT`
+Status: `IN_PROGRESS — STAGES 0–1 PASS; STAGE 2 READY`
 Starting synchronized bridge checkpoint:
 `fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`
 
@@ -195,6 +195,25 @@ Product implementation begins only after Stage 0 is committed and pushed.
 Each later stage runs Level 1 repair checks, an R1-05 Level 2 Task Gate, and
 Level 3 whenever public contract/schema/authentication/permission, shared
 design/i18n or reliably unbounded cross-domain behavior changes.
+
+## Stage 1 validation and Stage 2-only transition
+
+Stage 1 evidence:
+[R1-05 Stage 1 Validation — FR-UX-040 Live My Work Inspector Pane](r1-05-stage-1-validation.md).
+
+Result: `PASS — FR-UX-040 TECHNICAL_VERIFIED; STAGE 2 READY`.
+
+The fixed current-actor My Work inspector preference, bounded separator,
+confirmed-write recovery, presentation-only responsive stacking, focus
+recovery, trilingual UI and triggered Level 3 boundary passed their required
+contract, runtime, unit, browser, accessibility, i18n and zero-tolerance
+visual checks. The linked validation is the evidence source for exact commands,
+counts, artifacts, reviewed renderer deltas and independent reviews.
+
+This transition makes only Stage 2 and `FR-UX-041` ready as the next
+implementation stage. Stage 3 and `FR-UX-043` remain planned and are not
+activated by the Stage 1 PASS. It does not resume held P5-01 work or widen any
+document, attachment, ERPNext or production authority.
 
 ## Rollback
 

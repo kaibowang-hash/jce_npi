@@ -2657,3 +2657,15 @@ Authority Reason Code,权限原因代码
 Select whether this view has a saved filter.,选择此视图是否具有已保存的筛选条件。
 An unsaved filter must use code-owned defaults.,未保存的筛选条件必须使用代码定义的默认值。
 Select whether to save the current filter.,选择是否保存当前筛选条件。
+Pane layout was not saved. The last confirmed layout remains active.,窗格布局未保存。上次确认的布局仍然有效。
+Loading pane layout,正在加载窗格布局
+Pane layout is confirmed by the server.,窗格布局已由服务器确认。
+Saving pane layout,正在保存窗格布局
+Session verification is required before pane layout can be saved.,保存窗格布局前需要验证会话。
+Resize inspector,调整检查器大小
+"Drag to resize. Use Left and Right Arrow keys, Home or End for a limit, or double-click to reset.","拖动以调整大小。使用左方向键和右方向键调整宽度，按起始键或结束键设为边界值，或双击重置。"
+Reload pane layout,重新加载窗格布局
+Stored pane layout was invalid. The default layout is active.,存储的窗格布局无效。当前使用默认布局。
+Select the supported My Work inspector schema.,请选择受支持的“我的工作”检查器架构。
+Enter an inspector width within the supported range.,请输入支持范围内的检查器宽度。
+The stored inspector preference is invalid.,已存储的检查器偏好无效。

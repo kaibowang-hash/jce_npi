@@ -173,6 +173,7 @@ class Phase4ProjectControlsRuntimeVerifierTest(unittest.TestCase):
         route_disable = self.functions["verify_route_disable_switch"]
         self.assertIn("npi_p4_05_routes_disabled", route_disable)
         self.assertIn("npi_core.my_work_api.get_my_work", route_disable)
+        self.assertIn("npi_core.inspector_preferences_api.", route_disable)
         self.assertIn(
             "npi_core.project_work_api.get_project_work_context",
             route_disable,
@@ -181,6 +182,7 @@ class Phase4ProjectControlsRuntimeVerifierTest(unittest.TestCase):
         http_probe = self.functions["verify_route_disable_http_probe"]
         for route in (
             "/api/npi/v1/me/work",
+            "/api/npi/v1/me/preferences/my-work-inspector",
             "/api/npi/v1/learning",
             "/controls",
             "/activity",
@@ -193,6 +195,8 @@ class Phase4ProjectControlsRuntimeVerifierTest(unittest.TestCase):
             ":unfollow",
             "/api/method/npi_core.my_work_api.get_my_work",
             "npi_core.project_controls_api.search_project_learning",
+            "get_my_work_inspector_preference",
+            "set_my_work_inspector_preference",
             "/work-context",
             "/evidence",
         ):
@@ -202,6 +206,15 @@ class Phase4ProjectControlsRuntimeVerifierTest(unittest.TestCase):
             http_probe,
         )
         self.assertIn('"private, no-store"', http_probe)
+        request_helper = self.functions["npi_request"]
+        self.assertEqual(
+            request_helper.count('headers["X-Frappe-CSRF-Token"]'),
+            1,
+        )
+        self.assertLess(
+            request_helper.index("else:"),
+            request_helper.index("if csrf_token is not None:"),
+        )
         main = self.functions["main"]
         self.assertIn('"verify_transaction_rollback"', main)
         self.assertIn('"verify_route_disable_switch"', main)

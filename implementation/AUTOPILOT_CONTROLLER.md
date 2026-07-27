@@ -1,5 +1,7 @@
 # V1.2 Autopilot Controller
 
+Updated: `2026-07-27T11:08:13Z`
+
 ## Authority and operating mode
 
 The repository is in V1.2 continuous-delivery mode on
@@ -208,6 +210,8 @@ pending until that proof is produced in Codespaces.
 ## Current checkpoint
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
+- Current synchronized bridge checkpoint and R1-05 starting boundary:
+  `88fca2bd898ca08432c5a5f5eec9f25dc963fc14`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
   machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
   assets` (`PASS — LEVEL 2`), `R1-03 — App Shell collapsed navigation command
@@ -217,7 +221,11 @@ pending until that proof is produced in Codespaces.
   (`PASS — LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`). R1 is an inserted
   bridge, not a replacement controller Phase.
 - Current controller task:
-  `R1-05 — Resizable panes, field attachment, and icon action primitives`.
+  `R1-05 — Resizable panes, field attachment, and icon action primitives`
+  (`IN_PROGRESS`). Stage 1 (`FR-UX-040`) passed the
+  `LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
+  `TECHNICAL_VERIFIED`. Stage 2 (`FR-UX-041`) is `READY` and is the only
+  active next slice. Stage 3 (`FR-UX-043`) remains planned/inactive.
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
@@ -252,11 +260,20 @@ pending until that proof is produced in Codespaces.
   keep exact persisted pixel widths, serialize version-confirmed preference
   writes, close the seven-view schema and enforce Unicode code-point search
   limits while keeping publisher, export and bulk authority fail closed.
-- Execute R1-05 and R1-06. R1-07 remains scoped to `DR-REC-001`. The
-  shared Shell/design/i18n bridge requires its triggered Level 3 Gate before
-  P5-01 resumes.
+- R1-05 Stage 1 added one fixed actor-bound My Work inspector preference,
+  visible bounded pointer/keyboard resize, collapse/focus recovery and
+  responsive presentation-only stacking. Its final evidence records the
+  terminal canonical full Gate at 747 Python tests, 577 frontend unit tests
+  and 2,671 direct trilingual sources, plus 256 non-visual browser cases, 210
+  clean exact visual cases, all 18 controlled route disable/recovery
+  contracts, zero residual inspector `DefaultValue` rows and independent
+  audits with zero findings.
+- Execute only R1-05 Stage 2 next. Stage 3 remains planned until its Stage 2
+  Gate; R1-06 remains inactive until all R1-05 stages pass. R1-07 remains
+  scoped to `DR-REC-001`. The shared Shell/design/i18n bridge requires its
+  triggered Level 3 Gate before P5-01 resumes.
 
 Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
-Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01 through R1-04
-evidence; do not repeat or rewrite them merely to restore context. See
-`implementation/LAST_RUN.md` for the exact latest result.
+Reuse the passing Phase 4, P5-00, P5-01 checkpoint, R1-01 through R1-04 and
+R1-05 Stage 1 evidence; do not repeat or rewrite them merely to restore
+context. See `implementation/LAST_RUN.md` for the exact latest result.

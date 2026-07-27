@@ -1,5 +1,7 @@
 # Blockers
 
+Updated: `2026-07-27T11:08:13Z`
+
 ## Active hard blockers
 
 None.
@@ -9,7 +11,12 @@ None.
 `R1_SHARED_BRIDGE` is active.
 
 R1-01 and R1-02 passed their Level 2 Gates, and R1-03 and R1-04 passed their
-triggered task-level Level 3 Gates. R1-05 is current.
+triggered task-level Level 3 Gates. R1-05 is current and remains
+`IN_PROGRESS`. Its Stage 1 `FR-UX-040` slice passed the
+`LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
+`TECHNICAL_VERIFIED`. Stage 2 `FR-UX-041` is `READY` and is the only active
+next slice. Stage 3 `FR-UX-043` remains planned/inactive, and R1-06 remains
+inactive.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
@@ -175,3 +182,12 @@ must preserve that boundary.
   13-case task run, complete trilingual coverage and independent code,
   security, UX, accessibility and visual review. Only the explicit UX-028
   publisher-authority decision remains held; R1-05 is active.
+- R1-05 Stage 1 passed its triggered Level 3 public preference/shared-UI
+  checkpoint on 2026-07-27 from starting boundary
+  `88fca2bd898ca08432c5a5f5eec9f25dc963fc14`. Its final evidence records a
+  terminal canonical full Gate at 747 Python tests, 577 frontend unit tests
+  and 2,671 complete direct trilingual sources, plus 256 non-visual browser
+  cases, a clean 210-case exact visual matrix, all 18 controlled routes
+  disabled/recovered, zero residual inspector `DefaultValue` rows and
+  independent audits with zero findings. This closes only `FR-UX-040`; R1-05
+  Stage 2 is the sole next task and there is no active Hard Blocker.

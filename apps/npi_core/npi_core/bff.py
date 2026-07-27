@@ -38,6 +38,12 @@ _ROUTES = {
     ("PUT", "/api/npi/v1/me/preferences/my-work-grid"): (
         "npi_core.grid_personalization_api.set_my_work_grid_preferences"
     ),
+    ("GET", "/api/npi/v1/me/preferences/my-work-inspector"): (
+        "npi_core.inspector_preferences_api.get_my_work_inspector_preference"
+    ),
+    ("PUT", "/api/npi/v1/me/preferences/my-work-inspector"): (
+        "npi_core.inspector_preferences_api.set_my_work_inspector_preference"
+    ),
     ("GET", "/api/npi/v1/learning"): (
         "npi_core.project_controls_api.search_project_learning"
     ),
@@ -371,7 +377,7 @@ def route_not_found() -> dict[str, object] | None:
 
 @frappe.whitelist(
     allow_guest=True,
-    methods=["GET", "POST"],
+    methods=["GET", "POST", "PUT"],
 )
 def project_collaboration_routes_disabled() -> dict[str, object] | None:
     """Fail closed while P4-05 routes await a reviewed forward fix."""
@@ -406,6 +412,10 @@ def document_routes_disabled() -> dict[str, object] | None:
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
+        or (
+            isinstance(command, str)
+            and command.startswith("npi_core.inspector_preferences_api.")
+        )
         or (
             isinstance(command, str)
             and command.startswith("npi_core.project_controls_api.")
@@ -481,6 +491,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if (
         method in {"GET", "PUT"}
         and path == "/api/npi/v1/me/preferences/my-work-grid"
+    ):
+        return True
+    if (
+        method in {"GET", "PUT"}
+        and path == "/api/npi/v1/me/preferences/my-work-inspector"
     ):
         return True
     if method == "GET" and (

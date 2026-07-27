@@ -6,16 +6,20 @@ import {
   type ReactNode,
 } from "react";
 
+import type { RequestFailure } from "../api/http";
 import type {
   ActivityEvent,
   GateStep,
   LifecycleStep,
+  SemanticTone,
   SourceStatus,
 } from "../domain/view-models";
 import { activityLabel, gateLabel, lifecycleLabel } from "../i18n/copy";
 import { formatDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
-import { Button } from "../ui-adapters/npi-ui";
+import { Button, focusControl } from "../ui-adapters/npi-ui";
+import { ResizablePaneSeparator } from "../ui-adapters/resizable-pane";
+import { RequestFailurePanel } from "./problem-details-panel";
 import { Panel, SemanticStatus, SourceBadge, SyncBadge } from "./primitives";
 
 export function ObjectHeader({
@@ -219,81 +223,201 @@ export function SectionAnchors({
   );
 }
 
+const controlledInspectorDefaultWidthPx = 340;
+const legacyInspectorDefaultWidthPx = 320;
+const inspectorMinimumWidthPx = 260;
+const inspectorMaximumWidthPx = 480;
+const inspectorKeyboardStepPx = 20;
+
+export type DockedInspectorLayoutStatus =
+  | "failed"
+  | "loading"
+  | "ready"
+  | "saving"
+  | "unavailable";
+
+export interface DockedInspectorLayout {
+  readonly collapsed: boolean;
+  readonly widthPx: number;
+  readonly canUpdate: boolean;
+  readonly status: DockedInspectorLayoutStatus;
+  readonly failure: RequestFailure | null;
+  readonly recoveryReason: "stored_preference_invalid" | null;
+  readonly onChange: (next: {
+    readonly collapsed: boolean;
+    readonly widthPx: number;
+  }) => void;
+  readonly onReload: () => void;
+}
+
+function clampInspectorWidth(widthPx: number): number {
+  if (!Number.isFinite(widthPx)) return controlledInspectorDefaultWidthPx;
+  return Math.min(
+    inspectorMaximumWidthPx,
+    Math.max(inspectorMinimumWidthPx, Math.round(widthPx)),
+  );
+}
+
+function inspectorLayoutStatusCopy(
+  status: DockedInspectorLayoutStatus,
+  recoveryReason: DockedInspectorLayout["recoveryReason"],
+  t: ReturnType<typeof useI18n>["t"],
+): {
+  readonly label: string;
+  readonly text: string;
+  readonly tone: SemanticTone;
+} {
+  switch (status) {
+    case "failed":
+      return {
+        label: t("Not saved"),
+        text: t(
+          "Pane layout was not saved. The last confirmed layout remains active.",
+        ),
+        tone: "danger",
+      };
+    case "loading":
+      return {
+        label: t("Loading"),
+        text: t("Loading pane layout"),
+        tone: "info",
+      };
+    case "ready":
+      return recoveryReason === "stored_preference_invalid"
+        ? {
+            label: t("Defaults active"),
+            text: t(
+              "Stored pane layout was invalid. The default layout is active.",
+            ),
+            tone: "warning",
+          }
+        : {
+            label: t("Confirmed"),
+            text: t("Pane layout is confirmed by the server."),
+            tone: "neutral",
+          };
+    case "saving":
+      return {
+        label: t("Saving"),
+        text: t("Saving pane layout"),
+        tone: "info",
+      };
+    case "unavailable":
+      return {
+        label: t("Unavailable"),
+        text: t(
+          "Session verification is required before pane layout can be saved.",
+        ),
+        tone: "warning",
+      };
+  }
+}
+
 export function DockedInspector({
   title,
   children,
   activities,
   id,
+  layout,
 }: PropsWithChildren<{
   title: string;
   activities?: readonly ActivityEvent[];
   id?: string;
+  layout?: DockedInspectorLayout;
 }>): React.JSX.Element {
   const { locale, t } = useI18n();
   const inspectorRef = useRef<HTMLElement | null>(null);
-  const [width, setWidth] = useState(() => {
+  const collapseControlRef = useRef<HTMLDivElement | null>(null);
+  const reloadControlRef = useRef<HTMLDivElement | null>(null);
+  const focusWasInsideInspector = useRef(false);
+  const previousCollapsed = useRef(layout?.collapsed ?? false);
+  const controlled = layout !== undefined;
+  const [legacyWidth, setLegacyWidth] = useState(() => {
+    if (layout) return legacyInspectorDefaultWidthPx;
     const stored = Number(
       globalThis.localStorage.getItem("npi-one-inspector-width"),
     );
-    return Number.isFinite(stored) && stored >= 260 && stored <= 480
+    return Number.isFinite(stored) &&
+      stored >= inspectorMinimumWidthPx &&
+      stored <= inspectorMaximumWidthPx
       ? stored
-      : 320;
+      : legacyInspectorDefaultWidthPx;
   });
-  const [collapsed, setCollapsed] = useState(
-    () =>
-      globalThis.localStorage.getItem("npi-one-inspector-collapsed") === "true",
+  const [legacyCollapsed, setLegacyCollapsed] = useState(() =>
+    layout
+      ? false
+      : globalThis.localStorage.getItem("npi-one-inspector-collapsed") ===
+        "true",
   );
+  const collapsed = layout?.collapsed ?? legacyCollapsed;
+  const recoveryExpanded = Boolean(collapsed && layout?.failure);
+  const confirmedWidth = layout
+    ? clampInspectorWidth(layout.widthPx)
+    : legacyWidth;
+
+  useEffect(() => {
+    if (!controlled) return undefined;
+    const handleFocusIn = (event: FocusEvent): void => {
+      focusWasInsideInspector.current = Boolean(
+        event.target instanceof Node &&
+        inspectorRef.current?.contains(event.target),
+      );
+    };
+    document.addEventListener("focusin", handleFocusIn);
+    return () => {
+      document.removeEventListener("focusin", handleFocusIn);
+    };
+  }, [controlled]);
+
+  useEffect(() => {
+    if (
+      controlled &&
+      collapsed &&
+      !previousCollapsed.current &&
+      focusWasInsideInspector.current
+    ) {
+      const focusContainer = recoveryExpanded
+        ? reloadControlRef.current
+        : collapseControlRef.current;
+      void focusControl(
+        focusContainer?.querySelector<HTMLElement>("button, ix-button") ?? null,
+      );
+    }
+    previousCollapsed.current = collapsed;
+  }, [collapsed, controlled, recoveryExpanded]);
+
   useEffect(() => {
     const layout = inspectorRef.current?.parentElement;
     layout?.style.setProperty(
       "--npi-inspector-width",
-      collapsed ? "40px" : `${String(width)}px`,
+      collapsed && !recoveryExpanded ? "40px" : `${String(confirmedWidth)}px`,
     );
-    globalThis.localStorage.setItem("npi-one-inspector-width", String(width));
-    globalThis.localStorage.setItem(
-      "npi-one-inspector-collapsed",
-      String(collapsed),
-    );
+    if (!controlled) {
+      globalThis.localStorage.setItem(
+        "npi-one-inspector-width",
+        String(legacyWidth),
+      );
+      globalThis.localStorage.setItem(
+        "npi-one-inspector-collapsed",
+        String(legacyCollapsed),
+      );
+    }
     return () => {
       layout?.style.removeProperty("--npi-inspector-width");
     };
-  }, [collapsed, width]);
-  return (
-    <aside
-      aria-label={title}
-      className={`docked-inspector${collapsed ? " docked-inspector--collapsed" : ""}`}
-      id={id}
-      ref={inspectorRef}
-      tabIndex={0}
-    >
-      <div className="inspector-controls">
-        <Button
-          aria-expanded={!collapsed}
-          onClick={() => {
-            setCollapsed((current) => !current);
-          }}
-        >
-          {collapsed ? t("Expand inspector") : t("Collapse inspector")}
-        </Button>
-        {collapsed ? null : (
-          <label>
-            <span className="visually-hidden">{t("Inspector width")}</span>
-            <input
-              aria-label={t("Inspector width")}
-              max={480}
-              min={260}
-              onChange={(event) => {
-                setWidth(Number(event.currentTarget.value));
-              }}
-              step={20}
-              type="range"
-              value={width}
-            />
-          </label>
-        )}
-      </div>
-      {collapsed ? null : <Panel title={title}>{children}</Panel>}
-      {!collapsed && activities ? (
+  }, [
+    collapsed,
+    confirmedWidth,
+    controlled,
+    legacyCollapsed,
+    legacyWidth,
+    recoveryExpanded,
+  ]);
+
+  const inspectorContent = (
+    <>
+      <Panel title={title}>{children}</Panel>
+      {activities ? (
         <Panel title={t("Activity")}>
           <ol className="activity-timeline">
             {activities.map((event) => (
@@ -319,6 +443,117 @@ export function DockedInspector({
           </ol>
         </Panel>
       ) : null}
+    </>
+  );
+  const statusCopy = layout
+    ? inspectorLayoutStatusCopy(layout.status, layout.recoveryReason, t)
+    : null;
+
+  return (
+    <aside
+      aria-label={title}
+      className={`docked-inspector${controlled ? " docked-inspector--controlled" : ""}${collapsed ? " docked-inspector--collapsed" : ""}${recoveryExpanded ? " docked-inspector--recovery-open" : ""}`}
+      id={id}
+      ref={inspectorRef}
+      tabIndex={0}
+    >
+      {layout && !collapsed ? (
+        <ResizablePaneSeparator
+          defaultValue={controlledInspectorDefaultWidthPx}
+          disabled={!layout.canUpdate}
+          label={t("Resize inspector")}
+          maximum={inspectorMaximumWidthPx}
+          minimum={inspectorMinimumWidthPx}
+          onCommit={(widthPx) => {
+            layout.onChange({
+              collapsed: false,
+              widthPx: clampInspectorWidth(widthPx),
+            });
+          }}
+          onPreview={(widthPx) => {
+            inspectorRef.current?.parentElement?.style.setProperty(
+              "--npi-inspector-width",
+              `${String(clampInspectorWidth(widthPx))}px`,
+            );
+          }}
+          step={inspectorKeyboardStepPx}
+          title={t(
+            "Drag to resize. Use Left and Right Arrow keys, Home or End for a limit, or double-click to reset.",
+          )}
+          value={confirmedWidth}
+        />
+      ) : null}
+      <div className="inspector-controls">
+        <div ref={collapseControlRef}>
+          <Button
+            aria-expanded={!collapsed}
+            disabled={layout ? !layout.canUpdate : false}
+            onClick={(event) => {
+              void focusControl(event.currentTarget);
+              if (layout) {
+                layout.onChange({
+                  collapsed: !collapsed,
+                  widthPx: confirmedWidth,
+                });
+              } else {
+                setLegacyCollapsed((current) => !current);
+              }
+            }}
+          >
+            {collapsed ? t("Expand inspector") : t("Collapse inspector")}
+          </Button>
+        </div>
+        {statusCopy &&
+        (!collapsed ||
+          layout?.status !== "ready" ||
+          layout.recoveryReason !== null) ? (
+          <div className="docked-inspector__layout-status">
+            <span
+              aria-atomic="true"
+              aria-live="polite"
+              className={
+                collapsed && !recoveryExpanded ? "visually-hidden" : undefined
+              }
+            >
+              {statusCopy.text}
+            </span>
+            <SemanticStatus label={statusCopy.label} tone={statusCopy.tone} />
+          </div>
+        ) : null}
+        {!controlled && !collapsed ? (
+          <label>
+            <span className="visually-hidden">{t("Inspector width")}</span>
+            <input
+              aria-label={t("Inspector width")}
+              max={inspectorMaximumWidthPx}
+              min={inspectorMinimumWidthPx}
+              onChange={(event) => {
+                setLegacyWidth(Number(event.currentTarget.value));
+              }}
+              step={20}
+              type="range"
+              value={legacyWidth}
+            />
+          </label>
+        ) : null}
+      </div>
+      {layout?.failure ? (
+        <div className="docked-inspector__layout-failure">
+          <RequestFailurePanel failure={layout.failure} />
+          <div ref={reloadControlRef}>
+            <Button icon="refresh" onClick={layout.onReload} visual="secondary">
+              {t("Reload pane layout")}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      {controlled ? (
+        <div className="docked-inspector__content" hidden={collapsed}>
+          {inspectorContent}
+        </div>
+      ) : collapsed ? null : (
+        inspectorContent
+      )}
     </aside>
   );
 }

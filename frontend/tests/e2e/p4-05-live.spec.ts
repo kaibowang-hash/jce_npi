@@ -10,6 +10,10 @@ import {
   type SaveMyWorkGridPreference,
 } from "../../src/api/grid-preferences-data-source";
 import type { ProblemDetails } from "../../src/api/http";
+import {
+  defaultMyWorkInspectorPreference,
+  isSaveMyWorkInspectorPreference,
+} from "../../src/api/my-work-inspector-preferences-data-source";
 import type {
   MyWorkPageViewModel,
   ProjectActivityItemViewModel,
@@ -45,6 +49,8 @@ const idempotencyKeyPattern =
 const myWorkEndpoint = /\/api\/npi\/v1\/me\/work(?:\?.*)?$/u;
 const gridPreferenceEndpoint =
   /\/api\/npi\/v1\/me\/preferences\/my-work-grid(?:\?.*)?$/u;
+const inspectorPreferenceEndpoint =
+  /\/api\/npi\/v1\/me\/preferences\/my-work-inspector(?:\?.*)?$/u;
 const cockpitEndpoint = /\/api\/npi\/v1\/projects\/[^/?]+\/cockpit(?:\?.*)?$/u;
 const controlsEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/controls(?:\?.*)?$/u;
@@ -180,6 +186,42 @@ function applyGridPreferencePut(
 
 async function installSession(page: Page, locale: TestLocale): Promise<void> {
   let preferences = gridPreferenceFixture();
+  let inspectorPreference = defaultMyWorkInspectorPreference();
+  await page.route(inspectorPreferenceEndpoint, async (route) => {
+    const request = observe(route);
+    if (request.method === "GET") {
+      expect(request).toMatchObject({
+        accept: "application/json, application/problem+json",
+        csrf: undefined,
+        idempotencyKey: undefined,
+      });
+      await fulfillApi(route, inspectorPreference, {
+        traceId: "trace-p4-05-inspector-preference",
+      });
+      return;
+    }
+
+    expect(request).toMatchObject({
+      accept: "application/json, application/problem+json",
+      csrf: csrfToken,
+      idempotencyKey: undefined,
+      method: "PUT",
+    });
+    const candidate: unknown = route.request().postDataJSON();
+    expect(isSaveMyWorkInspectorPreference(candidate)).toBe(true);
+    if (!isSaveMyWorkInspectorPreference(candidate)) {
+      throw new Error("The inspector preference command must be valid.");
+    }
+    inspectorPreference = {
+      ...inspectorPreference,
+      collapsed: candidate.collapsed,
+      recoveryReason: null,
+      widthPx: candidate.widthPx,
+    };
+    await fulfillApi(route, inspectorPreference, {
+      traceId: "trace-p4-05-inspector-preference-put",
+    });
+  });
   await page.route(gridPreferenceEndpoint, async (route) => {
     const request = observe(route);
     if (request.method === "GET") {

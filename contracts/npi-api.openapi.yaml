@@ -191,6 +191,87 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /me/preferences/my-work-inspector:
+    get:
+      tags: [Work]
+      operationId: getMyWorkInspectorPreference
+      description: >-
+        Returns the authenticated internal actor's fixed My Work inspector
+        layout. The actor, pane identity, schema and User Default storage key
+        are server-owned. Invalid stored JSON is reported through the bounded
+        recovery reason without repairing storage during the query.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Effective server-confirmed My Work inspector layout
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              description: Validated or server-generated request identifier
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support correlation
+              required: true
+              schema: { type: string, minLength: 8, maxLength: 128 }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyWorkInspectorPreference"
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+    put:
+      tags: [Work]
+      operationId: setMyWorkInspectorPreference
+      description: >-
+        Replaces the authenticated internal actor's fixed My Work inspector
+        layout after exact schema, width and boolean validation. No caller may
+        select an actor, pane identity or User Default key.
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMyWorkInspectorPreference"
+      responses:
+        "200":
+          description: Persisted server-confirmed My Work inspector layout
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              description: Validated or server-generated request identifier
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              description: Trace identifier for support correlation
+              required: true
+              schema: { type: string, minLength: 8, maxLength: 128 }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyWorkInspectorPreference"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /me/work:
     get:
       tags: [Work]
@@ -4732,6 +4813,27 @@ components:
           oneOf:
             - { type: string, format: uuid }
             - { type: "null" }
+    MyWorkInspectorPreference:
+      type: object
+      additionalProperties: false
+      required: [paneId, schemaVersion, widthPx, collapsed, recoveryReason]
+      properties:
+        paneId: { type: string, const: my-work-inspector }
+        schemaVersion: { type: string, const: my-work-inspector-v1 }
+        widthPx: { type: integer, minimum: 260, maximum: 480 }
+        collapsed: { type: boolean }
+        recoveryReason:
+          oneOf:
+            - { type: string, const: stored_preference_invalid }
+            - { type: "null" }
+    SetMyWorkInspectorPreference:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, widthPx, collapsed]
+      properties:
+        schemaVersion: { type: string, const: my-work-inspector-v1 }
+        widthPx: { type: integer, minimum: 260, maximum: 480 }
+        collapsed: { type: boolean }
     MyWorkCategory:
       type: string
       description: Read-only My Work projection category, not a persisted domain semantic kind

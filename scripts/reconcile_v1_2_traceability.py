@@ -25,7 +25,7 @@ DOCX_ONLY_PREFIXES = ("UX-", "ARCH-", "COD-", "I18N-", "FR-TX-")
 ADDENDUM_REQUIREMENTS = (
     ("FR-UX-038", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-039", "P0", "5", "TECHNICAL_VERIFIED"),
-    ("FR-UX-040", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
+    ("FR-UX-040", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-041", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
     ("FR-UX-043", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
@@ -138,6 +138,29 @@ R1_04_EVIDENCE = {
         "implementation/evidence/reconciliation/r1-04-validation.md",
     ),
 }
+R1_05_STAGE_1_EVIDENCE = {
+    "FR-UX-040": (
+        "apps/npi_core/npi_core/inspector_preferences/domain.py",
+        "apps/npi_core/npi_core/inspector_preferences/frappe_repository.py",
+        "apps/npi_core/npi_core/inspector_preferences_api.py",
+        "apps/npi_core/npi_core/bff.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/api/my-work-inspector-preferences-data-source.ts",
+        "frontend/src/ui-adapters/resizable-pane.tsx",
+        "frontend/src/components/my-work-inspector-personalization.ts",
+        "frontend/src/components/live-my-worklist.tsx",
+        "frontend/tests/unit/resizable-pane-separator.test.tsx",
+        "frontend/tests/unit/my-work-inspector-personalization.test.tsx",
+        "frontend/tests/unit/my-work-inspector-preferences-data-source.test.ts",
+        "tests/test_r1_05_inspector_preferences_domain.py",
+        "tests/test_r1_05_inspector_preferences_api.py",
+        "tests/test_r1_05_inspector_preferences_contract.py",
+        "frontend/tests/e2e/r1-05-panes.spec.ts",
+        "scripts/verify_frappe_runtime.py",
+        "scripts/verify_project_controls_runtime.py",
+        "implementation/evidence/reconciliation/r1-05-stage-1-validation.md",
+    ),
+}
 
 
 class TraceError(RuntimeError):
@@ -224,6 +247,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
         if requirement_id in R1_04_EVIDENCE:
             evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_1_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -256,6 +281,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_03_EVIDENCE[requirement_id])
         if requirement_id in R1_04_EVIDENCE:
             evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_1_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

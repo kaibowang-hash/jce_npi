@@ -183,6 +183,32 @@ EXPECTED_R1_04_TRACE = {
         },
     ),
 }
+EXPECTED_R1_05_STAGE_1_TRACE = {
+    "FR-UX-040": (
+        "TECHNICAL_VERIFIED",
+        {
+            "apps/npi_core/npi_core/inspector_preferences/domain.py",
+            "apps/npi_core/npi_core/inspector_preferences/frappe_repository.py",
+            "apps/npi_core/npi_core/inspector_preferences_api.py",
+            "apps/npi_core/npi_core/bff.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/api/my-work-inspector-preferences-data-source.ts",
+            "frontend/src/ui-adapters/resizable-pane.tsx",
+            "frontend/src/components/my-work-inspector-personalization.ts",
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/tests/unit/resizable-pane-separator.test.tsx",
+            "frontend/tests/unit/my-work-inspector-personalization.test.tsx",
+            "frontend/tests/unit/my-work-inspector-preferences-data-source.test.ts",
+            "tests/test_r1_05_inspector_preferences_domain.py",
+            "tests/test_r1_05_inspector_preferences_api.py",
+            "tests/test_r1_05_inspector_preferences_contract.py",
+            "frontend/tests/e2e/r1-05-panes.spec.ts",
+            "scripts/verify_frappe_runtime.py",
+            "scripts/verify_project_controls_runtime.py",
+            "implementation/evidence/reconciliation/r1-05-stage-1-validation.md",
+        },
+    ),
+}
 EXPECTED_BRAND_INSTRUCTIONS = {
     "Company LOGO.svg": (
         "Website Footer",
@@ -355,6 +381,27 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "FR-UX-043 must retain its exact R1-05 append-only trace state"
         )
+    field_attachment_row = by_id["FR-UX-041"]
+    if (
+        field_attachment_row["priority"],
+        field_attachment_row["phase"],
+        field_attachment_row["status"],
+        field_attachment_row["source"],
+        field_attachment_row["evidence"],
+        field_attachment_row["trace_kind"],
+        field_attachment_row["canonical_ids"],
+    ) != (
+        "P0",
+        "5",
+        "PLANNED_SHARED_UX_REMEDIATION",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        "ADDENDUM_DIRECT",
+        "FR-UX-041",
+    ):
+        raise ReconciliationVerificationError(
+            "FR-UX-041 must remain planned until R1-05 Stage 2 passes"
+        )
     for requirement_id, (
         expected_status,
         expected_evidence,
@@ -417,6 +464,44 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing R1-04 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_05_STAGE_1_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+            "ADDENDUM_DIRECT",
+            requirement_id,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the verified R1-05 Stage 1 trace state"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-05 Stage 1 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-05 Stage 1 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

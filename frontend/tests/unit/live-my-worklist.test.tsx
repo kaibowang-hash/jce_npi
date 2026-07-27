@@ -9,10 +9,18 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  defaultMyWorkGridPreferences,
+  type MyWorkGridPreferencesDataSource,
+} from "../../src/api/grid-preferences-data-source";
+import {
   NpiApiError,
   NpiTransportError,
   type ProblemDetails,
 } from "../../src/api/http";
+import {
+  defaultMyWorkInspectorPreference,
+  type MyWorkInspectorPreferencesDataSource,
+} from "../../src/api/my-work-inspector-preferences-data-source";
 import type {
   MyWorkDataSource,
   MyWorkQuery,
@@ -23,6 +31,7 @@ import type {
   MyWorkItemViewModel,
   MyWorkPageViewModel,
 } from "../../src/domain/view-models";
+import { supportedLocales } from "../../src/i18n/runtime";
 import { renderWithLocale } from "../support/render";
 
 const projectId = "11111111-1111-4111-8111-111111111111";
@@ -253,6 +262,116 @@ describe("live My Work worklist", () => {
     expect(
       document.querySelectorAll('[data-visual-primary="true"]'),
     ).toHaveLength(1);
+  });
+
+  it("uses the injected authenticated pane preference and preserves work context across collapse", async () => {
+    const bootstrap = {
+      allowedLanguages: supportedLocales,
+      catalog: {
+        language: "en" as const,
+        messages: {},
+        version: "a".repeat(64),
+      },
+      csrfToken: "authenticated-my-work-pane-csrf-token",
+      language: "en" as const,
+      preferences: { navigationCollapsed: false },
+      userId: "pane-engineer@example.invalid",
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify(bootstrap), { status: 200 }),
+        ),
+      ),
+    );
+    const gridPreferencesDataSource: MyWorkGridPreferencesDataSource = {
+      load: vi.fn(() => Promise.resolve(defaultMyWorkGridPreferences())),
+      save: vi.fn(() => Promise.resolve(defaultMyWorkGridPreferences())),
+    };
+    const paneLoad = vi.fn<MyWorkInspectorPreferencesDataSource["load"]>(() =>
+      Promise.resolve(defaultMyWorkInspectorPreference()),
+    );
+    const paneSave = vi.fn<MyWorkInspectorPreferencesDataSource["save"]>(
+      (command) =>
+        Promise.resolve({
+          ...defaultMyWorkInspectorPreference(),
+          collapsed: command.collapsed,
+          widthPx: command.widthPx,
+        }),
+    );
+    const source = resolvedDataSource();
+    const user = userEvent.setup();
+    const { container } = renderWithLocale(
+      <LiveMyWorklist
+        dataSource={source}
+        gridPreferencesDataSource={gridPreferencesDataSource}
+        navigate={vi.fn()}
+        panePreferencesDataSource={{ load: paneLoad, save: paneSave }}
+      />,
+    );
+    await waitFor(() => {
+      expect(paneLoad).toHaveBeenCalledOnce();
+    });
+    const collapse = screen.getByRole("button", {
+      name: "Collapse inspector",
+    });
+    await waitFor(() => {
+      expect(collapse).toBeEnabled();
+    });
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter" }), {
+      target: { value: "runner" },
+    });
+    await waitFor(() => {
+      expect(source.load).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: "runner" }),
+        expect.any(AbortSignal),
+      );
+    });
+    const table = screen.getByRole("table");
+    const gateRow = within(table)
+      .getByText("Review Gate G3 evidence")
+      .closest("tr");
+    expect(gateRow).not.toBeNull();
+    if (!gateRow) throw new Error("The Gate assignment row is required.");
+    await user.click(gateRow);
+    expect(gateRow).toHaveAttribute("aria-selected", "true");
+
+    const viewport = container.querySelector<HTMLElement>(
+      ".dense-grid__viewport",
+    );
+    expect(viewport).not.toBeNull();
+    if (!viewport) throw new Error("The grid viewport is required.");
+    viewport.scrollLeft = 120;
+    fireEvent.scroll(viewport);
+
+    await user.click(
+      screen.getByRole("button", { name: "Collapse inspector" }),
+    );
+
+    expect(screen.getByRole("searchbox", { name: "Filter" })).toHaveValue(
+      "runner",
+    );
+    expect(gateRow).toHaveAttribute("aria-selected", "true");
+    expect(viewport.scrollLeft).toBe(120);
+    expect(
+      screen.getByRole("button", { name: "Expand inspector" }),
+    ).toBeVisible();
+    await waitFor(() => {
+      expect(paneSave).toHaveBeenCalledWith(
+        {
+          collapsed: true,
+          schemaVersion: "my-work-inspector-v1",
+          widthPx: 340,
+        },
+        {
+          csrfToken: bootstrap.csrfToken,
+          userId: bootstrap.userId,
+        },
+        expect.any(AbortSignal),
+      );
+    });
   });
 
   it("uses only closed filters and cursor pagination, then returns to the prior cursor", async () => {

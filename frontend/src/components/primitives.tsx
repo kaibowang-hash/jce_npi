@@ -340,6 +340,7 @@ export function DefinitionList({
   rows,
 }: {
   rows: readonly {
+    rowKey?: string;
     label: string;
     value: ReactNode;
     exempt?: "business-data" | "identifier" | "unit";
@@ -348,7 +349,7 @@ export function DefinitionList({
   return (
     <dl className="field-list">
       {rows.map((row) => (
-        <div key={row.label}>
+        <div key={row.rowKey ?? row.label}>
           <dt>{row.label}</dt>
           <dd data-language-exempt={row.exempt}>{row.value}</dd>
         </div>

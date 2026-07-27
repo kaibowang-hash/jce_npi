@@ -13,6 +13,10 @@ import {
   type SaveMyWorkGridPreference,
 } from "../../src/api/grid-preferences-data-source";
 import type { ProblemDetails } from "../../src/api/http";
+import {
+  defaultMyWorkInspectorPreference,
+  isSaveMyWorkInspectorPreference,
+} from "../../src/api/my-work-inspector-preferences-data-source";
 import { isMyWorkPageResponse } from "../../src/api/my-work-data-source";
 import type {
   MyWorkItemViewModel,
@@ -38,6 +42,8 @@ const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const myWorkEndpoint = /\/api\/npi\/v1\/me\/work(?:\?.*)?$/u;
 const gridPreferenceEndpoint =
   /\/api\/npi\/v1\/me\/preferences\/my-work-grid(?:\?.*)?$/u;
+const inspectorPreferenceEndpoint =
+  /\/api\/npi\/v1\/me\/preferences\/my-work-inspector(?:\?.*)?$/u;
 const preferencePath = "/api/npi/v1/me/preferences/my-work-grid";
 
 interface ObservedPreferencePut {
@@ -399,6 +405,33 @@ async function installGridPreferenceApi(
   };
   let getCount = 0;
   const puts: ObservedPreferencePut[] = [];
+  let inspectorPreference = defaultMyWorkInspectorPreference();
+
+  await page.route(inspectorPreferenceEndpoint, async (route) => {
+    const request = route.request();
+    if (request.method() === "GET") {
+      expectSafeGet(route);
+      await fulfillApi(route, inspectorPreference, {
+        traceId: "trace-r1-04-inspector-get",
+      });
+      return;
+    }
+    expect(request.method()).toBe("PUT");
+    const candidate: unknown = request.postDataJSON();
+    expect(isSaveMyWorkInspectorPreference(candidate)).toBe(true);
+    if (!isSaveMyWorkInspectorPreference(candidate)) {
+      throw new Error("The inspector preference command must be valid.");
+    }
+    inspectorPreference = {
+      ...inspectorPreference,
+      collapsed: candidate.collapsed,
+      recoveryReason: null,
+      widthPx: candidate.widthPx,
+    };
+    await fulfillApi(route, inspectorPreference, {
+      traceId: "trace-r1-04-inspector-put",
+    });
+  });
 
   await page.route(gridPreferenceEndpoint, async (route) => {
     const request = route.request();
@@ -603,11 +636,16 @@ async function setInspectorWidth(
   locale: TestLocale,
   width: number,
 ): Promise<void> {
-  const control = page.getByRole("slider", {
-    name: translate(locale, "Inspector width"),
+  expect(width).toBe(340);
+  const separator = page.getByRole("separator", {
+    name: translate(locale, "Resize inspector"),
   });
-  await control.fill(String(width));
-  await expect(control).toHaveValue(String(width));
+  if (await separator.isVisible()) {
+    await separator.dblclick();
+    await expect(separator).toHaveAttribute("aria-valuenow", String(width));
+  } else {
+    await expect(separator).toBeHidden();
+  }
 }
 
 async function expectMainContentVerticalGeometry(
@@ -1318,7 +1356,9 @@ test.describe("@visual R1-04 grid personalization evidence", () => {
       });
       await page.evaluate(async () => document.fonts.ready);
       await resetScreenshotScrollPosition(page);
-      if (profile.nominal.width === 1440 && profile.zoom === 1) {
+      const capturesHeaderBrand =
+        profile.nominal.width === 1440 && profile.zoom === 1;
+      if (capturesHeaderBrand) {
         const wordmark = page.locator(
           'img[data-brand-context="wordmark-dark"]',
         );
@@ -1349,16 +1389,18 @@ test.describe("@visual R1-04 grid personalization evidence", () => {
         expect(wordmarkState.naturalWidth).toBeGreaterThan(0);
         expect(wordmarkState.height).toBeGreaterThan(0);
         expect(wordmarkState.width).toBeGreaterThan(0);
-        await expect(page.locator(".app-header__brand")).toHaveScreenshot(
-          `r1-04-header-brand-${profile.locale}-1440x900-100.png`,
-          { animations: "disabled" },
-        );
       }
 
       await expect(page).toHaveScreenshot(
         `r1-04-grid-${profile.locale}-${String(profile.nominal.width)}x${String(profile.nominal.height)}-${String(profile.zoom * 100)}.png`,
         { fullPage: false },
       );
+      if (capturesHeaderBrand) {
+        await expect(page.locator(".app-header__brand")).toHaveScreenshot(
+          `r1-04-header-brand-${profile.locale}-1440x900-100.png`,
+          { animations: "disabled" },
+        );
+      }
     });
   }
 });

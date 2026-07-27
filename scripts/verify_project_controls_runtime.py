@@ -204,8 +204,8 @@ def npi_request(
             "X-Request-ID": request_id,
             "X-Trace-ID": fixture_trace_id(idempotency_key),
         }
-        if csrf_token is not None:
-            headers["X-Frappe-CSRF-Token"] = csrf_token
+    if csrf_token is not None:
+        headers["X-Frappe-CSRF-Token"] = csrf_token
     result = request(
         opener,
         base_url,
@@ -2252,6 +2252,14 @@ def verify_route_disable_switch(
             and bff._p4_05_routes_disabled(
                 "npi_core.project_controls_api.get_project_controls"
             )
+            and bff._p4_05_routes_disabled(
+                "npi_core.inspector_preferences_api."
+                "get_my_work_inspector_preference"
+            )
+            and bff._p4_05_routes_disabled(
+                "npi_core.inspector_preferences_api."
+                "set_my_work_inspector_preference"
+            )
             and not bff._p4_05_routes_disabled(
                 "npi_core.project_work_api.get_project_work_context"
             ),
@@ -2319,6 +2327,22 @@ def verify_route_disable_http_probe(
             None,
             200,
             None,
+        ),
+        (
+            "my-work-inspector-get",
+            "GET",
+            "/api/npi/v1/me/preferences/my-work-inspector",
+            None,
+            200,
+            None,
+        ),
+        (
+            "my-work-inspector-put",
+            "PUT",
+            "/api/npi/v1/me/preferences/my-work-inspector",
+            {},
+            422,
+            "VALIDATION_FAILED",
         ),
         (
             "global-learning",
@@ -2455,7 +2479,9 @@ def verify_route_disable_http_probe(
             path,
             method=method,
             payload=payload,
-            csrf_token=csrf_token if method == "POST" else None,
+            csrf_token=(
+                csrf_token if method in {"POST", "PUT"} else None
+            ),
             idempotency_key=(
                 f"{FIXTURE_PREFIX}-route-probe-{expected_mode}-{index}"
                 if method == "POST"
@@ -2500,24 +2526,68 @@ def verify_route_disable_http_probe(
         return result.body
 
     direct_statuses: dict[str, int] = {}
-    for label, path in (
+    for (
+        label,
+        method,
+        path,
+        payload,
+        recovered_status,
+        recovered_code,
+    ) in (
         (
             "direct-my-work",
+            "GET",
             (
                 "/api/method/npi_core.my_work_api.get_my_work"
                 "?view=all&limit=1"
             ),
+            None,
+            200,
+            None,
         ),
         (
             "direct-global-learning",
+            "GET",
             (
                 "/api/method/"
                 "npi_core.project_controls_api.search_project_learning"
                 "?limit=1"
             ),
+            None,
+            200,
+            None,
+        ),
+        (
+            "direct-my-work-inspector-get",
+            "GET",
+            (
+                "/api/method/npi_core.inspector_preferences_api."
+                "get_my_work_inspector_preference"
+            ),
+            None,
+            200,
+            None,
+        ),
+        (
+            "direct-my-work-inspector-put",
+            "PUT",
+            (
+                "/api/method/npi_core.inspector_preferences_api."
+                "set_my_work_inspector_preference"
+            ),
+            {},
+            422,
+            "VALIDATION_FAILED",
         ),
     ):
-        result = npi_request(administrator, base_url, path)
+        result = npi_request(
+            administrator,
+            base_url,
+            path,
+            method=method,
+            payload=payload,
+            csrf_token=csrf_token if method == "PUT" else None,
+        )
         direct_statuses[label] = result.status
         response_body = direct_body(result, label)
         if expected_mode == "disabled":
@@ -2532,9 +2602,8 @@ def verify_route_disable_http_probe(
             )
         else:
             require(
-                result.status == 200
-                and response_body.get("code")
-                != "PROJECT_COLLABORATION_ROUTES_DISABLED",
+                result.status == recovered_status
+                and response_body.get("code") == recovered_code,
                 f"Recovered direct Project collaboration route {label} drifted",
             )
         require(
