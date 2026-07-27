@@ -2,10 +2,10 @@
 
 Status: `R1-05 READY — R1 SHARED BRIDGE`
 
-Recovery time: `2026-07-27T06:44:34Z`
+Recovery time: `2026-07-27T08:06:38Z`
 
 Last synchronized bridge checkpoint:
-`3e0721a1b8be8dbd1b618d78a635b74d28cd0178`
+`fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
@@ -21,10 +21,12 @@ Required and only development branch:
   - `UX-027`: `TECHNICAL_VERIFIED_FOUNDATION`;
   - `UX-028`: `TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD`; and
   - `UX-035`: `TECHNICAL_VERIFIED_FOUNDATION`.
-- `FR-UX-040` and `FR-UX-041` remain
+- `FR-UX-040`, `FR-UX-041` and `FR-UX-043` remain
   `PLANNED_SHARED_UX_REMEDIATION`; R1-05 has not yet claimed implementation.
-- The current typed trace contains 281 unique IDs: 173 `PACK_CANONICAL`, 95
-  `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+- The current typed trace contains 282 unique IDs: 173 `PACK_CANONICAL`, 95
+  `DOCX_RECONCILED`, and 14 `ADDENDUM_DIRECT`. The added `FR-UX-043` row is an
+  append-only correction; historical R1-01 and earlier Gate evidence retain
+  their original 281-row counts.
 - R1 is an inserted bridge, not a new controller Phase.
 - Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its external UAT is unsigned.
 - Phase 4 remains `PASS` and its historical evidence is unchanged.
@@ -37,16 +39,17 @@ Required and only development branch:
 
 Execute only:
 
-`R1-05 — Resizable panes and field attachment primitives`
+`R1-05 — Resizable panes, field attachment, and icon action primitives`
 
 Requirement IDs:
 
 - `FR-UX-040`
 - `FR-UX-041`
+- `FR-UX-043`
 
 Use:
 
-- the indexed requirement and coverage rows for those two IDs;
+- the indexed requirement and coverage rows for those three IDs;
 - `docs/UX_INTERACTION_SPEC.md`;
 - `docs/LOCALIZATION_SPEC.md`;
 - `design/UI_VISUAL_BASELINE.md`;
@@ -72,7 +75,11 @@ Use:
    type/size guidance, progress, scanner-owned state and visible failure.
 6. After registration, expose exact revision/hash, permission and
    confidentiality truth. A raw private URL is never authorization.
-7. Add literal-English source text, complete direct `zh`/`zh-TW`
+7. Route compact icon-first secondary actions through the approved local icon
+   adapter. Icon-only controls require translated accessible names/tooltips,
+   keyboard/focus/disabled states and a no-hover path; high-risk, ambiguous or
+   primary actions retain visible labels.
+8. Add literal-English source text, complete direct `zh`/`zh-TW`
    translations, component/browser/accessibility tests and affected
    trilingual visual evidence.
 
@@ -85,6 +92,9 @@ Use:
   upload, scanner, viewer or external-retrieval policy.
 - Do not use a drawer as the primary sustained-work inspector.
 - Do not expose a raw private URL as a stable business link or access grant.
+- Do not copy GitHub branding, import vendor icons directly or add an
+  unapproved Primer/Octicons dependency. GitHub may inform only compact
+  micro-interactions; Siemens iX Classic remains the sole primary baseline.
 - Do not disturb R1-04 personal/shared-view separation or activate its held
   publisher authority, export or bulk business commands.
 - Do not begin R1-06 or R1-07, resume P5-01, activate `Core.png`, connect

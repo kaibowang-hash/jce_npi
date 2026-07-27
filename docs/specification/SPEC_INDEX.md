@@ -48,7 +48,8 @@
 - The historical 2026-07-21 DOCX XML cross-check remains import evidence.
 - On 2026-07-25 deterministic OOXML extraction produced 229 unique
   requirements and 43 Tooling source columns; the reviewed crosswalk produced
-  a 281-ID typed trace. `scripts/verify_v1_2_reconciliation.py` validates
-  generated artifacts, set arithmetic, the original Pack-ID digest, and the
-  exact brand package.
+  a 281-ID typed trace. The append-only 2026-07-27 `FR-UX-043` correction
+  produces the current 282-ID trace.
+  `scripts/verify_v1_2_reconciliation.py` validates generated artifacts, set
+  arithmetic, the original Pack-ID digest, and the exact brand package.
 - Original input artifacts remain at repository root and are ignored; the normalized DOCX copy is retained under `docs/reference/`.

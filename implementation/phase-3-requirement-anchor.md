@@ -13,8 +13,10 @@ instructions and are not rewritten.
 - Deterministic OOXML extraction resolves the former 228 count as 229 unique
   DOCX requirements.
 - The former 173-row Pack trace is the immutable pre-reconciliation inventory.
-  The current union has 281 IDs: 173 `PACK_CANONICAL`, 95
-  `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+  R1-01 produced a 281-ID union at its historical checkpoint. The append-only
+  R1-05 re-anchor adds user-approved `FR-UX-043`; the current union has 282
+  IDs: 173 `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 14
+  `ADDENDUM_DIRECT`.
 - The former DOCX-only families now have machine rows and executable task
   placement. Existing Phase 3 evidence does not automatically mark their
   aliases or acceptance deltas implemented.

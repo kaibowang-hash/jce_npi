@@ -44,6 +44,18 @@ NPI One 的终端界面必须以 **Siemens Industrial Experience (iX) 与经典�
 - 仅为“现代感”引入动画、渐变或玻璃效果；
 - 直接套用 Frappe Desk 主题后称为专业工程软件。
 
+### 2.5 图标与紧凑动作
+- 图标必须通过 `frontend/src/ui-adapters/` 的本地适配层映射；领域页面不得
+  直接导入第三方图标 API、品牌图标或另建图标体系。
+- 熟悉、低风险、上下文明确的次级动作可采用 icon-first；仅图标动作必须
+  有翻译后的可访问名称和 tooltip，并覆盖键盘、焦点、活动、禁用和无
+  hover 场景。
+- 高风险、不可逆、主动作或含义可能混淆的动作必须保留可见文字；颜色和
+  图标不能成为唯一含义。
+- 可参考 GitHub 的紧凑 overflow、inline 和 sidebar 微交互，但 Siemens
+  iX Classic/经典工程布局仍是唯一主要基线；不得复制 GitHub 品牌、颜色，
+  也不得引入未经批准的 Primer/Octicons 依赖。
+
 ## 3. 经典工程应用布局
 
 ### 3.1 固定区域

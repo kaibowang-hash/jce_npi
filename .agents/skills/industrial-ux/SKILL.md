@@ -22,6 +22,13 @@ Create a classic, professional engineering product based on Siemens Industrial E
 - Worklist/tree-table for queues and cross-object work.
 - Object Page for Project/Tooling/Trial/Change.
 - Resizable split panes and docked inspector for engineering workspace.
+- Route compact icon-first secondary actions only through the repository-owned
+  local icon adapter. Give every icon-only action a translated accessible name
+  and tooltip, keyboard access, visible focus, disabled state and a non-hover
+  discovery path. Retain visible text for primary, high-risk or ambiguous
+  actions. Keep Siemens as the sole primary design baseline; do not copy
+  GitHub branding, import vendor icons directly or add unapproved
+  Primer/Octicons.
 - Impact Review for high-risk commands.
 - One visual primary action.
 - SourceBadge + SyncBadge for shared objects.
@@ -38,6 +45,10 @@ Create a classic, professional engineering product based on Siemens Industrial E
 - Are failures and partial execution honest?
 - Is status understandable without color?
 - Does keyboard/focus behavior work?
+- Do icon-only actions have translated names/tooltips and non-hover discovery,
+  while primary, high-risk and ambiguous actions retain visible text?
+- Are all icons routed through the local adapter with no GitHub branding,
+  direct vendor import or unapproved Primer/Octicons dependency?
 - Is a Desk page leaking into the primary flow?
 
 ## Evidence

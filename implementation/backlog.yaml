@@ -190,7 +190,7 @@ milestones:
     title: My Work integration and contextual activity
 - id: R1
   name: V1.2 reconciliation and shared UX bridge
-  exit_gate: Reconciled 281-ID trace and accepted shared UX/brand changes pass a Level 3 bridge gate before P5-01 resumes
+  exit_gate: Reconciled 282-ID trace and accepted shared UX/brand changes pass a Level 3 bridge gate before P5-01 resumes
   tasks:
   - id: R1-01
     title: DOCX Pack reconciliation addendum and machine trace
@@ -236,10 +236,11 @@ milestones:
     - industrial-ux
     - frappe-i18n
   - id: R1-05
-    title: Resizable panes and field attachment primitives
+    title: Resizable panes, field attachment, and icon action primitives
     requirements:
     - FR-UX-040
     - FR-UX-041
+    - FR-UX-043
     skills:
     - industrial-ux
     - frappe-i18n

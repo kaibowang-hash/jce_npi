@@ -68,6 +68,9 @@ EBOM 发布创建 10 个 Item，其中目标系统报告部分成功。
 - 列宽拖动/auto-fit/reset/键盘调整按用户+视图+表版本持久化；
 - 折叠导航和 resizable pane 保留项目、选中、筛选、滚动和焦点上下文；
 - 字段/附件显示 required/editability/source/lock reason/scan/progress/hash；
+- 紧凑 icon-first 动作仅通过批准的本地图标适配层，并具有翻译后的名称/
+  tooltip、键盘、焦点和禁用态；高风险/含义不明的主动作保留可见文字，
+  且无 GitHub 品牌、直接供应商图标导入或未批准的 Primer/Octicons 依赖；
 - LaunchFlow 仅使用品牌 CSV 允许的精确资产/场景，技术身份保持不变；
 - favicon、pre-shell loading、dark/light logo、compact source identity 和
   website footer 均有可访问名称与对比度证据；

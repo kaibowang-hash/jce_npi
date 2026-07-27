@@ -14,8 +14,9 @@ Starting checkpoint:
 ## 2026-07-25 reconciliation amendment
 
 P5-00 and the original five-task allocation below remain truthful historical
-Gate evidence. The current typed trace contains 281 IDs rather than the
-pre-reconciliation 173, and the retained P5-01 backend checkpoint is
+Gate evidence. The current typed trace contains 282 IDs rather than the
+pre-reconciliation 173; the append-only addition is `FR-UX-043` under R1-05,
+and the retained P5-01 backend checkpoint is
 `930b5a28cb995df12f251994a36f7502525ed94a`.
 
 Before any further P5-01 product work:

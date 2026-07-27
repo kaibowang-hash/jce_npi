@@ -9,8 +9,9 @@
 `PHASE_STATUS.yaml`、`NEXT_ACTION.md`、`LAST_RUN.md` 和当前 Requirement
 Anchor；聊天记忆不构成状态事实。
 
-2026-07-25 的 additive reconciliation 已用 281-ID typed trace 取代旧的
-Pack-only completeness 结论，但不回写既有 Gate 证据。R1 bridge 完成前，
+2026-07-25 的 additive reconciliation 建立了 281-ID typed trace；
+2026-07-27 按用户批准计划追加 `FR-UX-043` 后，当前 trace 为 282 IDs
+（173/95/14）。该追加修正不回写既有 Gate 证据。R1 bridge 完成前，
 P5-01 产品任务保持 checkpointed/held。
 
 品牌开发只允许使用 `docs/Brand Asset/Brand Asset Instruction.csv` 和同

@@ -17,10 +17,7 @@ def _png_chunk(chunk_type: bytes, payload: bytes) -> bytes:
     crc = zlib.crc32(chunk_type)
     crc = zlib.crc32(payload, crc) & 0xFFFFFFFF
     return (
-        struct.pack(">I", len(payload))
-        + chunk_type
-        + payload
-        + struct.pack(">I", crc)
+        struct.pack(">I", len(payload)) + chunk_type + payload + struct.pack(">I", crc)
     )
 
 
@@ -119,6 +116,52 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
+    def test_fr_ux_043_is_allocated_to_r1_05(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        self.assertEqual(
+            by_id["FR-UX-043"],
+            {
+                "requirement_id": "FR-UX-043",
+                "priority": "P0",
+                "phase": "5",
+                "status": "PLANNED_SHARED_UX_REMEDIATION",
+                "source": "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+                "evidence": "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+                "trace_kind": "ADDENDUM_DIRECT",
+                "canonical_ids": "FR-UX-043",
+            },
+        )
+        addendum = self.verifier.ADDENDUM.read_text(encoding="utf-8")
+        self.assertIn("| FR-UX-043 | P0 |", addendum)
+        self.assertIn("Append-only amendment: 2026-07-27", addendum)
+        self.assertIn("the user-approved 2026-07-26 amended autopilot plan", addendum)
+        backlog = (self.verifier.ROOT / "implementation/backlog.yaml").read_text(
+            encoding="utf-8"
+        )
+        r1_05 = backlog.split("  - id: R1-05\n", 1)[1].split("  - id: R1-06\n", 1)[0]
+        self.assertIn("    - FR-UX-043\n", r1_05)
+        industrial_ux_skill = (
+            self.verifier.ROOT / ".agents/skills/industrial-ux/SKILL.md"
+        ).read_text(encoding="utf-8")
+        for required_guard in (
+            "repository-owned\n  local icon adapter",
+            "translated accessible name",
+            "Retain visible text for primary, high-risk or ambiguous\n  actions",
+            "unapproved Primer/Octicons",
+        ):
+            self.assertIn(required_guard, industrial_ux_skill)
+        definition_of_done = (self.verifier.ROOT / "AGENTS.md").read_text(
+            encoding="utf-8"
+        )
+        for required_guard in (
+            "icon-first 次级动作仅通过仓库本地图标适配层",
+            "名称/tooltip、键盘、焦点、禁用和非 hover 路径",
+            "主动作、高风险或含义不明",
+            "Primer/Octicons 依赖",
+        ):
+            self.assertIn(required_guard, definition_of_done)
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
 
@@ -139,9 +182,7 @@ class V12ReconciliationTests(unittest.TestCase):
                 ),
                 (
                     "dimension",
-                    _png_document(
-                        width=self.verifier.MAX_BRAND_PNG_DIMENSION + 1
-                    ),
+                    _png_document(width=self.verifier.MAX_BRAND_PNG_DIMENSION + 1),
                     "dimensions",
                 ),
                 (
@@ -197,9 +238,7 @@ class V12ReconciliationTests(unittest.TestCase):
             (
                 "animation",
                 _png_document(
-                    extra_chunks=(
-                        _png_chunk(b"acTL", struct.pack(">II", 1, 0)),
-                    )
+                    extra_chunks=(_png_chunk(b"acTL", struct.pack(">II", 1, 0)),)
                 ),
                 "animated PNG chunks",
             ),

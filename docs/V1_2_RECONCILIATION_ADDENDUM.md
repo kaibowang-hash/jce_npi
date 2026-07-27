@@ -3,6 +3,7 @@
 Status: `ACCEPTED_ADDITIVE_RECONCILIATION`
 
 Date: 2026-07-25
+Append-only amendment: 2026-07-27
 
 ## 1. Authority and intent
 
@@ -12,6 +13,8 @@ This addendum implements the user-directed reconciliation based on:
 - the repository V1.2 Execution Pack;
 - the 2026-07-25 reconciliation report supplied with the instruction to
   proceed; and
+- the user-approved 2026-07-26 amended autopilot plan, which adds
+  `FR-UX-043` to UX-A3/R1-05 without rewriting prior evidence; and
 - `docs/Brand Asset/Brand Asset Instruction.csv` and the exact assets beside
   it, which are the sole authority for brand-asset use.
 
@@ -35,8 +38,8 @@ Deterministic extraction of the authoritative DOCX requirement annex produces:
 | Same IDs in DOCX and pre-reconciliation Pack | 134 |
 | DOCX IDs absent from the pre-reconciliation Pack | 95 |
 | Pack-only normalized IDs | 39 |
-| New clarification IDs in this addendum | 13 |
-| Post-reconciliation machine trace IDs | 281 |
+| New clarification IDs in this addendum | 14 |
+| Post-reconciliation machine trace IDs | 282 |
 
 The 95 former gaps are `UX-001..036`, `ARCH-001..012`,
 `FR-TX-001..018`, `COD-001..022`, and `I18N-001..007`.
@@ -118,6 +121,7 @@ normalized aggregate model.
 | FR-UX-040 | P0 | Docked panes and sustained-work inspectors resize from the actual boundary and remember layout. | Boundary drag, double-click reset, integrated collapse and keyboard resize are covered by accessibility and visual tests. | Accepted |
 | FR-UX-041 | P0 | Fields and attachments expose requiredness, editability, source, lock reason, validation/unit and complete upload/scan/progress/failure truth. | Upload supports clear/remove, drag/drop and picker; registered revision/hash, permission and confidentiality are visible; no raw private URL grants access. | Accepted |
 | FR-UX-042 | P0 | My Work may use inline row expansion for quick triage, with drawer/Object Page fallback for sustained work. | Filter, scroll, grouping and selection survive expansion and fallback navigation. | Pending DR-REC-001 |
+| FR-UX-043 | P0 | Compact icon-first action affordances use the approved local icon adapter. GitHub interaction patterns may inform micro-interactions, but Siemens remains the only primary design baseline. | Icon-only actions have translated accessible names/tooltips and keyboard/focus/disabled states; high-risk or ambiguous primary actions remain visibly labelled; no GitHub branding, direct vendor icon import or unapproved Primer/Octicons dependency is introduced. | Accepted; source boundary resolved by DR-REC-005 |
 | FR-PRN-001 | P0 | Provide a server-side Frappe Print Format registry/mapping by object type, project type, Gate/state, language, effective version and copy control. | Normal users initiate printing through the SPA/BFF and never need Desk. | Accepted foundation; exact forms pending |
 | FR-PRN-002 | P0 | Controlled output is rendered from an immutable snapshot with source/version, language, print actor/time, QR/hash, watermark/copy state and audit. | Reprinting the same controlled snapshot is traceable and cannot silently substitute newer live data. | Accepted foundation |
 | FR-PRN-003 | P0 | Define controlled domain print-form coverage, permissions and required signatures. | Every enabled form has an owner, signer rule, locale evidence and retention/copy policy. | Pending DR-REC-003/004 |
@@ -188,7 +192,7 @@ This addendum passes only when:
 - the DOCX extraction contains exactly 229 unique requirements;
 - the Tooling mapping contains exactly 43 unique source columns;
 - the coverage matrix reproduces the accepted category counts;
-- all 229 DOCX IDs and all 13 clarification IDs are present in the 281-ID
+- all 229 DOCX IDs and all 14 clarification IDs are present in the 282-ID
   trace union;
 - backlog, roadmap, acceptance, decisions, risks, deviations and required
   inputs agree with the scoped delivery sequence;

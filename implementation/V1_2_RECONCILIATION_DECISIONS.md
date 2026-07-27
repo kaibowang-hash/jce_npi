@@ -1,6 +1,6 @@
 # V1.2 Reconciliation Decision Requests
 
-Date: 2026-07-25
+Date: 2026-07-25; append-only FR-UX-043 clarification recorded 2026-07-27
 
 These are Class-B decisions from the accepted reconciliation. Each hold is
 scoped to its dependent requirement; none authorizes a guessed default.
@@ -11,7 +11,7 @@ scoped to its dependent requirement; none authorizes a guessed default.
 | DR-REC-002 | Variance exception color | A: every non-zero difference is abnormal; B: only outside a versioned tolerance is abnormal; C: per-metric policy chooses A/B. | C with B as the safe common policy; never infer a tolerance. | `PENDING_PRODUCT_OWNER`; blocks final FR-TX-020 visual semantics. |
 | DR-REC-003 | Controlled paper forms and wet signatures | Select exact forms, document owners, required signers, wet/electronic signature and retention rules. | Start with generic snapshot/registry infrastructure; enable no controlled form without its approved mapping. | `PENDING_BUSINESS_POLICY`; blocks FR-PRN-003 forms, not FR-PRN-001/002 foundation. |
 | DR-REC-004 | Print delivery/copy numbering | A: controlled PDF only; B: PDF plus browser print; C: B plus numbered controlled copies. | A until copy-control policy exists. | `PENDING_PRODUCT_OWNER`; blocks browser/direct-copy claims. |
-| DR-REC-005 | Icon sources | A: existing iX/company adapters and supplied company brand assets; B: add Octicons through dependency/license ADR. | A. | `RESOLVED_BY_CURRENT_PACK_AND_USER_ASSET_RULE`; Octicons are not approved. |
+| DR-REC-005 | Icon sources | A: existing iX/company adapters and supplied company brand assets; B: add Octicons through dependency/license ADR. | A. | `RESOLVED_BY_CURRENT_PACK_AND_USER_ASSET_RULE`; governs FR-UX-043. Compact icon actions use the existing local adapter; GitHub branding, direct vendor imports and unapproved Primer/Octicons dependencies are not approved. |
 | DR-REC-006 | ERP/JCE display identity | Supply approved display text, icon package, usage rules and legal wording, or retain current ERPNext display identity. | Activate the approved `JCE Core` display name and exact `Core.png` only in Phase 8/M7-09; retain the current runtime display until that task passes and keep `ERPNEXT` as the stable internal system code. | `RESOLVED_BY_USER_SUPPLIED_CORE_ASSET`; `Core.png`, its CSV usage rule and the approved `JCE Core` display name are allocated to Phase 8/M7-09. |
 | DR-REC-007 | Tooling List value semantics | Classify each relevant source column as Customer Standard, estimate, TP measured actual or calculated result, including effectivity. | Approve a versioned mapping overlay; never infer from column names alone. | `PENDING_BUSINESS_DATA_OWNER`; blocks formal import mapping activation, not parser/provenance work. |
 | DR-REC-008 | Import rollback cutoff | Define whether rollback is allowed after downstream references, approvals, trials, exports or integrations. | Allow only unused-batch rollback; otherwise preserve history and use forward correction. | `PENDING_BUSINESS_POLICY`; destructive downstream rollback remains denied. |

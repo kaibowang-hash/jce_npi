@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-27T06:44:34Z`
+Updated: `2026-07-27T08:06:38Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f9b71-27d4-7c91-9a58-7258e08a6307`
@@ -12,11 +12,13 @@ Updated: `2026-07-27T06:44:34Z`
 - Last synchronized product checkpoint:
   `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
   the R1-01 task checkpoint)
-- Current bridge checkpoint: R1-01 through R1-04 are `PASS`; R1-03 passed
-  its triggered `LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`, and R1-04 passed
-  its `LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`
+- Current synchronized bridge checkpoint:
+  `fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`; R1-01 through R1-04 are
+  `PASS`, R1-03 passed its triggered
+  `LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`, and R1-04 passed its
+  `LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`
 - Current controller task:
-  `R1-05 — Resizable panes and field attachment primitives`
+  `R1-05 — Resizable panes, field attachment, and icon action primitives`
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -38,6 +40,11 @@ Updated: `2026-07-27T06:44:34Z`
 - `implementation/REQUIREMENT_TRACEABILITY.csv`
 - `implementation/V1_2_RECONCILIATION_DECISIONS.md`
 - the current Requirement Anchors, contracts and accepted ADRs
+
+The current typed trace contains 282 unique IDs: 173 `PACK_CANONICAL`, 95
+`DOCX_RECONCILED` and 14 `ADDENDUM_DIRECT`. The 2026-07-27 append-only
+correction places `FR-UX-043` in R1-05/UX-A3 without rewriting the historical
+281-row R1-01 checkpoint or any earlier Gate evidence.
 
 Brand development has one sole source:
 `docs/Brand Asset/Brand Asset Instruction.csv`, the exact five LaunchFlow SVGs
@@ -64,6 +71,11 @@ the seven ordered view schemas and Unicode search limits have final regression
 coverage. R1-05 and R1-06 remain in the shared bridge; R1-07 remains
 scoped to DR-REC-001. Their cumulative Shell/design/i18n changes must pass the
 complete triggered Level 3 bridge Gate before P5-01 product work resumes.
+
+Before R1-05 product code, its independent planning checkpoint re-anchors the
+user-approved `FR-UX-043` requirement, generator, verifier and task plan only.
+It changes no React/Frappe runtime, API, schema, permission or production
+dependency boundary.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and

@@ -58,3 +58,15 @@ Current resolutions:
 - The seven unique Tooling List gaps are scheduled into the specialized Phase
   6 import task with a safe inspection Skill, while production column
   semantics and rollback cutoffs remain scoped decisions.
+
+## 2026-07-27 append-only FR-UX-043 correction
+
+The user-approved 2026-07-26 amended plan contains `FR-UX-043`, but the
+2026-07-25 repository addendum and generator predate that instruction. The ID
+is appended as `P0`, Phase 5, `ADDENDUM_DIRECT`, self-canonical and allocated
+to R1-05/UX-A3. The current union is therefore 282 IDs: 173
+`PACK_CANONICAL`, 95 `DOCX_RECONCILED` and 14 `ADDENDUM_DIRECT`.
+
+This corrects current machine coverage only. The historical 281-ID R1-01
+checkpoint, its validation counts and every earlier Gate conclusion remain
+unchanged.

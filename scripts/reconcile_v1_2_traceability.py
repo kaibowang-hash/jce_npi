@@ -28,6 +28,7 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-040", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-041", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
+    ("FR-UX-043", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-PRN-001", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
     ("FR-PRN-002", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
@@ -281,10 +282,10 @@ def validate(
     requirements: list[dict[str, str]],
     coverage_rows: list[dict[str, str]],
 ) -> None:
-    if len(rows) != 281:
-        raise TraceError(f"expected 281 reconciliation trace rows; found {len(rows)}")
+    if len(rows) != 282:
+        raise TraceError(f"expected 282 reconciliation trace rows; found {len(rows)}")
     trace_ids = [row["requirement_id"] for row in rows]
-    if len(set(trace_ids)) != 281:
+    if len(set(trace_ids)) != 282:
         raise TraceError("reconciliation trace IDs are not unique")
 
     docx_ids = {row["requirement_id"] for row in requirements}

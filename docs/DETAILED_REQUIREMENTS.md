@@ -7,8 +7,9 @@
 机器 Pack。精确原文与验收在
 `implementation/V1_2_DOCX_REQUIREMENTS.csv`，历史覆盖分类在
 `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`。本文件保留原 173
-Pack 需求并列出 13 个新增澄清 ID；不得把 consolidated Pack ID 当作删除
-原 DOCX ID 的理由。
+Pack 需求；R1-01 曾列出当时的 13 个新增澄清 ID，2026-07-27
+append-only 修正后当前为 14 个。不得把 consolidated Pack ID 当作删除原
+DOCX ID 的理由。
 
 
 ## 5.0 统一 UI、交互与领域 API
@@ -57,6 +58,7 @@ Pack 需求并列出 13 个新增澄清 ID；不得把 consolidated Pack ID 当�
 | FR-UX-040 | P0 | 停靠面板/检查器通过实际边界拖动调整并记住布局。 | 支持边界拖动、双击重置、集成折叠和键盘调整；抽屉仅用于短时任务。 |
 | FR-UX-041 | P0 | 字段和附件明确必填、可编辑性、来源、锁定原因、校验/单位及上传/扫描状态。 | 上传支持清除、拖放、选择器、进度/失败；注册后显示精确修订/哈希/密级且无原始私有URL授权。 |
 | FR-UX-042 | P0 | My Work 可按页使用行内展开快速分诊，复杂/持续工作回退抽屉或对象页。 | 展开和回退保留筛选、滚动、分组和选中状态；待 DR-REC-001 批准。 |
+| FR-UX-043 | P0 | 紧凑、图标优先的动作必须通过已批准的本地图标适配层；GitHub 交互仅可参考微交互，Siemens 仍是唯一主要设计基线。 | 仅图标动作具有翻译后的可访问名称/tooltip 及键盘、焦点、禁用状态；高风险或含义不明的主动作保留可见文字；不得引入 GitHub 品牌、直接供应商图标导入或未经批准的 Primer/Octicons 依赖。 |
 
 
 

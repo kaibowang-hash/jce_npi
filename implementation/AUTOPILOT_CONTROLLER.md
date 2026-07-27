@@ -21,11 +21,12 @@ The Execution Pack means the repository's actual `GOAL.md`, contracts, docs,
 design rules, specifications, implementation records, prompts, localization
 material, and Skills; this controller coordinates that Pack and never replaces
 it with a second product specification. The 2026-07-25 reconciliation addendum
-amends the Pack additively: all 229 DOCX IDs, 39 Pack-only normalized IDs and
-13 clarification IDs remain visible in the 281-row trace. Only reversible
-implementation details may be selected without a business decision. A
-material conflict is recorded as a Decision Request and never resolved by
-silently overwriting an authority.
+and the append-only 2026-07-27 `FR-UX-043` correction amend the Pack
+additively: all 229 DOCX IDs, 39 Pack-only normalized IDs and 14 clarification
+IDs remain visible in the current 282-row trace. The historical 281-row R1-01
+checkpoint remains unchanged. Only reversible implementation details may be
+selected without a business decision. A material conflict is recorded as a
+Decision Request and never resolved by silently overwriting an authority.
 
 ## Permanent product and ownership boundaries
 
@@ -216,12 +217,12 @@ pending until that proof is produced in Codespaces.
   (`PASS — LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`). R1 is an inserted
   bridge, not a replacement controller Phase.
 - Current controller task:
-  `R1-05 — Resizable panes and field attachment primitives`.
+  `R1-05 — Resizable panes, field attachment, and icon action primitives`.
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
-- Current requirement inventory: 281 unique trace rows — 173
-  `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 13 `ADDENDUM_DIRECT`.
+- Current requirement inventory: 282 unique trace rows — 173
+  `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 14 `ADDENDUM_DIRECT`.
 - Current reconciliation authorities:
   `docs/V1_2_RECONCILIATION_ADDENDUM.md`,
   `implementation/V1_2_DOCX_REQUIREMENTS.csv`,

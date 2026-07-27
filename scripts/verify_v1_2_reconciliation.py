@@ -25,7 +25,7 @@ BRAND_INSTRUCTIONS = BRAND_DIRECTORY / "Brand Asset Instruction.csv"
 EXPECTED_TRACE_KINDS = {
     "PACK_CANONICAL": 173,
     "DOCX_RECONCILED": 95,
-    "ADDENDUM_DIRECT": 13,
+    "ADDENDUM_DIRECT": 14,
 }
 EXPECTED_PACK_ID_SET_SHA256 = (
     "2150b062153317c2b3f06362c3d3b00aff25f10b2bdaebbb452ebda1e5f666fb"
@@ -49,6 +49,7 @@ ADDENDUM_IDS = {
     "FR-UX-040",
     "FR-UX-041",
     "FR-UX-042",
+    "FR-UX-043",
     "FR-PRN-001",
     "FR-PRN-002",
     "FR-PRN-003",
@@ -208,7 +209,7 @@ EXPECTED_BRAND_INSTRUCTIONS = {
         "",
     ),
     "Core.png": (
-        'Standard LOGO for JCE Core or Erpnext. Use this LOGO to replace text '
+        "Standard LOGO for JCE Core or Erpnext. Use this LOGO to replace text "
         '"Erpnext" or "JCE Core".',
         "",
     ),
@@ -279,7 +280,7 @@ def verify_trace_sets() -> None:
     coverage_ids = _require_unique(
         coverage, "docx_requirement_id", 229, "coverage matrix"
     )
-    trace_ids = _require_unique(trace, "requirement_id", 281, "traceability")
+    trace_ids = _require_unique(trace, "requirement_id", 282, "traceability")
     _require_unique(tooling_mapping, "source_column", 43, "Tooling List field mapping")
 
     if coverage_ids != docx_ids:
@@ -318,9 +319,7 @@ def verify_trace_sets() -> None:
         "implementation/evidence/reconciliation/r1-02-validation.md",
     }
     actual_brand_evidence = {
-        value.strip()
-        for value in brand_row["evidence"].split(";")
-        if value.strip()
+        value.strip() for value in brand_row["evidence"].split(";") if value.strip()
     }
     if (
         brand_row["phase"],
@@ -335,14 +334,34 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "FR-BR-001 must retain its complete R1-02 runtime evidence set"
         )
-    for requirement_id, (expected_status, expected_evidence) in (
-        EXPECTED_R1_03_TRACE.items()
+    icon_action_row = by_id["FR-UX-043"]
+    if (
+        icon_action_row["priority"],
+        icon_action_row["phase"],
+        icon_action_row["status"],
+        icon_action_row["source"],
+        icon_action_row["evidence"],
+        icon_action_row["trace_kind"],
+        icon_action_row["canonical_ids"],
+    ) != (
+        "P0",
+        "5",
+        "PLANNED_SHARED_UX_REMEDIATION",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        "ADDENDUM_DIRECT",
+        "FR-UX-043",
     ):
+        raise ReconciliationVerificationError(
+            "FR-UX-043 must retain its exact R1-05 append-only trace state"
+        )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_03_TRACE.items():
         row = by_id[requirement_id]
         actual_evidence = {
-            value.strip()
-            for value in row["evidence"].split(";")
-            if value.strip()
+            value.strip() for value in row["evidence"].split(";") if value.strip()
         }
         if (
             row["phase"],
@@ -351,11 +370,7 @@ def verify_trace_sets() -> None:
         ) != (
             "5",
             expected_status,
-            (
-                "ADDENDUM_DIRECT"
-                if requirement_id == "FR-UX-039"
-                else "DOCX_RECONCILED"
-            ),
+            ("ADDENDUM_DIRECT" if requirement_id == "FR-UX-039" else "DOCX_RECONCILED"),
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the verified R1-03 trace state"
@@ -372,14 +387,13 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} references missing R1-03 evidence files: "
                 f"{missing_evidence}"
             )
-    for requirement_id, (expected_status, expected_evidence) in (
-        EXPECTED_R1_04_TRACE.items()
-    ):
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_04_TRACE.items():
         row = by_id[requirement_id]
         actual_evidence = {
-            value.strip()
-            for value in row["evidence"].split(";")
-            if value.strip()
+            value.strip() for value in row["evidence"].split(";") if value.strip()
         }
         if (
             row["phase"],
@@ -388,11 +402,7 @@ def verify_trace_sets() -> None:
         ) != (
             "5",
             expected_status,
-            (
-                "ADDENDUM_DIRECT"
-                if requirement_id == "FR-UX-038"
-                else "DOCX_RECONCILED"
-            ),
+            ("ADDENDUM_DIRECT" if requirement_id == "FR-UX-038" else "DOCX_RECONCILED"),
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the verified R1-04 trace state"
@@ -666,9 +676,7 @@ def _verify_png_is_safe(path: Path) -> None:
                 )
             channels = PNG_CHANNELS_BY_COLOR_TYPE[color_type]
             bytes_per_sample = 1 if bit_depth <= 8 else 2
-            decoded_byte_bound = (
-                pixels * channels * bytes_per_sample + height * 8
-            )
+            decoded_byte_bound = pixels * channels * bytes_per_sample + height * 8
             if decoded_byte_bound > MAX_BRAND_PNG_DECODED_BYTES:
                 raise ReconciliationVerificationError(
                     f"brand PNG decoded-byte budget is outside the accepted "

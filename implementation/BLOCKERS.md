@@ -31,6 +31,13 @@ or actor mapping exists until the exact “administrator” and “Project lead�
 authority policy is approved. Personal preferences, R1-05 and other
 independent bridge work continue without inferring that policy.
 
+The append-only `FR-UX-043` trace correction is not a blocker and does not
+change any historical Gate. `DR-REC-005` already resolves its source boundary
+to the existing local iX/company icon adapter. R1-05 may implement bounded
+icon-first secondary actions, but GitHub branding, direct vendor imports,
+unapproved Primer/Octicons dependencies and icon-only high-risk/ambiguous
+primary actions remain prohibited.
+
 ## Current P5-01 scope
 
 Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.

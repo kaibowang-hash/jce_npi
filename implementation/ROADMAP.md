@@ -69,12 +69,13 @@ Exit：安全、API 和迁移基线通过；没有业务用户依赖 Desk。
 
 在 P5-01 后端 checkpoint 后、继续产品代码前完成：
 
-1. DOCX–Pack additive addendum、229 行原需求、coverage matrix、281 行带
-   trace kind 的机器追踪和 43 列 Tooling mapping；
+1. DOCX–Pack additive addendum、229 行原需求、coverage matrix、R1-01
+   的 281 行追踪加 FR-UX-043 追加修正后共 282 行带 trace kind 的机器追踪，
+   以及 43 列 Tooling mapping；
 2. 只使用 `docs/Brand Asset/` CSV/资产的 LaunchFlow display adapter；
 3. 可折叠域导航、上下文 quick-create/command foundation；
 4. 可拖动/持久化列宽、个人/共享视图和受控 export foundation；
-5. 边界拖动分栏、字段可编辑性及附件状态 primitives；
+5. 边界拖动分栏、字段可编辑性、附件状态和本地 icon-first 动作 primitives；
 6. 低风险限时撤销契约、模块 prototype gate，以及在既有尺寸之外新增
    1440×900 三语言 P0 视觉矩阵；
 7. My Work inline expansion 仅在 DR-REC-001 批准后执行。

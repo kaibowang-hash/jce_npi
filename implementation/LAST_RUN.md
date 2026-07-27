@@ -1,5 +1,60 @@
 # Last Run
 
+## R1-05 FR-UX-043 requirement re-anchor PASS; product task ready — 2026-07-27T08:06:38Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting synchronized bridge checkpoint:
+  `fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`.
+- Planning-only atomic task:
+  append the user-approved `FR-UX-043` requirement and allocate it to
+  `R1-05 / UX-A3` before product code.
+- Result:
+  `PASS — REQUIREMENT RE-ANCHOR ONLY; PRODUCT TASK READY`.
+- Current product task remains:
+  `R1-05 — Resizable panes, field attachment, and icon action primitives`.
+- Held product task remains:
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED`; not `PASS`).
+
+### Delivered boundary
+
+- Added one P0, Phase 5, `PLANNED_SHARED_UX_REMEDIATION`,
+  `ADDENDUM_DIRECT`, self-canonical `FR-UX-043` row and allocated it beside
+  `FR-UX-040`/`FR-UX-041` in R1-05.
+- Updated the current trace to 282 unique rows: 173 `PACK_CANONICAL`, 95
+  `DOCX_RECONCILED`, 14 `ADDENDUM_DIRECT`.
+- Updated the current addendum/spec/controller/task/decision/risk records,
+  applicable `industrial-ux` Skill, root Definition of Done, generator,
+  verifier, focused regression and staged R1-05 plan.
+- Preserved the historical 281-row R1-01/R1-02 validation and every earlier
+  Phase 3/4/P5/R1 Gate conclusion.
+- Changed no React/Frappe runtime, API, contract, schema, permission,
+  translation catalog, production dependency or external integration.
+
+### Validation
+
+- Reconciliation unit suite: `PASS — 11/11`.
+- Standalone reconciliation verifier: `PASS`.
+- Trace generator apply plus clean check: `PASS`.
+- Current trace cardinality/distribution:
+  `PASS — 282/282; 173/95/14`.
+- Focused Black, flake8 and Python compile checks: `PASS`.
+- `industrial-ux` Skill structure validation: `PASS`.
+- Repository YAML safe parse: `PASS — 5 files`.
+- Product-path and historical Phase 3/4/5 evidence diffs: `PASS — empty`.
+- Independent requirement/trace/Skill/DoD and commit-scope re-audits:
+  `PASS — 0 remaining findings`.
+- `git diff --check`: `PASS`.
+
+Durable evidence:
+
+- `implementation/evidence/reconciliation/r1-05-plan.md`
+- `implementation/evidence/reconciliation/r1-05-reanchor-validation.md`
+
+This result completes only the append-only Stage 0 checkpoint. R1-05 product
+implementation begins after its independent commit/push. R1-06 and R1-07
+remain inactive, and P5-01 remains held.
+
 ## R1-04 grid personalization PASS; R1-05 activated — 2026-07-27T06:44:34Z
 
 - Branch: `codex/npi-v1.2-implementation`.
