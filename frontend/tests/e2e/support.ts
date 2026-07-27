@@ -335,7 +335,7 @@ export async function expectIndustrialComputedStyles(
       auditSquareSurface(panel, "panel");
     }
     for (const control of document.querySelectorAll(
-      ".page .npi-input, .page .npi-select, .photo-action__button, .section-anchors button, .rectangular-tabs button",
+      ".page .npi-input, .page .npi-select, .attachment-truth__picker-button, .section-anchors button, .rectangular-tabs button",
     )) {
       auditSquareSurface(control, "ordinary control");
       if (isVisible(control)) {

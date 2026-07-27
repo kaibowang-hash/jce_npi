@@ -43,6 +43,12 @@ implementation/evidence/reconciliation/r1-05/stage-1/coverage/*
 implementation/evidence/reconciliation/r1-05/stage-1/playwright-results/*
 !implementation/evidence/reconciliation/r1-05/stage-1/playwright-results/.last-run.json
 implementation/evidence/reconciliation/r1-05/stage-1/playwright-report/
+!implementation/evidence/reconciliation/r1-05/stage-2/coverage/
+implementation/evidence/reconciliation/r1-05/stage-2/coverage/*
+!implementation/evidence/reconciliation/r1-05/stage-2/coverage/coverage-summary.json
+implementation/evidence/reconciliation/r1-05/stage-2/playwright-results/*
+!implementation/evidence/reconciliation/r1-05/stage-2/playwright-results/.last-run.json
+implementation/evidence/reconciliation/r1-05/stage-2/playwright-report/
 .pytest_cache/
 __pycache__/
 *.py[cod]

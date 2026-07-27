@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-07-27T11:08:13Z`
+Updated: `2026-07-27T14:00:01Z`
 
 ## Authority and operating mode
 
@@ -210,8 +210,8 @@ pending until that proof is produced in Codespaces.
 ## Current checkpoint
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
-- Current synchronized bridge checkpoint and R1-05 starting boundary:
-  `88fca2bd898ca08432c5a5f5eec9f25dc963fc14`.
+- Current synchronized bridge checkpoint and R1-05 Stage 2 starting boundary:
+  `749665e5428208f0453832b7f394eddcb6deebca`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
   machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
   assets` (`PASS — LEVEL 2`), `R1-03 — App Shell collapsed navigation command
@@ -224,8 +224,10 @@ pending until that proof is produced in Codespaces.
   `R1-05 — Resizable panes, field attachment, and icon action primitives`
   (`IN_PROGRESS`). Stage 1 (`FR-UX-040`) passed the
   `LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
-  `TECHNICAL_VERIFIED`. Stage 2 (`FR-UX-041`) is `READY` and is the only
-  active next slice. Stage 3 (`FR-UX-043`) remains planned/inactive.
+  `TECHNICAL_VERIFIED`. Stage 2 (`FR-UX-041`) passed the
+  `LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE` and is
+  `TECHNICAL_VERIFIED`. Stage 3 (`FR-UX-043`) is `READY` and is the only
+  active next slice.
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
@@ -268,12 +270,20 @@ pending until that proof is produced in Codespaces.
   clean exact visual cases, all 18 controlled route disable/recovery
   contracts, zero residual inspector `DefaultValue` rows and independent
   audits with zero findings.
-- Execute only R1-05 Stage 2 next. Stage 3 remains planned until its Stage 2
-  Gate; R1-06 remains inactive until all R1-05 stages pass. R1-07 remains
+- R1-05 Stage 2 added reusable field and attachment truth primitives, a
+  fail-closed injected transport state machine, visible local-file identity
+  through asynchronous/failure states, URL-free exact registered revision
+  facts, local-only Trial integration and read-only Gate evidence integration.
+  Its Level 2 evidence records 614 frontend unit tests, 2,735 complete direct
+  trilingual sources, focused browser `12/12`, affected page `20/20`, Gate
+  visual `23/23`, Trial visual `24/24`, zero npm vulnerabilities and an
+  independent post-repair PASS.
+- Execute only R1-05 Stage 3 next. R1-06 remains inactive until all R1-05
+  stages pass. R1-07 remains
   scoped to `DR-REC-001`. The shared Shell/design/i18n bridge requires its
   triggered Level 3 Gate before P5-01 resumes.
 
 Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
 Reuse the passing Phase 4, P5-00, P5-01 checkpoint, R1-01 through R1-04 and
-R1-05 Stage 1 evidence; do not repeat or rewrite them merely to restore
-context. See `implementation/LAST_RUN.md` for the exact latest result.
+R1-05 Stage 1/Stage 2 evidence; do not repeat or rewrite them merely to
+restore context. See `implementation/LAST_RUN.md` for the exact latest result.

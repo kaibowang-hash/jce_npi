@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-27T11:08:13Z`
+Updated: `2026-07-27T14:00:01Z`
 
 ## Active hard blockers
 
@@ -14,9 +14,10 @@ R1-01 and R1-02 passed their Level 2 Gates, and R1-03 and R1-04 passed their
 triggered task-level Level 3 Gates. R1-05 is current and remains
 `IN_PROGRESS`. Its Stage 1 `FR-UX-040` slice passed the
 `LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
-`TECHNICAL_VERIFIED`. Stage 2 `FR-UX-041` is `READY` and is the only active
-next slice. Stage 3 `FR-UX-043` remains planned/inactive, and R1-06 remains
-inactive.
+`TECHNICAL_VERIFIED`. Stage 2 `FR-UX-041` passed the
+`LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE` and is
+`TECHNICAL_VERIFIED`. Stage 3 `FR-UX-043` is `READY` and is the only active
+next slice; R1-06 remains inactive.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
@@ -190,4 +191,12 @@ must preserve that boundary.
   cases, a clean 210-case exact visual matrix, all 18 controlled routes
   disabled/recovered, zero residual inspector `DefaultValue` rows and
   independent audits with zero findings. This closes only `FR-UX-040`; R1-05
-  Stage 2 is the sole next task and there is no active Hard Blocker.
+  Stage 2 was activated without an active Hard Blocker.
+- R1-05 Stage 2 passed its bounded Level 2 field/attachment truth Gate on
+  2026-07-27 from starting boundary
+  `749665e5428208f0453832b7f394eddcb6deebca`. Its final evidence records 614
+  frontend unit tests, 2,735 complete direct trilingual sources, focused
+  browser `12/12`, affected page `20/20`, Gate visual `23/23`, Trial visual
+  `24/24`, zero dependency vulnerabilities and an independent post-repair
+  PASS. This closes only `FR-UX-041`; Stage 3 is the sole next task and there
+  is no active Hard Blocker.

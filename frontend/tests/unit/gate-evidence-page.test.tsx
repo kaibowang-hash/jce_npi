@@ -348,7 +348,17 @@ describe("live Gate Review Room", () => {
       within(evidenceTable).getByText("Private file revision"),
     ).toBeVisible();
     expect(within(evidenceTable).getByText("Scan pending")).toBeVisible();
-    expect(screen.getByText("SYN-DIMENSIONAL-REPORT.pdf")).toBeVisible();
+    const registeredTruth = screen.getByRole("region", {
+      name: "Registered attachment truth",
+    });
+    expect(
+      within(registeredTruth).getByText("SYN-DIMENSIONAL-REPORT.pdf"),
+    ).toBeVisible();
+    expect(within(registeredTruth).getByText("4".repeat(64))).toBeVisible();
+    expect(
+      within(registeredTruth).getAllByText("Not provided by this workspace"),
+    ).toHaveLength(7);
+    expect(within(registeredTruth).queryByRole("link")).not.toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", {

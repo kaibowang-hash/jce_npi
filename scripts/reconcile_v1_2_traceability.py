@@ -26,7 +26,7 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-038", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-039", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-040", "P0", "5", "TECHNICAL_VERIFIED"),
-    ("FR-UX-041", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
+    ("FR-UX-041", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
     ("FR-UX-043", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
     ("FR-PRN-001", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
@@ -161,6 +161,24 @@ R1_05_STAGE_1_EVIDENCE = {
         "implementation/evidence/reconciliation/r1-05-stage-1-validation.md",
     ),
 }
+R1_05_STAGE_2_EVIDENCE = {
+    "FR-UX-041": (
+        "frontend/src/components/attachment-workflow.ts",
+        "frontend/src/components/field-attachment-primitives.tsx",
+        "frontend/src/pages/trial-page.tsx",
+        "frontend/src/pages/gate-evidence-page.tsx",
+        "frontend/src/styles/app.css",
+        "frontend/tests/unit/field-attachment-primitives.test.tsx",
+        "frontend/tests/unit/pages-and-shell.test.tsx",
+        "frontend/tests/unit/gate-evidence-page.test.tsx",
+        "frontend/tests/e2e/r1-05-field-attachments.spec.ts",
+        "frontend/tests/e2e/states-locales-accessibility.spec.ts",
+        "apps/npi_core/npi_core/translations/zh.csv",
+        "apps/npi_core/npi_core/translations/zh-TW.csv",
+        "frontend/src/generated/catalogs.ts",
+        "implementation/evidence/reconciliation/r1-05-stage-2-validation.md",
+    ),
+}
 
 
 class TraceError(RuntimeError):
@@ -249,6 +267,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_1_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_2_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -283,6 +303,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_04_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_1_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_2_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

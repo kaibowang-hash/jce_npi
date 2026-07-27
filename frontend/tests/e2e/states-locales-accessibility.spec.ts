@@ -162,14 +162,19 @@ test.describe("WCAG and stable engineering-layout checks", () => {
     );
     await expect(photoInput).toBeAttached();
     await expect(photoInput).toHaveClass(/visually-hidden/);
-    await expect(page.getByText("Add trial photo")).toBeVisible();
+    await expect(page.getByText("Choose a local file")).toBeVisible();
     await photoInput.setInputFiles({
       name: "trial-cavity-3.png",
       mimeType: "image/png",
       buffer: Buffer.from("phase-3-photo-fixture"),
     });
     await expect(
-      page.getByText("Prototype photo selected. No file was uploaded."),
+      page.getByText(
+        "This file is selected locally and has not been uploaded.",
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Clear local selection" }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Submit trial conclusion" }),
@@ -198,7 +203,9 @@ test.describe("WCAG and stable engineering-layout checks", () => {
       buffer: Buffer.from("phase-3-phone-photo-fixture"),
     });
     await expect(
-      page.getByText("Prototype photo selected. No file was uploaded."),
+      page.getByText(
+        "This file is selected locally and has not been uploaded.",
+      ),
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Submit trial conclusion" }).click();

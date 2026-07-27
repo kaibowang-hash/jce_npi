@@ -9,6 +9,10 @@ import {
 } from "../api/gate-review-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import {
+  AttachmentField,
+  type RegisteredAttachmentTruth,
+} from "../components/field-attachment-primitives";
+import {
   DockedInspector,
   MetricStrip,
   ObjectHeader,
@@ -1157,6 +1161,23 @@ function SelectedEvidenceDetail({
       </p>
     );
   }
+  const registeredAttachment: RegisteredAttachmentTruth | null =
+    selectedEvidence.file
+      ? {
+          capabilities: { kind: "unavailable" },
+          confidentiality: { kind: "unavailable" },
+          exactRevision: String(selectedEvidence.revision),
+          fileName: selectedEvidence.file.fileName,
+          mimeType: selectedEvidence.file.mimeType,
+          permission: { kind: "unavailable" },
+          private: { kind: "unavailable" },
+          provenance: { kind: "unavailable" },
+          scanObservedAt: { kind: "unavailable" },
+          scanState: selectedEvidence.file.scanState,
+          sha256: selectedEvidence.objectHash,
+          sizeBytes: selectedEvidence.file.sizeBytes,
+        }
+      : null;
   return (
     <div className="gate-evidence-detail">
       <DefinitionList
@@ -1174,15 +1195,19 @@ function SelectedEvidenceDetail({
             value: selectedEvidence.sourceGlobalId,
             exempt: "identifier",
           },
-          {
-            label: t("Exact revision"),
-            value: formatNumber(locale, selectedEvidence.revision, 0),
-          },
-          {
-            label: t("Object hash"),
-            value: selectedEvidence.objectHash,
-            exempt: "identifier",
-          },
+          ...(!selectedEvidence.file
+            ? [
+                {
+                  label: t("Exact revision"),
+                  value: formatNumber(locale, selectedEvidence.revision, 0),
+                },
+                {
+                  label: t("Object hash"),
+                  value: selectedEvidence.objectHash,
+                  exempt: "identifier" as const,
+                },
+              ]
+            : []),
           {
             label: t("Recorded"),
             value: formatDateTime(locale, selectedEvidence.createdAt),
@@ -1192,38 +1217,16 @@ function SelectedEvidenceDetail({
             value: selectedEvidence.createdBy,
             exempt: "business-data",
           },
-          ...(selectedEvidence.file
-            ? [
-                {
-                  label: t("File name"),
-                  value: selectedEvidence.file.fileName,
-                  exempt: "business-data" as const,
-                },
-                {
-                  label: t("File media type"),
-                  value: selectedEvidence.file.mimeType,
-                  exempt: "identifier" as const,
-                },
-                {
-                  label: t("File size"),
-                  value: (
-                    <>
-                      {formatNumber(locale, selectedEvidence.file.sizeBytes, 0)}{" "}
-                      <span data-language-exempt="unit">B</span>
-                    </>
-                  ),
-                },
-                {
-                  label: t("Scan State"),
-                  value: gateEvidenceScanStateLabel(
-                    t,
-                    selectedEvidence.file.scanState,
-                  ),
-                },
-              ]
-            : []),
         ]}
       />
+      {registeredAttachment ? (
+        <AttachmentField
+          access="read_only"
+          id={`gate-evidence-${selectedEvidence.globalId}`}
+          label={t("Registered attachment truth")}
+          state={{ attachment: registeredAttachment, kind: "registered" }}
+        />
+      ) : null}
     </div>
   );
 }

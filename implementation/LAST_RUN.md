@@ -1,5 +1,72 @@
 # Last Run
 
+## R1-05 Stage 2 field/attachment truth Level 2 PASS; Stage 3 ready — 2026-07-27T14:00:01Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Stage 2 starting synchronized checkpoint:
+  `749665e5428208f0453832b7f394eddcb6deebca`.
+- Atomic slice:
+  `R1-05 Stage 2 — FR-UX-041 field and attachment truth primitives`.
+- Result:
+  `PASS — LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE`.
+- R1-05 remains the current task and remains `IN_PROGRESS`.
+- `FR-UX-040` and `FR-UX-041` are `TECHNICAL_VERIFIED`.
+  `FR-UX-043` remains `PLANNED_SHARED_UX_REMEDIATION`; only Stage 3 is
+  `READY`.
+
+### Delivered boundary
+
+- Added reusable field truth for requiredness, editability, source/editable
+  system, locks, validation, units, exact version and effectivity.
+- Added an injected, fail-closed attachment workflow for loading, local
+  selection/validation, actual transport bytes, registration, registered
+  revision, scanner, failure, conflict and denied truth.
+- Preserved write-state monotonicity and visible file identity through
+  asynchronous/failure states; null, malformed and contradictory transport
+  results cannot hang, downgrade registered truth or reopen local mutation.
+- Integrated local-only Trial photo selection and URL-free read-only Gate File
+  Revision facts without adding an upload API, permission widening, raw
+  private URL or registered-file detach/delete/replacement behavior.
+- Added complete direct English-source/`zh`/`zh-TW` copy, industrial styling,
+  native progress brand color and affected exact visual evidence.
+- Added no public API/OpenAPI change, DocType, migration, authentication or
+  permission-model change, production dependency or external connection.
+
+### Validation
+
+- Canonical Node 24 frontend `npm run verify`: `PASS` — generated artifacts,
+  type/lint/format/style/boundary/UI/i18n, `614/614` unit tests in `27/27`
+  files, production build, install-script policy and both zero-vulnerability
+  dependency audits.
+- Frontend coverage: `PASS` — 85.51% statements, 83.61% branches, 89.33%
+  functions and 87.61% lines.
+- Affected unit group: `108/108 PASS`.
+- Frappe-compatible i18n: `PASS` — 2,735 literal English sources with complete
+  direct `zh`/`zh-TW` coverage.
+- Focused field/attachment browser and exact visuals: `12/12 PASS`.
+- Affected page behavior: `20/20 PASS`; Gate visual matrix: `23/23 PASS`;
+  final clean Trial visual matrix: `24/24 PASS` at unchanged zero tolerance.
+- Reconciliation generator freshness, `12/12` reconciliation tests,
+  standalone verifier and exact 282-row `173/95/14` trace state: `PASS`.
+- Independent post-repair review:
+  `PASS — all five original blockers closed`; TypeScript, ESLint, Prettier,
+  unit `37/37`, i18n, Playwright `12/12` and `git diff --check` independently
+  confirmed.
+- Security, privacy, immutable-revision, schema/migration/dependency,
+  rollback/recovery and historical Phase 4 evidence-preservation reviews:
+  `PASS`.
+
+Durable evidence:
+
+- `implementation/evidence/reconciliation/r1-05-stage-2-validation.md`
+- `implementation/evidence/reconciliation/r1-05/stage-2/coverage/coverage-summary.json`
+- `implementation/evidence/reconciliation/r1-05/stage-2/playwright-results/.last-run.json`
+
+This checkpoint completes only R1-05 Stage 2. It does not make R1-05 a
+completed bridge task, activate R1-06/R1-07, resume P5-01 or authorize a
+production upload/scanner policy. There is no active Hard Blocker; automatic
+continuation activates only Stage 3.
+
 ## R1-05 Stage 1 inspector pane Level 3 PASS; Stage 2 ready — 2026-07-27T11:08:13Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -116,7 +116,7 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
-    def test_r1_05_stage_1_trace_is_verified_without_advancing_later_stages(
+    def test_r1_05_stage_1_and_2_traces_are_verified_without_advancing_stage_3(
         self,
     ) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
@@ -148,17 +148,48 @@ class V12ReconciliationTests(unittest.TestCase):
             },
             self.verifier.EXPECTED_R1_05_STAGE_1_TRACE["FR-UX-040"][1],
         )
-        for requirement_id in ("FR-UX-041", "FR-UX-043"):
-            with self.subTest(requirement_id=requirement_id):
-                self.assertEqual(
-                    by_id[requirement_id]["status"],
-                    "PLANNED_SHARED_UX_REMEDIATION",
-                )
-                self.assertEqual(
-                    by_id[requirement_id]["evidence"],
-                    "implementation/V1_2_RECONCILIATION_DECISIONS.md",
-                )
+        field_attachment_row = by_id["FR-UX-041"]
+        self.assertEqual(
+            (
+                field_attachment_row["priority"],
+                field_attachment_row["phase"],
+                field_attachment_row["status"],
+                field_attachment_row["source"],
+                field_attachment_row["trace_kind"],
+                field_attachment_row["canonical_ids"],
+            ),
+            (
+                "P0",
+                "5",
+                "TECHNICAL_VERIFIED",
+                "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+                "ADDENDUM_DIRECT",
+                "FR-UX-041",
+            ),
+        )
+        self.assertEqual(
+            {
+                value.strip()
+                for value in field_attachment_row["evidence"].split(";")
+                if value.strip()
+            },
+            self.verifier.EXPECTED_R1_05_STAGE_2_TRACE["FR-UX-041"][1],
+        )
+        self.assertEqual(
+            by_id["FR-UX-043"]["status"],
+            "PLANNED_SHARED_UX_REMEDIATION",
+        )
+        self.assertEqual(
+            by_id["FR-UX-043"]["evidence"],
+            "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        )
         for _, expected_evidence in self.verifier.EXPECTED_R1_05_STAGE_1_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+        for _, expected_evidence in self.verifier.EXPECTED_R1_05_STAGE_2_TRACE.values():
             for evidence_path in expected_evidence:
                 self.assertTrue(
                     (self.verifier.ROOT / evidence_path).is_file(),

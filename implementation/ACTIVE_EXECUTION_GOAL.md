@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-27T11:08:13Z`
+Updated: `2026-07-27T14:00:01Z`
 
 - Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
 - Codex Goal ID: `019f9b71-27d4-7c91-9a58-7258e08a6307`
@@ -12,25 +12,26 @@ Updated: `2026-07-27T11:08:13Z`
 - Last synchronized product checkpoint:
   `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
   the R1-01 task checkpoint)
-- Current synchronized bridge checkpoint:
-  `88fca2bd898ca08432c5a5f5eec9f25dc963fc14`; R1-01 through R1-04 are
+- Current synchronized Stage 2 starting checkpoint:
+  `749665e5428208f0453832b7f394eddcb6deebca`; R1-01 through R1-04 are
   complete bridge tasks, R1-03 passed its triggered
   `LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`, and R1-04 passed its
-  `LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`
+  `LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`; R1-05 Stage 1 is the
+  committed predecessor to the passing Stage 2 slice
 - Current controller task:
   `R1-05 — Resizable panes, field attachment, and icon action primitives`
   (`IN_PROGRESS`)
-- Passing current-task checkpoint:
+- Passing current-task checkpoints:
   `R1-05 Stage 1 — FR-UX-040 live My Work inspector pane`
   (`PASS — LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT`;
-  `FR-UX-040` is `TECHNICAL_VERIFIED`)
-- Next and only active slice:
+  `FR-UX-040` is `TECHNICAL_VERIFIED`), and
   `R1-05 Stage 2 — FR-UX-041 field and attachment truth primitives`
-  (`READY`; `FR-UX-041` remains `PLANNED_SHARED_UX_REMEDIATION` until its
-  Gate passes)
-- Planned inactive slice:
+  (`PASS — LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE`;
+  `FR-UX-041` is `TECHNICAL_VERIFIED`)
+- Next and only active slice:
   `R1-05 Stage 3 — FR-UX-043 bounded icon-action foundation`
-  (`PLANNED_SHARED_UX_REMEDIATION`)
+  (`READY`; `FR-UX-043` remains `PLANNED_SHARED_UX_REMEDIATION` until its
+  own Gate passes)
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -84,19 +85,23 @@ coverage. R1-05 Stage 1 added one fixed actor-bound My Work inspector
 preference and a bounded pointer/keyboard/collapse pane boundary. Its public
 preference, shared-UI, runtime, accessibility and trilingual evidence passed
 the triggered Level 3 checkpoint; it advances only `FR-UX-040`.
-R1-05 remains `IN_PROGRESS`; only Stage 2 is active next, Stage 3 remains
-planned/inactive, and R1-06 remains inactive. R1-07 remains scoped to
+Stage 2 added bounded field/attachment truth presentation, a fail-closed
+injected transport state machine and URL-free Trial/Gate integrations. Its
+unit, browser, accessibility, trilingual, security and independent-review
+evidence passed the Level 2 Task Gate; it advances only `FR-UX-041`.
+R1-05 remains `IN_PROGRESS`; only Stage 3 is active next, and R1-06 remains
+inactive. R1-07 remains scoped to
 DR-REC-001. Their cumulative Shell/design/i18n changes must pass the complete
 triggered Level 3 bridge Gate before P5-01 product work resumes.
 
-The R1-05 starting boundary is
-`88fca2bd898ca08432c5a5f5eec9f25dc963fc14`. Stage 1 introduced no DocType,
-database migration, production dependency or external integration and left
-`FR-UX-041` and `FR-UX-043` planned.
+The R1-05 Stage 2 starting boundary is
+`749665e5428208f0453832b7f394eddcb6deebca`. Stage 2 introduced no public API,
+DocType, database migration, authentication/permission change, production
+dependency or external integration and left `FR-UX-043` planned.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
 `implementation/LAST_RUN.md`. Chat memory is non-authoritative. Reuse accepted
 Phase 4, P5-00, P5-01 checkpoint, R1-01 through R1-04 and R1-05 Stage 1
-evidence; resume only Stage 2 and do not repeat or rewrite passing work merely
-to restore context.
+and Stage 2 evidence; resume only Stage 3 and do not repeat or rewrite passing
+work merely to restore context.

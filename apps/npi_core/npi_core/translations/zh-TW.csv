@@ -28,7 +28,6 @@ Activity,活動
 Actor,操作人
 Actual cost,實際成本
 Actual value,實際值
-Add trial photo,新增試模照片
 Administration,管理
 Analysis in progress,分析進行中
 Analytics,分析
@@ -547,8 +546,6 @@ Reconciliation impact review,對帳影響評審
 "A submitted command would record the actor, reason, versions, result, and trace ID.",提交後的命令會記錄操作人、原因、版本、結果和追蹤編號。
 "A submitted command would record the source files, hashes, approver, reason, and trace ID.",提交後的命令會記錄原始檔、雜湊、核准人、原因和追蹤編號。
 "A submitted command would record the checklist versions, approver, reason, result, and trace ID.",提交後的命令會記錄檢查表版本、核准人、原因、結果和追蹤編號。
-Prototype photo selected. No file was uploaded.,已選取原型照片。未上傳任何檔案。
-The selected file is not an image. No upload was prepared.,所選檔案不是影像。未準備上傳。
 "A submitted command would record the actor, conclusion, reason, input hash, result, and trace ID.",提交後的命令會記錄操作人、結論、原因、輸入雜湊、結果和追蹤編號。
 Request ID,請求編號
 Client reference ID,用戶端參考編號
@@ -2669,3 +2666,70 @@ Stored pane layout was invalid. The default layout is active.,儲存的窗格版
 Select the supported My Work inspector schema.,請選擇支援的「我的工作」檢查器結構描述。
 Enter an inspector width within the supported range.,請輸入支援範圍內的檢查器寬度。
 The stored inspector preference is invalid.,已儲存的檢查器偏好無效。
+Editable,可編輯
+Conditionally editable,符合條件時可編輯
+Conditionally read only,條件限制為唯讀
+Access denied,拒絕存取
+Not validated,未驗證
+Valid,驗證通過
+Effective from {{date}},自 {{date}} 起生效
+Effective,已生效
+Superseded on {{date}},已於 {{date}} 被取代
+Not provided by this workspace,此工作區未提供
+No editable system,無可編輯系統
+Exact version,精確版本
+Effectivity,生效狀態
+Edit condition,編輯條件
+Lock reason,鎖定原因
+Local selection,本機選取
+File transport,檔案傳輸
+File registration,檔案登錄
+File scanning,檔案掃描
+No server write occurred,未發生伺服器寫入
+Server write is unconfirmed,伺服器寫入狀態未確認
+Registered revision retained,已保留登錄修訂版
+Not private,非私有
+Attachment permitted,允許附加附件
+Attachment not permitted,不允許附加附件
+Source reported available; blocked by scan state,來源回報可用；已因掃描狀態遭封鎖
+Registered attachment truth,已登錄附件事實
+Scan observed,掃描觀測時間
+Not observed,未觀測
+Privacy,私有狀態
+Confidentiality,機密等級
+Provenance,來源記錄
+Attachment permission,附加權限
+Preview capability,預覽能力
+Download capability,下載能力
+The registered revision is awaiting a scanner result. No safe-file capability is implied.,已登錄修訂版正在等待掃描結果。這不表示檔案可安全使用。
+"The scanner detected a threat. The registered revision remains visible for recovery, but no file action is available.",掃描器偵測到威脅。已登錄修訂版仍可見以便復原，但目前沒有可用的檔案操作。
+File scanning failed. Recovery requires an authorized server action; no retry or replacement is assumed.,檔案掃描失敗。復原需要獲得授權的伺服器操作；不得假定可以重試或取代。
+The scanner reported no threat for this exact registered revision.,掃描器報告此精確登錄修訂版未發現威脅。
+Drop a file for {{field}},將檔案拖放到{{field}}
+Choose a local file,選擇本機檔案
+or drop one file here,或將一個檔案拖放到此處
+Loading attachment truth,正在載入附件事實
+No local selection,沒有本機選取
+This field is read only and has no registered attachment.,此欄位為唯讀，且沒有已登錄附件。
+No file is selected and no transport has started.,未選擇檔案，也未開始傳輸。
+Local validation failed,本機驗證失敗
+This file is selected locally and has not been uploaded.,此檔案僅在本機選取，尚未上傳。
+Start file transport,開始檔案傳輸
+Clear local selection,清除本機選取
+File transport is not available in this workspace.,此工作區未提供檔案傳輸。
+Transporting file,正在傳輸檔案
+Actual file transport progress,實際檔案傳輸進度
+{{loaded}} of {{total}} bytes were reported by the transport.,傳輸程式報告已傳輸 {{loaded}} 位元組，共 {{total}} 位元組。
+{{loaded}} bytes were reported by the transport; total size was not provided.,傳輸程式報告了 {{loaded}} 位元組；未提供總大小。
+Transport is active. Byte progress was not provided by the transport.,傳輸正在進行。傳輸程式未提供位元組進度。
+Registering file,正在登錄檔案
+Transport completed and registration is awaiting a verified server result.,傳輸已完成，登錄正在等待經過驗證的伺服器結果。
+Retry file transport,重試檔案傳輸
+Reload attachment truth,重新載入附件事實
+This attachment field is read only.,此附件欄位為唯讀。
+The selected file is not an image. No transport was started.,所選檔案不是影像。未開始傳輸。
+The released Trial version is immutable.,已發佈的試模版本不可變更。
+Choose one image file. Selection remains local because this workspace has no approved file transport.,請選擇一個影像檔案。由於此工作區沒有核准的檔案傳輸，所選檔案僅保留在本機。
+Trial photo evidence,試模照片證據
+Use the picker or drop one image file. No upload or scanner result is implied.,使用選擇器或拖放一個影像檔案。這不表示檔案已上傳或已取得掃描結果。
+The local file selection is valid for this prototype field.,本機檔案選取符合此原型欄位的要求。

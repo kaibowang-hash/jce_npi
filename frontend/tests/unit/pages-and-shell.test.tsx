@@ -1384,7 +1384,15 @@ describe("read-only mutation boundaries", () => {
     expect(
       screen.getByRole("button", { name: "Submit trial conclusion" }),
     ).toBeDisabled();
-    expect(screen.getByLabelText("Add trial photo")).toBeDisabled();
+    expect(
+      screen.queryByLabelText("Choose a local file"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("This attachment field is read only."),
+    ).toBeVisible();
+    expect(
+      screen.getByText("The released Trial version is immutable."),
+    ).toBeVisible();
     trial.unmount();
 
     renderWithLocale(<ExecutionPage scenario="read_only" />);

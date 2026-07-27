@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { Scenario } from "../domain/view-models";
 import { activities } from "../fixtures/prototype";
 import { formatNumber, formatPercent } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button } from "../ui-adapters/npi-ui";
+import {
+  AttachmentField,
+  FieldTruth,
+} from "../components/field-attachment-primitives";
+import { useAttachmentWorkflow } from "../components/attachment-workflow";
 import { DockedInspector, ObjectHeader } from "../components/object-components";
 import {
   DefinitionList,
@@ -35,11 +40,18 @@ export default function TrialPage({
   const { locale, t } = useI18n();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [preparedReason, setPreparedReason] = useState<string | null>(null);
-  const [photoSelection, setPhotoSelection] = useState<{
-    fileName: string;
-    valid: boolean;
-  } | null>(null);
   const [activeTab, setActiveTab] = useState<TrialTab>("parameters");
+  const validateTrialPhoto = useCallback(
+    (file: File): string | null =>
+      file.type.startsWith("image/")
+        ? null
+        : t("The selected file is not an image. No transport was started."),
+    [t],
+  );
+  const photoWorkflow = useAttachmentWorkflow({
+    transport: null,
+    validateFile: validateTrialPhoto,
+  });
   const inheritedFrom = new URLSearchParams(globalThis.location.search).get(
     "inherit",
   );
@@ -175,45 +187,61 @@ export default function TrialPage({
               </small>
             </li>
           </ul>
-          <label
-            aria-disabled={scenario === "read_only"}
-            className={`photo-action${scenario === "read_only" ? " photo-action--disabled" : ""}`}
-          >
-            <input
-              accept="image/*"
-              aria-label={t("Add trial photo")}
-              capture="environment"
-              className="visually-hidden"
-              disabled={scenario === "read_only"}
-              onChange={(event) => {
-                const file = event.currentTarget.files?.[0];
-                if (!file) {
-                  setPhotoSelection(null);
-                  return;
-                }
-                setPhotoSelection({
-                  fileName: file.name,
-                  valid: file.type.startsWith("image/"),
-                });
-              }}
-              type="file"
-            />
-            <span className="photo-action__button">{t("Add trial photo")}</span>
-          </label>
-          {photoSelection ? (
-            <div className="scenario-banner" role="status">
-              <span>
-                {photoSelection.valid
-                  ? t("Prototype photo selected. No file was uploaded.")
-                  : t(
-                      "The selected file is not an image. No upload was prepared.",
-                    )}
-              </span>
-              <span data-language-exempt="business-data">
-                {photoSelection.fileName}
-              </span>
-            </div>
-          ) : null}
+          <FieldTruth
+            editableIn={scenario === "read_only" ? "NONE" : source.editableIn}
+            editability={
+              scenario === "read_only"
+                ? {
+                    kind: "read_only",
+                    reason: t("The released Trial version is immutable."),
+                  }
+                : { kind: "editable" }
+            }
+            effectivity={{ kind: "not_applicable" }}
+            exactVersion="T1"
+            help={t(
+              "Choose one image file. Selection remains local because this workspace has no approved file transport.",
+            )}
+            id="trial-photo-evidence"
+            label={t("Trial photo evidence")}
+            lockReason={
+              scenario === "read_only"
+                ? t("The released Trial version is immutable.")
+                : null
+            }
+            renderControl={(properties) => (
+              <AttachmentField
+                accept="image/*"
+                access={scenario === "read_only" ? "read_only" : "editable"}
+                capture="environment"
+                guidance={t(
+                  "Use the picker or drop one image file. No upload or scanner result is implied.",
+                )}
+                id={properties.id}
+                inputAccessibility={properties}
+                label={t("Trial photo evidence")}
+                workflow={photoWorkflow}
+              />
+            )}
+            required={false}
+            sourceSystem={source.sourceSystem}
+            unit={null}
+            validation={
+              photoWorkflow.state.kind === "local_invalid"
+                ? {
+                    kind: "invalid",
+                    message: photoWorkflow.state.message,
+                  }
+                : photoWorkflow.state.kind === "local_selected"
+                  ? {
+                      kind: "valid",
+                      message: t(
+                        "The local file selection is valid for this prototype field.",
+                      ),
+                    }
+                  : { kind: "not_validated" }
+            }
+          />
         </Panel>
         <Panel title={t("Trial record")}>
           <div

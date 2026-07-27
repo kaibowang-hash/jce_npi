@@ -5,7 +5,7 @@ Branch: `codex/npi-v1.2-implementation`
 Task:
 `R1-05 — Resizable panes, field attachment, and icon action primitives`
 Requirements: `FR-UX-040`, `FR-UX-041`, `FR-UX-043`
-Status: `IN_PROGRESS — STAGES 0–1 PASS; STAGE 2 READY`
+Status: `IN_PROGRESS — STAGES 0–2 PASS; STAGE 3 READY`
 Starting synchronized bridge checkpoint:
 `fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`
 
@@ -214,6 +214,33 @@ This transition makes only Stage 2 and `FR-UX-041` ready as the next
 implementation stage. Stage 3 and `FR-UX-043` remain planned and are not
 activated by the Stage 1 PASS. It does not resume held P5-01 work or widen any
 document, attachment, ERPNext or production authority.
+
+## Stage 2 validation and Stage 3-only transition
+
+Stage 2 starting synchronized checkpoint:
+`749665e5428208f0453832b7f394eddcb6deebca`.
+
+Stage 2 evidence:
+[R1-05 Stage 2 Validation — FR-UX-041 Field and Attachment Truth](r1-05-stage-2-validation.md).
+
+Result:
+`PASS — LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE`.
+
+The reusable field/attachment truth contracts, fail-closed injected transport
+workflow, visible async file identity, URL-free registered File Revision
+presentation, local-only Trial integration, read-only Gate integration,
+trilingual UI, accessibility and exact affected visual evidence passed their
+bounded Level 2 Gate. The linked validation is the evidence source for exact
+commands, counts, coverage, artifacts, security/rollback review and the
+independent post-repair PASS.
+
+`FR-UX-040` and `FR-UX-041` are `TECHNICAL_VERIFIED`. This transition
+activates only Stage 3 and `FR-UX-043`; `FR-UX-043` remains
+`PLANNED_SHARED_UX_REMEDIATION` until its own Gate passes. R1-05 as a whole
+remains `IN_PROGRESS`. R1-06 is not activated, R1-07 remains disabled under
+DR-REC-001, P5-01 remains held, and no document/file permission, registered
+revision mutation, production upload/scanner policy or external integration
+is widened.
 
 ## Rollback
 

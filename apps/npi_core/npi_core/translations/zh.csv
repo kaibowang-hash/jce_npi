@@ -28,7 +28,6 @@ Activity,活动
 Actor,操作人
 Actual cost,实际成本
 Actual value,实际值
-Add trial photo,添加试模照片
 Administration,管理
 Analysis in progress,分析进行中
 Analytics,分析
@@ -547,8 +546,6 @@ Reconciliation impact review,对账影响评审
 "A submitted command would record the actor, reason, versions, result, and trace ID.",提交后的命令会记录操作人、原因、版本、结果和跟踪编号。
 "A submitted command would record the source files, hashes, approver, reason, and trace ID.",提交后的命令会记录源文件、哈希、批准人、原因和跟踪编号。
 "A submitted command would record the checklist versions, approver, reason, result, and trace ID.",提交后的命令会记录检查表版本、批准人、原因、结果和跟踪编号。
-Prototype photo selected. No file was uploaded.,已选择原型照片。未上传任何文件。
-The selected file is not an image. No upload was prepared.,所选文件不是图像。未准备上传。
 "A submitted command would record the actor, conclusion, reason, input hash, result, and trace ID.",提交后的命令会记录操作人、结论、原因、输入哈希、结果和跟踪编号。
 Request ID,请求编号
 Client reference ID,客户端参考编号
@@ -2669,3 +2666,70 @@ Stored pane layout was invalid. The default layout is active.,存储的窗格布
 Select the supported My Work inspector schema.,请选择受支持的“我的工作”检查器架构。
 Enter an inspector width within the supported range.,请输入支持范围内的检查器宽度。
 The stored inspector preference is invalid.,已存储的检查器偏好无效。
+Editable,可编辑
+Conditionally editable,条件满足时可编辑
+Conditionally read only,条件限制为只读
+Access denied,拒绝访问
+Not validated,未验证
+Valid,验证通过
+Effective from {{date}},自 {{date}} 起生效
+Effective,已生效
+Superseded on {{date}},已于 {{date}} 被取代
+Not provided by this workspace,本工作区未提供
+No editable system,无可编辑系统
+Exact version,精确版本
+Effectivity,生效状态
+Edit condition,编辑条件
+Lock reason,锁定原因
+Local selection,本地选择
+File transport,文件传输
+File registration,文件注册
+File scanning,文件扫描
+No server write occurred,未发生服务器写入
+Server write is unconfirmed,服务器写入状态未确认
+Registered revision retained,已保留注册修订版
+Not private,非私有
+Attachment permitted,允许附加附件
+Attachment not permitted,不允许附加附件
+Source reported available; blocked by scan state,来源报告可用；已因扫描状态被阻止
+Registered attachment truth,已注册附件事实
+Scan observed,扫描观测时间
+Not observed,未观测
+Privacy,私有状态
+Confidentiality,保密级别
+Provenance,来源记录
+Attachment permission,附加权限
+Preview capability,预览能力
+Download capability,下载能力
+The registered revision is awaiting a scanner result. No safe-file capability is implied.,已注册修订版正在等待扫描结果。这不表示文件可安全使用。
+"The scanner detected a threat. The registered revision remains visible for recovery, but no file action is available.",扫描器检测到威胁。已注册修订版仍可见以便恢复，但当前没有可用的文件操作。
+File scanning failed. Recovery requires an authorized server action; no retry or replacement is assumed.,文件扫描失败。恢复需要获得授权的服务器操作；不得假定可以重试或替换。
+The scanner reported no threat for this exact registered revision.,扫描器报告此精确注册修订版未发现威胁。
+Drop a file for {{field}},将文件拖放到{{field}}
+Choose a local file,选择本地文件
+or drop one file here,或将一个文件拖放到此处
+Loading attachment truth,正在加载附件事实
+No local selection,没有本地选择
+This field is read only and has no registered attachment.,此字段为只读，且没有已注册附件。
+No file is selected and no transport has started.,未选择文件，也未开始传输。
+Local validation failed,本地验证失败
+This file is selected locally and has not been uploaded.,此文件仅在本地选中，尚未上传。
+Start file transport,开始文件传输
+Clear local selection,清除本地选择
+File transport is not available in this workspace.,此工作区未提供文件传输。
+Transporting file,正在传输文件
+Actual file transport progress,实际文件传输进度
+{{loaded}} of {{total}} bytes were reported by the transport.,传输程序报告已传输 {{loaded}} 字节，共 {{total}} 字节。
+{{loaded}} bytes were reported by the transport; total size was not provided.,传输程序报告了 {{loaded}} 字节；未提供总大小。
+Transport is active. Byte progress was not provided by the transport.,传输正在进行。传输程序未提供字节进度。
+Registering file,正在注册文件
+Transport completed and registration is awaiting a verified server result.,传输已完成，注册正在等待经过验证的服务器结果。
+Retry file transport,重试文件传输
+Reload attachment truth,重新加载附件事实
+This attachment field is read only.,此附件字段为只读。
+The selected file is not an image. No transport was started.,所选文件不是图像。未开始传输。
+The released Trial version is immutable.,已发布的试模版本不可更改。
+Choose one image file. Selection remains local because this workspace has no approved file transport.,请选择一个图像文件。由于此工作区没有获批的文件传输，所选文件仅保留在本地。
+Trial photo evidence,试模照片证据
+Use the picker or drop one image file. No upload or scanner result is implied.,使用选择器或拖放一个图像文件。这不表示文件已上传或已取得扫描结果。
+The local file selection is valid for this prototype field.,本地文件选择符合此原型字段的要求。
