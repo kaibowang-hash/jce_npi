@@ -83,6 +83,9 @@ class DevcontainerVerifierTest(unittest.TestCase):
             "@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b"
         )
         safe_workflow = """steps:
+  - uses: actions/checkout@v4
+    with: {fetch-depth: 0}
+  - uses: actions/setup-python@v5
   - run: sudo apt-get update
   - run: sudo apt-get install --yes ripgrep
   - run: bash scripts/verify-dev-config.sh
@@ -114,6 +117,7 @@ visual:
 """
         validate_ci_verification_tools(safe_workflow, visual_image)
         unsafe_variants = (
+            safe_workflow.replace("    with: {fetch-depth: 0}\n", ""),
             safe_workflow.replace("sudo apt-get update\n", ""),
             safe_workflow.replace("sudo apt-get install --yes ripgrep\n", ""),
             safe_workflow.replace(

@@ -221,12 +221,29 @@ def validate_ci_verification_tools(
             is not None
         )
 
+    repository_checkout = ci_workflow.find("- uses: actions/checkout@v4")
+    repository_fetch_depth = ci_workflow.find(
+        "with: {fetch-depth: 0}",
+        repository_checkout,
+    )
+    repository_python = ci_workflow.find(
+        "- uses: actions/setup-python@v5",
+        repository_checkout,
+    )
     apt_update = ci_workflow.find("sudo apt-get update")
     ripgrep_install = ci_workflow.find("sudo apt-get install --yes ripgrep")
     repository_verify = ci_workflow.find("- run: bash scripts/verify.sh")
     require(apt_update >= 0, "CI must refresh APT metadata before installing ripgrep")
     require(ripgrep_install >= 0, "CI must install the required ripgrep verifier")
     require(repository_verify >= 0, "CI must run the repository verifier")
+    require(
+        repository_checkout < repository_fetch_depth < repository_python,
+        "CI repository checkout must retain full history for PR secret scanning",
+    )
+    require(
+        ci_workflow.count("with: {fetch-depth: 0}") == 1,
+        "Only the repository verification job may require full Git history",
+    )
     require(
         apt_update < ripgrep_install < repository_verify,
         "CI must install ripgrep before running the repository verifier",
