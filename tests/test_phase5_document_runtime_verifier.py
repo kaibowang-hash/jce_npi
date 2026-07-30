@@ -140,6 +140,28 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             self.shell,
         )
 
+    def test_site_init_preserves_apps_registry_line_boundaries(self) -> None:
+        site_init = (ROOT / "scripts" / "init-npi-site.sh").read_text(
+            encoding="utf-8"
+        )
+        required_fragments = (
+            'local apps_file="${bench_path}/sites/apps.txt"',
+            '[[ -L "${apps_file}" || ! -f "${apps_file}" ]]',
+            "Bench application registry must be a physical file: ${apps_file}",
+            'tail -c 1 "${apps_file}" | od -An -tx1 | tr -d \'[:space:]\'',
+            '!= "0a"',
+            'printf \'\\n\' >>"${apps_file}"',
+            'grep -Fqx "${application}" "${apps_file}"',
+            'printf \'%s\\n\' "${application}" >>"${apps_file}"',
+        )
+        for fragment in required_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, site_init)
+        self.assertLess(
+            site_init.index('printf \'\\n\' >>"${apps_file}"'),
+            site_init.index('printf \'%s\\n\' "${application}" >>"${apps_file}"'),
+        )
+
     def test_runtime_uses_only_the_fixed_disposable_site(self) -> None:
         required_fragments = (
             'SITE_NAME = "npi.localhost"',

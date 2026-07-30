@@ -3,10 +3,10 @@
 Status:
 `P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T16:50:19Z`
+Recovery time: `2026-07-30T17:03:54Z`
 
 Latest complete CI recovery checkpoint:
-`7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21`
+`b500dfac18bac9260fed5a39140a0fdc2a112b9f`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -38,6 +38,12 @@ Required and only development branch:
 - Manual run `30563106063` installed both exact Python packages and confirmed
   exact Yarn, then failed a silent CLI version-rendering comparison before
   initialization; no controlled runtime result is claimed from that run.
+- The distribution-metadata repair passed complete normal CI `#82`, run
+  `30563401058`.
+- Manual run `30564025523` passed tool/Bench/database guards and created only
+  the fresh Site, then failed before NPI app installation because the pinned
+  Bench registry lacked a terminal newline. Its containers, volumes and
+  network were removed; no controlled document runtime result is claimed.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -71,11 +77,11 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Push and validate the bounded distribution-metadata version repair, then
-redispatch `.github/workflows/ci.yml` on the development branch. It must
-require installed Bench/uv metadata and the runner's Yarn version to equal
-the exact repository pins, initialize a fresh runner-local fixed disposable
-Frappe Site without touching retained local volumes, then run:
+Push and validate the bounded app-registry line-boundary repair, then
+redispatch `.github/workflows/ci.yml` on the development branch. It must keep
+the exact tool pins, initialize a fresh runner-local fixed disposable Frappe
+Site without touching retained local volumes, append each NPI app as its own
+registry line, then run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

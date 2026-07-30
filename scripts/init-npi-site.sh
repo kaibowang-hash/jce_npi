@@ -120,6 +120,7 @@ link_application() {
   local application="$1"
   local source_path="${repo_root}/apps/${application}"
   local target_path="${bench_path}/apps/${application}"
+  local apps_file="${bench_path}/sites/apps.txt"
 
   if [[ -L "${target_path}" ]]; then
     if [[ "$(readlink -f "${target_path}")" != "$(readlink -f "${source_path}")" ]]; then
@@ -134,8 +135,16 @@ link_application() {
   fi
 
   uv pip install --python "${bench_path}/env/bin/python" --no-deps --editable "${source_path}"
-  if ! grep -Fqx "${application}" "${bench_path}/sites/apps.txt"; then
-    printf '%s\n' "${application}" >>"${bench_path}/sites/apps.txt"
+  if [[ -L "${apps_file}" || ! -f "${apps_file}" ]]; then
+    echo "Bench application registry must be a physical file: ${apps_file}" >&2
+    exit 2
+  fi
+  if [[ -s "${apps_file}" ]] &&
+    [[ "$(tail -c 1 "${apps_file}" | od -An -tx1 | tr -d '[:space:]')" != "0a" ]]; then
+    printf '\n' >>"${apps_file}"
+  fi
+  if ! grep -Fqx "${application}" "${apps_file}"; then
+    printf '%s\n' "${application}" >>"${apps_file}"
   fi
 }
 

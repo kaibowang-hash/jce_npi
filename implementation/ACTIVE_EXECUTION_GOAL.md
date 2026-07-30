@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T16:50:19Z`
+Updated: `2026-07-30T17:03:54Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,7 +9,7 @@ Updated: `2026-07-30T16:50:19Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21`
+  `b500dfac18bac9260fed5a39140a0fdc2a112b9f`
 - Current controller task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE
@@ -85,6 +85,16 @@ Yarn, but a silent CLI presentation-string comparison returned nonzero before
 initialization. The bounded repair now uses exact installed distribution
 metadata for Bench/uv and retains the exact Yarn CLI version check.
 
+That repair checkpoint `b500dfac18bac9260fed5a39140a0fdc2a112b9f`
+passed normal CI `#82`, run `30563401058`, including the complete repository,
+`285/285` browser, fixed-Linux visual and both secret lanes. Manual run
+`30564025523` then passed tool and pinned Bench setup, created only the guarded
+fresh Site after the live database identity proof, and failed before NPI app
+installation because Bench's unterminated `apps.txt` joined `frappe` and
+`npi_core`. The runner removed both containers, both new volumes and its
+network. The bounded repair restores only the missing line boundary before an
+app-name append and rejects a missing registry.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -133,8 +143,8 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The first incomplete action is to push the bounded distribution-metadata
-version repair, let its normal PR CI pass, then redispatch the same CI
+The first incomplete action is to push the bounded Bench app-registry line
+boundary repair, let its normal PR CI pass, then redispatch the same CI
 workflow on the development branch. The job creates only fresh ephemeral
 runner volumes and does not touch the unavailable retained local volumes. It
 must run:
@@ -175,7 +185,9 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-`IN_PROGRESS` until the fixed controlled Site passes.
+`IN_PROGRESS`; the distribution-metadata repair is complete at
+`b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The fixed
+controlled Site has not yet passed.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

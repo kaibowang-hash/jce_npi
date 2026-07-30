@@ -242,6 +242,18 @@ second bounded repair therefore compares exact `frappe-bench` and `uv`
 versions through Python package metadata, retains the exact Yarn CLI version
 check, and still fails closed before initialization on any mismatch.
 
+The third dispatch, run `30564025523`, passed exact tool verification and
+pinned Frappe Bench initialization, started only the guarded disposable
+MariaDB/Redis services, passed the controlled database identity guard and
+created the fresh `npi.localhost` Frappe Site. It then failed before NPI app
+installation or the document verifier because the pinned Bench generated
+`sites/apps.txt` without a terminal newline and the first app append produced
+the invalid registry token `frappenpi_core`. Cleanup stopped and removed both
+containers, both new volumes and the runner-local network. The bounded repair
+adds only a checked line boundary before an app-name append; it rejects a
+missing or symlinked registry and does not delete, replace or reinterpret
+existing app entries.
+
 ## Pending controlled-Site proof
 
 The required command is:
@@ -250,10 +262,10 @@ The required command is:
 bash scripts/verify-frappe-runtime.sh --document-only
 ```
 
-It failed closed before migration or fixture writes because the fixed
-physical repository Bench does not exist. The repository preflight then
-confirmed that this host has no Docker CLI, Docker daemon or Compose v2.
-No production Site or external integration was contacted.
+On the current local host it failed closed before migration or fixture writes
+because the fixed physical repository Bench does not exist. The repository
+preflight then confirmed that this host has no Docker CLI, Docker daemon or
+Compose v2. No production Site or external integration was contacted.
 
 The verifier and shell contract are tested, but static proof cannot replace
 the required real Site result. Before P5-01 can pass:

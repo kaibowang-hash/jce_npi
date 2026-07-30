@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T16:50:19Z`
+Updated: `2026-07-30T17:03:54Z`
 
 ## Active hard blockers
 
@@ -89,6 +89,15 @@ returned nonzero before initialization. This remains a bounded CI setup
 defect, not a Hard Blocker or runtime result. The second repair uses exact
 installed distribution metadata for Bench/uv and retains exact Yarn
 verification before any stateful command.
+
+Manual dispatch `30564025523` then passed exact tool/Bench setup, Docker and
+the live database identity guard and created only the fresh disposable Site.
+It failed before NPI app installation because pinned Bench emitted
+`sites/apps.txt` without a terminal newline, causing the first app append to
+form `frappenpi_core`. Cleanup removed the runner-local containers, volumes
+and network. This is a bounded bootstrap defect, not a Hard Blocker or
+document runtime result; the repair only restores the missing line boundary
+and rejects a missing app registry.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`
