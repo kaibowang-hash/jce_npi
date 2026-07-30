@@ -3,10 +3,10 @@
 Status:
 `P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T16:39:02Z`
+Recovery time: `2026-07-30T16:50:19Z`
 
 Latest complete CI recovery checkpoint:
-`3839503982223470fafb7e268f3331089418b350`
+`7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -33,6 +33,11 @@ Required and only development branch:
 - Manual run `30562284484` failed before Bench/Site/Compose/database work
   because strict npm policy rejected an unnecessary Yarn global install; no
   controlled runtime result is claimed from that run.
+- The bounded Yarn repair passed complete normal CI `#81`, run
+  `30562550109`.
+- Manual run `30563106063` installed both exact Python packages and confirmed
+  exact Yarn, then failed a silent CLI version-rendering comparison before
+  initialization; no controlled runtime result is claimed from that run.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -66,11 +71,11 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Push and validate the bounded Yarn setup repair, then redispatch
-`.github/workflows/ci.yml` on the development branch. It must require the
-runner's Yarn version to equal the exact repository pin, initialize a fresh
-runner-local fixed disposable Frappe Site without touching retained local
-volumes, then run:
+Push and validate the bounded distribution-metadata version repair, then
+redispatch `.github/workflows/ci.yml` on the development branch. It must
+require installed Bench/uv metadata and the runner's Yarn version to equal
+the exact repository pins, initialize a fresh runner-local fixed disposable
+Frappe Site without touching retained local volumes, then run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

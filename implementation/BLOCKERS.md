@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T16:39:02Z`
+Updated: `2026-07-30T16:50:19Z`
 
 ## Active hard blockers
 
@@ -82,6 +82,13 @@ CI setup defect, not an external or global Hard Blocker. The repair removes
 the unnecessary global install and requires the already present runner Yarn,
 the installed Bench and uv to equal all exact repository pins before
 initialization.
+
+Manual dispatch `30563106063` then installed both exact Python packages and
+confirmed exact Yarn, but a silent CLI presentation-string comparison
+returned nonzero before initialization. This remains a bounded CI setup
+defect, not a Hard Blocker or runtime result. The second repair uses exact
+installed distribution metadata for Bench/uv and retains exact Yarn
+verification before any stateful command.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`

@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T16:39:02Z`
+Updated: `2026-07-30T16:50:19Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,7 +9,7 @@ Updated: `2026-07-30T16:39:02Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `3839503982223470fafb7e268f3331089418b350`
+  `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21`
 - Current controller task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE
@@ -77,6 +77,14 @@ because npm rejected Yarn's preinstall script without an explicit allowlist.
 The bounded repair retains the runner's already exact Yarn and verifies all
 three tool versions fail closed; no runtime result is claimed yet.
 
+That repair checkpoint `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21`
+passed normal CI `#81`, run `30562550109`, including complete repository,
+`285/285` browser, fixed-Linux visual and both secret lanes. Its manual run
+`30563106063` installed both exact Python packages and again reported exact
+Yarn, but a silent CLI presentation-string comparison returned nonzero before
+initialization. The bounded repair now uses exact installed distribution
+metadata for Bench/uv and retains the exact Yarn CLI version check.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -125,10 +133,11 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The first incomplete action is to push the bounded Yarn setup repair, let its
-normal PR CI pass, then redispatch the same CI workflow on the development
-branch. The job creates only fresh ephemeral runner volumes and does not
-touch the unavailable retained local volumes. It must run:
+The first incomplete action is to push the bounded distribution-metadata
+version repair, let its normal PR CI pass, then redispatch the same CI
+workflow on the development branch. The job creates only fresh ephemeral
+runner volumes and does not touch the unavailable retained local volumes. It
+must run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 
@@ -164,7 +173,9 @@ checkpoint `9198dc9c54d314c9927ff5aa68ce17253f6f4afe` passed CI `#75`. The
 frontend/runtime-ready candidate and its bounded CI repairs are complete at
 `86f3fde02303a5088c5ec4d4be906efcdb83c96d` with CI `#79`; the manual lane
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
-CI `#80`. P5-01 remains `IN_PROGRESS` until the fixed controlled Site passes.
+CI `#80`; the first setup repair is complete at
+`7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
+`IN_PROGRESS` until the fixed controlled Site passes.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

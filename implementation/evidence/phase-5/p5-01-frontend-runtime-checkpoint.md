@@ -233,6 +233,15 @@ runner already reported Yarn `1.22.22`, and the job now fails closed unless
 Bench, uv and Yarn each report the exact repository-pinned version. No script
 allowlist or runtime Gate was weakened.
 
+The second dispatch, run `30563106063`, again used the exact remote SHA.
+Both pinned Python packages installed successfully and the runner again
+reported Yarn `1.22.22`, but one silent CLI rendering comparison returned
+nonzero before initialization. Distribution metadata, rather than a CLI's
+presentation string, is the canonical installed-package version source. The
+second bounded repair therefore compares exact `frappe-bench` and `uv`
+versions through Python package metadata, retains the exact Yarn CLI version
+check, and still fails closed before initialization on any mismatch.
+
 ## Pending controlled-Site proof
 
 The required command is:

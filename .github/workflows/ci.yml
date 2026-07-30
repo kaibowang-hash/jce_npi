@@ -123,8 +123,7 @@ jobs:
             --no-cache-dir \
             "frappe-bench==5.31.0" \
             "uv==0.11.30"
-          test "$(bench --version)" = "5.31.0"
-          test "$(uv --version)" = "uv 0.11.30"
+          python -c 'from importlib.metadata import version; raise SystemExit(0 if (version("frappe-bench"), version("uv")) == ("5.31.0", "0.11.30") else 1)'
           test "$(yarn --version)" = "1.22.22"
       - name: Initialize pinned Frappe Bench
         run: bash scripts/init-frappe-bench.sh
