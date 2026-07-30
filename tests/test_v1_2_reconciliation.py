@@ -116,9 +116,7 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
-    def test_r1_05_stage_1_and_2_traces_are_verified_without_advancing_stage_3(
-        self,
-    ) -> None:
+    def test_all_r1_05_stage_traces_are_verified(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         pane_row = by_id["FR-UX-040"]
@@ -177,11 +175,15 @@ class V12ReconciliationTests(unittest.TestCase):
         )
         self.assertEqual(
             by_id["FR-UX-043"]["status"],
-            "PLANNED_SHARED_UX_REMEDIATION",
+            "TECHNICAL_VERIFIED",
         )
         self.assertEqual(
-            by_id["FR-UX-043"]["evidence"],
-            "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+            {
+                value.strip()
+                for value in by_id["FR-UX-043"]["evidence"].split(";")
+                if value.strip()
+            },
+            self.verifier.EXPECTED_R1_05_STAGE_3_TRACE["FR-UX-043"][1],
         )
         for _, expected_evidence in self.verifier.EXPECTED_R1_05_STAGE_1_TRACE.values():
             for evidence_path in expected_evidence:
@@ -195,22 +197,47 @@ class V12ReconciliationTests(unittest.TestCase):
                     (self.verifier.ROOT / evidence_path).is_file(),
                     evidence_path,
                 )
+        for _, expected_evidence in self.verifier.EXPECTED_R1_05_STAGE_3_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
 
     def test_fr_ux_043_is_allocated_to_r1_05(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
+        icon_action_row = by_id["FR-UX-043"]
         self.assertEqual(
-            by_id["FR-UX-043"],
+            {
+                key: icon_action_row[key]
+                for key in (
+                    "requirement_id",
+                    "priority",
+                    "phase",
+                    "status",
+                    "source",
+                    "trace_kind",
+                    "canonical_ids",
+                )
+            },
             {
                 "requirement_id": "FR-UX-043",
                 "priority": "P0",
                 "phase": "5",
-                "status": "PLANNED_SHARED_UX_REMEDIATION",
+                "status": "TECHNICAL_VERIFIED",
                 "source": "docs/V1_2_RECONCILIATION_ADDENDUM.md",
-                "evidence": "implementation/V1_2_RECONCILIATION_DECISIONS.md",
                 "trace_kind": "ADDENDUM_DIRECT",
                 "canonical_ids": "FR-UX-043",
             },
+        )
+        self.assertEqual(
+            {
+                value.strip()
+                for value in icon_action_row["evidence"].split(";")
+                if value.strip()
+            },
+            self.verifier.EXPECTED_R1_05_STAGE_3_TRACE["FR-UX-043"][1],
         )
         addendum = self.verifier.ADDENDUM.read_text(encoding="utf-8")
         self.assertIn("| FR-UX-043 | P0 |", addendum)

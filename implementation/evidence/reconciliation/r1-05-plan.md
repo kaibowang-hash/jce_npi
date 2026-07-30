@@ -5,7 +5,7 @@ Branch: `codex/npi-v1.2-implementation`
 Task:
 `R1-05 — Resizable panes, field attachment, and icon action primitives`
 Requirements: `FR-UX-040`, `FR-UX-041`, `FR-UX-043`
-Status: `IN_PROGRESS — STAGES 0–2 PASS; STAGE 3 READY`
+Status: `PASS — STAGES 0–3 PASS; R1-06 READY`
 Starting synchronized bridge checkpoint:
 `fb92884a2d3a1a4b3dd90e8e30a013c457701e7f`
 
@@ -241,6 +241,29 @@ remains `IN_PROGRESS`. R1-06 is not activated, R1-07 remains disabled under
 DR-REC-001, P5-01 remains held, and no document/file permission, registered
 revision mutation, production upload/scanner policy or external integration
 is widened.
+
+## Stage 3 validation and R1-06-only transition
+
+Stage 3 starting synchronized checkpoint:
+`0b485446ddde66ee0fe0a8ed7459bf191916a020`.
+
+Stage 3 evidence:
+[R1-05 Stage 3 Validation — FR-UX-043 Bounded Icon Actions](r1-05-stage-3-validation.md).
+
+Result:
+`PASS — LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE`.
+
+The closed local action policy, fail-closed Siemens iX icon mapping, translated
+accessible tooltip/name behavior, keyboard/focus/disabled boundaries, visible
+primary/high-risk/ambiguous actions, vendor-import bans and affected
+trilingual Linux visuals passed. The CI repairs required to execute the
+repository, visual, metadata and secret-scan lanes are recorded in the linked
+evidence; no test or acceptance threshold was reduced.
+
+`FR-UX-040`, `FR-UX-041` and `FR-UX-043` are
+`TECHNICAL_VERIFIED`, and R1-05 is complete. This transition activates only
+R1-06. R1-07 remains disabled under DR-REC-001; P5-01 remains held until R1-06
+and the cumulative R1 shared Shell/design/i18n Level 3 Gate pass.
 
 ## Rollback
 

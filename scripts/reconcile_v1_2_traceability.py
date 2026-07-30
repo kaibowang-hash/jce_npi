@@ -28,7 +28,7 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-040", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-041", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
-    ("FR-UX-043", "P0", "5", "PLANNED_SHARED_UX_REMEDIATION"),
+    ("FR-UX-043", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-PRN-001", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
     ("FR-PRN-002", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
@@ -179,6 +179,21 @@ R1_05_STAGE_2_EVIDENCE = {
         "implementation/evidence/reconciliation/r1-05-stage-2-validation.md",
     ),
 }
+R1_05_STAGE_3_EVIDENCE = {
+    "FR-UX-043": (
+        "frontend/src/ui-adapters/action-policy.ts",
+        "frontend/src/ui-adapters/npi-ui.tsx",
+        "frontend/src/components/field-attachment-primitives.tsx",
+        "frontend/src/components/object-components.tsx",
+        "frontend/src/styles/app.css",
+        "frontend/scripts/verify-boundaries.mjs",
+        "frontend/tests/unit/action-policy.test.ts",
+        "frontend/tests/unit/compact-action.test.tsx",
+        "frontend/tests/e2e/r1-05-panes.spec.ts",
+        "frontend/tests/e2e/r1-05-field-attachments.spec.ts",
+        "implementation/evidence/reconciliation/r1-05-stage-3-validation.md",
+    ),
+}
 
 
 class TraceError(RuntimeError):
@@ -269,6 +284,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_2_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_3_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -305,6 +322,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_1_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_2_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
+        if requirement_id in R1_05_STAGE_3_EVIDENCE:
+            evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

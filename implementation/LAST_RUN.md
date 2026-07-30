@@ -1356,3 +1356,46 @@ Complete evidence is in
 
 Complete evidence and the changed-files → affected-tests map are in
 `implementation/evidence/phase-4/p4-04-domain-checkpoint.md`.
+
+## R1-05 Stage 3 icon-action Task Gate PASS; R1-06 ready — 2026-07-30T11:35:38Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Stage 3 starting checkpoint:
+  `0b485446ddde66ee0fe0a8ed7459bf191916a020`.
+- Final pre-evidence implementation checkpoint:
+  `a2b533691ab7f223c1f51b8113fb2b9251aa82a4`.
+- Atomic slice:
+  `R1-05 Stage 3 — FR-UX-043 bounded icon-action foundation`.
+- Result:
+  `PASS — LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE`.
+- Requirement result:
+  `FR-UX-043 TECHNICAL_VERIFIED`; R1-05 complete.
+
+The slice added a closed local action policy, fail-closed Siemens iX icon
+mapping and compact secondary-action adapter. Every icon-only action retains a
+translated accessible name, title/focus tooltip, keyboard, visible-focus,
+disabled and non-hover path. Primary, high-risk and ambiguous actions keep
+visible labels. No Primer/Octicons/react-icons import or dependency, public
+API, schema, permission, translation-catalog, design-token, production
+dependency or external-integration change was introduced.
+
+Verification passed:
+
+- affected unit `58/58`; complete frontend unit `620/620`;
+- complete repository Python `754/754`;
+- affected behavior `14/14`; complete non-visual browser `265/265`;
+- digest-pinned affected Linux visual `6/6`;
+- `2,735` literal English sources with `100%` direct `zh`/`zh-TW` coverage;
+- generated/static/type/style/boundary/industrial UI/build checks;
+- coverage, both zero-finding npm audits, pinned metadata/toolchain checks and
+  both PR secret scans: action range `22 commits / 6.32 MB` and complete
+  branch `50 commits / 11.67 MB`, each `no leaks found`;
+- reconciliation tests `12/12`, standalone verifier and generator freshness;
+- `282` unique trace rows with unchanged `173/95/14` kinds.
+
+Complete evidence:
+`implementation/evidence/reconciliation/r1-05-stage-3-validation.md`.
+
+Current task:
+`R1-06 — Controlled undo prototype gate and 1440 visual governance`.
+P5-01 remains held; R1-07 remains disabled unless DR-REC-001 is approved.

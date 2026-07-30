@@ -230,6 +230,24 @@ EXPECTED_R1_05_STAGE_2_TRACE = {
         },
     ),
 }
+EXPECTED_R1_05_STAGE_3_TRACE = {
+    "FR-UX-043": (
+        "TECHNICAL_VERIFIED",
+        {
+            "frontend/src/ui-adapters/action-policy.ts",
+            "frontend/src/ui-adapters/npi-ui.tsx",
+            "frontend/src/components/field-attachment-primitives.tsx",
+            "frontend/src/components/object-components.tsx",
+            "frontend/src/styles/app.css",
+            "frontend/scripts/verify-boundaries.mjs",
+            "frontend/tests/unit/action-policy.test.ts",
+            "frontend/tests/unit/compact-action.test.tsx",
+            "frontend/tests/e2e/r1-05-panes.spec.ts",
+            "frontend/tests/e2e/r1-05-field-attachments.spec.ts",
+            "implementation/evidence/reconciliation/r1-05-stage-3-validation.md",
+        },
+    ),
+}
 EXPECTED_BRAND_INSTRUCTIONS = {
     "Company LOGO.svg": (
         "Website Footer",
@@ -381,27 +399,6 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "FR-BR-001 must retain its complete R1-02 runtime evidence set"
         )
-    icon_action_row = by_id["FR-UX-043"]
-    if (
-        icon_action_row["priority"],
-        icon_action_row["phase"],
-        icon_action_row["status"],
-        icon_action_row["source"],
-        icon_action_row["evidence"],
-        icon_action_row["trace_kind"],
-        icon_action_row["canonical_ids"],
-    ) != (
-        "P0",
-        "5",
-        "PLANNED_SHARED_UX_REMEDIATION",
-        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
-        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
-        "ADDENDUM_DIRECT",
-        "FR-UX-043",
-    ):
-        raise ReconciliationVerificationError(
-            "FR-UX-043 must retain its exact R1-05 append-only trace state"
-        )
     for requirement_id, (
         expected_status,
         expected_evidence,
@@ -540,6 +537,44 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing R1-05 Stage 2 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_05_STAGE_3_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+            "ADDENDUM_DIRECT",
+            requirement_id,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the verified R1-05 Stage 3 trace state"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-05 Stage 3 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-05 Stage 3 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

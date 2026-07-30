@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-27T14:00:01Z`
+Updated: `2026-07-30T11:35:38Z`
 
 ## Active hard blockers
 
@@ -11,13 +11,14 @@ None.
 `R1_SHARED_BRIDGE` is active.
 
 R1-01 and R1-02 passed their Level 2 Gates, and R1-03 and R1-04 passed their
-triggered task-level Level 3 Gates. R1-05 is current and remains
-`IN_PROGRESS`. Its Stage 1 `FR-UX-040` slice passed the
+triggered task-level Level 3 Gates. R1-05 is complete. Its Stage 1
+`FR-UX-040` slice passed the
 `LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
 `TECHNICAL_VERIFIED`. Stage 2 `FR-UX-041` passed the
 `LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE` and is
-`TECHNICAL_VERIFIED`. Stage 3 `FR-UX-043` is `READY` and is the only active
-next slice; R1-06 remains inactive.
+`TECHNICAL_VERIFIED`. Stage 3 `FR-UX-043` passed the
+`LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE` and is
+`TECHNICAL_VERIFIED`. R1-06 is the only active next bridge task.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
@@ -40,9 +41,9 @@ authority policy is approved. Personal preferences, R1-05 and other
 independent bridge work continue without inferring that policy.
 
 The append-only `FR-UX-043` trace correction is not a blocker and does not
-change any historical Gate. `DR-REC-005` already resolves its source boundary
-to the existing local iX/company icon adapter. R1-05 may implement bounded
-icon-first secondary actions, but GitHub branding, direct vendor imports,
+change any historical Gate. `DR-REC-005` resolved its source boundary to the
+existing local iX/company icon adapter. R1-05 implemented and verified only
+bounded icon-first secondary actions; GitHub branding, direct vendor imports,
 unapproved Primer/Octicons dependencies and icon-only high-risk/ambiguous
 primary actions remain prohibited.
 
