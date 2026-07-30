@@ -13,6 +13,7 @@ from scripts.verify_devcontainer import (
     validate_bootstrap_uv_installation,
     validate_ci_verification_tools,
     validate_frontend_install_policy,
+    validate_gitleaks_ignore,
     validate_local_configuration,
     validate_repository_verifier,
 )
@@ -76,6 +77,22 @@ class DevcontainerVerifierTest(unittest.TestCase):
         self.assertEqual(toolchain["VITE_ESBUILD_EXPECTED_VERSION"], "0.21.5")
         self.assertEqual(toolchain["VITE_FSEVENTS_EXPECTED_VERSION"], "2.3.3")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
+
+    def test_gitleaks_ignore_is_limited_to_the_reviewed_test_fingerprint(self):
+        reviewed = (
+            "0fd4762a01fd10fe6851df07ead1c5e4e7a42473:"
+            "tests/test_phase4_gate_template_domain.py:generic-api-key:314"
+        )
+        validate_gitleaks_ignore(reviewed + "\n")
+        for unsafe in (
+            "tests/test_phase4_gate_template_domain.py\n",
+            reviewed.replace(":314", ":*") + "\n",
+            reviewed + "\n" + reviewed.replace(":314", ":315") + "\n",
+            "# permit historical test data\n" + reviewed + "\n",
+            "\n" + reviewed + "\n",
+        ):
+            with self.subTest(unsafe=unsafe), self.assertRaises(VerificationError):
+                validate_gitleaks_ignore(unsafe)
 
     def test_ci_installs_ripgrep_before_the_fail_closed_repository_scan(self):
         visual_image = (

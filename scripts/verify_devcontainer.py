@@ -29,6 +29,14 @@ OCI_ACCEPT = ", ".join(
         "application/vnd.docker.distribution.manifest.v2+json",
     )
 )
+REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
+    {
+        (
+            "0fd4762a01fd10fe6851df07ead1c5e4e7a42473:"
+            "tests/test_phase4_gate_template_domain.py:generic-api-key:314"
+        ),
+    }
+)
 
 
 class VerificationError(RuntimeError):
@@ -202,6 +210,22 @@ def validate_repository_verifier(repository_verify: str) -> None:
     require(
         "if rg -n 'ignore_permissions" not in repository_verify,
         "Repository verifier must not treat every non-match status as success",
+    )
+
+
+def validate_gitleaks_ignore(gitleaks_ignore: str) -> None:
+    fingerprints = {
+        line.strip()
+        for line in gitleaks_ignore.splitlines()
+        if line.strip()
+    }
+    require(
+        fingerprints == REVIEWED_GITLEAKS_FINGERPRINTS,
+        "Gitleaks ignores must contain only the reviewed historical test fingerprint",
+    )
+    require(
+        len(fingerprints) == len(gitleaks_ignore.splitlines()),
+        "Gitleaks ignores must use one exact fingerprint per non-empty line",
     )
 
 
@@ -447,6 +471,9 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
         require(git_mode(script_path) == "100755", f"Script is not executable in Git: {script_path.name}")
     validate_repository_verifier(
         (REPO_ROOT / "scripts/verify.sh").read_text(encoding="utf-8")
+    )
+    validate_gitleaks_ignore(
+        (REPO_ROOT / ".gitleaksignore").read_text(encoding="utf-8")
     )
     frontend_package = read_json(REPO_ROOT / "frontend/package.json")
     validate_frontend_install_policy(
