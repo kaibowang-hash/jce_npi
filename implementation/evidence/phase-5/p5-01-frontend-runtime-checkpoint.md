@@ -179,6 +179,24 @@ affected ESLint, affected Prettier and `git diff --check` pass. This repair
 is pending a new complete CI run and does not relax or skip the retained
 high-risk interaction contract.
 
+### CI #78 history-scan repair
+
+CI `#78`, run `30559919155`, passed the fixed-Linux governed visuals,
+complete `scripts/verify.sh`, all `285/285` non-visual Playwright cases and
+the current-tree gitleaks scan. Its final full PR-history scan found one
+`generic-api-key` false positive introduced by the P5 checkpoint:
+`npi_p5_01_routes_disabled`, the internal boolean route-disable key used by
+the fixed disposable Frappe runtime shell. It contains no credential and
+cannot authenticate to any service.
+
+Because the introducing commit is already shared, history was not rewritten.
+The exact commit/file/rule/line fingerprint is added to `.gitleaksignore`.
+The repository's closed fingerprint verifier and its negative unit matrix
+are updated to require exactly this reviewed entry together with the three
+previously reviewed synthetic fingerprints. Path-only entries, wildcard
+lines, comments, blanks and unreviewed additional fingerprints remain
+rejected. This forward-only repair is pending a new complete CI run.
+
 ## Pending controlled-Site proof
 
 The required command is:

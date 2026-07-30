@@ -43,6 +43,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "028d551d4e02ad5700b165c21409e14b647babf0:"
             "scripts/verify_project_controls_runtime.py:generic-api-key:2243"
         ),
+        (
+            "e687ede91c5d95860a019f5a57c9b04e63466614:"
+            "scripts/verify-frappe-runtime.sh:generic-api-key:129"
+        ),
     }
 )
 
