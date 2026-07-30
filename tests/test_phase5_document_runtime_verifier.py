@@ -93,6 +93,9 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertIn("frappe.db.table_exists(doctype)", self.source)
         self.assertIn("frappe.get_meta(doctype, cached=False)", self.source)
+        self.assertIn('"response_snapshot"', self.source)
+        self.assertIn('"response_sealed"', self.source)
+        self.assertNotIn('"response_payload"', self.source)
         self.assertNotIn("drop table", self.source.casefold())
         self.assertNotIn("truncate table", self.source.casefold())
 

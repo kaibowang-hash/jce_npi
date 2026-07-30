@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T17:03:54Z`
+Updated: `2026-07-30T17:17:57Z`
 
 ## Active hard blockers
 
@@ -98,6 +98,15 @@ form `frappenpi_core`. Cleanup removed the runner-local containers, volumes
 and network. This is a bounded bootstrap defect, not a Hard Blocker or
 document runtime result; the repair only restores the missing line boundary
 and rejects a missing app registry.
+
+The line-boundary repair passed normal CI run `30564533440`. Manual dispatch
+`30565065165` then passed the exact setup, installed both apps on the fresh
+guarded Site and completed both migrations. The document verifier failed
+closed at its first schema fixture because that fixture still named obsolete
+`response_payload` metadata instead of the existing sealed
+`response_snapshot` and `response_sealed` contract. Cleanup removed the
+runner-local containers, volumes and network. This is a bounded verifier
+inventory defect, not a Hard Blocker or controlled runtime PASS.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`

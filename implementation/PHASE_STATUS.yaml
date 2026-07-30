@@ -1,14 +1,14 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-30T17:03:54Z'
+updated_at: '2026-07-30T17:17:57Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-01
 current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-01-CONTROLLED-SITE-APP-REGISTRY-REPAIR
+current_task_completed_stage: P5-01-CONTROLLED-SITE-TWO-MIGRATIONS
 current_task_next_stage: P5-01-CONTROLLED-SITE-TASK-GATE
-current_task_next_stage_status: WAITING_FOR_CONTROLLED_RUNTIME
+current_task_next_stage_status: WAITING_FOR_SCHEMA-INVENTORY-REPAIR
 resumed_product_task: P5-01
 resumed_product_task_status: IN_PROGRESS_CONTROLLED_SITE_PENDING
 bridge:

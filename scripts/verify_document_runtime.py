@@ -686,7 +686,8 @@ def verify_document_runtime_schema(fixture_run_id: str) -> dict[str, object]:
         "NPI Document Command Idempotency": {
             "actor_key_hash",
             "payload_hash",
-            "response_payload",
+            "response_snapshot",
+            "response_sealed",
         },
     }
     for doctype in DOCUMENT_DOCTYPES:

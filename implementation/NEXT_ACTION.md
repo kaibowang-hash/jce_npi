@@ -3,10 +3,10 @@
 Status:
 `P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T17:03:54Z`
+Recovery time: `2026-07-30T17:17:57Z`
 
 Latest complete CI recovery checkpoint:
-`b500dfac18bac9260fed5a39140a0fdc2a112b9f`
+`5dfb99df923ed112ea4eae2ea1b8019ec723d953`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -44,6 +44,14 @@ Required and only development branch:
   the fresh Site, then failed before NPI app installation because the pinned
   Bench registry lacked a terminal newline. Its containers, volumes and
   network were removed; no controlled document runtime result is claimed.
+- The app-registry repair passed normal run `30564533440`, including the
+  complete repository, browser, visual and both secret lanes.
+- Manual run `30565065165` installed both NPI apps on the fresh guarded Site
+  and completed both migrations, then the verifier failed closed because its
+  schema fixture required obsolete `response_payload` metadata instead of the
+  existing sealed `response_snapshot` and `response_sealed` pair. Cleanup
+  removed the runner-local containers, volumes and network; no controlled
+  document runtime result is claimed.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -77,7 +85,7 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Push and validate the bounded app-registry line-boundary repair, then
+Push and validate the bounded document verifier schema-inventory repair, then
 redispatch `.github/workflows/ci.yml` on the development branch. It must keep
 the exact tool pins, initialize a fresh runner-local fixed disposable Frappe
 Site without touching retained local volumes, append each NPI app as its own

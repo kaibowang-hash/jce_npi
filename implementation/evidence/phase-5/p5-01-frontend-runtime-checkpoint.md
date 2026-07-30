@@ -254,6 +254,22 @@ adds only a checked line boundary before an app-name append; it rejects a
 missing or symlinked registry and does not delete, replace or reinterpret
 existing app entries.
 
+The app-registry repair checkpoint
+`5dfb99df923ed112ea4eae2ea1b8019ec723d953` passed normal CI run
+`30564533440`, including the complete repository, `285/285` browser,
+fixed-Linux visual and both secret lanes. Manual run `30565065165` then
+passed exact tool and pinned Bench setup, created the guarded disposable
+Site, installed both NPI apps, ran the Site migration during initialization
+and entered the unchanged document verifier. Its second migration also
+completed before the schema fixture correctly failed closed: the verifier
+still required an obsolete `response_payload` field even though the
+authoritative DocType, repository, controller and metadata tests consistently
+use the sealed `response_snapshot` plus `response_sealed` pair. Cleanup
+removed both containers, both new volumes and the runner-local network. The
+bounded repair aligns only that verifier inventory with the existing sealed
+idempotency contract and adds a regression assertion; it does not change the
+DocType, database or business behavior.
+
 ## Pending controlled-Site proof
 
 The required command is:
@@ -267,13 +283,13 @@ because the fixed physical repository Bench does not exist. The repository
 preflight then confirmed that this host has no Docker CLI, Docker daemon or
 Compose v2. No production Site or external integration was contacted.
 
-The verifier and shell contract are tested, but static proof cannot replace
-the required real Site result. Before P5-01 can pass:
+The verifier and shell contract are tested, but the fourth run stopped at the
+first document schema fixture and therefore cannot replace the required
+complete Site result. Before P5-01 can pass:
 
-1. restore the repository's fixed disposable runtime without deleting or
-   resetting retained volumes;
-2. run the document-only command, including two migrations, fresh execution,
-   route-disable/recovery, second-process exact replay and cleanup;
+1. push the bounded schema-inventory repair and let its normal CI pass;
+2. run the document-only command once more, including two migrations, fresh
+   execution, route-disable/recovery, second-process exact replay and cleanup;
 3. rerun the affected checks if runtime repair changes source;
 4. finish the P5-01 Task Diff/domain/permission/security/UX/i18n review; and
 5. only then mark the seven requirements verified and activate P5-02.
