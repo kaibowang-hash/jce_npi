@@ -269,6 +269,39 @@ class V12ReconciliationTests(unittest.TestCase):
         ):
             self.assertIn(required_guard, definition_of_done)
 
+    def test_r1_06_stage_1_trace_separates_prototype_truth_from_approval(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        expected_statuses = {
+            "UX-026": "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD",
+            "UX-030": "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD",
+        }
+        for requirement_id, expected_status in expected_statuses.items():
+            row = by_id[requirement_id]
+            self.assertEqual(row["status"], expected_status)
+            self.assertEqual(
+                {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                },
+                self.verifier.EXPECTED_R1_06_STAGE_1_TRACE[requirement_id][1],
+            )
+        manifest = (
+            self.verifier.ROOT
+            / "implementation"
+            / "prototype-approvals"
+            / "r1-06-my-work-grid-reset.json"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"status": "PENDING_PRODUCT_OWNER"', manifest)
+        self.assertIn('"backendImplementationAuthorized": false', manifest)
+        for _, expected_evidence in self.verifier.EXPECTED_R1_06_STAGE_1_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
 

@@ -2733,3 +2733,50 @@ Choose one image file. Selection remains local because this workspace has no app
 Trial photo evidence,试模照片证据
 Use the picker or drop one image file. No upload or scanner result is implied.,使用选择器或拖放一个图像文件。这不表示文件已上传或已取得扫描结果。
 The local file selection is valid for this prototype field.,本地文件选择符合此原型字段的要求。
+The personal layout is customized. Review the reset consequence before continuing.,个人布局已自定义。继续前请审查重置后果。
+Ready for review,可供审查
+Only this personal view would return to code-owned defaults. No business data or shared view would change.,仅此个人视图将恢复为代码定义的默认值。业务数据或共享视图不会变更。
+Confirmation,确认
+Review state: the reset response is confirmed and one undo is available for the displayed time.,审查状态：重置响应已确认，并可在显示的时限内执行一次撤销。
+Undo available,可撤销
+Review state: the undo request is processing. The previous layout is not reported as restored.,审查状态：撤销请求正在处理中。系统尚未报告已恢复先前布局。
+Review state: reconciliation confirms the previous layout as a new preference version.,审查状态：对账已确认先前布局已作为新的偏好版本恢复。
+Review state: the undo window expired. The confirmed reset remains active.,审查状态：撤销窗口已过期。已确认的重置仍然有效。
+Expired,已过期
+Review state: the layout changed in another session. Reload current settings before another command.,审查状态：布局已在另一个会话中变更。再次执行命令前请重新加载当前设置。
+Review state: permission is no longer available. No command is sent.,审查状态：权限已不可用。未发送任何命令。
+Review state: the result is unknown. Reconcile the prepared request before retrying.,审查状态：结果未知。重试前请先对账已准备的请求。
+Result unknown,结果未知
+Review state: undo cannot continue. The confirmed reset remains active and the reference ID remains visible.,审查状态：撤销无法继续。已确认的重置仍然有效，并保留显示参考编号。
+Previous personal layout,先前个人布局
+Code-owned default layout,代码定义的默认布局
+Customized personal layout,自定义个人布局
+Review reset,审查重置
+Cancel review,取消审查
+Show reset-confirmed state,显示重置已确认状态
+Show expired state,显示已过期状态
+Undo reset,撤销重置
+Show conflict state,显示冲突状态
+Show retryable error,显示可重试错误
+Show reconciled result,显示已对账结果
+Reload prototype state,重新加载原型状态
+Retry prototype state,重试原型状态
+Return to review,返回审查
+Controlled undo review prototype,受控撤销审查原型
+Prototype only,仅限原型
+This review surface sends no production request and changes no saved settings.,此审查界面不会发送生产请求，也不会更改任何已保存设置。
+Prototype state,原型状态
+Undo window,撤销窗口
+{{seconds}} seconds remaining,剩余 {{seconds}} 秒
+Reference ID,参考编号
+Prototype review facts,原型审查事实
+Current layout,当前布局
+Eligible action,符合条件的操作
+Reset one personal My Work grid view,重置一个个人“我的工作”网格视图
+Prototype duration,原型时限
+{{seconds}} seconds for interaction review; the production value is pending.,用于交互审查的时限为 {{seconds}} 秒；生产值待定。
+Backend implementation gate,后端实施门禁
+Pending Product Owner approval,等待产品负责人批准
+Prototype revision,原型修订版
+"Approvals, releases, baselines, registered revisions, deletes, and external execution never use this generic undo.",批准、发布、基线、已登记修订版、删除和外部执行绝不使用此通用撤销。
+"Their approved forward-correction, new-revision, reconciliation, or support path remains visible in the owning workflow.",其获批的前向纠正、新修订版、对账或支持路径在所属工作流中保持可见。

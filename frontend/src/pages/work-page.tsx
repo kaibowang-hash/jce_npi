@@ -5,6 +5,8 @@ import { formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { MetricStrip } from "../components/object-components";
 import { Worklist } from "../components/worklist";
+import { ControlledUndoPrototype } from "../components/controlled-undo-prototype";
+import { controlledUndoPrototypeRequested } from "../components/controlled-undo-prototype-model";
 
 const worklistDataSource = new PrototypeWorklistTransport(workItems);
 
@@ -70,6 +72,7 @@ export default function WorkPage({
           },
         ]}
       />
+      {controlledUndoPrototypeRequested() ? <ControlledUndoPrototype /> : null}
       <Worklist
         asOf={prototypeTimestamp}
         dataSource={worklistDataSource}

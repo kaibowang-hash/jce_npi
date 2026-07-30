@@ -46,10 +46,10 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
-    "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
+    "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
-    "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
+    "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
     "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
 }
@@ -194,6 +194,25 @@ R1_05_STAGE_3_EVIDENCE = {
         "implementation/evidence/reconciliation/r1-05-stage-3-validation.md",
     ),
 }
+R1_06_STAGE_1_EVIDENCE = {
+    requirement_id: (
+        "frontend/src/components/controlled-undo-prototype-model.ts",
+        "frontend/src/components/controlled-undo-prototype.tsx",
+        "frontend/src/pages/work-page.tsx",
+        "frontend/src/styles/app.css",
+        "apps/npi_core/npi_core/translations/zh.csv",
+        "apps/npi_core/npi_core/translations/zh-TW.csv",
+        "frontend/src/generated/catalogs.ts",
+        "frontend/tests/unit/controlled-undo-prototype.test.tsx",
+        "frontend/tests/e2e/r1-06-controlled-undo-prototype.spec.ts",
+        "implementation/prototype-approvals/r1-06-my-work-grid-reset.json",
+        "scripts/verify_prototype_approvals.py",
+        "tests/test_prototype_approvals.py",
+        "implementation/evidence/reconciliation/r1-06-stage-1-prototype-review.md",
+        "implementation/evidence/reconciliation/r1-06-stage-1-validation.md",
+    )
+    for requirement_id in ("UX-026", "UX-030")
+}
 
 
 class TraceError(RuntimeError):
@@ -286,6 +305,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_3_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
+        if requirement_id in R1_06_STAGE_1_EVIDENCE:
+            evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -324,6 +345,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_2_EVIDENCE[requirement_id])
         if requirement_id in R1_05_STAGE_3_EVIDENCE:
             evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
+        if requirement_id in R1_06_STAGE_1_EVIDENCE:
+            evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

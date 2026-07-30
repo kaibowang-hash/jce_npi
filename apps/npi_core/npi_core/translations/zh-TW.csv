@@ -2733,3 +2733,50 @@ Choose one image file. Selection remains local because this workspace has no app
 Trial photo evidence,試模照片證據
 Use the picker or drop one image file. No upload or scanner result is implied.,使用選擇器或拖放一個影像檔案。這不表示檔案已上傳或已取得掃描結果。
 The local file selection is valid for this prototype field.,本機檔案選取符合此原型欄位的要求。
+The personal layout is customized. Review the reset consequence before continuing.,個人版面已自訂。繼續前請審查重設後果。
+Ready for review,可供審查
+Only this personal view would return to code-owned defaults. No business data or shared view would change.,僅此個人檢視將還原為程式碼定義的預設值。業務資料或共用檢視不會變更。
+Confirmation,確認
+Review state: the reset response is confirmed and one undo is available for the displayed time.,審查狀態：重設回應已確認，並可在顯示的時限內執行一次復原。
+Undo available,可復原
+Review state: the undo request is processing. The previous layout is not reported as restored.,審查狀態：復原請求正在處理中。系統尚未報告已還原先前版面。
+Review state: reconciliation confirms the previous layout as a new preference version.,審查狀態：對帳已確認先前版面已作為新的偏好版本還原。
+Review state: the undo window expired. The confirmed reset remains active.,審查狀態：復原時限已過期。已確認的重設仍然有效。
+Expired,已過期
+Review state: the layout changed in another session. Reload current settings before another command.,審查狀態：版面已在另一個工作階段中變更。再次執行命令前請重新載入目前設定。
+Review state: permission is no longer available. No command is sent.,審查狀態：權限已無法使用。未傳送任何命令。
+Review state: the result is unknown. Reconcile the prepared request before retrying.,審查狀態：結果未知。重試前請先對帳已準備的請求。
+Result unknown,結果未知
+Review state: undo cannot continue. The confirmed reset remains active and the reference ID remains visible.,審查狀態：復原無法繼續。已確認的重設仍然有效，並保留顯示參考編號。
+Previous personal layout,先前個人版面
+Code-owned default layout,程式碼定義的預設版面
+Customized personal layout,自訂個人版面
+Review reset,審查重設
+Cancel review,取消審查
+Show reset-confirmed state,顯示重設已確認狀態
+Show expired state,顯示已過期狀態
+Undo reset,復原重設
+Show conflict state,顯示衝突狀態
+Show retryable error,顯示可重試錯誤
+Show reconciled result,顯示已對帳結果
+Reload prototype state,重新載入原型狀態
+Retry prototype state,重試原型狀態
+Return to review,返回審查
+Controlled undo review prototype,受控復原審查原型
+Prototype only,僅限原型
+This review surface sends no production request and changes no saved settings.,此審查介面不會傳送正式環境請求，也不會變更任何已儲存設定。
+Prototype state,原型狀態
+Undo window,復原時限
+{{seconds}} seconds remaining,剩餘 {{seconds}} 秒
+Reference ID,參考編號
+Prototype review facts,原型審查事實
+Current layout,目前版面
+Eligible action,符合條件的操作
+Reset one personal My Work grid view,重設一個個人「我的工作」網格檢視
+Prototype duration,原型時限
+{{seconds}} seconds for interaction review; the production value is pending.,用於互動審查的時限為 {{seconds}} 秒；正式環境值待定。
+Backend implementation gate,後端實作門禁
+Pending Product Owner approval,等待產品負責人核准
+Prototype revision,原型修訂版
+"Approvals, releases, baselines, registered revisions, deletes, and external execution never use this generic undo.",核准、發佈、基線、已登錄修訂版、刪除和外部執行絕不使用此通用復原。
+"Their approved forward-correction, new-revision, reconciliation, or support path remains visible in the owning workflow.",其已核准的前向修正、新修訂版、對帳或支援路徑在所屬工作流程中保持可見。

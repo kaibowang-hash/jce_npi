@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "taskId": "R1-06",
+  "prototypeId": "my-work-grid-reset-undo",
+  "prototypeRevision": "r1-06-stage-1-v1",
+  "requirements": [
+    "UX-026",
+    "UX-030"
+  ],
+  "route": "/demo/work?prototype=my-work-grid-reset-undo&undoState=review",
+  "eligibleAction": "current_actor_closed_my_work_view_grid_reset",
+  "ineligibleActions": [
+    "gate_decision_or_reopen",
+    "release_publish_or_baseline",
+    "registered_revision_mutation",
+    "business_lifecycle_transition",
+    "external_execution",
+    "delete_cancel_or_void",
+    "unapproved_bulk_action"
+  ],
+  "reviewStates": [
+    "review",
+    "confirmation",
+    "available",
+    "processing",
+    "restored",
+    "expired",
+    "conflict",
+    "denied",
+    "retryable",
+    "final"
+  ],
+  "prototypeDurationSeconds": 10,
+  "productionDurationSeconds": null,
+  "status": "PENDING_PRODUCT_OWNER",
+  "backendImplementationAuthorized": false,
+  "approval": {
+    "productOwnerIdentifier": null,
+    "approvedAt": null,
+    "approvalEvidence": null,
+    "approvedPrototypeRevision": null,
+    "approvedEligibleAction": null,
+    "approvedReviewStates": null
+  },
+  "sourceFiles": [
+    "frontend/src/components/controlled-undo-prototype-model.ts",
+    "frontend/src/components/controlled-undo-prototype.tsx",
+    "frontend/src/pages/work-page.tsx"
+  ],
+  "sourceDigest": "cd5eea1ce8f88d27e0b8194c0d3e974f972b040680f259212f5d15fc99a13408"
+}

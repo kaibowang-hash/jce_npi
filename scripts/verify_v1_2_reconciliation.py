@@ -67,10 +67,10 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
-    "UX-026": ("5", "PLANNED_R1_06_CONTROLLED_UNDO"),
+    "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
-    "UX-030": ("5", "PLANNED_R1_06_PROTOTYPE_GATE"),
+    "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
     "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
 }
@@ -247,6 +247,32 @@ EXPECTED_R1_05_STAGE_3_TRACE = {
             "implementation/evidence/reconciliation/r1-05-stage-3-validation.md",
         },
     ),
+}
+EXPECTED_R1_06_STAGE_1_TRACE = {
+    requirement_id: (
+        (
+            "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"
+            if requirement_id == "UX-026"
+            else "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"
+        ),
+        {
+            "frontend/src/components/controlled-undo-prototype-model.ts",
+            "frontend/src/components/controlled-undo-prototype.tsx",
+            "frontend/src/pages/work-page.tsx",
+            "frontend/src/styles/app.css",
+            "apps/npi_core/npi_core/translations/zh.csv",
+            "apps/npi_core/npi_core/translations/zh-TW.csv",
+            "frontend/src/generated/catalogs.ts",
+            "frontend/tests/unit/controlled-undo-prototype.test.tsx",
+            "frontend/tests/e2e/r1-06-controlled-undo-prototype.spec.ts",
+            "implementation/prototype-approvals/r1-06-my-work-grid-reset.json",
+            "scripts/verify_prototype_approvals.py",
+            "tests/test_prototype_approvals.py",
+            "implementation/evidence/reconciliation/r1-06-stage-1-prototype-review.md",
+            "implementation/evidence/reconciliation/r1-06-stage-1-validation.md",
+        },
+    )
+    for requirement_id in ("UX-026", "UX-030")
 }
 EXPECTED_BRAND_INSTRUCTIONS = {
     "Company LOGO.svg": (
@@ -575,6 +601,42 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing R1-05 Stage 3 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_06_STAGE_1_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+            "DOCX_RECONCILED",
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the R1-06 Stage 1 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-06 Stage 1 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-06 Stage 1 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {
