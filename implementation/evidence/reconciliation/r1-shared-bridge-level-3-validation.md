@@ -110,6 +110,27 @@ The three Gitleaks exclusions remain limited to the exact previously reviewed
 synthetic fingerprints and are guarded by the repository verifier. No new
 finding or broad path/rule exclusion exists.
 
+## Recovery-checkpoint confirmation
+
+The pushed controller/evidence checkpoint
+`c980571b27be66e16f2ac57409f0ef72a986e741` then passed GitHub Actions CI
+`#73`, run `30548142786`, without changing the original Gate decision:
+
+- repository job `90889525337`: `764/764` Python, `634/634` frontend unit,
+  `279/279` non-visual browser, `2,782` literal sources with `100%` direct
+  `zh`/`zh-TW`, both npm audits with `0` vulnerabilities, and both secret
+  scans with no leaks;
+- fixed-Linux visual job `90889525478`: `24/24` PASS in `32.2s`;
+- visual artifact `8761649289`, size `3,725,955` bytes, digest
+  `sha256:bb9add0a69b9c61fb2908ff0f6e75f779a8a207a538fd1e1a100a235c403b2de`;
+  and
+- Gitleaks artifact `8761804431`, size `6,760` bytes, digest
+  `sha256:79524d0c3ca399ed528e659242db3779c3aa13bf179d34e8f1aa4dde0f518974`.
+
+The one additional Python case asserts that P5-01 resumed without being
+misreported complete. The product, visual inventory, acceptance criteria and
+R1 release result are unchanged.
+
 ## API, permission, runtime and migration evidence
 
 R1-03 and R1-04 each passed their triggered public-contract/schema Level 3

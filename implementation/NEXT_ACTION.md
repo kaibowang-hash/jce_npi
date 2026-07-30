@@ -1,11 +1,11 @@
 # Next Action
 
-Status: `P5-01 RESUME AUDIT READY — R1 BRIDGE PASS`
+Status: `P5-01 FRONTEND/RUNTIME READY — RESUME AUDIT PASS`
 
-Recovery time: `2026-07-30T13:32:57Z`
+Recovery time: `2026-07-30T13:52:00Z`
 
-Latest synchronized R1 Gate candidate:
-`2ced098362ab99a4750a13e7004a441a7f19b698`
+Latest synchronized recovery checkpoint:
+`c980571b27be66e16f2ac57409f0ef72a986e741`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -22,7 +22,7 @@ Required and only development branch:
   complete.
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
-- P5-01 resumes as `IN_PROGRESS_CHECKPOINTED`; it is not `PASS`.
+- P5-01 resume audit is `PASS`; P5-01 remains `IN_PROGRESS`, not `PASS`.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -46,28 +46,31 @@ Use:
 - `implementation/phase-5-requirement-anchor.md`;
 - `implementation/evidence/phase-5/p5-01-plan.md`;
 - `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`;
+- `implementation/evidence/phase-5/p5-01-resume-audit.md`;
 - the indexed trace rows and current contracts; and
 - `frappe-safe-change`, `npi-domain-guard`, `industrial-ux` and
   `frappe-i18n` Skills.
 
 ## First incomplete action
 
-Complete only the P5-01 resume audit before new product implementation:
+Implement the smallest unfinished P5-01 frontend/runtime vertical slice:
 
-1. compare the exact retained `930b5a2` backend/domain/DocType/repository/
-   BFF/API/OpenAPI/data-ownership slice with the accepted reconciliation and
-   current R1 shared boundaries;
-2. verify stable identities, ownership, permission, API and localization
-   contracts were not invalidated by R1;
-3. identify and minimally repair only real conflicts;
-4. preserve all valid checkpoint code and its existing focused evidence;
-5. produce a current Requirement → Code → Test → Evidence and changed-files →
-   affected-tests map;
-6. rerun the focused retained Level 1 backend/contract checks; and
-7. commit and push a recoverable resume-audit checkpoint.
-
-Only after that audit passes may the unfinished P5-01 frontend/runtime/UI slice
-begin.
+1. add one strict document data-source module with closed list/detail/
+   capability/command response parsers and view models;
+2. expose the existing live BFF through a dense Project Design/Documents tab,
+   preserving Project context and showing identity, policy, revision, exact
+   file/hash/scan, relationships, lock history, source/editability and
+   external/CAD unavailable truth;
+3. support normal, empty, loading, no-permission, read-only, validation,
+   conflict, processing, retryable, final and provider-unavailable states
+   without a raw private URL or fake success;
+4. replace the prototype-only dirty route assumption with real workspace dirty
+   registration covering App navigation, Project-tab changes, history and
+   `beforeunload`, with cancel restoring focus and preserving input;
+5. add direct literal-English/`zh`/`zh-TW` copy and affected unit/component/
+   accessibility/browser/visual tests; and
+6. prepare the additive/idempotent DocType metadata synchronization and
+   controlled Frappe runtime lane before the Level 2 Task Gate.
 
 ## Retained passing checkpoint evidence
 
@@ -80,8 +83,9 @@ begin.
 - Exact 55-file retained inventory and no production policy, external
   identity, scanner/viewer, CAD/PDM or ERPNext activation.
 
-These results must be impact-reviewed against current shared code before
-reuse; do not repeat unrelated complete R1 Gates.
+These results were impact-reviewed against current shared code and retained in
+`implementation/evidence/phase-5/p5-01-resume-audit.md`. Do not repeat
+unrelated complete R1 Gates.
 
 ## Prohibited or held behavior
 
@@ -100,8 +104,6 @@ reuse; do not repeat unrelated complete R1 Gates.
 
 ## Transition
 
-After the resume audit checkpoint passes, continue the smallest unfinished
-P5-01 vertical slice: controlled metadata synchronization/runtime plus the live
-Project Design/Documents workspace, complete trilingual/accessibility/error
-states and affected exact visuals. Finish the P5-01 Level 2 Task Gate before
-activating P5-02.
+Complete the controlled metadata/runtime plus live Project Design/Documents
+workspace slice, trilingual/accessibility/error states and affected exact
+visuals. Finish the P5-01 Level 2 Task Gate before activating P5-02.

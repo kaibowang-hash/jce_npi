@@ -5,7 +5,7 @@ Planned: `2026-07-25T18:38:47Z`
 Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
-Task state: **IN PROGRESS — R1 HOLD RELEASED; RESUME AUDIT READY**
+Task state: **IN PROGRESS — RESUME AUDIT PASS; FRONTEND/RUNTIME READY**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
@@ -13,9 +13,10 @@ Checkpoint evidence:
 The user-directed hold preserved this plan after the bounded
 backend/domain/DocType/repository/BFF/API/contract unit. The cumulative R1
 Level 3 Gate passed on 2026-07-30 and released the hold. P5-01 is not complete.
-Before unfinished frontend/runtime work, compare the retained slice against
-the accepted reconciliation and current shared boundaries, record the exact
-retained/corrected scope and rerun its focused Level 1 checks.
+The bounded comparison passed at
+`implementation/evidence/phase-5/p5-01-resume-audit.md`: the retained slice
+requires no product correction, and its focused `63/63` Level 1 checks passed.
+Unfinished frontend/runtime work may now begin.
 
 Applicable requirements:
 
@@ -321,8 +322,7 @@ start frontend or contract work until the domain invariants pass a Level 1
 check.
 
 That original action is complete at retained checkpoint `930b5a2`. The first
-resume action is now the bounded comparison described in
-`p5-01-reconciliation-hold.md`: verify the retained
-backend/domain/DocType/repository/BFF/API/contracts against the accepted
-reconciliation and every current shared R1 boundary. Only then continue the
-unfinished frontend/runtime/UI evidence slice.
+resume action passed at `p5-01-resume-audit.md` without product correction.
+Continue only the unfinished strict frontend data-source/view-model/parser,
+live Project Design/Documents workspace, real dirty-state registration and
+controlled metadata/runtime evidence slice.

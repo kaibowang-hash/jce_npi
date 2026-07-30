@@ -1564,3 +1564,41 @@ boundaries before new frontend/runtime implementation.
 
 Complete evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
+
+## R1 recovery checkpoint sealed; P5-01 resume audit PASS — 2026-07-30T13:52:00Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Synchronized recovery checkpoint:
+  `c980571b27be66e16f2ac57409f0ef72a986e741`.
+- Retained P5-01 backend checkpoint:
+  `930b5a28cb995df12f251994a36f7502525ed94a`.
+- Result:
+  `PASS — RETAIN P5-01 BACKEND/DOMAIN/CONTRACT CHECKPOINT`.
+
+CI `#73`, run `30548142786`, passed on the exact pushed recovery checkpoint:
+
+- repository job `90889525337`: Python `764/764`, frontend unit `634/634`,
+  non-visual browser `279/279`, i18n `2,782` literal sources with `100%`
+  direct `zh`/`zh-TW`, both npm audits `0` vulnerabilities, and the
+  `22`-commit action plus `59`-commit full-branch secret scans with no leaks;
+- fixed-Linux visual job `90889525478`: `24/24` PASS;
+- visual artifact `8761649289`, digest
+  `sha256:bb9add0a69b9c61fb2908ff0f6e75f779a8a207a538fd1e1a100a235c403b2de`;
+  and
+- Gitleaks artifact `8761804431`, digest
+  `sha256:79524d0c3ca399ed528e659242db3779c3aa13bf179d34e8f1aa4dde0f518974`.
+
+The exact retained 55-file P5-01 inventory was compared with the accepted
+reconciliation and every later R1 change. The dedicated document
+domain/repository/API, nine DocTypes and data ownership are untouched. Shared
+BFF/OpenAPI/catalog changes are compatible additions; two focused test edits
+retain identical assertions. The P5-01 focused suites reran `63/63` PASS.
+
+No retained product correction is required. P5-01 remains `IN_PROGRESS`; no
+requirement is marked complete and P5-02 remains inactive. The first
+unfinished action is the strict frontend data-source/view-model/parser and
+live Project Design/Documents workspace plus real dirty-state integration and
+the additive controlled runtime lane.
+
+Complete evidence:
+`implementation/evidence/phase-5/p5-01-resume-audit.md`.

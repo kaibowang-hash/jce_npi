@@ -210,8 +210,8 @@ pending until that proof is produced in Codespaces.
 ## Current checkpoint
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
-- Current synchronized bridge checkpoint:
-  `5fae1784e376c08cd4466c1b38592eb9a7ec513e`.
+- Current synchronized recovery checkpoint:
+  `c980571b27be66e16f2ac57409f0ef72a986e741`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
   machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
   assets` (`PASS — LEVEL 2`), `R1-03 — App Shell collapsed navigation command
@@ -226,10 +226,11 @@ pending until that proof is produced in Codespaces.
   R1 is an inserted bridge, not a replacement controller Phase.
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS_CHECKPOINTED — RESUME AUDIT READY`).
+  (`IN_PROGRESS — RESUME AUDIT PASS; FRONTEND/RUNTIME READY`).
 - The R1 bridge and its cumulative shared Shell/design/i18n Level 3 exit Gate
   are `PASS`. The bounded P5-01 backend/domain/contract checkpoint is retained
-  at `930b5a2`; P5-01 is not `PASS`.
+  at `930b5a2`; its current-boundary resume audit passed without product
+  correction, and P5-01 is not `PASS`.
 - Current requirement inventory: 282 unique trace rows — 173
   `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 14 `ADDENDUM_DIRECT`.
 - Current reconciliation authorities:
@@ -294,8 +295,11 @@ pending until that proof is produced in Codespaces.
   `24/24` fixed-Linux affected visuals and `2,782` direct trilingual sources.
 - `DR-REC-001` remains `PENDING_PRODUCT_OWNER`, so conditional R1-07 is
   skipped without being marked complete. The cumulative R1 shared
-  Shell/design/i18n Level 3 exit Gate passed at CI `#72`; preserve its scoped
-  holds and run only the P5-01 resume comparison audit next.
+  Shell/design/i18n Level 3 exit Gate passed at CI `#72`; recovery checkpoint
+  `c980571b27be66e16f2ac57409f0ef72a986e741` then passed CI `#73` with
+  `764/764` Python, `634/634` frontend unit, `279/279` non-visual browser and
+  `24/24` fixed-Linux visual checks. Preserve its scoped holds and run only
+  the unfinished P5-01 frontend/runtime slice next.
 
 Resume only from `implementation/NEXT_ACTION.md`, the Phase 5 anchor and the
 retained P5-01 checkpoint evidence. Reuse the passing Phase 4, P5-00 and R1
@@ -303,5 +307,5 @@ evidence where the current impact map proves the boundary unchanged; do not
 repeat or rewrite it merely to restore context. See
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`,
 `implementation/evidence/phase-5/p5-01-plan.md`,
-`implementation/evidence/phase-5/p5-01-reconciliation-hold.md` and
+`implementation/evidence/phase-5/p5-01-resume-audit.md` and
 `implementation/LAST_RUN.md` for the exact latest result.

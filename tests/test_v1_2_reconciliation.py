@@ -333,13 +333,13 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
-    def test_p5_01_trace_resumes_without_claiming_completion(self) -> None:
+    def test_p5_01_trace_advances_without_claiming_completion(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         for (
             requirement_id,
             (expected_status, expected_evidence),
-        ) in self.verifier.EXPECTED_P5_01_RESUME_TRACE.items():
+        ) in self.verifier.EXPECTED_P5_01_ACTIVE_TRACE.items():
             row = by_id[requirement_id]
             self.assertEqual(row["status"], expected_status)
             self.assertEqual(

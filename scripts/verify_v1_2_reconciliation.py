@@ -302,14 +302,15 @@ EXPECTED_R1_06_STAGE_3_TRACE = {
         },
     ),
 }
-EXPECTED_P5_01_RESUME_TRACE = {
+EXPECTED_P5_01_ACTIVE_TRACE = {
     requirement_id: (
-        "IN_PROGRESS_P5_01_RESUME_AUDIT",
+        "IN_PROGRESS_P5_01_FRONTEND_RUNTIME",
         {
             "implementation/evidence/phase-5/p5-01-reconciliation-hold.md",
             "implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md",
             "implementation/phase-5-requirement-anchor.md",
             "implementation/evidence/phase-5/p5-01-plan.md",
+            "implementation/evidence/phase-5/p5-01-resume-audit.md",
         },
     )
     for requirement_id in (
@@ -735,7 +736,7 @@ def verify_trace_sets() -> None:
     for requirement_id, (
         expected_status,
         expected_evidence,
-    ) in EXPECTED_P5_01_RESUME_TRACE.items():
+    ) in EXPECTED_P5_01_ACTIVE_TRACE.items():
         row = by_id[requirement_id]
         actual_evidence = {
             value.strip() for value in row["evidence"].split(";") if value.strip()
@@ -756,18 +757,18 @@ def verify_trace_sets() -> None:
             requirement_id,
         ):
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain the P5-01 resume-audit trace truth"
+                f"{requirement_id} must retain the active P5-01 trace truth"
             )
         if actual_evidence != expected_evidence:
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain its complete P5-01 resume evidence set"
+                f"{requirement_id} must retain its complete active P5-01 evidence set"
             )
         missing_evidence = sorted(
             path for path in expected_evidence if not (ROOT / path).is_file()
         )
         if missing_evidence:
             raise ReconciliationVerificationError(
-                f"{requirement_id} references missing P5-01 resume evidence files: "
+                f"{requirement_id} references missing active P5-01 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

@@ -1,6 +1,6 @@
 # Phase 5 Requirement Anchor — Design, Documents, Baselines, and EBOM
 
-Status: **ANCHORED — R1 BRIDGE PASS; P5-01 RESUME AUDIT READY**
+Status: **ANCHORED — R1 BRIDGE AND P5-01 RESUME AUDIT PASS**
 
 Anchor date: 2026-07-25
 
@@ -30,9 +30,11 @@ Before any further P5-01 product work:
 All four entry conditions passed on 2026-07-30. The terminal bridge evidence
 is
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
-P5-01 is resumed only at its retained backend checkpoint; it is not complete,
-and the first action is the reconciliation/current-shared-boundary comparison
-required by the hold checkpoint before unfinished frontend/runtime work.
+P5-01 resumed only at its retained backend checkpoint; it is not complete.
+The required reconciliation/current-shared-boundary comparison passed at
+`implementation/evidence/phase-5/p5-01-resume-audit.md` without product
+correction. The first unfinished action is now the frontend/runtime vertical
+slice.
 
 The amended M4 plan adds:
 

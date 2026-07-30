@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T13:32:57Z`
+Updated: `2026-07-30T13:52:00Z`
 
 ## Active hard blockers
 
@@ -12,15 +12,16 @@ None.
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
-`2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`.
+`2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`; pushed recovery
+checkpoint `c980571b27be66e16f2ac57409f0ef72a986e741` passed CI `#73`.
 `R1_SHARED_BRIDGE` is released. Complete evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
 P5-01 resumes from its retained backend checkpoint as `IN_PROGRESS`; this does
 not mark P5-01 `PASS`, activate P5-02 or permit scope beyond the current Phase
-5 anchor. Its first action is the bounded reconciliation/current-shared-
-boundary comparison required by
-`implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
+5 anchor. Its bounded reconciliation/current-shared-boundary audit passed and
+retained the implementation without product correction. Complete evidence:
+`implementation/evidence/phase-5/p5-01-resume-audit.md`.
 
 R1-06 Stage 1 passed its technical prototype/governance Gate at
 `e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. Stage 3 passed at
@@ -58,9 +59,9 @@ and is resumed at its retained checkpoint under
 The retained checkpoint at `930b5a2` contains the bounded Controlled
 Document/Document Revision/private File Revision backend slice, Project-scoped
 confidentiality/download audit, locks, capability-truth preview/download
-fallback, and the connector-unavailable seam. No further P5-01 implementation
-may begin until the resume audit passes. P5-01 must not invent production
-document numbering, classification, retention, scanner/viewer, sharing,
+fallback, and the connector-unavailable seam. The resume audit is now `PASS`,
+so only the unfinished frontend/runtime slice may begin. P5-01 must not invent
+production document numbering, classification, retention, scanner/viewer, sharing,
 revision or CAD/PDM rules; review/release/baseline/EBOM/formal publish remain
 P5-02 through P5-05. Production ERPNext/CAD/PDM access and external file
 retrieval remain prohibited or fail closed.
