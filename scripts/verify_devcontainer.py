@@ -246,7 +246,16 @@ def validate_ci_verification_tools(
     visual_container = ci_workflow.find(
         f"image: {visual_container_reference}"
     )
-    visual_test = ci_workflow.find("- run: npm run test:visual")
+    visual_source_cleanup = ci_workflow.find(
+        "sudo find /etc/apt/sources.list.d -maxdepth 1 -type f "
+        "-iname '*yarn*' -delete",
+        visual_container,
+    )
+    visual_browser_install = ci_workflow.find(
+        "- run: npx playwright install --with-deps chromium",
+        visual_container,
+    )
+    visual_test = ci_workflow.find("- run: npm run test:visual", visual_container)
     visual_artifact = ci_workflow.find("name: r1-05-linux-visual-evidence")
     require(
         visual_container >= 0,
@@ -257,7 +266,16 @@ def validate_ci_verification_tools(
         "CI must have exactly one canonical visual verification step",
     )
     require(
-        visual_container < visual_test < visual_artifact,
+        "sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' "
+        "/etc/apt/sources.list" in ci_workflow,
+        "CI canonical visual setup must sanitize the obsolete main Yarn source",
+    )
+    require(
+        visual_container
+        < visual_source_cleanup
+        < visual_browser_install
+        < visual_test
+        < visual_artifact,
         "CI visual verification and its evidence must follow the canonical container",
     )
     for evidence_path in (

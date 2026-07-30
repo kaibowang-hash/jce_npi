@@ -95,6 +95,10 @@ visual:
   container:
     image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
   steps:
+    - run: |
+        sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' /etc/apt/sources.list
+        sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete
+    - run: npx playwright install --with-deps chromium
     - run: npm run test:visual
     - uses: actions/upload-artifact@v4
       with:
@@ -138,6 +142,11 @@ visual:
             safe_workflow.replace(
                 f"    image: {visual_image}\n",
                 "    image: ubuntu:24.04\n",
+            ),
+            safe_workflow.replace(
+                "        sudo find /etc/apt/sources.list.d -maxdepth 1 "
+                "-type f -iname '*yarn*' -delete\n",
+                "",
             ),
             safe_workflow.replace(
                 "          implementation/evidence/phase-4/playwright-results/"
