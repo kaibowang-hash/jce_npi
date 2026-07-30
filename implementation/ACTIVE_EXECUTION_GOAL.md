@@ -1,19 +1,19 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T18:09:33Z`
+Updated: `2026-07-30T18:36:25Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — ONE USER-AUTHORIZED EXTRA P5-01 RUNTIME REPAIR`
+- Mode: `BLOCKED_EXTERNAL — CONTROLLED RUNTIME DATETIME PERSISTENCE REPAIR LIMIT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `56e1b75d6b34fd000df34d0ab70016d9163143f4`
+  `a2d98e23f7dd4d37cb66ae220beade32123bd567`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS — DISPOSABLE OWNER REPAIR LOCAL CHECKS PASS; NORMAL CI AND
-  CONTROLLED SITE GATE PENDING`)
+  (`BLOCKED_EXTERNAL — OWNER REPAIR PROVED; DATETIME PERSISTENCE GATE FAILED
+  AFTER THE AUTHORIZED EXTRA ROUND`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -119,12 +119,18 @@ a canonical email owner. Cleanup removed both containers, both volumes and
 the runner-local network.
 
 This was the fifth complete genuine controlled-runtime repair round and
-correctly triggered the controller Hard Blocker. The user has since explicitly
-authorized exactly one additional bounded repair. The candidate changes only
-the synthetic owner fixture, passed `91/91` affected and `774/774` complete
-tracked Python tests, and is tracked in
-`implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
-Normal CI and the real controlled-Site Gate remain pending.
+correctly triggered the controller Hard Blocker. The user explicitly
+authorized exactly one additional bounded owner repair. Candidate `a2d98e2`
+passed `91/91` affected and `774/774` complete tracked Python tests plus normal
+CI run `30569830739`.
+
+Manual run `30570343315` proved that repair through successful Project,
+Document Policy root and policy-draft creation. Publishing the draft returned
+HTTP `500` at the first P5 Frappe `Datetime` persistence boundary. The
+code-backed shared root is canonical ISO `T`/`Z` API text being assigned
+directly to Frappe database datetime fields. The user-authorized round is now
+exhausted and the necessary Gate remains failed. Exact evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
 
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
@@ -174,13 +180,12 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The exhausted repair boundary has been explicitly released for one bounded
-round. The synthetic fixture now creates, uses and cleans a namespaced
-disposable email owner and its local affected checks pass. The first incomplete
-action is to commit and push that bounded candidate, require normal CI PASS and
-then run the unchanged:
-
-`bash scripts/verify-frappe-runtime.sh --document-only`
+The authorized owner round is complete and exhausted. The first incomplete
+action is the single user authorization recorded in
+`implementation/NEXT_ACTION.md`. Only after that authorization may one bounded
+root-cause batch separate canonical API/snapshot timestamps from Frappe
+database formatting, harden sanitized diagnostics, rerun affected checks and
+normal CI, and dispatch the unchanged controlled-Site Gate.
 
 P5-01 remains incomplete and P5-02 remains inactive.
 
@@ -214,16 +219,23 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-`IN_PROGRESS`; the distribution-metadata repair is complete at
+incomplete and is now `BLOCKED_EXTERNAL`; the distribution-metadata repair is
+complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
 with normal run `30564533440`; the schema repair is complete at
 `56e1b75d6b34fd000df34d0ab70016d9163143f4` with normal run
-`30565607707`. The fixed controlled Site has not passed. The fifth-round Hard
+`30565607707`. The owner repair is complete at
+`a2d98e23f7dd4d37cb66ae220beade32123bd567` with normal run
+`30569830739`; its authorized controlled run `30570343315` failed at policy
+Datetime persistence after Project and draft-policy success. The fixed
+controlled Site has not passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
-authorized recovery is active at
+authorized recovery is complete at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
+The active terminal evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

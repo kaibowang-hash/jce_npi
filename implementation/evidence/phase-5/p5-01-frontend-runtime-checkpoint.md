@@ -279,7 +279,7 @@ non-email owner `Administrator`; the retained Project command requires a
 canonical email owner. Cleanup again removed both containers, both volumes
 and the runner-local network.
 
-## Controlled-Site proof blocked after five repair rounds
+## Controlled-Site proof blocked after the authorized extra round
 
 The required command is:
 
@@ -292,17 +292,28 @@ because the fixed physical repository Bench does not exist. The repository
 preflight then confirmed that this host has no Docker CLI, Docker daemon or
 Compose v2. No production Site or external integration was contacted.
 
-The five complete genuine rounds and root cause are retained in
+The first five complete genuine rounds and owner-fixture root cause are
+retained in
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
-Because the necessary Gate still fails after the fifth round, the controller
-requires `BLOCKED_EXTERNAL`.
+The user then authorized one extra bounded owner-fixture repair. Candidate
+`a2d98e23f7dd4d37cb66ae220beade32123bd567` passed normal CI run
+`30569830739`; controlled run `30570343315` proved the owner correction,
+Project creation and Document Policy root/draft creation. Policy publication
+returned HTTP `500` at the first P5 Frappe `Datetime` persistence boundary.
+The authorized round is exhausted, so the controller again requires
+`BLOCKED_EXTERNAL`.
 
 The single user action required is:
 
-`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair
+round for the shared Frappe Datetime persistence root cause and sanitized
+diagnostic hardening beyond the exhausted extra round.`
 
-Until then, no sixth repair or dispatch is permitted. P5-01 and all seven
-requirements remain incomplete, and P5-02 remains inactive.
+Exact evidence and the bounded solution are in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
+Until the new authorization, no further source repair or dispatch is
+permitted. P5-01 and all seven requirements remain incomplete, and P5-02
+remains inactive.
 
 ## Rollback and recovery
 

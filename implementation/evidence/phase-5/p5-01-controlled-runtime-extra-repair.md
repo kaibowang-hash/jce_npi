@@ -17,11 +17,13 @@ Requirements:
 
 Result:
 
-`IN_PROGRESS — USER-AUTHORIZED EXTRA REPAIR; LOCAL CANDIDATE CHECKS PASS;
-NORMAL CI AND CONTROLLED SITE GATE PENDING`
+`BLOCKED_EXTERNAL — OWNER REPAIR PASSED NORMAL CI AND ADVANCED THE CONTROLLED
+SITE; NEW DATETIME PERSISTENCE FAILURE EXHAUSTED THE AUTHORIZED ROUND`
 
 This is not a P5-01 Task Gate PASS, does not promote any requirement and does
-not activate P5-02.
+not activate P5-02. The terminal result and next bounded action are recorded
+in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
 
 ## Authority and fixed scope
 
@@ -88,5 +90,24 @@ normal CI followed by:
 bash scripts/verify-frappe-runtime.sh --document-only
 ```
 
-Only a real PASS of that controlled Site Gate may resume the final P5-01
-reviews and Level 2 Task Gate.
+## Terminal result of the authorized round
+
+The candidate was committed and pushed at
+`a2d98e23f7dd4d37cb66ae220beade32123bd567`. Normal CI run `30569830739`
+passed the complete repository, browser, visual and both pull-request secret
+lanes on that exact SHA.
+
+Manual run `30570343315` used the same SHA. It passed exact runtime setup,
+both app installations, both migrations, schema verification, the disposable
+owner lifecycle, Project creation, and Document Policy root and draft
+creation. Publishing the draft then returned HTTP `500`. The workflow removed
+its ephemeral containers, volumes and network.
+
+The owner correction is therefore effective, but the necessary Gate remains
+failed at a new downstream Frappe Datetime persistence boundary. The single
+authorized extra round is exhausted. Exact analysis, bounded solution and the
+single required user action are preserved in the datetime blocker evidence
+named above.
+
+Only a newly authorized repair and a real PASS of the unchanged controlled
+Site Gate may resume the final P5-01 reviews and Level 2 Task Gate.

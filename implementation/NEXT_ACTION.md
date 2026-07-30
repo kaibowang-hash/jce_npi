@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-01 EXTRA OWNER-FIXTURE REPAIR LOCAL CHECKS PASS`
+`BLOCKED_EXTERNAL — P5-01 DATETIME PERSISTENCE REPAIR LIMIT`
 
-Recovery time: `2026-07-30T18:09:33Z`
+Recovery time: `2026-07-30T18:36:25Z`
 
 Latest complete CI recovery checkpoint:
-`56e1b75d6b34fd000df34d0ab70016d9163143f4`
+`a2d98e23f7dd4d37cb66ae220beade32123bd567`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -24,7 +24,8 @@ Required and only development branch:
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
-  static runtime checks pass; P5-01 remains `IN_PROGRESS`, not `PASS`.
+  static runtime checks pass; P5-01 remains incomplete and is now
+  `BLOCKED_EXTERNAL`, not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -61,12 +62,19 @@ Required and only development branch:
   runner-local containers, volumes and network.
 - The fifth failed round remains preserved as a truthful historical Hard
   Blocker.
-- The user explicitly authorized one additional bounded repair. The fixture
-  now creates a canonical-email disposable owner, keeps Administrator only as
-  actor, cleans the exact owner in `finally` and requires replay-only to prove
-  cleanup.
-- Affected runtime/verifier tests pass `91/91`; complete tracked Python tests
-  pass `774/774`. No real controlled-Site PASS is claimed yet.
+- The user-authorized extra repair is complete at `a2d98e2`. Affected
+  runtime/verifier tests pass `91/91`, complete tracked Python tests pass
+  `774/774`, and normal CI run `30569830739` passed on the exact SHA.
+- Manual run `30570343315` proved the owner lifecycle and advanced through
+  Project, Document Policy root and draft creation. Policy publication then
+  returned HTTP `500` at the first P5 Frappe `Datetime` persistence boundary.
+  Cleanup removed the ephemeral runtime resources.
+- The code-backed shared root is canonical ISO `T`/`Z` API text being assigned
+  directly to Frappe database `Datetime` fields. The bounded solution must
+  separate canonical timestamp truth from Frappe storage formatting across
+  all affected P5 Document controllers and add sanitized failure diagnostics.
+- The single authorized extra round is exhausted. This is a controller Hard
+  Blocker; no further source repair or dispatch is authorized.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -100,9 +108,15 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The authorization is satisfied and the bounded local repair checks pass. The
-first incomplete action is to commit and push the exact fixture candidate,
-require its normal CI PASS, then dispatch:
+The first incomplete action is the single required user authorization:
+
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair
+round for the shared Frappe Datetime persistence root cause and sanitized
+diagnostic hardening beyond the exhausted extra round.`
+
+After that authority only, implement the bounded root-cause batch defined in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`,
+run affected checks and normal CI, then dispatch the unchanged:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

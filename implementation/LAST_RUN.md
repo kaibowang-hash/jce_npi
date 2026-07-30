@@ -1,5 +1,26 @@
 # Last Run
 
+## P5-01 authorized extra round exposed Datetime blocker — 2026-07-31
+
+- Exact owner-repair candidate:
+  `a2d98e23f7dd4d37cb66ae220beade32123bd567`.
+- Normal CI run `30569830739`: repository, browser, visual and both
+  pull-request secret lanes `PASS`.
+- Authorized controlled run `30570343315`: exact runtime setup, both app
+  installations, both migrations, schema, disposable owner, Project, Document
+  Policy root and draft `PASS`.
+- Document Policy publication returned HTTP `500` at the first P5 Frappe
+  `Datetime` persistence boundary. No Document/revision runtime PASS is
+  claimed; ephemeral containers, volumes and network were removed.
+- The owner repair is proved effective. The new shared root is canonical ISO
+  `T`/`Z` text assigned directly to Frappe database `Datetime` fields; the
+  same helper affects downstream P5 Document persistence.
+- The single authorized extra round is exhausted. Controller status is
+  `BLOCKED_EXTERNAL`; P5-01 and all seven requirements remain incomplete,
+  P5-02 remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
+
 ## P5-01 extra controlled-runtime repair locally green — 2026-07-31
 
 - The user explicitly authorized one additional bounded repair beyond the

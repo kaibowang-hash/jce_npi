@@ -1,10 +1,29 @@
 # Blockers
 
-Updated: `2026-07-30T18:09:33Z`
+Updated: `2026-07-30T18:36:25Z`
 
 ## Active hard blockers
 
-None.
+`P5-01-CONTROLLED-RUNTIME-DATETIME-PERSISTENCE-REPAIR-LIMIT`
+
+The single user-authorized extra repair round passed normal CI and proved the
+disposable canonical-email owner correction on the real controlled Site.
+Manual run `30570343315` advanced through Project, Document Policy root and
+draft creation, then Document Policy publication returned HTTP `500` at the
+first P5 Frappe `Datetime` write. The code-backed root is the use of canonical
+ISO `T`/`Z` timestamp strings in Frappe database fields whose fixed storage
+format is space-separated and timezone-naive. The same helper affects the
+downstream P5 Document datetime fields, so a policy-only workaround is unsafe.
+
+The authorized round is exhausted and the necessary Gate still fails.
+Complete evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
+
+Single user action required:
+
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair
+round for the shared Frappe Datetime persistence root cause and sanitized
+diagnostic hardening beyond the exhausted extra round.`
 
 ## Resolved hard blockers
 
@@ -13,14 +32,15 @@ None.
 The five-round limit was a real controller Hard Blocker and remains preserved
 in `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
 The user explicitly authorized exactly one additional bounded repair round on
-2026-07-31 local time. The known disposable-owner correction has passed its
-local affected checks; normal CI and the unchanged controlled-Site Gate remain
-pending. Evidence:
+2026-07-31 local time. The known disposable-owner correction passed local
+checks, normal CI and its real controlled-Site path through Project creation.
+That historical repair-limit blocker is resolved by the authorization, while
+the new downstream Datetime persistence blocker above is active. Evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_EXTRA_REPAIR`
+`P5-01_CONTROLLED_RUNTIME_DATETIME_PERSISTENCE_REPAIR_LIMIT`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
@@ -29,10 +49,11 @@ checkpoint `c980571b27be66e16f2ac57409f0ef72a986e741` passed CI `#73`.
 `R1_SHARED_BRIDGE` is released. Complete evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
-P5-01 resumes from its retained backend checkpoint as `IN_PROGRESS`; this does
-not mark P5-01 `PASS`, activate P5-02 or permit scope beyond the current Phase
-5 anchor. Its bounded reconciliation/current-shared-boundary audit passed and
-retained the implementation without product correction. Complete evidence:
+P5-01 remains at its retained backend checkpoint as incomplete and
+`BLOCKED_EXTERNAL`; this does not mark P5-01 `PASS`, activate P5-02 or permit
+scope beyond the current Phase 5 anchor. Its bounded
+reconciliation/current-shared-boundary audit passed and retained the
+implementation without product correction. Complete evidence:
 `implementation/evidence/phase-5/p5-01-resume-audit.md`.
 
 R1-06 Stage 1 passed its technical prototype/governance Gate at
