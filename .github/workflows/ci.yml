@@ -30,6 +30,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --strict-allow-scripts
         working-directory: frontend
+      - name: Install repository verification tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ripgrep
       - run: bash scripts/verify-dev-config.sh
       - run: bash scripts/verify.sh
       - run: npx playwright install --with-deps chromium

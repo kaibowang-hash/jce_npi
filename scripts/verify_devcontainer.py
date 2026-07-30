@@ -205,6 +205,23 @@ def validate_repository_verifier(repository_verify: str) -> None:
     )
 
 
+def validate_ci_verification_tools(ci_workflow: str) -> None:
+    apt_update = ci_workflow.find("sudo apt-get update")
+    ripgrep_install = ci_workflow.find("sudo apt-get install --yes ripgrep")
+    repository_verify = ci_workflow.find("- run: bash scripts/verify.sh")
+    require(apt_update >= 0, "CI must refresh APT metadata before installing ripgrep")
+    require(ripgrep_install >= 0, "CI must install the required ripgrep verifier")
+    require(repository_verify >= 0, "CI must run the repository verifier")
+    require(
+        apt_update < ripgrep_install < repository_verify,
+        "CI must install ripgrep before running the repository verifier",
+    )
+    require(
+        "sudo apt-get install --yes ripgrep || true" not in ci_workflow,
+        "CI must not ignore a failed ripgrep installation",
+    )
+
+
 def validate_frontend_install_policy(
     npmrc: str,
     package: Mapping[str, Any],
@@ -326,9 +343,12 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
         in (REPO_ROOT / "Makefile").read_text(encoding="utf-8"),
         "Frontend Make install must enter the project and enforce strict dependency scripts",
     )
+    ci_workflow = (REPO_ROOT / ".github/workflows/ci.yml").read_text(
+        encoding="utf-8"
+    )
+    validate_ci_verification_tools(ci_workflow)
     require(
-        "run: npm ci --strict-allow-scripts"
-        in (REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"),
+        "run: npm ci --strict-allow-scripts" in ci_workflow,
         "Frontend CI install must enforce strict dependency scripts",
     )
     pending_script_verifier = (

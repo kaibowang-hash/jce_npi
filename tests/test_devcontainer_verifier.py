@@ -11,6 +11,7 @@ from scripts.verify_devcontainer import (
     validate_apt_source_sanitization,
     validate_bootstrap_vite_installation,
     validate_bootstrap_uv_installation,
+    validate_ci_verification_tools,
     validate_frontend_install_policy,
     validate_local_configuration,
     validate_repository_verifier,
@@ -75,6 +76,31 @@ class DevcontainerVerifierTest(unittest.TestCase):
         self.assertEqual(toolchain["VITE_ESBUILD_EXPECTED_VERSION"], "0.21.5")
         self.assertEqual(toolchain["VITE_FSEVENTS_EXPECTED_VERSION"], "2.3.3")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
+
+    def test_ci_installs_ripgrep_before_the_fail_closed_repository_scan(self):
+        safe_workflow = """steps:
+  - run: sudo apt-get update
+  - run: sudo apt-get install --yes ripgrep
+  - run: bash scripts/verify.sh
+"""
+        validate_ci_verification_tools(safe_workflow)
+        unsafe_variants = (
+            safe_workflow.replace("sudo apt-get update\n", ""),
+            safe_workflow.replace("sudo apt-get install --yes ripgrep\n", ""),
+            safe_workflow.replace(
+                "sudo apt-get install --yes ripgrep",
+                "sudo apt-get install --yes ripgrep || true",
+            ),
+            safe_workflow.replace(
+                "  - run: sudo apt-get install --yes ripgrep\n"
+                "  - run: bash scripts/verify.sh\n",
+                "  - run: bash scripts/verify.sh\n"
+                "  - run: sudo apt-get install --yes ripgrep\n",
+            ),
+        )
+        for unsafe_workflow in unsafe_variants:
+            with self.assertRaises(VerificationError):
+                validate_ci_verification_tools(unsafe_workflow)
 
     def test_upstream_token_is_scoped_to_github_api(self):
         github_headers = upstream_request_headers(
