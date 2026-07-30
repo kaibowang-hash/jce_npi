@@ -5,15 +5,17 @@ Planned: `2026-07-25T18:38:47Z`
 Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
-Task state: **IN PROGRESS — V1_2_RECONCILIATION_HOLD**
+Task state: **IN PROGRESS — R1 HOLD RELEASED; RESUME AUDIT READY**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
 
-The user-directed hold freezes this plan after the bounded
-backend/domain/DocType/repository/BFF/API/contract unit. It does not mark
-P5-01 complete and no later planned sub-slice may start until reconciliation
-is explicitly lifted.
+The user-directed hold preserved this plan after the bounded
+backend/domain/DocType/repository/BFF/API/contract unit. The cumulative R1
+Level 3 Gate passed on 2026-07-30 and released the hold. P5-01 is not complete.
+Before unfinished frontend/runtime work, compare the retained slice against
+the accepted reconciliation and current shared boundaries, record the exact
+retained/corrected scope and rerun its focused Level 1 checks.
 
 Applicable requirements:
 
@@ -317,3 +319,10 @@ Implement the pure document-policy/document-revision/lock domain model and its
 focused unit tests, then add controlled DocType metadata/controllers. Do not
 start frontend or contract work until the domain invariants pass a Level 1
 check.
+
+That original action is complete at retained checkpoint `930b5a2`. The first
+resume action is now the bounded comparison described in
+`p5-01-reconciliation-hold.md`: verify the retained
+backend/domain/DocType/repository/BFF/API/contracts against the accepted
+reconciliation and every current shared R1 boundary. Only then continue the
+unfinished frontend/runtime/UI evidence slice.

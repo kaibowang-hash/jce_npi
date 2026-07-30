@@ -1,103 +1,107 @@
 # Next Action
 
-Status: `R1 SHARED BRIDGE LEVEL 3 EXIT GATE READY`
+Status: `P5-01 RESUME AUDIT READY — R1 BRIDGE PASS`
 
-Recovery time: `2026-07-30T13:19:55Z`
+Recovery time: `2026-07-30T13:32:57Z`
 
-Latest synchronized R1-06 Task Gate checkpoint:
-`5fae1784e376c08cd4466c1b38592eb9a7ec513e`
+Latest synchronized R1 Gate candidate:
+`2ced098362ab99a4750a13e7004a441a7f19b698`
+
+Retained P5-01 checkpoint:
+`930b5a28cb995df12f251994a36f7502525ed94a`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
 
 ## Controller state
 
-- R1-01 and R1-02 passed their Level 2 Gates.
-- R1-03 and R1-04 passed their triggered task-level Level 3 Gates.
-- R1-05 is complete:
-  - `FR-UX-040`: `TECHNICAL_VERIFIED`;
-  - `FR-UX-041`: `TECHNICAL_VERIFIED`; and
-  - `FR-UX-043`: `TECHNICAL_VERIFIED`.
-- R1-06 passed its Level 2 Task Gate for the executable scope:
-  - `UX-026`: `PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD`;
-  - `UX-030`:
-    `TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD`;
-  - `UX-035`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`; and
-  - `UX-036`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`.
-- Product Owner approval remains truthfully unsigned. R1-06 Stage 2 is
-  scoped-held by the fail-closed backend-entry verifier.
-- `DR-REC-001` remains `PENDING_PRODUCT_OWNER`; conditional R1-07 is skipped
-  without being marked complete.
+- The cumulative R1 shared Shell/design/i18n Level 3 exit Gate is `PASS`.
+- `R1_SHARED_BRIDGE` is released.
+- R1-01 through R1-06 are complete for their executable scope.
+- `DR-REC-001` remains pending; conditional R1-07 was not activated or marked
+  complete.
+- Phase 5 remains `IN_PROGRESS`.
+- P5-00 remains `PASS`.
+- P5-01 resumes as `IN_PROGRESS_CHECKPOINTED`; it is not `PASS`.
+- P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
-- Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; Phase 4 remains `PASS`; Phase
-  5 remains `IN_PROGRESS`.
-- P5-01 remains `IN_PROGRESS_CHECKPOINTED` at the retained backend boundary.
-- The cumulative R1 shared Shell/design/i18n Level 3 exit Gate is the only
-  active bridge action.
+
+## Current task
+
+`P5-01 — Document and design revision`
+
+Requirements:
+
+- `FR-DS-001`
+- `FR-DS-003`
+- `FR-DS-004`
+- `FR-DS-007`
+- `FR-DS-008`
+- `FR-DS-009`
+- `FR-DS-014`
+
+Use:
+
+- `implementation/phase-5-requirement-anchor.md`;
+- `implementation/evidence/phase-5/p5-01-plan.md`;
+- `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`;
+- the indexed trace rows and current contracts; and
+- `frappe-safe-change`, `npi-domain-guard`, `industrial-ux` and
+  `frappe-i18n` Skills.
 
 ## First incomplete action
 
-Run the complete cumulative R1 shared Shell/design/i18n Level 3 release Gate
-using `implementation/QUALITY_GATE.md` and the `release-gate` Skill.
+Complete only the P5-01 resume audit before new product implementation:
 
-The Gate must reconcile and retain:
+1. compare the exact retained `930b5a2` backend/domain/DocType/repository/
+   BFF/API/OpenAPI/data-ownership slice with the accepted reconciliation and
+   current R1 shared boundaries;
+2. verify stable identities, ownership, permission, API and localization
+   contracts were not invalidated by R1;
+3. identify and minimally repair only real conflicts;
+4. preserve all valid checkpoint code and its existing focused evidence;
+5. produce a current Requirement → Code → Test → Evidence and changed-files →
+   affected-tests map;
+6. rerun the focused retained Level 1 backend/contract checks; and
+7. commit and push a recoverable resume-audit checkpoint.
 
-1. complete repository type/lint/unit/build/audit verification;
-2. complete backend, API, permission and controlled Frappe runtime evidence
-   for the shared boundaries that changed in R1;
-3. complete non-visual browser and trilingual accessibility evidence;
-4. the accepted complete historical visual matrix plus the additive current
-   R1 fixed-Linux comparisons, without rewriting unrelated baselines;
-5. security, dependency, secret, prohibited-pattern and fake-success scans;
-6. migration, rollback and recovery review;
-7. exact 282-row traceability and Evidence integrity; and
-8. independent requirement/domain/permission/security/UX/i18n/visual/release
-   review.
+Only after that audit passes may the unfinished P5-01 frontend/runtime/UI slice
+begin.
 
-Run fresh complete CI for the Task Gate checkpoint. Reuse earlier R1
-Level 3/runtime/complete-matrix evidence only where the R1-06 impact map proves
-that source boundary unchanged, and state that reuse explicitly.
+## Retained passing checkpoint evidence
 
-## Reusable current evidence
+- P5-01 focused domain/repository/API/metadata/controller/contract:
+  `63/63`.
+- Binary response/failure matrix: `15/15`.
+- Affected foundation/BFF/API regressions: `107/107`.
+- Nine DocType JSON and OpenAPI/data-ownership/controller metadata checks.
+- Direct catalogs at the checkpoint and generated-catalog freshness.
+- Exact 55-file retained inventory and no production policy, external
+  identity, scanner/viewer, CAD/PDM or ERPNext activation.
 
-- R1-03 Level 3 public session-contract Gate.
-- R1-04 Level 3 grid personalization/schema Gate.
-- R1-05 Stage 1 Level 3 public preference/shared-UI Gate.
-- R1-05 Stage 2 and Stage 3 Level 2 Gates.
-- R1-06 Stage 1 technical prototype/governance Gate, CI `#67`.
-- R1-06 Stage 3:
-  - affected governance `28/28`;
-  - complete Python `762/762`;
-  - complete frontend unit `634/634`;
-  - complete non-visual browser `279/279`;
-  - exact fixed-Linux visual `24/24`;
-  - direct three-language coverage `2,782` sources at `100%`;
-  - both npm audits `0` vulnerabilities; and
-  - CI `#70`, run `30544737387`, repository job `90877923233`, visual job
-    `90877923386`.
+These results must be impact-reviewed against current shared code before
+reuse; do not repeat unrelated complete R1 Gates.
 
 ## Prohibited or held behavior
 
-- Do not treat technical prototype evidence as Product Owner approval.
-- Do not start the R1-06 production reset/undo command while its exact
-  approval manifest remains unsigned.
-- Do not implement R1-07 while `DR-REC-001` is pending.
-- Do not rewrite historical visual baselines solely to normalize renderer
-  drift.
-- Do not sign Phase 3 business UAT or infer any production business policy.
-- Do not resume P5-01 until the cumulative R1 exit Gate passes.
-- Do not activate `Core.png`, connect ERPNext/JCE/CAD/PDM or infer a pending
-  Decision Request.
+- Do not restart the already retained pure domain/backend slice.
+- Do not install production document types, prefixes, numbering or revision
+  policy.
+- Do not infer release/review authority from Project ownership, RACI,
+  `System Manager` or the transport role.
+- Do not expose a raw private URL or fabricate upload, scanner, preview,
+  connector or external-sharing success.
+- Do not weaken tenant/Project/object authorization, CSRF, idempotency,
+  optimistic version, audit or immutable revision truth.
+- Do not start P5-02 review/release, P5-03 baseline, P5-04 EBOM or P5-05
+  publish request behavior.
+- Do not connect production ERPNext/JCE/CAD/PDM or sign external UAT.
 
 ## Transition
 
-If the cumulative R1 Level 3 Gate passes:
-
-1. mark the R1 bridge `PASS`;
-2. release the `R1_SHARED_BRIDGE` hold;
-3. preserve R1-06 Stage 2 and R1-07 as scoped external-decision holds;
-4. resume P5-01 from its retained `930b5a2` checkpoint and current Phase 5
-   requirement anchor; and
-5. continue automatic Phase 5 delivery without waiting for a routine user
-   continuation instruction.
+After the resume audit checkpoint passes, continue the smallest unfinished
+P5-01 vertical slice: controlled metadata synchronization/runtime plus the live
+Project Design/Documents workspace, complete trilingual/accessibility/error
+states and affected exact visuals. Finish the P5-01 Level 2 Task Gate before
+activating P5-02.

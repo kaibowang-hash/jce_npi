@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T13:10:49Z`
+Updated: `2026-07-30T13:32:57Z`
 
 ## Active hard blockers
 
@@ -8,42 +8,19 @@ None.
 
 ## Active execution hold
 
-`R1_SHARED_BRIDGE` is active.
+None.
 
-R1-01 and R1-02 passed their Level 2 Gates, and R1-03 and R1-04 passed their
-triggered task-level Level 3 Gates. R1-05 is complete. Its Stage 1
-`FR-UX-040` slice passed the
-`LEVEL 3 R1-05 STAGE 1 PUBLIC PREFERENCE/SHARED UI CHECKPOINT` and is
-`TECHNICAL_VERIFIED`. Stage 2 `FR-UX-041` passed the
-`LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE` and is
-`TECHNICAL_VERIFIED`. Stage 3 `FR-UX-043` passed the
-`LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE` and is
-`TECHNICAL_VERIFIED`. R1-06 passed its Level 2 Task Gate for every currently
-executable scope:
+The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
+2026-07-30 at synchronized candidate
+`2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`.
+`R1_SHARED_BRIDGE` is released. Complete evidence:
+`implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
-- `UX-026`: `PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD`;
-- `UX-030`: `TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD`;
-- `UX-035`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`; and
-- `UX-036`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`.
-
-R1-06 Stage 3 adds exact six-screen × three-language 1440×900 fixed-Linux
-governance without rewriting accepted historical baselines. `DR-REC-001`
-remains `PENDING_PRODUCT_OWNER`, so conditional R1-07 is skipped without being
-marked complete. The cumulative R1 shared Shell/design/i18n Level 3 exit Gate
-is the only active bridge action.
-P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
-
-- is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
-- does not permit P5-01 to be marked `PASS`;
-- prevents another P5-01 sub-slice, P5-02, or Phase 6 from starting;
-- executes R1-05 and R1-06 before the shared Level 3 bridge Gate;
-- keeps R1-07 disabled unless DR-REC-001 is approved; and
-- preserves the exact P5-01 product boundary in
-  `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
-
-The former `V1_2_RECONCILIATION_HOLD` is resolved by
-`implementation/evidence/reconciliation/r1-01-validation.md`; it is replaced
-by this bounded shared-bridge hold rather than removed.
+P5-01 resumes from its retained backend checkpoint as `IN_PROGRESS`; this does
+not mark P5-01 `PASS`, activate P5-02 or permit scope beyond the current Phase
+5 anchor. Its first action is the bounded reconciliation/current-shared-
+boundary comparison required by
+`implementation/evidence/phase-5/p5-01-reconciliation-hold.md`.
 
 R1-06 Stage 1 passed its technical prototype/governance Gate at
 `e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. Stage 3 passed at
@@ -73,7 +50,7 @@ primary actions remain prohibited.
 Phase 4 and P4-05 passed their complete triggered Level 3 Full Release Gate.
 `P5-00 — Phase 5 requirement anchor for Design, Documents, Baselines, and
 EBOM` is `PASS`. `P5-01 — Document and design revision` remains incomplete
-under the current R1 bridge hold and is governed by
+and is resumed at its retained checkpoint under
 `implementation/phase-5-requirement-anchor.md`,
 `implementation/ACTIVE_EXECUTION_GOAL.md`, and
 `implementation/NEXT_ACTION.md`.
@@ -82,17 +59,18 @@ The retained checkpoint at `930b5a2` contains the bounded Controlled
 Document/Document Revision/private File Revision backend slice, Project-scoped
 confidentiality/download audit, locks, capability-truth preview/download
 fallback, and the connector-unavailable seam. No further P5-01 implementation
-may begin while this hold is active. On resume, P5-01 must not invent
-production document numbering, classification, retention, scanner/viewer,
-sharing, revision or CAD/PDM rules; review/release/baseline/EBOM/formal
-publish remain P5-02 through P5-05. Production ERPNext/CAD/PDM access and
-external file retrieval remain prohibited or fail closed.
+may begin until the resume audit passes. P5-01 must not invent production
+document numbering, classification, retention, scanner/viewer, sharing,
+revision or CAD/PDM rules; review/release/baseline/EBOM/formal publish remain
+P5-02 through P5-05. Production ERPNext/CAD/PDM access and external file
+retrieval remain prohibited or fail closed.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`
 and approved `JCE Core` display name resolve DR-REC-006 but remain allocated to
 FR-BR-002/Phase 8/M7-09; they must not be activated by the remaining R1 tasks
-or replaced by the Company LOGO, a reconstructed mark or an external search.
+or P5-01, or replaced by the Company LOGO, a reconstructed mark or an external
+search.
 
 DR-REC-001..010 in
 `implementation/V1_2_RECONCILIATION_DECISIONS.md` pause only their named

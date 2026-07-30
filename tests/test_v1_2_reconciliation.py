@@ -333,6 +333,30 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
+    def test_p5_01_trace_resumes_without_claiming_completion(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for (
+            requirement_id,
+            (expected_status, expected_evidence),
+        ) in self.verifier.EXPECTED_P5_01_RESUME_TRACE.items():
+            row = by_id[requirement_id]
+            self.assertEqual(row["status"], expected_status)
+            self.assertEqual(
+                {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                },
+                expected_evidence,
+            )
+            self.assertNotIn("TECHNICAL_VERIFIED", row["status"])
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
 

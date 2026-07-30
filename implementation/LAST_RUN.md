@@ -1519,3 +1519,48 @@ Complete evidence:
 
 - `implementation/evidence/reconciliation/r1-06-stage-3-validation.md`;
 - `implementation/evidence/reconciliation/r1-06-validation.md`.
+
+## R1 cumulative Level 3 PASS; P5-01 resumed — 2026-07-30T13:32:57Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Final synchronized R1 Gate candidate:
+  `2ced098362ab99a4750a13e7004a441a7f19b698`.
+- Retained P5-01 backend checkpoint:
+  `930b5a28cb995df12f251994a36f7502525ed94a`.
+- Result:
+  `PASS — LEVEL 3 R1 SHARED SHELL/DESIGN/I18N EXIT GATE`.
+
+CI `#72`, run `30546528862`, passed on the exact controller-synchronized
+candidate:
+
+- repository job `90884045344`: complete Python `763/763`, complete frontend
+  unit `634/634`, complete non-visual browser `279/279`, i18n `2,782` sources
+  with `100%` direct `zh`/`zh-TW`, both npm audits `0` vulnerabilities and
+  action/full-branch secret scans with no leaks;
+- fixed-Linux visual job `90884045367`: `24/24` PASS;
+- visual artifact `8760986155`, digest
+  `sha256:fd58861f26629f35dbe1c4914922884ab3134711102ba9ad5114699d5fadd750`;
+  and
+- Gitleaks artifact `8761142614`, digest
+  `sha256:574b5a225face8b03790291ea97353500196a77d343ba08830bf6781488f189e`.
+
+The current 231-case visual inventory is completely covered by the accepted
+210-case matrix plus every later source-affected replacement and 21 additive
+cases. The known unrelated renderer-only diagnostic drift was not normalized
+or represented as PASS. Backend/runtime/migration evidence remains reusable:
+after the terminal R1-05 Level 3 runtime checkpoint, the only
+`apps/npi_core` changes are the two additive translation CSV files.
+
+Independent requirements, domain/API/schema, permission/security, migration/
+recovery, UX/accessibility/i18n/visual and controller/evidence reviews found
+`0 blocker / 0 major / 0 minor`. R1-07 remains unactivated under pending
+`DR-REC-001`, and R1-06 Stage 2 retains its unsigned Product Owner hold.
+
+`R1_SHARED_BRIDGE` is released. P5-01 resumes as
+`IN_PROGRESS_CHECKPOINTED`, not `PASS`. Its first incomplete action is the
+bounded comparison of the retained backend/domain/DocType/repository/BFF/API/
+contract slice against the accepted reconciliation and current shared R1
+boundaries before new frontend/runtime implementation.
+
+Complete evidence:
+`implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.

@@ -225,11 +225,11 @@ pending until that proof is produced in Codespaces.
   (`PASS — LEVEL 2 TASK GATE; STAGE 2 PRODUCT APPROVAL HOLD RETAINED`).
   R1 is an inserted bridge, not a replacement controller Phase.
 - Current controller task:
-  `R1-EXIT-GATE — cumulative shared Shell/design/i18n Level 3`
-  (`IN_PROGRESS — READY`).
-- Held product task: `P5-01 — Document and design revision`. Its bounded
-  backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
-  `PASS`, and no further P5-01 product slice may start during the R1 bridge.
+  `P5-01 — Document and design revision`
+  (`IN_PROGRESS_CHECKPOINTED — RESUME AUDIT READY`).
+- The R1 bridge and its cumulative shared Shell/design/i18n Level 3 exit Gate
+  are `PASS`. The bounded P5-01 backend/domain/contract checkpoint is retained
+  at `930b5a2`; P5-01 is not `PASS`.
 - Current requirement inventory: 282 unique trace rows — 173
   `PACK_CANONICAL`, 95 `DOCX_RECONCILED`, and 14 `ADDENDUM_DIRECT`.
 - Current reconciliation authorities:
@@ -250,7 +250,7 @@ pending until that proof is produced in Codespaces.
 - Latest completed product Phase remains Phase 4 `PASS`; its historical Gate
   evidence is immutable and is not recalculated against the amended trace.
 - Phase 5 remains `IN_PROGRESS`; P5-00 remains a historical `PASS`, P5-01 is
-  held, and P5-02 through P5-05 remain inactive.
+  resumed at its checkpoint, and P5-02 through P5-05 remain inactive.
 - R1-01 changed specifications, trace/index metadata, planning and safe
   inspection tooling only. R1-02 changed the shared frontend Shell,
   Frappe-compatible catalogs and display-brand build guard. R1-03 added only
@@ -293,13 +293,15 @@ pending until that proof is produced in Codespaces.
   `762/762` Python, `634/634` frontend unit, `279/279` non-visual browser,
   `24/24` fixed-Linux affected visuals and `2,782` direct trilingual sources.
 - `DR-REC-001` remains `PENDING_PRODUCT_OWNER`, so conditional R1-07 is
-  skipped without being marked complete. Run only the cumulative R1 shared
-  Shell/design/i18n Level 3 exit Gate next; P5-01 resumes only if it passes.
+  skipped without being marked complete. The cumulative R1 shared
+  Shell/design/i18n Level 3 exit Gate passed at CI `#72`; preserve its scoped
+  holds and run only the P5-01 resume comparison audit next.
 
-Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
-Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01 through R1-06
+Resume only from `implementation/NEXT_ACTION.md`, the Phase 5 anchor and the
+retained P5-01 checkpoint evidence. Reuse the passing Phase 4, P5-00 and R1
 evidence where the current impact map proves the boundary unchanged; do not
 repeat or rewrite it merely to restore context. See
-`implementation/evidence/reconciliation/r1-06-requirement-anchor.md`,
-`implementation/evidence/reconciliation/r1-06-plan.md` and
+`implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`,
+`implementation/evidence/phase-5/p5-01-plan.md`,
+`implementation/evidence/phase-5/p5-01-reconciliation-hold.md` and
 `implementation/LAST_RUN.md` for the exact latest result.

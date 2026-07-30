@@ -1,6 +1,6 @@
 # Phase 5 Requirement Anchor — Design, Documents, Baselines, and EBOM
 
-Status: **ANCHORED — P5-01 CHECKPOINTED AND HELD FOR R1 BRIDGE**
+Status: **ANCHORED — R1 BRIDGE PASS; P5-01 RESUME AUDIT READY**
 
 Anchor date: 2026-07-25
 
@@ -26,6 +26,13 @@ Before any further P5-01 product work:
 2. deliver R1-04 through R1-06 shared UX/governance remediation;
 3. keep R1-07 scoped to DR-REC-001; and
 4. pass the triggered Level 3 shared Shell/design/i18n bridge Gate.
+
+All four entry conditions passed on 2026-07-30. The terminal bridge evidence
+is
+`implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
+P5-01 is resumed only at its retained backend checkpoint; it is not complete,
+and the first action is the reconciliation/current-shared-boundary comparison
+required by the hold checkpoint before unfinished frontend/runtime work.
 
 The amended M4 plan adds:
 
