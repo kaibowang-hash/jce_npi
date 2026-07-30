@@ -137,15 +137,23 @@ visual:
         sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' /etc/apt/sources.list
         sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete
     - run: npx playwright install --with-deps chromium
-    - run: npx playwright test tests/e2e/r1-05-panes.spec.ts tests/e2e/r1-05-field-attachments.spec.ts --grep @visual
+    - run: npx playwright test tests/e2e/r1-06-p0-visual-governance.spec.ts tests/e2e/r1-05-panes.spec.ts tests/e2e/r1-05-field-attachments.spec.ts --grep @visual
+      env:
+        NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3
     - uses: actions/upload-artifact@v4
       with:
-        name: r1-05-linux-visual-evidence
+        name: r1-06-linux-visual-evidence
         path: |
-          implementation/evidence/phase-4/playwright-results/.last-run.json
-          implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png
-          implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png
+          frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-*-linux.png
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-actual.png
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-diff.png
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-05-*/**/*-actual.png
+          implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-05-*/**/*-diff.png
+        if-no-files-found: error
         include-hidden-files: true
+        retention-days: 30
 """
         validate_ci_verification_tools(safe_workflow, visual_image)
         unsafe_variants = (
@@ -204,11 +212,26 @@ visual:
                 "",
             ),
             safe_workflow.replace(
-                "          implementation/evidence/phase-4/playwright-results/"
-                "r1-05-*/**/*-actual.png\n",
-                "          implementation/evidence/phase-4\n",
+                "          implementation/evidence/phase-5/r1-06-stage-3/"
+                "playwright-results/r1-06-*/**/*-actual.png\n",
+                "          implementation/evidence/phase-5\n",
             ),
             safe_workflow.replace("        include-hidden-files: true\n", ""),
+            safe_workflow.replace("        if-no-files-found: error\n", ""),
+            safe_workflow.replace("        retention-days: 30\n", ""),
+            safe_workflow.replace(
+                " tests/e2e/r1-06-p0-visual-governance.spec.ts",
+                "",
+            ),
+            safe_workflow.replace(
+                "      env:\n"
+                "        NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3\n",
+                "",
+            ),
+            safe_workflow.replace(
+                " --grep @visual",
+                " --grep @visual --update-snapshots=all",
+            ),
         )
         for unsafe_workflow in unsafe_variants:
             with self.assertRaises(VerificationError):

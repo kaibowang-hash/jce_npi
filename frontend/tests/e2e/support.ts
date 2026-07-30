@@ -6,6 +6,9 @@ const terminology = readFileSync(
   new URL("../../../contracts/terminology-allowlist.yaml", import.meta.url),
   "utf8",
 );
+const p0VisualRegistryDocument: unknown = JSON.parse(
+  readFileSync(new URL("./p0-visual-registry.json", import.meta.url), "utf8"),
+);
 
 function terminologyList(name: string): string[] {
   const lines = terminology.split(/\r?\n/);
@@ -108,24 +111,25 @@ export interface CoreScreen {
   id: "work" | "project" | "gate" | "tooling" | "trial" | "execution";
   path: string;
   pageClass: string;
+  contextSelector: string;
+  workSurfaceSelector: string;
+  propertiesSelector: string;
 }
 
-export const coreScreens: readonly CoreScreen[] = [
-  { id: "work", pageClass: "page--work", path: "/demo/work" },
-  {
-    id: "project",
-    pageClass: "page--object",
-    path: "/demo/projects/PJ-26018",
-  },
-  {
-    id: "gate",
-    pageClass: "page--object",
-    path: "/demo/projects/PJ-26018/gates/G5",
-  },
-  { id: "tooling", pageClass: "page--object", path: "/tooling/TL-26018-01" },
-  { id: "trial", pageClass: "page--object", path: "/trials/T1" },
-  { id: "execution", pageClass: "page--execution", path: "/execution" },
-];
+export interface P0VisualRegistry {
+  schemaVersion: 1;
+  viewport: {
+    width: 1440;
+    height: 900;
+    zoomPercent: 100;
+  };
+  scenario: "normal";
+  locales: readonly TestLocale[];
+  screens: readonly CoreScreen[];
+}
+
+export const p0VisualRegistry = p0VisualRegistryDocument as P0VisualRegistry;
+export const coreScreens = p0VisualRegistry.screens;
 
 function pathWithFixture(
   path: string,

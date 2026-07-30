@@ -15,18 +15,18 @@ concurrency:
       || format('{0}-{1}', github.event_name, github.ref) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-permissions: {contents: read}
+permissions: { contents: read }
 jobs:
   repository:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
+        with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
-        with: {python-version: '3.11'}
+        with: { python-version: "3.11" }
       - uses: actions/setup-node@v4
         with:
-          node-version: '24.18.0'
+          node-version: "24.18.0"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --strict-allow-scripts
@@ -66,7 +66,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24.18.0'
+          node-version: "24.18.0"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --strict-allow-scripts
@@ -79,20 +79,28 @@ jobs:
           sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - name: Verify R1-05 affected visual matrix
+      - name: Verify R1-06 governed visual matrix
         run: >-
           npx playwright test
+          tests/e2e/r1-06-p0-visual-governance.spec.ts
           tests/e2e/r1-05-panes.spec.ts
           tests/e2e/r1-05-field-attachments.spec.ts
           --grep @visual
+        env:
+          NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3
         working-directory: frontend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: r1-05-linux-visual-evidence
+          name: r1-06-linux-visual-evidence
           path: |
-            implementation/evidence/phase-4/playwright-results/.last-run.json
-            implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png
-            implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png
-          if-no-files-found: warn
+            frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-*-linux.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-05-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-05-*/**/*-diff.png
+          if-no-files-found: error
           include-hidden-files: true
+          retention-days: 30

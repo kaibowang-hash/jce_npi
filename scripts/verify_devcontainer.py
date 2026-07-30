@@ -254,9 +254,11 @@ def validate_ci_verification_tools(
         )
 
     repository_checkout = ci_workflow.find("- uses: actions/checkout@v4")
-    repository_fetch_depth = ci_workflow.find(
-        "with: {fetch-depth: 0}",
-        repository_checkout,
+    fetch_depth_matches = tuple(
+        re.finditer(r"with:\s*\{\s*fetch-depth:\s*0\s*\}", ci_workflow)
+    )
+    repository_fetch_depth = (
+        fetch_depth_matches[0].start() if fetch_depth_matches else -1
     )
     repository_python = ci_workflow.find(
         "- uses: actions/setup-python@v5",
@@ -273,7 +275,7 @@ def validate_ci_verification_tools(
         "CI repository checkout must retain full history for PR secret scanning",
     )
     require(
-        ci_workflow.count("with: {fetch-depth: 0}") == 1,
+        len(fetch_depth_matches) == 1,
         "Only the repository verification job may require full Git history",
     )
     require(
@@ -330,17 +332,25 @@ def validate_ci_verification_tools(
         visual_container,
     )
     visual_test = ci_workflow.find("npx playwright test", visual_container)
-    visual_artifact = ci_workflow.find("name: r1-05-linux-visual-evidence")
+    visual_artifact = ci_workflow.find("name: r1-06-linux-visual-evidence")
     require(
         visual_container >= 0,
         "CI visual verification must use the digest-pinned devcontainer base",
     )
     require(
         ci_workflow.count("npx playwright test") == 1
+        and ci_workflow.count(
+            "tests/e2e/r1-06-p0-visual-governance.spec.ts"
+        )
+        == 2
         and ci_workflow.count("tests/e2e/r1-05-panes.spec.ts") == 1
         and ci_workflow.count("tests/e2e/r1-05-field-attachments.spec.ts") == 1
         and ci_workflow.count("--grep @visual") == 1,
-        "CI must have exactly one affected R1-05 visual verification step",
+        "CI must have exactly one governed R1-06 visual verification step",
+    )
+    require(
+        "--update-snapshots" not in ci_workflow,
+        "CI visual comparison must never update accepted baselines",
     )
     require(
         "sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' "
@@ -355,10 +365,24 @@ def validate_ci_verification_tools(
         < visual_artifact,
         "CI visual verification and its evidence must follow the canonical container",
     )
+    require(
+        "NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3" in ci_workflow,
+        "CI visual evidence must use the bounded R1-06 Stage 3 scope",
+    )
     for evidence_path in (
-        "implementation/evidence/phase-4/playwright-results/.last-run.json",
-        "implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png",
-        "implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png",
+        "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/"
+        "r1-06-p0-normal-*-linux.png",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-results/"
+        ".last-run.json",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-results/"
+        "r1-06-*/**/*-actual.png",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-results/"
+        "r1-06-*/**/*-diff.png",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-results/"
+        "r1-05-*/**/*-actual.png",
+        "implementation/evidence/phase-5/r1-06-stage-3/playwright-results/"
+        "r1-05-*/**/*-diff.png",
     ):
         require(
             evidence_path in ci_workflow,
@@ -369,8 +393,16 @@ def validate_ci_verification_tools(
         "CI visual artifact must retain the hidden Playwright result manifest",
     )
     require(
-        "path: implementation/evidence/phase-4\n" not in ci_workflow,
-        "CI must not upload the unbounded historical Phase 4 evidence tree",
+        "if-no-files-found: error" in ci_workflow,
+        "CI visual artifact must fail when bounded evidence is absent",
+    )
+    require(
+        "retention-days: 30" in ci_workflow,
+        "CI visual evidence must retain an explicit bounded duration",
+    )
+    require(
+        "path: implementation/evidence/phase-5\n" not in ci_workflow,
+        "CI must not upload the unbounded Phase 5 evidence tree",
     )
 
 

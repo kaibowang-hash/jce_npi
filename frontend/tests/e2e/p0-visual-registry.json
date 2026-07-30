@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "zoomPercent": 100
+  },
+  "scenario": "normal",
+  "locales": ["en", "zh", "zh-TW"],
+  "screens": [
+    {
+      "id": "work",
+      "path": "/demo/work",
+      "pageClass": "page--work",
+      "contextSelector": ".page-heading",
+      "workSurfaceSelector": ".worklist-panel",
+      "propertiesSelector": ".docked-inspector"
+    },
+    {
+      "id": "project",
+      "path": "/demo/projects/PJ-26018",
+      "pageClass": "page--object",
+      "contextSelector": ".object-header",
+      "workSurfaceSelector": ".engineering-layout--project",
+      "propertiesSelector": ".docked-inspector"
+    },
+    {
+      "id": "gate",
+      "path": "/demo/projects/PJ-26018/gates/G5",
+      "pageClass": "page--object",
+      "contextSelector": ".object-header",
+      "workSurfaceSelector": ".review-layout",
+      "propertiesSelector": "#gate-decision"
+    },
+    {
+      "id": "tooling",
+      "path": "/tooling/TL-26018-01",
+      "pageClass": "page--object",
+      "contextSelector": ".object-header",
+      "workSurfaceSelector": ".engineering-layout",
+      "propertiesSelector": "#tooling-properties"
+    },
+    {
+      "id": "trial",
+      "path": "/trials/T1",
+      "pageClass": "page--object",
+      "contextSelector": ".object-header",
+      "workSurfaceSelector": ".trial-layout",
+      "propertiesSelector": ".docked-inspector"
+    },
+    {
+      "id": "execution",
+      "path": "/execution",
+      "pageClass": "page--execution",
+      "contextSelector": ".page-heading",
+      "workSurfaceSelector": ".execution-layout",
+      "propertiesSelector": ".execution-layout > .panel:last-child"
+    }
+  ]
+}
