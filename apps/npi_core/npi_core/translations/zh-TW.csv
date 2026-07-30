@@ -2780,3 +2780,81 @@ Pending Product Owner approval,等待產品負責人核准
 Prototype revision,原型修訂版
 "Approvals, releases, baselines, registered revisions, deletes, and external execution never use this generic undo.",核准、發佈、基線、已登錄修訂版、刪除和外部執行絕不使用此通用復原。
 "Their approved forward-correction, new-revision, reconciliation, or support path remains visible in the owning workflow.",其已核准的前向修正、新修訂版、對帳或支援路徑在所屬工作流程中保持可見。
+Project reference,專案參照
+Project documents are not available,專案文件無法使用
+Project documents could not be loaded,無法載入專案文件
+No protected document identity or file information was displayed.,未顯示任何受保護的文件識別或檔案資訊。
+No document data was displayed. Use the reference ID for support.,未顯示任何文件資料。請使用參考編號取得支援。
+Reload,重新載入
+No controlled documents,沒有受控文件
+Create the first controlled document for this Project.,為此專案建立第一個受控文件。
+Document creation is unavailable because no accepted document policy is configured.,由於未設定已接受的文件策略，文件建立無法使用。
+Create document,建立文件
+Document number,文件編號
+Lock,鎖定
+Checked out,已簽出
+Complete every required document field.,請填寫所有必填文件欄位。
+Creating controlled document,正在建立受控文件
+Complete every required revision field.,請填寫所有必填修訂版欄位。
+The selected file does not match the active document policy.,所選檔案不符合目前文件策略。
+Check out the document before creating a revision.,建立修訂版前請先簽出文件。
+Creating immutable document revision,正在建立不可變文件修訂版
+Enter a lock recovery reason.,請輸入鎖定復原原因。
+Recovering document lock,正在復原文件鎖定
+Checking out document,正在簽出文件
+Checking in document,正在簽入文件
+Preparing secure preview,正在準備安全預覽
+Preparing secure download,正在準備安全下載
+The live controlled document data source is not configured.,未設定即時受控文件資料來源。
+Loading project documents,正在載入專案文件
+Project design and documents,專案設計與文件
+Design and documents,設計與文件
+Controlled documents,受控文件
+Document inspector,文件檢查器
+Document type,文件類型
+Current revision,目前修訂版
+Editability,可編輯性
+Editable in NPI One,可在 NPI One 中編輯
+Lock holder,鎖定持有人
+External retrieval,外部擷取
+CAD/PDM connector,CAD/產品資料管理連接器
+Check in,簽入
+Check out,簽出
+New revision,新增修訂版
+Recover lock,復原鎖定
+Create controlled document,建立受控文件
+Document policy,文件策略
+Create immutable revision,建立不可變修訂版
+Major revision,主修訂號
+Minor revision,次修訂號
+Effective date,生效日期
+Revision reason,修訂原因
+Private revision file,私有修訂版檔案
+Maximum file size: {{size}},檔案大小上限：{{size}}
+Create revision,建立修訂版
+Recover document lock,復原文件鎖定
+Recovery reason,復原原因
+Immutable revision history,不可變修訂歷程
+Exact private files,精確私有檔案
+Size,大小
+Scan,掃描
+Integrity,完整性
+Preview,預覽
+Infected,已感染
+Failed,失敗
+Download,下載
+Provider boundaries,提供者邊界
+External policy,外部策略
+Not configured,未設定
+Connector isolation,連接器隔離
+No outbound request was made,未傳送任何對外請求
+The requested file capability is not available.,要求的檔案能力無法使用。
+Secure native preview,安全原生預覽
+Preview of {{fileName}},{{fileName}} 的預覽
+Typed relationships,類型化關聯
+Relationship,關聯
+Target identity,目標識別
+Lock history,鎖定歷程
+Holder,持有人
+Acquired,已取得
+Recovered,已復原

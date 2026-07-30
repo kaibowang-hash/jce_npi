@@ -304,13 +304,14 @@ EXPECTED_R1_06_STAGE_3_TRACE = {
 }
 EXPECTED_P5_01_ACTIVE_TRACE = {
     requirement_id: (
-        "IN_PROGRESS_P5_01_FRONTEND_RUNTIME",
+        "IN_PROGRESS_P5_01_CONTROLLED_SITE_PENDING",
         {
             "implementation/evidence/phase-5/p5-01-reconciliation-hold.md",
             "implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md",
             "implementation/phase-5-requirement-anchor.md",
             "implementation/evidence/phase-5/p5-01-plan.md",
             "implementation/evidence/phase-5/p5-01-resume-audit.md",
+            "implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md",
         },
     )
     for requirement_id in (

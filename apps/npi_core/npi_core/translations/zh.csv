@@ -2780,3 +2780,81 @@ Pending Product Owner approval,等待产品负责人批准
 Prototype revision,原型修订版
 "Approvals, releases, baselines, registered revisions, deletes, and external execution never use this generic undo.",批准、发布、基线、已登记修订版、删除和外部执行绝不使用此通用撤销。
 "Their approved forward-correction, new-revision, reconciliation, or support path remains visible in the owning workflow.",其获批的前向纠正、新修订版、对账或支持路径在所属工作流中保持可见。
+Project reference,项目引用
+Project documents are not available,项目文件不可用
+Project documents could not be loaded,无法加载项目文件
+No protected document identity or file information was displayed.,未显示任何受保护的文件标识或文件信息。
+No document data was displayed. Use the reference ID for support.,未显示任何文件数据。请使用参考编号获取支持。
+Reload,重新加载
+No controlled documents,没有受控文件
+Create the first controlled document for this Project.,为此项目创建第一个受控文件。
+Document creation is unavailable because no accepted document policy is configured.,由于未配置已接受的文件策略，文件创建不可用。
+Create document,创建文件
+Document number,文件编号
+Lock,锁定
+Checked out,已签出
+Complete every required document field.,请填写所有必填文件字段。
+Creating controlled document,正在创建受控文件
+Complete every required revision field.,请填写所有必填修订版字段。
+The selected file does not match the active document policy.,所选文件不符合当前文件策略。
+Check out the document before creating a revision.,创建修订版前请先签出文件。
+Creating immutable document revision,正在创建不可变文件修订版
+Enter a lock recovery reason.,请输入锁定恢复原因。
+Recovering document lock,正在恢复文件锁定
+Checking out document,正在签出文件
+Checking in document,正在签入文件
+Preparing secure preview,正在准备安全预览
+Preparing secure download,正在准备安全下载
+The live controlled document data source is not configured.,未配置实时受控文件数据源。
+Loading project documents,正在加载项目文件
+Project design and documents,项目设计与文件
+Design and documents,设计与文件
+Controlled documents,受控文件
+Document inspector,文件检查器
+Document type,文件类型
+Current revision,当前修订版
+Editability,可编辑性
+Editable in NPI One,可在 NPI One 中编辑
+Lock holder,锁定持有人
+External retrieval,外部检索
+CAD/PDM connector,CAD/产品数据管理连接器
+Check in,签入
+Check out,签出
+New revision,新建修订版
+Recover lock,恢复锁定
+Create controlled document,创建受控文件
+Document policy,文件策略
+Create immutable revision,创建不可变修订版
+Major revision,主修订号
+Minor revision,次修订号
+Effective date,生效日期
+Revision reason,修订原因
+Private revision file,私有修订版文件
+Maximum file size: {{size}},最大文件大小：{{size}}
+Create revision,创建修订版
+Recover document lock,恢复文件锁定
+Recovery reason,恢复原因
+Immutable revision history,不可变修订历史
+Exact private files,精确私有文件
+Size,大小
+Scan,扫描
+Integrity,完整性
+Preview,预览
+Infected,已感染
+Failed,失败
+Download,下载
+Provider boundaries,提供商边界
+External policy,外部策略
+Not configured,未配置
+Connector isolation,连接器隔离
+No outbound request was made,未发送任何出站请求
+The requested file capability is not available.,请求的文件能力不可用。
+Secure native preview,安全原生预览
+Preview of {{fileName}},{{fileName}} 的预览
+Typed relationships,类型化关联关系
+Relationship,关联关系
+Target identity,目标标识
+Lock history,锁定历史
+Holder,持有人
+Acquired,已获取
+Recovered,已恢复

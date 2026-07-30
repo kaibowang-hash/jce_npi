@@ -79,6 +79,29 @@ describe("NPI BFF client boundary", () => {
     expect(new Headers(request?.headers).get("X-Trace-ID")).toMatch(/^trace-/);
   });
 
+  it("lets the browser frame multipart bodies without an incorrect JSON content type", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ value: 7 }), { status: 200 }),
+        ),
+      ),
+    );
+    const form = new FormData();
+    form.append("metadata", JSON.stringify({ version: 1 }));
+
+    await new NpiHttpClient().request("/fixture", {
+      body: form,
+      headers: { Accept: "application/vnd.npi.fixture+json" },
+    });
+
+    const [, request] = vi.mocked(globalThis.fetch).mock.calls[0] ?? [];
+    const headers = new Headers(request?.headers);
+    expect(headers.get("Content-Type")).toBeNull();
+    expect(headers.get("Accept")).toBe("application/vnd.npi.fixture+json");
+  });
+
   it("encodes structured query options without weakening the normalized BFF path boundary", async () => {
     vi.stubGlobal(
       "fetch",

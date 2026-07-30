@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T14:10:21Z`
+Updated: `2026-07-30T15:09:42Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,10 +9,11 @@ Updated: `2026-07-30T14:10:21Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest synchronized recovery checkpoint:
-  `ee8730133e8cdd30fc7bff158ab80a252ed14249`
+  `9198dc9c54d314c9927ff5aa68ce17253f6f4afe`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS — RESUME AUDIT PASS; FRONTEND/RUNTIME READY`)
+  (`IN_PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE
+  PENDING`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -55,7 +56,9 @@ the original R1 Gate decision.
 The subsequent bounded P5-01 resume-audit checkpoint
 `ee8730133e8cdd30fc7bff158ab80a252ed14249` passed CI `#74`, run
 `30549749537`, including both repository and fixed-Linux visual jobs. The
-exact audit commit is therefore the current synchronized recovery point.
+controller synchronization commit
+`9198dc9c54d314c9927ff5aa68ce17253f6f4afe` then passed CI `#75`, run
+`30550637406`. It is the current synchronized recovery point.
 
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
@@ -64,7 +67,7 @@ These accepted results are not rerun unless P5-01 changes their source
 boundary. Historical Phase 3/4, P5-00, P5-01 checkpoint and R1 evidence remains
 append-only.
 
-## Retained and unfinished P5-01 scope
+## Retained, delivered and unfinished P5-01 scope
 
 Retained at `930b5a2`:
 
@@ -77,14 +80,23 @@ Retained at `930b5a2`:
 - direct backend/DocType `zh` and `zh-TW` sources; and
 - focused backend/contract tests.
 
+Delivered in the current frontend/runtime-ready candidate:
+
+- strict closed browser parsers, data sources and FormData/Blob handling;
+- a live dense Project Documents workspace with exact policy, revision, file,
+  relationship, lock and provider truth;
+- registered App/Project/history/`beforeunload` dirty-state protection;
+- complete direct `zh`/`zh-TW`, affected unit, browser, accessibility and
+  exact trilingual visual evidence;
+- a fail-closed controlled-Site migration/runtime verifier; and
+- Requirement → Code → Test → Evidence plus changed-files → affected-tests
+  mapping.
+
 Still unfinished:
 
-- additive/idempotent migration and complete controlled Frappe runtime
-  evidence;
-- live Project Design/Documents frontend, parser/view models and dirty-state
-  integration;
-- complete P5-01 unit/E2E/accessibility/trilingual/visual evidence;
-- exact Requirement → Code → Test → Evidence updates;
+- actual execution of the additive/idempotent migrations and complete
+  controlled Frappe runtime on the fixed disposable Site;
+- final Task Diff/domain/permission/security/UX/i18n review after that runtime;
 - P5-01 Level 2 Task Gate; and
 - every later P5 task.
 
@@ -92,22 +104,18 @@ No P5-01 requirement is yet reported complete.
 
 ## First incomplete action
 
-The bounded resume audit passed and is recorded at
-`implementation/evidence/phase-5/p5-01-resume-audit.md`. It found no retained
-product conflict and reran the focused P5-01 suites `63/63`.
+The frontend/runtime-ready checkpoint is recorded at
+`implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
+Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-Implement the smallest unfinished P5-01 frontend/runtime vertical slice:
+The first incomplete action is to restore the repository's fixed disposable
+Frappe runtime without deleting/resetting retained volumes, then run:
 
-1. add strict document list/detail/command data sources, closed response
-   parsers and view models over the existing BFF contract;
-2. integrate a live Project Design/Documents engineering workspace with dense
-   document/revision/file/relationship/lock and capability truth;
-3. register real form dirty state with App navigation, browser history,
-   Project-tab and `beforeunload` guards;
-4. add only the additive/idempotent metadata synchronization and controlled
-   runtime proof required by the retained nine DocTypes;
-5. add literal-English source copy and direct `zh`/`zh-TW` translations; and
-6. run affected Level 1 checks before the complete P5-01 Level 2 Task Gate.
+`bash scripts/verify-frappe-runtime.sh --document-only`
+
+That command must pass two migrations, fresh execution, route
+disable/recovery, second-process replay and cleanup. Then finish the affected
+reviews and P5-01 Level 2 Task Gate. Do not activate P5-02 before that proof.
 
 Do not start P5-02, add review/release/baseline/EBOM behavior, enable external
 retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
@@ -132,13 +140,15 @@ The R1 bridge Gate remains complete at
 `2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`; its pushed recovery
 checkpoint is `c980571b27be66e16f2ac57409f0ef72a986e741` with CI `#73`. The
 P5-01 retained backend checkpoint remains `930b5a2`; its resume-audit
-checkpoint is `ee8730133e8cdd30fc7bff158ab80a252ed14249` with CI `#74` and is
-`PASS`. The first unfinished action is the frontend/runtime vertical slice,
-not reimplementation of the retained domain/backend.
+checkpoint is `ee8730133e8cdd30fc7bff158ab80a252ed14249` with CI `#74`; controller
+checkpoint `9198dc9c54d314c9927ff5aa68ce17253f6f4afe` passed CI `#75`. The
+frontend/runtime-ready candidate is recoverable through its dedicated
+evidence file but remains `IN_PROGRESS` until the fixed controlled Site
+passes.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
 `implementation/LAST_RUN.md`, `implementation/phase-5-requirement-anchor.md`,
 `implementation/evidence/phase-5/p5-01-plan.md` and
-`implementation/evidence/phase-5/p5-01-resume-audit.md`. Chat memory is
-non-authoritative.
+`implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`. Chat
+memory is non-authoritative.

@@ -941,10 +941,6 @@ describe("application shell behavior", () => {
       screen.getByRole("navigation", { name: "Domain navigation" }),
     ).getByRole("button", { name: "Tooling" });
     await user.click(tooling);
-    await user.type(
-      screen.getByRole("textbox", { name: "Reason" }),
-      "Discard test-only draft",
-    );
     await user.click(
       screen.getByRole("button", { name: "Discard changes and leave" }),
     );

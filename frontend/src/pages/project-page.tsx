@@ -9,7 +9,12 @@ import type {
   ProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
 import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
+import type { DocumentDataSource } from "../api/document-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
+import type {
+  ReportWorkspaceDirty,
+  RequestWorkspaceTransition,
+} from "../app/workspace-navigation";
 import {
   DockedInspector,
   MetricStrip,
@@ -218,14 +223,20 @@ function ProjectCockpit({
   cockpit,
   controlsDataSource,
   contextDataSource,
+  documentDataSource,
   domainWorkItemsDataSource,
   navigate,
+  reportWorkspaceDirty,
+  requestWorkspaceTransition,
 }: {
   cockpit: ProjectCockpitViewModel;
   controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
+  documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   navigate: (target: string) => void;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
 }): React.JSX.Element {
   const { locale, t } = useI18n();
   const {
@@ -324,9 +335,12 @@ function ProjectCockpit({
         cockpit={currentCockpit}
         controlsDataSource={controlsDataSource}
         contextDataSource={contextDataSource}
+        documentDataSource={documentDataSource}
         domainWorkItemsDataSource={domainWorkItemsDataSource}
         navigate={navigate}
         onProjectChanged={synchronizeProjectControlState}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+        requestWorkspaceTransition={requestWorkspaceTransition}
         overview={
           <>
             <MetricStrip
@@ -514,15 +528,21 @@ export default function ProjectPage({
   controlsDataSource,
   contextDataSource,
   domainWorkItemsDataSource,
+  documentDataSource,
   globalId,
   navigate,
+  reportWorkspaceDirty,
+  requestWorkspaceTransition,
 }: {
   dataSource: ProjectCockpitDataSource;
   controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
+  documentDataSource?: DocumentDataSource | undefined;
   globalId: string;
   navigate: (target: string) => void;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
 }): React.JSX.Element {
   const [attempt, setAttempt] = useState(0);
   const generation = useRef(0);
@@ -600,9 +620,12 @@ export default function ProjectPage({
       cockpit={state.cockpit}
       controlsDataSource={controlsDataSource}
       contextDataSource={contextDataSource}
+      documentDataSource={documentDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
       navigate={navigate}
+      reportWorkspaceDirty={reportWorkspaceDirty}
+      requestWorkspaceTransition={requestWorkspaceTransition}
     />
   );
 }

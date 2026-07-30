@@ -7,7 +7,12 @@ import type {
 } from "../api/project-work-data-source";
 import { ProjectWorkRequestCancelledError } from "../api/project-work-data-source";
 import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
+import type { DocumentDataSource } from "../api/document-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
+import type {
+  ReportWorkspaceDirty,
+  RequestWorkspaceTransition,
+} from "../app/workspace-navigation";
 import { DockedInspector } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import {
@@ -42,12 +47,14 @@ import {
   ProjectGovernanceWorkspace,
   type ProjectGovernanceSection,
 } from "./project-governance-workspace";
+import { ProjectDocumentWorkspace } from "./project-document-workspace";
 
 type ProjectWorkspaceTab =
   | "overview"
   | "team"
   | "plan"
   | "work-items"
+  | "documents"
   | ProjectGovernanceSection;
 
 const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
@@ -58,6 +65,7 @@ const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
   "controls",
   "activity",
   "learning",
+  "documents",
 ]);
 
 function initialProjectWorkspaceTab(): ProjectWorkspaceTab {
@@ -1256,18 +1264,24 @@ export function ProjectWorkspace({
   cockpit,
   controlsDataSource,
   contextDataSource,
+  documentDataSource,
   domainWorkItemsDataSource,
   navigate,
   onProjectChanged,
   overview,
+  reportWorkspaceDirty,
+  requestWorkspaceTransition,
 }: {
   cockpit: ProjectCockpitViewModel;
   controlsDataSource?: ProjectControlsDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
+  documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   navigate: (target: string) => void;
   onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
   overview: ReactNode;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
 }): React.JSX.Element {
   const { t } = useI18n();
   const routeSearch = globalThis.location.search;
@@ -1430,15 +1444,34 @@ export function ProjectWorkspace({
     { id: "controls", label: t("Controls") },
     { id: "activity", label: t("Activity") },
     { id: "learning", label: t("Learning") },
+    { id: "documents", label: t("Design and documents") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
     label: string;
   }>[];
 
-  const selectTab = (tab: ProjectWorkspaceTab): void => {
-    setTabSelection({ routeSearch, tab });
-    if (tab === "team" || tab === "plan") setContextRequested(true);
-    if (tab === "work-items") setWorkItemsRequested(true);
+  const selectTab = (tab: ProjectWorkspaceTab, focusSelected = false): void => {
+    if (tab === activeTab) return;
+    const perform = (): void => {
+      setTabSelection({ routeSearch, tab });
+      if (tab === "team" || tab === "plan") setContextRequested(true);
+      if (tab === "work-items") setWorkItemsRequested(true);
+      if (focusSelected) {
+        globalThis.queueMicrotask(() => {
+          document.getElementById(`project-workspace-tab-${tab}`)?.focus();
+        });
+      }
+    };
+    if (requestWorkspaceTransition) {
+      requestWorkspaceTransition(
+        perform,
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null,
+      );
+      return;
+    }
+    perform();
   };
   const selectAdjacentTab = (
     current: ProjectWorkspaceTab,
@@ -1448,8 +1481,7 @@ export function ProjectWorkspace({
     const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
     const next = tabs[nextIndex];
     if (!next) return;
-    selectTab(next.id);
-    document.getElementById(`project-workspace-tab-${next.id}`)?.focus();
+    selectTab(next.id, true);
   };
   const setFilteredWorkItemsQuery = (query: DomainWorkItemQuery): void => {
     const firstPageQuery = { ...query };
@@ -1577,6 +1609,15 @@ export function ProjectWorkspace({
         section={activeTab}
       />
     );
+  } else if (activeTab === "documents") {
+    content = (
+      <ProjectDocumentWorkspace
+        dataSource={documentDataSource}
+        projectId={cockpit.project.globalId}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+        requestWorkspaceTransition={requestWorkspaceTransition}
+      />
+    );
   }
 
   return (
@@ -1606,17 +1647,12 @@ export function ProjectWorkspace({
               }
               if (event.key === "Home") {
                 event.preventDefault();
-                selectTab("overview");
-                document
-                  .getElementById("project-workspace-tab-overview")
-                  ?.focus();
+                selectTab("overview", true);
               }
               if (event.key === "End") {
                 event.preventDefault();
-                selectTab("learning");
-                document
-                  .getElementById("project-workspace-tab-learning")
-                  ?.focus();
+                const last = tabs.at(-1);
+                if (last) selectTab(last.id, true);
               }
             }}
             role="tab"

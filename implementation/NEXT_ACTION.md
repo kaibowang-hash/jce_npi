@@ -1,11 +1,12 @@
 # Next Action
 
-Status: `P5-01 FRONTEND/RUNTIME READY — RESUME AUDIT PASS`
+Status:
+`P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T14:10:21Z`
+Recovery time: `2026-07-30T15:09:42Z`
 
 Latest synchronized recovery checkpoint:
-`ee8730133e8cdd30fc7bff158ab80a252ed14249`
+`9198dc9c54d314c9927ff5aa68ce17253f6f4afe`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -22,8 +23,9 @@ Required and only development branch:
   complete.
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
-- P5-01 resume audit is `PASS`; P5-01 remains `IN_PROGRESS`, not `PASS`.
-- The exact resume-audit checkpoint passed CI `#74`, run `30549749537`.
+- P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
+  static runtime checks pass; P5-01 remains `IN_PROGRESS`, not `PASS`.
+- The exact controller checkpoint passed CI `#75`, run `30550637406`.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -54,24 +56,27 @@ Use:
 
 ## First incomplete action
 
-Implement the smallest unfinished P5-01 frontend/runtime vertical slice:
+The frontend/runtime-ready checkpoint is recorded at
+`implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-1. add one strict document data-source module with closed list/detail/
-   capability/command response parsers and view models;
-2. expose the existing live BFF through a dense Project Design/Documents tab,
-   preserving Project context and showing identity, policy, revision, exact
-   file/hash/scan, relationships, lock history, source/editability and
-   external/CAD unavailable truth;
-3. support normal, empty, loading, no-permission, read-only, validation,
-   conflict, processing, retryable, final and provider-unavailable states
-   without a raw private URL or fake success;
-4. replace the prototype-only dirty route assumption with real workspace dirty
-   registration covering App navigation, Project-tab changes, history and
-   `beforeunload`, with cancel restoring focus and preserving input;
-5. add direct literal-English/`zh`/`zh-TW` copy and affected unit/component/
-   accessibility/browser/visual tests; and
-6. prepare the additive/idempotent DocType metadata synchronization and
-   controlled Frappe runtime lane before the Level 2 Task Gate.
+Restore the repository's fixed disposable Frappe runtime without deleting or
+resetting retained volumes, then run:
+
+`bash scripts/verify-frappe-runtime.sh --document-only`
+
+The terminal result must prove:
+
+1. the exact fixed Site/database/user safety guards;
+2. two additive/idempotent migrations and exact nine-DocType metadata;
+3. one fresh synthetic policy/Project/document/lock/revision/private file
+   round trip with server-observed hash and scanner state;
+4. exact CSRF, version, idempotency, replay, audit, Guest and IDOR behavior;
+5. route-disable/recovery and second-process replay; and
+6. bounded cleanup with no production or external connection.
+
+If runtime repair changes source, rerun its affected checks. Then complete the
+Task Diff/domain/permission/security/UX/i18n review and P5-01 Level 2 Task
+Gate. P5-02 remains inactive until this passes.
 
 ## Retained passing checkpoint evidence
 
@@ -83,6 +88,10 @@ Implement the smallest unfinished P5-01 frontend/runtime vertical slice:
 - Direct catalogs at the checkpoint and generated-catalog freshness.
 - Exact 55-file retained inventory and no production policy, external
   identity, scanner/viewer, CAD/PDM or ERPNext activation.
+- Frontend/runtime-ready candidate:
+  `658/658` complete frontend unit, `6/6` P5 browser, `3/3` exact trilingual
+  visual, `2,860` complete direct sources, production build, `68/68` P5
+  Python/static verifier and `85/85` shared runtime regressions.
 
 These results were impact-reviewed against current shared code and retained in
 `implementation/evidence/phase-5/p5-01-resume-audit.md`. Do not repeat
@@ -105,6 +114,5 @@ unrelated complete R1 Gates.
 
 ## Transition
 
-Complete the controlled metadata/runtime plus live Project Design/Documents
-workspace slice, trilingual/accessibility/error states and affected exact
-visuals. Finish the P5-01 Level 2 Task Gate before activating P5-02.
+Complete only the controlled-Site proof and final affected reviews. Finish the
+P5-01 Level 2 Task Gate before activating P5-02.

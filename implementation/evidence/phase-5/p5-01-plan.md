@@ -5,7 +5,8 @@ Planned: `2026-07-25T18:38:47Z`
 Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
-Task state: **IN PROGRESS — RESUME AUDIT PASS; FRONTEND/RUNTIME READY**
+Task state:
+**IN PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE PENDING**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
@@ -16,7 +17,11 @@ Level 3 Gate passed on 2026-07-30 and released the hold. P5-01 is not complete.
 The bounded comparison passed at
 `implementation/evidence/phase-5/p5-01-resume-audit.md`: the retained slice
 requires no product correction, and its focused `63/63` Level 1 checks passed.
-Unfinished frontend/runtime work may now begin.
+The frontend/runtime-ready vertical slice is now recorded at
+`implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
+Frontend, direct trilingual, unit, browser and static runtime checks pass.
+The real controlled Frappe Site migration/runtime proof and the final Level 2
+Task Gate remain pending; P5-02 is not active.
 
 Applicable requirements:
 

@@ -168,14 +168,16 @@ export function toRequestFailure(error: unknown): RequestFailure {
   };
 }
 
-interface RequestOptions<T> {
+export interface RequestOptions<T> {
   csrfToken?: string | undefined;
   query?: Readonly<Record<string, string>> | undefined;
   requireIdempotencyReplay?: boolean | undefined;
   requirePrivateNoStore?: boolean | undefined;
   requireRequestIdEcho?: boolean | undefined;
   requireTraceId?: boolean | undefined;
+  responseType?: "json" | "blob" | undefined;
   validate?: ((value: unknown) => value is T) | undefined;
+  validateResponse?: ((response: Response) => boolean) | undefined;
 }
 
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
@@ -203,9 +205,13 @@ export class NpiHttpClient {
       );
     const method = (init.method ?? "GET").toUpperCase();
     const headers = new Headers(init.headers);
-    if (!headers.has("Content-Type"))
+    if (
+      !headers.has("Content-Type") &&
+      !(typeof FormData !== "undefined" && init.body instanceof FormData)
+    )
       headers.set("Content-Type", "application/json");
-    headers.set("Accept", "application/json, application/problem+json");
+    if (!headers.has("Accept"))
+      headers.set("Accept", "application/json, application/problem+json");
     headers.delete("X-Frappe-CSRF-Token");
     const suppliedRequestId = headers.get("X-Request-ID");
     if (suppliedRequestId && !requestIdPattern.test(suppliedRequestId)) {
@@ -289,9 +295,25 @@ export class NpiHttpClient {
         responseTraceId ? "trace" : "request",
       );
     }
+    let responseHeadersAreValid: boolean;
+    try {
+      responseHeadersAreValid = options.validateResponse?.(response) ?? true;
+    } catch {
+      responseHeadersAreValid = false;
+    }
+    if (response.ok && !responseHeadersAreValid) {
+      throw new NpiTransportError(
+        "invalid_response",
+        responseTraceId ?? requestId,
+        responseTraceId ? "trace" : "request",
+      );
+    }
     let body: unknown;
     try {
-      body = await response.json();
+      body =
+        response.ok && options.responseType === "blob"
+          ? await response.blob()
+          : await response.json();
     } catch (error) {
       throw new NpiTransportError(
         "invalid_response",

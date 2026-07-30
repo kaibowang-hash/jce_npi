@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T13:52:00Z`
+Updated: `2026-07-30T15:09:42Z`
 
 ## Active hard blockers
 
@@ -60,11 +60,18 @@ The retained checkpoint at `930b5a2` contains the bounded Controlled
 Document/Document Revision/private File Revision backend slice, Project-scoped
 confidentiality/download audit, locks, capability-truth preview/download
 fallback, and the connector-unavailable seam. The resume audit is now `PASS`,
-so only the unfinished frontend/runtime slice may begin. P5-01 must not invent
-production document numbering, classification, retention, scanner/viewer, sharing,
-revision or CAD/PDM rules; review/release/baseline/EBOM/formal publish remain
-P5-02 through P5-05. Production ERPNext/CAD/PDM access and external file
-retrieval remain prohibited or fail closed.
+and the frontend/browser/static-runtime slice is recorded at
+`implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
+The final controlled-Site command could not start because this host has no
+Docker CLI/daemon/Compose and no fixed repository Bench. It failed before
+migration or fixture writes. This is a scoped environment gap, not a global
+Hard Blocker, but it keeps P5-01 `IN_PROGRESS` and P5-02 inactive until the
+real two-migration/fresh/replay/route-recovery Site result passes. P5-01 must
+not invent production document numbering, classification, retention,
+scanner/viewer, sharing, revision or CAD/PDM rules;
+review/release/baseline/EBOM/formal publish remain P5-02 through P5-05.
+Production ERPNext/CAD/PDM access and external file retrieval remain
+prohibited or fail closed.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`

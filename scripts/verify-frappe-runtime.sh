@@ -17,8 +17,9 @@ verification_mode="${1:-all}"
 if [[ "${verification_mode}" != "all" &&
       "${verification_mode}" != "--gate-evidence-only" &&
       "${verification_mode}" != "--gate-review-only" &&
-      "${verification_mode}" != "--project-controls-only" ]]; then
-  echo "Usage: scripts/verify-frappe-runtime.sh [--gate-evidence-only|--gate-review-only|--project-controls-only]" >&2
+      "${verification_mode}" != "--project-controls-only" &&
+      "${verification_mode}" != "--document-only" ]]; then
+  echo "Usage: scripts/verify-frappe-runtime.sh [--gate-evidence-only|--gate-review-only|--project-controls-only|--document-only]" >&2
   exit 2
 fi
 
@@ -31,6 +32,7 @@ unset \
   NPI_DATABASE_ROOT_PASSWORD \
   NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
   NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+  NPI_DOCUMENT_RUNTIME_RUN_ID \
   NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
   NPI_PROJECT_WORK_RUNTIME_RUN_ID \
   NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
@@ -86,6 +88,7 @@ run_site_guard() {
       NPI_LOCAL_DATABASE_ROOT_PASSWORD \
       NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
       NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
       NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
       NPI_PROJECT_WORK_RUNTIME_RUN_ID \
       NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
@@ -119,6 +122,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+document_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+key = "npi_p5_01_routes_disabled"
+if key not in config:
+    print("absent")
+elif config[key] is True:
+    print("true")
+elif config[key] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -129,10 +148,34 @@ verify_p405_route_switch_state() {
   fi
 }
 
+verify_document_route_switch_state() {
+  local expected="$1"
+  local actual
+  actual="$(document_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P5-01 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 route_disable_original_state="$(p405_route_switch_state)"
 if [[ "${route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P4-05 route-disable switch." >&2
   exit 2
+fi
+document_route_disable_original_state="$(document_route_switch_state)"
+if [[ "${document_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P5-01 route-disable switch." >&2
+  exit 2
+fi
+if [[ "${verification_mode}" == "all" ||
+      "${verification_mode}" == "--document-only" ]]; then
+  for _migration_attempt in 1 2; do
+    (
+      cd "${bench_path}"
+      bench --site "${site_name}" migrate
+    )
+  done
 fi
 if curl --silent --output /dev/null \
   --connect-timeout 1 --max-time 2 "${base_url}/api/method/ping"; then
@@ -143,6 +186,7 @@ fi
 runtime_log="$(mktemp)"
 server_pid=""
 route_disable_config_changed=false
+document_route_disable_config_changed=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -161,6 +205,7 @@ start_runtime_server() {
       -u NPI_DATABASE_ROOT_PASSWORD \
       -u NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
       -u NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      -u NPI_DOCUMENT_RUNTIME_RUN_ID \
       -u NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
       -u NPI_PROJECT_WORK_RUNTIME_RUN_ID \
       -u NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
@@ -218,11 +263,29 @@ set_p405_route_switch() {
   verify_p405_route_switch_state "${expected}"
 }
 
+set_document_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p5_01_routes_disabled "${value}"
+  )
+  verify_document_route_switch_state "${expected}"
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
   fi
   route_disable_config_changed=false
+}
+
+restore_document_route_switch() {
+  if ! set_document_route_switch None absent; then
+    return 1
+  fi
+  document_route_disable_config_changed=false
 }
 
 cleanup() {
@@ -234,6 +297,12 @@ cleanup() {
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
       echo "Failed to restore the P4-05 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${document_route_disable_config_changed}" == true ]]; then
+    if ! restore_document_route_switch; then
+      echo "Failed to restore the P5-01 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -458,6 +527,75 @@ run_project_controls_route_probe() {
   )
 }
 
+document_runtime_run_id="$(
+  "${bench_path}/env/bin/python" -c \
+    'from uuid import uuid4; print(uuid4().hex)'
+)"
+if [[ ! "${document_runtime_run_id}" =~ ^[a-f0-9]{32}$ ]]; then
+  echo "Document runtime namespace generation failed." >&2
+  exit 2
+fi
+
+run_document_runtime_verifier() {
+  local mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_document_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_document_runtime.py" \
+        --base-url "${base_url}" \
+        --replay-only
+    fi
+    echo "Unknown Document runtime verification mode." >&2
+    exit 2
+  )
+}
+
+run_document_route_probe() {
+  local expected_mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_document_runtime.py" \
+      --base-url "${base_url}" \
+      --route-disable-probe "${expected_mode}"
+  )
+}
+
 if [[ "${verification_mode}" == "all" ]]; then
   if ! run_runtime_verifier "${repo_root}/scripts/verify_frappe_runtime.py"; then
     echo "Local Frappe runtime verification failed." >&2
@@ -536,6 +674,39 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! run_project_controls_runtime_verifier replay-only; then
     echo "Local Frappe Project controls cross-process replay verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+fi
+
+if [[ "${verification_mode}" == "all" ||
+      "${verification_mode}" == "--document-only" ]]; then
+  if ! run_document_runtime_verifier fresh; then
+    echo "Local Frappe Document runtime verification failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  document_route_disable_config_changed=true
+  stop_runtime_server
+  set_document_route_switch true true
+  start_runtime_server
+  wait_for_runtime_server
+  if ! run_document_route_probe disabled; then
+    echo "Local Frappe Document route-disable probe failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  stop_runtime_server
+  set_document_route_switch false false
+  start_runtime_server
+  wait_for_runtime_server
+  if ! run_document_route_probe recovered; then
+    echo "Local Frappe Document route recovery probe failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  if ! run_document_runtime_verifier replay-only; then
+    echo "Local Frappe Document cross-process replay verification failed." >&2
     tail -100 "${runtime_log}" >&2
     exit 1
   fi

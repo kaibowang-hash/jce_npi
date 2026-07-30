@@ -21,6 +21,11 @@ import {
   LiveProjectDomainWorkItemsDataSource,
   LiveProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
+import { LiveDocumentDataSource } from "../api/document-data-source";
+import type {
+  RequestWorkspaceTransition,
+  WorkspaceDirtyRegistration,
+} from "./workspace-navigation";
 
 const WorkPage = lazy(() => import("../pages/work-page"));
 const LiveWorkPage = lazy(() => import("../pages/live-work-page"));
@@ -36,20 +41,48 @@ const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
 const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
 const liveProjectDomainWorkItemsDataSource =
   new LiveProjectDomainWorkItemsDataSource();
+const liveDocumentDataSource = new LiveDocumentDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
   const { t } = useI18n();
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null,
-  );
-  const navigationReturnFocusTarget = useCallback(
-    (): HTMLElement | null =>
-      document.getElementById("command-palette-trigger") ??
-      document.getElementById("main-content"),
+  const [workspaceDirty, setWorkspaceDirty] =
+    useState<WorkspaceDirtyRegistration | null>(null);
+  const [pendingTransition, setPendingTransition] = useState<{
+    perform: () => void;
+    returnFocusTarget: HTMLElement | null;
+    target: string;
+  } | null>(null);
+  const dirty = route.scenario === "dirty" || workspaceDirty !== null;
+  const reportWorkspaceDirty = useCallback(
+    (registration: WorkspaceDirtyRegistration | null): void => {
+      setWorkspaceDirty(registration);
+    },
     [],
+  );
+  const requestWorkspaceTransition: RequestWorkspaceTransition = useCallback(
+    (perform, returnFocusTarget): void => {
+      if (!dirty) {
+        perform();
+        return;
+      }
+      const activeElement =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      setPendingTransition({
+        perform,
+        returnFocusTarget:
+          returnFocusTarget ??
+          activeElement ??
+          workspaceDirty?.returnFocusTarget() ??
+          document.getElementById("main-content"),
+        target: globalThis.location.pathname,
+      });
+    },
+    [dirty, workspaceDirty],
   );
   useEffect(() => {
     if (import.meta.env.DEV || import.meta.env.VITE_NPI_PROTOTYPE === "true") {
@@ -63,7 +96,7 @@ export function App(): React.JSX.Element {
     }
   }, [route.pathname, route.screen]);
   useLayoutEffect(() => {
-    if (route.scenario !== "dirty") return undefined;
+    if (!dirty) return undefined;
     const protectedLocation = `${globalThis.location.pathname}${globalThis.location.search}${globalThis.location.hash}`;
     const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
       event.preventDefault();
@@ -76,7 +109,15 @@ export function App(): React.JSX.Element {
       const attemptedLocation = `${globalThis.location.pathname}${globalThis.location.search}${globalThis.location.hash}`;
       globalThis.history.pushState({}, "", protectedLocation);
       syncRoute();
-      setPendingNavigation(attemptedLocation);
+      setPendingTransition({
+        perform: () => {
+          navigate(attemptedLocation);
+        },
+        returnFocusTarget:
+          workspaceDirty?.returnFocusTarget() ??
+          document.getElementById("main-content"),
+        target: attemptedLocation,
+      });
     };
     globalThis.addEventListener("beforeunload", handleBeforeUnload);
     globalThis.addEventListener("popstate", handlePopState);
@@ -84,16 +125,24 @@ export function App(): React.JSX.Element {
       globalThis.removeEventListener("beforeunload", handleBeforeUnload);
       globalThis.removeEventListener("popstate", handlePopState);
     };
-  }, [route.scenario, syncRoute]);
+  }, [dirty, navigate, syncRoute, workspaceDirty]);
   const guardedNavigate = useCallback(
     (target: string): void => {
-      if (route.scenario === "dirty") {
-        setPendingNavigation(target);
-        return;
-      }
-      navigate(target);
+      const activeElement =
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement !== document.body
+          ? document.activeElement
+          : null;
+      const returnFocusTarget = activeElement?.closest('[role="dialog"]')
+        ? document.getElementById("command-palette-trigger")
+        : (activeElement ??
+          document.getElementById("command-palette-trigger") ??
+          document.getElementById("main-content"));
+      requestWorkspaceTransition(() => {
+        navigate(target);
+      }, returnFocusTarget);
     },
-    [navigate, route.scenario],
+    [navigate, requestWorkspaceTransition],
   );
   const page =
     route.screen === "project" && route.projectMode === "demo" ? (
@@ -103,9 +152,12 @@ export function App(): React.JSX.Element {
         contextDataSource={liveProjectWorkContextDataSource}
         controlsDataSource={liveProjectControlsDataSource}
         dataSource={liveProjectDataSource}
+        documentDataSource={liveDocumentDataSource}
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+        requestWorkspaceTransition={requestWorkspaceTransition}
       />
     ) : route.screen === "gate" && route.gateMode === "live" ? (
       <GateEvidencePage
@@ -172,12 +224,13 @@ export function App(): React.JSX.Element {
           )}
         </Suspense>
       </AppShell>
-      {pendingNavigation ? (
+      {pendingTransition ? (
         <ImpactReview
           confirmLabel={t("Discard changes and leave")}
           details={{
-            objectIdentity: route.pathname,
-            version: "unsaved-draft",
+            objectIdentity:
+              workspaceDirty?.objectIdentity ?? pendingTransition.target,
+            version: workspaceDirty?.version ?? "unsaved-draft",
             impact: t(
               "Your unsaved changes in the current workspace will be discarded.",
             ),
@@ -191,14 +244,15 @@ export function App(): React.JSX.Element {
             ),
           }}
           onCancel={() => {
-            setPendingNavigation(null);
+            setPendingTransition(null);
           }}
           onConfirm={() => {
-            const target = pendingNavigation;
-            setPendingNavigation(null);
-            navigate(target);
+            const transition = pendingTransition;
+            setPendingTransition(null);
+            transition.perform();
           }}
-          returnFocusTarget={navigationReturnFocusTarget}
+          reasonRequired={false}
+          returnFocusTarget={() => pendingTransition.returnFocusTarget}
           title={t("Unsaved changes")}
         />
       ) : null}

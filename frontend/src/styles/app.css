@@ -2334,6 +2334,220 @@ textarea::placeholder {
   border-top: var(--npi-border-default) solid var(--npi-color-border-default);
 }
 
+.document-workspace {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.document-workspace__toolbar {
+  display: flex;
+  min-height: var(--npi-density-toolbar);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--npi-space-3);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.document-workspace__toolbar h2,
+.document-workspace__summary {
+  margin: var(--npi-space-0);
+}
+
+.document-workspace__toolbar h2 {
+  font-size: var(--npi-typography-size-md);
+}
+
+.document-workspace__summary {
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.document-workspace__layout {
+  display: grid;
+  grid-template-columns: minmax(560px, 1fr) minmax(320px, 400px);
+  align-items: start;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.document-list-table {
+  min-width: 680px;
+}
+
+.table-link {
+  appearance: none;
+  padding: var(--npi-space-0);
+  border: var(--npi-space-0);
+  background: transparent;
+  color: var(--npi-color-brand-primary);
+  font: inherit;
+  font-weight: var(--npi-typography-weight-semibold);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.table-link:hover {
+  color: var(--npi-color-brand-active);
+}
+
+.table-link:focus-visible {
+  outline: var(--npi-border-selected) solid var(--npi-color-focus);
+  outline-offset: var(--npi-space-1);
+}
+
+.document-inspector__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--npi-space-2);
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.document-inspector__header > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+}
+
+.document-inspector__title {
+  overflow-wrap: anywhere;
+}
+
+.document-inspector__actions {
+  padding-top: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.document-command-state,
+.document-content-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: var(--npi-density-row-default);
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.document-command-state--error {
+  align-items: flex-start;
+  border-left-color: var(--npi-color-semantic-danger);
+  background: var(--npi-color-semantic-dangerSubtle);
+}
+
+.document-command-state .problem-details,
+.document-content-state .problem-details {
+  flex: 1 1 100%;
+}
+
+.document-empty-state {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  justify-items: start;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-4);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-default);
+}
+
+.document-empty-state h2,
+.document-empty-state p {
+  margin: var(--npi-space-0);
+}
+
+.document-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--npi-space-2);
+}
+
+.document-form--revision {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.document-form label {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.document-form input[type="file"] {
+  min-height: var(--npi-density-control);
+  padding: var(--npi-space-1);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-radius: var(--npi-radius-control);
+  background: var(--npi-color-surface-default);
+  color: var(--npi-color-text-primary);
+}
+
+.document-form small {
+  color: var(--npi-color-text-secondary);
+}
+
+.document-form__wide {
+  grid-column: 1 / -1;
+}
+
+.document-workspace__evidence-grid,
+.document-workspace__history-grid {
+  display: grid;
+  grid-template-columns: minmax(620px, 1fr) minmax(280px, 360px);
+  align-items: start;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.document-workspace__history-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.document-workspace__evidence-grid .data-table {
+  min-width: 880px;
+}
+
+.document-file__hash {
+  display: block;
+  max-width: 260px;
+  overflow: hidden;
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--npi-space-1);
+}
+
+.document-native-preview {
+  display: grid;
+  gap: var(--npi-space-2);
+}
+
+.document-native-preview iframe {
+  width: 100%;
+  min-height: 480px;
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-radius: var(--npi-radius-panel);
+  background: var(--npi-color-surface-subtle);
+}
+
 .governance-filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -3119,6 +3333,15 @@ textarea::placeholder {
   .governance-comment-options {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .document-workspace__layout,
+  .document-workspace__evidence-grid {
+    grid-template-columns: minmax(440px, 1fr) minmax(280px, 320px);
+  }
+
+  .document-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (width <= 920px) {
@@ -3158,6 +3381,19 @@ textarea::placeholder {
   .worklist-layout,
   .execution-layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-workspace__layout,
+  .document-workspace__evidence-grid,
+  .document-workspace__history-grid,
+  .document-form,
+  .document-form--revision {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-workspace__toolbar {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .engineering-layout > .docked-inspector,
