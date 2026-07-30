@@ -400,12 +400,28 @@ test.describe("R1-05 live My Work inspector layout", () => {
     const collapse = page.getByRole("button", {
       name: translate("en", "Collapse inspector"),
     });
-    await collapse.click();
+    const collapseAction = page.locator(".inspector-controls .npi-icon-action");
+    await expect(collapseAction.locator("ix-button")).toHaveAttribute(
+      "title",
+      translate("en", "Collapse inspector"),
+    );
+    await expect(collapseAction).toHaveAttribute("data-icon-action", "true");
+    await collapse.focus();
+    await expect(
+      collapseAction.getByRole("tooltip", {
+        name: translate("en", "Collapse inspector"),
+      }),
+    ).toBeVisible();
+    await collapse.press("Enter");
     await expect.poll(() => harness.puts.length).toBe(5);
     const expand = page.getByRole("button", {
       name: translate("en", "Expand inspector"),
     });
     await expect(expand).toBeVisible();
+    await expect(collapseAction.locator("ix-button")).toHaveAttribute(
+      "title",
+      translate("en", "Expand inspector"),
+    );
     await expect(expand).toBeFocused();
     await expect(
       page.getByRole("searchbox", { name: translate("en", "Filter") }),
@@ -543,11 +559,16 @@ test.describe("R1-05 live My Work inspector layout", () => {
     await expect(
       page.getByText("trace-r1-05-inspector-save-failure", { exact: true }),
     ).toBeVisible();
+    const disabledExpand = page.getByRole("button", {
+      name: translate("en", "Expand inspector"),
+    });
+    await expect(disabledExpand).toBeDisabled();
     await expect(
-      page.getByRole("button", {
-        name: translate("en", "Expand inspector"),
-      }),
-    ).toBeDisabled();
+      page.locator(".inspector-controls .npi-icon-action ix-button"),
+    ).toHaveAttribute("title", translate("en", "Expand inspector"));
+    await expect(
+      page.locator(".inspector-controls .npi-icon-action"),
+    ).toHaveAttribute("data-icon-action", "true");
     await expect(
       page.getByRole("button", {
         name: translate("en", "Reload pane layout"),
@@ -620,6 +641,18 @@ test.describe("@visual R1-05 live My Work inspector evidence", () => {
       const harness = await installLiveMyWorkRoutes(page, profile.locale);
       await openLiveMyWork(page, profile.locale);
       await expect.poll(harness.getCount).toBeGreaterThan(0);
+      const collapse = page.getByRole("button", {
+        name: translate(profile.locale, "Collapse inspector"),
+      });
+      const collapseAction = page.locator(
+        ".inspector-controls .npi-icon-action",
+      );
+      await collapse.focus();
+      await expect(
+        collapseAction.getByRole("tooltip", {
+          name: translate(profile.locale, "Collapse inspector"),
+        }),
+      ).toBeVisible();
       await expectNoMixedLanguage(page, profile.locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

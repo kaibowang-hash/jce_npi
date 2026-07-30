@@ -6,7 +6,7 @@ import type {
   PropsWithChildren,
   SelectHTMLAttributes,
 } from "react";
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useId, useRef } from "react";
 import { IxButton, IxIcon } from "@siemens/ix-react";
 import {
   iconAlarmBell,
@@ -16,6 +16,7 @@ import {
   iconCheck,
   iconChevronLeftSmall,
   iconChevronRightSmall,
+  iconClear,
   iconDocument,
   iconError,
   iconFilter,
@@ -29,37 +30,22 @@ import {
   iconProjects,
   iconRefresh,
   iconSearch,
+  iconUpload,
   iconUser,
   iconWarning,
   iconWorkCase,
 } from "@siemens/ix-icons/icons";
 import "@siemens/ix/dist/siemens-ix/siemens-ix.css";
 
-export type NpiIconName =
-  | "add"
-  | "alarm"
-  | "analysis"
-  | "apps"
-  | "check"
-  | "chevron"
-  | "collapse"
-  | "document"
-  | "error"
-  | "expand"
-  | "filter"
-  | "help"
-  | "history"
-  | "info"
-  | "keyboard"
-  | "maintenance"
-  | "play"
-  | "project"
-  | "projects"
-  | "refresh"
-  | "search"
-  | "user"
-  | "warning"
-  | "work";
+import {
+  assertNpiIconName,
+  isIconOnlyAction,
+  type CompactActionIntent,
+  type CompactActionProminence,
+  type NpiIconName,
+} from "./action-policy";
+
+export type { NpiIconName } from "./action-policy";
 
 const icons: Record<NpiIconName, string> = {
   add: iconAdd,
@@ -68,6 +54,7 @@ const icons: Record<NpiIconName, string> = {
   apps: iconApps,
   check: iconCheck,
   chevron: iconChevronRightSmall,
+  clear: iconClear,
   collapse: iconChevronLeftSmall,
   document: iconDocument,
   error: iconError,
@@ -83,10 +70,15 @@ const icons: Record<NpiIconName, string> = {
   projects: iconProjects,
   refresh: iconRefresh,
   search: iconSearch,
+  upload: iconUpload,
   user: iconUser,
   warning: iconWarning,
   work: iconWorkCase,
 };
+
+function localIcon(name: NpiIconName): string {
+  return icons[assertNpiIconName(name)];
+}
 
 type HydratableElement = HTMLElement & {
   componentOnReady?: () => Promise<unknown>;
@@ -147,7 +139,7 @@ export function Icon({
     <IxIcon
       aria-hidden={label ? undefined : true}
       aria-label={label}
-      name={icons[name]}
+      name={localIcon(name)}
       size="16"
     />
   );
@@ -233,6 +225,7 @@ export function Button({
       {...(ariaLabel ? { ariaLabelButton: ariaLabel } : {})}
       {...(onClick ? { onClick } : {})}
       className={`npi-button ${className}`.trim()}
+      data-visual={visual}
       data-visual-primary={visual === "primary" ? "true" : "false"}
       disabled={disabled}
       ghost={visual === "ghost"}
@@ -241,9 +234,71 @@ export function Button({
       type={type}
       variant={variant}
     >
-      {icon ? <IxIcon aria-hidden={true} name={icons[icon]} size="16" /> : null}
+      {icon ? (
+        <IxIcon aria-hidden={true} name={localIcon(icon)} size="16" />
+      ) : null}
       {children}
     </IxButton>
+  );
+}
+
+type CompactActionProps = Omit<
+  ButtonProps,
+  "aria-label" | "children" | "icon" | "visual"
+> & {
+  readonly icon: NpiIconName;
+  readonly intent: CompactActionIntent;
+  readonly label: string;
+  readonly prominence?: CompactActionProminence;
+  readonly tooltipPlacement?: "bottom" | "left";
+};
+
+export function CompactAction({
+  className = "",
+  icon,
+  intent,
+  label,
+  prominence = "secondary",
+  tooltipPlacement = "bottom",
+  ...properties
+}: CompactActionProps): React.JSX.Element {
+  const generatedId = useId().replaceAll(":", "");
+  const tooltipId = `npi-icon-action-${generatedId}`;
+  const iconOnly = isIconOnlyAction(intent, prominence);
+  const visual =
+    intent === "high-risk"
+      ? "danger"
+      : prominence === "primary"
+        ? "primary"
+        : "secondary";
+
+  if (!iconOnly) {
+    return (
+      <Button {...properties} className={className} icon={icon} visual={visual}>
+        {label}
+      </Button>
+    );
+  }
+
+  return (
+    <span
+      className="npi-icon-action"
+      data-icon-action="true"
+      data-tooltip-placement={tooltipPlacement}
+    >
+      <Button
+        {...properties}
+        aria-describedby={tooltipId}
+        aria-label={label}
+        className={`npi-icon-action__button ${className}`.trim()}
+        icon={icon}
+        title={label}
+        visual="ghost"
+      />
+      <span className="npi-icon-action__tooltip" id={tooltipId} role="tooltip">
+        {label}
+      </span>
+    </span>
   );
 }
 

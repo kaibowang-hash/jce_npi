@@ -232,6 +232,57 @@ textarea::placeholder {
   --theme-btn-primary--color: var(--npi-color-surface-default);
 }
 
+.npi-icon-action {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.npi-icon-action__button {
+  width: var(--npi-density-control-compact);
+  min-width: var(--npi-density-control-compact);
+  padding-inline: var(--npi-space-0);
+}
+
+.npi-icon-action:focus-within {
+  outline: var(--npi-border-default) solid var(--npi-color-focus);
+  outline-offset: 2px;
+}
+
+.npi-icon-action__tooltip {
+  position: absolute;
+  top: calc(100% + var(--npi-space-1));
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: var(--npi-space-1) var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-strong);
+  border-radius: var(--npi-radius-subtle);
+  visibility: hidden;
+  color: var(--npi-color-surface-default);
+  font-size: var(--npi-typography-size-xs);
+  line-height: 1.25;
+  background: var(--npi-color-text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  white-space: normal;
+}
+
+.npi-icon-action[data-tooltip-placement="left"] .npi-icon-action__tooltip {
+  top: 50%;
+  right: calc(100% + var(--npi-space-1));
+  left: auto;
+  transform: translateY(-50%);
+}
+
+.npi-icon-action:hover .npi-icon-action__tooltip,
+.npi-icon-action:focus-within .npi-icon-action__tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
 .app-shell {
   display: grid;
   grid-template-rows: var(--npi-layout-appHeader) minmax(0, 1fr);

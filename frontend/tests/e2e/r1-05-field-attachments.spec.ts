@@ -362,8 +362,21 @@ test.describe("R1-05 field and attachment truth", () => {
     const clear = page.getByRole("button", {
       name: translate("en", "Clear local selection"),
     });
+    const clearAction = page.locator(
+      ".attachment-truth__actions .npi-icon-action",
+    );
+    await expect(clearAction.locator("ix-button")).toHaveAttribute(
+      "title",
+      translate("en", "Clear local selection"),
+    );
+    await expect(clearAction).toHaveAttribute("data-icon-action", "true");
     await clear.focus();
     await expect(clear).toBeFocused();
+    await expect(
+      clearAction.getByRole("tooltip", {
+        name: translate("en", "Clear local selection"),
+      }),
+    ).toBeVisible();
     await clear.press("Enter");
     await expect(page.getByText(firstFileName, { exact: true })).toHaveCount(0);
     await expect(picker).toBeFocused();
@@ -607,6 +620,19 @@ test.describe("@visual R1-05 field and attachment truth evidence", () => {
     });
     await openPrototype(page, "/trials/T1", { locale: "en" });
     await selectTrialFile(page, "en", "SYN-TRIAL-VISUAL.jpg");
+    const clearAction = page.locator(
+      ".attachment-truth__actions .npi-icon-action",
+    );
+    await page
+      .getByRole("button", {
+        name: translate("en", "Clear local selection"),
+      })
+      .focus();
+    await expect(
+      clearAction.getByRole("tooltip", {
+        name: translate("en", "Clear local selection"),
+      }),
+    ).toBeVisible();
     await expectSurfaceQuality(page, "en");
     await disableAnimationsAndWaitForFonts(page);
     const field = page.getByRole("region", {

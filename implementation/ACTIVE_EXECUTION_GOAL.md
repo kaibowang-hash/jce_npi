@@ -1,9 +1,9 @@
 # Active Execution Goal
 
-Updated: `2026-07-27T14:00:01Z`
+Updated: `2026-07-30T10:01:52Z`
 
-- Goal: `NPI One V1.2 — Autopilot Continuous Delivery`
-- Codex Goal ID: `019f9b71-27d4-7c91-9a58-7258e08a6307`
+- Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
+- Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
 - Mode: `R1_SHARED_BRIDGE` within
   `NPI One V1.2 AUTOPILOT CONTINUOUS DELIVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
@@ -12,9 +12,10 @@ Updated: `2026-07-27T14:00:01Z`
 - Last synchronized product checkpoint:
   `930b5a28cb995df12f251994a36f7502525ed94a` (`0` ahead / `0` behind before
   the R1-01 task checkpoint)
-- Current synchronized Stage 2 starting checkpoint:
-  `749665e5428208f0453832b7f394eddcb6deebca`; R1-01 through R1-04 are
-  complete bridge tasks, R1-03 passed its triggered
+- Current synchronized Stage 3 starting checkpoint:
+  `0b485446ddde66ee0fe0a8ed7459bf191916a020` (`0` ahead / `0` behind at
+  recovery); R1-01 through R1-04 are complete bridge tasks, R1-03 passed its
+  triggered
   `LEVEL 3 PUBLIC SESSION-CONTRACT TASK GATE`, and R1-04 passed its
   `LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`; R1-05 Stage 1 is the
   committed predecessor to the passing Stage 2 slice
@@ -30,8 +31,21 @@ Updated: `2026-07-27T14:00:01Z`
   `FR-UX-041` is `TECHNICAL_VERIFIED`)
 - Next and only active slice:
   `R1-05 Stage 3 — FR-UX-043 bounded icon-action foundation`
-  (`READY`; `FR-UX-043` remains `PLANNED_SHARED_UX_REMEDIATION` until its
-  own Gate passes)
+  (`IMPLEMENTED_LOCAL_VALIDATION_PENDING_LINUX_VISUAL_TASK_GATE`;
+  `FR-UX-043` remains `PLANNED_SHARED_UX_REMEDIATION` until its own Gate
+  passes)
+- Passing reusable Stage 3 checks:
+  exact Node `24.18.0` / npm `11.16.0`; generated-source freshness,
+  TypeScript, affected ESLint/Stylelint, vendor-boundary, industrial UI and
+  i18n audits; `61/61` affected unit tests; `14/14` affected real-browser
+  behavior tests; and `6/6` host-platform visual renders. The host-platform
+  screenshots are review evidence only and are not substituted for the
+  repository's Linux baselines.
+- First incomplete action:
+  create and push a truthful Stage 3 checkpoint, let existing draft PR `#1`
+  run Ubuntu CI, retrieve the exact Linux visual deltas, then complete the
+  Level 2 Task Gate. GitHub CLI authentication is stale; the connected GitHub
+  app remains available for PR, run and artifact inspection.
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -94,14 +108,17 @@ inactive. R1-07 remains scoped to
 DR-REC-001. Their cumulative Shell/design/i18n changes must pass the complete
 triggered Level 3 bridge Gate before P5-01 product work resumes.
 
-The R1-05 Stage 2 starting boundary is
-`749665e5428208f0453832b7f394eddcb6deebca`. Stage 2 introduced no public API,
-DocType, database migration, authentication/permission change, production
-dependency or external integration and left `FR-UX-043` planned.
+The R1-05 Stage 3 starting boundary is
+`0b485446ddde66ee0fe0a8ed7459bf191916a020`. The bounded Stage 3 implementation
+introduces no public API, DocType, database migration, authentication or
+permission change, production dependency, translation-catalog change or
+external integration. Its Linux visual baseline and final Level 2 evidence
+remain incomplete, so no Stage 3 or R1-05 PASS is claimed.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`, and
 `implementation/LAST_RUN.md`. Chat memory is non-authoritative. Reuse accepted
 Phase 4, P5-00, P5-01 checkpoint, R1-01 through R1-04 and R1-05 Stage 1
 and Stage 2 evidence; resume only Stage 3 and do not repeat or rewrite passing
-work merely to restore context.
+work merely to restore context. Reuse the passing Stage 3 static/unit/browser
+evidence above; the first incomplete action is the Linux visual CI checkpoint.

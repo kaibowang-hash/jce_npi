@@ -3,7 +3,7 @@ import { useId, useRef, type InputHTMLAttributes, type ReactNode } from "react";
 import type { SourceStatus, SourceSystem } from "../domain/view-models";
 import { formatDate, formatDateTime, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
-import { Button } from "../ui-adapters/npi-ui";
+import { CompactAction } from "../ui-adapters/npi-ui";
 import {
   normalizeAttachmentWorkflowState,
   type AttachmentCapabilityTruth,
@@ -822,16 +822,23 @@ export function AttachmentField({
             {state.kind === "local_selected" &&
             transportAvailable &&
             mutationAllowed ? (
-              <Button
+              <CompactAction
+                icon="upload"
+                intent="familiar-low-risk"
+                label={t("Start file transport")}
                 onClick={() => {
                   start?.();
                 }}
-              >
-                {t("Start file transport")}
-              </Button>
+                prominence="primary"
+              />
             ) : null}
             {clearable ? (
-              <Button onClick={clear}>{t("Clear local selection")}</Button>
+              <CompactAction
+                icon="clear"
+                intent="familiar-low-risk"
+                label={t("Clear local selection")}
+                onClick={clear}
+              />
             ) : null}
           </div>
           {!transportAvailable && state.kind === "local_selected" ? (
@@ -933,15 +940,30 @@ export function AttachmentField({
             state.retryable &&
             retry &&
             mutationAllowed ? (
-              <Button onClick={retry}>{t("Retry file transport")}</Button>
+              <CompactAction
+                icon="refresh"
+                intent="familiar-low-risk"
+                label={t("Retry file transport")}
+                onClick={retry}
+              />
             ) : null}
             {(state.kind === "conflict" ||
               state.writeState === "unconfirmed") &&
             onReload ? (
-              <Button onClick={onReload}>{t("Reload attachment truth")}</Button>
+              <CompactAction
+                icon="refresh"
+                intent="ambiguous"
+                label={t("Reload attachment truth")}
+                onClick={onReload}
+              />
             ) : null}
             {clearable ? (
-              <Button onClick={clear}>{t("Clear local selection")}</Button>
+              <CompactAction
+                icon="clear"
+                intent="familiar-low-risk"
+                label={t("Clear local selection")}
+                onClick={clear}
+              />
             ) : null}
           </div>
         </div>

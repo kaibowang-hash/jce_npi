@@ -5,33 +5,16 @@ import type {
   PropsWithChildren,
   SelectHTMLAttributes,
 } from "react";
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 
-export type NpiIconName =
-  | "add"
-  | "alarm"
-  | "analysis"
-  | "apps"
-  | "check"
-  | "chevron"
-  | "collapse"
-  | "document"
-  | "error"
-  | "expand"
-  | "filter"
-  | "help"
-  | "history"
-  | "info"
-  | "keyboard"
-  | "maintenance"
-  | "play"
-  | "project"
-  | "projects"
-  | "refresh"
-  | "search"
-  | "user"
-  | "warning"
-  | "work";
+import {
+  isIconOnlyAction,
+  type CompactActionIntent,
+  type CompactActionProminence,
+  type NpiIconName,
+} from "../../src/ui-adapters/action-policy";
+
+export type { NpiIconName } from "../../src/ui-adapters/action-policy";
 
 // The test adapter intentionally mirrors both component and imperative exports.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -54,11 +37,72 @@ export function Button({
   return (
     <button
       data-icon={icon}
+      data-visual={visual}
       data-visual-primary={visual === "primary" ? "true" : undefined}
       {...properties}
     >
       {children}
     </button>
+  );
+}
+
+type CompactActionProps = Omit<
+  ButtonProps,
+  "aria-label" | "children" | "icon" | "visual"
+> & {
+  readonly icon: NpiIconName;
+  readonly intent: CompactActionIntent;
+  readonly label: string;
+  readonly prominence?: CompactActionProminence;
+  readonly tooltipPlacement?: "bottom" | "left";
+};
+
+export function CompactAction({
+  className = "",
+  icon,
+  intent,
+  label,
+  prominence = "secondary",
+  tooltipPlacement = "bottom",
+  ...properties
+}: CompactActionProps): JSX.Element {
+  const generatedId = useId().replaceAll(":", "");
+  const tooltipId = `npi-icon-action-${generatedId}`;
+  const iconOnly = isIconOnlyAction(intent, prominence);
+  const visual =
+    intent === "high-risk"
+      ? "danger"
+      : prominence === "primary"
+        ? "primary"
+        : "secondary";
+
+  if (!iconOnly) {
+    return (
+      <Button {...properties} className={className} icon={icon} visual={visual}>
+        {label}
+      </Button>
+    );
+  }
+
+  return (
+    <span
+      className="npi-icon-action"
+      data-icon-action="true"
+      data-tooltip-placement={tooltipPlacement}
+    >
+      <Button
+        {...properties}
+        aria-describedby={tooltipId}
+        aria-label={label}
+        className={`npi-icon-action__button ${className}`.trim()}
+        icon={icon}
+        title={label}
+        visual="ghost"
+      />
+      <span className="npi-icon-action__tooltip" id={tooltipId} role="tooltip">
+        {label}
+      </span>
+    </span>
   );
 }
 

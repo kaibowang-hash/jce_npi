@@ -17,7 +17,7 @@ import type {
 import { activityLabel, gateLabel, lifecycleLabel } from "../i18n/copy";
 import { formatDateTime } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
-import { Button, focusControl } from "../ui-adapters/npi-ui";
+import { Button, CompactAction, focusControl } from "../ui-adapters/npi-ui";
 import { ResizablePaneSeparator } from "../ui-adapters/resizable-pane";
 import { RequestFailurePanel } from "./problem-details-panel";
 import { Panel, SemanticStatus, SourceBadge, SyncBadge } from "./primitives";
@@ -485,23 +485,35 @@ export function DockedInspector({
       ) : null}
       <div className="inspector-controls">
         <div ref={collapseControlRef}>
-          <Button
-            aria-expanded={!collapsed}
-            disabled={layout ? !layout.canUpdate : false}
-            onClick={(event) => {
-              void focusControl(event.currentTarget);
-              if (layout) {
+          {controlled ? (
+            <CompactAction
+              aria-expanded={!collapsed}
+              disabled={!layout.canUpdate}
+              icon={collapsed ? "expand" : "collapse"}
+              intent="familiar-low-risk"
+              label={
+                collapsed ? t("Expand inspector") : t("Collapse inspector")
+              }
+              onClick={(event) => {
+                void focusControl(event.currentTarget);
                 layout.onChange({
                   collapsed: !collapsed,
                   widthPx: confirmedWidth,
                 });
-              } else {
+              }}
+              tooltipPlacement={collapsed ? "left" : "bottom"}
+            />
+          ) : (
+            <Button
+              aria-expanded={!collapsed}
+              onClick={(event) => {
+                void focusControl(event.currentTarget);
                 setLegacyCollapsed((current) => !current);
-              }
-            }}
-          >
-            {collapsed ? t("Expand inspector") : t("Collapse inspector")}
-          </Button>
+              }}
+            >
+              {collapsed ? t("Expand inspector") : t("Collapse inspector")}
+            </Button>
+          )}
         </div>
         {statusCopy &&
         (!collapsed ||
@@ -541,9 +553,12 @@ export function DockedInspector({
         <div className="docked-inspector__layout-failure">
           <RequestFailurePanel failure={layout.failure} />
           <div ref={reloadControlRef}>
-            <Button icon="refresh" onClick={layout.onReload} visual="secondary">
-              {t("Reload pane layout")}
-            </Button>
+            <CompactAction
+              icon="refresh"
+              intent="ambiguous"
+              label={t("Reload pane layout")}
+              onClick={layout.onReload}
+            />
           </div>
         </div>
       ) : null}
