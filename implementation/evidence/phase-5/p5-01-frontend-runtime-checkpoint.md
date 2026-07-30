@@ -270,7 +270,16 @@ bounded repair aligns only that verifier inventory with the existing sealed
 idempotency contract and adds a regression assertion; it does not change the
 DocType, database or business behavior.
 
-## Pending controlled-Site proof
+The schema-inventory repair checkpoint
+`56e1b75d6b34fd000df34d0ab70016d9163143f4` passed normal CI run
+`30565607707`. Manual run `30566120000` passed the corrected schema fixture,
+both migrations and all guarded setup boundaries. The next real command,
+synthetic Project creation, returned HTTP `422` because the fixture supplied
+non-email owner `Administrator`; the retained Project command requires a
+canonical email owner. Cleanup again removed both containers, both volumes
+and the runner-local network.
+
+## Controlled-Site proof blocked after five repair rounds
 
 The required command is:
 
@@ -283,20 +292,17 @@ because the fixed physical repository Bench does not exist. The repository
 preflight then confirmed that this host has no Docker CLI, Docker daemon or
 Compose v2. No production Site or external integration was contacted.
 
-The verifier and shell contract are tested, but the fourth run stopped at the
-first document schema fixture and therefore cannot replace the required
-complete Site result. Before P5-01 can pass:
+The five complete genuine rounds and root cause are retained in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
+Because the necessary Gate still fails after the fifth round, the controller
+requires `BLOCKED_EXTERNAL`.
 
-1. push the bounded schema-inventory repair and let its normal CI pass;
-2. run the document-only command once more, including two migrations, fresh
-   execution, route-disable/recovery, second-process exact replay and cleanup;
-3. rerun the affected checks if runtime repair changes source;
-4. finish the P5-01 Task Diff/domain/permission/security/UX/i18n review; and
-5. only then mark the seven requirements verified and activate P5-02.
+The single user action required is:
 
-The unavailable local runtime is a scoped environment gap, not an
-`AUTOPILOT_CONTROLLER.md` Hard Blocker. The Goal remains active and the task
-remains fail closed at P5-01.
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
+
+Until then, no sixth repair or dispatch is permitted. P5-01 and all seven
+requirements remain incomplete, and P5-02 remains inactive.
 
 ## Rollback and recovery
 

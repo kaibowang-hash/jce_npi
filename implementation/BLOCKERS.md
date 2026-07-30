@@ -1,14 +1,30 @@
 # Blockers
 
-Updated: `2026-07-30T17:17:57Z`
+Updated: `2026-07-30T17:32:55Z`
 
 ## Active hard blockers
 
-None.
+`P5-01-CONTROLLED-RUNTIME-REPAIR-LIMIT`
+
+The necessary P5-01 controlled-Site Gate still fails after five complete
+genuine repair rounds, which is an exhaustive Hard Blocker under
+`implementation/AUTOPILOT_CONTROLLER.md`. Exact evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
+
+The fifth run `30566120000` passed exact runtime guards, installed both apps,
+completed both migrations and passed the corrected nine-DocType schema
+fixture. Its synthetic Project command then returned HTTP `422` because the
+fixture supplied `Administrator` as `ownerUserId`, while the retained Project
+contract requires a canonical email owner. Cleanup removed both containers,
+both volumes and the runner-local network.
+
+Single user action required:
+
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
 
 ## Active execution hold
 
-None.
+`P5-01_CONTROLLED_RUNTIME_REPAIR_LIMIT`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate

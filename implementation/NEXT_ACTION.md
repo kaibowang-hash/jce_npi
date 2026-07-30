@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
+`BLOCKED_EXTERNAL — P5-01 CONTROLLED SITE GATE FAILED AFTER FIVE REPAIR ROUNDS`
 
-Recovery time: `2026-07-30T17:17:57Z`
+Recovery time: `2026-07-30T17:32:55Z`
 
 Latest complete CI recovery checkpoint:
-`5dfb99df923ed112ea4eae2ea1b8019ec723d953`
+`56e1b75d6b34fd000df34d0ab70016d9163143f4`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -52,6 +52,15 @@ Required and only development branch:
   existing sealed `response_snapshot` and `response_sealed` pair. Cleanup
   removed the runner-local containers, volumes and network; no controlled
   document runtime result is claimed.
+- The schema-inventory repair passed normal run `30565607707`, including the
+  complete repository, `285/285` browser, fixed-Linux visual and both secret
+  lanes.
+- Manual run `30566120000` passed both migrations and the corrected schema
+  fixture, then Project creation returned HTTP `422` because the synthetic
+  fixture supplied non-email owner `Administrator`. Cleanup removed the
+  runner-local containers, volumes and network.
+- This is the fifth complete repair round. The controller therefore records
+  the still-failing necessary Gate as an exhaustive Hard Blocker.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -85,11 +94,13 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Push and validate the bounded document verifier schema-inventory repair, then
-redispatch `.github/workflows/ci.yml` on the development branch. It must keep
-the exact tool pins, initialize a fresh runner-local fixed disposable Frappe
-Site without touching retained local volumes, append each NPI app as its own
-registry line, then run:
+Single user action required:
+
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
+
+Do not modify code or dispatch another runtime before that authority. If
+authorized, change only the synthetic fixture to create, use and clean a
+namespaced disposable email owner. Then rerun affected checks, normal CI and:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 
@@ -103,9 +114,8 @@ The terminal result must prove:
 5. route-disable/recovery and second-process replay; and
 6. bounded cleanup with no production or external connection.
 
-If runtime repair changes source, rerun its affected checks. Then complete the
-Task Diff/domain/permission/security/UX/i18n review and P5-01 Level 2 Task
-Gate. P5-02 remains inactive until this passes.
+Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
+review and P5-01 Level 2 Task Gate. P5-02 remains inactive.
 
 ## Retained passing checkpoint evidence
 

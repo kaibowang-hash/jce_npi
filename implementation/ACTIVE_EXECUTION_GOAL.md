@@ -1,19 +1,19 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T17:17:57Z`
+Updated: `2026-07-30T17:32:55Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `PHASE_5_CONTINUOUS_DELIVERY`
+- Mode: `BLOCKED_EXTERNAL`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
+  `56e1b75d6b34fd000df34d0ab70016d9163143f4`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE
-  PENDING`)
+  (`BLOCKED_EXTERNAL — NECESSARY CONTROLLED SITE GATE FAILED AFTER FIVE
+  COMPLETE REPAIR ROUNDS`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -107,6 +107,22 @@ Cleanup removed the two containers, two volumes and runner-local network.
 The current bounded repair changes only this verifier inventory and its
 regression assertion; no product or runtime PASS is claimed.
 
+That schema-inventory repair checkpoint
+`56e1b75d6b34fd000df34d0ab70016d9163143f4` passed normal run
+`30565607707`, including the complete repository, `285/285` browser,
+fixed-Linux visual and both secret lanes. Manual run `30566120000` then
+passed exact tool/Bench/database guards, installed both apps, completed both
+migrations and passed the corrected nine-DocType schema fixture. Its
+synthetic Project command returned HTTP `422` because the fixture used
+`Administrator` as `ownerUserId`, while the retained Project command requires
+a canonical email owner. Cleanup removed both containers, both volumes and
+the runner-local network.
+
+This was the fifth complete genuine controlled-runtime repair round.
+`AUTOPILOT_CONTROLLER.md` defines a necessary Gate still failing after five
+complete repair rounds as an exhaustive Hard Blocker. Exact evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -155,17 +171,18 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The first incomplete action is to push the bounded document verifier schema
-inventory repair, let its normal PR CI pass, then redispatch the same CI
-workflow on the development branch. The job creates only fresh ephemeral
-runner volumes and does not touch the unavailable retained local volumes. It
-must run:
+Automatic delivery is stopped at the controller's exhausted repair boundary.
+The single incomplete action is external:
+
+`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
+
+If authorized, change only the synthetic fixture to create, use and clean a
+namespaced disposable email owner; then rerun affected checks, normal CI and
+the unchanged:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 
-That command must pass two migrations, fresh execution, route
-disable/recovery, second-process replay and cleanup. Then finish the affected
-reviews and P5-01 Level 2 Task Gate. Do not activate P5-02 before that proof.
+P5-01 remains incomplete and P5-02 remains inactive.
 
 Do not start P5-02, add review/release/baseline/EBOM behavior, enable external
 retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
@@ -200,7 +217,11 @@ CI `#80`; the first setup repair is complete at
 `IN_PROGRESS`; the distribution-metadata repair is complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
-with normal run `30564533440`. The fixed controlled Site has not yet passed.
+with normal run `30564533440`; the schema repair is complete at
+`56e1b75d6b34fd000df34d0ab70016d9163143f4` with normal run
+`30565607707`. The fixed controlled Site has not passed and the fifth-round
+Hard Blocker is recorded at
+`implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
