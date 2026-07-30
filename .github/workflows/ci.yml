@@ -116,14 +116,16 @@ jobs:
         with: { python-version: "3.11" }
       - uses: actions/setup-node@v4
         with: { node-version: "24.18.0" }
-      - name: Install exact Bench runtime tools
+      - name: Install and verify exact Bench runtime tools
         run: |
           python -m pip install \
             --disable-pip-version-check \
             --no-cache-dir \
             "frappe-bench==5.31.0" \
             "uv==0.11.30"
-          npm install --global --strict-allow-scripts "yarn@1.22.22"
+          test "$(bench --version)" = "5.31.0"
+          test "$(uv --version)" = "uv 0.11.30"
+          test "$(yarn --version)" = "1.22.22"
       - name: Initialize pinned Frappe Bench
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site

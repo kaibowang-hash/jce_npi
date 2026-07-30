@@ -216,12 +216,22 @@ controlled-Site proof.
 The current host has no Docker or fixed Bench. The existing CI workflow now
 adds a manual-only `document_runtime` job so the next proof can run on a
 fresh ephemeral GitHub runner. It installs only the exact toolchain-pinned
-Bench, uv and Yarn versions, initializes the repository's pinned Frappe
-commit and fixed disposable `npi.localhost` Site, then runs the unchanged
-`--document-only` command. The job records only non-secret result metadata,
-uploads it for 30 days and removes only its own ephemeral Compose volumes.
-It has read-only repository permissions, contains no production hostname or
-secret binding and does not alter the normal pull-request CI path.
+Bench and uv versions, requires the runner-provided Yarn to equal the exact
+pinned version, initializes the repository's pinned Frappe commit and fixed
+disposable `npi.localhost` Site, then runs the unchanged `--document-only`
+command. The job records only non-secret result metadata, uploads it for 30
+days and removes only its own ephemeral Compose volumes. It has read-only
+repository permissions, contains no production hostname or secret binding
+and does not alter the normal pull-request CI path.
+
+The first dispatch, run `30562284484`, reached the exact remote SHA and failed
+before Bench initialization, Site creation, Compose startup or database
+writes. npm 11 correctly rejected Yarn's package preinstall script because
+the generic `--strict-allow-scripts` invocation had no package-specific
+allowlist. The repair removes that unnecessary global install: the hosted
+runner already reported Yarn `1.22.22`, and the job now fails closed unless
+Bench, uv and Yarn each report the exact repository-pinned version. No script
+allowlist or runtime Gate was weakened.
 
 ## Pending controlled-Site proof
 

@@ -165,7 +165,9 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "timeout-minutes: 45",
             f'"frappe-bench=={toolchain["BENCH_EXPECTED_VERSION"]}"',
             f'"uv=={toolchain["UV_EXPECTED_VERSION"]}"',
-            f'"yarn@{toolchain["YARN_EXPECTED_VERSION"]}"',
+            f'test "$(bench --version)" = "{toolchain["BENCH_EXPECTED_VERSION"]}"',
+            f'test "$(uv --version)" = "uv {toolchain["UV_EXPECTED_VERSION"]}"',
+            f'test "$(yarn --version)" = "{toolchain["YARN_EXPECTED_VERSION"]}"',
             "bash scripts/init-frappe-bench.sh",
             "bash scripts/init-npi-site.sh",
             "bash scripts/verify-frappe-runtime.sh --document-only",
@@ -182,6 +184,8 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("secrets.", runtime_job)
         self.assertNotIn("continue-on-error", runtime_job)
         self.assertNotIn("core.whjichen.cn", runtime_job)
+        self.assertNotIn("npm install --global", runtime_job)
+        self.assertNotIn("--dangerously-allow-all-scripts", runtime_job)
 
 
 if __name__ == "__main__":

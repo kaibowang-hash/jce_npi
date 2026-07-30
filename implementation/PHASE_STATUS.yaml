@@ -1,12 +1,12 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-30T16:23:38Z'
+updated_at: '2026-07-30T16:39:02Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-01
 current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-01-FRONTEND-BROWSER-STATIC-RUNTIME-CI
+current_task_completed_stage: P5-01-CONTROLLED-SITE-CI-SETUP-REPAIR
 current_task_next_stage: P5-01-CONTROLLED-SITE-TASK-GATE
 current_task_next_stage_status: WAITING_FOR_CONTROLLED_RUNTIME
 resumed_product_task: P5-01

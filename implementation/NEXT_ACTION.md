@@ -3,10 +3,10 @@
 Status:
 `P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T16:23:38Z`
+Recovery time: `2026-07-30T16:39:02Z`
 
 Latest complete CI recovery checkpoint:
-`86f3fde02303a5088c5ec4d4be906efcdb83c96d`
+`3839503982223470fafb7e268f3331089418b350`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -28,6 +28,11 @@ Required and only development branch:
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
+- The manual-lane checkpoint passed the same complete normal CI as `#80`, run
+  `30561689283`.
+- Manual run `30562284484` failed before Bench/Site/Compose/database work
+  because strict npm policy rejected an unnecessary Yarn global install; no
+  controlled runtime result is claimed from that run.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -61,10 +66,11 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Push and validate the manual-only `document_runtime` CI job, then dispatch
-`.github/workflows/ci.yml` on the development branch. It must initialize a
-fresh runner-local fixed disposable Frappe Site without touching retained
-local volumes, then run:
+Push and validate the bounded Yarn setup repair, then redispatch
+`.github/workflows/ci.yml` on the development branch. It must require the
+runner's Yarn version to equal the exact repository pin, initialize a fresh
+runner-local fixed disposable Frappe Site without touching retained local
+volumes, then run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

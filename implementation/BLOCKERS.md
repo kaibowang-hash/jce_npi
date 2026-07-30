@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T16:23:38Z`
+Updated: `2026-07-30T16:39:02Z`
 
 ## Active hard blockers
 
@@ -75,6 +75,13 @@ sharing, revision or CAD/PDM rules;
 review/release/baseline/EBOM/formal publish remain P5-02 through P5-05.
 Production ERPNext/CAD/PDM access and external file retrieval remain
 prohibited or fail closed.
+
+Manual dispatch `30562284484` failed before Bench/Site/Compose/database work
+because npm 11 rejected Yarn's package preinstall script. This is a bounded
+CI setup defect, not an external or global Hard Blocker. The repair removes
+the unnecessary global install and requires the already present runner Yarn,
+the installed Bench and uv to equal all exact repository pins before
+initialization.
 
 R1-02 used only the five supplied LaunchFlow SVGs in their governed contexts
 and passed its exact-scope asset guard. The subsequently supplied `Core.png`

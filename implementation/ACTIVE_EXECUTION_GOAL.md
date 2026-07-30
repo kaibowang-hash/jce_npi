@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T16:23:38Z`
+Updated: `2026-07-30T16:39:02Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,7 +9,7 @@ Updated: `2026-07-30T16:23:38Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `86f3fde02303a5088c5ec4d4be906efcdb83c96d`
+  `3839503982223470fafb7e268f3331089418b350`
 - Current controller task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE
@@ -67,6 +67,16 @@ at `86f3fde02303a5088c5ec4d4be906efcdb83c96d`. CI `#79`, run
 fixed-Linux visual, current-tree secret and complete PR-history secret lanes.
 It is the latest complete CI recovery point.
 
+The manual controlled-runtime lane checkpoint
+`3839503982223470fafb7e268f3331089418b350` then passed normal CI `#80`,
+run `30561689283`: complete repository, `285/285` non-visual browser,
+fixed-Linux visual, current-tree secret and complete PR-history secret lanes.
+The first manual dispatch, run `30562284484`, proved the event, ref, SHA and
+read-only permissions, then failed before Bench/Site/Compose/database work
+because npm rejected Yarn's preinstall script without an explicit allowlist.
+The bounded repair retains the runner's already exact Yarn and verifies all
+three tool versions fail closed; no runtime result is claimed yet.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -115,10 +125,10 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The first incomplete action is to push the manual-only controlled document
-runtime job, let its normal PR CI pass, then dispatch the same CI workflow on
-the development branch. The job creates only fresh ephemeral runner volumes
-and does not touch the unavailable retained local volumes. It must run:
+The first incomplete action is to push the bounded Yarn setup repair, let its
+normal PR CI pass, then redispatch the same CI workflow on the development
+branch. The job creates only fresh ephemeral runner volumes and does not
+touch the unavailable retained local volumes. It must run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 
@@ -152,8 +162,9 @@ P5-01 retained backend checkpoint remains `930b5a2`; its resume-audit
 checkpoint is `ee8730133e8cdd30fc7bff158ab80a252ed14249` with CI `#74`; controller
 checkpoint `9198dc9c54d314c9927ff5aa68ce17253f6f4afe` passed CI `#75`. The
 frontend/runtime-ready candidate and its bounded CI repairs are complete at
-`86f3fde02303a5088c5ec4d4be906efcdb83c96d` with CI `#79`. P5-01 remains
-`IN_PROGRESS` until the fixed controlled Site passes.
+`86f3fde02303a5088c5ec4d4be906efcdb83c96d` with CI `#79`; the manual lane
+checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
+CI `#80`. P5-01 remains `IN_PROGRESS` until the fixed controlled Site passes.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
