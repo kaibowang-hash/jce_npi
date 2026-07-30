@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T15:09:42Z`
+Updated: `2026-07-30T16:23:38Z`
 
 ## Active hard blockers
 
@@ -64,11 +64,14 @@ and the frontend/browser/static-runtime slice is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 The final controlled-Site command could not start because this host has no
 Docker CLI/daemon/Compose and no fixed repository Bench. It failed before
-migration or fixture writes. This is a scoped environment gap, not a global
-Hard Blocker, but it keeps P5-01 `IN_PROGRESS` and P5-02 inactive until the
-real two-migration/fresh/replay/route-recovery Site result passes. P5-01 must
-not invent production document numbering, classification, retention,
-scanner/viewer, sharing, revision or CAD/PDM rules;
+migration or fixture writes. This remains a scoped local environment gap, not
+a global Hard Blocker. A manual-only CI job now provides the same pinned,
+guarded, fixed disposable Site on a fresh ephemeral runner without touching
+retained local volumes or any production endpoint. P5-01 remains
+`IN_PROGRESS` and P5-02 inactive until its real
+two-migration/fresh/replay/route-recovery result passes. P5-01 must not invent
+production document numbering, classification, retention, scanner/viewer,
+sharing, revision or CAD/PDM rules;
 review/release/baseline/EBOM/formal publish remain P5-02 through P5-05.
 Production ERPNext/CAD/PDM access and external file retrieval remain
 prohibited or fail closed.

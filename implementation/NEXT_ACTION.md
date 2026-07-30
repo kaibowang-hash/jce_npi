@@ -3,10 +3,10 @@
 Status:
 `P5-01 FRONTEND/BROWSER/STATIC RUNTIME PASS — CONTROLLED SITE PENDING`
 
-Recovery time: `2026-07-30T15:09:42Z`
+Recovery time: `2026-07-30T16:23:38Z`
 
-Latest synchronized recovery checkpoint:
-`9198dc9c54d314c9927ff5aa68ce17253f6f4afe`
+Latest complete CI recovery checkpoint:
+`86f3fde02303a5088c5ec4d4be906efcdb83c96d`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -25,7 +25,9 @@ Required and only development branch:
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
   static runtime checks pass; P5-01 remains `IN_PROGRESS`, not `PASS`.
-- The exact controller checkpoint passed CI `#75`, run `30550637406`.
+- The frontend/runtime/security checkpoint passed complete CI `#79`, run
+  `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
+  visuals and both current-tree and complete PR-history secret scans.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -59,8 +61,10 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Restore the repository's fixed disposable Frappe runtime without deleting or
-resetting retained volumes, then run:
+Push and validate the manual-only `document_runtime` CI job, then dispatch
+`.github/workflows/ci.yml` on the development branch. It must initialize a
+fresh runner-local fixed disposable Frappe Site without touching retained
+local volumes, then run:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

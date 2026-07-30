@@ -197,6 +197,32 @@ previously reviewed synthetic fingerprints. Path-only entries, wildcard
 lines, comments, blanks and unreviewed additional fingerprints remain
 rejected. This forward-only repair is pending a new complete CI run.
 
+### Complete CI checkpoint and controlled-Site channel
+
+CI `#79`, run `30560612349`, passed on exact remote head
+`86f3fde02303a5088c5ec4d4be906efcdb83c96d`. Both jobs and every declared
+step completed:
+
+- repository: complete `verify-dev-config`, `scripts/verify.sh`, `285/285`
+  non-visual Playwright, current-tree gitleaks and complete PR-history
+  gitleaks;
+- visual: exact fixed-Linux governed matrix and bounded artifact upload.
+
+This closes the three bounded CI repair loops without weakening a Gate,
+rewriting history or including unrelated local changes. It is reusable
+frontend/browser/static/security evidence but still does not replace the real
+controlled-Site proof.
+
+The current host has no Docker or fixed Bench. The existing CI workflow now
+adds a manual-only `document_runtime` job so the next proof can run on a
+fresh ephemeral GitHub runner. It installs only the exact toolchain-pinned
+Bench, uv and Yarn versions, initializes the repository's pinned Frappe
+commit and fixed disposable `npi.localhost` Site, then runs the unchanged
+`--document-only` command. The job records only non-secret result metadata,
+uploads it for 30 days and removes only its own ephemeral Compose volumes.
+It has read-only repository permissions, contains no production hostname or
+secret binding and does not alter the normal pull-request CI path.
+
 ## Pending controlled-Site proof
 
 The required command is:

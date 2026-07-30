@@ -11,6 +11,8 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 VERIFIER = ROOT / "scripts" / "verify_document_runtime.py"
 RUNTIME_SHELL = ROOT / "scripts" / "verify-frappe-runtime.sh"
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+TOOLCHAIN = ROOT / ".devcontainer" / "toolchain.env"
 FIXTURE_RUN_ID = "0123456789abcdef0123456789abcdef"
 
 
@@ -44,6 +46,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         cls.module = load_verifier()
         cls.source = VERIFIER.read_text(encoding="utf-8")
         cls.shell = RUNTIME_SHELL.read_text(encoding="utf-8")
+        cls.workflow = CI_WORKFLOW.read_text(encoding="utf-8")
 
     def test_fixture_namespace_and_headers_are_bounded(self) -> None:
         module = self.module
@@ -149,6 +152,36 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         for fragment in required_fragments:
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, self.source)
+
+    def test_manual_ci_lane_uses_the_pinned_disposable_runtime(self) -> None:
+        toolchain = dict(
+            line.split("=", 1)
+            for line in TOOLCHAIN.read_text(encoding="utf-8").splitlines()
+            if line and not line.startswith("#")
+        )
+        runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
+        required_fragments = (
+            "if: github.event_name == 'workflow_dispatch'",
+            "timeout-minutes: 45",
+            f'"frappe-bench=={toolchain["BENCH_EXPECTED_VERSION"]}"',
+            f'"uv=={toolchain["UV_EXPECTED_VERSION"]}"',
+            f'"yarn@{toolchain["YARN_EXPECTED_VERSION"]}"',
+            "bash scripts/init-frappe-bench.sh",
+            "bash scripts/init-npi-site.sh",
+            "bash scripts/verify-frappe-runtime.sh --document-only",
+            "site=npi.localhost",
+            "database=npi_one_runtime",
+            "runtime_marker=npi-one-local-runtime-disposable-v1",
+            f'frappe_commit={toolchain["FRAPPE_COMMIT"]}',
+            "p5-document-runtime-${{ github.run_id }}",
+            "docker compose down --volumes",
+        )
+        for fragment in required_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, runtime_job)
+        self.assertNotIn("secrets.", runtime_job)
+        self.assertNotIn("continue-on-error", runtime_job)
+        self.assertNotIn("core.whjichen.cn", runtime_job)
 
 
 if __name__ == "__main__":
