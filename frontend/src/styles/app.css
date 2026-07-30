@@ -277,6 +277,19 @@ textarea::placeholder {
   transform: translateY(-50%);
 }
 
+.npi-icon-action[data-tooltip-placement="bottom-start"]
+  .npi-icon-action__tooltip {
+  left: 0;
+  transform: none;
+}
+
+.npi-icon-action[data-tooltip-placement="bottom-end"]
+  .npi-icon-action__tooltip {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
 .npi-icon-action:hover .npi-icon-action__tooltip,
 .npi-icon-action:focus-within .npi-icon-action__tooltip {
   visibility: visible;

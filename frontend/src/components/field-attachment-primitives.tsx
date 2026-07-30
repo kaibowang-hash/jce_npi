@@ -697,6 +697,17 @@ export function AttachmentField({
       state.kind === "local_invalid" ||
       (state.kind === "failed" && state.writeState === "none"));
   const inputDisabled = inputAccessibility?.disabled === true || !selectable;
+  const showStart =
+    state.kind === "local_selected" && transportAvailable && mutationAllowed;
+  const showRetry =
+    state.kind === "failed" &&
+    state.retryable &&
+    retry !== undefined &&
+    mutationAllowed;
+  const showReload =
+    (state.kind === "conflict" ||
+      (state.kind === "failed" && state.writeState === "unconfirmed")) &&
+    onReload !== undefined;
 
   const choose = (file: File | undefined): void => {
     if (!file || !selectable) return;
@@ -819,9 +830,7 @@ export function AttachmentField({
           </div>
           <LocalAttachmentFile file={state.file} />
           <div className="attachment-truth__actions">
-            {state.kind === "local_selected" &&
-            transportAvailable &&
-            mutationAllowed ? (
+            {showStart ? (
               <CompactAction
                 icon="upload"
                 intent="familiar-low-risk"
@@ -838,6 +847,7 @@ export function AttachmentField({
                 intent="familiar-low-risk"
                 label={t("Clear local selection")}
                 onClick={clear}
+                tooltipPlacement={showStart ? "bottom-end" : "bottom-start"}
               />
             ) : null}
           </div>
@@ -936,20 +946,16 @@ export function AttachmentField({
           />
           <RequestFailurePanel announce={false} failure={state.failure} />
           <div className="attachment-truth__actions">
-            {state.kind === "failed" &&
-            state.retryable &&
-            retry &&
-            mutationAllowed ? (
+            {showRetry ? (
               <CompactAction
                 icon="refresh"
                 intent="familiar-low-risk"
                 label={t("Retry file transport")}
                 onClick={retry}
+                tooltipPlacement="bottom-start"
               />
             ) : null}
-            {(state.kind === "conflict" ||
-              state.writeState === "unconfirmed") &&
-            onReload ? (
+            {showReload ? (
               <CompactAction
                 icon="refresh"
                 intent="ambiguous"
@@ -963,6 +969,9 @@ export function AttachmentField({
                 intent="familiar-low-risk"
                 label={t("Clear local selection")}
                 onClick={clear}
+                tooltipPlacement={
+                  showRetry || showReload ? "bottom-end" : "bottom-start"
+                }
               />
             ) : null}
           </div>

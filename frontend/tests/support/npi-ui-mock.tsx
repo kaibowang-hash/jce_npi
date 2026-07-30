@@ -54,7 +54,7 @@ type CompactActionProps = Omit<
   readonly intent: CompactActionIntent;
   readonly label: string;
   readonly prominence?: CompactActionProminence;
-  readonly tooltipPlacement?: "bottom" | "left";
+  readonly tooltipPlacement?: "bottom" | "bottom-end" | "bottom-start" | "left";
 };
 
 export function CompactAction({

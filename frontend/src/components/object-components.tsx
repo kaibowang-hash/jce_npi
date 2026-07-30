@@ -501,7 +501,7 @@ export function DockedInspector({
                   widthPx: confirmedWidth,
                 });
               }}
-              tooltipPlacement={collapsed ? "left" : "bottom"}
+              tooltipPlacement={collapsed ? "left" : "bottom-start"}
             />
           ) : (
             <Button

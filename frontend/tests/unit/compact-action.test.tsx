@@ -14,6 +14,7 @@ describe("CompactAction", () => {
         intent="familiar-low-risk"
         label="Clear local selection"
         onClick={onClick}
+        tooltipPlacement="bottom-start"
       />,
     );
 
@@ -26,6 +27,10 @@ describe("CompactAction", () => {
     expect(button).toHaveAttribute("title", "Clear local selection");
     expect(button).toHaveAttribute("aria-describedby", tooltip.id);
     expect(button.parentElement).toHaveAttribute("data-icon-action", "true");
+    expect(button.parentElement).toHaveAttribute(
+      "data-tooltip-placement",
+      "bottom-start",
+    );
     expect(button).toHaveAttribute("data-icon", "clear");
     expect(button).toHaveTextContent("");
 
