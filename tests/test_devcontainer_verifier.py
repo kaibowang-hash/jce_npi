@@ -81,7 +81,12 @@ class DevcontainerVerifierTest(unittest.TestCase):
         safe_workflow = """steps:
   - run: sudo apt-get update
   - run: sudo apt-get install --yes ripgrep
+  - run: bash scripts/verify-dev-config.sh
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
   - run: bash scripts/verify.sh
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
 """
         validate_ci_verification_tools(safe_workflow)
         unsafe_variants = (
@@ -93,9 +98,26 @@ class DevcontainerVerifierTest(unittest.TestCase):
             ),
             safe_workflow.replace(
                 "  - run: sudo apt-get install --yes ripgrep\n"
+                "  - run: bash scripts/verify-dev-config.sh\n"
+                "    env:\n"
+                "      GITHUB_TOKEN: ${{ github.token }}\n"
                 "  - run: bash scripts/verify.sh\n",
                 "  - run: bash scripts/verify.sh\n"
+                "    env:\n"
+                "      GITHUB_TOKEN: ${{ github.token }}\n"
                 "  - run: sudo apt-get install --yes ripgrep\n",
+            ),
+            safe_workflow.replace(
+                "  - run: bash scripts/verify-dev-config.sh\n"
+                "    env:\n"
+                "      GITHUB_TOKEN: ${{ github.token }}\n",
+                "  - run: bash scripts/verify-dev-config.sh\n",
+            ),
+            safe_workflow.replace(
+                "  - run: bash scripts/verify.sh\n"
+                "    env:\n"
+                "      GITHUB_TOKEN: ${{ github.token }}\n",
+                "  - run: bash scripts/verify.sh\n",
             ),
         )
         for unsafe_workflow in unsafe_variants:

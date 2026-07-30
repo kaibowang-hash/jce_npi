@@ -35,7 +35,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes ripgrep
       - run: bash scripts/verify-dev-config.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - run: bash scripts/verify.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
       - run: npm run test:e2e

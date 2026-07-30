@@ -206,6 +206,18 @@ def validate_repository_verifier(repository_verify: str) -> None:
 
 
 def validate_ci_verification_tools(ci_workflow: str) -> None:
+    def has_scoped_actions_token(command: str) -> bool:
+        token_binding = re.escape("GITHUB_TOKEN: ${{ github.token }}")
+        return (
+            re.search(
+                rf"(?m)^(?P<indent>[ \t]*)- run: {re.escape(command)}\n"
+                rf"(?P=indent)  env:\n"
+                rf"(?P=indent)    {token_binding}[ \t]*(?:\n|$)",
+                ci_workflow,
+            )
+            is not None
+        )
+
     apt_update = ci_workflow.find("sudo apt-get update")
     ripgrep_install = ci_workflow.find("sudo apt-get install --yes ripgrep")
     repository_verify = ci_workflow.find("- run: bash scripts/verify.sh")
@@ -219,6 +231,14 @@ def validate_ci_verification_tools(ci_workflow: str) -> None:
     require(
         "sudo apt-get install --yes ripgrep || true" not in ci_workflow,
         "CI must not ignore a failed ripgrep installation",
+    )
+    require(
+        has_scoped_actions_token("bash scripts/verify-dev-config.sh"),
+        "CI development configuration verification must use the scoped Actions token",
+    )
+    require(
+        has_scoped_actions_token("bash scripts/verify.sh"),
+        "CI repository verification must use the scoped Actions token",
     )
 
 
