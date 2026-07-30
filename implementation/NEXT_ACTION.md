@@ -1,11 +1,11 @@
 # Next Action
 
-Status: `R1-06 READY — R1 SHARED BRIDGE`
+Status: `R1-06 STAGE 1 PROTOTYPE READY — R1 SHARED BRIDGE`
 
-Recovery time: `2026-07-30T11:35:38Z`
+Recovery time: `2026-07-30T11:45:09Z`
 
-R1-05 Stage 3 synchronized implementation checkpoint:
-`a2b533691ab7f223c1f51b8113fb2b9251aa82a4`
+R1-06 starting synchronized implementation checkpoint:
+`373770f988b4cf7707b41a50e96b7a4861d93c3b`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
@@ -24,7 +24,8 @@ Required and only development branch:
 - Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its external UAT is unsigned.
 - Phase 4 remains `PASS`; Phase 5 remains `IN_PROGRESS`.
 - P5-01 remains `IN_PROGRESS_CHECKPOINTED` at the retained backend boundary.
-- R1-06 is the only next bridge task.
+- R1-06 Stage 0 has anchored and planned the exact task; Stage 1 is the only
+  next implementation slice.
 - R1-07 remains disabled unless `DR-REC-001` is approved.
 - P5-01 resumes only after R1-06 and the cumulative R1 shared
   Shell/design/i18n Level 3 Gate pass.
@@ -54,22 +55,25 @@ Use:
 
 ## First incomplete action
 
-Create the R1-06 Requirement Anchor and atomic delivery plan before product
-code. The plan must:
+Implement only Stage 1 from:
 
-1. preserve the exact DOCX meanings and existing canonical mappings for
-   `UX-026`, `UX-030`, `UX-035` and `UX-036`;
-2. identify one genuinely low-risk reversible action eligible for a timed undo
-   contract and explicitly list ineligible actions;
-3. define the prototype-before-business-implementation Gate without
-   representing fixtures or technical validation as business UAT;
-4. define the additive `1440×900` English/Simplified/Traditional P0 visual
-   matrix alongside, not instead of, accepted `1366×768` and `1920×1080`
-   evidence;
-5. replace the temporary R1-05 affected-visual CI scope with durable,
-   fail-closed R1-06 visual governance; and
-6. map changed files to affected tests, Level 1/2 checks and the mandatory
-   cumulative R1 Level 3 exit Gate.
+- `implementation/evidence/reconciliation/r1-06-requirement-anchor.md`; and
+- `implementation/evidence/reconciliation/r1-06-plan.md`.
+
+Deliver a deterministic clickable My Work grid reset/undo prototype with:
+
+1. reset confirmation and server-confirmed undo availability/countdown;
+2. processing, success, expired, conflict, denied, retryable and final-failure
+   states without a production mutation or optimistic success;
+3. literal-English sources, direct `zh`/`zh-TW` catalogs, keyboard/focus/axe
+   coverage and trilingual 1440 evidence;
+4. a versioned approval manifest whose real status remains
+   `PENDING_PRODUCT_OWNER`; and
+5. a fail-closed verifier that prevents Stage 2 backend entry without an
+   actual approval tied to the reviewed prototype revision and policy facts.
+
+Stage 1 must change no production API, DocType, database schema, permission or
+business command.
 
 ## Prohibited or held behavior
 
@@ -88,7 +92,9 @@ code. The plan must:
 
 ## Transition
 
-After R1-06 passes its task Gate, evaluate `DR-REC-001`. If it remains
-unapproved, skip R1-07 as conditional and run the complete R1 shared
-Shell/design/i18n Level 3 exit Gate. Only a passing exit Gate releases the
-P5-01 hold.
+After the Stage 1 technical prototype gate, record the actual Product Owner
+approval truth. If approval is pending, keep only Stage 2 held and proceed to
+the independent Stage 3 1440 visual-governance slice. If approval is supplied,
+Stage 2 may implement the fixed authenticated reset/undo command before Stage
+3. R1-06 then runs its Task Gate, evaluates `DR-REC-001`, and runs the
+cumulative R1 Level 3 exit Gate before P5-01 can resume.

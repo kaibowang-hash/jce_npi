@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T11:35:38Z`
+Updated: `2026-07-30T11:45:09Z`
 
 ## Active hard blockers
 
@@ -32,6 +32,14 @@ P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 The former `V1_2_RECONCILIATION_HOLD` is resolved by
 `implementation/evidence/reconciliation/r1-01-validation.md`; it is replaced
 by this bounded shared-bridge hold rather than removed.
+
+R1-06 Stage 0 is complete. Stage 1 may build and technically validate the
+clickable My Work grid reset/undo prototype. Actual Product Owner approval is
+required before the dependent Stage 2 public reset/undo command may begin.
+That approval is currently pending and is a scoped `UX-030` entry gate, not an
+overall Hard Blocker: the prototype package, approval verifier and independent
+1440 P0 visual-governance stage continue. No technical fixture, screenshot,
+Codex review or automated test may sign the approval.
 
 R1-04's `UX-028` publisher authority remains a scoped Class-B hold, not a
 global blocker. The immutable published-view root/revision, hash, lineage and

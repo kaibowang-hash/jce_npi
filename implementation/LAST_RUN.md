@@ -1399,3 +1399,36 @@ Complete evidence:
 Current task:
 `R1-06 — Controlled undo prototype gate and 1440 visual governance`.
 P5-01 remains held; R1-07 remains disabled unless DR-REC-001 is approved.
+
+## R1-06 Stage 0 requirement anchor and plan — 2026-07-30T11:45:09Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting checkpoint:
+  `373770f988b4cf7707b41a50e96b7a4861d93c3b`.
+- Atomic slice:
+  `R1-06 Stage 0 — requirement anchor and atomic delivery plan`.
+- Result:
+  `IN_PROGRESS — ANCHOR/PLAN COMPLETE; STAGE 1 PROTOTYPE READY`.
+
+The exact reconciled meanings and canonical mappings for `UX-026`, `UX-030`,
+`UX-035` and `UX-036` are frozen in
+`implementation/evidence/reconciliation/r1-06-requirement-anchor.md`. The
+delivery plan selects only the current actor's closed-view My Work grid reset
+as a low-risk undo prototype candidate, explicitly excludes every business
+bulk/high-risk/irreversible action, and retains the full business bulk
+acceptance as held.
+
+The prototype-before-backend gate separates technical evidence from actual
+Product Owner approval. Stage 1 may build the deterministic trilingual
+prototype and approval package, but the real manifest remains
+`PENDING_PRODUCT_OWNER` and Stage 2 cannot begin without an approval tied to
+the reviewed revision and policy facts. Independent Stage 3 governance covers
+the current six P0 screens × three languages at 1440×900 while preserving all
+accepted 1366×768, 1920×1080, state, zoom and R1-05 evidence.
+
+This checkpoint changes planning/controller truth only. It changes no product
+runtime, public API, DocType, database schema, permission, translation catalog,
+dependency, visual baseline or external integration.
+
+Validation:
+`implementation/evidence/reconciliation/r1-06-stage-0-validation.md`.

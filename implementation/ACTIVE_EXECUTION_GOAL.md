@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T11:35:38Z`
+Updated: `2026-07-30T11:45:09Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -10,10 +10,10 @@ Updated: `2026-07-30T11:35:38Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest synchronized implementation checkpoint:
-  `a2b533691ab7f223c1f51b8113fb2b9251aa82a4`
+  `373770f988b4cf7707b41a50e96b7a4861d93c3b`
 - Current controller task:
   `R1-06 — Controlled undo prototype gate and 1440 visual governance`
-  (`READY`)
+  (`IN_PROGRESS — ANCHOR/PLAN COMPLETE; PROTOTYPE READY`)
 - Completed bridge tasks:
   `R1-01`, `R1-02`, `R1-03`, `R1-04`, `R1-05`
 - Held product task:
@@ -59,11 +59,12 @@ reconciliation checkpoint are not rewritten.
 
 ## First incomplete action
 
-Create the R1-06 Requirement Anchor and atomic delivery plan for `UX-026`,
-`UX-030`, `UX-035` and `UX-036`. Bound one low-risk timed-undo contract,
-explicitly enumerate ineligible commands, define the prototype-before-business
-implementation Gate, and define durable additive `1440×900` trilingual P0
-visual governance plus the cumulative R1 Level 3 exit Gate.
+Implement only R1-06 Stage 1: the deterministic clickable My Work grid
+reset/undo prototype and versioned approval package. Cover the complete
+available/countdown/processing/success/expired/conflict/denied/error state set,
+keyboard/focus/accessibility and direct `en`/`zh`/`zh-TW` evidence. Keep the
+real approval state `PENDING_PRODUCT_OWNER`, make the backend-entry verifier
+fail closed, and change no production API/schema/business command.
 
 R1-07 remains conditional on `DR-REC-001`. P5-01 remains held until R1-06 and
 the complete R1 exit Gate pass. Phase 3 external UAT, production rules,
@@ -89,15 +90,19 @@ technical identifiers remain unchanged.
 
 ## Recovery boundary
 
-The R1-05 Stage 3 starting boundary is
-`0b485446ddde66ee0fe0a8ed7459bf191916a020`. Its bounded icon-action slice
-changed no public API, DocType, database migration, authentication,
-authorization, translation catalog, design token, production dependency or
-external integration. The linked validation records all CI repair evidence
-and the reviewed Linux baseline hashes.
+R1-05 is complete at the final pushed evidence checkpoint
+`373770f988b4cf7707b41a50e96b7a4861d93c3b`. R1-06 Stage 0 is a
+documentation-only anchor/plan checkpoint over that boundary. It defines one
+personal-preference prototype candidate, preserves the business bulk-action
+hold, separates technical prototype evidence from actual Product Owner
+approval and freezes the additive six-page × three-language 1440 visual scope.
+It changes no product runtime, public API, DocType, permission, translation
+catalog, dependency or external integration.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
-`implementation/LAST_RUN.md`, and the current R1-06 Requirement Anchor once it
-exists. Chat memory is non-authoritative. Resume from the first incomplete
-R1-06 action without repeating accepted R1-05 or earlier Gates.
+`implementation/LAST_RUN.md`,
+`implementation/evidence/reconciliation/r1-06-requirement-anchor.md` and
+`implementation/evidence/reconciliation/r1-06-plan.md`. Chat memory is
+non-authoritative. Resume from Stage 1 without repeating accepted R1-05 or
+earlier Gates.
