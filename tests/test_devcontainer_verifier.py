@@ -97,6 +97,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
   - uses: gitleaks/gitleaks-action@v2
     env:
       GITHUB_TOKEN: ${{ github.token }}
+      GITLEAKS_VERSION: 8.24.3
+  - name: Scan complete pull-request branch history
+    if: github.event_name == 'pull_request'
+    run: /tmp/gitleaks-8.24.3/gitleaks detect --redact --verbose --exit-code=2 --log-opts="--no-merges origin/main..HEAD"
 visual:
   container:
     image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
@@ -152,6 +156,15 @@ visual:
                 "    env:\n"
                 "      GITHUB_TOKEN: ${{ github.token }}\n",
                 "  - uses: gitleaks/gitleaks-action@v2\n",
+            ),
+            safe_workflow.replace("      GITLEAKS_VERSION: 8.24.3\n", ""),
+            safe_workflow.replace(
+                "  - name: Scan complete pull-request branch history\n"
+                "    if: github.event_name == 'pull_request'\n"
+                "    run: /tmp/gitleaks-8.24.3/gitleaks detect --redact "
+                "--verbose --exit-code=2 "
+                '--log-opts="--no-merges origin/main..HEAD"\n',
+                "",
             ),
             safe_workflow.replace(
                 f"    image: {visual_image}\n",

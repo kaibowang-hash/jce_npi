@@ -48,6 +48,15 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_VERSION: 8.24.3
+      - name: Scan complete pull-request branch history
+        if: github.event_name == 'pull_request'
+        run: >-
+          /tmp/gitleaks-8.24.3/gitleaks detect
+          --redact
+          --verbose
+          --exit-code=2
+          --log-opts="--no-merges origin/main..HEAD"
 
   visual:
     runs-on: ubuntu-latest

@@ -264,6 +264,27 @@ def validate_ci_verification_tools(
         has_scoped_actions_token("uses: gitleaks/gitleaks-action@v2"),
         "CI secret scanning must use the scoped Actions token",
     )
+    gitleaks_action = ci_workflow.find("- uses: gitleaks/gitleaks-action@v2")
+    full_history_scan = ci_workflow.find(
+        '/tmp/gitleaks-8.24.3/gitleaks detect',
+        gitleaks_action,
+    )
+    visual_job = ci_workflow.find("\nvisual:")
+    if visual_job < 0:
+        visual_job = ci_workflow.find("\n  visual:")
+    require(
+        "GITLEAKS_VERSION: 8.24.3" in ci_workflow,
+        "CI secret scanning must use the reviewed Gitleaks version",
+    )
+    require(
+        "if: github.event_name == 'pull_request'" in ci_workflow
+        and '--log-opts="--no-merges origin/main..HEAD"' in ci_workflow,
+        "CI must scan the complete pull-request branch range",
+    )
+    require(
+        gitleaks_action < full_history_scan < visual_job,
+        "The complete pull-request secret scan must remain in the repository job",
+    )
     visual_container = ci_workflow.find(
         f"image: {visual_container_reference}"
     )
