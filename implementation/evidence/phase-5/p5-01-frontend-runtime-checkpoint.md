@@ -119,6 +119,44 @@ dependency or schema was added.
 - The preceding controller-only checkpoint passed CI `#75`, run
   `30550637406`.
 
+## CI #76 diagnosis and bounded repair
+
+Recorded: `2026-07-30T15:50:30Z`
+
+The product checkpoint `e687ede91c5d95860a019f5a57c9b04e63466614`
+was pushed and CI `#76`, run `30556235620`, exercised the complete
+repository and governed visual jobs. Two evidence defects were found; neither
+was accepted as a product PASS:
+
+- The repository job reached the prohibited-pattern scan after the Python,
+  frontend, coverage, build, brand and audit checks passed. A verifier unit
+  test contained the exact forbidden source token as its negative assertion,
+  so the repository scanner correctly failed closed. The test now constructs
+  that negative token without embedding the scanner pattern. Its `5/5`
+  affected tests pass and the exact repository scan returns no match.
+- Adding the retained document translations changed the generated catalog
+  version from `82a93beb772c049c` to `f36f17fab18f412b`. The six retained
+  R1-05 visual cases passed; all eighteen governed R1-06 P0 cases failed
+  because that version is visible in the footer.
+
+The failed visual artifact `8764951776` was downloaded in full and verified
+against GitHub's digest:
+`94536ac05da25aa38a00612f9dd92aabcc6adc350d0cab6270e9dac3a6cf386a`.
+It contained exactly eighteen actual and eighteen diff images. All actuals
+were `1440×900`. Pixel comparison against the retained Linux baselines found
+the primary changed bounds only in the catalog footer text
+(`x=496/560..677`, `y=882..892`), with `771..786` changed pixels per image.
+The English Trial actual also contained twenty one-level RGB
+anti-aliasing pixels at bottom control corners. The eighteen verified actuals
+were promoted as one governed Linux baseline set; the exact baseline
+inventory/dimension verifier, its `7/7` unit tests, the affected runtime
+verifier `5/5`, reconciliation verifier, prohibited-pattern scan and
+`git diff --check` pass locally.
+
+This bounded repair remains pending a fresh fixed-runner CI result. It does
+not change P5-01 completion state or substitute for the controlled-Site
+proof below.
+
 ## Pending controlled-Site proof
 
 The required command is:

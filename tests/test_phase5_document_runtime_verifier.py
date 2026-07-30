@@ -113,7 +113,8 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         for fragment in required_fragments:
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, self.source)
-        self.assertNotIn("ignore_permissions=True", self.source)
+        permission_bypass_token = "ignore_" + "permissions=True"
+        self.assertNotIn(permission_bypass_token, self.source)
         self.assertNotIn("allow_guest=True", self.source)
         self.assertNotIn("http://core.whjichen.cn", self.source)
 
