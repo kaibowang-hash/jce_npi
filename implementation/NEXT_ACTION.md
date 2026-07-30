@@ -1,11 +1,11 @@
 # Next Action
 
-Status: `R1-06 STAGE 1 PROTOTYPE READY — R1 SHARED BRIDGE`
+Status: `R1-06 STAGE 3 1440 VISUAL GOVERNANCE READY — R1 SHARED BRIDGE`
 
-Recovery time: `2026-07-30T11:45:09Z`
+Recovery time: `2026-07-30T12:28:35Z`
 
-R1-06 starting synchronized implementation checkpoint:
-`373770f988b4cf7707b41a50e96b7a4861d93c3b`
+R1-06 Stage 1 synchronized implementation checkpoint:
+`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`
@@ -24,8 +24,13 @@ Required and only development branch:
 - Phase 3 remains `TECHNICAL_PASS_PENDING_UAT`; its external UAT is unsigned.
 - Phase 4 remains `PASS`; Phase 5 remains `IN_PROGRESS`.
 - P5-01 remains `IN_PROGRESS_CHECKPOINTED` at the retained backend boundary.
-- R1-06 Stage 0 has anchored and planned the exact task; Stage 1 is the only
-  next implementation slice.
+- R1-06 Stage 1 passed its technical prototype/governance Gate:
+  - `UX-026`: `PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD`;
+  - `UX-030`:
+    `TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD`;
+  - Product Owner approval remains truthfully unsigned; and
+  - Stage 2 is scoped-held by the fail-closed backend-entry verifier.
+- Independent R1-06 Stage 3 is the only next implementation slice.
 - R1-07 remains disabled unless `DR-REC-001` is approved.
 - P5-01 resumes only after R1-06 and the cumulative R1 shared
   Shell/design/i18n Level 3 Gate pass.
@@ -55,25 +60,24 @@ Use:
 
 ## First incomplete action
 
-Implement only Stage 1 from:
+Implement only Stage 3 from:
 
 - `implementation/evidence/reconciliation/r1-06-requirement-anchor.md`; and
 - `implementation/evidence/reconciliation/r1-06-plan.md`.
 
-Deliver a deterministic clickable My Work grid reset/undo prototype with:
+Deliver durable additive 1440×900 P0 visual governance with:
 
-1. reset confirmation and server-confirmed undo availability/countdown;
-2. processing, success, expired, conflict, denied, retryable and final-failure
-   states without a production mutation or optimistic success;
-3. literal-English sources, direct `zh`/`zh-TW` catalogs, keyboard/focus/axe
-   coverage and trilingual 1440 evidence;
-4. a versioned approval manifest whose real status remains
-   `PENDING_PRODUCT_OWNER`; and
-5. a fail-closed verifier that prevents Stage 2 backend entry without an
-   actual approval tied to the reviewed prototype revision and policy facts.
-
-Stage 1 must change no production API, DocType, database schema, permission or
-business command.
+1. one explicit machine-checked registry for `work`, `project`, `gate`,
+   `tooling`, `trial` and `execution`;
+2. exactly 18 normal-state cases: six screens × `en`/`zh`/`zh-TW` at
+   1440×900/100%;
+3. density, object-context, primary-action, work-surface/list,
+   inspector/properties and document-overflow assertions;
+4. fixed-digest Linux comparison, bounded diff/result artifacts and repository
+   tests that fail if the registry, command, digest, expected case set or
+   retention contract drifts; and
+5. source-driven baseline generation plus original-resolution review without
+   rewriting unrelated accepted 1366/1920/state/zoom evidence.
 
 ## Prohibited or held behavior
 
@@ -92,9 +96,8 @@ business command.
 
 ## Transition
 
-After the Stage 1 technical prototype gate, record the actual Product Owner
-approval truth. If approval is pending, keep only Stage 2 held and proceed to
-the independent Stage 3 1440 visual-governance slice. If approval is supplied,
-Stage 2 may implement the fixed authenticated reset/undo command before Stage
-3. R1-06 then runs its Task Gate, evaluates `DR-REC-001`, and runs the
-cumulative R1 Level 3 exit Gate before P5-01 can resume.
+After Stage 3, run the R1-06 Level 2 Task Gate over the completed Stage 1 and
+Stage 3 scopes while retaining the Stage 2 approval hold. Then evaluate
+`DR-REC-001`; if it remains unapproved, skip conditional R1-07 without
+claiming it complete. Run the cumulative R1 shared Shell/design/i18n Level 3
+exit Gate before P5-01 can resume.

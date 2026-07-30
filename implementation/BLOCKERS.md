@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T11:45:09Z`
+Updated: `2026-07-30T12:28:35Z`
 
 ## Active hard blockers
 
@@ -33,13 +33,13 @@ The former `V1_2_RECONCILIATION_HOLD` is resolved by
 `implementation/evidence/reconciliation/r1-01-validation.md`; it is replaced
 by this bounded shared-bridge hold rather than removed.
 
-R1-06 Stage 0 is complete. Stage 1 may build and technically validate the
-clickable My Work grid reset/undo prototype. Actual Product Owner approval is
-required before the dependent Stage 2 public reset/undo command may begin.
-That approval is currently pending and is a scoped `UX-030` entry gate, not an
-overall Hard Blocker: the prototype package, approval verifier and independent
-1440 P0 visual-governance stage continue. No technical fixture, screenshot,
-Codex review or automated test may sign the approval.
+R1-06 Stage 1 passed its technical prototype/governance Gate at
+`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. Actual Product
+Owner approval is still required before the dependent Stage 2 public
+reset/undo command may begin. That approval remains pending and is a scoped
+`UX-030` entry gate, not an overall Hard Blocker: Stage 2 is fail-closed while
+independent Stage 3 1440 P0 visual governance proceeds. No technical fixture,
+screenshot, Codex review or automated test may sign the approval.
 
 R1-04's `UX-028` publisher authority remains a scoped Class-B hold, not a
 global blocker. The immutable published-view root/revision, hash, lineage and

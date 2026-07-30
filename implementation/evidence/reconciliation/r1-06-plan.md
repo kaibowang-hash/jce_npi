@@ -4,7 +4,8 @@ Date: 2026-07-30
 Branch: `codex/npi-v1.2-implementation`
 Task: `R1-06 — Controlled undo prototype gate and 1440 visual governance`
 Requirements: `UX-026`, `UX-030`, `UX-035`, `UX-036`
-Status: `IN_PROGRESS — STAGE 0 PASS; STAGE 1 PROTOTYPE READY`
+Status:
+`IN_PROGRESS — STAGE 1 TECHNICAL PASS; STAGE 2 APPROVAL HELD; STAGE 3 READY`
 Starting synchronized bridge checkpoint:
 `373770f988b4cf7707b41a50e96b7a4861d93c3b`
 
@@ -48,6 +49,12 @@ Validation:
 Exit: technical prototype evidence may pass, but the stage records approval as
 pending until supplied by the Product Owner. Codex never signs it.
 
+Validation:
+[R1-06 Stage 1 Validation — Controlled undo review prototype](r1-06-stage-1-validation.md).
+
+Result:
+`PASS — TECHNICAL PROTOTYPE/GOVERNANCE; PRODUCT OWNER APPROVAL PENDING; STAGE 2 HELD; STAGE 3 READY`.
+
 ### Stage 2 — approved fixed reset/undo command vertical slice
 
 Entry: only an actual Stage 1 Product Owner approval record.
@@ -72,6 +79,9 @@ addition to the cumulative R1 exit Gate.
 
 If approval remains pending, Stage 2 stays scoped-held. The task continues to
 Stage 3 without claiming `UX-026` backend completion.
+
+Current entry result: `HELD — PENDING_PRODUCT_OWNER`. The exact backend-entry
+verifier rejects the unsigned manifest. No Stage 2 implementation has begun.
 
 ### Stage 3 — durable additive 1440 P0 visual governance
 

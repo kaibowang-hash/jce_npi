@@ -4,6 +4,8 @@ Date: 2026-07-30
 Branch: `codex/npi-v1.2-implementation`
 Starting synchronized checkpoint:
 `2790ca280bbc47670d840bdb75fadaf2885367d3`
+Final pushed implementation checkpoint:
+`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2`
 Task: `R1-06 — Controlled undo prototype gate and 1440 visual governance`
 Requirements: `UX-026`, `UX-030`
 Result:
@@ -99,6 +101,28 @@ inspection are recorded in
   command. This is an environment/tool-version limitation, not a substituted
   PASS; the clean hosted CI repository lane must supply the canonical
   install-script and zero-vulnerability audit evidence for this checkpoint.
+
+### Hosted canonical checkpoint
+
+GitHub Actions CI `#67`, run `30542155671`, completed `success` for the exact
+pushed checkpoint:
+
+- repository job `90869267448`: PASS;
+- Node `24.18.0` / npm `11.16.0` clean install: `380` packages audited,
+  `0` vulnerabilities;
+- complete repository verifier, including the install-script guard and both
+  npm audits: PASS;
+- complete non-visual browser matrix: `279/279` PASS in `4.2m`;
+- action secret scan: `22` commits / `6.32 MB`, no leaks;
+- complete PR-branch secret scan: `53` commits / `11.81 MB`, no leaks; and
+- fixed-container visual job `90869267397`: PASS.
+
+Retained CI artifacts:
+
+- `r1-05-linux-visual-evidence`, artifact `8759172677`, digest
+  `sha256:34637088bf8ba8e86d95a8e6bcf515914914211f9b4a17556cf011cd18a5cfcb`;
+- `gitleaks-results.sarif`, artifact `8759316210`, digest
+  `sha256:46277e63a3c9b8ac55d4967961597527311a7ed98f46c7214a45a30f927318fa`.
 
 ### UX, accessibility and localization review
 

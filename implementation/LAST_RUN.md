@@ -1432,3 +1432,47 @@ dependency, visual baseline or external integration.
 
 Validation:
 `implementation/evidence/reconciliation/r1-06-stage-0-validation.md`.
+
+## R1-06 Stage 1 technical prototype/governance PASS; Stage 3 ready — 2026-07-30T12:28:35Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting Stage 1 checkpoint:
+  `2790ca280bbc47670d840bdb75fadaf2885367d3`.
+- Pushed implementation checkpoint:
+  `e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2`.
+- Atomic slice:
+  `R1-06 Stage 1 — controlled undo review prototype and approval gate`.
+- Result:
+  `PASS — TECHNICAL PROTOTYPE/GOVERNANCE; PRODUCT OWNER APPROVAL PENDING; STAGE 2 HELD; STAGE 3 READY`.
+
+The deterministic demo-only prototype covers the closed review, confirmation,
+available/countdown, processing, reconciled, expired, conflict, denied,
+retryable and final states in English, Simplified Chinese and Traditional
+Chinese. It sends no production mutation, changes no saved settings and adds
+no API, DocType, schema, permission or business command.
+
+The source-bound approval manifest remains `PENDING_PRODUCT_OWNER` with backend
+authorization false. Its normal verifier passes, while the exact Stage 2 entry
+verifier fails closed. Technical evidence does not sign Product Owner
+approval; Stage 2 remains scoped-held and independent Stage 3 proceeds.
+
+Verification passed:
+
+- prototype unit `14/14`, approval verifier `5/5`, complete frontend unit
+  `634/634`;
+- complete non-visual browser `279/279`;
+- direct `zh`/`zh-TW`, mixed-language, keyboard/focus/axe, industrial geometry,
+  build, source-digest and reconciliation checks;
+- CI `#67` / run `30542155671`: repository job `90869267448` and visual job
+  `90869267397` PASS;
+- npm clean-install audit `0` vulnerabilities; action scan
+  `22 commits / 6.32 MB` and full-branch scan `53 commits / 11.81 MB`, no
+  leaks.
+
+Complete evidence:
+`implementation/evidence/reconciliation/r1-06-stage-1-validation.md`.
+
+Current task remains R1-06. The first incomplete action is Stage 3: the exact
+six P0 pages × three languages at 1440×900 with durable fixed-Linux visual and
+bounded artifact governance. P5-01 remains held; R1-07 remains conditional on
+`DR-REC-001`.
