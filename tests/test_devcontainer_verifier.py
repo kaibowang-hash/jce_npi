@@ -78,6 +78,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
 
     def test_ci_installs_ripgrep_before_the_fail_closed_repository_scan(self):
+        visual_image = (
+            "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm"
+            "@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b"
+        )
         safe_workflow = """steps:
   - run: sudo apt-get update
   - run: sudo apt-get install --yes ripgrep
@@ -87,8 +91,20 @@ class DevcontainerVerifierTest(unittest.TestCase):
   - run: bash scripts/verify.sh
     env:
       GITHUB_TOKEN: ${{ github.token }}
+visual:
+  container:
+    image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
+  steps:
+    - run: npm run test:visual
+    - uses: actions/upload-artifact@v4
+      with:
+        name: r1-05-linux-visual-evidence
+        path: |
+          implementation/evidence/phase-4/playwright-results/.last-run.json
+          implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png
+          implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png
 """
-        validate_ci_verification_tools(safe_workflow)
+        validate_ci_verification_tools(safe_workflow, visual_image)
         unsafe_variants = (
             safe_workflow.replace("sudo apt-get update\n", ""),
             safe_workflow.replace("sudo apt-get install --yes ripgrep\n", ""),
@@ -119,10 +135,19 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "      GITHUB_TOKEN: ${{ github.token }}\n",
                 "  - run: bash scripts/verify.sh\n",
             ),
+            safe_workflow.replace(
+                f"    image: {visual_image}\n",
+                "    image: ubuntu:24.04\n",
+            ),
+            safe_workflow.replace(
+                "          implementation/evidence/phase-4/playwright-results/"
+                "r1-05-*/**/*-actual.png\n",
+                "          implementation/evidence/phase-4\n",
+            ),
         )
         for unsafe_workflow in unsafe_variants:
             with self.assertRaises(VerificationError):
-                validate_ci_verification_tools(unsafe_workflow)
+                validate_ci_verification_tools(unsafe_workflow, visual_image)
 
     def test_upstream_token_is_scoped_to_github_api(self):
         github_headers = upstream_request_headers(

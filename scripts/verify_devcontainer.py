@@ -205,7 +205,10 @@ def validate_repository_verifier(repository_verify: str) -> None:
     )
 
 
-def validate_ci_verification_tools(ci_workflow: str) -> None:
+def validate_ci_verification_tools(
+    ci_workflow: str,
+    visual_container_reference: str,
+) -> None:
     def has_scoped_actions_token(command: str) -> bool:
         token_binding = re.escape("GITHUB_TOKEN: ${{ github.token }}")
         return (
@@ -239,6 +242,36 @@ def validate_ci_verification_tools(ci_workflow: str) -> None:
     require(
         has_scoped_actions_token("bash scripts/verify.sh"),
         "CI repository verification must use the scoped Actions token",
+    )
+    visual_container = ci_workflow.find(
+        f"image: {visual_container_reference}"
+    )
+    visual_test = ci_workflow.find("- run: npm run test:visual")
+    visual_artifact = ci_workflow.find("name: r1-05-linux-visual-evidence")
+    require(
+        visual_container >= 0,
+        "CI visual verification must use the digest-pinned devcontainer base",
+    )
+    require(
+        ci_workflow.count("- run: npm run test:visual") == 1,
+        "CI must have exactly one canonical visual verification step",
+    )
+    require(
+        visual_container < visual_test < visual_artifact,
+        "CI visual verification and its evidence must follow the canonical container",
+    )
+    for evidence_path in (
+        "implementation/evidence/phase-4/playwright-results/.last-run.json",
+        "implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png",
+        "implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png",
+    ):
+        require(
+            evidence_path in ci_workflow,
+            f"CI visual artifact must retain the bounded path: {evidence_path}",
+        )
+    require(
+        "path: implementation/evidence/phase-4\n" not in ci_workflow,
+        "CI must not upload the unbounded historical Phase 4 evidence tree",
     )
 
 
@@ -366,7 +399,16 @@ def validate_local_configuration() -> tuple[dict[str, Any], dict[str, str], tupl
     ci_workflow = (REPO_ROOT / ".github/workflows/ci.yml").read_text(
         encoding="utf-8"
     )
-    validate_ci_verification_tools(ci_workflow)
+    visual_base_reference = parse_pinned_from(
+        dockerfile_path.read_text(encoding="utf-8")
+    )
+    validate_ci_verification_tools(
+        ci_workflow,
+        (
+            f"{visual_base_reference[0]}:{visual_base_reference[1]}"
+            f"@sha256:{visual_base_reference[2]}"
+        ),
+    )
     require(
         "run: npm ci --strict-allow-scripts" in ci_workflow,
         "Frontend CI install must enforce strict dependency scripts",
