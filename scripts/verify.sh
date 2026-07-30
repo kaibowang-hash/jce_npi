@@ -17,6 +17,7 @@ find apps -name '*.json' -print0 | xargs -0 -r -n1 python -m json.tool >/dev/nul
 python -m compileall -q apps/npi_core apps/npi_integration scripts tests
 python -m unittest discover -s tests -v
 python scripts/verify_prototype_approvals.py
+python scripts/verify_p0_visual_governance.py
 npm --prefix frontend run verify
 python scripts/verify_v1_2_reconciliation.py
 if ! command -v rg >/dev/null 2>&1; then
