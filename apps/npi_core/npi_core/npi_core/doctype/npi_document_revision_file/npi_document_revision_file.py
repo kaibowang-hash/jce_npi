@@ -22,12 +22,12 @@ from npi_core.documents.frappe_validation import (
     deny_document_history_delete,
     deny_document_history_update,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_object,
     required_text,
     require_exact_parent,
     require_document_command_write,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -297,14 +297,6 @@ class NPIDocumentRevisionFile(Document):
         self.size_bytes = association.file_revision.size_bytes
         self.sha256 = association.file_revision.sha256
         self.scan_state = association.file_revision.scan_state.value
-        self.scan_observed_at = (
-            utc_datetime_text(
-                association.file_revision.scan_observed_at,
-                _("Scan Observed At"),
-            )
-            if association.file_revision.scan_observed_at
-            else None
-        )
         self.is_private = 1
         self.released = int(association.file_revision.released)
         self.file_role = association.role.value
@@ -314,11 +306,22 @@ class NPIDocumentRevisionFile(Document):
         self.file_revision_source_snapshot = canonical_json(source_snapshot)
         self.association_snapshot = canonical_json(snapshot)
         self.snapshot_hash = expected_hash
+        self.scan_observed_at = (
+            frappe_utc_datetime_text(
+                association.file_revision.scan_observed_at,
+                _("Scan Observed At"),
+            )
+            if association.file_revision.scan_observed_at
+            else None
+        )
         self.created_by_user_id = actor_text(
             self.created_by_user_id,
             _("Created By"),
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
+        self.created_at = frappe_utc_datetime_text(
+            self.created_at,
+            _("Created At"),
+        )
         self.request_id = required_text(
             self.request_id,
             _("Request ID"),

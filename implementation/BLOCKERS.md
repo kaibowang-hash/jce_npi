@@ -1,8 +1,12 @@
 # Blockers
 
-Updated: `2026-07-30T18:36:25Z`
+Updated: `2026-07-30T18:59:43Z`
 
 ## Active hard blockers
+
+None.
+
+## Resolved hard blockers
 
 `P5-01-CONTROLLED-RUNTIME-DATETIME-PERSISTENCE-REPAIR-LIMIT`
 
@@ -15,17 +19,13 @@ ISO `T`/`Z` timestamp strings in Frappe database fields whose fixed storage
 format is space-separated and timezone-naive. The same helper affects the
 downstream P5 Document datetime fields, so a policy-only workaround is unsafe.
 
-The authorized round is exhausted and the necessary Gate still fails.
-Complete evidence:
+The authorized round was exhausted and the necessary Gate still failed.
+Historical evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`.
 
-Single user action required:
-
-`Explicitly authorize one additional bounded P5-01 controlled-runtime repair
-round for the shared Frappe Datetime persistence root cause and sanitized
-diagnostic hardening beyond the exhausted extra round.`
-
-## Resolved hard blockers
+The user supplied that exact additional bounded authorization on 2026-07-31
+local time. The blocker is resolved only as an execution-limit decision; the
+runtime defect remains in repair and no Gate PASS is claimed.
 
 `P5-01-CONTROLLED-RUNTIME-REPAIR-LIMIT`
 
@@ -40,7 +40,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_DATETIME_PERSISTENCE_REPAIR_LIMIT`
+`P5-01_CONTROLLED_RUNTIME_DATETIME_REPAIR`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
@@ -50,8 +50,8 @@ checkpoint `c980571b27be66e16f2ac57409f0ef72a986e741` passed CI `#73`.
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
 P5-01 remains at its retained backend checkpoint as incomplete and
-`BLOCKED_EXTERNAL`; this does not mark P5-01 `PASS`, activate P5-02 or permit
-scope beyond the current Phase 5 anchor. Its bounded
+`IN_PROGRESS`; this does not mark P5-01 `PASS`, activate P5-02 or permit scope
+beyond the current Phase 5 anchor. Its bounded
 reconciliation/current-shared-boundary audit passed and retained the
 implementation without product correction. Complete evidence:
 `implementation/evidence/phase-5/p5-01-resume-audit.md`.

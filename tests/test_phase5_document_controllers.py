@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import json
+import re
 import sys
 import types
 import unittest
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid5
 
@@ -24,6 +27,8 @@ FILE_REVISION_ID = UUID("56b90190-26c4-4ba6-b9e4-6495347621c9")
 LOCK_ID = UUID("6e38c507-d2cc-4f39-95b0-cd62d75d14dc")
 ACQUIRE_EVENT_ID = UUID("ba94e31a-fe62-4c00-8aaf-c3e6dfbd3804")
 NOW = datetime(2026, 7, 25, 12, 0, tzinfo=UTC)
+NOW_CANONICAL = "2026-07-25T12:00:00Z"
+NOW_FRAPPE = "2026-07-25 12:00:00.000000"
 
 
 class StubDocument:
@@ -232,7 +237,10 @@ class Phase5DocumentControllerTest(unittest.TestCase):
                         "tenant_id": TENANT_ID,
                         "project_global_id": str(PROJECT_ID),
                         "document_global_id": str(DOCUMENT_ID),
+                        "major": 1,
+                        "minor": 0,
                         "snapshot_hash": "a" * 64,
+                        "predecessor_revision_global_id": None,
                     }
                 if (
                     doctype == "NPI Gate Shell"
@@ -405,6 +413,88 @@ class Phase5DocumentControllerTest(unittest.TestCase):
                 "optimistic_version": 1,
             }
         )
+
+    def test_frappe_datetime_adapter_and_semantic_comparison(self) -> None:
+        adapter = self.validation.frappe_utc_datetime_text
+        self.assertEqual(adapter(NOW, "Observed At"), NOW_FRAPPE)
+        self.assertEqual(
+            adapter(datetime(2026, 7, 25, 12, 0), "Observed At"),
+            NOW_FRAPPE,
+        )
+        self.assertEqual(adapter(NOW_CANONICAL, "Observed At"), NOW_FRAPPE)
+
+        current = StubDocument({"created_at": NOW_FRAPPE})
+        previous = StubDocument({"created_at": NOW})
+        self.validation.assert_immutable_fields(
+            current,
+            previous,
+            ("created_at",),
+        )
+        current.created_at = "2026-07-25 12:00:01.000000"
+        with self.assertRaises(self.PermissionError):
+            self.validation.assert_immutable_fields(
+                current,
+                previous,
+                ("created_at",),
+            )
+
+        exact = self.validation.require_exact_parent(
+            "NPI Document Lock Event",
+            {
+                "lock_global_id": str(LOCK_ID),
+                "lock_version": 1,
+            },
+            {"expires_at": "2026-07-25 12:30:00.000000"},
+            "Datetime comparison drifted.",
+        )
+        self.assertEqual(exact["expires_at"], NOW + timedelta(minutes=30))
+
+    def test_all_p5_document_datetime_fields_use_storage_adapter(self) -> None:
+        base = (
+            Path("apps")
+            / "npi_core"
+            / "npi_core"
+            / "npi_core"
+            / "doctype"
+        )
+        controller_fields = {
+            "npi_document_policy_version": ("published_at",),
+            "npi_controlled_document": (
+                "current_lock_expires_at",
+                "created_at",
+            ),
+            "npi_document_revision": ("created_at",),
+            "npi_document_revision_file": (
+                "scan_observed_at",
+                "created_at",
+            ),
+            "npi_document_relationship": ("created_at",),
+            "npi_document_lock_event": (
+                "acquired_at",
+                "expires_at",
+                "occurred_at",
+            ),
+            "npi_document_share_grant": (
+                "expires_at",
+                "closed_at",
+                "created_at",
+            ),
+            "npi_document_command_idempotency": ("created_at",),
+        }
+        for controller, fields in controller_fields.items():
+            source = (base / controller / f"{controller}.py").read_text(
+                encoding="utf-8"
+            )
+            for fieldname in fields:
+                with self.subTest(controller=controller, field=fieldname):
+                    self.assertRegex(
+                        source,
+                        re.compile(
+                            rf"self[.]{fieldname}\s*=\s*(?:[(]\s*)?"
+                            r"frappe_utc_datetime_text",
+                            re.MULTILINE,
+                        ),
+                    )
 
     def controlled_document(self) -> StubDocument:
         value = self.domain.create_controlled_document(
@@ -642,7 +732,10 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         published.validate()
         self.assertNotEqual(draft_hash, published.snapshot_hash)
         self.assertEqual(published.snapshot_hash, self.policy.snapshot_hash)
-        self.assertIsNotNone(published.published_at)
+        self.assertRegex(
+            published.published_at,
+            r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[.]\d{6}$",
+        )
         self.assertEqual(value.document_policy, str(POLICY_ID))
         malformed = self.policy_version()
         malformed.publication_state = "draft"
@@ -660,6 +753,7 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         value = self.controlled_document()
         value.before_validate()
         value.validate()
+        self.assertEqual(value.created_at, NOW_FRAPPE)
         current = clone(value)
         current._previous = clone(value)
         current.current_lock_global_id = str(LOCK_ID)
@@ -670,6 +764,24 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         current.before_validate()
         current.validate()
         self.assertEqual(current.current_lock_global_id, str(LOCK_ID))
+        self.assertEqual(
+            current.current_lock_expires_at,
+            "2026-07-25 12:30:00.000000",
+        )
+        advanced = clone(current)
+        advanced._previous = clone(current)
+        advanced._previous.current_lock_expires_at = NOW + timedelta(minutes=30)
+        advanced.current_revision_global_id = str(REVISION_ID)
+        advanced.current_revision_major = 1
+        advanced.current_revision_minor = 0
+        advanced.current_revision_snapshot_hash = "a" * 64
+        advanced.optimistic_version = 3
+        advanced.before_validate()
+        advanced.validate()
+        self.assertEqual(
+            advanced.current_lock_expires_at,
+            "2026-07-25 12:30:00.000000",
+        )
         stale = clone(current)
         stale._previous = clone(current)
         stale.title = "Changed outside the immutable root"
@@ -685,6 +797,11 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         revision.before_validate()
         revision.validate()
         self.assertEqual(revision.revision_state, "draft")
+        self.assertEqual(revision.created_at, NOW_FRAPPE)
+        self.assertEqual(
+            json.loads(revision.revision_snapshot)["createdAt"],
+            NOW_CANONICAL,
+        )
         changed = clone(revision)
         changed._previous = clone(revision)
         changed.reason = "Attempted rewrite."
@@ -695,6 +812,8 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         association = self.revision_file()
         association.before_validate()
         association.validate()
+        self.assertEqual(association.created_at, NOW_FRAPPE)
+        self.assertIsNone(association.scan_observed_at)
         self.assertNotEqual(
             association.file_document_global_id,
             association.document_global_id,
@@ -746,6 +865,7 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         value.before_validate()
         value.validate()
         self.assertEqual(len(value.relationship_key), 64)
+        self.assertEqual(value.created_at, NOW_FRAPPE)
         invalid = clone(value)
         invalid._previous = None
         invalid.relationship_kind = "doctype"
@@ -825,6 +945,13 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         )
         value.before_validate()
         value.validate()
+        self.assertEqual(value.acquired_at, NOW_FRAPPE)
+        self.assertEqual(value.expires_at, "2026-07-25 12:30:00.000000")
+        self.assertEqual(value.occurred_at, NOW_FRAPPE)
+        self.assertEqual(
+            json.loads(value.event_snapshot)["occurredAt"],
+            NOW_CANONICAL,
+        )
         recovered = self.lock_event(
             event_id=UUID("4596dc6a-71bd-46cd-adfc-3017a90a5fb7"),
             event_type="recovered",
@@ -837,6 +964,10 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         recovered.before_validate()
         recovered.validate()
         self.assertEqual(recovered.holder_user_id, "engineer@example.invalid")
+        self.assertEqual(
+            recovered.occurred_at,
+            "2026-07-25 12:05:00.000000",
+        )
         self.assertNotEqual(value.global_id, recovered.global_id)
         changed = clone(value)
         changed._previous = clone(value)
@@ -903,6 +1034,12 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         value.before_validate()
         value.validate()
         self.assertEqual(value.retrieval_state, "unavailable")
+        self.assertEqual(value.created_at, NOW_FRAPPE)
+        self.assertEqual(value.expires_at, "2026-08-01 12:00:00.000000")
+        self.assertEqual(
+            json.loads(value.grant_snapshot)["expiresAt"],
+            "2026-08-01T12:00:00Z",
+        )
         unsafe = clone(value)
         unsafe._previous = None
         unsafe.retrieval_state = "available"
@@ -919,6 +1056,7 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         revoked.before_validate()
         revoked.validate()
         self.assertEqual(revoked.share_state, "revoked")
+        self.assertEqual(revoked.closed_at, "2026-07-25 13:00:00.000000")
 
     def test_actor_scoped_receipt_seals_once(self) -> None:
         record_id = UUID("8ac881d8-e1fe-4a4b-836b-966ec4f29811")
@@ -943,8 +1081,10 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         )
         value.before_validate()
         value.validate()
+        self.assertEqual(value.created_at, NOW_FRAPPE)
         sealed = clone(value)
         sealed._previous = clone(value)
+        sealed._previous.created_at = NOW
         sealed.response_snapshot = {"status": 201, "documentId": str(DOCUMENT_ID)}
         sealed.response_sealed = 1
         sealed.before_validate()

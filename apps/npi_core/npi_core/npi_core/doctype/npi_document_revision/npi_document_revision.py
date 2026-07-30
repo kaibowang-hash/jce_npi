@@ -25,6 +25,7 @@ from npi_core.documents.frappe_validation import (
     deny_document_history_delete,
     deny_document_history_update,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_object,
     optional_date_text,
     optional_uuid,
@@ -122,7 +123,7 @@ class NPIDocumentRevision(Document):
             self.created_by_user_id,
             _("Created By"),
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
+        created_at = utc_datetime_text(self.created_at, _("Created At"))
         self.request_id = required_text(
             self.request_id,
             _("Request ID"),
@@ -243,7 +244,7 @@ class NPIDocumentRevision(Document):
             },
             "file": file_snapshot,
             "createdByUserId": self.created_by_user_id,
-            "createdAt": self.created_at,
+            "createdAt": created_at,
             "requestId": self.request_id,
             "traceId": self.trace_id,
         }
@@ -304,6 +305,10 @@ class NPIDocumentRevision(Document):
         self.revision_snapshot = canonical_json(expected_snapshot)
         self.snapshot_hash = revision.snapshot_hash
         self.optimistic_version = revision.version
+        self.created_at = frappe_utc_datetime_text(
+            created_at,
+            _("Created At"),
+        )
 
     def on_trash(self) -> None:
         deny_document_history_delete(

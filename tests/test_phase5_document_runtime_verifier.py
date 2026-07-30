@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
 import unittest
@@ -107,6 +108,81 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn('"response_payload"', self.source)
         self.assertNotIn("drop table", self.source.casefold())
         self.assertNotIn("truncate table", self.source.casefold())
+
+    def test_http_failure_diagnostics_are_bounded_and_sanitized(self) -> None:
+        module = self.module
+        result = module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={
+                "exc_type": "DataError",
+                "_server_messages": json.dumps(
+                    [
+                        json.dumps(
+                            {
+                                "message": (
+                                    "<strong>Incorrect datetime value</strong> "
+                                    "for column published_at"
+                                )
+                            }
+                        )
+                    ]
+                ),
+                "exc": "traceback contains controlled-fixture-password",
+                "exception": "database exception contains a request payload",
+                "cookies": "sid=synthetic-secret",
+                "request": {"password": "controlled-fixture-password"},
+            },
+        )
+        detail = module.sanitized_http_failure(result)
+        self.assertEqual(
+            detail,
+            (
+                " [exc_type=DataError; message=Incorrect datetime value "
+                "for column published_at]"
+            ),
+        )
+        for forbidden in (
+            "traceback",
+            "payload",
+            "cookie",
+            "controlled-fixture-password",
+            "sid=",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, detail)
+        with self.assertRaisesRegex(
+            RuntimeError,
+            (
+                r"Document policy publication returned HTTP 500 "
+                r"\[exc_type=DataError; message=Incorrect datetime value "
+                r"for column published_at\]"
+            ),
+        ):
+            module.require_http_status(
+                result,
+                {200},
+                "Document policy publication",
+            )
+
+        sensitive = module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={
+                "exc_type": "Invalid Type With Spaces",
+                "message": "Authorization token=synthetic-secret",
+            },
+        )
+        self.assertEqual(module.sanitized_http_failure(sensitive), "")
+
+    def test_http_failure_diagnostic_message_is_length_bounded(self) -> None:
+        result = self.module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={"message": "x" * 500},
+        )
+        detail = self.module.sanitized_http_failure(result)
+        self.assertEqual(detail, f" [message={'x' * 240}]")
 
     def test_runtime_covers_real_file_and_authorization_boundaries(self) -> None:
         required_fragments = (

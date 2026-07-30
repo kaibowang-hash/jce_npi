@@ -19,11 +19,11 @@ from npi_core.documents.frappe_validation import (
     canonical_uuid,
     deny_document_history_delete,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_array,
     require_exact_parent,
     require_document_command_write,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -213,7 +213,7 @@ class NPIControlledDocument(Document):
         self.current_lock_version = domain.current_lock_version
         self.current_lock_holder_user_id = domain.current_lock_holder
         self.current_lock_expires_at = (
-            utc_datetime_text(
+            frappe_utc_datetime_text(
                 domain.current_lock_expires_at,
                 _("Current Lock Expires At"),
             )
@@ -225,7 +225,10 @@ class NPIControlledDocument(Document):
             self.created_by_user_id,
             _("Created By"),
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
+        self.created_at = frappe_utc_datetime_text(
+            self.created_at,
+            _("Created At"),
+        )
 
     def on_trash(self) -> None:
         deny_document_history_delete(
@@ -396,13 +399,13 @@ def _validate_lock_projection(document: object, previous: object) -> None:
         previous.get("current_lock_global_id"),
         previous.get("current_lock_version"),
         previous.get("current_lock_holder_user_id"),
-        previous.get("current_lock_expires_at"),
+        _optional_datetime(previous.get("current_lock_expires_at")),
     )
     new = (
         document.get("current_lock_global_id"),
         document.get("current_lock_version"),
         document.get("current_lock_holder_user_id"),
-        document.get("current_lock_expires_at"),
+        _optional_datetime(document.get("current_lock_expires_at")),
     )
     if old == new:
         return
@@ -450,7 +453,11 @@ def _validate_lock_projection(document: object, previous: object) -> None:
             "document_global_id": document.get("global_id"),
             "event_type": "acquired",
             "holder_user_id": new[2],
-            "expires_at": new[3],
+            "expires_at": document.get("current_lock_expires_at"),
         },
         _("The current edit lock does not match an exact acquisition event."),
     )
+
+
+def _optional_datetime(value: object) -> datetime | None:
+    return None if value in (None, "") else _as_datetime(value)

@@ -148,3 +148,11 @@ That authorization would permit only the bounded solution above and the
 unchanged checks/Gate. It would not authorize a requirement, API contract,
 permission, architecture, data-ownership, timestamp semantic or PASS-criteria
 change.
+
+## Authorization received
+
+At 2026-07-31 local time the user supplied the exact requested authorization.
+This historical blocker is resolved only as an execution-limit decision.
+P5-01 remains incomplete; the bounded repair, normal CI and one unchanged
+controlled-Site Gate are recorded separately in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-repair.md`.

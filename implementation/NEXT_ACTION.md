@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-01 DATETIME PERSISTENCE REPAIR LIMIT`
+`IN_PROGRESS — P5-01 AUTHORIZED DATETIME PERSISTENCE REPAIR`
 
-Recovery time: `2026-07-30T18:36:25Z`
+Recovery time: `2026-07-30T18:59:43Z`
 
 Latest complete CI recovery checkpoint:
 `a2d98e23f7dd4d37cb66ae220beade32123bd567`
@@ -25,7 +25,7 @@ Required and only development branch:
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
   static runtime checks pass; P5-01 remains incomplete and is now
-  `BLOCKED_EXTERNAL`, not `PASS`.
+  `IN_PROGRESS` under the bounded Datetime repair, not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -73,8 +73,10 @@ Required and only development branch:
   directly to Frappe database `Datetime` fields. The bounded solution must
   separate canonical timestamp truth from Frappe storage formatting across
   all affected P5 Document controllers and add sanitized failure diagnostics.
-- The single authorized extra round is exhausted. This is a controller Hard
-  Blocker; no further source repair or dispatch is authorized.
+- The user supplied the exact additional bounded authorization on 2026-07-31
+  local time. It permits only the shared Frappe Datetime persistence repair,
+  sanitized diagnostics, affected checks, normal CI and one unchanged
+  controlled-Site dispatch.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -108,15 +110,10 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The first incomplete action is the single required user authorization:
-
-`Explicitly authorize one additional bounded P5-01 controlled-runtime repair
-round for the shared Frappe Datetime persistence root cause and sanitized
-diagnostic hardening beyond the exhausted extra round.`
-
-After that authority only, implement the bounded root-cause batch defined in
-`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-blocker.md`,
-run affected checks and normal CI, then dispatch the unchanged:
+The required authorization is complete. Finish the bounded root-cause batch
+defined in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-repair.md`,
+run affected checks and normal CI, then dispatch exactly once the unchanged:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

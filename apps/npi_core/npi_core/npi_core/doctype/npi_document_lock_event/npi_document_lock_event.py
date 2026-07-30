@@ -19,13 +19,13 @@ from npi_core.documents.frappe_validation import (
     deny_document_history_delete,
     deny_document_history_update,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_object,
     optional_uuid,
     required_text,
     require_exact_parent,
     require_document_command_write,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -239,10 +239,19 @@ class NPIDocumentLockEvent(Document):
             )
         self.event_key = expected_event_key
         self.holder_user_id = lock.holder_user_id
-        self.acquired_at = utc_datetime_text(lock.acquired_at, _("Acquired At"))
-        self.expires_at = utc_datetime_text(lock.expires_at, _("Expires At"))
+        self.acquired_at = frappe_utc_datetime_text(
+            lock.acquired_at,
+            _("Acquired At"),
+        )
+        self.expires_at = frappe_utc_datetime_text(
+            lock.expires_at,
+            _("Expires At"),
+        )
         self.actor_user_id = actor
-        self.occurred_at = utc_datetime_text(occurred_at, _("Occurred At"))
+        self.occurred_at = frappe_utc_datetime_text(
+            occurred_at,
+            _("Occurred At"),
+        )
         self.closure_reason = lock.reason
         self.event_snapshot = canonical_json(snapshot)
         self.snapshot_hash = expected_hash

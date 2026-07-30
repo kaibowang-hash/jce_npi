@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import re
@@ -58,6 +59,12 @@ DOCUMENT_DOCTYPES = (
     "NPI Document Share Grant",
 )
 PDF_CONTENT = b"%PDF-1.7\n% NPI One synthetic runtime document\n"
+_DIAGNOSTIC_TEXT_LIMIT = 240
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
+    r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
+    re.IGNORECASE,
+)
 
 
 def validated_fixture_run_id(candidate: str | None) -> str:
@@ -135,6 +142,65 @@ def fixture_request_id(key: str) -> str:
 
 def fixture_trace_id(key: str) -> str:
     return f"trace-{uuid5(NAMESPACE_URL, f'{FIXTURE_PREFIX}/trace/{key}').hex}"
+
+
+def require_http_status(
+    result: HttpResult,
+    expected_statuses: set[int],
+    operation: str,
+) -> None:
+    require(
+        result.status in expected_statuses,
+        (
+            f"{operation} returned HTTP {result.status}"
+            f"{sanitized_http_failure(result)}"
+        ),
+    )
+
+
+def sanitized_http_failure(result: HttpResult) -> str:
+    """Expose only bounded Frappe type/message diagnostics for a failed fixture."""
+
+    details: list[str] = []
+    exc_type = result.body.get("exc_type")
+    if (
+        isinstance(exc_type, str)
+        and _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exc_type) is not None
+    ):
+        details.append(f"exc_type={exc_type}")
+    message = _sanitized_server_message(result.body)
+    if message:
+        details.append(f"message={message}")
+    return f" [{'; '.join(details)}]" if details else ""
+
+
+def _sanitized_server_message(body: dict[str, Any]) -> str | None:
+    candidates: list[object] = [body.get("message")]
+    server_messages = body.get("_server_messages")
+    if isinstance(server_messages, str):
+        try:
+            server_messages = json.loads(server_messages)
+        except (TypeError, ValueError):
+            server_messages = None
+    if isinstance(server_messages, list):
+        candidates.extend(server_messages[:3])
+    for candidate in candidates:
+        if isinstance(candidate, str):
+            try:
+                decoded = json.loads(candidate)
+            except (TypeError, ValueError):
+                decoded = candidate
+            candidate = decoded
+        if isinstance(candidate, dict):
+            candidate = candidate.get("message")
+        if not isinstance(candidate, str):
+            continue
+        text = re.sub(r"<[^>]*>", " ", html.unescape(candidate))
+        text = " ".join(text.split())
+        if not text or _SENSITIVE_DIAGNOSTIC_PATTERN.search(text):
+            continue
+        return text[:_DIAGNOSTIC_TEXT_LIMIT]
+    return None
 
 
 def command_headers(
@@ -432,9 +498,10 @@ def ensure_document_policy(
         },
         csrf_token,
     )
-    require(
-        root.status in {200, 201},
-        f"Document policy creation returned HTTP {root.status}",
+    require_http_status(
+        root,
+        {200, 201},
+        "Document policy creation",
     )
     draft = create_resource(
         administrator,
@@ -460,9 +527,10 @@ def ensure_document_policy(
         },
         csrf_token,
     )
-    require(
-        draft.status in {200, 201},
-        f"Document policy draft creation returned HTTP {draft.status}",
+    require_http_status(
+        draft,
+        {200, 201},
+        "Document policy draft creation",
     )
     published = update_resource(
         administrator,
@@ -472,9 +540,10 @@ def ensure_document_policy(
         {"publication_state": "published"},
         csrf_token,
     )
-    require(
-        published.status == 200,
-        f"Document policy publication returned HTTP {published.status}",
+    require_http_status(
+        published,
+        {200},
+        "Document policy publication",
     )
     data = published.body.get("data", {})
     snapshot_hash = data.get("snapshot_hash")

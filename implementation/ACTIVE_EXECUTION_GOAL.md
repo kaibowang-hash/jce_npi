@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T18:36:25Z`
+Updated: `2026-07-30T18:59:43Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — CONTROLLED RUNTIME DATETIME PERSISTENCE REPAIR LIMIT`
+- Mode: `IN_PROGRESS — AUTHORIZED CONTROLLED RUNTIME DATETIME REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,8 +12,8 @@ Updated: `2026-07-30T18:36:25Z`
   `a2d98e23f7dd4d37cb66ae220beade32123bd567`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`BLOCKED_EXTERNAL — OWNER REPAIR PROVED; DATETIME PERSISTENCE GATE FAILED
-  AFTER THE AUTHORIZED EXTRA ROUND`)
+  (`IN_PROGRESS — DATETIME PERSISTENCE ROOT REPAIR AUTHORIZED; CONTROLLED
+  SITE GATE PENDING`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -180,14 +180,16 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The authorized owner round is complete and exhausted. The first incomplete
-action is the single user authorization recorded in
-`implementation/NEXT_ACTION.md`. Only after that authorization may one bounded
-root-cause batch separate canonical API/snapshot timestamps from Frappe
-database formatting, harden sanitized diagnostics, rerun affected checks and
-normal CI, and dispatch the unchanged controlled-Site Gate.
+The user supplied the exact required authorization on 2026-07-31 local time.
+The active bounded batch separates canonical API/snapshot timestamps from
+Frappe database formatting across every affected P5 Document `Datetime`
+field, retains canonical snapshots, hardens sanitized diagnostics and adds
+exact regression coverage. The first incomplete action is to finish the
+affected checks and normal CI on the repair checkpoint, then dispatch the
+unchanged controlled-Site Gate exactly once.
 
-P5-01 remains incomplete and P5-02 remains inactive.
+P5-01 remains incomplete and P5-02 remains inactive until that Gate and the
+remaining Level 2 reviews pass.
 
 Do not start P5-02, add review/release/baseline/EBOM behavior, enable external
 retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
@@ -219,8 +221,8 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-incomplete and is now `BLOCKED_EXTERNAL`; the distribution-metadata repair is
-complete at
+incomplete and is now `IN_PROGRESS` under the bounded Datetime repair; the
+distribution-metadata repair is complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
 with normal run `30564533440`; the schema repair is complete at
@@ -228,7 +230,8 @@ with normal run `30564533440`; the schema repair is complete at
 `30565607707`. The owner repair is complete at
 `a2d98e23f7dd4d37cb66ae220beade32123bd567` with normal run
 `30569830739`; its authorized controlled run `30570343315` failed at policy
-Datetime persistence after Project and draft-policy success. The fixed
+Datetime persistence after Project and draft-policy success. The user has now
+authorized one bounded shared-Datetime repair, which is in progress. The fixed
 controlled Site has not passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one

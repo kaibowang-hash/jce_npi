@@ -224,6 +224,14 @@ def utc_datetime_text(value: object, label: str) -> str:
     return parsed.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
+def frappe_utc_datetime_text(value: object, label: str) -> str:
+    """Return a UTC value in Frappe's database Datetime text format."""
+
+    canonical = utc_datetime_text(value, label)
+    parsed = datetime.fromisoformat(canonical.replace("Z", "+00:00"))
+    return parsed.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
 def json_object(value: object, label: str) -> dict[str, object]:
     prepared = _json_value(value, label)
     if not isinstance(prepared, dict):
@@ -282,7 +290,12 @@ def assert_immutable_fields(
     fields: Iterable[str],
 ) -> None:
     for fieldname in fields:
-        if _value(document, fieldname) != _value(previous, fieldname):
+        current_value = _value(document, fieldname)
+        previous_value = _value(previous, fieldname)
+        if fieldname.endswith("_at"):
+            current_value = _comparable_datetime(current_value)
+            previous_value = _comparable_datetime(previous_value)
+        if current_value != previous_value:
             frappe.throw(
                 _("Controlled document history cannot be changed."),
                 frappe.PermissionError,
@@ -322,6 +335,10 @@ def require_exact_parent(
                 matches = False
         elif expected_value is None:
             matches = actual in (None, "")
+        elif fieldname.endswith("_at"):
+            matches = _comparable_datetime(actual) == _comparable_datetime(
+                expected_value
+            )
         else:
             matches = str(actual) == str(expected_value)
         if not matches:
@@ -430,3 +447,20 @@ def _audit_uuid(value: object) -> UUID | None:
 def _value(document: object, fieldname: str) -> object:
     getter = getattr(document, "get", None)
     return getter(fieldname) if callable(getter) else getattr(document, fieldname, None)
+
+
+def _comparable_datetime(value: object) -> object:
+    if value in (None, ""):
+        return None
+    try:
+        if isinstance(value, datetime):
+            parsed = value
+        elif isinstance(value, str):
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        else:
+            return object()
+    except ValueError:
+        return object()
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)

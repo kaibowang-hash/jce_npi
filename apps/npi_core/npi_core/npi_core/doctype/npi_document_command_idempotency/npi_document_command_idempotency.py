@@ -10,6 +10,7 @@ from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
     deny_document_history_delete,
+    frappe_utc_datetime_text,
     json_object,
     key_text,
     lowercase_sha256,
@@ -18,7 +19,6 @@ from npi_core.documents.frappe_validation import (
     require_exact_parent,
     require_document_command_write,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -125,7 +125,10 @@ class NPIDocumentCommandIdempotency(Document):
             _("Trace ID"),
             128,
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
+        self.created_at = frappe_utc_datetime_text(
+            self.created_at,
+            _("Created At"),
+        )
         response = json_object(
             self.response_snapshot,
             _("Response Snapshot"),

@@ -17,6 +17,7 @@ from npi_core.documents.frappe_validation import (
     deny_document_history_delete,
     deny_document_history_update,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_object,
     optional_uuid,
     positive_integer,
@@ -24,7 +25,6 @@ from npi_core.documents.frappe_validation import (
     require_exact_parent,
     require_document_command_write,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -234,7 +234,10 @@ class NPIDocumentRelationship(Document):
             self.created_by_user_id,
             _("Created By"),
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
+        self.created_at = frappe_utc_datetime_text(
+            self.created_at,
+            _("Created At"),
+        )
         self.request_id = required_text(
             self.request_id,
             _("Request ID"),

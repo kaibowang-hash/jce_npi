@@ -1,5 +1,26 @@
 # Last Run
 
+## P5-01 Datetime persistence repair authorized and locally green — 2026-07-31
+
+- The user supplied the exact additional bounded authorization after the
+  exhausted owner round.
+- Added one P5 Document Frappe Datetime storage adapter across all thirteen
+  affected fields while retaining canonical `Z` snapshots and API truth.
+- Added semantic immutable/parent comparisons for hydrated Frappe datetimes
+  versus storage text and preserved an unchanged active lock across revision
+  projection.
+- Added bounded runtime diagnostics that expose only a validated exception
+  type and controlled server message; traceback, exception, request, cookie
+  and credential fields are excluded.
+- Focused tests pass `23/23`; the complete P5 document module group passes
+  `77/77`; complete tracked Python passes `778/778`; affected compile,
+  Reconciliation, YAML structure, prohibited-pattern and whitespace checks
+  pass.
+- Normal CI and the single unchanged controlled-Site Gate remain pending.
+  P5-01 is not PASS and P5-02 remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-repair.md`.
+
 ## P5-01 authorized extra round exposed Datetime blocker — 2026-07-31
 
 - Exact owner-repair candidate:

@@ -14,6 +14,7 @@ from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
     deny_document_history_delete,
+    frappe_utc_datetime_text,
     json_object,
     lowercase_sha256,
     required_text,
@@ -160,10 +161,10 @@ class NPIDocumentShareGrant(Document):
             self.created_by_user_id,
             _("Created By"),
         )
-        self.created_at = utc_datetime_text(self.created_at, _("Created At"))
-        self.expires_at = utc_datetime_text(self.expires_at, _("Expires At"))
-        created_at = _as_datetime(self.created_at)
-        expires_at = _as_datetime(self.expires_at)
+        created_at_text = utc_datetime_text(self.created_at, _("Created At"))
+        expires_at_text = utc_datetime_text(self.expires_at, _("Expires At"))
+        created_at = _as_datetime(created_at_text)
+        expires_at = _as_datetime(expires_at_text)
         if expires_at <= created_at or expires_at - created_at > (_MAX_SYNTHETIC_TTL):
             frappe.throw(
                 _(
@@ -219,11 +220,11 @@ class NPIDocumentShareGrant(Document):
             "revisionFileSnapshotHash": self.revision_file_snapshot_hash,
             "fileRevisionGlobalId": self.file_revision_global_id,
             "shareLabelHash": self.share_label_hash,
-            "expiresAt": self.expires_at,
+            "expiresAt": expires_at_text,
             "retrievalState": "unavailable",
             "retrievalReasonCode": "external_access_policy_unavailable",
             "createdByUserId": self.created_by_user_id,
-            "createdAt": self.created_at,
+            "createdAt": created_at_text,
             "requestId": self.request_id,
             "traceId": self.trace_id,
         }
@@ -274,7 +275,7 @@ class NPIDocumentShareGrant(Document):
                     frappe.ValidationError,
                 )
         else:
-            self.closed_at = utc_datetime_text(self.closed_at, _("Closed At"))
+            closed_at_text = utc_datetime_text(self.closed_at, _("Closed At"))
             self.closed_by_user_id = actor_text(
                 self.closed_by_user_id,
                 _("Closed By"),
@@ -292,12 +293,24 @@ class NPIDocumentShareGrant(Document):
                 )
             if (
                 self.share_state == "expired"
-                and _as_datetime(self.closed_at) < expires_at
+                and _as_datetime(closed_at_text) < expires_at
             ):
                 frappe.throw(
                     _("A share grant cannot expire before its expiry time."),
                     frappe.ValidationError,
                 )
+            self.closed_at = frappe_utc_datetime_text(
+                closed_at_text,
+                _("Closed At"),
+            )
+        self.created_at = frappe_utc_datetime_text(
+            created_at_text,
+            _("Created At"),
+        )
+        self.expires_at = frappe_utc_datetime_text(
+            expires_at_text,
+            _("Expires At"),
+        )
 
     def on_trash(self) -> None:
         deny_document_history_delete(

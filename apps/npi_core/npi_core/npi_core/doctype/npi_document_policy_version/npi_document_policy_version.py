@@ -16,10 +16,10 @@ from npi_core.documents.frappe_validation import (
     assert_immutable_fields,
     canonical_json,
     document_domain_value,
+    frappe_utc_datetime_text,
     json_array,
     positive_integer,
     tenant_text,
-    utc_datetime_text,
 )
 
 
@@ -244,7 +244,7 @@ class NPIDocumentPolicyVersion(Document):
         self.snapshot_hash = policy.snapshot_hash
         self.optimistic_version = optimistic_version
         if policy.state is DocumentPolicyState.PUBLISHED:
-            self.published_at = utc_datetime_text(
+            self.published_at = frappe_utc_datetime_text(
                 datetime.now(UTC),
                 _("Published At"),
             )
