@@ -88,3 +88,15 @@ That authority permits only the disposable-owner fixture repair described
 above and the unchanged affected checks, normal CI and controlled-Site Gate.
 It does not authorize a requirement, contract, permission, architecture or
 PASS-criteria change.
+
+## Authorized recovery
+
+On 2026-07-31 local time, the user explicitly selected the exact authorization
+above. The Hard Blocker remains truthful historical evidence, but its required
+user action is satisfied. The single extra repair is now active and is tracked
+in:
+
+`implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`
+
+P5-01 remains incomplete. No controlled-Site PASS or P5-02 activation is
+claimed by the authorization or local checks.

@@ -104,6 +104,9 @@ DOCUMENT_POLICY_VERSION = 1
 DOCUMENT_POLICY_VERSION_KEY = (
     f"{DOCUMENT_POLICY_ID}:{DOCUMENT_POLICY_VERSION}"
 )
+OWNER_USER = (
+    f"npi-document-{FIXTURE_RUN_ID[:20]}-owner@example.invalid"
+)
 UNRELATED_USER = (
     f"npi-document-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
 )
@@ -374,7 +377,7 @@ def create_project(
         "businessCode": BUSINESS_CODE,
         "title": "Synthetic P5-01 controlled document project",
         "projectType": "new_tool",
-        "ownerUserId": "Administrator",
+        "ownerUserId": OWNER_USER,
         "targetSop": "2027-01-31",
         "templateGlobalId": PROJECT_TEMPLATE_ID,
         "templateVersion": PROJECT_TEMPLATE_VERSION,
@@ -485,6 +488,12 @@ def ensure_document_policy(
 
 
 def verify_fresh_namespace(administrator, base_url: str) -> None:
+    for user in (OWNER_USER, UNRELATED_USER):
+        result = request(administrator, base_url, user_resource_path(user))
+        require(
+            result.status == 404,
+            f"Fresh runtime fixture already contains User {user}",
+        )
     for doctype, name in (
         ("NPI Project Template", PROJECT_TEMPLATE_ID),
         ("NPI Document Policy", DOCUMENT_POLICY_ID),
@@ -900,6 +909,15 @@ def run_replay(
     base_url: str,
     csrf_token: str,
 ) -> None:
+    owner = request(
+        administrator,
+        base_url,
+        user_resource_path(OWNER_USER),
+    )
+    require(
+        owner.status == 404,
+        "Disposable Document runtime Project owner was not cleaned",
+    )
     project_id, project_version = fixture_project(administrator, base_url)
     policy_hash = fixture_policy_hash(administrator, base_url)
     replayed = replay_controlled_document(
@@ -924,6 +942,42 @@ def run_fresh(
     fixture_password: str,
 ) -> dict[str, object]:
     verify_fresh_namespace(administrator, base_url)
+    owner_created = create_disposable_user(
+        administrator,
+        base_url,
+        OWNER_USER,
+        fixture_password,
+        csrf_token,
+    )
+    owner_cleanup_required = owner_created.status in {200, 201}
+    try:
+        validate_disposable_user(owner_created, OWNER_USER)
+        evidence = _run_fresh_with_owner(
+            administrator,
+            base_url,
+            csrf_token,
+            fixture_password,
+        )
+    finally:
+        if owner_cleanup_required:
+            delete_disposable_user(
+                administrator,
+                base_url,
+                OWNER_USER,
+                csrf_token,
+            )
+    return {
+        **evidence,
+        "ownerFixtureCleaned": True,
+    }
+
+
+def _run_fresh_with_owner(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    fixture_password: str,
+) -> dict[str, object]:
     schema = run_bench_fixture(
         "verify_document_runtime_schema",
         {"fixture_run_id": FIXTURE_RUN_ID},
@@ -1353,11 +1407,18 @@ def main() -> None:
     base_url = validate_local_fixture_inputs(
         arguments.base_url,
         administrator_user,
+        OWNER_USER,
+    )
+    validate_local_fixture_inputs(
+        base_url,
+        administrator_user,
         UNRELATED_USER,
     )
     require(
         BUSINESS_CODE.startswith("P5-01-")
-        and UNRELATED_USER.endswith("@example.invalid"),
+        and OWNER_USER.endswith("@example.invalid")
+        and UNRELATED_USER.endswith("@example.invalid")
+        and OWNER_USER != UNRELATED_USER,
         "Document runtime fixture identity drifted",
     )
     administrator = login(

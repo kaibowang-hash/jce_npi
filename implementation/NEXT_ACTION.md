@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-01 CONTROLLED SITE GATE FAILED AFTER FIVE REPAIR ROUNDS`
+`IN_PROGRESS — P5-01 EXTRA OWNER-FIXTURE REPAIR LOCAL CHECKS PASS`
 
-Recovery time: `2026-07-30T17:32:55Z`
+Recovery time: `2026-07-30T18:09:33Z`
 
 Latest complete CI recovery checkpoint:
 `56e1b75d6b34fd000df34d0ab70016d9163143f4`
@@ -59,8 +59,14 @@ Required and only development branch:
   fixture, then Project creation returned HTTP `422` because the synthetic
   fixture supplied non-email owner `Administrator`. Cleanup removed the
   runner-local containers, volumes and network.
-- This is the fifth complete repair round. The controller therefore records
-  the still-failing necessary Gate as an exhaustive Hard Blocker.
+- The fifth failed round remains preserved as a truthful historical Hard
+  Blocker.
+- The user explicitly authorized one additional bounded repair. The fixture
+  now creates a canonical-email disposable owner, keeps Administrator only as
+  actor, cleans the exact owner in `finally` and requires replay-only to prove
+  cleanup.
+- Affected runtime/verifier tests pass `91/91`; complete tracked Python tests
+  pass `774/774`. No real controlled-Site PASS is claimed yet.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -94,13 +100,9 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-Single user action required:
-
-`Explicitly authorize one additional bounded P5-01 controlled-runtime repair round beyond the five-round limit.`
-
-Do not modify code or dispatch another runtime before that authority. If
-authorized, change only the synthetic fixture to create, use and clean a
-namespaced disposable email owner. Then rerun affected checks, normal CI and:
+The authorization is satisfied and the bounded local repair checks pass. The
+first incomplete action is to commit and push the exact fixture candidate,
+require its normal CI PASS, then dispatch:
 
 `bash scripts/verify-frappe-runtime.sh --document-only`
 

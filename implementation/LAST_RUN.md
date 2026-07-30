@@ -1,5 +1,22 @@
 # Last Run
 
+## P5-01 extra controlled-runtime repair locally green — 2026-07-31
+
+- The user explicitly authorized one additional bounded repair beyond the
+  five-round controller limit.
+- Added only a namespaced canonical-email disposable Project owner fixture,
+  retained Administrator as the command actor, cleaned the owner in `finally`
+  and required replay-only to prove cleanup.
+- Changed no product domain, API, permission, Schema, UI, translation,
+  dependency or Gate criterion.
+- Affected runtime/verifier tests passed `91/91`; complete tracked Python tests
+  passed `774/774`; compile, Bash syntax, prohibited-pattern, reconciliation,
+  generated-trace and whitespace checks passed.
+- Normal CI and the real controlled-Site `--document-only` Gate remain
+  pending. P5-01 is not PASS and P5-02 remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
+
 ## R1-05 Stage 2 field/attachment truth Level 2 PASS; Stage 3 ready — 2026-07-27T14:00:01Z
 
 - Branch: `codex/npi-v1.2-implementation`.

@@ -5,7 +5,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +65,15 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             module.PROJECT_TEMPLATE_ID,
             module.DOCUMENT_POLICY_ID,
         )
+        self.assertRegex(
+            module.OWNER_USER,
+            r"^npi-document-[a-f0-9]{20}-owner@example[.]invalid$",
+        )
+        self.assertRegex(
+            module.UNRELATED_USER,
+            r"^npi-document-[a-f0-9]{20}-unrelated@example[.]invalid$",
+        )
+        self.assertNotEqual(module.OWNER_USER, module.UNRELATED_USER)
         headers = module.command_headers(
             "csrf-" + ("a" * 48),
             module.DOCUMENT_CREATE_KEY,
@@ -123,6 +132,110 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn(permission_bypass_token, self.source)
         self.assertNotIn("allow_guest=True", self.source)
         self.assertNotIn("http://core.whjichen.cn", self.source)
+
+    def test_project_uses_the_disposable_email_owner(self) -> None:
+        response = Mock(
+            status=201,
+            body={
+                "project": {
+                    "globalId": "20873131-6923-5ad4-bf35-74efdc358224",
+                    "version": 1,
+                }
+            },
+        )
+        with patch.object(
+            self.module,
+            "post_project",
+            return_value=response,
+        ) as post_project:
+            self.module.create_project(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "csrf-" + ("a" * 48),
+            )
+        payload = post_project.call_args.args[2]
+        self.assertEqual(payload["ownerUserId"], self.module.OWNER_USER)
+        self.assertNotEqual(payload["ownerUserId"], "Administrator")
+
+    def test_disposable_owner_is_cleaned_on_success_and_failure(self) -> None:
+        module = self.module
+        created = Mock(status=201)
+        expected = {"fixtureRunId": FIXTURE_RUN_ID}
+        for downstream, expected_error in (
+            (Mock(return_value=expected), None),
+            (Mock(side_effect=RuntimeError("fixture failed")), "fixture failed"),
+        ):
+            with self.subTest(expected_error=expected_error):
+                with (
+                    patch.object(module, "verify_fresh_namespace"),
+                    patch.object(
+                        module,
+                        "create_disposable_user",
+                        return_value=created,
+                    ) as create_user,
+                    patch.object(module, "validate_disposable_user") as validate_user,
+                    patch.object(
+                        module,
+                        "_run_fresh_with_owner",
+                        downstream,
+                    ),
+                    patch.object(
+                        module,
+                        "delete_disposable_user",
+                    ) as delete_user,
+                ):
+                    if expected_error is None:
+                        result = module.run_fresh(
+                            Mock(),
+                            "http://127.0.0.1:8003",
+                            "csrf-" + ("a" * 48),
+                            "controlled-fixture-password",
+                        )
+                        self.assertEqual(
+                            result,
+                            {
+                                **expected,
+                                "ownerFixtureCleaned": True,
+                            },
+                        )
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, expected_error):
+                            module.run_fresh(
+                                Mock(),
+                                "http://127.0.0.1:8003",
+                                "csrf-" + ("a" * 48),
+                                "controlled-fixture-password",
+                            )
+                create_user.assert_called_once()
+                self.assertEqual(
+                    create_user.call_args.args[2],
+                    module.OWNER_USER,
+                )
+                validate_user.assert_called_once_with(created, module.OWNER_USER)
+                delete_user.assert_called_once()
+                self.assertEqual(
+                    delete_user.call_args.args[2],
+                    module.OWNER_USER,
+                )
+
+    def test_replay_requires_the_disposable_owner_to_be_absent(self) -> None:
+        owner_still_exists = Mock(status=200)
+        with (
+            patch.object(
+                self.module,
+                "request",
+                return_value=owner_still_exists,
+            ),
+            self.assertRaisesRegex(
+                RuntimeError,
+                "Project owner was not cleaned",
+            ),
+        ):
+            self.module.run_replay(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "csrf-" + ("a" * 48),
+            )
 
     def test_runtime_shell_migrates_twice_and_restores_route_switch(self) -> None:
         required_fragments = (
