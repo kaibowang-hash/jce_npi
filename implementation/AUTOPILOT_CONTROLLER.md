@@ -211,7 +211,7 @@ pending until that proof is produced in Codespaces.
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Current synchronized bridge checkpoint:
-  `373770f988b4cf7707b41a50e96b7a4861d93c3b`.
+  `5fae1784e376c08cd4466c1b38592eb9a7ec513e`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
   machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
   assets` (`PASS — LEVEL 2`), `R1-03 — App Shell collapsed navigation command
@@ -220,13 +220,13 @@ pending until that proof is produced in Codespaces.
   `R1-04 — Shared grid sizing personalization views and export foundation`
   (`PASS — LEVEL 3 GRID PERSONALIZATION/SCHEMA TASK GATE`), and
   `R1-05 — Resizable panes, field attachment, and icon action primitives`
-  (`PASS — STAGES 1–3`). R1 is an inserted bridge, not a replacement
-  controller Phase.
-- Current controller task:
+  (`PASS — STAGES 1–3`), and
   `R1-06 — Controlled undo prototype gate and 1440 visual governance`
-  (`IN_PROGRESS`). Its Requirement Anchor and atomic plan are complete; Stage
-  1, the non-production clickable reset/undo prototype and truthful approval
-  package, is the only active next slice.
+  (`PASS — LEVEL 2 TASK GATE; STAGE 2 PRODUCT APPROVAL HOLD RETAINED`).
+  R1 is an inserted bridge, not a replacement controller Phase.
+- Current controller task:
+  `R1-EXIT-GATE — cumulative shared Shell/design/i18n Level 3`
+  (`IN_PROGRESS — READY`).
 - Held product task: `P5-01 — Document and design revision`. Its bounded
   backend/domain/contract checkpoint is retained at `930b5a2`; P5-01 is not
   `PASS`, and no further P5-01 product slice may start during the R1 bridge.
@@ -283,15 +283,23 @@ pending until that proof is produced in Codespaces.
   `754/754` Python, `265/265` non-visual browser and `6/6` affected
   digest-pinned Linux visual cases, complete direct trilingual coverage and
   both action-range and complete-branch secret scans.
-- Execute only R1-06 Stage 1 next. Its technical prototype evidence cannot
-  self-create Product Owner approval; pending approval holds only the Stage 2
-  backend command while independent 1440 visual governance continues. R1-07
-  remains scoped to `DR-REC-001`. The shared Shell/design/i18n bridge requires
-  its cumulative Level 3 Gate before P5-01 resumes.
+- R1-06 Stage 1 passed only as technical no-mutation prototype/governance
+  evidence. Its unsigned Product Owner approval keeps the Stage 2 backend
+  command and full business claim fail-closed.
+- R1-06 Stage 3 and its Level 2 Task Gate passed at the fixed-Linux product
+  checkpoint `0b3a7b28bb447edbc165daa95a3e9963f255d832`, followed by the pushed
+  evidence/trace/controller checkpoint
+  `5fae1784e376c08cd4466c1b38592eb9a7ec513e`. The current exact evidence is
+  `762/762` Python, `634/634` frontend unit, `279/279` non-visual browser,
+  `24/24` fixed-Linux affected visuals and `2,782` direct trilingual sources.
+- `DR-REC-001` remains `PENDING_PRODUCT_OWNER`, so conditional R1-07 is
+  skipped without being marked complete. Run only the cumulative R1 shared
+  Shell/design/i18n Level 3 exit Gate next; P5-01 resumes only if it passes.
 
 Resume only from `implementation/NEXT_ACTION.md` and the current R1 evidence.
-Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01 through R1-05
-evidence; do not repeat or rewrite them merely to restore context. See
+Reuse the passing Phase 4, P5-00, P5-01 checkpoint and R1-01 through R1-06
+evidence where the current impact map proves the boundary unchanged; do not
+repeat or rewrite it merely to restore context. See
 `implementation/evidence/reconciliation/r1-06-requirement-anchor.md`,
 `implementation/evidence/reconciliation/r1-06-plan.md` and
 `implementation/LAST_RUN.md` for the exact latest result.

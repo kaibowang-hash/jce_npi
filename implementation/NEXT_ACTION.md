@@ -2,10 +2,10 @@
 
 Status: `R1 SHARED BRIDGE LEVEL 3 EXIT GATE READY`
 
-Recovery time: `2026-07-30T13:10:49Z`
+Recovery time: `2026-07-30T13:19:55Z`
 
-Latest verified R1-06 implementation checkpoint:
-`0b3a7b28bb447edbc165daa95a3e9963f255d832`
+Latest synchronized R1-06 Task Gate checkpoint:
+`5fae1784e376c08cd4466c1b38592eb9a7ec513e`
 
 Required and only development branch:
 `codex/npi-v1.2-implementation`

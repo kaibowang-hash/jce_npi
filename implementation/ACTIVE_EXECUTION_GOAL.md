@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T13:10:49Z`
+Updated: `2026-07-30T13:19:55Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -10,7 +10,7 @@ Updated: `2026-07-30T13:10:49Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest synchronized implementation checkpoint:
-  `0b3a7b28bb447edbc165daa95a3e9963f255d832`
+  `5fae1784e376c08cd4466c1b38592eb9a7ec513e`
 - Current controller task:
   `R1-EXIT-GATE — cumulative shared Shell/design/i18n Level 3`
 - Completed bridge tasks:
@@ -114,9 +114,10 @@ technical identifiers remain unchanged.
 
 R1-06 implementation is verified through fixed-Linux checkpoint
 `0b3a7b28bb447edbc165daa95a3e9963f255d832` and CI `#70`. Its Level 2 Task
-Gate evidence and current trace are the pending checkpoint being committed.
-R1-07 was not activated because `DR-REC-001` remains pending. The cumulative
-R1 shared Shell/design/i18n Level 3 exit Gate is the first unfinished action.
+Gate evidence and current trace are synchronized at
+`5fae1784e376c08cd4466c1b38592eb9a7ec513e`. R1-07 was not activated because
+`DR-REC-001` remains pending. The cumulative R1 shared Shell/design/i18n Level
+3 exit Gate is the first unfinished action.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
