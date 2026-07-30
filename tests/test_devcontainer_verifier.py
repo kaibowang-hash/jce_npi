@@ -99,7 +99,7 @@ visual:
         sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' /etc/apt/sources.list
         sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete
     - run: npx playwright install --with-deps chromium
-    - run: npm run test:visual
+    - run: npx playwright test tests/e2e/r1-05-panes.spec.ts tests/e2e/r1-05-field-attachments.spec.ts --grep @visual
     - uses: actions/upload-artifact@v4
       with:
         name: r1-05-linux-visual-evidence
@@ -107,6 +107,7 @@ visual:
           implementation/evidence/phase-4/playwright-results/.last-run.json
           implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png
           implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png
+        include-hidden-files: true
 """
         validate_ci_verification_tools(safe_workflow, visual_image)
         unsafe_variants = (
@@ -153,6 +154,7 @@ visual:
                 "r1-05-*/**/*-actual.png\n",
                 "          implementation/evidence/phase-4\n",
             ),
+            safe_workflow.replace("        include-hidden-files: true\n", ""),
         )
         for unsafe_workflow in unsafe_variants:
             with self.assertRaises(VerificationError):

@@ -255,15 +255,18 @@ def validate_ci_verification_tools(
         "- run: npx playwright install --with-deps chromium",
         visual_container,
     )
-    visual_test = ci_workflow.find("- run: npm run test:visual", visual_container)
+    visual_test = ci_workflow.find("npx playwright test", visual_container)
     visual_artifact = ci_workflow.find("name: r1-05-linux-visual-evidence")
     require(
         visual_container >= 0,
         "CI visual verification must use the digest-pinned devcontainer base",
     )
     require(
-        ci_workflow.count("- run: npm run test:visual") == 1,
-        "CI must have exactly one canonical visual verification step",
+        ci_workflow.count("npx playwright test") == 1
+        and ci_workflow.count("tests/e2e/r1-05-panes.spec.ts") == 1
+        and ci_workflow.count("tests/e2e/r1-05-field-attachments.spec.ts") == 1
+        and ci_workflow.count("--grep @visual") == 1,
+        "CI must have exactly one affected R1-05 visual verification step",
     )
     require(
         "sudo sed -i '/dl\\.yarnpkg\\.com\\/debian/d' "
@@ -287,6 +290,10 @@ def validate_ci_verification_tools(
             evidence_path in ci_workflow,
             f"CI visual artifact must retain the bounded path: {evidence_path}",
         )
+    require(
+        "include-hidden-files: true" in ci_workflow,
+        "CI visual artifact must retain the hidden Playwright result manifest",
+    )
     require(
         "path: implementation/evidence/phase-4\n" not in ci_workflow,
         "CI must not upload the unbounded historical Phase 4 evidence tree",

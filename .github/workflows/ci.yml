@@ -67,7 +67,12 @@ jobs:
           sudo find /etc/apt/sources.list.d -maxdepth 1 -type f -iname '*yarn*' -delete
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: npm run test:visual
+      - name: Verify R1-05 affected visual matrix
+        run: >-
+          npx playwright test
+          tests/e2e/r1-05-panes.spec.ts
+          tests/e2e/r1-05-field-attachments.spec.ts
+          --grep @visual
         working-directory: frontend
       - uses: actions/upload-artifact@v4
         if: always()
@@ -78,3 +83,4 @@ jobs:
             implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-actual.png
             implementation/evidence/phase-4/playwright-results/r1-05-*/**/*-diff.png
           if-no-files-found: warn
+          include-hidden-files: true
