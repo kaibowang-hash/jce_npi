@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-01 AUTHORIZED DATETIME PERSISTENCE REPAIR`
+`BLOCKED_EXTERNAL — P5-01 CHECKOUT HTTP 500; AUTHORIZED ROUND EXHAUSTED`
 
-Recovery time: `2026-07-30T18:59:43Z`
+Recovery time: `2026-07-30T19:18:48Z`
 
 Latest complete CI recovery checkpoint:
-`a2d98e23f7dd4d37cb66ae220beade32123bd567`
+`7aa14edbdd2e484784cee6a8ec52adef4f6bf328`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -24,8 +24,8 @@ Required and only development branch:
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
-  static runtime checks pass; P5-01 remains incomplete and is now
-  `IN_PROGRESS` under the bounded Datetime repair, not `PASS`.
+  static runtime checks pass; P5-01 remains incomplete and is
+  `BLOCKED_EXTERNAL` at the controlled-Site checkout boundary, not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -77,6 +77,15 @@ Required and only development branch:
   local time. It permits only the shared Frappe Datetime persistence repair,
   sanitized diagnostics, affected checks, normal CI and one unchanged
   controlled-Site dispatch.
+- Datetime repair candidate `7aa14ed` passed normal CI `#98`, run
+  `30573186630`. Its one authorized controlled dispatch `#99`, run
+  `30573778175`, passed the formerly failing policy publication, controlled
+  document creation and immediate idempotency replay, then returned HTTP
+  `500` on the first document `:check-out`.
+- The verifier's sanitized detail helper covered policy operations but not
+  the generic document-workspace assertion. The retained evidence therefore
+  cannot uniquely attribute the checkout failure inside the four-step
+  persistence/response boundary. The one authorized dispatch is exhausted.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -110,12 +119,21 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The required authorization is complete. Finish the bounded root-cause batch
-defined in
-`implementation/evidence/phase-5/p5-01-controlled-runtime-datetime-repair.md`,
-run affected checks and normal CI, then dispatch exactly once the unchanged:
+The shared-Datetime repair and its one authorized dispatch are complete. Do
+not change product code or dispatch the Gate again under the exhausted
+authorization.
 
-`bash scripts/verify-frappe-runtime.sh --document-only`
+The single unblock action is explicit user authorization for one further
+bounded repair round limited to:
+
+1. extending the already reviewed sanitized exception type/message helper to
+   the document-workspace command boundary;
+2. one diagnostic-only controlled-Site dispatch to identify the exact
+   checkout transaction root;
+3. fixing only that proven root, with affected tests and complete normal CI;
+   and
+4. one final unchanged
+   `bash scripts/verify-frappe-runtime.sh --document-only` dispatch.
 
 The terminal result must prove:
 
@@ -128,7 +146,8 @@ The terminal result must prove:
 6. bounded cleanup with no production or external connection.
 
 Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
-review and P5-01 Level 2 Task Gate. P5-02 remains inactive.
+review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
 
 ## Retained passing checkpoint evidence
 

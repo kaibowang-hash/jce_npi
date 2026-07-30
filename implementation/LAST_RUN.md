@@ -1,5 +1,31 @@
 # Last Run
 
+## P5-01 Datetime repair passed CI; authorized Gate stopped at checkout — 2026-07-31
+
+- Exact repair candidate:
+  `7aa14edbdd2e484784cee6a8ec52adef4f6bf328`.
+- Normal CI `#98`, run `30573186630`, passed the complete repository,
+  `285/285` non-visual browser, `24/24` fixed-Linux visual, direct trilingual,
+  dependency-audit and both secret-scan lanes.
+- The one authorized controlled dispatch `#99`, run `30573778175`, passed
+  exact setup, guarded disposable Site/database, both apps and migrations,
+  policy publication, controlled document creation and immediate idempotency
+  replay.
+- The first controlled document `:check-out` returned HTTP `500`. This proves
+  the prior policy Datetime persistence root is repaired and exposes a new,
+  later checkout transaction failure.
+- The generic document-workspace assertion did not emit the already bounded
+  sanitized exception type/message, so the retained evidence cannot uniquely
+  distinguish lock-event insertion, document projection save, audit append
+  or response reconstruction. No lock/revision/private-file runtime PASS is
+  claimed.
+- Cleanup removed the ephemeral containers, volumes and network. The single
+  authorized dispatch is exhausted. Controller status is `BLOCKED_EXTERNAL`;
+  P5-01 and all seven requirements remain incomplete, and P5-02 remains
+  inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
+
 ## P5-01 Datetime persistence repair authorized and locally green — 2026-07-31
 
 - The user supplied the exact additional bounded authorization after the

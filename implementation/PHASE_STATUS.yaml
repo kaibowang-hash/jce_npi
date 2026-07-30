@@ -1,16 +1,16 @@
 version: '1.2'
-overall_status: IN_PROGRESS
+overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-07-30T18:59:43Z'
+updated_at: '2026-07-30T19:18:48Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5-01_CONTROLLED_RUNTIME_DATETIME_REPAIR
+execution_hold: P5-01_CONTROLLED_RUNTIME_CHECKOUT_HTTP_500
 current_task: P5-01
-current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-01-CONTROLLED-SITE-PROJECT-AND-DRAFT-POLICY-PASS
-current_task_next_stage: P5-01-CONTROLLED-SITE-DATETIME-PERSISTENCE-REPAIR
-current_task_next_stage_status: AUTHORIZED_IN_PROGRESS
+current_task_status: BLOCKED_EXTERNAL
+current_task_completed_stage: P5-01-CONTROLLED-SITE-DOCUMENT-CREATE-REPLAY-PASS
+current_task_next_stage: P5-01-CONTROLLED-SITE-CHECKOUT-DIAGNOSTIC-REPAIR
+current_task_next_stage_status: BLOCKED_AUTHORIZATION_REQUIRED
 resumed_product_task: P5-01
-resumed_product_task_status: IN_PROGRESS_CONTROLLED_SITE_DATETIME_REPAIR
+resumed_product_task_status: BLOCKED_CONTROLLED_SITE_CHECKOUT_HTTP_500
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -17,8 +17,7 @@ Requirements:
 
 State:
 
-`IN_PROGRESS — BOUNDED REPAIR AUTHORIZED; NORMAL CI AND CONTROLLED-SITE GATE
-PENDING`
+`COMPLETE REPAIR / FAILED CONTROLLED-SITE GATE — CHECKOUT HTTP 500`
 
 P5-01 is not `PASS`, none of its seven requirements is promoted, and P5-02
 remains inactive.
@@ -69,10 +68,35 @@ The host does not provide Black or flake8 as standalone modules; the normal
 repository CI remains the canonical complete environment check. No dependency
 was installed to mask that host fact.
 
-## Pending terminal evidence
+## Terminal execution evidence
 
-1. pushed exact repair checkpoint and normal CI on that SHA;
-2. one unchanged `bash scripts/verify-frappe-runtime.sh --document-only`
-   dispatch;
-3. if and only if that passes, final Task Diff/domain/permission/security/
-   UX/i18n reviews and the P5-01 Level 2 Task Gate.
+The exact repair checkpoint is:
+
+`7aa14edbdd2e484784cee6a8ec52adef4f6bf328`
+
+Normal CI `#98`, run `30573186630`, passed on that exact SHA:
+
+- repository job `90974843950`: complete repository verification,
+  `285/285` non-visual browser checks, direct trilingual coverage, dependency
+  audits and both secret lanes `PASS`; and
+- visual job `90974843881`: fixed-Linux `24/24 PASS`, artifact
+  `8771657987`, digest
+  `334073ee8ccce3eb9ccffdd9ad005e70b477673fb27df1ccdf0b83e799aa315d`.
+
+The single authorized controlled dispatch was CI `#99`, run `30573778175`,
+on the same exact SHA. Its controlled runtime job `90976852494`:
+
+1. passed exact tools and pinned Bench;
+2. passed the fixed disposable Site/database guards;
+3. installed both NPI apps and completed both migrations;
+4. passed the formerly failing policy publication;
+5. created the controlled document and passed immediate idempotency replay;
+6. returned HTTP `500` on the first `:check-out`; and
+7. removed the ephemeral containers, volumes and network.
+
+The old shared-Datetime root is therefore repaired. The Gate is still not
+PASS. Because the document-workspace assertion did not use the new sanitized
+failure-detail helper, the retained log cannot uniquely identify which
+checkout transaction step failed. The one authorized dispatch is exhausted.
+The resulting Hard Blocker is recorded in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.

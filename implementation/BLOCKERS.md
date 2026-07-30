@@ -1,10 +1,37 @@
 # Blockers
 
-Updated: `2026-07-30T18:59:43Z`
+Updated: `2026-07-30T19:18:48Z`
 
 ## Active hard blockers
 
-None.
+`P5-01-CONTROLLED-RUNTIME-CHECKOUT-DIAGNOSTIC-REPAIR-LIMIT`
+
+The explicitly authorized shared-Datetime repair is complete at
+`7aa14edbdd2e484784cee6a8ec52adef4f6bf328`. Normal CI `#98`, run
+`30573186630`, passed on that exact SHA. The single authorized manual
+controlled-Site run `#99`, `30573778175`, advanced beyond the previously
+failing policy publication, created the controlled document and passed its
+immediate idempotency replay. The first `:check-out` command then returned
+HTTP `500`.
+
+This progression proves that the shared Frappe Datetime persistence repair
+closed the prior publication blocker. It also proves that setup, migrations,
+schema synchronization, disposable owner, Project, policy publication,
+document creation and immediate replay are not the current blocker.
+
+The runtime verifier did not apply its new sanitized failure-detail helper to
+the generic document-workspace assertion. The retained log therefore exposes
+only HTTP `500`, not the bounded server exception type/message needed to
+distinguish lock-event insertion, controlled-document projection save, audit
+append or response reconstruction. Guessing among those transaction steps,
+or rerunning the Gate without a diagnosis, would violate the fail-closed
+evidence rule.
+
+The one authorized dispatch is exhausted and P5-01's necessary controlled
+runtime Gate still fails. A further code repair or dispatch requires one new
+explicitly bounded authorization for one diagnostic-only dispatch and one
+final unchanged Gate after the proven root is fixed. Exact evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
 
 ## Resolved hard blockers
 
@@ -40,7 +67,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_DATETIME_REPAIR`
+`P5-01_CONTROLLED_RUNTIME_CHECKOUT_HTTP_500`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
