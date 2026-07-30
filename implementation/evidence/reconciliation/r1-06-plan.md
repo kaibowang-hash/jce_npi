@@ -5,7 +5,7 @@ Branch: `codex/npi-v1.2-implementation`
 Task: `R1-06 — Controlled undo prototype gate and 1440 visual governance`
 Requirements: `UX-026`, `UX-030`, `UX-035`, `UX-036`
 Status:
-`IN_PROGRESS — STAGE 1 TECHNICAL PASS; STAGE 2 APPROVAL HELD; STAGE 3 READY`
+`PASS — LEVEL 2 TASK GATE; STAGE 2 APPROVAL HELD; R1 EXIT GATE READY`
 Starting synchronized bridge checkpoint:
 `373770f988b4cf7707b41a50e96b7a4861d93c3b`
 
@@ -105,6 +105,12 @@ verifier rejects the unsigned manifest. No Stage 2 implementation has begun.
 
 Stage 3 is independent of Stage 2 Product Owner approval.
 
+Result:
+`PASS — LEVEL 2 R1-06 STAGE 3 1440 P0 VISUAL GOVERNANCE`.
+
+Validation:
+[R1-06 Stage 3 Validation — Durable 1440 P0 visual governance](r1-06-stage-3-validation.md).
+
 ### Stage 4 — R1-06 Task Gate and cumulative R1 exit Gate
 
 - Run the R1-06 Level 2 Task Gate over all completed stages.
@@ -119,6 +125,16 @@ Stage 3 is independent of Stage 2 Product Owner approval.
 - Only a passing cumulative exit Gate releases P5-01. An unsigned Product Owner
   approval holds only Stage 2 and the exact dependent trace claim unless the
   controller's exit criteria explicitly require it.
+
+R1-06 Task Gate result:
+`PASS — LEVEL 2 R1-06 TASK GATE; STAGE 2 PRODUCT APPROVAL HOLD RETAINED`.
+
+`DR-REC-001` remains `PENDING_PRODUCT_OWNER`; conditional R1-07 is skipped
+without being marked complete. The cumulative R1 shared Shell/design/i18n
+Level 3 exit Gate is now the only active bridge action.
+
+Task validation:
+[R1-06 Validation — Task Gate](r1-06-validation.md).
 
 ## Requirement to code, test and evidence
 

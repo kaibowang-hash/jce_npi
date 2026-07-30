@@ -1476,3 +1476,46 @@ Current task remains R1-06. The first incomplete action is Stage 3: the exact
 six P0 pages × three languages at 1440×900 with durable fixed-Linux visual and
 bounded artifact governance. P5-01 remains held; R1-07 remains conditional on
 `DR-REC-001`.
+
+## R1-06 Stage 3 and Task Gate PASS; cumulative R1 exit Gate ready — 2026-07-30T13:10:49Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Starting Stage 3 controller checkpoint:
+  `a681c8cf948158b33a78b40a057145f91daf3cc8`.
+- Fixed-Linux baseline checkpoint:
+  `0b3a7b28bb447edbc165daa95a3e9963f255d832`.
+- Result:
+  `PASS — LEVEL 2 R1-06 TASK GATE; STAGE 2 PRODUCT APPROVAL HOLD RETAINED`.
+
+R1-06 Stage 3 governs exactly the current six P0 screens × `en`/`zh`/`zh-TW`
+at 1440×900/100%. The strict repository verifier owns the registry, exact
+18-case/file set, dimensions, density/overflow contract, digest-pinned CI
+command, retained R1-05 six-case scope and bounded `30`-day artifacts. All
+eighteen Linux images passed original-resolution industrial UX and language
+review; no accepted historical 1366/1920/state/zoom baseline was rewritten.
+
+Verification passed:
+
+- affected governance tests `28/28`; exact baseline verifier `18/18`;
+- complete Python `762/762`; complete frontend unit `634/634`;
+- i18n audit `2,782` literal English sources with `100%` direct `zh`/`zh-TW`;
+- complete non-visual browser `279/279`;
+- CI `#70` / run `30544737387`: repository job `90877923233` and fixed-Linux
+  visual job `90877923386` PASS;
+- exact Linux visual lane `24/24` (`18` R1-06 plus retained `6` R1-05);
+- both npm audits `0` vulnerabilities; action scan
+  `22 commits / 6.32 MB` and full-branch scan `56 commits / 11.85 MB`, no
+  leaks; and
+- reconciliation tests `14/14`, standalone verifier, generator freshness and
+  exact 282-row trace PASS.
+
+The versioned prototype approval remains unsigned, so Stage 2 and its full
+backend/business claim remain fail-closed. `DR-REC-001` is still
+`PENDING_PRODUCT_OWNER`; R1-07 is skipped without being marked complete. The
+first incomplete action is the cumulative R1 shared Shell/design/i18n Level 3
+exit Gate. P5-01 remains held until that Gate passes.
+
+Complete evidence:
+
+- `implementation/evidence/reconciliation/r1-06-stage-3-validation.md`;
+- `implementation/evidence/reconciliation/r1-06-validation.md`.

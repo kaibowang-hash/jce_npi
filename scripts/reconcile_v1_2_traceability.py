@@ -50,8 +50,8 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
     "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
-    "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
-    "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
+    "UX-035": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
+    "UX-036": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
 }
 R1_03_EVIDENCE = {
     "FR-UX-039": (
@@ -213,6 +213,34 @@ R1_06_STAGE_1_EVIDENCE = {
     )
     for requirement_id in ("UX-026", "UX-030")
 }
+R1_06_STAGE_3_EVIDENCE = {
+    "UX-035": R1_04_EVIDENCE["UX-035"]
+    + (
+        ".github/workflows/ci.yml",
+        "frontend/tests/e2e/p0-visual-registry.json",
+        "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts",
+        "scripts/verify_devcontainer.py",
+        "scripts/verify_p0_visual_governance.py",
+        "tests/test_devcontainer_verifier.py",
+        "tests/test_p0_visual_governance.py",
+        "implementation/evidence/reconciliation/r1-06-stage-3-validation.md",
+        "implementation/evidence/reconciliation/r1-06-validation.md",
+    ),
+    "UX-036": (
+        ".github/workflows/ci.yml",
+        "frontend/tests/e2e/p0-visual-registry.json",
+        "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts",
+        "frontend/tests/e2e/visual-matrix.spec.ts",
+        "frontend/tests/e2e/states-locales-accessibility.spec.ts",
+        "implementation/evidence/phase-3/visual-review.md",
+        "scripts/verify_devcontainer.py",
+        "scripts/verify_p0_visual_governance.py",
+        "tests/test_devcontainer_verifier.py",
+        "tests/test_p0_visual_governance.py",
+        "implementation/evidence/reconciliation/r1-06-stage-3-validation.md",
+        "implementation/evidence/reconciliation/r1-06-validation.md",
+    ),
+}
 
 
 class TraceError(RuntimeError):
@@ -307,6 +335,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
         if requirement_id in R1_06_STAGE_1_EVIDENCE:
             evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
+        if requirement_id in R1_06_STAGE_3_EVIDENCE:
+            evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -347,6 +377,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_05_STAGE_3_EVIDENCE[requirement_id])
         if requirement_id in R1_06_STAGE_1_EVIDENCE:
             evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
+        if requirement_id in R1_06_STAGE_3_EVIDENCE:
+            evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

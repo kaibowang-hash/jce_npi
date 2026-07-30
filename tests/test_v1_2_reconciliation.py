@@ -101,7 +101,6 @@ class V12ReconciliationTests(unittest.TestCase):
             "UX-007": "TECHNICAL_VERIFIED_FOUNDATION",
             "UX-027": "TECHNICAL_VERIFIED_FOUNDATION",
             "UX-028": "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD",
-            "UX-035": "TECHNICAL_VERIFIED_FOUNDATION",
         }
         for requirement_id, expected_status in expected_statuses.items():
             self.assertEqual(by_id[requirement_id]["status"], expected_status)
@@ -296,6 +295,38 @@ class V12ReconciliationTests(unittest.TestCase):
         self.assertIn('"status": "PENDING_PRODUCT_OWNER"', manifest)
         self.assertIn('"backendImplementationAuthorized": false', manifest)
         for _, expected_evidence in self.verifier.EXPECTED_R1_06_STAGE_1_TRACE.values():
+            for evidence_path in expected_evidence:
+                self.assertTrue(
+                    (self.verifier.ROOT / evidence_path).is_file(),
+                    evidence_path,
+                )
+
+    def test_r1_06_stage_3_trace_covers_current_p0_visual_scope(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id in ("UX-035", "UX-036"):
+            row = by_id[requirement_id]
+            self.assertEqual(
+                row["status"],
+                "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE",
+            )
+            self.assertEqual(
+                {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                },
+                self.verifier.EXPECTED_R1_06_STAGE_3_TRACE[requirement_id][1],
+            )
+        self.assertIn(
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+            by_id["UX-035"]["evidence"],
+        )
+        self.assertIn(
+            "implementation/evidence/phase-3/visual-review.md",
+            by_id["UX-036"]["evidence"],
+        )
+        for _, expected_evidence in self.verifier.EXPECTED_R1_06_STAGE_3_TRACE.values():
             for evidence_path in expected_evidence:
                 self.assertTrue(
                     (self.verifier.ROOT / evidence_path).is_file(),

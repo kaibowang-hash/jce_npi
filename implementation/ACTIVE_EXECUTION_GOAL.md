@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T12:28:35Z`
+Updated: `2026-07-30T13:10:49Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -10,12 +10,14 @@ Updated: `2026-07-30T12:28:35Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest synchronized implementation checkpoint:
-  `e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2`
+  `0b3a7b28bb447edbc165daa95a3e9963f255d832`
 - Current controller task:
-  `R1-06 — Controlled undo prototype gate and 1440 visual governance`
-  (`IN_PROGRESS — STAGE 1 TECHNICAL PASS; STAGE 2 APPROVAL HELD; STAGE 3 READY`)
+  `R1-EXIT-GATE — cumulative shared Shell/design/i18n Level 3`
 - Completed bridge tasks:
-  `R1-01`, `R1-02`, `R1-03`, `R1-04`, `R1-05`
+  `R1-01`, `R1-02`, `R1-03`, `R1-04`, `R1-05`, `R1-06`
+- Conditional task not activated:
+  `R1-07 — My Work inline expansion page amendment`
+  (`DR-REC-001 = PENDING_PRODUCT_OWNER`; not marked complete)
 - Held product task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS_CHECKPOINTED`; no P5-01 PASS is claimed)
@@ -38,50 +40,58 @@ Updated: `2026-07-30T12:28:35Z`
   `LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE`
 - R1-06 Stage 1 / `UX-026`, `UX-030`:
   `TECHNICAL PROTOTYPE/GOVERNANCE PASS; PRODUCT OWNER APPROVAL PENDING`
+- R1-06 Stage 3 / `UX-035`, `UX-036`:
+  `LEVEL 2 1440 P0 VISUAL GOVERNANCE PASS`
+- R1-06:
+  `LEVEL 2 TASK GATE PASS; STAGE 2 PRODUCT APPROVAL HOLD RETAINED`
 - Current trace:
   `282` unique IDs =
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`
-- Stage 3 complete frontend:
-  `620/620` unit tests; coverage statements `85.41%`, branches `83.54%`,
-  functions `89.23%`, lines `87.50%`; both npm audits `0` vulnerabilities
-- Stage 3 browser:
-  affected behavior `14/14`, complete non-visual matrix `265/265`, exact
-  affected digest-pinned Linux visual matrix `6/6`
-- Stage 3 localization:
-  `2,735` literal English sources with `100%` direct `zh` and `zh-TW`
-  coverage
-- Stage 3 repository and security:
-  complete Python lane `754/754`, metadata/toolchain verifier, prohibited
-  pattern scan, `22`-commit action secret scan and `50`-commit complete-branch
-  secret scan PASS
-- R1-06 Stage 1 frontend:
-  `634/634` unit tests; coverage statements `85.46%`, branches `83.63%`,
-  functions `89.01%`, lines `87.53%`; hosted install-script review and both
-  npm audits PASS
-- R1-06 Stage 1 browser/governance:
-  affected prototype `14/14`, complete non-visual matrix `279/279`, approval
-  verifier `5/5`, exact pending backend-entry rejection and trilingual 1440
-  original-resolution review PASS
-- R1-06 Stage 1 hosted evidence:
-  CI `#67` run `30542155671`, repository job `90869267448`, visual job
-  `90869267397`, complete branch scan `53 commits / 11.81 MB`, no leaks
 
-These accepted results are reused unless R1-06 directly changes their source
-boundary. Historical Phase 3/4/P5/R1 evidence and the historical 281-row
-reconciliation checkpoint are not rewritten.
+Latest complete R1-06 verification:
+
+- complete Python `762/762`;
+- complete frontend unit `634/634`, coverage statements `85.46%`, branches
+  `83.63%`, functions `89.01%`, lines `87.53%`;
+- complete non-visual browser `279/279`;
+- exact digest-pinned Linux visual `24/24`
+  (`18` R1-06 plus retained `6` R1-05);
+- `2,782` literal English sources with `100%` direct `zh`/`zh-TW` coverage;
+- both npm audits `0` vulnerabilities;
+- action secret scan `22 commits / 6.32 MB` and complete branch scan
+  `56 commits / 11.85 MB`, no leaks; and
+- CI `#70`, run `30544737387`, repository job `90877923233`, visual job
+  `90877923386`.
+
+Historical Phase 3/4/P5/R1 evidence and the historical 281-row reconciliation
+checkpoint remain immutable. Accepted results are reused only where the
+current impact map proves the source boundary unchanged.
 
 ## First incomplete action
 
-Implement only R1-06 Stage 3: add the exact six-screen × three-language
-1440×900 normal-state registry, density/overflow assertions, digest-pinned
-Linux comparison and bounded artifact/repository guards. Preserve every
-accepted 1366/1920/state/zoom/R1-05 baseline and do not normalize unrelated
-renderer drift.
+Commit and push the R1-06 Task Gate trace/evidence/controller checkpoint, run
+its fresh complete CI, then execute the cumulative R1 shared Shell/design/i18n
+Level 3 release Gate using `implementation/QUALITY_GATE.md` and the
+`release-gate` Skill.
 
-R1-07 remains conditional on `DR-REC-001`. P5-01 remains held until R1-06 and
-the complete R1 exit Gate pass. Phase 3 external UAT, production rules,
-ERPNext/JCE/CAD/PDM access and externally owned business decisions remain
-scoped holds rather than global blockers.
+The cumulative Gate must include repository/backend/frontend/browser,
+controlled runtime, contract/permission/security, complete trilingual and
+visual evidence, migration/rollback/recovery, trace/evidence integrity and
+independent release review. Reuse of an accepted complete runtime or visual
+matrix requires an explicit unchanged-source impact justification.
+
+## Scoped holds that remain truthful
+
+- R1-06 Stage 2 remains held until an actual Product Owner approval is tied to
+  the unchanged prototype revision and policy facts.
+- R1-07 remains unactivated while `DR-REC-001` is pending.
+- Phase 3 named business UAT and sanitized-data provenance remain externally
+  unsigned.
+- P5-01 remains held until the cumulative R1 exit Gate passes.
+- Production ERPNext/JCE/CAD/PDM access and unresolved business rules remain
+  prohibited or fail closed within their dependent scope.
+
+None is currently an `AUTOPILOT_CONTROLLER.md` global Hard Blocker.
 
 ## Current authority
 
@@ -102,17 +112,16 @@ technical identifiers remain unchanged.
 
 ## Recovery boundary
 
-R1-06 Stage 1 is complete at pushed implementation checkpoint
-`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. The deterministic
-demo prototype, direct translations, pending manifest and exact backend-entry
-guard passed; no production API, schema, permission or business command was
-added. Product Owner approval remains unsigned, so Stage 2 stays scoped-held.
-Stage 3 is independent and is the first unfinished action.
+R1-06 implementation is verified through fixed-Linux checkpoint
+`0b3a7b28bb447edbc165daa95a3e9963f255d832` and CI `#70`. Its Level 2 Task
+Gate evidence and current trace are the pending checkpoint being committed.
+R1-07 was not activated because `DR-REC-001` remains pending. The cumulative
+R1 shared Shell/design/i18n Level 3 exit Gate is the first unfinished action.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,
 `implementation/LAST_RUN.md`,
-`implementation/evidence/reconciliation/r1-06-requirement-anchor.md` and
-`implementation/evidence/reconciliation/r1-06-plan.md`. Chat memory is
-non-authoritative. Resume from Stage 3 without repeating accepted R1-05,
-R1-06 Stage 1 or earlier Gates.
+`implementation/evidence/reconciliation/r1-06-requirement-anchor.md`,
+`implementation/evidence/reconciliation/r1-06-plan.md` and the cumulative R1
+Level 3 evidence if it exists. Chat memory is non-authoritative. Do not repeat
+accepted R1-03 through R1-06 Gates unless the current impact map requires it.

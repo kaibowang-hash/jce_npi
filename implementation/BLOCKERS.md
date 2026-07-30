@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-30T12:28:35Z`
+Updated: `2026-07-30T13:10:49Z`
 
 ## Active hard blockers
 
@@ -18,7 +18,19 @@ triggered task-level Level 3 Gates. R1-05 is complete. Its Stage 1
 `LEVEL 2 R1-05 STAGE 2 FIELD/ATTACHMENT TRUTH TASK GATE` and is
 `TECHNICAL_VERIFIED`. Stage 3 `FR-UX-043` passed the
 `LEVEL 2 R1-05 STAGE 3 ICON-ACTION TASK GATE` and is
-`TECHNICAL_VERIFIED`. R1-06 is the only active next bridge task.
+`TECHNICAL_VERIFIED`. R1-06 passed its Level 2 Task Gate for every currently
+executable scope:
+
+- `UX-026`: `PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD`;
+- `UX-030`: `TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD`;
+- `UX-035`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`; and
+- `UX-036`: `TECHNICAL_VERIFIED_CURRENT_P0_SCOPE`.
+
+R1-06 Stage 3 adds exact six-screen × three-language 1440×900 fixed-Linux
+governance without rewriting accepted historical baselines. `DR-REC-001`
+remains `PENDING_PRODUCT_OWNER`, so conditional R1-07 is skipped without being
+marked complete. The cumulative R1 shared Shell/design/i18n Level 3 exit Gate
+is the only active bridge action.
 P5-01 remains `IN_PROGRESS_CHECKPOINTED`; this hold:
 
 - is not an `AUTOPILOT_CONTROLLER.md` Hard Blocker;
@@ -34,12 +46,13 @@ The former `V1_2_RECONCILIATION_HOLD` is resolved by
 by this bounded shared-bridge hold rather than removed.
 
 R1-06 Stage 1 passed its technical prototype/governance Gate at
-`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. Actual Product
-Owner approval is still required before the dependent Stage 2 public
-reset/undo command may begin. That approval remains pending and is a scoped
-`UX-030` entry gate, not an overall Hard Blocker: Stage 2 is fail-closed while
-independent Stage 3 1440 P0 visual governance proceeds. No technical fixture,
-screenshot, Codex review or automated test may sign the approval.
+`e7f2e3bc7956d5f2192eb1b2b9e5fb3d5dc0c4a2` and CI `#67`. Stage 3 passed at
+`0b3a7b28bb447edbc165daa95a3e9963f255d832` and CI `#70`: the complete
+repository/non-visual lanes and the exact `24/24` fixed-Linux visual lane
+passed. Actual Product Owner approval is still required before the dependent
+Stage 2 public reset/undo command may begin. That approval remains pending and
+is a scoped `UX-030` entry gate, not an overall Hard Blocker. No technical
+fixture, screenshot, Codex review or automated test may sign the approval.
 
 R1-04's `UX-028` publisher authority remains a scoped Class-B hold, not a
 global blocker. The immutable published-view root/revision, hash, lineage and

@@ -71,8 +71,8 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
     "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
-    "UX-035": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
-    "UX-036": ("5", "PLANNED_R1_06_1440_VISUAL_MATRIX"),
+    "UX-035": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
+    "UX-036": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
 }
 EXPECTED_R1_03_TRACE = {
     "FR-UX-039": (
@@ -170,18 +170,6 @@ EXPECTED_R1_04_TRACE = {
             "implementation/evidence/reconciliation/r1-04-validation.md",
         },
     ),
-    "UX-035": (
-        "TECHNICAL_VERIFIED_FOUNDATION",
-        {
-            "frontend/src/components/live-my-worklist.tsx",
-            "frontend/src/styles/app.css",
-            "frontend/tests/e2e/r1-04-grid.spec.ts",
-            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-en-1440x900-100-linux.png",
-            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-1440x900-100-linux.png",
-            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-TW-1440x900-100-linux.png",
-            "implementation/evidence/reconciliation/r1-04-validation.md",
-        },
-    ),
 }
 EXPECTED_R1_05_STAGE_1_TRACE = {
     "FR-UX-040": (
@@ -273,6 +261,46 @@ EXPECTED_R1_06_STAGE_1_TRACE = {
         },
     )
     for requirement_id in ("UX-026", "UX-030")
+}
+EXPECTED_R1_06_STAGE_3_TRACE = {
+    "UX-035": (
+        "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE",
+        {
+            "frontend/src/components/live-my-worklist.tsx",
+            "frontend/src/styles/app.css",
+            "frontend/tests/e2e/r1-04-grid.spec.ts",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-en-1440x900-100-linux.png",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-1440x900-100-linux.png",
+            "frontend/tests/e2e/r1-04-grid.spec.ts-snapshots/r1-04-grid-zh-TW-1440x900-100-linux.png",
+            "implementation/evidence/reconciliation/r1-04-validation.md",
+            ".github/workflows/ci.yml",
+            "frontend/tests/e2e/p0-visual-registry.json",
+            "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts",
+            "scripts/verify_devcontainer.py",
+            "scripts/verify_p0_visual_governance.py",
+            "tests/test_devcontainer_verifier.py",
+            "tests/test_p0_visual_governance.py",
+            "implementation/evidence/reconciliation/r1-06-stage-3-validation.md",
+            "implementation/evidence/reconciliation/r1-06-validation.md",
+        },
+    ),
+    "UX-036": (
+        "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE",
+        {
+            ".github/workflows/ci.yml",
+            "frontend/tests/e2e/p0-visual-registry.json",
+            "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts",
+            "frontend/tests/e2e/visual-matrix.spec.ts",
+            "frontend/tests/e2e/states-locales-accessibility.spec.ts",
+            "implementation/evidence/phase-3/visual-review.md",
+            "scripts/verify_devcontainer.py",
+            "scripts/verify_p0_visual_governance.py",
+            "tests/test_devcontainer_verifier.py",
+            "tests/test_p0_visual_governance.py",
+            "implementation/evidence/reconciliation/r1-06-stage-3-validation.md",
+            "implementation/evidence/reconciliation/r1-06-validation.md",
+        },
+    ),
 }
 EXPECTED_BRAND_INSTRUCTIONS = {
     "Company LOGO.svg": (
@@ -637,6 +665,42 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing R1-06 Stage 1 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_R1_06_STAGE_3_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+            "DOCX_RECONCILED",
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the R1-06 Stage 3 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete R1-06 Stage 3 evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing R1-06 Stage 3 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {
