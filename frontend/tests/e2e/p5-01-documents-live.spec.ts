@@ -439,10 +439,18 @@ test.describe("P5-01 live controlled-document workspace", () => {
     ).toHaveAttribute("aria-selected", "true");
 
     await page.getByRole("tab", { name: "Overview" }).click();
-    await page
-      .getByRole("dialog", { name: "Unsaved changes" })
-      .getByRole("button", { name: "Discard changes and leave" })
-      .click();
+    const discardReview = page.getByRole("dialog", {
+      name: "Unsaved changes",
+    });
+    const discard = discardReview.getByRole("button", {
+      name: "Discard changes and leave",
+    });
+    await expect(discard).toBeDisabled();
+    await discardReview
+      .getByRole("textbox", { name: "Reason" })
+      .fill("Discard the unsubmitted controlled document");
+    await expect(discard).toBeEnabled();
+    await discard.click();
     await expect(page.getByRole("tab", { name: "Overview" })).toHaveAttribute(
       "aria-selected",
       "true",

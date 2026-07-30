@@ -941,9 +941,16 @@ describe("application shell behavior", () => {
       screen.getByRole("navigation", { name: "Domain navigation" }),
     ).getByRole("button", { name: "Tooling" });
     await user.click(tooling);
-    await user.click(
-      screen.getByRole("button", { name: "Discard changes and leave" }),
+    const discard = screen.getByRole("button", {
+      name: "Discard changes and leave",
+    });
+    expect(discard).toBeDisabled();
+    await user.type(
+      screen.getByRole("textbox", { name: "Reason" }),
+      "Discard the local draft",
     );
+    expect(discard).toBeEnabled();
+    await user.click(discard);
     expect(globalThis.location.pathname).toBe("/tooling/TL-26018-01");
   });
 });

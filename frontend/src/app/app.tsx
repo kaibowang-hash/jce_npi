@@ -251,7 +251,6 @@ export function App(): React.JSX.Element {
             setPendingTransition(null);
             transition.perform();
           }}
-          reasonRequired={false}
           returnFocusTarget={() => pendingTransition.returnFocusTarget}
           title={t("Unsaved changes")}
         />

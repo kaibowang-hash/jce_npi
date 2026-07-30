@@ -157,6 +157,28 @@ This bounded repair remains pending a fresh fixed-runner CI result. It does
 not change P5-01 completion state or substitute for the controlled-Site
 proof below.
 
+### CI #77 dirty-guard regression repair
+
+Recorded: `2026-07-30T16:05:10Z`
+
+Checkpoint `b89600281e5487b6d7869dd5571d0bfa5ec841e3` passed the
+fixed-Linux governed visual job and the repository's complete
+`scripts/verify.sh` in CI `#77`, run `30558847983`. The later complete
+non-visual Playwright run found one real regression: the P5 App integration
+had made the existing discard-unsaved-changes review executable without a
+reason, while the retained browser-history contract still required one.
+The run failed `1/285`; the remaining `284/285` cases passed. Secret and
+history scans did not run after that failure.
+
+The App now retains the Impact Review default that requires a reason. The
+existing App unit test and new P5 Project-tab browser test both assert that
+the discard command is disabled before a reason and enabled only after one
+is supplied. The affected unit file passes `31/31`; both affected browser
+cases pass `2/2` and then `10/10` across five repetitions. TypeScript,
+affected ESLint, affected Prettier and `git diff --check` pass. This repair
+is pending a new complete CI run and does not relax or skip the retained
+high-risk interaction contract.
+
 ## Pending controlled-Site proof
 
 The required command is:
