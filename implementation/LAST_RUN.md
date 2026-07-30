@@ -1602,3 +1602,22 @@ the additive controlled runtime lane.
 
 Complete evidence:
 `implementation/evidence/phase-5/p5-01-resume-audit.md`.
+
+## P5-01 resume-audit checkpoint CI sealed — 2026-07-30T14:10:21Z
+
+- Branch: `codex/npi-v1.2-implementation`.
+- Exact pushed checkpoint:
+  `ee8730133e8cdd30fc7bff158ab80a252ed14249`.
+- CI: `#74`, run `30549749537`, `PASS`.
+- Repository job `90895012341`: `PASS`, including the complete repository
+  verification, `279/279` non-visual browser cases, both zero-vulnerability
+  audits and both secret scans.
+- Fixed-Linux visual job `90895012280`: `PASS`.
+- Visual artifact `8762298652`, digest
+  `sha256:a92194794446cadea8266e6f69f478868cfc2eee4d206d113e8a739ba564ca31`.
+- Gitleaks artifact `8762447048`, digest
+  `sha256:8598dbb9e2de31cc9db0b825ab764e6ebcffc440061a3880d51485acbcad5069`.
+
+This CI seals only the bounded resume-audit checkpoint. P5-01 remains
+`IN_PROGRESS`; the first unfinished action remains the live frontend/runtime
+vertical slice.

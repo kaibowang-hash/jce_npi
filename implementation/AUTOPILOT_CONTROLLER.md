@@ -211,7 +211,7 @@ pending until that proof is produced in Codespaces.
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Current synchronized recovery checkpoint:
-  `c980571b27be66e16f2ac57409f0ef72a986e741`.
+  `ee8730133e8cdd30fc7bff158ab80a252ed14249`.
 - Completed bridge tasks: `R1-01 — DOCX Pack reconciliation addendum and
   machine trace`, `R1-02 — LaunchFlow display brand adapter and exact supplied
   assets` (`PASS — LEVEL 2`), `R1-03 — App Shell collapsed navigation command
@@ -298,8 +298,10 @@ pending until that proof is produced in Codespaces.
   Shell/design/i18n Level 3 exit Gate passed at CI `#72`; recovery checkpoint
   `c980571b27be66e16f2ac57409f0ef72a986e741` then passed CI `#73` with
   `764/764` Python, `634/634` frontend unit, `279/279` non-visual browser and
-  `24/24` fixed-Linux visual checks. Preserve its scoped holds and run only
-  the unfinished P5-01 frontend/runtime slice next.
+  `24/24` fixed-Linux visual checks. The exact P5-01 resume-audit checkpoint
+  `ee8730133e8cdd30fc7bff158ab80a252ed14249` then passed CI `#74`, run
+  `30549749537`, and is the current recovery point. Preserve the scoped holds
+  and run only the unfinished P5-01 frontend/runtime slice next.
 
 Resume only from `implementation/NEXT_ACTION.md`, the Phase 5 anchor and the
 retained P5-01 checkpoint evidence. Reuse the passing Phase 4, P5-00 and R1

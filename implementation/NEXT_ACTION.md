@@ -2,10 +2,10 @@
 
 Status: `P5-01 FRONTEND/RUNTIME READY — RESUME AUDIT PASS`
 
-Recovery time: `2026-07-30T13:52:00Z`
+Recovery time: `2026-07-30T14:10:21Z`
 
 Latest synchronized recovery checkpoint:
-`c980571b27be66e16f2ac57409f0ef72a986e741`
+`ee8730133e8cdd30fc7bff158ab80a252ed14249`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -23,6 +23,7 @@ Required and only development branch:
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
 - P5-01 resume audit is `PASS`; P5-01 remains `IN_PROGRESS`, not `PASS`.
+- The exact resume-audit checkpoint passed CI `#74`, run `30549749537`.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.

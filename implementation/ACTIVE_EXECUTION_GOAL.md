@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T13:52:00Z`
+Updated: `2026-07-30T14:10:21Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,7 +9,7 @@ Updated: `2026-07-30T13:52:00Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest synchronized recovery checkpoint:
-  `c980571b27be66e16f2ac57409f0ef72a986e741`
+  `ee8730133e8cdd30fc7bff158ab80a252ed14249`
 - Current controller task:
   `P5-01 — Document and design revision`
   (`IN_PROGRESS — RESUME AUDIT PASS; FRONTEND/RUNTIME READY`)
@@ -51,6 +51,11 @@ frontend unit, `279/279` non-visual browser, `24/24` fixed-Linux visuals,
 complete direct trilingual coverage, both zero-vulnerability audits and both
 secret scans. This seals the controller/evidence checkpoint without changing
 the original R1 Gate decision.
+
+The subsequent bounded P5-01 resume-audit checkpoint
+`ee8730133e8cdd30fc7bff158ab80a252ed14249` passed CI `#74`, run
+`30549749537`, including both repository and fixed-Linux visual jobs. The
+exact audit commit is therefore the current synchronized recovery point.
 
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
@@ -126,7 +131,8 @@ Blockers.
 The R1 bridge Gate remains complete at
 `2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`; its pushed recovery
 checkpoint is `c980571b27be66e16f2ac57409f0ef72a986e741` with CI `#73`. The
-P5-01 retained backend checkpoint remains `930b5a2`, and its resume audit is
+P5-01 retained backend checkpoint remains `930b5a2`; its resume-audit
+checkpoint is `ee8730133e8cdd30fc7bff158ab80a252ed14249` with CI `#74` and is
 `PASS`. The first unfinished action is the frontend/runtime vertical slice,
 not reimplementation of the retained domain/backend.
 
