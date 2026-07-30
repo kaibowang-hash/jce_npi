@@ -91,6 +91,9 @@ class DevcontainerVerifierTest(unittest.TestCase):
   - run: bash scripts/verify.sh
     env:
       GITHUB_TOKEN: ${{ github.token }}
+  - uses: gitleaks/gitleaks-action@v2
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
 visual:
   container:
     image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
@@ -139,6 +142,12 @@ visual:
                 "    env:\n"
                 "      GITHUB_TOKEN: ${{ github.token }}\n",
                 "  - run: bash scripts/verify.sh\n",
+            ),
+            safe_workflow.replace(
+                "  - uses: gitleaks/gitleaks-action@v2\n"
+                "    env:\n"
+                "      GITHUB_TOKEN: ${{ github.token }}\n",
+                "  - uses: gitleaks/gitleaks-action@v2\n",
             ),
             safe_workflow.replace(
                 f"    image: {visual_image}\n",

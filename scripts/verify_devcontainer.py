@@ -209,11 +209,11 @@ def validate_ci_verification_tools(
     ci_workflow: str,
     visual_container_reference: str,
 ) -> None:
-    def has_scoped_actions_token(command: str) -> bool:
+    def has_scoped_actions_token(step: str) -> bool:
         token_binding = re.escape("GITHUB_TOKEN: ${{ github.token }}")
         return (
             re.search(
-                rf"(?m)^(?P<indent>[ \t]*)- run: {re.escape(command)}\n"
+                rf"(?m)^(?P<indent>[ \t]*)- {re.escape(step)}\n"
                 rf"(?P=indent)  env:\n"
                 rf"(?P=indent)    {token_binding}[ \t]*(?:\n|$)",
                 ci_workflow,
@@ -236,12 +236,16 @@ def validate_ci_verification_tools(
         "CI must not ignore a failed ripgrep installation",
     )
     require(
-        has_scoped_actions_token("bash scripts/verify-dev-config.sh"),
+        has_scoped_actions_token("run: bash scripts/verify-dev-config.sh"),
         "CI development configuration verification must use the scoped Actions token",
     )
     require(
-        has_scoped_actions_token("bash scripts/verify.sh"),
+        has_scoped_actions_token("run: bash scripts/verify.sh"),
         "CI repository verification must use the scoped Actions token",
+    )
+    require(
+        has_scoped_actions_token("uses: gitleaks/gitleaks-action@v2"),
+        "CI secret scanning must use the scoped Actions token",
     )
     visual_container = ci_workflow.find(
         f"image: {visual_container_reference}"
