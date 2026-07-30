@@ -35,6 +35,14 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "0fd4762a01fd10fe6851df07ead1c5e4e7a42473:"
             "tests/test_phase4_gate_template_domain.py:generic-api-key:314"
         ),
+        (
+            "028d551d4e02ad5700b165c21409e14b647babf0:"
+            "scripts/verify-frappe-runtime.sh:generic-api-key:110"
+        ),
+        (
+            "028d551d4e02ad5700b165c21409e14b647babf0:"
+            "scripts/verify_project_controls_runtime.py:generic-api-key:2243"
+        ),
     }
 )
 
@@ -221,7 +229,7 @@ def validate_gitleaks_ignore(gitleaks_ignore: str) -> None:
     }
     require(
         fingerprints == REVIEWED_GITLEAKS_FINGERPRINTS,
-        "Gitleaks ignores must contain only the reviewed historical test fingerprint",
+        "Gitleaks ignores must contain only reviewed historical synthetic fingerprints",
     )
     require(
         len(fingerprints) == len(gitleaks_ignore.splitlines()),

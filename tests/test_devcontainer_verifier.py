@@ -78,18 +78,29 @@ class DevcontainerVerifierTest(unittest.TestCase):
         self.assertEqual(toolchain["VITE_FSEVENTS_EXPECTED_VERSION"], "2.3.3")
         self.assertEqual(base_reference[1], "1-3.11-bookworm")
 
-    def test_gitleaks_ignore_is_limited_to_the_reviewed_test_fingerprint(self):
+    def test_gitleaks_ignore_is_limited_to_reviewed_synthetic_fingerprints(self):
         reviewed = (
-            "0fd4762a01fd10fe6851df07ead1c5e4e7a42473:"
-            "tests/test_phase4_gate_template_domain.py:generic-api-key:314"
+            (
+                "0fd4762a01fd10fe6851df07ead1c5e4e7a42473:"
+                "tests/test_phase4_gate_template_domain.py:generic-api-key:314"
+            ),
+            (
+                "028d551d4e02ad5700b165c21409e14b647babf0:"
+                "scripts/verify-frappe-runtime.sh:generic-api-key:110"
+            ),
+            (
+                "028d551d4e02ad5700b165c21409e14b647babf0:"
+                "scripts/verify_project_controls_runtime.py:generic-api-key:2243"
+            ),
         )
-        validate_gitleaks_ignore(reviewed + "\n")
+        safe = "\n".join(reviewed) + "\n"
+        validate_gitleaks_ignore(safe)
         for unsafe in (
             "tests/test_phase4_gate_template_domain.py\n",
-            reviewed.replace(":314", ":*") + "\n",
-            reviewed + "\n" + reviewed.replace(":314", ":315") + "\n",
-            "# permit historical test data\n" + reviewed + "\n",
-            "\n" + reviewed + "\n",
+            safe.replace(":314", ":*"),
+            safe + reviewed[0].replace(":314", ":315") + "\n",
+            "# permit historical test data\n" + safe,
+            "\n" + safe,
         ):
             with self.subTest(unsafe=unsafe), self.assertRaises(VerificationError):
                 validate_gitleaks_ignore(unsafe)
