@@ -21,6 +21,7 @@ from npi_core.documents.frappe_validation import (
     document_domain_value,
     frappe_utc_datetime_text,
     json_array,
+    mark_projection_validation_substage,
     require_exact_parent,
     require_document_command_write,
     tenant_text,
@@ -55,9 +56,18 @@ class NPIControlledDocument(Document):
         require_document_command_write()
 
     def before_save(self) -> None:
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD"
+        )
         require_document_command_write()
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION"
+        )
 
     def before_validate(self) -> None:
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_INPUT"
+        )
         self.global_id = canonical_uuid(self.global_id, _("Global ID"))
         self.tenant_id = tenant_text(self.tenant_id)
         self.project_global_id = canonical_uuid(
@@ -66,9 +76,15 @@ class NPIControlledDocument(Document):
         )
 
     def validate(self) -> None:
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_IMMUTABLE_IDENTITY"
+        )
         previous = self.get_doc_before_save()
         if previous is not None:
             assert_immutable_fields(self, previous, _IDENTITY_FIELDS)
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_POLICY_IDENTITY"
+        )
         require_exact_parent(
             "NPI Engineering Project",
             self.project_global_id,
@@ -118,6 +134,9 @@ class NPIControlledDocument(Document):
                 ),
                 ValidationError,
             )
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_DOMAIN_RECONSTRUCTION"
+        )
         domain = document_domain_value(
             lambda: ControlledDocument(
                 global_id=self.global_id,
@@ -164,7 +183,10 @@ class NPIControlledDocument(Document):
                     if self.current_lock_global_id
                     else None
                 ),
-            )
+            ),
+        )
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_IDENTITY"
         )
         self.global_id = str(domain.global_id)
         self.tenant_id = domain.tenant_id
@@ -177,6 +199,9 @@ class NPIControlledDocument(Document):
         self.document_type_key = domain.document_type_key
         self.title = domain.title
         self.confidentiality_key = domain.confidentiality_key
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_VERSION"
+        )
         if previous is None:
             if (
                 domain.version != 1
@@ -199,8 +224,17 @@ class NPIControlledDocument(Document):
                 ValidationError,
             )
         if previous is not None:
+            mark_projection_validation_substage(
+                "DOCUMENT_CHECKOUT_PROJECTION_REVISION"
+            )
             _validate_revision_projection(self, previous)
+            mark_projection_validation_substage(
+                "DOCUMENT_CHECKOUT_PROJECTION_LOCK"
+            )
             _validate_lock_projection(self, previous)
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_PROJECTION"
+        )
         self.current_revision_global_id = (
             str(domain.current_revision_id) if domain.current_revision_id else None
         )
@@ -228,6 +262,11 @@ class NPIControlledDocument(Document):
         self.created_at = frappe_utc_datetime_text(
             self.created_at,
             _("Created At"),
+        )
+
+    def on_update(self) -> None:
+        mark_projection_validation_substage(
+            "DOCUMENT_CHECKOUT_PROJECTION_POST_SAVE_HOOK"
         )
 
     def on_trash(self) -> None:

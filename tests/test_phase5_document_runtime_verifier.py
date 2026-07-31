@@ -258,8 +258,9 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             str(raised.exception),
             (
                 "Document workspace returned HTTP 500 "
-                "[exc_type=ValidationError; "
-                "diagnostic_code=UNEXPECTED_BFF_EXCEPTION]"
+                "[diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
+                "exc_type=ValidationError; "
+                f"trace_id={trace_id}]"
             ),
         )
         for forbidden in (
@@ -267,6 +268,49 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "password",
             "controlled-fixture-password",
             "WrongTraceError",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, str(raised.exception))
+
+    def test_document_workspace_emits_no_body_diagnostic_without_safe_record(
+        self,
+    ) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        result = module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={
+                "exc_type": "ValidationError",
+                "message": "raw validation text",
+                "request": {
+                    "password": "controlled-fixture-password",
+                },
+            },
+            request_id=module.fixture_request_id(module.DOCUMENT_CHECK_OUT_KEY),
+            trace_id=trace_id,
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            with (
+                patch.object(module, "BENCH_PATH", bench_path),
+                self.assertRaises(RuntimeError) as raised,
+            ):
+                module.validate_document_workspace(
+                    result,
+                    project_id=module.fixture_id("project"),
+                    expected_document_id=module.fixture_id("document"),
+                )
+        self.assertEqual(
+            str(raised.exception),
+            "Document workspace returned HTTP 500",
+        )
+        for forbidden in (
+            "ValidationError",
+            "raw validation text",
+            "password",
+            "controlled-fixture-password",
+            trace_id,
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, str(raised.exception))
@@ -353,8 +397,9 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             detail,
             (
-                " [exc_type=ValidationError; "
-                f"diagnostic_code={stage_code}]"
+                f" [diagnostic_code={stage_code}; "
+                "exc_type=ValidationError; "
+                f"trace_id={trace_id}]"
             ),
         )
         for forbidden in (
@@ -363,6 +408,101 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "UnsafeError",
             "UnhashableCodeError",
             "server detail",
+            "password",
+            "controlled-fixture-password",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, detail)
+
+    def test_projection_validation_substage_is_closed_and_preferred(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_INPUT",
+            "DOCUMENT_CHECKOUT_PROJECTION_IMMUTABLE_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_POLICY_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_DOMAIN_RECONSTRUCTION",
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_VERSION",
+            "DOCUMENT_CHECKOUT_PROJECTION_REVISION",
+            "DOCUMENT_CHECKOUT_PROJECTION_LOCK",
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_PROJECTION",
+            "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD",
+            "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION",
+            "DOCUMENT_CHECKOUT_PROJECTION_POST_SAVE_HOOK",
+            "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE",
+        }
+        self.assertEqual(
+            module._PROJECTION_VALIDATION_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        substage_code = "DOCUMENT_CHECKOUT_PROJECTION_LOCK"
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                "\n".join(
+                    (
+                        json.dumps(
+                            {
+                                "code": substage_code,
+                                "exceptionType": "ValidationError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+                                "exceptionType": "ValidationError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNEXPECTED_BFF_EXCEPTION",
+                                "exceptionType": "ValidationError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                    )
+                ),
+                encoding="utf-8",
+            )
+            result = module.HttpResult(
+                status=500,
+                headers=Mock(),
+                body={
+                    "message": "raw validation detail must not be emitted",
+                    "request": {
+                        "password": "controlled-fixture-password",
+                    },
+                },
+                request_id=module.fixture_request_id(
+                    module.DOCUMENT_CHECK_OUT_KEY
+                ),
+                trace_id=trace_id,
+            )
+            with patch.object(module, "BENCH_PATH", bench_path):
+                detail = module.sanitized_http_failure(result)
+        self.assertEqual(
+            detail,
+            (
+                f" [diagnostic_code={substage_code}; "
+                "exc_type=ValidationError; "
+                f"trace_id={trace_id}]"
+            ),
+        )
+        for forbidden in (
+            "raw validation detail",
             "password",
             "controlled-fixture-password",
         ):

@@ -22,6 +22,28 @@ _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
 _TENANT_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _ACTOR_PATTERN = re.compile(r"^[^\s\x00-\x1f\x7f]{1,254}$")
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
+_PROJECTION_VALIDATION_DIAGNOSTIC_FLAG = (
+    "npi_document_projection_validation_diagnostic"
+)
+PROJECTION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_INPUT",
+        "DOCUMENT_CHECKOUT_PROJECTION_IMMUTABLE_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_POLICY_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_DOMAIN_RECONSTRUCTION",
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_VERSION",
+        "DOCUMENT_CHECKOUT_PROJECTION_REVISION",
+        "DOCUMENT_CHECKOUT_PROJECTION_LOCK",
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_PROJECTION",
+        "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD",
+        "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION",
+        "DOCUMENT_CHECKOUT_PROJECTION_POST_SAVE_HOOK",
+        "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE",
+    }
+)
 _T = TypeVar("_T")
 
 
@@ -55,6 +77,107 @@ def document_command_write() -> Iterator[None]:
 def document_policy_write() -> Iterator[None]:
     with _flag_scope(DOCUMENT_POLICY_FLAG):
         yield
+
+
+@contextmanager
+def document_projection_validation_diagnostics(trace_id: str) -> Iterator[None]:
+    """Enable one exact, sanitized checkout projection diagnostic scope."""
+
+    enabled = _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+    state = {
+        "trace_id": trace_id,
+        "substage": None,
+        "recorded": False,
+    }
+    flags = frappe.flags
+    missing = object()
+    previous = getattr(flags, _PROJECTION_VALIDATION_DIAGNOSTIC_FLAG, missing)
+    setattr(
+        flags,
+        _PROJECTION_VALIDATION_DIAGNOSTIC_FLAG,
+        state if enabled else None,
+    )
+    try:
+        yield
+    finally:
+        if previous is missing:
+            try:
+                delattr(flags, _PROJECTION_VALIDATION_DIAGNOSTIC_FLAG)
+            except AttributeError:
+                pass
+        else:
+            setattr(
+                flags,
+                _PROJECTION_VALIDATION_DIAGNOSTIC_FLAG,
+                previous,
+            )
+
+
+def mark_projection_validation_substage(code: str) -> None:
+    """Mark one closed validation substage without changing save behavior."""
+
+    state = _projection_validation_diagnostic_state()
+    if state is not None and code in PROJECTION_VALIDATION_DIAGNOSTIC_CODES:
+        state["substage"] = code
+
+
+def record_projection_validation_fallback(error: Exception) -> None:
+    """Classify failures outside custom hooks without changing save behavior."""
+
+    state = _projection_validation_diagnostic_state()
+    if state is None or state.get("recorded") is True:
+        return
+    candidate = state.get("substage")
+    code = (
+        str(candidate)
+        if candidate in PROJECTION_VALIDATION_DIAGNOSTIC_CODES
+        else "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE"
+    )
+    _record_projection_validation_failure(code, error, state)
+
+
+def _projection_validation_diagnostic_state() -> dict[str, object] | None:
+    state = getattr(
+        frappe.flags,
+        _PROJECTION_VALIDATION_DIAGNOSTIC_FLAG,
+        None,
+    )
+    if (
+        not isinstance(state, dict)
+        or set(state) != {"trace_id", "substage", "recorded"}
+        or not isinstance(state.get("trace_id"), str)
+        or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+    ):
+        return None
+    return state
+
+
+def _record_projection_validation_failure(
+    code: str,
+    error: Exception,
+    state: dict[str, object],
+) -> None:
+    if (
+        code not in PROJECTION_VALIDATION_DIAGNOSTIC_CODES
+        or state.get("recorded") is True
+    ):
+        return
+    exception_type = type(error).__name__
+    if _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None:
+        return
+    state["recorded"] = True
+    try:
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI Document projection validation failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        # Diagnostics must never replace the original validation failure.
+        pass
 
 
 @contextmanager

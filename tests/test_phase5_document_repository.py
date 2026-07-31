@@ -586,6 +586,16 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
             checkout_source.count("_record_checkout_stage_failure("),
             len(self.repository._CHECKOUT_STAGE_DIAGNOSTIC_CODES),
         )
+        self.assertEqual(
+            checkout_source.count(
+                "document_projection_validation_diagnostics(self.trace_id)"
+            ),
+            1,
+        )
+        self.assertEqual(
+            checkout_source.count("record_projection_validation_fallback(error)"),
+            1,
+        )
 
     def test_repository_uses_public_frappe_apis_and_never_commits_content(self) -> None:
         source = SOURCE.read_text(encoding="utf-8")

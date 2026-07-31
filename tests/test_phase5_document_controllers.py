@@ -10,6 +10,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID, uuid5
 
 
@@ -789,6 +790,99 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         stale.before_validate()
         with self.assertRaises(self.PermissionError):
             stale.validate()
+
+    def test_projection_validation_diagnostics_are_closed_and_sanitized(
+        self,
+    ) -> None:
+        expected_codes = {
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_INPUT",
+            "DOCUMENT_CHECKOUT_PROJECTION_IMMUTABLE_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_POLICY_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_DOMAIN_RECONSTRUCTION",
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_IDENTITY",
+            "DOCUMENT_CHECKOUT_PROJECTION_VERSION",
+            "DOCUMENT_CHECKOUT_PROJECTION_REVISION",
+            "DOCUMENT_CHECKOUT_PROJECTION_LOCK",
+            "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_PROJECTION",
+            "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD",
+            "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION",
+            "DOCUMENT_CHECKOUT_PROJECTION_POST_SAVE_HOOK",
+            "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE",
+        }
+        self.assertEqual(
+            self.validation.PROJECTION_VALIDATION_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        error = self.ValidationError("password=controlled-fixture-password")
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            with self.validation.document_projection_validation_diagnostics(
+                trace_id
+            ):
+                self.validation.mark_projection_validation_substage(
+                    "DOCUMENT_CHECKOUT_PROJECTION_LOCK"
+                )
+                self.validation.record_projection_validation_fallback(error)
+            record.assert_called_once_with(
+                code="DOCUMENT_CHECKOUT_PROJECTION_LOCK",
+                title="NPI Document projection validation failed",
+                exception_type="ValidationError",
+                trace_id=trace_id,
+            )
+            self.assertNotIn(
+                "controlled-fixture-password",
+                repr(record.call_args),
+            )
+            record.reset_mock()
+            unsafe_type = type("Unsafe Type", (Exception,), {})
+            with self.validation.document_projection_validation_diagnostics(
+                trace_id
+            ):
+                self.validation.mark_projection_validation_substage(
+                    "DOCUMENT_CHECKOUT_PROJECTION_LOCK"
+                )
+                self.validation.record_projection_validation_fallback(
+                    unsafe_type("private exception text")
+                )
+            record.assert_not_called()
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_document_projection_validation_diagnostic",
+            )
+        )
+
+    def test_projection_validation_fallback_is_exact_and_secondary(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        error = self.ValidationError("request payload must stay private")
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            with self.validation.document_projection_validation_diagnostics(
+                trace_id
+            ):
+                self.validation.mark_projection_validation_substage(
+                    "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD"
+                )
+                self.validation.mark_projection_validation_substage(
+                    "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION"
+                )
+                self.validation.record_projection_validation_fallback(error)
+                self.validation.record_projection_validation_fallback(error)
+            record.assert_called_once_with(
+                code="DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION",
+                title="NPI Document projection validation failed",
+                exception_type="ValidationError",
+                trace_id=trace_id,
+            )
+
+            record.reset_mock()
+            record.side_effect = RuntimeError("synthetic diagnostic failure")
+            with self.validation.document_projection_validation_diagnostics(
+                trace_id
+            ):
+                self.validation.mark_projection_validation_substage(
+                    "DOCUMENT_CHECKOUT_PROJECTION_VERSION"
+                )
+                self.validation.record_projection_validation_fallback(error)
 
     def test_revision_and_file_association_are_append_only_exact_snapshots(
         self,

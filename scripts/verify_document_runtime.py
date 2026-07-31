@@ -74,6 +74,23 @@ _CHECKOUT_STAGE_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
     }
 )
+_PROJECTION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_INPUT",
+        "DOCUMENT_CHECKOUT_PROJECTION_IMMUTABLE_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_POLICY_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_DOMAIN_RECONSTRUCTION",
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_IDENTITY",
+        "DOCUMENT_CHECKOUT_PROJECTION_VERSION",
+        "DOCUMENT_CHECKOUT_PROJECTION_REVISION",
+        "DOCUMENT_CHECKOUT_PROJECTION_LOCK",
+        "DOCUMENT_CHECKOUT_PROJECTION_NORMALIZE_PROJECTION",
+        "DOCUMENT_CHECKOUT_PROJECTION_COMMAND_GUARD",
+        "DOCUMENT_CHECKOUT_PROJECTION_FRAPPE_STANDARD_VALIDATION",
+        "DOCUMENT_CHECKOUT_PROJECTION_POST_SAVE_HOOK",
+        "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE",
+    }
+)
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -178,10 +195,11 @@ def sanitized_http_failure(result: HttpResult) -> str:
 
     log_diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
     if log_diagnostic is not None:
-        diagnostic_type, diagnostic_code = log_diagnostic
+        diagnostic_type, diagnostic_code, diagnostic_trace_id = log_diagnostic
         return (
-            f" [exc_type={diagnostic_type}; "
-            f"diagnostic_code={diagnostic_code}]"
+            f" [diagnostic_code={diagnostic_code}; "
+            f"exc_type={diagnostic_type}; "
+            f"trace_id={diagnostic_trace_id}]"
         )
     details: list[str] = []
     exc_type = result.body.get("exc_type")
@@ -198,7 +216,7 @@ def sanitized_http_failure(result: HttpResult) -> str:
 
 def _sanitized_bff_log_diagnostic(
     trace_id: str | None,
-) -> tuple[str, str] | None:
+) -> tuple[str, str, str] | None:
     """Read only the existing safe BFF diagnostic record for this exact trace."""
 
     if (
@@ -215,7 +233,8 @@ def _sanitized_bff_log_diagnostic(
         BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
     )
     decoder = json.JSONDecoder()
-    generic_diagnostic: tuple[str, str] | None = None
+    stage_diagnostic: tuple[str, str, str] | None = None
+    generic_diagnostic: tuple[str, str, str] | None = None
     for candidate in candidates:
         try:
             if candidate.is_symlink() or not candidate.is_file():
@@ -256,15 +275,27 @@ def _sanitized_bff_log_diagnostic(
                     diagnostic_code = record.get("code")
                     if (
                         isinstance(diagnostic_code, str)
-                        and diagnostic_code in _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+                        and diagnostic_code
+                        in _PROJECTION_VALIDATION_DIAGNOSTIC_CODES
                     ):
-                        return diagnostic_type, diagnostic_code
+                        return diagnostic_type, diagnostic_code, trace_id
+                    if (
+                        isinstance(diagnostic_code, str)
+                        and diagnostic_code in _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+                        and stage_diagnostic is None
+                    ):
+                        stage_diagnostic = (
+                            diagnostic_type,
+                            diagnostic_code,
+                            trace_id,
+                        )
                     if diagnostic_code == _UNEXPECTED_BFF_DIAGNOSTIC_CODE:
                         generic_diagnostic = (
                             diagnostic_type,
                             _UNEXPECTED_BFF_DIAGNOSTIC_CODE,
+                            trace_id,
                         )
-    return generic_diagnostic
+    return stage_diagnostic or generic_diagnostic
 
 
 def _sanitized_server_message(body: dict[str, Any]) -> str | None:
@@ -693,11 +724,20 @@ def validate_document_workspace(
     project_id: str,
     expected_document_id: str | None,
 ) -> dict[str, Any]:
-    require_http_status(
-        result,
-        {200, 201},
-        "Document workspace",
-    )
+    if result.status not in {200, 201}:
+        diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
+        detail = ""
+        if diagnostic is not None:
+            diagnostic_type, diagnostic_code, diagnostic_trace_id = diagnostic
+            detail = (
+                f" [diagnostic_code={diagnostic_code}; "
+                f"exc_type={diagnostic_type}; "
+                f"trace_id={diagnostic_trace_id}]"
+            )
+        require(
+            False,
+            f"Document workspace returned HTTP {result.status}{detail}",
+        )
     require(
         result.body.get("project", {}).get("globalId") == project_id,
         "Document workspace Project identity drifted",

@@ -51,7 +51,11 @@ from npi_core.documents.domain import (
     release_document_lock,
     sha256_json,
 )
-from npi_core.documents.frappe_validation import DOCUMENT_COMMAND_FLAG
+from npi_core.documents.frappe_validation import (
+    DOCUMENT_COMMAND_FLAG,
+    document_projection_validation_diagnostics,
+    record_projection_validation_fallback,
+)
 from npi_core.foundation.audit import create_audit_event
 from npi_core.foundation.errors import (
     CursorSigningUnavailable,
@@ -444,7 +448,12 @@ class FrappeDocumentRepository:
                 raise
             try:
                 _apply_document_projection(document, acquisition.document)
-                document.save()
+                with document_projection_validation_diagnostics(self.trace_id):
+                    try:
+                        document.save()
+                    except Exception as error:
+                        record_projection_validation_fallback(error)
+                        raise
             except Exception as error:
                 _record_checkout_stage_failure(
                     "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
