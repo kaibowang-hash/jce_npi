@@ -58,7 +58,43 @@ DOCUMENT_DOCTYPES = (
     "NPI Document Command Idempotency",
     "NPI Document Share Grant",
 )
-PDF_CONTENT = b"%PDF-1.7\n% NPI One synthetic runtime document\n"
+
+
+def build_synthetic_pdf() -> bytes:
+    """Build one deterministic, structurally valid, JavaScript-free PDF page."""
+
+    content = bytearray(b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n")
+    objects = (
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        (
+            b"<< /Type /Page /Parent 2 0 R "
+            b"/MediaBox [0 0 200 200] /Contents 4 0 R >>"
+        ),
+        b"<< /Length 0 >>\nstream\n\nendstream",
+    )
+    offsets = [0]
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(content))
+        content.extend(f"{number} 0 obj\n".encode("ascii"))
+        content.extend(body)
+        content.extend(b"\nendobj\n")
+
+    xref_offset = len(content)
+    content.extend(f"xref\n0 {len(offsets)}\n".encode("ascii"))
+    content.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        content.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    content.extend(
+        (
+            f"trailer\n<< /Size {len(offsets)} /Root 1 0 R >>\n"
+            f"startxref\n{xref_offset}\n%%EOF\n"
+        ).encode("ascii")
+    )
+    return bytes(content)
+
+
+PDF_CONTENT = build_synthetic_pdf()
 _DIAGNOSTIC_TEXT_LIMIT = 240
 _DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")

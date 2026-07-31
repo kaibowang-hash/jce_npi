@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -86,6 +87,35 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             r"^[a-f0-9-]{36}$",
         )
         self.assertTrue(headers["X-Trace-ID"].startswith("trace-"))
+
+    def test_runtime_pdf_fixture_is_structurally_complete_and_safe(self) -> None:
+        content = self.module.PDF_CONTENT
+        self.assertEqual(content, self.module.build_synthetic_pdf())
+        self.assertTrue(content.startswith(b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n"))
+        self.assertNotIn(b"/JS", content)
+        self.assertNotIn(b"/JavaScript", content)
+
+        startxref_match = re.search(
+            rb"startxref\n([0-9]+)\n%%EOF\n\Z",
+            content,
+        )
+        self.assertIsNotNone(startxref_match)
+        xref_offset = int(startxref_match.group(1))
+        self.assertEqual(content[xref_offset : xref_offset + 5], b"xref\n")
+
+        xref_match = re.search(
+            rb"xref\n0 5\n0000000000 65535 f \n"
+            rb"((?:[0-9]{10} 00000 n \n){4})",
+            content,
+        )
+        self.assertIsNotNone(xref_match)
+        object_offsets = re.findall(rb"([0-9]{10}) 00000 n", xref_match.group(1))
+        self.assertEqual(len(object_offsets), 4)
+        for number, encoded_offset in enumerate(object_offsets, start=1):
+            offset = int(encoded_offset)
+            self.assertTrue(
+                content[offset:].startswith(f"{number} 0 obj\n".encode())
+            )
 
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
