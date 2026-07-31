@@ -1,5 +1,25 @@
 # Last Run
 
+## P5-02 requirement/domain audit PASS; metadata foundation active — 2026-07-31T07:19:37Z
+
+- Restored exact branch/head and confirmed only the pre-existing protected
+  workspace modifications remain unstaged.
+- Compared `FR-DS-002`, `FR-DS-005` and `FR-DS-010` with the retained P5-01
+  revision/file/lock/API/ownership/frontend boundaries.
+- Froze an additive design using a separate immutable release-policy version,
+  append-only review/confirmation/lifecycle history and one guarded
+  current-state projection. The P5-01 revision snapshot is never rewritten.
+- Froze exact policy-bound submit/review/release/supersede/obsolete authority,
+  live private-file/hash/scanner revalidation and the missing server-side
+  released Frappe File deletion guard.
+- Production roles, approval counts, delegation, regulated signature strength,
+  replacement/effectivity and scanner-provider choices remain unavailable
+  Class-B facts; no production policy is installed or inferred.
+- P5-02 status:
+  `IN_PROGRESS_DOMAIN — CONTROLLED_METADATA_FOUNDATION`.
+- Evidence:
+  `implementation/evidence/phase-5/p5-02-plan.md`.
+
 ## P5-01 controlled runtime and Level 2 PASS; P5-02 activated — 2026-07-31T07:00:05Z
 
 - Product checkpoint:
