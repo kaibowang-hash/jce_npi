@@ -396,14 +396,18 @@ def _load_exact_policy(
 
 
 def _validate_revision_projection(document: object, previous: object) -> None:
+    old_revision_id = previous.get("current_revision_global_id")
+    new_revision_id = document.get("current_revision_global_id")
+    if old_revision_id in (None, "") and new_revision_id in (None, ""):
+        return
     old = (
-        previous.get("current_revision_global_id"),
+        old_revision_id,
         previous.get("current_revision_major"),
         previous.get("current_revision_minor"),
         previous.get("current_revision_snapshot_hash"),
     )
     new = (
-        document.get("current_revision_global_id"),
+        new_revision_id,
         document.get("current_revision_major"),
         document.get("current_revision_minor"),
         document.get("current_revision_snapshot_hash"),

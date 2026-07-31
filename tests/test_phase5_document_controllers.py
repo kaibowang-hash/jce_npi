@@ -791,6 +791,24 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         with self.assertRaises(self.PermissionError):
             stale.validate()
 
+    def test_empty_revision_projection_accepts_frappe_int_zero_coercion(
+        self,
+    ) -> None:
+        value = self.controlled_document()
+        value.before_validate()
+        value.validate()
+        reloaded = clone(value)
+        reloaded._previous = clone(value)
+        reloaded._previous.current_revision_major = 0
+        reloaded._previous.current_revision_minor = 0
+        reloaded.optimistic_version = 2
+        reloaded.before_validate()
+        reloaded.validate()
+        self.assertIsNone(reloaded.current_revision_global_id)
+        self.assertIsNone(reloaded.current_revision_major)
+        self.assertIsNone(reloaded.current_revision_minor)
+        self.assertIsNone(reloaded.current_revision_snapshot_hash)
+
     def test_projection_validation_diagnostics_are_closed_and_sanitized(
         self,
     ) -> None:
