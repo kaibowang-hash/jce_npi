@@ -184,6 +184,24 @@ class MockDocumentRepository:
     def create_revision(self, *args: object, **kwargs: Any):
         return self._command("revision", args, kwargs)
 
+    def submit_review(self, *args: object, **kwargs: Any):
+        return self._command("submit_review", args, kwargs)
+
+    def resubmit_review(self, *args: object, **kwargs: Any):
+        return self._command("resubmit_review", args, kwargs)
+
+    def confirm_review(self, *args: object, **kwargs: Any):
+        return self._command("confirm_review", args, kwargs)
+
+    def release_revision(self, *args: object, **kwargs: Any):
+        return self._command("release_revision", args, kwargs)
+
+    def supersede_revision(self, *args: object, **kwargs: Any):
+        return self._command("supersede_revision", args, kwargs)
+
+    def obsolete_revision(self, *args: object, **kwargs: Any):
+        return self._command("obsolete_revision", args, kwargs)
+
     def file_capability(self, *args: object, **kwargs: Any):
         self.calls.append(("capability", args, kwargs))
         return self._response()
@@ -268,6 +286,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
         self.frappe.conf = AttrDict(
             npi_tenant_id="TENANT-A",
             npi_p5_01_routes_disabled=False,
+            npi_p5_02_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -325,6 +344,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
             return self.repository
 
         self.api._repository_factory = repository_factory
+        self.api._release_repository_factory = repository_factory
         self.workspace = {
             "project": {"globalId": PROJECT_ID},
             "permissions": {"view": True},
@@ -648,6 +668,171 @@ class Phase5DocumentApiTest(unittest.TestCase):
             422,
             "VALIDATION_FAILED",
         )
+
+    def test_release_commands_use_transport_role_and_exact_confirmations(
+        self,
+    ) -> None:
+        submit_payload = {
+            "expectedDocumentVersion": 3,
+            "expectedLifecycleVersion": 0,
+            "policyGlobalId": POLICY_ID,
+            "policyVersion": 1,
+            "policySnapshotHash": "a" * 64,
+            "confirmationIntent": "submit_review",
+            "confirmed": True,
+        }
+        for user, status, code in (
+            ("Guest", 401, "AUTHENTICATION_REQUIRED"),
+            ("Administrator", 403, "PERMISSION_DENIED"),
+            ("external@example.invalid", 403, "PERMISSION_DENIED"),
+        ):
+            with self.subTest(user=user):
+                self.reset(user=user)
+                self.assert_problem(
+                    self.call(
+                        "npi_core.document_api.submit_document_review",
+                        self.api.submit_document_review,
+                        submit_payload,
+                    ),
+                    status,
+                    code,
+                )
+
+        self.reset(user="member@example.invalid")
+        self.assertEqual(
+            self.call(
+                "npi_core.document_api.submit_document_review",
+                self.api.submit_document_review,
+                submit_payload,
+            ),
+            self.workspace,
+        )
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "submit_review")
+        self.assertEqual(
+            args,
+            (UUID(PROJECT_ID), UUID(DOCUMENT_ID), UUID(REVISION_ID)),
+        )
+        self.assertEqual(values["expected_lifecycle_version"], 0)
+        self.assertEqual(values["confirmation_intent"], "submit_review")
+        self.assertIs(values["confirmed"], True)
+        self.assertEqual(self.frappe.local.response.http_status_code, 201)
+        self.assertTrue(
+            all(
+                call[2].get("administer") is False
+                for call in self.repository.calls
+                if call[0] == "authorize"
+            )
+        )
+
+        for field, value in (
+            ("confirmed", False),
+            ("confirmationIntent", "release_revision"),
+        ):
+            with self.subTest(field=field):
+                self.reset(user="member@example.invalid")
+                invalid = {**submit_payload, field: value}
+                problem = self.assert_problem(
+                    self.call(
+                        "npi_core.document_api.submit_document_review",
+                        self.api.submit_document_review,
+                        invalid,
+                    ),
+                    422,
+                    "VALIDATION_FAILED",
+                )
+                self.assertEqual(problem["fieldErrors"][0]["path"], field)
+                self.assertNotIn(
+                    "submit_review",
+                    [call[0] for call in self.repository.calls],
+                )
+
+    def test_release_command_payloads_are_closed_and_exact(self) -> None:
+        common = {
+            "expectedDocumentVersion": 3,
+            "expectedLifecycleVersion": 2,
+            "confirmed": True,
+        }
+        commands = (
+            (
+                self.api.resubmit_document_review,
+                "resubmit_review",
+                {
+                    **common,
+                    "policyGlobalId": POLICY_ID,
+                    "policyVersion": 1,
+                    "policySnapshotHash": "a" * 64,
+                    "priorRejectedCycleId": REVISION_ID,
+                    "confirmationIntent": "resubmit_review",
+                },
+            ),
+            (
+                self.api.confirm_document_review,
+                "confirm_review",
+                {
+                    **common,
+                    "decision": "approve",
+                    "confirmationIntent": "review_decision",
+                },
+            ),
+            (
+                self.api.release_document_revision,
+                "release_revision",
+                {
+                    **common,
+                    "confirmationIntent": "release_revision",
+                },
+            ),
+            (
+                self.api.supersede_document_revision,
+                "supersede_revision",
+                {
+                    **common,
+                    "replacementRevisionId": FILE_REVISION_ID,
+                    "expectedReplacementLifecycleVersion": 4,
+                    "reason": "Replaced by the effective controlled revision.",
+                    "confirmationIntent": "supersede_revision",
+                },
+            ),
+            (
+                self.api.obsolete_document_revision,
+                "obsolete_revision",
+                {
+                    **common,
+                    "reason": "No longer applicable.",
+                    "confirmationIntent": "obsolete_revision",
+                },
+            ),
+        )
+        for endpoint, operation, payload in commands:
+            with self.subTest(operation=operation):
+                self.reset(user="member@example.invalid")
+                result = self.call(
+                    f"npi_core.document_api.{endpoint.__name__}",
+                    endpoint,
+                    payload,
+                )
+                self.assertEqual(result, self.workspace)
+                self.assertEqual(self.repository.calls[-1][0], operation)
+                self.assertEqual(
+                    self.repository.calls[-1][1],
+                    (UUID(PROJECT_ID), UUID(DOCUMENT_ID), UUID(REVISION_ID)),
+                )
+
+                self.reset(user="member@example.invalid")
+                problem = self.assert_problem(
+                    self.call(
+                        f"npi_core.document_api.{endpoint.__name__}",
+                        endpoint,
+                        {**payload, "unexpected": True},
+                    ),
+                    422,
+                    "VALIDATION_FAILED",
+                )
+                self.assertEqual(
+                    problem["fieldErrors"][0]["path"],
+                    "unexpected",
+                )
 
     def test_content_commits_audit_before_binary_and_sets_safe_headers(self) -> None:
         self.frappe.local.response = RecordingResponse(self.frappe.db.events)
@@ -979,6 +1164,42 @@ class Phase5DocumentApiTest(unittest.TestCase):
                 f"/revisions/{REVISION_ID}/files/{FILE_REVISION_ID}:content",
                 "get_file_content",
             ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:submit-review",
+                "submit_document_review",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:review",
+                "confirm_document_review",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:resubmit-review",
+                "resubmit_document_review",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:release",
+                "release_document_revision",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:supersede",
+                "supersede_document_revision",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+                f"/revisions/{REVISION_ID}:obsolete",
+                "obsolete_document_revision",
+            ),
         )
         for method, path, function_name in routes:
             with self.subTest(method=method, path=path):
@@ -1020,6 +1241,62 @@ class Phase5DocumentApiTest(unittest.TestCase):
             "DOCUMENT_ROUTES_DISABLED",
         )
 
+    def test_release_route_switch_is_independent_and_parent_switch_wins(
+        self,
+    ) -> None:
+        release_path = (
+            f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+            f"/revisions/{REVISION_ID}:release"
+        )
+        retained_path = f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+        self.frappe.conf.npi_p5_02_routes_disabled = True
+
+        for path, expected in (
+            (release_path, "npi_core.bff.document_release_routes_disabled"),
+            (retained_path, "npi_core.document_api.get_document"),
+        ):
+            with self.subTest(path=path):
+                self.frappe.local.form_dict = AttrDict()
+                method = "POST" if path == release_path else "GET"
+                self.frappe.local.request = types.SimpleNamespace(
+                    path=path,
+                    method=method,
+                    files=FileMap(),
+                )
+                self.frappe.request = self.frappe.local.request
+                self.router.route_request()
+                self.assertEqual(self.frappe.local.form_dict.cmd, expected)
+
+        self.reset(user="member@example.invalid")
+        self.assert_problem(
+            self.call(
+                "npi_core.document_api.release_document_revision",
+                self.api.release_document_revision,
+                {
+                    "expectedDocumentVersion": 3,
+                    "expectedLifecycleVersion": 2,
+                    "confirmationIntent": "release_revision",
+                    "confirmed": True,
+                },
+            ),
+            503,
+            "DOCUMENT_RELEASE_ROUTES_DISABLED",
+        )
+
+        self.frappe.conf.npi_p5_01_routes_disabled = True
+        self.frappe.local.form_dict = AttrDict()
+        self.frappe.local.request = types.SimpleNamespace(
+            path=release_path,
+            method="POST",
+            files=FileMap(),
+        )
+        self.frappe.request = self.frappe.local.request
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.document_routes_disabled",
+        )
+
     def test_endpoint_methods_are_exact(self) -> None:
         expected = {
             self.api.get_documents: ("GET",),
@@ -1031,6 +1308,12 @@ class Phase5DocumentApiTest(unittest.TestCase):
             self.api.create_document_revision: ("POST",),
             self.api.get_file_capabilities: ("GET",),
             self.api.get_file_content: ("POST",),
+            self.api.submit_document_review: ("POST",),
+            self.api.resubmit_document_review: ("POST",),
+            self.api.confirm_document_review: ("POST",),
+            self.api.release_document_revision: ("POST",),
+            self.api.supersede_document_revision: ("POST",),
+            self.api.obsolete_document_revision: ("POST",),
         }
         for endpoint, methods in expected.items():
             self.assertTrue(endpoint.allow_guest)

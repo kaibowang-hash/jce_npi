@@ -8,6 +8,13 @@ export type DocumentLifecycleState =
   | "completed"
   | "cancelled";
 export type DocumentCapabilityState = "available" | "unavailable" | "blocked";
+export type DocumentReleaseLifecycleState =
+  | "draft"
+  | "in_review"
+  | "approved"
+  | "released"
+  | "superseded"
+  | "obsolete";
 export type DocumentRelationshipKind =
   | "project"
   | "project_reference"
@@ -39,8 +46,13 @@ export interface DocumentPermissionsViewModel {
   preview: boolean;
   download: boolean;
   share: false;
-  review: false;
-  release: false;
+  submitReview: boolean;
+  resubmitReview: boolean;
+  review: boolean;
+  approve: boolean;
+  release: boolean;
+  supersede: boolean;
+  obsolete: boolean;
 }
 
 export interface DocumentTypeOptionViewModel {
@@ -198,6 +210,142 @@ export interface DocumentLockEventViewModel {
   snapshotHash: string;
 }
 
+export interface DocumentReleasePolicyOptionViewModel {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+  key: string;
+  title: string;
+  requiredApprovalCount: number;
+  confirmationMethod: "authenticated_session_confirmation";
+}
+
+export interface DocumentReleaseCapabilitiesViewModel {
+  submitReview: boolean;
+  resubmitReview: boolean;
+  review: boolean;
+  approve: boolean;
+  release: boolean;
+  supersede: boolean;
+  obsolete: boolean;
+}
+
+export interface DocumentRevisionLifecycleViewModel {
+  state: DocumentReleaseLifecycleState;
+  version: number;
+  activeCycleId: string | null;
+  approvedCycleId: string | null;
+  approvedEventId: string | null;
+  releaseEventId: string | null;
+  releaseSnapshotHash: string | null;
+  replacementRevisionId: string | null;
+  replacementEffectiveDate: string | null;
+  terminalEventId: string | null;
+}
+
+export interface DocumentReviewFileEvidenceViewModel {
+  fileRevisionId: string;
+  associationId: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanState: "clean";
+  scanObservedAt: string;
+  uploadedByUserId: string;
+  uploadedAt: string;
+}
+
+export interface DocumentReviewerProgressViewModel {
+  slotKey: string;
+  userId: string;
+  state: "pending" | "approved" | "rejected";
+  confirmationId: string | null;
+}
+
+export interface DocumentReviewCycleViewModel {
+  globalId: string;
+  cycleNumber: number;
+  state: "active" | "approved" | "rejected" | "closed";
+  policy: DocumentPolicyReferenceViewModel;
+  evidenceSnapshotHash: string;
+  fileEvidence: readonly DocumentReviewFileEvidenceViewModel[];
+  reviewerAssignments: readonly DocumentReviewerProgressViewModel[];
+  requiredApprovalCount: number;
+  priorRejectedCycleId: string | null;
+  submittedByUserId: string;
+  submittedAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface DocumentReleaseConfirmationViewModel {
+  globalId: string;
+  cycleId: string;
+  type:
+    | "review_approve"
+    | "review_reject"
+    | "release"
+    | "supersede"
+    | "obsolete";
+  actorUserId: string;
+  authoritySlot: string;
+  confirmationMethod: "authenticated_session_confirmation";
+  confirmationIntent:
+    | "review_decision"
+    | "release_revision"
+    | "supersede_revision"
+    | "obsolete_revision";
+  reason: string | null;
+  confirmedAt: string;
+  requestId: string;
+  traceId: string;
+  evidenceHash: string;
+}
+
+export interface DocumentReleaseLifecycleEventViewModel {
+  globalId: string;
+  type:
+    | "submitted"
+    | "resubmitted"
+    | "review_approved"
+    | "review_rejected"
+    | "approved"
+    | "released"
+    | "superseded"
+    | "obsolete";
+  fromState: DocumentReleaseLifecycleState;
+  toState: DocumentReleaseLifecycleState;
+  fromVersion: number;
+  toVersion: number;
+  cycleId: string;
+  confirmationHashes: readonly string[];
+  replacementRevisionId: string | null;
+  replacementEffectiveDate: string | null;
+  actorUserId: string;
+  occurredAt: string;
+  requestId: string;
+  traceId: string;
+  eventHash: string;
+}
+
+export interface DocumentReleaseRevisionHistoryViewModel {
+  revisionId: string;
+  lifecycle: DocumentRevisionLifecycleViewModel;
+  capabilities: DocumentReleaseCapabilitiesViewModel;
+  cycles: readonly DocumentReviewCycleViewModel[];
+  confirmations: readonly DocumentReleaseConfirmationViewModel[];
+  events: readonly DocumentReleaseLifecycleEventViewModel[];
+}
+
+export interface DocumentReleaseWorkspaceViewModel {
+  available: boolean;
+  commandsEnabled: boolean;
+  reasonCode: "available" | "permission_unavailable" | "routes_disabled";
+  policies: readonly DocumentReleasePolicyOptionViewModel[];
+  revisions: readonly DocumentReleaseRevisionHistoryViewModel[];
+}
+
 export interface ControlledDocumentWorkspaceViewModel {
   project: DocumentProjectViewModel;
   permissions: DocumentPermissionsViewModel;
@@ -209,6 +357,29 @@ export interface ControlledDocumentWorkspaceViewModel {
     state: "unavailable";
     reasonCode: "external_access_policy_unavailable";
   }>;
+  releaseWorkspace: DocumentReleaseWorkspaceViewModel;
+}
+
+export interface DocumentReleaseTransitionViewModel {
+  projectId: string;
+  documentId: string;
+  documentOptimisticVersion: number;
+  revisionId: string;
+  state: DocumentReleaseLifecycleState;
+  lifecycleVersion: number;
+  reviewCycleId: string;
+  releasePolicy: DocumentPolicyReferenceViewModel;
+  event: Readonly<{
+    globalId: string;
+    type: DocumentReleaseLifecycleEventViewModel["type"];
+    snapshotHash: string;
+  }>;
+  confirmation: Readonly<{
+    globalId: string;
+    type: DocumentReleaseConfirmationViewModel["type"];
+    evidenceHash: string;
+  }> | null;
+  releaseSnapshotHash: string | null;
 }
 
 export interface DocumentFileCapabilityResultViewModel {
@@ -266,6 +437,49 @@ export interface CreateDocumentRevisionCommand {
   file: File;
 }
 
+interface DocumentReleaseCommandBase {
+  expectedDocumentVersion: number;
+  expectedLifecycleVersion: number;
+  confirmed: true;
+}
+
+interface DocumentReviewSubmissionCommand extends DocumentReleaseCommandBase {
+  policyGlobalId: string;
+  policyVersion: number;
+  policySnapshotHash: string;
+}
+
+export interface SubmitDocumentReviewCommand extends DocumentReviewSubmissionCommand {
+  confirmationIntent: "submit_review";
+}
+
+export interface ResubmitDocumentReviewCommand extends DocumentReviewSubmissionCommand {
+  priorRejectedCycleId: string;
+  confirmationIntent: "resubmit_review";
+}
+
+export interface ConfirmDocumentReviewCommand extends DocumentReleaseCommandBase {
+  decision: "approve" | "reject";
+  reason?: string | undefined;
+  confirmationIntent: "review_decision";
+}
+
+export interface ReleaseDocumentRevisionCommand extends DocumentReleaseCommandBase {
+  confirmationIntent: "release_revision";
+}
+
+export interface SupersedeDocumentRevisionCommand extends DocumentReleaseCommandBase {
+  replacementRevisionId: string;
+  expectedReplacementLifecycleVersion: number;
+  reason: string;
+  confirmationIntent: "supersede_revision";
+}
+
+export interface ObsoleteDocumentRevisionCommand extends DocumentReleaseCommandBase {
+  reason: string;
+  confirmationIntent: "obsolete_revision";
+}
+
 export interface DocumentListQuery {
   limit?: number | undefined;
   cursor?: string | undefined;
@@ -320,6 +534,48 @@ export interface DocumentDataSource {
     command: CreateDocumentRevisionCommand,
     context: DocumentCommandContext,
   ): Promise<ControlledDocumentWorkspaceViewModel>;
+  submitReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: SubmitDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
+  resubmitReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ResubmitDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
+  confirmReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ConfirmDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
+  releaseRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ReleaseDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
+  supersedeRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: SupersedeDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
+  obsoleteRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ObsoleteDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel>;
   loadCapabilities(
     projectId: string,
     documentId: string,
@@ -352,6 +608,7 @@ const keyPattern = /^[a-z][a-z0-9_.-]{0,63}$/u;
 const prefixPattern = /^[A-Z0-9][A-Z0-9-]{0,15}$/u;
 const cursorPattern = /^[A-Za-z0-9._~:-]{1,500}$/u;
 const idempotencyPattern = /^[A-Za-z0-9._:-]{8,128}$/u;
+const tracePattern = /^[A-Za-z0-9._:-]{8,128}$/u;
 const mimePattern =
   /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+(?:;[a-z0-9!#$&^_.+\-=" ]+)?$/u;
 const timestampPattern =
@@ -367,6 +624,37 @@ const lifecycleStates = new Set<DocumentLifecycleState>([
   "on_hold",
   "completed",
   "cancelled",
+]);
+const releaseLifecycleStates = new Set<DocumentReleaseLifecycleState>([
+  "draft",
+  "in_review",
+  "approved",
+  "released",
+  "superseded",
+  "obsolete",
+]);
+const releaseEventTypes = new Set<
+  DocumentReleaseLifecycleEventViewModel["type"]
+>([
+  "submitted",
+  "resubmitted",
+  "review_approved",
+  "review_rejected",
+  "approved",
+  "released",
+  "superseded",
+  "obsolete",
+]);
+const confirmationTypes = new Set<DocumentReleaseConfirmationViewModel["type"]>(
+  ["review_approve", "review_reject", "release", "supersede", "obsolete"],
+);
+const confirmationIntents = new Set<
+  DocumentReleaseConfirmationViewModel["confirmationIntent"]
+>([
+  "review_decision",
+  "release_revision",
+  "supersede_revision",
+  "obsolete_revision",
 ]);
 const relationshipKinds = new Set<DocumentRelationshipKind>([
   "project",
@@ -533,8 +821,13 @@ function isDocumentPermissions(
       "preview",
       "download",
       "share",
+      "submitReview",
+      "resubmitReview",
       "review",
+      "approve",
       "release",
+      "supersede",
+      "obsolete",
     ])
   )
     return false;
@@ -547,8 +840,13 @@ function isDocumentPermissions(
     typeof value.preview === "boolean" &&
     typeof value.download === "boolean" &&
     value.share === false &&
-    value.review === false &&
-    value.release === false
+    typeof value.submitReview === "boolean" &&
+    typeof value.resubmitReview === "boolean" &&
+    typeof value.review === "boolean" &&
+    typeof value.approve === "boolean" &&
+    typeof value.release === "boolean" &&
+    typeof value.supersede === "boolean" &&
+    typeof value.obsolete === "boolean"
   );
 }
 
@@ -988,6 +1286,446 @@ function isDocumentLockEvent(
   );
 }
 
+function isReleasePolicyOption(
+  value: unknown,
+): value is DocumentReleasePolicyOptionViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "version",
+      "snapshotHash",
+      "key",
+      "title",
+      "requiredApprovalCount",
+      "confirmationMethod",
+    ]) &&
+    isUuid(value.globalId) &&
+    isPositiveInteger(value.version) &&
+    isString(value.snapshotHash, 64, 64, hashPattern) &&
+    isString(value.key, 1, 64, keyPattern) &&
+    isString(value.title, 1, 140) &&
+    isPositiveInteger(value.requiredApprovalCount) &&
+    value.requiredApprovalCount <= 32 &&
+    value.confirmationMethod === "authenticated_session_confirmation"
+  );
+}
+
+function isReleaseCapabilities(
+  value: unknown,
+): value is DocumentReleaseCapabilitiesViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "submitReview",
+      "resubmitReview",
+      "review",
+      "approve",
+      "release",
+      "supersede",
+      "obsolete",
+    ]) &&
+    Object.values(value).every((candidate) => typeof candidate === "boolean") &&
+    value.review === value.approve
+  );
+}
+
+function isRevisionLifecycle(
+  value: unknown,
+): value is DocumentRevisionLifecycleViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "state",
+      "version",
+      "activeCycleId",
+      "approvedCycleId",
+      "approvedEventId",
+      "releaseEventId",
+      "releaseSnapshotHash",
+      "replacementRevisionId",
+      "replacementEffectiveDate",
+      "terminalEventId",
+    ]) &&
+    typeof value.state === "string" &&
+    releaseLifecycleStates.has(value.state as DocumentReleaseLifecycleState) &&
+    isNonnegativeInteger(value.version) &&
+    (value.activeCycleId === null || isUuid(value.activeCycleId)) &&
+    (value.approvedCycleId === null || isUuid(value.approvedCycleId)) &&
+    (value.approvedEventId === null || isUuid(value.approvedEventId)) &&
+    (value.releaseEventId === null || isUuid(value.releaseEventId)) &&
+    (value.releaseSnapshotHash === null ||
+      isString(value.releaseSnapshotHash, 64, 64, hashPattern)) &&
+    (value.replacementRevisionId === null ||
+      isUuid(value.replacementRevisionId)) &&
+    (value.replacementEffectiveDate === null ||
+      isDate(value.replacementEffectiveDate)) &&
+    (value.terminalEventId === null || isUuid(value.terminalEventId)) &&
+    (value.version === 0
+      ? value.state === "draft" &&
+        value.activeCycleId === null &&
+        value.approvedCycleId === null &&
+        value.approvedEventId === null &&
+        value.releaseEventId === null &&
+        value.releaseSnapshotHash === null &&
+        value.replacementRevisionId === null &&
+        value.replacementEffectiveDate === null &&
+        value.terminalEventId === null
+      : true)
+  );
+}
+
+function isReviewFileEvidence(
+  value: unknown,
+): value is DocumentReviewFileEvidenceViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "fileRevisionId",
+      "associationId",
+      "mimeType",
+      "sizeBytes",
+      "sha256",
+      "scanState",
+      "scanObservedAt",
+      "uploadedByUserId",
+      "uploadedAt",
+    ]) &&
+    isUuid(value.fileRevisionId) &&
+    isUuid(value.associationId) &&
+    isString(value.mimeType, 3, 255, mimePattern) &&
+    isNonnegativeInteger(value.sizeBytes) &&
+    value.sizeBytes <= 67_108_864 &&
+    isString(value.sha256, 64, 64, hashPattern) &&
+    value.scanState === "clean" &&
+    isTimestamp(value.scanObservedAt) &&
+    isUserId(value.uploadedByUserId) &&
+    isTimestamp(value.uploadedAt)
+  );
+}
+
+function isReviewerProgress(
+  value: unknown,
+): value is DocumentReviewerProgressViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["slotKey", "userId", "state", "confirmationId"]) &&
+    isString(value.slotKey, 1, 64, keyPattern) &&
+    isUserId(value.userId) &&
+    ["pending", "approved", "rejected"].includes(String(value.state)) &&
+    (value.confirmationId === null || isUuid(value.confirmationId)) &&
+    (value.state === "pending"
+      ? value.confirmationId === null
+      : value.confirmationId !== null)
+  );
+}
+
+function isReviewCycle(value: unknown): value is DocumentReviewCycleViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "globalId",
+      "cycleNumber",
+      "state",
+      "policy",
+      "evidenceSnapshotHash",
+      "fileEvidence",
+      "reviewerAssignments",
+      "requiredApprovalCount",
+      "priorRejectedCycleId",
+      "submittedByUserId",
+      "submittedAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    !Array.isArray(value.fileEvidence) ||
+    value.fileEvidence.length < 1 ||
+    value.fileEvidence.length > 64 ||
+    !value.fileEvidence.every(isReviewFileEvidence) ||
+    !hasUniqueValues(value.fileEvidence, (file) => file.fileRevisionId) ||
+    !Array.isArray(value.reviewerAssignments) ||
+    value.reviewerAssignments.length < 1 ||
+    value.reviewerAssignments.length > 32 ||
+    !value.reviewerAssignments.every(isReviewerProgress) ||
+    !hasUniqueValues(
+      value.reviewerAssignments,
+      (assignment) => assignment.slotKey,
+    )
+  )
+    return false;
+  return (
+    isUuid(value.globalId) &&
+    isPositiveInteger(value.cycleNumber) &&
+    ["active", "approved", "rejected", "closed"].includes(
+      String(value.state),
+    ) &&
+    isPolicyReference(value.policy) &&
+    isString(value.evidenceSnapshotHash, 64, 64, hashPattern) &&
+    isPositiveInteger(value.requiredApprovalCount) &&
+    value.requiredApprovalCount <= value.reviewerAssignments.length &&
+    (value.priorRejectedCycleId === null ||
+      isUuid(value.priorRejectedCycleId)) &&
+    isUserId(value.submittedByUserId) &&
+    isTimestamp(value.submittedAt) &&
+    isUuid(value.requestId) &&
+    isString(value.traceId, 8, 128, tracePattern) &&
+    isString(value.snapshotHash, 64, 64, hashPattern)
+  );
+}
+
+function isReleaseConfirmation(
+  value: unknown,
+): value is DocumentReleaseConfirmationViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "cycleId",
+      "type",
+      "actorUserId",
+      "authoritySlot",
+      "confirmationMethod",
+      "confirmationIntent",
+      "reason",
+      "confirmedAt",
+      "requestId",
+      "traceId",
+      "evidenceHash",
+    ]) &&
+    isUuid(value.globalId) &&
+    isUuid(value.cycleId) &&
+    typeof value.type === "string" &&
+    confirmationTypes.has(
+      value.type as DocumentReleaseConfirmationViewModel["type"],
+    ) &&
+    isUserId(value.actorUserId) &&
+    isString(value.authoritySlot, 1, 64, keyPattern) &&
+    value.confirmationMethod === "authenticated_session_confirmation" &&
+    typeof value.confirmationIntent === "string" &&
+    confirmationIntents.has(
+      value.confirmationIntent as DocumentReleaseConfirmationViewModel["confirmationIntent"],
+    ) &&
+    (value.reason === null || isString(value.reason, 1, 2_000)) &&
+    isTimestamp(value.confirmedAt) &&
+    isUuid(value.requestId) &&
+    isString(value.traceId, 8, 128, tracePattern) &&
+    isString(value.evidenceHash, 64, 64, hashPattern)
+  );
+}
+
+function isReleaseLifecycleEvent(
+  value: unknown,
+): value is DocumentReleaseLifecycleEventViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "type",
+      "fromState",
+      "toState",
+      "fromVersion",
+      "toVersion",
+      "cycleId",
+      "confirmationHashes",
+      "replacementRevisionId",
+      "replacementEffectiveDate",
+      "actorUserId",
+      "occurredAt",
+      "requestId",
+      "traceId",
+      "eventHash",
+    ]) &&
+    isUuid(value.globalId) &&
+    typeof value.type === "string" &&
+    releaseEventTypes.has(
+      value.type as DocumentReleaseLifecycleEventViewModel["type"],
+    ) &&
+    typeof value.fromState === "string" &&
+    releaseLifecycleStates.has(
+      value.fromState as DocumentReleaseLifecycleState,
+    ) &&
+    typeof value.toState === "string" &&
+    releaseLifecycleStates.has(
+      value.toState as DocumentReleaseLifecycleState,
+    ) &&
+    isNonnegativeInteger(value.fromVersion) &&
+    isPositiveInteger(value.toVersion) &&
+    value.toVersion === value.fromVersion + 1 &&
+    isUuid(value.cycleId) &&
+    isBoundedUniqueStringArray(
+      value.confirmationHashes,
+      0,
+      32,
+      (candidate): candidate is string =>
+        isString(candidate, 64, 64, hashPattern),
+    ) &&
+    (value.replacementRevisionId === null ||
+      isUuid(value.replacementRevisionId)) &&
+    (value.replacementEffectiveDate === null ||
+      isDate(value.replacementEffectiveDate)) &&
+    isUserId(value.actorUserId) &&
+    isTimestamp(value.occurredAt) &&
+    isUuid(value.requestId) &&
+    isString(value.traceId, 8, 128, tracePattern) &&
+    isString(value.eventHash, 64, 64, hashPattern)
+  );
+}
+
+function isReleaseRevisionHistory(
+  value: unknown,
+): value is DocumentReleaseRevisionHistoryViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "revisionId",
+      "lifecycle",
+      "capabilities",
+      "cycles",
+      "confirmations",
+      "events",
+    ]) ||
+    !isUuid(value.revisionId) ||
+    !isRevisionLifecycle(value.lifecycle) ||
+    !isReleaseCapabilities(value.capabilities) ||
+    !Array.isArray(value.cycles) ||
+    value.cycles.length > 64 ||
+    !value.cycles.every(isReviewCycle) ||
+    !hasUniqueValues(value.cycles, (cycle) => cycle.globalId) ||
+    !Array.isArray(value.confirmations) ||
+    value.confirmations.length > 64 ||
+    !value.confirmations.every(isReleaseConfirmation) ||
+    !hasUniqueValues(
+      value.confirmations,
+      (confirmation) => confirmation.globalId,
+    ) ||
+    !Array.isArray(value.events) ||
+    value.events.length > 64 ||
+    !value.events.every(isReleaseLifecycleEvent) ||
+    !hasUniqueValues(value.events, (event) => event.globalId)
+  )
+    return false;
+  const events =
+    value.events as readonly DocumentReleaseLifecycleEventViewModel[];
+  const cycleIds = new Set(value.cycles.map((cycle) => cycle.globalId));
+  return (
+    value.confirmations.every((confirmation) =>
+      cycleIds.has(confirmation.cycleId),
+    ) &&
+    events.every((event) => cycleIds.has(event.cycleId)) &&
+    events.every(
+      (event, index) =>
+        index === 0 || event.fromVersion === events[index - 1]?.toVersion,
+    ) &&
+    (events.length === 0
+      ? value.lifecycle.version === 0
+      : events.at(-1)?.toVersion === value.lifecycle.version)
+  );
+}
+
+function isReleaseWorkspace(
+  value: unknown,
+): value is DocumentReleaseWorkspaceViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "available",
+      "commandsEnabled",
+      "reasonCode",
+      "policies",
+      "revisions",
+    ]) ||
+    typeof value.available !== "boolean" ||
+    typeof value.commandsEnabled !== "boolean" ||
+    !["available", "permission_unavailable", "routes_disabled"].includes(
+      String(value.reasonCode),
+    ) ||
+    !Array.isArray(value.policies) ||
+    value.policies.length > 64 ||
+    !value.policies.every(isReleasePolicyOption) ||
+    !hasUniqueValues(
+      value.policies,
+      (policy) => `${policy.globalId}:${String(policy.version)}`,
+    ) ||
+    !Array.isArray(value.revisions) ||
+    value.revisions.length > 256 ||
+    !value.revisions.every(isReleaseRevisionHistory) ||
+    !hasUniqueValues(value.revisions, (revision) => revision.revisionId)
+  )
+    return false;
+  return (
+    (value.reasonCode === "available" &&
+      value.available &&
+      value.commandsEnabled) ||
+    (value.reasonCode === "routes_disabled" &&
+      value.available &&
+      !value.commandsEnabled) ||
+    (value.reasonCode === "permission_unavailable" &&
+      !value.available &&
+      !value.commandsEnabled &&
+      value.policies.length === 0 &&
+      value.revisions.length === 0)
+  );
+}
+
+export function isDocumentReleaseTransitionResponse(
+  value: unknown,
+): value is DocumentReleaseTransitionViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "projectId",
+      "documentId",
+      "documentOptimisticVersion",
+      "revisionId",
+      "state",
+      "lifecycleVersion",
+      "reviewCycleId",
+      "releasePolicy",
+      "event",
+      "confirmation",
+      "releaseSnapshotHash",
+    ]) ||
+    !isRecord(value.event) ||
+    !hasExactKeys(value.event, ["globalId", "type", "snapshotHash"]) ||
+    (value.confirmation !== null &&
+      (!isRecord(value.confirmation) ||
+        !hasExactKeys(value.confirmation, [
+          "globalId",
+          "type",
+          "evidenceHash",
+        ])))
+  )
+    return false;
+  const confirmation = value.confirmation;
+  return (
+    isUuid(value.projectId) &&
+    isUuid(value.documentId) &&
+    isPositiveInteger(value.documentOptimisticVersion) &&
+    isUuid(value.revisionId) &&
+    typeof value.state === "string" &&
+    releaseLifecycleStates.has(value.state as DocumentReleaseLifecycleState) &&
+    isPositiveInteger(value.lifecycleVersion) &&
+    isUuid(value.reviewCycleId) &&
+    isPolicyReference(value.releasePolicy) &&
+    isUuid(value.event.globalId) &&
+    typeof value.event.type === "string" &&
+    releaseEventTypes.has(
+      value.event.type as DocumentReleaseLifecycleEventViewModel["type"],
+    ) &&
+    isString(value.event.snapshotHash, 64, 64, hashPattern) &&
+    (confirmation === null ||
+      (isUuid(confirmation.globalId) &&
+        typeof confirmation.type === "string" &&
+        confirmationTypes.has(
+          confirmation.type as DocumentReleaseConfirmationViewModel["type"],
+        ) &&
+        isString(confirmation.evidenceHash, 64, 64, hashPattern))) &&
+    (value.releaseSnapshotHash === null ||
+      isString(value.releaseSnapshotHash, 64, 64, hashPattern))
+  );
+}
+
 export function isControlledDocumentPageResponse(
   value: unknown,
 ): value is ControlledDocumentPageViewModel {
@@ -1028,6 +1766,7 @@ export function isControlledDocumentWorkspaceResponse(
       "relationships",
       "lockHistory",
       "externalRetrieval",
+      "releaseWorkspace",
     ]) ||
     !isDocumentProject(value.project) ||
     !isDocumentPermissions(value.permissions) ||
@@ -1047,9 +1786,11 @@ export function isControlledDocumentWorkspaceResponse(
     value.lockHistory.length > 256 ||
     !value.lockHistory.every(isDocumentLockEvent) ||
     !hasUniqueValues(value.lockHistory, (event) => event.globalId) ||
-    !isExternalRetrievalCapability(value.externalRetrieval)
+    !isExternalRetrievalCapability(value.externalRetrieval) ||
+    !isReleaseWorkspace(value.releaseWorkspace)
   )
     return false;
+  const releaseWorkspace = value.releaseWorkspace;
   const currentRevision = value.document.currentRevision;
   if (
     currentRevision !== null &&
@@ -1060,6 +1801,17 @@ export function isControlledDocumentWorkspaceResponse(
         revision.minor === currentRevision.minor &&
         revision.snapshotHash === currentRevision.snapshotHash,
     )
+  )
+    return false;
+  if (
+    releaseWorkspace.available &&
+    (releaseWorkspace.revisions.length !== value.revisions.length ||
+      value.revisions.some(
+        (revision) =>
+          !releaseWorkspace.revisions.some(
+            (release) => release.revisionId === revision.globalId,
+          ),
+      ))
   )
     return false;
   const currentLock = value.document.currentLock;
@@ -1426,6 +2178,173 @@ export class LiveDocumentDataSource implements DocumentDataSource {
     );
   }
 
+  async submitReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: SubmitDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    if (
+      !isUuid(command.policyGlobalId) ||
+      !isPositiveInteger(command.policyVersion) ||
+      !isString(command.policySnapshotHash, 64, 64, hashPattern)
+    )
+      throw requestNotReady();
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":submit-review",
+      command,
+      context,
+      (value) =>
+        value.state === "in_review" &&
+        value.event.type === "submitted" &&
+        value.confirmation === null &&
+        value.releaseSnapshotHash === null,
+    );
+  }
+
+  async resubmitReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ResubmitDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    if (
+      !isUuid(command.policyGlobalId) ||
+      !isPositiveInteger(command.policyVersion) ||
+      !isString(command.policySnapshotHash, 64, 64, hashPattern) ||
+      !isUuid(command.priorRejectedCycleId)
+    )
+      throw requestNotReady();
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":resubmit-review",
+      command,
+      context,
+      (value) =>
+        value.state === "in_review" &&
+        value.event.type === "resubmitted" &&
+        value.confirmation === null &&
+        value.releaseSnapshotHash === null,
+    );
+  }
+
+  async confirmReview(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ConfirmDocumentReviewCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    const reason = command.reason?.trim();
+    if (
+      !["approve", "reject"].includes(command.decision) ||
+      (command.decision === "reject" && !isString(reason, 1, 2_000)) ||
+      (reason !== undefined && !isString(reason, 1, 2_000))
+    )
+      throw requestNotReady();
+    const payload =
+      reason === undefined ? { ...command } : { ...command, reason };
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":review",
+      payload,
+      context,
+      (value) =>
+        value.confirmation?.type ===
+          (command.decision === "approve"
+            ? "review_approve"
+            : "review_reject") &&
+        (command.decision === "reject"
+          ? value.state === "draft" && value.event.type === "review_rejected"
+          : ["in_review", "approved"].includes(value.state) &&
+            ["review_approved", "approved"].includes(value.event.type)),
+    );
+  }
+
+  async releaseRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ReleaseDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":release",
+      command,
+      context,
+      (value) =>
+        value.state === "released" &&
+        value.event.type === "released" &&
+        value.confirmation?.type === "release" &&
+        value.releaseSnapshotHash !== null,
+    );
+  }
+
+  async supersedeRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: SupersedeDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    const reason = command.reason.trim();
+    if (
+      !isUuid(command.replacementRevisionId) ||
+      !isPositiveInteger(command.expectedReplacementLifecycleVersion) ||
+      !isString(reason, 1, 2_000)
+    )
+      throw requestNotReady();
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":supersede",
+      { ...command, reason },
+      context,
+      (value) =>
+        value.state === "superseded" &&
+        value.event.type === "superseded" &&
+        value.confirmation?.type === "supersede" &&
+        value.releaseSnapshotHash !== null,
+    );
+  }
+
+  async obsoleteRevision(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    command: ObsoleteDocumentRevisionCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    const reason = command.reason.trim();
+    if (!isString(reason, 1, 2_000)) throw requestNotReady();
+    return this.releaseCommand(
+      projectId,
+      documentId,
+      revisionId,
+      ":obsolete",
+      { ...command, reason },
+      context,
+      (value) =>
+        value.state === "obsolete" &&
+        value.event.type === "obsolete" &&
+        value.confirmation?.type === "obsolete" &&
+        value.releaseSnapshotHash !== null,
+    );
+  }
+
   async loadCapabilities(
     projectId: string,
     documentId: string,
@@ -1545,6 +2464,48 @@ export class LiveDocumentDataSource implements DocumentDataSource {
         value.project.globalId === projectId &&
         value.document.globalId === documentId &&
         value.document.optimisticVersion === expectedDocumentVersion + 1 &&
+        check(value),
+    );
+  }
+
+  private async releaseCommand(
+    projectId: string,
+    documentId: string,
+    revisionId: string,
+    suffix:
+      | ":submit-review"
+      | ":resubmit-review"
+      | ":review"
+      | ":release"
+      | ":supersede"
+      | ":obsolete",
+    body: object,
+    context: DocumentCommandContext,
+    check: (value: DocumentReleaseTransitionViewModel) => boolean,
+  ): Promise<DocumentReleaseTransitionViewModel> {
+    if (
+      !isUuid(projectId) ||
+      !isUuid(documentId) ||
+      !isUuid(revisionId) ||
+      !isRecord(body) ||
+      !isPositiveInteger(body.expectedDocumentVersion) ||
+      !isNonnegativeInteger(body.expectedLifecycleVersion) ||
+      body.confirmed !== true
+    )
+      throw requestNotReady();
+    const expectedDocumentVersion = body.expectedDocumentVersion;
+    const expectedLifecycleVersion = body.expectedLifecycleVersion;
+    return this.command(
+      `/projects/${projectId}/documents/${documentId}/revisions/${revisionId}${suffix}`,
+      body,
+      context,
+      (value): value is DocumentReleaseTransitionViewModel =>
+        isDocumentReleaseTransitionResponse(value) &&
+        value.projectId === projectId &&
+        value.documentId === documentId &&
+        value.revisionId === revisionId &&
+        value.documentOptimisticVersion === expectedDocumentVersion &&
+        value.lifecycleVersion === expectedLifecycleVersion + 1 &&
         check(value),
     );
   }

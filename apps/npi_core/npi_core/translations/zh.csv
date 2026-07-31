@@ -3008,3 +3008,48 @@ NPI Document Review Cycle,NPI 文件评审周期
 Review Evidence,评审证据
 NPI Document Revision Lifecycle,NPI 文件修订版生命周期
 Current Lifecycle State,当前生命周期状态
+Select the supported confirmation intent.,请选择受支持的确认意图。
+Obsolete,作废
+Submit for review,提交评审
+Resubmit for review,重新提交评审
+Approve review,批准评审
+Reject review,拒绝评审
+Release revision,发布修订版
+Supersede revision,取代修订版
+Mark obsolete,标记为作废
+Confirm the exact document review or release action.,请确认精确的文件评审或发布操作。
+Enter the required controlled reason.,请输入所需的受控原因。
+Select an exact published release policy.,请选择精确的已发布发布策略。
+The rejected review cycle is not available.,被拒绝的评审周期不可用。
+Select an exact later released revision.,请选择精确的后续已发布修订版。
+Lifecycle state,生命周期状态
+Lifecycle version,生命周期版本
+Review and release,评审与发布
+Document review and release details are not available for this workspace.,此工作区无法查看文件评审和发布详情。
+Review and release commands are temporarily disabled. Immutable history remains available.,评审和发布命令暂时停用。不可变历史记录仍可查看。
+Release snapshot,发布快照
+Confirmation required,需要确认
+Release policy,发布策略
+Replacement revision,替代修订版
+Controlled reason,受控原因
+I confirm this exact action using my authenticated session.,我确认使用已认证会话执行此精确操作。
+"The confirmation, exact input hashes, actor, time, request ID and trace ID will be retained.","系统将保留确认记录、精确输入哈希、操作人、时间、请求编号和追踪编号。"
+Reviewer progress,评审人进度
+Reviewer slot,评审人位置
+Assigned user,已指派用户
+No review cycle has been submitted for this revision.,此修订版尚未提交评审周期。
+Review cycles,评审周期
+No immutable review cycles.,没有不可变评审周期。
+Cycle,周期
+Required approvals,所需批准数
+Submitted by,提交人
+Submitted,已提交
+Closed,已关闭
+Electronic confirmations,电子确认
+No immutable confirmations.,没有不可变确认记录。
+Review approved,评审已批准
+Review rejected,评审已拒绝
+Lifecycle events,生命周期事件
+No immutable lifecycle events.,没有不可变生命周期事件。
+Transition,状态转换
+Resubmitted,已重新提交

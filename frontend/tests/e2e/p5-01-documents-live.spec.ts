@@ -8,8 +8,11 @@ import type {
 import type { ProblemDetails } from "../../src/api/http";
 import { translate } from "../../src/i18n/runtime";
 import {
+  controlledDocumentInReviewWorkspaceFixture,
   controlledDocumentPageFixture,
+  controlledDocumentReleasedWorkspaceFixture,
   controlledDocumentWorkspaceFixture,
+  documentReleaseTransitionFixture,
 } from "../support/document-fixture";
 import { projectWorkCockpitFixture } from "../support/project-work-fixture";
 import {
@@ -34,6 +37,7 @@ interface DocumentApiOptions {
   readonly listProblem?: ProblemDetails;
   readonly noPolicy?: boolean;
   readonly readOnly?: boolean;
+  readonly releaseState?: "draft" | "released";
 }
 
 interface ObservedRequest {
@@ -43,6 +47,7 @@ interface ObservedRequest {
   readonly idempotencyKey: string | undefined;
   readonly method: string;
   readonly path: string;
+  readonly payload: unknown;
   readonly requestId: string;
 }
 
@@ -74,9 +79,12 @@ function documentPage(
 }
 
 function documentWorkspace(
-  options: Pick<DocumentApiOptions, "readOnly"> = {},
+  options: Pick<DocumentApiOptions, "readOnly" | "releaseState"> = {},
 ): ControlledDocumentWorkspaceViewModel {
-  const fixture = controlledDocumentWorkspaceFixture();
+  const fixture =
+    options.releaseState === "released"
+      ? controlledDocumentReleasedWorkspaceFixture()
+      : controlledDocumentWorkspaceFixture();
   return {
     ...fixture,
     project: {
@@ -139,6 +147,9 @@ async function fulfillJson(
       "Cache-Control": "private, no-store",
       "Content-Type":
         status >= 400 ? "application/problem+json" : "application/json",
+      ...(route.request().headers()["idempotency-key"]
+        ? { "Idempotency-Replayed": "false" }
+        : {}),
       "X-Request-ID": requestIdentity(route),
       "X-Trace-ID": options.traceId ?? "trace-p5-01-document-browser",
     },
@@ -174,7 +185,7 @@ async function installDocumentApi(
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
   const pageFixture = documentPage(options);
-  const workspaceFixture = documentWorkspace(options);
+  let workspaceFixture = documentWorkspace(options);
   await page.route(projectApiEndpoint, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -187,6 +198,7 @@ async function installDocumentApi(
       idempotencyKey: headers["idempotency-key"],
       method: request.method(),
       path: url.pathname,
+      payload: request.method() === "POST" ? request.postDataJSON() : null,
       requestId,
     });
     if (url.pathname.endsWith("/cockpit")) {
@@ -257,6 +269,41 @@ async function installDocumentApi(
         },
         status: 200,
       });
+      return;
+    }
+    if (url.pathname.endsWith(":submit-review")) {
+      expect(request.method()).toBe("POST");
+      expect(headers["x-frappe-csrf-token"]).toBe(csrfToken);
+      expect(headers["idempotency-key"]).toMatch(/^document-release-/u);
+      const payload = request.postDataJSON() as Record<string, unknown>;
+      expect(payload).toEqual({
+        confirmationIntent: "submit_review",
+        confirmed: true,
+        expectedDocumentVersion: 3,
+        expectedLifecycleVersion: 0,
+        policyGlobalId:
+          controlledDocumentWorkspaceFixture().releaseWorkspace.policies[0]
+            ?.globalId,
+        policySnapshotHash: "a".repeat(64),
+        policyVersion: 1,
+      });
+      expect(payload).not.toHaveProperty("actorUserId");
+      expect(payload).not.toHaveProperty("scanState");
+      expect(payload).not.toHaveProperty("sha256");
+      workspaceFixture = {
+        ...documentWorkspace(),
+        ...controlledDocumentInReviewWorkspaceFixture(),
+        project: workspaceFixture.project,
+        relationships: workspaceFixture.relationships,
+      };
+      await fulfillJson(
+        route,
+        documentReleaseTransitionFixture({
+          projectId,
+          documentId: workspaceFixture.document.globalId,
+        }),
+        { status: 201, traceId: "trace-p5-02-submit-review" },
+      );
       return;
     }
     if (url.pathname.includes("/documents/")) {
@@ -412,6 +459,66 @@ test.describe("P5-01 live controlled-document workspace", () => {
       method: "POST",
     });
     expect(content?.idempotencyKey).toMatch(/^inline-/u);
+  });
+
+  test("requires an explicit authenticated confirmation and refreshes immutable review truth", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installDocumentApi(page);
+    await openDocuments(page, "en");
+    await expectDocumentLoaded(page, "en");
+
+    const start = page.getByRole("button", {
+      name: "Submit for review",
+      exact: true,
+    });
+    await expect(start).toBeEnabled();
+    await start.click();
+    const confirmation = page.getByRole("checkbox", {
+      name: "I confirm this exact action using my authenticated session.",
+    });
+    const submit = page.getByRole("button", {
+      name: "Submit for review",
+      exact: true,
+    });
+    await expect(submit).toBeDisabled();
+    await confirmation.check();
+    await expect(submit).toBeEnabled();
+    await submit.click();
+
+    await expect(
+      page.getByRole("heading", { name: "Reviewer progress" }),
+    ).toBeVisible();
+    await expect(page.getByText("reviewer@example.invalid")).toBeVisible();
+    await expect(
+      page.getByText("In review", { exact: true }).first(),
+    ).toBeVisible();
+    await expectNoPrivateUrl(page);
+    await expectNoDocumentOverflow(page);
+    await expectAxeClean(page);
+
+    const command = observed.find((request) =>
+      request.path.endsWith(":submit-review"),
+    );
+    expect(command).toMatchObject({
+      accept: "application/json, application/problem+json",
+      contentType: "application/json",
+      csrfToken,
+      method: "POST",
+    });
+    expect(command?.idempotencyKey).toMatch(/^document-release-/u);
+    expect(command?.payload).toEqual({
+      confirmationIntent: "submit_review",
+      confirmed: true,
+      expectedDocumentVersion: 3,
+      expectedLifecycleVersion: 0,
+      policyGlobalId:
+        controlledDocumentWorkspaceFixture().releaseWorkspace.policies[0]
+          ?.globalId,
+      policySnapshotHash: "a".repeat(64),
+      policyVersion: 1,
+    });
   });
 
   test("uses the real App dirty guard for Project-tab navigation", async ({
@@ -578,6 +685,78 @@ test.describe("@visual P5-01 controlled-document evidence", () => {
       await page.evaluate(() => {
         globalThis.scrollTo(0, 0);
       });
+      await expect(page).toHaveScreenshot(`${visual.name}.png`, {
+        fullPage: false,
+      });
+    });
+  }
+});
+
+const releaseVisualCases = [
+  {
+    height: 768,
+    locale: "en",
+    name: "p5-02-document-release-en-1366x768-100",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 900,
+    locale: "zh",
+    name: "p5-02-document-release-zh-1440x900-125",
+    width: 1440,
+    zoom: 1.25,
+  },
+  {
+    height: 1080,
+    locale: "zh-TW",
+    name: "p5-02-document-release-zh-TW-1920x1080-150",
+    width: 1920,
+    zoom: 1.5,
+  },
+] as const;
+
+test.describe("@visual P5-02 review and release evidence", () => {
+  for (const visual of releaseVisualCases) {
+    test(visual.name, async ({ page }) => {
+      await installSession(page, visual.locale);
+      await installDocumentApi(page, { releaseState: "released" });
+      await page.setViewportSize(
+        effectiveViewport(
+          { height: visual.height, width: visual.width },
+          visual.zoom,
+        ),
+      );
+      await page.emulateMedia({
+        colorScheme: "light",
+        reducedMotion: "reduce",
+      });
+      await openDocuments(page, visual.locale);
+      await expectDocumentLoaded(page, visual.locale);
+      const releasePanel = page.getByRole("heading", {
+        name: translate(visual.locale, "Review and release"),
+      });
+      await expect(releasePanel).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: translate(visual.locale, "Electronic confirmations"),
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: translate(visual.locale, "Lifecycle events"),
+        }),
+      ).toBeVisible();
+      await expectNoMixedLanguage(page, visual.locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+      await page.addStyleTag({
+        content:
+          "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+      });
+      await page.evaluate(async () => document.fonts.ready);
+      await releasePanel.scrollIntoViewIfNeeded();
       await expect(page).toHaveScreenshot(`${visual.name}.png`, {
         fullPage: false,
       });

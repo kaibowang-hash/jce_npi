@@ -17,6 +17,7 @@ import {
   controlledDocumentWorkspaceFixture,
   documentFileCapabilityFixture,
   documentProjectId,
+  documentReleaseTransitionFixture,
 } from "../support/document-fixture";
 import { renderWithLocale } from "../support/render";
 
@@ -61,7 +62,13 @@ function createDataSource(
       Promise.resolve(new Blob(["%PDF"], { type: "application/pdf" })),
     loadDocument: () => Promise.resolve(workspace),
     loadDocuments: () => Promise.resolve(controlledDocumentPageFixture()),
+    obsoleteRevision: () => Promise.reject(new Error("not configured")),
+    confirmReview: () => Promise.reject(new Error("not configured")),
+    releaseRevision: () => Promise.reject(new Error("not configured")),
     recoverLock: () => Promise.resolve(workspace),
+    resubmitReview: () => Promise.reject(new Error("not configured")),
+    submitReview: () => Promise.reject(new Error("not configured")),
+    supersedeRevision: () => Promise.reject(new Error("not configured")),
     ...overrides,
   };
 }
@@ -97,7 +104,7 @@ describe("Project controlled document workspace", () => {
     expect(
       await screen.findByRole("heading", { name: "Design and documents" }),
     ).toBeVisible();
-    expect(screen.getByText("DRW-000071")).toBeVisible();
+    expect(screen.getAllByText("DRW-000071")[0]).toBeVisible();
     expect(screen.getAllByText("Synthetic cavity drawing")[0]).toBeVisible();
     expect(
       await screen.findByRole("heading", {
@@ -252,6 +259,65 @@ describe("Project controlled document workspace", () => {
     expect(
       await screen.findByRole("button", { name: "Check out" }),
     ).toBeEnabled();
+  });
+
+  it("requires explicit authenticated confirmation before submitting review", async () => {
+    enableCommandSession();
+    const user = userEvent.setup();
+    const workspace = controlledDocumentWorkspaceFixture();
+    const submitReview = vi.fn<DocumentDataSource["submitReview"]>(() =>
+      Promise.resolve(documentReleaseTransitionFixture()),
+    );
+    const loadDocument = vi.fn<DocumentDataSource["loadDocument"]>(() =>
+      Promise.resolve(workspace),
+    );
+    renderWorkspace(createDataSource({ loadDocument, submitReview }));
+
+    const start = await screen.findByRole("button", {
+      name: "Submit for review",
+    });
+    await waitFor(() => {
+      expect(start).toBeEnabled();
+    });
+    await user.click(start);
+
+    expect(
+      screen.getByText(
+        "I confirm this exact action using my authenticated session.",
+      ),
+    ).toBeVisible();
+    const submit = screen.getByRole("button", { name: "Submit for review" });
+    expect(submit).toBeDisabled();
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: "I confirm this exact action using my authenticated session.",
+      }),
+    );
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(submitReview).toHaveBeenCalledOnce();
+      expect(loadDocument).toHaveBeenCalledTimes(2);
+    });
+    const call = submitReview.mock.calls[0];
+    if (!call) throw new Error("The review submission was not captured.");
+    expect(call.slice(0, 3)).toEqual([
+      documentProjectId,
+      workspace.document.globalId,
+      workspace.revisions[0]?.globalId,
+    ]);
+    expect(call[3]).toEqual({
+      expectedDocumentVersion: workspace.document.optimisticVersion,
+      expectedLifecycleVersion: 0,
+      policyGlobalId: workspace.releaseWorkspace.policies[0]?.globalId,
+      policyVersion: workspace.releaseWorkspace.policies[0]?.version,
+      policySnapshotHash: workspace.releaseWorkspace.policies[0]?.snapshotHash,
+      confirmationIntent: "submit_review",
+      confirmed: true,
+    });
+    expect(call[4].csrfToken).toBe(csrfToken);
+    expect(call[4].idempotencyKey).toMatch(/^document-release-/u);
   });
 
   it("shows an honest empty state and disables creation without a policy", async () => {

@@ -4,6 +4,7 @@ import {
   DocumentRequestCancelledError,
   isControlledDocumentPageResponse,
   isControlledDocumentWorkspaceResponse,
+  isDocumentReleaseTransitionResponse,
   isDocumentFileCapabilityResponse,
   LiveDocumentDataSource,
   type ControlledDocumentWorkspaceViewModel,
@@ -15,8 +16,10 @@ import {
   controlledDocumentWorkspaceFixture,
   documentFileCapabilityFixture,
   documentProjectId,
+  documentReleaseTransitionFixture,
   documentRevisionId,
   fileRevisionId,
+  releasePolicyId,
 } from "../support/document-fixture";
 
 function commandContext(signal = new AbortController().signal) {
@@ -57,6 +60,9 @@ describe("controlled document response validation", () => {
     ).toBe(true);
     expect(
       isDocumentFileCapabilityResponse(documentFileCapabilityFixture()),
+    ).toBe(true);
+    expect(
+      isDocumentReleaseTransitionResponse(documentReleaseTransitionFixture()),
     ).toBe(true);
   });
 
@@ -392,6 +398,209 @@ describe("live controlled document data source", () => {
       size: file.size,
       type: file.type,
     });
+  });
+
+  it("submits the six closed release commands with explicit confirmation", async () => {
+    const hash = "a".repeat(64);
+    const confirmation = (
+      type: "review_approve" | "release" | "supersede" | "obsolete",
+    ) => ({
+      globalId: "71000000-0000-4000-8000-000000000015",
+      type,
+      evidenceHash: hash,
+    });
+    const cases = [
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.submitReview(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 0,
+              policyGlobalId: releasePolicyId,
+              policyVersion: 1,
+              policySnapshotHash: hash,
+              confirmationIntent: "submit_review",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":submit-review",
+        response: documentReleaseTransitionFixture(),
+      },
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.resubmitReview(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 2,
+              policyGlobalId: releasePolicyId,
+              policyVersion: 1,
+              policySnapshotHash: hash,
+              priorRejectedCycleId: "71000000-0000-4000-8000-000000000016",
+              confirmationIntent: "resubmit_review",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":resubmit-review",
+        response: documentReleaseTransitionFixture({
+          lifecycleVersion: 3,
+          event: {
+            globalId: "71000000-0000-4000-8000-000000000014",
+            type: "resubmitted",
+            snapshotHash: hash,
+          },
+        }),
+      },
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.confirmReview(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 2,
+              decision: "approve",
+              confirmationIntent: "review_decision",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":review",
+        response: documentReleaseTransitionFixture({
+          state: "approved",
+          lifecycleVersion: 3,
+          event: {
+            globalId: "71000000-0000-4000-8000-000000000014",
+            type: "approved",
+            snapshotHash: hash,
+          },
+          confirmation: confirmation("review_approve"),
+        }),
+      },
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.releaseRevision(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 3,
+              confirmationIntent: "release_revision",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":release",
+        response: documentReleaseTransitionFixture({
+          state: "released",
+          lifecycleVersion: 4,
+          event: {
+            globalId: "71000000-0000-4000-8000-000000000014",
+            type: "released",
+            snapshotHash: hash,
+          },
+          confirmation: confirmation("release"),
+          releaseSnapshotHash: hash,
+        }),
+      },
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.supersedeRevision(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 4,
+              replacementRevisionId: "71000000-0000-4000-8000-000000000017",
+              expectedReplacementLifecycleVersion: 2,
+              reason: "Exact released successor.",
+              confirmationIntent: "supersede_revision",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":supersede",
+        response: documentReleaseTransitionFixture({
+          state: "superseded",
+          lifecycleVersion: 5,
+          event: {
+            globalId: "71000000-0000-4000-8000-000000000014",
+            type: "superseded",
+            snapshotHash: hash,
+          },
+          confirmation: confirmation("supersede"),
+          releaseSnapshotHash: hash,
+        }),
+      },
+      {
+        invoke: (source: LiveDocumentDataSource) =>
+          source.obsoleteRevision(
+            documentProjectId,
+            controlledDocumentId,
+            documentRevisionId,
+            {
+              expectedDocumentVersion: 3,
+              expectedLifecycleVersion: 4,
+              reason: "Controlled content is no longer applicable.",
+              confirmationIntent: "obsolete_revision",
+              confirmed: true,
+            },
+            commandContext(),
+          ),
+        suffix: ":obsolete",
+        response: documentReleaseTransitionFixture({
+          state: "obsolete",
+          lifecycleVersion: 5,
+          event: {
+            globalId: "71000000-0000-4000-8000-000000000014",
+            type: "obsolete",
+            snapshotHash: hash,
+          },
+          confirmation: confirmation("obsolete"),
+          releaseSnapshotHash: hash,
+        }),
+      },
+    ] as const;
+
+    for (const value of cases) {
+      const http = new NpiHttpClient();
+      const request = vi
+        .spyOn(http, "request")
+        .mockImplementation(
+          <T>(): Promise<T> => Promise.resolve(value.response as T),
+        );
+      await expect(
+        value.invoke(new LiveDocumentDataSource(http)),
+      ).resolves.toEqual(value.response);
+      const [path, init, options] = request.mock.calls[0] ?? [];
+      expect(path).toBe(
+        `/projects/${documentProjectId}/documents/${controlledDocumentId}/revisions/${documentRevisionId}${value.suffix}`,
+      );
+      const body = init?.body;
+      if (typeof body !== "string")
+        throw new Error("The release command body was not JSON.");
+      const parsed: unknown = JSON.parse(body);
+      expect(parsed).toMatchObject({
+        expectedDocumentVersion: 3,
+        confirmed: true,
+      });
+      expect(parsed).not.toHaveProperty("actorUserId");
+      expect(parsed).not.toHaveProperty("scanState");
+      expect(parsed).not.toHaveProperty("sha256");
+      expect(options?.csrfToken).toBe("csrf-document-fixture");
+      expect(options?.requireIdempotencyReplay).toBe(true);
+      expect(options?.validate?.(value.response)).toBe(true);
+    }
   });
 
   it("validates audited content headers and returns exact bytes without a URL", async () => {

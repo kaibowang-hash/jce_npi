@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -8,11 +8,19 @@ import frappe
 from frappe import _
 
 from npi_core.documents.release_domain import (
+    DocumentConfirmation,
+    DocumentConfirmationType,
+    DocumentLifecycleEvent,
+    DocumentLifecycleEventType,
+    DocumentLifecycleState,
     DocumentReleaseFileEvidence,
+    DocumentReleasePolicyReference,
     DocumentReleasePolicyState,
     DocumentReleasePolicyVersion,
+    DocumentReviewCycle,
     DocumentReviewEvidence,
     DocumentReviewerAssignment,
+    DocumentRevisionLifecycle,
 )
 from npi_core.foundation.errors import RequestValidationFailed
 
@@ -103,6 +111,122 @@ def review_evidence_value(value: object) -> DocumentReviewEvidence:
         revision_global_id=prepared.get("revisionGlobalId"),
         revision_snapshot_hash=prepared.get("revisionSnapshotHash"),
         files=tuple(_release_file_evidence(item) for item in files),
+    )
+
+
+def review_cycle_value(document: Any) -> DocumentReviewCycle:
+    return DocumentReviewCycle(
+        global_id=_value(document, "global_id"),
+        revision_global_id=_value(document, "revision_global_id"),
+        cycle_number=_integer(_value(document, "cycle_number")),
+        policy_ref=_policy_reference(document),
+        evidence=review_evidence_value(_value(document, "review_evidence")),
+        reviewer_assignments=tuple(
+            DocumentReviewerAssignment(
+                slot_key=value.get("slotKey"),
+                user_id=value.get("userId"),
+            )
+            for value in _reviewer_rows(_value(document, "reviewer_assignments"))
+        ),
+        required_approval_count=_integer(
+            _value(document, "required_approval_count")
+        ),
+        prior_rejected_cycle_global_id=_optional_uuid(
+            _value(document, "prior_rejected_cycle_global_id")
+        ),
+        submitted_by_user_id=_value(document, "submitted_by_user_id"),
+        submitted_at=_datetime(_value(document, "submitted_at")),
+        request_id=_value(document, "request_id"),
+        trace_id=_value(document, "trace_id"),
+        snapshot_hash=str(_value(document, "snapshot_hash") or ""),
+    )
+
+
+def confirmation_value(document: Any) -> DocumentConfirmation:
+    return DocumentConfirmation(
+        global_id=_value(document, "global_id"),
+        confirmation_key=_value(document, "confirmation_key"),
+        confirmation_type=DocumentConfirmationType(
+            str(_value(document, "confirmation_type"))
+        ),
+        revision_global_id=_value(document, "revision_global_id"),
+        cycle_global_id=_value(document, "cycle_global_id"),
+        policy_ref=_policy_reference(document),
+        evidence_snapshot_hash=_value(document, "evidence_snapshot_hash"),
+        actor_user_id=_value(document, "actor_user_id"),
+        authority_slot=_value(document, "authority_slot"),
+        confirmation_method=_value(document, "confirmation_method"),
+        confirmation_intent=_value(document, "confirmation_intent"),
+        confirmed=_checkbox(_value(document, "confirmed")),
+        reason=_optional_text(_value(document, "reason")),
+        confirmed_at=_datetime(_value(document, "confirmed_at")),
+        request_id=_value(document, "request_id"),
+        trace_id=_value(document, "trace_id"),
+        evidence_hash=str(_value(document, "evidence_hash") or ""),
+    )
+
+
+def lifecycle_event_value(document: Any) -> DocumentLifecycleEvent:
+    return DocumentLifecycleEvent(
+        global_id=_value(document, "global_id"),
+        revision_global_id=_value(document, "revision_global_id"),
+        event_type=DocumentLifecycleEventType(
+            str(_value(document, "event_type"))
+        ),
+        from_state=DocumentLifecycleState(str(_value(document, "from_state"))),
+        to_state=DocumentLifecycleState(str(_value(document, "to_state"))),
+        from_version=_integer(_value(document, "from_version")),
+        to_version=_integer(_value(document, "to_version")),
+        cycle_global_id=_value(document, "cycle_global_id"),
+        policy_ref=_policy_reference(document),
+        evidence_snapshot_hash=_value(document, "evidence_snapshot_hash"),
+        confirmation_hashes=tuple(
+            str(value)
+            for value in _json_array(_value(document, "confirmation_hashes"))
+        ),
+        replacement_revision_global_id=_optional_uuid(
+            _value(document, "replacement_revision_global_id")
+        ),
+        replacement_effective_date=_optional_date(
+            _value(document, "replacement_effective_date")
+        ),
+        actor_user_id=_value(document, "actor_user_id"),
+        occurred_at=_datetime(_value(document, "occurred_at")),
+        request_id=_value(document, "request_id"),
+        trace_id=_value(document, "trace_id"),
+        event_hash=str(_value(document, "event_hash") or ""),
+    )
+
+
+def lifecycle_value(document: Any) -> DocumentRevisionLifecycle:
+    return DocumentRevisionLifecycle(
+        revision_global_id=_value(document, "revision_global_id"),
+        state=DocumentLifecycleState(str(_value(document, "current_state"))),
+        version=_integer(_value(document, "lifecycle_version")),
+        active_cycle_global_id=_optional_uuid(
+            _value(document, "active_cycle_global_id")
+        ),
+        approved_cycle_global_id=_optional_uuid(
+            _value(document, "approved_cycle_global_id")
+        ),
+        approved_event_global_id=_optional_uuid(
+            _value(document, "approved_event_global_id")
+        ),
+        release_event_global_id=_optional_uuid(
+            _value(document, "release_event_global_id")
+        ),
+        release_snapshot_hash=_optional_text(
+            _value(document, "release_snapshot_hash")
+        ),
+        replacement_revision_global_id=_optional_uuid(
+            _value(document, "replacement_revision_global_id")
+        ),
+        replacement_effective_date=_optional_date(
+            _value(document, "replacement_effective_date")
+        ),
+        terminal_event_global_id=_optional_uuid(
+            _value(document, "terminal_event_global_id")
+        ),
     )
 
 
@@ -246,6 +370,32 @@ def _datetime(value: object) -> datetime:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)
+
+
+def _optional_date(value: object) -> date | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value))
+
+
+def _optional_text(value: object) -> str | None:
+    return None if value in (None, "") else str(value)
+
+
+def _optional_uuid(value: object) -> UUID | None:
+    return None if value in (None, "") else UUID(str(value))
+
+
+def _policy_reference(document: Any) -> DocumentReleasePolicyReference:
+    return DocumentReleasePolicyReference(
+        global_id=_value(document, "policy_global_id"),
+        version=_integer(_value(document, "policy_version")),
+        snapshot_hash=_value(document, "policy_snapshot_hash"),
+    )
 
 
 def _integer(value: object) -> int:

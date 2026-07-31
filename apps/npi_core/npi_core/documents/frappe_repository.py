@@ -1221,8 +1221,13 @@ class FrappeDocumentRepository:
             "preview": administer,
             "download": administer,
             "share": False,
+            "submitReview": False,
+            "resubmitReview": False,
             "review": False,
+            "approve": False,
             "release": False,
+            "supersede": False,
+            "obsolete": False,
         }
 
     def _may_preview(self) -> bool:

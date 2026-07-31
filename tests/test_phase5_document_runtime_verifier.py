@@ -186,6 +186,12 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 "NPI Document Lock Event",
                 "NPI Document Command Idempotency",
                 "NPI Document Share Grant",
+                "NPI Document Release Policy",
+                "NPI Document Release Policy Version",
+                "NPI Document Revision Lifecycle",
+                "NPI Document Review Cycle",
+                "NPI Document Confirmation",
+                "NPI Document Lifecycle Event",
             },
         )
         self.assertIn("frappe.db.table_exists(doctype)", self.source)
@@ -766,6 +772,21 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "DOCUMENT_VERSION_CONFLICT",
             "DOCUMENT_UNAVAILABLE",
             "AUTHENTICATION_REQUIRED",
+            "DOCUMENT_RELEASE_POLICY_UNAVAILABLE",
+            "DOCUMENT_REVIEW_STATE_CONFLICT",
+            "DOCUMENT_RELEASE_INTEGRITY_BLOCKED",
+            "DOCUMENT_RELEASE_ROUTES_DISABLED",
+            "create_internal_fixture_user(",
+            '"user_type": "System User"',
+            '{"role": "NPI API User"}',
+            "ensure_document_release_policy(",
+            "verify_review_release_runtime(",
+            '"set_document_file_content"',
+            '"verify_released_file_delete_guard"',
+            "DOCUMENT_REVIEW_REJECT_KEY",
+            "DOCUMENT_REVIEW_RESUBMIT_KEY",
+            "DOCUMENT_REVIEW_APPROVE_KEY",
+            "DOCUMENT_RELEASE_KEY",
             "externalRetrieval",
             "rawPrivateUrlExposed",
         )
@@ -801,9 +822,8 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(payload["ownerUserId"], self.module.OWNER_USER)
         self.assertNotEqual(payload["ownerUserId"], "Administrator")
 
-    def test_disposable_owner_is_cleaned_on_success_and_failure(self) -> None:
+    def test_internal_owner_is_cleaned_on_success_and_failure(self) -> None:
         module = self.module
-        created = Mock(status=201)
         expected = {"fixtureRunId": FIXTURE_RUN_ID}
         for downstream, expected_error in (
             (Mock(return_value=expected), None),
@@ -814,10 +834,8 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                     patch.object(module, "verify_fresh_namespace"),
                     patch.object(
                         module,
-                        "create_disposable_user",
-                        return_value=created,
+                        "create_internal_fixture_user",
                     ) as create_user,
-                    patch.object(module, "validate_disposable_user") as validate_user,
                     patch.object(
                         module,
                         "_run_fresh_with_owner",
@@ -855,7 +873,6 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                     create_user.call_args.args[2],
                     module.OWNER_USER,
                 )
-                validate_user.assert_called_once_with(created, module.OWNER_USER)
                 delete_user.assert_called_once()
                 self.assertEqual(
                     delete_user.call_args.args[2],
@@ -886,17 +903,25 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             '"--document-only"',
             "for _migration_attempt in 1 2",
             'npi_p5_01_routes_disabled "${value}"',
+            'npi_p5_02_routes_disabled "${value}"',
             "run_document_runtime_verifier fresh",
             "run_document_route_probe disabled",
             "run_document_route_probe recovered",
+            "run_document_release_route_probe disabled",
+            "run_document_release_route_probe recovered",
             "run_document_runtime_verifier replay-only",
             "restore_document_route_switch",
+            "restore_document_release_route_switch",
         )
         for fragment in required_fragments:
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, self.shell)
         self.assertIn(
             'document_route_disable_original_state}" != "absent"',
+            self.shell,
+        )
+        self.assertIn(
+            'document_release_route_disable_original_state}" != "absent"',
             self.shell,
         )
 

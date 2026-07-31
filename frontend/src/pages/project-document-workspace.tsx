@@ -5,6 +5,7 @@ import type {
   ControlledDocumentSummaryViewModel,
   ControlledDocumentWorkspaceViewModel,
   DocumentDataSource,
+  DocumentReleaseLifecycleState,
   DocumentRelationshipKind,
   DocumentRevisionFileViewModel,
   DocumentRevisionViewModel,
@@ -33,6 +34,15 @@ type ResourceState<T> =
   | { kind: "failed"; failure: RequestFailure };
 
 type EditorKind = "create" | "revision" | "recover" | null;
+type ReleaseActionKind =
+  | "submit"
+  | "resubmit"
+  | "approve"
+  | "reject"
+  | "release"
+  | "supersede"
+  | "obsolete"
+  | null;
 
 type CommandState =
   | { kind: "idle" }
@@ -66,6 +76,13 @@ interface RevisionFormState {
   file: File | null;
 }
 
+interface ReleaseFormState {
+  policyRef: string;
+  confirmed: boolean;
+  reason: string;
+  replacementRevisionId: string;
+}
+
 function canRetry(failure: RequestFailure): boolean {
   return (
     failure.kind === "network" ||
@@ -88,6 +105,56 @@ function capabilityTone(
     : state === "blocked"
       ? "danger"
       : "warning";
+}
+
+function releaseStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: DocumentReleaseLifecycleState,
+): string {
+  switch (state) {
+    case "draft":
+      return t("Draft");
+    case "in_review":
+      return t("In review");
+    case "approved":
+      return t("Approved");
+    case "released":
+      return t("Released");
+    case "superseded":
+      return t("Superseded");
+    case "obsolete":
+      return t("Obsolete");
+  }
+}
+
+function releaseStateTone(
+  state: DocumentReleaseLifecycleState,
+): "info" | "success" | "warning" {
+  if (state === "released" || state === "approved") return "success";
+  if (state === "superseded" || state === "obsolete") return "warning";
+  return "info";
+}
+
+function releaseActionLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  action: Exclude<ReleaseActionKind, null>,
+): string {
+  switch (action) {
+    case "submit":
+      return t("Submit for review");
+    case "resubmit":
+      return t("Resubmit for review");
+    case "approve":
+      return t("Approve review");
+    case "reject":
+      return t("Reject review");
+    case "release":
+      return t("Release revision");
+    case "supersede":
+      return t("Supersede revision");
+    case "obsolete":
+      return t("Mark obsolete");
+  }
 }
 
 function relationshipKindLabel(
@@ -317,6 +384,7 @@ export function ProjectDocumentWorkspace({
     null,
   );
   const [editor, setEditor] = useState<EditorKind>(null);
+  const [releaseAction, setReleaseAction] = useState<ReleaseActionKind>(null);
   const [editorTouched, setEditorTouched] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [commandState, setCommandState] = useState<CommandState>({
@@ -339,6 +407,12 @@ export function ProjectDocumentWorkspace({
     file: null,
   });
   const [recoverReason, setRecoverReason] = useState("");
+  const [releaseForm, setReleaseForm] = useState<ReleaseFormState>({
+    policyRef: "",
+    confirmed: false,
+    reason: "",
+    replacementRevisionId: "",
+  });
   const firstEditorControl = useRef<HTMLElement | null>(null);
   const latestCommand = useRef<(() => void) | null>(null);
   const page = pageState.kind === "loaded" ? pageState.value : null;
@@ -359,13 +433,27 @@ export function ProjectDocumentWorkspace({
       null,
     [detail?.revisions, selectedRevisionId],
   );
-  const dirty = editor !== null && editorTouched;
+  const selectedReleaseHistory = useMemo(
+    () =>
+      detail?.releaseWorkspace.revisions.find(
+        (revision) => revision.revisionId === selectedRevision?.globalId,
+      ) ?? null,
+    [detail?.releaseWorkspace.revisions, selectedRevision?.globalId],
+  );
+  const dirty = (editor !== null || releaseAction !== null) && editorTouched;
 
   const clearEditor = useCallback((): void => {
     setEditor(null);
+    setReleaseAction(null);
     setEditorTouched(false);
     setFormError(null);
     setRecoverReason("");
+    setReleaseForm({
+      policyRef: "",
+      confirmed: false,
+      reason: "",
+      replacementRevisionId: "",
+    });
     setRevisionForm({
       major: "0",
       minor: "1",
@@ -543,6 +631,67 @@ export function ProjectDocumentWorkspace({
     },
     [updateWorkspace],
   );
+
+  const runReleaseCommand = useCallback(
+    (
+      label: string,
+      documentId: string,
+      command: (signal: AbortSignal) => Promise<unknown>,
+    ): void => {
+      const run = (): void => {
+        const controller = new AbortController();
+        setCommandState({ kind: "processing", label });
+        void command(controller.signal)
+          .then(() =>
+            dataSource?.loadDocument(projectId, documentId, controller.signal),
+          )
+          .then((workspace) => {
+            if (workspace) updateWorkspace(workspace);
+          })
+          .catch((error: unknown) => {
+            if (
+              controller.signal.aborted ||
+              error instanceof DocumentRequestCancelledError
+            )
+              return;
+            setCommandState({
+              failure: toRequestFailure(error),
+              kind: "failed",
+            });
+          });
+      };
+      latestCommand.current = run;
+      run();
+    },
+    [dataSource, projectId, updateWorkspace],
+  );
+
+  const startReleaseAction = (
+    action: Exclude<ReleaseActionKind, null>,
+  ): void => {
+    if (!detail || !selectedRevision || !selectedReleaseHistory) return;
+    const policy = detail.releaseWorkspace.policies[0];
+    const replacement = detail.releaseWorkspace.revisions.find(
+      (value) =>
+        value.revisionId !== selectedRevision.globalId &&
+        value.lifecycle.state === "released",
+    );
+    setEditor(null);
+    setReleaseAction(action);
+    setReleaseForm({
+      policyRef: policy
+        ? `${policy.globalId}:${String(policy.version)}:${policy.snapshotHash}`
+        : "",
+      confirmed: false,
+      reason: "",
+      replacementRevisionId: replacement?.revisionId ?? "",
+    });
+    setEditorTouched(false);
+    setFormError(null);
+    globalThis.queueMicrotask(() => {
+      firstEditorControl.current?.focus();
+    });
+  };
 
   const startCreate = (): void => {
     const policy = page?.policies[0];
@@ -754,6 +903,172 @@ export function ProjectDocumentWorkspace({
     );
   };
 
+  const submitReleaseAction = (): void => {
+    if (
+      !dataSource ||
+      !detail ||
+      !selectedRevision ||
+      !selectedReleaseHistory ||
+      !releaseAction ||
+      !sessionCommandContext
+    )
+      return;
+    if (!releaseForm.confirmed) {
+      setFormError(t("Confirm the exact document review or release action."));
+      return;
+    }
+    const reason = releaseForm.reason.trim();
+    if (
+      ["reject", "supersede", "obsolete"].includes(releaseAction) &&
+      !reason
+    ) {
+      setFormError(t("Enter the required controlled reason."));
+      return;
+    }
+    const common = {
+      expectedDocumentVersion: detail.document.optimisticVersion,
+      expectedLifecycleVersion: selectedReleaseHistory.lifecycle.version,
+      confirmed: true as const,
+    };
+    const context = (signal: AbortSignal) => ({
+      csrfToken: sessionCommandContext.csrfToken,
+      idempotencyKey: `document-release-${globalThis.crypto.randomUUID()}`,
+      signal,
+    });
+    const run = (command: (signal: AbortSignal) => Promise<unknown>): void => {
+      runReleaseCommand(
+        releaseActionLabel(t, releaseAction),
+        detail.document.globalId,
+        command,
+      );
+    };
+    if (releaseAction === "submit" || releaseAction === "resubmit") {
+      const policy = detail.releaseWorkspace.policies.find(
+        (value) =>
+          `${value.globalId}:${String(value.version)}:${value.snapshotHash}` ===
+          releaseForm.policyRef,
+      );
+      if (!policy) {
+        setFormError(t("Select an exact published release policy."));
+        return;
+      }
+      if (releaseAction === "submit") {
+        run((signal) =>
+          dataSource.submitReview(
+            projectId,
+            detail.document.globalId,
+            selectedRevision.globalId,
+            {
+              ...common,
+              policyGlobalId: policy.globalId,
+              policyVersion: policy.version,
+              policySnapshotHash: policy.snapshotHash,
+              confirmationIntent: "submit_review",
+            },
+            context(signal),
+          ),
+        );
+        return;
+      }
+      const rejectedCycle = [...selectedReleaseHistory.cycles]
+        .reverse()
+        .find((value) => value.state === "rejected");
+      if (!rejectedCycle) {
+        setFormError(t("The rejected review cycle is not available."));
+        return;
+      }
+      run((signal) =>
+        dataSource.resubmitReview(
+          projectId,
+          detail.document.globalId,
+          selectedRevision.globalId,
+          {
+            ...common,
+            policyGlobalId: policy.globalId,
+            policyVersion: policy.version,
+            policySnapshotHash: policy.snapshotHash,
+            priorRejectedCycleId: rejectedCycle.globalId,
+            confirmationIntent: "resubmit_review",
+          },
+          context(signal),
+        ),
+      );
+      return;
+    }
+    if (releaseAction === "approve" || releaseAction === "reject") {
+      run((signal) =>
+        dataSource.confirmReview(
+          projectId,
+          detail.document.globalId,
+          selectedRevision.globalId,
+          {
+            ...common,
+            decision: releaseAction === "approve" ? "approve" : "reject",
+            ...(reason ? { reason } : {}),
+            confirmationIntent: "review_decision",
+          },
+          context(signal),
+        ),
+      );
+      return;
+    }
+    if (releaseAction === "release") {
+      run((signal) =>
+        dataSource.releaseRevision(
+          projectId,
+          detail.document.globalId,
+          selectedRevision.globalId,
+          {
+            ...common,
+            confirmationIntent: "release_revision",
+          },
+          context(signal),
+        ),
+      );
+      return;
+    }
+    if (releaseAction === "supersede") {
+      const replacement = detail.releaseWorkspace.revisions.find(
+        (value) =>
+          value.revisionId === releaseForm.replacementRevisionId &&
+          value.lifecycle.state === "released",
+      );
+      if (!replacement) {
+        setFormError(t("Select an exact later released revision."));
+        return;
+      }
+      run((signal) =>
+        dataSource.supersedeRevision(
+          projectId,
+          detail.document.globalId,
+          selectedRevision.globalId,
+          {
+            ...common,
+            replacementRevisionId: replacement.revisionId,
+            expectedReplacementLifecycleVersion: replacement.lifecycle.version,
+            reason,
+            confirmationIntent: "supersede_revision",
+          },
+          context(signal),
+        ),
+      );
+      return;
+    }
+    run((signal) =>
+      dataSource.obsoleteRevision(
+        projectId,
+        detail.document.globalId,
+        selectedRevision.globalId,
+        {
+          ...common,
+          reason,
+          confirmationIntent: "obsolete_revision",
+        },
+        context(signal),
+      ),
+    );
+  };
+
   const requestContent = (
     file: DocumentRevisionFileViewModel,
     disposition: "inline" | "attachment",
@@ -887,6 +1202,13 @@ export function ProjectDocumentWorkspace({
         ) ?? null);
   const editorPolicy = editor === "create" ? selectedPolicy : documentPolicy;
   const commandProcessing = commandState.kind === "processing";
+  const selectedReviewCycle = selectedReleaseHistory?.cycles.at(-1) ?? null;
+  const replacementOptions =
+    detail?.releaseWorkspace.revisions.filter(
+      (value) =>
+        value.revisionId !== selectedRevision?.globalId &&
+        value.lifecycle.state === "released",
+    ) ?? [];
 
   return (
     <section
@@ -910,7 +1232,6 @@ export function ProjectDocumentWorkspace({
             }
             icon="add"
             onClick={startCreate}
-            visual="primary"
           >
             {t("Create document")}
           </Button>
@@ -1019,6 +1340,25 @@ export function ProjectDocumentWorkspace({
                       ) ?? null,
                     ),
                     exempt: "identifier",
+                  },
+                  {
+                    label: t("Lifecycle state"),
+                    value: selectedReleaseHistory
+                      ? releaseStateLabel(
+                          t,
+                          selectedReleaseHistory.lifecycle.state,
+                        )
+                      : t("Unavailable"),
+                  },
+                  {
+                    label: t("Lifecycle version"),
+                    value: selectedReleaseHistory
+                      ? formatNumber(
+                          locale,
+                          selectedReleaseHistory.lifecycle.version,
+                          0,
+                        )
+                      : "—",
                   },
                   {
                     label: t("Editability"),
@@ -1409,6 +1749,7 @@ export function ProjectDocumentWorkspace({
               <tr>
                 <th>{t("Revision")}</th>
                 <th>{t("State")}</th>
+                <th>{t("Lifecycle version")}</th>
                 <th>{t("Reason")}</th>
                 <th>{t("Effective date")}</th>
                 <th>{t("Created by")}</th>
@@ -1416,51 +1757,435 @@ export function ProjectDocumentWorkspace({
               </tr>
             </thead>
             <tbody>
-              {detail.revisions.map((revision) => (
-                <tr
-                  aria-selected={
-                    selectedRevision?.globalId === revision.globalId
-                  }
-                  className={
-                    selectedRevision?.globalId === revision.globalId
-                      ? "is-selected"
-                      : ""
-                  }
-                  key={revision.globalId}
-                >
-                  <td>
-                    <button
-                      className="table-link"
-                      data-language-exempt="identifier"
-                      onClick={() => {
-                        setSelectedRevisionId(revision.globalId);
-                        setContentState({ kind: "idle" });
-                      }}
-                      type="button"
-                    >
-                      {documentRevisionLabel(revision)}
-                    </button>
-                  </td>
-                  <td>
-                    <SemanticStatus label={t("Draft")} tone="info" />
-                  </td>
-                  <td data-language-exempt="business-data">
-                    {revision.reason}
-                  </td>
-                  <td>
-                    {revision.effectiveDate
-                      ? formatDate(locale, revision.effectiveDate)
-                      : "—"}
-                  </td>
-                  <td data-language-exempt="business-data">
-                    {revision.createdByUserId}
-                  </td>
-                  <td>{formatDateTime(locale, revision.createdAt)}</td>
-                </tr>
-              ))}
+              {detail.revisions.map((revision) => {
+                const releaseHistory =
+                  detail.releaseWorkspace.revisions.find(
+                    (value) => value.revisionId === revision.globalId,
+                  ) ?? null;
+                return (
+                  <tr
+                    aria-selected={
+                      selectedRevision?.globalId === revision.globalId
+                    }
+                    className={
+                      selectedRevision?.globalId === revision.globalId
+                        ? "is-selected"
+                        : ""
+                    }
+                    key={revision.globalId}
+                  >
+                    <td>
+                      <button
+                        className="table-link"
+                        data-language-exempt="identifier"
+                        onClick={() => {
+                          setSelectedRevisionId(revision.globalId);
+                          setContentState({ kind: "idle" });
+                        }}
+                        type="button"
+                      >
+                        {documentRevisionLabel(revision)}
+                      </button>
+                    </td>
+                    <td>
+                      <SemanticStatus
+                        label={
+                          releaseHistory
+                            ? releaseStateLabel(
+                                t,
+                                releaseHistory.lifecycle.state,
+                              )
+                            : t("Unavailable")
+                        }
+                        tone={
+                          releaseHistory
+                            ? releaseStateTone(releaseHistory.lifecycle.state)
+                            : "warning"
+                        }
+                      />
+                    </td>
+                    <td>
+                      {releaseHistory
+                        ? formatNumber(
+                            locale,
+                            releaseHistory.lifecycle.version,
+                            0,
+                          )
+                        : "—"}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {revision.reason}
+                    </td>
+                    <td>
+                      {revision.effectiveDate
+                        ? formatDate(locale, revision.effectiveDate)
+                        : "—"}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {revision.createdByUserId}
+                    </td>
+                    <td>{formatDateTime(locale, revision.createdAt)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </Panel>
+      ) : null}
+
+      {detail ? (
+        !detail.releaseWorkspace.available ? (
+          <Panel title={t("Review and release")}>
+            <div
+              className="scenario-banner scenario-banner--partial"
+              role="status"
+            >
+              <SemanticStatus label={t("No permission")} tone="warning" />
+              <span>
+                {t(
+                  "Document review and release details are not available for this workspace.",
+                )}
+              </span>
+            </div>
+          </Panel>
+        ) : selectedReleaseHistory && selectedRevision ? (
+          <Panel title={t("Review and release")}>
+            {!detail.releaseWorkspace.commandsEnabled ? (
+              <div
+                className="scenario-banner scenario-banner--partial"
+                role="status"
+              >
+                <SemanticStatus label={t("Unavailable")} tone="warning" />
+                <span>
+                  {t(
+                    "Review and release commands are temporarily disabled. Immutable history remains available.",
+                  )}
+                </span>
+              </div>
+            ) : null}
+            <div className="document-release__summary">
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Lifecycle state"),
+                    value: releaseStateLabel(
+                      t,
+                      selectedReleaseHistory.lifecycle.state,
+                    ),
+                  },
+                  {
+                    label: t("Lifecycle version"),
+                    value: formatNumber(
+                      locale,
+                      selectedReleaseHistory.lifecycle.version,
+                      0,
+                    ),
+                  },
+                  {
+                    label: t("Review cycle"),
+                    value: selectedReviewCycle
+                      ? formatNumber(locale, selectedReviewCycle.cycleNumber, 0)
+                      : "—",
+                  },
+                  {
+                    label: t("Release snapshot"),
+                    value:
+                      selectedReleaseHistory.lifecycle.releaseSnapshotHash ??
+                      "—",
+                    exempt: "identifier",
+                  },
+                ]}
+              />
+              {releaseAction === null ? (
+                <div className="detail-actions document-release__actions">
+                  {selectedReleaseHistory.capabilities.submitReview ? (
+                    <Button
+                      disabled={
+                        detail.releaseWorkspace.policies.length === 0 ||
+                        !sessionCommandContext ||
+                        commandProcessing
+                      }
+                      onClick={() => {
+                        startReleaseAction("submit");
+                      }}
+                      visual="primary"
+                    >
+                      {t("Submit for review")}
+                    </Button>
+                  ) : null}
+                  {selectedReleaseHistory.capabilities.resubmitReview ? (
+                    <Button
+                      disabled={
+                        detail.releaseWorkspace.policies.length === 0 ||
+                        !sessionCommandContext ||
+                        commandProcessing
+                      }
+                      onClick={() => {
+                        startReleaseAction("resubmit");
+                      }}
+                      visual="primary"
+                    >
+                      {t("Resubmit for review")}
+                    </Button>
+                  ) : null}
+                  {selectedReleaseHistory.capabilities.approve ? (
+                    <>
+                      <Button
+                        disabled={!sessionCommandContext || commandProcessing}
+                        onClick={() => {
+                          startReleaseAction("approve");
+                        }}
+                        visual="primary"
+                      >
+                        {t("Approve review")}
+                      </Button>
+                      <Button
+                        disabled={!sessionCommandContext || commandProcessing}
+                        onClick={() => {
+                          startReleaseAction("reject");
+                        }}
+                      >
+                        {t("Reject review")}
+                      </Button>
+                    </>
+                  ) : null}
+                  {selectedReleaseHistory.capabilities.release ? (
+                    <Button
+                      disabled={!sessionCommandContext || commandProcessing}
+                      onClick={() => {
+                        startReleaseAction("release");
+                      }}
+                      visual="primary"
+                    >
+                      {t("Release revision")}
+                    </Button>
+                  ) : null}
+                  {selectedReleaseHistory.capabilities.supersede ? (
+                    <Button
+                      disabled={
+                        replacementOptions.length === 0 ||
+                        !sessionCommandContext ||
+                        commandProcessing
+                      }
+                      onClick={() => {
+                        startReleaseAction("supersede");
+                      }}
+                    >
+                      {t("Supersede revision")}
+                    </Button>
+                  ) : null}
+                  {selectedReleaseHistory.capabilities.obsolete ? (
+                    <Button
+                      disabled={!sessionCommandContext || commandProcessing}
+                      onClick={() => {
+                        startReleaseAction("obsolete");
+                      }}
+                    >
+                      {t("Mark obsolete")}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
+            {releaseAction ? (
+              <form
+                className="document-release__confirmation"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  submitReleaseAction();
+                }}
+              >
+                <header>
+                  <SemanticStatus
+                    label={t("Confirmation required")}
+                    tone="warning"
+                  />
+                  <strong>{releaseActionLabel(t, releaseAction)}</strong>
+                </header>
+                {(releaseAction === "submit" ||
+                  releaseAction === "resubmit") && (
+                  <label className="document-release__field">
+                    <span>{t("Release policy")}</span>
+                    <Select
+                      onChange={(event) => {
+                        setReleaseForm({
+                          ...releaseForm,
+                          policyRef: event.currentTarget.value,
+                        });
+                        setEditorTouched(true);
+                      }}
+                      value={releaseForm.policyRef}
+                    >
+                      {detail.releaseWorkspace.policies.map((policy) => (
+                        <option
+                          data-language-exempt="business-data"
+                          key={`${policy.globalId}:${String(policy.version)}`}
+                          value={`${policy.globalId}:${String(policy.version)}:${policy.snapshotHash}`}
+                        >
+                          {policy.title} · v{String(policy.version)}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                )}
+                {releaseAction === "supersede" ? (
+                  <label className="document-release__field">
+                    <span>{t("Replacement revision")}</span>
+                    <Select
+                      onChange={(event) => {
+                        setReleaseForm({
+                          ...releaseForm,
+                          replacementRevisionId: event.currentTarget.value,
+                        });
+                        setEditorTouched(true);
+                      }}
+                      value={releaseForm.replacementRevisionId}
+                    >
+                      {replacementOptions.map((replacement) => {
+                        const revision = detail.revisions.find(
+                          (value) => value.globalId === replacement.revisionId,
+                        );
+                        return (
+                          <option
+                            data-language-exempt="identifier"
+                            key={replacement.revisionId}
+                            value={replacement.revisionId}
+                          >
+                            {documentRevisionLabel(revision ?? null)}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </label>
+                ) : null}
+                {["reject", "supersede", "obsolete"].includes(releaseAction) ? (
+                  <label className="document-release__field">
+                    <span>{t("Controlled reason")}</span>
+                    <textarea
+                      maxLength={2_000}
+                      onChange={(event) => {
+                        setReleaseForm({
+                          ...releaseForm,
+                          reason: event.currentTarget.value,
+                        });
+                        setEditorTouched(true);
+                      }}
+                      ref={(element) => {
+                        firstEditorControl.current = element;
+                      }}
+                      required
+                      rows={3}
+                      value={releaseForm.reason}
+                    />
+                  </label>
+                ) : null}
+                <label className="document-release__confirmation-check">
+                  <input
+                    checked={releaseForm.confirmed}
+                    onChange={(event) => {
+                      setReleaseForm({
+                        ...releaseForm,
+                        confirmed: event.currentTarget.checked,
+                      });
+                      setEditorTouched(true);
+                    }}
+                    ref={(element) => {
+                      firstEditorControl.current ??= element;
+                    }}
+                    type="checkbox"
+                  />
+                  <span>
+                    {t(
+                      "I confirm this exact action using my authenticated session.",
+                    )}
+                  </span>
+                </label>
+                <small>
+                  {t(
+                    "The confirmation, exact input hashes, actor, time, request ID and trace ID will be retained.",
+                  )}
+                </small>
+                {formError ? (
+                  <p className="form-error" role="alert">
+                    {formError}
+                  </p>
+                ) : null}
+                <div className="detail-actions">
+                  <Button
+                    disabled={!releaseForm.confirmed || commandProcessing}
+                    type="submit"
+                    visual="primary"
+                  >
+                    {releaseActionLabel(t, releaseAction)}
+                  </Button>
+                  <Button
+                    disabled={commandProcessing}
+                    onClick={clearEditor}
+                    type="button"
+                  >
+                    {t("Cancel")}
+                  </Button>
+                </div>
+              </form>
+            ) : null}
+
+            {selectedReviewCycle ? (
+              <div className="document-release__progress">
+                <h3>{t("Reviewer progress")}</h3>
+                <table className="data-table data-table--compact">
+                  <thead>
+                    <tr>
+                      <th>{t("Reviewer slot")}</th>
+                      <th>{t("Assigned user")}</th>
+                      <th>{t("State")}</th>
+                      <th>{t("Confirmation")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedReviewCycle.reviewerAssignments.map(
+                      (assignment) => (
+                        <tr key={assignment.slotKey}>
+                          <td data-language-exempt="identifier">
+                            {assignment.slotKey}
+                          </td>
+                          <td data-language-exempt="business-data">
+                            {assignment.userId}
+                          </td>
+                          <td>
+                            <SemanticStatus
+                              label={
+                                assignment.state === "approved"
+                                  ? t("Approved")
+                                  : assignment.state === "rejected"
+                                    ? t("Rejected")
+                                    : t("Pending")
+                              }
+                              tone={
+                                assignment.state === "approved"
+                                  ? "success"
+                                  : assignment.state === "rejected"
+                                    ? "warning"
+                                    : "info"
+                              }
+                            />
+                          </td>
+                          <td data-language-exempt="identifier">
+                            {assignment.confirmationId ?? "—"}
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="document-release__empty">
+                {t("No review cycle has been submitted for this revision.")}
+              </p>
+            )}
+          </Panel>
+        ) : null
       ) : null}
 
       {selectedRevision && detail ? (
@@ -1635,6 +2360,156 @@ export function ProjectDocumentWorkspace({
             </span>
           </div>
         </Panel>
+      ) : null}
+
+      {selectedReleaseHistory ? (
+        <div className="document-workspace__release-history">
+          <Panel scrollableBody title={t("Review cycles")}>
+            {selectedReleaseHistory.cycles.length === 0 ? (
+              <p className="document-release__empty">
+                {t("No immutable review cycles.")}
+              </p>
+            ) : (
+              <table className="data-table data-table--compact">
+                <thead>
+                  <tr>
+                    <th>{t("Cycle")}</th>
+                    <th>{t("State")}</th>
+                    <th>{t("Required approvals")}</th>
+                    <th>{t("Submitted by")}</th>
+                    <th>{t("Submitted")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedReleaseHistory.cycles.map((cycle) => (
+                    <tr key={cycle.globalId}>
+                      <td data-language-exempt="identifier">
+                        {formatNumber(locale, cycle.cycleNumber, 0)}
+                      </td>
+                      <td>
+                        {cycle.state === "active"
+                          ? t("Active")
+                          : cycle.state === "approved"
+                            ? t("Approved")
+                            : cycle.state === "rejected"
+                              ? t("Rejected")
+                              : t("Closed")}
+                      </td>
+                      <td>
+                        {formatNumber(locale, cycle.requiredApprovalCount, 0)}
+                      </td>
+                      <td data-language-exempt="business-data">
+                        {cycle.submittedByUserId}
+                      </td>
+                      <td>{formatDateTime(locale, cycle.submittedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Panel>
+          <Panel scrollableBody title={t("Electronic confirmations")}>
+            {selectedReleaseHistory.confirmations.length === 0 ? (
+              <p className="document-release__empty">
+                {t("No immutable confirmations.")}
+              </p>
+            ) : (
+              <table className="data-table data-table--compact">
+                <thead>
+                  <tr>
+                    <th>{t("Confirmation")}</th>
+                    <th>{t("Actor")}</th>
+                    <th>{t("Authority slot")}</th>
+                    <th>{t("Confirmed")}</th>
+                    <th>{t("Trace ID")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedReleaseHistory.confirmations.map((confirmation) => (
+                    <tr key={confirmation.globalId}>
+                      <td>
+                        {confirmation.type === "review_approve"
+                          ? t("Review approved")
+                          : confirmation.type === "review_reject"
+                            ? t("Review rejected")
+                            : confirmation.type === "release"
+                              ? t("Released")
+                              : confirmation.type === "supersede"
+                                ? t("Superseded")
+                                : t("Obsolete")}
+                      </td>
+                      <td data-language-exempt="business-data">
+                        {confirmation.actorUserId}
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {confirmation.authoritySlot}
+                      </td>
+                      <td>
+                        {formatDateTime(locale, confirmation.confirmedAt)}
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {confirmation.traceId}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Panel>
+          <Panel scrollableBody title={t("Lifecycle events")}>
+            {selectedReleaseHistory.events.length === 0 ? (
+              <p className="document-release__empty">
+                {t("No immutable lifecycle events.")}
+              </p>
+            ) : (
+              <table className="data-table data-table--compact">
+                <thead>
+                  <tr>
+                    <th>{t("Event")}</th>
+                    <th>{t("Transition")}</th>
+                    <th>{t("Version")}</th>
+                    <th>{t("Actor")}</th>
+                    <th>{t("Occurred")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedReleaseHistory.events.map((event) => (
+                    <tr key={event.globalId}>
+                      <td>
+                        {event.type === "submitted"
+                          ? t("Submitted")
+                          : event.type === "resubmitted"
+                            ? t("Resubmitted")
+                            : event.type === "review_approved"
+                              ? t("Review approved")
+                              : event.type === "review_rejected"
+                                ? t("Review rejected")
+                                : event.type === "approved"
+                                  ? t("Approved")
+                                  : event.type === "released"
+                                    ? t("Released")
+                                    : event.type === "superseded"
+                                      ? t("Superseded")
+                                      : t("Obsolete")}
+                      </td>
+                      <td>
+                        {releaseStateLabel(t, event.fromState)} →{" "}
+                        {releaseStateLabel(t, event.toState)}
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {formatNumber(locale, event.toVersion, 0)}
+                      </td>
+                      <td data-language-exempt="business-data">
+                        {event.actorUserId}
+                      </td>
+                      <td>{formatDateTime(locale, event.occurredAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Panel>
+        </div>
       ) : null}
 
       {detail ? (

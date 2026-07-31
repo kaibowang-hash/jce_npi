@@ -2156,6 +2156,224 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:submit-review:
+    post:
+      tags: [Documents]
+      operationId: submitDocumentRevisionReview
+      description: >
+        Creates the first immutable review cycle from one exact published
+        release-policy snapshot. Project visibility and the NPI API User
+        transport role do not grant submit authority; the actor must be an
+        exact submitter frozen in that policy.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-policy-submitter
+      x-transaction-boundary: controlled-document-review
+      x-audit-operation: document.review.submit
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitDocumentReview" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:review:
+    post:
+      tags: [Documents]
+      operationId: confirmDocumentRevisionReview
+      description: >
+        Appends one approve or reject authenticated electronic confirmation
+        for the actor's exact slot in the active frozen review cycle. Project
+        roles, administrator roles, locks and transport roles are never
+        reviewer authority.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-active-reviewer-slot
+      x-transaction-boundary: controlled-document-review
+      x-audit-operation: document.review.decision
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConfirmDocumentReview" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:resubmit-review:
+    post:
+      tags: [Documents]
+      operationId: resubmitDocumentRevisionReview
+      description: >
+        Creates a new immutable review cycle from the exact closed rejected
+        predecessor under one exact published release policy. The rejected
+        cycle and confirmations remain retained.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-policy-submitter
+      x-transaction-boundary: controlled-document-review
+      x-audit-operation: document.review.resubmit
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResubmitDocumentReview" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:release:
+    post:
+      tags: [Documents]
+      operationId: releaseDocumentRevision
+      description: >
+        Revalidates the exact private File identity, bytes, hash, size, format
+        and scanner-owned clean observation before appending the release
+        confirmation and event. Only an exact frozen release authority may
+        execute this command.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-policy-release-authority
+      x-transaction-boundary: controlled-document-release
+      x-audit-operation: document.release
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReleaseDocumentRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:supersede:
+    post:
+      tags: [Documents]
+      operationId: supersedeDocumentRevision
+      description: >
+        Retains a released revision and binds it to one exact later released
+        successor with an effective date. Only an exact frozen supersede
+        authority may execute this command.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-policy-supersede-authority
+      x-transaction-boundary: controlled-document-release
+      x-audit-operation: document.supersede
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SupersedeDocumentRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/documents/{documentId}/revisions/{revisionId}:obsolete:
+    post:
+      tags: [Documents]
+      operationId: obsoleteDocumentRevision
+      description: >
+        Retains and marks one released revision obsolete with a bounded reason.
+        Only an exact frozen obsolete authority may execute this command.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-policy-obsolete-authority
+      x-transaction-boundary: controlled-document-release
+      x-audit-operation: document.obsolete
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/DocumentId"
+        - $ref: "#/components/parameters/DocumentRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ObsoleteDocumentRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/DocumentReleaseCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/documents/{documentId}/revisions/{revisionId}/files/{fileRevisionId}/capabilities:
     get:
       tags: [Documents]
@@ -3054,6 +3272,34 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ControlledDocumentWorkspace" }
+    DocumentReleaseCommandResult:
+      description: >
+        Exact immutable review/release transition after one atomic command, or
+        the original transition safely replayed for the same actor-bound key
+        and canonical payload
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DocumentReleaseTransition"
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -6357,6 +6603,207 @@ components:
         expectedDocumentVersion: { type: integer, minimum: 1 }
         expectedFileVersion: { type: integer, minimum: 1 }
         disposition: { type: string, enum: [inline, attachment] }
+    SubmitDocumentReview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 0 }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        confirmationIntent: { type: string, const: submit_review }
+        confirmed: { type: boolean, const: true }
+    ResubmitDocumentReview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          priorRejectedCycleId,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        priorRejectedCycleId: { type: string, format: uuid }
+        confirmationIntent: { type: string, const: resubmit_review }
+        confirmed: { type: boolean, const: true }
+    ConfirmDocumentReview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          decision,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        decision: { type: string, enum: [approve, reject] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        confirmationIntent: { type: string, const: review_decision }
+        confirmed: { type: boolean, const: true }
+    ReleaseDocumentRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        confirmationIntent: { type: string, const: release_revision }
+        confirmed: { type: boolean, const: true }
+    SupersedeDocumentRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          replacementRevisionId,
+          expectedReplacementLifecycleVersion,
+          reason,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        replacementRevisionId: { type: string, format: uuid }
+        expectedReplacementLifecycleVersion: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        confirmationIntent: { type: string, const: supersede_revision }
+        confirmed: { type: boolean, const: true }
+    ObsoleteDocumentRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedDocumentVersion,
+          expectedLifecycleVersion,
+          reason,
+          confirmationIntent,
+          confirmed,
+        ]
+      properties:
+        expectedDocumentVersion: { type: integer, minimum: 1 }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        confirmationIntent: { type: string, const: obsolete_revision }
+        confirmed: { type: boolean, const: true }
+    DocumentReleasePolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentReleaseEventSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, type, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        type:
+          type: string
+          enum:
+            [
+              submitted,
+              resubmitted,
+              review_approved,
+              review_rejected,
+              approved,
+              released,
+              superseded,
+              obsolete,
+            ]
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentConfirmationSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, type, evidenceHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        type:
+          type: string
+          enum:
+            [review_approve, review_reject, release, supersede, obsolete]
+        evidenceHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentReleaseTransition:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          projectId,
+          documentId,
+          documentOptimisticVersion,
+          revisionId,
+          state,
+          lifecycleVersion,
+          reviewCycleId,
+          releasePolicy,
+          event,
+          confirmation,
+          releaseSnapshotHash,
+        ]
+      properties:
+        projectId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        documentOptimisticVersion: { type: integer, minimum: 1 }
+        revisionId: { type: string, format: uuid }
+        state:
+          type: string
+          enum: [draft, in_review, approved, released, superseded, obsolete]
+        lifecycleVersion: { type: integer, minimum: 1 }
+        reviewCycleId: { type: string, format: uuid }
+        releasePolicy:
+          $ref: "#/components/schemas/DocumentReleasePolicyReference"
+        event: { $ref: "#/components/schemas/DocumentReleaseEventSummary" }
+        confirmation:
+          oneOf:
+            - $ref: "#/components/schemas/DocumentConfirmationSummary"
+            - type: "null"
+        releaseSnapshotHash:
+          type: [string, "null"]
+          pattern: "^[a-f0-9]{64}$"
     DocumentProject:
       type: object
       additionalProperties: false
@@ -6527,8 +6974,13 @@ components:
           preview,
           download,
           share,
+          submitReview,
+          resubmitReview,
           review,
+          approve,
           release,
+          supersede,
+          obsolete,
         ]
       properties:
         view: { type: boolean }
@@ -6539,8 +6991,13 @@ components:
         preview: { type: boolean }
         download: { type: boolean }
         share: { type: boolean, const: false }
-        review: { type: boolean, const: false }
-        release: { type: boolean, const: false }
+        submitReview: { type: boolean }
+        resubmitReview: { type: boolean }
+        review: { type: boolean }
+        approve: { type: boolean }
+        release: { type: boolean }
+        supersede: { type: boolean }
+        obsolete: { type: boolean }
     ControlledDocumentPage:
       type: object
       additionalProperties: false
@@ -6853,6 +7310,346 @@ components:
         snapshotHash:
           type: string
           pattern: "^[a-f0-9]{64}$"
+    DocumentReleasePolicyOption:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          version,
+          snapshotHash,
+          key,
+          title,
+          requiredApprovalCount,
+          confirmationMethod,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        key:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 140 }
+        requiredApprovalCount: { type: integer, minimum: 1, maximum: 32 }
+        confirmationMethod:
+          type: string
+          const: authenticated_session_confirmation
+    DocumentReleaseCapabilities:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          submitReview,
+          resubmitReview,
+          review,
+          approve,
+          release,
+          supersede,
+          obsolete,
+        ]
+      properties:
+        submitReview: { type: boolean }
+        resubmitReview: { type: boolean }
+        review: { type: boolean }
+        approve: { type: boolean }
+        release: { type: boolean }
+        supersede: { type: boolean }
+        obsolete: { type: boolean }
+    DocumentRevisionLifecycle:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          state,
+          version,
+          activeCycleId,
+          approvedCycleId,
+          approvedEventId,
+          releaseEventId,
+          releaseSnapshotHash,
+          replacementRevisionId,
+          replacementEffectiveDate,
+          terminalEventId,
+        ]
+      properties:
+        state:
+          type: string
+          enum: [draft, in_review, approved, released, superseded, obsolete]
+        version: { type: integer, minimum: 0 }
+        activeCycleId: { type: [string, "null"], format: uuid }
+        approvedCycleId: { type: [string, "null"], format: uuid }
+        approvedEventId: { type: [string, "null"], format: uuid }
+        releaseEventId: { type: [string, "null"], format: uuid }
+        releaseSnapshotHash:
+          type: [string, "null"]
+          pattern: "^[a-f0-9]{64}$"
+        replacementRevisionId: { type: [string, "null"], format: uuid }
+        replacementEffectiveDate: { type: [string, "null"], format: date }
+        terminalEventId: { type: [string, "null"], format: uuid }
+    DocumentReviewFileEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          fileRevisionId,
+          associationId,
+          mimeType,
+          sizeBytes,
+          sha256,
+          scanState,
+          scanObservedAt,
+          uploadedByUserId,
+          uploadedAt,
+        ]
+      properties:
+        fileRevisionId: { type: string, format: uuid }
+        associationId: { type: string, format: uuid }
+        mimeType: { type: string, minLength: 3, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0, maximum: 67108864 }
+        sha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        scanState: { type: string, const: clean }
+        scanObservedAt: { type: string, format: date-time }
+        uploadedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        uploadedAt: { type: string, format: date-time }
+    DocumentReviewerProgress:
+      type: object
+      additionalProperties: false
+      required: [slotKey, userId, state, confirmationId]
+      properties:
+        slotKey:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        userId: { type: string, minLength: 1, maxLength: 254 }
+        state: { type: string, enum: [pending, approved, rejected] }
+        confirmationId: { type: [string, "null"], format: uuid }
+    DocumentReviewCycle:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          cycleNumber,
+          state,
+          policy,
+          evidenceSnapshotHash,
+          fileEvidence,
+          reviewerAssignments,
+          requiredApprovalCount,
+          priorRejectedCycleId,
+          submittedByUserId,
+          submittedAt,
+          requestId,
+          traceId,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        cycleNumber: { type: integer, minimum: 1 }
+        state: { type: string, enum: [active, approved, rejected, closed] }
+        policy:
+          $ref: "#/components/schemas/DocumentReleasePolicyReference"
+        evidenceSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        fileEvidence:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/DocumentReviewFileEvidence"
+        reviewerAssignments:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            $ref: "#/components/schemas/DocumentReviewerProgress"
+        requiredApprovalCount: { type: integer, minimum: 1, maximum: 32 }
+        priorRejectedCycleId: { type: [string, "null"], format: uuid }
+        submittedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        submittedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId:
+          type: string
+          minLength: 8
+          maxLength: 128
+          pattern: "^[A-Za-z0-9._:-]+$"
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentReleaseConfirmation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          cycleId,
+          type,
+          actorUserId,
+          authoritySlot,
+          confirmationMethod,
+          confirmationIntent,
+          reason,
+          confirmedAt,
+          requestId,
+          traceId,
+          evidenceHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        cycleId: { type: string, format: uuid }
+        type:
+          type: string
+          enum:
+            [review_approve, review_reject, release, supersede, obsolete]
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        authoritySlot:
+          type: string
+          pattern: "^[a-z][a-z0-9_.-]{0,63}$"
+        confirmationMethod:
+          type: string
+          const: authenticated_session_confirmation
+        confirmationIntent:
+          type: string
+          enum:
+            [
+              review_decision,
+              release_revision,
+              supersede_revision,
+              obsolete_revision,
+            ]
+        reason: { type: [string, "null"], maxLength: 2000 }
+        confirmedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId:
+          type: string
+          minLength: 8
+          maxLength: 128
+          pattern: "^[A-Za-z0-9._:-]+$"
+        evidenceHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentReleaseLifecycleEvent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          type,
+          fromState,
+          toState,
+          fromVersion,
+          toVersion,
+          cycleId,
+          confirmationHashes,
+          replacementRevisionId,
+          replacementEffectiveDate,
+          actorUserId,
+          occurredAt,
+          requestId,
+          traceId,
+          eventHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        type:
+          type: string
+          enum:
+            [
+              submitted,
+              resubmitted,
+              review_approved,
+              review_rejected,
+              approved,
+              released,
+              superseded,
+              obsolete,
+            ]
+        fromState:
+          type: string
+          enum: [draft, in_review, approved, released, superseded, obsolete]
+        toState:
+          type: string
+          enum: [draft, in_review, approved, released, superseded, obsolete]
+        fromVersion: { type: integer, minimum: 0 }
+        toVersion: { type: integer, minimum: 1 }
+        cycleId: { type: string, format: uuid }
+        confirmationHashes:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items:
+            type: string
+            pattern: "^[a-f0-9]{64}$"
+        replacementRevisionId: { type: [string, "null"], format: uuid }
+        replacementEffectiveDate: { type: [string, "null"], format: date }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        occurredAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId:
+          type: string
+          minLength: 8
+          maxLength: 128
+          pattern: "^[A-Za-z0-9._:-]+$"
+        eventHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentReleaseRevisionHistory:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          revisionId,
+          lifecycle,
+          capabilities,
+          cycles,
+          confirmations,
+          events,
+        ]
+      properties:
+        revisionId: { type: string, format: uuid }
+        lifecycle:
+          $ref: "#/components/schemas/DocumentRevisionLifecycle"
+        capabilities:
+          $ref: "#/components/schemas/DocumentReleaseCapabilities"
+        cycles:
+          type: array
+          maxItems: 64
+          items: { $ref: "#/components/schemas/DocumentReviewCycle" }
+        confirmations:
+          type: array
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/DocumentReleaseConfirmation"
+        events:
+          type: array
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/DocumentReleaseLifecycleEvent"
+    DocumentReleaseWorkspace:
+      type: object
+      additionalProperties: false
+      required: [available, commandsEnabled, reasonCode, policies, revisions]
+      properties:
+        available: { type: boolean }
+        commandsEnabled: { type: boolean }
+        reasonCode:
+          type: string
+          enum: [available, permission_unavailable, routes_disabled]
+        policies:
+          type: array
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/DocumentReleasePolicyOption"
+        revisions:
+          type: array
+          maxItems: 256
+          items:
+            $ref: "#/components/schemas/DocumentReleaseRevisionHistory"
     ControlledDocumentWorkspace:
       type: object
       additionalProperties: false
@@ -6865,6 +7662,7 @@ components:
           relationships,
           lockHistory,
           externalRetrieval,
+          releaseWorkspace,
         ]
       properties:
         project: { $ref: "#/components/schemas/DocumentProject" }
@@ -6884,6 +7682,8 @@ components:
           items: { $ref: "#/components/schemas/DocumentLockEvent" }
         externalRetrieval:
           $ref: "#/components/schemas/DocumentExternalRetrievalCapability"
+        releaseWorkspace:
+          $ref: "#/components/schemas/DocumentReleaseWorkspace"
     DocumentFileCapabilityResult:
       type: object
       additionalProperties: false

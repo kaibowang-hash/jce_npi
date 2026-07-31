@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import unittest
 from pathlib import Path
@@ -7,6 +8,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCTYPE_ROOT = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
+RELEASE_REPOSITORY = (
+    ROOT / "apps/npi_core/npi_core/documents/release_repository.py"
+)
 
 SYSTEM_MANAGER = {
     "role": "System Manager",
@@ -296,6 +300,133 @@ class Phase5DocumentReleaseMetadataTest(unittest.TestCase):
             self.assertIn(object_name, ownership)
         self.assertIn("APPEND_EVENT_AND_VERSION_CONFLICT", ownership)
         self.assertIn("IMMUTABLE_SNAPSHOT", ownership)
+
+    def test_repository_preserves_exact_authority_locks_and_file_truth(
+        self,
+    ) -> None:
+        source = RELEASE_REPOSITORY.read_text(encoding="utf-8")
+        self.assertIn("class FrappeDocumentReleaseRepository", source)
+        self.assertIn("for_update=True", source)
+        self.assertIn("self._can_view_project(project, project_id)", source)
+        self.assertNotIn("_can_administer_project", source)
+        for marker in (
+            "release_policy_value",
+            "review_cycle_value",
+            "confirmation_value",
+            "lifecycle_event_value",
+            "has_live_private_file_identity",
+            'str(file_revision.scan_state) != "clean"',
+            "hashlib.sha256(content).hexdigest()",
+            "file_document.is_private",
+            "file_document.is_remote_file",
+            "file_document.content_hash",
+            "_association_matches_live_file",
+        ):
+            self.assertIn(marker, source)
+        self.assertNotIn("ignore_" + "permissions", source)
+        self.assertNotIn("frappe.db." + "sql", source)
+
+    def test_repository_transaction_order_is_closed_for_each_command(
+        self,
+    ) -> None:
+        source = RELEASE_REPOSITORY.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+
+        def method(name: str) -> str:
+            node = next(
+                value
+                for value in ast.walk(tree)
+                if isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and value.name == name
+            )
+            return ast.get_source_segment(source, node) or ""
+
+        sequences = {
+            "_submit_review": (
+                "_insert_idempotency",
+                "_insert_review_cycle",
+                "_insert_lifecycle_event",
+                "_save_lifecycle",
+                "_append_release_audit",
+                "_seal_idempotency",
+            ),
+            "confirm_review": (
+                "_insert_idempotency",
+                "_insert_confirmation",
+                "_insert_lifecycle_event",
+                "_save_lifecycle",
+                "_append_release_audit",
+                "_seal_idempotency",
+            ),
+            "release_revision": (
+                "_insert_idempotency",
+                "_mark_file_revisions_released",
+                "_insert_confirmation",
+                "_insert_lifecycle_event",
+                "_save_lifecycle",
+                "_append_release_audit",
+                "_seal_idempotency",
+            ),
+            "_terminate_revision": (
+                "_insert_idempotency",
+                "_insert_confirmation",
+                "_insert_lifecycle_event",
+                "_save_lifecycle",
+                "_append_release_audit",
+                "_seal_idempotency",
+            ),
+        }
+        for name, sequence in sequences.items():
+            with self.subTest(name=name):
+                body = method(name)
+                self.assertIn("_controlled_document_write_scope()", body)
+                self.assertIn("document_release_command_write()", body)
+                offsets = [body.index(marker) for marker in sequence]
+                self.assertEqual(offsets, sorted(offsets))
+
+    def test_controller_evidence_chain_distinguishes_review_and_release(
+        self,
+    ) -> None:
+        confirmation = (
+            DOCTYPE_ROOT
+            / "npi_document_confirmation"
+            / "npi_document_confirmation.py"
+        ).read_text(encoding="utf-8")
+        event = (
+            DOCTYPE_ROOT
+            / "npi_document_lifecycle_event"
+            / "npi_document_lifecycle_event.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("DocumentConfirmationType.REVIEW_APPROVE", confirmation)
+        self.assertIn('"current_state": "approved"', confirmation)
+        self.assertIn('"current_state": "released"', confirmation)
+        self.assertIn(
+            '"release_snapshot_hash": self.evidence_snapshot_hash',
+            confirmation,
+        )
+        self.assertIn("review_events = {", event)
+        self.assertIn('"NPI Document Confirmation"', event)
+        self.assertIn(
+            '"evidence_snapshot_hash": self.evidence_snapshot_hash',
+            event,
+        )
+
+    def test_document_receipt_accepts_only_closed_release_operations(self) -> None:
+        source = (
+            DOCTYPE_ROOT
+            / "npi_document_command_idempotency"
+            / "npi_document_command_idempotency.py"
+        ).read_text(encoding="utf-8")
+        for operation in (
+            "document.review.submit",
+            "document.review.resubmit",
+            "document.review.approve",
+            "document.review.reject",
+            "document.release",
+            "document.supersede",
+            "document.obsolete",
+        ):
+            self.assertEqual(source.count(f'"{operation}"'), 1)
 
 
 if __name__ == "__main__":

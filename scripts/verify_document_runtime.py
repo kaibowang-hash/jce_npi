@@ -58,6 +58,12 @@ DOCUMENT_DOCTYPES = (
     "NPI Document Lock Event",
     "NPI Document Command Idempotency",
     "NPI Document Share Grant",
+    "NPI Document Release Policy",
+    "NPI Document Release Policy Version",
+    "NPI Document Revision Lifecycle",
+    "NPI Document Review Cycle",
+    "NPI Document Confirmation",
+    "NPI Document Lifecycle Event",
 )
 
 
@@ -199,6 +205,11 @@ DOCUMENT_POLICY_VERSION = 1
 DOCUMENT_POLICY_VERSION_KEY = (
     f"{DOCUMENT_POLICY_ID}:{DOCUMENT_POLICY_VERSION}"
 )
+DOCUMENT_RELEASE_POLICY_ID = fixture_id("document-release-policy")
+DOCUMENT_RELEASE_POLICY_VERSION = 1
+DOCUMENT_RELEASE_POLICY_VERSION_KEY = (
+    f"{DOCUMENT_RELEASE_POLICY_ID}:{DOCUMENT_RELEASE_POLICY_VERSION}"
+)
 OWNER_USER = (
     f"npi-document-{FIXTURE_RUN_ID[:20]}-owner@example.invalid"
 )
@@ -208,12 +219,18 @@ UNRELATED_USER = (
 BUSINESS_CODE = f"P5-01-{FIXTURE_RUN_ID[:16].upper()}"
 PROJECT_TEMPLATE_CODE = f"P501-{FIXTURE_RUN_ID[:16].upper()}"
 POLICY_KEY = f"p5_01_runtime_{FIXTURE_RUN_ID}"
+RELEASE_POLICY_KEY = f"p5_02_runtime_{FIXTURE_RUN_ID}"
 PROJECT_CREATE_KEY = f"{FIXTURE_PREFIX}-project-create"
 DOCUMENT_CREATE_KEY = f"{FIXTURE_PREFIX}-document-create"
 DOCUMENT_CHECK_OUT_KEY = f"{FIXTURE_PREFIX}-document-check-out"
 DOCUMENT_REVISION_KEY = f"{FIXTURE_PREFIX}-document-revision"
 DOCUMENT_CONTENT_KEY = f"{FIXTURE_PREFIX}-document-content"
 DOCUMENT_CHECK_IN_KEY = f"{FIXTURE_PREFIX}-document-check-in"
+DOCUMENT_REVIEW_SUBMIT_KEY = f"{FIXTURE_PREFIX}-review-submit"
+DOCUMENT_REVIEW_REJECT_KEY = f"{FIXTURE_PREFIX}-review-reject"
+DOCUMENT_REVIEW_RESUBMIT_KEY = f"{FIXTURE_PREFIX}-review-resubmit"
+DOCUMENT_REVIEW_APPROVE_KEY = f"{FIXTURE_PREFIX}-review-approve"
+DOCUMENT_RELEASE_KEY = f"{FIXTURE_PREFIX}-release"
 
 
 @dataclass(frozen=True)
@@ -601,6 +618,54 @@ def binary_content_request(
     return result
 
 
+def create_internal_fixture_user(
+    administrator,
+    base_url: str,
+    user_id: str,
+    password: str,
+    csrf_token: str,
+) -> None:
+    created = create_resource(
+        administrator,
+        base_url,
+        "User",
+        {
+            "email": user_id,
+            "enabled": 1,
+            "first_name": "NPI Document Reviewer",
+            "language": "en",
+            "last_name": "Runtime Fixture",
+            "new_password": password,
+            "roles": [
+                {"role": "Desk User"},
+                {"role": "NPI API User"},
+            ],
+            "send_welcome_email": 0,
+            "user_type": "System User",
+        },
+        csrf_token,
+    )
+    require(
+        created.status in {200, 201},
+        f"Internal Document fixture user creation returned HTTP {created.status}",
+    )
+    retained = get_resource(administrator, base_url, "User", user_id)
+    data = retained.body.get("data", {})
+    roles = {
+        str(value.get("role"))
+        for value in data.get("roles", [])
+        if isinstance(value, dict)
+    }
+    require(
+        retained.status == 200
+        and data.get("enabled") == 1
+        and data.get("user_type") == "System User"
+        and "NPI API User" in roles
+        and "System Manager" not in roles,
+        "Internal Document fixture transport identity drifted",
+    )
+
+
 def ensure_project_template(
     administrator,
     base_url: str,
@@ -785,6 +850,92 @@ def ensure_document_policy(
     return snapshot_hash
 
 
+def ensure_document_release_policy(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+) -> str:
+    root = create_resource(
+        administrator,
+        base_url,
+        "NPI Document Release Policy",
+        {
+            "global_id": DOCUMENT_RELEASE_POLICY_ID,
+            "tenant_id": TENANT_ID,
+            "project_global_id": project_id,
+            "policy_key": RELEASE_POLICY_KEY,
+            "title": "Synthetic P5-02 runtime document release policy",
+            "enabled": 1,
+        },
+        csrf_token,
+    )
+    require_http_status(
+        root,
+        {200, 201},
+        "Document release policy creation",
+    )
+    draft = create_resource(
+        administrator,
+        base_url,
+        "NPI Document Release Policy Version",
+        {
+            "document_release_policy": DOCUMENT_RELEASE_POLICY_ID,
+            "policy_version": DOCUMENT_RELEASE_POLICY_VERSION,
+            "title": "Synthetic P5-02 runtime release policy version",
+            "publication_state": "draft",
+            "submitter_user_ids": ["Administrator"],
+            "reviewer_assignments": [
+                {
+                    "slotKey": "engineering_reviewer",
+                    "userId": OWNER_USER,
+                }
+            ],
+            "required_approval_count": 1,
+            "release_authority_user_ids": ["Administrator"],
+            "supersede_authority_user_ids": ["Administrator"],
+            "obsolete_authority_user_ids": ["Administrator"],
+            "confirmation_method": "authenticated_session_confirmation",
+            "required_scan_state": "clean",
+            "require_live_private_identity": 1,
+            "require_sha256_match": 1,
+            "supersede_requires_released_successor": 1,
+            "supersede_requires_later_revision": 1,
+            "supersede_requires_successor_effective_date": 1,
+        },
+        csrf_token,
+    )
+    require_http_status(
+        draft,
+        {200, 201},
+        "Document release policy draft creation",
+    )
+    published = update_resource(
+        administrator,
+        base_url,
+        "NPI Document Release Policy Version",
+        DOCUMENT_RELEASE_POLICY_VERSION_KEY,
+        {"publication_state": "published"},
+        csrf_token,
+    )
+    require_http_status(
+        published,
+        {200},
+        "Document release policy publication",
+    )
+    data = published.body.get("data", {})
+    snapshot_hash = data.get("snapshot_hash")
+    require(
+        data.get("publication_state") == "published"
+        and data.get("project_global_id") == project_id
+        and isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Published document release policy truth drifted",
+    )
+    return snapshot_hash
+
+
 def verify_fresh_namespace(administrator, base_url: str) -> None:
     for user in (OWNER_USER, UNRELATED_USER):
         result = request(administrator, base_url, user_resource_path(user))
@@ -795,6 +946,7 @@ def verify_fresh_namespace(administrator, base_url: str) -> None:
     for doctype, name in (
         ("NPI Project Template", PROJECT_TEMPLATE_ID),
         ("NPI Document Policy", DOCUMENT_POLICY_ID),
+        ("NPI Document Release Policy", DOCUMENT_RELEASE_POLICY_ID),
     ):
         result = get_resource(administrator, base_url, doctype, name)
         require(
@@ -1006,6 +1158,45 @@ def verify_document_runtime_schema(fixture_run_id: str) -> dict[str, object]:
             "response_snapshot",
             "response_sealed",
         },
+        "NPI Document Release Policy": {
+            "global_id",
+            "project_global_id",
+            "policy_key_hash",
+            "optimistic_version",
+        },
+        "NPI Document Release Policy Version": {
+            "global_id",
+            "policy_global_id",
+            "reviewer_assignments",
+            "release_authority_user_ids",
+            "policy_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Document Revision Lifecycle": {
+            "revision_global_id",
+            "current_state",
+            "lifecycle_version",
+            "last_event_global_id",
+        },
+        "NPI Document Review Cycle": {
+            "cycle_key",
+            "revision_global_id",
+            "review_evidence",
+            "snapshot_hash",
+        },
+        "NPI Document Confirmation": {
+            "confirmation_key",
+            "revision_global_id",
+            "confirmation_evidence",
+            "evidence_hash",
+        },
+        "NPI Document Lifecycle Event": {
+            "revision_global_id",
+            "from_version",
+            "to_version",
+            "event_snapshot",
+            "event_hash",
+        },
     }
     for doctype in DOCUMENT_DOCTYPES:
         require(
@@ -1088,6 +1279,116 @@ def observe_document_file_scan(
     }
 
 
+def verify_released_file_delete_guard(
+    fixture_run_id: str,
+    *,
+    file_revision_id: str,
+    document_id: str,
+    project_id: str,
+) -> dict[str, object]:
+    import frappe
+
+    _validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "Released file guard fixture namespace drifted",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.business_code) == BUSINESS_CODE,
+        "Released file guard Project identity drifted",
+    )
+    revision = frappe.get_doc("NPI File Revision", file_revision_id)
+    require(
+        str(revision.project_global_id) == project_id
+        and str(revision.document_global_id) == document_id
+        and int(revision.released or 0) == 1,
+        "Released file guard identity drifted",
+    )
+    file_id = str(revision.frappe_file_id)
+    retained = frappe.get_doc("File", file_id)
+    try:
+        retained.delete()
+    except frappe.PermissionError:
+        frappe.db.rollback()
+    else:
+        frappe.db.rollback()
+        require(False, "Released document File deletion was not rejected")
+    require(
+        frappe.db.exists("File", file_id)
+        and frappe.db.exists("NPI File Revision", file_revision_id),
+        "Released document File guard did not retain exact evidence",
+    )
+    return {
+        "deleteRejected": True,
+        "documentId": document_id,
+        "fileRevisionId": file_revision_id,
+        "projectId": project_id,
+    }
+
+
+def set_document_file_content(
+    fixture_run_id: str,
+    *,
+    file_revision_id: str,
+    document_id: str,
+    project_id: str,
+    mode: str,
+) -> dict[str, object]:
+    import frappe
+
+    _validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID and mode in {"tamper", "restore"},
+        "Document integrity fixture arguments drifted",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    revision = frappe.get_doc("NPI File Revision", file_revision_id)
+    require(
+        str(project.business_code) == BUSINESS_CODE
+        and str(revision.project_global_id) == project_id
+        and str(revision.document_global_id) == document_id
+        and int(revision.released or 0) == 0,
+        "Document integrity fixture identity drifted",
+    )
+    file_document = frappe.get_doc("File", str(revision.frappe_file_id))
+    file_url = str(file_document.file_url)
+    require(
+        file_url.startswith("/private/files/")
+        and int(file_document.is_private or 0) == 1
+        and int(file_document.is_remote_file or 0) == 0,
+        "Document integrity fixture private-file boundary drifted",
+    )
+    private_root = Path(frappe.get_site_path("private", "files")).resolve()
+    file_path = Path(
+        frappe.get_site_path(*file_url.lstrip("/").split("/"))
+    ).resolve()
+    require(
+        file_path.is_relative_to(private_root)
+        and file_path.is_file()
+        and not file_path.is_symlink(),
+        "Document integrity fixture path drifted",
+    )
+    tampered = PDF_CONTENT + b"\n%controlled-integrity-mismatch\n"
+    expected_before = PDF_CONTENT if mode == "tamper" else tampered
+    expected_after = tampered if mode == "tamper" else PDF_CONTENT
+    require(
+        file_path.read_bytes() == expected_before,
+        "Document integrity fixture precondition drifted",
+    )
+    file_path.write_bytes(expected_after)
+    require(
+        file_path.read_bytes() == expected_after,
+        "Document integrity fixture write verification failed",
+    )
+    return {
+        "contentMode": mode,
+        "documentId": document_id,
+        "fileRevisionId": file_revision_id,
+        "projectId": project_id,
+    }
+
+
 def run_bench_fixture(
     method: str,
     kwargs: dict[str, object],
@@ -1137,6 +1438,8 @@ def run_bench_fixture(
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     fixtures = {
         "observe_document_file_scan": observe_document_file_scan,
+        "set_document_file_content": set_document_file_content,
+        "verify_released_file_delete_guard": verify_released_file_delete_guard,
         "verify_document_runtime_schema": verify_document_runtime_schema,
     }
     require(method in fixtures, "Controlled Document Bench fixture is unavailable")
@@ -1190,6 +1493,82 @@ def fixture_policy_hash(administrator, base_url: str) -> str:
     return snapshot_hash
 
 
+def fixture_release_policy_hash(administrator, base_url: str) -> str:
+    policy = get_resource(
+        administrator,
+        base_url,
+        "NPI Document Release Policy Version",
+        DOCUMENT_RELEASE_POLICY_VERSION_KEY,
+    )
+    require(
+        policy.status == 200,
+        "Retained Document release policy is unavailable",
+    )
+    snapshot_hash = policy.body.get("data", {}).get("snapshot_hash")
+    require(
+        isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Retained Document release policy hash drifted",
+    )
+    return snapshot_hash
+
+
+def release_command(
+    opener,
+    base_url: str,
+    csrf_token: str | None,
+    *,
+    project_id: str,
+    document_id: str,
+    revision_id: str,
+    suffix: str,
+    payload: dict[str, object],
+    idempotency_key: str,
+) -> HttpResult:
+    return npi_request(
+        opener,
+        base_url,
+        (
+            f"/api/npi/v1/projects/{project_id}/documents/{document_id}/"
+            f"revisions/{revision_id}:{suffix}"
+        ),
+        method="POST",
+        payload=payload,
+        csrf_token=csrf_token,
+        idempotency_key=idempotency_key,
+    )
+
+
+def validate_release_transition(
+    result: HttpResult,
+    *,
+    expected_state: str,
+    expected_version: int,
+    expected_event: str,
+    expected_confirmation: str | None,
+    replayed: bool = False,
+) -> dict[str, Any]:
+    require_http_status(result, {201}, f"Document {expected_event} command")
+    body = result.body
+    confirmation = body.get("confirmation")
+    require(
+        body.get("state") == expected_state
+        and body.get("lifecycleVersion") == expected_version
+        and body.get("event", {}).get("type") == expected_event
+        and (
+            (expected_confirmation is None and confirmation is None)
+            or (
+                isinstance(confirmation, dict)
+                and confirmation.get("type") == expected_confirmation
+            )
+        )
+        and result.headers.get("Idempotency-Replayed")
+        == ("true" if replayed else "false"),
+        f"Document {expected_event} transition truth drifted",
+    )
+    return body
+
+
 def route_disable_probe(
     administrator,
     base_url: str,
@@ -1210,6 +1589,69 @@ def route_disable_probe(
             result.status == 200,
             f"Recovered Document route returned HTTP {result.status}",
         )
+
+
+def release_route_disable_probe(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    expected_mode: str,
+) -> None:
+    project_id, _project_version = fixture_project(administrator, base_url)
+    page = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents",
+        query_key=f"release-route-list-{expected_mode}",
+    )
+    require(
+        page.status == 200 and len(page.body.get("items", [])) == 1,
+        "P5-02 route switch changed the retained P5-01 list route",
+    )
+    document_id = str(page.body["items"][0]["globalId"])
+    detail = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents/{document_id}",
+        query_key=f"release-route-detail-{expected_mode}",
+    )
+    release_workspace = detail.body.get("releaseWorkspace", {})
+    require(
+        detail.status == 200
+        and release_workspace.get("available") is True
+        and release_workspace.get("commandsEnabled")
+        is (expected_mode == "recovered")
+        and release_workspace.get("reasonCode")
+        == ("available" if expected_mode == "recovered" else "routes_disabled"),
+        "P5-02 release route switch workspace truth drifted",
+    )
+    if expected_mode == "recovered":
+        return
+    revision_history = release_workspace.get("revisions", [])[0]
+    revision_id = str(revision_history["revisionId"])
+    disabled = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="obsolete",
+        payload={
+            "expectedDocumentVersion": int(
+                detail.body["document"]["optimisticVersion"]
+            ),
+            "expectedLifecycleVersion": int(
+                revision_history["lifecycle"]["version"]
+            ),
+            "reason": "Controlled route-disable probe.",
+            "confirmationIntent": "obsolete_revision",
+            "confirmed": True,
+        },
+        idempotency_key=f"{FIXTURE_PREFIX}-release-route-disabled",
+    )
+    validate_problem(disabled, 503, "DOCUMENT_RELEASE_ROUTES_DISABLED")
 
 
 def run_replay(
@@ -1241,6 +1683,351 @@ def run_replay(
         documents.get("globalId"),
         "Document replay did not retain its exact identity",
     )
+    document_id = str(documents["globalId"])
+    detail = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents/{document_id}",
+        query_key="release-replay-detail",
+    )
+    require(
+        detail.status == 200
+        and len(detail.body.get("releaseWorkspace", {}).get("revisions", []))
+        == 1,
+        "Retained Document release history is unavailable for replay",
+    )
+    revision_id = str(detail.body["revisions"][0]["globalId"])
+    release_replay = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="release",
+        payload={
+            "expectedDocumentVersion": 4,
+            "expectedLifecycleVersion": 4,
+            "confirmationIntent": "release_revision",
+            "confirmed": True,
+        },
+        idempotency_key=DOCUMENT_RELEASE_KEY,
+    )
+    validate_release_transition(
+        release_replay,
+        expected_state="released",
+        expected_version=5,
+        expected_event="released",
+        expected_confirmation="release",
+        replayed=True,
+    )
+
+
+def verify_review_release_runtime(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    fixture_password: str,
+    *,
+    project_id: str,
+    document_id: str,
+    revision_id: str,
+    file_revision_id: str,
+    release_policy_hash: str,
+) -> dict[str, object]:
+    owner = login(base_url, OWNER_USER, fixture_password)
+    owner_csrf = bootstrap_csrf(owner, base_url, OWNER_USER)
+    submit_payload = {
+        "expectedDocumentVersion": 4,
+        "expectedLifecycleVersion": 0,
+        "policyGlobalId": DOCUMENT_RELEASE_POLICY_ID,
+        "policyVersion": DOCUMENT_RELEASE_POLICY_VERSION,
+        "policySnapshotHash": release_policy_hash,
+        "confirmationIntent": "submit_review",
+        "confirmed": True,
+    }
+    no_csrf = release_command(
+        administrator,
+        base_url,
+        None,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="submit-review",
+        payload=submit_payload,
+        idempotency_key=f"{FIXTURE_PREFIX}-review-csrf-rejected",
+    )
+    validate_problem(no_csrf, 403, "CSRF_TOKEN_INVALID")
+    wrong_submitter = release_command(
+        owner,
+        base_url,
+        owner_csrf,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="submit-review",
+        payload=submit_payload,
+        idempotency_key=f"{FIXTURE_PREFIX}-review-authority-rejected",
+    )
+    validate_problem(
+        wrong_submitter,
+        503,
+        "DOCUMENT_RELEASE_POLICY_UNAVAILABLE",
+    )
+
+    submitted_result = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="submit-review",
+        payload=submit_payload,
+        idempotency_key=DOCUMENT_REVIEW_SUBMIT_KEY,
+    )
+    submitted = validate_release_transition(
+        submitted_result,
+        expected_state="in_review",
+        expected_version=1,
+        expected_event="submitted",
+        expected_confirmation=None,
+    )
+    first_cycle_id = str(submitted["reviewCycleId"])
+    submitted_replay = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="submit-review",
+        payload=submit_payload,
+        idempotency_key=DOCUMENT_REVIEW_SUBMIT_KEY,
+    )
+    replayed_submit = validate_release_transition(
+        submitted_replay,
+        expected_state="in_review",
+        expected_version=1,
+        expected_event="submitted",
+        expected_confirmation=None,
+        replayed=True,
+    )
+    require(
+        replayed_submit == submitted,
+        "Review submission replay changed its sealed response",
+    )
+    stale_submit = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="submit-review",
+        payload=submit_payload,
+        idempotency_key=f"{FIXTURE_PREFIX}-review-stale-submit",
+    )
+    validate_problem(
+        stale_submit,
+        409,
+        "DOCUMENT_REVIEW_STATE_CONFLICT",
+    )
+
+    rejected_result = release_command(
+        owner,
+        base_url,
+        owner_csrf,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="review",
+        payload={
+            "expectedDocumentVersion": 4,
+            "expectedLifecycleVersion": 1,
+            "decision": "reject",
+            "reason": "Synthetic controlled rejection for resubmission proof.",
+            "confirmationIntent": "review_decision",
+            "confirmed": True,
+        },
+        idempotency_key=DOCUMENT_REVIEW_REJECT_KEY,
+    )
+    validate_release_transition(
+        rejected_result,
+        expected_state="draft",
+        expected_version=2,
+        expected_event="review_rejected",
+        expected_confirmation="review_reject",
+    )
+
+    resubmitted_result = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="resubmit-review",
+        payload={
+            "expectedDocumentVersion": 4,
+            "expectedLifecycleVersion": 2,
+            "policyGlobalId": DOCUMENT_RELEASE_POLICY_ID,
+            "policyVersion": DOCUMENT_RELEASE_POLICY_VERSION,
+            "policySnapshotHash": release_policy_hash,
+            "priorRejectedCycleId": first_cycle_id,
+            "confirmationIntent": "resubmit_review",
+            "confirmed": True,
+        },
+        idempotency_key=DOCUMENT_REVIEW_RESUBMIT_KEY,
+    )
+    resubmitted = validate_release_transition(
+        resubmitted_result,
+        expected_state="in_review",
+        expected_version=3,
+        expected_event="resubmitted",
+        expected_confirmation=None,
+    )
+    require(
+        str(resubmitted["reviewCycleId"]) != first_cycle_id,
+        "Review resubmission did not append a new immutable cycle",
+    )
+
+    approved_result = release_command(
+        owner,
+        base_url,
+        owner_csrf,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="review",
+        payload={
+            "expectedDocumentVersion": 4,
+            "expectedLifecycleVersion": 3,
+            "decision": "approve",
+            "confirmationIntent": "review_decision",
+            "confirmed": True,
+        },
+        idempotency_key=DOCUMENT_REVIEW_APPROVE_KEY,
+    )
+    validate_release_transition(
+        approved_result,
+        expected_state="approved",
+        expected_version=4,
+        expected_event="approved",
+        expected_confirmation="review_approve",
+    )
+
+    integrity_kwargs = {
+        "fixture_run_id": FIXTURE_RUN_ID,
+        "file_revision_id": file_revision_id,
+        "document_id": document_id,
+        "project_id": project_id,
+    }
+    tampered = run_bench_fixture(
+        "set_document_file_content",
+        {**integrity_kwargs, "mode": "tamper"},
+    )
+    require(
+        tampered.get("contentMode") == "tamper",
+        "Controlled integrity mismatch was not applied",
+    )
+    release_payload = {
+        "expectedDocumentVersion": 4,
+        "expectedLifecycleVersion": 4,
+        "confirmationIntent": "release_revision",
+        "confirmed": True,
+    }
+    try:
+        blocked_release = release_command(
+            administrator,
+            base_url,
+            csrf_token,
+            project_id=project_id,
+            document_id=document_id,
+            revision_id=revision_id,
+            suffix="release",
+            payload=release_payload,
+            idempotency_key=f"{FIXTURE_PREFIX}-release-integrity-blocked",
+        )
+        validate_problem(
+            blocked_release,
+            409,
+            "DOCUMENT_RELEASE_INTEGRITY_BLOCKED",
+        )
+    finally:
+        restored = run_bench_fixture(
+            "set_document_file_content",
+            {**integrity_kwargs, "mode": "restore"},
+        )
+        require(
+            restored.get("contentMode") == "restore",
+            "Controlled integrity fixture was not restored",
+        )
+
+    released_result = release_command(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        suffix="release",
+        payload=release_payload,
+        idempotency_key=DOCUMENT_RELEASE_KEY,
+    )
+    released = validate_release_transition(
+        released_result,
+        expected_state="released",
+        expected_version=5,
+        expected_event="released",
+        expected_confirmation="release",
+    )
+    release_snapshot_hash = released.get("releaseSnapshotHash")
+    require(
+        isinstance(release_snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", release_snapshot_hash) is not None,
+        "Released revision snapshot hash is unavailable",
+    )
+
+    detail = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents/{document_id}",
+        query_key="released-detail",
+    )
+    require_http_status(detail, {200}, "Released Document detail")
+    histories = detail.body.get("releaseWorkspace", {}).get("revisions", [])
+    files = detail.body.get("revisions", [])[0].get("files", [])
+    require(
+        detail.body.get("document", {}).get("optimisticVersion") == 4
+        and len(histories) == 1
+        and histories[0].get("lifecycle", {}).get("state") == "released"
+        and histories[0].get("lifecycle", {}).get("version") == 5
+        and len(histories[0].get("cycles", [])) == 2
+        and [value.get("state") for value in histories[0]["cycles"]]
+        == ["rejected", "approved"]
+        and len(histories[0].get("confirmations", [])) == 3
+        and len(histories[0].get("events", [])) == 5
+        and len(files) == 1
+        and files[0].get("released") is True
+        and files[0].get("scanState") == "clean",
+        "Released Document history or retained file truth drifted",
+    )
+    deletion = run_bench_fixture(
+        "verify_released_file_delete_guard",
+        integrity_kwargs,
+    )
+    require(
+        deletion.get("deleteRejected") is True,
+        "Released File delete guard did not pass",
+    )
+    return {
+        "deleteRejected": True,
+        "integrityBlocked": True,
+        "releaseSnapshotHash": release_snapshot_hash,
+        "reviewCycles": 2,
+        "reviewRejectResubmit": True,
+    }
 
 
 def run_fresh(
@@ -1250,16 +2037,15 @@ def run_fresh(
     fixture_password: str,
 ) -> dict[str, object]:
     verify_fresh_namespace(administrator, base_url)
-    owner_created = create_disposable_user(
+    create_internal_fixture_user(
         administrator,
         base_url,
         OWNER_USER,
         fixture_password,
         csrf_token,
     )
-    owner_cleanup_required = owner_created.status in {200, 201}
+    owner_cleanup_required = True
     try:
-        validate_disposable_user(owner_created, OWNER_USER)
         evidence = _run_fresh_with_owner(
             administrator,
             base_url,
@@ -1304,6 +2090,12 @@ def _run_fresh_with_owner(
         administrator,
         base_url,
         csrf_token,
+    )
+    release_policy_hash = ensure_document_release_policy(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
     )
     empty = npi_request(
         administrator,
@@ -1547,6 +2339,17 @@ def _run_fresh_with_owner(
         == ["released", "acquired"],
         "Document check-in or immutable lock history truth drifted",
     )
+    release_evidence = verify_review_release_runtime(
+        administrator,
+        base_url,
+        csrf_token,
+        fixture_password,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        file_revision_id=file_revision_id,
+        release_policy_hash=release_policy_hash,
+    )
 
     relationship_filter = npi_request(
         administrator,
@@ -1635,6 +2438,11 @@ def _run_fresh_with_owner(
         "document.revision.create": DOCUMENT_REVISION_KEY,
         "document.content.inline": DOCUMENT_CONTENT_KEY,
         "document.lock.release": DOCUMENT_CHECK_IN_KEY,
+        "document.review.submit": DOCUMENT_REVIEW_SUBMIT_KEY,
+        "document.review.reject": DOCUMENT_REVIEW_REJECT_KEY,
+        "document.review.resubmit": DOCUMENT_REVIEW_RESUBMIT_KEY,
+        "document.review.approve": DOCUMENT_REVIEW_APPROVE_KEY,
+        "document.release": DOCUMENT_RELEASE_KEY,
     }
     audits = []
     for operation, command_key in expected_audit_traces.items():
@@ -1675,6 +2483,7 @@ def _run_fresh_with_owner(
         "rawPrivateUrlExposed": False,
         "scanState": "clean",
         "typedRelationshipQuery": True,
+        **release_evidence,
     }
 
 
@@ -1687,12 +2496,18 @@ def main() -> None:
         "--bench-fixture",
         choices=(
             "observe_document_file_scan",
+            "set_document_file_content",
+            "verify_released_file_delete_guard",
             "verify_document_runtime_schema",
         ),
     )
     parser.add_argument("--fixture-kwargs")
     parser.add_argument(
         "--route-disable-probe",
+        choices=("disabled", "recovered"),
+    )
+    parser.add_argument(
+        "--release-route-disable-probe",
         choices=("disabled", "recovered"),
     )
     parser.add_argument("--replay-only", action="store_true")
@@ -1702,7 +2517,8 @@ def main() -> None:
             arguments.base_url is None
             and isinstance(arguments.fixture_kwargs, str)
             and not arguments.replay_only
-            and arguments.route_disable_probe is None,
+            and arguments.route_disable_probe is None
+            and arguments.release_route_disable_probe is None,
             "Controlled Document Bench fixture arguments are invalid",
         )
         kwargs = json.loads(arguments.fixture_kwargs)
@@ -1748,6 +2564,18 @@ def main() -> None:
         base_url,
         administrator_user,
     )
+    require(
+        sum(
+            value is not None
+            for value in (
+                arguments.route_disable_probe,
+                arguments.release_route_disable_probe,
+            )
+        )
+        + int(arguments.replay_only)
+        <= 1,
+        "Controlled Document runtime modes are mutually exclusive",
+    )
     if arguments.route_disable_probe is not None:
         route_disable_probe(
             administrator,
@@ -1757,6 +2585,20 @@ def main() -> None:
         print(
             json.dumps(
                 {"routeMode": arguments.route_disable_probe},
+                sort_keys=True,
+            )
+        )
+        return
+    if arguments.release_route_disable_probe is not None:
+        release_route_disable_probe(
+            administrator,
+            base_url,
+            csrf_token,
+            expected_mode=arguments.release_route_disable_probe,
+        )
+        print(
+            json.dumps(
+                {"releaseRouteMode": arguments.release_route_disable_probe},
                 sort_keys=True,
             )
         )

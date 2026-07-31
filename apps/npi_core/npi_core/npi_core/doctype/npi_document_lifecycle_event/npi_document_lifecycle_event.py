@@ -147,7 +147,7 @@ class NPIDocumentLifecycleEvent(Document):
             },
             _("The lifecycle event does not match its document revision."),
         )
-        require_exact_parent(
+        cycle = require_exact_parent(
             "NPI Document Review Cycle",
             self.review_cycle,
             {
@@ -159,9 +159,9 @@ class NPIDocumentLifecycleEvent(Document):
                 "policy_global_id": self.policy_global_id,
                 "policy_version": self.policy_version,
                 "policy_snapshot_hash": self.policy_snapshot_hash,
-                "evidence_snapshot_hash": self.evidence_snapshot_hash,
             },
             _("The lifecycle event does not match its review cycle."),
+            extra_fields=("evidence_snapshot_hash",),
         )
         require_exact_parent(
             "NPI Document Release Policy Version",
@@ -194,6 +194,45 @@ class NPIDocumentLifecycleEvent(Document):
                 _("Confirmation Hashes"),
             )
         )
+        review_events = {
+            DocumentLifecycleEventType.SUBMITTED,
+            DocumentLifecycleEventType.RESUBMITTED,
+            DocumentLifecycleEventType.REVIEW_APPROVED,
+            DocumentLifecycleEventType.REVIEW_REJECTED,
+            DocumentLifecycleEventType.APPROVED,
+        }
+        if event_type in review_events:
+            evidence_matches = (
+                str(cycle.get("evidence_snapshot_hash"))
+                == str(self.evidence_snapshot_hash)
+            )
+        else:
+            confirmation_type = {
+                DocumentLifecycleEventType.RELEASED: "release",
+                DocumentLifecycleEventType.SUPERSEDED: "supersede",
+                DocumentLifecycleEventType.OBSOLETE: "obsolete",
+            }[event_type]
+            confirmation = frappe.db.get_value(
+                "NPI Document Confirmation",
+                {
+                    "revision_global_id": self.revision_global_id,
+                    "cycle_global_id": self.cycle_global_id,
+                    "confirmation_type": confirmation_type,
+                    "evidence_snapshot_hash": self.evidence_snapshot_hash,
+                },
+                ["evidence_hash"],
+                as_dict=True,
+            )
+            evidence_matches = bool(
+                confirmation
+                and str(confirmation.get("evidence_hash"))
+                in confirmation_hashes
+            )
+        if not evidence_matches:
+            frappe.throw(
+                _("The lifecycle event does not match its review cycle."),
+                frappe.ValidationError,
+            )
         occurred_at_text = utc_datetime_text(
             self.occurred_at,
             _("Occurred At"),

@@ -9,12 +9,14 @@ from .api import frappe_domain_call
 from .foundation.errors import (
     ApiRouteNotFound,
     CsrfTokenInvalid,
+    DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
     MalformedRequest,
     ProjectCollaborationRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
+    document_release_routes_are_disabled,
     document_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
@@ -92,6 +94,56 @@ _DOCUMENT_RECOVER_LOCK_ROUTE = re.compile(
 _DOCUMENT_REVISIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
     r"(?P<document_id>[^/:]+)/revisions$"
+)
+_DOCUMENT_RELEASE_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":submit-review$"
+        ),
+        "npi_core.document_api.submit_document_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":review$"
+        ),
+        "npi_core.document_api.confirm_document_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":resubmit-review$"
+        ),
+        "npi_core.document_api.resubmit_document_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":release$"
+        ),
+        "npi_core.document_api.release_document_revision",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":supersede$"
+        ),
+        "npi_core.document_api.supersede_document_revision",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
+            r"(?P<document_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)"
+            r":obsolete$"
+        ),
+        "npi_core.document_api.obsolete_document_revision",
+    ),
 )
 _DOCUMENT_FILE_CAPABILITIES_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
@@ -286,6 +338,13 @@ def route_request() -> None:
             command = "npi_core.document_api.create_document_revision"
             route_params = match.groupdict()
     if command is None and request.method == "POST":
+        for route, candidate in _DOCUMENT_RELEASE_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "POST":
         document_commands = (
             (_DOCUMENT_CHECK_OUT_ROUTE, "npi_core.document_api.check_out_document"),
             (_DOCUMENT_CHECK_IN_ROUTE, "npi_core.document_api.check_in_document"),
@@ -357,6 +416,9 @@ def route_request() -> None:
     if _p5_01_routes_disabled(command):
         command = "npi_core.bff.document_routes_disabled"
         route_params = {}
+    if _p5_02_routes_disabled(command):
+        command = "npi_core.bff.document_release_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -409,6 +471,23 @@ def document_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["POST"],
+)
+def document_release_routes_disabled() -> dict[str, object] | None:
+    """Fail closed while P5-02 routes await a reviewed forward fix."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise DocumentReleaseRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -421,6 +500,13 @@ def _p4_05_routes_disabled(command: str | None) -> bool:
             and command.startswith("npi_core.project_controls_api.")
         )
     )
+
+
+def _p5_02_routes_disabled(command: str | None) -> bool:
+    release_commands = frozenset(
+        candidate for _route, candidate in _DOCUMENT_RELEASE_COMMAND_ROUTES
+    )
+    return document_release_routes_are_disabled() and command in release_commands
 
 
 def _p5_01_routes_disabled(command: str | None) -> bool:
@@ -539,6 +625,10 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _DOCUMENT_RECOVER_LOCK_ROUTE.fullmatch(path) is not None
         or _DOCUMENT_REVISIONS_ROUTE.fullmatch(path) is not None
         or _DOCUMENT_FILE_CONTENT_ROUTE.fullmatch(path) is not None
+        or any(
+            route.fullmatch(path) is not None
+            for route, _command in _DOCUMENT_RELEASE_COMMAND_ROUTES
+        )
     ):
         return True
     if (

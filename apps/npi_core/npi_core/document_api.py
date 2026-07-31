@@ -17,6 +17,7 @@ from npi_core.documents.domain import (
     DocumentUnavailable,
     MAX_FILE_BYTES,
 )
+from npi_core.documents.release_domain import DocumentReviewDecision
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
 from npi_core.foundation.tracing import current_trace_id
@@ -27,6 +28,7 @@ from npi_core.request_security import (
     reject_unexpected_request_fields,
     require_csrf_token,
     require_document_routes_enabled,
+    require_document_release_routes_enabled,
     require_request_fields,
     response_request_id,
 )
@@ -75,6 +77,29 @@ _REVISION_METADATA_FIELDS = frozenset(
 _CONTENT_FIELDS = frozenset(
     {"expectedDocumentVersion", "expectedFileVersion", "disposition"}
 )
+_RELEASE_COMMON_FIELDS = frozenset(
+    {
+        "expectedDocumentVersion",
+        "expectedLifecycleVersion",
+        "confirmationIntent",
+        "confirmed",
+    }
+)
+_SUBMIT_REVIEW_FIELDS = _RELEASE_COMMON_FIELDS | {
+    "policyGlobalId",
+    "policyVersion",
+    "policySnapshotHash",
+}
+_RESUBMIT_REVIEW_FIELDS = _SUBMIT_REVIEW_FIELDS | {
+    "priorRejectedCycleId",
+}
+_REVIEW_FIELDS = _RELEASE_COMMON_FIELDS | {"decision", "reason"}
+_SUPERSEDE_FIELDS = _RELEASE_COMMON_FIELDS | {
+    "replacementRevisionId",
+    "expectedReplacementLifecycleVersion",
+    "reason",
+}
+_OBSOLETE_FIELDS = _RELEASE_COMMON_FIELDS | {"reason"}
 _RELATIONSHIP_KINDS = frozenset(value.value for value in DocumentRelationshipKind)
 _PROJECT_REFERENCE_TYPES = frozenset(
     {"customer", "product", "part", "tooling", "order"}
@@ -151,6 +176,30 @@ class _RepositoryLike(Protocol):
         **kwargs: Any,
     ) -> _ContentOutcomeLike | None: ...
 
+    def submit_review(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def resubmit_review(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def confirm_review(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def release_revision(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def supersede_revision(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def obsolete_revision(
+        self, project_id: UUID, document_id: UUID, revision_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
 
 def _repository_factory(
     *,
@@ -158,9 +207,28 @@ def _repository_factory(
     request_id: str,
     trace_id: str,
 ) -> _RepositoryLike:
-    from npi_core.documents.frappe_repository import FrappeDocumentRepository
+    from npi_core.documents.release_repository import (
+        FrappeDocumentReleaseRepository,
+    )
 
-    return FrappeDocumentRepository(
+    return FrappeDocumentReleaseRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _release_repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _RepositoryLike:
+    from npi_core.documents.release_repository import (
+        FrappeDocumentReleaseRepository,
+    )
+
+    return FrappeDocumentReleaseRepository(
         principal=principal,
         request_id=request_id,
         trace_id=trace_id,
@@ -490,6 +558,363 @@ def create_document_revision(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def submit_document_review(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    policyGlobalId: Any = None,
+    policyVersion: Any = None,
+    policySnapshotHash: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _SUBMIT_REVIEW_FIELDS,
+            _SUBMIT_REVIEW_FIELDS,
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.submit_review(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_nonnegative_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            policy_global_id=_uuid_value(policyGlobalId, "policyGlobalId"),
+            policy_version=_positive_integer(policyVersion, "policyVersion"),
+            policy_snapshot_hash=_hash_value(
+                policySnapshotHash,
+                "policySnapshotHash",
+            ),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"submit_review"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def resubmit_document_review(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    policyGlobalId: Any = None,
+    policyVersion: Any = None,
+    policySnapshotHash: Any = None,
+    priorRejectedCycleId: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _RESUBMIT_REVIEW_FIELDS,
+            _RESUBMIT_REVIEW_FIELDS,
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.resubmit_review(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_positive_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            policy_global_id=_uuid_value(policyGlobalId, "policyGlobalId"),
+            policy_version=_positive_integer(policyVersion, "policyVersion"),
+            policy_snapshot_hash=_hash_value(
+                policySnapshotHash,
+                "policySnapshotHash",
+            ),
+            prior_rejected_cycle_id=_uuid_value(
+                priorRejectedCycleId,
+                "priorRejectedCycleId",
+            ),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"resubmit_review"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def confirm_document_review(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    decision: Any = None,
+    reason: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _REVIEW_FIELDS,
+            _RELEASE_COMMON_FIELDS | {"decision"},
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.confirm_review(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_positive_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            decision=DocumentReviewDecision(
+                _enum_value(
+                    decision,
+                    "decision",
+                    frozenset({"approve", "reject"}),
+                )
+            ),
+            reason=(
+                None
+                if reason in (None, "")
+                else _text_value(reason, "reason", 2_000)
+            ),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"review_decision"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def release_document_revision(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _RELEASE_COMMON_FIELDS,
+            _RELEASE_COMMON_FIELDS,
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.release_revision(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_positive_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"release_revision"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def supersede_document_revision(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    replacementRevisionId: Any = None,
+    expectedReplacementLifecycleVersion: Any = None,
+    reason: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _SUPERSEDE_FIELDS,
+            _SUPERSEDE_FIELDS,
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.supersede_revision(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_positive_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            replacement_revision_id=_uuid_value(
+                replacementRevisionId,
+                "replacementRevisionId",
+            ),
+            expected_replacement_lifecycle_version=_positive_integer(
+                expectedReplacementLifecycleVersion,
+                "expectedReplacementLifecycleVersion",
+            ),
+            reason=_text_value(reason, "reason", 2_000),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"supersede_revision"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def obsolete_document_revision(
+    expectedDocumentVersion: Any = None,
+    expectedLifecycleVersion: Any = None,
+    reason: Any = None,
+    confirmationIntent: Any = None,
+    confirmed: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        context = _release_command_context(
+            _OBSOLETE_FIELDS,
+            _OBSOLETE_FIELDS,
+            request_fields,
+        )
+        request_id, idempotency_key, repository, project_id, document_id = context
+        outcome = repository.obsolete_revision(
+            project_id,
+            document_id,
+            _route_uuid("revision_id", "revisionId"),
+            idempotency_key=idempotency_key,
+            expected_document_version=_positive_integer(
+                expectedDocumentVersion,
+                "expectedDocumentVersion",
+            ),
+            expected_lifecycle_version=_positive_integer(
+                expectedLifecycleVersion,
+                "expectedLifecycleVersion",
+            ),
+            reason=_text_value(reason, "reason", 2_000),
+            confirmation_intent=_enum_value(
+                confirmationIntent,
+                "confirmationIntent",
+                frozenset({"obsolete_revision"}),
+            ),
+            confirmed=_confirmed_value(confirmed),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=success_headers,
+    )
+
+
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_file_capabilities(**request_fields: Any) -> dict[str, Any] | None:
     success_headers = {"X-Request-ID": response_request_id()}
@@ -629,6 +1054,49 @@ def _command_context(
         administer=True,
         require_document=require_document,
     )
+    reject_unexpected_request_fields(allowed_fields, request_fields)
+    require_request_fields(required_fields, request_fields)
+    request_id = _request_id()
+    idempotency_key = actor_idempotency_key_hash(
+        actor,
+        frappe.get_request_header("Idempotency-Key"),
+    )
+    return (
+        request_id,
+        idempotency_key,
+        repository,
+        project_id,
+        document_id,
+    )
+
+
+def _release_command_context(
+    allowed_fields: frozenset[str],
+    required_fields: frozenset[str],
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _RepositoryLike, UUID, UUID]:
+    require_document_routes_enabled()
+    require_document_release_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "NPI API User" not in principal.roles:
+        raise PermissionDenied()
+    provisional_request_id = response_request_id()
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The Document request has no active trace identity.")
+    repository = _release_repository_factory(
+        principal=principal,
+        request_id=provisional_request_id,
+        trace_id=trace_id,
+    )
+    project_id, document_id = _authorized_route_scope(
+        repository,
+        administer=False,
+        require_document=True,
+    )
+    assert document_id is not None
     reject_unexpected_request_fields(allowed_fields, request_fields)
     require_request_fields(required_fields, request_fields)
     request_id = _request_id()
@@ -785,6 +1253,15 @@ def _hash_value(value: object, path: str) -> str:
     if not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None:
         raise _field_problem(path, _("Enter a valid SHA-256 value."))
     return value
+
+
+def _confirmed_value(value: object) -> bool:
+    if value is not True:
+        raise _field_problem(
+            "confirmed",
+            _("Explicit confirmation is required."),
+        )
+    return True
 
 
 def _key_value(value: object, path: str) -> str:

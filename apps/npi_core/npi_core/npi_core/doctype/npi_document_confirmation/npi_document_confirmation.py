@@ -131,7 +131,7 @@ class NPIDocumentConfirmation(Document):
             },
             _("The confirmation does not match its document revision."),
         )
-        require_exact_parent(
+        cycle = require_exact_parent(
             "NPI Document Review Cycle",
             self.review_cycle,
             {
@@ -143,9 +143,9 @@ class NPIDocumentConfirmation(Document):
                 "policy_global_id": self.policy_global_id,
                 "policy_version": self.policy_version,
                 "policy_snapshot_hash": self.policy_snapshot_hash,
-                "evidence_snapshot_hash": self.evidence_snapshot_hash,
             },
             _("The confirmation does not match its review cycle."),
+            extra_fields=("evidence_snapshot_hash",),
         )
         try:
             confirmation_type = DocumentConfirmationType(
@@ -157,6 +157,45 @@ class NPIDocumentConfirmation(Document):
                 frappe.ValidationError,
             )
             raise AssertionError("Frappe validation must raise.")
+        if confirmation_type in {
+            DocumentConfirmationType.REVIEW_APPROVE,
+            DocumentConfirmationType.REVIEW_REJECT,
+        }:
+            evidence_matches = (
+                str(cycle.get("evidence_snapshot_hash"))
+                == str(self.evidence_snapshot_hash)
+            )
+            lifecycle_filters = {
+                "revision_global_id": self.revision_global_id,
+                "current_state": "in_review",
+                "active_cycle_global_id": self.cycle_global_id,
+            }
+        elif confirmation_type is DocumentConfirmationType.RELEASE:
+            evidence_matches = True
+            lifecycle_filters = {
+                "revision_global_id": self.revision_global_id,
+                "current_state": "approved",
+                "approved_cycle_global_id": self.cycle_global_id,
+            }
+        else:
+            evidence_matches = True
+            lifecycle_filters = {
+                "revision_global_id": self.revision_global_id,
+                "current_state": "released",
+                "approved_cycle_global_id": self.cycle_global_id,
+                "release_snapshot_hash": self.evidence_snapshot_hash,
+            }
+        if not evidence_matches:
+            frappe.throw(
+                _("The confirmation does not match its review cycle."),
+                frappe.ValidationError,
+            )
+        require_exact_parent(
+            "NPI Document Revision Lifecycle",
+            self.revision_global_id,
+            lifecycle_filters,
+            _("The confirmation does not match its document revision."),
+        )
         confirmed_at_text = utc_datetime_text(
             self.confirmed_at,
             _("Confirmed At"),

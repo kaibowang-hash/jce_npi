@@ -3008,3 +3008,48 @@ NPI Document Review Cycle,NPI 文件評審週期
 Review Evidence,評審證據
 NPI Document Revision Lifecycle,NPI 文件修訂版生命週期
 Current Lifecycle State,目前生命週期狀態
+Select the supported confirmation intent.,請選擇支援的確認意圖。
+Obsolete,作廢
+Submit for review,提交評審
+Resubmit for review,重新提交評審
+Approve review,核准評審
+Reject review,拒絕評審
+Release revision,發布修訂版
+Supersede revision,取代修訂版
+Mark obsolete,標記為作廢
+Confirm the exact document review or release action.,請確認精確的文件評審或發布操作。
+Enter the required controlled reason.,請輸入所需的受控原因。
+Select an exact published release policy.,請選擇精確的已發布發布策略。
+The rejected review cycle is not available.,被拒絕的評審週期無法使用。
+Select an exact later released revision.,請選擇精確的後續已發布修訂版。
+Lifecycle state,生命週期狀態
+Lifecycle version,生命週期版本
+Review and release,評審與發布
+Document review and release details are not available for this workspace.,此工作區無法檢視文件評審和發布詳細資料。
+Review and release commands are temporarily disabled. Immutable history remains available.,評審和發布命令暫時停用。不可變歷史記錄仍可檢視。
+Release snapshot,發布快照
+Confirmation required,需要確認
+Release policy,發布策略
+Replacement revision,替代修訂版
+Controlled reason,受控原因
+I confirm this exact action using my authenticated session.,我確認使用已驗證的工作階段執行此精確操作。
+"The confirmation, exact input hashes, actor, time, request ID and trace ID will be retained.","系統將保留確認記錄、精確輸入雜湊、操作人、時間、請求編號和追蹤編號。"
+Reviewer progress,評審人進度
+Reviewer slot,評審人位置
+Assigned user,已指派使用者
+No review cycle has been submitted for this revision.,此修訂版尚未提交評審週期。
+Review cycles,評審週期
+No immutable review cycles.,沒有不可變評審週期。
+Cycle,週期
+Required approvals,所需核准數
+Submitted by,提交人
+Submitted,已提交
+Closed,已關閉
+Electronic confirmations,電子確認
+No immutable confirmations.,沒有不可變確認記錄。
+Review approved,評審已核准
+Review rejected,評審已拒絕
+Lifecycle events,生命週期事件
+No immutable lifecycle events.,沒有不可變生命週期事件。
+Transition,狀態轉換
+Resubmitted,已重新提交

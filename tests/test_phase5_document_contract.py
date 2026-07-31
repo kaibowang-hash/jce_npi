@@ -150,6 +150,70 @@ class Phase5DocumentContractTest(unittest.TestCase):
         ),
         (ROUTES[7], "post", "getDocumentFileContent", "200", True),
     )
+    RELEASE_ROUTES = (
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:submit-review:"
+        ),
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:review:"
+        ),
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:resubmit-review:"
+        ),
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:release:"
+        ),
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:supersede:"
+        ),
+        (
+            "  /projects/{projectId}/documents/{documentId}/revisions/"
+            "{revisionId}:obsolete:"
+        ),
+    )
+    RELEASE_OPERATIONS = (
+        (
+            RELEASE_ROUTES[0],
+            "submitDocumentRevisionReview",
+            "exact-policy-submitter",
+            "SubmitDocumentReview",
+        ),
+        (
+            RELEASE_ROUTES[1],
+            "confirmDocumentRevisionReview",
+            "exact-active-reviewer-slot",
+            "ConfirmDocumentReview",
+        ),
+        (
+            RELEASE_ROUTES[2],
+            "resubmitDocumentRevisionReview",
+            "exact-policy-submitter",
+            "ResubmitDocumentReview",
+        ),
+        (
+            RELEASE_ROUTES[3],
+            "releaseDocumentRevision",
+            "exact-policy-release-authority",
+            "ReleaseDocumentRevision",
+        ),
+        (
+            RELEASE_ROUTES[4],
+            "supersedeDocumentRevision",
+            "exact-policy-supersede-authority",
+            "SupersedeDocumentRevision",
+        ),
+        (
+            RELEASE_ROUTES[5],
+            "obsoleteDocumentRevision",
+            "exact-policy-obsolete-authority",
+            "ObsoleteDocumentRevision",
+        ),
+    )
 
     def test_document_routes_are_explicit_bff_operations(self) -> None:
         for marker in self.ROUTES:
@@ -221,6 +285,134 @@ class Phase5DocumentContractTest(unittest.TestCase):
                     '$ref: "#/components/parameters/CsrfToken"',
                     block,
                 )
+
+    def test_release_commands_are_exact_policy_authorized_bff_operations(
+        self,
+    ) -> None:
+        command_errors = {
+            "400",
+            "401",
+            "403",
+            "404",
+            "409",
+            "422",
+            "500",
+            "503",
+            "default",
+        }
+        for route, operation_id, authority, schema in self.RELEASE_OPERATIONS:
+            with self.subTest(route=route):
+                operation = _operation(route, "post")
+                self.assertIn("tags: [Documents]", operation)
+                self.assertIn(f"operationId: {operation_id}", operation)
+                self.assertIn("x-required-roles: [NPI API User]", operation)
+                self.assertNotIn("System Manager", operation)
+                self.assertIn(f"x-business-authority: {authority}", operation)
+                self.assertIn("x-transaction-boundary:", operation)
+                self.assertIn("x-audit-operation: document.", operation)
+                self.assertIn(
+                    '$ref: "#/components/parameters/IdempotencyKey"',
+                    operation,
+                )
+                self.assertIn(
+                    '$ref: "#/components/parameters/CsrfToken"',
+                    operation,
+                )
+                self.assertIn(
+                    f'$ref: "#/components/schemas/{schema}"',
+                    operation,
+                )
+                self.assertEqual(
+                    _response_statuses(operation),
+                    {"201"} | command_errors,
+                )
+
+    def test_release_request_and_transition_schemas_are_closed_and_exact(
+        self,
+    ) -> None:
+        expected = {
+            "SubmitDocumentReview": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "policyGlobalId",
+                "policyVersion",
+                "policySnapshotHash",
+                "confirmationIntent",
+                "confirmed",
+            },
+            "ResubmitDocumentReview": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "policyGlobalId",
+                "policyVersion",
+                "policySnapshotHash",
+                "priorRejectedCycleId",
+                "confirmationIntent",
+                "confirmed",
+            },
+            "ConfirmDocumentReview": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "decision",
+                "reason",
+                "confirmationIntent",
+                "confirmed",
+            },
+            "ReleaseDocumentRevision": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "confirmationIntent",
+                "confirmed",
+            },
+            "SupersedeDocumentRevision": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "replacementRevisionId",
+                "expectedReplacementLifecycleVersion",
+                "reason",
+                "confirmationIntent",
+                "confirmed",
+            },
+            "ObsoleteDocumentRevision": {
+                "expectedDocumentVersion",
+                "expectedLifecycleVersion",
+                "reason",
+                "confirmationIntent",
+                "confirmed",
+            },
+        }
+        optional = {"ConfirmDocumentReview": {"reason"}}
+        for schema, fields in expected.items():
+            with self.subTest(schema=schema):
+                block = _schema(schema)
+                self.assertIn("additionalProperties: false", block)
+                self.assertEqual(_properties(schema), fields)
+                self.assertEqual(
+                    set(_required(schema)),
+                    fields - optional.get(schema, set()),
+                )
+                self.assertIn("confirmed: { type: boolean, const: true }", block)
+                self.assertNotIn("actor", block.casefold())
+                self.assertNotIn("scanstate", block.casefold())
+                self.assertNotIn("fileidentity", block.casefold())
+        for schema in (
+            "DocumentReleasePolicyReference",
+            "DocumentReleaseEventSummary",
+            "DocumentConfirmationSummary",
+            "DocumentReleaseTransition",
+        ):
+            with self.subTest(response_schema=schema):
+                self.assertIn("additionalProperties: false", _schema(schema))
+        transition = _schema("DocumentReleaseTransition")
+        self.assertEqual(
+            set(_required("DocumentReleaseTransition")),
+            _properties("DocumentReleaseTransition"),
+        )
+        self.assertIn(
+            "enum: [draft, in_review, approved, released, superseded, obsolete]",
+            transition,
+        )
+        self.assertNotIn("fileUrl", transition)
 
     def test_command_schemas_are_closed_and_browser_cannot_assert_file_truth(
         self,
@@ -300,6 +492,16 @@ class Phase5DocumentContractTest(unittest.TestCase):
             "DocumentProjectReferenceRelationship",
             "DocumentLockEvent",
             "DocumentFileCapabilityResult",
+            "DocumentReleaseWorkspace",
+            "DocumentReleaseRevisionHistory",
+            "DocumentRevisionLifecycle",
+            "DocumentReleaseCapabilities",
+            "DocumentReleasePolicyOption",
+            "DocumentReviewCycle",
+            "DocumentReviewFileEvidence",
+            "DocumentReviewerProgress",
+            "DocumentReleaseConfirmation",
+            "DocumentReleaseLifecycleEvent",
         )
         combined = ""
         for name in schemas:
@@ -359,6 +561,50 @@ class Phase5DocumentContractTest(unittest.TestCase):
         self.assertIn("preview: { type: boolean }", permissions)
         self.assertIn("download: { type: boolean }", permissions)
         self.assertIn("share: { type: boolean, const: false }", permissions)
+        self.assertEqual(
+            {
+                "submitReview",
+                "resubmitReview",
+                "review",
+                "approve",
+                "release",
+                "supersede",
+                "obsolete",
+            },
+            {
+                name
+                for name in _properties("DocumentPermissions")
+                if name
+                in {
+                    "submitReview",
+                    "resubmitReview",
+                    "review",
+                    "approve",
+                    "release",
+                    "supersede",
+                    "obsolete",
+                }
+            },
+        )
+        workspace = _schema("ControlledDocumentWorkspace")
+        self.assertIn("releaseWorkspace", _required("ControlledDocumentWorkspace"))
+        self.assertIn(
+            '$ref: "#/components/schemas/DocumentReleaseWorkspace"',
+            workspace,
+        )
+        release_workspace = _schema("DocumentReleaseWorkspace")
+        self.assertEqual(
+            set(_required("DocumentReleaseWorkspace")),
+            _properties("DocumentReleaseWorkspace"),
+        )
+        self.assertIn(
+            "enum: [available, permission_unavailable, routes_disabled]",
+            release_workspace,
+        )
+        self.assertEqual(
+            set(_required("DocumentReleaseCapabilities")),
+            _properties("DocumentReleaseCapabilities"),
+        )
         for name in ("DocumentRelationshipInput", "DocumentRelationship"):
             with self.subTest(discriminator=name):
                 value = _schema(name)
@@ -404,6 +650,7 @@ class Phase5DocumentContractTest(unittest.TestCase):
             "DocumentListResult",
             "DocumentQueryResult",
             "DocumentCommandResult",
+            "DocumentReleaseCommandResult",
             "DocumentCapabilityResult",
         ):
             with self.subTest(response=response):

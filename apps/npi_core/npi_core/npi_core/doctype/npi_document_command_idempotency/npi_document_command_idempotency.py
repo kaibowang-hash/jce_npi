@@ -42,6 +42,13 @@ _OPERATIONS = {
     "document.lock.recover",
     "document.revision.create",
     "document.content",
+    "document.review.submit",
+    "document.review.resubmit",
+    "document.review.approve",
+    "document.review.reject",
+    "document.release",
+    "document.supersede",
+    "document.obsolete",
 }
 
 
