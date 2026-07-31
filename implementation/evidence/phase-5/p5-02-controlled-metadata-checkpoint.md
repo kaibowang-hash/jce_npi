@@ -62,8 +62,41 @@ Requirements in progress:
 - complete `test_phase5_document*.py`: `110/110` PASS;
 - all new/affected Python compiles: PASS;
 - all fourteen document-family DocType JSON files parse: PASS;
-- changed Python files contain no line over 88 characters: PASS;
+- new release-domain and DocType-controller Python files contain no line over
+  88 characters: PASS;
 - `git diff --check`: PASS.
+
+## Ordinary-CI follow-up
+
+Ordinary CI run `30613731273` for checkpoint commit `c895bd4` found two
+additive coverage gaps:
+
+- the new English metadata and domain source strings were not yet present in
+  both Frappe Chinese catalogs, so catalog generation and the governed visual
+  job failed closed; and
+- the retained Phase 4 File-hook test still asserted the old single-callback
+  tuple shape even though the release-deletion guard correctly changed
+  `on_trash` to an ordered callback list.
+
+The follow-up keeps every product and gate rule unchanged. It adds complete
+Simplified/Traditional Chinese translations and regenerates the React
+catalog; strengthens the existing hook test to require the deletion guard
+before the still-present dependency callback; and adds pure-domain coverage
+for partial/final review approval, rejection, separated final-release
+authority and exact-cycle terminal transitions.
+
+Post-fix affected verification:
+
+- complete `test_phase5_document*.py`: `114/114` PASS;
+- Phase 4 File-hook metadata tests: `7/7` PASS;
+- generated catalog freshness: PASS;
+- all affected Python compiles: PASS; and
+- `git diff --check`: PASS.
+
+The three guarded Frappe error calls retain their complete English source
+strings on one physical line because the repository's translation extractor
+requires one literal. This is the only affected Python line-length exception;
+it preserves complete extractable messages rather than weakening i18n.
 
 The host does not provide standalone `ruff` or `black`; the complete ordinary
 CI remains the canonical pinned formatter/linter proof for the exact commit.

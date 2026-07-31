@@ -69,6 +69,7 @@ class DocumentConfirmationType(StrEnum):
 class DocumentLifecycleEventType(StrEnum):
     SUBMITTED = "submitted"
     RESUBMITTED = "resubmitted"
+    REVIEW_APPROVED = "review_approved"
     REVIEW_REJECTED = "review_rejected"
     APPROVED = "approved"
     RELEASED = "released"
@@ -1316,6 +1317,10 @@ class DocumentLifecycleEvent:
                 DocumentLifecycleState.IN_REVIEW,
                 DocumentLifecycleState.DRAFT,
             ),
+            DocumentLifecycleEventType.REVIEW_APPROVED: (
+                DocumentLifecycleState.IN_REVIEW,
+                DocumentLifecycleState.IN_REVIEW,
+            ),
             DocumentLifecycleEventType.APPROVED: (
                 DocumentLifecycleState.IN_REVIEW,
                 DocumentLifecycleState.APPROVED,
@@ -1460,6 +1465,339 @@ def submit_document_review(
         active_cycle_global_id=cycle.global_id,
     )
     return ReviewSubmission(cycle, event, updated)
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewConfirmationOutcome:
+    confirmation: DocumentConfirmation
+    event: DocumentLifecycleEvent
+    lifecycle: DocumentRevisionLifecycle
+
+
+def confirm_document_review(
+    *,
+    lifecycle: DocumentRevisionLifecycle,
+    cycle: DocumentReviewCycle,
+    policy: DocumentReleasePolicyVersion,
+    decision: DocumentReviewDecision,
+    existing_approval_hashes: Sequence[str],
+    confirmation_global_id: UUID,
+    event_global_id: UUID,
+    actor: str,
+    reason: str | None,
+    now: datetime,
+    request_id: str,
+    trace_id: str,
+) -> ReviewConfirmationOutcome:
+    if (
+        policy.state is not DocumentReleasePolicyState.PUBLISHED
+        or policy.reference != cycle.policy_ref
+    ):
+        raise DocumentReleasePolicyUnavailable()
+    if (
+        lifecycle.state is not DocumentLifecycleState.IN_REVIEW
+        or lifecycle.active_cycle_global_id != cycle.global_id
+        or lifecycle.revision_global_id != cycle.revision_global_id
+    ):
+        raise DocumentReviewStateConflict()
+    assignment = policy.reviewer_assignment(actor)
+    if assignment is None or assignment not in cycle.reviewer_assignments:
+        raise DocumentReviewAssignmentUnavailable()
+    if not isinstance(decision, DocumentReviewDecision):
+        raise _field_problem("decision", _("Select a supported review decision."))
+    if decision is DocumentReviewDecision.REJECT and reason is None:
+        raise _field_problem("reason", _("Enter a rejection reason."))
+    confirmation_type = (
+        DocumentConfirmationType.REVIEW_APPROVE
+        if decision is DocumentReviewDecision.APPROVE
+        else DocumentConfirmationType.REVIEW_REJECT
+    )
+    confirmation_key = sha256_json(
+        {
+            "cycleGlobalId": str(cycle.global_id),
+            "authoritySlot": assignment.slot_key,
+            "confirmationType": confirmation_type.value,
+        }
+    )
+    confirmation = DocumentConfirmation(
+        global_id=confirmation_global_id,
+        confirmation_key=confirmation_key,
+        confirmation_type=confirmation_type,
+        revision_global_id=cycle.revision_global_id,
+        cycle_global_id=cycle.global_id,
+        policy_ref=cycle.policy_ref,
+        evidence_snapshot_hash=cycle.evidence.snapshot_hash,
+        actor_user_id=actor,
+        authority_slot=assignment.slot_key,
+        confirmation_method=policy.confirmation_method,
+        confirmation_intent="review_decision",
+        confirmed=True,
+        reason=reason,
+        confirmed_at=now,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    prior_hashes = tuple(
+        _hash(value, f"existingApprovalHashes[{index}]")
+        for index, value in enumerate(existing_approval_hashes)
+    )
+    if len(set(prior_hashes)) != len(prior_hashes):
+        raise DocumentReviewStateConflict()
+    if decision is DocumentReviewDecision.REJECT:
+        event_type = DocumentLifecycleEventType.REVIEW_REJECTED
+        to_state = DocumentLifecycleState.DRAFT
+        confirmation_hashes = (confirmation.evidence_hash,)
+    elif len(prior_hashes) + 1 >= cycle.required_approval_count:
+        event_type = DocumentLifecycleEventType.APPROVED
+        to_state = DocumentLifecycleState.APPROVED
+        confirmation_hashes = (*prior_hashes, confirmation.evidence_hash)
+    else:
+        event_type = DocumentLifecycleEventType.REVIEW_APPROVED
+        to_state = DocumentLifecycleState.IN_REVIEW
+        confirmation_hashes = (*prior_hashes, confirmation.evidence_hash)
+    event = DocumentLifecycleEvent(
+        global_id=event_global_id,
+        revision_global_id=cycle.revision_global_id,
+        event_type=event_type,
+        from_state=DocumentLifecycleState.IN_REVIEW,
+        to_state=to_state,
+        from_version=lifecycle.version,
+        to_version=lifecycle.version + 1,
+        cycle_global_id=cycle.global_id,
+        policy_ref=cycle.policy_ref,
+        evidence_snapshot_hash=cycle.evidence.snapshot_hash,
+        confirmation_hashes=confirmation_hashes,
+        replacement_revision_global_id=None,
+        replacement_effective_date=None,
+        actor_user_id=actor,
+        occurred_at=now,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    if to_state is DocumentLifecycleState.IN_REVIEW:
+        updated = replace(lifecycle, version=event.to_version)
+    else:
+        updated = advance_document_lifecycle(lifecycle, event)
+    return ReviewConfirmationOutcome(confirmation, event, updated)
+
+
+@dataclass(frozen=True, slots=True)
+class ReleaseTransitionOutcome:
+    confirmation: DocumentConfirmation
+    event: DocumentLifecycleEvent
+    lifecycle: DocumentRevisionLifecycle
+
+
+def release_document_revision(
+    *,
+    lifecycle: DocumentRevisionLifecycle,
+    cycle: DocumentReviewCycle,
+    policy: DocumentReleasePolicyVersion,
+    release_snapshot_hash: str,
+    approval_confirmation_hashes: Sequence[str],
+    confirmation_global_id: UUID,
+    event_global_id: UUID,
+    actor: str,
+    now: datetime,
+    request_id: str,
+    trace_id: str,
+) -> ReleaseTransitionOutcome:
+    if (
+        policy.state is not DocumentReleasePolicyState.PUBLISHED
+        or policy.reference != cycle.policy_ref
+    ):
+        raise DocumentReleasePolicyUnavailable()
+    if (
+        lifecycle.state is not DocumentLifecycleState.APPROVED
+        or lifecycle.approved_cycle_global_id != cycle.global_id
+    ):
+        raise DocumentReviewStateConflict()
+    if not policy.permits_release(actor):
+        raise DocumentReleaseAuthorityUnavailable()
+    snapshot_hash = _hash(release_snapshot_hash, "releaseSnapshotHash")
+    confirmation = _lifecycle_confirmation(
+        confirmation_type=DocumentConfirmationType.RELEASE,
+        intent="release_revision",
+        authority_slot="final_release_authority",
+        lifecycle=lifecycle,
+        cycle=cycle,
+        policy=policy,
+        confirmation_global_id=confirmation_global_id,
+        actor=actor,
+        reason=None,
+        now=now,
+        request_id=request_id,
+        trace_id=trace_id,
+        evidence_snapshot_hash=snapshot_hash,
+    )
+    approval_hashes = tuple(
+        _hash(value, f"approvalConfirmationHashes[{index}]")
+        for index, value in enumerate(approval_confirmation_hashes)
+    )
+    if len(approval_hashes) < cycle.required_approval_count:
+        raise DocumentReviewStateConflict()
+    event = DocumentLifecycleEvent(
+        global_id=event_global_id,
+        revision_global_id=cycle.revision_global_id,
+        event_type=DocumentLifecycleEventType.RELEASED,
+        from_state=DocumentLifecycleState.APPROVED,
+        to_state=DocumentLifecycleState.RELEASED,
+        from_version=lifecycle.version,
+        to_version=lifecycle.version + 1,
+        cycle_global_id=cycle.global_id,
+        policy_ref=cycle.policy_ref,
+        evidence_snapshot_hash=snapshot_hash,
+        confirmation_hashes=(*approval_hashes, confirmation.evidence_hash),
+        replacement_revision_global_id=None,
+        replacement_effective_date=None,
+        actor_user_id=actor,
+        occurred_at=now,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    updated = advance_document_lifecycle(
+        lifecycle,
+        event,
+        release_snapshot_hash=snapshot_hash,
+    )
+    return ReleaseTransitionOutcome(confirmation, event, updated)
+
+
+def terminate_released_document_revision(
+    *,
+    lifecycle: DocumentRevisionLifecycle,
+    cycle: DocumentReviewCycle,
+    policy: DocumentReleasePolicyVersion,
+    obsolete: bool,
+    replacement_revision_global_id: UUID | None,
+    replacement_effective_date: date | None,
+    confirmation_global_id: UUID,
+    event_global_id: UUID,
+    actor: str,
+    reason: str,
+    now: datetime,
+    request_id: str,
+    trace_id: str,
+) -> ReleaseTransitionOutcome:
+    if (
+        policy.state is not DocumentReleasePolicyState.PUBLISHED
+        or policy.reference != cycle.policy_ref
+    ):
+        raise DocumentReleasePolicyUnavailable()
+    if (
+        lifecycle.state is not DocumentLifecycleState.RELEASED
+        or lifecycle.approved_cycle_global_id != cycle.global_id
+    ):
+        raise DocumentReviewStateConflict()
+    permitted = (
+        policy.permits_obsolete(actor)
+        if obsolete
+        else policy.permits_supersede(actor)
+    )
+    if not permitted:
+        raise DocumentReleaseAuthorityUnavailable()
+    confirmation_type = (
+        DocumentConfirmationType.OBSOLETE
+        if obsolete
+        else DocumentConfirmationType.SUPERSEDE
+    )
+    event_type = (
+        DocumentLifecycleEventType.OBSOLETE
+        if obsolete
+        else DocumentLifecycleEventType.SUPERSEDED
+    )
+    to_state = (
+        DocumentLifecycleState.OBSOLETE
+        if obsolete
+        else DocumentLifecycleState.SUPERSEDED
+    )
+    confirmation = _lifecycle_confirmation(
+        confirmation_type=confirmation_type,
+        intent=(
+            "obsolete_revision" if obsolete else "supersede_revision"
+        ),
+        authority_slot=(
+            "obsolete_authority" if obsolete else "supersede_authority"
+        ),
+        lifecycle=lifecycle,
+        cycle=cycle,
+        policy=policy,
+        confirmation_global_id=confirmation_global_id,
+        actor=actor,
+        reason=reason,
+        now=now,
+        request_id=request_id,
+        trace_id=trace_id,
+        evidence_snapshot_hash=lifecycle.release_snapshot_hash or "",
+    )
+    event = DocumentLifecycleEvent(
+        global_id=event_global_id,
+        revision_global_id=lifecycle.revision_global_id,
+        event_type=event_type,
+        from_state=DocumentLifecycleState.RELEASED,
+        to_state=to_state,
+        from_version=lifecycle.version,
+        to_version=lifecycle.version + 1,
+        cycle_global_id=cycle.global_id,
+        policy_ref=cycle.policy_ref,
+        evidence_snapshot_hash=lifecycle.release_snapshot_hash or "",
+        confirmation_hashes=(confirmation.evidence_hash,),
+        replacement_revision_global_id=(
+            None if obsolete else replacement_revision_global_id
+        ),
+        replacement_effective_date=(
+            None if obsolete else replacement_effective_date
+        ),
+        actor_user_id=actor,
+        occurred_at=now,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    updated = advance_document_lifecycle(lifecycle, event)
+    return ReleaseTransitionOutcome(confirmation, event, updated)
+
+
+def _lifecycle_confirmation(
+    *,
+    confirmation_type: DocumentConfirmationType,
+    intent: str,
+    authority_slot: str,
+    lifecycle: DocumentRevisionLifecycle,
+    cycle: DocumentReviewCycle,
+    policy: DocumentReleasePolicyVersion,
+    confirmation_global_id: UUID,
+    actor: str,
+    reason: str | None,
+    now: datetime,
+    request_id: str,
+    trace_id: str,
+    evidence_snapshot_hash: str,
+) -> DocumentConfirmation:
+    confirmation_key = sha256_json(
+        {
+            "revisionGlobalId": str(lifecycle.revision_global_id),
+            "lifecycleVersion": lifecycle.version,
+            "confirmationType": confirmation_type.value,
+        }
+    )
+    return DocumentConfirmation(
+        global_id=confirmation_global_id,
+        confirmation_key=confirmation_key,
+        confirmation_type=confirmation_type,
+        revision_global_id=lifecycle.revision_global_id,
+        cycle_global_id=cycle.global_id,
+        policy_ref=policy.reference,
+        evidence_snapshot_hash=evidence_snapshot_hash,
+        actor_user_id=actor,
+        authority_slot=authority_slot,
+        confirmation_method=policy.confirmation_method,
+        confirmation_intent=intent,
+        confirmed=True,
+        reason=reason,
+        confirmed_at=now,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
 
 
 def advance_document_lifecycle(

@@ -327,9 +327,16 @@ class Phase4GateReviewHistoryMetadataTest(unittest.TestCase):
         hooks = HOOKS.read_text(encoding="utf-8")
         self.assertIn('"File": {', hooks)
         self.assertIn('"on_update": (', hooks)
-        self.assertIn('"on_trash": (', hooks)
+        self.assertIn('"on_trash": [', hooks)
+        protection = (
+            '"npi_core.documents.release_frappe.'
+            'protect_released_document_file"'
+        )
+        dependency = '"queue_gate_review_file_dependency_evaluation"'
+        self.assertIn(protection, hooks)
+        self.assertLess(hooks.index(protection), hooks.rindex(dependency))
         self.assertEqual(
-            hooks.count('"queue_gate_review_file_dependency_evaluation"'),
+            hooks.count(dependency),
             2,
         )
 

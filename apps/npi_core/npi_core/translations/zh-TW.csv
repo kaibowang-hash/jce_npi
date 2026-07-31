@@ -2858,3 +2858,153 @@ Lock history,鎖定歷程
 Holder,持有人
 Acquired,已取得
 Recovered,已復原
+Document review and release history can only be changed through an authorized NPI release command.,文件評審與發布歷程只能透過已授權的 NPI 發布命令變更。
+The selected document release policy version is unavailable.,所選文件發布策略版本無法使用。
+The document review state changed before this command completed.,此命令完成前文件評審狀態已發生變更。
+The current user is not assigned to this document review action.,目前使用者未被指派執行此文件評審操作。
+The current user is not assigned to this document release action.,目前使用者未被指派執行此文件發布操作。
+The exact document file has not passed integrity and security checks.,該精確文件尚未通過完整性與安全檢查。
+Enter valid authority users.,請輸入有效的權限使用者。
+Authority users must be unique.,權限使用者不得重複。
+Enter valid reviewer assignments.,請輸入有效的評審人指派。
+Reviewer slots and users must be unique.,評審席位和使用者不得重複。
+Required approvals cannot exceed reviewer assignments.,所需核准數不得超過評審人指派數。
+Reviewers and final release authorities must be separate.,評審人與最終發布權限人必須相互分離。
+Select the supported confirmation method.,請選擇支援的確認方式。
+Document release requires a clean scan state.,文件發布要求掃描狀態為未發現威脅。
+Document release safeguards cannot be disabled.,不得停用文件發布保護措施。
+The release policy snapshot hash does not match its content.,發布策略快照雜湊與其內容不符。
+Enter a valid file content hash.,請輸入有效的檔案內容雜湊。
+Only a clean file can enter a release review.,只有掃描狀態為未發現威脅的檔案才能進入發布評審。
+Enter valid release file evidence.,請輸入有效的發布檔案證據。
+Release file evidence must be unique.,發布檔案證據不得重複。
+Select a supported document lifecycle state.,請選擇支援的文件生命週期狀態。
+Document lifecycle references do not match its state.,文件生命週期參照與其狀態不符。
+Enter a valid release policy reference.,請輸入有效的發布策略參照。
+Enter valid review evidence.,請輸入有效的評審證據。
+Review evidence must match the exact revision.,評審證據必須與精確修訂版相符。
+The review-cycle snapshot hash does not match its content.,評審週期快照雜湊與其內容不符。
+Select a supported confirmation type.,請選擇支援的確認類型。
+Explicit confirmation is required.,必須進行明確確認。
+The confirmation evidence hash does not match its content.,確認證據雜湊與其內容不符。
+Select a supported lifecycle event.,請選擇支援的生命週期事件。
+Select supported lifecycle states.,請選擇支援的生命週期狀態。
+Lifecycle event versions must advance exactly once.,生命週期事件版本必須精確遞增一次。
+Enter valid confirmation hashes.,請輸入有效的確認雜湊。
+Confirmation hashes must be unique.,確認雜湊不得重複。
+The lifecycle event hash does not match its content.,生命週期事件雜湊與其內容不符。
+The lifecycle event does not match the allowed transition.,生命週期事件與允許的狀態轉換不符。
+Supersede requires one exact replacement revision.,取代操作需要一個精確的替代修訂版。
+Supersede requires the replacement effective date.,取代操作需要替代修訂版的生效日期。
+Select a supported review decision.,請選擇支援的評審決定。
+Enter a rejection reason.,請輸入拒絕原因。
+Enter valid file evidence.,請輸入有效的檔案證據。
+Released document content cannot be deleted.,已發布文件內容不可刪除。
+Release policy users must be enabled internal system users.,發布策略使用者必須是已啟用的內部系統使用者。
+Document review and release is temporarily unavailable.,文件評審與發布暫時無法使用。
+Revision Global ID,修訂版全域編號
+Review Cycle,評審週期
+Release Policy Global ID,發布策略全域編號
+Review Cycle must match its exact Global ID.,評審週期必須與其精確全域編號相符。
+The confirmation does not match its document revision.,確認記錄與其文件修訂版不符。
+The confirmation does not match its review cycle.,確認記錄與其評審週期不符。
+Confirmed At,確認時間
+Confirmation Reason,確認原因
+Confirmation Evidence,確認證據
+Confirmation Evidence does not match the exact action.,確認證據與精確操作不符。
+Replacement Revision Global ID,替代修訂版全域編號
+Replacement Effective Date,替代修訂版生效日期
+The lifecycle event does not match its document revision.,生命週期事件與其文件修訂版不符。
+The lifecycle event does not match its review cycle.,生命週期事件與其評審週期不符。
+The lifecycle event release policy is unavailable.,生命週期事件的發布策略無法使用。
+Select supported lifecycle event values.,請選擇支援的生命週期事件值。
+Confirmation Hash,確認雜湊
+Confirmation Hashes,確認雜湊
+From Lifecycle Version,原生命週期版本
+To Lifecycle Version,目標生命週期版本
+Lifecycle Event Snapshot,生命週期事件快照
+Lifecycle Event Snapshot does not match the exact transition.,生命週期事件快照與精確狀態轉換不符。
+Release Policy Key,發布策略鍵
+Release Policy Title,發布策略標題
+The release policy does not match its Project and tenant.,發布策略與其專案和租戶不符。
+A published document release policy version cannot be changed.,已發布的文件發布策略版本不可變更。
+Select a supported release policy publication state.,請選擇支援的發布策略發布狀態。
+A new document release policy version must start as a draft.,新文件發布策略版本必須從草稿開始。
+Enable the document release policy before publishing this version.,發布此版本前請先啟用文件發布策略。
+Submitter User IDs,提交人使用者編號
+Release Authority User IDs,發布權限使用者編號
+Supersede Authority User IDs,取代權限使用者編號
+Obsolete Authority User IDs,作廢權限使用者編號
+Require Live Private Identity,要求有效的私有檔案識別
+Require SHA-256 Match,要求 SHA-256 相符
+Supersede Requires Released Successor,取代操作要求後繼修訂版已發布
+Supersede Requires Later Revision,取代操作要求使用後續修訂版
+Supersede Requires Successor Effective Date,取代操作要求後繼修訂版生效日期
+Select an existing document release policy.,請選擇現有文件發布策略。
+Release Policy Version,發布策略版本
+Enter a valid document release policy version.,請輸入有效的文件發布策略版本。
+Publish each document release policy version before ,請在將每個文件發布策略版本用於受控評審前先發布
+Reviewer Assignments,評審人指派
+Reviewer Assignments must contain only valid assignments.,評審人指派只能包含有效指派。
+{field} must be a checkbox value.,{field} 必須是核取方塊值。
+Canonical Release Policy Snapshot,規範發布策略快照
+Canonical Release Policy Snapshot does not match its rules.,規範發布策略快照與其規則不符。
+Release Policy Snapshot Hash does not match its rules.,發布策略快照雜湊與其規則不符。
+A draft release policy cannot have a publication time.,草稿發布策略不能包含發布時間。
+Prior Rejected Cycle Global ID,前一拒絕週期全域編號
+The review cycle does not match its document revision.,評審週期與其文件修訂版不符。
+The review-cycle release policy is unavailable.,評審週期的發布策略無法使用。
+Review Evidence must match the exact revision.,評審證據必須與精確修訂版相符。
+Evidence Snapshot Hash does not match the review evidence.,證據快照雜湊與評審證據不符。
+Submitted At,提交時間
+Required Approval Count,所需核准數
+Review Cycle Snapshot,評審週期快照
+Review Cycle Snapshot does not match the exact review input.,評審週期快照與精確評審輸入不符。
+Submitted By,提交人
+Review Cycle Snapshot Hash,評審週期快照雜湊
+Active Review Cycle Global ID,目前評審週期全域編號
+Approved Review Cycle Global ID,已核准評審週期全域編號
+Approved Event Global ID,已核准事件全域編號
+Release Event Global ID,發布事件全域編號
+Terminal Event Global ID,終止事件全域編號
+Last Lifecycle Event,上一生命週期事件
+Lifecycle identity must match the exact document revision.,生命週期識別必須與精確文件修訂版相符。
+The lifecycle projection does not match its document revision.,生命週期投影與其文件修訂版不符。
+Lifecycle Version,生命週期版本
+The lifecycle projection does not match its exact last event.,生命週期投影與其精確上一事件不符。
+The lifecycle projection must advance from its exact prior state.,生命週期投影必須從其精確前一狀態推進。
+Release Snapshot Hash,發布快照雜湊
+Updated By,更新人
+Updated At,更新時間
+NPI Document Confirmation,NPI 文件確認
+Confirmation Key,確認鍵
+Release Policy Snapshot Hash,發布策略快照雜湊
+Evidence Snapshot Hash,證據快照雜湊
+Confirmation Type,確認類型
+review_approve,評審核准
+review_reject,評審拒絕
+release,發布
+supersede,取代
+obsolete,作廢
+Confirmation Method,確認方式
+Confirmation Intent,確認意圖
+Confirmation Evidence Hash,確認證據雜湊
+NPI Document Lifecycle Event,NPI 文件生命週期事件
+Lifecycle Event Type,生命週期事件類型
+submitted,已提交
+resubmitted,已重新提交
+review_approved,評審已核准
+review_rejected,評審已拒絕
+From State,原狀態
+To State,目標狀態
+Lifecycle Event Hash,生命週期事件雜湊
+NPI Document Release Policy,NPI 文件發布策略
+Release Policy Key Hash,發布策略鍵雜湊
+NPI Document Release Policy Version,NPI 文件發布策略版本
+Document Release Policy,文件發布策略
+Release Policy Version Key,發布策略版本鍵
+Required Scan State,所需掃描狀態
+NPI Document Review Cycle,NPI 文件評審週期
+Review Evidence,評審證據
+NPI Document Revision Lifecycle,NPI 文件修訂版生命週期
+Current Lifecycle State,目前生命週期狀態

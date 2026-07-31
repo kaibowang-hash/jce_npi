@@ -51,10 +51,7 @@ _T = TypeVar("_T")
 def require_document_command_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_COMMAND_FLAG, False):
         frappe.throw(
-            _(
-                "Controlled documents can only be changed through an "
-                "authorized NPI document command."
-            ),
+            _("Controlled documents can only be changed through an authorized NPI document command."),
             frappe.PermissionError,
         )
 
@@ -62,10 +59,7 @@ def require_document_command_write() -> None:
 def require_document_policy_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_POLICY_FLAG, False):
         frappe.throw(
-            _(
-                "Document policy versions can only be changed through "
-                "authorized administration."
-            ),
+            _("Document policy versions can only be changed through authorized administration."),
             frappe.PermissionError,
         )
 
@@ -73,10 +67,7 @@ def require_document_policy_write() -> None:
 def require_document_release_command_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_RELEASE_COMMAND_FLAG, False):
         frappe.throw(
-            _(
-                "Document review and release history can only be changed "
-                "through an authorized NPI release command."
-            ),
+            _("Document review and release history can only be changed through an authorized NPI release command."),
             frappe.PermissionError,
         )
 

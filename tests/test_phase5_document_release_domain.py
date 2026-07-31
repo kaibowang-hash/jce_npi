@@ -10,12 +10,15 @@ from uuid import UUID
 sys.path.insert(0, "apps/npi_core")
 
 from npi_core.documents.release_domain import (  # noqa: E402
+    DocumentConfirmationType,
     DocumentLifecycleEvent,
     DocumentLifecycleEventType,
     DocumentLifecycleState,
+    DocumentReleaseAuthorityUnavailable,
     DocumentReleaseFileEvidence,
     DocumentReleasePolicyState,
     DocumentReleasePolicyVersion,
+    DocumentReviewDecision,
     DocumentReviewAssignmentUnavailable,
     DocumentReviewEvidence,
     DocumentReviewerAssignment,
@@ -23,7 +26,10 @@ from npi_core.documents.release_domain import (  # noqa: E402
     DocumentRevisionLifecycle,
     RequestValidationFailed,
     advance_document_lifecycle,
+    confirm_document_review,
+    release_document_revision,
     submit_document_review,
+    terminate_released_document_revision,
 )
 
 
@@ -33,6 +39,9 @@ PROJECT_ID = UUID("8378554b-cb1d-4a09-806d-480a9580055e")
 REVISION_ID = UUID("2589495e-797a-4a66-a171-83e7166c92ad")
 CYCLE_ID = UUID("8d566c67-fced-4f52-b8d8-01a913f31f10")
 EVENT_ID = UUID("dbca8699-13c2-4424-86f7-86e2b7564fda")
+CONFIRMATION_ID = UUID("d96bf3c3-c728-4474-abba-434195501153")
+SECOND_CONFIRMATION_ID = UUID("3227400f-9d41-423c-a4b7-ff3d94cce419")
+SECOND_EVENT_ID = UUID("da734c13-f979-4bdc-946b-dbe220ff63ce")
 ASSOCIATION_ID = UUID("8fa4d6c0-5b7f-4765-a624-62e9999297af")
 FILE_REVISION_ID = UUID("f1428481-d120-47c5-ab4c-daad0bc6a57f")
 FILE_DOCUMENT_ID = UUID("70e55f2e-dcb4-43fe-a6ea-a0e5950572d6")
@@ -92,6 +101,22 @@ def evidence() -> DocumentReviewEvidence:
     )
 
 
+def submission():
+    return submit_document_review(
+        lifecycle=None,
+        policy=policy(),
+        evidence=evidence(),
+        cycle_global_id=CYCLE_ID,
+        event_global_id=EVENT_ID,
+        cycle_number=1,
+        prior_rejected_cycle_global_id=None,
+        actor="submitter@example.invalid",
+        now=NOW,
+        request_id="request-release-0001",
+        trace_id="trace-release-0001",
+    )
+
+
 class DocumentReleasePolicyTests(unittest.TestCase):
     def test_policy_snapshot_is_deterministic_and_exact(self) -> None:
         selected = policy()
@@ -133,19 +158,7 @@ class DocumentReleasePolicyTests(unittest.TestCase):
 
 class DocumentReleaseTransitionTests(unittest.TestCase):
     def test_first_submission_creates_in_review_version_one(self) -> None:
-        result = submit_document_review(
-            lifecycle=None,
-            policy=policy(),
-            evidence=evidence(),
-            cycle_global_id=CYCLE_ID,
-            event_global_id=EVENT_ID,
-            cycle_number=1,
-            prior_rejected_cycle_global_id=None,
-            actor="submitter@example.invalid",
-            now=NOW,
-            request_id="request-release-0001",
-            trace_id="trace-release-0001",
-        )
+        result = submission()
 
         self.assertEqual(result.lifecycle.state, DocumentLifecycleState.IN_REVIEW)
         self.assertEqual(result.lifecycle.version, 1)
@@ -154,6 +167,160 @@ class DocumentReleaseTransitionTests(unittest.TestCase):
             DocumentLifecycleEventType.SUBMITTED,
         )
         self.assertEqual(result.cycle.evidence.snapshot_hash, evidence().snapshot_hash)
+
+    def test_review_quorum_is_exact_and_keeps_partial_approval_append_only(
+        self,
+    ) -> None:
+        submitted = submission()
+        first = confirm_document_review(
+            lifecycle=submitted.lifecycle,
+            cycle=submitted.cycle,
+            policy=policy(),
+            decision=DocumentReviewDecision.APPROVE,
+            existing_approval_hashes=(),
+            confirmation_global_id=CONFIRMATION_ID,
+            event_global_id=SECOND_EVENT_ID,
+            actor="reviewer@example.invalid",
+            reason=None,
+            now=NOW,
+            request_id="request-release-review-0001",
+            trace_id="trace-release-review-0001",
+        )
+        second = confirm_document_review(
+            lifecycle=first.lifecycle,
+            cycle=submitted.cycle,
+            policy=policy(),
+            decision=DocumentReviewDecision.APPROVE,
+            existing_approval_hashes=(first.confirmation.evidence_hash,),
+            confirmation_global_id=SECOND_CONFIRMATION_ID,
+            event_global_id=UUID("b02779c0-ca38-4469-8852-09bac2812be4"),
+            actor="reviewer2@example.invalid",
+            reason=None,
+            now=NOW,
+            request_id="request-release-review-0002",
+            trace_id="trace-release-review-0002",
+        )
+
+        self.assertEqual(
+            first.event.event_type,
+            DocumentLifecycleEventType.REVIEW_APPROVED,
+        )
+        self.assertEqual(first.lifecycle.state, DocumentLifecycleState.IN_REVIEW)
+        self.assertEqual(first.lifecycle.version, 2)
+        self.assertEqual(second.event.event_type, DocumentLifecycleEventType.APPROVED)
+        self.assertEqual(second.lifecycle.state, DocumentLifecycleState.APPROVED)
+        self.assertEqual(second.lifecycle.version, 3)
+        self.assertEqual(
+            second.lifecycle.approved_cycle_global_id,
+            submitted.cycle.global_id,
+        )
+
+    def test_review_rejection_returns_exact_revision_to_draft(self) -> None:
+        submitted = submission()
+        result = confirm_document_review(
+            lifecycle=submitted.lifecycle,
+            cycle=submitted.cycle,
+            policy=policy(),
+            decision=DocumentReviewDecision.REJECT,
+            existing_approval_hashes=(),
+            confirmation_global_id=CONFIRMATION_ID,
+            event_global_id=SECOND_EVENT_ID,
+            actor="reviewer@example.invalid",
+            reason="Drawing metadata does not match the controlled file.",
+            now=NOW,
+            request_id="request-release-reject-0001",
+            trace_id="trace-release-reject-0001",
+        )
+
+        self.assertEqual(
+            result.confirmation.confirmation_type,
+            DocumentConfirmationType.REVIEW_REJECT,
+        )
+        self.assertEqual(result.lifecycle.state, DocumentLifecycleState.DRAFT)
+        self.assertEqual(result.lifecycle.version, 2)
+        self.assertIsNone(result.lifecycle.active_cycle_global_id)
+
+    def test_release_requires_separate_exact_authority_and_approval_quorum(
+        self,
+    ) -> None:
+        submitted = submission()
+        approved = DocumentRevisionLifecycle(
+            revision_global_id=REVISION_ID,
+            state=DocumentLifecycleState.APPROVED,
+            version=3,
+            approved_cycle_global_id=CYCLE_ID,
+            approved_event_global_id=SECOND_EVENT_ID,
+        )
+        hashes = ("1" * 64, "2" * 64)
+        with self.assertRaises(DocumentReleaseAuthorityUnavailable):
+            release_document_revision(
+                lifecycle=approved,
+                cycle=submitted.cycle,
+                policy=policy(),
+                release_snapshot_hash="3" * 64,
+                approval_confirmation_hashes=hashes,
+                confirmation_global_id=CONFIRMATION_ID,
+                event_global_id=UUID("4566f49b-b85e-4d4f-949e-7fcb2df0b1c0"),
+                actor="reviewer@example.invalid",
+                now=NOW,
+                request_id="request-release-final-0001",
+                trace_id="trace-release-final-0001",
+            )
+
+        result = release_document_revision(
+            lifecycle=approved,
+            cycle=submitted.cycle,
+            policy=policy(),
+            release_snapshot_hash="3" * 64,
+            approval_confirmation_hashes=hashes,
+            confirmation_global_id=CONFIRMATION_ID,
+            event_global_id=UUID("4566f49b-b85e-4d4f-949e-7fcb2df0b1c0"),
+            actor="releaser@example.invalid",
+            now=NOW,
+            request_id="request-release-final-0001",
+            trace_id="trace-release-final-0001",
+        )
+
+        self.assertEqual(
+            result.confirmation.confirmation_type,
+            DocumentConfirmationType.RELEASE,
+        )
+        self.assertEqual(result.lifecycle.state, DocumentLifecycleState.RELEASED)
+        self.assertEqual(result.lifecycle.release_snapshot_hash, "3" * 64)
+        self.assertEqual(result.event.confirmation_hashes[:2], hashes)
+
+    def test_terminal_transition_requires_exact_approved_cycle(self) -> None:
+        submitted = submission()
+        released = DocumentRevisionLifecycle(
+            revision_global_id=REVISION_ID,
+            state=DocumentLifecycleState.RELEASED,
+            version=4,
+            approved_cycle_global_id=UUID(
+                "eaa5fcd9-eb8f-42f4-b41e-b47b3df82cea"
+            ),
+            approved_event_global_id=SECOND_EVENT_ID,
+            release_event_global_id=UUID(
+                "4566f49b-b85e-4d4f-949e-7fcb2df0b1c0"
+            ),
+            release_snapshot_hash="3" * 64,
+        )
+
+        with self.assertRaises(DocumentReviewStateConflict):
+            terminate_released_document_revision(
+                lifecycle=released,
+                cycle=submitted.cycle,
+                policy=policy(),
+                obsolete=True,
+                replacement_revision_global_id=None,
+                replacement_effective_date=None,
+                confirmation_global_id=CONFIRMATION_ID,
+                event_global_id=SECOND_EVENT_ID,
+                actor="obsoleter@example.invalid",
+                reason="The controlled content is no longer applicable.",
+                now=NOW,
+                request_id="request-release-obsolete-0001",
+                trace_id="trace-release-obsolete-0001",
+            )
 
     def test_submission_requires_exact_policy_actor(self) -> None:
         with self.assertRaises(DocumentReviewAssignmentUnavailable):
