@@ -798,6 +798,28 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("allow_guest=True", self.source)
         self.assertNotIn("http://core.whjichen.cn", self.source)
 
+    def test_integrity_fixture_resolves_exact_file_association(self) -> None:
+        fixture = self.source.split(
+            "def set_document_file_content(",
+            maxsplit=1,
+        )[1].split("def run_bench_fixture(", maxsplit=1)[0]
+        self.assertIn('"NPI Document Revision File"', fixture)
+        self.assertIn('"file_document_global_id"', fixture)
+        self.assertIn('"file_revision_global_id": file_revision_id', fixture)
+        self.assertIn(
+            'str(revision.document_global_id)\n'
+            '        == str(association.get("file_document_global_id"))',
+            fixture,
+        )
+        self.assertIn(
+            'str(revision.sha256) == str(association.get("sha256"))',
+            fixture,
+        )
+        self.assertNotIn(
+            "str(revision.document_global_id) == document_id",
+            fixture,
+        )
+
     def test_project_uses_the_disposable_email_owner(self) -> None:
         response = Mock(
             status=201,

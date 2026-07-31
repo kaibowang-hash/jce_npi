@@ -1344,10 +1344,23 @@ def set_document_file_content(
     )
     project = frappe.get_doc("NPI Engineering Project", project_id)
     revision = frappe.get_doc("NPI File Revision", file_revision_id)
+    association = frappe.db.get_value(
+        "NPI Document Revision File",
+        {
+            "project_global_id": project_id,
+            "document_global_id": document_id,
+            "file_revision_global_id": file_revision_id,
+        },
+        ["file_document_global_id", "sha256"],
+        as_dict=True,
+    )
     require(
         str(project.business_code) == BUSINESS_CODE
+        and association is not None
         and str(revision.project_global_id) == project_id
-        and str(revision.document_global_id) == document_id
+        and str(revision.document_global_id)
+        == str(association.get("file_document_global_id"))
+        and str(revision.sha256) == str(association.get("sha256"))
         and int(revision.released or 0) == 0,
         "Document integrity fixture identity drifted",
     )
