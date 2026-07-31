@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — PROVEN CHECKOUT PROJECTION-SAVE REPAIR`
+`BLOCKED_EXTERNAL — PROJECTION-SAVE VALIDATION SUBSTAGE DIAGNOSTIC AUTHORITY`
 
-Recovery time: `2026-07-31T03:25:04Z`
+Recovery time: `2026-07-31T03:40:40Z`
 
 Latest complete CI recovery checkpoint:
 `954bd0d08b9f82614e34cc0e92e67f5de0340db9`
@@ -131,6 +131,14 @@ Required and only development branch:
 - Focused repair tests pass `41/41`; the complete P5 Document module group
   passes `85/85`; complete tracked Python passes `786/786`; compilation and
   whitespace checks pass.
+- Exact repair checkpoint `b2d7ca9` passed complete normal CI run
+  `30601670711`.
+- The retained final unchanged controlled-Site Gate `30601980685` matched the
+  exact repair SHA, passed fixed setup, both migrations and cleanup, but
+  returned the same safe
+  `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`.
+- This disproves the exact acquisition-event selector hypothesis. The failed
+  repair is forward-reverted in the blocker checkpoint.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -164,16 +172,18 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair and both bounded diagnostic runs are complete. The
-allowlisted stage result uniquely proves the projection-save boundary, and
-only that boundary has been repaired.
+The shared-Datetime repair, both bounded diagnostics and the retained final
+unchanged Gate are complete. The last run still proves only the outer
+projection-save stage, not the failing validation substage inside
+`document.save()`.
 
-The first incomplete sequence is:
+The first incomplete action requires one new explicit bounded authorization:
 
-1. commit and push only the proven-stage repair checkpoint;
-2. pass affected checks and complete normal CI on its exact SHA; and
-3. execute the already authorized final unchanged
-   `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
+`Explicitly authorize one additional bounded P5-01 projection-validation
+substage diagnostic checkpoint and one controlled-Site diagnostic dispatch,
+limited to allowlisted substage code + validated exception type + exact trace
+ID, followed by repair of only the proven substage, affected tests and normal
+CI, and one final unchanged controlled-Site Gate.`
 
 The terminal result must prove:
 

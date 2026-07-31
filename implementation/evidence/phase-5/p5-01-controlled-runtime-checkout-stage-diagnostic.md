@@ -1,6 +1,6 @@
 # P5-01 Controlled Runtime Checkout Stage Diagnostic
 
-Recorded: `2026-07-31T03:25:04Z`
+Recorded: `2026-07-31T03:40:40Z`
 
 Task:
 `P5-01 — Document and design revision`
@@ -17,8 +17,8 @@ Requirements:
 
 State:
 
-`IN_PROGRESS — PROVEN PROJECTION-SAVE REPAIR LOCALLY PASS; NORMAL CI AND FINAL
-UNCHANGED CONTROLLED-SITE GATE PENDING`
+`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; PROJECTION-SAVE
+VALIDATION SUBSTAGE NOT YET PROVEN`
 
 P5-01 is not `PASS`, none of its seven requirements is promoted, and P5-02
 remains inactive.
@@ -83,7 +83,7 @@ exception text, traceback, payload, cookie and credential data are excluded.
 - complete P5 Document module group: `83/83 PASS`;
 - complete tracked Python suite: `784/784 PASS`;
 - changed Python compilation: `PASS`;
-- Reconciliation and YAML: pending controller update verification;
+- Reconciliation and YAML: `PASS`;
 - whitespace: `PASS`.
 
 The local Python lacks repository Black/flake8 packages, so no local result is
@@ -108,7 +108,7 @@ formatter/lint/repository/frontend/visual/security environment.
 - receipt insert and immutable lock-event insert are therefore proven not to
   be the failing stage. The diagnostic run is not a Gate PASS.
 
-## Proven-stage-only repair
+## Rejected repair candidate
 
 The first new lock projection now binds its save to the exact immutable
 acquisition-event name returned by the immediately preceding successful
@@ -129,13 +129,44 @@ Affected local evidence after repair:
 - complete tracked Python suite: `786/786 PASS`;
 - changed Python compilation and whitespace: `PASS`.
 
-## Exact remaining sequence
+Exact repair checkpoint
+`b2d7ca9256a0dd62a693baa6feea1c53fd33402f` passed complete normal CI run
+`30601670711`, including canonical repository formatting/lint/full checks,
+complete E2E, fixed-Linux visual and both secret scans.
 
-1. verify controller/Reconciliation/YAML and commit only the proven-stage
-   repair;
-2. push and pass complete normal CI on its exact SHA; and
-3. execute the already authorized final unchanged
-   `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
+The retained final unchanged Gate, run `30601980685`, matched that exact SHA.
+It passed the fixed tools, disposable Site/database, both apps, both
+migrations and bounded cleanup, but checkout again returned the exact safe
+result `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`.
+The same workflow's complete repository/E2E/security job and fixed-Linux
+visual job passed; the workflow failed only because the controlled runtime
+job correctly rejected checkout.
 
-The diagnostic dispatch is not a Gate PASS even if it advances. Only the final
-unchanged run may provide the missing P5-01 controlled-runtime Gate evidence.
+This disproves the acquisition-event selector hypothesis. The failing stage
+is still inside the Controlled Document `save()` lifecycle, after successful
+receipt and lock-event insertion, but the allowed evidence does not
+distinguish identity/policy hydration, domain reconstruction, optimistic
+version validation, exact lock projection validation or a later Frappe save
+hook. The failed candidate is forward-reverted in the blocker checkpoint so
+no unproved behavior remains.
+
+## Hard Blocker and resolution
+
+The one stage-diagnostic dispatch and the retained final unchanged Gate are
+both exhausted. Another code repair or controlled-Site dispatch would exceed
+the explicit bounded authority. P5-01 remains incomplete and P5-02 remains
+inactive.
+
+The smallest safe resolution is one new explicit authorization for:
+
+1. one diagnostic-only checkpoint with a closed allowlist of projection
+   validation substages;
+2. affected tests and complete normal CI;
+3. one controlled-Site diagnostic dispatch;
+4. repair of only the uniquely proven substage;
+5. affected tests and complete normal CI; and
+6. one final unchanged controlled-Site Gate.
+
+No raw exception message, traceback, request, cookie or credential may be
+added, and no Requirement, contract, permission, lock, version, audit,
+idempotency, transaction order or PASS criterion may be weakened.

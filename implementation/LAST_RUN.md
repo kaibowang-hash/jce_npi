@@ -1,5 +1,30 @@
 # Last Run
 
+## P5-01 projection-save candidate disproven; bounded authority exhausted — 2026-07-31
+
+- Exact candidate `b2d7ca9256a0dd62a693baa6feea1c53fd33402f`
+  passed complete normal CI `30601670711`, including repository, complete
+  E2E, fixed-Linux visual and both secret-scan lanes.
+- The retained final unchanged controlled-Site Gate `30601980685` matched
+  that exact SHA. Fixed tools, disposable Site/database, both app
+  installations, both migrations and cleanup passed.
+- The workflow's complete repository/E2E/security and fixed-Linux visual jobs
+  also passed; only the controlled runtime job failed.
+- Checkout returned the same sanitized
+  `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. The exact-event
+  selector hypothesis is disproven; no controlled runtime PASS is claimed.
+- The failed candidate is forward-reverted. The retained diagnostic still
+  proves only the outer Frappe Controlled Document `save()` stage, not its
+  identity/policy, reconstruction, optimistic-version, lock-projection or
+  later-hook validation substage.
+- The sole stage-diagnostic dispatch and final unchanged Gate are exhausted.
+  Controller status is `BLOCKED_EXTERNAL`; P5-01 remains incomplete and
+  P5-02 remains inactive.
+- The minimum safe resolution is the exact projection-validation substage
+  diagnostic authorization recorded in `implementation/NEXT_ACTION.md`.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+
 ## P5-01 checkout projection-save stage proven and repaired — 2026-07-31
 
 - Exact diagnostic checkpoint:

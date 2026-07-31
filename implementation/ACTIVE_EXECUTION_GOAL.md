@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T03:25:04Z`
+Updated: `2026-07-31T03:40:40Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `AUTOPILOT — PROVEN CHECKOUT PROJECTION-SAVE REPAIR`
+- Mode: `BLOCKED_EXTERNAL — PROJECTION-SAVE VALIDATION SUBSTAGE AUTHORITY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,8 +12,8 @@ Updated: `2026-07-31T03:25:04Z`
   `954bd0d08b9f82614e34cc0e92e67f5de0340db9`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS — PROVEN PROJECTION-SAVE REPAIR LOCALLY PASS; NORMAL CI AND
-  FINAL UNCHANGED CONTROLLED SITE PENDING`)
+  (`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; PROJECTION VALIDATION
+  SUBSTAGE NOT PROVEN`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -199,14 +199,32 @@ cleanup, and safely proved
 trace was equality-validated against the existing three-field safe record
 before the result was accepted and was not echoed to the job output.
 
-Only the proven projection-save boundary is now repaired. The repository
-binds the save to the exact immutable acquisition-event name returned by the
-successful prior insert; the DocType controller still reads that exact event
-from the database and verifies every tenant/Project/Document/lock/event/
-holder/expiry field. Invalid bindings fail closed and the temporary context
-is restored in `finally`. Focused `41/41`, complete P5 Document `85/85` and
-complete tracked Python `786/786` tests pass locally. Normal CI on the repair
-SHA and the retained final unchanged controlled-Site Gate remain pending.
+The bounded repair candidate changed only the projection-save boundary by
+binding the save to the exact immutable acquisition-event name returned by
+the successful prior insert. Focused `41/41`, complete P5 Document `85/85`
+and complete tracked Python `786/786` tests passed locally, but the candidate
+remained a hypothesis until the controlled Gate. Its later failure and
+forward reversion are recorded below.
+
+The exact repair checkpoint is
+`b2d7ca9256a0dd62a693baa6feea1c53fd33402f`. Complete normal CI run
+`30601670711` passed its repository, complete E2E, fixed-Linux visual and both
+secret-scan lanes.
+
+The retained final unchanged controlled-Site Gate `30601980685` matched that
+SHA. Fixed tools, disposable Site/database, both app installations, both
+migrations and cleanup passed, but checkout again returned the exact safe
+result `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Therefore the
+acquisition-event selector hypothesis is disproven. The failed candidate is
+forward-reverted in the blocker checkpoint.
+
+The remaining failure is within the Frappe Controlled Document `save()`
+lifecycle after receipt and lock-event insertion. Current authorized evidence
+cannot distinguish identity/policy hydration, domain reconstruction,
+optimistic-version validation, exact lock-projection validation or a later
+Frappe save hook. Both authorized controlled executions are exhausted. A new
+projection-substage diagnostic checkpoint/dispatch plus a new final unchanged
+Gate require explicit bounded authorization.
 
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
@@ -256,16 +274,17 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The authorized shared-Datetime batch and both bounded checkout diagnostic
-runs are complete. The allowlisted result proved only the projection-save
-stage, and its exact-event repair is locally green.
+The authorized shared-Datetime batch, both bounded checkout diagnostics and
+the retained final unchanged Gate are complete. The allowlisted result still
+proves only the projection-save stage; the exact-event repair did not close
+it and is forward-reverted.
 
-The first incomplete action is to commit and push only the proven-stage
-repair, then pass complete normal CI on its exact SHA. The already authorized
-final unchanged controlled-Site Gate remains unused.
+The first incomplete action requires the explicit bounded authorization
+recorded in `implementation/NEXT_ACTION.md`. Do not add projection-substage
+diagnostics, make another repair or dispatch another controlled Site before
+that authority exists.
 
-P5-01 remains incomplete and P5-02 remains inactive until the proven repair,
-final unchanged Gate and remaining Level 2 reviews pass.
+P5-01 remains incomplete and P5-02 remains inactive.
 
 Do not start P5-02, add review/release/baseline/EBOM behavior, enable external
 retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
@@ -318,8 +337,10 @@ Frappe `ValidationError` but not a unique transaction stage. Stage checkpoint
 `954bd0d08b9f82614e34cc0e92e67f5de0340db9` passed normal CI `#104`;
 dispatch `30600943765` then proved
 `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its bounded repair is
-locally green and awaits normal CI plus the final unchanged Site Gate. The
-fixed controlled Site has not passed. The fifth-round Hard
+normal-CI green at `b2d7ca9`, but final Gate `30601980685` returned the same
+safe stage result and exhausted the authority. The failed candidate is
+forward-reverted in the blocker checkpoint. The fixed controlled Site has not
+passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
 authorized recovery is complete at

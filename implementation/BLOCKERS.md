@@ -1,10 +1,40 @@
 # Blockers
 
-Updated: `2026-07-31T03:25:04Z`
+Updated: `2026-07-31T03:43:11Z`
 
 ## Active hard blockers
 
-None.
+`P5-01-CONTROLLED-RUNTIME-PROJECTION-SUBSTAGE-DIAGNOSTIC-LIMIT`
+
+The exact stage-diagnostic checkpoint `954bd0d` passed complete normal CI
+`30600587269`. Its sole authorized controlled-Site diagnostic dispatch
+`30600943765` safely proved
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE` after receipt and
+immutable lock-event insertion.
+
+The bounded candidate `b2d7ca9` bound the projection save to the exact
+acquisition-event name returned by that successful insertion and passed
+complete normal CI `30601670711`. The retained final unchanged controlled-Site
+Gate `30601980685` matched the exact candidate SHA, passed fixed setup, both
+migrations and cleanup, then returned the same safe
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. The hypothesis is
+therefore disproven and the candidate is forward-reverted in the blocker
+checkpoint.
+
+Current authorized evidence isolates only the outer Frappe Controlled
+Document `save()` stage. It cannot distinguish identity/policy hydration,
+domain reconstruction, optimistic-version validation, exact lock-projection
+validation or a later save hook. Both the sole stage-diagnostic dispatch and
+the retained final unchanged Gate are exhausted. Guessing another repair or
+dispatching another controlled Site would violate the bounded authorization
+and fail-closed evidence rule.
+
+Resolution requires the exact additional bounded authorization recorded in
+`implementation/NEXT_ACTION.md`: one allowlisted projection-validation
+substage diagnostic checkpoint, one controlled-Site diagnostic dispatch,
+repair of only the proven substage, affected checks/normal CI and one final
+unchanged controlled-Site Gate. Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
 
 ## Resolved hard blockers
 
@@ -24,10 +54,10 @@ tracked Python `784/784` checks pass. Evidence:
 Exact checkpoint `954bd0d` passed normal CI `#104`, run `30600587269`.
 The sole authorized diagnostic dispatch `30600943765` then proved
 `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE` while fixed setup,
-migrations and cleanup passed. Only that stage is now repaired; focused
-`41/41`, P5 Document `85/85` and complete tracked Python `786/786` pass.
-Normal CI on the repair checkpoint and the retained final unchanged Gate are
-pending.
+migrations and cleanup passed. The later exact-event binding candidate passed
+normal CI but failed its retained final unchanged Gate at the same stage and
+was forward-reverted. The remaining projection-validation substage authority
+is now the active hard blocker above.
 
 `P5-01-CONTROLLED-RUNTIME-CHECKOUT-DIAGNOSTIC-REPAIR-LIMIT`
 
@@ -97,7 +127,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_FINAL_GATE`
+`P5-01_CONTROLLED_RUNTIME_PROJECTION_SUBSTAGE_DIAGNOSTIC_LIMIT`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
