@@ -1,5 +1,28 @@
 # Last Run
 
+## P5-01 checkout diagnostic proved class but not stage — 2026-07-31
+
+- Exact diagnostic checkpoint:
+  `e4b284f6360a852ffd81d6a9e7b0f41f65f363a9`.
+- Normal CI `#101`, run `30598406263`, passed the complete repository,
+  `285/285` non-visual browser, fixed-Linux visual, direct trilingual,
+  dependency-audit and both secret-scan lanes.
+- The sole authorized diagnostic dispatch `#102`, run `30598733723`, matched
+  that SHA and passed exact tools, fixed disposable Site/database guards, both
+  app installations and both migrations.
+- Checkout returned only
+  `exc_type=ValidationError; diagnostic_code=UNEXPECTED_BFF_EXCEPTION`.
+  The safe record has no transaction-stage code, so command-receipt,
+  lock-event, exact projection and receipt-seal validations remain
+  indistinguishable.
+- The controlled job failed as diagnostic evidence, while its cleanup,
+  repository and visual jobs passed. No runtime Gate PASS is claimed.
+- The one diagnostic dispatch is exhausted. Controller status is
+  `BLOCKED_EXTERNAL`; P5-01 and its seven requirements remain incomplete, and
+  P5-02 remains inactive. The authorized final unchanged Gate is not consumed.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
+
 ## P5-01 checkout diagnostic round authorized and locally green — 2026-07-31
 
 - The user explicitly authorized one additional bounded round for

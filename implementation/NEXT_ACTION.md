@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-01 AUTHORIZED CHECKOUT DIAGNOSTIC/REPAIR ROUND`
+`BLOCKED_EXTERNAL — CHECKOUT VALIDATION STAGE NOT UNIQUELY PROVEN`
 
-Recovery time: `2026-07-31T02:08:45Z`
+Recovery time: `2026-07-31T02:37:04Z`
 
 Latest complete CI recovery checkpoint:
-`7aa14edbdd2e484784cee6a8ec52adef4f6bf328`
+`e4b284f6360a852ffd81d6a9e7b0f41f65f363a9`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -98,6 +98,16 @@ Required and only development branch:
   cookie or credential data.
 - Focused `15/15` and complete tracked Python `781/781` checks pass locally.
   No product/domain/API/permission/transaction/DocType change is present.
+- Exact diagnostic checkpoint `e4b284f` passed complete normal CI `#101`, run
+  `30598406263`.
+- The sole authorized diagnostic dispatch `#102`, run `30598733723`, matched
+  the exact SHA and passed tools, fixed Site/database guards, both app
+  installations, both migrations and cleanup. Checkout returned
+  `ValidationError / UNEXPECTED_BFF_EXCEPTION`.
+- The safe record has no checkout stage code. `ValidationError` remains
+  possible at the command-receipt exact-parent check, immutable lock-event
+  validation, controlled-document exact lock projection and final receipt
+  seal. The result therefore does not authorize choosing one for repair.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -131,16 +141,21 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair and its prior dispatch are complete. The new
-bounded authorization is active. The first incomplete action is:
+The shared-Datetime repair and the diagnostic-only run are complete. The
+authorized diagnostic dispatch is exhausted and no unique checkout
+transaction root is proven.
 
-1. commit and push only the diagnostic verifier/tests/controller evidence;
-2. pass complete normal CI on that exact SHA;
-3. execute the sole diagnostic-only controlled-Site dispatch;
-4. use its safe exact trace record to identify the checkout transaction root;
-5. fix only that proven root, with affected checks and complete normal CI; and
-6. execute one final unchanged
-   `bash scripts/verify-frappe-runtime.sh --document-only` dispatch.
+The single unblock action is explicit user authorization for one additional
+stage-coded diagnostic checkpoint and one controlled-Site dispatch limited to:
+
+1. adding an allowlisted safe stage code for receipt insert, lock-event
+   insert, document projection save, audit append, response build and receipt
+   seal;
+2. emitting only that code, a validated exception type and the exact trace ID;
+3. running affected tests, normal CI and one stage-diagnostic controlled Site;
+4. repairing only the exact stage proven by that run; and
+5. retaining the already authorized final unchanged
+   `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
 
 The terminal result must prove:
 
@@ -154,7 +169,7 @@ The terminal result must prove:
 
 Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
 review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Active evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`.
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
 
 ## Retained passing checkpoint evidence
 

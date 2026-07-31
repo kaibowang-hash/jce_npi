@@ -17,8 +17,7 @@ Requirements:
 
 State:
 
-`IN_PROGRESS — DIAGNOSTIC CHECKPOINT LOCALLY PASS; NORMAL CI AND THE SOLE
-DIAGNOSTIC-ONLY CONTROLLED-SITE DISPATCH PENDING`
+`COMPLETE DIAGNOSTIC CHECKPOINT / INSUFFICIENT STAGE ATTRIBUTION`
 
 P5-01 is not `PASS`, none of its seven requirements is promoted, and P5-02
 remains inactive.
@@ -89,19 +88,33 @@ The host Node/npm versions are not the repository pins, so complete normal CI
 remains the canonical repository/frontend/visual/security environment. No
 dependency was installed and no local product runtime result is claimed.
 
-## Pending terminal evidence
+## Terminal evidence
 
-The exact next sequence is:
+Exact checkpoint:
+`e4b284f6360a852ffd81d6a9e7b0f41f65f363a9`.
 
-1. commit and push this diagnostic-only checkpoint;
-2. pass complete normal CI on its exact SHA;
-3. dispatch exactly one diagnostic-only controlled-Site workflow;
-4. retain only its sanitized exception type/code and exact trace;
-5. fix only the thereby proven checkout root;
-6. pass affected checks and complete normal CI; and
-7. dispatch one final unchanged
-   `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
+Normal CI `#101`, run `30598406263`, passed:
 
-The diagnostic dispatch is not a Gate PASS even if it happens to advance.
-Only the final unchanged run may supply the missing controlled-runtime Gate
-evidence.
+- repository job `91055706505`;
+- fixed-Linux visual job `91055706451`;
+- complete repository verification and `285/285` non-visual browser cases;
+- current-tree and complete pull-request-history secret scans.
+
+The sole authorized diagnostic workflow was `#102`, run `30598733723`, on
+the same exact SHA:
+
+- controlled runtime job `91056666308`: diagnostic `FAIL`;
+- repository job `91056666373`: `PASS`;
+- visual job `91056666259`: `PASS`;
+- exact tools, fixed Site/database guards, both app installations and both
+  migrations: `PASS`;
+- checkout diagnostic:
+  `exc_type=ValidationError; diagnostic_code=UNEXPECTED_BFF_EXCEPTION`;
+- bounded cleanup: `PASS`.
+
+The diagnostic is not a Gate PASS. It proves the safe trace chain works, but
+the existing BFF record contains no checkout transaction-stage code.
+`ValidationError` remains shared by command-receipt, lock-event, exact
+projection and response-receipt seal validations. A product repair would
+therefore still be a guess. The resulting Hard Blocker is recorded in
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
