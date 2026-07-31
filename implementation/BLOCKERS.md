@@ -1,24 +1,25 @@
 # Blockers
 
-Updated: `2026-07-31T07:00:05Z`
+Updated: `2026-07-31T20:15:18Z`
 
 ## Active hard blockers
 
-None. P5-01 passed its controlled-Site and Level 2 Task Gates; P5-02 is
+None. P5-02 passed its controlled-Site and Level 2 Task Gates; P5-03 is
 authorized active.
 
 ## Active diagnostic progress
 
 None.
 
-The P5-01 closed diagnostic inventory retained only allowlisted stage code,
-validated exception type and exact trace ID. It led to a valid synthetic PDF
-fixture and one strict relationship-query parser repair without weakening the
-product or Gate. Complete ordinary CI `30610355829` and final unchanged
-controlled-Site workflow `30610747931` passed on exact product SHA `5a9cd3d`.
+The P5-02 controlled recovery retained only bounded, non-sensitive diagnostic
+facts and repaired the single product root proved in release-policy
+publication. Later verifier-only identity corrections changed no product
+Requirement, contract, permission or lifecycle rule. Complete ordinary CI
+`30661086073` and final unchanged controlled-Site workflow `30661586342`
+passed on exact product SHA `f088d70`.
 
 Evidence:
-`implementation/evidence/phase-5/p5-01-validation.md`.
+`implementation/evidence/phase-5/p5-02-validation.md`.
 
 ## Resolved hard blockers
 

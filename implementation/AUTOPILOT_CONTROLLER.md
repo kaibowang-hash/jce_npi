@@ -242,19 +242,20 @@ pending until that proof is produced in Codespaces.
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Branch: `codex/npi-v1.2-implementation`.
-- Phase 5 remains `IN_PROGRESS`; P5-00 and P5-01 are `PASS`.
-- P5-01 product checkpoint
-  `5a9cd3d85885895819a730dd0da4e7abe86c2646` passed complete normal CI
-  `30610355829`, final unchanged controlled-Site workflow `30610747931` and
+- Phase 5 remains `IN_PROGRESS`; P5-00, P5-01 and P5-02 are `PASS`.
+- P5-02 product checkpoint
+  `f088d70b00b54488587b2a83a311b636ef48cf78` passed complete normal CI
+  `30661086073`, final unchanged controlled-Site workflow `30661586342` and
   its Level 2 Task Gate. Complete evidence:
-  `implementation/evidence/phase-5/p5-01-validation.md`.
-- P5-02 is the only active atomic task, beginning with the bounded
+  `implementation/evidence/phase-5/p5-02-validation.md`.
+- P5-03 is the only active atomic task, beginning with the bounded
   Requirement/domain audit in `implementation/NEXT_ACTION.md`.
-- P5-03 through P5-05 and Phase 6 remain inactive.
+- P5-04, P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker or execution hold exists. Production numbering,
-  reviewer/approver authority, signatures, external identity/retrieval,
-  scanner/viewer providers, CAD/PDM and production ERPNext remain scoped
-  fail-closed holds and are not represented as implemented.
+  reviewer/approver authority, signatures, baseline/invalidation authority,
+  production dependency matrix, external identity/retrieval, scanner/viewer
+  providers, CAD/PDM and production ERPNext remain scoped fail-closed holds
+  and are not represented as implemented.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 - Existing uncommitted workspace changes remain user-owned and must not be

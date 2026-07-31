@@ -1,29 +1,29 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T07:00:05Z`
+Updated: `2026-07-31T20:15:18Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `IN_PROGRESS — P5-02 AUTHORIZED ACTIVE`
+- Mode: `IN_PROGRESS — P5-03 AUTHORIZED ACTIVE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest passed product checkpoint:
-  `5a9cd3d85885895819a730dd0da4e7abe86c2646`
+  `f088d70b00b54488587b2a83a311b636ef48cf78`
 - Local and remote product SHA:
-  `5a9cd3d85885895819a730dd0da4e7abe86c2646` (`0 ahead / 0 behind` before
-  the P5-01 evidence/controller commit)
+  `f088d70b00b54488587b2a83a311b636ef48cf78` (`0 ahead / 0 behind` before
+  the P5-02 evidence/controller commit)
 - Complete normal CI:
-  `30610355829` (`PASS`)
+  `30661086073` (`PASS`)
 - Final unchanged controlled-Site Gate:
-  `30610747931` (`PASS`)
+  `30661586342` (`PASS`)
 - Current controller task:
-  `P5-02 — Review and release workflow`
+  `P5-03 — Baseline and impact invalidation`
   (`READY — REQUIREMENT/DOMAIN AUDIT`)
 - Current Requirement IDs:
-  `FR-DS-002`, `FR-DS-005`, `FR-DS-010`
-- Completed P5-01 evidence:
-  `implementation/evidence/phase-5/p5-01-validation.md`
+  `FR-DS-006`
+- Completed P5-02 evidence:
+  `implementation/evidence/phase-5/p5-02-validation.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
