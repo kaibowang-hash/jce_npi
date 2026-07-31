@@ -1771,8 +1771,8 @@ def verify_review_release_runtime(
     )
     validate_problem(
         wrong_submitter,
-        503,
-        "DOCUMENT_RELEASE_POLICY_UNAVAILABLE",
+        403,
+        "DOCUMENT_REVIEW_ASSIGNMENT_UNAVAILABLE",
     )
 
     submitted_result = release_command(
