@@ -297,7 +297,16 @@ class NPIDocumentReleasePolicyVersion(Document):
         previous: object | None,
     ) -> None:
         snapshot = policy.snapshot_payload()
-        if self.policy_snapshot not in (None, ""):
+        canonical_snapshot = canonical_json(snapshot)
+        prior_snapshot = (
+            previous.get("policy_snapshot") if previous is not None else None
+        )
+        if self.policy_snapshot not in (
+            None,
+            "",
+            prior_snapshot,
+            canonical_snapshot,
+        ):
             supplied = json_object(
                 self.policy_snapshot,
                 _("Canonical Release Policy Snapshot"),
@@ -307,7 +316,15 @@ class NPIDocumentReleasePolicyVersion(Document):
                     _("Canonical Release Policy Snapshot does not match its rules."),
                     frappe.ValidationError,
                 )
-        if self.snapshot_hash not in (None, "", policy.snapshot_hash):
+        prior_snapshot_hash = (
+            previous.get("snapshot_hash") if previous is not None else None
+        )
+        if self.snapshot_hash not in (
+            None,
+            "",
+            prior_snapshot_hash,
+            policy.snapshot_hash,
+        ):
             frappe.throw(
                 _("Release Policy Snapshot Hash does not match its rules."),
                 frappe.ValidationError,
@@ -342,7 +359,7 @@ class NPIDocumentReleasePolicyVersion(Document):
         self.supersede_requires_released_successor = 1
         self.supersede_requires_later_revision = 1
         self.supersede_requires_successor_effective_date = 1
-        self.policy_snapshot = canonical_json(snapshot)
+        self.policy_snapshot = canonical_snapshot
         self.snapshot_hash = policy.snapshot_hash
         self.optimistic_version = optimistic_version
         if policy.state is DocumentReleasePolicyState.PUBLISHED:

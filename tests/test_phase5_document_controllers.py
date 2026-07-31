@@ -20,6 +20,9 @@ TENANT_ID = "tenant-a"
 PROJECT_ID = UUID("ee7193f7-a704-4ed3-9ac0-85c2b1b45184")
 POLICY_ID = UUID("83cdca19-f649-4a18-8a5b-9d263d97a911")
 POLICY_VERSION_ID = uuid5(POLICY_ID, "version:1")
+RELEASE_POLICY_ID = UUID("f411134e-97ec-4bb5-9c04-89b5be4cfe89")
+RELEASE_POLICY_VERSION_ID = uuid5(RELEASE_POLICY_ID, "version:1")
+REVIEWER_USER = "document.reviewer@example.invalid"
 DOCUMENT_ID = UUID("927466bd-a55d-48a1-9ddb-637e4ccb88c0")
 REVISION_ID = UUID("66997315-516a-4a5d-800b-0933f70a1e7d")
 REVISION_FILE_ID = UUID("2f4f7899-0fb4-483e-8660-e0ff79c09584")
@@ -71,6 +74,11 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         (
             "npi_core.npi_core.doctype.npi_document_policy_version"
             ".npi_document_policy_version"
+        ),
+        "npi_core.documents.release_frappe",
+        (
+            "npi_core.npi_core.doctype.npi_document_release_policy_version"
+            ".npi_document_release_policy_version"
         ),
         (
             "npi_core.npi_core.doctype.npi_controlled_document"
@@ -139,11 +147,11 @@ class Phase5DocumentControllerTest(unittest.TestCase):
             def get_value(
                 database_self,
                 doctype: str,
-                name: str,
-                fields: list[str],
+                name: object,
+                fields: list[str] | str,
                 *,
-                as_dict: bool,
-            ) -> dict[str, object] | None:
+                as_dict: bool = False,
+            ) -> dict[str, object] | str | None:
                 if (
                     doctype == "NPI Document Policy"
                     and name == str(POLICY_ID)
@@ -154,6 +162,27 @@ class Phase5DocumentControllerTest(unittest.TestCase):
                         "tenant_id": TENANT_ID,
                         "policy_key": "synthetic_document_policy",
                         "enabled": 1,
+                    }
+                if (
+                    doctype == "NPI Document Release Policy"
+                    and name == str(RELEASE_POLICY_ID)
+                    and as_dict
+                ):
+                    return {
+                        "global_id": str(RELEASE_POLICY_ID),
+                        "tenant_id": TENANT_ID,
+                        "project_global_id": str(PROJECT_ID),
+                        "policy_key": "synthetic_release_policy",
+                        "enabled": 1,
+                    }
+                if doctype == "User" and name in {
+                    "Administrator",
+                    REVIEWER_USER,
+                }:
+                    return {
+                        "name": name,
+                        "enabled": 1,
+                        "user_type": "System User",
                     }
                 if (
                     doctype == "NPI Document Policy Version"
@@ -330,6 +359,10 @@ class Phase5DocumentControllerTest(unittest.TestCase):
             "npi_core.npi_core.doctype.npi_document_policy_version"
             ".npi_document_policy_version"
         ).NPIDocumentPolicyVersion
+        self.ReleasePolicyVersion = importlib.import_module(
+            "npi_core.npi_core.doctype.npi_document_release_policy_version"
+            ".npi_document_release_policy_version"
+        ).NPIDocumentReleasePolicyVersion
         self.ControlledDocument = importlib.import_module(
             "npi_core.npi_core.doctype.npi_controlled_document"
             ".npi_controlled_document"
@@ -408,6 +441,46 @@ class Phase5DocumentControllerTest(unittest.TestCase):
                 "preview_mime_types": ["application/pdf"],
                 "maximum_file_bytes": 1_048_576,
                 "lock_lease_minutes": 30,
+                "snapshot_hash": "",
+                "policy_snapshot": None,
+                "published_at": None,
+                "optimistic_version": 1,
+            }
+        )
+
+    def release_policy_version(self) -> StubDocument:
+        return self.ReleasePolicyVersion(
+            {
+                "doctype": "NPI Document Release Policy Version",
+                "name": str(RELEASE_POLICY_VERSION_ID),
+                "global_id": str(RELEASE_POLICY_VERSION_ID),
+                "document_release_policy": str(RELEASE_POLICY_ID),
+                "tenant_id": TENANT_ID,
+                "project_global_id": str(PROJECT_ID),
+                "policy_global_id": str(RELEASE_POLICY_ID),
+                "policy_key": "synthetic_release_policy",
+                "policy_version": 1,
+                "version_key": f"{RELEASE_POLICY_ID}:1",
+                "title": "Synthetic document release policy",
+                "publication_state": "draft",
+                "submitter_user_ids": ["Administrator"],
+                "reviewer_assignments": [
+                    {
+                        "slotKey": "engineering_reviewer",
+                        "userId": REVIEWER_USER,
+                    }
+                ],
+                "required_approval_count": 1,
+                "release_authority_user_ids": ["Administrator"],
+                "supersede_authority_user_ids": ["Administrator"],
+                "obsolete_authority_user_ids": ["Administrator"],
+                "confirmation_method": "authenticated_session_confirmation",
+                "required_scan_state": "clean",
+                "require_live_private_identity": 1,
+                "require_sha256_match": 1,
+                "supersede_requires_released_successor": 1,
+                "supersede_requires_later_revision": 1,
+                "supersede_requires_successor_effective_date": 1,
                 "snapshot_hash": "",
                 "policy_snapshot": None,
                 "published_at": None,
@@ -749,6 +822,41 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         invalid_state.before_validate()
         with self.assertRaises(self.ValidationError):
             invalid_state.validate()
+
+    def test_release_policy_publication_recomputes_server_owned_snapshot(
+        self,
+    ) -> None:
+        draft = self.release_policy_version()
+        draft.before_validate()
+        draft.validate()
+        draft_snapshot = draft.policy_snapshot
+        draft_hash = draft.snapshot_hash
+
+        published = clone(draft)
+        published._previous = clone(draft)
+        published.publication_state = "published"
+        published.before_validate()
+        published.validate()
+
+        self.assertNotEqual(draft_snapshot, published.policy_snapshot)
+        self.assertNotEqual(draft_hash, published.snapshot_hash)
+        self.assertEqual(
+            json.loads(published.policy_snapshot)["state"],
+            "published",
+        )
+        self.assertEqual(published.optimistic_version, 2)
+        self.assertRegex(
+            published.published_at,
+            r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[.]\d{6}$",
+        )
+
+        tampered = clone(draft)
+        tampered._previous = clone(draft)
+        tampered.title = "Changed release policy title"
+        tampered.policy_snapshot = "{}"
+        tampered.before_validate()
+        with self.assertRaises(self.ValidationError):
+            tampered.validate()
 
     def test_controlled_document_starts_empty_and_advances_exactly_once(self) -> None:
         value = self.controlled_document()
