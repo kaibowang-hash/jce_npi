@@ -27,8 +27,7 @@ def require_document_baseline_command_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_BASELINE_COMMAND_FLAG, False):
         frappe.throw(
             _(
-                "Document baselines can only be changed through an authorized "
-                "NPI baseline command."
+                "Document baselines can only be changed through an authorized NPI baseline command."
             ),
             frappe.PermissionError,
         )
@@ -38,8 +37,7 @@ def require_baseline_dependency_system_write() -> None:
     if not getattr(frappe.flags, BASELINE_DEPENDENCY_SYSTEM_FLAG, False):
         frappe.throw(
             _(
-                "Baseline dependencies can only be changed through authorized "
-                "Gate and revision commands."
+                "Only authorized Gate and revision commands can change baseline dependencies."
             ),
             frappe.PermissionError,
         )

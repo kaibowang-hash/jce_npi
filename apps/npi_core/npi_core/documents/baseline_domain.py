@@ -80,6 +80,24 @@ class DocumentBaselineInputUnavailable(NpiProblem):
         )
 
 
+class DocumentBaselineUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "DOCUMENT_BASELINE_UNAVAILABLE",
+            _("The document baseline is unavailable."),
+        )
+
+
+class DocumentBaselineIdempotencyConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "DOCUMENT_BASELINE_IDEMPOTENCY_CONFLICT",
+            _("The idempotency key was already used for a different baseline."),
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class DocumentBaselinePolicyReference:
     global_id: UUID
@@ -101,6 +119,45 @@ class DocumentBaselinePolicyReference:
             "version": self.version,
             "snapshotHash": self.snapshot_hash,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class DocumentBaselineMemberPrecondition:
+    revision_id: UUID
+    expected_revision_snapshot_hash: str
+    expected_lifecycle_version: int
+    expected_release_snapshot_hash: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "revision_id",
+            _uuid(self.revision_id, "baselineInput.revisionId"),
+        )
+        object.__setattr__(
+            self,
+            "expected_revision_snapshot_hash",
+            _hash(
+                self.expected_revision_snapshot_hash,
+                "baselineInput.expectedRevisionSnapshotHash",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "expected_lifecycle_version",
+            _positive(
+                self.expected_lifecycle_version,
+                "baselineInput.expectedLifecycleVersion",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "expected_release_snapshot_hash",
+            _hash(
+                self.expected_release_snapshot_hash,
+                "baselineInput.expectedReleaseSnapshotHash",
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)

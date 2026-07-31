@@ -156,6 +156,10 @@ class MockDocumentRepository:
         self.calls.append(("list", args, kwargs))
         return self._response()
 
+    def list_baselines(self, *args: object, **kwargs: Any):
+        self.calls.append(("list_baselines", args, kwargs))
+        return self._response()
+
     def document_detail(self, *args: object, **kwargs: Any):
         self.calls.append(("detail", args, kwargs))
         return self._response()
@@ -171,6 +175,9 @@ class MockDocumentRepository:
                 replayed=self.replayed,
             )
         )
+
+    def create_baseline(self, *args: object, **kwargs: Any):
+        return self._command("create_baseline", args, kwargs)
 
     def check_out(self, *args: object, **kwargs: Any):
         return self._command("check_out", args, kwargs)
@@ -287,6 +294,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
             npi_tenant_id="TENANT-A",
             npi_p5_01_routes_disabled=False,
             npi_p5_02_routes_disabled=False,
+            npi_p5_03_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -345,6 +353,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
 
         self.api._repository_factory = repository_factory
         self.api._release_repository_factory = repository_factory
+        self.api._baseline_repository_factory = repository_factory
         self.workspace = {
             "project": {"globalId": PROJECT_ID},
             "permissions": {"view": True},
@@ -412,6 +421,23 @@ class Phase5DocumentApiTest(unittest.TestCase):
                     "kind": "project",
                     "targetIdentity": PROJECT_ID,
                     "targetVersion": 3,
+                }
+            ],
+        }
+
+    @staticmethod
+    def baseline_payload() -> dict[str, object]:
+        return {
+            "policyGlobalId": POLICY_ID,
+            "policyVersion": 1,
+            "policySnapshotHash": "a" * 64,
+            "label": "G2 synthetic release package",
+            "members": [
+                {
+                    "revisionId": REVISION_ID,
+                    "expectedRevisionSnapshotHash": "b" * 64,
+                    "expectedLifecycleVersion": 4,
+                    "expectedReleaseSnapshotHash": "c" * 64,
                 }
             ],
         }
@@ -609,6 +635,103 @@ class Phase5DocumentApiTest(unittest.TestCase):
             "VALIDATION_FAILED",
         )
         self.assertEqual(problem["fieldErrors"][0]["path"], "objectLinks[1]")
+
+    def test_baseline_query_authorizes_before_closed_field_validation(self) -> None:
+        self.reset(user="member@example.invalid")
+        self.repository.scope_authorized = False
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.document_api.get_document_baselines",
+                self.api.get_document_baselines,
+                {"unexpected": "must-not-be-resolved"},
+            ),
+            404,
+            "DOCUMENT_UNAVAILABLE",
+        )
+        self.assertNotIn("fieldErrors", problem)
+        self.assertEqual(self.repository.calls[-1][0], "authorize")
+
+        self.reset(user="member@example.invalid")
+        result = self.call(
+            "npi_core.document_api.get_document_baselines",
+            self.api.get_document_baselines,
+            {},
+        )
+        self.assertEqual(result, self.workspace)
+        self.assertEqual(self.repository.calls[-1][0], "list_baselines")
+
+    def test_baseline_create_requires_transport_role_and_exact_preconditions(
+        self,
+    ) -> None:
+        for user, status, code in (
+            ("Guest", 401, "AUTHENTICATION_REQUIRED"),
+            ("manager@example.invalid", 403, "PERMISSION_DENIED"),
+            ("external@example.invalid", 403, "PERMISSION_DENIED"),
+        ):
+            with self.subTest(user=user):
+                self.reset(user=user)
+                self.assert_problem(
+                    self.call(
+                        "npi_core.document_api.create_document_baseline",
+                        self.api.create_document_baseline,
+                        self.baseline_payload(),
+                    ),
+                    status,
+                    code,
+                )
+
+        self.reset(user="member@example.invalid")
+        result = self.call(
+            "npi_core.document_api.create_document_baseline",
+            self.api.create_document_baseline,
+            self.baseline_payload(),
+        )
+        self.assertEqual(result, self.workspace)
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "create_baseline")
+        self.assertEqual(args, (UUID(PROJECT_ID),))
+        self.assertEqual(values["policy_global_id"], UUID(POLICY_ID))
+        self.assertEqual(values["members"][0].revision_id, UUID(REVISION_ID))
+        self.assertEqual(values["members"][0].expected_lifecycle_version, 4)
+        self.assertEqual(len(values["idempotency_key_hash"]), 64)
+        self.assertEqual(self.frappe.local.response.http_status_code, 201)
+
+        self.reset(user="member@example.invalid")
+        duplicate = self.baseline_payload()
+        duplicate["members"] = [
+            duplicate["members"][0],
+            copy.deepcopy(duplicate["members"][0]),
+        ]
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.document_api.create_document_baseline",
+                self.api.create_document_baseline,
+                duplicate,
+            ),
+            422,
+            "VALIDATION_FAILED",
+        )
+        self.assertEqual(problem["fieldErrors"][0]["path"], "members[1].revisionId")
+
+    def test_baseline_create_scope_authorization_precedes_body_validation(
+        self,
+    ) -> None:
+        self.reset(user="member@example.invalid")
+        self.repository.scope_authorized = False
+        invalid = self.baseline_payload()
+        invalid["unexpected"] = True
+        invalid["members"] = "must-not-be-parsed"
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.document_api.create_document_baseline",
+                self.api.create_document_baseline,
+                invalid,
+            ),
+            404,
+            "DOCUMENT_UNAVAILABLE",
+        )
+        self.assertNotIn("fieldErrors", problem)
+        self.assertEqual(self.repository.calls[-1][0], "authorize")
 
     def test_revision_accepts_only_one_bounded_binary_and_closed_metadata(self) -> None:
         metadata = {
@@ -1118,6 +1241,16 @@ class Phase5DocumentApiTest(unittest.TestCase):
         routes = (
             (
                 "GET",
+                f"/api/npi/v1/projects/{PROJECT_ID}/document-baselines",
+                "get_document_baselines",
+            ),
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/document-baselines",
+                "create_document_baseline",
+            ),
+            (
+                "GET",
                 f"/api/npi/v1/projects/{PROJECT_ID}/documents",
                 "get_documents",
             ),
@@ -1297,8 +1430,58 @@ class Phase5DocumentApiTest(unittest.TestCase):
             "npi_core.bff.document_routes_disabled",
         )
 
+    def test_baseline_route_switch_is_independent_and_parent_switch_wins(
+        self,
+    ) -> None:
+        baseline_path = f"/api/npi/v1/projects/{PROJECT_ID}/document-baselines"
+        retained_path = f"/api/npi/v1/projects/{PROJECT_ID}/documents/{DOCUMENT_ID}"
+        self.frappe.conf.npi_p5_03_routes_disabled = True
+
+        for method, path, expected in (
+            ("GET", baseline_path, "npi_core.bff.document_baseline_routes_disabled"),
+            ("POST", baseline_path, "npi_core.bff.document_baseline_routes_disabled"),
+            ("GET", retained_path, "npi_core.document_api.get_document"),
+        ):
+            with self.subTest(method=method, path=path):
+                self.frappe.local.form_dict = AttrDict()
+                self.frappe.local.request = types.SimpleNamespace(
+                    path=path,
+                    method=method,
+                    files=FileMap(),
+                )
+                self.frappe.request = self.frappe.local.request
+                self.router.route_request()
+                self.assertEqual(self.frappe.local.form_dict.cmd, expected)
+
+        self.reset(user="member@example.invalid")
+        self.assert_problem(
+            self.call(
+                "npi_core.document_api.get_document_baselines",
+                self.api.get_document_baselines,
+                {},
+            ),
+            503,
+            "DOCUMENT_BASELINE_ROUTES_DISABLED",
+        )
+
+        self.frappe.conf.npi_p5_01_routes_disabled = True
+        self.frappe.local.form_dict = AttrDict()
+        self.frappe.local.request = types.SimpleNamespace(
+            path=baseline_path,
+            method="GET",
+            files=FileMap(),
+        )
+        self.frappe.request = self.frappe.local.request
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.document_routes_disabled",
+        )
+
     def test_endpoint_methods_are_exact(self) -> None:
         expected = {
+            self.api.get_document_baselines: ("GET",),
+            self.api.create_document_baseline: ("POST",),
             self.api.get_documents: ("GET",),
             self.api.create_document: ("POST",),
             self.api.get_document: ("GET",),

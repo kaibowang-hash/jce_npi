@@ -12,12 +12,15 @@ from npi_core.documents.baseline_domain import (  # noqa: E402
     BaselineGateDependency,
     BaselineImpactEvent,
     DocumentBaselineAuthorityUnavailable,
+    DocumentBaselineIdempotencyConflict,
     DocumentBaselineInputUnavailable,
     DocumentBaselineMember,
+    DocumentBaselineMemberPrecondition,
     DocumentBaselinePolicyReference,
     DocumentBaselinePolicyState,
     DocumentBaselinePolicyUnavailable,
     DocumentBaselinePolicyVersion,
+    DocumentBaselineUnavailable,
     create_document_baseline,
     sha256_json,
 )
@@ -253,6 +256,27 @@ class DocumentBaselineDomainTest(unittest.TestCase):
         self.assertEqual(
             DocumentBaselineInputUnavailable().code,
             "DOCUMENT_BASELINE_INPUT_UNAVAILABLE",
+        )
+
+    def test_member_precondition_and_repository_problems_are_closed(self) -> None:
+        value = DocumentBaselineMemberPrecondition(
+            revision_id=REVISION_ID,
+            expected_revision_snapshot_hash=HASH_A,
+            expected_lifecycle_version=4,
+            expected_release_snapshot_hash=HASH_B,
+        )
+        self.assertEqual(value.expected_lifecycle_version, 4)
+        with self.assertRaises(RequestValidationFailed):
+            replace(value, expected_lifecycle_version=0)
+        with self.assertRaises(RequestValidationFailed):
+            replace(value, expected_release_snapshot_hash="not-a-hash")
+        self.assertEqual(
+            DocumentBaselineUnavailable().code,
+            "DOCUMENT_BASELINE_UNAVAILABLE",
+        )
+        self.assertEqual(
+            DocumentBaselineIdempotencyConflict().code,
+            "DOCUMENT_BASELINE_IDEMPOTENCY_CONFLICT",
         )
 
     @staticmethod

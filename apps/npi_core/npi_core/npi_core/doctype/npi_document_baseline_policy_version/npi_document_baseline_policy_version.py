@@ -198,8 +198,7 @@ class NPIDocumentBaselinePolicyVersion(Document):
         if not valid:
             frappe.throw(
                 _(
-                    "Publish each document baseline policy version before "
-                    "creating the next."
+                    "Publish each document baseline policy version before creating the next."
                 ),
                 frappe.ValidationError,
             )

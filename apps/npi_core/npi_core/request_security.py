@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from .foundation.errors import (
     AuthenticationRequired,
     CsrfTokenInvalid,
+    DocumentBaselineRoutesDisabled,
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
@@ -60,6 +61,27 @@ def require_document_release_routes_enabled() -> None:
 
     if document_release_routes_are_disabled():
         raise DocumentReleaseRoutesDisabled()
+
+
+def document_baseline_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P5-03 emergency switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p5_03_routes_disabled")
+        if hasattr(configuration, "get")
+        else False
+    )
+    return value is True
+
+
+def require_document_baseline_routes_enabled() -> None:
+    """Close P5-03 handlers without disabling retained P5-01/P5-02 routes."""
+
+    if document_baseline_routes_are_disabled():
+        raise DocumentBaselineRoutesDisabled()
 
 
 def project_collaboration_routes_are_disabled() -> bool:

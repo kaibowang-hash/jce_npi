@@ -111,6 +111,7 @@ def _properties(name: str) -> set[str]:
 
 
 class Phase5DocumentContractTest(unittest.TestCase):
+    BASELINE_ROUTE = "  /projects/{projectId}/document-baselines:"
     ROUTES = (
         "  /projects/{projectId}/documents:",
         "  /projects/{projectId}/documents/{documentId}:",
@@ -414,6 +415,124 @@ class Phase5DocumentContractTest(unittest.TestCase):
         )
         self.assertNotIn("fileUrl", transition)
 
+    def test_baseline_operations_freeze_exact_authority_and_transaction_order(
+        self,
+    ) -> None:
+        query = _operation(self.BASELINE_ROUTE, "get")
+        command = _operation(self.BASELINE_ROUTE, "post")
+        self.assertIn("operationId: listDocumentBaselines", query)
+        self.assertEqual(
+            _response_statuses(query),
+            {"200", "400", "401", "404", "422", "500", "503", "default"},
+        )
+        self.assertIn("operationId: createDocumentBaseline", command)
+        self.assertIn("x-required-roles: [NPI API User]", command)
+        self.assertNotIn("System Manager", command)
+        self.assertIn(
+            "x-business-authority: exact-document-baseline-policy-authority",
+            command,
+        )
+        self.assertIn("x-transaction-boundary: document-baseline-root", command)
+        transaction_order = (
+            "unsealed-actor-bound-receipt",
+            "immutable-baseline",
+            "ordered-immutable-members",
+            "append-only-audit",
+            "authoritative-response",
+            "sealed-receipt",
+        )
+        positions = [command.index(value) for value in transaction_order]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("x-audit-operation: document.baseline.create", command)
+        self.assertIn(
+            '$ref: "#/components/parameters/IdempotencyKey"',
+            command,
+        )
+        self.assertIn('$ref: "#/components/parameters/CsrfToken"', command)
+        self.assertIn(
+            '$ref: "#/components/schemas/CreateDocumentBaseline"',
+            command,
+        )
+        self.assertEqual(
+            _response_statuses(command),
+            {
+                "201",
+                "400",
+                "401",
+                "403",
+                "404",
+                "409",
+                "422",
+                "500",
+                "503",
+                "default",
+            },
+        )
+
+    def test_baseline_request_and_response_schemas_are_closed_and_url_free(
+        self,
+    ) -> None:
+        self.assertEqual(
+            _properties("CreateDocumentBaseline"),
+            {"policyGlobalId", "policyVersion", "policySnapshotHash", "label", "members"},
+        )
+        self.assertEqual(
+            set(_required("CreateDocumentBaseline")),
+            _properties("CreateDocumentBaseline"),
+        )
+        self.assertEqual(
+            _properties("CreateDocumentBaselineMember"),
+            {
+                "revisionId",
+                "expectedRevisionSnapshotHash",
+                "expectedLifecycleVersion",
+                "expectedReleaseSnapshotHash",
+            },
+        )
+        self.assertEqual(
+            set(_required("CreateDocumentBaselineMember")),
+            _properties("CreateDocumentBaselineMember"),
+        )
+        member = _schema("DocumentBaselineMember")
+        self.assertIn("releaseSnapshotHash", _required("DocumentBaselineMember"))
+        self.assertIn("original reviewed File evidence", member)
+        self.assertIn("independent", member)
+        schemas = (
+            "CreateDocumentBaseline",
+            "CreateDocumentBaselineMember",
+            "DocumentBaselineProject",
+            "DocumentBaselinePermissions",
+            "DocumentBaselinePolicyReference",
+            "DocumentBaselinePolicyOption",
+            "DocumentBaselineFile",
+            "DocumentBaselineMember",
+            "DocumentBaselineSummary",
+            "DocumentBaselineImpactEvent",
+            "DocumentBaselineWorkspace",
+            "DocumentBaselineCommand",
+        )
+        combined = ""
+        for schema in schemas:
+            with self.subTest(schema=schema):
+                value = _schema(schema)
+                self.assertIn("additionalProperties: false", value)
+                combined += value.casefold()
+        self.assertEqual(
+            set(_required("DocumentBaselineWorkspace")),
+            _properties("DocumentBaselineWorkspace"),
+        )
+        for forbidden in (
+            "fileurl",
+            "rawurl",
+            "privateurl",
+            "downloadurl",
+            "storageidentity",
+            "frappefileid",
+            "cookie",
+            "credential",
+        ):
+            self.assertNotIn(forbidden, combined)
+
     def test_command_schemas_are_closed_and_browser_cannot_assert_file_truth(
         self,
     ) -> None:
@@ -651,6 +770,8 @@ class Phase5DocumentContractTest(unittest.TestCase):
             "DocumentQueryResult",
             "DocumentCommandResult",
             "DocumentReleaseCommandResult",
+            "DocumentBaselineListResult",
+            "DocumentBaselineCommandResult",
             "DocumentCapabilityResult",
         ):
             with self.subTest(response=response):

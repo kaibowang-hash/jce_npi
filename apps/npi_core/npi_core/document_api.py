@@ -17,6 +17,11 @@ from npi_core.documents.domain import (
     DocumentUnavailable,
     MAX_FILE_BYTES,
 )
+from npi_core.documents.baseline_domain import (
+    MAX_BASELINE_MEMBERS,
+    DocumentBaselineMemberPrecondition,
+    DocumentBaselineUnavailable,
+)
 from npi_core.documents.release_domain import DocumentReviewDecision
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
@@ -29,6 +34,7 @@ from npi_core.request_security import (
     require_csrf_token,
     require_document_routes_enabled,
     require_document_release_routes_enabled,
+    require_document_baseline_routes_enabled,
     require_request_fields,
     response_request_id,
 )
@@ -55,6 +61,23 @@ _CREATE_FIELDS = frozenset(
         "title",
         "confidentialityKey",
         "objectLinks",
+    }
+)
+_BASELINE_CREATE_FIELDS = frozenset(
+    {
+        "policyGlobalId",
+        "policyVersion",
+        "policySnapshotHash",
+        "label",
+        "members",
+    }
+)
+_BASELINE_MEMBER_FIELDS = frozenset(
+    {
+        "revisionId",
+        "expectedRevisionSnapshotHash",
+        "expectedLifecycleVersion",
+        "expectedReleaseSnapshotHash",
     }
 )
 _CHECK_OUT_FIELDS = frozenset({"expectedDocumentVersion"})
@@ -141,6 +164,17 @@ class _RepositoryLike(Protocol):
 
     def create_document(
         self, project_id: UUID, **kwargs: Any
+    ) -> _CommandOutcomeLike | None: ...
+
+    def list_baselines(
+        self,
+        project_id: UUID,
+    ) -> dict[str, Any] | None: ...
+
+    def create_baseline(
+        self,
+        project_id: UUID,
+        **kwargs: Any,
     ) -> _CommandOutcomeLike | None: ...
 
     def check_out(
@@ -235,6 +269,23 @@ def _release_repository_factory(
     )
 
 
+def _baseline_repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _RepositoryLike:
+    from npi_core.documents.baseline_repository import (
+        FrappeDocumentBaselineRepository,
+    )
+
+    return FrappeDocumentBaselineRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_documents(
     limit: Any = None,
@@ -276,6 +327,70 @@ def get_documents(
     return frappe_domain_call(
         handle,
         cache_control="private, no-store",
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_document_baselines(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = _baseline_query_context(
+            request_fields,
+        )
+        response = repository.list_baselines(project_id)
+        if response is None:
+            raise DocumentBaselineUnavailable()
+        success_headers["X-Request-ID"] = request_id
+        return _response_dict(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=success_headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_document_baseline(
+    policyGlobalId: Any = None,
+    policyVersion: Any = None,
+    policySnapshotHash: Any = None,
+    label: Any = None,
+    members: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    success_headers = _command_headers()
+
+    def handle() -> dict[str, Any]:
+        request_id, idempotency_key_hash, repository, project_id = (
+            _baseline_command_context(request_fields)
+        )
+        outcome = repository.create_baseline(
+            project_id,
+            idempotency_key_hash=idempotency_key_hash,
+            policy_global_id=_uuid_value(policyGlobalId, "policyGlobalId"),
+            policy_version=_positive_integer(policyVersion, "policyVersion"),
+            policy_snapshot_hash=_hash_value(
+                policySnapshotHash,
+                "policySnapshotHash",
+            ),
+            label=_text_value(label, "label", 140),
+            members=_baseline_members(members),
+        )
+        return _command_response(
+            outcome,
+            request_id=request_id,
+            success_headers=success_headers,
+        )
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
         response_headers=success_headers,
     )
 
@@ -1034,6 +1149,64 @@ def _query_context(
     return request_id, repository, project_id, document_id
 
 
+def _baseline_query_context(
+    request_fields: dict[str, Any],
+) -> tuple[str, _RepositoryLike, UUID]:
+    require_document_routes_enabled()
+    require_document_baseline_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    provisional_request_id = response_request_id()
+    repository = _baseline_repository(
+        principal,
+        provisional_request_id,
+    )
+    project_id, _document_id = _authorized_route_scope(
+        repository,
+        administer=False,
+        require_document=False,
+    )
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return _request_id(), repository, project_id
+
+
+def _baseline_command_context(
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _RepositoryLike, UUID]:
+    require_document_routes_enabled()
+    require_document_baseline_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "NPI API User" not in principal.roles:
+        raise PermissionDenied()
+    provisional_request_id = response_request_id()
+    repository = _baseline_repository(
+        principal,
+        provisional_request_id,
+    )
+    project_id, _document_id = _authorized_route_scope(
+        repository,
+        administer=False,
+        require_document=False,
+    )
+    reject_unexpected_request_fields(
+        _BASELINE_CREATE_FIELDS,
+        request_fields,
+    )
+    require_request_fields(_BASELINE_CREATE_FIELDS, request_fields)
+    request_id = _request_id()
+    return (
+        request_id,
+        actor_idempotency_key_hash(
+            actor,
+            frappe.get_request_header("Idempotency-Key"),
+        ),
+        repository,
+        project_id,
+    )
+
+
 def _command_context(
     allowed_fields: frozenset[str],
     required_fields: frozenset[str],
@@ -1142,6 +1315,20 @@ def _repository(principal: Principal, request_id: str) -> _RepositoryLike:
     if trace_id is None:
         raise RuntimeError("The Document request has no active trace identity.")
     return _repository_factory(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _baseline_repository(
+    principal: Principal,
+    request_id: str,
+) -> _RepositoryLike:
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The Document request has no active trace identity.")
+    return _baseline_repository_factory(
         principal=principal,
         request_id=request_id,
         trace_id=trace_id,
@@ -1385,6 +1572,54 @@ def _object_links(value: object) -> tuple[dict[str, object], ...]:
             )
         fingerprints.add(fingerprint)
         result.append(normalized)
+    return tuple(result)
+
+
+def _baseline_members(
+    value: object,
+) -> tuple[DocumentBaselineMemberPrecondition, ...]:
+    if (
+        not isinstance(value, list)
+        or not value
+        or len(value) > MAX_BASELINE_MEMBERS
+    ):
+        raise _field_problem(
+            "members",
+            _("Enter a bounded list of released document revisions."),
+        )
+    result = []
+    revision_ids = set()
+    for index, item in enumerate(value):
+        path = f"members[{index}]"
+        if not isinstance(item, dict) or set(item) != _BASELINE_MEMBER_FIELDS:
+            raise _field_problem(
+                path,
+                _("The baseline member contains unsupported fields."),
+            )
+        revision_id = _uuid_value(item.get("revisionId"), f"{path}.revisionId")
+        if revision_id in revision_ids:
+            raise _field_problem(
+                f"{path}.revisionId",
+                _("Attach each released revision once."),
+            )
+        revision_ids.add(revision_id)
+        result.append(
+            DocumentBaselineMemberPrecondition(
+                revision_id=revision_id,
+                expected_revision_snapshot_hash=_hash_value(
+                    item.get("expectedRevisionSnapshotHash"),
+                    f"{path}.expectedRevisionSnapshotHash",
+                ),
+                expected_lifecycle_version=_positive_integer(
+                    item.get("expectedLifecycleVersion"),
+                    f"{path}.expectedLifecycleVersion",
+                ),
+                expected_release_snapshot_hash=_hash_value(
+                    item.get("expectedReleaseSnapshotHash"),
+                    f"{path}.expectedReleaseSnapshotHash",
+                ),
+            )
+        )
     return tuple(result)
 
 

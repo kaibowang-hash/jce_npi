@@ -9,6 +9,7 @@ from .api import frappe_domain_call
 from .foundation.errors import (
     ApiRouteNotFound,
     CsrfTokenInvalid,
+    DocumentBaselineRoutesDisabled,
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
     MalformedRequest,
@@ -16,6 +17,7 @@ from .foundation.errors import (
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
+    document_baseline_routes_are_disabled,
     document_release_routes_are_disabled,
     document_routes_are_disabled,
     project_collaboration_routes_are_disabled,
@@ -74,6 +76,9 @@ _PROJECT_LEARNING_ROUTE = re.compile(
 )
 _PROJECT_DOCUMENTS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents$"
+)
+_PROJECT_DOCUMENT_BASELINES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/document-baselines$"
 )
 _PROJECT_DOCUMENT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
@@ -314,6 +319,15 @@ def route_request() -> None:
             )
             route_params = match.groupdict()
     if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_DOCUMENT_BASELINES_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.document_api.get_document_baselines"
+                if request.method == "GET"
+                else "npi_core.document_api.create_document_baseline"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
         match = _PROJECT_DOCUMENTS_ROUTE.fullmatch(path)
         if match is not None:
             command = (
@@ -419,6 +433,9 @@ def route_request() -> None:
     if _p5_02_routes_disabled(command):
         command = "npi_core.bff.document_release_routes_disabled"
         route_params = {}
+    if _p5_03_routes_disabled(command):
+        command = "npi_core.bff.document_baseline_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -488,6 +505,23 @@ def document_release_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def document_baseline_routes_disabled() -> dict[str, object] | None:
+    """Fail closed while P5-03 routes await a reviewed forward fix."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise DocumentBaselineRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -507,6 +541,13 @@ def _p5_02_routes_disabled(command: str | None) -> bool:
         candidate for _route, candidate in _DOCUMENT_RELEASE_COMMAND_ROUTES
     )
     return document_release_routes_are_disabled() and command in release_commands
+
+
+def _p5_03_routes_disabled(command: str | None) -> bool:
+    return document_baseline_routes_are_disabled() and command in {
+        "npi_core.document_api.get_document_baselines",
+        "npi_core.document_api.create_document_baseline",
+    }
 
 
 def _p5_01_routes_disabled(command: str | None) -> bool:
@@ -612,6 +653,7 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOCUMENTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_DOCUMENT_BASELINES_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method == "GET" and (

@@ -1977,6 +1977,75 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/document-baselines:
+    get:
+      tags: [Documents]
+      operationId: listDocumentBaselines
+      description: >
+        Returns bounded immutable release baselines, exact published policy
+        options available to the current Project member, append-only impact
+        lineage, and server capability truth. Authorization precedes protected
+        baseline or policy resolution. Raw File identities, private URLs,
+        storage locations, cookies, credentials, and caller-selected impact
+        targets are never returned.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentBaselineListResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Documents]
+      operationId: createDocumentBaseline
+      description: >
+        Creates one immutable Project release baseline from an exact published
+        baseline policy and a bounded ordered set of exact currently released
+        Document Revisions. The server locks and revalidates the complete
+        revision, lifecycle, release-event, association, File Revision, live
+        private-file, byte, MIME, SHA-256, scanner-clean, and released truth.
+        The request cannot select File evidence or infer Gate dependencies.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-document-baseline-policy-authority
+      x-transaction-boundary: document-baseline-root
+      x-transaction-order:
+        - unsealed-actor-bound-receipt
+        - immutable-baseline
+        - ordered-immutable-members
+        - append-only-audit
+        - authoritative-response
+        - sealed-receipt
+      x-audit-operation: document.baseline.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDocumentBaseline"
+      responses:
+        "201":
+          $ref: "#/components/responses/DocumentBaselineCommandResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/documents/{documentId}:
     get:
       tags: [Documents]
@@ -3300,6 +3369,56 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/DocumentReleaseTransition"
+    DocumentBaselineListResult:
+      description: >
+        Authorized immutable Document baseline workspace with exact policy
+        options and append-only impact lineage
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/DocumentBaselineWorkspace" }
+    DocumentBaselineCommandResult:
+      description: >
+        Exact immutable Document baseline after one atomic command, or the
+        original result safely replayed for the same actor-bound key and
+        canonical payload
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema:
+            {
+              type: string,
+              minLength: 8,
+              maxLength: 128,
+              pattern: "^[A-Za-z0-9._:-]+$",
+            }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/DocumentBaselineCommand" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -6923,6 +7042,259 @@ components:
         version: { type: integer, minimum: 1 }
         holderUserId: { type: string, minLength: 1, maxLength: 254 }
         expiresAt: { type: string, format: date-time }
+    DocumentBaselineProject:
+      type: object
+      additionalProperties: false
+      required: [globalId, projectCode, projectName]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectCode: { type: string, minLength: 1, maxLength: 64 }
+        projectName: { type: string, minLength: 1, maxLength: 280 }
+    DocumentBaselinePermissions:
+      type: object
+      additionalProperties: false
+      required: [view, create]
+      properties:
+        view: { type: boolean }
+        create: { type: boolean }
+    DocumentBaselinePolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentBaselinePolicyOption:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash, key, title]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        key:
+          type: string
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 140 }
+    CreateDocumentBaselineMember:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          revisionId,
+          expectedRevisionSnapshotHash,
+          expectedLifecycleVersion,
+          expectedReleaseSnapshotHash,
+        ]
+      properties:
+        revisionId: { type: string, format: uuid }
+        expectedRevisionSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        expectedReleaseSnapshotHash:
+          description: >
+            Exact release-transition snapshot hash. This is independent from
+            the original reviewed File evidence snapshot hash.
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    CreateDocumentBaseline:
+      type: object
+      additionalProperties: false
+      required:
+        [policyGlobalId, policyVersion, policySnapshotHash, label, members]
+      properties:
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        label: { type: string, minLength: 1, maxLength: 140 }
+        members:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          x-unique-by: revisionId
+          items:
+            $ref: "#/components/schemas/CreateDocumentBaselineMember"
+    DocumentBaselineFile:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          fileRevisionGlobalId,
+          fileDocumentGlobalId,
+          fileName,
+          mimeType,
+          sizeBytes,
+          sha256,
+          scanState,
+        ]
+      properties:
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileDocumentGlobalId: { type: string, format: uuid }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 3, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 0, maximum: 67108864 }
+        sha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        scanState: { type: string, const: clean }
+    DocumentBaselineMember:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          sequence,
+          documentGlobalId,
+          revisionGlobalId,
+          major,
+          minor,
+          revisionSnapshotHash,
+          lifecycleVersion,
+          releaseEventGlobalId,
+          releaseSnapshotHash,
+          memberHash,
+          files,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        sequence: { type: integer, minimum: 1, maximum: 100 }
+        documentGlobalId: { type: string, format: uuid }
+        revisionGlobalId: { type: string, format: uuid }
+        major: { type: integer, minimum: 0 }
+        minor: { type: integer, minimum: 0 }
+        revisionSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        lifecycleVersion: { type: integer, minimum: 1 }
+        releaseEventGlobalId: { type: string, format: uuid }
+        releaseSnapshotHash:
+          description: >
+            Exact release-transition snapshot hash, kept independent from the
+            original reviewed File evidence carried by files.
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        memberHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        files:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items: { $ref: "#/components/schemas/DocumentBaselineFile" }
+    DocumentBaselineSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          label,
+          version,
+          snapshotHash,
+          policy,
+          createdByUserId,
+          createdAt,
+          members,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        label: { type: string, minLength: 1, maxLength: 140 }
+        version: { type: integer, const: 1 }
+        snapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        policy:
+          $ref: "#/components/schemas/DocumentBaselinePolicyReference"
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        members:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/DocumentBaselineMember" }
+    DocumentBaselineImpactEvent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          eventType,
+          dependencyGlobalId,
+          baselineGlobalId,
+          baselineSnapshotHash,
+          oldRevisionGlobalId,
+          oldRevisionSnapshotHash,
+          newRevisionGlobalId,
+          newRevisionSnapshotHash,
+          gateGlobalId,
+          requirementGlobalId,
+          evidenceReferenceGlobalId,
+          initiatedByUserId,
+          occurredAt,
+          eventHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        eventType: { type: string, const: invalidated }
+        dependencyGlobalId: { type: string, format: uuid }
+        baselineGlobalId: { type: string, format: uuid }
+        baselineSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        oldRevisionGlobalId: { type: string, format: uuid }
+        oldRevisionSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        newRevisionGlobalId: { type: string, format: uuid }
+        newRevisionSnapshotHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        gateGlobalId: { type: string, format: uuid }
+        requirementGlobalId: { type: string, format: uuid }
+        evidenceReferenceGlobalId: { type: string, format: uuid }
+        initiatedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        occurredAt: { type: string, format: date-time }
+        eventHash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+    DocumentBaselineWorkspace:
+      type: object
+      additionalProperties: false
+      required: [project, permissions, policies, items, impacts]
+      properties:
+        project: { $ref: "#/components/schemas/DocumentBaselineProject" }
+        permissions:
+          $ref: "#/components/schemas/DocumentBaselinePermissions"
+        policies:
+          type: array
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/DocumentBaselinePolicyOption"
+        items:
+          type: array
+          maxItems: 256
+          items: { $ref: "#/components/schemas/DocumentBaselineSummary" }
+        impacts:
+          type: array
+          maxItems: 512
+          items:
+            $ref: "#/components/schemas/DocumentBaselineImpactEvent"
+    DocumentBaselineCommand:
+      type: object
+      additionalProperties: false
+      required: [projectId, baseline]
+      properties:
+        projectId: { type: string, format: uuid }
+        baseline:
+          $ref: "#/components/schemas/DocumentBaselineSummary"
     ControlledDocumentSummary:
       type: object
       additionalProperties: false

@@ -3053,3 +3053,132 @@ Lifecycle events,生命周期事件
 No immutable lifecycle events.,没有不可变生命周期事件。
 Transition,状态转换
 Resubmitted,已重新提交
+Enter a bounded list of released document revisions.,请输入有限数量的已发布文件修订版。
+The baseline member contains unsupported fields.,基线成员包含不支持的字段。
+Attach each released revision once.,每个已发布修订版只能附加一次。
+The document baseline policy is unavailable.,文件基线策略不可用。
+You are not authorized to create this document baseline.,您无权创建此文件基线。
+The exact released document baseline input is unavailable.,精确的已发布文件基线输入不可用。
+The document baseline is unavailable.,文件基线不可用。
+The idempotency key was already used for a different baseline.,该幂等键已用于其他基线。
+The baseline policy snapshot hash does not match its content.,基线策略快照哈希与其内容不匹配。
+Enter exact released file evidence.,请输入精确的已发布文件证据。
+Released file evidence does not match the document revision.,已发布文件证据与文件修订版不匹配。
+The revision snapshot hash does not match released evidence.,修订版快照哈希与已发布证据不匹配。
+Select an exact baseline policy version.,请选择精确的基线策略版本。
+Enter a bounded list of exact released revisions.,请输入有限数量的精确已发布修订版。
+Baseline member sequence must be contiguous.,基线成员序号必须连续。
+Baseline members and revisions must be unique.,基线成员和修订版必须唯一。
+An immutable baseline must use version 1.,不可变基线必须使用版本 1。
+The baseline snapshot hash does not match its members.,基线快照哈希与其成员不匹配。
+The baseline dependency key does not match its exact scope.,基线依赖键与其精确范围不匹配。
+The baseline dependency snapshot hash does not match.,基线依赖快照哈希不匹配。
+Select a supported baseline impact event.,请选择支持的基线影响事件。
+The successor revision must differ from the prior input.,后续修订版必须与先前输入不同。
+The baseline impact key does not match its exact lineage.,基线影响键与其精确沿袭不匹配。
+The baseline impact event hash does not match its lineage.,基线影响事件哈希与其沿袭不匹配。
+Enter a valid lowercase SHA-256 hash.,请输入有效的小写 SHA-256 哈希。
+Enter an integer greater than zero.,请输入大于零的整数。
+Enter a bounded list of user IDs.,请输入有限数量的用户编号。
+User IDs must be unique.,用户编号必须唯一。
+Document baselines can only be changed through an authorized NPI baseline command.,文件基线只能通过获授权的 NPI 基线命令更改。
+Only authorized Gate and revision commands can change baseline dependencies.,只有获授权的阶段门和修订命令可以更改基线依赖。
+Select a supported baseline policy publication state.,请选择支持的基线策略发布状态。
+Enter a valid JSON array.,请输入有效的数据数组。
+Document baselines are temporarily unavailable.,文件基线暂时不可用。
+Baseline Global ID,基线全局编号
+Select a supported baseline command operation.,请选择支持的基线命令操作。
+Idempotency Key Hash,幂等键哈希
+Receipt Key does not match the actor-bound command scope.,回执键与操作人绑定的命令范围不匹配。
+The baseline command receipt does not match its Project.,基线命令回执与其项目不匹配。
+Response Payload,响应载荷
+Sealed must be a checkbox value.,封存状态必须为复选框值。
+Updated At cannot be earlier than Created At.,更新时间不能早于创建时间。
+A baseline command response must be sealed after success.,基线命令响应必须在成功后封存。
+A baseline command response can only be sealed once.,基线命令响应只能封存一次。
+The baseline command response does not match its baseline.,基线命令响应与其基线不匹配。
+Response Hash does not match the sealed response.,响应哈希与已封存响应不匹配。
+Input Document Global ID,输入文件全局编号
+Input Revision Global ID,输入修订版全局编号
+Evidence Reference Global ID,证据引用全局编号
+Document Baseline,文件基线
+Document Baseline must match its exact Global ID.,文件基线必须与其精确全局编号匹配。
+The baseline dependency does not match its immutable baseline.,基线依赖与其不可变基线不匹配。
+The Gate dependency input is not an exact baseline member.,阶段门依赖输入不是精确的基线成员。
+The baseline dependency does not match its Gate.,基线依赖与其阶段门不匹配。
+The baseline dependency does not match exact Gate evidence.,基线依赖与精确阶段门证据不匹配。
+Baseline Snapshot Hash,基线快照哈希
+Input Revision Snapshot Hash,输入修订版快照哈希
+Canonical Dependency Snapshot,规范依赖快照
+Dependency Snapshot does not match its exact Gate input.,依赖快照与其精确阶段门输入不匹配。
+Registered By User ID,登记用户编号
+Registered At,登记时间
+Dependency Global ID,依赖全局编号
+Successor Revision Global ID,后续修订版全局编号
+The impact event does not match its registered dependency.,影响事件与其已登记依赖不匹配。
+The exact direct successor revision is unavailable.,精确的直接后续修订版不可用。
+Successor Revision Snapshot Hash,后续修订版快照哈希
+Canonical Impact Event Snapshot,规范影响事件快照
+Impact Event Snapshot does not match its exact lineage.,影响事件快照与其精确沿袭不匹配。
+Initiated By User ID,发起用户编号
+Baseline Policy Global ID,基线策略全局编号
+The document baseline does not match its Project and tenant.,文件基线与其项目和租户不匹配。
+The exact published baseline policy is unavailable.,精确的已发布基线策略不可用。
+Canonical Baseline Snapshot,规范基线快照
+Canonical Baseline Snapshot must contain exact members.,规范基线快照必须包含精确成员。
+Canonical Baseline Snapshot does not match its exact members.,规范基线快照与其精确成员不匹配。
+Member Count,成员数
+Member Count does not match the baseline snapshot.,成员数与基线快照不匹配。
+Baseline Label,基线标签
+Baseline Policy Snapshot Hash,基线策略快照哈希
+Created By User ID,创建用户编号
+Canonical Baseline Snapshot contains an invalid member.,规范基线快照包含无效成员。
+Controlled Document must match its exact Global ID.,受控文件必须与其精确全局编号匹配。
+The baseline member does not match its immutable baseline.,基线成员与其不可变基线不匹配。
+The baseline member does not match its controlled document.,基线成员与其受控文件不匹配。
+The baseline member does not match its exact document revision.,基线成员与其精确文件修订版不匹配。
+The baseline member is not the exact released document revision.,基线成员不是精确的已发布文件修订版。
+Member Sequence,成员序号
+The baseline member release event is unavailable.,基线成员发布事件不可用。
+Canonical Baseline Member Snapshot,规范基线成员快照
+Baseline Member Snapshot does not match its immutable baseline.,基线成员快照与其不可变基线不匹配。
+Baseline member creation time must match its baseline.,基线成员创建时间必须与其基线匹配。
+Baseline Policy Key,基线策略键
+Baseline Policy Title,基线策略标题
+The baseline policy does not match its Project and tenant.,基线策略与其项目和租户不匹配。
+A published document baseline policy version cannot be changed.,已发布的文件基线策略版本不可更改。
+A new document baseline policy version must start as a draft.,新的文件基线策略版本必须以草稿开始。
+Enable the document baseline policy before publishing this version.,发布此版本前请启用文件基线策略。
+Baseline Authority User IDs,基线权限用户编号
+Select an existing document baseline policy.,请选择现有文件基线策略。
+Baseline Policy Version,基线策略版本
+Enter a valid document baseline policy version.,请输入有效的文件基线策略版本。
+Publish each document baseline policy version before creating the next.,创建下一版本前请发布每个文件基线策略版本。
+Canonical Baseline Policy Snapshot,规范基线策略快照
+Canonical Baseline Policy Snapshot does not match its rules.,规范基线策略快照与其规则不匹配。
+Baseline Policy Snapshot Hash does not match its rules.,基线策略快照哈希与其规则不匹配。
+A draft baseline policy cannot have a publication time.,草稿基线策略不能有发布时间。
+NPI Baseline Command Idempotency,NPI 基线命令幂等性
+Receipt Key,回执键
+baseline.create,创建基线
+Response Hash,响应哈希
+Sealed,已封存
+NPI Baseline Gate Dependency,NPI 基线阶段门依赖
+Dependency Key,依赖键
+Dependency Snapshot Hash,依赖快照哈希
+NPI Baseline Impact Event,NPI 基线影响事件
+Impact Key,影响键
+Impact Event Type,影响事件类型
+Baseline Gate Dependency,基线阶段门依赖
+Impact Event Hash,影响事件哈希
+NPI Document Baseline,NPI 文件基线
+Baseline Version,基线版本
+NPI Document Baseline Member,NPI 文件基线成员
+Baseline Member Key,基线成员键
+Exact Release Evidence,精确发布证据
+Baseline Member Hash,基线成员哈希
+NPI Document Baseline Policy,NPI 文件基线策略
+Baseline Policy Key Hash,基线策略键哈希
+NPI Document Baseline Policy Version,NPI 文件基线策略版本
+Document Baseline Policy,文件基线策略
+Baseline Policy Version Key,基线策略版本键
