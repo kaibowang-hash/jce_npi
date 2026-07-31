@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN PROGRESS — P5-03 REPOSITORY/BFF/OPENAPI`
+`IN PROGRESS — P5-03 GATE EVIDENCE/DEPENDENCY`
 
-Recovery time: `2026-07-31T20:58:50Z`
+Recovery time: `2026-07-31T22:22:10Z`
 
 Latest passed product checkpoint:
-`f088d70b00b54488587b2a83a311b636ef48cf78`
+`ff4fb4d15da14d6ac04354ff63d7da1af34cacba`
 
 Latest complete normal CI:
-`30663842514` (`PASS`, P5-03 audit checkpoint `81f1249`)
+`30669247503` (`PASS`, P5-03 repository/API checkpoint `ff4fb4d`)
 
 Final unchanged controlled-Site Gate:
 `30661586342` (`PASS`, exact product SHA)
@@ -29,6 +29,10 @@ Required development branch:
 - The P5-03 exact baseline domain, seven guarded additive DocTypes and split
   ownership passed their focused Level 1 checkpoint at
   `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`.
+- The Project-scoped baseline list/create repository, strict BFF/OpenAPI
+  contract, direct trilingual catalog additions and refreshed fixed-Linux
+  catalog baselines passed complete ordinary CI at
+  `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`.
 - P5-03 is the only active task. P5-04, P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker exists. Production baseline contents/authority,
   dependency completeness/matrix, external providers and production ERPNext
@@ -55,21 +59,23 @@ Primary boundary:
 
 ## First incomplete action
 
-Implement only the P5-03 repository/BFF/OpenAPI slice:
+Implement only the P5-03 exact Gate-evidence/dependency slice:
 
-1. add Project-scoped baseline list/create repository commands under a new
-   independent fail-closed P5-03 route switch;
-2. authorize transport, Project membership and exact published baseline
-   policy before resolving protected Document/File facts;
-3. lock and revalidate exact released revisions, lifecycle/release snapshots,
-   complete Document Revision File associations and live private File truth;
-4. enforce actor-bound replay/payload conflict and insert unsealed receipt,
-   immutable baseline/members, audit and sealed response in the frozen order;
-5. add strict BFF/OpenAPI request and safe response schemas without raw URLs,
-   caller-selected scan truth or generic CRUD; and
-6. prove authorization order, stale/hash/state/association/File failures,
-   deterministic replay, rollback, route recovery and prior-route
-   compatibility before the next focused checkpoint.
+1. add `release_baseline` as an additive publishable Gate Template/evidence
+   kind without rewriting any historical or production template snapshot;
+2. retain the existing Gate attach request and its independent Gate-evidence
+   authority, requiring exact baseline global ID, immutable source version `1`
+   and snapshot hash;
+3. revalidate the same tenant/Project immutable baseline, canonical snapshot,
+   complete member rows and hashes before inserting the evidence reference;
+4. return only safe baseline/member identity and hash metadata, never raw
+   URLs, credentials or caller-selected dependency targets;
+5. in the same existing Gate attach transaction append exactly one
+   `NPI Baseline Gate Dependency` per exact baseline member with deterministic
+   keys and frozen actor/request/trace identity; and
+6. prove old-template compatibility, wrong Project/version/hash and member
+   tamper denial, duplicate behavior, independent authority, exact dependency
+   registration and full rollback before the next focused checkpoint.
 
 ## Frozen invariants and non-scope
 
@@ -96,14 +102,12 @@ Implement only the P5-03 repository/BFF/OpenAPI slice:
 
 ## Planned later P5-03 slices
 
-After repository/BFF/OpenAPI passes:
+After Gate evidence/dependency registration passes:
 
-1. exact `release_baseline` Gate-evidence resolver and template kind;
-2. explicit dependency registration plus successor-triggered append-only
-   impact and existing Gate Review refresh;
-3. dense Project Documents and Gate workspace UI with direct English/`zh`/
+1. successor-triggered append-only impact and existing Gate Review refresh;
+2. dense Project Documents and Gate workspace UI with direct English/`zh`/
    `zh-TW`, accessibility and exact visuals;
-4. affected tests, complete ordinary CI, one final controlled-Site Gate and
+3. affected tests, complete ordinary CI, one final controlled-Site Gate and
    the P5-03 Level 2 Task Gate.
 
 Standing automatic-delivery authority remains active between passing

@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T20:58:50Z`
+Updated: `2026-07-31T22:22:10Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
@@ -9,16 +9,16 @@ Updated: `2026-07-31T20:58:50Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest passed product checkpoint:
-  `f088d70b00b54488587b2a83a311b636ef48cf78`
-- Local and remote checkpoint before the active foundation commit:
-  `81f12493d01b4112afb59966a845de49230c819d` (`0 ahead / 0 behind`)
+  `ff4fb4d15da14d6ac04354ff63d7da1af34cacba`
+- Local and remote checkpoint:
+  `ff4fb4d15da14d6ac04354ff63d7da1af34cacba` (`0 ahead / 0 behind`)
 - Complete normal CI:
-  `30663842514` (`PASS`, P5-03 audit checkpoint)
+  `30669247503` (`PASS`, P5-03 repository/API checkpoint)
 - Final unchanged controlled-Site Gate:
   `30661586342` (`PASS`)
 - Current controller task:
   `P5-03 — Baseline and impact invalidation`
-  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI`)
+  (`IN_PROGRESS — GATE EVIDENCE/DEPENDENCY`)
 - Current Requirement IDs:
   `FR-DS-006`
 - Completed P5-02 evidence:
@@ -27,6 +27,8 @@ Updated: `2026-07-31T20:58:50Z`
   `implementation/evidence/phase-5/p5-03-plan.md`
 - Current P5-03 Level 1 foundation evidence:
   `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`
+- Current P5-03 repository/API evidence:
+  `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:

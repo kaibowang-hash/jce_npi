@@ -1,5 +1,26 @@
 # Last Run
 
+## P5-03 repository/BFF/OpenAPI Level 1 PASS — 2026-07-31T22:22:10Z
+
+- Added the Project-scoped immutable baseline list/create repository, strict
+  BFF/OpenAPI contract and independent P5-03 route switch.
+- Proved authorization before protected resolution, exact released
+  revision/lifecycle/release/File revalidation, actor-bound replay/conflict,
+  rollback and the frozen receipt-to-seal transaction order.
+- Added `129` direct Simplified/Traditional catalog entries; i18n now passes
+  at `3,184` literal-English sources with `100%` direct coverage in both
+  Chinese catalogs.
+- The only first-run clean-CI failure was the visible footer catalog hash.
+  Exact pixel audit bounded every change to the bottom status bar, after which
+  `18` Linux baselines were refreshed without changing a threshold or matrix.
+- Product checkpoint `ff4fb4d` passed ordinary CI `30669247503`: Python
+  `858/858`, frontend unit `660/660`, non-visual browser `286/286`, fixed-Linux
+  visual `30/30`, zero npm vulnerabilities and both secret scans.
+- P5-03 remains incomplete and advances only to exact `release_baseline` Gate
+  evidence plus same-transaction explicit dependency registration.
+- Evidence:
+  `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`.
+
 ## P5-03 domain/metadata foundation Level 1 PASS — 2026-07-31T20:58:50Z
 
 - Added strict canonical baseline policy, immutable baseline/member, explicit

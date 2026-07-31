@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T20:58:50Z'
+updated_at: '2026-07-31T22:22:10Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-03
 current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-03-DOMAIN-METADATA-FOUNDATION-PASS
-current_task_next_stage: P5-03-REPOSITORY-BFF-OPENAPI
+current_task_completed_stage: P5-03-REPOSITORY-BFF-OPENAPI-PASS
+current_task_next_stage: P5-03-GATE-EVIDENCE-DEPENDENCY
 current_task_next_stage_status: AUTHORIZED_ACTIVE
 resumed_product_task: P5-03
 resumed_product_task_status: IN_PROGRESS
@@ -37,14 +37,17 @@ p5_02:
     - implementation/evidence/phase-5/p5-02-implementation-checkpoint.md
     - implementation/evidence/phase-5/p5-02-validation.md
 p5_03:
-  status: IN_PROGRESS_REPOSITORY_API
+  status: IN_PROGRESS_GATE_EVIDENCE
   requirements: [FR-DS-006]
-  completed_stage: DOMAIN_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_BFF_OPENAPI
+  product_checkpoint: ff4fb4d15da14d6ac04354ff63d7da1af34cacba
+  normal_ci: 30669247503
+  completed_stage: REPOSITORY_BFF_OPENAPI_PASS
+  next_stage: GATE_EVIDENCE_DEPENDENCY_REGISTRATION
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-03-plan.md
     - implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
