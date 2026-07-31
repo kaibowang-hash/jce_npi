@@ -402,7 +402,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
             "limit": 25,
             "relationshipKind": "gate",
             "targetIdentity": REVISION_ID,
-            "targetVersion": 2,
+            "targetVersion": "2",
         }
         result = self.call(
             "npi_core.document_api.get_documents",
@@ -430,6 +430,45 @@ class Phase5DocumentApiTest(unittest.TestCase):
         )
         self.assertNotIn("fieldErrors", problem)
         self.assertFalse(self.repository.calls)
+
+    def test_relationship_query_integer_is_canonical_and_bounded(self) -> None:
+        for value in (
+            "02",
+            "+2",
+            "2.0",
+            " 2",
+            "2147483648",
+            2.0,
+            True,
+        ):
+            with self.subTest(value=value):
+                self.reset(user="member@example.invalid")
+                problem = self.assert_problem(
+                    self.call(
+                        "npi_core.document_api.get_documents",
+                        self.api.get_documents,
+                        {
+                            "relationshipKind": "gate",
+                            "targetIdentity": REVISION_ID,
+                            "targetVersion": value,
+                        },
+                    ),
+                    422,
+                    "VALIDATION_FAILED",
+                )
+                self.assertEqual(
+                    problem["fieldErrors"][0]["path"],
+                    "targetVersion",
+                )
+                self.assertNotIn(
+                    "list",
+                    [call[0] for call in self.repository.calls],
+                )
+
+        self.assertEqual(
+            self.api._positive_query_integer(2, "targetVersion"),
+            2,
+        )
 
     def test_create_requires_internal_system_manager_csrf_and_closed_body(self) -> None:
         for user, status, code in (

@@ -755,6 +755,26 @@ def _positive_integer(value: object, path: str, *, maximum: int = 2_147_483_647)
     return value
 
 
+def _positive_query_integer(
+    value: object,
+    path: str,
+    *,
+    maximum: int = 2_147_483_647,
+) -> int:
+    if type(value) is int:
+        return _positive_integer(value, path, maximum=maximum)
+    if (
+        isinstance(value, str)
+        and len(value) <= 10
+        and value.isascii()
+        and value.isdigit()
+    ):
+        parsed = int(value)
+        if str(parsed) == value and parsed <= maximum:
+            return parsed
+    raise _field_problem(path, _("Enter a positive whole number."))
+
+
 def _nonnegative_integer(value: object, path: str) -> int:
     if type(value) is not int or value < 0:
         raise _field_problem(path, _("Enter zero or a positive whole number."))
@@ -922,7 +942,7 @@ def _relationship_filter(
         _RELATIONSHIP_KINDS,
     )
     identity = _text_value(target_identity, "targetIdentity", 512)
-    version = _positive_integer(target_version, "targetVersion")
+    version = _positive_query_integer(target_version, "targetVersion")
     if kind == DocumentRelationshipKind.PROJECT_REFERENCE.value:
         subtype = _enum_value(
             project_reference_type,
