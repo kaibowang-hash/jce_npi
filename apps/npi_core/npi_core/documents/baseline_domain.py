@@ -293,11 +293,6 @@ class DocumentBaselineMember:
                 "baselineMember.revisionSnapshotHash",
                 _("The revision snapshot hash does not match released evidence."),
             )
-        if self.release_evidence.snapshot_hash != self.release_snapshot_hash:
-            raise _field_problem(
-                "baselineMember.releaseSnapshotHash",
-                _("The release snapshot hash does not match its exact files."),
-            )
 
     @property
     def member_hash(self) -> str:

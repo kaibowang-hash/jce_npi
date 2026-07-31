@@ -164,22 +164,6 @@ class NPIDocumentBaselineMember(Document):
             },
             _("The baseline member is not the exact released document revision."),
         )
-        require_exact_parent(
-            "NPI Document Lifecycle Event",
-            self.release_event_global_id,
-            {
-                "global_id": self.release_event_global_id,
-                "tenant_id": self.tenant_id,
-                "project_global_id": self.project_global_id,
-                "document_global_id": self.document_global_id,
-                "revision_global_id": self.revision_global_id,
-                "event_type": "released",
-                "to_state": "released",
-                "to_version": self.lifecycle_version,
-                "evidence_snapshot_hash": self.release_snapshot_hash,
-            },
-            _("The baseline member release event is unavailable."),
-        )
         self.member_sequence = positive_integer(
             self.member_sequence,
             _("Member Sequence"),
@@ -203,6 +187,22 @@ class NPIDocumentBaselineMember(Document):
             _("Release Snapshot Hash"),
         )
         member = document_domain_value(lambda: baseline_member_value(self))
+        require_exact_parent(
+            "NPI Document Lifecycle Event",
+            self.release_event_global_id,
+            {
+                "global_id": self.release_event_global_id,
+                "tenant_id": self.tenant_id,
+                "project_global_id": self.project_global_id,
+                "document_global_id": self.document_global_id,
+                "revision_global_id": self.revision_global_id,
+                "event_type": "released",
+                "to_state": "released",
+                "to_version": self.lifecycle_version,
+                "evidence_snapshot_hash": member.release_evidence.snapshot_hash,
+            },
+            _("The baseline member release event is unavailable."),
+        )
         expected_snapshot = member.canonical_dict()
         supplied_snapshot = json_object(
             self.member_snapshot,

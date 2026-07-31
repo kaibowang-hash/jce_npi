@@ -105,7 +105,7 @@ def member(sequence: int = 1) -> DocumentBaselineMember:
         revision_snapshot_hash=HASH_C,
         lifecycle_version=4,
         release_event_global_id=RELEASE_EVENT_ID,
-        release_snapshot_hash=evidence.snapshot_hash,
+        release_snapshot_hash=HASH_A,
         release_evidence=evidence,
     )
 
@@ -134,10 +134,11 @@ class DocumentBaselineDomainTest(unittest.TestCase):
     def test_member_freezes_exact_revision_release_and_file_evidence(self) -> None:
         value = member()
         self.assertEqual(value.release_evidence.revision_global_id, REVISION_ID)
-        self.assertEqual(value.release_snapshot_hash, value.release_evidence.snapshot_hash)
+        self.assertNotEqual(
+            value.release_snapshot_hash,
+            value.release_evidence.snapshot_hash,
+        )
         self.assertEqual(value.member_hash, sha256_json(value.canonical_dict()))
-        with self.assertRaises(RequestValidationFailed):
-            replace(value, release_snapshot_hash=HASH_A)
         with self.assertRaises(RequestValidationFailed):
             replace(value, revision_snapshot_hash=HASH_A)
 
