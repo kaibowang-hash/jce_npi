@@ -1,47 +1,35 @@
 # Blockers
 
-Updated: `2026-07-31T05:09:49Z`
+Updated: `2026-07-31T05:42:15Z`
 
 ## Active hard blockers
 
-`P5-01-CONTROLLED-RUNTIME-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC-LIMIT`
+None. P5-01 is `IN_PROGRESS_DIAGNOSTIC`, not `PASS`.
 
-The exact projection-validation diagnostic checkpoint `57b4314` passed
-complete normal CI `30604536515`. Its sole authorized controlled-Site
-diagnostic dispatch `30604964265` safely proved
-`DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError` with one exact
-trace ID after exact setup and both migrations. Cleanup passed.
+## Active diagnostic progress
 
-The only proven root was Frappe hydrating empty revision `Int` columns as
-`0` while the domain projection normalized the same no-revision state to
-`None`. The revision validator interpreted that auxiliary normalization as a
-revision transition despite both revision IDs being absent. Repair `7dc4dc0`
-recognizes the same empty identity before comparing auxiliary fields and
-retains every non-empty exact-successor check. Focused `44/44`, complete P5
-Document `88/88`, complete tracked Python `789/789` and complete normal CI
-`30605323680` passed.
+`P5-01-POST-CHECKOUT-REVISION-UPLOAD-STAGE-DIAGNOSTIC`
 
-The controlled-Site workflow, Bench/Site scripts and document verifier were
-unchanged. The single final Gate `30605683679` matched `7dc4dc0`; its
-repository/E2E/security, fixed-Linux visual, exact setup, both migrations and
-cleanup passed. The controlled job failed later with only the safe
-`UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result and one exact trace ID.
-The PASS-result step and controlled artifact were correctly skipped.
+The user authorized the bounded recovery plan on 2026-07-31. The historical
+final Gate result `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` remains valid,
+but its prior execution-authority hold is satisfied. One closed diagnostic
+inventory may identify the exact revision/upload transaction stage, followed
+by repair of only the uniquely proven stage, affected checks, complete normal
+CI and one final unchanged controlled-Site Gate.
 
-The generic code does not uniquely identify the post-checkout
-revision/upload transaction stage. The diagnostic dispatch and final Gate
-are exhausted. Guessing a PDF fixture, File, revision, audit, idempotency or
-response repair, or dispatching another controlled Site, would violate the
-bounded authority and fail-closed evidence rule.
-
-Resolution requires the exact additional bounded authorization recorded in
-`implementation/NEXT_ACTION.md`: closed revision/upload transaction-stage
-diagnostics, one controlled-Site diagnostic dispatch, repair of only the
-uniquely proven stage, affected checks/normal CI and one final unchanged
-controlled-Site Gate. Evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
+The diagnostic is behavior-neutral and may record only one allowlisted stage
+code, a validated exception type and the exact trace ID. Requirements, API,
+permission, Schema, file-integrity rules, lock, version, audit, idempotency,
+transaction order and PASS criteria remain frozen. Evidence is recorded in
+`implementation/evidence/phase-5/p5-01-post-checkout-recovery.md`.
 
 ## Resolved hard blockers
+
+`P5-01-CONTROLLED-RUNTIME-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC-LIMIT`
+
+The user-authorized recovery plan satisfies the prior execution-authority
+hold. The safe `PdfStreamError` remains unresolved and is now active
+diagnostic progress rather than a product `PASS`.
 
 `P5-01-CONTROLLED-RUNTIME-PROJECTION-SUBSTAGE-DIAGNOSTIC-LIMIT`
 

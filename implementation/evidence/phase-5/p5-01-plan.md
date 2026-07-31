@@ -6,8 +6,7 @@ Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
 Task state:
-**BLOCKED EXTERNAL — FRONTEND/BROWSER/STATIC RUNTIME PASS; FINAL CONTROLLED
-SITE FOUND A NEW POST-CHECKOUT PDFSTREAM FAILURE**
+**IN PROGRESS DIAGNOSTIC — POST-CHECKOUT REVISION/UPLOAD RECOVERY AUTHORIZED**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
@@ -27,6 +26,14 @@ the final unchanged controlled-Site Gate failed later with only the safe
 `implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
 The controlled Frappe runtime proof and final Level 2 Task Gate remain
 pending; P5-02 is not active.
+
+On 2026-07-31 the user authorized the bounded recovery plan without changing
+the V1.2 product path. Repair-round accounting now separates environment
+remediation and behavior-neutral diagnostics from uniquely proven product-root
+repairs. The active step adds one closed diagnostic inventory across the
+existing revision/upload transaction, then repairs only the uniquely proven
+stage. Requirements, API, permission, Schema, file-integrity rules, lock,
+version, audit, idempotency, transaction order and PASS criteria remain frozen.
 
 Applicable requirements:
 

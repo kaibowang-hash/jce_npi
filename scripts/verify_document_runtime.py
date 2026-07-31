@@ -91,6 +91,20 @@ _PROJECTION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_CHECKOUT_PROJECTION_SAVE_LIFECYCLE",
     }
 )
+_REVISION_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_REVISION_RECEIPT_INSERT",
+        "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+        "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+        "DOCUMENT_REVISION_DOMAIN_APPEND",
+        "DOCUMENT_REVISION_RECORD_INSERT",
+        "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+        "DOCUMENT_REVISION_PROJECTION_SAVE",
+        "DOCUMENT_REVISION_AUDIT_APPEND",
+        "DOCUMENT_REVISION_RESPONSE_BUILD",
+        "DOCUMENT_REVISION_RECEIPT_SEAL",
+    }
+)
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -281,7 +295,11 @@ def _sanitized_bff_log_diagnostic(
                         return diagnostic_type, diagnostic_code, trace_id
                     if (
                         isinstance(diagnostic_code, str)
-                        and diagnostic_code in _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+                        and diagnostic_code
+                        in (
+                            _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+                            | _REVISION_STAGE_DIAGNOSTIC_CODES
+                        )
                         and stage_diagnostic is None
                     ):
                         stage_diagnostic = (

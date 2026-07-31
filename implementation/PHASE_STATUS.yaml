@@ -1,16 +1,23 @@
 version: '1.2'
-overall_status: BLOCKED_EXTERNAL
+overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T05:09:49Z'
+updated_at: '2026-07-31T05:42:15Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5-01_CONTROLLED_RUNTIME_POST_CHECKOUT_PDFSTREAM_DIAGNOSTIC_LIMIT
+execution_hold: null
 current_task: P5-01
-current_task_status: BLOCKED_EXTERNAL
+current_task_status: IN_PROGRESS_DIAGNOSTIC
 current_task_completed_stage: P5-01-PROJECTION-REVISION-REPAIR-FINAL-GATE-FAILED
 current_task_next_stage: P5-01-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC
-current_task_next_stage_status: BLOCKED_PENDING_EXPLICIT_AUTHORIZATION
+current_task_next_stage_status: AUTHORIZED_ACTIVE
 resumed_product_task: P5-01
-resumed_product_task_status: BLOCKED_EXTERNAL
+resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
+repair_accounting:
+  basis: PRODUCT_ROOT_ONLY
+  product_root_budget: 5
+  product_root_repairs_completed: 2
+  environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
+  diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
+  current_root: PENDING_UNIQUE_REVISION_UPLOAD_STAGE
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

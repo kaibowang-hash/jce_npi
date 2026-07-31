@@ -414,6 +414,97 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, detail)
 
+    def test_revision_stage_diagnostic_is_allowlisted_and_preferred(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "DOCUMENT_REVISION_RECEIPT_INSERT",
+            "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+            "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+            "DOCUMENT_REVISION_DOMAIN_APPEND",
+            "DOCUMENT_REVISION_RECORD_INSERT",
+            "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+            "DOCUMENT_REVISION_PROJECTION_SAVE",
+            "DOCUMENT_REVISION_AUDIT_APPEND",
+            "DOCUMENT_REVISION_RESPONSE_BUILD",
+            "DOCUMENT_REVISION_RECEIPT_SEAL",
+        }
+        self.assertEqual(module._REVISION_STAGE_DIAGNOSTIC_CODES, expected_codes)
+        trace_id = module.fixture_trace_id(module.DOCUMENT_REVISION_KEY)
+        stage_code = "DOCUMENT_REVISION_PRIVATE_FILE_SAVE"
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                "\n".join(
+                    (
+                        json.dumps(
+                            {
+                                "code": stage_code,
+                                "exceptionType": "PdfStreamError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNREVIEWED_REVISION_STAGE",
+                                "exceptionType": "UnsafeError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNEXPECTED_BFF_EXCEPTION",
+                                "exceptionType": "GenericError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                    )
+                ),
+                encoding="utf-8",
+            )
+            result = module.HttpResult(
+                status=500,
+                headers=Mock(),
+                body={
+                    "exc_type": "BodyError",
+                    "message": "raw PDF parser detail must not be emitted",
+                    "request": {
+                        "cookie": "controlled-fixture-cookie",
+                    },
+                },
+                request_id=module.fixture_request_id(module.DOCUMENT_REVISION_KEY),
+                trace_id=trace_id,
+            )
+            with patch.object(module, "BENCH_PATH", bench_path):
+                detail = module.sanitized_http_failure(result)
+        self.assertEqual(
+            detail,
+            (
+                f" [diagnostic_code={stage_code}; "
+                "exc_type=PdfStreamError; "
+                f"trace_id={trace_id}]"
+            ),
+        )
+        for forbidden in (
+            "BodyError",
+            "GenericError",
+            "UnsafeError",
+            "raw PDF parser detail",
+            "cookie",
+            "controlled-fixture-cookie",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, detail)
+
     def test_projection_validation_substage_is_closed_and_preferred(
         self,
     ) -> None:

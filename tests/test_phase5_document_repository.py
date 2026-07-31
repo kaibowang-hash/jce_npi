@@ -597,6 +597,96 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
             1,
         )
 
+    def test_revision_stage_diagnostics_are_closed_sanitized_and_secondary(
+        self,
+    ) -> None:
+        expected_codes = {
+            "DOCUMENT_REVISION_RECEIPT_INSERT",
+            "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+            "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+            "DOCUMENT_REVISION_DOMAIN_APPEND",
+            "DOCUMENT_REVISION_RECORD_INSERT",
+            "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+            "DOCUMENT_REVISION_PROJECTION_SAVE",
+            "DOCUMENT_REVISION_AUDIT_APPEND",
+            "DOCUMENT_REVISION_RESPONSE_BUILD",
+            "DOCUMENT_REVISION_RECEIPT_SEAL",
+        }
+        self.assertEqual(
+            self.repository._REVISION_STAGE_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        error = RuntimeError("cookie=controlled-fixture-cookie")
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            self.repository._record_revision_stage_failure(
+                "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_called_once_with(
+                code="DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+                title="NPI Document revision stage failed",
+                exception_type="RuntimeError",
+                trace_id="trace-0123456789abcdef0123456789abcdef",
+            )
+            self.assertNotIn("controlled-fixture-cookie", repr(record.call_args))
+
+            record.reset_mock()
+            self.repository._record_revision_stage_failure(
+                "UNREVIEWED_REVISION_STAGE",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_not_called()
+
+            self.repository._record_revision_stage_failure(
+                "DOCUMENT_REVISION_RECEIPT_INSERT",
+                self.repository.DocumentIdempotencyConflict(),
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_not_called()
+
+            record.side_effect = RuntimeError("synthetic diagnostic failure")
+            self.repository._record_revision_stage_failure(
+                "DOCUMENT_REVISION_RECEIPT_SEAL",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+
+    def test_revision_has_one_diagnostic_for_each_authorized_stage_in_order(
+        self,
+    ) -> None:
+        source = SOURCE.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        create_revision = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "create_revision"
+        )
+        revision_source = ast.get_source_segment(source, create_revision) or ""
+        expected_order = (
+            "DOCUMENT_REVISION_RECEIPT_INSERT",
+            "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+            "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+            "DOCUMENT_REVISION_DOMAIN_APPEND",
+            "DOCUMENT_REVISION_RECORD_INSERT",
+            "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+            "DOCUMENT_REVISION_PROJECTION_SAVE",
+            "DOCUMENT_REVISION_AUDIT_APPEND",
+            "DOCUMENT_REVISION_RESPONSE_BUILD",
+            "DOCUMENT_REVISION_RECEIPT_SEAL",
+        )
+        positions: list[int] = []
+        for stage_code in expected_order:
+            with self.subTest(stage_code=stage_code):
+                self.assertEqual(revision_source.count(f'"{stage_code}"'), 1)
+                positions.append(revision_source.index(f'"{stage_code}"'))
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(
+            revision_source.count("_record_revision_stage_failure("),
+            len(expected_order),
+        )
+
     def test_repository_uses_public_frappe_apis_and_never_commits_content(self) -> None:
         source = SOURCE.read_text(encoding="utf-8")
         tree = ast.parse(source)

@@ -148,6 +148,34 @@ Gate after every individual failure. Run the applicable Task, Phase, PR, or
 release Gate only after the batch is green. An Incremental Check can never be
 used to bypass the complete Phase-level Gate.
 
+Repair-round accounting is product-root based:
+
+- Runner tools, package presentation, container/Bench/Site bootstrap, App
+  registry, migration invocation, verifier metadata, and clearly synthetic
+  fixture-precondition failures are environment remediation. They remain
+  fail-closed and require fresh evidence, but do not consume a product-root
+  repair round.
+- A behavior-neutral diagnostic checkpoint that emits only closed stage codes,
+  validated exception types and exact trace IDs is
+  `IN_PROGRESS_DIAGNOSTIC`. It does not consume a product-root repair round and
+  is never a Gate `PASS`.
+- A product-root repair round begins only after the pinned environment,
+  guarded disposable Site, required App installations and migrations, and
+  current-task fixture preconditions have passed and evidence uniquely proves
+  one implementation root inside the active task.
+- A disproved and fully forward-reverted candidate is retained as evidence but
+  is not represented as a completed product-root repair. A proven repair that
+  advances the same unchanged Gate to a new downstream root counts once.
+
+Under standing automatic-delivery authority, safe diagnostic narrowing and a
+uniquely proven in-scope repair continue inside the active task and remaining
+product-root budget. Exhausting a per-dispatch diagnostic allowance is an
+execution-authority hold only when the governing user instruction explicitly
+made that allowance terminal; it is not by itself a product Hard Blocker.
+Requirement, API, permission, Schema, ownership, lock, version, audit,
+idempotency, transaction-order and PASS-criterion changes remain outside this
+automatic repair authority.
+
 Only a Hard Blocker defined by the governing instruction may stop the whole
 loop. Missing production ERPNext material does not block contracts, mock and
 sandbox-ready adapters, tests, UI or documentation. Missing reconciliation
@@ -159,7 +187,10 @@ production-system permission; irreversible production-data action; mutually
 unsatisfiable highest-priority Pack rules; a required change to approved
 architecture, industrial UI, language strategy, or data ownership; missing core
 business facts on which *all* remaining work depends; a necessary Gate still
-failing after five complete repair rounds; or a concrete license/security risk.
+failing after five complete product-root repair rounds; or a concrete
+license/security risk. An environment remediation or
+`IN_PROGRESS_DIAGNOSTIC` state cannot be relabelled as `PASS`, but neither is a
+Hard Blocker while a safe in-scope action remains under current authority.
 Stopping records one cause, completed scope, and the single user action needed.
 
 Final completion requires a reproducible build and deployment, type and lint

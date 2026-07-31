@@ -87,6 +87,20 @@ _CHECKOUT_STAGE_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
     }
 )
+_REVISION_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_REVISION_RECEIPT_INSERT",
+        "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+        "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+        "DOCUMENT_REVISION_DOMAIN_APPEND",
+        "DOCUMENT_REVISION_RECORD_INSERT",
+        "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+        "DOCUMENT_REVISION_PROJECTION_SAVE",
+        "DOCUMENT_REVISION_AUDIT_APPEND",
+        "DOCUMENT_REVISION_RESPONSE_BUILD",
+        "DOCUMENT_REVISION_RECEIPT_SEAL",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -606,143 +620,234 @@ class FrappeDocumentRepository:
         file_document_id = uuid4()
         file_document = None
         with _controlled_document_write_scope():
-            receipt = self._insert_idempotency(
-                idempotency_key,
-                payload_hash,
-                project=project,
-                document_id=document_id,
-                operation="document.revision.create",
-            )
+            try:
+                receipt = self._insert_idempotency(
+                    idempotency_key,
+                    payload_hash,
+                    project=project,
+                    document_id=document_id,
+                    operation="document.revision.create",
+                )
+            except Exception as error:
+                _record_revision_stage_failure(
+                    "DOCUMENT_REVISION_RECEIPT_INSERT",
+                    error,
+                    self.trace_id,
+                )
+                raise
             if isinstance(receipt, dict):
                 return DocumentCommandOutcome(receipt, replayed=True)
             try:
-                from frappe.utils.file_manager import save_file
+                try:
+                    from frappe.utils.file_manager import save_file
 
-                file_document = save_file(
-                    observation.file_name,
-                    content,
-                    "NPI Controlled Document",
-                    str(document_id),
-                    is_private=1,
-                )
-                _register_orphan_cleanup(file_document)
-                file_revision = frappe.get_doc(
-                    {
-                        "doctype": "NPI File Revision",
-                        "global_id": str(uuid4()),
-                        "tenant_id": str(project.tenant_id),
-                        "project_global_id": str(project_id),
-                        "document_global_id": str(file_document_id),
-                        "revision": 1,
-                        "frappe_file_id": str(file_document.name),
-                        "scan_state": FileScanState.PENDING.value,
-                        "released": 0,
-                        "optimistic_version": 1,
-                    }
-                ).insert()
-                file_snapshot = _file_revision_value(file_revision)
-                if (
-                    file_snapshot.mime_type != observation.mime_type
-                    or file_snapshot.size_bytes != observation.size_bytes
-                    or file_snapshot.sha256 != observation.sha256
-                    or file_snapshot.frappe_content_hash
-                    != observation.frappe_content_hash
-                ):
-                    raise ValueError(
-                        "Persisted File Revision does not match the observed upload."
+                    file_document = save_file(
+                        observation.file_name,
+                        content,
+                        "NPI Controlled Document",
+                        str(document_id),
+                        is_private=1,
                     )
-                append = append_document_revision(
-                    _controlled_document_value(document),
-                    current.lock,
-                    file_snapshot,
-                    display_file_name=observation.file_name,
-                    revision_id=revision_id,
-                    revision_file_id=revision_file_id,
-                    actor=self.actor,
-                    now=now,
-                    major=major,
-                    minor=minor,
-                    reason=reason,
-                    effective_date=effective_date,
-                    predecessor_revision_id=predecessor_revision_id,
-                    request_id=self.request_id,
-                    trace_id=self.trace_id,
-                )
-                revision_snapshot = _revision_snapshot(
-                    append,
-                    current_lock=current.lock,
-                    created_by=self.actor,
-                    created_at=now,
-                    request_id=self.request_id,
-                    trace_id=self.trace_id,
-                )
-                if sha256_json(revision_snapshot) != append.revision.snapshot_hash:
-                    raise ValueError("Document Revision snapshot generation drifted.")
-                revision = frappe.get_doc(
-                    {
-                        "doctype": "NPI Document Revision",
-                        "global_id": str(append.revision.global_id),
-                        "tenant_id": str(project.tenant_id),
-                        "project_global_id": str(project_id),
-                        "controlled_document": str(document_id),
-                        "document_global_id": str(document_id),
-                        "major": append.revision.major,
-                        "minor": append.revision.minor,
-                        "revision_key": append.revision.revision_key,
-                        "reason": append.revision.reason,
-                        "effective_date": (
-                            append.revision.effective_date.isoformat()
-                            if append.revision.effective_date
-                            else None
-                        ),
-                        "predecessor_revision_global_id": (
-                            str(append.revision.predecessor_revision_id)
-                            if append.revision.predecessor_revision_id
-                            else None
-                        ),
-                        "lock_global_id": str(current.lock.global_id),
-                        "lock_version": current.lock.version,
-                        "revision_state": append.revision.state.value,
-                        "policy_global_id": str(append.revision.policy_ref.global_id),
-                        "policy_version": append.revision.policy_ref.version,
-                        "policy_snapshot_hash": (
-                            append.revision.policy_ref.snapshot_hash
-                        ),
-                        "revision_snapshot": revision_snapshot,
-                        "snapshot_hash": append.revision.snapshot_hash,
-                        "optimistic_version": append.revision.version,
-                        "created_by_user_id": self.actor,
-                        "created_at": _database_datetime(now),
-                        "request_id": self.request_id,
-                        "trace_id": self.trace_id,
-                    }
-                ).insert()
-                self._insert_revision_file(
-                    project,
-                    document,
-                    revision,
-                    file_revision,
-                    append.file,
-                    created_at=now,
-                )
-                _apply_document_projection(document, append.document)
-                document.save()
-                self._append_audit(
-                    operation="document.revision.create",
-                    global_id=append.revision.global_id,
-                    object_version=1,
-                    result="created",
-                    summary={
-                        "documentId": str(document_id),
-                        "fileRevisionId": str(file_snapshot.global_id),
-                        "fileSha256": file_snapshot.sha256,
-                        "projectId": str(project_id),
-                        "requestId": self.request_id,
-                        "revision": f"{append.revision.major}.{append.revision.minor}",
-                    },
-                )
-                response = self._detail_for(project, document)
-                self._seal_idempotency(receipt, response)
+                    _register_orphan_cleanup(file_document)
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_PRIVATE_FILE_SAVE",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    file_revision = frappe.get_doc(
+                        {
+                            "doctype": "NPI File Revision",
+                            "global_id": str(uuid4()),
+                            "tenant_id": str(project.tenant_id),
+                            "project_global_id": str(project_id),
+                            "document_global_id": str(file_document_id),
+                            "revision": 1,
+                            "frappe_file_id": str(file_document.name),
+                            "scan_state": FileScanState.PENDING.value,
+                            "released": 0,
+                            "optimistic_version": 1,
+                        }
+                    ).insert()
+                    file_snapshot = _file_revision_value(file_revision)
+                    if (
+                        file_snapshot.mime_type != observation.mime_type
+                        or file_snapshot.size_bytes != observation.size_bytes
+                        or file_snapshot.sha256 != observation.sha256
+                        or file_snapshot.frappe_content_hash
+                        != observation.frappe_content_hash
+                    ):
+                        raise ValueError(
+                            "Persisted File Revision does not match the "
+                            "observed upload."
+                        )
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_FILE_REVISION_INSERT",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    append = append_document_revision(
+                        _controlled_document_value(document),
+                        current.lock,
+                        file_snapshot,
+                        display_file_name=observation.file_name,
+                        revision_id=revision_id,
+                        revision_file_id=revision_file_id,
+                        actor=self.actor,
+                        now=now,
+                        major=major,
+                        minor=minor,
+                        reason=reason,
+                        effective_date=effective_date,
+                        predecessor_revision_id=predecessor_revision_id,
+                        request_id=self.request_id,
+                        trace_id=self.trace_id,
+                    )
+                    revision_snapshot = _revision_snapshot(
+                        append,
+                        current_lock=current.lock,
+                        created_by=self.actor,
+                        created_at=now,
+                        request_id=self.request_id,
+                        trace_id=self.trace_id,
+                    )
+                    if (
+                        sha256_json(revision_snapshot)
+                        != append.revision.snapshot_hash
+                    ):
+                        raise ValueError(
+                            "Document Revision snapshot generation drifted."
+                        )
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_DOMAIN_APPEND",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    revision = frappe.get_doc(
+                        {
+                            "doctype": "NPI Document Revision",
+                            "global_id": str(append.revision.global_id),
+                            "tenant_id": str(project.tenant_id),
+                            "project_global_id": str(project_id),
+                            "controlled_document": str(document_id),
+                            "document_global_id": str(document_id),
+                            "major": append.revision.major,
+                            "minor": append.revision.minor,
+                            "revision_key": append.revision.revision_key,
+                            "reason": append.revision.reason,
+                            "effective_date": (
+                                append.revision.effective_date.isoformat()
+                                if append.revision.effective_date
+                                else None
+                            ),
+                            "predecessor_revision_global_id": (
+                                str(append.revision.predecessor_revision_id)
+                                if append.revision.predecessor_revision_id
+                                else None
+                            ),
+                            "lock_global_id": str(current.lock.global_id),
+                            "lock_version": current.lock.version,
+                            "revision_state": append.revision.state.value,
+                            "policy_global_id": str(
+                                append.revision.policy_ref.global_id
+                            ),
+                            "policy_version": append.revision.policy_ref.version,
+                            "policy_snapshot_hash": (
+                                append.revision.policy_ref.snapshot_hash
+                            ),
+                            "revision_snapshot": revision_snapshot,
+                            "snapshot_hash": append.revision.snapshot_hash,
+                            "optimistic_version": append.revision.version,
+                            "created_by_user_id": self.actor,
+                            "created_at": _database_datetime(now),
+                            "request_id": self.request_id,
+                            "trace_id": self.trace_id,
+                        }
+                    ).insert()
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_RECORD_INSERT",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    self._insert_revision_file(
+                        project,
+                        document,
+                        revision,
+                        file_revision,
+                        append.file,
+                        created_at=now,
+                    )
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_FILE_ASSOCIATION_INSERT",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    _apply_document_projection(document, append.document)
+                    document.save()
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_PROJECTION_SAVE",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    self._append_audit(
+                        operation="document.revision.create",
+                        global_id=append.revision.global_id,
+                        object_version=1,
+                        result="created",
+                        summary={
+                            "documentId": str(document_id),
+                            "fileRevisionId": str(file_snapshot.global_id),
+                            "fileSha256": file_snapshot.sha256,
+                            "projectId": str(project_id),
+                            "requestId": self.request_id,
+                            "revision": (
+                                f"{append.revision.major}."
+                                f"{append.revision.minor}"
+                            ),
+                        },
+                    )
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_AUDIT_APPEND",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    response = self._detail_for(project, document)
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_RESPONSE_BUILD",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
+                try:
+                    self._seal_idempotency(receipt, response)
+                except Exception as error:
+                    _record_revision_stage_failure(
+                        "DOCUMENT_REVISION_RECEIPT_SEAL",
+                        error,
+                        self.trace_id,
+                    )
+                    raise
             except Exception:
                 # The registered callback removes only an unreferenced physical
                 # file after the transaction is rolled back.
@@ -2087,6 +2192,32 @@ def _record_checkout_stage_failure(
         )
     except Exception:
         # Diagnostics must never replace the original checkout failure.
+        pass
+
+
+def _record_revision_stage_failure(
+    stage_code: str,
+    error: Exception,
+    trace_id: str,
+) -> None:
+    """Record only an allowlisted revision stage, exception type and trace."""
+
+    if (
+        stage_code not in _REVISION_STAGE_DIAGNOSTIC_CODES
+        or isinstance(error, NpiProblem)
+    ):
+        return
+    try:
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=stage_code,
+            title="NPI Document revision stage failed",
+            exception_type=type(error).__name__,
+            trace_id=trace_id,
+        )
+    except Exception:
+        # Diagnostics must never replace the original revision failure.
         pass
 
 

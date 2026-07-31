@@ -313,6 +313,7 @@ EXPECTED_P5_01_ACTIVE_TRACE = {
             "implementation/evidence/phase-5/p5-01-resume-audit.md",
             "implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md",
             "implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md",
+            "implementation/evidence/phase-5/p5-01-post-checkout-recovery.md",
         },
     )
     for requirement_id in (

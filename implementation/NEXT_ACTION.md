@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — POST-CHECKOUT PDFSTREAM DIAGNOSTIC AUTHORITY`
+`IN_PROGRESS_DIAGNOSTIC — AUTHORIZED POST-CHECKOUT REVISION/UPLOAD STAGES`
 
-Recovery time: `2026-07-31T05:09:49Z`
+Recovery time: `2026-07-31T05:42:15Z`
 
 Latest complete CI recovery checkpoint:
-`7dc4dc081b669874ab6c10323d774298d45a1c78`
+`2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23`
 
 Local and remote development-branch SHA:
-`7dc4dc081b669874ab6c10323d774298d45a1c78` (`0 ahead / 0 behind`)
+`2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23` (`0 ahead / 0 behind`)
 
 Blocker-checkpoint normal CI:
-`30605323680` (`PASS`; controlled runtime correctly skipped on PR event)
+`30606322575` (`PASS`; controlled runtime correctly skipped on PR event)
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -29,6 +29,12 @@ Required and only development branch:
   complete.
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
+- The user authorized the P5-01 recovery plan on 2026-07-31. The controller
+  now counts only uniquely proven product roots toward the five-round repair
+  budget; environment remediation and behavior-neutral diagnostics remain
+  fail-closed but do not consume that budget.
+- P5-01 is `IN_PROGRESS_DIAGNOSTIC`. Its seven Requirement rows remain
+  incomplete, and P5-02 remains inactive.
 - The authorized projection-validation diagnostic checkpoint `57b4314`
   passed complete normal CI `30604536515`. Its sole diagnostic dispatch
   `30604964265` safely proved
@@ -47,9 +53,8 @@ Required and only development branch:
   Gate is exhausted, no runtime PASS is claimed, and P5-01 Level 2 did not
   run.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
-  static runtime checks pass; P5-01 remains incomplete and is
-  `BLOCKED_EXTERNAL` at the new post-checkout PdfStream diagnostic boundary,
-  not `PASS`.
+  static runtime checks pass. The prior PdfStream authorization hold is
+  satisfied; no controlled runtime `PASS` is claimed.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -202,17 +207,19 @@ the safe `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result. It does not
 identify a unique revision/upload transaction stage, and the final Gate is
 exhausted.
 
-The first incomplete action requires one new explicit bounded authorization:
+The user has authorized the first incomplete action. Add one closed
+revision/upload diagnostic inventory covering receipt insertion, private File
+save, File Revision insertion, domain append, Document Revision insertion,
+revision/file association, document projection save, audit append, response
+build and receipt seal. Emit only stage code, validated exception type and
+exact trace ID. Run affected checks and complete normal CI before one
+controlled-Site diagnostic dispatch.
 
-`Explicitly authorize one additional bounded P5-01 post-checkout
-PdfStreamError diagnostic round: add only closed revision/upload transaction
-stage codes that emit stage code + validated exception type + exact trace ID,
-run affected checks and complete normal CI, execute one diagnostic
-controlled-Site dispatch, repair only the uniquely proven stage, rerun
-affected checks and complete normal CI, and execute one final unchanged
-controlled-Site Gate. Do not change or weaken any Requirement, API,
-permission, Schema, file-integrity rule, lock, version, audit, idempotency,
-transaction order or PASS criterion.`
+After that dispatch, repair only the uniquely proven stage. Rerun affected
+checks and complete normal CI, then execute one final unchanged controlled-Site
+Gate. Do not change or weaken any Requirement, API, permission, Schema,
+file-integrity rule, lock, version, audit, idempotency, transaction order or
+PASS criterion.
 
 The terminal result must prove:
 
@@ -264,7 +271,9 @@ unrelated complete R1 Gates.
 
 ## Transition
 
-Do not add another diagnostic, repair the PdfStream failure or dispatch
-another controlled Site without the exact bounded authorization above. After
-one real controlled-Site PASS, complete the final affected reviews and P5-01
-Level 2 Task Gate before activating P5-02.
+The recovery authority is active. Continue the safe diagnostic and uniquely
+proven repair inside the remaining product-root budget. Stop only for a real
+Class B/C boundary, a required contract/permission/Schema/ownership change, a
+concrete security/license risk, or five complete product-root repair rounds.
+After one real controlled-Site PASS, complete the final affected reviews and
+P5-01 Level 2 Task Gate before activating P5-02.

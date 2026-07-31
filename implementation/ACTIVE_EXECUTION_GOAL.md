@@ -1,23 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T05:09:49Z`
+Updated: `2026-07-31T05:42:15Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `BLOCKED_EXTERNAL — POST-CHECKOUT PDFSTREAM DIAGNOSTIC AUTHORITY`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — AUTHORIZED P5-01 POST-CHECKOUT RECOVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `7dc4dc081b669874ab6c10323d774298d45a1c78`
+  `2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23`
 - Local and remote development-branch SHA:
-  `7dc4dc081b669874ab6c10323d774298d45a1c78` (`0 ahead / 0 behind`)
+  `2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23` (`0 ahead / 0 behind`)
 - Blocker-checkpoint normal CI:
-  `30605323680` (`PASS`; controlled runtime correctly skipped on PR event)
+  `30606322575` (`PASS`; controlled runtime correctly skipped on PR event)
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; NEW POST-CHECKOUT
-  PDFSTREAM STAGE NOT PROVEN`)
+  (`IN_PROGRESS_DIAGNOSTIC — CLOSED REVISION/UPLOAD STAGE CHECKPOINT`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
