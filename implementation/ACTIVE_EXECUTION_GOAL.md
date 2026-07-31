@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T20:25:22Z`
+Updated: `2026-07-31T20:58:50Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
@@ -10,22 +10,23 @@ Updated: `2026-07-31T20:25:22Z`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest passed product checkpoint:
   `f088d70b00b54488587b2a83a311b636ef48cf78`
-- Local and remote product SHA:
-  `0681acf2783249f4b8387522cfb0a75db87fc880` (`0 ahead / 0 behind` before
-  the P5-03 audit/controller commit)
+- Local and remote checkpoint before the active foundation commit:
+  `81f12493d01b4112afb59966a845de49230c819d` (`0 ahead / 0 behind`)
 - Complete normal CI:
-  `30662552535` (`PASS`, P5-02 evidence checkpoint)
+  `30663842514` (`PASS`, P5-03 audit checkpoint)
 - Final unchanged controlled-Site Gate:
   `30661586342` (`PASS`)
 - Current controller task:
   `P5-03 — Baseline and impact invalidation`
-  (`IN_PROGRESS — DOMAIN/METADATA FOUNDATION`)
+  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI`)
 - Current Requirement IDs:
   `FR-DS-006`
 - Completed P5-02 evidence:
   `implementation/evidence/phase-5/p5-02-validation.md`
 - Current P5-03 audit/plan:
   `implementation/evidence/phase-5/p5-03-plan.md`
+- Current P5-03 Level 1 foundation evidence:
+  `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:

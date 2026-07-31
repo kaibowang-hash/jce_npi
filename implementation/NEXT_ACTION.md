@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN PROGRESS — P5-03 DOMAIN/METADATA FOUNDATION`
+`IN PROGRESS — P5-03 REPOSITORY/BFF/OPENAPI`
 
-Recovery time: `2026-07-31T20:25:22Z`
+Recovery time: `2026-07-31T20:58:50Z`
 
 Latest passed product checkpoint:
 `f088d70b00b54488587b2a83a311b636ef48cf78`
 
 Latest complete normal CI:
-`30662552535` (`PASS`, P5-02 evidence checkpoint `0681acf`)
+`30663842514` (`PASS`, P5-03 audit checkpoint `81f1249`)
 
 Final unchanged controlled-Site Gate:
 `30661586342` (`PASS`, exact product SHA)
@@ -26,6 +26,9 @@ Required development branch:
   CI `30662552535` after the exact product Gate evidence was recorded.
 - The bounded P5-03 Requirement/domain audit passed at
   `implementation/evidence/phase-5/p5-03-plan.md`.
+- The P5-03 exact baseline domain, seven guarded additive DocTypes and split
+  ownership passed their focused Level 1 checkpoint at
+  `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`.
 - P5-03 is the only active task. P5-04, P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker exists. Production baseline contents/authority,
   dependency completeness/matrix, external providers and production ERPNext
@@ -39,7 +42,7 @@ Required development branch:
 
 Requirement:
 
-- `FR-DS-006` (`IN_PROGRESS_P5_03_PLANNED`).
+- `FR-DS-006` (`IN_PROGRESS_P5_03_FOUNDATION_VERIFIED`).
 
 Primary boundary:
 
@@ -52,20 +55,21 @@ Primary boundary:
 
 ## First incomplete action
 
-Implement only the P5-03 domain/metadata foundation:
+Implement only the P5-03 repository/BFF/OpenAPI slice:
 
-1. add strict independently testable baseline policy, baseline/member,
-   dependency, impact-event and receipt domain values with canonical hashes;
-2. add guarded additive DocTypes for the exact policy versions, immutable
-   baseline/members, actor-bound receipt, exact Gate dependencies and
-   append-only impact events;
-3. make every retained record non-deletable and generic CRUD unavailable to
-   normal users;
-4. update data ownership with separate baseline-policy, command, rule-engine
-   and Gate-review ownership;
-5. prove invalid UUID/hash/state/member/order/duplicate/tamper/overwrite/delete
-   cases plus deterministic canonical snapshots; and
-6. stop at a focused Level 1 checkpoint before repository/API wiring.
+1. add Project-scoped baseline list/create repository commands under a new
+   independent fail-closed P5-03 route switch;
+2. authorize transport, Project membership and exact published baseline
+   policy before resolving protected Document/File facts;
+3. lock and revalidate exact released revisions, lifecycle/release snapshots,
+   complete Document Revision File associations and live private File truth;
+4. enforce actor-bound replay/payload conflict and insert unsealed receipt,
+   immutable baseline/members, audit and sealed response in the frozen order;
+5. add strict BFF/OpenAPI request and safe response schemas without raw URLs,
+   caller-selected scan truth or generic CRUD; and
+6. prove authorization order, stale/hash/state/association/File failures,
+   deterministic replay, rollback, route recovery and prior-route
+   compatibility before the next focused checkpoint.
 
 ## Frozen invariants and non-scope
 
@@ -92,15 +96,14 @@ Implement only the P5-03 domain/metadata foundation:
 
 ## Planned later P5-03 slices
 
-After the foundation passes:
+After repository/BFF/OpenAPI passes:
 
-1. repository/BFF/OpenAPI baseline create/list and route toggle;
-2. exact `release_baseline` Gate-evidence resolver and template kind;
-3. explicit dependency registration plus successor-triggered append-only
+1. exact `release_baseline` Gate-evidence resolver and template kind;
+2. explicit dependency registration plus successor-triggered append-only
    impact and existing Gate Review refresh;
-4. dense Project Documents and Gate workspace UI with direct English/`zh`/
+3. dense Project Documents and Gate workspace UI with direct English/`zh`/
    `zh-TW`, accessibility and exact visuals;
-5. affected tests, complete ordinary CI, one final controlled-Site Gate and
+4. affected tests, complete ordinary CI, one final controlled-Site Gate and
    the P5-03 Level 2 Task Gate.
 
 Standing automatic-delivery authority remains active between passing

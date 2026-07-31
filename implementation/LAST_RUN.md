@@ -1,5 +1,25 @@
 # Last Run
 
+## P5-03 domain/metadata foundation Level 1 PASS — 2026-07-31T20:58:50Z
+
+- Added strict canonical baseline policy, immutable baseline/member, explicit
+  Gate dependency and append-only successor-impact domain values.
+- Added seven guarded additive DocTypes with publish-once policy versions,
+  private command/system write scopes, actor-bound one-way-sealed receipt and
+  non-renamable/non-updatable/non-deletable retained history.
+- Exact members bind the Document Revision hash, release lifecycle/event/hash
+  and complete P5-02 File evidence; no mutable/latest reference or raw URL is
+  accepted.
+- Updated ownership while retaining production authority/content/dependency
+  rules as unavailable; no production default or second impact-review state
+  was introduced.
+- Focused and adjacent metadata/domain tests passed `28/28`; changed Python
+  compilation, seven JSON parses and whitespace checks passed.
+- The preceding audit checkpoint `81f1249` passed ordinary CI `30663842514`.
+- P5-03 remains incomplete and advances only to repository/BFF/OpenAPI.
+- Evidence:
+  `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`.
+
 ## P5-03 requirement/domain audit PASS; foundation active — 2026-07-31T20:25:22Z
 
 - Reconciled `FR-DS-006` with exact P5-01 revision/File truth, P5-02 release

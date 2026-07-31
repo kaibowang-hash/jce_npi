@@ -351,10 +351,11 @@ EXPECTED_P5_02_PRIORITIES = {
 }
 EXPECTED_P5_03_ACTIVE_TRACE = {
     "FR-DS-006": (
-        "IN_PROGRESS_P5_03_PLANNED",
+        "IN_PROGRESS_P5_03_FOUNDATION_VERIFIED",
         {
             "implementation/phase-5-requirement-anchor.md",
             "implementation/evidence/phase-5/p5-03-plan.md",
+            "implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md",
         },
     )
 }

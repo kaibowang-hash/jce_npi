@@ -295,7 +295,7 @@ objects:
       title_and_confidentiality: {owner: NPI_ONE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: NEW_REVISION}
       current_revision_pointer: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
       current_edit_lease_pointer: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
-      baseline_membership: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NPI_TO_ERPNEXT_REFERENCE, conflict: IMMUTABLE_SNAPSHOT}
+      baseline_membership: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_BASELINE_COMMAND], direction: NPI_TO_ERPNEXT_REFERENCE, conflict: IMMUTABLE_SNAPSHOT}
       official_archive_id: {owner: ERPNEXT_OR_DMS, editable_in: [ERPNEXT_OR_DMS], direction: EXTERNAL_TO_NPI, conflict: IMMUTABLE_MAPPING}
       external_retrieval: {owner: FUTURE_EXTERNAL_ACCESS_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
 
@@ -351,6 +351,63 @@ objects:
       exact_submit_review_release_supersede_and_obsolete_bindings: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
       integrity_confirmation_and_replacement_rules: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
       snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentBaselinePolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      enabled_and_title: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSION_CONFLICT}
+      production_baseline_authority_and_content_rules: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentBaselinePolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_version_identity_and_publication: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: PUBLISH_ONCE}
+      exact_baseline_authority_bindings: {owner: VERSIONED_DOCUMENT_BASELINE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentBaseline:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_project_policy_member_and_file_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      creator_time_request_and_trace: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      production_baseline_semantics: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentBaselineMember:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_baseline_document_revision_release_and_file_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      member_sequence_and_hash: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  BaselineCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_operation_and_hashed_key_scope: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [NPI_ONE_DOCUMENT_BASELINE_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_baseline_identity: {owner: NPI_ONE_DOCUMENT_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  BaselineGateDependency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_baseline_member_gate_requirement_and_evidence_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXPLICIT_REGISTRATION_ONLY}
+      registration_actor_time_request_and_trace: {owner: NPI_ONE_GATE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      production_dependency_matrix: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  BaselineImpactEvent:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_registered_dependency_and_successor_lineage: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      affected_gate_requirement_and_evidence_reference: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXPLICIT_DEPENDENCY_ONLY}
+      resolution_state: {owner: EXISTING_GATE_REVIEW_CYCLE, editable_in: [NPI_ONE_GATE_REVIEW_COMMAND], direction: NONE, conflict: NEW_REVIEW_CYCLE}
 
   DocumentReviewCycle:
     owner_system: NPI_ONE
