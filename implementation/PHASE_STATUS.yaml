@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T20:15:18Z'
+updated_at: '2026-07-31T20:25:22Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-03
 current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-02-LEVEL-2-TASK-GATE-PASS
-current_task_next_stage: P5-03-REQUIREMENT-DOMAIN-AUDIT
+current_task_completed_stage: P5-03-REQUIREMENT-DOMAIN-AUDIT-PASS
+current_task_next_stage: P5-03-DOMAIN-METADATA-FOUNDATION
 current_task_next_stage_status: AUTHORIZED_ACTIVE
 resumed_product_task: P5-03
 resumed_product_task_status: IN_PROGRESS
@@ -37,12 +37,13 @@ p5_02:
     - implementation/evidence/phase-5/p5-02-implementation-checkpoint.md
     - implementation/evidence/phase-5/p5-02-validation.md
 p5_03:
-  status: IN_PROGRESS_REQUIREMENT_AUDIT
+  status: IN_PROGRESS_DOMAIN_METADATA
   requirements: [FR-DS-006]
-  completed_stage: P5_02_LEVEL_2_TASK_GATE_PASS
-  next_stage: REQUIREMENT_DOMAIN_AUDIT
+  completed_stage: REQUIREMENT_DOMAIN_AUDIT_PASS
+  next_stage: DOMAIN_METADATA_FOUNDATION
   evidence:
     - implementation/phase-5-requirement-anchor.md
+    - implementation/evidence/phase-5/p5-03-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

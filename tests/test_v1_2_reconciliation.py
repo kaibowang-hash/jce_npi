@@ -403,6 +403,29 @@ class V12ReconciliationTests(unittest.TestCase):
                 "TECHNICAL_VERIFIED_FOUNDATION",
             )
 
+    def test_p5_03_trace_records_only_the_active_planned_scope(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        expected_status, expected_evidence = (
+            self.verifier.EXPECTED_P5_03_ACTIVE_TRACE["FR-DS-006"]
+        )
+        row = by_id["FR-DS-006"]
+        self.assertEqual(row["status"], expected_status)
+        self.assertEqual(
+            {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            },
+            expected_evidence,
+        )
+        self.assertFalse(row["status"].startswith("TECHNICAL_VERIFIED"))
+        for evidence_path in expected_evidence:
+            self.assertTrue(
+                (self.verifier.ROOT / evidence_path).is_file(),
+                evidence_path,
+            )
+
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()
 

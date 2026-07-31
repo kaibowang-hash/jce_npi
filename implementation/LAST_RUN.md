@@ -1,5 +1,23 @@
 # Last Run
 
+## P5-03 requirement/domain audit PASS; foundation active — 2026-07-31T20:25:22Z
+
+- Reconciled `FR-DS-006` with exact P5-01 revision/File truth, P5-02 release
+  truth and the existing Phase 4 Gate-evidence/review boundaries.
+- Confirmed the current repository has no document release-package/baseline
+  aggregate; the existing WBS plan baseline is unrelated and is not reused.
+- Froze an independent exact baseline-policy authority, immutable released
+  revision/File/hash membership and `release_baseline` Gate evidence.
+- Dependencies are registered only at explicit Gate attachment. A successor
+  appends old/new impact lineage and reuses existing Gate Review invalidation;
+  no production matrix or second review state machine is inferred.
+- Production baseline contents/authority, retention/replacement and dependency
+  completeness remain explicit scoped holds.
+- The isolated P5-02 evidence checkpoint `0681acf` passed clean ordinary CI
+  `30662552535` before P5-03 product work began.
+- Next stage: P5-03 domain/metadata foundation only.
+- Evidence: `implementation/evidence/phase-5/p5-03-plan.md`.
+
 ## P5-02 Level 2 Task Gate PASS; P5-03 audit active — 2026-07-31T20:15:18Z
 
 - Product checkpoint `f088d70b00b54488587b2a83a311b636ef48cf78`

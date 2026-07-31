@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN PROGRESS — P5-03 REQUIREMENT/DOMAIN AUDIT`
+`IN PROGRESS — P5-03 DOMAIN/METADATA FOUNDATION`
 
-Recovery time: `2026-07-31T20:15:18Z`
+Recovery time: `2026-07-31T20:25:22Z`
 
 Latest passed product checkpoint:
 `f088d70b00b54488587b2a83a311b636ef48cf78`
 
 Latest complete normal CI:
-`30661086073` (`PASS`, exact product head SHA)
+`30662552535` (`PASS`, P5-02 evidence checkpoint `0681acf`)
 
 Final unchanged controlled-Site Gate:
 `30661586342` (`PASS`, exact product SHA)
@@ -19,23 +19,17 @@ Required development branch:
 
 ## Controller state
 
-- The cumulative R1 shared Shell/design/i18n Level 3 exit Gate remains
-  `PASS`; conditional R1-07 remains unactivated under `DR-REC-001`.
-- Phase 5 remains `IN_PROGRESS`.
-- P5-00 and P5-01 remain `PASS`.
-- P5-02 is `PASS — LEVEL 2`; its final evidence is
+- P5-00, P5-01 and P5-02 remain `PASS`; Phase 5 remains `IN_PROGRESS`.
+- P5-02 complete evidence is
   `implementation/evidence/phase-5/p5-02-validation.md`.
-- Complete ordinary CI `30661086073` and final controlled-Site workflow
-  `30661586342` passed for exact product head
-  `f088d70b00b54488587b2a83a311b636ef48cf78`.
-- The P5-02 recovery changed or weakened no Requirement, public API schema,
-  data ownership, permission, lock, version, audit, idempotency, transaction
-  order, file-integrity rule or PASS criterion.
-- Production reviewer/approver policy, regulated-signature meaning, external
-  identity/retrieval, scanner/viewer providers, CAD/PDM and production ERPNext
-  remain explicit fail-closed holds.
-- P5-03 is the only active atomic task. P5-04, P5-05 and Phase 6 remain
-  inactive.
+- Its isolated evidence/controller checkpoint `0681acf` passed clean ordinary
+  CI `30662552535` after the exact product Gate evidence was recorded.
+- The bounded P5-03 Requirement/domain audit passed at
+  `implementation/evidence/phase-5/p5-03-plan.md`.
+- P5-03 is the only active task. P5-04, P5-05 and Phase 6 remain inactive.
+- No active Hard Blocker exists. Production baseline contents/authority,
+  dependency completeness/matrix, external providers and production ERPNext
+  remain scoped fail-closed holds.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -45,65 +39,69 @@ Required development branch:
 
 Requirement:
 
-- `FR-DS-006`.
+- `FR-DS-006` (`IN_PROGRESS_P5_03_PLANNED`).
 
 Primary boundary:
 
-> Deliver immutable release packages/baselines containing exact released
-> Document Revision, File Revision and hash references plus exact Gate
-> evidence references. Only explicitly registered exact dependencies may
-> create visible impact/invalidation; later revisions never replace baseline
-> members and prior Gate/baseline decisions remain immutable.
-
-Use only:
-
-- `implementation/phase-5-requirement-anchor.md`;
-- the indexed `FR-DS-006` trace row;
-- the passed P5-01 exact revision/private-file boundary;
-- the passed P5-02 release/confirmation/lifecycle boundary;
-- the existing exact Gate evidence boundary; and
-- `repo-discovery`, `npi-domain-guard`, `frappe-safe-change`, `industrial-ux`
-  and `frappe-i18n` as applicable to the bounded slice.
+> Create immutable release packages from exact currently released Document
+> Revision, File Revision and hash evidence under an independent exact
+> baseline-policy authority. Attach an exact baseline through the existing
+> Gate-evidence boundary. Register dependencies only at that explicit attach;
+> a successor revision appends exact old/new impact lineage and refreshes the
+> existing Gate Review without replacing the baseline or prior Gate history.
 
 ## First incomplete action
 
-Perform the bounded P5-03 Requirement/domain audit before changing code:
+Implement only the P5-03 domain/metadata foundation:
 
-1. reconcile `FR-DS-006` with the exact P5-01/P5-02 released identities and
-   the existing Phase 4 Gate-evidence resolver;
-2. inventory current baseline, Gate-reference and invalidation state,
-   authority, ownership, OpenAPI and UI seams;
-3. freeze exact immutable package membership, version/hash lineage and
-   explicit dependency-registration invariants;
-4. identify all production dependency taxonomy, completeness, review and
-   invalidation-authority facts that must remain held;
-5. map the smallest additive vertical slice to affected tests, migrations,
-   rollback and Level 2 acceptance; and
-6. record the audit before implementation.
+1. add strict independently testable baseline policy, baseline/member,
+   dependency, impact-event and receipt domain values with canonical hashes;
+2. add guarded additive DocTypes for the exact policy versions, immutable
+   baseline/members, actor-bound receipt, exact Gate dependencies and
+   append-only impact events;
+3. make every retained record non-deletable and generic CRUD unavailable to
+   normal users;
+4. update data ownership with separate baseline-policy, command, rule-engine
+   and Gate-review ownership;
+5. prove invalid UUID/hash/state/member/order/duplicate/tamper/overwrite/delete
+   cases plus deterministic canonical snapshots; and
+6. stop at a focused Level 1 checkpoint before repository/API wiring.
 
-## Frozen non-scope
+## Frozen invariants and non-scope
 
-- Do not infer a production dependency matrix from filenames, document types,
-  screenshots, test data or “latest” relationships.
-- Do not rewrite or replace released revisions, File Revisions, confirmations,
-  lifecycle events, baselines or prior Gate decisions.
-- Do not implement EBOM revisions/comparisons; that is P5-04.
-- Do not implement formal Item/MBOM publish requests or claim ERP success;
-  that is P5-05/Phase 8.
-- Do not activate external retrieval, CAD/PDM, production scanner/viewer or
-  production ERPNext.
-- Do not infer baseline or invalidation authority from Project ownership,
-  RACI, `System Manager`, assignment, transport role or UI visibility.
-- Do not weaken authorization-before-resolution, CSRF, optimistic versions,
-  actor-bound idempotency, append-only audit/history, exact private-file
-  integrity, scanner-owned truth or independent Gate authority.
+- Baseline input is server-resolved and must be a current exact `released`
+  revision with its exact release snapshot and complete live private
+  File/hash/scan evidence. A caller cannot supply a mutable URL or “latest”.
+- A baseline is immutable; later revisions never replace its members.
+- Baseline creation requires a published exact Project-scoped baseline policy,
+  an explicit actor binding and the existing internal command transport. No
+  authority is inferred from Project owner, RACI, `System Manager`, assignment
+  or UI visibility.
+- Gate attachment retains its independent Gate-evidence authority and creates
+  dependency registrations only for the exact attached baseline members.
+- Successor creation can append an impact only for those exact registrations.
+  It preserves the prior Gate evidence/decision and reuses the existing Gate
+  Review invalidation/successor-cycle mechanism for resolution.
+- Do not add a second impact-review state machine, infer a production
+  dependency matrix, install G2/G5/G6/ECN contents or a Gate-to-baseline
+  policy, or infer replacement/effectivity semantics.
+- Do not implement EBOM, formal Item/MBOM publication, external retrieval,
+  CAD/PDM, production scanner/viewer or production ERPNext behavior.
+- Do not weaken P5-01/P5-02 revision, release, permission, integrity,
+  idempotency, audit or rollback rules.
 
-## Transition
+## Planned later P5-03 slices
 
-Standing automatic-delivery authority is active. Continue P5-03 through its
-bounded audit, implementation checkpoints and Level 2 Task Gate without
-waiting between passing internal checkpoints. Stop only for a true Class B/C
-boundary that blocks every safe P5-03 slice, a required architecture/public
-contract/permission/Schema/ownership change outside the frozen anchor, a
-concrete security/license risk, or exhaustion of the product-root repair
-budget.
+After the foundation passes:
+
+1. repository/BFF/OpenAPI baseline create/list and route toggle;
+2. exact `release_baseline` Gate-evidence resolver and template kind;
+3. explicit dependency registration plus successor-triggered append-only
+   impact and existing Gate Review refresh;
+4. dense Project Documents and Gate workspace UI with direct English/`zh`/
+   `zh-TW`, accessibility and exact visuals;
+5. affected tests, complete ordinary CI, one final controlled-Site Gate and
+   the P5-03 Level 2 Task Gate.
+
+Standing automatic-delivery authority remains active between passing
+checkpoints. Stop only for a true controller-defined Hard Blocker.

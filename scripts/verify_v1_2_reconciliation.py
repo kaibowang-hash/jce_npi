@@ -349,6 +349,15 @@ EXPECTED_P5_02_PRIORITIES = {
     "FR-DS-005": "P0",
     "FR-DS-010": "P0",
 }
+EXPECTED_P5_03_ACTIVE_TRACE = {
+    "FR-DS-006": (
+        "IN_PROGRESS_P5_03_PLANNED",
+        {
+            "implementation/phase-5-requirement-anchor.md",
+            "implementation/evidence/phase-5/p5-03-plan.md",
+        },
+    )
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -833,6 +842,44 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing P5-02 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_P5_03_ACTIVE_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "docs/DETAILED_REQUIREMENTS.md",
+            "PACK_CANONICAL",
+            requirement_id,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the active P5-03 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P5-03 plan evidence"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P5-03 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

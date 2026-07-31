@@ -248,8 +248,9 @@ pending until that proof is produced in Codespaces.
   `30661086073`, final unchanged controlled-Site workflow `30661586342` and
   its Level 2 Task Gate. Complete evidence:
   `implementation/evidence/phase-5/p5-02-validation.md`.
-- P5-03 is the only active atomic task, beginning with the bounded
-  Requirement/domain audit in `implementation/NEXT_ACTION.md`.
+- P5-03 is the only active atomic task. Its bounded Requirement/domain audit
+  passed, and the domain/metadata foundation is active in
+  `implementation/NEXT_ACTION.md`.
 - P5-04, P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker or execution hold exists. Production numbering,
   reviewer/approver authority, signatures, baseline/invalidation authority,
