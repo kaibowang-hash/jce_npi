@@ -55,6 +55,7 @@ from npi_core.documents.frappe_validation import DOCUMENT_COMMAND_FLAG
 from npi_core.foundation.audit import create_audit_event
 from npi_core.foundation.errors import (
     CursorSigningUnavailable,
+    NpiProblem,
     RequestValidationFailed,
 )
 from npi_core.foundation.security import Principal
@@ -72,6 +73,16 @@ _MAX_POLICIES = 64
 _CURSOR_VERSION = 1
 _CURSOR_KEY_CONTEXT = b"npi-one:documents:list-cursor:v1"
 _SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
+_CHECKOUT_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+        "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+        "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+        "DOCUMENT_CHECKOUT_AUDIT_APPEND",
+        "DOCUMENT_CHECKOUT_RESPONSE_BUILD",
+        "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -386,51 +397,101 @@ class FrappeDocumentRepository:
             lease_minutes=policy.lock_lease_minutes,
         )
         with _controlled_document_write_scope():
-            receipt = self._insert_idempotency(
-                idempotency_key,
-                payload_hash,
-                project=project,
-                document_id=document_id,
-                operation="document.lock.acquire",
-            )
+            try:
+                receipt = self._insert_idempotency(
+                    idempotency_key,
+                    payload_hash,
+                    project=project,
+                    document_id=document_id,
+                    operation="document.lock.acquire",
+                )
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+                    error,
+                    self.trace_id,
+                )
+                raise
             if isinstance(receipt, dict):
                 return DocumentCommandOutcome(receipt, replayed=True)
-            if acquisition.expired_lock is not None:
-                assert current is not None
+            try:
+                if acquisition.expired_lock is not None:
+                    assert current is not None
+                    self._insert_lock_event(
+                        project,
+                        document,
+                        acquisition.expired_lock,
+                        event_type="expired",
+                        actor=self.actor,
+                        occurred_at=now,
+                        prior_event_id=current.acquisition_event_global_id,
+                    )
                 self._insert_lock_event(
                     project,
                     document,
-                    acquisition.expired_lock,
-                    event_type="expired",
+                    acquisition.active_lock,
+                    event_type="acquired",
                     actor=self.actor,
                     occurred_at=now,
-                    prior_event_id=current.acquisition_event_global_id,
+                    prior_event_id=None,
                 )
-            self._insert_lock_event(
-                project,
-                document,
-                acquisition.active_lock,
-                event_type="acquired",
-                actor=self.actor,
-                occurred_at=now,
-                prior_event_id=None,
-            )
-            _apply_document_projection(document, acquisition.document)
-            document.save()
-            self._append_audit(
-                operation="document.lock.acquire",
-                global_id=acquisition.active_lock.global_id,
-                object_version=1,
-                result="created",
-                summary={
-                    "documentId": str(document_id),
-                    "expiresAt": _datetime_iso(acquisition.active_lock.expires_at),
-                    "projectId": str(project_id),
-                    "requestId": self.request_id,
-                },
-            )
-            response = self._detail_for(project, document)
-            self._seal_idempotency(receipt, response)
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+                    error,
+                    self.trace_id,
+                )
+                raise
+            try:
+                _apply_document_projection(document, acquisition.document)
+                document.save()
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+                    error,
+                    self.trace_id,
+                )
+                raise
+            try:
+                self._append_audit(
+                    operation="document.lock.acquire",
+                    global_id=acquisition.active_lock.global_id,
+                    object_version=1,
+                    result="created",
+                    summary={
+                        "documentId": str(document_id),
+                        "expiresAt": _datetime_iso(
+                            acquisition.active_lock.expires_at
+                        ),
+                        "projectId": str(project_id),
+                        "requestId": self.request_id,
+                    },
+                )
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_AUDIT_APPEND",
+                    error,
+                    self.trace_id,
+                )
+                raise
+            try:
+                response = self._detail_for(project, document)
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_RESPONSE_BUILD",
+                    error,
+                    self.trace_id,
+                )
+                raise
+            try:
+                self._seal_idempotency(receipt, response)
+            except Exception as error:
+                _record_checkout_stage_failure(
+                    "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+                    error,
+                    self.trace_id,
+                )
+                raise
         return DocumentCommandOutcome(response)
 
     def check_in(
@@ -1992,6 +2053,32 @@ def _apply_document_projection(document, value: ControlledDocument) -> None:
         else None
     )
     document.optimistic_version = value.version
+
+
+def _record_checkout_stage_failure(
+    stage_code: str,
+    error: Exception,
+    trace_id: str,
+) -> None:
+    """Record only an allowlisted checkout stage, exception type and trace."""
+
+    if (
+        stage_code not in _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+        or isinstance(error, NpiProblem)
+    ):
+        return
+    try:
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=stage_code,
+            title="NPI Document checkout stage failed",
+            exception_type=type(error).__name__,
+            trace_id=trace_id,
+        )
+    except Exception:
+        # Diagnostics must never replace the original checkout failure.
+        pass
 
 
 def _policy_value(row: object) -> DocumentPolicyVersion:

@@ -1,5 +1,25 @@
 # Last Run
 
+## P5-01 checkout stage-diagnostic authorized and locally green — 2026-07-31
+
+- The user explicitly authorized one additional bounded checkout
+  stage-diagnostic checkpoint and one controlled-Site diagnostic dispatch,
+  followed by repair of only the proven stage; the final unchanged Gate
+  remains reserved.
+- Added six closed diagnostic codes for receipt insert, lock-event insert,
+  projection save, audit append, response build and receipt seal without
+  changing transaction order or product behavior.
+- The exact safe record remains `code / exceptionType / traceId`. Business
+  `NpiProblem` outcomes are excluded; raw exception text, traceback, request,
+  cookie and credential data cannot enter diagnostic output.
+- Focused checkout/repository/verifier tests pass `28/28`; the complete P5
+  Document module group passes `83/83`; complete tracked Python passes
+  `784/784`; compilation and whitespace checks pass.
+- Normal CI and the single stage-diagnostic controlled-Site dispatch remain
+  pending. No repair stage is selected before that run proves it.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+
 ## P5-01 checkout diagnostic proved class but not stage — 2026-07-31
 
 - Exact diagnostic checkpoint:

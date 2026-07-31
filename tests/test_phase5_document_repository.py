@@ -10,6 +10,7 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -511,6 +512,80 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
         self.assertEqual(snapshot["requestId"], "request-document-0001")
         self.assertEqual(snapshot["traceId"], "trace-document-0001")
         self.assertEqual(snapshot["closureReason"], "Administrative recovery")
+
+    def test_checkout_stage_diagnostics_are_closed_sanitized_and_secondary(
+        self,
+    ) -> None:
+        expected_codes = {
+            "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+            "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+            "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+            "DOCUMENT_CHECKOUT_AUDIT_APPEND",
+            "DOCUMENT_CHECKOUT_RESPONSE_BUILD",
+            "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+        }
+        self.assertEqual(
+            self.repository._CHECKOUT_STAGE_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        error = self.frappe.UniqueValidationError(
+            "password=controlled-fixture-password"
+        )
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            self.repository._record_checkout_stage_failure(
+                "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_called_once_with(
+                code="DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+                title="NPI Document checkout stage failed",
+                exception_type="UniqueValidationError",
+                trace_id="trace-0123456789abcdef0123456789abcdef",
+            )
+            self.assertNotIn(
+                "controlled-fixture-password",
+                repr(record.call_args),
+            )
+
+            record.reset_mock()
+            self.repository._record_checkout_stage_failure(
+                "UNREVIEWED_CHECKOUT_STAGE",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_not_called()
+
+            self.repository._record_checkout_stage_failure(
+                "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+                self.repository.DocumentIdempotencyConflict(),
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+            record.assert_not_called()
+
+            record.side_effect = RuntimeError("synthetic diagnostic failure")
+            self.repository._record_checkout_stage_failure(
+                "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+                error,
+                "trace-0123456789abcdef0123456789abcdef",
+            )
+
+    def test_checkout_has_one_diagnostic_for_each_authorized_stage(self) -> None:
+        source = SOURCE.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        checkout = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "check_out"
+        )
+        checkout_source = ast.get_source_segment(source, checkout) or ""
+        for stage_code in self.repository._CHECKOUT_STAGE_DIAGNOSTIC_CODES:
+            with self.subTest(stage_code=stage_code):
+                self.assertEqual(checkout_source.count(f'"{stage_code}"'), 1)
+        self.assertEqual(
+            checkout_source.count("_record_checkout_stage_failure("),
+            len(self.repository._CHECKOUT_STAGE_DIAGNOSTIC_CODES),
+        )
 
     def test_repository_uses_public_frappe_apis_and_never_commits_content(self) -> None:
         source = SOURCE.read_text(encoding="utf-8")

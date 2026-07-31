@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — CHECKOUT VALIDATION STAGE NOT UNIQUELY PROVEN`
+`IN_PROGRESS — AUTHORIZED CHECKOUT STAGE DIAGNOSTIC`
 
-Recovery time: `2026-07-31T02:37:04Z`
+Recovery time: `2026-07-31T03:00:10Z`
 
 Latest complete CI recovery checkpoint:
-`e4b284f6360a852ffd81d6a9e7b0f41f65f363a9`
+`b9bd39897242ca3c08d4cfb022b7f484e7f6b5d7`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -25,7 +25,8 @@ Required and only development branch:
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
   static runtime checks pass; P5-01 remains incomplete and is
-  `BLOCKED_EXTERNAL` at the controlled-Site checkout boundary, not `PASS`.
+  `IN_PROGRESS` at the authorized controlled-Site checkout stage-diagnostic
+  boundary, not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -108,6 +109,13 @@ Required and only development branch:
   possible at the command-receipt exact-parent check, immutable lock-event
   validation, controlled-document exact lock projection and final receipt
   seal. The result therefore does not authorize choosing one for repair.
+- The user supplied the exact additional bounded authorization on 2026-07-31.
+  The active checkpoint adds six closed stage codes, preserves the exact
+  three-field safe record, ignores business `NpiProblem` outcomes and never
+  emits raw exception text, traceback, request, cookie or credential data.
+- Focused checkout/repository/verifier tests pass `28/28`; the complete P5
+  Document module group passes `83/83`; complete tracked Python passes
+  `784/784`; compilation and whitespace checks pass.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -141,20 +149,17 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair and the diagnostic-only run are complete. The
-authorized diagnostic dispatch is exhausted and no unique checkout
-transaction root is proven.
+The shared-Datetime repair and generic diagnostic run are complete. The new
+bounded stage-diagnostic authorization is active.
 
-The single unblock action is explicit user authorization for one additional
-stage-coded diagnostic checkpoint and one controlled-Site dispatch limited to:
+The first incomplete sequence is:
 
-1. adding an allowlisted safe stage code for receipt insert, lock-event
-   insert, document projection save, audit append, response build and receipt
-   seal;
-2. emitting only that code, a validated exception type and the exact trace ID;
-3. running affected tests, normal CI and one stage-diagnostic controlled Site;
-4. repairing only the exact stage proven by that run; and
-5. retaining the already authorized final unchanged
+1. commit and push only the stage-diagnostic checkpoint;
+2. pass complete normal CI on its exact SHA;
+3. execute the single authorized stage-diagnostic controlled Site;
+4. repair only the exact stage proven by that run;
+5. pass affected checks and complete normal CI; and
+6. execute the already authorized final unchanged
    `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
 
 The terminal result must prove:
@@ -169,7 +174,7 @@ The terminal result must prove:
 
 Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
 review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Active evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
 
 ## Retained passing checkpoint evidence
 

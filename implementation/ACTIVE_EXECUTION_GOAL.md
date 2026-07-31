@@ -1,20 +1,19 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T02:37:04Z`
+Updated: `2026-07-31T03:00:10Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — CHECKOUT VALIDATION STAGE NOT UNIQUELY PROVEN`
+- Mode: `AUTOPILOT — AUTHORIZED CHECKOUT STAGE DIAGNOSTIC`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `e4b284f6360a852ffd81d6a9e7b0f41f65f363a9`
+  `b9bd39897242ca3c08d4cfb022b7f484e7f6b5d7`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`BLOCKED_EXTERNAL — DIAGNOSTIC RUN PROVED FRAPPE VALIDATIONERROR BUT NOT
-  THE UNIQUE CHECKOUT TRANSACTION STAGE; AUTHORIZED DIAGNOSTIC DISPATCH
-  EXHAUSTED`)
+  (`IN_PROGRESS — AUTHORIZED ALLOWLISTED CHECKOUT STAGE DIAGNOSTIC LOCALLY
+  PASS; NORMAL CI AND ONE STAGE-DIAGNOSTIC CONTROLLED SITE PENDING`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -176,6 +175,21 @@ one candidate would guess at the root and violate the explicit authorization.
 Exact Hard Blocker evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
 
+The user explicitly authorized one additional bounded stage-diagnostic
+checkpoint and one controlled-Site diagnostic dispatch on 2026-07-31. The
+authorization permits only allowlisted checkout stage code, validated
+exception type and exact trace ID, followed by repair of only the proven
+stage; the already authorized final unchanged Gate remains reserved.
+
+The local checkpoint now distinguishes receipt insert, lock-event insert,
+projection save, audit append, response build and receipt seal without
+changing their order or behavior. Diagnostics exclude `NpiProblem`, raw
+exception text, traceback, request, cookie and credential data. Focused
+checkout/repository/verifier tests pass `28/28`, the complete P5 Document
+module group passes `83/83`, and complete tracked Python passes `784/784`.
+Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -224,17 +238,15 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The authorized shared-Datetime batch is complete and the prior policy
-publication failure is repaired. The diagnostic checkpoint passed normal CI,
-but its single authorized controlled-Site dispatch identified only the shared
-Frappe `ValidationError` class, not a unique checkout transaction stage.
+The authorized shared-Datetime batch and the prior generic checkout diagnostic
+are complete. The new stage-diagnostic authorization is active and its local
+checkpoint is green.
 
-The first incomplete action is blocked on explicit authorization for one
-additional stage-coded diagnostic checkpoint and one controlled-Site
-dispatch. The checkpoint must emit only an allowlisted checkout stage code,
-validated exception type and exact trace ID. After that run, only its proven
-stage may be repaired; the already authorized final unchanged Gate remains
-unused.
+The first incomplete action is to commit and push only the stage-diagnostic
+checkpoint, pass complete normal CI on its exact SHA, and execute the single
+authorized stage-diagnostic controlled-Site dispatch. Only the stage proven
+by that run may then be repaired. The already authorized final unchanged Gate
+remains unused.
 
 P5-01 remains incomplete and P5-02 remains inactive until the proven repair,
 final unchanged Gate and remaining Level 2 reviews pass.
@@ -269,8 +281,7 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-incomplete and is now `BLOCKED_EXTERNAL` at the exhausted stage-diagnostic
-boundary;
+incomplete and is now in the authorized stage-diagnostic checkpoint;
 the distribution-metadata repair is complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
@@ -298,8 +309,10 @@ The historical checkout blocker evidence is
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`;
 the completed bounded diagnostic evidence is
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`;
-and the active terminal evidence is
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
+the historical stage blocker evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`;
+and the active bounded-round evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

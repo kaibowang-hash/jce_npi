@@ -271,6 +271,104 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, str(raised.exception))
 
+    def test_checkout_stage_diagnostic_is_allowlisted_and_preferred(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+            "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+            "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+            "DOCUMENT_CHECKOUT_AUDIT_APPEND",
+            "DOCUMENT_CHECKOUT_RESPONSE_BUILD",
+            "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+        }
+        self.assertEqual(module._CHECKOUT_STAGE_DIAGNOSTIC_CODES, expected_codes)
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        stage_code = "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT"
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                "\n".join(
+                    (
+                        json.dumps(
+                            {
+                                "code": stage_code,
+                                "exceptionType": "ValidationError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNREVIEWED_CHECKOUT_STAGE",
+                                "exceptionType": "UnsafeError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": ["DOCUMENT_CHECKOUT_RECEIPT_SEAL"],
+                                "exceptionType": "UnhashableCodeError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNEXPECTED_BFF_EXCEPTION",
+                                "exceptionType": "GenericError",
+                                "traceId": trace_id,
+                            },
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ),
+                    )
+                ),
+                encoding="utf-8",
+            )
+            result = module.HttpResult(
+                status=500,
+                headers=Mock(),
+                body={
+                    "exc_type": "BodyError",
+                    "message": "server detail must not be emitted",
+                    "request": {
+                        "password": "controlled-fixture-password",
+                    },
+                },
+                request_id=module.fixture_request_id(
+                    module.DOCUMENT_CHECK_OUT_KEY
+                ),
+                trace_id=trace_id,
+            )
+            with patch.object(module, "BENCH_PATH", bench_path):
+                detail = module.sanitized_http_failure(result)
+        self.assertEqual(
+            detail,
+            (
+                " [exc_type=ValidationError; "
+                f"diagnostic_code={stage_code}]"
+            ),
+        )
+        for forbidden in (
+            "BodyError",
+            "GenericError",
+            "UnsafeError",
+            "UnhashableCodeError",
+            "server detail",
+            "password",
+            "controlled-fixture-password",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, detail)
+
     def test_npi_request_preserves_deterministic_diagnostic_identity(
         self,
     ) -> None:

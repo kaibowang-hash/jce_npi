@@ -1,35 +1,25 @@
 # Blockers
 
-Updated: `2026-07-31T02:37:04Z`
+Updated: `2026-07-31T03:00:10Z`
 
 ## Active hard blockers
 
-`P5-01-CONTROLLED-RUNTIME-CHECKOUT-STAGE-DIAGNOSTIC-LIMIT`
-
-Diagnostic checkpoint
-`e4b284f6360a852ffd81d6a9e7b0f41f65f363a9` passed complete normal
-CI `#101`, run `30598406263`. The sole authorized diagnostic-only dispatch
-`#102`, run `30598733723`, matched that SHA, passed exact setup, fixed
-Site/database guards, both apps and migrations, and cleaned all ephemeral
-resources.
-
-The checkout failure was safely narrowed to:
-
-`exc_type=ValidationError; diagnostic_code=UNEXPECTED_BFF_EXCEPTION`
-
-This excludes an arbitrary unclassified HTTP failure, but does not identify a
-unique transaction stage. The same Frappe class can still originate from the
-checkout command receipt, immutable lock event, exact document-lock projection
-or final response receipt seal. The safe BFF record contains no stage code.
-
-The one authorized diagnostic dispatch is exhausted. Fixing a candidate now
-would violate the explicit “fix only the proven checkout transaction root”
-boundary. One new explicit authorization is required for a stage-coded safe
-diagnostic checkpoint and one additional controlled-Site diagnostic dispatch.
-The already authorized final unchanged Gate is unconsumed. Exact evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`.
+None.
 
 ## Resolved hard blockers
+
+`P5-01-CONTROLLED-RUNTIME-CHECKOUT-STAGE-DIAGNOSTIC-LIMIT`
+
+Checkpoint `e4b284f` and controlled run `30598733723` safely proved
+`ValidationError / UNEXPECTED_BFF_EXCEPTION` but not a unique checkout stage.
+The user supplied the exact additional bounded authorization on 2026-07-31.
+The execution-limit blocker is resolved; the fixed controlled-Site Gate is
+not. The active round permits only one allowlisted stage-diagnostic
+checkpoint, one controlled-Site diagnostic dispatch, repair of only its
+proven stage, affected checks/normal CI and the already authorized final
+unchanged Gate. Local focused `28/28`, P5 Document `83/83` and complete
+tracked Python `784/784` checks pass. Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
 
 `P5-01-CONTROLLED-RUNTIME-CHECKOUT-DIAGNOSTIC-REPAIR-LIMIT`
 
@@ -99,7 +89,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_CHECKOUT_STAGE_DIAGNOSTIC_LIMIT`
+`P5-01_CONTROLLED_RUNTIME_CHECKOUT_STAGE_DIAGNOSTIC`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate

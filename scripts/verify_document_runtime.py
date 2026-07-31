@@ -64,6 +64,16 @@ _DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 _DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _UNEXPECTED_BFF_DIAGNOSTIC_CODE = "UNEXPECTED_BFF_EXCEPTION"
+_CHECKOUT_STAGE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "DOCUMENT_CHECKOUT_RECEIPT_INSERT",
+        "DOCUMENT_CHECKOUT_LOCK_EVENT_INSERT",
+        "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
+        "DOCUMENT_CHECKOUT_AUDIT_APPEND",
+        "DOCUMENT_CHECKOUT_RESPONSE_BUILD",
+        "DOCUMENT_CHECKOUT_RECEIPT_SEAL",
+    }
+)
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -166,6 +176,13 @@ def require_http_status(
 def sanitized_http_failure(result: HttpResult) -> str:
     """Expose only bounded Frappe type/message diagnostics for a failed fixture."""
 
+    log_diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
+    if log_diagnostic is not None:
+        diagnostic_type, diagnostic_code = log_diagnostic
+        return (
+            f" [exc_type={diagnostic_type}; "
+            f"diagnostic_code={diagnostic_code}]"
+        )
     details: list[str] = []
     exc_type = result.body.get("exc_type")
     if (
@@ -176,12 +193,6 @@ def sanitized_http_failure(result: HttpResult) -> str:
     message = _sanitized_server_message(result.body)
     if message:
         details.append(f"message={message}")
-    log_diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
-    if log_diagnostic is not None:
-        diagnostic_type, diagnostic_code = log_diagnostic
-        if not any(detail.startswith("exc_type=") for detail in details):
-            details.append(f"exc_type={diagnostic_type}")
-        details.append(f"diagnostic_code={diagnostic_code}")
     return f" [{'; '.join(details)}]" if details else ""
 
 
@@ -204,6 +215,7 @@ def _sanitized_bff_log_diagnostic(
         BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
     )
     decoder = json.JSONDecoder()
+    generic_diagnostic: tuple[str, str] | None = None
     for candidate in candidates:
         try:
             if candidate.is_symlink() or not candidate.is_file():
@@ -236,14 +248,23 @@ def _sanitized_bff_log_diagnostic(
                     continue
                 diagnostic_type = record.get("exceptionType")
                 if (
-                    record.get("code") == _UNEXPECTED_BFF_DIAGNOSTIC_CODE
-                    and record.get("traceId") == trace_id
+                    record.get("traceId") == trace_id
                     and isinstance(diagnostic_type, str)
                     and _DIAGNOSTIC_TYPE_PATTERN.fullmatch(diagnostic_type)
                     is not None
                 ):
-                    return diagnostic_type, _UNEXPECTED_BFF_DIAGNOSTIC_CODE
-    return None
+                    diagnostic_code = record.get("code")
+                    if (
+                        isinstance(diagnostic_code, str)
+                        and diagnostic_code in _CHECKOUT_STAGE_DIAGNOSTIC_CODES
+                    ):
+                        return diagnostic_type, diagnostic_code
+                    if diagnostic_code == _UNEXPECTED_BFF_DIAGNOSTIC_CODE:
+                        generic_diagnostic = (
+                            diagnostic_type,
+                            _UNEXPECTED_BFF_DIAGNOSTIC_CODE,
+                        )
+    return generic_diagnostic
 
 
 def _sanitized_server_message(body: dict[str, Any]) -> str | None:
