@@ -51,7 +51,10 @@ from npi_core.documents.domain import (
     release_document_lock,
     sha256_json,
 )
-from npi_core.documents.frappe_validation import DOCUMENT_COMMAND_FLAG
+from npi_core.documents.frappe_validation import (
+    DOCUMENT_COMMAND_FLAG,
+    DOCUMENT_CURRENT_LOCK_EVENT_FLAG,
+)
 from npi_core.foundation.audit import create_audit_event
 from npi_core.foundation.errors import (
     CursorSigningUnavailable,
@@ -426,7 +429,7 @@ class FrappeDocumentRepository:
                         occurred_at=now,
                         prior_event_id=current.acquisition_event_global_id,
                     )
-                self._insert_lock_event(
+                acquisition_event = self._insert_lock_event(
                     project,
                     document,
                     acquisition.active_lock,
@@ -444,7 +447,8 @@ class FrappeDocumentRepository:
                 raise
             try:
                 _apply_document_projection(document, acquisition.document)
-                document.save()
+                with _current_lock_event_scope(acquisition_event.name):
+                    document.save()
             except Exception as error:
                 _record_checkout_stage_failure(
                     "DOCUMENT_CHECKOUT_PROJECTION_SAVE",
@@ -2686,3 +2690,23 @@ def _controlled_document_write_scope() -> Iterator[None]:
                     pass
             else:
                 setattr(flags, name, value)
+
+
+@contextmanager
+def _current_lock_event_scope(event_id: object) -> Iterator[None]:
+    """Bind one validated acquisition event to its projection save."""
+
+    flags = frappe.flags
+    missing = object()
+    previous = getattr(flags, DOCUMENT_CURRENT_LOCK_EVENT_FLAG, missing)
+    setattr(flags, DOCUMENT_CURRENT_LOCK_EVENT_FLAG, str(event_id))
+    try:
+        yield
+    finally:
+        if previous is missing:
+            try:
+                delattr(flags, DOCUMENT_CURRENT_LOCK_EVENT_FLAG)
+            except AttributeError:
+                pass
+        else:
+            setattr(flags, DOCUMENT_CURRENT_LOCK_EVENT_FLAG, previous)

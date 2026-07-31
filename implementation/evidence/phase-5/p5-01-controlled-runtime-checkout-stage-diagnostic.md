@@ -1,6 +1,6 @@
 # P5-01 Controlled Runtime Checkout Stage Diagnostic
 
-Recorded: `2026-07-31T03:00:10Z`
+Recorded: `2026-07-31T03:25:04Z`
 
 Task:
 `P5-01 — Document and design revision`
@@ -17,8 +17,8 @@ Requirements:
 
 State:
 
-`IN_PROGRESS — STAGE-DIAGNOSTIC CHECKPOINT LOCALLY PASS; NORMAL CI AND ONE
-CONTROLLED-SITE DIAGNOSTIC DISPATCH PENDING`
+`IN_PROGRESS — PROVEN PROJECTION-SAVE REPAIR LOCALLY PASS; NORMAL CI AND FINAL
+UNCHANGED CONTROLLED-SITE GATE PENDING`
 
 P5-01 is not `PASS`, none of its seven requirements is promoted, and P5-02
 remains inactive.
@@ -90,16 +90,51 @@ The local Python lacks repository Black/flake8 packages, so no local result is
 claimed for those commands. Complete normal CI remains the canonical
 formatter/lint/repository/frontend/visual/security environment.
 
+## Authorized diagnostic result
+
+- exact diagnostic checkpoint:
+  `954bd0d08b9f82614e34cc0e92e67f5de0340db9`;
+- complete normal CI `#104`, run `30600587269`: repository, complete E2E,
+  fixed-Linux visual and both secret scans `PASS`;
+- sole stage-diagnostic dispatch: run `30600943765`, event
+  `workflow_dispatch`, exact checkpoint SHA;
+- exact tools, fixed disposable Site/database, both apps, both migrations and
+  bounded cleanup: `PASS`;
+- safe result:
+  `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`;
+- exact request trace: match-validated against the three-field safe record
+  before accepting the stage result; the verifier did not echo its value or
+  any raw server detail; and
+- receipt insert and immutable lock-event insert are therefore proven not to
+  be the failing stage. The diagnostic run is not a Gate PASS.
+
+## Proven-stage-only repair
+
+The first new lock projection now binds its save to the exact immutable
+acquisition-event name returned by the immediately preceding successful
+insert. The Controlled Document controller still reads that row from the
+database and validates its exact global ID, tenant, Project, Document, lock
+ID/version, event type, holder and expiry. An absent command binding retains
+the existing exact-filter behavior; a malformed binding fails closed.
+
+The binding exists only around the proven projection `save()`, restores any
+prior Frappe flag in `finally`, and changes no DocType, public contract,
+permission, event content, lock lease, optimistic version, audit,
+idempotency, transaction order or rollback behavior.
+
+Affected local evidence after repair:
+
+- focused repository/controller/verifier: `41/41 PASS`;
+- complete P5 Document module group: `85/85 PASS`;
+- complete tracked Python suite: `786/786 PASS`;
+- changed Python compilation and whitespace: `PASS`.
+
 ## Exact remaining sequence
 
-1. verify controller/Reconciliation/YAML and commit only this bounded
-   checkpoint;
-2. push and pass complete normal CI on the exact SHA;
-3. execute exactly one stage-diagnostic controlled-Site dispatch;
-4. retain only its allowlisted code, validated exception type and exact trace;
-5. repair only the thereby proven stage;
-6. pass affected checks and complete normal CI; and
-7. execute the already authorized final unchanged
+1. verify controller/Reconciliation/YAML and commit only the proven-stage
+   repair;
+2. push and pass complete normal CI on its exact SHA; and
+3. execute the already authorized final unchanged
    `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
 
 The diagnostic dispatch is not a Gate PASS even if it advances. Only the final

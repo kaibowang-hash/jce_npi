@@ -790,6 +790,33 @@ class Phase5DocumentControllerTest(unittest.TestCase):
         with self.assertRaises(self.PermissionError):
             stale.validate()
 
+    def test_controlled_document_binds_new_lock_to_exact_inserted_event(self) -> None:
+        value = self.controlled_document()
+        value.before_validate()
+        value.validate()
+        current = clone(value)
+        current._previous = clone(value)
+        current.current_lock_global_id = str(LOCK_ID)
+        current.current_lock_version = 1
+        current.current_lock_holder_user_id = "engineer@example.invalid"
+        current.current_lock_expires_at = NOW + timedelta(minutes=30)
+        current.optimistic_version = 2
+        current.before_validate()
+
+        flag = self.validation.DOCUMENT_CURRENT_LOCK_EVENT_FLAG
+        setattr(self.frappe.flags, flag, str(ACQUIRE_EVENT_ID))
+        try:
+            current.validate()
+            self.assertEqual(
+                current.current_lock_expires_at,
+                "2026-07-25 12:30:00.000000",
+            )
+            setattr(self.frappe.flags, flag, "not-a-global-id")
+            with self.assertRaises(self.ValidationError):
+                current.validate()
+        finally:
+            delattr(self.frappe.flags, flag)
+
     def test_revision_and_file_association_are_append_only_exact_snapshots(
         self,
     ) -> None:

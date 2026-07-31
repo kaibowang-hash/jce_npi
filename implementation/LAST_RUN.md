@@ -1,5 +1,32 @@
 # Last Run
 
+## P5-01 checkout projection-save stage proven and repaired — 2026-07-31
+
+- Exact diagnostic checkpoint:
+  `954bd0d08b9f82614e34cc0e92e67f5de0340db9`.
+- Complete normal CI `#104`, run `30600587269`, passed repository, complete
+  E2E, fixed-Linux visual and both secret-scan lanes.
+- The sole authorized stage-diagnostic dispatch `30600943765` matched that
+  SHA, passed exact tools, fixed disposable Site/database, both migrations
+  and cleanup, and safely proved
+  `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`.
+- The exact request trace was equality-validated against the three-field safe
+  record before accepting the result. Its value, raw exception text,
+  traceback, request, cookie and credentials were not echoed.
+- The repair changes only the proven projection-save boundary: the save is
+  bound to the exact immutable acquisition-event name returned by the
+  successful insert, and the controller still reads and validates that exact
+  database row. A malformed binding fails closed and temporary Frappe state
+  is restored.
+- Focused repository/controller/verifier tests pass `41/41`; complete P5
+  Document tests pass `85/85`; complete tracked Python passes `786/786`;
+  compilation and whitespace checks pass.
+- Normal CI on the repair checkpoint and the retained final unchanged
+  controlled-Site Gate remain pending. P5-01 is not PASS and P5-02 remains
+  inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+
 ## P5-01 checkout stage-diagnostic authorized and locally green — 2026-07-31
 
 - The user explicitly authorized one additional bounded checkout

@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T03:00:10Z'
+updated_at: '2026-07-31T03:25:04Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5-01_CONTROLLED_RUNTIME_CHECKOUT_STAGE_DIAGNOSTIC
+execution_hold: P5-01_CONTROLLED_RUNTIME_FINAL_GATE
 current_task: P5-01
 current_task_status: IN_PROGRESS
-current_task_completed_stage: P5-01-CHECKOUT-STAGE-DIAGNOSTIC-LOCAL-PASS
-current_task_next_stage: P5-01-CHECKOUT-STAGE-DIAGNOSTIC-NORMAL-CI
+current_task_completed_stage: P5-01-CHECKOUT-PROJECTION-SAVE-REPAIR-LOCAL-PASS
+current_task_next_stage: P5-01-CHECKOUT-PROJECTION-SAVE-REPAIR-NORMAL-CI
 current_task_next_stage_status: READY_AFTER_CHECKPOINT_PUSH
 resumed_product_task: P5-01
-resumed_product_task_status: IN_PROGRESS_CONTROLLED_SITE_STAGE_DIAGNOSTIC
+resumed_product_task_status: IN_PROGRESS_CONTROLLED_SITE_FINAL_GATE
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

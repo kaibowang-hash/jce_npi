@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from uuid import UUID
 
 import frappe
 from frappe import _
@@ -14,6 +15,7 @@ from npi_core.documents.domain import (
     create_controlled_document,
 )
 from npi_core.documents.frappe_validation import (
+    DOCUMENT_CURRENT_LOCK_EVENT_FLAG,
     actor_text,
     assert_immutable_fields,
     canonical_uuid,
@@ -441,13 +443,32 @@ def _validate_lock_projection(document: object, previous: object) -> None:
             _("An active edit lock cannot be rewritten."),
             frappe.ValidationError,
         )
-    require_exact_parent(
-        "NPI Document Lock Event",
-        {
+    event_id = getattr(
+        frappe.flags,
+        DOCUMENT_CURRENT_LOCK_EVENT_FLAG,
+        None,
+    )
+    if event_id not in (None, ""):
+        try:
+            event_id = str(UUID(str(event_id)))
+        except (AttributeError, TypeError, ValueError):
+            frappe.throw(
+                _("The current edit lock does not match an exact acquisition event."),
+                frappe.ValidationError,
+            )
+        selector: object = event_id
+        event_identity = {"global_id": event_id}
+    else:
+        selector = {
             "lock_global_id": new[0],
             "lock_version": new[1],
-        },
+        }
+        event_identity = {}
+    require_exact_parent(
+        "NPI Document Lock Event",
+        selector,
         {
+            **event_identity,
             "tenant_id": document.get("tenant_id"),
             "project_global_id": document.get("project_global_id"),
             "document_global_id": document.get("global_id"),

@@ -472,6 +472,18 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
         self.assertFalse(hasattr(self.frappe.flags, "npi_file_revision_command_write"))
         self.assertEqual(self.frappe.flags.npi_audit_append, "previous")
 
+    def test_current_lock_event_scope_is_exact_and_restored(self) -> None:
+        flag = self.repository.DOCUMENT_CURRENT_LOCK_EVENT_FLAG
+        event_id = "ba94e31a-fe62-4c00-8aaf-c3e6dfbd3804"
+        with self.repository._current_lock_event_scope(event_id):
+            self.assertEqual(getattr(self.frappe.flags, flag), event_id)
+        self.assertFalse(hasattr(self.frappe.flags, flag))
+
+        setattr(self.frappe.flags, flag, "previous")
+        with self.repository._current_lock_event_scope(event_id):
+            self.assertEqual(getattr(self.frappe.flags, flag), event_id)
+        self.assertEqual(getattr(self.frappe.flags, flag), "previous")
+
     def test_lock_snapshot_binds_exact_request_trace_and_prior_event(self) -> None:
         lock_id = UUID("6e38c507-d2cc-4f39-95b0-cd62d75d14dc")
         event_id = UUID("ba94e31a-fe62-4c00-8aaf-c3e6dfbd3804")

@@ -1,12 +1,12 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — AUTHORIZED CHECKOUT STAGE DIAGNOSTIC`
+`IN_PROGRESS — PROVEN CHECKOUT PROJECTION-SAVE REPAIR`
 
-Recovery time: `2026-07-31T03:00:10Z`
+Recovery time: `2026-07-31T03:25:04Z`
 
 Latest complete CI recovery checkpoint:
-`b9bd39897242ca3c08d4cfb022b7f484e7f6b5d7`
+`954bd0d08b9f82614e34cc0e92e67f5de0340db9`
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -25,7 +25,7 @@ Required and only development branch:
 - P5-00 remains `PASS`.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
   static runtime checks pass; P5-01 remains incomplete and is
-  `IN_PROGRESS` at the authorized controlled-Site checkout stage-diagnostic
+  `IN_PROGRESS` at the proven checkout projection-save repair/final-Gate
   boundary, not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
@@ -116,6 +116,21 @@ Required and only development branch:
 - Focused checkout/repository/verifier tests pass `28/28`; the complete P5
   Document module group passes `83/83`; complete tracked Python passes
   `784/784`; compilation and whitespace checks pass.
+- Exact stage-diagnostic checkpoint `954bd0d` passed complete normal CI
+  `#104`, run `30600587269`.
+- The sole authorized stage-diagnostic dispatch `30600943765` matched that
+  SHA, passed exact setup, both migrations and cleanup, and safely proved
+  `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its safe record was
+  accepted only after exact request-trace equality; no trace value or raw
+  server detail was echoed.
+- The bounded repair changes only that proven projection-save boundary. It
+  binds the save to the exact immutable acquisition-event name returned by
+  the successful insert and retains the controller's database-backed exact
+  tenant/Project/Document/lock/event/holder/expiry validation. Invalid
+  bindings fail closed and temporary state is restored.
+- Focused repair tests pass `41/41`; the complete P5 Document module group
+  passes `85/85`; complete tracked Python passes `786/786`; compilation and
+  whitespace checks pass.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -149,17 +164,15 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair and generic diagnostic run are complete. The new
-bounded stage-diagnostic authorization is active.
+The shared-Datetime repair and both bounded diagnostic runs are complete. The
+allowlisted stage result uniquely proves the projection-save boundary, and
+only that boundary has been repaired.
 
 The first incomplete sequence is:
 
-1. commit and push only the stage-diagnostic checkpoint;
-2. pass complete normal CI on its exact SHA;
-3. execute the single authorized stage-diagnostic controlled Site;
-4. repair only the exact stage proven by that run;
-5. pass affected checks and complete normal CI; and
-6. execute the already authorized final unchanged
+1. commit and push only the proven-stage repair checkpoint;
+2. pass affected checks and complete normal CI on its exact SHA; and
+3. execute the already authorized final unchanged
    `bash scripts/verify-frappe-runtime.sh --document-only` Gate.
 
 The terminal result must prove:

@@ -1,19 +1,19 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T03:00:10Z`
+Updated: `2026-07-31T03:25:04Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `AUTOPILOT — AUTHORIZED CHECKOUT STAGE DIAGNOSTIC`
+- Mode: `AUTOPILOT — PROVEN CHECKOUT PROJECTION-SAVE REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `b9bd39897242ca3c08d4cfb022b7f484e7f6b5d7`
+  `954bd0d08b9f82614e34cc0e92e67f5de0340db9`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`IN_PROGRESS — AUTHORIZED ALLOWLISTED CHECKOUT STAGE DIAGNOSTIC LOCALLY
-  PASS; NORMAL CI AND ONE STAGE-DIAGNOSTIC CONTROLLED SITE PENDING`)
+  (`IN_PROGRESS — PROVEN PROJECTION-SAVE REPAIR LOCALLY PASS; NORMAL CI AND
+  FINAL UNCHANGED CONTROLLED SITE PENDING`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -190,6 +190,24 @@ module group passes `83/83`, and complete tracked Python passes `784/784`.
 Evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
 
+Exact stage-diagnostic checkpoint
+`954bd0d08b9f82614e34cc0e92e67f5de0340db9` passed complete normal CI
+`#104`, run `30600587269`. The sole authorized stage-diagnostic dispatch
+`30600943765` matched that SHA, passed fixed setup, both migrations and
+cleanup, and safely proved
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. The exact request
+trace was equality-validated against the existing three-field safe record
+before the result was accepted and was not echoed to the job output.
+
+Only the proven projection-save boundary is now repaired. The repository
+binds the save to the exact immutable acquisition-event name returned by the
+successful prior insert; the DocType controller still reads that exact event
+from the database and verifies every tenant/Project/Document/lock/event/
+holder/expiry field. Invalid bindings fail closed and the temporary context
+is restored in `finally`. Focused `41/41`, complete P5 Document `85/85` and
+complete tracked Python `786/786` tests pass locally. Normal CI on the repair
+SHA and the retained final unchanged controlled-Site Gate remain pending.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -238,15 +256,13 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The authorized shared-Datetime batch and the prior generic checkout diagnostic
-are complete. The new stage-diagnostic authorization is active and its local
-checkpoint is green.
+The authorized shared-Datetime batch and both bounded checkout diagnostic
+runs are complete. The allowlisted result proved only the projection-save
+stage, and its exact-event repair is locally green.
 
-The first incomplete action is to commit and push only the stage-diagnostic
-checkpoint, pass complete normal CI on its exact SHA, and execute the single
-authorized stage-diagnostic controlled-Site dispatch. Only the stage proven
-by that run may then be repaired. The already authorized final unchanged Gate
-remains unused.
+The first incomplete action is to commit and push only the proven-stage
+repair, then pass complete normal CI on its exact SHA. The already authorized
+final unchanged controlled-Site Gate remains unused.
 
 P5-01 remains incomplete and P5-02 remains inactive until the proven repair,
 final unchanged Gate and remaining Level 2 reviews pass.
@@ -281,8 +297,8 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-incomplete and is now in the authorized stage-diagnostic checkpoint;
-the distribution-metadata repair is complete at
+incomplete and is now at the proven projection-save repair checkpoint; the
+distribution-metadata repair is complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
 with normal run `30564533440`; the schema repair is complete at
@@ -298,9 +314,12 @@ passed policy publication/document creation/replay and failed the first
 checkout with HTTP `500`. Diagnostic checkpoint
 `e4b284f6360a852ffd81d6a9e7b0f41f65f363a9` passed normal CI `#101`;
 diagnostic run `#102`, `30598733723`, safely narrowed the exception class to
-Frappe `ValidationError` but not a unique transaction stage. The fixed
-controlled Site has not passed. The
-fifth-round Hard
+Frappe `ValidationError` but not a unique transaction stage. Stage checkpoint
+`954bd0d08b9f82614e34cc0e92e67f5de0340db9` passed normal CI `#104`;
+dispatch `30600943765` then proved
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its bounded repair is
+locally green and awaits normal CI plus the final unchanged Site Gate. The
+fixed controlled Site has not passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
 authorized recovery is complete at

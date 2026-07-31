@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-31T03:00:10Z`
+Updated: `2026-07-31T03:25:04Z`
 
 ## Active hard blockers
 
@@ -20,6 +20,14 @@ proven stage, affected checks/normal CI and the already authorized final
 unchanged Gate. Local focused `28/28`, P5 Document `83/83` and complete
 tracked Python `784/784` checks pass. Evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+
+Exact checkpoint `954bd0d` passed normal CI `#104`, run `30600587269`.
+The sole authorized diagnostic dispatch `30600943765` then proved
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE` while fixed setup,
+migrations and cleanup passed. Only that stage is now repaired; focused
+`41/41`, P5 Document `85/85` and complete tracked Python `786/786` pass.
+Normal CI on the repair checkpoint and the retained final unchanged Gate are
+pending.
 
 `P5-01-CONTROLLED-RUNTIME-CHECKOUT-DIAGNOSTIC-REPAIR-LIMIT`
 
@@ -89,7 +97,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_CHECKOUT_STAGE_DIAGNOSTIC`
+`P5-01_CONTROLLED_RUNTIME_FINAL_GATE`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate

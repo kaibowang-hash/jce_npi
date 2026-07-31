@@ -17,6 +17,7 @@ from npi_core.foundation.tracing import resolve_trace_id
 
 
 DOCUMENT_COMMAND_FLAG = "npi_document_command_write"
+DOCUMENT_CURRENT_LOCK_EVENT_FLAG = "npi_document_current_lock_event"
 DOCUMENT_POLICY_FLAG = "npi_document_policy_write"
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
