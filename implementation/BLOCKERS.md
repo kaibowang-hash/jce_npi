@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-07-31T03:43:11Z`
+Updated: `2026-07-31T03:53:26Z`
 
 ## Active hard blockers
 
@@ -19,7 +19,10 @@ Gate `30601980685` matched the exact candidate SHA, passed fixed setup, both
 migrations and cleanup, then returned the same safe
 `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. The hypothesis is
 therefore disproven and the candidate is forward-reverted in the blocker
-checkpoint.
+checkpoint `cefe7638b5ab31e424fae6cf691e808c47da68c5`. Local and remote SHA
+match at `0 ahead / 0 behind`; complete normal CI `30602410036` passed the
+repository/E2E/security and fixed-Linux visual jobs. The controlled runtime
+job was correctly skipped because this was an ordinary PR event.
 
 Current authorized evidence isolates only the outer Frappe Controlled
 Document `save()` stage. It cannot distinguish identity/policy hydration,

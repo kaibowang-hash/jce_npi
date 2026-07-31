@@ -3,10 +3,16 @@
 Status:
 `BLOCKED_EXTERNAL — PROJECTION-SAVE VALIDATION SUBSTAGE DIAGNOSTIC AUTHORITY`
 
-Recovery time: `2026-07-31T03:40:40Z`
+Recovery time: `2026-07-31T03:53:26Z`
 
 Latest complete CI recovery checkpoint:
-`954bd0d08b9f82614e34cc0e92e67f5de0340db9`
+`cefe7638b5ab31e424fae6cf691e808c47da68c5`
+
+Local and remote development-branch SHA:
+`cefe7638b5ab31e424fae6cf691e808c47da68c5` (`0 ahead / 0 behind`)
+
+Blocker-checkpoint normal CI:
+`30602410036` (`PASS`; controlled runtime correctly skipped on PR event)
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`

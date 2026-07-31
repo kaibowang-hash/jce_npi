@@ -17,6 +17,11 @@
   proves only the outer Frappe Controlled Document `save()` stage, not its
   identity/policy, reconstruction, optimistic-version, lock-projection or
   later-hook validation substage.
+- Exact blocker checkpoint
+  `cefe7638b5ab31e424fae6cf691e808c47da68c5` is pushed with local/remote
+  `0 ahead / 0 behind`; complete normal CI `30602410036` passed. Its
+  controlled runtime job was correctly skipped, so no additional dispatch was
+  consumed.
 - The sole stage-diagnostic dispatch and final unchanged Gate are exhausted.
   Controller status is `BLOCKED_EXTERNAL`; P5-01 remains incomplete and
   P5-02 remains inactive.

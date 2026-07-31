@@ -1,6 +1,6 @@
 # P5-01 Controlled Runtime Checkout Stage Diagnostic
 
-Recorded: `2026-07-31T03:40:40Z`
+Recorded: `2026-07-31T03:53:26Z`
 
 Task:
 `P5-01 — Document and design revision`
@@ -149,6 +149,13 @@ distinguish identity/policy hydration, domain reconstruction, optimistic
 version validation, exact lock projection validation or a later Frappe save
 hook. The failed candidate is forward-reverted in the blocker checkpoint so
 no unproved behavior remains.
+
+The exact pushed blocker checkpoint is
+`cefe7638b5ab31e424fae6cf691e808c47da68c5`; local and remote SHA match at
+`0 ahead / 0 behind`. Its complete normal CI `30602410036` passed the
+repository/E2E/security and fixed-Linux visual jobs. The manual controlled
+runtime job was correctly skipped for this ordinary PR event, so no additional
+dispatch was consumed.
 
 ## Hard Blocker and resolution
 

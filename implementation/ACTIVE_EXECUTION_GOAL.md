@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T03:40:40Z`
+Updated: `2026-07-31T03:53:26Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -9,7 +9,11 @@ Updated: `2026-07-31T03:40:40Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `954bd0d08b9f82614e34cc0e92e67f5de0340db9`
+  `cefe7638b5ab31e424fae6cf691e808c47da68c5`
+- Local and remote development-branch SHA:
+  `cefe7638b5ab31e424fae6cf691e808c47da68c5` (`0 ahead / 0 behind`)
+- Blocker-checkpoint normal CI:
+  `30602410036` (`PASS`; controlled runtime correctly skipped on PR event)
 - Current controller task:
   `P5-01 — Document and design revision`
   (`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; PROJECTION VALIDATION
@@ -339,8 +343,10 @@ dispatch `30600943765` then proved
 `ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its bounded repair is
 normal-CI green at `b2d7ca9`, but final Gate `30601980685` returned the same
 safe stage result and exhausted the authority. The failed candidate is
-forward-reverted in the blocker checkpoint. The fixed controlled Site has not
-passed. The fifth-round Hard
+forward-reverted at pushed checkpoint
+`cefe7638b5ab31e424fae6cf691e808c47da68c5`; normal CI `30602410036`
+passed the complete repository/E2E/security and fixed-Linux visual jobs. The
+fixed controlled Site has not passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
 authorized recovery is complete at
