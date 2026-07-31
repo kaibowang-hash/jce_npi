@@ -47,6 +47,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "e687ede91c5d95860a019f5a57c9b04e63466614:"
             "scripts/verify-frappe-runtime.sh:generic-api-key:129"
         ),
+        (
+            "822daad07d61650f39684df88a59b288e57f5af3:"
+            "scripts/verify-frappe-runtime.sh:generic-api-key:145"
+        ),
     }
 )
 

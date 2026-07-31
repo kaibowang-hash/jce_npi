@@ -96,6 +96,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "e687ede91c5d95860a019f5a57c9b04e63466614:"
                 "scripts/verify-frappe-runtime.sh:generic-api-key:129"
             ),
+            (
+                "822daad07d61650f39684df88a59b288e57f5af3:"
+                "scripts/verify-frappe-runtime.sh:generic-api-key:145"
+            ),
         )
         safe = "\n".join(reviewed) + "\n"
         validate_gitleaks_ignore(safe)
