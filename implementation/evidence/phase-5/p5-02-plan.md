@@ -6,7 +6,10 @@ Starting remote checkpoint:
 `7b145de8805178b638a58f9e12cba32ba4dfc388`
 
 Task state:
-**IN PROGRESS — REQUIREMENT/DOMAIN AUDIT PASS; IMPLEMENTATION READY**
+**IN PROGRESS — CONTROLLED-METADATA FOUNDATION PASS; REPOSITORY READY**
+
+Controlled-metadata checkpoint:
+`implementation/evidence/phase-5/p5-02-controlled-metadata-checkpoint.md`
 
 Applicable requirements:
 

@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN PROGRESS — P5-02 CONTROLLED-METADATA FOUNDATION`
+`IN PROGRESS — P5-02 REPOSITORY COMMANDS`
 
-Recovery time: `2026-07-31T07:19:37Z`
+Recovery time: `2026-07-31T07:36:49Z`
 
 Latest passed product checkpoint:
 `5a9cd3d85885895819a730dd0da4e7abe86c2646`
@@ -36,7 +36,9 @@ Required development branch:
   explicit; none is represented as active.
 - The bounded P5-02 requirement/domain audit passed at
   `implementation/evidence/phase-5/p5-02-plan.md`.
-- P5-02 is the only active task and is now `IN_PROGRESS_DOMAIN`; P5-03
+- The controlled-metadata foundation passed its focused Level 1 checkpoint at
+  `implementation/evidence/phase-5/p5-02-controlled-metadata-checkpoint.md`.
+- P5-02 is the only active task and is now `IN_PROGRESS_BACKEND`; P5-03
   through P5-05 and Phase 6 remain inactive.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -70,19 +72,20 @@ Use:
 
 ## First incomplete action
 
-Implement the smallest complete P5-02 controlled-metadata foundation defined
-by the passed plan:
+Implement the P5-02 repository transaction slice over the passed controlled
+metadata:
 
-1. add the closed lifecycle states, exact synthetic release-policy model and
-   fail-closed transition rules without changing the P5-01 revision snapshot;
-2. add the Project-scoped policy root/version, lifecycle projection, review
-   cycle, electronic confirmation and lifecycle-event DocTypes;
-3. make policy/history rows publish-once or append-only, allow only the guarded
-   lifecycle projection to advance, and add an independent P5-02 route switch;
-4. protect an underlying Frappe `File` from deletion once its exact
-   `NPI File Revision` is released; and
-5. pass focused domain/controller/metadata tests before starting repository
-   commands.
+1. load only an exact published Project-scoped release policy and exact
+   revision/File evidence;
+2. implement submit, approve/reject, resubmit, release, supersede and obsolete
+   commands with exact policy membership and optimistic lifecycle versions;
+3. extend actor-bound document idempotency with closed operation names;
+4. append confirmation/event/audit before advancing the guarded projection and
+   seal the command receipt last in the existing transaction;
+5. revalidate live private identity, bytes, SHA-256 and scanner-owned `clean`
+   state before marking the exact File Revision released once; and
+6. prove replay/conflict, stale version, wrong authority, integrity failure,
+   duplicate confirmation, rollback and File deletion rejection.
 
 Do not infer production reviewer/approver roles, quorum, signature meaning,
 major/minor release semantics, retention, watermark, scanner provider or

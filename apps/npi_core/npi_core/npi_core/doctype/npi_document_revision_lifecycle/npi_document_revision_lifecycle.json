@@ -1,0 +1,38 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Document Revision Lifecycle",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 1,
+  "read_only": 1,
+  "search_fields": "revision_global_id,document_global_id,project_global_id,current_state",
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "document_global_id", "fieldtype": "Link", "label": "Controlled Document", "options": "NPI Controlled Document", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "document_revision", "fieldtype": "Link", "label": "Document Revision", "options": "NPI Document Revision", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "revision_global_id", "fieldtype": "Data", "label": "Revision Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "current_state", "fieldtype": "Select", "label": "Current Lifecycle State", "options": "draft\nin_review\napproved\nreleased\nsuperseded\nobsolete", "reqd": 1, "read_only": 1},
+    {"fieldname": "lifecycle_version", "fieldtype": "Int", "label": "Lifecycle Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "active_cycle_global_id", "fieldtype": "Data", "label": "Active Review Cycle Global ID", "read_only": 1},
+    {"fieldname": "approved_cycle_global_id", "fieldtype": "Data", "label": "Approved Review Cycle Global ID", "read_only": 1},
+    {"fieldname": "approved_event_global_id", "fieldtype": "Data", "label": "Approved Event Global ID", "read_only": 1},
+    {"fieldname": "release_event_global_id", "fieldtype": "Data", "label": "Release Event Global ID", "read_only": 1},
+    {"fieldname": "release_snapshot_hash", "fieldtype": "Data", "label": "Release Snapshot Hash", "read_only": 1},
+    {"fieldname": "replacement_revision_global_id", "fieldtype": "Data", "label": "Replacement Revision Global ID", "read_only": 1},
+    {"fieldname": "replacement_effective_date", "fieldtype": "Date", "label": "Replacement Effective Date", "read_only": 1},
+    {"fieldname": "terminal_event_global_id", "fieldtype": "Data", "label": "Terminal Event Global ID", "read_only": 1},
+    {"fieldname": "last_event_global_id", "fieldtype": "Link", "label": "Last Lifecycle Event", "options": "NPI Document Lifecycle Event", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_by_user_id", "fieldtype": "Data", "label": "Updated By", "reqd": 1, "read_only": 1},
+    {"fieldname": "updated_at", "fieldtype": "Datetime", "label": "Updated At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

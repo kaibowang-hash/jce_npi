@@ -18,6 +18,7 @@ from npi_core.foundation.tracing import resolve_trace_id
 
 DOCUMENT_COMMAND_FLAG = "npi_document_command_write"
 DOCUMENT_POLICY_FLAG = "npi_document_policy_write"
+DOCUMENT_RELEASE_COMMAND_FLAG = "npi_document_release_command_write"
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
 _TENANT_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
@@ -51,7 +52,8 @@ def require_document_command_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_COMMAND_FLAG, False):
         frappe.throw(
             _(
-                "Controlled documents can only be changed through an authorized NPI document command."
+                "Controlled documents can only be changed through an "
+                "authorized NPI document command."
             ),
             frappe.PermissionError,
         )
@@ -61,7 +63,19 @@ def require_document_policy_write() -> None:
     if not getattr(frappe.flags, DOCUMENT_POLICY_FLAG, False):
         frappe.throw(
             _(
-                "Document policy versions can only be changed through authorized administration."
+                "Document policy versions can only be changed through "
+                "authorized administration."
+            ),
+            frappe.PermissionError,
+        )
+
+
+def require_document_release_command_write() -> None:
+    if not getattr(frappe.flags, DOCUMENT_RELEASE_COMMAND_FLAG, False):
+        frappe.throw(
+            _(
+                "Document review and release history can only be changed "
+                "through an authorized NPI release command."
             ),
             frappe.PermissionError,
         )
@@ -76,6 +90,12 @@ def document_command_write() -> Iterator[None]:
 @contextmanager
 def document_policy_write() -> Iterator[None]:
     with _flag_scope(DOCUMENT_POLICY_FLAG):
+        yield
+
+
+@contextmanager
+def document_release_command_write() -> Iterator[None]:
+    with _flag_scope(DOCUMENT_RELEASE_COMMAND_FLAG):
         yield
 
 

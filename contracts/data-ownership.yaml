@@ -323,7 +323,7 @@ objects:
       revision_identity_major_minor_and_predecessor: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       reason_effectivity_and_state: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
       exact_policy_lock_file_and_provenance_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
-      review_release_and_archive_state: {owner: FUTURE_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      review_release_and_archive_state: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: NONE, conflict: APPEND_EVENT_AND_VERSION_CONFLICT}
 
   DocumentRevisionFile:
     owner_system: NPI_ONE
@@ -334,6 +334,55 @@ objects:
       frappe_storage_filename_and_identity: {owner: FRAPPE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
       file_role_and_provenance: {owner: NPI_ONE_DOCUMENT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       connector_state: {owner: FUTURE_CAD_PDM_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE_OR_ISOLATED_FAILURE}
+
+  DocumentReleasePolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      enabled_and_title: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSION_CONFLICT}
+      production_authority_configuration: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  DocumentReleasePolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      policy_version_identity_and_publication: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: PUBLISH_ONCE}
+      exact_submit_review_release_supersede_and_obsolete_bindings: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      integrity_confirmation_and_replacement_rules: {owner: VERSIONED_DOCUMENT_RELEASE_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  DocumentReviewCycle:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_revision_file_policy_and_assignment_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      submission_actor_time_request_and_trace: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      prior_rejected_cycle: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  DocumentConfirmation:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      confirmation_identity_type_intent_and_method: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_revision_file_cycle_policy_and_authority_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      actor_time_request_trace_and_evidence_hash: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  DocumentLifecycleEvent:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_state_transition_and_versions: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_cycle_policy_confirmation_and_replacement_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      actor_time_request_trace_and_event_hash: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  DocumentRevisionLifecycle:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      revision_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_state_and_version: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      active_approved_release_terminal_and_replacement_pointers: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_DOCUMENT_RELEASE_COMMAND], direction: REFERENCE_ONLY, conflict: EXACT_EVENT_REFERENCE}
 
   DocumentRelationship:
     owner_system: NPI_ONE

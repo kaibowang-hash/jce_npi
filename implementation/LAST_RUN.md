@@ -1,5 +1,22 @@
 # Last Run
 
+## P5-02 controlled-metadata foundation PASS; repository active — 2026-07-31T07:36:49Z
+
+- Added the closed review/release lifecycle domain, Project-scoped immutable
+  release-policy version, append-only cycles/confirmations/events and guarded
+  lifecycle projection without rewriting the P5-01 revision snapshot.
+- Added exact revision/File evidence including identity, hash, format, size,
+  uploader/time and scanner-owned `clean` observation.
+- Added the independent release-command write/switch seams and a Frappe
+  `File.on_trash` guard for exact released File Revisions.
+- Updated ownership without installing production roles, policy, scanner,
+  signature strength, external provider or ERPNext behavior.
+- Focused/adjacent `37/37` and complete P5 document `110/110` tests, Python
+  compilation, fourteen DocType JSON parses, line-length and diff checks pass.
+- P5-02 remains incomplete and advances only to repository commands.
+- Evidence:
+  `implementation/evidence/phase-5/p5-02-controlled-metadata-checkpoint.md`.
+
 ## P5-02 requirement/domain audit PASS; metadata foundation active — 2026-07-31T07:19:37Z
 
 - Restored exact branch/head and confirmed only the pre-existing protected

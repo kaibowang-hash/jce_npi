@@ -69,10 +69,13 @@ doc_events = {
             "npi_core.gate_review.frappe_repository."
             "queue_gate_review_file_dependency_evaluation"
         ),
-        "on_trash": (
-            "npi_core.gate_review.frappe_repository."
-            "queue_gate_review_file_dependency_evaluation"
-        ),
+        "on_trash": [
+            "npi_core.documents.release_frappe.protect_released_document_file",
+            (
+                "npi_core.gate_review.frappe_repository."
+                "queue_gate_review_file_dependency_evaluation"
+            ),
+        ],
     },
 }
 

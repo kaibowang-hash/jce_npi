@@ -175,3 +175,14 @@ class DocumentRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class DocumentReleaseRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "DOCUMENT_RELEASE_ROUTES_DISABLED",
+            _("Document review and release is temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

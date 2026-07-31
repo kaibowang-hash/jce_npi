@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T07:19:37Z'
+updated_at: '2026-07-31T07:36:49Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-02
 current_task_status: IN_PROGRESS
 current_task_completed_stage: P5-01-LEVEL-2-TASK-GATE-PASS
-current_task_next_stage: P5-02-CONTROLLED-METADATA-FOUNDATION
+current_task_next_stage: P5-02-REPOSITORY-COMMANDS
 current_task_next_stage_status: AUTHORIZED_ACTIVE
 resumed_product_task: P5-02
 resumed_product_task_status: IN_PROGRESS
@@ -25,11 +25,13 @@ p5_01:
   controlled_site_gate: 30610747931
   evidence: implementation/evidence/phase-5/p5-01-validation.md
 p5_02:
-  status: IN_PROGRESS_DOMAIN
+  status: IN_PROGRESS_BACKEND
   requirements: [FR-DS-002, FR-DS-005, FR-DS-010]
-  completed_stage: REQUIREMENT_DOMAIN_AUDIT_PASS
-  next_stage: CONTROLLED_METADATA_FOUNDATION
-  evidence: implementation/evidence/phase-5/p5-02-plan.md
+  completed_stage: CONTROLLED_METADATA_FOUNDATION_PASS
+  next_stage: REPOSITORY_COMMANDS
+  evidence:
+    - implementation/evidence/phase-5/p5-02-plan.md
+    - implementation/evidence/phase-5/p5-02-controlled-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
