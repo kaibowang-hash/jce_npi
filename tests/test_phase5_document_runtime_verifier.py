@@ -820,6 +820,29 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             fixture,
         )
 
+    def test_delete_guard_resolves_exact_file_association(self) -> None:
+        fixture = self.source.split(
+            "def verify_released_file_delete_guard(",
+            maxsplit=1,
+        )[1].split("def set_document_file_content(", maxsplit=1)[0]
+        self.assertIn('"NPI Document Revision File"', fixture)
+        self.assertIn('"file_document_global_id"', fixture)
+        self.assertIn('"file_revision_global_id": file_revision_id', fixture)
+        self.assertIn(
+            'str(revision.document_global_id)\n'
+            '        == str(association.get("file_document_global_id"))',
+            fixture,
+        )
+        self.assertIn(
+            'str(revision.sha256) == str(association.get("sha256"))',
+            fixture,
+        )
+        self.assertIn("int(revision.released or 0) == 1", fixture)
+        self.assertNotIn(
+            "str(revision.document_global_id) == document_id",
+            fixture,
+        )
+
     def test_project_uses_the_disposable_email_owner(self) -> None:
         response = Mock(
             status=201,
