@@ -1,5 +1,38 @@
 # Last Run
 
+## P5-01 controlled runtime and Level 2 PASS; P5-02 activated — 2026-07-31T07:00:05Z
+
+- Product checkpoint:
+  `5a9cd3d85885895819a730dd0da4e7abe86c2646`.
+- The closed revision diagnostic proved only
+  `DOCUMENT_REVISION_PRIVATE_FILE_SAVE / PdfStreamError /
+  trace-2adf5e0e29df533e9c2ceda04f2dbc19`; the cause was an invalid synthetic
+  PDF fixture, not a product-validation defect.
+- The valid deterministic PDF fixture advanced the unchanged Gate through the
+  complete revision/private-file/scanner/content path.
+- A closed relationship assertion then proved only
+  `P5_RUNTIME_RELATIONSHIP_FILTER_HTTP / RuntimeSubstageFailure /
+  trace-1e82a74de2b756faa623b48896176fb6`.
+- The sole product root was Frappe GET query text entering a JSON-body-only
+  integer parser. Repair `5a9cd3d` adds strict canonical positive query
+  parsing and changes no JSON body, API, permission, Schema, lock, version,
+  audit, idempotency, transaction order, file-integrity rule or PASS
+  criterion.
+- Affected `63/63`, complete P5/controller/trace `112/112`, complete tracked
+  Python `798/798` and current workspace discovery `804/804` checks passed.
+  The additional six workspace tests are pre-existing and untracked.
+- Complete ordinary CI `30610355829` passed the exact product SHA, including
+  repository, complete E2E, fixed-Linux visual and both secret lanes.
+- Final unchanged controlled-Site workflow `30610747931` passed all three
+  jobs, exact tools/Site/database/user guards, both migrations, the complete
+  synthetic round trip, replay/conflict/audit/Guest/IDOR/route recovery,
+  artifact upload and bounded cleanup.
+- P5-01 result:
+  `PASS — LEVEL 2 DOCUMENT AND DESIGN REVISION TASK GATE`.
+- Phase 5 remains `IN_PROGRESS`; P5-02 is the sole next task.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-validation.md`.
+
 ## P5-01 revision substage repaired; final Gate exposed new blocker — 2026-07-31
 
 - Diagnostic checkpoint

@@ -96,3 +96,39 @@ No controlled runtime result is claimed by this diagnostic checkpoint.
 The current workspace discovery includes pre-existing untracked local
 prerequisite tests. They pass but are not part of this checkpoint. Complete
 normal CI remains required before dispatch.
+
+## Terminal recovery result
+
+Recorded: `2026-07-31T07:00:05Z`
+
+Result:
+`PASS — CONTROLLED-SITE CLOSED; P5-01 LEVEL 2 RELEASED`
+
+- Normal CI `30607746148` passed diagnostic checkpoint `c4e94a3`.
+- Controlled run `30608055245` proved only
+  `DOCUMENT_REVISION_PRIVATE_FILE_SAVE / PdfStreamError /
+  trace-2adf5e0e29df533e9c2ceda04f2dbc19`.
+- The failure was a synthetic fixture precondition: a PDF signature without a
+  valid PDF structure. Checkpoint `1b596a8` supplied one deterministic,
+  one-page, JavaScript-free PDF and changed no product validation.
+- The next unchanged Gate `30608963778` passed revision/file/scanner/content
+  behavior and reached the later relationship query assertion.
+- Behavior-neutral checkpoint `30c285f` passed normal CI `30609495441`.
+  Controlled diagnosis `30609830735` proved only
+  `P5_RUNTIME_RELATIONSHIP_FILTER_HTTP / RuntimeSubstageFailure /
+  trace-1e82a74de2b756faa623b48896176fb6`.
+- Repair `5a9cd3d` changes only strict Frappe GET query parsing for
+  `targetVersion`; JSON body parsing, API schema, permissions and the
+  transaction are unchanged.
+- Affected `63/63`, P5/controller/trace `112/112`, complete tracked Python
+  `798/798` and current workspace discovery `804/804` checks passed. The six
+  additional workspace tests are pre-existing untracked local-prerequisite
+  checks and are not part of this checkpoint.
+- Complete ordinary CI `30610355829` passed on exact `5a9cd3d`.
+- Final unchanged controlled-Site workflow `30610747931` matched exact
+  `5a9cd3d`; repository, controlled runtime and fixed-Linux visual jobs all
+  passed, including both migrations, fresh/replay/route-recovery proof,
+  artifact upload and bounded cleanup.
+
+Complete Level 2 evidence:
+`implementation/evidence/phase-5/p5-01-validation.md`.

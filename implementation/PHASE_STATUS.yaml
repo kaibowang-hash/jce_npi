@@ -1,23 +1,33 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-07-31T05:42:15Z'
+updated_at: '2026-07-31T07:00:05Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P5-01
-current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: P5-01-PROJECTION-REVISION-REPAIR-FINAL-GATE-FAILED
-current_task_next_stage: P5-01-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC
+current_task: P5-02
+current_task_status: READY
+current_task_completed_stage: P5-01-LEVEL-2-TASK-GATE-PASS
+current_task_next_stage: P5-02-REQUIREMENT-DOMAIN-AUDIT
 current_task_next_stage_status: AUTHORIZED_ACTIVE
-resumed_product_task: P5-01
-resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
+resumed_product_task: P5-02
+resumed_product_task_status: READY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
-  product_root_repairs_completed: 2
+  product_root_repairs_completed: 3
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: PENDING_UNIQUE_REVISION_UPLOAD_STAGE
+  current_root: CLOSED_P5_01
+p5_01:
+  status: PASS_LEVEL_2
+  product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
+  normal_ci: 30610355829
+  controlled_site_gate: 30610747931
+  evidence: implementation/evidence/phase-5/p5-01-validation.md
+p5_02:
+  status: READY
+  requirements: [FR-DS-002, FR-DS-005, FR-DS-010]
+  next_stage: REQUIREMENT_DOMAIN_AUDIT
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -41,7 +51,7 @@ phases:
   - {id: 2, name: Frappe Backend and Security Foundation, status: PASS, repair_round: 0, gate: implementation/phase-2-gate.md}
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
-  - {id: 5, name: Part Design Documents Baselines and EBOM, status: IN_PROGRESS, repair_round: 0}
+  - {id: 5, name: Part Design Documents Baselines and EBOM, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P5-00, P5-01], current_task: P5-02}
   - {id: 6, name: Tooling Domain, status: NOT_STARTED, repair_round: 0}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}

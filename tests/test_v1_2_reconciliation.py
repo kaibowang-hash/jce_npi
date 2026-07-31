@@ -333,13 +333,13 @@ class V12ReconciliationTests(unittest.TestCase):
                     evidence_path,
                 )
 
-    def test_p5_01_trace_advances_without_claiming_completion(self) -> None:
+    def test_p5_01_trace_records_level_2_scope_without_overclaiming_holds(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         for (
             requirement_id,
             (expected_status, expected_evidence),
-        ) in self.verifier.EXPECTED_P5_01_ACTIVE_TRACE.items():
+        ) in self.verifier.EXPECTED_P5_01_COMPLETED_TRACE.items():
             row = by_id[requirement_id]
             self.assertEqual(row["status"], expected_status)
             self.assertEqual(
@@ -350,12 +350,28 @@ class V12ReconciliationTests(unittest.TestCase):
                 },
                 expected_evidence,
             )
-            self.assertNotIn("TECHNICAL_VERIFIED", row["status"])
+            self.assertTrue(row["status"].startswith("TECHNICAL_VERIFIED"))
             for evidence_path in expected_evidence:
                 self.assertTrue(
                     (self.verifier.ROOT / evidence_path).is_file(),
                     evidence_path,
                 )
+        self.assertEqual(
+            by_id["FR-DS-003"]["status"],
+            "TECHNICAL_VERIFIED",
+        )
+        for requirement_id in (
+            "FR-DS-001",
+            "FR-DS-004",
+            "FR-DS-007",
+            "FR-DS-008",
+            "FR-DS-009",
+            "FR-DS-014",
+        ):
+            self.assertEqual(
+                by_id[requirement_id]["status"],
+                "TECHNICAL_VERIFIED_FOUNDATION",
+            )
 
     def test_brand_package_is_exact_and_self_contained(self) -> None:
         self.verifier.verify_brand_package()

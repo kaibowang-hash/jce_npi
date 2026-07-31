@@ -1,33 +1,40 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T05:42:15Z`
+Updated: `2026-07-31T07:00:05Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — AUTHORIZED P5-01 POST-CHECKOUT RECOVERY`
+- Mode: `IN_PROGRESS — P5-02 AUTHORIZED ACTIVE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest complete CI recovery checkpoint:
-  `2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23`
-- Local and remote development-branch SHA:
-  `2d5d57c49ea3a5a0d2828f1a1b745d3f70a9cc23` (`0 ahead / 0 behind`)
-- Blocker-checkpoint normal CI:
-  `30606322575` (`PASS`; controlled runtime correctly skipped on PR event)
+- Latest passed product checkpoint:
+  `5a9cd3d85885895819a730dd0da4e7abe86c2646`
+- Local and remote product SHA:
+  `5a9cd3d85885895819a730dd0da4e7abe86c2646` (`0 ahead / 0 behind` before
+  the P5-01 evidence/controller commit)
+- Complete normal CI:
+  `30610355829` (`PASS`)
+- Final unchanged controlled-Site Gate:
+  `30610747931` (`PASS`)
 - Current controller task:
-  `P5-01 — Document and design revision`
-  (`IN_PROGRESS_DIAGNOSTIC — CLOSED REVISION/UPLOAD STAGE CHECKPOINT`)
+  `P5-02 — Review and release workflow`
+  (`READY — REQUIREMENT/DOMAIN AUDIT`)
 - Current Requirement IDs:
-  `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
-  `FR-DS-009`, `FR-DS-014`
-- Retained P5-01 implementation checkpoint:
-  `930b5a28cb995df12f251994a36f7502525ed94a`
+  `FR-DS-002`, `FR-DS-005`, `FR-DS-010`
+- Completed P5-01 evidence:
+  `implementation/evidence/phase-5/p5-01-validation.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
 
-## Completed bridge and passing reusable evidence
+## Historical passing and reusable evidence
+
+The remainder of this file preserves chronological recovery detail. Where a
+historical paragraph says P5-01 was incomplete or P5-02 inactive, the
+authoritative current state is the header above together with
+`implementation/PHASE_STATUS.yaml` and `implementation/NEXT_ACTION.md`.
 
 R1-01 through R1-06 are complete for their executable scope. Conditional R1-07
 was not activated because `DR-REC-001` remains pending.
@@ -236,7 +243,7 @@ These accepted results are not rerun unless P5-01 changes their source
 boundary. Historical Phase 3/4, P5-00, P5-01 checkpoint and R1 evidence remains
 append-only.
 
-## Retained, delivered and unfinished P5-01 scope
+## Historical P5-01 delivered scope
 
 Retained at `930b5a2`:
 
@@ -271,7 +278,7 @@ Still unfinished:
 
 No P5-01 requirement is yet reported complete.
 
-## First incomplete action
+## Historical P5-01 first incomplete action — superseded
 
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
@@ -314,7 +321,7 @@ retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
 These hold only their named behavior and are not currently global Hard
 Blockers.
 
-## Recovery boundary
+## Historical P5-01 recovery boundary — closed
 
 The R1 bridge Gate remains complete at
 `2ced098362ab99a4750a13e7004a441a7f19b698` and CI `#72`; its pushed recovery

@@ -302,9 +302,9 @@ EXPECTED_R1_06_STAGE_3_TRACE = {
         },
     ),
 }
-EXPECTED_P5_01_ACTIVE_TRACE = {
+EXPECTED_P5_01_COMPLETED_TRACE = {
     requirement_id: (
-        "IN_PROGRESS_P5_01_CONTROLLED_SITE_PENDING",
+        status,
         {
             "implementation/evidence/phase-5/p5-01-reconciliation-hold.md",
             "implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md",
@@ -314,17 +314,18 @@ EXPECTED_P5_01_ACTIVE_TRACE = {
             "implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md",
             "implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md",
             "implementation/evidence/phase-5/p5-01-post-checkout-recovery.md",
+            "implementation/evidence/phase-5/p5-01-validation.md",
         },
     )
-    for requirement_id in (
-        "FR-DS-001",
-        "FR-DS-003",
-        "FR-DS-004",
-        "FR-DS-007",
-        "FR-DS-008",
-        "FR-DS-009",
-        "FR-DS-014",
-    )
+    for requirement_id, status in {
+        "FR-DS-001": "TECHNICAL_VERIFIED_FOUNDATION",
+        "FR-DS-003": "TECHNICAL_VERIFIED",
+        "FR-DS-004": "TECHNICAL_VERIFIED_FOUNDATION",
+        "FR-DS-007": "TECHNICAL_VERIFIED_FOUNDATION",
+        "FR-DS-008": "TECHNICAL_VERIFIED_FOUNDATION",
+        "FR-DS-009": "TECHNICAL_VERIFIED_FOUNDATION",
+        "FR-DS-014": "TECHNICAL_VERIFIED_FOUNDATION",
+    }.items()
 }
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
@@ -739,7 +740,7 @@ def verify_trace_sets() -> None:
     for requirement_id, (
         expected_status,
         expected_evidence,
-    ) in EXPECTED_P5_01_ACTIVE_TRACE.items():
+    ) in EXPECTED_P5_01_COMPLETED_TRACE.items():
         row = by_id[requirement_id]
         actual_evidence = {
             value.strip() for value in row["evidence"].split(";") if value.strip()
@@ -760,18 +761,18 @@ def verify_trace_sets() -> None:
             requirement_id,
         ):
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain the active P5-01 trace truth"
+                f"{requirement_id} must retain the completed P5-01 trace truth"
             )
         if actual_evidence != expected_evidence:
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain its complete active P5-01 evidence set"
+                f"{requirement_id} must retain its complete P5-01 evidence set"
             )
         missing_evidence = sorted(
             path for path in expected_evidence if not (ROOT / path).is_file()
         )
         if missing_evidence:
             raise ReconciliationVerificationError(
-                f"{requirement_id} references missing active P5-01 evidence files: "
+                f"{requirement_id} references missing P5-01 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

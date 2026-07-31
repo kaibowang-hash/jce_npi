@@ -1,27 +1,24 @@
 # Blockers
 
-Updated: `2026-07-31T05:42:15Z`
+Updated: `2026-07-31T07:00:05Z`
 
 ## Active hard blockers
 
-None. P5-01 is `IN_PROGRESS_DIAGNOSTIC`, not `PASS`.
+None. P5-01 passed its controlled-Site and Level 2 Task Gates; P5-02 is
+authorized active.
 
 ## Active diagnostic progress
 
-`P5-01-POST-CHECKOUT-REVISION-UPLOAD-STAGE-DIAGNOSTIC`
+None.
 
-The user authorized the bounded recovery plan on 2026-07-31. The historical
-final Gate result `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` remains valid,
-but its prior execution-authority hold is satisfied. One closed diagnostic
-inventory may identify the exact revision/upload transaction stage, followed
-by repair of only the uniquely proven stage, affected checks, complete normal
-CI and one final unchanged controlled-Site Gate.
+The P5-01 closed diagnostic inventory retained only allowlisted stage code,
+validated exception type and exact trace ID. It led to a valid synthetic PDF
+fixture and one strict relationship-query parser repair without weakening the
+product or Gate. Complete ordinary CI `30610355829` and final unchanged
+controlled-Site workflow `30610747931` passed on exact product SHA `5a9cd3d`.
 
-The diagnostic is behavior-neutral and may record only one allowlisted stage
-code, a validated exception type and the exact trace ID. Requirements, API,
-permission, Schema, file-integrity rules, lock, version, audit, idempotency,
-transaction order and PASS criteria remain frozen. Evidence is recorded in
-`implementation/evidence/phase-5/p5-01-post-checkout-recovery.md`.
+Evidence:
+`implementation/evidence/phase-5/p5-01-validation.md`.
 
 ## Resolved hard blockers
 
@@ -128,6 +125,10 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
 
 ## Active execution hold
+
+None.
+
+## Historical and scoped execution holds
 
 `P5-01_CONTROLLED_RUNTIME_PROJECTION_SUBSTAGE_DIAGNOSTIC_LIMIT`
 

@@ -6,34 +6,33 @@ Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
 Task state:
-**IN PROGRESS DIAGNOSTIC — POST-CHECKOUT REVISION/UPLOAD RECOVERY AUTHORIZED**
+**PASS — LEVEL 2 DOCUMENT AND DESIGN REVISION TASK GATE**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
 
 The user-directed hold preserved this plan after the bounded
 backend/domain/DocType/repository/BFF/API/contract unit. The cumulative R1
-Level 3 Gate passed on 2026-07-30 and released the hold. P5-01 is not complete.
+Level 3 Gate passed on 2026-07-30 and released the hold.
 The bounded comparison passed at
 `implementation/evidence/phase-5/p5-01-resume-audit.md`: the retained slice
 requires no product correction, and its focused `63/63` Level 1 checks passed.
 The frontend/runtime-ready vertical slice is now recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, direct trilingual, unit, browser and static runtime checks pass.
-The authorized projection-validation repair and complete normal CI pass, but
-the final unchanged controlled-Site Gate failed later with only the safe
-`UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result. Exact evidence is
-`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
-The controlled Frappe runtime proof and final Level 2 Task Gate remain
-pending; P5-02 is not active.
+The historical projection and post-checkout failures remain append-only
+diagnostic evidence. Their bounded recovery, exact product repair, complete
+normal CI, final unchanged controlled-Site proof and Level 2 Task Gate passed
+at
+`implementation/evidence/phase-5/p5-01-validation.md`; P5-02 is active.
 
 On 2026-07-31 the user authorized the bounded recovery plan without changing
 the V1.2 product path. Repair-round accounting now separates environment
 remediation and behavior-neutral diagnostics from uniquely proven product-root
-repairs. The active step adds one closed diagnostic inventory across the
-existing revision/upload transaction, then repairs only the uniquely proven
-stage. Requirements, API, permission, Schema, file-integrity rules, lock,
-version, audit, idempotency, transaction order and PASS criteria remain frozen.
+repairs. The closed diagnostic inventory and uniquely proven repair are
+complete. Requirements, API, permission, Schema, file-integrity rules, lock,
+version, audit, idempotency, transaction order and PASS criteria remained
+frozen.
 
 Applicable requirements:
 
