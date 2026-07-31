@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — PROJECTION-SAVE VALIDATION SUBSTAGE DIAGNOSTIC AUTHORITY`
+`BLOCKED_EXTERNAL — POST-CHECKOUT PDFSTREAM DIAGNOSTIC AUTHORITY`
 
-Recovery time: `2026-07-31T03:53:26Z`
+Recovery time: `2026-07-31T05:09:49Z`
 
 Latest complete CI recovery checkpoint:
-`cefe7638b5ab31e424fae6cf691e808c47da68c5`
+`7dc4dc081b669874ab6c10323d774298d45a1c78`
 
 Local and remote development-branch SHA:
-`cefe7638b5ab31e424fae6cf691e808c47da68c5` (`0 ahead / 0 behind`)
+`7dc4dc081b669874ab6c10323d774298d45a1c78` (`0 ahead / 0 behind`)
 
 Blocker-checkpoint normal CI:
-`30602410036` (`PASS`; controlled runtime correctly skipped on PR event)
+`30605323680` (`PASS`; controlled runtime correctly skipped on PR event)
 
 Retained P5-01 checkpoint:
 `930b5a28cb995df12f251994a36f7502525ed94a`
@@ -29,10 +29,27 @@ Required and only development branch:
   complete.
 - Phase 5 remains `IN_PROGRESS`.
 - P5-00 remains `PASS`.
+- The authorized projection-validation diagnostic checkpoint `57b4314`
+  passed complete normal CI `30604536515`. Its sole diagnostic dispatch
+  `30604964265` safely proved
+  `DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError` with one exact
+  trace ID.
+- The only proven repair `7dc4dc0` normalizes Frappe's empty-`Int` zero
+  hydration only when both revision IDs are absent. Focused `44/44`,
+  complete P5 Document `88/88` and complete tracked Python `789/789` checks
+  pass, and complete normal CI `30605323680` passed.
+- The final controlled-Site runner and verifier were unchanged. The sole
+  final Gate `30605683679` matched `7dc4dc0`; repository/E2E/security,
+  fixed-Linux visual, setup, both migrations and cleanup passed.
+- The controlled job failed later with only the safe
+  `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result and one exact trace ID.
+  This is outside the authorized projection-validation repair. The final
+  Gate is exhausted, no runtime PASS is claimed, and P5-01 Level 2 did not
+  run.
 - P5-01 resume audit, frontend, direct trilingual, unit, browser, visual and
   static runtime checks pass; P5-01 remains incomplete and is
-  `IN_PROGRESS` at the proven checkout projection-save repair/final-Gate
-  boundary, not `PASS`.
+  `BLOCKED_EXTERNAL` at the new post-checkout PdfStream diagnostic boundary,
+  not `PASS`.
 - The frontend/runtime/security checkpoint passed complete CI `#79`, run
   `30560612349`, including `285/285` non-visual browser cases, fixed-Linux
   visuals and both current-tree and complete PR-history secret scans.
@@ -178,18 +195,24 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair, both bounded diagnostics and the retained final
-unchanged Gate are complete. The last run still proves only the outer
-projection-save stage, not the failing validation substage inside
-`document.save()`.
+The authorized projection-validation diagnostic and its uniquely proven
+revision-substage repair are complete. Complete normal CI passes. The single
+final unchanged Gate advanced beyond that prior failure and then emitted only
+the safe `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result. It does not
+identify a unique revision/upload transaction stage, and the final Gate is
+exhausted.
 
 The first incomplete action requires one new explicit bounded authorization:
 
-`Explicitly authorize one additional bounded P5-01 projection-validation
-substage diagnostic checkpoint and one controlled-Site diagnostic dispatch,
-limited to allowlisted substage code + validated exception type + exact trace
-ID, followed by repair of only the proven substage, affected tests and normal
-CI, and one final unchanged controlled-Site Gate.`
+`Explicitly authorize one additional bounded P5-01 post-checkout
+PdfStreamError diagnostic round: add only closed revision/upload transaction
+stage codes that emit stage code + validated exception type + exact trace ID,
+run affected checks and complete normal CI, execute one diagnostic
+controlled-Site dispatch, repair only the uniquely proven stage, rerun
+affected checks and complete normal CI, and execute one final unchanged
+controlled-Site Gate. Do not change or weaken any Requirement, API,
+permission, Schema, file-integrity rule, lock, version, audit, idempotency,
+transaction order or PASS criterion.`
 
 The terminal result must prove:
 
@@ -203,7 +226,7 @@ The terminal result must prove:
 
 Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
 review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Active evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
 
 ## Retained passing checkpoint evidence
 
@@ -241,5 +264,7 @@ unrelated complete R1 Gates.
 
 ## Transition
 
-Complete only the controlled-Site proof and final affected reviews. Finish the
-P5-01 Level 2 Task Gate before activating P5-02.
+Do not add another diagnostic, repair the PdfStream failure or dispatch
+another controlled Site without the exact bounded authorization above. After
+one real controlled-Site PASS, complete the final affected reviews and P5-01
+Level 2 Task Gate before activating P5-02.

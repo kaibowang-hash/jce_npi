@@ -1,5 +1,35 @@
 # Last Run
 
+## P5-01 revision substage repaired; final Gate exposed new blocker — 2026-07-31
+
+- Diagnostic checkpoint
+  `57b431411c130810f5f26109974922a8ae86cb4e` passed complete normal CI
+  `30604536515`.
+- The sole diagnostic dispatch `30604964265` safely proved only
+  `DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError` plus one exact
+  trace ID. Fixed setup, both migrations and cleanup passed.
+- The unique root was Frappe empty-`Int` zero hydration versus the domain
+  projection's `None` normalization while both revision IDs were absent.
+  Repair `7dc4dc081b669874ab6c10323d774298d45a1c78` retains every non-empty
+  exact-successor check.
+- Affected `44/44`, complete P5 Document `88/88` and complete tracked Python
+  `789/789` tests passed. Complete normal CI `30605323680` passed repository,
+  complete E2E, fixed-Linux visual and both secret-scan lanes.
+- The controlled workflow and verifier were unchanged. The sole final Gate
+  `30605683679` matched `7dc4dc0`; repository/E2E/security, fixed-Linux
+  visual, exact setup, both migrations and cleanup passed.
+- The controlled job failed later with only
+  `UNEXPECTED_BFF_EXCEPTION / PdfStreamError` plus one exact trace ID. The
+  controlled PASS result/artifact were correctly skipped.
+- The new generic code does not prove a unique post-checkout revision/upload
+  stage. Both authorized dispatches are exhausted; no further repair or
+  controlled run is permitted without the bounded authority in
+  `implementation/NEXT_ACTION.md`.
+- Controller status is `BLOCKED_EXTERNAL`; P5-01 and all seven requirements
+  remain incomplete, P5-01 Level 2 did not run, and P5-02 remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
+
 ## P5-01 projection-save candidate disproven; bounded authority exhausted — 2026-07-31
 
 - Exact candidate `b2d7ca9256a0dd62a693baa6feea1c53fd33402f`

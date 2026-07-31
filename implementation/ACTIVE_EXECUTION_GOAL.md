@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T03:53:26Z`
+Updated: `2026-07-31T05:09:49Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
-- Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — PROJECTION-SAVE VALIDATION SUBSTAGE AUTHORITY`
+- Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
+- Mode: `BLOCKED_EXTERNAL — POST-CHECKOUT PDFSTREAM DIAGNOSTIC AUTHORITY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest complete CI recovery checkpoint:
-  `cefe7638b5ab31e424fae6cf691e808c47da68c5`
+  `7dc4dc081b669874ab6c10323d774298d45a1c78`
 - Local and remote development-branch SHA:
-  `cefe7638b5ab31e424fae6cf691e808c47da68c5` (`0 ahead / 0 behind`)
+  `7dc4dc081b669874ab6c10323d774298d45a1c78` (`0 ahead / 0 behind`)
 - Blocker-checkpoint normal CI:
-  `30602410036` (`PASS`; controlled runtime correctly skipped on PR event)
+  `30605323680` (`PASS`; controlled runtime correctly skipped on PR event)
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; PROJECTION VALIDATION
-  SUBSTAGE NOT PROVEN`)
+  (`BLOCKED_EXTERNAL — FINAL UNCHANGED GATE EXHAUSTED; NEW POST-CHECKOUT
+  PDFSTREAM STAGE NOT PROVEN`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -278,13 +278,21 @@ The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, unit, browser, visual, translation and static runtime checks pass.
 
-The authorized shared-Datetime batch, both bounded checkout diagnostics and
-the retained final unchanged Gate are complete. The allowlisted result still
-proves only the projection-save stage; the exact-event repair did not close
-it and is forward-reverted.
+The authorized projection-validation diagnostic proved
+`DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError`. The only proven
+repair is complete at `7dc4dc0`; focused `44/44`, complete P5 Document
+`88/88`, complete tracked Python `789/789` and complete normal CI
+`30605323680` pass.
+
+The single final unchanged Gate `30605683679` matched `7dc4dc0`. Its
+repository/E2E/security, fixed-Linux visual, exact setup, both migrations and
+cleanup passed, but the controlled job emitted only the safe
+`UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result and failed. The prior
+revision substage did not recur, but the new generic code does not prove a
+unique post-checkout revision/upload stage.
 
 The first incomplete action requires the explicit bounded authorization
-recorded in `implementation/NEXT_ACTION.md`. Do not add projection-substage
+recorded in `implementation/NEXT_ACTION.md`. Do not add revision/upload stage
 diagnostics, make another repair or dispatch another controlled Site before
 that authority exists.
 
@@ -340,13 +348,16 @@ diagnostic run `#102`, `30598733723`, safely narrowed the exception class to
 Frappe `ValidationError` but not a unique transaction stage. Stage checkpoint
 `954bd0d08b9f82614e34cc0e92e67f5de0340db9` passed normal CI `#104`;
 dispatch `30600943765` then proved
-`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its bounded repair is
-normal-CI green at `b2d7ca9`, but final Gate `30601980685` returned the same
-safe stage result and exhausted the authority. The failed candidate is
-forward-reverted at pushed checkpoint
-`cefe7638b5ab31e424fae6cf691e808c47da68c5`; normal CI `30602410036`
-passed the complete repository/E2E/security and fixed-Linux visual jobs. The
-fixed controlled Site has not passed. The fifth-round Hard
+`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. Its disproven bounded
+repair is forward-reverted at checkpoint `cefe763`. Projection-validation
+diagnostic checkpoint `57b4314` passed normal CI `30604536515`; dispatch
+`30604964265` proved
+`DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError`. Its only proven
+repair is `7dc4dc0`, with normal CI `30605323680` passing. Final unchanged
+Gate `30605683679` then failed later with only
+`UNEXPECTED_BFF_EXCEPTION / PdfStreamError`; its repository/E2E/security,
+visual, setup, migrations and cleanup passed. The fixed controlled Site has
+not passed. The fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
 authorized recovery is complete at
@@ -357,8 +368,10 @@ the completed bounded diagnostic evidence is
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`;
 the historical stage blocker evidence is
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-blocker.md`;
-and the active bounded-round evidence is
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+the completed checkout-stage evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`;
+and the active Hard Blocker evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

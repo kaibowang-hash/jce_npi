@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-07-31T03:53:26Z'
+updated_at: '2026-07-31T05:09:49Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5-01_CONTROLLED_RUNTIME_PROJECTION_SUBSTAGE_DIAGNOSTIC_LIMIT
+execution_hold: P5-01_CONTROLLED_RUNTIME_POST_CHECKOUT_PDFSTREAM_DIAGNOSTIC_LIMIT
 current_task: P5-01
 current_task_status: BLOCKED_EXTERNAL
-current_task_completed_stage: P5-01-CHECKOUT-PROJECTION-SAVE-REPAIR-GATE-FAILED
-current_task_next_stage: P5-01-CHECKOUT-PROJECTION-SUBSTAGE-DIAGNOSTIC
+current_task_completed_stage: P5-01-PROJECTION-REVISION-REPAIR-FINAL-GATE-FAILED
+current_task_next_stage: P5-01-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC
 current_task_next_stage_status: BLOCKED_PENDING_EXPLICIT_AUTHORIZATION
 resumed_product_task: P5-01
 resumed_product_task_status: BLOCKED_EXTERNAL

@@ -6,7 +6,8 @@ Starting remote checkpoint:
 `6099ac2351567665478ff911bc07c4ef55ab3ee1`
 
 Task state:
-**IN PROGRESS — FRONTEND/BROWSER/STATIC RUNTIME PASS; CONTROLLED SITE PENDING**
+**BLOCKED EXTERNAL — FRONTEND/BROWSER/STATIC RUNTIME PASS; FINAL CONTROLLED
+SITE FOUND A NEW POST-CHECKOUT PDFSTREAM FAILURE**
 
 Checkpoint evidence:
 `implementation/evidence/phase-5/p5-01-reconciliation-hold.md`
@@ -20,8 +21,12 @@ requires no product correction, and its focused `63/63` Level 1 checks passed.
 The frontend/runtime-ready vertical slice is now recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 Frontend, direct trilingual, unit, browser and static runtime checks pass.
-The real controlled Frappe Site migration/runtime proof and the final Level 2
-Task Gate remain pending; P5-02 is not active.
+The authorized projection-validation repair and complete normal CI pass, but
+the final unchanged controlled-Site Gate failed later with only the safe
+`UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result. Exact evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
+The controlled Frappe runtime proof and final Level 2 Task Gate remain
+pending; P5-02 is not active.
 
 Applicable requirements:
 

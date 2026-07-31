@@ -1,45 +1,56 @@
 # Blockers
 
-Updated: `2026-07-31T03:53:26Z`
+Updated: `2026-07-31T05:09:49Z`
 
 ## Active hard blockers
 
-`P5-01-CONTROLLED-RUNTIME-PROJECTION-SUBSTAGE-DIAGNOSTIC-LIMIT`
+`P5-01-CONTROLLED-RUNTIME-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC-LIMIT`
 
-The exact stage-diagnostic checkpoint `954bd0d` passed complete normal CI
-`30600587269`. Its sole authorized controlled-Site diagnostic dispatch
-`30600943765` safely proved
-`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE` after receipt and
-immutable lock-event insertion.
+The exact projection-validation diagnostic checkpoint `57b4314` passed
+complete normal CI `30604536515`. Its sole authorized controlled-Site
+diagnostic dispatch `30604964265` safely proved
+`DOCUMENT_CHECKOUT_PROJECTION_REVISION / ValidationError` with one exact
+trace ID after exact setup and both migrations. Cleanup passed.
 
-The bounded candidate `b2d7ca9` bound the projection save to the exact
-acquisition-event name returned by that successful insertion and passed
-complete normal CI `30601670711`. The retained final unchanged controlled-Site
-Gate `30601980685` matched the exact candidate SHA, passed fixed setup, both
-migrations and cleanup, then returned the same safe
-`ValidationError / DOCUMENT_CHECKOUT_PROJECTION_SAVE`. The hypothesis is
-therefore disproven and the candidate is forward-reverted in the blocker
-checkpoint `cefe7638b5ab31e424fae6cf691e808c47da68c5`. Local and remote SHA
-match at `0 ahead / 0 behind`; complete normal CI `30602410036` passed the
-repository/E2E/security and fixed-Linux visual jobs. The controlled runtime
-job was correctly skipped because this was an ordinary PR event.
+The only proven root was Frappe hydrating empty revision `Int` columns as
+`0` while the domain projection normalized the same no-revision state to
+`None`. The revision validator interpreted that auxiliary normalization as a
+revision transition despite both revision IDs being absent. Repair `7dc4dc0`
+recognizes the same empty identity before comparing auxiliary fields and
+retains every non-empty exact-successor check. Focused `44/44`, complete P5
+Document `88/88`, complete tracked Python `789/789` and complete normal CI
+`30605323680` passed.
 
-Current authorized evidence isolates only the outer Frappe Controlled
-Document `save()` stage. It cannot distinguish identity/policy hydration,
-domain reconstruction, optimistic-version validation, exact lock-projection
-validation or a later save hook. Both the sole stage-diagnostic dispatch and
-the retained final unchanged Gate are exhausted. Guessing another repair or
-dispatching another controlled Site would violate the bounded authorization
-and fail-closed evidence rule.
+The controlled-Site workflow, Bench/Site scripts and document verifier were
+unchanged. The single final Gate `30605683679` matched `7dc4dc0`; its
+repository/E2E/security, fixed-Linux visual, exact setup, both migrations and
+cleanup passed. The controlled job failed later with only the safe
+`UNEXPECTED_BFF_EXCEPTION / PdfStreamError` result and one exact trace ID.
+The PASS-result step and controlled artifact were correctly skipped.
+
+The generic code does not uniquely identify the post-checkout
+revision/upload transaction stage. The diagnostic dispatch and final Gate
+are exhausted. Guessing a PDF fixture, File, revision, audit, idempotency or
+response repair, or dispatching another controlled Site, would violate the
+bounded authority and fail-closed evidence rule.
 
 Resolution requires the exact additional bounded authorization recorded in
-`implementation/NEXT_ACTION.md`: one allowlisted projection-validation
-substage diagnostic checkpoint, one controlled-Site diagnostic dispatch,
-repair of only the proven substage, affected checks/normal CI and one final
-unchanged controlled-Site Gate. Evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-stage-diagnostic.md`.
+`implementation/NEXT_ACTION.md`: closed revision/upload transaction-stage
+diagnostics, one controlled-Site diagnostic dispatch, repair of only the
+uniquely proven stage, affected checks/normal CI and one final unchanged
+controlled-Site Gate. Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md`.
 
 ## Resolved hard blockers
+
+`P5-01-CONTROLLED-RUNTIME-PROJECTION-SUBSTAGE-DIAGNOSTIC-LIMIT`
+
+The user supplied the exact bounded authority on 2026-07-31. Diagnostic
+checkpoint `57b4314` and dispatch `30604964265` uniquely proved the revision
+validation substage. Repair `7dc4dc0` is locally and normal-CI green and the
+prior substage did not recur in the final Gate. The execution-limit blocker
+is resolved; the fixed controlled-Site Gate is not. The new downstream
+failure is the active Hard Blocker above.
 
 `P5-01-CONTROLLED-RUNTIME-CHECKOUT-STAGE-DIAGNOSTIC-LIMIT`
 
