@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-07-30T19:18:48Z`
+Updated: `2026-07-31T02:08:45Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — CONTROLLED RUNTIME CHECKOUT HTTP 500`
+- Mode: `AUTOPILOT — AUTHORIZED BOUNDED CHECKOUT DIAGNOSTIC/REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,8 +12,8 @@ Updated: `2026-07-30T19:18:48Z`
   `7aa14edbdd2e484784cee6a8ec52adef4f6bf328`
 - Current controller task:
   `P5-01 — Document and design revision`
-  (`BLOCKED_EXTERNAL — DATETIME REPAIR PASSED NORMAL CI; SINGLE CONTROLLED
-  SITE GATE FAILED AT DOCUMENT CHECKOUT`)
+  (`IN_PROGRESS — DOCUMENT-WORKSPACE DIAGNOSTIC HARDENING LOCALLY PASS;
+  NORMAL CI AND ONE DIAGNOSTIC-ONLY CONTROLLED SITE DISPATCH PENDING`)
 - Current Requirement IDs:
   `FR-DS-001`, `FR-DS-003`, `FR-DS-004`, `FR-DS-007`, `FR-DS-008`,
   `FR-DS-009`, `FR-DS-014`
@@ -148,6 +148,19 @@ response reconstruction. The one authorized dispatch is exhausted. Exact
 evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
 
+The user explicitly authorized one additional bounded P5-01
+controlled-runtime diagnostic/repair round on 2026-07-31. That authority is
+limited to document-workspace sanitized diagnostics, one diagnostic-only
+controlled-Site dispatch, repair of only the proven checkout transaction root,
+affected checks and normal CI, and one final unchanged controlled-Site Gate.
+The diagnostic checkpoint now carries the deterministic request/trace identity
+to the workspace boundary and reads only an exact three-field safe BFF record
+from a fixed physical Bench log with a 64 KiB tail bound. Focused `15/15` and
+complete tracked Python `781/781` tests pass locally. No product contract,
+DocType, permission, transaction, lock, audit or idempotency behavior changed.
+Normal CI and both authorized controlled executions remain pending. Evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`.
+
 Complete bridge evidence:
 `implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md`.
 
@@ -198,15 +211,14 @@ Frontend, unit, browser, visual, translation and static runtime checks pass.
 
 The authorized shared-Datetime batch and its single controlled-Site dispatch
 are complete. The prior policy publication failure is repaired, but the Gate
-now fails at document checkout. The first incomplete action is blocked on
-explicit authorization for one additional bounded round limited to extending
-the existing sanitized diagnostics to the document-workspace boundary,
-one diagnostic-only controlled-Site dispatch, fixing only the subsequently
-proven checkout transaction root, affected checks, normal CI and one final
-unchanged controlled-Site Gate.
+now fails at document checkout. The new bounded authorization is active. The
+first incomplete action is to commit and push the diagnostic-only verifier
+checkpoint, pass normal CI on its exact SHA, then execute the sole authorized
+diagnostic-only controlled-Site dispatch. Product code may change only after
+that run proves the checkout transaction root.
 
-P5-01 remains incomplete and P5-02 remains inactive until that Gate and the
-remaining Level 2 reviews pass.
+P5-01 remains incomplete and P5-02 remains inactive until the proven repair,
+final unchanged Gate and remaining Level 2 reviews pass.
 
 Do not start P5-02, add review/release/baseline/EBOM behavior, enable external
 retrieval, claim an Office/CAD viewer or connect ERPNext/JCE/CAD/PDM.
@@ -238,7 +250,8 @@ frontend/runtime-ready candidate and its bounded CI repairs are complete at
 checkpoint is complete at `3839503982223470fafb7e268f3331089418b350` with
 CI `#80`; the first setup repair is complete at
 `7e47dbbae4832a7495ab7cf6c3085ba6afbd7f21` with CI `#81`. P5-01 remains
-incomplete and is now `BLOCKED_EXTERNAL` at the controlled checkout boundary;
+incomplete and is now in the authorized bounded diagnostic/repair round at
+the controlled checkout boundary;
 the distribution-metadata repair is complete at
 `b500dfac18bac9260fed5a39140a0fdc2a112b9f` with CI `#82`. The app-registry
 repair is complete at `5dfb99df923ed112ea4eae2ea1b8019ec723d953`
@@ -252,14 +265,18 @@ shared-Datetime repair is complete at
 `7aa14edbdd2e484784cee6a8ec52adef4f6bf328` with normal CI `#98`, run
 `30573186630`; its single authorized controlled run `#99`, `30573778175`,
 passed policy publication/document creation/replay and failed the first
-checkout with HTTP `500`. The fixed controlled Site has not passed. The
+checkout with HTTP `500`. Controller checkpoint
+`fb999ce44a1b7a1016d0041fc696bfba307a9760` is the synchronized recovery
+HEAD. The fixed controlled Site has not passed. The
 fifth-round Hard
 Blocker remains historically recorded at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-blocker.md`; its one
 authorized recovery is complete at
 `implementation/evidence/phase-5/p5-01-controlled-runtime-extra-repair.md`.
-The active terminal evidence is
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
+The historical checkout blocker evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`;
+the active bounded-round evidence is
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`.
 
 On compaction, model switch, tool interruption or handoff, reread this file,
 `implementation/PHASE_STATUS.yaml`, `implementation/NEXT_ACTION.md`,

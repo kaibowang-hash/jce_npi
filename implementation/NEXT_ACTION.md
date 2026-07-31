@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-01 CHECKOUT HTTP 500; AUTHORIZED ROUND EXHAUSTED`
+`IN_PROGRESS — P5-01 AUTHORIZED CHECKOUT DIAGNOSTIC/REPAIR ROUND`
 
-Recovery time: `2026-07-30T19:18:48Z`
+Recovery time: `2026-07-31T02:08:45Z`
 
 Latest complete CI recovery checkpoint:
 `7aa14edbdd2e484784cee6a8ec52adef4f6bf328`
@@ -86,6 +86,18 @@ Required and only development branch:
   the generic document-workspace assertion. The retained evidence therefore
   cannot uniquely attribute the checkout failure inside the four-step
   persistence/response boundary. The one authorized dispatch is exhausted.
+- The user explicitly authorized one additional bounded round limited to the
+  document-workspace diagnostic, one diagnostic-only controlled-Site run,
+  repair of only the proven checkout root, affected checks/normal CI and one
+  final unchanged controlled-Site Gate.
+- The diagnostic checkpoint carries the exact deterministic trace identity,
+  applies the shared failure boundary to every document workspace result and
+  accepts only the existing exact `code / exceptionType / traceId` BFF record
+  from one of two fixed physical Bench log paths. It reads no more than the
+  final 64 KiB and never emits raw traceback, exception message, request,
+  cookie or credential data.
+- Focused `15/15` and complete tracked Python `781/781` checks pass locally.
+  No product/domain/API/permission/transaction/DocType change is present.
 - P5-02 through P5-05 and Phase 6 remain inactive.
 - The current trace contains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -119,20 +131,15 @@ Use:
 The frontend/runtime-ready checkpoint is recorded at
 `implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md`.
 
-The shared-Datetime repair and its one authorized dispatch are complete. Do
-not change product code or dispatch the Gate again under the exhausted
-authorization.
+The shared-Datetime repair and its prior dispatch are complete. The new
+bounded authorization is active. The first incomplete action is:
 
-The single unblock action is explicit user authorization for one further
-bounded repair round limited to:
-
-1. extending the already reviewed sanitized exception type/message helper to
-   the document-workspace command boundary;
-2. one diagnostic-only controlled-Site dispatch to identify the exact
-   checkout transaction root;
-3. fixing only that proven root, with affected tests and complete normal CI;
-   and
-4. one final unchanged
+1. commit and push only the diagnostic verifier/tests/controller evidence;
+2. pass complete normal CI on that exact SHA;
+3. execute the sole diagnostic-only controlled-Site dispatch;
+4. use its safe exact trace record to identify the checkout transaction root;
+5. fix only that proven root, with affected checks and complete normal CI; and
+6. execute one final unchanged
    `bash scripts/verify-frappe-runtime.sh --document-only` dispatch.
 
 The terminal result must prove:
@@ -146,8 +153,8 @@ The terminal result must prove:
 6. bounded cleanup with no production or external connection.
 
 Only a real PASS may resume the Task Diff/domain/permission/security/UX/i18n
-review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Evidence:
-`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
+review and P5-01 Level 2 Task Gate. P5-02 remains inactive. Active evidence:
+`implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`.
 
 ## Retained passing checkpoint evidence
 

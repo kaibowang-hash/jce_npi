@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -183,6 +184,158 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         detail = self.module.sanitized_http_failure(result)
         self.assertEqual(detail, f" [message={'x' * 240}]")
+
+    def test_document_workspace_uses_exact_sanitized_bff_log_diagnostic(
+        self,
+    ) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                "\n".join(
+                    (
+                        json.dumps(
+                            {
+                                "code": "UNEXPECTED_BFF_EXCEPTION",
+                                "exceptionType": "WrongTraceError",
+                                "traceId": "trace-" + ("0" * 32),
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "code": "UNEXPECTED_BFF_EXCEPTION",
+                                "exceptionType": "Unsafe Type",
+                                "traceId": trace_id,
+                            }
+                        ),
+                        (
+                            "2026-07-31 ERROR npi_core "
+                            + json.dumps(
+                                {
+                                    "code": "UNEXPECTED_BFF_EXCEPTION",
+                                    "exceptionType": "ValidationError",
+                                    "traceId": trace_id,
+                                },
+                                separators=(",", ":"),
+                                sort_keys=True,
+                            )
+                        ),
+                        (
+                            "request payload password="
+                            "controlled-fixture-password"
+                        ),
+                    )
+                ),
+                encoding="utf-8",
+            )
+            result = module.HttpResult(
+                status=500,
+                headers=Mock(),
+                body={
+                    "detail": "The server could not complete the request.",
+                    "request": {
+                        "password": "controlled-fixture-password",
+                    },
+                },
+                request_id=module.fixture_request_id(
+                    module.DOCUMENT_CHECK_OUT_KEY
+                ),
+                trace_id=trace_id,
+            )
+            with (
+                patch.object(module, "BENCH_PATH", bench_path),
+                self.assertRaises(RuntimeError) as raised,
+            ):
+                module.validate_document_workspace(
+                    result,
+                    project_id=module.fixture_id("project"),
+                    expected_document_id=module.fixture_id("document"),
+                )
+        self.assertEqual(
+            str(raised.exception),
+            (
+                "Document workspace returned HTTP 500 "
+                "[exc_type=ValidationError; "
+                "diagnostic_code=UNEXPECTED_BFF_EXCEPTION]"
+            ),
+        )
+        for forbidden in (
+            "payload",
+            "password",
+            "controlled-fixture-password",
+            "WrongTraceError",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, str(raised.exception))
+
+    def test_npi_request_preserves_deterministic_diagnostic_identity(
+        self,
+    ) -> None:
+        module = self.module
+        request_id = module.fixture_request_id(module.DOCUMENT_CHECK_OUT_KEY)
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        response = module.HttpResult(
+            status=500,
+            headers={
+                "X-Request-ID": request_id,
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        with patch.object(module, "request", return_value=response):
+            result = module.npi_request(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/example/documents/example:check-out",
+                method="POST",
+                payload={"expectedDocumentVersion": 1},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=module.DOCUMENT_CHECK_OUT_KEY,
+            )
+        self.assertEqual(result.request_id, request_id)
+        self.assertEqual(result.trace_id, trace_id)
+
+    def test_bff_log_diagnostic_rejects_symlink_and_stale_oversize_tail(
+        self,
+    ) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.DOCUMENT_CHECK_OUT_KEY)
+        safe_record = json.dumps(
+            {
+                "code": "UNEXPECTED_BFF_EXCEPTION",
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            bench_path = root / "bench"
+            log_directory = bench_path / "logs"
+            log_directory.mkdir(parents=True)
+            external_log = root / "external.log"
+            external_log.write_text(safe_record, encoding="utf-8")
+            diagnostic_log = log_directory / "npi_core.log"
+            diagnostic_log.symlink_to(external_log)
+            with patch.object(module, "BENCH_PATH", bench_path):
+                self.assertIsNone(
+                    module._sanitized_bff_log_diagnostic(trace_id)
+                )
+            diagnostic_log.unlink()
+            diagnostic_log.write_text(
+                safe_record
+                + "\n"
+                + ("x" * (module._DIAGNOSTIC_LOG_TAIL_LIMIT + 1)),
+                encoding="utf-8",
+            )
+            with patch.object(module, "BENCH_PATH", bench_path):
+                self.assertIsNone(
+                    module._sanitized_bff_log_diagnostic(trace_id)
+                )
 
     def test_runtime_covers_real_file_and_authorization_boundaries(self) -> None:
         required_fragments = (

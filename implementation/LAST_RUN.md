@@ -1,5 +1,28 @@
 # Last Run
 
+## P5-01 checkout diagnostic round authorized and locally green — 2026-07-31
+
+- The user explicitly authorized one additional bounded round for
+  document-workspace sanitized diagnostics, one diagnostic-only controlled
+  Site, repair of only the proven checkout root, affected checks/normal CI and
+  one final unchanged controlled-Site Gate.
+- The diagnostic-only verifier now retains the deterministic request/trace
+  identity, applies the common sanitized failure assertion at every document
+  workspace boundary, and reads only the matching existing safe
+  `code / exceptionType / traceId` BFF record.
+- Log access is limited to two fixed physical paths beneath the fixed Bench,
+  rejects symlinks and escaped resolution, reads only the final 64 KiB and
+  emits no raw exception text, traceback, request payload, cookie or
+  credential.
+- Focused verifier tests pass `15/15`; complete tracked Python passes
+  `781/781`; compile and whitespace checks pass.
+- This checkpoint changes no product contract, DocType, domain, permission,
+  transaction, lock, audit or idempotency behavior. Normal CI and the one
+  diagnostic-only controlled-Site dispatch remain pending. P5-01 is not PASS
+  and P5-02 remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-diagnostic.md`.
+
 ## P5-01 Datetime repair passed CI; authorized Gate stopped at checkout — 2026-07-31
 
 - Exact repair candidate:

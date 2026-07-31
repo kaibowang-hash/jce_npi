@@ -60,7 +60,10 @@ DOCUMENT_DOCTYPES = (
 )
 PDF_CONTENT = b"%PDF-1.7\n% NPI One synthetic runtime document\n"
 _DIAGNOSTIC_TEXT_LIMIT = 240
+_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_UNEXPECTED_BFF_DIAGNOSTIC_CODE = "UNEXPECTED_BFF_EXCEPTION"
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -149,8 +152,10 @@ def require_http_status(
     expected_statuses: set[int],
     operation: str,
 ) -> None:
+    if result.status in expected_statuses:
+        return
     require(
-        result.status in expected_statuses,
+        False,
         (
             f"{operation} returned HTTP {result.status}"
             f"{sanitized_http_failure(result)}"
@@ -171,7 +176,74 @@ def sanitized_http_failure(result: HttpResult) -> str:
     message = _sanitized_server_message(result.body)
     if message:
         details.append(f"message={message}")
+    log_diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
+    if log_diagnostic is not None:
+        diagnostic_type, diagnostic_code = log_diagnostic
+        if not any(detail.startswith("exc_type=") for detail in details):
+            details.append(f"exc_type={diagnostic_type}")
+        details.append(f"diagnostic_code={diagnostic_code}")
     return f" [{'; '.join(details)}]" if details else ""
+
+
+def _sanitized_bff_log_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str] | None:
+    """Read only the existing safe BFF diagnostic record for this exact trace."""
+
+    if (
+        not isinstance(trace_id, str)
+        or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is None
+    ):
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    candidates = (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                continue
+            with resolved.open("rb") as log_file:
+                log_file.seek(0, os.SEEK_END)
+                size = log_file.tell()
+                log_file.seek(max(0, size - _DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_DIAGNOSTIC_LOG_TAIL_LIMIT)
+        except (OSError, RuntimeError):
+            continue
+        for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
+            if trace_id not in line:
+                continue
+            for start, character in enumerate(line):
+                if character != "{":
+                    continue
+                try:
+                    record, _ = decoder.raw_decode(line[start:])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(record, dict) or set(record) != {
+                    "code",
+                    "exceptionType",
+                    "traceId",
+                }:
+                    continue
+                diagnostic_type = record.get("exceptionType")
+                if (
+                    record.get("code") == _UNEXPECTED_BFF_DIAGNOSTIC_CODE
+                    and record.get("traceId") == trace_id
+                    and isinstance(diagnostic_type, str)
+                    and _DIAGNOSTIC_TYPE_PATTERN.fullmatch(diagnostic_type)
+                    is not None
+                ):
+                    return diagnostic_type, _UNEXPECTED_BFF_DIAGNOSTIC_CODE
+    return None
 
 
 def _sanitized_server_message(body: dict[str, Any]) -> str | None:
@@ -256,7 +328,13 @@ def npi_request(
         result.headers.get("Cache-Control") == "private, no-store",
         f"NPI cache control drifted for {path}",
     )
-    return result
+    return HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=headers["X-Trace-ID"],
+    )
 
 
 def multipart_revision_request(
@@ -319,7 +397,13 @@ def multipart_revision_request(
         result.headers.get("X-Request-ID") == headers["X-Request-ID"],
         "Multipart revision request identity was not echoed",
     )
-    return result
+    return HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=headers["X-Trace-ID"],
+    )
 
 
 def binary_content_request(
@@ -588,9 +672,10 @@ def validate_document_workspace(
     project_id: str,
     expected_document_id: str | None,
 ) -> dict[str, Any]:
-    require(
-        result.status in {200, 201},
-        f"Document workspace returned HTTP {result.status}",
+    require_http_status(
+        result,
+        {200, 201},
+        "Document workspace",
     )
     require(
         result.body.get("project", {}).get("globalId") == project_id,

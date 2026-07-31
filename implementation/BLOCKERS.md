@@ -1,8 +1,12 @@
 # Blockers
 
-Updated: `2026-07-30T19:18:48Z`
+Updated: `2026-07-31T02:08:45Z`
 
 ## Active hard blockers
+
+None.
+
+## Resolved hard blockers
 
 `P5-01-CONTROLLED-RUNTIME-CHECKOUT-DIAGNOSTIC-REPAIR-LIMIT`
 
@@ -33,7 +37,12 @@ explicitly bounded authorization for one diagnostic-only dispatch and one
 final unchanged Gate after the proven root is fixed. Exact evidence:
 `implementation/evidence/phase-5/p5-01-controlled-runtime-checkout-blocker.md`.
 
-## Resolved hard blockers
+The user supplied that exact authorization on 2026-07-31. The execution-limit
+blocker is resolved; the fixed controlled-Site Gate is not. The active bounded
+round permits only the diagnostic checkpoint, one diagnostic-only dispatch,
+repair of the proven root, affected checks/normal CI and one final unchanged
+Gate. Local diagnostic tests pass; normal CI and both controlled executions
+remain pending.
 
 `P5-01-CONTROLLED-RUNTIME-DATETIME-PERSISTENCE-REPAIR-LIMIT`
 
@@ -67,7 +76,7 @@ the new downstream Datetime persistence blocker above is active. Evidence:
 
 ## Active execution hold
 
-`P5-01_CONTROLLED_RUNTIME_CHECKOUT_HTTP_500`
+`P5-01_CONTROLLED_RUNTIME_CHECKOUT_DIAGNOSTIC`
 
 The cumulative R1 shared Shell/design/i18n Level 3 exit Gate passed on
 2026-07-30 at synchronized candidate
