@@ -7,6 +7,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -141,6 +142,13 @@ _REVISION_STAGE_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_REVISION_RECEIPT_SEAL",
     }
 )
+_RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
+        "P5_RUNTIME_RELATIONSHIP_FILTER_CARDINALITY",
+        "P5_RUNTIME_RELATIONSHIP_FILTER_IDENTITY",
+    }
+)
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -214,6 +222,37 @@ class BinaryHttpResult:
     headers: Any
     content: bytes
     problem: dict[str, Any] | None
+
+
+class RuntimeSubstageFailure(RuntimeError):
+    """Closed verifier failure that exposes no response or exception text."""
+
+    def __init__(self, code: str, trace_id: str) -> None:
+        super().__init__("Controlled Document runtime substage failed")
+        self.code = code
+        self.trace_id = trace_id
+
+
+def require_runtime_substage(
+    condition: bool,
+    *,
+    code: str,
+    trace_id: str,
+) -> None:
+    if code not in _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES:
+        raise ValueError("Runtime diagnostic code is not allowlisted")
+    if _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is None:
+        raise ValueError("Runtime diagnostic trace identity is invalid")
+    if not condition:
+        raise RuntimeSubstageFailure(code, trace_id)
+
+
+def runtime_substage_diagnostic(error: RuntimeSubstageFailure) -> str:
+    return (
+        f"[diagnostic_code={error.code}; "
+        f"exc_type={type(error).__name__}; "
+        f"trace_id={error.trace_id}]"
+    )
 
 
 def fixture_request_id(key: str) -> str:
@@ -1519,14 +1558,23 @@ def _run_fresh_with_owner(
         ),
         query_key="relationship-filter",
     )
-    require(
-        relationship_filter.status == 200
-        and [
-            row["globalId"]
-            for row in relationship_filter.body.get("items", [])
-        ]
-        == [document_id],
-        "Typed reverse Document relationship query drifted",
+    require_runtime_substage(
+        relationship_filter.status == 200,
+        code="P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
+        trace_id=relationship_filter.trace_id,
+    )
+    relationship_ids = [
+        row["globalId"] for row in relationship_filter.body.get("items", [])
+    ]
+    require_runtime_substage(
+        len(relationship_ids) == 1,
+        code="P5_RUNTIME_RELATIONSHIP_FILTER_CARDINALITY",
+        trace_id=relationship_filter.trace_id,
+    )
+    require_runtime_substage(
+        relationship_ids[0] == document_id,
+        code="P5_RUNTIME_RELATIONSHIP_FILTER_IDENTITY",
+        trace_id=relationship_filter.trace_id,
     )
 
     unrelated_created = create_disposable_user(
@@ -1738,4 +1786,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RuntimeSubstageFailure as error:
+        print(runtime_substage_diagnostic(error), file=sys.stderr)
+        raise SystemExit(1) from None

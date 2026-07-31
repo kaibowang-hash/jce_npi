@@ -117,6 +117,62 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 content[offset:].startswith(f"{number} 0 obj\n".encode())
             )
 
+    def test_relationship_runtime_diagnostic_is_closed_and_sanitized(self) -> None:
+        module = self.module
+        expected_codes = {
+            "P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
+            "P5_RUNTIME_RELATIONSHIP_FILTER_CARDINALITY",
+            "P5_RUNTIME_RELATIONSHIP_FILTER_IDENTITY",
+        }
+        self.assertEqual(
+            set(module._RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES),
+            expected_codes,
+        )
+        trace_id = "trace-" + ("a" * 32)
+        for code in expected_codes:
+            with self.subTest(code=code):
+                with self.assertRaises(module.RuntimeSubstageFailure) as failure:
+                    module.require_runtime_substage(
+                        False,
+                        code=code,
+                        trace_id=trace_id,
+                    )
+                diagnostic = module.runtime_substage_diagnostic(
+                    failure.exception
+                )
+                self.assertEqual(
+                    diagnostic,
+                    (
+                        f"[diagnostic_code={code}; "
+                        "exc_type=RuntimeSubstageFailure; "
+                        f"trace_id={trace_id}]"
+                    ),
+                )
+                self.assertNotIn("request", diagnostic.casefold())
+                self.assertNotIn("cookie", diagnostic.casefold())
+                self.assertNotIn("credential", diagnostic.casefold())
+
+        self.assertIsNone(
+            module.require_runtime_substage(
+                True,
+                code="P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
+                trace_id=trace_id,
+            )
+        )
+        for code, candidate_trace in (
+            ("NOT_ALLOWLISTED", trace_id),
+            ("P5_RUNTIME_RELATIONSHIP_FILTER_HTTP", "invalid-trace"),
+        ):
+            with (
+                self.subTest(code=code, trace_id=candidate_trace),
+                self.assertRaises(ValueError),
+            ):
+                module.require_runtime_substage(
+                    False,
+                    code=code,
+                    trace_id=candidate_trace,
+                )
+
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
             set(self.module.DOCUMENT_DOCTYPES),
