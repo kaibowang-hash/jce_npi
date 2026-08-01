@@ -3,10 +3,16 @@ import {
   isGateEvidenceResponse,
   isGateEvidenceResponseForRoute,
 } from "./gate-evidence-data-source";
+import {
+  isDocumentBaselineWorkspaceResponse,
+  type DocumentBaselineWorkspaceViewModel,
+} from "./document-data-source";
 import type {
   GateDecisionDetailViewModel,
   GateDecisionOutcome,
   GateDecisionSummaryViewModel,
+  GateEvidenceKind,
+  GateEvidenceViewModel,
   GateReviewAuthorityBindingViewModel,
   GateReviewAuthorityPurpose,
   GateReviewAvailablePolicyViewModel,
@@ -100,6 +106,14 @@ export interface ReopenGateCommand {
   bindings: readonly GateReviewBindingInput[];
 }
 
+export interface AttachGateEvidenceCommand {
+  expectedGateVersion: number;
+  evidenceKind: GateEvidenceKind;
+  sourceGlobalId: string;
+  sourceVersion: number;
+  sourceHash: string;
+}
+
 export interface GateReviewCommandContext {
   csrfToken: string;
   idempotencyKey: string;
@@ -130,6 +144,17 @@ export interface GateReviewDataSource {
     projectGlobalId: string,
     gateGlobalId: string,
     signal: AbortSignal,
+  ) => Promise<GateReviewViewModel>;
+  loadDocumentBaselines: (
+    projectGlobalId: string,
+    signal: AbortSignal,
+  ) => Promise<DocumentBaselineWorkspaceViewModel>;
+  attachEvidence: (
+    projectGlobalId: string,
+    gateGlobalId: string,
+    requirementKey: string,
+    command: AttachGateEvidenceCommand,
+    context: GateReviewCommandContext,
   ) => Promise<GateReviewViewModel>;
   startReview: (
     projectGlobalId: string,
@@ -458,7 +483,8 @@ function isInputEvidence(
     isUuid(value.globalId) &&
     isUuid(value.requirementGlobalId) &&
     (value.evidenceKind === "wbs_item" ||
-      value.evidenceKind === "file_revision") &&
+      value.evidenceKind === "file_revision" ||
+      value.evidenceKind === "release_baseline") &&
     isUuid(value.sourceGlobalId) &&
     isPositiveInteger(value.sourceVersion) &&
     isHash(value.sourceHash) &&
@@ -1756,6 +1782,29 @@ function isStartCommand(value: unknown): value is StartGateReviewCommand {
   );
 }
 
+function isAttachEvidenceCommand(
+  value: unknown,
+): value is AttachGateEvidenceCommand {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "expectedGateVersion",
+      "evidenceKind",
+      "sourceGlobalId",
+      "sourceVersion",
+      "sourceHash",
+    ]) &&
+    isExpectedVersion(value.expectedGateVersion) &&
+    (value.evidenceKind === "wbs_item" ||
+      value.evidenceKind === "file_revision" ||
+      value.evidenceKind === "release_baseline") &&
+    isUuid(value.sourceGlobalId) &&
+    isPositiveInteger(value.sourceVersion) &&
+    isHash(value.sourceHash) &&
+    (value.evidenceKind !== "release_baseline" || value.sourceVersion === 1)
+  );
+}
+
 function isSubmitCommand(value: unknown): value is SubmitGateReviewCommand {
   return (
     isRecord(value) &&
@@ -1985,6 +2034,114 @@ export class LiveGateReviewDataSource implements GateReviewDataSource {
       );
     } catch (error) {
       throwIfCancelled(signal);
+      throw error;
+    }
+  }
+
+  async loadDocumentBaselines(
+    projectGlobalId: string,
+    signal: AbortSignal,
+  ): Promise<DocumentBaselineWorkspaceViewModel> {
+    if (!isUuid(projectGlobalId) || !isAbortSignal(signal)) {
+      throw requestNotReady();
+    }
+    throwIfCancelled(signal);
+    try {
+      return await this.http.request<DocumentBaselineWorkspaceViewModel>(
+        `/projects/${projectGlobalId}/document-baselines`,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is DocumentBaselineWorkspaceViewModel =>
+            isDocumentBaselineWorkspaceResponse(value) &&
+            value.project.globalId === projectGlobalId,
+        },
+      );
+    } catch (error) {
+      throwIfCancelled(signal);
+      throw error;
+    }
+  }
+
+  async attachEvidence(
+    projectGlobalId: string,
+    gateGlobalId: string,
+    requirementKey: string,
+    command: AttachGateEvidenceCommand,
+    context: GateReviewCommandContext,
+  ): Promise<GateReviewViewModel> {
+    if (
+      !validRouteIds(projectGlobalId, gateGlobalId) ||
+      !isKey(requirementKey) ||
+      !isAttachEvidenceCommand(command) ||
+      !isCommandContext(context)
+    ) {
+      throw requestNotReady();
+    }
+    throwIfCancelled(context.signal);
+    try {
+      await this.http.request<GateEvidenceViewModel>(
+        `/projects/${projectGlobalId}/gates/${gateGlobalId}/requirements/${requirementKey}/evidence`,
+        {
+          body: JSON.stringify(command),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is GateEvidenceViewModel =>
+            isGateEvidenceResponseForRoute(
+              value,
+              projectGlobalId,
+              gateGlobalId,
+            ) &&
+            value.requirements.some(
+              (requirement) =>
+                requirement.key === requirementKey &&
+                requirement.evidence.some(
+                  (reference) =>
+                    reference.kind === command.evidenceKind &&
+                    reference.sourceGlobalId === command.sourceGlobalId &&
+                    reference.revision === command.sourceVersion &&
+                    reference.objectHash === command.sourceHash,
+                ),
+            ),
+        },
+      );
+      const review = await this.load(
+        projectGlobalId,
+        gateGlobalId,
+        context.signal,
+      );
+      if (
+        !review.evidence.requirements.some(
+          (requirement) =>
+            requirement.key === requirementKey &&
+            requirement.evidence.some(
+              (reference) =>
+                reference.kind === command.evidenceKind &&
+                reference.sourceGlobalId === command.sourceGlobalId &&
+                reference.revision === command.sourceVersion &&
+                reference.objectHash === command.sourceHash,
+            ),
+        )
+      ) {
+        throw new NpiTransportError(
+          "invalid_response",
+          clientReference(),
+          "client",
+        );
+      }
+      return review;
+    } catch (error) {
+      throwIfCancelled(context.signal);
       throw error;
     }
   }

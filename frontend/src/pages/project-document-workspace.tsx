@@ -4,7 +4,9 @@ import type {
   ControlledDocumentPageViewModel,
   ControlledDocumentSummaryViewModel,
   ControlledDocumentWorkspaceViewModel,
+  CreateDocumentBaselineMemberCommand,
   DocumentDataSource,
+  DocumentBaselineWorkspaceViewModel,
   DocumentReleaseLifecycleState,
   DocumentRelationshipKind,
   DocumentRevisionFileViewModel,
@@ -33,7 +35,7 @@ type ResourceState<T> =
   | { kind: "loaded"; value: T }
   | { kind: "failed"; failure: RequestFailure };
 
-type EditorKind = "create" | "revision" | "recover" | null;
+type EditorKind = "create" | "revision" | "recover" | "baseline" | null;
 type ReleaseActionKind =
   | "submit"
   | "resubmit"
@@ -81,6 +83,20 @@ interface ReleaseFormState {
   confirmed: boolean;
   reason: string;
   replacementRevisionId: string;
+}
+
+interface BaselineSelection extends CreateDocumentBaselineMemberCommand {
+  documentGlobalId: string;
+  documentNumber: string;
+  documentTitle: string;
+  major: number;
+  minor: number;
+}
+
+interface BaselineFormState {
+  policyRef: string;
+  label: string;
+  members: readonly BaselineSelection[];
 }
 
 function canRetry(failure: RequestFailure): boolean {
@@ -371,12 +387,16 @@ export function ProjectDocumentWorkspace({
   const { locale, sessionCommandContext, t } = useI18n();
   const [attempt, setAttempt] = useState(0);
   const [detailAttempt, setDetailAttempt] = useState(0);
+  const [baselineAttempt, setBaselineAttempt] = useState(0);
   const [pageState, setPageState] = useState<
     ResourceState<ControlledDocumentPageViewModel>
   >({ kind: "loading" });
   const [detailState, setDetailState] = useState<
     ResourceState<ControlledDocumentWorkspaceViewModel> | { kind: "idle" }
   >({ kind: "idle" });
+  const [baselineState, setBaselineState] = useState<
+    ResourceState<DocumentBaselineWorkspaceViewModel>
+  >({ kind: "loading" });
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
     null,
   );
@@ -413,10 +433,17 @@ export function ProjectDocumentWorkspace({
     reason: "",
     replacementRevisionId: "",
   });
+  const [baselineForm, setBaselineForm] = useState<BaselineFormState>({
+    policyRef: "",
+    label: "",
+    members: [],
+  });
   const firstEditorControl = useRef<HTMLElement | null>(null);
   const latestCommand = useRef<(() => void) | null>(null);
   const page = pageState.kind === "loaded" ? pageState.value : null;
   const detail = detailState.kind === "loaded" ? detailState.value : null;
+  const baselineWorkspace =
+    baselineState.kind === "loaded" ? baselineState.value : null;
   const selectedPolicy = useMemo(
     () =>
       page?.policies.find(
@@ -440,6 +467,27 @@ export function ProjectDocumentWorkspace({
       ) ?? null,
     [detail?.releaseWorkspace.revisions, selectedRevision?.globalId],
   );
+  const releasedBaselineCandidate = useMemo<BaselineSelection | null>(() => {
+    if (
+      !detail ||
+      !selectedRevision ||
+      selectedReleaseHistory?.lifecycle.state !== "released" ||
+      !selectedReleaseHistory.lifecycle.releaseSnapshotHash
+    )
+      return null;
+    return {
+      documentGlobalId: detail.document.globalId,
+      documentNumber: detail.document.documentNumber,
+      documentTitle: detail.document.title,
+      major: selectedRevision.major,
+      minor: selectedRevision.minor,
+      revisionId: selectedRevision.globalId,
+      expectedRevisionSnapshotHash: selectedRevision.snapshotHash,
+      expectedLifecycleVersion: selectedReleaseHistory.lifecycle.version,
+      expectedReleaseSnapshotHash:
+        selectedReleaseHistory.lifecycle.releaseSnapshotHash,
+    };
+  }, [detail, selectedReleaseHistory, selectedRevision]);
   const dirty = (editor !== null || releaseAction !== null) && editorTouched;
 
   const clearEditor = useCallback((): void => {
@@ -454,6 +502,7 @@ export function ProjectDocumentWorkspace({
       reason: "",
       replacementRevisionId: "",
     });
+    setBaselineForm({ policyRef: "", label: "", members: [] });
     setRevisionForm({
       major: "0",
       minor: "1",
@@ -473,11 +522,15 @@ export function ProjectDocumentWorkspace({
       objectIdentity:
         editor === "create"
           ? `${projectId}:new-document`
-          : (detail?.document.globalId ?? projectId),
+          : editor === "baseline"
+            ? `${projectId}:new-document-baseline`
+            : (detail?.document.globalId ?? projectId),
       version:
         editor === "create"
           ? "unsaved-document"
-          : `document-v${String(detail?.document.optimisticVersion ?? 0)}`,
+          : editor === "baseline"
+            ? "unsaved-document-baseline"
+            : `document-v${String(detail?.document.optimisticVersion ?? 0)}`,
       returnFocusTarget: () =>
         firstEditorControl.current ??
         document.getElementById("project-workspace-tab-documents"),
@@ -528,6 +581,28 @@ export function ProjectDocumentWorkspace({
   }, [attempt, dataSource, projectId]);
 
   useEffect(() => {
+    if (!dataSource) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadBaselines(projectId, controller.signal)
+      .then((value) => {
+        if (!controller.signal.aborted)
+          setBaselineState({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof DocumentRequestCancelledError
+        )
+          return;
+        setBaselineState({ failure: toRequestFailure(error), kind: "failed" });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [baselineAttempt, dataSource, projectId]);
+
+  useEffect(() => {
     if (!dataSource || !selectedDocumentId) {
       return undefined;
     }
@@ -561,8 +636,10 @@ export function ProjectDocumentWorkspace({
     setCommandState({ kind: "idle" });
     setContentState({ kind: "idle" });
     setPageState({ kind: "loading" });
+    setBaselineState({ kind: "loading" });
     setDetailState(selectedDocumentId ? { kind: "loading" } : { kind: "idle" });
     setAttempt((current) => current + 1);
+    setBaselineAttempt((current) => current + 1);
     setDetailAttempt((current) => current + 1);
   }, [clearEditor, selectedDocumentId]);
 
@@ -666,6 +743,41 @@ export function ProjectDocumentWorkspace({
     [dataSource, projectId, updateWorkspace],
   );
 
+  const runBaselineCommand = useCallback(
+    (
+      label: string,
+      command: (signal: AbortSignal) => Promise<unknown>,
+    ): void => {
+      const run = (): void => {
+        if (!dataSource) return;
+        const controller = new AbortController();
+        setCommandState({ kind: "processing", label });
+        void command(controller.signal)
+          .then(() => dataSource.loadBaselines(projectId, controller.signal))
+          .then((workspace) => {
+            if (controller.signal.aborted) return;
+            setBaselineState({ kind: "loaded", value: workspace });
+            clearEditor();
+            setCommandState({ kind: "idle" });
+          })
+          .catch((error: unknown) => {
+            if (
+              controller.signal.aborted ||
+              error instanceof DocumentRequestCancelledError
+            )
+              return;
+            setCommandState({
+              failure: toRequestFailure(error),
+              kind: "failed",
+            });
+          });
+      };
+      latestCommand.current = run;
+      run();
+    },
+    [clearEditor, dataSource, projectId],
+  );
+
   const startReleaseAction = (
     action: Exclude<ReleaseActionKind, null>,
   ): void => {
@@ -727,17 +839,53 @@ export function ProjectDocumentWorkspace({
     });
   };
 
+  const startBaseline = (): void => {
+    const policy = baselineWorkspace?.policies[0];
+    if (!policy) return;
+    setReleaseAction(null);
+    setBaselineForm({
+      policyRef: `${policy.globalId}:${String(policy.version)}:${policy.snapshotHash}`,
+      label: "",
+      members: [],
+    });
+    setEditor("baseline");
+    setEditorTouched(false);
+    setFormError(null);
+    globalThis.queueMicrotask(() => {
+      firstEditorControl.current?.focus();
+    });
+  };
+
+  const addBaselineCandidate = (): void => {
+    if (!releasedBaselineCandidate) return;
+    if (
+      baselineForm.members.some(
+        (member) => member.revisionId === releasedBaselineCandidate.revisionId,
+      )
+    )
+      return;
+    setBaselineForm({
+      ...baselineForm,
+      members: [...baselineForm.members, releasedBaselineCandidate],
+    });
+    setEditorTouched(true);
+  };
+
   const selectDocument = (
     documentSummary: ControlledDocumentSummaryViewModel,
     returnFocusTarget: HTMLElement,
   ): void => {
     if (documentSummary.globalId === selectedDocumentId) return;
     const perform = (): void => {
-      clearEditor();
+      if (editor !== "baseline") clearEditor();
       setContentState({ kind: "idle" });
       setDetailState({ kind: "loading" });
       setSelectedDocumentId(documentSummary.globalId);
     };
+    if (editor === "baseline") {
+      perform();
+      return;
+    }
     if (requestWorkspaceTransition) {
       requestWorkspaceTransition(perform, returnFocusTarget);
     } else {
@@ -782,6 +930,44 @@ export function ProjectDocumentWorkspace({
         {
           csrfToken: sessionCommandContext.csrfToken,
           idempotencyKey: `document-${globalThis.crypto.randomUUID()}`,
+          signal,
+        },
+      ),
+    );
+  };
+
+  const submitBaseline = (): void => {
+    if (!dataSource || !baselineWorkspace || !sessionCommandContext) return;
+    const policy = baselineWorkspace.policies.find(
+      (candidate) =>
+        `${candidate.globalId}:${String(candidate.version)}:${candidate.snapshotHash}` ===
+        baselineForm.policyRef,
+    );
+    const label = baselineForm.label.trim();
+    if (!policy || !label || baselineForm.members.length === 0) {
+      setFormError(
+        t("Select a policy, enter a label, and add released revisions."),
+      );
+      return;
+    }
+    runBaselineCommand(t("Creating immutable release baseline"), (signal) =>
+      dataSource.createBaseline(
+        projectId,
+        {
+          policyGlobalId: policy.globalId,
+          policyVersion: policy.version,
+          policySnapshotHash: policy.snapshotHash,
+          label,
+          members: baselineForm.members.map((member) => ({
+            revisionId: member.revisionId,
+            expectedRevisionSnapshotHash: member.expectedRevisionSnapshotHash,
+            expectedLifecycleVersion: member.expectedLifecycleVersion,
+            expectedReleaseSnapshotHash: member.expectedReleaseSnapshotHash,
+          })),
+        },
+        {
+          csrfToken: sessionCommandContext.csrfToken,
+          idempotencyKey: `document-baseline-${globalThis.crypto.randomUUID()}`,
           signal,
         },
       ),
@@ -1190,6 +1376,10 @@ export function ProjectDocumentWorkspace({
 
   const canCreate =
     pageState.value.permissions.create && sessionCommandContext !== null;
+  const canCreateBaseline =
+    baselineWorkspace?.permissions.create === true &&
+    baselineWorkspace.policies.length > 0 &&
+    sessionCommandContext !== null;
   const documentPolicy =
     detail === null
       ? null
@@ -1442,6 +1632,378 @@ export function ProjectDocumentWorkspace({
           )}
         </div>
       )}
+
+      <Panel title={t("Release baselines and successor impact")}>
+        <div className="document-baseline__toolbar">
+          <span>
+            {t("Immutable baselines")}:{" "}
+            {formatNumber(locale, baselineWorkspace?.items.length ?? 0, 0)} ·{" "}
+            {t("Recorded impacts")}:{" "}
+            {formatNumber(locale, baselineWorkspace?.impacts.length ?? 0, 0)}
+          </span>
+          <Button
+            disabled={!canCreateBaseline || commandProcessing}
+            icon="add"
+            onClick={startBaseline}
+          >
+            {t("Create release baseline")}
+          </Button>
+        </div>
+        {baselineState.kind === "loading" ? (
+          <div
+            aria-busy="true"
+            className="workspace-resource-state workspace-resource-state--loading"
+            role="status"
+          >
+            <div className="skeleton" />
+            <span className="visually-hidden">
+              {t("Loading release baselines")}
+            </span>
+          </div>
+        ) : baselineState.kind === "failed" ? (
+          <div className="document-baseline__failure" role="alert">
+            <RequestFailurePanel failure={baselineState.failure} />
+            {canRetry(baselineState.failure) ? (
+              <Button
+                icon="refresh"
+                onClick={() => {
+                  setBaselineState({ kind: "loading" });
+                  setBaselineAttempt((current) => current + 1);
+                }}
+              >
+                {t("Retry")}
+              </Button>
+            ) : null}
+          </div>
+        ) : (
+          <div className="document-baseline__tables">
+            <table
+              aria-label={t("Immutable release baselines")}
+              className="data-table data-table--compact"
+            >
+              <thead>
+                <tr>
+                  <th>{t("Baseline")}</th>
+                  <th>{t("Members")}</th>
+                  <th>{t("Policy")}</th>
+                  <th>{t("Created")}</th>
+                  <th>{t("State")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baselineState.value.items.length ? (
+                  baselineState.value.items.map((baseline) => (
+                    <tr key={baseline.globalId}>
+                      <td>
+                        <strong data-language-exempt="business-data">
+                          {baseline.label}
+                        </strong>
+                        <code data-language-exempt="identifier">
+                          {baseline.globalId}@{String(baseline.version)}
+                        </code>
+                        <small
+                          className="document-file__hash"
+                          data-language-exempt="identifier"
+                        >
+                          SHA-256 {baseline.snapshotHash}
+                        </small>
+                      </td>
+                      <td>
+                        <details>
+                          <summary>
+                            {formatNumber(locale, baseline.members.length, 0)}
+                          </summary>
+                          <ol className="document-baseline__members">
+                            {baseline.members.map((member) => (
+                              <li key={member.globalId}>
+                                <span data-language-exempt="identifier">
+                                  {String(member.major)}.{String(member.minor)}{" "}
+                                  · {member.revisionGlobalId}
+                                </span>
+                                <small data-language-exempt="identifier">
+                                  SHA-256 {member.revisionSnapshotHash}
+                                </small>
+                              </li>
+                            ))}
+                          </ol>
+                        </details>
+                      </td>
+                      <td>
+                        <span data-language-exempt="business-data">
+                          {baselineState.value.policies.find(
+                            (policy) =>
+                              policy.globalId === baseline.policy.globalId &&
+                              policy.version === baseline.policy.version &&
+                              policy.snapshotHash ===
+                                baseline.policy.snapshotHash,
+                          )?.title ?? baseline.policy.globalId}
+                        </span>
+                        <small data-language-exempt="identifier">
+                          v{formatNumber(locale, baseline.policy.version, 0)}
+                        </small>
+                      </td>
+                      <td>
+                        {formatDateTime(locale, baseline.createdAt)}
+                        <small data-language-exempt="business-data">
+                          {baseline.createdByUserId}
+                        </small>
+                      </td>
+                      <td>
+                        <SemanticStatus label={t("Immutable")} tone="success" />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5}>
+                      {t("No release baseline has been created.")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <table
+              aria-label={t("Successor impact lineage")}
+              className="data-table data-table--compact"
+            >
+              <thead>
+                <tr>
+                  <th>{t("Affected baseline")}</th>
+                  <th>{t("Prior revision")}</th>
+                  <th>{t("Successor revision")}</th>
+                  <th>{t("Affected Gate")}</th>
+                  <th>{t("Recorded")}</th>
+                  <th>{t("State")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baselineState.value.impacts.length ? (
+                  baselineState.value.impacts.map((impact) => (
+                    <tr key={impact.globalId}>
+                      <td data-language-exempt="identifier">
+                        {impact.baselineGlobalId}
+                        <small>SHA-256 {impact.baselineSnapshotHash}</small>
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {impact.oldRevisionGlobalId}
+                        <small>SHA-256 {impact.oldRevisionSnapshotHash}</small>
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {impact.newRevisionGlobalId}
+                        <small>SHA-256 {impact.newRevisionSnapshotHash}</small>
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {impact.gateGlobalId}
+                        <small>{impact.requirementGlobalId}</small>
+                      </td>
+                      <td>
+                        {formatDateTime(locale, impact.occurredAt)}
+                        <small data-language-exempt="business-data">
+                          {impact.initiatedByUserId}
+                        </small>
+                      </td>
+                      <td>
+                        <SemanticStatus
+                          label={t("Requires review")}
+                          tone="warning"
+                        />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6}>
+                      {t("No successor impact has been recorded.")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
+
+      {editor === "baseline" && baselineWorkspace ? (
+        <Panel title={t("Create immutable release baseline")}>
+          <form
+            className="document-form document-baseline__form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitBaseline();
+            }}
+          >
+            <label
+              ref={(element) => {
+                firstEditorControl.current = element;
+              }}
+            >
+              <span>{t("Baseline policy")}</span>
+              <Select
+                onChange={(event) => {
+                  setBaselineForm({
+                    ...baselineForm,
+                    policyRef: event.currentTarget.value,
+                  });
+                  setEditorTouched(true);
+                }}
+                value={baselineForm.policyRef}
+              >
+                {baselineWorkspace.policies.map((policy) => (
+                  <option
+                    data-language-exempt="business-data"
+                    key={`${policy.globalId}:${String(policy.version)}`}
+                    value={`${policy.globalId}:${String(policy.version)}:${policy.snapshotHash}`}
+                  >
+                    {policy.title} · v{String(policy.version)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label>
+              <span>{t("Baseline label")}</span>
+              <TextInput
+                maxLength={140}
+                onChange={(event) => {
+                  setBaselineForm({
+                    ...baselineForm,
+                    label: event.currentTarget.value,
+                  });
+                  setEditorTouched(true);
+                }}
+                required
+                value={baselineForm.label}
+              />
+            </label>
+            <div className="document-baseline__selection-toolbar">
+              <div>
+                <strong>{t("Released revision selection")}</strong>
+                <span>
+                  {releasedBaselineCandidate
+                    ? t("The selected revision is eligible for this baseline.")
+                    : t("Select an exactly released revision to add it.")}
+                </span>
+              </div>
+              <Button
+                disabled={
+                  !releasedBaselineCandidate ||
+                  baselineForm.members.some(
+                    (member) =>
+                      member.revisionId ===
+                      releasedBaselineCandidate.revisionId,
+                  ) ||
+                  commandProcessing
+                }
+                onClick={addBaselineCandidate}
+                type="button"
+              >
+                {t("Add selected released revision")}
+              </Button>
+            </div>
+            <table
+              aria-label={t("Selected baseline members")}
+              className="data-table data-table--compact"
+            >
+              <thead>
+                <tr>
+                  <th>{t("Sequence")}</th>
+                  <th>{t("Document")}</th>
+                  <th>{t("Revision")}</th>
+                  <th>{t("Lifecycle version")}</th>
+                  <th>{t("Release snapshot")}</th>
+                  <th>{t("Actions")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baselineForm.members.length ? (
+                  baselineForm.members.map((member, index) => (
+                    <tr key={member.revisionId}>
+                      <td>{formatNumber(locale, index + 1, 0)}</td>
+                      <td>
+                        <strong data-language-exempt="identifier">
+                          {member.documentNumber}
+                        </strong>
+                        <small data-language-exempt="business-data">
+                          {member.documentTitle}
+                        </small>
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {String(member.major)}.{String(member.minor)} ·{" "}
+                        {member.revisionId}
+                        <small>
+                          SHA-256 {member.expectedRevisionSnapshotHash}
+                        </small>
+                      </td>
+                      <td>
+                        {formatNumber(
+                          locale,
+                          member.expectedLifecycleVersion,
+                          0,
+                        )}
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {member.expectedReleaseSnapshotHash}
+                      </td>
+                      <td>
+                        <Button
+                          disabled={commandProcessing}
+                          onClick={() => {
+                            setBaselineForm({
+                              ...baselineForm,
+                              members: baselineForm.members.filter(
+                                (candidate) =>
+                                  candidate.revisionId !== member.revisionId,
+                              ),
+                            });
+                            setEditorTouched(true);
+                          }}
+                          type="button"
+                          visual="ghost"
+                        >
+                          {t("Remove")}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6}>
+                      {t("No released revision is selected.")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <small>
+              {t(
+                "The server revalidates every exact revision, release snapshot and clean private file before creating the immutable baseline.",
+              )}
+            </small>
+            {formError ? (
+              <p className="form-error" role="alert">
+                {formError}
+              </p>
+            ) : null}
+            <div className="detail-actions">
+              <Button
+                disabled={
+                  baselineForm.members.length === 0 || commandProcessing
+                }
+                type="submit"
+                visual="primary"
+              >
+                {t("Create immutable baseline")}
+              </Button>
+              <Button
+                disabled={commandProcessing}
+                onClick={clearEditor}
+                type="button"
+              >
+                {t("Cancel")}
+              </Button>
+            </div>
+          </form>
+        </Panel>
+      ) : null}
 
       {editor === "create" && selectedPolicy ? (
         <Panel title={t("Create controlled document")}>

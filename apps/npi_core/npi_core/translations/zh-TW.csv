@@ -314,6 +314,9 @@ Refresh,重新整理
 This prototype refresh restores the simulated processing state; no durable remote operation is queried.,此原型重新整理會恢復模擬的處理中狀態；不會查詢持久化遠端操作。
 Refresh status,重新整理狀態
 Release design revision,發布設計修訂版
+Release baseline,發布基線
+release_baseline,發布基線
+An exact baseline input gained a successor revision.,精確基線輸入已產生後繼修訂版。
 Release formal item,發布正式物料
 Released,已發布
 Released and immutable,已發布且不可變
@@ -3182,3 +3185,48 @@ Baseline Policy Key Hash,基線策略鍵雜湊
 NPI Document Baseline Policy Version,NPI 文件基線策略版本
 Document Baseline Policy,文件基線策略
 Baseline Policy Version Key,基線策略版本鍵
+Baseline successor impact lineage,基線後繼修訂影響沿革
+Affected baseline,受影響基線
+Prior revision,原修訂版
+Successor revision,後繼修訂版
+Requires review,需要重新評審
+No baseline successor impact is recorded.,未記錄基線後繼修訂影響。
+Exact baseline evidence source,精確基線證據來源
+The exact baseline sources are read only for your current permissions.,在您目前的權限下精確基線來源為唯讀。
+Loading exact release baselines,正在載入精確發布基線
+No unattached exact release baseline is available for this requirement.,此要求沒有可附加的精確發布基線。
+Release baseline source,發布基線來源
+Source version,來源版本
+Source hash,來源雜湊
+Members,成員
+Retry with the same command key,使用同一命令鍵重試
+Attaching exact baseline evidence,正在附加精確基線證據
+Attach exact baseline evidence,附加精確基線證據
+Baseline successor impact,基線後繼修訂影響
+Only explicitly registered exact baseline members can appear here; prior evidence and decisions remain immutable.,此處僅顯示已明確登記的精確基線成員；既有證據和決策保持不可變。
+"Select a policy, enter a label, and add released revisions.",請選擇策略、輸入標籤並新增已發布的修訂版。
+Creating immutable release baseline,正在建立不可變發布基線
+Release baselines and successor impact,發布基線與後繼修訂影響
+Immutable baselines,不可變基線
+Recorded impacts,已記錄影響
+Create release baseline,建立發布基線
+Loading release baselines,正在載入發布基線
+Immutable release baselines,不可變發布基線
+Immutable,不可變
+No release baseline has been created.,尚未建立發布基線。
+Successor impact lineage,後繼修訂影響沿革
+Affected Gate,受影響階段門
+No successor impact has been recorded.,尚未記錄後繼修訂影響。
+Create immutable release baseline,建立不可變發布基線
+Baseline policy,基線策略
+Baseline label,基線標籤
+Released revision selection,已發布修訂版選擇
+The selected revision is eligible for this baseline.,所選修訂版符合此基線的條件。
+Select an exactly released revision to add it.,請選擇一個精確的已發布修訂版以新增。
+Add selected released revision,新增所選已發布修訂版
+Selected baseline members,已選基線成員
+Document,文件
+Remove,移除
+No released revision is selected.,未選擇已發布修訂版。
+"The server revalidates every exact revision, release snapshot and clean private file before creating the immutable baseline.",伺服器會在建立不可變基線前重新驗證每個精確修訂版、發布快照和掃描乾淨的私有文件。
+Create immutable baseline,建立不可變基線

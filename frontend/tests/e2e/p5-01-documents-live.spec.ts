@@ -12,6 +12,7 @@ import {
   controlledDocumentPageFixture,
   controlledDocumentReleasedWorkspaceFixture,
   controlledDocumentWorkspaceFixture,
+  documentBaselineWorkspaceFixture,
   documentReleaseTransitionFixture,
 } from "../support/document-fixture";
 import { projectWorkCockpitFixture } from "../support/project-work-fixture";
@@ -115,6 +116,17 @@ function documentWorkspace(
   };
 }
 
+function baselineWorkspace() {
+  const fixture = documentBaselineWorkspaceFixture();
+  return {
+    ...fixture,
+    project: {
+      ...fixture.project,
+      globalId: projectId,
+    },
+  };
+}
+
 function problem(locale: TestLocale): ProblemDetails {
   return {
     type: "urn:npi:problem:document_unavailable",
@@ -186,6 +198,7 @@ async function installDocumentApi(
   const observed: ObservedRequest[] = [];
   const pageFixture = documentPage(options);
   let workspaceFixture = documentWorkspace(options);
+  const baselineFixture = baselineWorkspace();
   await page.route(projectApiEndpoint, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -219,6 +232,24 @@ async function installDocumentApi(
         options.invalidList
           ? { ...pageFixture, unsupportedDebugField: true }
           : pageFixture,
+      );
+      return;
+    }
+    if (url.pathname.endsWith("/document-baselines")) {
+      if (request.method() === "GET") {
+        await fulfillJson(route, baselineFixture);
+        return;
+      }
+      expect(request.method()).toBe("POST");
+      expect(headers["x-frappe-csrf-token"]).toBe(csrfToken);
+      expect(headers["idempotency-key"]).toMatch(/^document-baseline-/u);
+      const baseline = baselineFixture.items[0];
+      if (!baseline)
+        throw new Error("Document browser fixture has no release baseline.");
+      await fulfillJson(
+        route,
+        { projectId, baseline },
+        { status: 201, traceId: "trace-p5-03-create-baseline" },
       );
       return;
     }
@@ -392,7 +423,11 @@ test.describe("P5-01 live controlled-document workspace", () => {
           .locator("xpath=ancestor::section[1]")
           .getByText(translate(locale, "Unavailable"), { exact: true }),
       ).toHaveCount(2);
-      await expect(page.getByText(/^SHA-256 a{64}$/u)).toBeVisible();
+      await expect(
+        page
+          .getByLabel(translate(locale, "Exact private files"))
+          .getByText(/^SHA-256 a{64}$/u),
+      ).toBeVisible();
       await expectNoPrivateUrl(page);
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
@@ -518,6 +553,69 @@ test.describe("P5-01 live controlled-document workspace", () => {
           ?.globalId,
       policySnapshotHash: "a".repeat(64),
       policyVersion: 1,
+    });
+  });
+
+  test("creates one immutable release baseline from an exact released revision", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installDocumentApi(page, {
+      releaseState: "released",
+    });
+    await openDocuments(page, "en");
+    await expectDocumentLoaded(page, "en");
+
+    await page
+      .getByRole("button", { name: "Create release baseline", exact: true })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Baseline label" })
+      .fill("G2 controlled release");
+    await page
+      .getByRole("button", {
+        name: "Add selected released revision",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("button", { name: "Create immutable baseline", exact: true })
+      .click();
+
+    await expect(
+      page.getByRole("table", { name: "Immutable release baselines" }),
+    ).toContainText("G2 synthetic release package");
+    const command = observed.find(
+      (request) =>
+        request.path.endsWith("/document-baselines") &&
+        request.method === "POST",
+    );
+    const workspace = controlledDocumentReleasedWorkspaceFixture();
+    const policy = baselineWorkspace().policies[0];
+    const revision = workspace.revisions[0];
+    const release = workspace.releaseWorkspace.revisions[0];
+    if (!policy)
+      throw new Error("Document browser fixture has no baseline policy.");
+    expect(command).toMatchObject({
+      accept: "application/json, application/problem+json",
+      contentType: "application/json",
+      csrfToken,
+      method: "POST",
+    });
+    expect(command?.idempotencyKey).toMatch(/^document-baseline-/u);
+    expect(command?.payload).toEqual({
+      label: "G2 controlled release",
+      members: [
+        {
+          expectedLifecycleVersion: release?.lifecycle.version,
+          expectedReleaseSnapshotHash: release?.lifecycle.releaseSnapshotHash,
+          expectedRevisionSnapshotHash: revision?.snapshotHash,
+          revisionId: revision?.globalId,
+        },
+      ],
+      policyGlobalId: policy.globalId,
+      policySnapshotHash: policy.snapshotHash,
+      policyVersion: policy.version,
     });
   });
 
@@ -757,6 +855,81 @@ test.describe("@visual P5-02 review and release evidence", () => {
       });
       await page.evaluate(async () => document.fonts.ready);
       await releasePanel.scrollIntoViewIfNeeded();
+      await expect(page).toHaveScreenshot(`${visual.name}.png`, {
+        fullPage: false,
+      });
+    });
+  }
+});
+
+const baselineVisualCases = [
+  {
+    height: 768,
+    locale: "en",
+    name: "p5-03-document-baseline-en-1366x768-100",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 900,
+    locale: "zh",
+    name: "p5-03-document-baseline-zh-1440x900-125",
+    width: 1440,
+    zoom: 1.25,
+  },
+  {
+    height: 1080,
+    locale: "zh-TW",
+    name: "p5-03-document-baseline-zh-TW-1920x1080-150",
+    width: 1920,
+    zoom: 1.5,
+  },
+] as const;
+
+test.describe("@visual P5-03 immutable baseline and successor impact", () => {
+  for (const visual of baselineVisualCases) {
+    test(visual.name, async ({ page }) => {
+      await installSession(page, visual.locale);
+      await installDocumentApi(page, { releaseState: "released" });
+      await page.setViewportSize(
+        effectiveViewport(
+          { height: visual.height, width: visual.width },
+          visual.zoom,
+        ),
+      );
+      await page.emulateMedia({
+        colorScheme: "light",
+        reducedMotion: "reduce",
+      });
+      await openDocuments(page, visual.locale);
+      await expectDocumentLoaded(page, visual.locale);
+      const baselinePanel = page.getByRole("heading", {
+        name: translate(
+          visual.locale,
+          "Release baselines and successor impact",
+        ),
+      });
+      await expect(baselinePanel).toBeVisible();
+      await expect(
+        page.getByRole("table", {
+          name: translate(visual.locale, "Immutable release baselines"),
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("table", {
+          name: translate(visual.locale, "Successor impact lineage"),
+        }),
+      ).toBeVisible();
+      await expectNoMixedLanguage(page, visual.locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+      await page.addStyleTag({
+        content:
+          "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+      });
+      await page.evaluate(async () => document.fonts.ready);
+      await baselinePanel.scrollIntoViewIfNeeded();
       await expect(page).toHaveScreenshot(`${visual.name}.png`, {
         fullPage: false,
       });

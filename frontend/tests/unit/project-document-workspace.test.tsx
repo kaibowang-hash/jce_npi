@@ -13,8 +13,12 @@ import type {
 } from "../../src/app/workspace-navigation";
 import { ProjectDocumentWorkspace } from "../../src/pages/project-document-workspace";
 import {
+  baselinePolicyId,
   controlledDocumentPageFixture,
+  controlledDocumentReleasedWorkspaceFixture,
   controlledDocumentWorkspaceFixture,
+  documentBaselineCommandFixture,
+  documentBaselineWorkspaceFixture,
   documentFileCapabilityFixture,
   documentProjectId,
   documentReleaseTransitionFixture,
@@ -55,11 +59,13 @@ function createDataSource(
   return {
     checkIn: () => Promise.resolve(workspace),
     checkOut: () => Promise.resolve(workspace),
+    createBaseline: () => Promise.resolve(documentBaselineCommandFixture()),
     createDocument: () => Promise.resolve(workspace),
     createRevision: () => Promise.resolve(workspace),
     loadCapabilities: () => Promise.resolve(documentFileCapabilityFixture()),
     loadContent: () =>
       Promise.resolve(new Blob(["%PDF"], { type: "application/pdf" })),
+    loadBaselines: () => Promise.resolve(documentBaselineWorkspaceFixture()),
     loadDocument: () => Promise.resolve(workspace),
     loadDocuments: () => Promise.resolve(controlledDocumentPageFixture()),
     obsoleteRevision: () => Promise.reject(new Error("not configured")),
@@ -115,7 +121,13 @@ describe("Project controlled document workspace", () => {
       screen.getByRole("heading", { name: "Exact private files" }),
     ).toBeVisible();
     expect(screen.getByText("synthetic-drawing.pdf")).toBeVisible();
-    expect(screen.getByText(/^SHA-256 a{64}$/u)).toBeVisible();
+    expect(
+      within(
+        screen
+          .getByRole("heading", { name: "Exact private files" })
+          .closest("section") ?? document.body,
+      ).getByText(/^SHA-256 a{64}$/u),
+    ).toBeVisible();
     expect(screen.getAllByText("Clean")[0]).toBeVisible();
     expect(
       within(
@@ -318,6 +330,67 @@ describe("Project controlled document workspace", () => {
     });
     expect(call[4].csrfToken).toBe(csrfToken);
     expect(call[4].idempotencyKey).toMatch(/^document-release-/u);
+  });
+
+  it("creates an immutable baseline from an explicitly selected released revision", async () => {
+    enableCommandSession();
+    const user = userEvent.setup();
+    const released = controlledDocumentReleasedWorkspaceFixture();
+    const baselineCommand = documentBaselineCommandFixture();
+    const createBaseline = vi.fn<DocumentDataSource["createBaseline"]>(() =>
+      Promise.resolve(baselineCommand),
+    );
+    renderWorkspace(
+      createDataSource({
+        createBaseline,
+        loadDocument: () => Promise.resolve(released),
+      }),
+    );
+
+    const start = await screen.findByRole("button", {
+      name: "Create release baseline",
+    });
+    await waitFor(() => {
+      expect(start).toBeEnabled();
+    });
+    await user.click(start);
+    await user.type(
+      screen.getByRole("textbox", { name: "Baseline label" }),
+      "G2 controlled release",
+    );
+    await user.click(
+      screen.getByRole("button", {
+        name: "Add selected released revision",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Create immutable baseline" }),
+    );
+
+    await waitFor(() => {
+      expect(createBaseline).toHaveBeenCalledOnce();
+    });
+    const call = createBaseline.mock.calls[0];
+    if (!call) throw new Error("The baseline command was not captured.");
+    const history = released.releaseWorkspace.revisions[0];
+    const revision = released.revisions[0];
+    expect(call[0]).toBe(documentProjectId);
+    expect(call[1]).toEqual({
+      policyGlobalId: baselinePolicyId,
+      policyVersion: 1,
+      policySnapshotHash: "e".repeat(64),
+      label: "G2 controlled release",
+      members: [
+        {
+          revisionId: revision?.globalId,
+          expectedRevisionSnapshotHash: revision?.snapshotHash,
+          expectedLifecycleVersion: history?.lifecycle.version,
+          expectedReleaseSnapshotHash: history?.lifecycle.releaseSnapshotHash,
+        },
+      ],
+    });
+    expect(call[2].csrfToken).toBe(csrfToken);
+    expect(call[2].idempotencyKey).toMatch(/^document-baseline-/u);
   });
 
   it("shows an honest empty state and disables creation without a policy", async () => {

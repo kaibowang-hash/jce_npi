@@ -128,7 +128,7 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
             _schema("AttachGateEvidence"),
         )
         self.assertIn(
-            "enum: [wbs_item, file_revision]",
+            "enum: [wbs_item, file_revision, release_baseline]",
             _schema("AttachGateEvidence"),
         )
         self.assertIn(
@@ -141,7 +141,14 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
     def test_workspace_is_closed_and_exposes_scan_truth_without_decisions(
         self,
     ) -> None:
-        expected = ("project", "gate", "requirements", "summary", "permissions")
+        expected = (
+            "project",
+            "gate",
+            "requirements",
+            "baselineImpacts",
+            "summary",
+            "permissions",
+        )
         self.assertEqual(_required("GateEvidenceWorkspace"), expected)
         self.assertEqual(
             _property_names("GateEvidenceWorkspace"),
@@ -149,6 +156,10 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
         )
         self.assertIn(
             "additionalProperties: false",
+            _schema("GateEvidenceWorkspace"),
+        )
+        self.assertIn(
+            '$ref: "#/components/schemas/DocumentBaselineImpactEvent"',
             _schema("GateEvidenceWorkspace"),
         )
         file_metadata = _schema("GateEvidenceFileMetadata")
@@ -166,8 +177,13 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
             '$ref: "#/components/schemas/GateFileEvidenceReference"',
             reference,
         )
+        self.assertIn(
+            '$ref: "#/components/schemas/GateBaselineEvidenceReference"',
+            reference,
+        )
         wbs_reference = _schema("GateWbsEvidenceReference")
         file_reference = _schema("GateFileEvidenceReference")
+        baseline_reference = _schema("GateBaselineEvidenceReference")
         self.assertIn("kind: { type: string, const: wbs_item }", wbs_reference)
         self.assertIn(
             "sourceObjectType: { type: string, const: wbs_item }",
@@ -183,8 +199,23 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
             file_reference,
         )
         self.assertIn("file", _required("GateFileEvidenceReference"))
+        self.assertIn(
+            "kind: { type: string, const: release_baseline }",
+            baseline_reference,
+        )
+        self.assertIn(
+            "sourceObjectType: { type: string, const: release_baseline }",
+            baseline_reference,
+        )
+        self.assertIn("revision: { type: integer, const: 1 }", baseline_reference)
+        self.assertIn("baseline", _required("GateBaselineEvidenceReference"))
+        self.assertIn(
+            '$ref: "#/components/schemas/DocumentBaselineSummary"',
+            baseline_reference,
+        )
         self.assertIn("additionalProperties: false", wbs_reference)
         self.assertIn("additionalProperties: false", file_reference)
+        self.assertIn("additionalProperties: false", baseline_reference)
 
         workspace = "\n".join(
             _schema(name)
@@ -195,6 +226,7 @@ class Phase4GateEvidenceContractTest(unittest.TestCase):
                 "GateEvidenceReference",
                 "GateWbsEvidenceReference",
                 "GateFileEvidenceReference",
+                "GateBaselineEvidenceReference",
                 "GateEvidenceSummary",
             )
         ).casefold()

@@ -16,6 +16,11 @@ from npi_core.controlled_evidence_validation import (
     canonical_snapshot_hash,
     has_controlled_file_write,
 )
+from npi_core.documents.baseline_domain import DocumentBaselineInputUnavailable
+from npi_core.documents.baseline_repository import (
+    load_document_baseline,
+    load_project_baseline_impacts,
+)
 from npi_core.foundation.audit import create_audit_event
 from npi_core.foundation.errors import (
     PermissionDenied,
@@ -1902,6 +1907,9 @@ class FrappeGateReviewRepository:
                 snapshot_hash=canonical_snapshot_hash(snapshot),
             )
         ]
+        dependencies.extend(
+            self._baseline_impact_dependency_inputs(project, gate)
+        )
         for reference in references:
             evidence, valid, dependency_hash = self._resolve_evidence_input(
                 project, gate, reference
@@ -1964,6 +1972,30 @@ class FrappeGateReviewRepository:
             dependencies=tuple(dependencies),
         )
 
+    @staticmethod
+    def _baseline_impact_dependency_inputs(
+        project,
+        gate,
+    ) -> tuple[GateDependencyInput, ...]:
+        try:
+            impacts = load_project_baseline_impacts(
+                project,
+                gate_global_id=UUID(str(gate.global_id)),
+            )
+        except DocumentBaselineInputUnavailable as error:
+            raise ValueError(
+                "Persisted baseline impact lineage integrity failed."
+            ) from error
+        return tuple(
+            GateDependencyInput(
+                kind=DependencyEvaluator.GATE_INPUT_SNAPSHOT,
+                global_id=impact.global_id,
+                version=1,
+                snapshot_hash=impact.event_hash,
+            )
+            for impact in impacts
+        )
+
     def _resolve_evidence_input(self, project, gate, reference):
         if (
             str(reference.tenant_id) != str(project.tenant_id)
@@ -1999,6 +2031,22 @@ class FrappeGateReviewRepository:
                 exact = live_version == stored_version and live_hash == stored_hash
                 file_safe = exact and private and scan == "clean"
                 status = f"{'exact' if exact else 'drifted'}:{scan}"
+        elif kind == "release_baseline":
+            try:
+                baseline = load_document_baseline(
+                    project,
+                    source_id,
+                    lock=False,
+                )
+            except DocumentBaselineInputUnavailable as error:
+                raise ValueError(
+                    "Persisted Gate baseline evidence integrity failed."
+                ) from error
+            if baseline is not None:
+                live_version = baseline.version
+                live_hash = baseline.snapshot_hash
+                exact = live_version == stored_version and live_hash == stored_hash
+                status = "exact" if exact else "drifted"
         else:
             raise ValueError("Persisted Gate evidence kind is unsupported.")
         value = GateEvidenceInput(

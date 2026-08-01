@@ -687,6 +687,51 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
             len(expected_order),
         )
 
+    def test_successor_impact_is_exact_atomic_and_refreshes_existing_review(
+        self,
+    ) -> None:
+        source = SOURCE.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        functions = {
+            node.name: ast.get_source_segment(source, node) or ""
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef)
+        }
+        create_revision = functions["create_revision"]
+        order = (
+            "self._insert_revision_file(",
+            "self._append_baseline_impacts_for_successor(",
+            "_apply_document_projection(document, append.document)",
+            'self._append_audit(\n                        operation="document.revision.create"',
+            "response = self._detail_for(project, document)",
+            "self._seal_idempotency(receipt, response)",
+        )
+        positions = [create_revision.index(fragment) for fragment in order]
+        self.assertEqual(positions, sorted(positions))
+
+        impact = functions["_append_baseline_impacts_for_successor"]
+        for exact_filter in (
+            '"tenant_id": str(project.tenant_id)',
+            '"project_global_id": str(project.global_id)',
+            '"input_document_global_id": str(document.global_id)',
+            '"input_revision_global_id": str(predecessor_id)',
+        ):
+            with self.subTest(exact_filter=exact_filter):
+                self.assertIn(exact_filter, impact)
+        self.assertIn("for_update=True", impact)
+        self.assertIn("load_document_baseline(", impact)
+        self.assertIn('"NPI Baseline Impact Event"', impact)
+        self.assertIn("BaselineImpactEvent(", impact)
+        self.assertIn("refresh_gate_review_dependency_locked(", impact)
+        self.assertIn('reason="BASELINE_SUCCESSOR_IMPACT"', impact)
+        self.assertIn(
+            'operation="document.baseline.impact.record"',
+            impact,
+        )
+        for inferred_target in ("file_name", "document_type", "mime_type"):
+            with self.subTest(inferred_target=inferred_target):
+                self.assertNotIn(inferred_target, impact)
+
     def test_repository_uses_public_frappe_apis_and_never_commits_content(self) -> None:
         source = SOURCE.read_text(encoding="utf-8")
         tree = ast.parse(source)

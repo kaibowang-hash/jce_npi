@@ -7,6 +7,7 @@ import {
   type GateReviewCommandOperation,
   type GateReviewDataSource,
 } from "../api/gate-review-data-source";
+import type { DocumentBaselineWorkspaceViewModel } from "../api/document-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import {
   AttachmentField,
@@ -27,6 +28,7 @@ import {
   type ImpactReviewDetails,
 } from "../components/primitives";
 import type {
+  DocumentBaselineImpactViewModel,
   GateDecisionOutcome,
   GateEvidenceReferenceViewModel,
   GateEvidenceScanState,
@@ -88,6 +90,21 @@ type GateReviewLoadState =
       projectGlobalId: string;
       gateGlobalId: string;
       failureKind: FailureKind;
+      failure: RequestFailure;
+    };
+
+type BaselineSourceState =
+  | { kind: "loading" }
+  | { kind: "loaded"; value: DocumentBaselineWorkspaceViewModel }
+  | { kind: "failed"; failure: RequestFailure };
+
+type BaselineAttachState =
+  | { kind: "idle" }
+  | { kind: "processing"; baselineGlobalId: string; idempotencyKey: string }
+  | {
+      kind: "failed";
+      baselineGlobalId: string;
+      idempotencyKey: string;
       failure: RequestFailure;
     };
 
@@ -1231,6 +1248,69 @@ function SelectedEvidenceDetail({
   );
 }
 
+function BaselineImpactTable({
+  impacts,
+}: {
+  impacts: readonly DocumentBaselineImpactViewModel[];
+}): React.JSX.Element {
+  const { locale, t } = useI18n();
+  return (
+    <table
+      aria-label={t("Baseline successor impact lineage")}
+      className="data-table data-table--compact gate-baseline-impact-table"
+    >
+      <thead>
+        <tr>
+          <th>{t("Affected baseline")}</th>
+          <th>{t("Prior revision")}</th>
+          <th>{t("Successor revision")}</th>
+          <th>{t("Requirement")}</th>
+          <th>{t("Recorded")}</th>
+          <th>{t("State")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {impacts.length ? (
+          impacts.map((impact) => (
+            <tr key={impact.globalId}>
+              <td data-language-exempt="identifier">
+                {impact.baselineGlobalId}
+                <small>SHA-256 {impact.baselineSnapshotHash}</small>
+              </td>
+              <td data-language-exempt="identifier">
+                {impact.oldRevisionGlobalId}
+                <small>SHA-256 {impact.oldRevisionSnapshotHash}</small>
+              </td>
+              <td data-language-exempt="identifier">
+                {impact.newRevisionGlobalId}
+                <small>SHA-256 {impact.newRevisionSnapshotHash}</small>
+              </td>
+              <td data-language-exempt="identifier">
+                {impact.requirementGlobalId}
+              </td>
+              <td>
+                {formatDateTime(locale, impact.occurredAt)}
+                <small data-language-exempt="business-data">
+                  {impact.initiatedByUserId}
+                </small>
+              </td>
+              <td>
+                <SemanticStatus label={t("Requires review")} tone="warning" />
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan={6}>
+              {t("No baseline successor impact is recorded.")}
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+}
+
 function impactDetails(
   t: Translator,
   action: ReviewAction,
@@ -1386,6 +1466,45 @@ function GateReviewWorkspace({
     null,
   );
   const [commandEpoch, setCommandEpoch] = useState(0);
+  const [baselineSourceState, setBaselineSourceState] =
+    useState<BaselineSourceState>({ kind: "loading" });
+  const [selectedBaselineId, setSelectedBaselineId] = useState("");
+  const [baselineAttachState, setBaselineAttachState] =
+    useState<BaselineAttachState>({ kind: "idle" });
+  const baselineSourceRequired = evidence.requirements.some((requirement) =>
+    requirement.allowedEvidenceKinds.includes("release_baseline"),
+  );
+
+  useEffect(() => {
+    if (!baselineSourceRequired) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadDocumentBaselines(project.globalId, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setBaselineSourceState({ kind: "loaded", value });
+        setSelectedBaselineId((current) =>
+          value.items.some((baseline) => baseline.globalId === current)
+            ? current
+            : (value.items[0]?.globalId ?? ""),
+        );
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof GateReviewRequestCancelledError
+        )
+          return;
+        setBaselineSourceState({
+          failure: toRequestFailure(error),
+          kind: "failed",
+        });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [baselineSourceRequired, dataSource, project.globalId]);
+
   if (!selectedRequirementCandidate) {
     throw new Error("A validated Gate review response has no requirements.");
   }
@@ -1395,6 +1514,25 @@ function GateReviewWorkspace({
       (reference) => reference.globalId === selectedEvidenceId,
     ) ??
     selectedRequirement.evidence[0] ??
+    null;
+  const attachableBaselines =
+    baselineSourceState.kind === "loaded"
+      ? baselineSourceState.value.items.filter(
+          (baseline) =>
+            !selectedRequirement.evidence.some(
+              (reference) =>
+                reference.kind === "release_baseline" &&
+                reference.sourceGlobalId === baseline.globalId &&
+                reference.revision === baseline.version &&
+                reference.objectHash === baseline.snapshotHash,
+            ),
+        )
+      : [];
+  const selectedBaseline =
+    attachableBaselines.find(
+      (baseline) => baseline.globalId === selectedBaselineId,
+    ) ??
+    attachableBaselines[0] ??
     null;
   const activePolicy = activeCycle?.policyDefinition;
   const selectablePolicies = view.availablePolicies;
@@ -1687,6 +1825,75 @@ function GateReviewWorkspace({
     setSelectedActionKey("");
     setCommandFailure(null);
     setConfirmedMessage(null);
+  };
+
+  const executeBaselineAttach = (
+    baselineGlobalId: string,
+    idempotencyKey = `gate-baseline-evidence-${globalThis.crypto.randomUUID()}`,
+  ): void => {
+    if (
+      baselineSourceState.kind !== "loaded" ||
+      !sessionCommandContext ||
+      !evidence.permissions.canAttachEvidence ||
+      !selectedRequirement.allowedEvidenceKinds.includes("release_baseline") ||
+      processingActionCode
+    )
+      return;
+    const baseline = baselineSourceState.value.items.find(
+      (candidate) => candidate.globalId === baselineGlobalId,
+    );
+    if (!baseline) return;
+    const controller = new AbortController();
+    setBaselineAttachState({
+      baselineGlobalId,
+      idempotencyKey,
+      kind: "processing",
+    });
+    void dataSource
+      .attachEvidence(
+        project.globalId,
+        gate.globalId,
+        selectedRequirement.key,
+        {
+          expectedGateVersion: gate.version,
+          evidenceKind: "release_baseline",
+          sourceGlobalId: baseline.globalId,
+          sourceVersion: baseline.version,
+          sourceHash: baseline.snapshotHash,
+        },
+        {
+          csrfToken: sessionCommandContext.csrfToken,
+          idempotencyKey,
+          signal: controller.signal,
+        },
+      )
+      .then((review) => {
+        const reference = review.evidence.requirements
+          .find((requirement) => requirement.key === selectedRequirement.key)
+          ?.evidence.find(
+            (candidate) =>
+              candidate.kind === "release_baseline" &&
+              candidate.sourceGlobalId === baseline.globalId &&
+              candidate.revision === baseline.version &&
+              candidate.objectHash === baseline.snapshotHash,
+          );
+        if (reference) setSelectedEvidenceId(reference.globalId);
+        setBaselineAttachState({ kind: "idle" });
+        replaceReview(review);
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof GateReviewRequestCancelledError
+        )
+          return;
+        setBaselineAttachState({
+          baselineGlobalId,
+          failure: toRequestFailure(error),
+          idempotencyKey,
+          kind: "failed",
+        });
+      });
   };
 
   const executeCommand = useCallback(
@@ -2351,6 +2558,164 @@ function GateReviewWorkspace({
               }}
             />
             <SelectedEvidenceDetail selectedEvidence={selectedEvidence} />
+          </section>
+          {selectedRequirement.allowedEvidenceKinds.includes(
+            "release_baseline",
+          ) ? (
+            <section
+              aria-labelledby="baseline-evidence-source-heading"
+              className="review-room-section"
+            >
+              <h3 id="baseline-evidence-source-heading">
+                {t("Exact baseline evidence source")}
+              </h3>
+              {!evidence.permissions.canAttachEvidence ? (
+                <p className="empty-inline">
+                  {t(
+                    "The exact baseline sources are read only for your current permissions.",
+                  )}
+                </p>
+              ) : baselineSourceState.kind === "loading" ? (
+                <div aria-busy="true" className="inline-status" role="status">
+                  <SemanticStatus label={t("Loading")} tone="info" />
+                  <span>{t("Loading exact release baselines")}</span>
+                </div>
+              ) : baselineSourceState.kind === "failed" ? (
+                <div role="alert">
+                  <RequestFailurePanel failure={baselineSourceState.failure} />
+                </div>
+              ) : attachableBaselines.length === 0 ? (
+                <p className="empty-inline">
+                  {t(
+                    "No unattached exact release baseline is available for this requirement.",
+                  )}
+                </p>
+              ) : (
+                <div className="gate-baseline-source">
+                  <label className="field-control">
+                    <span>{t("Evidence kind")}</span>
+                    <Select disabled value="release_baseline">
+                      <option value="release_baseline">
+                        {gateEvidenceKindLabel(t, "release_baseline")}
+                      </option>
+                    </Select>
+                  </label>
+                  <label className="field-control">
+                    <span>{t("Release baseline source")}</span>
+                    <Select
+                      data-language-exempt="business-data"
+                      disabled={baselineAttachState.kind === "processing"}
+                      onChange={(event) => {
+                        setSelectedBaselineId(event.currentTarget.value);
+                        setBaselineAttachState({ kind: "idle" });
+                      }}
+                      value={selectedBaseline?.globalId ?? ""}
+                    >
+                      {attachableBaselines.map((baseline) => (
+                        <option
+                          key={baseline.globalId}
+                          value={baseline.globalId}
+                        >
+                          {baseline.label} · v{String(baseline.version)}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                  {selectedBaseline ? (
+                    <DefinitionList
+                      rows={[
+                        {
+                          label: t("Source global ID"),
+                          value: selectedBaseline.globalId,
+                          exempt: "identifier",
+                        },
+                        {
+                          label: t("Source version"),
+                          value: formatNumber(
+                            locale,
+                            selectedBaseline.version,
+                            0,
+                          ),
+                        },
+                        {
+                          label: t("Source hash"),
+                          value: selectedBaseline.snapshotHash,
+                          exempt: "identifier",
+                        },
+                        {
+                          label: t("Members"),
+                          value: formatNumber(
+                            locale,
+                            selectedBaseline.members.length,
+                            0,
+                          ),
+                        },
+                      ]}
+                    />
+                  ) : null}
+                  {baselineAttachState.kind === "failed" ? (
+                    <div className="command-failure" role="alert">
+                      <RequestFailurePanel
+                        failure={baselineAttachState.failure}
+                      />
+                      <div className="detail-actions">
+                        {["retryable", "conflict"].includes(
+                          classifyFailure(baselineAttachState.failure),
+                        ) ? (
+                          <Button
+                            onClick={() => {
+                              executeBaselineAttach(
+                                baselineAttachState.baselineGlobalId,
+                                baselineAttachState.idempotencyKey,
+                              );
+                            }}
+                          >
+                            {t("Retry with the same command key")}
+                          </Button>
+                        ) : null}
+                        {baselineAttachState.failure.problem?.status === 409 ? (
+                          <Button onClick={reload}>
+                            {t("Reload Gate review")}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+                  <div className="detail-actions gate-baseline-source__actions">
+                    <Button
+                      disabled={
+                        !selectedBaseline ||
+                        !sessionCommandContext ||
+                        baselineAttachState.kind === "processing" ||
+                        Boolean(processingActionCode)
+                      }
+                      onClick={() => {
+                        if (selectedBaseline)
+                          executeBaselineAttach(selectedBaseline.globalId);
+                      }}
+                    >
+                      {baselineAttachState.kind === "processing"
+                        ? t("Attaching exact baseline evidence")
+                        : t("Attach exact baseline evidence")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </section>
+          ) : null}
+          <section
+            aria-labelledby="baseline-impact-heading"
+            className="review-room-section"
+          >
+            <h3 id="baseline-impact-heading">
+              {t("Baseline successor impact")}
+            </h3>
+            <p className="context-help">
+              {t(
+                "Only explicitly registered exact baseline members can appear here; prior evidence and decisions remain immutable.",
+              )}
+            </p>
+            <BaselineImpactTable impacts={evidence.baselineImpacts} />
           </section>
           <section
             aria-labelledby="gate-blockers-heading"

@@ -8,6 +8,7 @@ import type {
   GateReviewViewModel,
 } from "../../src/domain/view-models";
 import { translate } from "../../src/i18n/runtime";
+import { documentBaselineWorkspaceFixture } from "../support/document-fixture";
 import {
   gateReviewDecidedFixture,
   gateReviewDecisionReadyFixture,
@@ -40,6 +41,10 @@ const submitReviewEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-cycles\/[^/?]+\/reviews(?:\?.*)?$/u;
 const receiptEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-command-receipts\/gate\.review\.submit(?:\?.*)?$/u;
+const documentBaselinesEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/document-baselines(?:\?.*)?$/u;
+const attachEvidenceEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/requirements\/[^/?]+\/evidence(?:\?.*)?$/u;
 const browserDecisionBlockedReasonCases = [
   ["REQUIRED_P0_EVIDENCE_MISSING", "Required P0 evidence is missing."],
   ["FILE_EVIDENCE_UNSAFE", "File evidence is not safe and current."],
@@ -187,6 +192,78 @@ function problem(
     traceId,
     type: `urn:npi:problem:${code.toLowerCase()}`,
   };
+}
+
+function projectBaselineWorkspace() {
+  const workspace = documentBaselineWorkspaceFixture();
+  return {
+    ...workspace,
+    project: {
+      ...workspace.project,
+      globalId: projectGlobalId,
+    },
+  };
+}
+
+function releaseBaselineReview(options: {
+  attached: boolean;
+  impacted?: boolean;
+}): GateReviewViewModel {
+  const base = gateReviewFixture();
+  const workspace = projectBaselineWorkspace();
+  const baseline = workspace.items[0];
+  const sourceImpact = workspace.impacts[0];
+  const firstRequirement = base.evidence.requirements[0];
+  if (!baseline || !sourceImpact || !firstRequirement)
+    throw new Error("The browser Gate baseline fixture is incomplete.");
+  const reference = {
+    globalId: "31313131-3131-4313-8313-313131313131",
+    kind: "release_baseline" as const,
+    sourceObjectType: "release_baseline" as const,
+    sourceGlobalId: baseline.globalId,
+    revision: baseline.version,
+    objectHash: baseline.snapshotHash,
+    createdAt: "2026-07-31T12:00:00Z",
+    createdBy: "reviewer@example.invalid",
+    baseline,
+  };
+  const attached = options.attached ? [reference] : [];
+  const evidence = {
+    ...base.evidence,
+    baselineImpacts:
+      options.attached && options.impacted
+        ? [
+            {
+              ...sourceImpact,
+              gateGlobalId: base.gate.globalId,
+              requirementGlobalId: firstRequirement.globalId,
+              evidenceReferenceGlobalId: reference.globalId,
+              occurredAt: "2026-08-01T09:00:00Z",
+            },
+          ]
+        : [],
+    permissions: {
+      ...base.evidence.permissions,
+      canAttachEvidence: true,
+    },
+    requirements: base.evidence.requirements.map((requirement, index) =>
+      index === 0
+        ? {
+            ...requirement,
+            allowedEvidenceKinds: [
+              ...requirement.allowedEvidenceKinds,
+              "release_baseline" as const,
+            ],
+            evidence: [...requirement.evidence, ...attached],
+          }
+        : requirement,
+    ),
+    summary: {
+      ...base.evidence.summary,
+      evidenceCount: base.evidence.summary.evidenceCount + attached.length,
+    },
+  };
+  return { ...base, evidence };
 }
 
 async function fulfillApi(
@@ -363,6 +440,13 @@ async function expectLocalizedReviewRoomLoaded(
   ).toBeVisible();
 }
 
+async function expectAxeClean(page: Page): Promise<void> {
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+}
+
 test.describe("live Gate Review Room", () => {
   test("renders one dense three-pane workspace with embedded controlled evidence", async ({
     page,
@@ -400,6 +484,65 @@ test.describe("live Gate Review Room", () => {
       idempotencyKey: undefined,
       method: "GET",
       url: `http://127.0.0.1:4173/api/npi/v1/projects/${projectGlobalId}/gates/${gateGlobalId}/review`,
+    });
+  });
+
+  test("attaches one exact immutable release baseline and reloads authoritative Gate truth", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const initial = releaseBaselineReview({ attached: false });
+    const attached = releaseBaselineReview({ attached: true });
+    const baselineWorkspace = projectBaselineWorkspace();
+    const baseline = baselineWorkspace.items[0];
+    const requirement = initial.evidence.requirements[0];
+    if (!baseline || !requirement)
+      throw new Error("The browser Gate baseline fixture is incomplete.");
+    let current = initial;
+    let reviewLoads = 0;
+    let attachBody: unknown = null;
+    await page.route(reviewEndpoint, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      reviewLoads += 1;
+      await fulfillApi(route, current);
+    });
+    await page.route(documentBaselinesEndpoint, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await fulfillApi(route, baselineWorkspace);
+    });
+    await page.route(attachEvidenceEndpoint, async (route) => {
+      const request = route.request();
+      expect(request.method()).toBe("POST");
+      expect(request.headers()["x-frappe-csrf-token"]).toBe(csrfToken);
+      expect(request.headers()["idempotency-key"]).toMatch(
+        /^gate-baseline-evidence-/u,
+      );
+      attachBody = request.postDataJSON();
+      current = attached;
+      await fulfillApi(route, attached.evidence, {
+        idempotencyReplayed: false,
+        status: 201,
+        traceId: "trace-p5-03-gate-baseline-attach",
+      });
+    });
+
+    await openGate(page);
+    await expectReviewRoomLoaded(page);
+    await expect(
+      page.getByRole("heading", { name: "Exact baseline evidence source" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Attach exact baseline evidence" })
+      .click();
+
+    await expect.poll(() => reviewLoads).toBeGreaterThanOrEqual(2);
+    await expect(page.getByText(baseline.globalId).first()).toBeVisible();
+    expect(attachBody).toEqual({
+      expectedGateVersion: initial.gate.version,
+      evidenceKind: "release_baseline",
+      sourceGlobalId: baseline.globalId,
+      sourceVersion: baseline.version,
+      sourceHash: baseline.snapshotHash,
     });
   });
 
@@ -1718,6 +1861,79 @@ test.describe("@visual live Gate Review Room", () => {
       } finally {
         await cleanup();
       }
+    });
+  }
+});
+
+const baselineImpactVisualCases = [
+  {
+    height: 768,
+    locale: "en",
+    name: "p5-03-gate-baseline-impact-en-1366x768-100",
+    width: 1366,
+    zoom: 1,
+  },
+  {
+    height: 900,
+    locale: "zh",
+    name: "p5-03-gate-baseline-impact-zh-1440x900-125",
+    width: 1440,
+    zoom: 1.25,
+  },
+  {
+    height: 1080,
+    locale: "zh-TW",
+    name: "p5-03-gate-baseline-impact-zh-TW-1920x1080-150",
+    width: 1920,
+    zoom: 1.5,
+  },
+] as const;
+
+test.describe("@visual P5-03 Gate baseline evidence and impact lineage", () => {
+  for (const visual of baselineImpactVisualCases) {
+    test(visual.name, async ({ page }) => {
+      await page.setViewportSize(
+        effectiveViewport(
+          { height: visual.height, width: visual.width },
+          visual.zoom,
+        ),
+      );
+      await page.emulateMedia({
+        colorScheme: "light",
+        reducedMotion: "reduce",
+      });
+      await installSession(page, visual.locale);
+      await installReview(
+        page,
+        releaseBaselineReview({ attached: true, impacted: true }),
+      );
+      await page.route(documentBaselinesEndpoint, async (route) => {
+        await fulfillApi(route, projectBaselineWorkspace());
+      });
+      await openGate(page, visual.locale);
+      await expectLocalizedReviewRoomLoaded(page, visual.locale);
+      const impactHeading = page.getByRole("heading", {
+        name: translate(visual.locale, "Baseline successor impact"),
+      });
+      await expect(impactHeading).toBeVisible();
+      await expect(
+        page.getByRole("table", {
+          name: translate(visual.locale, "Baseline successor impact lineage"),
+        }),
+      ).toBeVisible();
+      await expectNoMixedLanguage(page, visual.locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+      await page.addStyleTag({
+        content:
+          "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+      });
+      await page.evaluate(async () => document.fonts.ready);
+      await impactHeading.scrollIntoViewIfNeeded();
+      await expect(page).toHaveScreenshot(`${visual.name}.png`, {
+        fullPage: false,
+      });
     });
   }
 });

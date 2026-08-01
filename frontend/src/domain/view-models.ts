@@ -172,7 +172,10 @@ export interface ProjectCockpitViewModel {
 
 export type GateRequirementClassification = "required" | "optional";
 export type GateRequirementPriority = "P0" | "P1" | "P2";
-export type GateEvidenceKind = "wbs_item" | "file_revision";
+export type GateEvidenceKind =
+  | "wbs_item"
+  | "file_revision"
+  | "release_baseline";
 export type GateEvidenceScanState = "pending" | "clean" | "failed" | "infected";
 export type GateRequirementEvidenceState =
   | "missing"
@@ -186,6 +189,62 @@ export interface GateEvidencePersonViewModel {
   memberId: string;
   userId: string;
   displayName: string;
+}
+
+export interface GateEvidenceBaselineViewModel {
+  globalId: string;
+  label: string;
+  version: 1;
+  snapshotHash: string;
+  policy: {
+    globalId: string;
+    version: number;
+    snapshotHash: string;
+  };
+  createdByUserId: string;
+  createdAt: string;
+  members: readonly {
+    globalId: string;
+    sequence: number;
+    documentGlobalId: string;
+    revisionGlobalId: string;
+    major: number;
+    minor: number;
+    revisionSnapshotHash: string;
+    lifecycleVersion: number;
+    releaseEventGlobalId: string;
+    releaseSnapshotHash: string;
+    memberHash: string;
+    files: readonly {
+      fileRevisionGlobalId: string;
+      fileDocumentGlobalId: string;
+      fileName: string;
+      mimeType: string;
+      sizeBytes: number;
+      sha256: string;
+      scanState: "clean";
+    }[];
+  }[];
+}
+
+export type DocumentBaselineSummaryViewModel = GateEvidenceBaselineViewModel;
+
+export interface DocumentBaselineImpactViewModel {
+  globalId: string;
+  eventType: "invalidated";
+  dependencyGlobalId: string;
+  baselineGlobalId: string;
+  baselineSnapshotHash: string;
+  oldRevisionGlobalId: string;
+  oldRevisionSnapshotHash: string;
+  newRevisionGlobalId: string;
+  newRevisionSnapshotHash: string;
+  gateGlobalId: string;
+  requirementGlobalId: string;
+  evidenceReferenceGlobalId: string;
+  initiatedByUserId: string;
+  occurredAt: string;
+  eventHash: string;
 }
 
 export interface GateEvidenceReferenceViewModel {
@@ -203,6 +262,7 @@ export interface GateEvidenceReferenceViewModel {
     sizeBytes: number;
     scanState: GateEvidenceScanState;
   };
+  baseline?: GateEvidenceBaselineViewModel;
 }
 
 export interface GateRequirementViewModel {
@@ -242,6 +302,7 @@ export interface GateEvidenceViewModel {
     frozenBy: string;
   };
   requirements: readonly GateRequirementViewModel[];
+  baselineImpacts: readonly DocumentBaselineImpactViewModel[];
   summary: {
     requiredCount: number;
     missingRequiredCount: number;

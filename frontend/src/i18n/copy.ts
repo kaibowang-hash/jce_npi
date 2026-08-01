@@ -420,6 +420,8 @@ export function gateEvidenceKindLabel(
       return t("WBS item");
     case "file_revision":
       return t("Private file revision");
+    case "release_baseline":
+      return t("Release baseline");
   }
 }
 
@@ -526,6 +528,8 @@ export function gateReviewDependencyReasonLabel(
       return t("A controlled Gate source object changed.");
     case "GATE_WORK_ITEM_CHANGED":
       return t("A controlled Gate work item changed.");
+    case "BASELINE_SUCCESSOR_IMPACT":
+      return t("An exact baseline input gained a successor revision.");
     case "GATE_INPUT_CHANGED":
       return t("The exact Gate input snapshot changed.");
     default:

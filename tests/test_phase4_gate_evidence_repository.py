@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib
+import inspect
 import sys
 import types
 import unittest
@@ -21,6 +22,19 @@ OWNER_MEMBER_ID = UUID("4b5e2ed1-0e5a-41b6-a217-6f84a809ba36")
 REVIEWER_MEMBER_ID = UUID("44f7b429-a527-4304-865d-d61e6a42320b")
 WBS_ID = UUID("590b332e-1ec4-44d8-8778-8b84eaf079bc")
 FILE_REVISION_ID = UUID("2579bd55-bd84-461a-ae82-9f4f2f31a6f3")
+BASELINE_ID = UUID("1ba71ee3-c1fe-46d9-b9c6-67fb3c06aff2")
+BASELINE_MEMBER_IDS = (
+    UUID("1087d97c-f111-45b8-8822-87300ccda9e2"),
+    UUID("f301cb8e-2bf0-410b-90e0-1b8b541d0d1c"),
+)
+BASELINE_DOCUMENT_IDS = (
+    UUID("344a0a84-bac9-4b04-8f6d-730ec3398b00"),
+    UUID("cb50ea84-94c5-4088-8328-7641487e90d3"),
+)
+BASELINE_REVISION_IDS = (
+    UUID("45909373-97de-4931-824c-bc12a259f780"),
+    UUID("0bf29e7c-6a8e-46fa-ab8b-0084d2b2dc03"),
+)
 TENANT_ID = "TENANT-A"
 
 
@@ -125,6 +139,7 @@ class FakeStore:
         name_field = {
             "NPI Project Work Idempotency": "record_id",
             "NPI Gate Evidence Reference": "global_id",
+            "NPI Baseline Gate Dependency": "global_id",
             "NPI Audit Event": "event_id",
         }.get(doctype, "name")
         name = str(document.get(name_field) or document.get("name"))
@@ -295,6 +310,20 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
         self.repository_module.file_revision_source_snapshot = (
             self._file_source_snapshot
         )
+        self.baseline_load_calls: list[tuple[str, UUID, bool]] = []
+        self.baseline = self._release_baseline()
+
+        def load_document_baseline(project, baseline_id: UUID, *, lock: bool):
+            self.baseline_load_calls.append((str(project.global_id), baseline_id, lock))
+            return self.baseline if baseline_id == BASELINE_ID else None
+
+        self.repository_module.load_document_baseline = load_document_baseline
+        self.repository_module.document_baseline_response = (
+            self._baseline_response
+        )
+        self.repository_module.load_project_baseline_impacts = (
+            lambda project, *, gate_global_id: ()
+        )
         self._seed()
 
     def tearDown(self) -> None:
@@ -304,21 +333,24 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             if module is not None:
                 sys.modules[name] = module
 
-    def _template_snapshot(self):
+    def _template_snapshot(self, *, include_release_baseline: bool = True):
         EvidenceKind = self.template_domain.EvidenceKind
         Classification = self.template_domain.GateRequirementClassification
         Priority = self.template_domain.GateRequirementPriority
         Requirement = self.template_domain.GateRequirementDefinition
         ProjectType = importlib.import_module("npi_core.project.domain").ProjectType
+        allowed_evidence_kinds = [
+            EvidenceKind.WBS_ITEM,
+            EvidenceKind.FILE_REVISION,
+        ]
+        if include_release_baseline:
+            allowed_evidence_kinds.append(EvidenceKind.RELEASE_BASELINE)
         requirement = Requirement(
             key="drawing",
             title="Released drawing",
             classification=Classification.REQUIRED,
             priority=Priority.P0,
-            allowed_evidence_kinds=(
-                EvidenceKind.WBS_ITEM,
-                EvidenceKind.FILE_REVISION,
-            ),
+            allowed_evidence_kinds=tuple(allowed_evidence_kinds),
         )
         draft = self.template_domain.GateTemplateVersion.create_draft(
             gate_template_global_id=TEMPLATE_ID,
@@ -503,6 +535,78 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             "sizeBytes": int(document.size_bytes),
         }
 
+    @staticmethod
+    def _release_baseline():
+        snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(BASELINE_ID),
+            "tenantId": TENANT_ID,
+            "projectGlobalId": str(PROJECT_ID),
+            "label": "G2 release package",
+            "version": 1,
+            "members": [
+                {
+                    "globalId": str(member_id),
+                    "sequence": index,
+                    "documentGlobalId": str(document_id),
+                    "revisionGlobalId": str(revision_id),
+                    "revisionSnapshotHash": hash_value,
+                }
+                for index, (member_id, document_id, revision_id, hash_value) in enumerate(
+                    zip(
+                        BASELINE_MEMBER_IDS,
+                        BASELINE_DOCUMENT_IDS,
+                        BASELINE_REVISION_IDS,
+                        ("e" * 64, "f" * 64),
+                        strict=True,
+                    ),
+                    start=1,
+                )
+            ],
+        }
+        return types.SimpleNamespace(
+            global_id=BASELINE_ID,
+            version=1,
+            snapshot_hash="d" * 64,
+            snapshot_payload=lambda: snapshot,
+            members=tuple(
+                types.SimpleNamespace(
+                    global_id=member_id,
+                    sequence=index,
+                    document_global_id=document_id,
+                    revision_global_id=revision_id,
+                    revision_snapshot_hash=hash_value,
+                )
+                for index, (member_id, document_id, revision_id, hash_value) in enumerate(
+                    zip(
+                        BASELINE_MEMBER_IDS,
+                        BASELINE_DOCUMENT_IDS,
+                        BASELINE_REVISION_IDS,
+                        ("e" * 64, "f" * 64),
+                        strict=True,
+                    ),
+                    start=1,
+                )
+            ),
+        )
+
+    @staticmethod
+    def _baseline_response(baseline) -> dict[str, object]:
+        return {
+            "globalId": str(baseline.global_id),
+            "label": "G2 release package",
+            "version": baseline.version,
+            "snapshotHash": baseline.snapshot_hash,
+            "policy": {
+                "globalId": str(TEMPLATE_ID),
+                "version": 1,
+                "snapshotHash": "a" * 64,
+            },
+            "createdByUserId": "Administrator",
+            "createdAt": "2026-07-31T12:00:00Z",
+            "members": [],
+        }
+
     def _freeze(self, repository=None, *, key: str = "f" * 64):
         return (repository or self._repository()).freeze_requirements(
             PROJECT_ID,
@@ -531,6 +635,7 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             str(OWNER_MEMBER_ID),
         )
         self.assertEqual(outcome.response["summary"]["missingRequiredCount"], 1)
+        self.assertEqual(outcome.response["baselineImpacts"], [])
         self.assertEqual(outcome.response["requirements"][0]["priority"], "P0")
         self.assertEqual(
             outcome.response["requirements"][0]["owner"]["displayName"],
@@ -566,6 +671,33 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
             len(self.store.documents["NPI Audit Event"]),
             1,
         )
+
+    def test_workspace_exposes_gate_scoped_validated_baseline_impacts(self) -> None:
+        repository = self._repository()
+        outcome = self._freeze(repository)
+        self.assertIsNotNone(outcome)
+        impact = object()
+        response = {
+            "globalId": "1fb3ebaf-e053-4e0b-9955-8233563a65f7",
+            "eventType": "invalidated",
+        }
+        calls: list[tuple[str, UUID]] = []
+
+        def load_impacts(project, *, gate_global_id: UUID):
+            calls.append((str(project.global_id), gate_global_id))
+            return (impact,)
+
+        self.repository_module.load_project_baseline_impacts = load_impacts
+        self.repository_module.document_baseline_impact_response = (
+            lambda value: response if value is impact else None
+        )
+
+        workspace = repository.evidence_workspace(PROJECT_ID, GATE_ID)
+
+        self.assertIsNotNone(workspace)
+        assert workspace is not None
+        self.assertEqual(calls, [(str(PROJECT_ID), GATE_ID)])
+        self.assertEqual(workspace["baselineImpacts"], [response])
 
     def test_terminal_workspace_is_read_only_and_sealed_replay_survives(self) -> None:
         repository = self._repository()
@@ -822,6 +954,189 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
         self.file_revision.live_private_identity = False
         with self.assertRaises(ValueError):
             repository.evidence_workspace(PROJECT_ID, GATE_ID)
+
+    def test_release_baseline_registers_each_member_dependency_in_same_command(
+        self,
+    ) -> None:
+        repository = self._repository()
+        self._freeze(repository)
+        outcome = repository.attach_evidence(
+            PROJECT_ID,
+            GATE_ID,
+            "drawing",
+            idempotency_key="baseline-gate-evidence-attach",
+            expected_gate_version=2,
+            evidence_kind="release_baseline",
+            source_global_id=BASELINE_ID,
+            source_version=1,
+            source_hash=self.baseline.snapshot_hash,
+        )
+
+        self.assertIsNotNone(outcome)
+        assert outcome is not None
+        evidence = outcome.response["requirements"][0]["evidence"][0]
+        self.assertEqual(evidence["kind"], "release_baseline")
+        self.assertEqual(evidence["baseline"]["globalId"], str(BASELINE_ID))
+        self.assertNotIn("url", str(evidence).casefold())
+        self.assertEqual(
+            self.baseline_load_calls,
+            [
+                (str(PROJECT_ID), BASELINE_ID, True),
+                (str(PROJECT_ID), BASELINE_ID, False),
+            ],
+        )
+        dependencies = tuple(
+            self.store.documents["NPI Baseline Gate Dependency"].values()
+        )
+        self.assertEqual(len(dependencies), len(BASELINE_REVISION_IDS))
+        reference = next(
+            iter(self.store.documents["NPI Gate Evidence Reference"].values())
+        )
+        for dependency, document_id, revision_id, revision_hash in zip(
+            dependencies,
+            BASELINE_DOCUMENT_IDS,
+            BASELINE_REVISION_IDS,
+            ("e" * 64, "f" * 64),
+            strict=True,
+        ):
+            self.assertEqual(dependency.baseline_global_id, str(BASELINE_ID))
+            self.assertEqual(dependency.input_document_global_id, str(document_id))
+            self.assertEqual(dependency.input_revision_global_id, str(revision_id))
+            self.assertEqual(dependency.input_revision_snapshot_hash, revision_hash)
+            self.assertEqual(
+                dependency.evidence_reference_global_id,
+                reference.global_id,
+            )
+            self.assertRegex(dependency.dependency_key, r"^[a-f0-9]{64}$")
+            self.assertRegex(dependency.snapshot_hash, r"^[a-f0-9]{64}$")
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_baseline_dependency_system_write")
+        )
+        with self.assertRaises(
+            importlib.import_module(
+                "npi_core.gate_evidence.domain"
+            ).EvidenceAlreadyAttached
+        ):
+            repository.attach_evidence(
+                PROJECT_ID,
+                GATE_ID,
+                "drawing",
+                idempotency_key="duplicate-baseline-gate-evidence",
+                expected_gate_version=3,
+                evidence_kind="release_baseline",
+                source_global_id=BASELINE_ID,
+                source_version=1,
+                source_hash=self.baseline.snapshot_hash,
+            )
+        self.assertEqual(
+            len(self.store.documents["NPI Baseline Gate Dependency"]),
+            len(BASELINE_REVISION_IDS),
+        )
+
+    def test_baseline_reference_dependencies_gate_audit_and_receipt_share_scope(
+        self,
+    ) -> None:
+        source = inspect.getsource(
+            self.repository_module.FrappeGateEvidenceRepository.attach_evidence
+        )
+        scope = source.index("with _controlled_gate_write_scope():")
+        order = (
+            "self._insert_idempotency(",
+            '"doctype": "NPI Gate Evidence Reference"',
+            "self._insert_baseline_dependencies(",
+            "gate.save()",
+            "self._refresh_gate_review_locked(project, gate)",
+            "self._append_audit(",
+            "response = self._workspace_for(project, gate)",
+            "self._seal_idempotency(idempotency, response)",
+        )
+        positions = [source.index(fragment, scope) for fragment in order]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_release_baseline_rejects_missing_tampered_version_or_hash(self) -> None:
+        repository = self._repository()
+        self._freeze(repository)
+        EvidenceSourceUnavailable = importlib.import_module(
+            "npi_core.gate_evidence.domain"
+        ).EvidenceSourceUnavailable
+        EvidenceVersionConflict = importlib.import_module(
+            "npi_core.gate_evidence.domain"
+        ).EvidenceVersionConflict
+
+        for version, snapshot_hash in (
+            (2, self.baseline.snapshot_hash),
+            (1, "0" * 64),
+        ):
+            with self.subTest(version=version, snapshot_hash=snapshot_hash):
+                with self.assertRaises(EvidenceVersionConflict):
+                    repository.attach_evidence(
+                        PROJECT_ID,
+                        GATE_ID,
+                        "drawing",
+                        idempotency_key=f"baseline-conflict-{version}-{snapshot_hash[:1]}",
+                        expected_gate_version=2,
+                        evidence_kind="release_baseline",
+                        source_global_id=BASELINE_ID,
+                        source_version=version,
+                        source_hash=snapshot_hash,
+                    )
+
+        def unavailable_baseline(*_args, **_kwargs):
+            raise self.repository_module.DocumentBaselineInputUnavailable()
+
+        self.repository_module.load_document_baseline = unavailable_baseline
+        with self.assertRaises(EvidenceSourceUnavailable):
+            repository.attach_evidence(
+                PROJECT_ID,
+                GATE_ID,
+                "drawing",
+                idempotency_key="baseline-tampered-member",
+                expected_gate_version=2,
+                evidence_kind="release_baseline",
+                source_global_id=BASELINE_ID,
+                source_version=1,
+                source_hash=self.baseline.snapshot_hash,
+            )
+        self.assertEqual(self.gate.optimistic_version, 2)
+        self.assertNotIn(
+            "NPI Gate Evidence Reference",
+            self.store.documents,
+        )
+        self.assertNotIn(
+            "NPI Baseline Gate Dependency",
+            self.store.documents,
+        )
+
+    def test_historical_template_remains_valid_without_baseline_kind(self) -> None:
+        legacy = self._template_snapshot(include_release_baseline=False)
+        self.template_snapshot = legacy
+        self.gate.gate_template_snapshot_hash = legacy.snapshot_hash
+        repository = self._repository()
+        outcome = self._freeze(repository)
+        self.assertIsNotNone(outcome)
+        assert outcome is not None
+        requirement = outcome.response["requirements"][0]
+        self.assertEqual(
+            requirement["allowedEvidenceKinds"],
+            ["file_revision", "wbs_item"],
+        )
+        with self.assertRaises(
+            importlib.import_module(
+                "npi_core.foundation.errors"
+            ).RequestValidationFailed
+        ):
+            repository.attach_evidence(
+                PROJECT_ID,
+                GATE_ID,
+                "drawing",
+                idempotency_key="legacy-template-baseline-denied",
+                expected_gate_version=2,
+                evidence_kind="release_baseline",
+                source_global_id=BASELINE_ID,
+                source_version=1,
+                source_hash=self.baseline.snapshot_hash,
+            )
+        self.assertEqual(self.baseline_load_calls, [])
 
     def test_evidence_rejects_cross_project_and_stale_source(self) -> None:
         repository = self._repository()

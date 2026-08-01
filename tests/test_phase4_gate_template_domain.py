@@ -191,6 +191,24 @@ class GateTemplateDomainTest(unittest.TestCase):
                 )
             ).publish(expected_version=1)
 
+        baseline_template = gate_template_draft(
+            requirements=(
+                GateRequirementDefinition(
+                    key="release_package",
+                    title="Release package",
+                    classification=GateRequirementClassification.REQUIRED,
+                    priority=GateRequirementPriority.P0,
+                    allowed_evidence_kinds=(EvidenceKind.RELEASE_BASELINE,),
+                ),
+            )
+        ).publish(expected_version=1)
+        self.assertEqual(
+            baseline_template.snapshot().requirements[0].canonical_dict()[
+                "allowedEvidenceKinds"
+            ],
+            ["release_baseline"],
+        )
+
     def test_legacy_project_template_hash_and_payload_remain_byte_compatible(
         self,
     ) -> None:

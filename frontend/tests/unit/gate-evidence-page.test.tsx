@@ -31,6 +31,7 @@ import {
   gateReviewRequiresReviewFixture,
   pendingExceptionFixture,
 } from "../support/gate-review-fixture";
+import { documentBaselineWorkspaceFixture } from "../support/document-fixture";
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "c".repeat(32);
@@ -87,9 +88,13 @@ function resolvedDataSource(
   overrides: Partial<GateReviewDataSource> = {},
 ): GateReviewDataSource {
   return {
+    attachEvidence: vi.fn(unexpectedCommand),
     decideException: vi.fn(unexpectedCommand),
     decideGate: vi.fn(unexpectedCommand),
     load: vi.fn(() => Promise.resolve(view)),
+    loadDocumentBaselines: vi.fn(() =>
+      Promise.resolve(documentBaselineWorkspaceFixture()),
+    ),
     reconcileCommandReceipt: vi.fn(() =>
       Promise.reject(new Error("Unexpected Gate review receipt query.")),
     ),
@@ -371,6 +376,173 @@ describe("live Gate Review Room", () => {
     expect(
       screen.getByText(
         "Select a requirement with evidence to inspect its exact controlled reference.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("offers and attaches one exact release baseline with an actor-bound command key", async () => {
+    const user = userEvent.setup();
+    const base = gateReviewFixture();
+    const baseline = documentBaselineWorkspaceFixture().items[0];
+    const firstRequirement = base.evidence.requirements[0];
+    if (!baseline || !firstRequirement)
+      throw new Error("The Gate baseline fixture is incomplete.");
+    const initial: GateReviewViewModel = {
+      ...base,
+      evidence: {
+        ...base.evidence,
+        permissions: {
+          ...base.evidence.permissions,
+          canAttachEvidence: true,
+        },
+        requirements: base.evidence.requirements.map((requirement, index) =>
+          index === 0
+            ? {
+                ...requirement,
+                allowedEvidenceKinds: [
+                  ...requirement.allowedEvidenceKinds,
+                  "release_baseline" as const,
+                ],
+              }
+            : requirement,
+        ),
+      },
+    };
+    const attachedReference = {
+      globalId: "31313131-3131-4313-8313-313131313131",
+      kind: "release_baseline" as const,
+      sourceObjectType: "release_baseline" as const,
+      sourceGlobalId: baseline.globalId,
+      revision: baseline.version,
+      objectHash: baseline.snapshotHash,
+      createdAt: "2026-07-31T12:00:00Z",
+      createdBy: "reviewer@example.invalid",
+      baseline,
+    };
+    const attached: GateReviewViewModel = {
+      ...initial,
+      evidence: {
+        ...initial.evidence,
+        requirements: initial.evidence.requirements.map((requirement, index) =>
+          index === 0
+            ? {
+                ...requirement,
+                evidence: [...requirement.evidence, attachedReference],
+              }
+            : requirement,
+        ),
+        summary: {
+          ...initial.evidence.summary,
+          evidenceCount: initial.evidence.summary.evidenceCount + 1,
+        },
+      },
+    };
+    const attachEvidence = vi.fn<GateReviewDataSource["attachEvidence"]>(() =>
+      Promise.resolve(attached),
+    );
+    renderPage(resolvedDataSource(initial, { attachEvidence }));
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Exact baseline evidence source",
+      }),
+    ).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Evidence kind" })).toHaveValue(
+      "release_baseline",
+    );
+    expect(
+      screen.getByRole("combobox", { name: "Release baseline source" }),
+    ).toHaveValue(baseline.globalId);
+    await user.click(
+      screen.getByRole("button", { name: "Attach exact baseline evidence" }),
+    );
+
+    await waitFor(() => {
+      expect(attachEvidence).toHaveBeenCalledOnce();
+    });
+    const call = attachEvidence.mock.calls[0];
+    if (!call) throw new Error("The Gate evidence command was not captured.");
+    expect(call.slice(0, 4)).toEqual([
+      initial.project.globalId,
+      initial.gate.globalId,
+      firstRequirement.key,
+      {
+        expectedGateVersion: initial.gate.version,
+        evidenceKind: "release_baseline",
+        sourceGlobalId: baseline.globalId,
+        sourceVersion: 1,
+        sourceHash: baseline.snapshotHash,
+      },
+    ]);
+    expect(call[4].csrfToken).toBe(csrfToken);
+    expect(call[4].idempotencyKey).toMatch(/^gate-baseline-evidence-/u);
+    await waitFor(() => {
+      expect(screen.getAllByText(baseline.globalId).length).toBeGreaterThan(0);
+    });
+  });
+
+  it("renders validated successor impact without mutating prior baseline evidence", async () => {
+    const base = gateReviewFixture();
+    const baselineWorkspace = documentBaselineWorkspaceFixture();
+    const baseline = baselineWorkspace.items[0];
+    const impact = baselineWorkspace.impacts[0];
+    const firstRequirement = base.evidence.requirements[0];
+    if (!baseline || !impact || !firstRequirement)
+      throw new Error("The Gate impact fixture is incomplete.");
+    const attachedReference = {
+      globalId: "31313131-3131-4313-8313-313131313131",
+      kind: "release_baseline" as const,
+      sourceObjectType: "release_baseline" as const,
+      sourceGlobalId: baseline.globalId,
+      revision: baseline.version,
+      objectHash: baseline.snapshotHash,
+      createdAt: "2026-07-31T12:00:00Z",
+      createdBy: "reviewer@example.invalid",
+      baseline,
+    };
+    const view: GateReviewViewModel = {
+      ...base,
+      evidence: {
+        ...base.evidence,
+        baselineImpacts: [
+          {
+            ...impact,
+            gateGlobalId: base.gate.globalId,
+            requirementGlobalId: firstRequirement.globalId,
+            evidenceReferenceGlobalId: attachedReference.globalId,
+          },
+        ],
+        requirements: base.evidence.requirements.map((requirement, index) =>
+          index === 0
+            ? {
+                ...requirement,
+                allowedEvidenceKinds: [
+                  ...requirement.allowedEvidenceKinds,
+                  "release_baseline" as const,
+                ],
+                evidence: [...requirement.evidence, attachedReference],
+              }
+            : requirement,
+        ),
+        summary: {
+          ...base.evidence.summary,
+          evidenceCount: base.evidence.summary.evidenceCount + 1,
+        },
+      },
+    };
+    expect(isGateReviewResponse(view)).toBe(true);
+
+    renderPage(resolvedDataSource(view));
+
+    const table = await screen.findByRole("table", {
+      name: "Baseline successor impact lineage",
+    });
+    expect(within(table).getByText(impact.oldRevisionGlobalId)).toBeVisible();
+    expect(within(table).getByText(impact.newRevisionGlobalId)).toBeVisible();
+    expect(within(table).getByText("Requires review")).toBeVisible();
+    expect(
+      screen.getByText(
+        "Only explicitly registered exact baseline members can appear here; prior evidence and decisions remain immutable.",
       ),
     ).toBeVisible();
   });

@@ -11,6 +11,8 @@ from frappe import _
 
 from npi_core.documents.baseline_domain import (
     MAX_BASELINE_MEMBERS,
+    BaselineGateDependency,
+    BaselineImpactEvent,
     DocumentBaseline,
     DocumentBaselineIdempotencyConflict,
     DocumentBaselineInputUnavailable,
@@ -24,6 +26,8 @@ from npi_core.documents.baseline_domain import (
     sha256_json,
 )
 from npi_core.documents.baseline_frappe import (
+    baseline_dependency_value,
+    baseline_impact_value,
     baseline_member_value,
     baseline_policy_value,
     document_baseline_command_write,
@@ -58,7 +62,226 @@ from npi_core.request_security import document_baseline_routes_are_disabled
 
 
 _MAX_BASELINES = 256
+_MAX_BASELINE_IMPACTS = 50_000
 _MAX_POLICIES = 64
+
+
+def load_document_baseline(
+    project,
+    baseline_global_id: UUID,
+    *,
+    lock: bool,
+) -> DocumentBaseline | None:
+    """Load one exact immutable baseline within the supplied Project scope."""
+    try:
+        document = frappe.get_doc(
+            "NPI Document Baseline",
+            str(baseline_global_id),
+            for_update=lock,
+        )
+    except frappe.DoesNotExistError:
+        return None
+    if (
+        str(document.global_id) != str(baseline_global_id)
+        or str(document.tenant_id) != str(project.tenant_id)
+        or str(document.project_global_id) != str(project.global_id)
+    ):
+        return None
+    return _validated_baseline_value(
+        project,
+        document,
+        lock_members=lock,
+    )
+
+
+def document_baseline_response(value: DocumentBaseline) -> dict[str, Any]:
+    """Return URL-free exact baseline metadata safe for normal-user APIs."""
+    return {
+        "globalId": str(value.global_id),
+        "label": value.label,
+        "version": value.version,
+        "snapshotHash": value.snapshot_hash,
+        "policy": value.policy_ref.canonical_dict(),
+        "createdByUserId": value.created_by_user_id,
+        "createdAt": value.created_at.isoformat().replace("+00:00", "Z"),
+        "members": [
+            {
+                "globalId": str(member.global_id),
+                "sequence": member.sequence,
+                "documentGlobalId": str(member.document_global_id),
+                "revisionGlobalId": str(member.revision_global_id),
+                "major": member.major,
+                "minor": member.minor,
+                "revisionSnapshotHash": member.revision_snapshot_hash,
+                "lifecycleVersion": member.lifecycle_version,
+                "releaseEventGlobalId": str(member.release_event_global_id),
+                "releaseSnapshotHash": member.release_snapshot_hash,
+                "memberHash": member.member_hash,
+                "files": [
+                    {
+                        "fileRevisionGlobalId": str(
+                            file.file_revision_global_id
+                        ),
+                        "fileDocumentGlobalId": str(
+                            file.file_document_global_id
+                        ),
+                        "fileName": file.file_name,
+                        "mimeType": file.mime_type,
+                        "sizeBytes": file.size_bytes,
+                        "sha256": file.sha256,
+                        "scanState": file.scan_state,
+                    }
+                    for file in member.release_evidence.files
+                ],
+            }
+            for member in value.members
+        ],
+    }
+
+
+def load_project_baseline_impacts(
+    project,
+    *,
+    gate_global_id: UUID | None = None,
+) -> tuple[BaselineImpactEvent, ...]:
+    """Load validated append-only impact lineage for one Project or Gate."""
+    filters: dict[str, object] = {
+        "tenant_id": str(project.tenant_id),
+        "project_global_id": str(project.global_id),
+    }
+    if gate_global_id is not None:
+        filters["gate_global_id"] = str(gate_global_id)
+    names = frappe.get_all(
+        "NPI Baseline Impact Event",
+        filters=filters,
+        pluck="name",
+        order_by="occurred_at desc, global_id desc",
+        limit_page_length=_MAX_BASELINE_IMPACTS + 1,
+    )
+    if len(names) > _MAX_BASELINE_IMPACTS:
+        raise DocumentBaselineInputUnavailable()
+    return tuple(
+        _validated_baseline_impact(
+            project,
+            frappe.get_doc("NPI Baseline Impact Event", name),
+        )
+        for name in names
+    )
+
+
+def document_baseline_impact_response(
+    value: BaselineImpactEvent,
+) -> dict[str, Any]:
+    """Return visible exact impact lineage without request or trace metadata."""
+    return {
+        "globalId": str(value.global_id),
+        "eventType": value.event_type.value,
+        "dependencyGlobalId": str(value.dependency_global_id),
+        "baselineGlobalId": str(value.baseline_global_id),
+        "baselineSnapshotHash": value.baseline_snapshot_hash,
+        "oldRevisionGlobalId": str(value.old_revision_global_id),
+        "oldRevisionSnapshotHash": value.old_revision_snapshot_hash,
+        "newRevisionGlobalId": str(value.new_revision_global_id),
+        "newRevisionSnapshotHash": value.new_revision_snapshot_hash,
+        "gateGlobalId": str(value.gate_global_id),
+        "requirementGlobalId": str(value.requirement_global_id),
+        "evidenceReferenceGlobalId": str(value.evidence_reference_global_id),
+        "initiatedByUserId": value.initiated_by_user_id,
+        "occurredAt": value.occurred_at.isoformat().replace("+00:00", "Z"),
+        "eventHash": value.event_hash,
+    }
+
+
+def _validated_baseline_impact(
+    project,
+    document,
+) -> BaselineImpactEvent:
+    try:
+        event = baseline_impact_value(document)
+        dependency_document = frappe.get_doc(
+            "NPI Baseline Gate Dependency",
+            str(event.dependency_global_id),
+        )
+        dependency: BaselineGateDependency = baseline_dependency_value(
+            dependency_document
+        )
+        baseline = load_document_baseline(
+            project,
+            dependency.baseline_global_id,
+            lock=False,
+        )
+        evidence = frappe.get_doc(
+            "NPI Gate Evidence Reference",
+            str(dependency.evidence_reference_global_id),
+        )
+        gate = frappe.get_doc(
+            "NPI Gate Shell",
+            str(dependency.gate_global_id),
+        )
+        successor = frappe.get_doc(
+            "NPI Document Revision",
+            str(event.new_revision_global_id),
+        )
+    except Exception as error:
+        raise DocumentBaselineInputUnavailable() from error
+    member_matches = bool(
+        baseline is not None
+        and baseline.snapshot_hash == dependency.baseline_snapshot_hash
+        and any(
+            member.document_global_id == dependency.input_document_global_id
+            and member.revision_global_id == dependency.input_revision_global_id
+            and member.revision_snapshot_hash
+            == dependency.input_revision_snapshot_hash
+            for member in baseline.members
+        )
+    )
+    if (
+        str(event.tenant_id) != str(project.tenant_id)
+        or event.project_global_id != UUID(str(project.global_id))
+        or _json_object(document.event_snapshot) != event.event_payload()
+        or str(document.event_hash) != event.event_hash
+        or _json_object(dependency_document.dependency_snapshot)
+        != dependency.snapshot_payload()
+        or str(dependency_document.snapshot_hash) != dependency.snapshot_hash
+        or dependency.tenant_id != event.tenant_id
+        or dependency.project_global_id != event.project_global_id
+        or event.dependency_global_id != dependency.global_id
+        or event.baseline_global_id != dependency.baseline_global_id
+        or event.baseline_snapshot_hash != dependency.baseline_snapshot_hash
+        or event.old_revision_global_id != dependency.input_revision_global_id
+        or event.old_revision_snapshot_hash
+        != dependency.input_revision_snapshot_hash
+        or event.gate_global_id != dependency.gate_global_id
+        or event.requirement_global_id != dependency.requirement_global_id
+        or event.evidence_reference_global_id
+        != dependency.evidence_reference_global_id
+        or not member_matches
+        or str(evidence.tenant_id) != event.tenant_id
+        or str(evidence.global_id)
+        != str(dependency.evidence_reference_global_id)
+        or str(evidence.project_global_id) != str(event.project_global_id)
+        or str(evidence.gate_global_id) != str(event.gate_global_id)
+        or str(evidence.requirement_global_id)
+        != str(event.requirement_global_id)
+        or str(evidence.requirement_key) != dependency.requirement_key
+        or str(evidence.evidence_kind) != "release_baseline"
+        or str(evidence.source_object_type) != "release_baseline"
+        or str(evidence.source_global_id) != str(event.baseline_global_id)
+        or int(evidence.source_version) != 1
+        or str(evidence.source_hash) != event.baseline_snapshot_hash
+        or str(gate.global_id) != str(event.gate_global_id)
+        or str(gate.project_global_id) != str(event.project_global_id)
+        or str(successor.global_id) != str(event.new_revision_global_id)
+        or str(successor.tenant_id) != event.tenant_id
+        or str(successor.project_global_id) != str(event.project_global_id)
+        or str(successor.document_global_id)
+        != str(dependency.input_document_global_id)
+        or str(successor.predecessor_revision_global_id)
+        != str(event.old_revision_global_id)
+        or str(successor.snapshot_hash) != event.new_revision_snapshot_hash
+    ):
+        raise DocumentBaselineInputUnavailable()
+    return event
 
 
 class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
@@ -80,11 +303,17 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
             limit_page_length=_MAX_BASELINES + 1,
         )
         if len(names) > _MAX_BASELINES:
-            raise ValueError("Persisted Document baseline collection exceeds its bound.")
+            raise ValueError(
+                "Persisted Document baseline collection exceeds its bound."
+            )
         baselines = [
-            self._validated_baseline(project, frappe.get_doc("NPI Document Baseline", name))
+            self._validated_baseline(
+                project,
+                frappe.get_doc("NPI Document Baseline", name),
+            )
             for name in names
         ]
+        impacts = load_project_baseline_impacts(project)
         return {
             "project": {
                 "globalId": str(project.global_id),
@@ -100,7 +329,9 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
             },
             "policies": list(policy_options),
             "items": [self._baseline_response(value) for value in baselines],
-            "impacts": [],
+            "impacts": [
+                document_baseline_impact_response(value) for value in impacts
+            ],
         }
 
     def create_baseline(
@@ -700,97 +931,81 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
         receipt.save()
 
     def _validated_baseline(self, project, document) -> DocumentBaseline:
-        member_rows = _bounded_documents(
-            "NPI Document Baseline Member",
-            {
-                "baseline_global_id": str(document.global_id),
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-            },
-            order_by="member_sequence asc, global_id asc",
-            maximum=MAX_BASELINE_MEMBERS,
+        return _validated_baseline_value(
+            project,
+            document,
+            lock_members=False,
         )
-        try:
-            members = tuple(baseline_member_value(row) for row in member_rows)
-            value = DocumentBaseline(
-                global_id=UUID(str(document.global_id)),
-                tenant_id=str(document.tenant_id),
-                project_global_id=UUID(str(document.project_global_id)),
-                label=str(document.label),
-                policy_ref=DocumentBaselinePolicyReference(
-                    UUID(str(document.policy_global_id)),
-                    int(document.policy_version),
-                    str(document.policy_snapshot_hash),
-                ),
-                members=members,
-                created_by_user_id=str(document.created_by_user_id),
-                created_at=_datetime_value(document.created_at),
-                request_id=str(document.request_id),
-                trace_id=str(document.trace_id),
-                version=int(document.baseline_version),
-                snapshot_hash=str(document.snapshot_hash),
-            )
-        except (RequestValidationFailed, TypeError, ValueError) as error:
-            raise DocumentBaselineInputUnavailable() from error
-        supplied_snapshot = _json_object(document.baseline_snapshot)
-        if (
-            str(document.tenant_id) != str(project.tenant_id)
-            or str(document.project_global_id) != str(project.global_id)
-            or int(document.member_count) != len(members)
-            or supplied_snapshot != value.snapshot_payload()
-            or any(
-                _json_object(row.member_snapshot) != member.canonical_dict()
-                or str(row.member_hash) != member.member_hash
-                or str(row.baseline_snapshot_hash) != value.snapshot_hash
-                for row, member in zip(member_rows, members, strict=True)
-            )
-        ):
-            raise DocumentBaselineInputUnavailable()
-        return value
 
     @staticmethod
     def _baseline_response(value: DocumentBaseline) -> dict[str, Any]:
-        return {
-            "globalId": str(value.global_id),
-            "label": value.label,
-            "version": value.version,
-            "snapshotHash": value.snapshot_hash,
-            "policy": value.policy_ref.canonical_dict(),
-            "createdByUserId": value.created_by_user_id,
-            "createdAt": value.created_at.isoformat().replace("+00:00", "Z"),
-            "members": [
-                {
-                    "globalId": str(member.global_id),
-                    "sequence": member.sequence,
-                    "documentGlobalId": str(member.document_global_id),
-                    "revisionGlobalId": str(member.revision_global_id),
-                    "major": member.major,
-                    "minor": member.minor,
-                    "revisionSnapshotHash": member.revision_snapshot_hash,
-                    "lifecycleVersion": member.lifecycle_version,
-                    "releaseEventGlobalId": str(member.release_event_global_id),
-                    "releaseSnapshotHash": member.release_snapshot_hash,
-                    "memberHash": member.member_hash,
-                    "files": [
-                        {
-                            "fileRevisionGlobalId": str(
-                                file.file_revision_global_id
-                            ),
-                            "fileDocumentGlobalId": str(
-                                file.file_document_global_id
-                            ),
-                            "fileName": file.file_name,
-                            "mimeType": file.mime_type,
-                            "sizeBytes": file.size_bytes,
-                            "sha256": file.sha256,
-                            "scanState": file.scan_state,
-                        }
-                        for file in member.release_evidence.files
-                    ],
-                }
-                for member in value.members
-            ],
-        }
+        return document_baseline_response(value)
+
+
+def _validated_baseline_value(
+    project,
+    document,
+    *,
+    lock_members: bool,
+) -> DocumentBaseline:
+    names = frappe.get_all(
+        "NPI Document Baseline Member",
+        filters={"baseline_global_id": str(document.global_id)},
+        pluck="name",
+        order_by="member_sequence asc, global_id asc",
+        limit_page_length=MAX_BASELINE_MEMBERS + 1,
+    )
+    if not names or len(names) > MAX_BASELINE_MEMBERS:
+        raise DocumentBaselineInputUnavailable()
+    member_rows = [
+        frappe.get_doc(
+            "NPI Document Baseline Member",
+            name,
+            for_update=lock_members,
+        )
+        for name in names
+    ]
+    try:
+        members = tuple(baseline_member_value(row) for row in member_rows)
+        value = DocumentBaseline(
+            global_id=UUID(str(document.global_id)),
+            tenant_id=str(document.tenant_id),
+            project_global_id=UUID(str(document.project_global_id)),
+            label=str(document.label),
+            policy_ref=DocumentBaselinePolicyReference(
+                UUID(str(document.policy_global_id)),
+                int(document.policy_version),
+                str(document.policy_snapshot_hash),
+            ),
+            members=members,
+            created_by_user_id=str(document.created_by_user_id),
+            created_at=_datetime_value(document.created_at),
+            request_id=str(document.request_id),
+            trace_id=str(document.trace_id),
+            version=int(document.baseline_version),
+            snapshot_hash=str(document.snapshot_hash),
+        )
+    except (RequestValidationFailed, TypeError, ValueError) as error:
+        raise DocumentBaselineInputUnavailable() from error
+    supplied_snapshot = _json_object(document.baseline_snapshot)
+    if (
+        str(document.tenant_id) != str(project.tenant_id)
+        or str(document.project_global_id) != str(project.global_id)
+        or int(document.member_count) != len(members)
+        or supplied_snapshot != value.snapshot_payload()
+        or any(
+            str(row.tenant_id) != str(project.tenant_id)
+            or str(row.project_global_id) != str(project.global_id)
+            or str(row.document_baseline) != str(value.global_id)
+            or str(row.baseline_global_id) != str(value.global_id)
+            or _json_object(row.member_snapshot) != member.canonical_dict()
+            or str(row.member_hash) != member.member_hash
+            or str(row.baseline_snapshot_hash) != value.snapshot_hash
+            for row, member in zip(member_rows, members, strict=True)
+        )
+    ):
+        raise DocumentBaselineInputUnavailable()
+    return value
 
 
 def _stable_file_evidence_matches(

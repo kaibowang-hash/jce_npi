@@ -94,7 +94,11 @@ class Phase4GateEvidenceMetadataTest(unittest.TestCase):
         self.assertEqual(fields["source_snapshot"].get("fieldtype"), "JSON")
         self.assertEqual(
             fields["evidence_kind"].get("options"),
-            "wbs_item\nfile_revision",
+            "wbs_item\nfile_revision\nrelease_baseline",
+        )
+        self.assertEqual(
+            fields["source_object_type"].get("options"),
+            "wbs_item\nfile_revision\nrelease_baseline",
         )
         self.assertNotIn("url", " ".join(fields).casefold())
         self.assertTrue(all(field.get("read_only") == 1 for field in fields.values()))

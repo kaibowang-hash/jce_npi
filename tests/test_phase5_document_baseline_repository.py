@@ -149,7 +149,10 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
                 self.assertIn(fragment, replay)
 
     def test_public_response_is_url_and_storage_identity_free(self) -> None:
-        value = _function("_baseline_response").casefold()
+        wrapper = _function("_baseline_response")
+        self.assertIn("document_baseline_response(value)", wrapper)
+        response = _function("document_baseline_response")
+        value = response.casefold()
         for forbidden in (
             "file_url",
             "fileurl",
@@ -163,8 +166,74 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, value)
-        self.assertIn('"releaseSnapshotHash"', _function("_baseline_response"))
-        self.assertIn('"files"', _function("_baseline_response"))
+        self.assertIn('"releaseSnapshotHash"', response)
+        self.assertIn('"files"', response)
+
+    def test_exact_public_loader_scopes_root_and_locks_member_rows(self) -> None:
+        loader = _function("load_document_baseline")
+        validator = _function("_validated_baseline_value")
+        self.assertIn('"NPI Document Baseline"', loader)
+        self.assertIn("for_update=lock", loader)
+        self.assertIn("str(document.tenant_id) != str(project.tenant_id)", loader)
+        self.assertIn(
+            "str(document.project_global_id) != str(project.global_id)",
+            loader,
+        )
+        self.assertIn('filters={"baseline_global_id": str(document.global_id)}', validator)
+        self.assertIn("limit_page_length=MAX_BASELINE_MEMBERS + 1", validator)
+        self.assertIn("for_update=lock_members", validator)
+        for exact_field in (
+            "row.tenant_id",
+            "row.project_global_id",
+            "row.document_baseline",
+            "row.baseline_global_id",
+            "row.member_snapshot",
+            "row.member_hash",
+            "row.baseline_snapshot_hash",
+        ):
+            with self.subTest(exact_field=exact_field):
+                self.assertIn(exact_field, validator)
+
+    def test_impact_loader_revalidates_registered_lineage_and_safe_response(
+        self,
+    ) -> None:
+        workspace = _function("list_baselines")
+        loader = _function("load_project_baseline_impacts")
+        validator = _function("_validated_baseline_impact")
+        response = _function("document_baseline_impact_response")
+        for exact_scope in (
+            '"tenant_id": str(project.tenant_id)',
+            '"project_global_id": str(project.global_id)',
+            'filters["gate_global_id"] = str(gate_global_id)',
+        ):
+            with self.subTest(exact_scope=exact_scope):
+                self.assertIn(exact_scope, loader)
+        for exact_parent in (
+            '"NPI Baseline Gate Dependency"',
+            '"NPI Gate Evidence Reference"',
+            '"NPI Gate Shell"',
+            '"NPI Document Revision"',
+            "dependency.snapshot_payload()",
+            "event.event_payload()",
+            "load_document_baseline(",
+            'str(evidence.evidence_kind) != "release_baseline"',
+            "successor.predecessor_revision_global_id",
+        ):
+            with self.subTest(exact_parent=exact_parent):
+                self.assertIn(exact_parent, validator)
+        for forbidden in (
+            "requestId",
+            "traceId",
+            "fileUrl",
+            "privateUrl",
+            "cookie",
+            "credential",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden.casefold(), response.casefold())
+        self.assertIn('"eventHash"', response)
+        self.assertIn("impacts = load_project_baseline_impacts(project)", workspace)
+        self.assertIn("document_baseline_impact_response(value)", workspace)
 
 
 if __name__ == "__main__":

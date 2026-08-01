@@ -18,6 +18,11 @@ import frappe
 from frappe import _
 
 from npi_core.controlled_evidence_validation import FILE_REVISION_COMMAND_FLAG
+from npi_core.documents.baseline_domain import BaselineImpactEvent, DocumentBaseline
+from npi_core.documents.baseline_frappe import (
+    baseline_dependency_system_write,
+    baseline_dependency_value,
+)
 from npi_core.documents.domain import (
     CapabilityState,
     ConnectorState,
@@ -72,6 +77,7 @@ from npi_core.project_controls.terminal_guard import require_mutable_project
 
 _MAX_DOCUMENTS = 1_000
 _MAX_DOCUMENT_HISTORY = 256
+_MAX_BASELINE_IMPACT_DEPENDENCIES = 50_000
 _MAX_MEMBERS = 256
 _MAX_POLICIES = 64
 _CURSOR_VERSION = 1
@@ -795,6 +801,12 @@ class FrappeDocumentRepository:
                         self.trace_id,
                     )
                     raise
+                self._append_baseline_impacts_for_successor(
+                    project,
+                    document,
+                    new_revision=append.revision,
+                    occurred_at=now,
+                )
                 try:
                     _apply_document_projection(document, append.document)
                     document.save()
@@ -853,6 +865,226 @@ class FrappeDocumentRepository:
                 # file after the transaction is rolled back.
                 raise
         return DocumentCommandOutcome(response)
+
+    def _append_baseline_impacts_for_successor(
+        self,
+        project,
+        document,
+        *,
+        new_revision,
+        occurred_at: datetime,
+    ) -> tuple[BaselineImpactEvent, ...]:
+        predecessor_id = new_revision.predecessor_revision_id
+        if predecessor_id is None:
+            return ()
+        names = frappe.get_all(
+            "NPI Baseline Gate Dependency",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "input_document_global_id": str(document.global_id),
+                "input_revision_global_id": str(predecessor_id),
+            },
+            pluck="name",
+            order_by="dependency_key asc, global_id asc",
+            limit_page_length=_MAX_BASELINE_IMPACT_DEPENDENCIES + 1,
+        )
+        if len(names) > _MAX_BASELINE_IMPACT_DEPENDENCIES:
+            raise ValueError(
+                "Persisted baseline dependency collection exceeds its safe bound."
+            )
+        if not names:
+            return ()
+        dependency_rows = tuple(
+            frappe.get_doc(
+                "NPI Baseline Gate Dependency",
+                name,
+                for_update=True,
+            )
+            for name in names
+        )
+        dependencies = tuple(
+            baseline_dependency_value(row) for row in dependency_rows
+        )
+        from npi_core.documents.baseline_repository import load_document_baseline
+
+        baselines: dict[UUID, DocumentBaseline] = {}
+        for row, dependency in zip(
+            dependency_rows,
+            dependencies,
+            strict=True,
+        ):
+            baseline = baselines.get(dependency.baseline_global_id)
+            if baseline is None:
+                baseline = load_document_baseline(
+                    project,
+                    dependency.baseline_global_id,
+                    lock=True,
+                )
+                if baseline is not None:
+                    baselines[dependency.baseline_global_id] = baseline
+            evidence = frappe.get_doc(
+                "NPI Gate Evidence Reference",
+                str(dependency.evidence_reference_global_id),
+                for_update=True,
+            )
+            if (
+                _json_object(row.dependency_snapshot)
+                != dependency.snapshot_payload()
+                or str(row.snapshot_hash) != dependency.snapshot_hash
+                or dependency.tenant_id != str(project.tenant_id)
+                or dependency.project_global_id != UUID(str(project.global_id))
+                or dependency.input_document_global_id
+                != UUID(str(document.global_id))
+                or dependency.input_revision_global_id != predecessor_id
+                or baseline is None
+                or baseline.snapshot_hash != dependency.baseline_snapshot_hash
+                or not any(
+                    member.document_global_id
+                    == dependency.input_document_global_id
+                    and member.revision_global_id
+                    == dependency.input_revision_global_id
+                    and member.revision_snapshot_hash
+                    == dependency.input_revision_snapshot_hash
+                    for member in baseline.members
+                )
+                or str(evidence.tenant_id) != dependency.tenant_id
+                or str(evidence.global_id)
+                != str(dependency.evidence_reference_global_id)
+                or str(evidence.project_global_id)
+                != str(dependency.project_global_id)
+                or str(evidence.gate_global_id)
+                != str(dependency.gate_global_id)
+                or str(evidence.requirement_global_id)
+                != str(dependency.requirement_global_id)
+                or str(evidence.requirement_key) != dependency.requirement_key
+                or str(evidence.evidence_kind) != "release_baseline"
+                or str(evidence.source_object_type) != "release_baseline"
+                or str(evidence.source_global_id)
+                != str(dependency.baseline_global_id)
+                or int(evidence.source_version) != 1
+                or str(evidence.source_hash)
+                != dependency.baseline_snapshot_hash
+            ):
+                raise ValueError(
+                    "Persisted baseline dependency integrity failed."
+                )
+        gates = {
+            gate_id: frappe.get_doc(
+                "NPI Gate Shell",
+                str(gate_id),
+                for_update=True,
+            )
+            for gate_id in sorted(
+                {dependency.gate_global_id for dependency in dependencies},
+                key=str,
+            )
+        }
+        if any(
+            str(gate.global_id) != str(gate_id)
+            or str(gate.project_global_id) != str(project.global_id)
+            for gate_id, gate in gates.items()
+        ):
+            raise ValueError("Persisted baseline dependency Gate scope failed.")
+        impacts: list[BaselineImpactEvent] = []
+        with baseline_dependency_system_write():
+            for dependency in dependencies:
+                impact = BaselineImpactEvent(
+                    global_id=uuid4(),
+                    tenant_id=str(project.tenant_id),
+                    project_global_id=UUID(str(project.global_id)),
+                    dependency_global_id=dependency.global_id,
+                    baseline_global_id=dependency.baseline_global_id,
+                    baseline_snapshot_hash=dependency.baseline_snapshot_hash,
+                    old_revision_global_id=dependency.input_revision_global_id,
+                    old_revision_snapshot_hash=(
+                        dependency.input_revision_snapshot_hash
+                    ),
+                    new_revision_global_id=new_revision.global_id,
+                    new_revision_snapshot_hash=new_revision.snapshot_hash,
+                    gate_global_id=dependency.gate_global_id,
+                    requirement_global_id=dependency.requirement_global_id,
+                    evidence_reference_global_id=(
+                        dependency.evidence_reference_global_id
+                    ),
+                    initiated_by_user_id=self.actor,
+                    occurred_at=occurred_at,
+                    request_id=self.request_id,
+                    trace_id=self.trace_id,
+                )
+                frappe.get_doc(
+                    {
+                        "doctype": "NPI Baseline Impact Event",
+                        "global_id": str(impact.global_id),
+                        "impact_key": impact.impact_key,
+                        "event_type": impact.event_type.value,
+                        "tenant_id": impact.tenant_id,
+                        "project_global_id": str(impact.project_global_id),
+                        "dependency_global_id": str(
+                            impact.dependency_global_id
+                        ),
+                        "baseline_global_id": str(impact.baseline_global_id),
+                        "baseline_snapshot_hash": (
+                            impact.baseline_snapshot_hash
+                        ),
+                        "old_revision_global_id": str(
+                            impact.old_revision_global_id
+                        ),
+                        "old_revision_snapshot_hash": (
+                            impact.old_revision_snapshot_hash
+                        ),
+                        "new_revision_global_id": str(
+                            impact.new_revision_global_id
+                        ),
+                        "new_revision_snapshot_hash": (
+                            impact.new_revision_snapshot_hash
+                        ),
+                        "gate_global_id": str(impact.gate_global_id),
+                        "requirement_global_id": str(
+                            impact.requirement_global_id
+                        ),
+                        "evidence_reference_global_id": str(
+                            impact.evidence_reference_global_id
+                        ),
+                        "initiated_by_user_id": impact.initiated_by_user_id,
+                        "occurred_at": _database_datetime(impact.occurred_at),
+                        "request_id": impact.request_id,
+                        "trace_id": impact.trace_id,
+                        "event_snapshot": impact.event_payload(),
+                        "event_hash": impact.event_hash,
+                    }
+                ).insert()
+                self._append_audit(
+                    operation="document.baseline.impact.record",
+                    global_id=impact.global_id,
+                    object_version=1,
+                    result="created",
+                    summary={
+                        "baselineId": str(impact.baseline_global_id),
+                        "dependencyId": str(impact.dependency_global_id),
+                        "gateId": str(impact.gate_global_id),
+                        "newRevisionId": str(impact.new_revision_global_id),
+                        "oldRevisionId": str(impact.old_revision_global_id),
+                        "projectId": str(project.global_id),
+                        "requestId": self.request_id,
+                        "requirementId": str(impact.requirement_global_id),
+                    },
+                )
+                impacts.append(impact)
+        from npi_core.gate_review.frappe_repository import (
+            refresh_gate_review_dependency_locked,
+        )
+
+        for gate_id in sorted(gates, key=str):
+            refresh_gate_review_dependency_locked(
+                project,
+                gates[gate_id],
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+                reason="BASELINE_SUCCESSOR_IMPACT",
+                initiated_by_user_id=self.actor,
+            )
+        return tuple(impacts)
 
     def file_capability(
         self,

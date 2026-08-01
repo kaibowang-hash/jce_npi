@@ -1347,11 +1347,14 @@ paths:
       tags: [Gates]
       operationId: attachGateEvidence
       description: >
-        Appends one same-Project exact WBS-item or private File Revision
-        reference to a frozen requirement. The server resolves and verifies the
-        supplied exact version and lowercase SHA-256 before writing; it rejects
-        mutable latest references, raw URLs, client-selected scan state, and
-        unsupported future evidence resolvers.
+        Appends one same-Project exact WBS-item, private File Revision, or
+        immutable release-baseline reference to a frozen requirement. The
+        server resolves and verifies the supplied exact version and lowercase
+        SHA-256 before writing; release-baseline attachment also revalidates
+        every immutable member and registers only those explicit dependencies.
+        The server rejects mutable latest references and raw URLs. It also
+        rejects client-selected scan state and unsupported future evidence
+        resolvers.
       x-required-roles: [System Manager]
       x-transaction-boundary: gate-root
       x-audit-operation: gate.evidence.attach
@@ -5468,7 +5471,7 @@ components:
       properties:
         expectedGateVersion: { type: integer, minimum: 1 }
         evidenceKind:
-          { type: string, enum: [wbs_item, file_revision] }
+          { type: string, enum: [wbs_item, file_revision, release_baseline] }
         sourceGlobalId: { type: string, format: uuid }
         sourceVersion: { type: integer, minimum: 1 }
         sourceHash: { type: string, pattern: "^[a-f0-9]{64}$" }
@@ -5681,11 +5684,13 @@ components:
       oneOf:
         - $ref: "#/components/schemas/GateWbsEvidenceReference"
         - $ref: "#/components/schemas/GateFileEvidenceReference"
+        - $ref: "#/components/schemas/GateBaselineEvidenceReference"
       discriminator:
         propertyName: kind
         mapping:
           wbs_item: "#/components/schemas/GateWbsEvidenceReference"
           file_revision: "#/components/schemas/GateFileEvidenceReference"
+          release_baseline: "#/components/schemas/GateBaselineEvidenceReference"
     GateWbsEvidenceReference:
       type: object
       additionalProperties: false
@@ -5716,6 +5721,23 @@ components:
           { type: string, minLength: 1, maxLength: 254 }
         file:
           $ref: "#/components/schemas/GateEvidenceFileMetadata"
+    GateBaselineEvidenceReference:
+      type: object
+      additionalProperties: false
+      description: Exact immutable release baseline plus URL-free member metadata
+      required: [globalId, kind, sourceObjectType, sourceGlobalId, revision, objectHash, createdAt, createdBy, baseline]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { type: string, const: release_baseline }
+        sourceObjectType: { type: string, const: release_baseline }
+        sourceGlobalId: { type: string, format: uuid }
+        revision: { type: integer, const: 1 }
+        objectHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdAt: { type: string, format: date-time }
+        createdBy:
+          { type: string, minLength: 1, maxLength: 254 }
+        baseline:
+          $ref: "#/components/schemas/DocumentBaselineSummary"
     GateFrozenRequirement:
       type: object
       additionalProperties: false
@@ -5754,7 +5776,7 @@ components:
           maxItems: 10
           uniqueItems: true
           items:
-            { type: string, enum: [wbs_item, file_revision] }
+            { type: string, enum: [wbs_item, file_revision, release_baseline] }
         evidenceState:
           type: string
           enum: [missing, attached, scan_pending, scan_clean, scan_failed, scan_infected]
@@ -5786,7 +5808,7 @@ components:
       type: object
       additionalProperties: false
       description: Closed live P4-03 Gate evidence workspace with no decision controls
-      required: [project, gate, requirements, summary, permissions]
+      required: [project, gate, requirements, baselineImpacts, summary, permissions]
       properties:
         project:
           $ref: "#/components/schemas/GateEvidenceProject"
@@ -5799,6 +5821,14 @@ components:
           uniqueItems: true
           items:
             $ref: "#/components/schemas/GateFrozenRequirement"
+        baselineImpacts:
+          description: >
+            Append-only exact successor lineage for baselines explicitly
+            attached to this Gate; it does not alter Gate resolution semantics.
+          type: array
+          maxItems: 50000
+          items:
+            $ref: "#/components/schemas/DocumentBaselineImpactEvent"
         summary:
           $ref: "#/components/schemas/GateEvidenceSummary"
         permissions:
@@ -6073,7 +6103,7 @@ components:
         requirementGlobalId:
           $ref: "#/components/schemas/CanonicalUuid"
         evidenceKind:
-          { type: string, enum: [wbs_item, file_revision] }
+          { type: string, enum: [wbs_item, file_revision, release_baseline] }
         sourceGlobalId:
           $ref: "#/components/schemas/CanonicalUuid"
         sourceVersion: { type: integer, minimum: 1 }
@@ -7284,7 +7314,7 @@ components:
           items: { $ref: "#/components/schemas/DocumentBaselineSummary" }
         impacts:
           type: array
-          maxItems: 512
+          maxItems: 50000
           items:
             $ref: "#/components/schemas/DocumentBaselineImpactEvent"
     DocumentBaselineCommand:

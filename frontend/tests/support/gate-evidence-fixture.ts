@@ -124,6 +124,7 @@ export function gateEvidenceFixture(
         evidence: [],
       },
     ],
+    baselineImpacts: [],
     summary: {
       requiredCount: 2,
       missingRequiredCount: 0,

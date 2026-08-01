@@ -40,7 +40,9 @@ _ATTACH_FIELDS = frozenset(
         "sourceHash",
     }
 )
-_EVIDENCE_KINDS = frozenset({"wbs_item", "file_revision"})
+_EVIDENCE_KINDS = frozenset(
+    {"wbs_item", "file_revision", "release_baseline"}
+)
 _CONTROLLED_KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")

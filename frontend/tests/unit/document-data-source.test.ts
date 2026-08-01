@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   DocumentRequestCancelledError,
+  isDocumentBaselineCommandResponse,
+  isDocumentBaselineWorkspaceResponse,
   isControlledDocumentPageResponse,
   isControlledDocumentWorkspaceResponse,
   isDocumentReleaseTransitionResponse,
@@ -14,6 +16,9 @@ import {
   controlledDocumentId,
   controlledDocumentPageFixture,
   controlledDocumentWorkspaceFixture,
+  baselinePolicyId,
+  documentBaselineCommandFixture,
+  documentBaselineWorkspaceFixture,
   documentFileCapabilityFixture,
   documentProjectId,
   documentReleaseTransitionFixture,
@@ -136,7 +141,112 @@ describe("controlled document response validation", () => {
   });
 });
 
+describe("Document baseline response validation", () => {
+  it("accepts the exact URL-free baseline workspace and command contracts", () => {
+    expect(
+      isDocumentBaselineWorkspaceResponse(documentBaselineWorkspaceFixture()),
+    ).toBe(true);
+    expect(
+      isDocumentBaselineCommandResponse(documentBaselineCommandFixture()),
+    ).toBe(true);
+  });
+
+  it("rejects impact lineage that is unlinked, reordered, or carries an extra field", () => {
+    const fixture = documentBaselineWorkspaceFixture();
+    const impact = fixture.impacts[0];
+    if (!impact) throw new Error("The baseline fixture requires one impact.");
+    expect(
+      isDocumentBaselineWorkspaceResponse({
+        ...fixture,
+        impacts: [
+          {
+            ...impact,
+            baselineSnapshotHash: "9".repeat(64),
+          },
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      isDocumentBaselineWorkspaceResponse({
+        ...fixture,
+        impacts: [{ ...impact, privateFileUrl: "/private/files/unsafe.pdf" }],
+      }),
+    ).toBe(false);
+    expect(
+      isDocumentBaselineWorkspaceResponse({
+        ...fixture,
+        items: [fixture.items[0], fixture.items[0]],
+      }),
+    ).toBe(false);
+  });
+});
+
 describe("live controlled document data source", () => {
+  it("loads and creates exact immutable release baselines through the BFF", async () => {
+    const workspace = documentBaselineWorkspaceFixture();
+    const created = documentBaselineCommandFixture();
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementationOnce(
+        <T>(): Promise<T> => Promise.resolve(workspace as T),
+      )
+      .mockImplementationOnce(
+        <T>(): Promise<T> => Promise.resolve(created as T),
+      );
+    const source = new LiveDocumentDataSource(http);
+    const signal = new AbortController().signal;
+
+    await expect(
+      source.loadBaselines(documentProjectId, signal),
+    ).resolves.toEqual(workspace);
+    const baseline = created.baseline;
+    await expect(
+      source.createBaseline(
+        documentProjectId,
+        {
+          policyGlobalId: baselinePolicyId,
+          policyVersion: 1,
+          policySnapshotHash: "e".repeat(64),
+          label: `  ${baseline.label}  `,
+          members: baseline.members.map((member) => ({
+            revisionId: member.revisionGlobalId,
+            expectedRevisionSnapshotHash: member.revisionSnapshotHash,
+            expectedLifecycleVersion: member.lifecycleVersion,
+            expectedReleaseSnapshotHash: member.releaseSnapshotHash,
+          })),
+        },
+        commandContext(signal),
+      ),
+    ).resolves.toEqual(created);
+
+    expect(request.mock.calls[0]?.[0]).toBe(
+      `/projects/${documentProjectId}/document-baselines`,
+    );
+    expect(request.mock.calls[0]?.[2]?.requirePrivateNoStore).toBe(true);
+    const [path, init, options] = request.mock.calls[1] ?? [];
+    expect(path).toBe(`/projects/${documentProjectId}/document-baselines`);
+    expect(init?.method).toBe("POST");
+    const body = init?.body;
+    if (typeof body !== "string")
+      throw new Error("The baseline request body was not JSON text.");
+    expect(JSON.parse(body)).toEqual({
+      policyGlobalId: baselinePolicyId,
+      policyVersion: 1,
+      policySnapshotHash: "e".repeat(64),
+      label: baseline.label,
+      members: baseline.members.map((member) => ({
+        revisionId: member.revisionGlobalId,
+        expectedRevisionSnapshotHash: member.revisionSnapshotHash,
+        expectedLifecycleVersion: member.lifecycleVersion,
+        expectedReleaseSnapshotHash: member.releaseSnapshotHash,
+      })),
+    });
+    expect(options?.requireIdempotencyReplay).toBe(true);
+    expect(options?.requirePrivateNoStore).toBe(true);
+    expect(options?.validate?.(created)).toBe(true);
+  });
+
   it("loads an exact bounded Project document page through the BFF", async () => {
     const fixture = controlledDocumentPageFixture();
     const http = new NpiHttpClient();

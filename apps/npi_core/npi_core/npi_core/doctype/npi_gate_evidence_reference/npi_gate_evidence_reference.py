@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 import frappe
 from frappe import _
@@ -19,6 +20,8 @@ from npi_core.controlled_evidence_validation import (
     require_gate_evidence_command_write,
 )
 from npi_core.gate_evidence.domain import wbs_source_snapshot
+from npi_core.documents.baseline_domain import DocumentBaselineInputUnavailable
+from npi_core.documents.baseline_repository import load_document_baseline
 from npi_core.npi_core.doctype.npi_file_revision.npi_file_revision import (
     file_revision_source_snapshot,
     has_complete_file_revision_identity,
@@ -29,6 +32,7 @@ from npi_core.npi_core.doctype.npi_file_revision.npi_file_revision import (
 _SUPPORTED_SOURCE_TYPES = {
     "wbs_item": "wbs_item",
     "file_revision": "file_revision",
+    "release_baseline": "release_baseline",
 }
 
 
@@ -170,7 +174,7 @@ class NPIGateEvidenceReference(Document):
             expected_snapshot = wbs_item_source_snapshot(source)
             expected_version = int(source.optimistic_version)
             expected_hash = canonical_snapshot_hash(expected_snapshot)
-        else:
+        elif self.source_object_type == "file_revision":
             source = frappe.get_doc("NPI File Revision", self.source_global_id)
             if not has_complete_file_revision_identity(
                 source
@@ -182,6 +186,28 @@ class NPIGateEvidenceReference(Document):
             expected_snapshot = file_revision_source_snapshot(source)
             expected_version = int(source.revision)
             expected_hash = str(source.sha256)
+        else:
+            project = frappe.get_doc(
+                "NPI Engineering Project",
+                self.project_global_id,
+            )
+            try:
+                baseline = load_document_baseline(
+                    project,
+                    UUID(self.source_global_id),
+                    lock=False,
+                )
+            except DocumentBaselineInputUnavailable:
+                baseline = None
+            if baseline is None:
+                frappe.throw(
+                    _("The exact evidence source is unavailable."),
+                    frappe.ValidationError,
+                )
+            source = baseline
+            expected_snapshot = baseline.snapshot_payload()
+            expected_version = baseline.version
+            expected_hash = baseline.snapshot_hash
 
         if (
             str(source.project_global_id) != self.project_global_id

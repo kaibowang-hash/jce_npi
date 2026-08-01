@@ -1,4 +1,8 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import type {
+  DocumentBaselineImpactViewModel,
+  DocumentBaselineSummaryViewModel,
+} from "../domain/view-models";
 
 export type DocumentLifecycleState =
   | "draft"
@@ -391,6 +395,49 @@ export interface DocumentFileCapabilityResultViewModel {
   capabilities: DocumentFileCapabilitiesViewModel;
 }
 
+export interface DocumentBaselinePolicyOptionViewModel {
+  globalId: string;
+  version: number;
+  snapshotHash: string;
+  key: string;
+  title: string;
+}
+
+export interface DocumentBaselineWorkspaceViewModel {
+  project: Readonly<{
+    globalId: string;
+    projectCode: string;
+    projectName: string;
+  }>;
+  permissions: Readonly<{
+    view: boolean;
+    create: boolean;
+  }>;
+  policies: readonly DocumentBaselinePolicyOptionViewModel[];
+  items: readonly DocumentBaselineSummaryViewModel[];
+  impacts: readonly DocumentBaselineImpactViewModel[];
+}
+
+export interface CreateDocumentBaselineMemberCommand {
+  revisionId: string;
+  expectedRevisionSnapshotHash: string;
+  expectedLifecycleVersion: number;
+  expectedReleaseSnapshotHash: string;
+}
+
+export interface CreateDocumentBaselineCommand {
+  policyGlobalId: string;
+  policyVersion: number;
+  policySnapshotHash: string;
+  label: string;
+  members: readonly CreateDocumentBaselineMemberCommand[];
+}
+
+export interface DocumentBaselineCommandViewModel {
+  projectId: string;
+  baseline: DocumentBaselineSummaryViewModel;
+}
+
 export interface DocumentCommandContext {
   csrfToken: string;
   idempotencyKey: string;
@@ -502,6 +549,15 @@ export interface DocumentDataSource {
     documentId: string,
     signal: AbortSignal,
   ): Promise<ControlledDocumentWorkspaceViewModel>;
+  loadBaselines(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<DocumentBaselineWorkspaceViewModel>;
+  createBaseline(
+    projectId: string,
+    command: CreateDocumentBaselineCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentBaselineCommandViewModel>;
   createDocument(
     projectId: string,
     command: CreateControlledDocumentCommand,
@@ -609,6 +665,7 @@ const prefixPattern = /^[A-Z0-9][A-Z0-9-]{0,15}$/u;
 const cursorPattern = /^[A-Za-z0-9._~:-]{1,500}$/u;
 const idempotencyPattern = /^[A-Za-z0-9._:-]{8,128}$/u;
 const tracePattern = /^[A-Za-z0-9._:-]{8,128}$/u;
+const baselinePolicyKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/u;
 const mimePattern =
   /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+(?:;[a-z0-9!#$&^_.+\-=" ]+)?$/u;
 const timestampPattern =
@@ -1726,6 +1783,269 @@ export function isDocumentReleaseTransitionResponse(
   );
 }
 
+function isBaselinePolicyOption(
+  value: unknown,
+): value is DocumentBaselinePolicyOptionViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "version",
+      "snapshotHash",
+      "key",
+      "title",
+    ]) &&
+    isUuid(value.globalId) &&
+    isPositiveInteger(value.version) &&
+    isString(value.snapshotHash, 64, 64, hashPattern) &&
+    isString(value.key, 1, 64, baselinePolicyKeyPattern) &&
+    isString(value.title, 1, 140)
+  );
+}
+
+function isBaselineFile(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "fileRevisionGlobalId",
+      "fileDocumentGlobalId",
+      "fileName",
+      "mimeType",
+      "sizeBytes",
+      "sha256",
+      "scanState",
+    ]) &&
+    isUuid(value.fileRevisionGlobalId) &&
+    isUuid(value.fileDocumentGlobalId) &&
+    isString(value.fileName, 1, 255) &&
+    isString(value.mimeType, 3, 255, mimePattern) &&
+    isNonnegativeInteger(value.sizeBytes) &&
+    value.sizeBytes <= 67_108_864 &&
+    isString(value.sha256, 64, 64, hashPattern) &&
+    value.scanState === "clean"
+  );
+}
+
+function isBaselineMember(value: unknown): boolean {
+  if (!isRecord(value) || !Array.isArray(value.files)) return false;
+  return (
+    hasExactKeys(value, [
+      "globalId",
+      "sequence",
+      "documentGlobalId",
+      "revisionGlobalId",
+      "major",
+      "minor",
+      "revisionSnapshotHash",
+      "lifecycleVersion",
+      "releaseEventGlobalId",
+      "releaseSnapshotHash",
+      "memberHash",
+      "files",
+    ]) &&
+    isUuid(value.globalId) &&
+    isPositiveInteger(value.sequence) &&
+    value.sequence <= 100 &&
+    isUuid(value.documentGlobalId) &&
+    isUuid(value.revisionGlobalId) &&
+    isNonnegativeInteger(value.major) &&
+    isNonnegativeInteger(value.minor) &&
+    isString(value.revisionSnapshotHash, 64, 64, hashPattern) &&
+    isPositiveInteger(value.lifecycleVersion) &&
+    isUuid(value.releaseEventGlobalId) &&
+    isString(value.releaseSnapshotHash, 64, 64, hashPattern) &&
+    isString(value.memberHash, 64, 64, hashPattern) &&
+    value.files.length >= 1 &&
+    value.files.length <= 64 &&
+    value.files.every(isBaselineFile) &&
+    hasUniqueValues(
+      value.files as readonly { fileRevisionGlobalId: string }[],
+      (file) => file.fileRevisionGlobalId,
+    )
+  );
+}
+
+function isBaselineSummary(
+  value: unknown,
+): value is DocumentBaselineSummaryViewModel {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.policy) ||
+    !Array.isArray(value.members)
+  )
+    return false;
+  if (
+    !hasExactKeys(value, [
+      "globalId",
+      "label",
+      "version",
+      "snapshotHash",
+      "policy",
+      "createdByUserId",
+      "createdAt",
+      "members",
+    ]) ||
+    !isUuid(value.globalId) ||
+    !isString(value.label, 1, 140) ||
+    value.version !== 1 ||
+    !isString(value.snapshotHash, 64, 64, hashPattern) ||
+    !hasExactKeys(value.policy, ["globalId", "version", "snapshotHash"]) ||
+    !isUuid(value.policy.globalId) ||
+    !isPositiveInteger(value.policy.version) ||
+    !isString(value.policy.snapshotHash, 64, 64, hashPattern) ||
+    !isUserId(value.createdByUserId) ||
+    !isTimestamp(value.createdAt) ||
+    value.members.length < 1 ||
+    value.members.length > 100 ||
+    !value.members.every(isBaselineMember)
+  )
+    return false;
+  const members = value.members as DocumentBaselineSummaryViewModel["members"];
+  return (
+    members.every((member, index) => member.sequence === index + 1) &&
+    hasUniqueValues(members, (member) => member.globalId) &&
+    hasUniqueValues(members, (member) => member.revisionGlobalId)
+  );
+}
+
+function isBaselineImpact(
+  value: unknown,
+): value is DocumentBaselineImpactViewModel {
+  if (!isRecord(value)) return false;
+  const uuidFields = [
+    "globalId",
+    "dependencyGlobalId",
+    "baselineGlobalId",
+    "oldRevisionGlobalId",
+    "newRevisionGlobalId",
+    "gateGlobalId",
+    "requirementGlobalId",
+    "evidenceReferenceGlobalId",
+  ] as const;
+  const hashFields = [
+    "baselineSnapshotHash",
+    "oldRevisionSnapshotHash",
+    "newRevisionSnapshotHash",
+    "eventHash",
+  ] as const;
+  return (
+    hasExactKeys(value, [
+      "globalId",
+      "eventType",
+      "dependencyGlobalId",
+      "baselineGlobalId",
+      "baselineSnapshotHash",
+      "oldRevisionGlobalId",
+      "oldRevisionSnapshotHash",
+      "newRevisionGlobalId",
+      "newRevisionSnapshotHash",
+      "gateGlobalId",
+      "requirementGlobalId",
+      "evidenceReferenceGlobalId",
+      "initiatedByUserId",
+      "occurredAt",
+      "eventHash",
+    ]) &&
+    value.eventType === "invalidated" &&
+    uuidFields.every((field) => isUuid(value[field])) &&
+    hashFields.every((field) => isString(value[field], 64, 64, hashPattern)) &&
+    value.oldRevisionGlobalId !== value.newRevisionGlobalId &&
+    isUserId(value.initiatedByUserId) &&
+    isTimestamp(value.occurredAt)
+  );
+}
+
+export function isDocumentBaselineWorkspaceResponse(
+  value: unknown,
+): value is DocumentBaselineWorkspaceViewModel {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.project) ||
+    !isRecord(value.permissions) ||
+    !hasExactKeys(value, [
+      "project",
+      "permissions",
+      "policies",
+      "items",
+      "impacts",
+    ]) ||
+    !hasExactKeys(value.project, ["globalId", "projectCode", "projectName"]) ||
+    !isUuid(value.project.globalId) ||
+    !isString(value.project.projectCode, 1, 64) ||
+    !isString(value.project.projectName, 1, 280) ||
+    !hasExactKeys(value.permissions, ["view", "create"]) ||
+    typeof value.permissions.view !== "boolean" ||
+    typeof value.permissions.create !== "boolean" ||
+    !Array.isArray(value.policies) ||
+    value.policies.length > 64 ||
+    !value.policies.every(isBaselinePolicyOption) ||
+    !hasUniqueValues(
+      value.policies as readonly DocumentBaselinePolicyOptionViewModel[],
+      (policy) => `${policy.globalId}:${String(policy.version)}`,
+    ) ||
+    !Array.isArray(value.items) ||
+    value.items.length > 256 ||
+    !value.items.every(isBaselineSummary) ||
+    !hasUniqueValues(
+      value.items as readonly DocumentBaselineSummaryViewModel[],
+      (baseline) => baseline.globalId,
+    ) ||
+    !Array.isArray(value.impacts) ||
+    value.impacts.length > 50_000 ||
+    !value.impacts.every(isBaselineImpact) ||
+    !hasUniqueValues(
+      value.impacts as readonly DocumentBaselineImpactViewModel[],
+      (impact) => impact.globalId,
+    ) ||
+    !hasUniqueValues(
+      value.impacts as readonly DocumentBaselineImpactViewModel[],
+      (impact) => `${impact.dependencyGlobalId}:${impact.newRevisionGlobalId}`,
+    )
+  )
+    return false;
+  const items = value.items as readonly DocumentBaselineSummaryViewModel[];
+  const impacts = value.impacts as readonly DocumentBaselineImpactViewModel[];
+  return (
+    items.every(
+      (baseline, index) =>
+        index === 0 ||
+        Date.parse(items[index - 1]?.createdAt ?? "") >
+          Date.parse(baseline.createdAt) ||
+        (items[index - 1]?.createdAt === baseline.createdAt &&
+          (items[index - 1]?.globalId ?? "") < baseline.globalId),
+    ) &&
+    impacts.every(
+      (impact, index) =>
+        items.some(
+          (baseline) =>
+            baseline.globalId === impact.baselineGlobalId &&
+            baseline.snapshotHash === impact.baselineSnapshotHash &&
+            baseline.members.some(
+              (member) =>
+                member.revisionGlobalId === impact.oldRevisionGlobalId &&
+                member.revisionSnapshotHash === impact.oldRevisionSnapshotHash,
+            ),
+        ) &&
+        (index === 0 ||
+          Date.parse(impacts[index - 1]?.occurredAt ?? "") >
+            Date.parse(impact.occurredAt) ||
+          (impacts[index - 1]?.occurredAt === impact.occurredAt &&
+            (impacts[index - 1]?.globalId ?? "") > impact.globalId)),
+    )
+  );
+}
+
+export function isDocumentBaselineCommandResponse(
+  value: unknown,
+): value is DocumentBaselineCommandViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["projectId", "baseline"]) &&
+    isUuid(value.projectId) &&
+    isBaselineSummary(value.baseline)
+  );
+}
+
 export function isControlledDocumentPageResponse(
   value: unknown,
 ): value is ControlledDocumentPageViewModel {
@@ -1994,6 +2314,72 @@ export class LiveDocumentDataSource implements DocumentDataSource {
         isControlledDocumentWorkspaceResponse(value) &&
         value.project.globalId === projectId &&
         value.document.globalId === documentId,
+    );
+  }
+
+  async loadBaselines(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<DocumentBaselineWorkspaceViewModel> {
+    if (!isUuid(projectId)) throw requestNotReady();
+    return this.query(
+      `/projects/${projectId}/document-baselines`,
+      signal,
+      {},
+      (value): value is DocumentBaselineWorkspaceViewModel =>
+        isDocumentBaselineWorkspaceResponse(value) &&
+        value.project.globalId === projectId,
+    );
+  }
+
+  async createBaseline(
+    projectId: string,
+    command: CreateDocumentBaselineCommand,
+    context: DocumentCommandContext,
+  ): Promise<DocumentBaselineCommandViewModel> {
+    const label = command.label.trim();
+    if (
+      !isUuid(projectId) ||
+      !isUuid(command.policyGlobalId) ||
+      !isPositiveInteger(command.policyVersion) ||
+      !isString(command.policySnapshotHash, 64, 64, hashPattern) ||
+      !isString(label, 1, 140) ||
+      command.members.length < 1 ||
+      command.members.length > 100 ||
+      !command.members.every(
+        (member) =>
+          isUuid(member.revisionId) &&
+          isString(member.expectedRevisionSnapshotHash, 64, 64, hashPattern) &&
+          isPositiveInteger(member.expectedLifecycleVersion) &&
+          isString(member.expectedReleaseSnapshotHash, 64, 64, hashPattern),
+      ) ||
+      !hasUniqueValues(command.members, (member) => member.revisionId)
+    )
+      throw requestNotReady();
+    return this.command(
+      `/projects/${projectId}/document-baselines`,
+      { ...command, label },
+      context,
+      (value): value is DocumentBaselineCommandViewModel =>
+        isDocumentBaselineCommandResponse(value) &&
+        value.projectId === projectId &&
+        value.baseline.label === label &&
+        value.baseline.policy.globalId === command.policyGlobalId &&
+        value.baseline.policy.version === command.policyVersion &&
+        value.baseline.policy.snapshotHash === command.policySnapshotHash &&
+        value.baseline.members.length === command.members.length &&
+        command.members.every((member, index) => {
+          const responseMember = value.baseline.members[index];
+          return (
+            responseMember?.revisionGlobalId === member.revisionId &&
+            responseMember.revisionSnapshotHash ===
+              member.expectedRevisionSnapshotHash &&
+            responseMember.lifecycleVersion ===
+              member.expectedLifecycleVersion &&
+            responseMember.releaseSnapshotHash ===
+              member.expectedReleaseSnapshotHash
+          );
+        }),
     );
   }
 

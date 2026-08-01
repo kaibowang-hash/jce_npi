@@ -26,6 +26,7 @@ GATE_TEMPLATE_ID = UUID("27a34964-9987-4e3c-b010-2e5165782c62")
 DEPENDENCY_ID = UUID("4abcc093-5366-4a58-a6d2-7efcdf824840")
 REFERENCE_ID = UUID("9ac17691-24cf-4b28-a2ef-6597df9414dd")
 SOURCE_ID = UUID("d73df0ec-ef0e-444a-a8bc-a5e9a08c0014")
+BASELINE_ID = UUID("1ba71ee3-c1fe-46d9-b9c6-67fb3c06aff2")
 RESOLVED_ACTION_ID = UUID("a05978ee-1e35-4340-a693-6e211bc0880c")
 SECOND_RESOLVED_ACTION_ID = UUID("21b9baf4-4ed8-49fb-adca-d23c9996aca9")
 TENANT_ID = "tenant-test"
@@ -214,6 +215,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         "frappe",
         "npi_core.api",
         "npi_core.controlled_evidence_validation",
+        "npi_core.documents.baseline_repository",
         "npi_core.foundation.audit",
         "npi_core.gate_evidence.frappe_repository",
         "npi_core.gate_evidence_api",
@@ -286,6 +288,17 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         controlled.canonical_snapshot_hash = self._canonical_hash
         controlled.has_controlled_file_write = lambda: False
         sys.modules[controlled.__name__] = controlled
+
+        baseline_repository = types.ModuleType(
+            "npi_core.documents.baseline_repository"
+        )
+        baseline_repository.load_document_baseline = (
+            lambda *_args, **_kwargs: None
+        )
+        baseline_repository.load_project_baseline_impacts = (
+            lambda *_args, **_kwargs: ()
+        )
+        sys.modules[baseline_repository.__name__] = baseline_repository
 
         audit = types.ModuleType("npi_core.foundation.audit")
         audit.create_audit_event = lambda **values: types.SimpleNamespace(
@@ -1545,6 +1558,81 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
             )
         finally:
             repository_type.refresh_gate_for_dependency_change_locked = original_refresh
+
+    def test_release_baseline_input_revalidates_exact_non_file_identity(self) -> None:
+        repository = self._repository()
+        reference = AttrDoc(
+            global_id=str(REFERENCE_ID),
+            tenant_id=TENANT_ID,
+            project_global_id=str(PROJECT_ID),
+            gate_global_id=str(GATE_ID),
+            requirement_global_id=str(DEPENDENCY_ID),
+            evidence_kind="release_baseline",
+            source_global_id=str(BASELINE_ID),
+            source_version=1,
+            source_hash="d" * 64,
+        )
+        baseline = types.SimpleNamespace(version=1, snapshot_hash="d" * 64)
+        calls: list[tuple[UUID, bool]] = []
+
+        def load_document_baseline(_project, baseline_id: UUID, *, lock: bool):
+            calls.append((baseline_id, lock))
+            return baseline
+
+        self.repository_module.load_document_baseline = load_document_baseline
+        value, complete, evidence_hash = repository._resolve_evidence_input(
+            self.project,
+            self.gate,
+            reference,
+        )
+        self.assertTrue(complete)
+        self.assertEqual(value.evidence_kind, "release_baseline")
+        self.assertFalse(value.is_file)
+        self.assertTrue(value.file_safe)
+        self.assertEqual(value.source_version, 1)
+        self.assertEqual(value.source_hash, "d" * 64)
+        self.assertRegex(evidence_hash, r"^[a-f0-9]{64}$")
+        self.assertEqual(calls, [(BASELINE_ID, False)])
+
+        baseline.snapshot_hash = "e" * 64
+        drifted, drifted_complete, drifted_hash = repository._resolve_evidence_input(
+            self.project,
+            self.gate,
+            reference,
+        )
+        self.assertFalse(drifted_complete)
+        self.assertEqual(drifted.source_hash, "e" * 64)
+        self.assertNotEqual(drifted_hash, evidence_hash)
+
+    def test_baseline_impact_is_an_exact_gate_input_dependency(self) -> None:
+        impact_id = UUID("90909090-9090-4090-8090-909090909090")
+        calls: list[tuple[str, UUID]] = []
+
+        def load_project_baseline_impacts(project, *, gate_global_id: UUID):
+            calls.append((str(project.global_id), gate_global_id))
+            return (
+                types.SimpleNamespace(
+                    global_id=impact_id,
+                    event_hash="f" * 64,
+                ),
+            )
+
+        self.repository_module.load_project_baseline_impacts = (
+            load_project_baseline_impacts
+        )
+        dependencies = self._repository()._baseline_impact_dependency_inputs(
+            self.project,
+            self.gate,
+        )
+        self.assertEqual(calls, [(str(PROJECT_ID), GATE_ID)])
+        self.assertEqual(len(dependencies), 1)
+        self.assertEqual(dependencies[0].global_id, impact_id)
+        self.assertEqual(dependencies[0].version, 1)
+        self.assertEqual(dependencies[0].snapshot_hash, "f" * 64)
+        self.assertEqual(
+            dependencies[0].kind,
+            self.domain.DependencyEvaluator.GATE_INPUT_SNAPSHOT,
+        )
 
     def test_file_hook_queues_gate_recalculation_for_each_identity_change_only(
         self,

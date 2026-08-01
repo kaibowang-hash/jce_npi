@@ -31,6 +31,11 @@ import {
   gateReviewFixture as reviewRoomFixture,
   gateReviewRequiresReviewFixture as reviewRoomRequiresReviewFixture,
 } from "../support/gate-review-fixture";
+import { gateEvidenceFixture } from "../support/gate-evidence-fixture";
+import {
+  documentBaselineWorkspaceFixture,
+  documentProjectId,
+} from "../support/document-fixture";
 
 const projectId = "11111111-1111-1111-1111-111111111111";
 const gateId = "22222222-2222-2222-2222-222222222222";
@@ -157,6 +162,7 @@ function activeFixture(): GateReviewViewModel {
           evidence: [],
         },
       ],
+      baselineImpacts: [],
       summary: {
         requiredCount: 1,
         missingRequiredCount: 1,
@@ -756,6 +762,30 @@ describe("Gate review response validation", () => {
     expect(isGateReviewResponse(reopenedFixture())).toBe(true);
   });
 
+  it("accepts an exact non-file release baseline in frozen decision input", () => {
+    const fixture = decidedFixture();
+    const decision = fixture.decisions[0];
+    if (!decision) throw new Error("The fixture requires a decision.");
+    decision.detail.inputSnapshot.evidence = [
+      {
+        globalId: "34343434-3434-4343-8343-343434343434",
+        requirementGlobalId: requirementId,
+        evidenceKind: "release_baseline",
+        sourceGlobalId: "35353535-3535-4535-8535-353535353535",
+        sourceVersion: 1,
+        sourceHash: "a".repeat(64),
+        isFile: false,
+        fileSafe: true,
+      },
+    ];
+    expect(isGateReviewResponse(fixture)).toBe(true);
+
+    const baselineEvidence = decision.detail.inputSnapshot.evidence[0];
+    if (!baselineEvidence) throw new Error("The fixture requires evidence.");
+    baselineEvidence.fileSafe = false;
+    expect(isGateReviewResponse(fixture)).toBe(false);
+  });
+
   it("accepts a decided Gate whose latest historical decision is no longer downstream-current", () => {
     const fixture = structuredClone(decidedFixture());
     fixture.gate.downstreamDecisionCurrent = false;
@@ -1194,6 +1224,118 @@ describe("Gate review response validation", () => {
 });
 
 describe("live Gate review transport", () => {
+  it("loads exact Project release baselines for the Gate source selector", async () => {
+    const fixture = documentBaselineWorkspaceFixture();
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementation(<T>(): Promise<T> => Promise.resolve(fixture as T));
+    const signal = new AbortController().signal;
+
+    await expect(
+      new LiveGateReviewDataSource(http).loadDocumentBaselines(
+        documentProjectId,
+        signal,
+      ),
+    ).resolves.toEqual(fixture);
+    const [path, init, options] = request.mock.calls[0] ?? [];
+    expect(path).toBe(`/projects/${documentProjectId}/document-baselines`);
+    expect(init).toEqual({ signal });
+    expect(options).toMatchObject({
+      requirePrivateNoStore: true,
+      requireRequestIdEcho: true,
+      requireTraceId: true,
+    });
+    expect(options?.validate?.(fixture)).toBe(true);
+  });
+
+  it("attaches one exact baseline source and reloads authoritative Gate review truth", async () => {
+    const review = reviewRoomFixture();
+    const baseline = documentBaselineWorkspaceFixture().items[0];
+    if (!baseline)
+      throw new Error("The fixture requires one release baseline.");
+    const requirement = review.evidence.requirements[0];
+    if (!requirement) throw new Error("The fixture requires one requirement.");
+    const reference = {
+      globalId: "31313131-3131-4313-8313-313131313131",
+      kind: "release_baseline" as const,
+      sourceObjectType: "release_baseline" as const,
+      sourceGlobalId: baseline.globalId,
+      revision: baseline.version,
+      objectHash: baseline.snapshotHash,
+      createdAt: "2026-07-31T12:00:00Z",
+      createdBy: "engineering.lead@example.invalid",
+      baseline,
+    };
+    const evidence = gateEvidenceFixture({
+      requirements: review.evidence.requirements.map((candidate, index) =>
+        index === 0
+          ? {
+              ...candidate,
+              allowedEvidenceKinds: [
+                ...candidate.allowedEvidenceKinds,
+                "release_baseline" as const,
+              ],
+              evidence: [...candidate.evidence, reference],
+            }
+          : candidate,
+      ),
+      summary: {
+        ...review.evidence.summary,
+        evidenceCount: review.evidence.summary.evidenceCount + 1,
+      },
+    });
+    const refreshed = { ...review, evidence };
+    const http = new NpiHttpClient();
+    const request = vi
+      .spyOn(http, "request")
+      .mockImplementationOnce(
+        <T>(): Promise<T> => Promise.resolve(evidence as T),
+      )
+      .mockImplementationOnce(
+        <T>(): Promise<T> => Promise.resolve(refreshed as T),
+      );
+    const source = new LiveGateReviewDataSource(http);
+    const signal = new AbortController().signal;
+
+    await expect(
+      source.attachEvidence(
+        review.project.globalId,
+        review.gate.globalId,
+        requirement.key,
+        {
+          expectedGateVersion: review.gate.version,
+          evidenceKind: "release_baseline",
+          sourceGlobalId: baseline.globalId,
+          sourceVersion: 1,
+          sourceHash: baseline.snapshotHash,
+        },
+        { csrfToken, idempotencyKey, signal },
+      ),
+    ).resolves.toEqual(refreshed);
+
+    const [path, init, options] = request.mock.calls[0] ?? [];
+    expect(path).toBe(
+      `/projects/${review.project.globalId}/gates/${review.gate.globalId}/requirements/${requirement.key}/evidence`,
+    );
+    expect(init).toMatchObject({
+      headers: { "Idempotency-Key": idempotencyKey },
+      method: "POST",
+      signal,
+    });
+    expect(options).toMatchObject({
+      csrfToken,
+      requireIdempotencyReplay: true,
+      requirePrivateNoStore: true,
+      requireRequestIdEcho: true,
+      requireTraceId: true,
+    });
+    expect(options?.validate?.(evidence)).toBe(true);
+    expect(request.mock.calls[1]?.[0]).toBe(
+      `/projects/${review.project.globalId}/gates/${review.gate.globalId}/review`,
+    );
+  });
+
   it("loads the exact route with cancellation and strict response validation", async () => {
     const fixture = activeFixture();
     const http = new NpiHttpClient();

@@ -12,6 +12,18 @@ from uuid import UUID, uuid4
 import frappe
 from frappe import _
 
+from npi_core.documents.baseline_domain import (
+    BaselineGateDependency,
+    DocumentBaseline,
+    DocumentBaselineInputUnavailable,
+)
+from npi_core.documents.baseline_frappe import baseline_dependency_system_write
+from npi_core.documents.baseline_repository import (
+    document_baseline_impact_response,
+    document_baseline_response,
+    load_document_baseline,
+    load_project_baseline_impacts,
+)
 from npi_core.controlled_evidence_validation import (
     GATE_EVIDENCE_COMMAND_FLAG,
     canonical_snapshot_hash,
@@ -47,7 +59,9 @@ from npi_core.npi_core.doctype.npi_gate_evidence_reference.npi_gate_evidence_ref
 from npi_core.project.domain import IdempotencyConflict, ProjectType
 from npi_core.project_controls.terminal_guard import require_mutable_project
 
-_SUPPORTED_EVIDENCE_KINDS = frozenset({"wbs_item", "file_revision"})
+_SUPPORTED_EVIDENCE_KINDS = frozenset(
+    {"wbs_item", "file_revision", "release_baseline"}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -217,7 +231,7 @@ class FrappeGateEvidenceRepository:
             )
         if evidence_kind not in _SUPPORTED_EVIDENCE_KINDS:
             raise EvidenceSourceUnavailable()
-        source_snapshot = self._resolve_exact_source(
+        source_snapshot, baseline = self._resolve_exact_source(
             project,
             evidence_kind=evidence_kind,
             source_global_id=source_global_id,
@@ -263,6 +277,7 @@ class FrappeGateEvidenceRepository:
             )
 
         evidence_global_id = uuid4()
+        attached_at = datetime.now(UTC)
         with _controlled_gate_write_scope():
             idempotency = self._insert_idempotency(
                 idempotency_key,
@@ -289,10 +304,20 @@ class FrappeGateEvidenceRepository:
                     "source_hash": source_hash,
                     "source_snapshot": source_snapshot,
                     "created_by": self.actor,
-                    "created_at": _database_datetime(datetime.now(UTC)),
+                    "created_at": _database_datetime(attached_at),
                     "optimistic_version": 1,
                 }
             ).insert()
+            if baseline is not None:
+                self._insert_baseline_dependencies(
+                    project,
+                    gate,
+                    requirement_global_id=requirement_global_id,
+                    requirement_key=str(requirement["key"]),
+                    evidence_global_id=evidence_global_id,
+                    baseline=baseline,
+                    registered_at=attached_at,
+                )
             gate.optimistic_version = int(gate.optimistic_version) + 1
             gate.save()
             self._refresh_gate_review_locked(project, gate)
@@ -315,6 +340,79 @@ class FrappeGateEvidenceRepository:
             response = self._workspace_for(project, gate)
             self._seal_idempotency(idempotency, response)
         return GateCommandOutcome(response)
+
+    def _insert_baseline_dependencies(
+        self,
+        project,
+        gate,
+        *,
+        requirement_global_id: UUID,
+        requirement_key: str,
+        evidence_global_id: UUID,
+        baseline: DocumentBaseline,
+        registered_at: datetime,
+    ) -> None:
+        with baseline_dependency_system_write():
+            for member in baseline.members:
+                dependency = BaselineGateDependency(
+                    global_id=uuid4(),
+                    tenant_id=str(project.tenant_id),
+                    project_global_id=UUID(str(project.global_id)),
+                    baseline_global_id=baseline.global_id,
+                    baseline_snapshot_hash=baseline.snapshot_hash,
+                    input_document_global_id=member.document_global_id,
+                    input_revision_global_id=member.revision_global_id,
+                    input_revision_snapshot_hash=member.revision_snapshot_hash,
+                    gate_global_id=UUID(str(gate.global_id)),
+                    requirement_global_id=requirement_global_id,
+                    requirement_key=requirement_key,
+                    evidence_reference_global_id=evidence_global_id,
+                    registered_by_user_id=self.actor,
+                    registered_at=registered_at,
+                    request_id=self.request_id,
+                    trace_id=self.trace_id,
+                )
+                frappe.get_doc(
+                    {
+                        "doctype": "NPI Baseline Gate Dependency",
+                        "global_id": str(dependency.global_id),
+                        "dependency_key": dependency.dependency_key,
+                        "tenant_id": dependency.tenant_id,
+                        "project_global_id": str(dependency.project_global_id),
+                        "document_baseline": str(dependency.baseline_global_id),
+                        "baseline_global_id": str(dependency.baseline_global_id),
+                        "baseline_snapshot_hash": (
+                            dependency.baseline_snapshot_hash
+                        ),
+                        "input_document_global_id": str(
+                            dependency.input_document_global_id
+                        ),
+                        "input_revision_global_id": str(
+                            dependency.input_revision_global_id
+                        ),
+                        "input_revision_snapshot_hash": (
+                            dependency.input_revision_snapshot_hash
+                        ),
+                        "gate_global_id": str(dependency.gate_global_id),
+                        "requirement_global_id": str(
+                            dependency.requirement_global_id
+                        ),
+                        "requirement_key": dependency.requirement_key,
+                        "evidence_reference_global_id": str(
+                            dependency.evidence_reference_global_id
+                        ),
+                        "registered_by_user_id": (
+                            dependency.registered_by_user_id
+                        ),
+                        "registered_at": _database_datetime(
+                            dependency.registered_at
+                        ),
+                        "request_id": dependency.request_id,
+                        "trace_id": dependency.trace_id,
+                        "dependency_snapshot": dependency.snapshot_payload(),
+                        "snapshot_hash": dependency.snapshot_hash,
+                    }
+                ).insert()
 
     def _refresh_gate_review_locked(self, project, gate) -> bool:
         """Evaluate review input only after the new reference is persisted."""
@@ -421,6 +519,15 @@ class FrappeGateEvidenceRepository:
             "cancelled",
             "completed",
         }
+        try:
+            baseline_impacts = load_project_baseline_impacts(
+                project,
+                gate_global_id=UUID(str(gate.global_id)),
+            )
+        except DocumentBaselineInputUnavailable as error:
+            raise ValueError(
+                "Persisted Gate baseline impact integrity failed."
+            ) from error
         return {
             "project": {
                 "globalId": str(UUID(str(project.global_id))),
@@ -444,6 +551,10 @@ class FrappeGateEvidenceRepository:
                 "frozenBy": str(gate.requirements_frozen_by),
             },
             "requirements": requirement_responses,
+            "baselineImpacts": [
+                document_baseline_impact_response(value)
+                for value in baseline_impacts
+            ],
             "summary": {
                 "requiredCount": required_count,
                 "missingRequiredCount": missing_required_count,
@@ -521,6 +632,27 @@ class FrappeGateEvidenceRepository:
                 "sizeBytes": int(safe_file_snapshot["sizeBytes"]),
                 "scanState": str(safe_file_snapshot["scanState"]),
             }
+        elif str(document.evidence_kind) == "release_baseline":
+            try:
+                baseline = load_document_baseline(
+                    project,
+                    UUID(str(document.source_global_id)),
+                    lock=False,
+                )
+            except DocumentBaselineInputUnavailable as error:
+                raise ValueError(
+                    "Persisted Gate baseline evidence integrity failed."
+                ) from error
+            if (
+                baseline is None
+                or baseline.version != int(document.source_version)
+                or baseline.snapshot_hash != str(document.source_hash)
+                or baseline.snapshot_payload() != source_snapshot
+            ):
+                raise ValueError(
+                    "Persisted Gate baseline evidence integrity failed."
+                )
+            response["baseline"] = document_baseline_response(baseline)
         elif (
             canonical_snapshot_hash(source_snapshot) != str(document.source_hash)
             or source_snapshot.get("globalId") != str(document.source_global_id)
@@ -539,8 +671,29 @@ class FrappeGateEvidenceRepository:
         source_global_id: UUID,
         source_version: int,
         source_hash: str,
-    ) -> dict[str, object]:
-        doctype = "NPI WBS Item" if evidence_kind == "wbs_item" else "NPI File Revision"
+    ) -> tuple[dict[str, object], DocumentBaseline | None]:
+        if evidence_kind == "release_baseline":
+            try:
+                baseline = load_document_baseline(
+                    project,
+                    source_global_id,
+                    lock=True,
+                )
+            except DocumentBaselineInputUnavailable as error:
+                raise EvidenceSourceUnavailable() from error
+            if baseline is None:
+                raise EvidenceSourceUnavailable()
+            if (
+                baseline.version != source_version
+                or baseline.snapshot_hash != source_hash
+            ):
+                raise EvidenceVersionConflict()
+            return baseline.snapshot_payload(), baseline
+        doctype = (
+            "NPI WBS Item"
+            if evidence_kind == "wbs_item"
+            else "NPI File Revision"
+        )
         source = _optional_doc(doctype, str(source_global_id))
         if source is None:
             raise EvidenceSourceUnavailable()
@@ -562,7 +715,7 @@ class FrappeGateEvidenceRepository:
             expected_hash = str(source.sha256)
         if expected_version != source_version or expected_hash != source_hash:
             raise EvidenceVersionConflict()
-        return snapshot
+        return snapshot, None
 
     def _requirement_snapshot(self, gate) -> dict[str, Any]:
         if int(gate.requirements_frozen or 0) != 1:

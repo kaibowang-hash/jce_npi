@@ -45,6 +45,7 @@ class GateRequirementPriority(str, Enum):
 class EvidenceKind(str, Enum):
     WBS_ITEM = "wbs_item"
     FILE_REVISION = "file_revision"
+    RELEASE_BASELINE = "release_baseline"
     DOCUMENT_REVISION = "document_revision"
     TRIAL_ROUND = "trial_round"
     QUALITY_INSPECTION = "quality_inspection"
@@ -56,6 +57,7 @@ PUBLISHABLE_EVIDENCE_KINDS = frozenset(
     {
         EvidenceKind.WBS_ITEM,
         EvidenceKind.FILE_REVISION,
+        EvidenceKind.RELEASE_BASELINE,
     }
 )
 

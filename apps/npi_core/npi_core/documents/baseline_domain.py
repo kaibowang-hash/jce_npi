@@ -28,7 +28,7 @@ BASELINE_GATE_DEPENDENCY_SCHEMA_VERSION = 1
 BASELINE_IMPACT_SCHEMA_VERSION = 1
 MAX_BASELINE_MEMBERS = 100
 
-_ACTOR_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+_ACTOR_PATTERN = re.compile(r"^[^\s\x00-\x1f\x7f]{1,254}$")
 _KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _TENANT_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")

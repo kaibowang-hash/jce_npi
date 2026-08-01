@@ -224,6 +224,24 @@ class DocumentBaselineDomainTest(unittest.TestCase):
         with self.assertRaises(RequestValidationFailed):
             replace(value, dependency_key=HASH_A, snapshot_hash="")
 
+    def test_dependency_accepts_frappe_actor_ids_but_rejects_unsafe_text(self) -> None:
+        value = replace(
+            self.dependency(),
+            registered_by_user_id="Administrator",
+            dependency_key="",
+            snapshot_hash="",
+        )
+        self.assertEqual(value.registered_by_user_id, "Administrator")
+        for actor in ("", "two words", "unsafe\nactor"):
+            with self.subTest(actor=actor):
+                with self.assertRaises(RequestValidationFailed):
+                    replace(
+                        value,
+                        registered_by_user_id=actor,
+                        dependency_key="",
+                        snapshot_hash="",
+                    )
+
     def test_impact_freezes_old_new_lineage_and_rejects_same_revision(self) -> None:
         dependency = self.dependency()
         value = BaselineImpactEvent(

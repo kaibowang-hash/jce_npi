@@ -1,5 +1,7 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
 import type {
+  DocumentBaselineImpactViewModel,
+  GateEvidenceBaselineViewModel,
   GateEvidenceKind,
   GateEvidencePersonViewModel,
   GateEvidenceReferenceViewModel,
@@ -36,7 +38,11 @@ const controlledKeyPattern = /^[A-Za-z0-9][A-Za-z0-9._-]*$/u;
 const mimeTypePattern =
   /^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*\/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$/u;
 
-const evidenceKinds = new Set<GateEvidenceKind>(["wbs_item", "file_revision"]);
+const evidenceKinds = new Set<GateEvidenceKind>([
+  "wbs_item",
+  "file_revision",
+  "release_baseline",
+]);
 const scanStates = new Set<GateEvidenceScanState>([
   "pending",
   "clean",
@@ -131,6 +137,171 @@ function isFileMetadata(value: unknown): boolean {
   );
 }
 
+function isBaselineFile(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  return (
+    hasExactKeys(value, [
+      "fileRevisionGlobalId",
+      "fileDocumentGlobalId",
+      "fileName",
+      "mimeType",
+      "sizeBytes",
+      "sha256",
+      "scanState",
+    ]) &&
+    isUuid(value.fileRevisionGlobalId) &&
+    isUuid(value.fileDocumentGlobalId) &&
+    isConstrainedString(value.fileName, 255) &&
+    isConstrainedString(value.mimeType, 255, mimeTypePattern) &&
+    isNonnegativeInteger(value.sizeBytes) &&
+    value.sizeBytes <= 67_108_864 &&
+    typeof value.sha256 === "string" &&
+    sha256Pattern.test(value.sha256) &&
+    value.scanState === "clean"
+  );
+}
+
+function isBaselineMember(value: unknown): boolean {
+  if (!isRecord(value) || !Array.isArray(value.files)) return false;
+  return (
+    hasExactKeys(value, [
+      "globalId",
+      "sequence",
+      "documentGlobalId",
+      "revisionGlobalId",
+      "major",
+      "minor",
+      "revisionSnapshotHash",
+      "lifecycleVersion",
+      "releaseEventGlobalId",
+      "releaseSnapshotHash",
+      "memberHash",
+      "files",
+    ]) &&
+    isUuid(value.globalId) &&
+    isPositiveInteger(value.sequence) &&
+    value.sequence <= 100 &&
+    isUuid(value.documentGlobalId) &&
+    isUuid(value.revisionGlobalId) &&
+    isNonnegativeInteger(value.major) &&
+    isNonnegativeInteger(value.minor) &&
+    typeof value.revisionSnapshotHash === "string" &&
+    sha256Pattern.test(value.revisionSnapshotHash) &&
+    isPositiveInteger(value.lifecycleVersion) &&
+    isUuid(value.releaseEventGlobalId) &&
+    typeof value.releaseSnapshotHash === "string" &&
+    sha256Pattern.test(value.releaseSnapshotHash) &&
+    typeof value.memberHash === "string" &&
+    sha256Pattern.test(value.memberHash) &&
+    value.files.length >= 1 &&
+    value.files.length <= 64 &&
+    value.files.every(isBaselineFile) &&
+    new Set(
+      value.files.map(
+        (file: { fileRevisionGlobalId: string }) => file.fileRevisionGlobalId,
+      ),
+    ).size === value.files.length
+  );
+}
+
+function isBaselineSummary(
+  value: unknown,
+): value is GateEvidenceBaselineViewModel {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.policy) ||
+    !Array.isArray(value.members)
+  ) {
+    return false;
+  }
+  if (
+    !hasExactKeys(value, [
+      "globalId",
+      "label",
+      "version",
+      "snapshotHash",
+      "policy",
+      "createdByUserId",
+      "createdAt",
+      "members",
+    ]) ||
+    !isUuid(value.globalId) ||
+    !isConstrainedString(value.label, 140) ||
+    value.version !== 1 ||
+    typeof value.snapshotHash !== "string" ||
+    !sha256Pattern.test(value.snapshotHash) ||
+    !hasExactKeys(value.policy, ["globalId", "version", "snapshotHash"]) ||
+    !isUuid(value.policy.globalId) ||
+    !isPositiveInteger(value.policy.version) ||
+    typeof value.policy.snapshotHash !== "string" ||
+    !sha256Pattern.test(value.policy.snapshotHash) ||
+    !isConstrainedString(value.createdByUserId, 254) ||
+    !isUtcTimestamp(value.createdAt) ||
+    value.members.length < 1 ||
+    value.members.length > 100 ||
+    !value.members.every(isBaselineMember)
+  ) {
+    return false;
+  }
+  const members = value.members as GateEvidenceBaselineViewModel["members"];
+  return (
+    members.every((member, index) => member.sequence === index + 1) &&
+    new Set(members.map((member) => member.globalId)).size === members.length &&
+    new Set(members.map((member) => member.revisionGlobalId)).size ===
+      members.length
+  );
+}
+
+function isBaselineImpact(
+  value: unknown,
+): value is DocumentBaselineImpactViewModel {
+  if (!isRecord(value)) return false;
+  const uuidFields = [
+    "globalId",
+    "dependencyGlobalId",
+    "baselineGlobalId",
+    "oldRevisionGlobalId",
+    "newRevisionGlobalId",
+    "gateGlobalId",
+    "requirementGlobalId",
+    "evidenceReferenceGlobalId",
+  ] as const;
+  const hashFields = [
+    "baselineSnapshotHash",
+    "oldRevisionSnapshotHash",
+    "newRevisionSnapshotHash",
+    "eventHash",
+  ] as const;
+  return (
+    hasExactKeys(value, [
+      "globalId",
+      "eventType",
+      "dependencyGlobalId",
+      "baselineGlobalId",
+      "baselineSnapshotHash",
+      "oldRevisionGlobalId",
+      "oldRevisionSnapshotHash",
+      "newRevisionGlobalId",
+      "newRevisionSnapshotHash",
+      "gateGlobalId",
+      "requirementGlobalId",
+      "evidenceReferenceGlobalId",
+      "initiatedByUserId",
+      "occurredAt",
+      "eventHash",
+    ]) &&
+    value.eventType === "invalidated" &&
+    uuidFields.every((field) => isUuid(value[field])) &&
+    hashFields.every(
+      (field) =>
+        typeof value[field] === "string" && sha256Pattern.test(value[field]),
+    ) &&
+    value.oldRevisionGlobalId !== value.newRevisionGlobalId &&
+    isConstrainedString(value.initiatedByUserId, 254) &&
+    isUtcTimestamp(value.occurredAt)
+  );
+}
+
 function isEvidenceReference(
   value: unknown,
 ): value is GateEvidenceReferenceViewModel {
@@ -148,7 +319,7 @@ function isEvidenceReference(
         "createdAt",
         "createdBy",
       ],
-      ["file"],
+      ["file", "baseline"],
     ) ||
     !isUuid(value.globalId) ||
     typeof value.kind !== "string" ||
@@ -165,9 +336,24 @@ function isEvidenceReference(
   ) {
     return false;
   }
-  return value.kind === "file_revision"
-    ? Object.hasOwn(value, "file") && isFileMetadata(value.file)
-    : !Object.hasOwn(value, "file");
+  if (value.kind === "file_revision") {
+    return (
+      Object.hasOwn(value, "file") &&
+      isFileMetadata(value.file) &&
+      !Object.hasOwn(value, "baseline")
+    );
+  }
+  if (value.kind === "release_baseline") {
+    return (
+      !Object.hasOwn(value, "file") &&
+      Object.hasOwn(value, "baseline") &&
+      isBaselineSummary(value.baseline) &&
+      value.revision === 1 &&
+      value.baseline.globalId === value.sourceGlobalId &&
+      value.baseline.snapshotHash === value.objectHash
+    );
+  }
+  return !Object.hasOwn(value, "file") && !Object.hasOwn(value, "baseline");
 }
 
 function evidenceStateForReferences(
@@ -315,6 +501,7 @@ export function isGateEvidenceResponse(
       "project",
       "gate",
       "requirements",
+      "baselineImpacts",
       "summary",
       "permissions",
     ]) ||
@@ -329,6 +516,20 @@ export function isGateEvidenceResponse(
         (requirement: GateRequirementViewModel) => requirement.globalId,
       ),
     ).size !== value.requirements.length ||
+    !Array.isArray(value.baselineImpacts) ||
+    value.baselineImpacts.length > 50000 ||
+    !value.baselineImpacts.every(isBaselineImpact) ||
+    new Set(
+      value.baselineImpacts.map(
+        (impact: DocumentBaselineImpactViewModel) => impact.globalId,
+      ),
+    ).size !== value.baselineImpacts.length ||
+    new Set(
+      value.baselineImpacts.map(
+        (impact: DocumentBaselineImpactViewModel) =>
+          `${impact.dependencyGlobalId}:${impact.newRevisionGlobalId}`,
+      ),
+    ).size !== value.baselineImpacts.length ||
     new Set(
       value.requirements.map(
         (requirement: GateRequirementViewModel) => requirement.key,
@@ -354,7 +555,10 @@ export function isGateEvidenceResponse(
   }
   const requirements =
     value.requirements as readonly GateRequirementViewModel[];
+  const gate = value.gate as GateEvidenceViewModel["gate"];
   const evidence = requirements.flatMap((requirement) => requirement.evidence);
+  const baselineImpacts =
+    value.baselineImpacts as readonly DocumentBaselineImpactViewModel[];
   const requiredCount = requirements.filter(
     (requirement) => requirement.classification === "required",
   ).length;
@@ -373,7 +577,23 @@ export function isGateEvidenceResponse(
     value.summary.unsafeScanCount === unsafeScanCount &&
     value.summary.evidenceCount === evidence.length &&
     new Set(evidence.map((reference) => reference.globalId)).size ===
-      evidence.length
+      evidence.length &&
+    baselineImpacts.every(
+      (impact, index) =>
+        impact.gateGlobalId === gate.globalId &&
+        evidence.some(
+          (reference) =>
+            reference.globalId === impact.evidenceReferenceGlobalId &&
+            reference.kind === "release_baseline" &&
+            reference.sourceGlobalId === impact.baselineGlobalId &&
+            reference.objectHash === impact.baselineSnapshotHash,
+        ) &&
+        (index === 0 ||
+          Date.parse(baselineImpacts[index - 1]?.occurredAt ?? "") >
+            Date.parse(impact.occurredAt) ||
+          (baselineImpacts[index - 1]?.occurredAt === impact.occurredAt &&
+            (baselineImpacts[index - 1]?.globalId ?? "") > impact.globalId)),
+    )
   );
 }
 

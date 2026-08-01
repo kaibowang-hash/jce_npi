@@ -1,6 +1,8 @@
 import type {
   ControlledDocumentPageViewModel,
   ControlledDocumentWorkspaceViewModel,
+  DocumentBaselineCommandViewModel,
+  DocumentBaselineWorkspaceViewModel,
   DocumentFileCapabilityResultViewModel,
   DocumentReleaseTransitionViewModel,
 } from "../../src/api/document-data-source";
@@ -14,6 +16,8 @@ const hash = "a".repeat(64);
 const policyId = "71000000-0000-4000-8000-000000000006";
 const policyVersionId = "71000000-0000-4000-8000-000000000007";
 export const releasePolicyId = "71000000-0000-4000-8000-000000000012";
+export const baselinePolicyId = "71000000-0000-4000-8000-000000000023";
+export const documentBaselineId = "71000000-0000-4000-8000-000000000024";
 
 const permissions = {
   view: true,
@@ -501,6 +505,93 @@ export function controlledDocumentReleasedWorkspaceFixture(): ControlledDocument
       ],
     },
   };
+}
+
+export function documentBaselineWorkspaceFixture(): DocumentBaselineWorkspaceViewModel {
+  const baseline = {
+    globalId: documentBaselineId,
+    label: "G2 synthetic release package",
+    version: 1 as const,
+    snapshotHash: "d".repeat(64),
+    policy: {
+      globalId: baselinePolicyId,
+      version: 1,
+      snapshotHash: "e".repeat(64),
+    },
+    createdByUserId: "administrator@example.invalid",
+    createdAt: "2026-07-30T15:00:00Z",
+    members: [
+      {
+        globalId: "71000000-0000-4000-8000-000000000025",
+        sequence: 1,
+        documentGlobalId: controlledDocumentId,
+        revisionGlobalId: documentRevisionId,
+        major: 0,
+        minor: 1,
+        revisionSnapshotHash: hash,
+        lifecycleVersion: 3,
+        releaseEventGlobalId: "71000000-0000-4000-8000-000000000018",
+        releaseSnapshotHash: hash,
+        memberHash: "f".repeat(64),
+        files: [
+          {
+            fileRevisionGlobalId: fileRevisionId,
+            fileDocumentGlobalId: "71000000-0000-4000-8000-000000000009",
+            fileName: "synthetic-drawing.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 4,
+            sha256: hash,
+            scanState: "clean" as const,
+          },
+        ],
+      },
+    ],
+  };
+  return {
+    project: {
+      globalId: documentProjectId,
+      projectCode: project.businessCode,
+      projectName: project.title,
+    },
+    permissions: { view: true, create: true },
+    policies: [
+      {
+        globalId: baselinePolicyId,
+        version: 1,
+        snapshotHash: "e".repeat(64),
+        key: "synthetic.baseline.policy",
+        title: "Synthetic baseline policy",
+      },
+    ],
+    items: [baseline],
+    impacts: [
+      {
+        globalId: "71000000-0000-4000-8000-000000000026",
+        eventType: "invalidated",
+        dependencyGlobalId: "71000000-0000-4000-8000-000000000027",
+        baselineGlobalId: documentBaselineId,
+        baselineSnapshotHash: baseline.snapshotHash,
+        oldRevisionGlobalId: documentRevisionId,
+        oldRevisionSnapshotHash: hash,
+        newRevisionGlobalId: "71000000-0000-4000-8000-000000000028",
+        newRevisionSnapshotHash: "1".repeat(64),
+        gateGlobalId: "71000000-0000-4000-8000-000000000029",
+        requirementGlobalId: "71000000-0000-4000-8000-000000000030",
+        evidenceReferenceGlobalId: "71000000-0000-4000-8000-000000000031",
+        initiatedByUserId: "administrator@example.invalid",
+        occurredAt: "2026-07-30T16:00:00Z",
+        eventHash: "2".repeat(64),
+      },
+    ],
+  };
+}
+
+export function documentBaselineCommandFixture(): DocumentBaselineCommandViewModel {
+  const workspace = documentBaselineWorkspaceFixture();
+  const baseline = workspace.items[0];
+  if (!baseline)
+    throw new Error("The Document baseline fixture requires one baseline.");
+  return { projectId: documentProjectId, baseline };
 }
 
 export function documentFileCapabilityFixture(): DocumentFileCapabilityResultViewModel {

@@ -64,6 +64,7 @@ class MockGateEvidenceRepository:
         self.calls: list[tuple[str, UUID, UUID, dict[str, Any]]] = []
         self.unavailable = False
         self.replayed = False
+        self.attach_failure: Exception | None = None
 
     def evidence_workspace(
         self,
@@ -104,6 +105,8 @@ class MockGateEvidenceRepository:
                 {"requirement_key": requirement_key, **values},
             )
         )
+        if self.attach_failure is not None:
+            raise self.attach_failure
         if self.unavailable:
             return None
         return types.SimpleNamespace(
@@ -218,6 +221,7 @@ class Phase4GateEvidenceApiTest(unittest.TestCase):
                 "frozenBy": "Administrator",
             },
             "requirements": [],
+            "baselineImpacts": [],
             "summary": {
                 "requiredCount": 1,
                 "missingRequiredCount": 1,
@@ -458,6 +462,21 @@ class Phase4GateEvidenceApiTest(unittest.TestCase):
         self.assertEqual(values["source_hash"], "c" * 64)
         self.assertEqual(self.frappe.local.response.http_status_code, 201)
 
+        self.reset_response()
+        self.frappe.flags.npi_route_params["requirement_key"] = "drawing"
+        baseline_payload = self.attach_payload()
+        baseline_payload["evidenceKind"] = "release_baseline"
+        baseline_payload["sourceVersion"] = 1
+        self.call(
+            "npi_core.gate_evidence_api.attach_gate_evidence",
+            self.api.attach_gate_evidence,
+            baseline_payload,
+        )
+        self.assertEqual(
+            self.repository.calls[-1][3]["evidence_kind"],
+            "release_baseline",
+        )
+
         for field, value in (
             ("evidenceKind", "latest"),
             ("sourceVersion", 0),
@@ -477,6 +496,27 @@ class Phase4GateEvidenceApiTest(unittest.TestCase):
                     422,
                     "VALIDATION_FAILED",
                 )
+
+    def test_baseline_dependency_failure_returns_500_and_rolls_back(self) -> None:
+        self.frappe.flags.npi_route_params["requirement_key"] = "drawing"
+        self.repository.attach_failure = RuntimeError(
+            "synthetic baseline dependency persistence secret"
+        )
+        payload = self.attach_payload()
+        payload["evidenceKind"] = "release_baseline"
+        payload["sourceVersion"] = 1
+
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.gate_evidence_api.attach_gate_evidence",
+                self.api.attach_gate_evidence,
+                payload,
+            ),
+            500,
+            "INTERNAL_SERVER_ERROR",
+        )
+        self.assertEqual(self.frappe.db.rollback_count, 1)
+        self.assertNotIn("persistence secret", str(problem))
 
     def test_unavailable_project_or_gate_uses_one_non_leaking_problem(self) -> None:
         self.repository.unavailable = True

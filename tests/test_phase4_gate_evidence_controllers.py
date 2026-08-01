@@ -19,6 +19,7 @@ REQUIREMENT_ID = UUID("890364b3-df64-5179-b4d4-81307737c6b3")
 FILE_REVISION_ID = UUID("fe8d0b1b-87c1-4ad2-9e08-e88950731f2d")
 DOCUMENT_ID = UUID("2a3cc6e2-e585-4b19-9239-c756e7b4b555")
 WBS_ID = UUID("e2d8072c-65b9-47b9-92ee-98241f732a30")
+BASELINE_ID = UUID("1ba71ee3-c1fe-46d9-b9c6-67fb3c06aff2")
 
 
 class StubDocument:
@@ -167,6 +168,22 @@ class GateEvidenceControllerTest(unittest.TestCase):
             "npi_core.npi_core.doctype.npi_gate_evidence_reference"
             ".npi_gate_evidence_reference"
         )
+        self.baseline_source: StubDocument | None = None
+        self.baseline_load_calls: list[tuple[str, UUID, bool]] = []
+
+        def load_document_baseline(project, baseline_id: UUID, *, lock: bool):
+            self.baseline_load_calls.append((str(project.global_id), baseline_id, lock))
+            if baseline_id == BASELINE_ID:
+                return self.baseline_source
+            return None
+
+        self.evidence_module.load_document_baseline = load_document_baseline
+        self.documents[("NPI Engineering Project", str(PROJECT_ID))] = StubDocument(
+            {
+                "global_id": str(PROJECT_ID),
+                "tenant_id": TENANT_ID,
+            }
+        )
         self.gate_shell_module = importlib.import_module(
             "npi_core.npi_core.doctype.npi_gate_shell.npi_gate_shell"
         )
@@ -246,6 +263,26 @@ class GateEvidenceControllerTest(unittest.TestCase):
             }
         )
 
+    def release_baseline(self) -> StubDocument:
+        snapshot = {
+            "schemaVersion": 1,
+            "globalId": str(BASELINE_ID),
+            "tenantId": TENANT_ID,
+            "projectGlobalId": str(PROJECT_ID),
+            "label": "G2 release package",
+            "version": 1,
+        }
+        return StubDocument(
+            {
+                "global_id": str(BASELINE_ID),
+                "tenant_id": TENANT_ID,
+                "project_global_id": str(PROJECT_ID),
+                "version": 1,
+                "snapshot_hash": self.validation.canonical_snapshot_hash(snapshot),
+                "snapshot_payload": lambda: snapshot,
+            }
+        )
+
     def evidence(
         self,
         *,
@@ -269,7 +306,11 @@ class GateEvidenceControllerTest(unittest.TestCase):
                 "source_version": (
                     int(source.revision)
                     if kind == "file_revision"
-                    else int(source.optimistic_version)
+                    else (
+                        int(source.version)
+                        if kind == "release_baseline"
+                        else int(source.optimistic_version)
+                    )
                 ),
                 "source_hash": source_hash,
                 "source_snapshot": snapshot,
@@ -464,6 +505,36 @@ class GateEvidenceControllerTest(unittest.TestCase):
         self.assertEqual(persisted_snapshot["scanState"], "pending")
         self.assertNotIn("/private/files/", evidence.source_snapshot)
         self.assertFalse(any("url" in key.casefold() for key in persisted_snapshot))
+
+    def test_release_baseline_evidence_reloads_exact_immutable_snapshot(self) -> None:
+        source = self.release_baseline()
+        self.baseline_source = source
+        snapshot = source.snapshot_payload()
+        evidence = self.evidence(
+            kind="release_baseline",
+            source=source,
+            source_hash=source.snapshot_hash,
+            snapshot=snapshot,
+        )
+        self.persist_new_evidence(evidence)
+
+        self.assertEqual(
+            self.baseline_load_calls,
+            [(str(PROJECT_ID), BASELINE_ID, False)],
+        )
+        self.assertEqual(json.loads(evidence.source_snapshot), snapshot)
+        self.assertEqual(evidence.source_version, 1)
+        self.assertEqual(evidence.source_hash, source.snapshot_hash)
+
+        drifted = self.evidence(
+            kind="release_baseline",
+            source=source,
+            source_hash=source.snapshot_hash,
+            snapshot={**snapshot, "label": "Caller supplied drift"},
+        )
+        drifted.before_validate()
+        with self.assertRaises(self.ValidationError):
+            drifted.validate()
 
     def test_cross_tenant_raw_url_and_updates_are_rejected(self) -> None:
         source = self.wbs_item()
