@@ -2731,11 +2731,6 @@ def validate_initial_document_baseline_workspace(
         trace_id=trace_id,
     )
     require_runtime_substage(
-        permissions.get("create") is True,
-        code="P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
-        trace_id=trace_id,
-    )
-    require_runtime_substage(
         body.get("items") == [],
         code="P503_RUNTIME_BASELINE_WORKSPACE_ITEMS_EMPTY",
         trace_id=trace_id,
@@ -2783,6 +2778,11 @@ def validate_initial_document_baseline_workspace(
         policy.get("title")
         == "Synthetic P5-03 document baseline policy version",
         code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        permissions.get("create") is True,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
         trace_id=trace_id,
     )
 

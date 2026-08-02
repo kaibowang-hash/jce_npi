@@ -384,6 +384,25 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                     with self.subTest(code=expected_code, forbidden=forbidden):
                         self.assertNotIn(forbidden, diagnostic.casefold())
 
+        with self.assertRaises(module.RuntimeSubstageFailure) as failure:
+            module.validate_initial_document_baseline_workspace(
+                module.HttpResult(
+                    status=200,
+                    headers=Mock(),
+                    body={
+                        **body,
+                        "permissions": {"view": True, "create": False},
+                        "policies": [],
+                    },
+                    trace_id=trace_id,
+                ),
+                expected_policy_hash=policy_hash,
+            )
+        self.assertEqual(
+            failure.exception.code,
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
+        )
+
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
             set(self.module.DOCUMENT_DOCTYPES),
