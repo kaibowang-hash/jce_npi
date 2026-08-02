@@ -158,12 +158,12 @@ document_baseline_route_switch_state() {
   "${bench_path}/env/bin/python" -c \
     'import json, pathlib, sys
 config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
-config_key = "npi_p5_03_routes_disabled"
-if config_key not in config:
+switch_name = "npi_p5_03_routes_disabled"
+if switch_name not in config:
     print("absent")
-elif config[config_key] is True:
+elif config[switch_name] is True:
     print("true")
-elif config[config_key] is False:
+elif config[switch_name] is False:
     print("false")
 else:
     print("invalid")' \
