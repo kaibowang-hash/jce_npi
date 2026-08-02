@@ -1,24 +1,27 @@
 # Active Execution Goal
 
-Updated: `2026-07-31T22:22:10Z`
+Updated: `2026-08-02T19:11:28Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `IN_PROGRESS — P5-03 AUTHORIZED ACTIVE`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest passed product checkpoint:
-  `ff4fb4d15da14d6ac04354ff63d7da1af34cacba`
-- Local and remote checkpoint:
-  `ff4fb4d15da14d6ac04354ff63d7da1af34cacba` (`0 ahead / 0 behind`)
+- Recovered current HEAD and remote base:
+  `a1d84294641cb0b8cf71002c3d3557cb6b485ce7` (`0 ahead / 0 behind`)
 - Complete normal CI:
-  `30669247503` (`PASS`, P5-03 repository/API checkpoint)
-- Final unchanged controlled-Site Gate:
-  `30661586342` (`PASS`)
+  `30761151383` (`PASS`, exact recovery-base SHA)
+- Diagnostic-only controlled-Site run:
+  `30761455482` (`FAIL`, safe diagnostic evidence only)
+- Accepted safe diagnostic tuple:
+  `P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE / RuntimeError /
+  trace-f9c9295e07be5bec93aa8b6b05cc2c30`
+- P5-03 final unchanged controlled-Site Gate:
+  `NOT EXECUTED`
 - Current controller task:
   `P5-03 — Baseline and impact invalidation`
-  (`IN_PROGRESS — GATE EVIDENCE/DEPENDENCY`)
+  (`IN_PROGRESS_DIAGNOSTIC — BASELINE CREATE`)
 - Current Requirement IDs:
   `FR-DS-006`
 - Completed P5-02 evidence:
@@ -29,10 +32,33 @@ Updated: `2026-07-31T22:22:10Z`
   `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`
 - Current P5-03 repository/API evidence:
   `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`
+- Current P5-03 diagnostic recovery evidence:
+  `implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
+
+## Current bounded diagnostic authority
+
+The controller and the accepted P5-03 plan recorded four completed genuine
+product-root repairs before `2b067c1`. The safe baseline-workspace diagnostic
+uniquely proved the project-field mapping root; repair `2b067c1` advanced the
+same unchanged Gate to the new baseline-create failure. It is therefore the
+fifth completed product-root repair under the product-root definition.
+
+The current user authority is an additional, strictly bounded P5-03 exception
+for this one `baseline-create` root. It does not alter the controller's global
+five-round rule. Behavior-neutral diagnostic narrowing remains
+`IN_PROGRESS_DIAGNOSTIC`, consumes no product-root round and cannot support a
+`PASS` claim.
+
+At most two additional diagnostic-only controlled-Site dispatches are
+available. Each requires affected tests and complete ordinary CI first. A
+unique server root must be cross-validated against `FR-DS-006`, its Requirement
+anchor, OpenAPI, true DocType fields, permissions and transaction invariants
+before the one permitted root repair. The final unchanged Gate remains
+reserved and must run with the diagnostic activation path closed.
 
 ## Historical passing and reusable evidence
 

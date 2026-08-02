@@ -1,25 +1,31 @@
 # Blockers
 
-Updated: `2026-07-31T20:15:18Z`
+Updated: `2026-08-02T19:11:28Z`
 
 ## Active hard blockers
 
-None. P5-02 passed its controlled-Site and Level 2 Task Gates; P5-03 is
-authorized active.
+None. P5-03 is `IN_PROGRESS_DIAGNOSTIC`; no P5-03 Gate `PASS` is claimed.
 
 ## Active diagnostic progress
 
-None.
+`P5-03-BASELINE-CREATE-BOUNDED-DIAGNOSTIC`
 
-The P5-02 controlled recovery retained only bounded, non-sensitive diagnostic
-facts and repaired the single product root proved in release-policy
-publication. Later verifier-only identity corrections changed no product
-Requirement, contract, permission or lifecycle rule. Complete ordinary CI
-`30661086073` and final unchanged controlled-Site workflow `30661586342`
-passed on exact product SHA `f088d70`.
+Recovered base HEAD `a1d8429` passed complete ordinary CI `30761151383`.
+Diagnostic-only run `30761455482` returned the accepted closed tuple
+`P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE / RuntimeError /
+trace-f9c9295e07be5bec93aa8b6b05cc2c30`. It proves the baseline-create phase
+but not a unique server substage. The P5-03 final unchanged controlled-Site
+Gate has not been executed.
+
+The user authorized a behavior-neutral closed diagnostic ladder and at most
+two additional diagnostic-only dispatches, each after affected tests and
+complete ordinary CI. The current state is progress, not a Hard Blocker. If
+both dispatches fail to prove one root, or the root would require a business
+rule, API, permission, Schema, ownership or transaction-order change, record
+that single condition as the blocker and stop without guessing.
 
 Evidence:
-`implementation/evidence/phase-5/p5-02-validation.md`.
+`implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md`.
 
 ## Resolved hard blockers
 
