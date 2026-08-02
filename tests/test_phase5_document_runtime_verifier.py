@@ -76,7 +76,14 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             module.UNRELATED_USER,
             r"^npi-document-[a-f0-9]{20}-unrelated@example[.]invalid$",
         )
-        self.assertNotEqual(module.OWNER_USER, module.UNRELATED_USER)
+        self.assertRegex(
+            module.BASELINE_USER,
+            r"^npi-document-[a-f0-9]{20}-baseline@example[.]invalid$",
+        )
+        self.assertEqual(
+            len({module.OWNER_USER, module.BASELINE_USER, module.UNRELATED_USER}),
+            3,
+        )
         headers = module.command_headers(
             "csrf-" + ("a" * 48),
             module.DOCUMENT_CREATE_KEY,
@@ -116,6 +123,39 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             self.assertTrue(
                 content[offset:].startswith(f"{number} 0 obj\n".encode())
             )
+
+    def test_baseline_payload_is_exact_and_caller_cannot_select_file_truth(
+        self,
+    ) -> None:
+        payload = self.module.baseline_command_payload(
+            policy_snapshot_hash="a" * 64,
+            revision_id="20873131-6923-5ad4-bf35-74efdc358224",
+            revision_snapshot_hash="b" * 64,
+            release_snapshot_hash="c" * 64,
+        )
+        self.assertEqual(
+            set(payload),
+            {
+                "policyGlobalId",
+                "policyVersion",
+                "policySnapshotHash",
+                "label",
+                "members",
+            },
+        )
+        self.assertEqual(
+            set(payload["members"][0]),
+            {
+                "revisionId",
+                "expectedRevisionSnapshotHash",
+                "expectedLifecycleVersion",
+                "expectedReleaseSnapshotHash",
+            },
+        )
+        serialized = json.dumps(payload, sort_keys=True).casefold()
+        for forbidden in ("scanstate", "fileurl", '"url"', "cookie"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, serialized)
 
     def test_relationship_runtime_diagnostic_is_closed_and_sanitized(self) -> None:
         module = self.module
@@ -192,13 +232,34 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 "NPI Document Review Cycle",
                 "NPI Document Confirmation",
                 "NPI Document Lifecycle Event",
+                "NPI Document Baseline Policy",
+                "NPI Document Baseline Policy Version",
+                "NPI Document Baseline",
+                "NPI Document Baseline Member",
+                "NPI Baseline Command Idempotency",
+                "NPI Baseline Gate Dependency",
+                "NPI Baseline Impact Event",
             },
         )
         self.assertIn("frappe.db.table_exists(doctype)", self.source)
         self.assertIn("frappe.get_meta(doctype, cached=False)", self.source)
-        self.assertIn('"response_snapshot"', self.source)
-        self.assertIn('"response_sealed"', self.source)
-        self.assertNotIn('"response_payload"', self.source)
+        schema_inventory = self.source.split(
+            "required_fields = {",
+            maxsplit=1,
+        )[1].split("for doctype in DOCUMENT_DOCTYPES:", maxsplit=1)[0]
+        document_receipt = schema_inventory.split(
+            '"NPI Document Command Idempotency": {',
+            maxsplit=1,
+        )[1].split("},", maxsplit=1)[0]
+        baseline_receipt = schema_inventory.split(
+            '"NPI Baseline Command Idempotency": {',
+            maxsplit=1,
+        )[1].split("},", maxsplit=1)[0]
+        self.assertIn('"response_snapshot"', document_receipt)
+        self.assertIn('"response_sealed"', document_receipt)
+        self.assertNotIn('"response_payload"', document_receipt)
+        self.assertIn('"response_payload"', baseline_receipt)
+        self.assertIn('"sealed"', baseline_receipt)
         self.assertNotIn("drop table", self.source.casefold())
         self.assertNotIn("truncate table", self.source.casefold())
 
@@ -787,6 +848,13 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "DOCUMENT_REVIEW_RESUBMIT_KEY",
             "DOCUMENT_REVIEW_APPROVE_KEY",
             "DOCUMENT_RELEASE_KEY",
+            "ensure_document_baseline_policy(",
+            "verify_document_baseline_runtime(",
+            "DOCUMENT_BASELINE_KEY",
+            '"evidenceKind": "release_baseline"',
+            '"BASELINE_SUCCESSOR_IMPACT"',
+            "DOCUMENT_SUCCESSOR_KEY",
+            "DOCUMENT_UNREGISTERED_SUCCESSOR_KEY",
             "externalRetrieval",
             "rawPrivateUrlExposed",
         )
@@ -902,6 +970,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                             result,
                             {
                                 **expected,
+                                "baselineAuthorityFixtureRetained": True,
                                 "ownerFixtureCleaned": True,
                             },
                         )
@@ -913,10 +982,10 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                                 "csrf-" + ("a" * 48),
                                 "controlled-fixture-password",
                             )
-                create_user.assert_called_once()
+                self.assertEqual(create_user.call_count, 2)
                 self.assertEqual(
-                    create_user.call_args.args[2],
-                    module.OWNER_USER,
+                    [call.args[2] for call in create_user.call_args_list],
+                    [module.OWNER_USER, module.BASELINE_USER],
                 )
                 delete_user.assert_called_once()
                 self.assertEqual(
@@ -941,6 +1010,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 Mock(),
                 "http://127.0.0.1:8003",
                 "csrf-" + ("a" * 48),
+                "controlled-fixture-password",
             )
 
     def test_runtime_shell_migrates_twice_and_restores_route_switch(self) -> None:
@@ -949,14 +1019,18 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "for _migration_attempt in 1 2",
             'npi_p5_01_routes_disabled "${value}"',
             'npi_p5_02_routes_disabled "${value}"',
+            'npi_p5_03_routes_disabled "${value}"',
             "run_document_runtime_verifier fresh",
             "run_document_route_probe disabled",
             "run_document_route_probe recovered",
             "run_document_release_route_probe disabled",
             "run_document_release_route_probe recovered",
+            "run_document_baseline_route_probe disabled",
+            "run_document_baseline_route_probe recovered",
             "run_document_runtime_verifier replay-only",
             "restore_document_route_switch",
             "restore_document_release_route_switch",
+            "restore_document_baseline_route_switch",
         )
         for fragment in required_fragments:
             with self.subTest(fragment=fragment):
@@ -967,6 +1041,10 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertIn(
             'document_release_route_disable_original_state}" != "absent"',
+            self.shell,
+        )
+        self.assertIn(
+            'document_baseline_route_disable_original_state}" != "absent"',
             self.shell,
         )
 

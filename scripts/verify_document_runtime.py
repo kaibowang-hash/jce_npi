@@ -13,7 +13,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from uuid import NAMESPACE_URL, uuid4, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from verify_frappe_runtime import (
     HttpResult,
@@ -64,6 +64,13 @@ DOCUMENT_DOCTYPES = (
     "NPI Document Review Cycle",
     "NPI Document Confirmation",
     "NPI Document Lifecycle Event",
+    "NPI Document Baseline Policy",
+    "NPI Document Baseline Policy Version",
+    "NPI Document Baseline",
+    "NPI Document Baseline Member",
+    "NPI Baseline Command Idempotency",
+    "NPI Baseline Gate Dependency",
+    "NPI Baseline Impact Event",
 )
 
 
@@ -210,8 +217,42 @@ DOCUMENT_RELEASE_POLICY_VERSION = 1
 DOCUMENT_RELEASE_POLICY_VERSION_KEY = (
     f"{DOCUMENT_RELEASE_POLICY_ID}:{DOCUMENT_RELEASE_POLICY_VERSION}"
 )
+DOCUMENT_BASELINE_POLICY_ID = fixture_id("document-baseline-policy")
+DOCUMENT_BASELINE_POLICY_VERSION = 1
+DOCUMENT_BASELINE_POLICY_VERSION_KEY = (
+    f"{DOCUMENT_BASELINE_POLICY_ID}:{DOCUMENT_BASELINE_POLICY_VERSION}"
+)
+GATE_TEMPLATE_ID = fixture_id("gate-template")
+GATE_TEMPLATE_VERSION = 1
+GATE_TEMPLATE_VERSION_KEY = f"{GATE_TEMPLATE_ID}:{GATE_TEMPLATE_VERSION}"
+GATE_TEMPLATE_CODE = f"P503-GATE-{FIXTURE_RUN_ID[:12].upper()}"
+GATE_KEY = "G0"
+GATE_REQUIREMENT_KEY = "released_design_baseline"
+PROJECT_WORK_POLICY_ID = fixture_id("project-work-policy")
+PROJECT_WORK_POLICY_VERSION = 1
+PROJECT_WORK_POLICY_VERSION_KEY = (
+    f"{PROJECT_WORK_POLICY_ID}:{PROJECT_WORK_POLICY_VERSION}"
+)
+PROJECT_WORK_POLICY_KEY = f"p5_03_runtime_work_{FIXTURE_RUN_ID}"
+BASELINE_MEMBER_ID = fixture_id("baseline-member")
+BASELINE_ROLE_ASSIGNMENT_ID = fixture_id("baseline-role-assignment")
+BASELINE_RACI_ID = fixture_id("baseline-gate-raci")
+BASELINE_ROLE_KEY = "baseline_owner"
+GATE_REVIEW_POLICY_ID = fixture_id("gate-review-policy")
+GATE_REVIEW_POLICY_VERSION = 1
+GATE_REVIEW_POLICY_VERSION_KEY = (
+    f"{GATE_REVIEW_POLICY_ID}:{GATE_REVIEW_POLICY_VERSION}"
+)
+GATE_REVIEW_POLICY_CODE = f"P503-REVIEW-{FIXTURE_RUN_ID[:12].upper()}"
+GATE_REVIEW_STEP_KEY = "baseline_review"
+GATE_REVIEW_SLOT = "baseline_reviewer"
+GATE_DECISION_SLOT = "baseline_decider"
+GATE_REOPEN_SLOT = "baseline_reopener"
 OWNER_USER = (
     f"npi-document-{FIXTURE_RUN_ID[:20]}-owner@example.invalid"
+)
+BASELINE_USER = (
+    f"npi-document-{FIXTURE_RUN_ID[:20]}-baseline@example.invalid"
 )
 UNRELATED_USER = (
     f"npi-document-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
@@ -220,7 +261,9 @@ BUSINESS_CODE = f"P5-01-{FIXTURE_RUN_ID[:16].upper()}"
 PROJECT_TEMPLATE_CODE = f"P501-{FIXTURE_RUN_ID[:16].upper()}"
 POLICY_KEY = f"p5_01_runtime_{FIXTURE_RUN_ID}"
 RELEASE_POLICY_KEY = f"p5_02_runtime_{FIXTURE_RUN_ID}"
+BASELINE_POLICY_KEY = f"p5_03_runtime_{FIXTURE_RUN_ID}"
 PROJECT_CREATE_KEY = f"{FIXTURE_PREFIX}-project-create"
+PROJECT_TEAM_KEY = f"{FIXTURE_PREFIX}-project-team"
 DOCUMENT_CREATE_KEY = f"{FIXTURE_PREFIX}-document-create"
 DOCUMENT_CHECK_OUT_KEY = f"{FIXTURE_PREFIX}-document-check-out"
 DOCUMENT_REVISION_KEY = f"{FIXTURE_PREFIX}-document-revision"
@@ -231,6 +274,17 @@ DOCUMENT_REVIEW_REJECT_KEY = f"{FIXTURE_PREFIX}-review-reject"
 DOCUMENT_REVIEW_RESUBMIT_KEY = f"{FIXTURE_PREFIX}-review-resubmit"
 DOCUMENT_REVIEW_APPROVE_KEY = f"{FIXTURE_PREFIX}-review-approve"
 DOCUMENT_RELEASE_KEY = f"{FIXTURE_PREFIX}-release"
+DOCUMENT_BASELINE_KEY = f"{FIXTURE_PREFIX}-baseline-create"
+GATE_FREEZE_KEY = f"{FIXTURE_PREFIX}-gate-freeze"
+GATE_BASELINE_ATTACH_KEY = f"{FIXTURE_PREFIX}-gate-baseline-attach"
+GATE_REVIEW_START_KEY = f"{FIXTURE_PREFIX}-gate-review-start"
+DOCUMENT_SUCCESSOR_CHECK_OUT_KEY = (
+    f"{FIXTURE_PREFIX}-successor-check-out"
+)
+DOCUMENT_SUCCESSOR_KEY = f"{FIXTURE_PREFIX}-successor-registered"
+DOCUMENT_UNREGISTERED_SUCCESSOR_KEY = (
+    f"{FIXTURE_PREFIX}-successor-unregistered"
+)
 
 
 @dataclass(frozen=True)
@@ -666,10 +720,65 @@ def create_internal_fixture_user(
     )
 
 
+def ensure_gate_template(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+) -> str:
+    root = create_resource(
+        administrator,
+        base_url,
+        "NPI Gate Template",
+        {
+            "global_id": GATE_TEMPLATE_ID,
+            "template_code": GATE_TEMPLATE_CODE,
+            "title": "Synthetic P5-03 release baseline Gate",
+            "enabled": 1,
+        },
+        csrf_token,
+    )
+    require_http_status(root, {200, 201}, "Gate Template creation")
+    version = create_resource(
+        administrator,
+        base_url,
+        "NPI Gate Template Version",
+        {
+            "gate_template": GATE_TEMPLATE_ID,
+            "gate_template_version": GATE_TEMPLATE_VERSION,
+            "title": "Synthetic P5-03 release baseline Gate",
+            "publication_state": "published",
+            "applicable_project_types": ["new_tool"],
+            "requirements": [
+                {
+                    "requirement_key": GATE_REQUIREMENT_KEY,
+                    "title": "Exact released design baseline is attached",
+                    "classification": "required",
+                    "priority": "P0",
+                    "allowed_evidence_kinds": ["release_baseline"],
+                }
+            ],
+        },
+        csrf_token,
+    )
+    require_http_status(version, {200, 201}, "Gate Template publication")
+    data = version.body.get("data", {})
+    snapshot_hash = data.get("snapshot_hash")
+    require(
+        data.get("name") == GATE_TEMPLATE_VERSION_KEY
+        and data.get("publication_state") == "published"
+        and isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Published Gate Template identity or hash drifted",
+    )
+    return snapshot_hash
+
+
 def ensure_project_template(
     administrator,
     base_url: str,
     csrf_token: str,
+    *,
+    gate_template_hash: str,
 ) -> str:
     root = create_resource(
         administrator,
@@ -706,9 +815,12 @@ def ensure_project_template(
             ],
             "gates": [
                 {
-                    "gate_key": "G0",
+                    "gate_key": GATE_KEY,
                     "title": "Synthetic document intake",
                     "sequence": 1,
+                    "gate_template_global_id": GATE_TEMPLATE_ID,
+                    "gate_template_version": GATE_TEMPLATE_VERSION,
+                    "gate_template_snapshot_hash": gate_template_hash,
                 }
             ],
         },
@@ -772,6 +884,128 @@ def create_project(
         "Synthetic Project identity or version drifted",
     )
     return project_id, version
+
+
+def configured_gate_id(project_id: str) -> str:
+    return str(uuid5(UUID(project_id), f"gate-shell:1:{GATE_KEY}"))
+
+
+def ensure_project_work_policy(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+) -> dict[str, object]:
+    created = create_resource(
+        administrator,
+        base_url,
+        "NPI Project Work Policy Version",
+        {
+            "policy_global_id": PROJECT_WORK_POLICY_ID,
+            "policy_key": PROJECT_WORK_POLICY_KEY,
+            "policy_version": PROJECT_WORK_POLICY_VERSION,
+            "title": "Synthetic P5-03 baseline membership policy",
+            "publication_state": "published",
+            "role_keys": [BASELINE_ROLE_KEY],
+            "wbs_states": {
+                "initialStateKey": "not_started",
+                "states": [
+                    {
+                        "key": "not_started",
+                        "labelSource": "Not started",
+                        "terminal": False,
+                    }
+                ],
+            },
+            "work_item_lifecycles": [
+                {
+                    "kind": kind,
+                    "initialStateKey": state,
+                    "states": [
+                        {
+                            "key": state,
+                            "labelSource": label,
+                            "terminal": False,
+                        }
+                    ],
+                }
+                for kind, state, label in (
+                    ("risk", "risk_open", "Identified"),
+                    ("issue", "issue_open", "Open"),
+                    ("action", "action_open", "Open"),
+                    ("decision_request", "decision_open", "Requested"),
+                )
+            ],
+        },
+        csrf_token,
+    )
+    require_http_status(created, {200, 201}, "Project work policy publication")
+    data = created.body.get("data", {})
+    snapshot_hash = data.get("snapshot_hash")
+    require(
+        data.get("name") == PROJECT_WORK_POLICY_VERSION_KEY
+        and isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Published Project work policy identity or hash drifted",
+    )
+    return {
+        "globalId": PROJECT_WORK_POLICY_ID,
+        "version": PROJECT_WORK_POLICY_VERSION,
+        "snapshotHash": snapshot_hash,
+    }
+
+
+def configure_baseline_project_member(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    work_policy_ref: dict[str, object],
+) -> None:
+    configured = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}:configure-team",
+        method="POST",
+        payload={
+            "expectedProjectVersion": 1,
+            "workPolicyRef": work_policy_ref,
+            "members": [
+                {
+                    "globalId": BASELINE_MEMBER_ID,
+                    "userId": BASELINE_USER,
+                    "effectiveFrom": "2026-07-01",
+                }
+            ],
+            "roleAssignments": [
+                {
+                    "globalId": BASELINE_ROLE_ASSIGNMENT_ID,
+                    "memberId": BASELINE_MEMBER_ID,
+                    "roleKey": BASELINE_ROLE_KEY,
+                    "effectiveFrom": "2026-07-01",
+                }
+            ],
+            "substitutions": [],
+            "raciAssignments": [
+                {
+                    "globalId": BASELINE_RACI_ID,
+                    "contextType": "project",
+                    "contextId": project_id,
+                    "responsibilityKey": "gate_evidence",
+                    "roleAssignmentId": BASELINE_ROLE_ASSIGNMENT_ID,
+                    "raci": "responsible",
+                }
+            ],
+        },
+        csrf_token=csrf_token,
+        idempotency_key=PROJECT_TEAM_KEY,
+    )
+    require(
+        configured.status == 200
+        and configured.headers.get("Idempotency-Replayed") == "false"
+        and configured.body.get("projectVersion") == 2,
+        "Synthetic baseline Project membership drifted",
+    )
 
 
 def ensure_document_policy(
@@ -936,8 +1170,134 @@ def ensure_document_release_policy(
     return snapshot_hash
 
 
+def ensure_document_baseline_policy(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+) -> str:
+    root = create_resource(
+        administrator,
+        base_url,
+        "NPI Document Baseline Policy",
+        {
+            "global_id": DOCUMENT_BASELINE_POLICY_ID,
+            "tenant_id": TENANT_ID,
+            "project_global_id": project_id,
+            "policy_key": BASELINE_POLICY_KEY,
+            "title": "Synthetic P5-03 document baseline policy",
+            "enabled": 1,
+        },
+        csrf_token,
+    )
+    require_http_status(root, {200, 201}, "Document baseline policy creation")
+    draft = create_resource(
+        administrator,
+        base_url,
+        "NPI Document Baseline Policy Version",
+        {
+            "document_baseline_policy": DOCUMENT_BASELINE_POLICY_ID,
+            "policy_version": DOCUMENT_BASELINE_POLICY_VERSION,
+            "title": "Synthetic P5-03 document baseline policy version",
+            "publication_state": "draft",
+            "baseline_authority_user_ids": [BASELINE_USER],
+        },
+        csrf_token,
+    )
+    require_http_status(
+        draft,
+        {200, 201},
+        "Document baseline policy draft creation",
+    )
+    published = update_resource(
+        administrator,
+        base_url,
+        "NPI Document Baseline Policy Version",
+        DOCUMENT_BASELINE_POLICY_VERSION_KEY,
+        {"publication_state": "published"},
+        csrf_token,
+    )
+    require_http_status(
+        published,
+        {200},
+        "Document baseline policy publication",
+    )
+    data = published.body.get("data", {})
+    snapshot_hash = data.get("snapshot_hash")
+    require(
+        data.get("publication_state") == "published"
+        and data.get("project_global_id") == project_id
+        and isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Published document baseline policy truth drifted",
+    )
+    return snapshot_hash
+
+
+def ensure_gate_review_policy(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    gate_template_hash: str,
+) -> str:
+    root = create_resource(
+        administrator,
+        base_url,
+        "NPI Gate Review Policy",
+        {
+            "global_id": GATE_REVIEW_POLICY_ID,
+            "policy_code": GATE_REVIEW_POLICY_CODE,
+            "title": "Synthetic P5-03 baseline review policy",
+            "enabled": 1,
+        },
+        csrf_token,
+    )
+    require_http_status(root, {200, 201}, "Gate Review policy creation")
+    version = create_resource(
+        administrator,
+        base_url,
+        "NPI Gate Review Policy Version",
+        {
+            "gate_review_policy": GATE_REVIEW_POLICY_ID,
+            "policy_version": GATE_REVIEW_POLICY_VERSION,
+            "title": "Synthetic P5-03 baseline review policy version",
+            "publication_state": "published",
+            "gate_template_global_id": GATE_TEMPLATE_ID,
+            "gate_template_version": GATE_TEMPLATE_VERSION,
+            "gate_template_snapshot_hash": gate_template_hash,
+            "review_steps": [
+                {
+                    "key": GATE_REVIEW_STEP_KEY,
+                    "sequence": 1,
+                    "authoritySlot": GATE_REVIEW_SLOT,
+                    "activation": "always",
+                    "activationPriority": None,
+                }
+            ],
+            "decision_authority_slot": GATE_DECISION_SLOT,
+            "reopen_authority_slot": GATE_REOPEN_SLOT,
+            "exception_rules": [],
+            "dependency_evaluators": ["gate_input_snapshot"],
+        },
+        csrf_token,
+    )
+    require_http_status(version, {200, 201}, "Gate Review policy publication")
+    data = version.body.get("data", {})
+    snapshot_hash = data.get("snapshot_hash")
+    require(
+        data.get("name") == GATE_REVIEW_POLICY_VERSION_KEY
+        and data.get("publication_state") == "published"
+        and isinstance(snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", snapshot_hash) is not None,
+        "Published Gate Review policy identity or hash drifted",
+    )
+    return snapshot_hash
+
+
 def verify_fresh_namespace(administrator, base_url: str) -> None:
-    for user in (OWNER_USER, UNRELATED_USER):
+    for user in (OWNER_USER, BASELINE_USER, UNRELATED_USER):
         result = request(administrator, base_url, user_resource_path(user))
         require(
             result.status == 404,
@@ -945,8 +1305,15 @@ def verify_fresh_namespace(administrator, base_url: str) -> None:
         )
     for doctype, name in (
         ("NPI Project Template", PROJECT_TEMPLATE_ID),
+        ("NPI Gate Template", GATE_TEMPLATE_ID),
         ("NPI Document Policy", DOCUMENT_POLICY_ID),
         ("NPI Document Release Policy", DOCUMENT_RELEASE_POLICY_ID),
+        ("NPI Document Baseline Policy", DOCUMENT_BASELINE_POLICY_ID),
+        ("NPI Gate Review Policy", GATE_REVIEW_POLICY_ID),
+        (
+            "NPI Project Work Policy Version",
+            PROJECT_WORK_POLICY_VERSION_KEY,
+        ),
     ):
         result = get_resource(administrator, base_url, doctype, name)
         require(
@@ -1194,6 +1561,53 @@ def verify_document_runtime_schema(fixture_run_id: str) -> dict[str, object]:
             "revision_global_id",
             "from_version",
             "to_version",
+            "event_snapshot",
+            "event_hash",
+        },
+        "NPI Document Baseline Policy": {
+            "global_id",
+            "project_global_id",
+            "policy_key_hash",
+            "optimistic_version",
+        },
+        "NPI Document Baseline Policy Version": {
+            "policy_global_id",
+            "baseline_authority_user_ids",
+            "policy_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Document Baseline": {
+            "global_id",
+            "policy_global_id",
+            "member_count",
+            "baseline_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Document Baseline Member": {
+            "baseline_global_id",
+            "revision_global_id",
+            "release_snapshot_hash",
+            "member_snapshot",
+            "member_hash",
+        },
+        "NPI Baseline Command Idempotency": {
+            "actor_user_id",
+            "idempotency_key_hash",
+            "payload_hash",
+            "response_payload",
+            "sealed",
+        },
+        "NPI Baseline Gate Dependency": {
+            "baseline_global_id",
+            "input_revision_global_id",
+            "evidence_reference_global_id",
+            "dependency_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Baseline Impact Event": {
+            "baseline_global_id",
+            "old_revision_global_id",
+            "new_revision_global_id",
             "event_snapshot",
             "event_hash",
         },
@@ -1680,10 +2094,59 @@ def release_route_disable_probe(
     validate_problem(disabled, 503, "DOCUMENT_RELEASE_ROUTES_DISABLED")
 
 
+def baseline_route_disable_probe(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    expected_mode: str,
+) -> None:
+    project_id, _project_version = fixture_project(administrator, base_url)
+    documents = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents",
+        query_key=f"baseline-route-documents-{expected_mode}",
+    )
+    require(
+        documents.status == 200 and len(documents.body.get("items", [])) == 1,
+        "P5-03 route switch changed the retained P5-01 list route",
+    )
+    result = document_baseline_request(
+        administrator,
+        base_url,
+        project_id,
+        query_key=f"baseline-route-{expected_mode}",
+    )
+    if expected_mode == "disabled":
+        validate_problem(result, 503, "DOCUMENT_BASELINE_ROUTES_DISABLED")
+        disabled_command = document_baseline_request(
+            administrator,
+            base_url,
+            project_id,
+            payload={},
+            csrf_token=csrf_token,
+            idempotency_key=f"{FIXTURE_PREFIX}-baseline-route-disabled",
+        )
+        validate_problem(
+            disabled_command,
+            503,
+            "DOCUMENT_BASELINE_ROUTES_DISABLED",
+        )
+        return
+    require(
+        result.status == 200
+        and len(result.body.get("items", [])) == 1
+        and len(result.body.get("impacts", [])) == 1,
+        "Recovered Document baseline route truth drifted",
+    )
+
+
 def run_replay(
     administrator,
     base_url: str,
     csrf_token: str,
+    fixture_password: str,
 ) -> None:
     owner = request(
         administrator,
@@ -1693,6 +2156,15 @@ def run_replay(
     require(
         owner.status == 404,
         "Disposable Document runtime Project owner was not cleaned",
+    )
+    baseline_authority = request(
+        administrator,
+        base_url,
+        user_resource_path(BASELINE_USER),
+    )
+    require(
+        baseline_authority.status == 200,
+        "Controlled baseline authority fixture was not retained",
     )
     project_id, project_version = fixture_project(administrator, base_url)
     policy_hash = fixture_policy_hash(administrator, base_url)
@@ -1722,7 +2194,8 @@ def run_replay(
         == 1,
         "Retained Document release history is unavailable for replay",
     )
-    revision_id = str(detail.body["revisions"][0]["globalId"])
+    revision_history = detail.body["releaseWorkspace"]["revisions"][0]
+    revision_id = str(revision_history["revisionId"])
     release_replay = release_command(
         administrator,
         base_url,
@@ -1746,6 +2219,56 @@ def run_replay(
         expected_event="released",
         expected_confirmation="release",
         replayed=True,
+    )
+    baseline_actor = login(base_url, BASELINE_USER, fixture_password)
+    baseline_csrf = bootstrap_csrf(
+        baseline_actor,
+        base_url,
+        BASELINE_USER,
+    )
+    workspace = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        query_key="baseline-cross-process-replay",
+    )
+    baselines = workspace.body.get("items", [])
+    impacts = workspace.body.get("impacts", [])
+    require(
+        workspace.status == 200
+        and len(baselines) == 1
+        and len(impacts) == 1,
+        "Retained Document baseline or impact lineage is unavailable for replay",
+    )
+    baseline = baselines[0]
+    member = baseline["members"][0]
+    payload = baseline_command_payload(
+        policy_snapshot_hash=str(baseline["policy"]["snapshotHash"]),
+        revision_id=str(member["revisionGlobalId"]),
+        revision_snapshot_hash=str(member["revisionSnapshotHash"]),
+        release_snapshot_hash=str(member["releaseSnapshotHash"]),
+        label=str(baseline["label"]),
+    )
+    baseline_replay = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        payload=payload,
+        csrf_token=baseline_csrf,
+        idempotency_key=DOCUMENT_BASELINE_KEY,
+    )
+    replayed_baseline = validate_document_baseline_command(
+        baseline_replay,
+        project_id=project_id,
+        revision_id=str(member["revisionGlobalId"]),
+        revision_snapshot_hash=str(member["revisionSnapshotHash"]),
+        release_snapshot_hash=str(member["releaseSnapshotHash"]),
+        policy_snapshot_hash=str(baseline["policy"]["snapshotHash"]),
+        replayed=True,
+    )
+    require(
+        replayed_baseline == baseline,
+        "Cross-process Document baseline replay changed its sealed response",
     )
 
 
@@ -2023,7 +2546,11 @@ def verify_review_release_runtime(
     )
     require_http_status(detail, {200}, "Released Document detail")
     histories = detail.body.get("releaseWorkspace", {}).get("revisions", [])
-    files = detail.body.get("revisions", [])[0].get("files", [])
+    revision_details = detail.body.get("revisions", [])
+    files = revision_details[0].get("files", []) if revision_details else []
+    revision_snapshot_hash = (
+        revision_details[0].get("snapshotHash") if revision_details else None
+    )
     require(
         detail.body.get("document", {}).get("optimisticVersion") == 4
         and len(histories) == 1
@@ -2036,7 +2563,9 @@ def verify_review_release_runtime(
         and len(histories[0].get("events", [])) == 5
         and len(files) == 1
         and files[0].get("released") is True
-        and files[0].get("scanState") == "clean",
+        and files[0].get("scanState") == "clean"
+        and isinstance(revision_snapshot_hash, str)
+        and re.fullmatch(r"[a-f0-9]{64}", revision_snapshot_hash) is not None,
         "Released Document history or retained file truth drifted",
     )
     deletion = run_bench_fixture(
@@ -2051,8 +2580,555 @@ def verify_review_release_runtime(
         "deleteRejected": True,
         "integrityBlocked": True,
         "releaseSnapshotHash": release_snapshot_hash,
+        "revisionSnapshotHash": revision_snapshot_hash,
         "reviewCycles": 2,
         "reviewRejectResubmit": True,
+    }
+
+
+def baseline_command_payload(
+    *,
+    policy_snapshot_hash: str,
+    revision_id: str,
+    revision_snapshot_hash: str,
+    release_snapshot_hash: str,
+    label: str = "Synthetic P5-03 exact release baseline",
+) -> dict[str, object]:
+    return {
+        "policyGlobalId": DOCUMENT_BASELINE_POLICY_ID,
+        "policyVersion": DOCUMENT_BASELINE_POLICY_VERSION,
+        "policySnapshotHash": policy_snapshot_hash,
+        "label": label,
+        "members": [
+            {
+                "revisionId": revision_id,
+                "expectedRevisionSnapshotHash": revision_snapshot_hash,
+                "expectedLifecycleVersion": 5,
+                "expectedReleaseSnapshotHash": release_snapshot_hash,
+            }
+        ],
+    }
+
+
+def document_baseline_request(
+    opener,
+    base_url: str,
+    project_id: str,
+    *,
+    payload: dict[str, object] | None = None,
+    csrf_token: str | None = None,
+    idempotency_key: str | None = None,
+    query_key: str = "baseline-query",
+) -> HttpResult:
+    return npi_request(
+        opener,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/document-baselines",
+        method="POST" if payload is not None else "GET",
+        payload=payload,
+        csrf_token=csrf_token,
+        idempotency_key=idempotency_key,
+        query_key=query_key,
+    )
+
+
+def validate_document_baseline_command(
+    result: HttpResult,
+    *,
+    project_id: str,
+    revision_id: str,
+    revision_snapshot_hash: str,
+    release_snapshot_hash: str,
+    policy_snapshot_hash: str,
+    replayed: bool,
+) -> dict[str, Any]:
+    require_http_status(result, {201}, "Document baseline command")
+    baseline = result.body.get("baseline")
+    members = baseline.get("members") if isinstance(baseline, dict) else None
+    require(
+        result.body.get("projectId") == project_id
+        and result.headers.get("Idempotency-Replayed")
+        == ("true" if replayed else "false")
+        and isinstance(baseline, dict)
+        and baseline.get("version") == 1
+        and baseline.get("createdByUserId") == BASELINE_USER
+        and isinstance(baseline.get("globalId"), str)
+        and re.fullmatch(r"[a-f0-9-]{36}", baseline["globalId"]) is not None
+        and isinstance(baseline.get("snapshotHash"), str)
+        and re.fullmatch(r"[a-f0-9]{64}", baseline["snapshotHash"]) is not None
+        and baseline.get("policy")
+        == {
+            "globalId": DOCUMENT_BASELINE_POLICY_ID,
+            "version": DOCUMENT_BASELINE_POLICY_VERSION,
+            "snapshotHash": policy_snapshot_hash,
+        }
+        and isinstance(members, list)
+        and len(members) == 1
+        and members[0].get("revisionGlobalId") == revision_id
+        and members[0].get("revisionSnapshotHash") == revision_snapshot_hash
+        and members[0].get("lifecycleVersion") == 5
+        and members[0].get("releaseSnapshotHash") == release_snapshot_hash
+        and len(members[0].get("files", [])) == 1
+        and members[0]["files"][0].get("scanState") == "clean"
+        and "/private/files/" not in json.dumps(baseline, sort_keys=True)
+        and '"url"' not in json.dumps(baseline, sort_keys=True).casefold(),
+        "Immutable Document baseline response truth drifted",
+    )
+    return baseline
+
+
+def create_document_successor(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    document_id: str,
+    predecessor_revision_id: str,
+    expected_document_version: int,
+    lock_version: int,
+    minor: int,
+    idempotency_key: str,
+) -> dict[str, Any]:
+    result = multipart_revision_request(
+        administrator,
+        base_url,
+        (
+            f"/api/npi/v1/projects/{project_id}/documents/"
+            f"{document_id}/revisions"
+        ),
+        csrf_token=csrf_token,
+        idempotency_key=idempotency_key,
+        metadata={
+            "expectedDocumentVersion": expected_document_version,
+            "expectedLockVersion": lock_version,
+            "major": 0,
+            "minor": minor,
+            "reason": f"Synthetic exact successor revision 0.{minor}",
+            "effectiveDate": f"2026-08-{minor:02d}",
+            "predecessorRevisionId": predecessor_revision_id,
+        },
+        file_name=f"synthetic-runtime-drawing-0-{minor}.pdf",
+        content=PDF_CONTENT,
+    )
+    workspace = validate_document_workspace(
+        result,
+        project_id=project_id,
+        expected_document_id=document_id,
+    )
+    require(
+        result.status == 201
+        and result.headers.get("Idempotency-Replayed") == "false",
+        "Document successor command truth drifted",
+    )
+    revisions = workspace.get("revisions", [])
+    matches = [
+        value
+        for value in revisions
+        if value.get("major") == 0 and value.get("minor") == minor
+    ]
+    require(
+        len(matches) == 1
+        and matches[0].get("predecessorRevisionId")
+        == predecessor_revision_id
+        and isinstance(matches[0].get("snapshotHash"), str)
+        and re.fullmatch(r"[a-f0-9]{64}", matches[0]["snapshotHash"])
+        is not None,
+        "Document successor identity or exact predecessor drifted",
+    )
+    return matches[0]
+
+
+def verify_document_baseline_runtime(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    fixture_password: str,
+    *,
+    project_id: str,
+    document_id: str,
+    revision_id: str,
+    revision_snapshot_hash: str,
+    release_snapshot_hash: str,
+    baseline_policy_hash: str,
+    gate_template_hash: str,
+) -> dict[str, object]:
+    baseline_actor = login(base_url, BASELINE_USER, fixture_password)
+    baseline_csrf = bootstrap_csrf(baseline_actor, base_url, BASELINE_USER)
+    initial = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        query_key="baseline-empty",
+    )
+    require(
+        initial.status == 200
+        and initial.body.get("permissions") == {"view": True, "create": True}
+        and initial.body.get("items") == []
+        and initial.body.get("impacts") == []
+        and initial.body.get("policies")
+        == [
+            {
+                "globalId": DOCUMENT_BASELINE_POLICY_ID,
+                "version": DOCUMENT_BASELINE_POLICY_VERSION,
+                "snapshotHash": baseline_policy_hash,
+                "key": BASELINE_POLICY_KEY,
+                "title": "Synthetic P5-03 document baseline policy version",
+            }
+        ],
+        "Initial Document baseline workspace truth drifted",
+    )
+    payload = baseline_command_payload(
+        policy_snapshot_hash=baseline_policy_hash,
+        revision_id=revision_id,
+        revision_snapshot_hash=revision_snapshot_hash,
+        release_snapshot_hash=release_snapshot_hash,
+    )
+    no_csrf = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        payload=payload,
+        idempotency_key=f"{FIXTURE_PREFIX}-baseline-csrf-rejected",
+    )
+    validate_problem(no_csrf, 403, "CSRF_TOKEN_INVALID")
+    created_result = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        payload=payload,
+        csrf_token=baseline_csrf,
+        idempotency_key=DOCUMENT_BASELINE_KEY,
+    )
+    baseline = validate_document_baseline_command(
+        created_result,
+        project_id=project_id,
+        revision_id=revision_id,
+        revision_snapshot_hash=revision_snapshot_hash,
+        release_snapshot_hash=release_snapshot_hash,
+        policy_snapshot_hash=baseline_policy_hash,
+        replayed=False,
+    )
+    baseline_id = str(baseline["globalId"])
+    baseline_hash = str(baseline["snapshotHash"])
+    replay = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        payload=payload,
+        csrf_token=baseline_csrf,
+        idempotency_key=DOCUMENT_BASELINE_KEY,
+    )
+    replayed_baseline = validate_document_baseline_command(
+        replay,
+        project_id=project_id,
+        revision_id=revision_id,
+        revision_snapshot_hash=revision_snapshot_hash,
+        release_snapshot_hash=release_snapshot_hash,
+        policy_snapshot_hash=baseline_policy_hash,
+        replayed=True,
+    )
+    require(replayed_baseline == baseline, "Document baseline replay drifted")
+    conflict_payload = dict(payload)
+    conflict_payload["label"] = "Conflicting synthetic release baseline"
+    conflict = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        payload=conflict_payload,
+        csrf_token=baseline_csrf,
+        idempotency_key=DOCUMENT_BASELINE_KEY,
+    )
+    validate_problem(conflict, 409, "DOCUMENT_BASELINE_IDEMPOTENCY_CONFLICT")
+
+    gate_id = configured_gate_id(project_id)
+    freeze = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/gates/{gate_id}:freeze-requirements",
+        method="POST",
+        payload={
+            "expectedGateVersion": 1,
+            "gateDueDate": "2026-08-31",
+            "requirements": [
+                {
+                    "key": GATE_REQUIREMENT_KEY,
+                    "ownerMemberId": BASELINE_MEMBER_ID,
+                    "reviewerMemberIds": [BASELINE_MEMBER_ID],
+                    "dueDate": "2026-08-20",
+                }
+            ],
+        },
+        csrf_token=csrf_token,
+        idempotency_key=GATE_FREEZE_KEY,
+    )
+    require(
+        freeze.status == 200
+        and freeze.headers.get("Idempotency-Replayed") == "false"
+        and freeze.body.get("gate", {}).get("version") == 2,
+        "Exact baseline Gate requirement freeze drifted",
+    )
+    attached = npi_request(
+        administrator,
+        base_url,
+        (
+            f"/api/npi/v1/projects/{project_id}/gates/{gate_id}/"
+            f"requirements/{GATE_REQUIREMENT_KEY}/evidence"
+        ),
+        method="POST",
+        payload={
+            "expectedGateVersion": 2,
+            "evidenceKind": "release_baseline",
+            "sourceGlobalId": baseline_id,
+            "sourceVersion": 1,
+            "sourceHash": baseline_hash,
+        },
+        csrf_token=csrf_token,
+        idempotency_key=GATE_BASELINE_ATTACH_KEY,
+    )
+    requirements = attached.body.get("requirements", [])
+    evidence = (
+        requirements[0].get("evidence", [])
+        if len(requirements) == 1
+        else []
+    )
+    require(
+        attached.status == 201
+        and attached.headers.get("Idempotency-Replayed") == "false"
+        and attached.body.get("gate", {}).get("version") == 3
+        and len(evidence) == 1
+        and evidence[0].get("kind") == "release_baseline"
+        and evidence[0].get("sourceGlobalId") == baseline_id
+        and evidence[0].get("revision") == 1
+        and evidence[0].get("objectHash") == baseline_hash
+        and evidence[0].get("baseline") == baseline
+        and '"url"' not in json.dumps(evidence[0], sort_keys=True).casefold(),
+        "Exact baseline Gate evidence attachment drifted",
+    )
+    evidence_reference_id = str(evidence[0]["globalId"])
+    dependencies = list_resources(
+        administrator,
+        base_url,
+        "NPI Baseline Gate Dependency",
+        filters=[
+            ["baseline_global_id", "=", baseline_id],
+            ["gate_global_id", "=", gate_id],
+        ],
+        fields=[
+            "global_id",
+            "baseline_snapshot_hash",
+            "input_revision_global_id",
+            "input_revision_snapshot_hash",
+            "requirement_key",
+            "evidence_reference_global_id",
+            "snapshot_hash",
+        ],
+    )
+    require(
+        len(dependencies) == 1
+        and dependencies[0].get("baseline_snapshot_hash") == baseline_hash
+        and dependencies[0].get("input_revision_global_id") == revision_id
+        and dependencies[0].get("input_revision_snapshot_hash")
+        == revision_snapshot_hash
+        and dependencies[0].get("requirement_key") == GATE_REQUIREMENT_KEY
+        and dependencies[0].get("evidence_reference_global_id")
+        == evidence_reference_id
+        and re.fullmatch(
+            r"[a-f0-9]{64}",
+            str(dependencies[0].get("snapshot_hash")),
+        )
+        is not None,
+        "Exact baseline Gate dependency registration drifted",
+    )
+    dependency_id = str(dependencies[0]["global_id"])
+
+    review_policy_hash = ensure_gate_review_policy(
+        administrator,
+        base_url,
+        csrf_token,
+        gate_template_hash=gate_template_hash,
+    )
+    started = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/gates/{gate_id}:start-review",
+        method="POST",
+        payload={
+            "expectedGateVersion": 3,
+            "policyGlobalId": GATE_REVIEW_POLICY_ID,
+            "policyVersion": GATE_REVIEW_POLICY_VERSION,
+            "policySnapshotHash": review_policy_hash,
+            "bindings": [
+                {"slot": slot, "memberGlobalId": BASELINE_MEMBER_ID}
+                for slot in (
+                    GATE_REVIEW_SLOT,
+                    GATE_DECISION_SLOT,
+                    GATE_REOPEN_SLOT,
+                )
+            ],
+        },
+        csrf_token=csrf_token,
+        idempotency_key=GATE_REVIEW_START_KEY,
+    )
+    initial_cycle = started.body.get("activeCycle")
+    require(
+        started.status == 201
+        and started.headers.get("Idempotency-Replayed") == "false"
+        and started.body.get("gate", {}).get("reviewState") == "in_review"
+        and started.body.get("gate", {}).get("version") == 4
+        and isinstance(initial_cycle, dict)
+        and initial_cycle.get("number") == 1
+        and initial_cycle.get("state") == "active",
+        "Initial exact-baseline Gate Review cycle drifted",
+    )
+    initial_cycle_id = str(initial_cycle["globalId"])
+    initial_input_hash = str(initial_cycle["inputHash"])
+
+    checked_out = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/documents/{document_id}:check-out",
+        method="POST",
+        payload={"expectedDocumentVersion": 4},
+        csrf_token=csrf_token,
+        idempotency_key=DOCUMENT_SUCCESSOR_CHECK_OUT_KEY,
+    )
+    successor_lock = validate_document_workspace(
+        checked_out,
+        project_id=project_id,
+        expected_document_id=document_id,
+    )
+    lock = successor_lock.get("document", {}).get("currentLock")
+    require(
+        successor_lock.get("document", {}).get("optimisticVersion") == 5
+        and checked_out.headers.get("Idempotency-Replayed") == "false"
+        and isinstance(lock, dict)
+        and lock.get("holderUserId") == "Administrator"
+        and lock.get("version") == 2,
+        "Document successor lock truth drifted",
+    )
+    successor = create_document_successor(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        predecessor_revision_id=revision_id,
+        expected_document_version=5,
+        lock_version=2,
+        minor=2,
+        idempotency_key=DOCUMENT_SUCCESSOR_KEY,
+    )
+    successor_id = str(successor["globalId"])
+    successor_hash = str(successor["snapshotHash"])
+    impacted = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        query_key="baseline-impacted",
+    )
+    impacts = impacted.body.get("impacts", [])
+    require(
+        impacted.status == 200
+        and impacted.body.get("items") == [baseline]
+        and len(impacts) == 1
+        and impacts[0].get("eventType") == "invalidated"
+        and impacts[0].get("dependencyGlobalId") == dependency_id
+        and impacts[0].get("baselineGlobalId") == baseline_id
+        and impacts[0].get("baselineSnapshotHash") == baseline_hash
+        and impacts[0].get("oldRevisionGlobalId") == revision_id
+        and impacts[0].get("oldRevisionSnapshotHash") == revision_snapshot_hash
+        and impacts[0].get("newRevisionGlobalId") == successor_id
+        and impacts[0].get("newRevisionSnapshotHash") == successor_hash
+        and impacts[0].get("gateGlobalId") == gate_id
+        and impacts[0].get("evidenceReferenceGlobalId")
+        == evidence_reference_id
+        and impacts[0].get("initiatedByUserId") == "Administrator"
+        and re.fullmatch(r"[a-f0-9]{64}", str(impacts[0].get("eventHash")))
+        is not None,
+        "Registered baseline successor impact lineage drifted",
+    )
+    refreshed = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/gates/{gate_id}/review",
+        query_key="baseline-impact-review",
+    )
+    successor_cycle = refreshed.body.get("activeCycle")
+    dependency_changes = refreshed.body.get("dependencyChanges", [])
+    require(
+        refreshed.status == 200
+        and refreshed.body.get("gate", {}).get("reviewState")
+        == "requires_review"
+        and refreshed.body.get("gate", {}).get("version") == 5
+        and isinstance(successor_cycle, dict)
+        and successor_cycle.get("number") == 2
+        and successor_cycle.get("state") == "active"
+        and successor_cycle.get("trigger") == "dependency_change"
+        and successor_cycle.get("inputHash") != initial_input_hash
+        and len(dependency_changes) == 1
+        and dependency_changes[0].get("eventType") == "refreshed"
+        and dependency_changes[0].get("priorCycleGlobalId")
+        == initial_cycle_id
+        and dependency_changes[0].get("successorCycleGlobalId")
+        == successor_cycle.get("globalId")
+        and dependency_changes[0].get("reason")
+        == "BASELINE_SUCCESSOR_IMPACT"
+        and dependency_changes[0].get("initiatedByUserId") == "Administrator",
+        "Baseline successor did not refresh the existing Gate Review lineage",
+    )
+    successor_cycle_id = str(successor_cycle["globalId"])
+    successor_input_hash = str(successor_cycle["inputHash"])
+
+    unregistered = create_document_successor(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        document_id=document_id,
+        predecessor_revision_id=successor_id,
+        expected_document_version=6,
+        lock_version=2,
+        minor=3,
+        idempotency_key=DOCUMENT_UNREGISTERED_SUCCESSOR_KEY,
+    )
+    unchanged = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        query_key="baseline-unregistered-successor",
+    )
+    unchanged_review = npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/gates/{gate_id}/review",
+        query_key="baseline-unregistered-review",
+    )
+    require(
+        unregistered.get("predecessorRevisionId") == successor_id
+        and unchanged.status == 200
+        and unchanged.body.get("items") == [baseline]
+        and unchanged.body.get("impacts") == impacts
+        and unchanged_review.status == 200
+        and unchanged_review.body.get("gate", {}).get("version") == 5
+        and unchanged_review.body.get("activeCycle", {}).get("globalId")
+        == successor_cycle_id
+        and unchanged_review.body.get("activeCycle", {}).get("inputHash")
+        == successor_input_hash
+        and unchanged_review.body.get("dependencyChanges")
+        == dependency_changes,
+        "Unregistered successor created inferred baseline impact lineage",
+    )
+    return {
+        "baselineCrossProcessReplayReady": True,
+        "baselineGateDependencyCount": len(dependencies),
+        "baselineId": baseline_id,
+        "baselineImpactCount": len(impacts),
+        "baselineReplayConflict": True,
+        "baselineSnapshotHash": baseline_hash,
+        "gateReviewSuccessorCycle": 2,
+        "registeredSuccessorImpact": True,
+        "unregisteredSuccessorNoImpact": True,
     }
 
 
@@ -2070,8 +3146,14 @@ def run_fresh(
         fixture_password,
         csrf_token,
     )
-    owner_cleanup_required = True
     try:
+        create_internal_fixture_user(
+            administrator,
+            base_url,
+            BASELINE_USER,
+            fixture_password,
+            csrf_token,
+        )
         evidence = _run_fresh_with_owner(
             administrator,
             base_url,
@@ -2079,15 +3161,15 @@ def run_fresh(
             fixture_password,
         )
     finally:
-        if owner_cleanup_required:
-            delete_disposable_user(
-                administrator,
-                base_url,
-                OWNER_USER,
-                csrf_token,
-            )
+        delete_disposable_user(
+            administrator,
+            base_url,
+            OWNER_USER,
+            csrf_token,
+        )
     return {
         **evidence,
+        "baselineAuthorityFixtureRetained": True,
         "ownerFixtureCleaned": True,
     }
 
@@ -2102,22 +3184,47 @@ def _run_fresh_with_owner(
         "verify_document_runtime_schema",
         {"fixture_run_id": FIXTURE_RUN_ID},
     )
+    gate_template_hash = ensure_gate_template(
+        administrator,
+        base_url,
+        csrf_token,
+    )
     ensure_project_template(
         administrator,
         base_url,
         csrf_token,
+        gate_template_hash=gate_template_hash,
     )
     project_id, project_version = create_project(
         administrator,
         base_url,
         csrf_token,
     )
+    work_policy_ref = ensure_project_work_policy(
+        administrator,
+        base_url,
+        csrf_token,
+    )
+    configure_baseline_project_member(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        work_policy_ref=work_policy_ref,
+    )
+    project_version = 2
     policy_hash = ensure_document_policy(
         administrator,
         base_url,
         csrf_token,
     )
     release_policy_hash = ensure_document_release_policy(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+    )
+    baseline_policy_hash = ensure_document_baseline_policy(
         administrator,
         base_url,
         csrf_token,
@@ -2376,6 +3483,21 @@ def _run_fresh_with_owner(
         file_revision_id=file_revision_id,
         release_policy_hash=release_policy_hash,
     )
+    baseline_evidence = verify_document_baseline_runtime(
+        administrator,
+        base_url,
+        csrf_token,
+        fixture_password,
+        project_id=project_id,
+        document_id=document_id,
+        revision_id=revision_id,
+        revision_snapshot_hash=str(
+            release_evidence["revisionSnapshotHash"]
+        ),
+        release_snapshot_hash=str(release_evidence["releaseSnapshotHash"]),
+        baseline_policy_hash=baseline_policy_hash,
+        gate_template_hash=gate_template_hash,
+    )
 
     relationship_filter = npi_request(
         administrator,
@@ -2469,6 +3591,11 @@ def _run_fresh_with_owner(
         "document.review.resubmit": DOCUMENT_REVIEW_RESUBMIT_KEY,
         "document.review.approve": DOCUMENT_REVIEW_APPROVE_KEY,
         "document.release": DOCUMENT_RELEASE_KEY,
+        "document.baseline.create": DOCUMENT_BASELINE_KEY,
+        "gate.requirements.freeze": GATE_FREEZE_KEY,
+        "gate.evidence.attach": GATE_BASELINE_ATTACH_KEY,
+        "gate.review.start": GATE_REVIEW_START_KEY,
+        "document.baseline.impact.record": DOCUMENT_SUCCESSOR_KEY,
     }
     audits = []
     for operation, command_key in expected_audit_traces.items():
@@ -2509,6 +3636,7 @@ def _run_fresh_with_owner(
         "rawPrivateUrlExposed": False,
         "scanState": "clean",
         "typedRelationshipQuery": True,
+        **baseline_evidence,
         **release_evidence,
     }
 
@@ -2536,6 +3664,10 @@ def main() -> None:
         "--release-route-disable-probe",
         choices=("disabled", "recovered"),
     )
+    parser.add_argument(
+        "--baseline-route-disable-probe",
+        choices=("disabled", "recovered"),
+    )
     parser.add_argument("--replay-only", action="store_true")
     arguments = parser.parse_args()
     if arguments.bench_fixture is not None:
@@ -2544,7 +3676,8 @@ def main() -> None:
             and isinstance(arguments.fixture_kwargs, str)
             and not arguments.replay_only
             and arguments.route_disable_probe is None
-            and arguments.release_route_disable_probe is None,
+            and arguments.release_route_disable_probe is None
+            and arguments.baseline_route_disable_probe is None,
             "Controlled Document Bench fixture arguments are invalid",
         )
         kwargs = json.loads(arguments.fixture_kwargs)
@@ -2573,10 +3706,17 @@ def main() -> None:
         administrator_user,
         UNRELATED_USER,
     )
+    validate_local_fixture_inputs(
+        base_url,
+        administrator_user,
+        BASELINE_USER,
+    )
     require(
         BUSINESS_CODE.startswith("P5-01-")
         and OWNER_USER.endswith("@example.invalid")
+        and BASELINE_USER.endswith("@example.invalid")
         and UNRELATED_USER.endswith("@example.invalid")
+        and len({OWNER_USER, BASELINE_USER, UNRELATED_USER}) == 3
         and OWNER_USER != UNRELATED_USER,
         "Document runtime fixture identity drifted",
     )
@@ -2596,6 +3736,7 @@ def main() -> None:
             for value in (
                 arguments.route_disable_probe,
                 arguments.release_route_disable_probe,
+                arguments.baseline_route_disable_probe,
             )
         )
         + int(arguments.replay_only)
@@ -2629,8 +3770,27 @@ def main() -> None:
             )
         )
         return
+    if arguments.baseline_route_disable_probe is not None:
+        baseline_route_disable_probe(
+            administrator,
+            base_url,
+            csrf_token,
+            expected_mode=arguments.baseline_route_disable_probe,
+        )
+        print(
+            json.dumps(
+                {"baselineRouteMode": arguments.baseline_route_disable_probe},
+                sort_keys=True,
+            )
+        )
+        return
     if arguments.replay_only:
-        run_replay(administrator, base_url, csrf_token)
+        run_replay(
+            administrator,
+            base_url,
+            csrf_token,
+            fixture_password,
+        )
         print(
             json.dumps(
                 {
