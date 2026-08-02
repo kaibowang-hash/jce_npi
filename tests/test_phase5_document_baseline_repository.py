@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,16 @@ REPOSITORY_PATH = (
     / "npi_core"
     / "documents"
     / "baseline_repository.py"
+)
+PROJECT_DOCTYPE_PATH = (
+    ROOT
+    / "apps"
+    / "npi_core"
+    / "npi_core"
+    / "npi_core"
+    / "doctype"
+    / "npi_engineering_project"
+    / "npi_engineering_project.json"
 )
 SOURCE = REPOSITORY_PATH.read_text(encoding="utf-8")
 TREE = ast.parse(SOURCE)
@@ -34,6 +45,20 @@ def _function(name: str) -> str:
 
 
 class DocumentBaselineRepositoryTest(unittest.TestCase):
+    def test_workspace_project_response_maps_exact_persisted_fields(self) -> None:
+        schema = json.loads(PROJECT_DOCTYPE_PATH.read_text(encoding="utf-8"))
+        fieldnames = {field["fieldname"] for field in schema["fields"]}
+        self.assertIn("business_code", fieldnames)
+        self.assertIn("title", fieldnames)
+        self.assertNotIn("project_code", fieldnames)
+        self.assertNotIn("project_name", fieldnames)
+
+        value = _function("list_baselines")
+        self.assertIn('"projectCode": str(project.business_code)', value)
+        self.assertIn('"projectName": str(project.title)', value)
+        self.assertNotIn("project.project_code", value)
+        self.assertNotIn("project.project_name", value)
+
     def test_create_authorizes_exact_actor_before_protected_member_resolution(
         self,
     ) -> None:

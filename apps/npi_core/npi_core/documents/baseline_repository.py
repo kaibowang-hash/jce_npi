@@ -342,8 +342,8 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
             return {
                 "project": {
                     "globalId": str(project.global_id),
-                    "projectCode": str(project.project_code),
-                    "projectName": str(project.project_name),
+                    "projectCode": str(project.business_code),
+                    "projectName": str(project.title),
                 },
                 "permissions": {
                     "view": True,

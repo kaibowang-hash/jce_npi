@@ -180,49 +180,13 @@ _BASELINE_WORKSPACE_DIAGNOSTIC_CODES = frozenset(
         "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
     }
 )
-_BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_CODES = frozenset(
-    {
-        "P503_BASELINE_WORKSPACE_DOCUMENT_ROUTE_ENABLEMENT",
-        "P503_BASELINE_WORKSPACE_BASELINE_ROUTE_ENABLEMENT",
-        "P503_BASELINE_WORKSPACE_AUTHENTICATION",
-        "P503_BASELINE_WORKSPACE_PRINCIPAL",
-        "P503_BASELINE_WORKSPACE_REPOSITORY_FACTORY",
-        "P503_BASELINE_WORKSPACE_ROUTE_SCOPE",
-        "P503_BASELINE_WORKSPACE_REQUEST_FIELDS",
-        "P503_BASELINE_WORKSPACE_REQUEST_ID",
-        "P503_BASELINE_WORKSPACE_PROJECT_LOOKUP",
-        "P503_BASELINE_WORKSPACE_PROJECT_IDENTITY",
-        "P503_BASELINE_WORKSPACE_PROJECT_INTERNAL_PRINCIPAL",
-        "P503_BASELINE_WORKSPACE_PROJECT_TENANT",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_QUERY",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_LOAD",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_ABSENT",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_EFFECTIVITY",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBER_USER",
-        "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_CARDINALITY",
-        "P503_BASELINE_WORKSPACE_POLICY_QUERY",
-        "P503_BASELINE_WORKSPACE_POLICY_ROW",
-        "P503_BASELINE_WORKSPACE_POLICY_LOAD",
-        "P503_BASELINE_WORKSPACE_BASELINE_QUERY",
-        "P503_BASELINE_WORKSPACE_BASELINE_LOAD",
-        "P503_BASELINE_WORKSPACE_IMPACT_QUERY",
-        "P503_BASELINE_WORKSPACE_IMPACT_LOAD",
-        "P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE",
-        "P503_BASELINE_WORKSPACE_API_RESPONSE",
-    }
-)
 _RUNTIME_DIAGNOSTIC_CODES = (
     _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES
     | _BASELINE_WORKSPACE_DIAGNOSTIC_CODES
-    | _BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_CODES
 )
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
-)
-_BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
-_BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_SCOPE = (
-    "p503-baseline-workspace-http-v1"
 )
 
 
@@ -356,19 +320,10 @@ class BinaryHttpResult:
 class RuntimeSubstageFailure(RuntimeError):
     """Closed verifier failure that exposes no response or exception text."""
 
-    def __init__(
-        self,
-        code: str,
-        trace_id: str,
-        *,
-        exception_type: str = "RuntimeSubstageFailure",
-    ) -> None:
+    def __init__(self, code: str, trace_id: str) -> None:
         super().__init__("Controlled Document runtime substage failed")
-        if _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None:
-            raise ValueError("Runtime diagnostic exception type is invalid")
         self.code = code
         self.trace_id = trace_id
-        self.exception_type = exception_type
 
 
 def require_runtime_substage(
@@ -388,7 +343,7 @@ def require_runtime_substage(
 def runtime_substage_diagnostic(error: RuntimeSubstageFailure) -> str:
     return (
         f"[diagnostic_code={error.code}; "
-        f"exc_type={error.exception_type}; "
+        f"exc_type={type(error).__name__}; "
         f"trace_id={error.trace_id}]"
     )
 
@@ -503,12 +458,6 @@ def _sanitized_bff_log_diagnostic(
                     if (
                         isinstance(diagnostic_code, str)
                         and diagnostic_code
-                        in _BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_CODES
-                    ):
-                        return diagnostic_type, diagnostic_code, trace_id
-                    if (
-                        isinstance(diagnostic_code, str)
-                        and diagnostic_code
                         in _PROJECTION_VALIDATION_DIAGNOSTIC_CODES
                     ):
                         return diagnostic_type, diagnostic_code, trace_id
@@ -595,22 +544,12 @@ def npi_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
-    server_diagnostic_scope: str | None = None,
 ) -> HttpResult:
     headers = (
         command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else query_headers(f"{query_key}-{uuid4().hex}")
     )
-    if server_diagnostic_scope is not None:
-        require(
-            server_diagnostic_scope
-            == _BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_SCOPE,
-            "NPI server diagnostic scope is not allowlisted",
-        )
-        headers[_BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_HEADER] = (
-            server_diagnostic_scope
-        )
     result = request(
         opener,
         base_url,
@@ -2703,11 +2642,6 @@ def document_baseline_request(
     idempotency_key: str | None = None,
     query_key: str = "baseline-query",
 ) -> HttpResult:
-    diagnostic_scope = (
-        _BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_SCOPE
-        if payload is None and query_key == "baseline-empty"
-        else None
-    )
     return npi_request(
         opener,
         base_url,
@@ -2717,7 +2651,6 @@ def document_baseline_request(
         csrf_token=csrf_token,
         idempotency_key=idempotency_key,
         query_key=query_key,
-        server_diagnostic_scope=diagnostic_scope,
     )
 
 
@@ -2774,18 +2707,6 @@ def validate_initial_document_baseline_workspace(
     """Validate the exact empty baseline workspace through closed predicates."""
 
     trace_id = result.trace_id
-    if result.status != 200:
-        diagnostic = _sanitized_bff_log_diagnostic(trace_id)
-        if (
-            diagnostic is not None
-            and diagnostic[1] in _BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_CODES
-        ):
-            exception_type, code, diagnostic_trace_id = diagnostic
-            raise RuntimeSubstageFailure(
-                code,
-                diagnostic_trace_id,
-                exception_type=exception_type,
-            )
     require_runtime_substage(
         result.status == 200,
         code="P503_RUNTIME_BASELINE_WORKSPACE_HTTP",
