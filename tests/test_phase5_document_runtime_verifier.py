@@ -403,6 +403,94 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
         )
 
+    def test_post_workspace_verifier_stage_diagnostic_is_closed_and_exact(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD",
+            "P503_VERIFIER_POST_WORKSPACE_CSRF_GUARD",
+            "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE",
+            "P503_VERIFIER_POST_WORKSPACE_BASELINE_REPLAY",
+            "P503_VERIFIER_POST_WORKSPACE_IDEMPOTENCY_CONFLICT",
+            "P503_VERIFIER_POST_WORKSPACE_GATE_LOOKUP",
+            "P503_VERIFIER_POST_WORKSPACE_GATE_FREEZE",
+            "P503_VERIFIER_POST_WORKSPACE_EVIDENCE_ATTACH",
+            "P503_VERIFIER_POST_WORKSPACE_DEPENDENCY_QUERY",
+            "P503_VERIFIER_POST_WORKSPACE_REVIEW_POLICY",
+            "P503_VERIFIER_POST_WORKSPACE_REVIEW_START",
+            "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CHECKOUT",
+            "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CREATE",
+            "P503_VERIFIER_POST_WORKSPACE_IMPACT_QUERY",
+            "P503_VERIFIER_POST_WORKSPACE_REVIEW_REFRESH",
+            "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_SUCCESSOR_CREATE",
+            "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_WORKSPACE_QUERY",
+            "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_REVIEW_QUERY",
+            "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_INVARIANTS",
+            "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD",
+        }
+        self.assertEqual(
+            set(module._POST_WORKSPACE_VERIFIER_STAGE_CODES),
+            expected_codes,
+        )
+        trace_id = "trace-" + ("f" * 32)
+        code = "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE"
+        secret_text = "cookie=post-workspace-secret"
+
+        @module.post_workspace_verifier_diagnostics
+        def fail_after_checkpoint() -> None:
+            module.post_workspace_verifier_stage(code, trace_id)
+            raise AssertionError(secret_text)
+
+        with self.assertRaises(module.RuntimeSubstageFailure) as failure:
+            fail_after_checkpoint()
+        self.assertEqual(failure.exception.code, code)
+        self.assertEqual(failure.exception.exception_type, "AssertionError")
+        self.assertEqual(failure.exception.trace_id, trace_id)
+        diagnostic = module.runtime_substage_diagnostic(failure.exception)
+        self.assertEqual(
+            diagnostic,
+            (
+                f"[diagnostic_code={code}; "
+                "exc_type=AssertionError; "
+                f"trace_id={trace_id}]"
+            ),
+        )
+        for forbidden in ("cookie", "secret", secret_text):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden.casefold(), diagnostic.casefold())
+
+        @module.post_workspace_verifier_diagnostics
+        def fail_without_checkpoint() -> None:
+            raise KeyError(secret_text)
+
+        with self.assertRaises(KeyError) as original:
+            fail_without_checkpoint()
+        self.assertEqual(original.exception.args, (secret_text,))
+        with self.assertRaises(ValueError):
+            module.post_workspace_verifier_stage("NOT_ALLOWLISTED", trace_id)
+        with self.assertRaises(ValueError):
+            module.post_workspace_verifier_stage(code, "trace-invalid")
+
+    def test_post_workspace_verifier_stage_checkpoints_cover_exact_flow(self) -> None:
+        source = Path(self.module.__file__).read_text(encoding="utf-8")
+        function_start = source.index("def verify_document_baseline_runtime(")
+        function_end = source.index("\ndef run_fresh(", function_start)
+        function = source[function_start:function_end]
+        checkpoints = tuple(
+            code
+            for code in sorted(self.module._POST_WORKSPACE_VERIFIER_STAGE_CODES)
+            if code != "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD"
+        )
+        for code in checkpoints:
+            with self.subTest(code=code):
+                self.assertIn(f'"{code}"', function)
+        self.assertIn(
+            'stage_code = "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD"',
+            function,
+        )
+        self.assertEqual(function.count("post_workspace_verifier_stage("), 32)
+
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
             set(self.module.DOCUMENT_DOCTYPES),

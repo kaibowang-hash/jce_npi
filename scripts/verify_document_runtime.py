@@ -10,7 +10,9 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from contextvars import ContextVar
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
 from typing import Any
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
@@ -180,9 +182,34 @@ _BASELINE_WORKSPACE_DIAGNOSTIC_CODES = frozenset(
         "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
     }
 )
+_POST_WORKSPACE_VERIFIER_STAGE_CODES = frozenset(
+    {
+        "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD",
+        "P503_VERIFIER_POST_WORKSPACE_CSRF_GUARD",
+        "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE",
+        "P503_VERIFIER_POST_WORKSPACE_BASELINE_REPLAY",
+        "P503_VERIFIER_POST_WORKSPACE_IDEMPOTENCY_CONFLICT",
+        "P503_VERIFIER_POST_WORKSPACE_GATE_LOOKUP",
+        "P503_VERIFIER_POST_WORKSPACE_GATE_FREEZE",
+        "P503_VERIFIER_POST_WORKSPACE_EVIDENCE_ATTACH",
+        "P503_VERIFIER_POST_WORKSPACE_DEPENDENCY_QUERY",
+        "P503_VERIFIER_POST_WORKSPACE_REVIEW_POLICY",
+        "P503_VERIFIER_POST_WORKSPACE_REVIEW_START",
+        "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CHECKOUT",
+        "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CREATE",
+        "P503_VERIFIER_POST_WORKSPACE_IMPACT_QUERY",
+        "P503_VERIFIER_POST_WORKSPACE_REVIEW_REFRESH",
+        "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_SUCCESSOR_CREATE",
+        "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_WORKSPACE_QUERY",
+        "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_REVIEW_QUERY",
+        "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_INVARIANTS",
+        "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD",
+    }
+)
 _RUNTIME_DIAGNOSTIC_CODES = (
     _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES
     | _BASELINE_WORKSPACE_DIAGNOSTIC_CODES
+    | _POST_WORKSPACE_VERIFIER_STAGE_CODES
 )
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
@@ -320,10 +347,19 @@ class BinaryHttpResult:
 class RuntimeSubstageFailure(RuntimeError):
     """Closed verifier failure that exposes no response or exception text."""
 
-    def __init__(self, code: str, trace_id: str) -> None:
+    def __init__(
+        self,
+        code: str,
+        trace_id: str,
+        *,
+        exception_type: str = "RuntimeSubstageFailure",
+    ) -> None:
         super().__init__("Controlled Document runtime substage failed")
+        if _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None:
+            raise ValueError("Runtime diagnostic exception type is invalid")
         self.code = code
         self.trace_id = trace_id
+        self.exception_type = exception_type
 
 
 def require_runtime_substage(
@@ -343,9 +379,51 @@ def require_runtime_substage(
 def runtime_substage_diagnostic(error: RuntimeSubstageFailure) -> str:
     return (
         f"[diagnostic_code={error.code}; "
-        f"exc_type={type(error).__name__}; "
+        f"exc_type={error.exception_type}; "
         f"trace_id={error.trace_id}]"
     )
+
+
+_POST_WORKSPACE_VERIFIER_STAGE: ContextVar[tuple[str, str] | None] = ContextVar(
+    "p503_post_workspace_verifier_stage",
+    default=None,
+)
+
+
+def post_workspace_verifier_stage(code: str, trace_id: str) -> None:
+    """Select one closed verifier stage without emitting request or error data."""
+
+    if code not in _POST_WORKSPACE_VERIFIER_STAGE_CODES:
+        raise ValueError("Post-workspace verifier stage is not allowlisted")
+    if _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is None:
+        raise ValueError("Post-workspace verifier trace identity is invalid")
+    _POST_WORKSPACE_VERIFIER_STAGE.set((code, trace_id))
+
+
+def post_workspace_verifier_diagnostics(function):
+    """Convert one post-workspace failure to code, type, and exact trace only."""
+
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        token = _POST_WORKSPACE_VERIFIER_STAGE.set(None)
+        try:
+            return function(*args, **kwargs)
+        except RuntimeSubstageFailure:
+            raise
+        except Exception as error:
+            stage = _POST_WORKSPACE_VERIFIER_STAGE.get()
+            if stage is None:
+                raise
+            code, trace_id = stage
+            raise RuntimeSubstageFailure(
+                code,
+                trace_id,
+                exception_type=type(error).__name__,
+            ) from None
+        finally:
+            _POST_WORKSPACE_VERIFIER_STAGE.reset(token)
+
+    return wrapped
 
 
 def fixture_request_id(key: str) -> str:
@@ -2849,6 +2927,7 @@ def create_document_successor(
     return matches[0]
 
 
+@post_workspace_verifier_diagnostics
 def verify_document_baseline_runtime(
     administrator,
     base_url: str,
@@ -2875,12 +2954,16 @@ def verify_document_baseline_runtime(
         initial,
         expected_policy_hash=baseline_policy_hash,
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     payload = baseline_command_payload(
         policy_snapshot_hash=baseline_policy_hash,
         revision_id=revision_id,
         revision_snapshot_hash=revision_snapshot_hash,
         release_snapshot_hash=release_snapshot_hash,
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_CSRF_GUARD"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     no_csrf = document_baseline_request(
         baseline_actor,
         base_url,
@@ -2888,7 +2971,10 @@ def verify_document_baseline_runtime(
         payload=payload,
         idempotency_key=f"{FIXTURE_PREFIX}-baseline-csrf-rejected",
     )
+    post_workspace_verifier_stage(stage_code, no_csrf.trace_id)
     validate_problem(no_csrf, 403, "CSRF_TOKEN_INVALID")
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     created_result = document_baseline_request(
         baseline_actor,
         base_url,
@@ -2897,6 +2983,7 @@ def verify_document_baseline_runtime(
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
     )
+    post_workspace_verifier_stage(stage_code, created_result.trace_id)
     baseline = validate_document_baseline_command(
         created_result,
         project_id=project_id,
@@ -2908,6 +2995,8 @@ def verify_document_baseline_runtime(
     )
     baseline_id = str(baseline["globalId"])
     baseline_hash = str(baseline["snapshotHash"])
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_BASELINE_REPLAY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     replay = document_baseline_request(
         baseline_actor,
         base_url,
@@ -2916,6 +3005,7 @@ def verify_document_baseline_runtime(
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
     )
+    post_workspace_verifier_stage(stage_code, replay.trace_id)
     replayed_baseline = validate_document_baseline_command(
         replay,
         project_id=project_id,
@@ -2928,6 +3018,8 @@ def verify_document_baseline_runtime(
     require(replayed_baseline == baseline, "Document baseline replay drifted")
     conflict_payload = dict(payload)
     conflict_payload["label"] = "Conflicting synthetic release baseline"
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_IDEMPOTENCY_CONFLICT"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     conflict = document_baseline_request(
         baseline_actor,
         base_url,
@@ -2936,9 +3028,14 @@ def verify_document_baseline_runtime(
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
     )
+    post_workspace_verifier_stage(stage_code, conflict.trace_id)
     validate_problem(conflict, 409, "DOCUMENT_BASELINE_IDEMPOTENCY_CONFLICT")
 
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_GATE_LOOKUP"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     gate_id = configured_gate_id(project_id)
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_GATE_FREEZE"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     freeze = npi_request(
         administrator,
         base_url,
@@ -2959,12 +3056,15 @@ def verify_document_baseline_runtime(
         csrf_token=csrf_token,
         idempotency_key=GATE_FREEZE_KEY,
     )
+    post_workspace_verifier_stage(stage_code, freeze.trace_id)
     require(
         freeze.status == 200
         and freeze.headers.get("Idempotency-Replayed") == "false"
         and freeze.body.get("gate", {}).get("version") == 2,
         "Exact baseline Gate requirement freeze drifted",
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_EVIDENCE_ATTACH"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     attached = npi_request(
         administrator,
         base_url,
@@ -2983,6 +3083,7 @@ def verify_document_baseline_runtime(
         csrf_token=csrf_token,
         idempotency_key=GATE_BASELINE_ATTACH_KEY,
     )
+    post_workspace_verifier_stage(stage_code, attached.trace_id)
     requirements = attached.body.get("requirements", [])
     evidence = (
         requirements[0].get("evidence", [])
@@ -3003,6 +3104,8 @@ def verify_document_baseline_runtime(
         "Exact baseline Gate evidence attachment drifted",
     )
     evidence_reference_id = str(evidence[0]["globalId"])
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_DEPENDENCY_QUERY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     dependencies = list_resources(
         administrator,
         base_url,
@@ -3039,12 +3142,16 @@ def verify_document_baseline_runtime(
     )
     dependency_id = str(dependencies[0]["global_id"])
 
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_REVIEW_POLICY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     review_policy_hash = ensure_gate_review_policy(
         administrator,
         base_url,
         csrf_token,
         gate_template_hash=gate_template_hash,
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_REVIEW_START"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     started = npi_request(
         administrator,
         base_url,
@@ -3067,6 +3174,7 @@ def verify_document_baseline_runtime(
         csrf_token=csrf_token,
         idempotency_key=GATE_REVIEW_START_KEY,
     )
+    post_workspace_verifier_stage(stage_code, started.trace_id)
     initial_cycle = started.body.get("activeCycle")
     require(
         started.status == 201
@@ -3081,6 +3189,8 @@ def verify_document_baseline_runtime(
     initial_cycle_id = str(initial_cycle["globalId"])
     initial_input_hash = str(initial_cycle["inputHash"])
 
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CHECKOUT"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     checked_out = npi_request(
         administrator,
         base_url,
@@ -3090,6 +3200,7 @@ def verify_document_baseline_runtime(
         csrf_token=csrf_token,
         idempotency_key=DOCUMENT_SUCCESSOR_CHECK_OUT_KEY,
     )
+    post_workspace_verifier_stage(stage_code, checked_out.trace_id)
     successor_lock = validate_document_workspace(
         checked_out,
         project_id=project_id,
@@ -3104,6 +3215,8 @@ def verify_document_baseline_runtime(
         and lock.get("version") == 2,
         "Document successor lock truth drifted",
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CREATE"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     successor = create_document_successor(
         administrator,
         base_url,
@@ -3118,12 +3231,15 @@ def verify_document_baseline_runtime(
     )
     successor_id = str(successor["globalId"])
     successor_hash = str(successor["snapshotHash"])
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_IMPACT_QUERY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     impacted = document_baseline_request(
         baseline_actor,
         base_url,
         project_id,
         query_key="baseline-impacted",
     )
+    post_workspace_verifier_stage(stage_code, impacted.trace_id)
     impacts = impacted.body.get("impacts", [])
     require(
         impacted.status == 200
@@ -3145,12 +3261,15 @@ def verify_document_baseline_runtime(
         is not None,
         "Registered baseline successor impact lineage drifted",
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_REVIEW_REFRESH"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     refreshed = npi_request(
         administrator,
         base_url,
         f"/api/npi/v1/projects/{project_id}/gates/{gate_id}/review",
         query_key="baseline-impact-review",
     )
+    post_workspace_verifier_stage(stage_code, refreshed.trace_id)
     successor_cycle = refreshed.body.get("activeCycle")
     dependency_changes = refreshed.body.get("dependencyChanges", [])
     require(
@@ -3177,6 +3296,8 @@ def verify_document_baseline_runtime(
     successor_cycle_id = str(successor_cycle["globalId"])
     successor_input_hash = str(successor_cycle["inputHash"])
 
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_SUCCESSOR_CREATE"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     unregistered = create_document_successor(
         administrator,
         base_url,
@@ -3189,18 +3310,26 @@ def verify_document_baseline_runtime(
         minor=3,
         idempotency_key=DOCUMENT_UNREGISTERED_SUCCESSOR_KEY,
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_WORKSPACE_QUERY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     unchanged = document_baseline_request(
         baseline_actor,
         base_url,
         project_id,
         query_key="baseline-unregistered-successor",
     )
+    post_workspace_verifier_stage(stage_code, unchanged.trace_id)
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_REVIEW_QUERY"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     unchanged_review = npi_request(
         administrator,
         base_url,
         f"/api/npi/v1/projects/{project_id}/gates/{gate_id}/review",
         query_key="baseline-unregistered-review",
     )
+    post_workspace_verifier_stage(stage_code, unchanged_review.trace_id)
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_UNREGISTERED_INVARIANTS"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     require(
         unregistered.get("predecessorRevisionId") == successor_id
         and unchanged.status == 200
@@ -3216,6 +3345,8 @@ def verify_document_baseline_runtime(
         == dependency_changes,
         "Unregistered successor created inferred baseline impact lineage",
     )
+    stage_code = "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD"
+    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     return {
         "baselineCrossProcessReplayReady": True,
         "baselineGateDependencyCount": len(dependencies),
