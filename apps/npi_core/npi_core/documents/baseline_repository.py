@@ -25,6 +25,11 @@ from npi_core.documents.baseline_domain import (
     create_document_baseline,
     sha256_json,
 )
+from npi_core.documents.baseline_diagnostics import (
+    baseline_workspace_server_step,
+    record_baseline_workspace_server_failure,
+    record_baseline_workspace_server_predicate,
+)
 from npi_core.documents.baseline_frappe import (
     baseline_dependency_value,
     baseline_impact_value,
@@ -151,22 +156,28 @@ def load_project_baseline_impacts(
     }
     if gate_global_id is not None:
         filters["gate_global_id"] = str(gate_global_id)
-    names = frappe.get_all(
-        "NPI Baseline Impact Event",
-        filters=filters,
-        pluck="name",
-        order_by="occurred_at desc, global_id desc",
-        limit_page_length=_MAX_BASELINE_IMPACTS + 1,
-    )
+    with baseline_workspace_server_step("P503_BASELINE_WORKSPACE_IMPACT_QUERY"):
+        names = frappe.get_all(
+            "NPI Baseline Impact Event",
+            filters=filters,
+            pluck="name",
+            order_by="occurred_at desc, global_id desc",
+            limit_page_length=_MAX_BASELINE_IMPACTS + 1,
+        )
     if len(names) > _MAX_BASELINE_IMPACTS:
         raise DocumentBaselineInputUnavailable()
-    return tuple(
-        _validated_baseline_impact(
-            project,
-            frappe.get_doc("NPI Baseline Impact Event", name),
-        )
-        for name in names
-    )
+    impacts = []
+    for name in names:
+        with baseline_workspace_server_step(
+            "P503_BASELINE_WORKSPACE_IMPACT_LOAD"
+        ):
+            impacts.append(
+                _validated_baseline_impact(
+                    project,
+                    frappe.get_doc("NPI Baseline Impact Event", name),
+                )
+            )
+    return tuple(impacts)
 
 
 def document_baseline_impact_response(
@@ -290,49 +301,63 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
     def list_baselines(self, project_id: UUID) -> dict[str, Any] | None:
         project = self._authorized_project(project_id)
         if project is None:
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_LOOKUP",
+                exception_type="DocumentBaselineUnavailable",
+            )
             return None
         policy_options = self._published_baseline_policy_options(project)
-        names = frappe.get_all(
-            "NPI Document Baseline",
-            filters={
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-            },
-            pluck="name",
-            order_by="created_at desc, global_id asc",
-            limit_page_length=_MAX_BASELINES + 1,
-        )
+        with baseline_workspace_server_step(
+            "P503_BASELINE_WORKSPACE_BASELINE_QUERY"
+        ):
+            names = frappe.get_all(
+                "NPI Document Baseline",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                },
+                pluck="name",
+                order_by="created_at desc, global_id asc",
+                limit_page_length=_MAX_BASELINES + 1,
+            )
         if len(names) > _MAX_BASELINES:
             raise ValueError(
                 "Persisted Document baseline collection exceeds its bound."
             )
-        baselines = [
-            self._validated_baseline(
-                project,
-                frappe.get_doc("NPI Document Baseline", name),
-            )
-            for name in names
-        ]
+        baselines = []
+        for name in names:
+            with baseline_workspace_server_step(
+                "P503_BASELINE_WORKSPACE_BASELINE_LOAD"
+            ):
+                baselines.append(
+                    self._validated_baseline(
+                        project,
+                        frappe.get_doc("NPI Document Baseline", name),
+                    )
+                )
         impacts = load_project_baseline_impacts(project)
-        return {
-            "project": {
-                "globalId": str(project.global_id),
-                "projectCode": str(project.project_code),
-                "projectName": str(project.project_name),
-            },
-            "permissions": {
-                "view": True,
-                "create": bool(
-                    policy_options
-                    and not document_baseline_routes_are_disabled()
-                ),
-            },
-            "policies": list(policy_options),
-            "items": [self._baseline_response(value) for value in baselines],
-            "impacts": [
-                document_baseline_impact_response(value) for value in impacts
-            ],
-        }
+        with baseline_workspace_server_step(
+            "P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE"
+        ):
+            return {
+                "project": {
+                    "globalId": str(project.global_id),
+                    "projectCode": str(project.project_code),
+                    "projectName": str(project.project_name),
+                },
+                "permissions": {
+                    "view": True,
+                    "create": bool(
+                        policy_options
+                        and not document_baseline_routes_are_disabled()
+                    ),
+                },
+                "policies": list(policy_options),
+                "items": [self._baseline_response(value) for value in baselines],
+                "impacts": [
+                    document_baseline_impact_response(value) for value in impacts
+                ],
+            }
 
     def create_baseline(
         self,
@@ -484,28 +509,41 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
             or self._current_actor_member(project) is None
         ):
             return ()
-        rows = _bounded_documents(
-            "NPI Document Baseline Policy Version",
-            {
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "publication_state": DocumentBaselinePolicyState.PUBLISHED.value,
-            },
-            order_by="policy_key asc, policy_version desc, global_id asc",
-            maximum=_MAX_POLICIES,
-        )
+        with baseline_workspace_server_step("P503_BASELINE_WORKSPACE_POLICY_QUERY"):
+            rows = _bounded_documents(
+                "NPI Document Baseline Policy Version",
+                {
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "publication_state": DocumentBaselinePolicyState.PUBLISHED.value,
+                },
+                order_by="policy_key asc, policy_version desc, global_id asc",
+                maximum=_MAX_POLICIES,
+            )
         result = []
         for row in rows:
             try:
+                with baseline_workspace_server_step(
+                    "P503_BASELINE_WORKSPACE_POLICY_ROW"
+                ):
+                    policy_global_id = UUID(str(row.policy_global_id))
+                    policy_version = int(row.policy_version)
+                    snapshot_hash = str(row.snapshot_hash)
                 policy = self._load_exact_baseline_policy(
                     project,
-                    policy_global_id=UUID(str(row.policy_global_id)),
-                    policy_version=int(row.policy_version),
-                    snapshot_hash=str(row.snapshot_hash),
+                    policy_global_id=policy_global_id,
+                    policy_version=policy_version,
+                    snapshot_hash=snapshot_hash,
                     lock=False,
                 )
             except DocumentBaselinePolicyUnavailable:
                 continue
+            except Exception as error:
+                record_baseline_workspace_server_failure(
+                    "P503_BASELINE_WORKSPACE_POLICY_LOAD",
+                    error,
+                )
+                raise
             if policy.permits_baseline(self.actor):
                 result.append(
                     {

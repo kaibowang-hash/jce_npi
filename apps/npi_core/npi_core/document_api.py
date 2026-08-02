@@ -12,6 +12,10 @@ import frappe
 from frappe import _
 
 from npi_core.api import BinaryPayload, frappe_binary_call, frappe_domain_call
+from npi_core.documents.baseline_diagnostics import (
+    baseline_workspace_server_diagnostics,
+    baseline_workspace_server_step,
+)
 from npi_core.documents.domain import (
     DocumentRelationshipKind,
     DocumentUnavailable,
@@ -338,14 +342,18 @@ def get_document_baselines(
     success_headers = {"X-Request-ID": response_request_id()}
 
     def handle() -> dict[str, Any]:
-        request_id, repository, project_id = _baseline_query_context(
-            request_fields,
-        )
-        response = repository.list_baselines(project_id)
-        if response is None:
-            raise DocumentBaselineUnavailable()
-        success_headers["X-Request-ID"] = request_id
-        return _response_dict(response)
+        with baseline_workspace_server_diagnostics(current_trace_id.get()):
+            request_id, repository, project_id = _baseline_query_context(
+                request_fields,
+            )
+            with baseline_workspace_server_step(
+                "P503_BASELINE_WORKSPACE_API_RESPONSE"
+            ):
+                response = repository.list_baselines(project_id)
+                if response is None:
+                    raise DocumentBaselineUnavailable()
+                success_headers["X-Request-ID"] = request_id
+                return _response_dict(response)
 
     return frappe_domain_call(
         handle,
@@ -1152,22 +1160,43 @@ def _query_context(
 def _baseline_query_context(
     request_fields: dict[str, Any],
 ) -> tuple[str, _RepositoryLike, UUID]:
-    require_document_routes_enabled()
-    require_document_baseline_routes_enabled()
-    actor = authenticated_user()
-    principal = authenticated_principal(actor)
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_DOCUMENT_ROUTE_ENABLEMENT"
+    ):
+        require_document_routes_enabled()
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_BASELINE_ROUTE_ENABLEMENT"
+    ):
+        require_document_baseline_routes_enabled()
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_AUTHENTICATION"
+    ):
+        actor = authenticated_user()
+    with baseline_workspace_server_step("P503_BASELINE_WORKSPACE_PRINCIPAL"):
+        principal = authenticated_principal(actor)
     provisional_request_id = response_request_id()
-    repository = _baseline_repository(
-        principal,
-        provisional_request_id,
-    )
-    project_id, _document_id = _authorized_route_scope(
-        repository,
-        administer=False,
-        require_document=False,
-    )
-    reject_unexpected_request_fields(frozenset(), request_fields)
-    return _request_id(), repository, project_id
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_REPOSITORY_FACTORY"
+    ):
+        repository = _baseline_repository(
+            principal,
+            provisional_request_id,
+        )
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_ROUTE_SCOPE"
+    ):
+        project_id, _document_id = _authorized_route_scope(
+            repository,
+            administer=False,
+            require_document=False,
+        )
+    with baseline_workspace_server_step(
+        "P503_BASELINE_WORKSPACE_REQUEST_FIELDS"
+    ):
+        reject_unexpected_request_fields(frozenset(), request_fields)
+    with baseline_workspace_server_step("P503_BASELINE_WORKSPACE_REQUEST_ID"):
+        request_id = _request_id()
+    return request_id, repository, project_id
 
 
 def _baseline_command_context(

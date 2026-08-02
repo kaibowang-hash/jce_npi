@@ -44,6 +44,7 @@ class Phase5DocumentRepositoryTest(unittest.TestCase):
         "frappe",
         "frappe.utils",
         "frappe.utils.file_manager",
+        "npi_core.documents.baseline_diagnostics",
         "npi_core.documents.frappe_repository",
         "npi_core.npi_core.doctype.npi_file_revision.npi_file_revision",
     )

@@ -258,6 +258,7 @@ class Phase5DocumentApiTest(unittest.TestCase):
         "frappe",
         "frappe.sessions",
         "npi_core.api",
+        "npi_core.documents.baseline_diagnostics",
         "npi_core.request_security",
         "npi_core.document_api",
         "npi_core.bff",
@@ -343,6 +344,9 @@ class Phase5DocumentApiTest(unittest.TestCase):
 
         self.api = importlib.import_module("npi_core.document_api")
         self.core_api = importlib.import_module("npi_core.api")
+        self.baseline_diagnostics = importlib.import_module(
+            "npi_core.documents.baseline_diagnostics"
+        )
         self.router = importlib.import_module("npi_core.bff")
         self.repository = MockDocumentRepository(self)
         self.factory_calls: list[dict[str, Any]] = []
@@ -659,6 +663,101 @@ class Phase5DocumentApiTest(unittest.TestCase):
         )
         self.assertEqual(result, self.workspace)
         self.assertEqual(self.repository.calls[-1][0], "list_baselines")
+
+    def test_baseline_query_server_substage_diagnostic_is_closed_and_secondary(
+        self,
+    ) -> None:
+        expected_codes = {
+            "P503_BASELINE_WORKSPACE_DOCUMENT_ROUTE_ENABLEMENT",
+            "P503_BASELINE_WORKSPACE_BASELINE_ROUTE_ENABLEMENT",
+            "P503_BASELINE_WORKSPACE_AUTHENTICATION",
+            "P503_BASELINE_WORKSPACE_PRINCIPAL",
+            "P503_BASELINE_WORKSPACE_REPOSITORY_FACTORY",
+            "P503_BASELINE_WORKSPACE_ROUTE_SCOPE",
+            "P503_BASELINE_WORKSPACE_REQUEST_FIELDS",
+            "P503_BASELINE_WORKSPACE_REQUEST_ID",
+            "P503_BASELINE_WORKSPACE_PROJECT_LOOKUP",
+            "P503_BASELINE_WORKSPACE_PROJECT_IDENTITY",
+            "P503_BASELINE_WORKSPACE_PROJECT_INTERNAL_PRINCIPAL",
+            "P503_BASELINE_WORKSPACE_PROJECT_TENANT",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_QUERY",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_LOAD",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_ABSENT",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_EFFECTIVITY",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBER_USER",
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_CARDINALITY",
+            "P503_BASELINE_WORKSPACE_POLICY_QUERY",
+            "P503_BASELINE_WORKSPACE_POLICY_ROW",
+            "P503_BASELINE_WORKSPACE_POLICY_LOAD",
+            "P503_BASELINE_WORKSPACE_BASELINE_QUERY",
+            "P503_BASELINE_WORKSPACE_BASELINE_LOAD",
+            "P503_BASELINE_WORKSPACE_IMPACT_QUERY",
+            "P503_BASELINE_WORKSPACE_IMPACT_LOAD",
+            "P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE",
+            "P503_BASELINE_WORKSPACE_API_RESPONSE",
+        }
+        self.assertEqual(
+            self.baseline_diagnostics.BASELINE_WORKSPACE_SERVER_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        self.reset(user="member@example.invalid")
+        self.headers["X-Trace-ID"] = "trace-" + ("d" * 32)
+        self.headers["X-NPI-Diagnostic-Scope"] = (
+            "p503-baseline-workspace-http-v1"
+        )
+        secret_text = "password=server-substage-secret"
+
+        def fail_scope(*_args: object, **_kwargs: Any) -> bool:
+            raise RuntimeError(secret_text)
+
+        self.repository.authorize_scope = fail_scope  # type: ignore[method-assign]
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.document_api.get_document_baselines",
+                self.api.get_document_baselines,
+                {},
+            ),
+            500,
+            "INTERNAL_SERVER_ERROR",
+        )
+        self.assertEqual(problem["traceId"], self.headers["X-Trace-ID"])
+        safe_record = (
+            '"code":"P503_BASELINE_WORKSPACE_ROUTE_SCOPE",'
+            '"exceptionType":"RuntimeError",'
+            f'"traceId":"{self.headers["X-Trace-ID"]}"'
+        )
+        self.assertTrue(any(safe_record in value for value in self.safe_logs))
+        self.assertTrue(all(secret_text not in value for value in self.safe_logs))
+
+        self.safe_logs.clear()
+        try:
+            with self.baseline_diagnostics.baseline_workspace_server_diagnostics(
+                self.headers["X-Trace-ID"]
+            ):
+                with self.baseline_diagnostics.baseline_workspace_server_step(
+                    "NOT_ALLOWLISTED"
+                ):
+                    raise ValueError(secret_text)
+        except ValueError as error:
+            self.assertEqual(error.args, (secret_text,))
+        else:
+            self.fail("The original diagnostic test exception was not re-raised")
+        self.assertEqual(self.safe_logs, [])
+
+        self.headers.pop("X-NPI-Diagnostic-Scope")
+        try:
+            with self.baseline_diagnostics.baseline_workspace_server_diagnostics(
+                self.headers["X-Trace-ID"]
+            ):
+                with self.baseline_diagnostics.baseline_workspace_server_step(
+                    "P503_BASELINE_WORKSPACE_POLICY_QUERY"
+                ):
+                    raise ValueError(secret_text)
+        except ValueError as error:
+            self.assertEqual(error.args, (secret_text,))
+        else:
+            self.fail("The unscoped diagnostic test exception was not re-raised")
+        self.assertEqual(self.safe_logs, [])
 
     def test_baseline_create_requires_transport_role_and_exact_preconditions(
         self,

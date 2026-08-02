@@ -19,6 +19,10 @@ from frappe import _
 
 from npi_core.controlled_evidence_validation import FILE_REVISION_COMMAND_FLAG
 from npi_core.documents.baseline_domain import BaselineImpactEvent, DocumentBaseline
+from npi_core.documents.baseline_diagnostics import (
+    baseline_workspace_server_step,
+    record_baseline_workspace_server_predicate,
+)
 from npi_core.documents.baseline_frappe import (
     baseline_dependency_system_write,
     baseline_dependency_value,
@@ -154,8 +158,15 @@ class FrappeDocumentRepository:
         administer: bool,
     ) -> bool:
         """Opaque preflight; command methods still lock and reauthorize."""
-        project = _optional_doc("NPI Engineering Project", str(project_id))
+        with baseline_workspace_server_step(
+            "P503_BASELINE_WORKSPACE_PROJECT_LOOKUP"
+        ):
+            project = _optional_doc("NPI Engineering Project", str(project_id))
         if project is None:
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_LOOKUP",
+                exception_type="DocumentUnavailable",
+            )
             return False
         permitted = (
             self._can_administer_project(project, project_id)
@@ -1366,17 +1377,37 @@ class FrappeDocumentRepository:
         return project
 
     def _can_view_project(self, project, project_id: UUID) -> bool:
-        if (
-            str(project.global_id) != str(project_id)
-            or not self._tenant_matches(project)
-            or self.principal.is_external
-        ):
+        if str(project.global_id) != str(project_id):
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_IDENTITY",
+                exception_type="DocumentUnavailable",
+            )
             return False
-        return bool(
+        if self.principal.is_external:
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_INTERNAL_PRINCIPAL",
+                exception_type="DocumentUnavailable",
+            )
+            return False
+        if not self._tenant_matches(project):
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_TENANT",
+                exception_type="DocumentUnavailable",
+            )
+            return False
+        if (
             self._is_internal_system_manager()
             or str(project.owner_user_id).casefold() == self.actor.casefold()
-            or self._current_actor_member(project) is not None
-        )
+        ):
+            return True
+        member = self._current_actor_member(project)
+        if member is None:
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_ABSENT",
+                exception_type="DocumentUnavailable",
+            )
+            return False
+        return True
 
     def _can_administer_project(self, project, project_id: UUID) -> bool:
         return bool(
@@ -1398,40 +1429,69 @@ class FrappeDocumentRepository:
         )
 
     def _current_actor_member(self, project):
-        names = frappe.get_all(
-            "NPI Project Member",
-            filters={
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "user_id": self.actor,
-            },
-            pluck="name",
-            order_by="global_id asc",
-            limit_page_length=_MAX_MEMBERS + 1,
-        )
-        if len(names) > _MAX_MEMBERS:
-            raise ValueError(
-                "Persisted Project member collection exceeds its safe bound."
+        with baseline_workspace_server_step(
+            "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_QUERY"
+        ):
+            names = frappe.get_all(
+                "NPI Project Member",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "user_id": self.actor,
+                },
+                pluck="name",
+                order_by="global_id asc",
+                limit_page_length=_MAX_MEMBERS + 1,
             )
+            if len(names) > _MAX_MEMBERS:
+                raise ValueError(
+                    "Persisted Project member collection exceeds its safe bound."
+                )
+        if not names:
+            record_baseline_workspace_server_predicate(
+                "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_ABSENT",
+                exception_type="DocumentUnavailable",
+            )
+            return None
         today = datetime.now(UTC).date()
         matches = []
+        effective_count = 0
         for name in names:
-            member = frappe.get_doc("NPI Project Member", str(name))
+            with baseline_workspace_server_step(
+                "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_LOAD"
+            ):
+                member = frappe.get_doc("NPI Project Member", str(name))
             if not _member_effective(member, today):
                 continue
-            user = frappe.db.get_value(
-                "User",
-                self.actor,
-                ["enabled", "user_type"],
-                as_dict=True,
-            )
+            effective_count += 1
+            with baseline_workspace_server_step(
+                "P503_BASELINE_WORKSPACE_PROJECT_MEMBER_USER"
+            ):
+                user = frappe.db.get_value(
+                    "User",
+                    self.actor,
+                    ["enabled", "user_type"],
+                    as_dict=True,
+                )
             if (
                 user
                 and int(_record_value(user, "enabled") or 0) == 1
                 and str(_record_value(user, "user_type")) == "System User"
             ):
                 matches.append(member)
-        return matches[0] if len(matches) == 1 else None
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            code = "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_CARDINALITY"
+        elif effective_count == 0:
+            code = "P503_BASELINE_WORKSPACE_PROJECT_MEMBERSHIP_EFFECTIVITY"
+        else:
+            code = "P503_BASELINE_WORKSPACE_PROJECT_MEMBER_USER"
+        record_baseline_workspace_server_predicate(
+            code,
+            exception_type="DocumentUnavailable",
+        )
+        return None
 
     def _document_for_project(self, project, document_id: UUID):
         document = _optional_doc("NPI Controlled Document", str(document_id))
