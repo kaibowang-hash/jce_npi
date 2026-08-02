@@ -213,6 +213,177 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                     trace_id=candidate_trace,
                 )
 
+    def test_baseline_workspace_diagnostic_is_predicate_level_and_closed(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "P503_RUNTIME_BASELINE_WORKSPACE_HTTP",
+            "P503_RUNTIME_BASELINE_WORKSPACE_BODY_SHAPE",
+            "P503_RUNTIME_BASELINE_WORKSPACE_PERMISSIONS_SHAPE",
+            "P503_RUNTIME_BASELINE_WORKSPACE_VIEW_PERMISSION",
+            "P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
+            "P503_RUNTIME_BASELINE_WORKSPACE_ITEMS_EMPTY",
+            "P503_RUNTIME_BASELINE_WORKSPACE_IMPACTS_EMPTY",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_SHAPE",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_IDENTITY",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_VERSION",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_HASH",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_KEY",
+            "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
+        }
+        self.assertEqual(
+            set(module._BASELINE_WORKSPACE_DIAGNOSTIC_CODES),
+            expected_codes,
+        )
+        trace_id = "trace-" + ("b" * 32)
+        policy_hash = "a" * 64
+        body = {
+            "permissions": {"view": True, "create": True},
+            "items": [],
+            "impacts": [],
+            "policies": [
+                {
+                    "globalId": module.DOCUMENT_BASELINE_POLICY_ID,
+                    "version": module.DOCUMENT_BASELINE_POLICY_VERSION,
+                    "snapshotHash": policy_hash,
+                    "key": module.BASELINE_POLICY_KEY,
+                    "title": (
+                        "Synthetic P5-03 document baseline policy version"
+                    ),
+                }
+            ],
+        }
+
+        self.assertIsNone(
+            module.validate_initial_document_baseline_workspace(
+                module.HttpResult(
+                    status=200,
+                    headers=Mock(),
+                    body=body,
+                    trace_id=trace_id,
+                ),
+                expected_policy_hash=policy_hash,
+            )
+        )
+
+        cases = (
+            ("P503_RUNTIME_BASELINE_WORKSPACE_HTTP", 500, body),
+            ("P503_RUNTIME_BASELINE_WORKSPACE_BODY_SHAPE", 200, []),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_PERMISSIONS_SHAPE",
+                200,
+                {**body, "permissions": {"view": True}},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_VIEW_PERMISSION",
+                200,
+                {**body, "permissions": {"view": False, "create": True}},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
+                200,
+                {**body, "permissions": {"view": True, "create": False}},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_ITEMS_EMPTY",
+                200,
+                {**body, "items": [{}]},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_IMPACTS_EMPTY",
+                200,
+                {**body, "impacts": [{}]},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
+                200,
+                {**body, "policies": []},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_SHAPE",
+                200,
+                {**body, "policies": [{**body["policies"][0], "extra": 1}]},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_IDENTITY",
+                200,
+                {
+                    **body,
+                    "policies": [
+                        {
+                            **body["policies"][0],
+                            "globalId": module.PROJECT_TEMPLATE_ID,
+                        }
+                    ],
+                },
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_VERSION",
+                200,
+                {**body, "policies": [{**body["policies"][0], "version": 2}]},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_HASH",
+                200,
+                {
+                    **body,
+                    "policies": [
+                        {**body["policies"][0], "snapshotHash": "c" * 64}
+                    ],
+                },
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_KEY",
+                200,
+                {**body, "policies": [{**body["policies"][0], "key": "other"}]},
+            ),
+            (
+                "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
+                200,
+                {
+                    **body,
+                    "policies": [{**body["policies"][0], "title": "Other"}],
+                },
+            ),
+        )
+        for expected_code, status, candidate_body in cases:
+            with self.subTest(code=expected_code):
+                with self.assertRaises(module.RuntimeSubstageFailure) as failure:
+                    module.validate_initial_document_baseline_workspace(
+                        module.HttpResult(
+                            status=status,
+                            headers=Mock(),
+                            body=candidate_body,
+                            trace_id=trace_id,
+                        ),
+                        expected_policy_hash=policy_hash,
+                    )
+                self.assertEqual(failure.exception.code, expected_code)
+                self.assertEqual(failure.exception.trace_id, trace_id)
+                diagnostic = module.runtime_substage_diagnostic(
+                    failure.exception
+                )
+                self.assertEqual(
+                    diagnostic,
+                    (
+                        f"[diagnostic_code={expected_code}; "
+                        "exc_type=RuntimeSubstageFailure; "
+                        f"trace_id={trace_id}]"
+                    ),
+                )
+                for forbidden in (
+                    "response",
+                    "exception",
+                    "traceback",
+                    "request",
+                    "cookie",
+                    "credential",
+                ):
+                    with self.subTest(code=expected_code, forbidden=forbidden):
+                        self.assertNotIn(forbidden, diagnostic.casefold())
+
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
             set(self.module.DOCUMENT_DOCTYPES),

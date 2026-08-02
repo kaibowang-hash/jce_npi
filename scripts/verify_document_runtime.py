@@ -162,6 +162,28 @@ _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES = frozenset(
         "P5_RUNTIME_RELATIONSHIP_FILTER_IDENTITY",
     }
 )
+_BASELINE_WORKSPACE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P503_RUNTIME_BASELINE_WORKSPACE_HTTP",
+        "P503_RUNTIME_BASELINE_WORKSPACE_BODY_SHAPE",
+        "P503_RUNTIME_BASELINE_WORKSPACE_PERMISSIONS_SHAPE",
+        "P503_RUNTIME_BASELINE_WORKSPACE_VIEW_PERMISSION",
+        "P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
+        "P503_RUNTIME_BASELINE_WORKSPACE_ITEMS_EMPTY",
+        "P503_RUNTIME_BASELINE_WORKSPACE_IMPACTS_EMPTY",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_SHAPE",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_IDENTITY",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_VERSION",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_HASH",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_KEY",
+        "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
+    }
+)
+_RUNTIME_DIAGNOSTIC_CODES = (
+    _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES
+    | _BASELINE_WORKSPACE_DIAGNOSTIC_CODES
+)
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
     r"\b(?:authorization|cookie|csrf|password|passwd|pwd|secret|token)\b",
     re.IGNORECASE,
@@ -310,7 +332,7 @@ def require_runtime_substage(
     code: str,
     trace_id: str,
 ) -> None:
-    if code not in _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES:
+    if code not in _RUNTIME_DIAGNOSTIC_CODES:
         raise ValueError("Runtime diagnostic code is not allowlisted")
     if _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is None:
         raise ValueError("Runtime diagnostic trace identity is invalid")
@@ -2677,6 +2699,94 @@ def validate_document_baseline_command(
     return baseline
 
 
+def validate_initial_document_baseline_workspace(
+    result: HttpResult,
+    *,
+    expected_policy_hash: str,
+) -> None:
+    """Validate the exact empty baseline workspace through closed predicates."""
+
+    trace_id = result.trace_id
+    require_runtime_substage(
+        result.status == 200,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_HTTP",
+        trace_id=trace_id,
+    )
+    body = result.body
+    require_runtime_substage(
+        isinstance(body, dict),
+        code="P503_RUNTIME_BASELINE_WORKSPACE_BODY_SHAPE",
+        trace_id=trace_id,
+    )
+    permissions = body.get("permissions")
+    require_runtime_substage(
+        isinstance(permissions, dict)
+        and set(permissions) == {"view", "create"},
+        code="P503_RUNTIME_BASELINE_WORKSPACE_PERMISSIONS_SHAPE",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        permissions.get("view") is True,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_VIEW_PERMISSION",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        permissions.get("create") is True,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_CREATE_PERMISSION",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        body.get("items") == [],
+        code="P503_RUNTIME_BASELINE_WORKSPACE_ITEMS_EMPTY",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        body.get("impacts") == [],
+        code="P503_RUNTIME_BASELINE_WORKSPACE_IMPACTS_EMPTY",
+        trace_id=trace_id,
+    )
+    policies = body.get("policies")
+    require_runtime_substage(
+        isinstance(policies, list) and len(policies) == 1,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_CARDINALITY",
+        trace_id=trace_id,
+    )
+    policy = policies[0]
+    require_runtime_substage(
+        isinstance(policy, dict)
+        and set(policy)
+        == {"globalId", "version", "snapshotHash", "key", "title"},
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_SHAPE",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        policy.get("globalId") == DOCUMENT_BASELINE_POLICY_ID,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_IDENTITY",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        policy.get("version") == DOCUMENT_BASELINE_POLICY_VERSION,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_VERSION",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        policy.get("snapshotHash") == expected_policy_hash,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_HASH",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        policy.get("key") == BASELINE_POLICY_KEY,
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_KEY",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        policy.get("title")
+        == "Synthetic P5-03 document baseline policy version",
+        code="P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
+        trace_id=trace_id,
+    )
+
+
 def create_document_successor(
     administrator,
     base_url: str,
@@ -2761,22 +2871,9 @@ def verify_document_baseline_runtime(
         project_id,
         query_key="baseline-empty",
     )
-    require(
-        initial.status == 200
-        and initial.body.get("permissions") == {"view": True, "create": True}
-        and initial.body.get("items") == []
-        and initial.body.get("impacts") == []
-        and initial.body.get("policies")
-        == [
-            {
-                "globalId": DOCUMENT_BASELINE_POLICY_ID,
-                "version": DOCUMENT_BASELINE_POLICY_VERSION,
-                "snapshotHash": baseline_policy_hash,
-                "key": BASELINE_POLICY_KEY,
-                "title": "Synthetic P5-03 document baseline policy version",
-            }
-        ],
-        "Initial Document baseline workspace truth drifted",
+    validate_initial_document_baseline_workspace(
+        initial,
+        expected_policy_hash=baseline_policy_hash,
     )
     payload = baseline_command_payload(
         policy_snapshot_hash=baseline_policy_hash,
