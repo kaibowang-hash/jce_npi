@@ -1,23 +1,23 @@
 version: '1.2'
-overall_status: IN_PROGRESS
+overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-02T19:11:28Z'
+updated_at: '2026-08-03T02:08:59Z'
 authorization: automatic_transition_after_pass
-execution_hold: null
+execution_hold: P5_03_BASELINE_CREATE_FINAL_RESPONSE_CONTRACT_GATE
 current_task: P5-03
-current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: P5-03-POST-WORKSPACE-BASELINE-CREATE-DIAGNOSTIC
-current_task_next_stage: P5-03-BASELINE-CREATE-BOUNDED-DIAGNOSTIC-LADDER
-current_task_next_stage_status: AUTHORIZED_ACTIVE
+current_task_status: BLOCKED_EXTERNAL
+current_task_completed_stage: P5-03-BASELINE-CREATE-REPAIR-FINAL-GATE-FAILED
+current_task_next_stage: P5-03-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC
+current_task_next_stage_status: BLOCKED_AUTHORIZATION_REQUIRED
 resumed_product_task: P5-03
-resumed_product_task_status: IN_PROGRESS
+resumed_product_task_status: BLOCKED_RESPONSE_CONTRACT_NOT_UNIQUELY_PROVEN
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_03_BASELINE_CREATE_UNRESOLVED
+  current_root: P5_03_BASELINE_CREATE_RESPONSE_CONTRACT_NOT_UNIQUELY_PROVEN
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -26,6 +26,10 @@ repair_accounting:
     authority: USER_AUTHORIZED_2026_08_03
     task: P5-03
     root: BASELINE_CREATE_ONLY
+    status: EXHAUSTED_FINAL_GATE_FAILED
+    repair_commit: 15abf26834027045ccb98e5167a45390e94cb32b
+    proof: P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE
+    outcome: ADVANCED_FINAL_GATE_TO_RESPONSE_CONTRACT_FAILURE
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
 p5_01:
@@ -47,27 +51,47 @@ p5_02:
     - implementation/evidence/phase-5/p5-02-implementation-checkpoint.md
     - implementation/evidence/phase-5/p5-02-validation.md
 p5_03:
-  status: IN_PROGRESS_DIAGNOSTIC
+  status: BLOCKED_EXTERNAL
   requirements: [FR-DS-006]
   recovery_base_head: a1d84294641cb0b8cf71002c3d3557cb6b485ce7
-  normal_ci: 30761151383
-  diagnostic_run: 30761455482
-  safe_diagnostic_tuple:
-    stage_code: P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE
+  repaired_candidate: 15abf26834027045ccb98e5167a45390e94cb32b
+  normal_ci: 30777828197
+  diagnostic_runs:
+    - run: 30761455482
+      stage_code: P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE
+      exception_type: RuntimeError
+      trace_id: trace-f9c9295e07be5bec93aa8b6b05cc2c30
+    - run: 30776554186
+      stage_code: P503_BASELINE_CREATE_MEMBER_RESOLVE
+      exception_type: DocumentBaselineInputUnavailable
+      trace_id: trace-ed19a08e78a2589bb6251a09a7af5a17
+    - run: 30777405187
+      stage_code: P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE
+      exception_type: DocumentBaselineInputUnavailable
+      trace_id: trace-0e5e8f157cb05c66935396e6bdae896f
+  final_unchanged_controlled_site_gate:
+    run: 30778190537
+    status: FAIL
+    diagnostic_activation: CLOSED
+    stage_code: P503_BASELINE_CREATE_RESPONSE_CONTRACT
     exception_type: RuntimeError
-    trace_id: trace-f9c9295e07be5bec93aa8b6b05cc2c30
-  final_unchanged_controlled_site_gate: NOT_EXECUTED
+    trace_id: trace-062ce39fc49457a384bc1acba7afd785
   additional_diagnostic_dispatches:
     authorized: 2
-    used: 0
-  completed_stage: POST_WORKSPACE_BASELINE_CREATE_DIAGNOSTIC_ONLY
-  next_stage: BASELINE_CREATE_BOUNDED_DIAGNOSTIC_LADDER
+    used: 2
+  additional_product_root_exception:
+    authorized: 1
+    used: 1
+    changes_global_five_round_rule: false
+  completed_stage: BASELINE_CREATE_UNIQUE_REPAIR_FINAL_GATE_FAILED
+  next_stage: RESPONSE_CONTRACT_PREDICATE_DIAGNOSTIC_REQUIRES_AUTHORITY
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-03-plan.md
     - implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md
     - implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md
     - implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md
+    - implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

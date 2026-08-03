@@ -1,25 +1,30 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE`
+`BLOCKED_EXTERNAL — P5-03 BASELINE CREATE RESPONSE CONTRACT`
 
-Recovery time: `2026-08-02T19:11:28Z`
+Recovery time: `2026-08-03T02:08:59Z`
 
-Recovered base HEAD:
-`a1d84294641cb0b8cf71002c3d3557cb6b485ce7`
+Current repaired candidate:
+`15abf26834027045ccb98e5167a45390e94cb32b`
 
 Latest complete normal CI:
-`30761151383` (`PASS`, exact recovery-base SHA `a1d8429`)
+`30777828197` (`PASS`, exact repaired-candidate SHA `15abf26`)
 
-Diagnostic-only controlled-Site run:
-`30761455482` (`FAIL`, safe diagnostic evidence only)
+Additional diagnostic-only controlled-Site runs:
+`30776554186` and `30777405187` (`2/2` used)
 
-Safe diagnostic tuple:
-`P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE / RuntimeError /
-trace-f9c9295e07be5bec93aa8b6b05cc2c30`
+Unique repair proof:
+`P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE /
+DocumentBaselineInputUnavailable /
+trace-0e5e8f157cb05c66935396e6bdae896f`
 
 P5-03 final unchanged controlled-Site Gate:
-`NOT EXECUTED`
+`30778190537` (`FAIL`, diagnostic activation closed)
+
+Final safe diagnostic tuple:
+`P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
+trace-062ce39fc49457a384bc1acba7afd785`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
@@ -41,13 +46,12 @@ Required development branch:
   contract, direct trilingual catalog additions and refreshed fixed-Linux
   catalog baselines passed complete ordinary CI at
   `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`.
-- P5-03 is the only active task and is explicitly
-  `IN_PROGRESS_DIAGNOSTIC`; P5-04, P5-05 and Phase 6 remain inactive.
-- No active Hard Blocker exists. Production baseline contents/authority,
-  dependency completeness/matrix, external providers and production ERPNext
-  remain scoped fail-closed holds.
-- No P5-03 `PASS` is claimed. Its final unchanged controlled-Site Gate has not
-  run.
+- P5-03 is the only current task and is `BLOCKED_EXTERNAL`; P5-04, P5-05 and
+  Phase 6 remain inactive.
+- The active Hard Blocker is the necessary final controlled-Site Gate still
+  failing after the global five product-root rounds and the one exhausted
+  extra bounded P5-03 exception.
+- No P5-03 `PASS` or Level 2 result is claimed.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -70,29 +74,15 @@ Primary boundary:
 
 ## First incomplete action
 
-Add one behavior-neutral, closed diagnostic ladder around the existing
-baseline-create path only:
-
-1. server stages: command context, input parse, Project lock, membership
-   authority, policy load, idempotency replay, member resolve, domain build,
-   receipt insert, baseline insert, member insert, audit append, response
-   build and receipt seal;
-2. verifier stages: client HTTP, response shape and response contract; and
-3. output only an allowlisted stage code, validated exception type and the
-   exact trace ID. Never output exception text, traceback, request, response,
-   Cookie, credential, business data or storage path.
-
-Run affected tests and complete ordinary CI before each of at most two newly
-authorized diagnostic-only dispatches. Diagnostic convergence does not count
-as a product-root repair. Once one unique server root is proved, cross-check
-it against `FR-DS-006`, the Requirement anchor, OpenAPI, real DocType fields,
-permissions and transaction invariants, then repair only that root.
-
-After the repair, run affected tests, complete ordinary CI and one final
-unchanged controlled-Site Gate with the diagnostic activation path closed. If
-two diagnostic dispatches cannot prove one root, or the repair would alter a
-business rule, API, permission, Schema, data ownership or transaction order,
-stop and record one blocker without guessing.
+Stop product implementation and controlled dispatches. The final safe tuple
+proves only the response-contract stage, which contains multiple predicates;
+it does not authorize a repair. Resume only after new explicit authority that
+is bounded to behavior-neutral response-contract predicate diagnostics, a
+fresh pre-dispatch affected/full ordinary CI requirement, at most one
+diagnostic-only controlled Site, repair of only a uniquely proved predicate,
+and one new final unchanged controlled-Site Gate. Requirement, API,
+permission, Schema, ownership, locks, versions, audit, idempotency,
+transaction order and PASS criteria must remain frozen.
 
 ## Frozen invariants and non-scope
 
@@ -125,8 +115,7 @@ unchanged Gate to baseline creation. The current baseline-create authority is
 one extra, strictly bounded P5-03 exception. The global five-round rule is
 unchanged.
 
-After the final unchanged Gate passes, update P5-03 controller/evidence and
-continue the existing P5-03 Level 2 Task Gate and V1.2 Autopilot.
-
-Standing automatic-delivery authority remains active between passing
-checkpoints. Stop only for a true controller-defined Hard Blocker.
+The extra P5-03 exception was used only for repair `15abf26`; it is exhausted
+and does not alter the global five-round rule. The final unchanged Gate failed
+at a new, non-unique response-contract stage. P5-03 Level 2 and V1.2 Autopilot
+remain stopped at this true controller-defined Hard Blocker.

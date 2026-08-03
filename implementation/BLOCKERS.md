@@ -1,31 +1,41 @@
 # Blockers
 
-Updated: `2026-08-02T19:11:28Z`
+Updated: `2026-08-03T02:08:59Z`
 
 ## Active hard blockers
 
-None. P5-03 is `IN_PROGRESS_DIAGNOSTIC`; no P5-03 Gate `PASS` is claimed.
+`P5-03-BASELINE-CREATE-FINAL-RESPONSE-CONTRACT-GATE`
+
+Candidate `15abf26` passed affected P5 Document tests `167/167` and complete
+ordinary CI `30777828197`. The two authorized diagnostic-only dispatches were
+used and safely converged from `MEMBER_RESOLVE` to
+`MEMBER_RELEASE_LINEAGE`. Cross-validation against `FR-DS-006`, the Phase 5
+anchor, OpenAPI, real lifecycle/event/review DocType fields, permissions and
+transaction invariants uniquely proved the release-snapshot lineage
+comparison. The one extra bounded repair changed only that predicate and
+closed the diagnostic activation path.
+
+The single final unchanged controlled-Site workflow `30778190537` matched
+`15abf26`. Its repository, E2E, security and visual lanes passed; fixed tools,
+pinned Bench, the disposable Site, migrations and cleanup passed. The normal
+verifier failed with only the closed tuple
+`P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
+trace-062ce39fc49457a384bc1acba7afd785`.
+
+That tuple covers multiple response predicates and does not uniquely prove a
+repair. Both additional diagnostic dispatches, the one extra bounded
+product-root exception and the final Gate are exhausted. The global five-round
+rule remains unchanged. No further repair, controlled dispatch, P5-03 Level 2,
+P5-04, P5-05 or Phase 6 action is authorized; guessing would violate the
+controller and user boundary. No P5-03 `PASS` is claimed.
 
 ## Active diagnostic progress
 
-`P5-03-BASELINE-CREATE-BOUNDED-DIAGNOSTIC`
-
-Recovered base HEAD `a1d8429` passed complete ordinary CI `30761151383`.
-Diagnostic-only run `30761455482` returned the accepted closed tuple
-`P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE / RuntimeError /
-trace-f9c9295e07be5bec93aa8b6b05cc2c30`. It proves the baseline-create phase
-but not a unique server substage. The P5-03 final unchanged controlled-Site
-Gate has not been executed.
-
-The user authorized a behavior-neutral closed diagnostic ladder and at most
-two additional diagnostic-only dispatches, each after affected tests and
-complete ordinary CI. The current state is progress, not a Hard Blocker. If
-both dispatches fail to prove one root, or the root would require a business
-rule, API, permission, Schema, ownership or transaction-order change, record
-that single condition as the blocker and stop without guessing.
+None. A response-contract predicate diagnostic requires new explicit bounded
+authority.
 
 Evidence:
-`implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md`.
+`implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md`.
 
 ## Resolved hard blockers
 

@@ -1,27 +1,31 @@
 # Active Execution Goal
 
-Updated: `2026-08-02T19:11:28Z`
+Updated: `2026-08-03T02:08:59Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE`
+- Mode: `BLOCKED_EXTERNAL — P5-03 BASELINE CREATE RESPONSE CONTRACT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Recovered current HEAD and remote base:
-  `a1d84294641cb0b8cf71002c3d3557cb6b485ce7` (`0 ahead / 0 behind`)
+- Current repaired candidate and remote HEAD:
+  `15abf26834027045ccb98e5167a45390e94cb32b` (`0 ahead / 0 behind`)
 - Complete normal CI:
-  `30761151383` (`PASS`, exact recovery-base SHA)
-- Diagnostic-only controlled-Site run:
-  `30761455482` (`FAIL`, safe diagnostic evidence only)
-- Accepted safe diagnostic tuple:
-  `P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE / RuntimeError /
-  trace-f9c9295e07be5bec93aa8b6b05cc2c30`
+  `30777828197` (`PASS`, exact repaired-candidate SHA)
+- Additional diagnostic-only controlled-Site runs:
+  `30776554186` and `30777405187` (`2/2` used)
+- Unique repair proof:
+  `P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE /
+  DocumentBaselineInputUnavailable /
+  trace-0e5e8f157cb05c66935396e6bdae896f`
 - P5-03 final unchanged controlled-Site Gate:
-  `NOT EXECUTED`
+  `30778190537` (`FAIL`, diagnostic activation closed)
+- Final safe diagnostic tuple:
+  `P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
+  trace-062ce39fc49457a384bc1acba7afd785`
 - Current controller task:
   `P5-03 — Baseline and impact invalidation`
-  (`IN_PROGRESS_DIAGNOSTIC — BASELINE CREATE`)
+  (`BLOCKED_EXTERNAL — RESPONSE CONTRACT NOT UNIQUELY PROVEN`)
 - Current Requirement IDs:
   `FR-DS-006`
 - Completed P5-02 evidence:
@@ -34,12 +38,14 @@ Updated: `2026-08-02T19:11:28Z`
   `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`
 - Current P5-03 diagnostic recovery evidence:
   `implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md`
+- Current P5-03 final-Gate blocker evidence:
+  `implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
 
-## Current bounded diagnostic authority
+## Current Hard Blocker
 
 The controller and the accepted P5-03 plan recorded four completed genuine
 product-root repairs before `2b067c1`. The safe baseline-workspace diagnostic
@@ -47,18 +53,23 @@ uniquely proved the project-field mapping root; repair `2b067c1` advanced the
 same unchanged Gate to the new baseline-create failure. It is therefore the
 fifth completed product-root repair under the product-root definition.
 
-The current user authority is an additional, strictly bounded P5-03 exception
-for this one `baseline-create` root. It does not alter the controller's global
-five-round rule. Behavior-neutral diagnostic narrowing remains
-`IN_PROGRESS_DIAGNOSTIC`, consumes no product-root round and cannot support a
-`PASS` claim.
+Both additional diagnostic-only dispatches were used after their required
+affected tests and complete ordinary CI. They narrowed the server failure to
+the release-lineage predicate. `FR-DS-006`, its anchor, OpenAPI, the true
+Lifecycle Event/Lifecycle/Review Cycle fields, permissions and transaction
+invariants uniquely proved that a released event binds the release snapshot,
+not the independent review-evidence snapshot. Repair `15abf26` changed only
+that comparison, passed affected `167/167` and complete ordinary CI
+`30777828197`, and closed the diagnostic header activation path.
 
-At most two additional diagnostic-only controlled-Site dispatches are
-available. Each requires affected tests and complete ordinary CI first. A
-unique server root must be cross-validated against `FR-DS-006`, its Requirement
-anchor, OpenAPI, true DocType fields, permissions and transaction invariants
-before the one permitted root repair. The final unchanged Gate remains
-reserved and must run with the diagnostic activation path closed.
+The single final unchanged Gate `30778190537` then advanced to the closed tuple
+`P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
+trace-062ce39fc49457a384bc1acba7afd785`. That stage covers multiple response
+predicates and does not uniquely prove one root. The two diagnostic dispatches,
+one extra bounded product-root exception and final Gate are exhausted. The
+global five-round rule remains unchanged, no P5-03 `PASS` or Level 2 result
+exists, and Autopilot must not activate P5-04, P5-05 or Phase 6 without new
+explicitly bounded authority.
 
 ## Historical passing and reusable evidence
 
