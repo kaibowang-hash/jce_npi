@@ -812,6 +812,72 @@ class Phase5DocumentApiTest(unittest.TestCase):
         )
         self.assertEqual(problem["fieldErrors"][0]["path"], "members[1].revisionId")
 
+    def test_baseline_create_server_diagnostic_is_closed_and_scoped(
+        self,
+    ) -> None:
+        expected_codes = {
+            "P503_BASELINE_CREATE_COMMAND_CONTEXT",
+            "P503_BASELINE_CREATE_INPUT_PARSE",
+            "P503_BASELINE_CREATE_PROJECT_LOCK",
+            "P503_BASELINE_CREATE_MEMBERSHIP_AUTHORITY",
+            "P503_BASELINE_CREATE_POLICY_LOAD",
+            "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY",
+            "P503_BASELINE_CREATE_MEMBER_RESOLVE",
+            "P503_BASELINE_CREATE_DOMAIN_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_INSERT",
+            "P503_BASELINE_CREATE_BASELINE_INSERT",
+            "P503_BASELINE_CREATE_MEMBER_INSERT",
+            "P503_BASELINE_CREATE_AUDIT_APPEND",
+            "P503_BASELINE_CREATE_RESPONSE_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_SEAL",
+        }
+        self.assertEqual(
+            self.baseline_diagnostics.BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        self.reset(user="member@example.invalid")
+        self.headers["X-Trace-ID"] = "trace-" + ("e" * 32)
+        self.headers["X-NPI-Diagnostic-Scope"] = "p503-baseline-create-v1"
+        secret_text = "cookie=baseline-create-secret"
+
+        def fail_create(*_args: object, **_kwargs: Any):
+            raise RuntimeError(secret_text)
+
+        self.repository.create_baseline = fail_create  # type: ignore[method-assign]
+        problem = self.assert_problem(
+            self.call(
+                "npi_core.document_api.create_document_baseline",
+                self.api.create_document_baseline,
+                self.baseline_payload(),
+            ),
+            500,
+            "INTERNAL_SERVER_ERROR",
+        )
+        self.assertEqual(problem["traceId"], self.headers["X-Trace-ID"])
+        safe_record = (
+            '"code":"P503_BASELINE_CREATE_RESPONSE_BUILD",'
+            '"exceptionType":"RuntimeError",'
+            f'"traceId":"{self.headers["X-Trace-ID"]}"'
+        )
+        self.assertTrue(any(safe_record in value for value in self.safe_logs))
+        self.assertTrue(all(secret_text not in value for value in self.safe_logs))
+
+        self.safe_logs.clear()
+        self.headers.pop("X-NPI-Diagnostic-Scope")
+        self.assert_problem(
+            self.call(
+                "npi_core.document_api.create_document_baseline",
+                self.api.create_document_baseline,
+                self.baseline_payload(),
+            ),
+            500,
+            "INTERNAL_SERVER_ERROR",
+        )
+        self.assertFalse(
+            any("P503_BASELINE_CREATE_" in value for value in self.safe_logs)
+        )
+        self.assertTrue(all(secret_text not in value for value in self.safe_logs))
+
     def test_baseline_create_scope_authorization_precedes_body_validation(
         self,
     ) -> None:

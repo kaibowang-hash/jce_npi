@@ -410,7 +410,9 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         expected_codes = {
             "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD",
             "P503_VERIFIER_POST_WORKSPACE_CSRF_GUARD",
-            "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE",
+            "P503_BASELINE_CREATE_CLIENT_HTTP",
+            "P503_BASELINE_CREATE_RESPONSE_SHAPE",
+            "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
             "P503_VERIFIER_POST_WORKSPACE_BASELINE_REPLAY",
             "P503_VERIFIER_POST_WORKSPACE_IDEMPOTENCY_CONFLICT",
             "P503_VERIFIER_POST_WORKSPACE_GATE_LOOKUP",
@@ -434,7 +436,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             expected_codes,
         )
         trace_id = "trace-" + ("f" * 32)
-        code = "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE"
+        code = "P503_BASELINE_CREATE_CLIENT_HTTP"
         secret_text = "cookie=post-workspace-secret"
 
         @module.post_workspace_verifier_diagnostics
@@ -489,7 +491,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             'stage_code = "P503_VERIFIER_POST_WORKSPACE_RESULT_BUILD"',
             function,
         )
-        self.assertEqual(function.count("post_workspace_verifier_stage("), 32)
+        self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
@@ -1045,7 +1047,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             },
             body={},
         )
-        with patch.object(module, "request", return_value=response):
+        with patch.object(module, "request", return_value=response) as request_call:
             result = module.npi_request(
                 Mock(),
                 "http://127.0.0.1:8003",
@@ -1057,6 +1059,187 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             )
         self.assertEqual(result.request_id, request_id)
         self.assertEqual(result.trace_id, trace_id)
+        self.assertNotIn(
+            module._BASELINE_CREATE_DIAGNOSTIC_HEADER,
+            request_call.call_args.kwargs["request_headers"],
+        )
+
+        baseline_key = module.DOCUMENT_BASELINE_KEY
+        baseline_request_id = module.fixture_request_id(baseline_key)
+        diagnostic_response = module.HttpResult(
+            status=500,
+            headers={
+                "X-Request-ID": baseline_request_id,
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        with patch.object(
+            module,
+            "request",
+            return_value=diagnostic_response,
+        ) as diagnostic_call:
+            module.npi_request(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/example/document-baselines",
+                method="POST",
+                payload={},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=baseline_key,
+                baseline_create_diagnostic=True,
+            )
+        self.assertEqual(
+            diagnostic_call.call_args.kwargs["request_headers"].get(
+                module._BASELINE_CREATE_DIAGNOSTIC_HEADER
+            ),
+            module._BASELINE_CREATE_DIAGNOSTIC_SCOPE,
+        )
+
+    def test_baseline_create_server_diagnostic_precedes_client_http_code(
+        self,
+    ) -> None:
+        module = self.module
+        expected_codes = {
+            "P503_BASELINE_CREATE_COMMAND_CONTEXT",
+            "P503_BASELINE_CREATE_INPUT_PARSE",
+            "P503_BASELINE_CREATE_PROJECT_LOCK",
+            "P503_BASELINE_CREATE_MEMBERSHIP_AUTHORITY",
+            "P503_BASELINE_CREATE_POLICY_LOAD",
+            "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY",
+            "P503_BASELINE_CREATE_MEMBER_RESOLVE",
+            "P503_BASELINE_CREATE_DOMAIN_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_INSERT",
+            "P503_BASELINE_CREATE_BASELINE_INSERT",
+            "P503_BASELINE_CREATE_MEMBER_INSERT",
+            "P503_BASELINE_CREATE_AUDIT_APPEND",
+            "P503_BASELINE_CREATE_RESPONSE_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_SEAL",
+        }
+        self.assertEqual(
+            module._BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES,
+            expected_codes,
+        )
+        self.assertEqual(
+            module._BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES,
+            {
+                "P503_BASELINE_CREATE_CLIENT_HTTP",
+                "P503_BASELINE_CREATE_RESPONSE_SHAPE",
+                "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+            },
+        )
+        trace_id = module.fixture_trace_id(module.DOCUMENT_BASELINE_KEY)
+        server_code = "P503_BASELINE_CREATE_BASELINE_INSERT"
+        safe_record = json.dumps(
+            {
+                "code": server_code,
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        result = module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={"response": "must-not-be-emitted"},
+            trace_id=trace_id,
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                safe_record,
+                encoding="utf-8",
+            )
+            with (
+                patch.object(module, "BENCH_PATH", bench_path),
+                self.assertRaises(module.RuntimeSubstageFailure) as failure,
+            ):
+                module.require_baseline_create_http(result)
+        self.assertEqual(failure.exception.code, server_code)
+        self.assertEqual(failure.exception.exception_type, "ValidationError")
+        self.assertEqual(failure.exception.trace_id, trace_id)
+        diagnostic = module.runtime_substage_diagnostic(failure.exception)
+        self.assertEqual(
+            diagnostic,
+            (
+                f"[diagnostic_code={server_code}; "
+                "exc_type=ValidationError; "
+                f"trace_id={trace_id}]"
+            ),
+        )
+        for forbidden in (
+            "response",
+            "must-not-be-emitted",
+            "request",
+            "cookie",
+            "credential",
+            "traceback",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, diagnostic.casefold())
+
+        with self.assertRaises(module.RuntimeSubstageFailure) as client_failure:
+            module.require_baseline_create_http(
+                module.HttpResult(
+                    status=500,
+                    headers=Mock(),
+                    body={},
+                    trace_id=trace_id,
+                )
+            )
+        self.assertEqual(
+            client_failure.exception.code,
+            "P503_BASELINE_CREATE_CLIENT_HTTP",
+        )
+
+    def test_baseline_create_response_diagnostics_are_shape_then_contract(
+        self,
+    ) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.DOCUMENT_BASELINE_KEY)
+        project_id = "2e96f421-5872-4c96-a0dd-718d5c970a21"
+        revision_id = "590b332e-1ec4-44d8-8778-8b84eaf079bc"
+        shared = {
+            "project_id": project_id,
+            "revision_id": revision_id,
+            "revision_snapshot_hash": "a" * 64,
+            "release_snapshot_hash": "b" * 64,
+            "policy_snapshot_hash": "c" * 64,
+            "replayed": False,
+            "diagnostic": True,
+        }
+        with self.assertRaises(module.RuntimeSubstageFailure) as shape_failure:
+            module.validate_document_baseline_command(
+                module.HttpResult(
+                    status=201,
+                    headers=Mock(),
+                    body=[],
+                    trace_id=trace_id,
+                ),
+                **shared,
+            )
+        self.assertEqual(
+            shape_failure.exception.code,
+            "P503_BASELINE_CREATE_RESPONSE_SHAPE",
+        )
+
+        with self.assertRaises(module.RuntimeSubstageFailure) as contract_failure:
+            module.validate_document_baseline_command(
+                module.HttpResult(
+                    status=201,
+                    headers={"Idempotency-Replayed": "false"},
+                    body={"projectId": project_id, "baseline": {}},
+                    trace_id=trace_id,
+                ),
+                **shared,
+            )
+        self.assertEqual(
+            contract_failure.exception.code,
+            "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+        )
 
     def test_bff_log_diagnostic_rejects_symlink_and_stale_oversize_tail(
         self,

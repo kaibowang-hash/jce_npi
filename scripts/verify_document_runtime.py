@@ -182,11 +182,40 @@ _BASELINE_WORKSPACE_DIAGNOSTIC_CODES = frozenset(
         "P503_RUNTIME_BASELINE_WORKSPACE_POLICY_TITLE",
     }
 )
+_BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P503_BASELINE_CREATE_COMMAND_CONTEXT",
+        "P503_BASELINE_CREATE_INPUT_PARSE",
+        "P503_BASELINE_CREATE_PROJECT_LOCK",
+        "P503_BASELINE_CREATE_MEMBERSHIP_AUTHORITY",
+        "P503_BASELINE_CREATE_POLICY_LOAD",
+        "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY",
+        "P503_BASELINE_CREATE_MEMBER_RESOLVE",
+        "P503_BASELINE_CREATE_DOMAIN_BUILD",
+        "P503_BASELINE_CREATE_RECEIPT_INSERT",
+        "P503_BASELINE_CREATE_BASELINE_INSERT",
+        "P503_BASELINE_CREATE_MEMBER_INSERT",
+        "P503_BASELINE_CREATE_AUDIT_APPEND",
+        "P503_BASELINE_CREATE_RESPONSE_BUILD",
+        "P503_BASELINE_CREATE_RECEIPT_SEAL",
+    }
+)
+_BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P503_BASELINE_CREATE_CLIENT_HTTP",
+        "P503_BASELINE_CREATE_RESPONSE_SHAPE",
+        "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+    }
+)
+_BASELINE_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_BASELINE_CREATE_DIAGNOSTIC_SCOPE = "p503-baseline-create-v1"
 _POST_WORKSPACE_VERIFIER_STAGE_CODES = frozenset(
     {
         "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD",
         "P503_VERIFIER_POST_WORKSPACE_CSRF_GUARD",
-        "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE",
+        "P503_BASELINE_CREATE_CLIENT_HTTP",
+        "P503_BASELINE_CREATE_RESPONSE_SHAPE",
+        "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
         "P503_VERIFIER_POST_WORKSPACE_BASELINE_REPLAY",
         "P503_VERIFIER_POST_WORKSPACE_IDEMPOTENCY_CONFLICT",
         "P503_VERIFIER_POST_WORKSPACE_GATE_LOOKUP",
@@ -209,6 +238,8 @@ _POST_WORKSPACE_VERIFIER_STAGE_CODES = frozenset(
 _RUNTIME_DIAGNOSTIC_CODES = (
     _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES
     | _BASELINE_WORKSPACE_DIAGNOSTIC_CODES
+    | _BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES
+    | _BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES
     | _POST_WORKSPACE_VERIFIER_STAGE_CODES
 )
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
@@ -542,6 +573,12 @@ def _sanitized_bff_log_diagnostic(
                     if (
                         isinstance(diagnostic_code, str)
                         and diagnostic_code
+                        in _BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES
+                    ):
+                        return diagnostic_type, diagnostic_code, trace_id
+                    if (
+                        isinstance(diagnostic_code, str)
+                        and diagnostic_code
                         in (
                             _CHECKOUT_STAGE_DIAGNOSTIC_CODES
                             | _REVISION_STAGE_DIAGNOSTIC_CODES
@@ -622,12 +659,17 @@ def npi_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    baseline_create_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else query_headers(f"{query_key}-{uuid4().hex}")
     )
+    if baseline_create_diagnostic:
+        headers[_BASELINE_CREATE_DIAGNOSTIC_HEADER] = (
+            _BASELINE_CREATE_DIAGNOSTIC_SCOPE
+        )
     result = request(
         opener,
         base_url,
@@ -2719,6 +2761,7 @@ def document_baseline_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "baseline-query",
+    diagnostic: bool = False,
 ) -> HttpResult:
     return npi_request(
         opener,
@@ -2729,6 +2772,26 @@ def document_baseline_request(
         csrf_token=csrf_token,
         idempotency_key=idempotency_key,
         query_key=query_key,
+        baseline_create_diagnostic=diagnostic,
+    )
+
+
+def require_baseline_create_http(result: HttpResult) -> None:
+    if result.status == 201:
+        return
+    diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+        if code in _BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES:
+            raise RuntimeSubstageFailure(
+                code,
+                trace_id,
+                exception_type=exception_type,
+            )
+    require_runtime_substage(
+        False,
+        code="P503_BASELINE_CREATE_CLIENT_HTTP",
+        trace_id=result.trace_id,
     )
 
 
@@ -2741,11 +2804,20 @@ def validate_document_baseline_command(
     release_snapshot_hash: str,
     policy_snapshot_hash: str,
     replayed: bool,
+    diagnostic: bool = False,
 ) -> dict[str, Any]:
-    require_http_status(result, {201}, "Document baseline command")
+    if diagnostic:
+        require_baseline_create_http(result)
+        require_runtime_substage(
+            isinstance(result.body, dict),
+            code="P503_BASELINE_CREATE_RESPONSE_SHAPE",
+            trace_id=result.trace_id,
+        )
+    else:
+        require_http_status(result, {201}, "Document baseline command")
     baseline = result.body.get("baseline")
     members = baseline.get("members") if isinstance(baseline, dict) else None
-    require(
+    contract_matches = (
         result.body.get("projectId") == project_id
         and result.headers.get("Idempotency-Replayed")
         == ("true" if replayed else "false")
@@ -2771,9 +2843,19 @@ def validate_document_baseline_command(
         and len(members[0].get("files", [])) == 1
         and members[0]["files"][0].get("scanState") == "clean"
         and "/private/files/" not in json.dumps(baseline, sort_keys=True)
-        and '"url"' not in json.dumps(baseline, sort_keys=True).casefold(),
-        "Immutable Document baseline response truth drifted",
+        and '"url"' not in json.dumps(baseline, sort_keys=True).casefold()
     )
+    if diagnostic:
+        require_runtime_substage(
+            contract_matches,
+            code="P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+            trace_id=result.trace_id,
+        )
+    else:
+        require(
+            contract_matches,
+            "Immutable Document baseline response truth drifted",
+        )
     return baseline
 
 
@@ -2973,8 +3055,11 @@ def verify_document_baseline_runtime(
     )
     post_workspace_verifier_stage(stage_code, no_csrf.trace_id)
     validate_problem(no_csrf, 403, "CSRF_TOKEN_INVALID")
-    stage_code = "P503_VERIFIER_POST_WORKSPACE_BASELINE_CREATE"
-    post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
+    stage_code = "P503_BASELINE_CREATE_CLIENT_HTTP"
+    post_workspace_verifier_stage(
+        stage_code,
+        fixture_trace_id(DOCUMENT_BASELINE_KEY),
+    )
     created_result = document_baseline_request(
         baseline_actor,
         base_url,
@@ -2982,7 +3067,12 @@ def verify_document_baseline_runtime(
         payload=payload,
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
+        diagnostic=True,
     )
+    post_workspace_verifier_stage(stage_code, created_result.trace_id)
+    stage_code = "P503_BASELINE_CREATE_RESPONSE_SHAPE"
+    post_workspace_verifier_stage(stage_code, created_result.trace_id)
+    stage_code = "P503_BASELINE_CREATE_RESPONSE_CONTRACT"
     post_workspace_verifier_stage(stage_code, created_result.trace_id)
     baseline = validate_document_baseline_command(
         created_result,
@@ -2992,6 +3082,7 @@ def verify_document_baseline_runtime(
         release_snapshot_hash=release_snapshot_hash,
         policy_snapshot_hash=baseline_policy_hash,
         replayed=False,
+        diagnostic=True,
     )
     baseline_id = str(baseline["globalId"])
     baseline_hash = str(baseline["snapshotHash"])

@@ -26,6 +26,7 @@ from npi_core.documents.baseline_domain import (
     sha256_json,
 )
 from npi_core.documents.baseline_diagnostics import (
+    baseline_create_server_step,
     baseline_workspace_server_step,
     record_baseline_workspace_server_failure,
     record_baseline_workspace_server_predicate,
@@ -370,118 +371,148 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
         label: str,
         members: Sequence[DocumentBaselineMemberPrecondition],
     ) -> DocumentCommandOutcome | None:
-        project = self._locked_baseline_project(project_id)
+        with baseline_create_server_step("P503_BASELINE_CREATE_PROJECT_LOCK"):
+            project = self._locked_baseline_project(project_id)
         if project is None:
             return None
-        if self._current_actor_member(project) is None:
-            return None
-        policy = self._load_exact_baseline_policy(
-            project,
-            policy_global_id=policy_global_id,
-            policy_version=policy_version,
-            snapshot_hash=policy_snapshot_hash,
-            lock=True,
-        )
-        if not policy.permits_baseline(self.actor):
-            from npi_core.documents.baseline_domain import (
-                DocumentBaselineAuthorityUnavailable,
-            )
-
-            raise DocumentBaselineAuthorityUnavailable()
-        payload = {
-            "policyGlobalId": str(policy_global_id),
-            "policyVersion": policy_version,
-            "policySnapshotHash": policy_snapshot_hash,
-            "label": label,
-            "members": [
-                {
-                    "revisionId": str(value.revision_id),
-                    "expectedRevisionSnapshotHash": (
-                        value.expected_revision_snapshot_hash
-                    ),
-                    "expectedLifecycleVersion": value.expected_lifecycle_version,
-                    "expectedReleaseSnapshotHash": (
-                        value.expected_release_snapshot_hash
-                    ),
-                }
-                for value in members
-            ],
-        }
-        payload_hash = command_payload_hash(
-            operation="baseline.create",
-            actor=self.actor,
-            tenant_id=str(project.tenant_id),
-            project_id=project_id,
-            document_id=None,
-            payload=payload,
-        )
-        receipt_key = self._receipt_key(
-            project,
-            idempotency_key_hash=idempotency_key_hash,
-        )
-        replay = self._baseline_replay(
-            project,
-            receipt_key=receipt_key,
-            payload_hash=payload_hash,
-        )
-        if replay is not None:
-            return DocumentCommandOutcome(replay, replayed=True)
-        require_mutable_project(project)
-        if (
-            not members
-            or len(members) > MAX_BASELINE_MEMBERS
-            or len({value.revision_id for value in members}) != len(members)
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBERSHIP_AUTHORITY"
         ):
-            raise DocumentBaselineInputUnavailable()
-        resolved = self._resolve_members(project, members)
-        now = datetime.now(UTC)
-        baseline = create_document_baseline(
-            global_id=uuid4(),
-            tenant_id=str(project.tenant_id),
-            project_global_id=UUID(str(project.global_id)),
-            label=label,
-            policy=policy,
-            members=resolved,
-            actor=self.actor,
-            now=now,
-            request_id=self.request_id,
-            trace_id=self.trace_id,
-        )
-        with _baseline_write_scope():
-            receipt = self._insert_baseline_receipt(
+            if self._current_actor_member(project) is None:
+                return None
+            with baseline_create_server_step("P503_BASELINE_CREATE_POLICY_LOAD"):
+                policy = self._load_exact_baseline_policy(
+                    project,
+                    policy_global_id=policy_global_id,
+                    policy_version=policy_version,
+                    snapshot_hash=policy_snapshot_hash,
+                    lock=True,
+                )
+            if not policy.permits_baseline(self.actor):
+                from npi_core.documents.baseline_domain import (
+                    DocumentBaselineAuthorityUnavailable,
+                )
+
+                raise DocumentBaselineAuthorityUnavailable()
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY"
+        ):
+            payload = {
+                "policyGlobalId": str(policy_global_id),
+                "policyVersion": policy_version,
+                "policySnapshotHash": policy_snapshot_hash,
+                "label": label,
+                "members": [
+                    {
+                        "revisionId": str(value.revision_id),
+                        "expectedRevisionSnapshotHash": (
+                            value.expected_revision_snapshot_hash
+                        ),
+                        "expectedLifecycleVersion": (
+                            value.expected_lifecycle_version
+                        ),
+                        "expectedReleaseSnapshotHash": (
+                            value.expected_release_snapshot_hash
+                        ),
+                    }
+                    for value in members
+                ],
+            }
+            payload_hash = command_payload_hash(
+                operation="baseline.create",
+                actor=self.actor,
+                tenant_id=str(project.tenant_id),
+                project_id=project_id,
+                document_id=None,
+                payload=payload,
+            )
+            receipt_key = self._receipt_key(
+                project,
+                idempotency_key_hash=idempotency_key_hash,
+            )
+            replay = self._baseline_replay(
                 project,
                 receipt_key=receipt_key,
-                idempotency_key_hash=idempotency_key_hash,
                 payload_hash=payload_hash,
-                now=now,
             )
-            baseline_document = self._insert_baseline(project, baseline)
-            self._insert_members(project, baseline_document, baseline)
-            self._append_audit(
-                operation="document.baseline.create",
-                global_id=baseline.global_id,
-                object_version=1,
-                result="created",
-                summary={
+            if replay is not None:
+                return DocumentCommandOutcome(replay, replayed=True)
+        with baseline_create_server_step("P503_BASELINE_CREATE_MEMBER_RESOLVE"):
+            require_mutable_project(project)
+            if (
+                not members
+                or len(members) > MAX_BASELINE_MEMBERS
+                or len({value.revision_id for value in members}) != len(members)
+            ):
+                raise DocumentBaselineInputUnavailable()
+            resolved = self._resolve_members(project, members)
+        with baseline_create_server_step("P503_BASELINE_CREATE_DOMAIN_BUILD"):
+            now = datetime.now(UTC)
+            baseline = create_document_baseline(
+                global_id=uuid4(),
+                tenant_id=str(project.tenant_id),
+                project_global_id=UUID(str(project.global_id)),
+                label=label,
+                policy=policy,
+                members=resolved,
+                actor=self.actor,
+                now=now,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+            )
+        with _baseline_write_scope():
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_RECEIPT_INSERT"
+            ):
+                receipt = self._insert_baseline_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_BASELINE_INSERT"
+            ):
+                baseline_document = self._insert_baseline(project, baseline)
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_INSERT"
+            ):
+                self._insert_members(project, baseline_document, baseline)
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_AUDIT_APPEND"
+            ):
+                self._append_audit(
+                    operation="document.baseline.create",
+                    global_id=baseline.global_id,
+                    object_version=1,
+                    result="created",
+                    summary={
+                        "projectId": str(project_id),
+                        "baselineId": str(baseline.global_id),
+                        "baselineSnapshotHash": baseline.snapshot_hash,
+                        "memberCount": len(baseline.members),
+                        "policyGlobalId": str(policy.policy_global_id),
+                        "policyVersion": policy.policy_version,
+                        "requestId": self.request_id,
+                    },
+                )
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_RESPONSE_BUILD"
+            ):
+                response = {
                     "projectId": str(project_id),
-                    "baselineId": str(baseline.global_id),
-                    "baselineSnapshotHash": baseline.snapshot_hash,
-                    "memberCount": len(baseline.members),
-                    "policyGlobalId": str(policy.policy_global_id),
-                    "policyVersion": policy.policy_version,
-                    "requestId": self.request_id,
-                },
-            )
-            response = {
-                "projectId": str(project_id),
-                "baseline": self._baseline_response(baseline),
-            }
-            self._seal_baseline_receipt(
-                receipt,
-                baseline_id=baseline.global_id,
-                response=response,
-                now=now,
-            )
+                    "baseline": self._baseline_response(baseline),
+                }
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_RECEIPT_SEAL"
+            ):
+                self._seal_baseline_receipt(
+                    receipt,
+                    baseline_id=baseline.global_id,
+                    response=response,
+                    now=now,
+                )
         return DocumentCommandOutcome(response)
 
     def _locked_baseline_project(self, project_id: UUID):

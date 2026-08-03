@@ -13,6 +13,8 @@ from frappe import _
 
 from npi_core.api import BinaryPayload, frappe_binary_call, frappe_domain_call
 from npi_core.documents.baseline_diagnostics import (
+    baseline_create_server_diagnostics,
+    baseline_create_server_step,
     baseline_workspace_server_diagnostics,
     baseline_workspace_server_step,
 )
@@ -374,26 +376,45 @@ def create_document_baseline(
     success_headers = _command_headers()
 
     def handle() -> dict[str, Any]:
-        request_id, idempotency_key_hash, repository, project_id = (
-            _baseline_command_context(request_fields)
-        )
-        outcome = repository.create_baseline(
-            project_id,
-            idempotency_key_hash=idempotency_key_hash,
-            policy_global_id=_uuid_value(policyGlobalId, "policyGlobalId"),
-            policy_version=_positive_integer(policyVersion, "policyVersion"),
-            policy_snapshot_hash=_hash_value(
-                policySnapshotHash,
-                "policySnapshotHash",
-            ),
-            label=_text_value(label, "label", 140),
-            members=_baseline_members(members),
-        )
-        return _command_response(
-            outcome,
-            request_id=request_id,
-            success_headers=success_headers,
-        )
+        with baseline_create_server_diagnostics(current_trace_id.get()):
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_COMMAND_CONTEXT"
+            ):
+                request_id, idempotency_key_hash, repository, project_id = (
+                    _baseline_command_context(request_fields)
+                )
+            with baseline_create_server_step("P503_BASELINE_CREATE_INPUT_PARSE"):
+                policy_global_id = _uuid_value(
+                    policyGlobalId,
+                    "policyGlobalId",
+                )
+                policy_version = _positive_integer(
+                    policyVersion,
+                    "policyVersion",
+                )
+                policy_snapshot_hash = _hash_value(
+                    policySnapshotHash,
+                    "policySnapshotHash",
+                )
+                baseline_label = _text_value(label, "label", 140)
+                baseline_members = _baseline_members(members)
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_RESPONSE_BUILD"
+            ):
+                outcome = repository.create_baseline(
+                    project_id,
+                    idempotency_key_hash=idempotency_key_hash,
+                    policy_global_id=policy_global_id,
+                    policy_version=policy_version,
+                    policy_snapshot_hash=policy_snapshot_hash,
+                    label=baseline_label,
+                    members=baseline_members,
+                )
+                return _command_response(
+                    outcome,
+                    request_id=request_id,
+                    success_headers=success_headers,
+                )
 
     return frappe_domain_call(
         handle,

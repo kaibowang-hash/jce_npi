@@ -173,6 +173,36 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, replay)
 
+    def test_create_diagnostic_ladder_is_closed_and_order_neutral(self) -> None:
+        value = _function("create_baseline")
+        codes = (
+            "P503_BASELINE_CREATE_PROJECT_LOCK",
+            "P503_BASELINE_CREATE_MEMBERSHIP_AUTHORITY",
+            "P503_BASELINE_CREATE_POLICY_LOAD",
+            "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY",
+            "P503_BASELINE_CREATE_MEMBER_RESOLVE",
+            "P503_BASELINE_CREATE_DOMAIN_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_INSERT",
+            "P503_BASELINE_CREATE_BASELINE_INSERT",
+            "P503_BASELINE_CREATE_MEMBER_INSERT",
+            "P503_BASELINE_CREATE_AUDIT_APPEND",
+            "P503_BASELINE_CREATE_RESPONSE_BUILD",
+            "P503_BASELINE_CREATE_RECEIPT_SEAL",
+        )
+        positions = [value.index(f'"{code}"') for code in codes]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(value.count("baseline_create_server_step("), len(codes))
+        for forbidden in (
+            "traceback",
+            "exception.args",
+            "request.body",
+            "response.body",
+            "cookie",
+            "credential",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, value.casefold())
+
     def test_public_response_is_url_and_storage_identity_free(self) -> None:
         wrapper = _function("_baseline_response")
         self.assertIn("document_baseline_response(value)", wrapper)
