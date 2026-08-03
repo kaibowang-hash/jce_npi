@@ -1,16 +1,16 @@
 version: '1.2'
-overall_status: BLOCKED_EXTERNAL
+overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-03T02:08:59Z'
+updated_at: '2026-08-03T02:30:57Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5_03_BASELINE_CREATE_FINAL_RESPONSE_CONTRACT_GATE
+execution_hold: null
 current_task: P5-03
-current_task_status: BLOCKED_EXTERNAL
-current_task_completed_stage: P5-03-BASELINE-CREATE-REPAIR-FINAL-GATE-FAILED
-current_task_next_stage: P5-03-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC
-current_task_next_stage_status: BLOCKED_AUTHORIZATION_REQUIRED
+current_task_status: IN_PROGRESS_DIAGNOSTIC
+current_task_completed_stage: P5-03-RESPONSE-CONTRACT-DIAGNOSTIC-AUTHORIZED
+current_task_next_stage: P5-03-RESPONSE-CONTRACT-PREDICATE-LADDER
+current_task_next_stage_status: AUTHORIZED_ACTIVE
 resumed_product_task: P5-03
-resumed_product_task_status: BLOCKED_RESPONSE_CONTRACT_NOT_UNIQUELY_PROVEN
+resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -32,6 +32,18 @@ repair_accounting:
     outcome: ADVANCED_FINAL_GATE_TO_RESPONSE_CONTRACT_FAILURE
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
+  active_response_contract_authority:
+    authority: USER_AUTHORIZED_2026_08_03
+    task: P5-03
+    root: BASELINE_CREATE_RESPONSE_CONTRACT_ONLY
+    status: AUTHORIZED_ACTIVE
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    verifier_or_fixture_root_classified_by_controller: true
+    product_root_exception_authorized_if_uniquely_proven: 1
+    product_root_exception_used: 0
+    changes_global_five_round_rule: false
+    behavior_neutral_diagnostics_consume_product_root_round: false
 p5_01:
   status: PASS_LEVEL_2
   product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
@@ -51,7 +63,7 @@ p5_02:
     - implementation/evidence/phase-5/p5-02-implementation-checkpoint.md
     - implementation/evidence/phase-5/p5-02-validation.md
 p5_03:
-  status: BLOCKED_EXTERNAL
+  status: IN_PROGRESS_DIAGNOSTIC
   requirements: [FR-DS-006]
   recovery_base_head: a1d84294641cb0b8cf71002c3d3557cb6b485ce7
   repaired_candidate: 15abf26834027045ccb98e5167a45390e94cb32b
@@ -76,6 +88,16 @@ p5_03:
     stage_code: P503_BASELINE_CREATE_RESPONSE_CONTRACT
     exception_type: RuntimeError
     trace_id: trace-062ce39fc49457a384bc1acba7afd785
+  response_contract_diagnostic_authority:
+    authorized: true
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    predicate_scope: BASELINE_CREATE_RESPONSE_CONTRACT_ONLY
+    final_unchanged_gate: NOT_EXECUTED
+    final_gate_diagnostic_activation_required: CLOSED
+    product_root_exception_authorized_if_uniquely_proven: 1
+    product_root_exception_used: 0
+    changes_global_five_round_rule: false
   additional_diagnostic_dispatches:
     authorized: 2
     used: 2
@@ -83,8 +105,8 @@ p5_03:
     authorized: 1
     used: 1
     changes_global_five_round_rule: false
-  completed_stage: BASELINE_CREATE_UNIQUE_REPAIR_FINAL_GATE_FAILED
-  next_stage: RESPONSE_CONTRACT_PREDICATE_DIAGNOSTIC_REQUIRES_AUTHORITY
+  completed_stage: RESPONSE_CONTRACT_PREDICATE_DIAGNOSTIC_AUTHORIZED
+  next_stage: RESPONSE_CONTRACT_PREDICATE_LADDER
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-03-plan.md
@@ -92,6 +114,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md
     - implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md
     - implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md
+    - implementation/evidence/phase-5/p5-03-response-contract-diagnostic-resume.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

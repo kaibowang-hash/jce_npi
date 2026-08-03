@@ -1,10 +1,15 @@
 # Blockers
 
-Updated: `2026-08-03T02:08:59Z`
+Updated: `2026-08-03T02:30:57Z`
 
 ## Active hard blockers
 
-`P5-03-BASELINE-CREATE-FINAL-RESPONSE-CONTRACT-GATE`
+None. The prior response-contract execution-authority hold is resolved by the
+new strictly bounded user authorization. No P5-03 PASS is claimed.
+
+## Active diagnostic progress
+
+`P5-03-BASELINE-CREATE-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC`
 
 Candidate `15abf26` passed affected P5 Document tests `167/167` and complete
 ordinary CI `30777828197`. The two authorized diagnostic-only dispatches were
@@ -23,21 +28,24 @@ verifier failed with only the closed tuple
 trace-062ce39fc49457a384bc1acba7afd785`.
 
 That tuple covers multiple response predicates and does not uniquely prove a
-repair. Both additional diagnostic dispatches, the one extra bounded
-product-root exception and the final Gate are exhausted. The global five-round
-rule remains unchanged. No further repair, controlled dispatch, P5-03 Level 2,
-P5-04, P5-05 or Phase 6 action is authorized; guessing would violate the
-controller and user boundary. No P5-03 `PASS` is claimed.
-
-## Active diagnostic progress
-
-None. A response-contract predicate diagnostic requires new explicit bounded
-authority.
+repair. The new authority permits a behavior-neutral allowlisted predicate
+ladder and at most one diagnostic-only controlled-Site dispatch after affected
+tests and complete ordinary CI. A product repair is permitted only if that
+dispatch uniquely proves one predicate and the result matches FR-DS-006, its
+anchor, OpenAPI, true DocType fields, permissions, ownership and transaction
+invariants. The separate response-contract exception does not change the
+global five-round rule. No P5-03 `PASS` is claimed.
 
 Evidence:
-`implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md`.
+`implementation/evidence/phase-5/p5-03-response-contract-diagnostic-resume.md`.
 
 ## Resolved hard blockers
+
+`P5-03-BASELINE-CREATE-FINAL-RESPONSE-CONTRACT-GATE`
+
+Resolved only as an execution-authority blocker by the user's strictly bounded
+2026-08-03 response-contract authorization. The historical failed Gate and
+safe tuple remain unchanged; the underlying predicate is not yet proven.
 
 `P5-01-CONTROLLED-RUNTIME-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC-LIMIT`
 

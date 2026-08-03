@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-03T02:08:59Z`
+Updated: `2026-08-03T02:30:57Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `BLOCKED_EXTERNAL — P5-03 BASELINE CREATE RESPONSE CONTRACT`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE RESPONSE CONTRACT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Current repaired candidate and remote HEAD:
-  `15abf26834027045ccb98e5167a45390e94cb32b` (`0 ahead / 0 behind`)
-- Complete normal CI:
-  `30777828197` (`PASS`, exact repaired-candidate SHA)
+- Current controller/evidence HEAD and remote HEAD:
+  `a8a20ec18f5d9d16f28953f3bc100fb8728fb069` (`0 ahead / 0 behind`)
+- Latest complete normal CI:
+  `30778815782` (`PASS`, exact controller/evidence SHA `a8a20ec`)
 - Additional diagnostic-only controlled-Site runs:
   `30776554186` and `30777405187` (`2/2` used)
 - Unique repair proof:
@@ -25,7 +25,7 @@ Updated: `2026-08-03T02:08:59Z`
   trace-062ce39fc49457a384bc1acba7afd785`
 - Current controller task:
   `P5-03 — Baseline and impact invalidation`
-  (`BLOCKED_EXTERNAL — RESPONSE CONTRACT NOT UNIQUELY PROVEN`)
+  (`IN_PROGRESS_DIAGNOSTIC — RESPONSE CONTRACT PREDICATE LADDER`)
 - Current Requirement IDs:
   `FR-DS-006`
 - Completed P5-02 evidence:
@@ -45,7 +45,14 @@ Updated: `2026-08-03T02:08:59Z`
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
 
-## Current Hard Blocker
+## Resumed bounded diagnostic
+
+The prior Hard Blocker is resolved only as an execution-authority hold. The
+user authorized one behavior-neutral, closed response-contract predicate
+ladder and at most one diagnostic-only controlled-Site dispatch. The
+diagnostic may expose only an allowlisted predicate code, validated exception
+type and exact trace ID; it may not expose exception text, traceback, request,
+response, Cookie, credentials, business data or storage paths.
 
 The controller and the accepted P5-03 plan recorded four completed genuine
 product-root repairs before `2b067c1`. The safe baseline-workspace diagnostic
@@ -62,14 +69,13 @@ not the independent review-evidence snapshot. Repair `15abf26` changed only
 that comparison, passed affected `167/167` and complete ordinary CI
 `30777828197`, and closed the diagnostic header activation path.
 
-The single final unchanged Gate `30778190537` then advanced to the closed tuple
+The historical final unchanged Gate `30778190537` advanced to the closed tuple
 `P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
-trace-062ce39fc49457a384bc1acba7afd785`. That stage covers multiple response
-predicates and does not uniquely prove one root. The two diagnostic dispatches,
-one extra bounded product-root exception and final Gate are exhausted. The
-global five-round rule remains unchanged, no P5-03 `PASS` or Level 2 result
-exists, and Autopilot must not activate P5-04, P5-05 or Phase 6 without new
-explicitly bounded authority.
+trace-062ce39fc49457a384bc1acba7afd785`. That historical tuple still does not
+prove a predicate. The new authority does not change the global five-round
+rule; it permits a new product-root exception only if the sole diagnostic
+uniquely proves a product predicate and it is cross-validated against the
+frozen contracts. No P5-03 `PASS` or Level 2 result exists yet.
 
 ## Historical passing and reusable evidence
 
