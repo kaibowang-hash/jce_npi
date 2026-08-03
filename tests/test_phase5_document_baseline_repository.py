@@ -113,9 +113,9 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
             resolve_input,
         )
         self.assertIn(
-            "lifecycle.release_snapshot_hash\n            "
+            "lifecycle.release_snapshot_hash "
             "!= precondition.expected_release_snapshot_hash",
-            resolve_input,
+            " ".join(resolve_input.split()),
         )
         self.assertIn("cycle.evidence", resolve_input)
         self.assertNotIn(
@@ -181,6 +181,7 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
             "P503_BASELINE_CREATE_POLICY_LOAD",
             "P503_BASELINE_CREATE_IDEMPOTENCY_REPLAY",
             "P503_BASELINE_CREATE_MEMBER_RESOLVE",
+            "P503_BASELINE_CREATE_MEMBER_PRECONDITION_SET",
             "P503_BASELINE_CREATE_DOMAIN_BUILD",
             "P503_BASELINE_CREATE_RECEIPT_INSERT",
             "P503_BASELINE_CREATE_BASELINE_INSERT",
@@ -202,6 +203,30 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, value.casefold())
+
+        helper_codes = {
+            "P503_BASELINE_CREATE_MEMBER_RECORD_LOAD",
+            "P503_BASELINE_CREATE_MEMBER_RELEASE_STATE",
+            "P503_BASELINE_CREATE_MEMBER_REVIEW_LOAD",
+            "P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE",
+            "P503_BASELINE_CREATE_MEMBER_PROJECT_SCOPE",
+            "P503_BASELINE_CREATE_MEMBER_DOMAIN_BUILD",
+            "P503_BASELINE_CREATE_MEMBER_FILE_QUERY",
+            "P503_BASELINE_CREATE_MEMBER_FILE_ASSOCIATION_LOAD",
+            "P503_BASELINE_CREATE_MEMBER_FILE_CARDINALITY",
+            "P503_BASELINE_CREATE_MEMBER_FILE_LOAD",
+            "P503_BASELINE_CREATE_MEMBER_FILE_INTEGRITY",
+        }
+        helper_source = "\n".join(
+            (
+                _function("_resolve_members"),
+                _function("_resolve_member_input"),
+                _function("_validate_released_files"),
+            )
+        )
+        for code in helper_codes:
+            with self.subTest(code=code):
+                self.assertEqual(helper_source.count(f'"{code}"'), 1)
 
     def test_public_response_is_url_and_storage_identity_free(self) -> None:
         wrapper = _function("_baseline_response")

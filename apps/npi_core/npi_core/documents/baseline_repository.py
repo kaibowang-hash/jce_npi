@@ -438,13 +438,17 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
             if replay is not None:
                 return DocumentCommandOutcome(replay, replayed=True)
         with baseline_create_server_step("P503_BASELINE_CREATE_MEMBER_RESOLVE"):
-            require_mutable_project(project)
-            if (
-                not members
-                or len(members) > MAX_BASELINE_MEMBERS
-                or len({value.revision_id for value in members}) != len(members)
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_PRECONDITION_SET"
             ):
-                raise DocumentBaselineInputUnavailable()
+                require_mutable_project(project)
+                if (
+                    not members
+                    or len(members) > MAX_BASELINE_MEMBERS
+                    or len({value.revision_id for value in members})
+                    != len(members)
+                ):
+                    raise DocumentBaselineInputUnavailable()
             resolved = self._resolve_members(project, members)
         with baseline_create_server_step("P503_BASELINE_CREATE_DOMAIN_BUILD"):
             now = datetime.now(UTC)
@@ -671,30 +675,40 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
                 precondition,
             )
             resolved[revision_id] = (revision, lifecycle, evidence)
-            if not _document_matches_project(
-                document,
-                project,
-                UUID(str(document.global_id)),
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_PROJECT_SCOPE"
             ):
-                raise DocumentBaselineInputUnavailable()
+                if not _document_matches_project(
+                    document,
+                    project,
+                    UUID(str(document.global_id)),
+                ):
+                    raise DocumentBaselineInputUnavailable()
         members = []
         for sequence, precondition in enumerate(preconditions, start=1):
             revision, lifecycle, evidence = resolved[precondition.revision_id]
-            members.append(
-                DocumentBaselineMember(
-                    global_id=uuid4(),
-                    sequence=sequence,
-                    document_global_id=UUID(str(revision.document_global_id)),
-                    revision_global_id=UUID(str(revision.global_id)),
-                    major=int(revision.major),
-                    minor=int(revision.minor),
-                    revision_snapshot_hash=str(revision.snapshot_hash),
-                    lifecycle_version=lifecycle.version,
-                    release_event_global_id=lifecycle.release_event_global_id,
-                    release_snapshot_hash=lifecycle.release_snapshot_hash,
-                    release_evidence=evidence,
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_DOMAIN_BUILD"
+            ):
+                members.append(
+                    DocumentBaselineMember(
+                        global_id=uuid4(),
+                        sequence=sequence,
+                        document_global_id=UUID(
+                            str(revision.document_global_id)
+                        ),
+                        revision_global_id=UUID(str(revision.global_id)),
+                        major=int(revision.major),
+                        minor=int(revision.minor),
+                        revision_snapshot_hash=str(revision.snapshot_hash),
+                        lifecycle_version=lifecycle.version,
+                        release_event_global_id=(
+                            lifecycle.release_event_global_id
+                        ),
+                        release_snapshot_hash=lifecycle.release_snapshot_hash,
+                        release_evidence=evidence,
+                    )
                 )
-            )
         return tuple(members)
 
     def _resolve_member_input(
@@ -702,74 +716,88 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
         project,
         precondition: DocumentBaselineMemberPrecondition,
     ) -> tuple[Any, Any, Any, DocumentReviewEvidence]:
-        try:
-            revision = frappe.get_doc(
-                "NPI Document Revision",
-                str(precondition.revision_id),
-                for_update=True,
-            )
-            document = frappe.get_doc(
-                "NPI Controlled Document",
-                str(revision.document_global_id),
-                for_update=True,
-            )
-            lifecycle_document = frappe.get_doc(
-                "NPI Document Revision Lifecycle",
-                str(precondition.revision_id),
-                for_update=True,
-            )
-            lifecycle = lifecycle_value(lifecycle_document)
-        except (
-            frappe.DoesNotExistError,
-            RequestValidationFailed,
-            TypeError,
-            ValueError,
-        ) as error:
-            raise DocumentBaselineInputUnavailable() from error
-        if (
-            str(revision.global_id) != str(precondition.revision_id)
-            or str(revision.tenant_id) != str(project.tenant_id)
-            or str(revision.project_global_id) != str(project.global_id)
-            or str(revision.snapshot_hash)
-            != precondition.expected_revision_snapshot_hash
-            or lifecycle.revision_global_id != precondition.revision_id
-            or lifecycle.state is not DocumentLifecycleState.RELEASED
-            or lifecycle.version != precondition.expected_lifecycle_version
-            or lifecycle.release_snapshot_hash
-            != precondition.expected_release_snapshot_hash
-            or lifecycle.release_event_global_id is None
-            or lifecycle.approved_cycle_global_id is None
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_RECORD_LOAD"
         ):
-            raise DocumentBaselineInputUnavailable()
-        try:
-            event_document = frappe.get_doc(
-                "NPI Document Lifecycle Event",
-                str(lifecycle.release_event_global_id),
-                for_update=True,
-            )
-            event = lifecycle_event_value(event_document)
-            cycle_document = frappe.get_doc(
-                "NPI Document Review Cycle",
-                str(lifecycle.approved_cycle_global_id),
-                for_update=True,
-            )
-            cycle = review_cycle_value(cycle_document)
-        except (
-            frappe.DoesNotExistError,
-            RequestValidationFailed,
-            TypeError,
-            ValueError,
-        ) as error:
-            raise DocumentBaselineInputUnavailable() from error
-        if (
-            event.event_type is not DocumentLifecycleEventType.RELEASED
-            or event.revision_global_id != precondition.revision_id
-            or event.cycle_global_id != cycle.global_id
-            or event.evidence_snapshot_hash != cycle.evidence.snapshot_hash
-            or cycle.revision_global_id != precondition.revision_id
-            or cycle.evidence.revision_snapshot_hash != str(revision.snapshot_hash)
+            try:
+                revision = frappe.get_doc(
+                    "NPI Document Revision",
+                    str(precondition.revision_id),
+                    for_update=True,
+                )
+                document = frappe.get_doc(
+                    "NPI Controlled Document",
+                    str(revision.document_global_id),
+                    for_update=True,
+                )
+                lifecycle_document = frappe.get_doc(
+                    "NPI Document Revision Lifecycle",
+                    str(precondition.revision_id),
+                    for_update=True,
+                )
+                lifecycle = lifecycle_value(lifecycle_document)
+            except (
+                frappe.DoesNotExistError,
+                RequestValidationFailed,
+                TypeError,
+                ValueError,
+            ) as error:
+                raise DocumentBaselineInputUnavailable() from error
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_RELEASE_STATE"
         ):
-            raise DocumentBaselineInputUnavailable()
+            if (
+                str(revision.global_id) != str(precondition.revision_id)
+                or str(revision.tenant_id) != str(project.tenant_id)
+                or str(revision.project_global_id) != str(project.global_id)
+                or str(revision.snapshot_hash)
+                != precondition.expected_revision_snapshot_hash
+                or lifecycle.revision_global_id != precondition.revision_id
+                or lifecycle.state is not DocumentLifecycleState.RELEASED
+                or lifecycle.version
+                != precondition.expected_lifecycle_version
+                or lifecycle.release_snapshot_hash
+                != precondition.expected_release_snapshot_hash
+                or lifecycle.release_event_global_id is None
+                or lifecycle.approved_cycle_global_id is None
+            ):
+                raise DocumentBaselineInputUnavailable()
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_REVIEW_LOAD"
+        ):
+            try:
+                event_document = frappe.get_doc(
+                    "NPI Document Lifecycle Event",
+                    str(lifecycle.release_event_global_id),
+                    for_update=True,
+                )
+                event = lifecycle_event_value(event_document)
+                cycle_document = frappe.get_doc(
+                    "NPI Document Review Cycle",
+                    str(lifecycle.approved_cycle_global_id),
+                    for_update=True,
+                )
+                cycle = review_cycle_value(cycle_document)
+            except (
+                frappe.DoesNotExistError,
+                RequestValidationFailed,
+                TypeError,
+                ValueError,
+            ) as error:
+                raise DocumentBaselineInputUnavailable() from error
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE"
+        ):
+            if (
+                event.event_type is not DocumentLifecycleEventType.RELEASED
+                or event.revision_global_id != precondition.revision_id
+                or event.cycle_global_id != cycle.global_id
+                or event.evidence_snapshot_hash != cycle.evidence.snapshot_hash
+                or cycle.revision_global_id != precondition.revision_id
+                or cycle.evidence.revision_snapshot_hash
+                != str(revision.snapshot_hash)
+            ):
+                raise DocumentBaselineInputUnavailable()
         self._validate_released_files(
             project,
             document,
@@ -785,65 +813,86 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
         revision,
         evidence: DocumentReviewEvidence,
     ) -> None:
-        names = frappe.get_all(
-            "NPI Document Revision File",
-            filters={
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "document_global_id": str(document.global_id),
-                "document_revision_global_id": str(revision.global_id),
-            },
-            pluck="name",
-            order_by="global_id asc",
-            limit_page_length=MAX_BASELINE_MEMBERS + 1,
-        )
-        if not names or len(names) > MAX_BASELINE_MEMBERS:
-            raise DocumentBaselineInputUnavailable()
-        associations = [
-            frappe.get_doc("NPI Document Revision File", name, for_update=True)
-            for name in names
-        ]
-        evidence_by_association = {
-            value.association_global_id: value for value in evidence.files
-        }
-        if len(evidence_by_association) != len(associations):
-            raise DocumentBaselineInputUnavailable()
-        for association in associations:
-            expected = evidence_by_association.get(UUID(str(association.global_id)))
-            if expected is None:
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_FILE_QUERY"
+        ):
+            names = frappe.get_all(
+                "NPI Document Revision File",
+                filters={
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "document_global_id": str(document.global_id),
+                    "document_revision_global_id": str(revision.global_id),
+                },
+                pluck="name",
+                order_by="global_id asc",
+                limit_page_length=MAX_BASELINE_MEMBERS + 1,
+            )
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_FILE_CARDINALITY"
+        ):
+            if not names or len(names) > MAX_BASELINE_MEMBERS:
                 raise DocumentBaselineInputUnavailable()
-            try:
-                file_revision = frappe.get_doc(
-                    "NPI File Revision",
-                    str(association.file_revision_global_id),
+        with baseline_create_server_step(
+            "P503_BASELINE_CREATE_MEMBER_FILE_ASSOCIATION_LOAD"
+        ):
+            associations = [
+                frappe.get_doc(
+                    "NPI Document Revision File",
+                    name,
                     for_update=True,
                 )
-                observed = self._release_file_evidence(
-                    association,
-                    file_revision,
-                )
-            except (
-                frappe.DoesNotExistError,
-                DocumentReleaseIntegrityBlocked,
-                RequestValidationFailed,
-                TypeError,
-                ValueError,
-            ) as error:
-                raise DocumentBaselineInputUnavailable() from error
-            if (
-                not _association_matches_live_file(
-                    project,
-                    document,
-                    revision,
-                    association,
-                    file_revision,
-                )
-                or int(file_revision.released or 0) != 1
-                or int(file_revision.optimistic_version)
-                < expected.file_optimistic_version + 1
-                or not _stable_file_evidence_matches(observed, expected)
-            ):
+                for name in names
+            ]
+            evidence_by_association = {
+                value.association_global_id: value for value in evidence.files
+            }
+            if len(evidence_by_association) != len(associations):
                 raise DocumentBaselineInputUnavailable()
+        for association in associations:
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_FILE_LOAD"
+            ):
+                expected = evidence_by_association.get(
+                    UUID(str(association.global_id))
+                )
+                if expected is None:
+                    raise DocumentBaselineInputUnavailable()
+                try:
+                    file_revision = frappe.get_doc(
+                        "NPI File Revision",
+                        str(association.file_revision_global_id),
+                        for_update=True,
+                    )
+                    observed = self._release_file_evidence(
+                        association,
+                        file_revision,
+                    )
+                except (
+                    frappe.DoesNotExistError,
+                    DocumentReleaseIntegrityBlocked,
+                    RequestValidationFailed,
+                    TypeError,
+                    ValueError,
+                ) as error:
+                    raise DocumentBaselineInputUnavailable() from error
+            with baseline_create_server_step(
+                "P503_BASELINE_CREATE_MEMBER_FILE_INTEGRITY"
+            ):
+                if (
+                    not _association_matches_live_file(
+                        project,
+                        document,
+                        revision,
+                        association,
+                        file_revision,
+                    )
+                    or int(file_revision.released or 0) != 1
+                    or int(file_revision.optimistic_version)
+                    < expected.file_optimistic_version + 1
+                    or not _stable_file_evidence_matches(observed, expected)
+                ):
+                    raise DocumentBaselineInputUnavailable()
 
     def _receipt_key(self, project, *, idempotency_key_hash: str) -> str:
         return sha256_json(
