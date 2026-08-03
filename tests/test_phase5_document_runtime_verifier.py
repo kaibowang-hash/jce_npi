@@ -493,6 +493,13 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
+    def test_final_baseline_flow_does_not_activate_diagnostic_header(self) -> None:
+        source = Path(self.module.__file__).read_text(encoding="utf-8")
+        function_start = source.index("def verify_document_baseline_runtime(")
+        function_end = source.index("\ndef run_fresh(", function_start)
+        function = source[function_start:function_end]
+        self.assertNotIn("diagnostic=True", function)
+
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
             set(self.module.DOCUMENT_DOCTYPES),

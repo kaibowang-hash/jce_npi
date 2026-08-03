@@ -792,7 +792,8 @@ class FrappeDocumentBaselineRepository(FrappeDocumentReleaseRepository):
                 event.event_type is not DocumentLifecycleEventType.RELEASED
                 or event.revision_global_id != precondition.revision_id
                 or event.cycle_global_id != cycle.global_id
-                or event.evidence_snapshot_hash != cycle.evidence.snapshot_hash
+                or event.evidence_snapshot_hash
+                != lifecycle.release_snapshot_hash
                 or cycle.revision_global_id != precondition.revision_id
                 or cycle.evidence.revision_snapshot_hash
                 != str(revision.snapshot_hash)

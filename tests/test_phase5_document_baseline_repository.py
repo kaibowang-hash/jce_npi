@@ -109,8 +109,9 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
                 self.assertIn(doctype, resolve_input)
         self.assertGreaterEqual(resolve_input.count("for_update=True"), 5)
         self.assertIn(
-            "event.evidence_snapshot_hash != cycle.evidence.snapshot_hash",
-            resolve_input,
+            "event.evidence_snapshot_hash "
+            "!= lifecycle.release_snapshot_hash",
+            " ".join(resolve_input.split()),
         )
         self.assertIn(
             "lifecycle.release_snapshot_hash "
@@ -119,7 +120,7 @@ class DocumentBaselineRepositoryTest(unittest.TestCase):
         )
         self.assertIn("cycle.evidence", resolve_input)
         self.assertNotIn(
-            "lifecycle.release_snapshot_hash != cycle.evidence.snapshot_hash",
+            "event.evidence_snapshot_hash != cycle.evidence.snapshot_hash",
             resolve_input,
         )
         self.assertIn("self._release_file_evidence(", validate_files)
