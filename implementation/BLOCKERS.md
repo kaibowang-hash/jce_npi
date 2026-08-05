@@ -1,16 +1,24 @@
 # Blockers
 
-Updated: `2026-08-05T15:11:40Z`
+Updated: `2026-08-05T15:39:03Z`
 
 ## Active hard blockers
 
-`P5-04-POLICY-VERSION-PUBLISH-PRODUCT-REPAIR-AUTHORITY`
+`P5-04-CREATE-STAGE-DIAGNOSTIC-REPAIR-AUTHORITY`
 
-The authoritative blocker record is the final section below. Blocker
-checkpoint `6b48c5595769bf544df4875093ee76d096b40c06` is pushed and exact-SHA
-ordinary CI `31018194326` passed repository/E2E/Gitleaks/history and the
-fixed-Linux `62/62` matrix; the controlled job was correctly skipped. No safe
-product repair or controlled dispatch remains under current authority.
+Repair `d21d21a` resolved the former policy-publication root and passed local
+EBOM `58/58`, complete Python `954/954` and ordinary CI `31020190868`. Final
+unchanged workflow `31020886002` passed policy publication and every
+predecessor/environment boundary, then advanced to the first EBOM create
+command and returned only `P504_RUNTIME_CREATE / HttpStatusError /
+trace-f92a1e065fe35759b261601244cca7d4`.
+
+That aggregate stage is not a unique repair proof: policy load/authority,
+idempotency, root/revision/line/lifecycle writes, projection save, audit,
+response and receipt sealing all remain possible. The prior bounded repair
+and final-Gate authority is exhausted. No safe diagnostic dispatch or product
+repair remains under current authority. The authoritative record is the final
+section below.
 
 Historical resolved context follows.
 
@@ -456,3 +464,30 @@ must preserve that boundary.
   product-root repair round for only this prior-draft-hash publication defect,
   affected tests, complete ordinary CI and one final unchanged controlled-Site
   Gate. No product change or further dispatch is allowed before authorization.
+
+## Active Hard Blocker — P5-04 create-stage diagnostic/repair authority — 2026-08-05T15:39:03Z
+
+- The user authorized bounded repair `d21d21a`, push, ordinary CI, one final
+  unchanged controlled Gate and continued Autopilot.
+- Local EBOM `58/58`, complete Python `954/954` and exact-SHA ordinary CI
+  `31020190868` passed. This closes the prior policy-publication root.
+- Final workflow `31020886002` passed the fixed Bench/Site, migrations,
+  unchanged P5-01/02/03 runtime, policy publication, empty workspace,
+  guest/unrelated authorization, route recovery, cleanup and visual job, then
+  returned only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-f92a1e065fe35759b261601244cca7d4`.
+- The old `P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE` did not recur. The
+  repair advanced the unchanged Gate to a new downstream create boundary.
+- The create code is non-unique across policy load/authority, idempotency,
+  root/revision/line/lifecycle writes, projection save, audit, response and
+  receipt sealing. No safe product or verifier root is proven.
+- The prior repair/final-Gate authority is exhausted. The controller's five
+  product-root rounds remain exhausted, so a new diagnostic or repair cannot
+  be inferred from the prior scope.
+- Single action to unblock: explicitly authorize one bounded P5-04
+  create-stage diagnostic/repair sequence consisting of closed
+  response-neutral substages, affected/full ordinary CI, at most one
+  diagnostic controlled Site, repair of only one uniquely proven in-scope
+  verifier/fixture or product root, affected/ordinary CI and one final
+  unchanged Gate. No Requirement, API, permission, Schema, ownership,
+  transaction, idempotency, audit or PASS criterion may change.

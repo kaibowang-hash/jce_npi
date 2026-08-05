@@ -358,3 +358,45 @@ history, and fixed-Linux visual job `92347730622` passed `62/62`; controlled
 job `92347731389` was correctly skipped. This seals only the truthful
 `BLOCKED_EXTERNAL` evidence. It does not authorize or implement the product
 repair and does not consume the reserved final unchanged controlled-Site Gate.
+
+## Authorized policy-publication repair and new create-stage blocker
+
+The user explicitly authorized repair commit
+`d21d21ad52efa2a88bc459adc43f97f265715071`, its ordinary CI, controlled Gate
+and continued Autopilot. The bounded three-file change treats only the exact
+persisted prior draft hash as server-owned during a draft-to-published domain
+reconstruction. The original document value remains available to
+`_apply_policy()`; unrelated hashes, non-draft predecessors and non-publish
+transitions remain rejected.
+
+Local affected EBOM tests passed `58/58`, complete Python passed `954/954`,
+compilation and `git diff --check` passed. The host's complete wrapper stopped
+only at its fixed Node/npm preflight because the host has Node `24.2.0` and
+npm `11.3.0`; exact-SHA ordinary CI `31020190868` used the required Node
+`24.18.0` and npm `11.16.0` and passed repository, complete E2E, Gitleaks/
+branch history and the fixed-Linux visual matrix.
+
+Final unchanged controlled workflow `31020886002` retained exact SHA
+`d21d21a`. Its controlled job `92356978480` passed fixed Bench/Site, two
+migrations, complete unchanged P5-01/02/03 runtime, policy publication, empty
+EBOM workspace, guest/unrelated authorization, route recovery and cleanup.
+Repository job `92356978685` and visual job `92356978587` passed. The
+controlled job then emitted only:
+
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-f92a1e065fe35759b261601244cca7d4`
+
+The former `P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE` did not recur; the
+repair therefore advanced the unchanged Gate. The new aggregate create code
+is not a unique root: it covers exact policy load and actor authority,
+idempotency receipt replay/insert, EBOM root/revision/line/lifecycle writes,
+root projection save, audit, response construction and receipt sealing. The
+validated body supplied no safe exception type beyond `HttpStatusError`.
+Guessing a product or verifier repair is prohibited.
+
+The prior bounded repair/final-Gate authorization is exhausted. One new
+explicit authority is required for a behavior-neutral allowlisted create-stage
+diagnostic, affected/full ordinary CI, at most one diagnostic controlled Site,
+repair of only one uniquely proven in-scope verifier/fixture or product root,
+and one final unchanged Gate. P5-04 remains `BLOCKED_EXTERNAL`; P5-05 and
+Phase 6 remain inactive.

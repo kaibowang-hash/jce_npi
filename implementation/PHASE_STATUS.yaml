@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-05T15:11:40Z'
+updated_at: '2026-08-05T15:39:03Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5_04_POLICY_VERSION_PUBLISH_PRODUCT_REPAIR_AUTHORITY
+execution_hold: P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR_AUTHORITY
 current_task: P5-04
 current_task_status: BLOCKED_EXTERNAL
-current_task_completed_stage: POLICY_VERSION_PUBLISH_PRODUCT_ROOT_PROVEN
-current_task_next_stage: USER_AUTHORIZATION_P5_04_POLICY_VERSION_PUBLISH_REPAIR
+current_task_completed_stage: POLICY_PUBLISH_REPAIR_ADVANCED_GATE_TO_CREATE
+current_task_next_stage: USER_AUTHORIZATION_P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR
 current_task_next_stage_status: BLOCKED_EXTERNAL
 resumed_product_task: P5-04
-resumed_product_task_status: BLOCKED_EXTERNAL_PRODUCT_REPAIR_AUTHORITY
+resumed_product_task_status: BLOCKED_EXTERNAL_CREATE_STAGE_AUTHORITY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_POLICY_VERSION_PUBLISH_PRIOR_DRAFT_HASH
+  current_root: P5_04_CREATE_STAGE_NOT_UNIQUELY_PROVEN
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -46,6 +46,17 @@ repair_accounting:
     outcome: ADVANCED_CONTROLLED_GATE_BEYOND_BASELINE_CREATE
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
+  p5_04_policy_publish_exception:
+    authority: USER_AUTHORIZED_2026_08_05
+    scope: P5_04_POLICY_VERSION_PUBLISH_PRIOR_DRAFT_HASH_ONLY
+    status: USED_ADVANCED_GATE
+    repair_commit: d21d21ad52efa2a88bc459adc43f97f265715071
+    affected_ebom_tests: 58_PASS
+    complete_python_tests: 954_PASS
+    normal_ci: 31020190868
+    final_unchanged_controlled_gate: 31020886002
+    outcome: ADVANCED_TO_P504_RUNTIME_CREATE
+    changes_global_five_round_rule: false
 p5_01:
   status: PASS_LEVEL_2
   product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
@@ -222,7 +233,8 @@ p5_04:
   diagnostic_dispatches_used: 1
   diagnostic_dispatches_planned: 1
   proven_product_root: EBOM_POLICY_PUBLISH_PASSES_PRIOR_DRAFT_HASH_TO_PUBLISHED_DOMAIN_RECONSTRUCTION
-  proven_product_root_repairs_authorized: 0
+  proven_product_root_repairs_authorized: 1
+  proven_product_root_repairs_used: 1
   p5_01_additional_authority_transferable: false
   blocker_checkpoint: 6b48c5595769bf544df4875093ee76d096b40c06
   blocker_checkpoint_normal_ci: 31018194326
@@ -230,8 +242,24 @@ p5_04:
   blocker_checkpoint_visual_job: 92347730622
   blocker_checkpoint_controlled_job: 92347731389
   blocker_checkpoint_ci_outcome: PASS_CONTROLLED_CORRECTLY_SKIPPED
-  completed_stage: POLICY_VERSION_PUBLISH_PRODUCT_ROOT_PROVEN
-  next_stage: USER_AUTHORIZATION_P5_04_POLICY_VERSION_PUBLISH_REPAIR
+  policy_publish_repair_commit: d21d21ad52efa2a88bc459adc43f97f265715071
+  policy_publish_repair_normal_ci: 31020190868
+  policy_publish_repair_normal_ci_outcome: PASS
+  policy_publish_repair_controlled_gate: 31020886002
+  policy_publish_repair_controlled_job: 92356978480
+  policy_publish_repair_visual_job: 92356978587
+  policy_publish_repair_repository_job: 92356978685
+  policy_publish_repair_companion_outcome: PASS
+  policy_publish_repair_controlled_outcome: FAILED_NEW_CREATE_STAGE_NON_UNIQUE
+  policy_publish_repair_controlled_code: P504_RUNTIME_CREATE
+  policy_publish_repair_controlled_exception_type: HttpStatusError
+  policy_publish_repair_controlled_trace_id: trace-f92a1e065fe35759b261601244cca7d4
+  policy_publish_repair_predecessor_document_outcome: PASS
+  policy_publish_repair_policy_fixture_outcome: PASS
+  create_stage_diagnostic_dispatches_authorized: 0
+  create_stage_product_repairs_authorized_if_proven: 0
+  completed_stage: POLICY_PUBLISH_REPAIR_ADVANCED_GATE_TO_CREATE
+  next_stage: USER_AUTHORIZATION_P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

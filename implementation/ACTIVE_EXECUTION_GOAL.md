@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T15:11:40Z`
+Updated: `2026-08-05T15:39:03Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — P5-04 POLICY VERSION PUBLISH REPAIR AUTHORITY`
+- Mode: `BLOCKED_EXTERNAL — P5-04 CREATE-STAGE DIAGNOSTIC/REPAIR AUTHORITY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact-SHA blocker-state checkpoint:
-  `6b48c5595769bf544df4875093ee76d096b40c06` (pushed; recovery fetch proved
-  local/remote `0 ahead / 0 behind` before this metadata-only synchronization)
+- Latest exact product repair checkpoint:
+  `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
 - Latest complete normal CI:
-  `31018194326` (`PASS`, exact pushed blocker-checkpoint SHA `6b48c55`;
+  `31020190868` (`PASS`, exact repair SHA `d21d21a`;
   repository, E2E, Gitleaks/history and fixed-Linux `62/62` passed)
 - Latest controlled-Site run:
-  `31017098820` (`FAILED_POLICY_VERSION_PUBLISH_ROOT_PROVEN`, exact SHA
-  `217632f`)
+  `31020886002` (`FAILED_NEW_CREATE_STAGE_NON_UNIQUE`, exact SHA `d21d21a`;
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-f92a1e065fe35759b261601244cca7d4`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-05T15:11:40Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`BLOCKED_EXTERNAL — PRODUCT REPAIR AUTHORITY EXHAUSTED`)
+  (`BLOCKED_EXTERNAL — CREATE-STAGE AUTHORITY REQUIRED`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
