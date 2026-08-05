@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T11:24:06Z`
+Updated: `2026-08-05T11:35:29Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`
+- Mode: `IN_PROGRESS — P5-04 FRONTEND WORKSPACE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `ed2a7f87729b2f0e635969948e12f7625b0d52a3` (`0 ahead / 0 behind`)
+  `40e7b7036b9f39a8298b6bb44df9749c75337c5e` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `30996305240` (`PASS`, exact pushed checkpoint SHA `484af5b`)
+  `31001529719` (`PASS`, exact pushed checkpoint SHA `40e7b70`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T11:24:06Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`)
+  (`IN_PROGRESS — FRONTEND WORKSPACE`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -66,14 +66,21 @@ non-visual browser and both secret lanes PASS. Its only failure was the exact
 actuals were accepted byte-for-byte only for those fixed-Linux baselines. No
 workspace pixel, matrix, threshold or product behavior changed.
 
+Repair checkpoint `40e7b7036b9f39a8298b6bb44df9749c75337c5e` passed
+complete unchanged ordinary CI `31001529719`: repository `92291319560`,
+non-visual browser, both secret lanes and fixed-Linux visual `92291319718`
+(`59/59`) all passed. The repository/BFF/OpenAPI stage is closed with evidence
+at `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: commit and push only the reviewed eighteen Linux
-catalog baselines plus evidence/controller truth, then require complete
-unchanged ordinary CI at the exact pushed SHA. Do not begin the frontend
-workspace until that checkpoint passes.
+First incomplete action: implement and test only the P5-04 Project EBOM
+frontend workspace from the audit plan, including strict data source/view
+models, dense revision/line/comparison UI, lifecycle command states and direct
+English/zh/zh-TW coverage. Controlled runtime, P5-05 and Phase 6 remain
+inactive.
 
 ## Historical passing and reusable evidence
 

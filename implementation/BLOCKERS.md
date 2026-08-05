@@ -10,11 +10,10 @@ The former P5-03 pre-dispatch ordinary-CI and response-contract holds are
 resolved. Exact product SHA `302b1e9` passed ordinary CI `30990594281` and the
 final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2; the
 P5-04 Requirement/domain audit and domain/metadata foundation passed. Its
-repository/BFF/OpenAPI candidate passes local Level 1; exact-SHA CI
-`31000405445` passed the complete repository/non-visual/secret lanes and
-isolated only eighteen bottom-status catalog fingerprint baselines. Their
-reviewed CI actuals are accepted byte-for-byte and require one unchanged clean
-CI rerun before the frontend workspace can activate. Production EBOM policy
+repository/BFF/OpenAPI checkpoint `40e7b70` passed exact-SHA ordinary CI
+`31001529719`, including complete repository, non-visual browser, fixed-Linux
+`59/59` and both secret lanes. Only the P5-04 frontend workspace is active;
+controlled runtime, P5-05 and Phase 6 remain inactive. Production EBOM policy
 facts remain scoped Class-B holds rather than a global blocker. Historical
 blocker evidence remains retained below and in `implementation/evidence/phase-5/`.
 

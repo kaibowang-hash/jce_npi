@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T11:24:06Z'
+updated_at: '2026-08-05T11:35:29Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_REPOSITORY_BFF_OPENAPI_VISUAL_REPAIR_CLEAN_CI
-current_task_completed_stage: DOMAIN_METADATA_FOUNDATION_PASS
-current_task_next_stage: P5-04-REPOSITORY-BFF-OPENAPI-VISUAL-REPAIR-CLEAN-CI
+current_task_status: IN_PROGRESS_FRONTEND_WORKSPACE
+current_task_completed_stage: REPOSITORY_BFF_OPENAPI_PASS
+current_task_next_stage: P5-04-FRONTEND-WORKSPACE
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_REPOSITORY_BFF_OPENAPI_VISUAL_REPAIR_CLEAN_CI
+resumed_product_task_status: ACTIVE_FRONTEND_WORKSPACE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -137,8 +137,10 @@ p5_04:
   status: IN_PROGRESS
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
-  completed_stage: DOMAIN_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_BFF_OPENAPI_VISUAL_REPAIR_CLEAN_CI
+  repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
+  repository_normal_ci: 31001529719
+  completed_stage: REPOSITORY_BFF_OPENAPI_PASS
+  next_stage: FRONTEND_WORKSPACE
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

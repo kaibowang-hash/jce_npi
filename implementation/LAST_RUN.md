@@ -1,5 +1,25 @@
 # Last Run
 
+## P5-04 repository/BFF/OpenAPI clean CI PASS; frontend active — 2026-08-05T11:35:29Z
+
+- Exact repair checkpoint
+  `40e7b7036b9f39a8298b6bb44df9749c75337c5e` matched the remote branch and
+  passed complete unchanged ordinary CI `31001529719`.
+- Repository job `92291319560` passed in `7m07s`: complete `verify.sh`,
+  `939/939` tracked Python, `671/671` frontend unit with coverage/build,
+  `288/288` non-visual browser, direct `3,421`-source trilingual coverage,
+  both zero-vulnerability audits and both secret lanes.
+- Visual job `92291319718` passed exact fixed-Linux `59/59` in `2m20s`.
+  Artifact `8928521452` has digest
+  `sha256:9646d1bce9564f3f18347b7a636fc448f3f6853d94b3dbd890a71c08e868d972`.
+- Secret artifact `8928653139` has digest
+  `sha256:95b767273af081b0250a336212f72b75e757dea7e62babea59d6038fdb27a1a4`.
+- The repository/BFF/OpenAPI stage is `PASS — LEVEL 1`; only the P5-04
+  frontend workspace is active next. Controlled runtime, P5-05 and Phase 6
+  remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
+
 ## P5-04 exact-SHA CI isolates only catalog visuals; bounded repair ready — 2026-08-05T11:24:06Z
 
 - Candidate `ed2a7f87729b2f0e635969948e12f7625b0d52a3` matched the remote

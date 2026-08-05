@@ -3,7 +3,7 @@
 Recorded: `2026-08-05T11:06:55Z`
 
 Status:
-`IN_PROGRESS — LOCAL LEVEL 1 PASS; BOUNDED CI VISUAL EVIDENCE REPAIR`
+`PASS — LEVEL 1 REPOSITORY/BFF/OPENAPI`
 
 Requirements:
 
@@ -118,6 +118,28 @@ values match after copying. No matrix, threshold, viewport, scale, language,
 fixture state, product behavior or test is removed or weakened. A complete
 unchanged ordinary CI rerun remains mandatory before this stage can pass.
 
+Repair checkpoint `40e7b7036b9f39a8298b6bb44df9749c75337c5e` then
+matched the remote branch and passed complete unchanged ordinary CI
+`31001529719`:
+
+- repository job `92291319560` passed in `7m07s`, including complete
+  `verify.sh`, all `939/939` tracked Python tests, `671/671` frontend unit
+  tests with coverage/build, `288/288` non-visual browser cases, direct
+  `3,421`-source trilingual coverage, both zero-vulnerability audits and both
+  current/complete-history secret scans;
+- visual job `92291319718` passed the exact fixed-Linux `59/59` matrix in
+  `2m20s` without changing a test or threshold;
+- passing visual artifact `8928521452`, size `5,297,854` bytes, has digest
+  `sha256:9646d1bce9564f3f18347b7a636fc448f3f6853d94b3dbd890a71c08e868d972`;
+  and
+- passing secret-scan artifact `8928653139`, size `6,760` bytes, has digest
+  `sha256:95b767273af081b0250a336212f72b75e757dea7e62babea59d6038fdb27a1a4`.
+
+This exact-SHA PASS closes the repository/BFF/OpenAPI stage. It does not claim
+the frontend workspace, controlled-Site EBOM runtime or P5-04 Level 2 Task
+Gate. Only the frontend workspace may activate next; P5-05 and Phase 6 remain
+inactive.
+
 ## Domain, permission, security, UX and i18n review
 
 - Domain/ownership: NPI One owns only immutable working EBOM revisions and
@@ -156,7 +178,8 @@ unchanged ordinary CI rerun remains mandatory before this stage can pass.
 
 ## Next action
 
-Commit and push only the eighteen reviewed fixed-Linux actuals plus this exact
-evidence/controller truth, then require complete unchanged ordinary CI at the
-new exact SHA. Only that PASS may close the repository/BFF/OpenAPI stage and
-activate the P5-04 frontend workspace. P5-05 and Phase 6 remain inactive.
+Implement only the P5-04 Project EBOM frontend workspace defined in the audit
+plan: strict data-source/view-model contracts, dense industrial revision/
+line/comparison views, exact lifecycle commands and complete English/zh/zh-TW
+states. Do not begin controlled-Site runtime, P5-05 or Phase 6 before this
+frontend checkpoint passes.

@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`
+`IN_PROGRESS — P5-04 FRONTEND WORKSPACE`
 
-Recovery time: `2026-08-05T11:24:06Z`
+Recovery time: `2026-08-05T11:35:29Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`ed2a7f87729b2f0e635969948e12f7625b0d52a3`
+`40e7b7036b9f39a8298b6bb44df9749c75337c5e`
 
 Latest complete ordinary CI:
-`30996305240` (`PASS`, exact pushed checkpoint SHA)
+`31001529719` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -68,6 +68,10 @@ SHA-256
   was reviewed. Every strong delta is `256` pixels in the status bar; no
   product-workspace pixel changed. Its eighteen actuals are accepted
   byte-for-byte only as their corresponding fixed-Linux baselines.
+- Repair checkpoint `40e7b70` then passed complete unchanged ordinary CI
+  `31001529719`: repository `92291319560`, fixed-Linux `92291319718`
+  (`59/59`), complete non-visual browser and both secret lanes all passed.
+  The repository/BFF/OpenAPI stage is closed.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -89,14 +93,15 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Commit and push only the eighteen reviewed fixed-Linux actuals plus their
-evidence/controller truth, confirm the remote SHA, and require complete
-unchanged ordinary CI at that exact SHA. Inspect and repair only a proven
-failure root; do not weaken any Gate. Only exact-SHA CI PASS may mark this
-stage complete and activate the frontend workspace. Production EBOM numbering,
+Implement and test only the P5-04 Project EBOM frontend workspace defined in
+the audited plan: strict data source and view models, dense industrial
+revision/line/comparison views, exact submit/review/release command handling,
+normal/empty/loading/no-permission/read-only/error/conflict/processing states,
+accessibility and direct English/zh/zh-TW coverage. Production EBOM numbering,
 line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
 set, release authority and formal Item conversion remain Class-B holds;
-install no production defaults.
+install no production defaults. Controlled runtime, P5-05 and Phase 6 remain
+inactive.
 
 ## Frozen predecessor invariants
 
