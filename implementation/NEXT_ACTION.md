@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 FRONTEND EXACT-SHA CI`
+`IN_PROGRESS — P5-04 FRONTEND CI EVIDENCE REPAIR`
 
-Recovery time: `2026-08-05T12:25:54Z`
+Recovery time: `2026-08-05T12:47:15Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`0ad13b835c622fce9028dadf29d6fe9b2ee755ca`
+`85fd03fdc936db03b61985e03caced0e0b68f760`
 
 Latest complete ordinary CI:
 `31002288210` (`PASS`, exact pushed checkpoint SHA)
@@ -80,8 +80,21 @@ SHA-256
   `293/293` before the final isolated repairs; the final affected P5-04
   browser/visual run passed `8/8`; TypeScript, full lint, generated artifacts,
   production bundle and `3,508`-source direct `zh`/`zh-TW` coverage passed.
-- The frontend candidate remains uncommitted. Exact-SHA ordinary CI is
-  mandatory before controlled runtime can activate.
+- Frontend candidate `85fd03f` is pushed. Exact-SHA ordinary CI `31006126302`
+  proved `933/933` Python, `690/690` frontend unit, `293/293` complete
+  non-visual browser, build, brand, vulnerability and current-tree secret
+  checks. The repository job failed only its final `137`-commit history scan
+  on two literal synthetic EBOM business-key false positives.
+- Fixed-Linux job `92306322226` passed `38/62` and isolated exactly 24 reviewed
+  evidence deltas: three new P5-04 images, three P5-01 images with only the
+  additive EBOM Project tab, and eighteen P0 images with only the bottom
+  generated-catalog fingerprint changed.
+- Artifact `8930443639`, digest
+  `sha256:9c8dc4b9d3354e77ebb0718829ba00d6bbe93b0283cf58e6000d3e752f35da5b`,
+  passed original-resolution review. Its 24 actuals are copied byte for byte
+  only to their matching Linux baselines. The history repair adds only the two
+  immutable exact fingerprints to the strict reviewed allowlist and removes
+  the lexical false-positive pattern from current fixture code.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -103,13 +116,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one exact P5-04 frontend checkpoint containing only its product,
-tests, translations, governed visual evidence, workflow, trace and controller
-files. Preserve every user-owned local modification and untracked asset.
-Push the development branch, confirm the remote SHA and require complete
-ordinary CI on that exact SHA. Classify any fixed-Linux visual delta from the
-CI artifact without changing thresholds or the matrix. Controlled runtime,
-P5-05 and Phase 6 remain inactive until the clean frontend CI stage passes.
+Create one bounded P5-04 CI-evidence repair checkpoint containing only the 24
+reviewed Linux baselines, two exact historical synthetic fingerprints, their
+strict verifier/test inventory, lexical fixture hardening and synchronized
+evidence/controller files. Preserve every user-owned local modification and
+untracked asset. Push the development branch, confirm the remote SHA and
+require complete unchanged ordinary CI on that exact SHA. Controlled runtime,
+P5-05 and Phase 6 remain inactive until that clean frontend CI stage passes.
 
 ## Frozen predecessor invariants
 

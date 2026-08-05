@@ -1,5 +1,38 @@
 # Last Run
 
+## P5-04 exact-SHA CI roots classified; bounded evidence repair ready — 2026-08-05T12:47:15Z
+
+- Pushed frontend candidate
+  `85fd03fdc936db03b61985e03caced0e0b68f760` and confirmed the remote branch
+  at `0/0` divergence. Ordinary CI `31006126302` ran on that exact SHA.
+- Repository job `92306322154` passed `933/933` tracked Python, `690/690`
+  frontend unit, direct `3,508`-source trilingual coverage, production build,
+  brand and zero-vulnerability checks, complete `293/293` non-visual browser
+  and the current-tree no-leak scan. It failed only the final `137`-commit
+  history scan on two literal synthetic EBOM business-key false positives in
+  immutable commit `85fd03f`.
+- Fixed-Linux visual job `92306322226` passed `38/62` and failed exactly 24
+  reviewed evidence cases: three new P5-04 images, three P5-01 images whose
+  only strong change is the approved additive EBOM Project tab, and eighteen
+  durable P0 images whose only strong change is the bottom generated-catalog
+  fingerprint.
+- Reviewed original-resolution artifact `8930443639`, digest
+  `sha256:9c8dc4b9d3354e77ebb0718829ba00d6bbe93b0283cf58e6000d3e752f35da5b`.
+  Its 24 actuals now match byte for byte only their corresponding Linux
+  baselines. No threshold, viewport, language, state or visual case changed.
+- Added only the two exact historical fingerprints to the strict reviewed
+  allowlist and its fail-closed verifier/test inventory. Current fixture code
+  preserves the same visible synthetic values while separating them from the
+  `engineeringBomKey` property assignment.
+- Focused workspace tests passed `8/8`; strict allowlist verifier tests passed
+  `21/21`; the network-backed Python 3 verifier passed. The local wrapper is
+  unavailable only because this macOS environment has no unversioned `python`
+  executable; clean unchanged exact-SHA CI remains mandatory.
+- P5-04 remains `IN_PROGRESS`. First incomplete action is a scoped
+  commit/push of this evidence repair followed by complete unchanged ordinary
+  CI. Controlled runtime, P5-05 and Phase 6 remain inactive. All user-owned
+  local changes and untracked assets remain preserved and unstaged.
+
 ## P5-04 frontend workspace local Level 1 PASS; exact-SHA CI next — 2026-08-05T12:25:54Z
 
 - Confirmed local/remote branch checkpoint

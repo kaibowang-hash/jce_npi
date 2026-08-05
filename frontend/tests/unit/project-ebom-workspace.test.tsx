@@ -18,6 +18,7 @@ import {
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "ebom-workspace-csrf-token-fixture";
+const expectedEngineeringBomBusinessId = "synthetic.ebom.002";
 
 function enableCommandSession(): void {
   vi.stubGlobal(
@@ -209,7 +210,7 @@ describe("Project EBOM workspace", () => {
     });
     expect(createEbom.mock.calls[0]?.[0]).toBe(ebomProjectId);
     expect(createEbom.mock.calls[0]?.[1]).toMatchObject({
-      engineeringBomKey: "synthetic.ebom.002",
+      engineeringBomKey: expectedEngineeringBomBusinessId,
       title: "Second synthetic EBOM",
       reason: "Initial exact structure",
       policyGlobalId: "75000000-0000-4000-8000-000000000005",

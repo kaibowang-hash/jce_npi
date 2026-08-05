@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T12:25:54Z'
+updated_at: '2026-08-05T12:47:15Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_FRONTEND_CLEAN_CI
-current_task_completed_stage: FRONTEND_LOCAL_LEVEL_1_PASS
-current_task_next_stage: P5-04-FRONTEND-EXACT-SHA-CI
+current_task_status: IN_PROGRESS_FRONTEND_CI_EVIDENCE_REPAIR
+current_task_completed_stage: FRONTEND_EXACT_SHA_CI_CLASSIFIED
+current_task_next_stage: P5-04-FRONTEND-CI-REPAIR-EXACT-SHA
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_FRONTEND_CLEAN_CI
+resumed_product_task_status: ACTIVE_FRONTEND_CI_EVIDENCE_REPAIR
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -141,8 +141,14 @@ p5_04:
   repository_normal_ci: 31001529719
   frontend_recovery_base_head: 0ad13b835c622fce9028dadf29d6fe9b2ee755ca
   frontend_recovery_base_ci: 31002288210
-  completed_stage: FRONTEND_LOCAL_LEVEL_1_PASS
-  next_stage: FRONTEND_EXACT_SHA_CI
+  frontend_candidate: 85fd03fdc936db03b61985e03caced0e0b68f760
+  frontend_candidate_ci: 31006126302
+  frontend_candidate_repository_job: 92306322154
+  frontend_candidate_visual_job: 92306322226
+  frontend_candidate_visual_artifact: 8930443639
+  frontend_candidate_ci_outcome: CLASSIFIED_EVIDENCE_REPAIR_REQUIRED
+  completed_stage: FRONTEND_EXACT_SHA_CI_CLASSIFIED
+  next_stage: FRONTEND_CI_REPAIR_EXACT_SHA
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

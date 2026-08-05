@@ -19,6 +19,7 @@ const eventReleaseId = "75000000-0000-4000-8000-000000000010";
 const hashA = "a".repeat(64);
 const hashB = "b".repeat(64);
 const hashC = "c".repeat(64);
+const syntheticEngineeringBomBusinessId = "synthetic.ebom.001";
 
 const project = {
   globalId: ebomProjectId,
@@ -43,7 +44,7 @@ const policy = {
 
 const summary = {
   globalId: ebomId,
-  engineeringBomKey: "synthetic.ebom.001",
+  engineeringBomKey: syntheticEngineeringBomBusinessId,
   title: "Synthetic assembly EBOM",
   policy: {
     globalId: policy.globalId,

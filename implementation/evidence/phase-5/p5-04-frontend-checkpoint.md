@@ -1,9 +1,9 @@
 # P5-04 Frontend Workspace Checkpoint
 
-Recorded: `2026-08-05T12:25:54Z`
+Recorded: `2026-08-05T12:47:15Z`
 
 Status:
-`PASS — LOCAL LEVEL 1 FRONTEND WORKSPACE; EXACT-SHA ORDINARY CI PENDING`
+`PASS — LOCAL LEVEL 1 FRONTEND WORKSPACE; EXACT-SHA CI ROOTS CLASSIFIED; BOUNDED EVIDENCE REPAIR READY`
 
 Task:
 `P5-04 — EBOM revision and comparison`
@@ -15,6 +15,9 @@ Requirements:
 
 Starting synchronized checkpoint:
 `0ad13b835c622fce9028dadf29d6fe9b2ee755ca` (`0 ahead / 0 behind`)
+
+Pushed frontend candidate:
+`85fd03fdc936db03b61985e03caced0e0b68f760` (`0 ahead / 0 behind`)
 
 Reusable predecessor evidence:
 
@@ -101,7 +104,7 @@ explicitly.
 | Project tab registration and App injection | `project-workspace.test.tsx`; `project-page.test.tsx`; `pages-and-shell.test.tsx`; full unit regression | PASS |
 | translations and generated catalog | generation check; full lint/i18n | `3,508` literal English sources; direct `100%` `zh`/`zh-TW` PASS |
 | browser behavior | new P5-04 live suite; complete non-visual browser suite | P5-04 `5/5`; complete suite `293/293` PASS before the final isolated data-source/component repairs; final affected P5-04 suite `8/8` PASS |
-| visual surface and workflow inventory | exact Darwin P5-04 matrix; fixed-Linux job declaration | local zero-tolerance `3/3` PASS; clean Linux evidence pending exact-SHA CI |
+| visual surface and workflow inventory | exact Darwin P5-04 matrix; fixed-Linux job declaration | local zero-tolerance `3/3` PASS; exact-SHA CI `31006126302` classified `38/62` PASS with 24 reviewed evidence-only baseline deltas |
 | complete frontend | full unit, type, lint, generation and Vite production build | `690/690` units and all static/build checks PASS |
 
 The full unit runner emits the retained expected negative-path
@@ -109,8 +112,49 @@ The full unit runner emits the retained expected negative-path
 pass. The production bundle retains the existing size warning and completes.
 The local display-brand guard is not claimed because user-owned untracked
 `frontend/public` assets are intentionally preserved and excluded from this
-checkpoint; the clean exact-SHA CI remains the authoritative brand and secret
-proof.
+checkpoint. Clean-run CI `31006126302` supplied the authoritative brand proof
+and passed the current-tree secret lane; its complete-history secret lane
+isolated only the two reviewed synthetic fixture fingerprints recorded below.
+
+## Exact-SHA CI classification and bounded repair
+
+Ordinary CI `31006126302` ran against exact pushed SHA
+`85fd03fdc936db03b61985e03caced0e0b68f760`:
+
+- repository job `92306322154` passed `933/933` tracked Python, `690/690`
+  frontend unit, direct `3,508`-source trilingual coverage, production build,
+  brand guard, zero-vulnerability audits, complete `293/293` non-visual
+  browser and the current-tree no-leak scan;
+- that job failed only its final complete PR-history scan after `137` commits
+  because `generic-api-key` classified two literal synthetic EBOM business
+  keys in commit `85fd03f` as secrets; and
+- fixed-Linux visual job `92306322226` passed `38/62` and failed exactly 24
+  reviewed images: three new P5-04 images with no predecessor Linux baseline,
+  three P5-01 images whose only strong change is the approved additive `EBOM`
+  Project tab, and eighteen durable P0 images whose only strong change is the
+  generated catalog fingerprint in the bottom status bar.
+
+Visual artifact `8930443639`, digest
+`sha256:9c8dc4b9d3354e77ebb0718829ba00d6bbe93b0283cf58e6000d3e752f35da5b`,
+was reviewed at original resolution. Its 24 actuals are accepted byte for byte
+only for their corresponding Linux baselines. All 24 copied baseline files
+match the artifact actuals exactly; no visual threshold, viewport, language,
+scale, state or case was changed. The three P5-04 Linux SHA-256 values are:
+
+- English: `28837931db00caea741d01d2377649939c5ba4aa6339c0b51c57966144335b6b`;
+- Simplified Chinese: `bfdff2f16fa473458011ff7fea3db471295989f5299313e5b49cf5ccb6376aa6`;
+- Traditional Chinese: `d740d4b76db3b660c13738c3f8be9973fc2f4f5de668c51e9e4fda212e381f5f`.
+
+The history-scan repair adds only the two exact immutable fingerprints to the
+already strict reviewed allowlist and its fail-closed verifier/test inventory.
+Current fixture code now keeps the same visible synthetic values separate from
+the `engineeringBomKey` field assignment so a future commit does not recreate
+the lexical false positive. Focused workspace tests passed `8/8`; the strict
+allowlist verifier tests passed `21/21`; the network-backed verifier passed.
+The local wrapper could not run because this macOS environment lacks the
+unversioned `python` executable expected by the CI runner; this is an
+environment presentation difference, and the unchanged exact-SHA CI remains
+mandatory.
 
 ## Visual, accessibility and language review
 
@@ -154,8 +198,9 @@ identifier or unit exemptions.
 
 ## First incomplete action
 
-Create and push one exact frontend candidate checkpoint containing only the
-P5-04 product/tests/evidence/controller files, preserving all user-owned local
-changes. Then require complete ordinary CI on that exact SHA. Do not activate
-controlled runtime, P5-05 or Phase 6 before clean CI classifies the fixed-Linux
-visual evidence.
+Create and push one bounded CI-evidence repair checkpoint containing only the
+24 reviewed Linux baselines, two exact historical synthetic fingerprints,
+their strict verifier/test inventory, the lexical fixture hardening and
+synchronized evidence/controller files. Then require complete unchanged
+ordinary CI on that exact SHA. Do not activate controlled runtime, P5-05 or
+Phase 6 before that clean run passes.

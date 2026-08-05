@@ -108,6 +108,14 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "e02ddd5b67b98da6bac429454d063d29ad7f0f95:"
                 "scripts/verify-frappe-runtime.sh:generic-api-key:161"
             ),
+            (
+                "85fd03fdc936db03b61985e03caced0e0b68f760:"
+                "frontend/tests/unit/project-ebom-workspace.test.tsx:generic-api-key:212"
+            ),
+            (
+                "85fd03fdc936db03b61985e03caced0e0b68f760:"
+                "frontend/tests/support/ebom-fixture.ts:generic-api-key:46"
+            ),
         )
         safe = "\n".join(reviewed) + "\n"
         validate_gitleaks_ignore(safe)

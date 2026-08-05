@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T12:25:54Z`
+Updated: `2026-08-05T12:47:15Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 FRONTEND EXACT-SHA CI`
+- Mode: `IN_PROGRESS — P5-04 FRONTEND CI EVIDENCE REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `0ad13b835c622fce9028dadf29d6fe9b2ee755ca` (`0 ahead / 0 behind`)
+  `85fd03fdc936db03b61985e03caced0e0b68f760` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
   `31002288210` (`PASS`, exact pushed checkpoint SHA `0ad13b8`)
 - P5-03 final unchanged controlled-Site Gate:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T12:25:54Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — FRONTEND EXACT-SHA CI`)
+  (`IN_PROGRESS — FRONTEND CI EVIDENCE REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -81,16 +81,33 @@ artifacts, production bundle and `3,508`-source direct `zh`/`zh-TW` coverage
 passed. Evidence is
 `implementation/evidence/phase-5/p5-04-frontend-checkpoint.md`.
 
+Frontend candidate `85fd03f` is pushed. Exact-SHA ordinary CI `31006126302`
+proved `933/933` tracked Python, `690/690` frontend unit, `293/293` complete
+non-visual browser, build, brand, audit and current-tree secret checks. Its
+only repository failure was the final complete-history scan, which classified
+two literal synthetic EBOM business keys in that immutable commit as generic
+API keys. The bounded repair retains only those two exact fingerprints in the
+strict reviewed allowlist and removes the lexical assignment pattern from the
+current fixture/test.
+
+Fixed-Linux job `92306322226` passed `38/62` and isolated exactly 24 evidence
+deltas: three new P5-04 baselines, three P5-01 images with only the approved
+additive EBOM Project tab, and eighteen durable P0 images with only the bottom
+catalog fingerprint changed. Artifact `8930443639`, digest
+`sha256:9c8dc4b9d3354e77ebb0718829ba00d6bbe93b0283cf58e6000d3e752f35da5b`,
+was reviewed at original resolution; its 24 actuals now match only their
+corresponding Linux baselines byte for byte. No threshold or matrix changed.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: create and push one exact P5-04 frontend checkpoint
-containing only its product, tests, translations, visual evidence, workflow,
-trace and controller files while preserving every user-owned local change.
-Require complete ordinary CI on that exact SHA and classify fixed-Linux visual
-evidence without changing the matrix or threshold. Controlled runtime, P5-05
-and Phase 6 remain inactive.
+First incomplete action: create and push one bounded P5-04 CI-evidence repair
+checkpoint containing only the reviewed Linux baselines, two exact historical
+synthetic fingerprints, their strict verifier/test inventory, lexical fixture
+hardening and synchronized evidence/controller files. Require complete
+unchanged ordinary CI on that exact SHA. Controlled runtime, P5-05 and Phase 6
+remain inactive.
 
 ## Historical passing and reusable evidence
 
