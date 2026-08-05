@@ -90,7 +90,11 @@ def ebom_domain_value(factory: Any) -> Any:
     raise AssertionError("Frappe validation must raise.")
 
 
-def ebom_policy_value(document: Any) -> EngineeringBomPolicyVersion:
+def ebom_policy_value(
+    document: Any,
+    *,
+    snapshot_hash_override: object | None = None,
+) -> EngineeringBomPolicyVersion:
     try:
         state = EngineeringBomPolicyState(
             str(_value(document, "publication_state") or "draft")
@@ -147,7 +151,14 @@ def ebom_policy_value(document: Any) -> EngineeringBomPolicyVersion:
         require_effectivity_order=_checkbox(
             _value(document, "require_effectivity_order")
         ),
-        snapshot_hash=str(_value(document, "snapshot_hash") or ""),
+        snapshot_hash=str(
+            (
+                _value(document, "snapshot_hash")
+                if snapshot_hash_override is None
+                else snapshot_hash_override
+            )
+            or ""
+        ),
     )
 
 

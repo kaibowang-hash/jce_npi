@@ -37,6 +37,25 @@ _IDENTITY_FIELDS = (
 )
 
 
+def _domain_snapshot_hash(
+    document: object,
+    previous: object | None,
+    state: EngineeringBomPolicyState,
+) -> str:
+    current_hash = str(document.get("snapshot_hash") or "")
+    if previous is None or state is not EngineeringBomPolicyState.PUBLISHED:
+        return current_hash
+    prior_state = str(previous.get("publication_state") or "")
+    prior_hash = str(previous.get("snapshot_hash") or "")
+    if (
+        prior_state == EngineeringBomPolicyState.DRAFT.value
+        and current_hash
+        and current_hash == prior_hash
+    ):
+        return ""
+    return current_hash
+
+
 class NPIEBOMPolicyVersion(Document):
     """Administrative draft that becomes an immutable synthetic EBOM policy."""
 
@@ -89,7 +108,12 @@ class NPIEBOMPolicyVersion(Document):
                 _("Enable the EBOM policy before publishing this version."),
                 frappe.ValidationError,
             )
-        policy = ebom_domain_value(lambda: ebom_policy_value(self))
+        policy = ebom_domain_value(
+            lambda: ebom_policy_value(
+                self,
+                snapshot_hash_override=_domain_snapshot_hash(self, previous, state),
+            )
+        )
         if state is EngineeringBomPolicyState.PUBLISHED:
             validate_internal_ebom_policy_users(
                 (

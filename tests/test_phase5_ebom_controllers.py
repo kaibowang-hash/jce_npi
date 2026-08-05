@@ -34,6 +34,10 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
         "npi_core.documents.frappe_validation",
         "npi_core.ebom.frappe_validation",
         "npi_core.npi_core.doctype.npi_ebom_policy.npi_ebom_policy",
+        (
+            "npi_core.npi_core.doctype.npi_ebom_policy_version"
+            ".npi_ebom_policy_version"
+        ),
         "npi_core.npi_core.doctype.npi_engineering_bom.npi_engineering_bom",
         (
             "npi_core.npi_core.doctype.npi_engineering_bom_revision"
@@ -129,6 +133,10 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
         self.policy_module = importlib.import_module(
             "npi_core.npi_core.doctype.npi_ebom_policy.npi_ebom_policy"
         )
+        self.policy_version_module = importlib.import_module(
+            "npi_core.npi_core.doctype.npi_ebom_policy_version"
+            ".npi_ebom_policy_version"
+        )
         self.root_module = importlib.import_module(
             "npi_core.npi_core.doctype.npi_engineering_bom.npi_engineering_bom"
         )
@@ -182,6 +190,7 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
     def test_policy_and_content_controllers_reject_generic_writes(self) -> None:
         for controller in (
             self.policy_module.NPIEBOMPolicy(),
+            self.policy_version_module.NPIEBOMPolicyVersion(),
             self.root_module.NPIEngineeringBOM(),
             self.revision_module.NPIEngineeringBOMRevision(),
             self.line_module.NPIEngineeringBOMLine(),
@@ -190,6 +199,57 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
                 self.PermissionError
             ):
                 controller.before_insert()
+
+    def test_policy_publish_uses_only_exact_prior_draft_hash_as_server_owned(
+        self,
+    ) -> None:
+        draft_hash = "a" * 64
+        prior_draft = StubDocument(
+            {
+                "publication_state": "draft",
+                "snapshot_hash": draft_hash,
+            }
+        )
+        current = StubDocument({"snapshot_hash": draft_hash})
+
+        self.assertEqual(
+            self.policy_version_module._domain_snapshot_hash(
+                current,
+                prior_draft,
+                self.policy_version_module.EngineeringBomPolicyState.PUBLISHED,
+            ),
+            "",
+        )
+
+        current.snapshot_hash = "b" * 64
+        self.assertEqual(
+            self.policy_version_module._domain_snapshot_hash(
+                current,
+                prior_draft,
+                self.policy_version_module.EngineeringBomPolicyState.PUBLISHED,
+            ),
+            "b" * 64,
+        )
+
+        current.snapshot_hash = draft_hash
+        prior_draft.publication_state = "published"
+        self.assertEqual(
+            self.policy_version_module._domain_snapshot_hash(
+                current,
+                prior_draft,
+                self.policy_version_module.EngineeringBomPolicyState.PUBLISHED,
+            ),
+            draft_hash,
+        )
+        prior_draft.publication_state = "draft"
+        self.assertEqual(
+            self.policy_version_module._domain_snapshot_hash(
+                current,
+                prior_draft,
+                self.policy_version_module.EngineeringBomPolicyState.DRAFT,
+            ),
+            draft_hash,
+        )
 
     def test_lifecycle_event_and_receipt_use_operation_specific_scopes(self) -> None:
         lifecycle = self.lifecycle_module.NPIEBOMRevisionLifecycle()
