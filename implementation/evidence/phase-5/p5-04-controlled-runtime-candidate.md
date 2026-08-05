@@ -349,3 +349,12 @@ Single user action required: explicitly authorize one additional bounded P5-04
 product-root repair round, limited to this policy-version draft-to-published
 prior-snapshot-hash defect, affected tests, complete ordinary CI and one final
 unchanged controlled-Site Gate. P5-05 and Phase 6 remain inactive.
+
+The blocker-state checkpoint
+`6b48c5595769bf544df4875093ee76d096b40c06` is pushed with local/remote
+`0 ahead / 0 behind`. Exact-SHA ordinary CI `31018194326` passed repository
+job `92347730660`, including complete verification, E2E, Gitleaks and branch
+history, and fixed-Linux visual job `92347730622` passed `62/62`; controlled
+job `92347731389` was correctly skipped. This seals only the truthful
+`BLOCKED_EXTERNAL` evidence. It does not authorize or implement the product
+repair and does not consume the reserved final unchanged controlled-Site Gate.

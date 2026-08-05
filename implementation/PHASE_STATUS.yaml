@@ -1,7 +1,7 @@
 version: '1.2'
 overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-05T14:56:54Z'
+updated_at: '2026-08-05T15:11:40Z'
 authorization: automatic_transition_after_pass
 execution_hold: P5_04_POLICY_VERSION_PUBLISH_PRODUCT_REPAIR_AUTHORITY
 current_task: P5-04
@@ -224,6 +224,12 @@ p5_04:
   proven_product_root: EBOM_POLICY_PUBLISH_PASSES_PRIOR_DRAFT_HASH_TO_PUBLISHED_DOMAIN_RECONSTRUCTION
   proven_product_root_repairs_authorized: 0
   p5_01_additional_authority_transferable: false
+  blocker_checkpoint: 6b48c5595769bf544df4875093ee76d096b40c06
+  blocker_checkpoint_normal_ci: 31018194326
+  blocker_checkpoint_repository_job: 92347730660
+  blocker_checkpoint_visual_job: 92347730622
+  blocker_checkpoint_controlled_job: 92347731389
+  blocker_checkpoint_ci_outcome: PASS_CONTROLLED_CORRECTLY_SKIPPED
   completed_stage: POLICY_VERSION_PUBLISH_PRODUCT_ROOT_PROVEN
   next_stage: USER_AUTHORIZATION_P5_04_POLICY_VERSION_PUBLISH_REPAIR
   scoped_holds:

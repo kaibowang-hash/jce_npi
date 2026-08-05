@@ -1,10 +1,18 @@
 # Blockers
 
-Updated: `2026-08-05T14:10:59Z`
+Updated: `2026-08-05T15:11:40Z`
 
 ## Active hard blockers
 
-None.
+`P5-04-POLICY-VERSION-PUBLISH-PRODUCT-REPAIR-AUTHORITY`
+
+The authoritative blocker record is the final section below. Blocker
+checkpoint `6b48c5595769bf544df4875093ee76d096b40c06` is pushed and exact-SHA
+ordinary CI `31018194326` passed repository/E2E/Gitleaks/history and the
+fixed-Linux `62/62` matrix; the controlled job was correctly skipped. No safe
+product repair or controlled dispatch remains under current authority.
+
+Historical resolved context follows.
 
 The former P5-03 pre-dispatch ordinary-CI and response-contract holds are
 resolved. Exact product SHA `302b1e9` passed ordinary CI `30990594281` and the
@@ -28,9 +36,10 @@ a global blocker. Historical blocker evidence remains retained below and in
 
 The P5-03 evidence/controller checkpoint `5676f79` and P5-04 audit checkpoint
 `0eb10a8` passed complete ordinary CI `30992850240` and `30993437267`
-respectively. No Hard Blocker or diagnostic activation exists.
+respectively. No Hard Blocker or diagnostic activation existed at that
+historical checkpoint.
 
-## Active diagnostic progress
+## Resolved diagnostic progress
 
 `P5-04-CONTROLLED-RUNTIME-POLICY-FIXTURE-BOUNDARY`
 

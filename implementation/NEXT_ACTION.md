@@ -3,16 +3,17 @@
 Status:
 `BLOCKED_EXTERNAL — P5-04 POLICY VERSION PUBLISH REPAIR AUTHORITY`
 
-Recovery time: `2026-08-05T14:56:54Z`
+Recovery time: `2026-08-05T15:11:40Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
-Latest pushed recovery checkpoint:
-`217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6`
+Latest sealed blocker-state checkpoint:
+`6b48c5595769bf544df4875093ee76d096b40c06`
 
 Latest complete ordinary CI:
-`31016624361` (`PASS`, exact pushed checkpoint SHA)
+`31018194326` (`PASS`, exact pushed blocker-checkpoint SHA; repository, E2E,
+Gitleaks/history and fixed-Linux `62/62` passed)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -36,8 +37,9 @@ SHA-256
 - Final workflow `30991177478` passed the unchanged controlled Document
   runtime, two migrations, exact baseline/Gate/dependency/impact/review flow,
   replay/conflict, route recovery and bounded cleanup.
-- The historical P5-03 diagnostic and blocker evidence remains retained; there
-  is no active Hard Blocker.
+- The historical P5-03 diagnostic and blocker evidence remains retained and
+  resolved; the active Hard Blocker is limited to P5-04 product-repair
+  authority.
 - P5-04 is the only active task. P5-05 and Phase 6 remain inactive.
 - The P5-04 bounded Requirement/domain audit passed and is recorded in
   `implementation/evidence/phase-5/p5-04-plan.md`.

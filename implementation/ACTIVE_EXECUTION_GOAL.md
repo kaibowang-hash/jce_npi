@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T14:56:54Z`
+Updated: `2026-08-05T15:11:40Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
@@ -8,10 +8,12 @@ Updated: `2026-08-05T14:56:54Z`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest pushed checkpoint and remote HEAD:
-  `217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6` (`0 ahead / 0 behind`)
+- Latest exact-SHA blocker-state checkpoint:
+  `6b48c5595769bf544df4875093ee76d096b40c06` (pushed; recovery fetch proved
+  local/remote `0 ahead / 0 behind` before this metadata-only synchronization)
 - Latest complete normal CI:
-  `31016624361` (`PASS`, exact pushed checkpoint SHA `217632f`)
+  `31018194326` (`PASS`, exact pushed blocker-checkpoint SHA `6b48c55`;
+  repository, E2E, Gitleaks/history and fixed-Linux `62/62` passed)
 - Latest controlled-Site run:
   `31017098820` (`FAILED_POLICY_VERSION_PUBLISH_ROOT_PROVEN`, exact SHA
   `217632f`)
@@ -196,7 +198,8 @@ Hard Blocker. No product fix or further controlled dispatch is authorized.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
-P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
+P5-05 and Phase 6 remain inactive. The policy-version publication repair
+authority is the active controller-defined Hard Blocker.
 
 Single action required from the user: explicitly authorize one additional
 bounded P5-04 product-root repair round for only the policy-version

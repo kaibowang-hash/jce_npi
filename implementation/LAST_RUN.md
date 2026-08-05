@@ -1,5 +1,21 @@
 # Last Run
 
+## P5-04 blocker checkpoint sealed by exact-SHA ordinary CI — `BLOCKED_EXTERNAL` — 2026-08-05T15:11:40Z
+
+- Blocker-state checkpoint
+  `6b48c5595769bf544df4875093ee76d096b40c06` is pushed; recovery fetch proved
+  local/remote `0 ahead / 0 behind` before this metadata-only synchronization.
+- Exact-SHA ordinary CI `31018194326` passed: repository job `92347730660`
+  completed verification, E2E, Gitleaks and branch-history scanning; fixed-Linux
+  visual job `92347730622` passed unchanged `62/62`; controlled job
+  `92347731389` was correctly skipped.
+- This seals only truthful controller/evidence state. The uniquely proved
+  P5-04 policy-version draft-to-published prior-hash defect remains unfixed;
+  no product code or controlled-Site dispatch is permitted without one explicit
+  bounded P5-04 product-root repair authorization.
+- The additional P5-01 checkout authority remains unused and non-transferable.
+  The reserved final unchanged controlled-Site Gate remains unconsumed.
+
 ## P5-04 policy publication product root proved; five-round authority exhausted — `BLOCKED_EXTERNAL` — 2026-08-05T14:56:54Z
 
 - Diagnostic checkpoint `217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6`
