@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-05T13:38:32Z`
+Updated: `2026-08-05T14:10:59Z`
 
 ## Active hard blockers
 
@@ -14,12 +14,14 @@ repository/BFF/OpenAPI stage passed; checkpoint `40e7b70` passed exact-SHA
 ordinary CI `31001529719`. Controller checkpoint `0ad13b8` then passed
 ordinary CI `31002288210`. Frontend repair checkpoint `0c344fe` passed complete
 ordinary CI `31008027534`, including fixed-Linux `62/62` and both secret lanes.
-The controlled-runtime harness passes local Level 1. Candidate `b74511e`
-passed product/static/E2E, current-tree secret and fixed-Linux `62/62`; its
-only ordinary-CI failure is one exact synthetic query-label false positive in
-the immutable full-history scan. The bounded exact-fingerprint/current-source
-repair is normal Gate work, not a blocker. The controlled Site has not run.
-P5-05 and Phase 6 remain
+The controlled-runtime harness passed local Level 1. Candidate `b74511e`
+isolated one immutable history-scan false positive; repair `bc81d46` then
+passed complete ordinary CI `31011531101`, including fixed-Linux `62/62` and
+both secret lanes. Controlled run `31013199095` revalidated the unchanged
+P5-01/02/03 Document runtime, then proved that the P5-04 verifier incorrectly
+used generic policy REST CRUD against controllers that correctly require the
+closed admin write context. The bounded fixture-only correction is normal
+Gate work, not a product repair or Hard Blocker. P5-05 and Phase 6 remain
 inactive. Production EBOM policy facts remain scoped Class-B holds rather than
 a global blocker. Historical blocker evidence remains retained below and in
 `implementation/evidence/phase-5/`.
@@ -30,7 +32,16 @@ respectively. No Hard Blocker or diagnostic activation exists.
 
 ## Active diagnostic progress
 
-None.
+`P5-04-CONTROLLED-RUNTIME-POLICY-FIXTURE-BOUNDARY`
+
+Controlled run `31013199095`, job `92330431845`, passed the predecessor
+Document runtime and stopped at P5-04 policy provisioning. Code cross-review
+uniquely proves that the verifier's generic REST write conflicts with the
+intentional `ebom_policy_write()` guard. The local repair changes only the
+allowlisted fixed-Bench fixture boundary and affected contract tests; product
+API, permissions, Schema, ownership and transactions remain unchanged. It
+requires exact-SHA ordinary CI and the retained final unchanged controlled
+Gate. This is not a Hard Blocker and consumes no product-root repair round.
 
 ## Resolved hard blockers
 

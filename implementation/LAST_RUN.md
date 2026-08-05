@@ -1,5 +1,42 @@
 # Last Run
 
+## P5-04 controlled Site proves verifier policy-boundary root; bounded fixture repair passes locally — 2026-08-05T14:10:59Z
+
+- History-scan repair checkpoint
+  `bc81d468b12cc959e4761a593c451cf8785914b2` passed complete ordinary CI
+  `31011531101`: repository `92324678678` passed `verify.sh`, complete browser,
+  current-tree and complete-history secret scans; fixed-Linux visual
+  `92324678452` passed `62/62`.
+- Manual controlled run `31013199095` was pinned to that exact SHA. Bench,
+  fixed Frappe commit, disposable Site, two migrations and cleanup passed.
+  The unchanged P5-01/02/03 Document runtime and every route-disable/recovery
+  probe passed before P5-04 began.
+- Companion repository job `92330432221` and fixed-Linux visual job
+  `92330432419` both passed; only controlled job `92330431845` failed.
+- P5-04 stopped at synthetic policy root provisioning. The verifier used
+  generic REST CRUD even though both policy controllers correctly require the
+  closed `ebom_policy_write()` administration context. Its assertion emitted
+  a verifier traceback instead of the claimed sanitized tuple. This uniquely
+  proves a verifier/fixture boundary defect, not a product root.
+- The bounded repair removes only generic policy CRUD from the verifier and
+  provisions the disposable synthetic policy through an allowlisted fixed
+  Bench fixture under the existing guarded admin context. It does not change
+  product API, permission, Schema, ownership, transaction, policy or PASS
+  rules, and consumes no product repair round.
+- Runtime-verifier tests passed `11/11`; all P5-04 EBOM suites passed `54/54`;
+  the retained Document runtime contract passed `35/35`; complete tracked
+  Python passed `950/950`; compilation and `git diff --check` passed.
+- The local complete wrapper stopped at its toolchain preflight because this
+  host exposes Node `24.2.0` / npm `11.3.0` instead of the pinned Node
+  `24.18.0` / npm `11.16.0`; no wrapper test started or failed. Exact-SHA CI
+  `31011531101` remains the complete fixed-toolchain predecessor, and the
+  repair checkpoint must pass a new complete exact-SHA CI before dispatch.
+- First incomplete action is the scoped repair checkpoint commit/push and
+  complete ordinary CI on its exact SHA, followed by the retained final
+  unchanged controlled-Site Gate. P5-05 and Phase 6 remain inactive. The
+  user's additional P5-01 checkout authorization is not consumed because
+  P5-01 remains sealed and passed unchanged in this controlled run.
+
 ## P5-04 candidate CI isolates one synthetic history-scan match; bounded repair ready — 2026-08-05T13:38:32Z
 
 - Pushed controlled-runtime candidate

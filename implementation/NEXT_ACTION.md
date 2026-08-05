@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CI REPAIR`
+`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME FIXTURE REPAIR`
 
-Recovery time: `2026-08-05T13:38:32Z`
+Recovery time: `2026-08-05T14:10:59Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`b74511ea084a6b87604c861360fcb8004b645892`
+`bc81d468b12cc959e4761a593c451cf8785914b2`
 
 Latest complete ordinary CI:
-`31008027534` (`PASS`, exact pushed checkpoint SHA)
+`31011531101` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -121,6 +121,23 @@ SHA-256
   allowlist/verifier/test inventory and separates the current synthetic query
   label from its `query_key` keyword assignment. Focused checks passed `30/30`
   and the network-backed pinned verifier passed.
+- Repair checkpoint `bc81d46` passed complete unchanged ordinary CI
+  `31011531101`: repository job `92324678678` passed `verify.sh`, complete
+  browser and both secret lanes; fixed-Linux visual job `92324678452` passed
+  `62/62`. Manual controlled run `31013199095` was pinned to that exact SHA.
+- In that controlled run, the unchanged P5-01/02/03 Document runtime and every
+  route-disable/recovery probe passed. P5-04 then stopped before EBOM creation
+  because the verifier attempted generic REST writes against policy
+  controllers that correctly require the closed `ebom_policy_write()` admin
+  boundary. The failed job exposed a verifier traceback instead of the claimed
+  sanitized diagnostic tuple; this is a verifier/fixture root, not a product
+  root and does not consume a product repair round.
+- The bounded repair removes only the verifier's generic policy CRUD and
+  provisions the visibly synthetic disposable-Site policy through one
+  allowlisted fixed-Bench fixture using the existing guarded admin context.
+  It does not change product API, permission, Schema, ownership, transaction
+  or policy rules. Focused EBOM passed `54/54`, the retained Document runtime
+  contract passed `35/35`, and complete tracked Python passed `950/950`.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -142,14 +159,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one bounded P5-04 history-scan repair checkpoint containing only the
-exact immutable fingerprint, strict verifier/test inventory, current fixture
-lexical hardening and synchronized evidence/controller files. Preserve every
-user-owned local modification and untracked asset. Push the development
-branch, confirm the remote SHA and require complete unchanged ordinary CI on
-that exact SHA. Only then dispatch one controlled Site run; repair only a
-uniquely proven product root within the controller budget. P5-05 and Phase 6
-remain inactive.
+Create one bounded P5-04 policy-fixture repair checkpoint containing only the
+proven verifier boundary correction, affected tests and synchronized
+evidence/controller files. Preserve every user-owned local modification and
+untracked asset. Push the development branch, confirm the remote SHA and
+require complete unchanged ordinary CI on that exact SHA. Only then run the
+retained final unchanged controlled-Site Gate. No product repair is authorized
+or needed by this root; P5-05 and Phase 6 remain inactive.
 
 ## Frozen predecessor invariants
 

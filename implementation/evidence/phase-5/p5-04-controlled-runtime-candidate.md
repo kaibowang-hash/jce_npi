@@ -170,3 +170,72 @@ complete unchanged ordinary CI on the repair SHA; only then dispatch one
 controlled Site run. If that run fails, classify the exact safe stage and
 repair only a uniquely proven product root within the controller budget.
 P5-05 and Phase 6 remain inactive.
+
+## Exact-SHA controlled run and proven fixture-boundary repair
+
+History-scan repair checkpoint
+`bc81d468b12cc959e4761a593c451cf8785914b2` passed complete unchanged
+ordinary CI `31011531101`:
+
+- repository job `92324678678` passed `verify.sh`, complete browser,
+  current-tree Gitleaks and the complete branch-history scan;
+- fixed-Linux visual job `92324678452` passed `62/62`; and
+- controlled runtime job `92324679241` remained correctly skipped.
+
+Manual controlled run `31013199095` was pinned to exact SHA `bc81d46`.
+Controlled job `92330431845` proved:
+
+- exact Bench tools, pinned Frappe commit, disposable Site, both migrations
+  and cleanup passed;
+- the complete unchanged P5-01/02/03 Document runtime and its three
+  route-disable/recovery cycles passed; and
+- P5-04 stopped before EBOM creation at synthetic policy provisioning.
+
+The companion repository job `92330432221` passed `verify.sh`, complete E2E
+and current-tree Gitleaks, and fixed-Linux visual job `92330432419` passed
+`62/62`. The workflow conclusion is failure only because the controlled job
+failed; the workflow-dispatch event correctly skipped the PR-only complete
+history scan already passed by ordinary CI `31011531101`.
+
+The failed verifier used generic REST create/update for `NPI EBOM Policy` and
+`NPI EBOM Policy Version`. Both controllers intentionally require the closed
+`ebom_policy_write()` administration context and therefore correctly rejected
+that generic write. The verifier assertion then emitted a Python traceback
+instead of the documented sanitized diagnostic triple. Direct comparison of
+the controlled log, verifier call site and both guarded controllers uniquely
+proves a verifier/fixture boundary defect; no product root, permission defect
+or business-rule change is implicated.
+
+The bounded repair:
+
+- removes only the generic policy REST create/update calls from the verifier;
+- adds one allowlisted fixed-Bench fixture that validates the exact disposable
+  Site, fixture namespace, retained Project and enabled internal actor;
+- creates and publishes only the visibly synthetic policy under the existing
+  `ebom_policy_write()` context without `ignore_permissions`, raw SQL or core
+  changes;
+- maps any fixture subprocess or result-shape failure to only the allowlisted
+  fixture stage, a validated fixed exception type and the exact deterministic
+  fixture trace ID, without forwarding stderr, traceback or response content;
+- commits on success and rolls back on failure; and
+- keeps every product API, permission, DocType, ownership, transaction,
+  lifecycle, idempotency and PASS rule unchanged.
+
+Affected verification after the repair:
+
+- runtime-verifier contract: `11/11` PASS;
+- complete P5-04 EBOM suites: `54/54` PASS;
+- retained Document runtime contract: `35/35` PASS;
+- complete tracked Python: `950/950` PASS;
+- Python compilation and `git diff --check`: PASS.
+
+The local complete wrapper did not start its test body because the host has
+Node `24.2.0` / npm `11.3.0`, while the repository requires Node `24.18.0` /
+npm `11.16.0`. This is a preflight environment mismatch, not a test failure.
+Complete fixed-toolchain CI `31011531101` remains the predecessor, and the
+repair checkpoint requires a new complete exact-SHA CI before any final Gate.
+
+This is behavior-neutral verifier/fixture repair and consumes no product-root
+repair round. The next action is one scoped checkpoint, complete unchanged
+ordinary CI on its exact SHA and then the retained final unchanged
+controlled-Site Gate. P5-05 and Phase 6 remain inactive.

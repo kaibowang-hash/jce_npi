@@ -116,6 +116,8 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         trace_id = "trace-" + ("a" * 32)
         expected_codes = {
             "P504_RUNTIME_EMPTY_WORKSPACE",
+            "P504_RUNTIME_POLICY_FIXTURE",
+            "P504_RUNTIME_SCHEMA_FIXTURE",
             "P504_RUNTIME_GUEST_AUTHORIZATION",
             "P504_RUNTIME_UNRELATED_AUTHORIZATION",
             "P504_RUNTIME_CREATE",
@@ -232,6 +234,55 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('environment.pop(variable, None)', self.source)
         self.assertNotIn("frappe.db.set_value", self.source)
         self.assertNotIn("frappe.db." + "sql(", self.source)
+
+    def test_policy_fixture_uses_closed_admin_boundary_without_raw_rest(self) -> None:
+        self.assertIn(
+            '"provision_ebom_runtime_policy": provision_ebom_runtime_policy',
+            self.source,
+        )
+        self.assertIn("with ebom_policy_write():", self.source)
+        self.assertIn("frappe.db.commit()", self.source)
+        self.assertIn("frappe.db.rollback()", self.source)
+        self.assertNotIn("create_resource(", self.source)
+        self.assertNotIn("update_resource(", self.source)
+        self.assertNotIn("ignore_" + "permissions", self.source)
+
+    def test_policy_fixture_result_is_exact_and_actor_bound(self) -> None:
+        module = self.module
+        project_id = "10000000-0000-4000-8000-000000000001"
+        result = {
+            "fixtureRunId": module.FIXTURE_RUN_ID,
+            "policyGlobalId": module.POLICY_ID,
+            "policyVersionKey": module.POLICY_VERSION_KEY,
+            "publicationState": "published",
+            "snapshotHash": "a" * 64,
+        }
+        with patch.object(module, "run_bench_fixture", return_value=result) as call:
+            policy_hash = module.ensure_policy(project_id=project_id)
+        self.assertEqual(policy_hash, "a" * 64)
+        call.assert_called_once_with(
+            "provision_ebom_runtime_policy",
+            {
+                "fixture_run_id": module.FIXTURE_RUN_ID,
+                "project_id": project_id,
+                "actor_user_id": module.ACTOR_USER,
+            },
+        )
+        with patch.object(
+            module,
+            "run_bench_fixture",
+            return_value={"snapshotHash": "sensitive invalid result"},
+        ), self.assertRaises(module.RuntimeStageFailure) as failure:
+            module.ensure_policy(project_id=project_id)
+        self.assertEqual(
+            failure.exception.code,
+            "P504_RUNTIME_POLICY_FIXTURE",
+        )
+        self.assertEqual(
+            failure.exception.exception_type,
+            "ResponseShapeError",
+        )
+        self.assertRegex(failure.exception.trace_id, r"^trace-[a-f0-9]{32}$")
 
     def test_runtime_shell_migrates_twice_and_restores_p504_switch(self) -> None:
         required_fragments = (

@@ -9,7 +9,7 @@ import sys
 import urllib.request
 from pathlib import Path
 from typing import Any
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 import verify_document_runtime as document_runtime
 from verify_frappe_runtime import (
@@ -23,10 +23,8 @@ from verify_frappe_runtime import (
 )
 from verify_project_runtime import (
     bootstrap_csrf,
-    create_resource,
     get_resource,
     list_resources,
-    update_resource,
 )
 
 
@@ -92,6 +90,8 @@ _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _RUNTIME_STAGE_CODES = frozenset(
     {
         "P504_RUNTIME_EMPTY_WORKSPACE",
+        "P504_RUNTIME_POLICY_FIXTURE",
+        "P504_RUNTIME_SCHEMA_FIXTURE",
         "P504_RUNTIME_GUEST_AUTHORIZATION",
         "P504_RUNTIME_UNRELATED_AUTHORIZATION",
         "P504_RUNTIME_CREATE",
@@ -301,86 +301,30 @@ def transition_payload(
 
 
 def ensure_policy(
-    administrator,
-    base_url: str,
-    csrf_token: str,
     *,
     project_id: str,
 ) -> str:
-    roots = list_resources(
-        administrator,
-        base_url,
-        "NPI EBOM Policy",
-        filters=[["global_id", "=", POLICY_ID]],
-        fields=["global_id"],
-    )
-    require(not roots, "Controlled EBOM policy namespace is not fresh")
-    created_root = create_resource(
-        administrator,
-        base_url,
-        "NPI EBOM Policy",
+    fixture = run_bench_fixture(
+        "provision_ebom_runtime_policy",
         {
-            "global_id": POLICY_ID,
-            "tenant_id": TENANT_ID,
-            "project_global_id": project_id,
-            "policy_key": POLICY_KEY,
-            "title": "Synthetic controlled EBOM policy",
-            "enabled": 1,
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "actor_user_id": ACTOR_USER,
         },
-        csrf_token,
     )
-    require(
-        created_root.status in {200, 201}
-        and created_root.body.get("data", {}).get("name") == POLICY_ID,
-        "Controlled EBOM policy root creation failed",
-    )
-    draft = create_resource(
-        administrator,
-        base_url,
-        "NPI EBOM Policy Version",
-        {
-            "ebom_policy": POLICY_ID,
-            "policy_version": POLICY_VERSION,
-            "title": "Synthetic controlled EBOM policy",
-            "publication_state": "draft",
-            "synthetic_namespace": "synthetic_runtime",
-            "line_identity_mode": "caller_supplied_stable_key",
-            "quantity_scale": 3,
-            "maximum_nodes": 20,
-            "engineering_uoms": ["EA"],
-            "attribute_keys": ["material"],
-            "creator_user_ids": [ACTOR_USER],
-            "review_submitter_user_ids": [ACTOR_USER],
-            "reviewer_user_ids": [ACTOR_USER],
-            "release_authority_user_ids": [ACTOR_USER],
-            "require_acyclic_graph": 1,
-            "require_closed_alternates": 1,
-            "require_effectivity_order": 1,
-        },
-        csrf_token,
-    )
-    require(
-        draft.status in {200, 201}
-        and draft.body.get("data", {}).get("name") == POLICY_VERSION_KEY,
-        "Controlled EBOM policy draft creation failed",
-    )
-    published = update_resource(
-        administrator,
-        base_url,
-        "NPI EBOM Policy Version",
-        POLICY_VERSION_KEY,
-        {"publication_state": "published"},
-        csrf_token,
-    )
-    data = published.body.get("data", {})
-    policy_hash = data.get("snapshot_hash")
-    require(
-        published.status == 200
-        and data.get("publication_state") == "published"
+    policy_hash = fixture.get("snapshotHash")
+    if not (
+        fixture.get("policyGlobalId") == POLICY_ID
+        and fixture.get("policyVersionKey") == POLICY_VERSION_KEY
+        and fixture.get("publicationState") == "published"
         and isinstance(policy_hash, str)
-        and _HASH_PATTERN.fullmatch(policy_hash) is not None,
-        "Controlled EBOM policy publication failed",
-    )
+        and _HASH_PATTERN.fullmatch(policy_hash) is not None
+    ):
+        raise RuntimeStageFailure(
+            "P504_RUNTIME_POLICY_FIXTURE",
+            document_runtime.fixture_trace_id("P504_RUNTIME_POLICY_FIXTURE"),
+            exception_type="ResponseShapeError",
+        )
     return policy_hash
 
 
@@ -453,12 +397,7 @@ def run_fresh(
         "verify_ebom_runtime_schema",
         {"fixture_run_id": FIXTURE_RUN_ID},
     )
-    policy_hash = ensure_policy(
-        administrator,
-        base_url,
-        csrf_token,
-        project_id=project_id,
-    )
+    policy_hash = ensure_policy(project_id=project_id)
     actor = login(base_url, ACTOR_USER, fixture_password)
     actor_csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
     document_runtime.create_internal_fixture_user(
@@ -1020,7 +959,115 @@ def verify_ebom_runtime_schema(fixture_run_id: str) -> dict[str, object]:
     }
 
 
+def provision_ebom_runtime_policy(
+    fixture_run_id: str,
+    project_id: str,
+    actor_user_id: str,
+) -> dict[str, object]:
+    """Provision one synthetic policy through the closed admin write boundary."""
+    import frappe
+
+    from npi_core.ebom.frappe_validation import ebom_policy_write
+
+    document_runtime._validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID
+        and project_id == str(UUID(project_id))
+        and actor_user_id == ACTOR_USER,
+        "Controlled EBOM policy fixture identity drifted",
+    )
+    project = frappe.db.get_value(
+        "NPI Engineering Project",
+        project_id,
+        ["global_id", "tenant_id"],
+        as_dict=True,
+    )
+    require(
+        project is not None
+        and str(project.get("global_id")) == project_id
+        and str(project.get("tenant_id")) == TENANT_ID,
+        "Controlled EBOM policy fixture Project is unavailable",
+    )
+    actor = frappe.db.get_value(
+        "User",
+        actor_user_id,
+        ["name", "enabled", "user_type"],
+        as_dict=True,
+    )
+    require(
+        actor is not None
+        and str(actor.get("name")) == actor_user_id
+        and int(actor.get("enabled") or 0) == 1
+        and str(actor.get("user_type")) == "System User",
+        "Controlled EBOM policy fixture actor is unavailable",
+    )
+    require(
+        not frappe.db.exists("NPI EBOM Policy", POLICY_ID)
+        and not frappe.db.exists("NPI EBOM Policy Version", POLICY_VERSION_KEY),
+        "Controlled EBOM policy fixture namespace is not fresh",
+    )
+    with ebom_policy_write():
+        root = frappe.get_doc(
+            {
+                "doctype": "NPI EBOM Policy",
+                "global_id": POLICY_ID,
+                "tenant_id": TENANT_ID,
+                "project_global_id": project_id,
+                "policy_key": POLICY_KEY,
+                "title": "Synthetic controlled EBOM policy",
+                "enabled": 1,
+            }
+        ).insert()
+        version = frappe.get_doc(
+            {
+                "doctype": "NPI EBOM Policy Version",
+                "ebom_policy": POLICY_ID,
+                "policy_version": POLICY_VERSION,
+                "title": "Synthetic controlled EBOM policy",
+                "publication_state": "draft",
+                "synthetic_namespace": "synthetic_runtime",
+                "line_identity_mode": "caller_supplied_stable_key",
+                "quantity_scale": 3,
+                "maximum_nodes": 20,
+                "engineering_uoms": ["EA"],
+                "attribute_keys": ["material"],
+                "creator_user_ids": [actor_user_id],
+                "review_submitter_user_ids": [actor_user_id],
+                "reviewer_user_ids": [actor_user_id],
+                "release_authority_user_ids": [actor_user_id],
+                "require_acyclic_graph": 1,
+                "require_closed_alternates": 1,
+                "require_effectivity_order": 1,
+            }
+        ).insert()
+        version.publication_state = "published"
+        version.save()
+    policy_hash = str(version.snapshot_hash or "")
+    require(
+        root.name == POLICY_ID
+        and version.name == POLICY_VERSION_KEY
+        and version.publication_state == "published"
+        and _HASH_PATTERN.fullmatch(policy_hash) is not None,
+        "Controlled EBOM policy fixture persistence drifted",
+    )
+    frappe.db.commit()
+    return {
+        "fixtureRunId": fixture_run_id,
+        "policyGlobalId": root.name,
+        "policyVersionKey": version.name,
+        "publicationState": version.publication_state,
+        "snapshotHash": policy_hash,
+    }
+
+
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
+    stage_codes = {
+        "provision_ebom_runtime_policy": "P504_RUNTIME_POLICY_FIXTURE",
+        "verify_ebom_runtime_schema": "P504_RUNTIME_SCHEMA_FIXTURE",
+    }
+    require(method in stage_codes, "Controlled EBOM Bench fixture is unavailable")
+    stage_code = stage_codes[method]
+    trace_id = document_runtime.fixture_trace_id(stage_code)
     require(
         BENCH_PATH.is_dir()
         and not BENCH_PATH.is_symlink()
@@ -1056,30 +1103,53 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         capture_output=True,
         text=True,
     )
-    require(
-        completed.returncode == 0,
-        "Controlled EBOM Bench fixture failed",
-    )
+    if completed.returncode != 0:
+        raise RuntimeStageFailure(
+            stage_code,
+            trace_id,
+            exception_type="BenchFixtureError",
+        )
     lines = [line for line in completed.stdout.splitlines() if line.strip()]
-    require(bool(lines), "Controlled EBOM Bench fixture was silent")
-    result = json.loads(lines[-1])
-    require(isinstance(result, dict), "Controlled EBOM Bench fixture result is invalid")
+    if not lines:
+        raise RuntimeStageFailure(
+            stage_code,
+            trace_id,
+            exception_type="ResponseShapeError",
+        )
+    try:
+        result = json.loads(lines[-1])
+    except json.JSONDecodeError as error:
+        raise RuntimeStageFailure(
+            stage_code,
+            trace_id,
+            exception_type="ResponseShapeError",
+        ) from error
+    if not isinstance(result, dict):
+        raise RuntimeStageFailure(
+            stage_code,
+            trace_id,
+            exception_type="ResponseShapeError",
+        )
     return result
 
 
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
-    require(
-        method == "verify_ebom_runtime_schema",
-        "Controlled EBOM Bench fixture is unavailable",
-    )
+    fixtures = {
+        "provision_ebom_runtime_policy": provision_ebom_runtime_policy,
+        "verify_ebom_runtime_schema": verify_ebom_runtime_schema,
+    }
+    require(method in fixtures, "Controlled EBOM Bench fixture is unavailable")
     import frappe
 
     frappe.init(site=SITE_NAME, sites_path=str(BENCH_PATH / "sites"))
     frappe.connect()
     try:
         frappe.set_user("Administrator")
-        result = verify_ebom_runtime_schema(**kwargs)
+        result = fixtures[method](**kwargs)
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
+    except Exception:
+        frappe.db.rollback()
+        raise
     finally:
         frappe.destroy()
 
@@ -1091,7 +1161,10 @@ def main() -> None:
     parser.add_argument("--base-url")
     parser.add_argument(
         "--bench-fixture",
-        choices=("verify_ebom_runtime_schema",),
+        choices=(
+            "provision_ebom_runtime_policy",
+            "verify_ebom_runtime_schema",
+        ),
     )
     parser.add_argument("--fixture-kwargs")
     parser.add_argument(

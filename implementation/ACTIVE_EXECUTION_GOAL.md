@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T13:38:32Z`
+Updated: `2026-08-05T14:10:59Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CI REPAIR`
+- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME FIXTURE REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `b74511ea084a6b87604c861360fcb8004b645892` (`0 ahead / 0 behind`)
+  `bc81d468b12cc959e4761a593c451cf8785914b2` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `31008027534` (`PASS`, exact pushed checkpoint SHA `0c344fe`)
+  `31011531101` (`PASS`, exact pushed checkpoint SHA `bc81d46`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T13:38:32Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — CONTROLLED-RUNTIME CI REPAIR`)
+  (`IN_PROGRESS — CONTROLLED-RUNTIME FIXTURE REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -124,16 +124,38 @@ not a secret. The bounded repair adds only that exact fingerprint to the
 strict reviewed inventory and separates the current label from the lexical
 keyword assignment.
 
+History-repair checkpoint `bc81d468b12cc959e4761a593c451cf8785914b2`
+passed complete unchanged ordinary CI `31011531101`: repository job
+`92324678678` passed `verify.sh`, complete browser and both secret lanes;
+fixed-Linux visual job `92324678452` passed `62/62`.
+
+Manual controlled run `31013199095` was pinned to exact SHA `bc81d46`.
+The unchanged P5-01/02/03 Document runtime and all three route-disable/
+recovery cycles passed. P5-04 then stopped at synthetic policy provisioning:
+the verifier used generic REST CRUD while both policy controllers correctly
+require the closed `ebom_policy_write()` administration context. The failed
+verifier also emitted a traceback instead of the promised sanitized tuple.
+Code/controller cross-validation uniquely proves a verifier/fixture boundary
+root, not a product root; no product repair round is consumed.
+
+The bounded local repair removes only generic policy CRUD from the verifier
+and provisions that visibly synthetic policy through one allowlisted fixed
+Bench fixture using the existing guarded admin context. Product API,
+permission, Schema, ownership, transaction and policy rules are unchanged.
+Focused EBOM passed `54/54`, the retained Document runtime contract passed
+`35/35`, and complete tracked Python passed `950/950`.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: create and push one bounded P5-04 history-scan repair
-checkpoint containing only the exact immutable fingerprint, strict
-verifier/test inventory, current fixture lexical hardening and synchronized
-evidence/controller files. Require complete unchanged ordinary CI on that
-exact SHA before one manual controlled-Site dispatch. P5-05 and Phase 6 remain
-inactive.
+First incomplete action: create and push one bounded P5-04 policy-fixture
+repair checkpoint containing only the proven verifier correction, affected
+tests and synchronized evidence/controller files. Require complete unchanged
+ordinary CI on that exact SHA before the retained final unchanged
+controlled-Site Gate. No P5-01 range is reopened; the user's additional
+P5-01 checkout authorization remains unused because P5-01 is already sealed
+and passed unchanged in run `31013199095`. P5-05 and Phase 6 remain inactive.
 
 ## Historical passing and reusable evidence
 
