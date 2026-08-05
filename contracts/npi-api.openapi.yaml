@@ -16,6 +16,7 @@ tags:
   - { name: Projects }
   - { name: Gates }
   - { name: Documents }
+  - { name: EBOM }
   - { name: Tooling }
   - { name: Trials }
   - { name: Execution }
@@ -2552,6 +2553,239 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/eboms:
+    get:
+      tags: [EBOM]
+      operationId: listEngineeringBoms
+      description: >
+        Lists only Project-authorized NPI-owned EBOM summaries and exact
+        published synthetic policy options. Formal ERPNext Item/MBOM truth is
+        neither queried nor represented.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringBomListResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [EBOM]
+      operationId: createEngineeringBom
+      description: >
+        Atomically creates one stable NPI EBOM identity, immutable first
+        revision and line snapshot, draft lifecycle, audit and actor-bound
+        receipt under one exact published synthetic policy.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-ebom-policy-creator
+      x-transaction-boundary: engineering-bom-root-revision
+      x-audit-operation: ebom.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEngineeringBom" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringBomCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}:
+    get:
+      tags: [EBOM]
+      operationId: getEngineeringBom
+      description: >
+        Returns exact immutable revision/line history, separate lifecycle and
+        append-only events only after Project and EBOM scope authorization.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringBomDetailResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}/revisions:
+    post:
+      tags: [EBOM]
+      operationId: createEngineeringBomRevision
+      description: >
+        Appends one immutable successor from the exact current predecessor and
+        advances the root pointer exactly once; no released/history row is
+        rewritten.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-ebom-policy-creator
+      x-transaction-boundary: engineering-bom-root-revision
+      x-audit-operation: ebom.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEngineeringBomRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringBomCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}:submit-review:
+    post:
+      tags: [EBOM]
+      operationId: submitEngineeringBomReview
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-ebom-policy-review-submitter
+      x-transaction-boundary: engineering-bom-lifecycle
+      x-audit-operation: ebom.submit_review
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitEngineeringBomReview" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringBomCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}:review:
+    post:
+      tags: [EBOM]
+      operationId: reviewEngineeringBomRevision
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-ebom-policy-reviewer
+      x-transaction-boundary: engineering-bom-lifecycle
+      x-audit-operation: ebom.review
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviewEngineeringBomRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringBomCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}:release:
+    post:
+      tags: [EBOM]
+      operationId: releaseEngineeringBomRevision
+      description: >
+        Releases only the exact approved immutable revision after separate
+        policy authority and explicit high-risk confirmation. It creates no
+        formal ERPNext Item, MBOM or execution record.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-ebom-policy-release-authority
+      x-transaction-boundary: engineering-bom-lifecycle
+      x-audit-operation: ebom.release
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReleaseEngineeringBomRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/EngineeringBomCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/eboms/{ebomId}/compare:
+    get:
+      tags: [EBOM]
+      operationId: compareEngineeringBomRevisions
+      description: >
+        Deterministically compares two explicit immutable revisions from the
+        same authorized EBOM. No mutable pointer selector is accepted.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/RequestId"
+        - name: fromRevisionId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: toRevisionId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringBomComparisonResult" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /tooling/{toolingId}/cockpit:
     get:
       tags: [Tooling]
@@ -2776,6 +3010,18 @@ components:
       name: revisionId
       required: true
       description: Immutable Document Revision global_id
+      schema: { type: string, format: uuid }
+    EngineeringBomId:
+      in: path
+      name: ebomId
+      required: true
+      description: Immutable NPI-owned Engineering BOM global_id
+      schema: { type: string, format: uuid }
+    EngineeringBomRevisionId:
+      in: path
+      name: revisionId
+      required: true
+      description: Immutable exact NPI-owned EBOM Revision global_id
       schema: { type: string, format: uuid }
     FileRevisionId:
       in: path
@@ -3422,6 +3668,69 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentBaselineCommand" }
+    EngineeringBomListResult:
+      description: Authorized Project EBOM summaries and exact synthetic policy options
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomList" }
+    EngineeringBomDetailResult:
+      description: Authorized exact EBOM revision, line and lifecycle history
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomDetail" }
+    EngineeringBomCommandResult:
+      description: Exact EBOM/revision after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomCommand" }
+    EngineeringBomComparisonResult:
+      description: Deterministic exact-revision EBOM comparison
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomComparison" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -8106,6 +8415,474 @@ components:
         file: { $ref: "#/components/schemas/DocumentFileMetadata" }
         capabilities:
           $ref: "#/components/schemas/DocumentFileCapabilities"
+    EngineeringBomPolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomPolicyOption:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          version,
+          snapshotHash,
+          key,
+          title,
+          syntheticNamespace,
+          quantityScale,
+          maximumNodes,
+          engineeringUoms,
+          attributeKeys,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        key: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        syntheticNamespace:
+          type: string
+          pattern: "^synthetic_[a-z0-9_.-]+$"
+          maxLength: 32
+        quantityScale: { type: integer, minimum: 0, maximum: 6 }
+        maximumNodes: { type: integer, minimum: 1, maximum: 500 }
+        engineeringUoms:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 16 }
+        attributeKeys:
+          type: array
+          maxItems: 50
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 64 }
+    EngineeringBomLineInput:
+      type: object
+      additionalProperties: false
+      required: [lineKey, engineeringItemId, description, quantity, engineeringUom]
+      properties:
+        lineKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$" }
+        parentLineKey: { type: [string, "null"], maxLength: 64 }
+        engineeringItemId:
+          type: string
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+        description: { type: string, minLength: 1, maxLength: 280 }
+        quantity:
+          oneOf:
+            - { type: string, pattern: "^[0-9]+(?:\\.[0-9]+)?$", maxLength: 64 }
+            - { type: number, exclusiveMinimum: 0 }
+        engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+        alternateForLineKey: { type: [string, "null"], maxLength: 64 }
+        alternateGroupKey: { type: [string, "null"], maxLength: 64 }
+        effectivityStart: { type: [string, "null"], format: date }
+        effectivityEnd: { type: [string, "null"], format: date }
+        attributes:
+          type: object
+          propertyNames: { pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+          additionalProperties: { type: string, maxLength: 280 }
+          maxProperties: 50
+    CreateEngineeringBom:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          engineeringBomKey,
+          title,
+          reason,
+          lines,
+        ]
+      properties:
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        engineeringBomKey:
+          type: string
+          pattern: "^[a-z][a-z0-9._-]{0,63}$"
+        title: { type: string, minLength: 1, maxLength: 140 }
+        reason: { type: string, minLength: 1, maxLength: 280 }
+        effectivityNote: { type: [string, "null"], maxLength: 280 }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/EngineeringBomLineInput" }
+    CreateEngineeringBomRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedEbomVersion,
+          predecessorRevisionId,
+          expectedPredecessorSnapshotHash,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          reason,
+          lines,
+        ]
+      properties:
+        expectedEbomVersion: { type: integer, minimum: 1 }
+        predecessorRevisionId: { type: string, format: uuid }
+        expectedPredecessorSnapshotHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 280 }
+        effectivityNote: { type: [string, "null"], maxLength: 280 }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/EngineeringBomLineInput" }
+    SubmitEngineeringBomReview:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedEbomVersion,
+          expectedRevisionSnapshotHash,
+          expectedLifecycleVersion,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+        ]
+      properties:
+        expectedEbomVersion: { type: integer, minimum: 1 }
+        expectedRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: [string, "null"], maxLength: 280 }
+    ReviewEngineeringBomRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedEbomVersion,
+          expectedRevisionSnapshotHash,
+          expectedLifecycleVersion,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          decision,
+        ]
+      properties:
+        expectedEbomVersion: { type: integer, minimum: 1 }
+        expectedRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        decision: { type: string, enum: [approve, reject] }
+        reason: { type: [string, "null"], maxLength: 280 }
+    ReleaseEngineeringBomRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          expectedEbomVersion,
+          expectedRevisionSnapshotHash,
+          expectedLifecycleVersion,
+          policyGlobalId,
+          policyVersion,
+          policySnapshotHash,
+          confirmed,
+          confirmationIntent,
+        ]
+      properties:
+        expectedEbomVersion: { type: integer, minimum: 1 }
+        expectedRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        confirmed: { type: boolean, const: true }
+        confirmationIntent:
+          { type: string, const: release_exact_ebom_revision }
+    EngineeringBomProject:
+      type: object
+      additionalProperties: false
+      required: [globalId, businessCode, title, lifecycleState, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 280 }
+        lifecycleState: { type: string, minLength: 1, maxLength: 64 }
+        optimisticVersion: { type: integer, minimum: 1 }
+    EngineeringBomPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, create]
+      properties:
+        view: { type: boolean }
+        create: { type: boolean }
+    EngineeringBomRevisionReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, revisionNumber, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, engineeringBomKey, title, policy, optimisticVersion, latestRevision]
+      properties:
+        globalId: { type: string, format: uuid }
+        engineeringBomKey: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        policy: { $ref: "#/components/schemas/EngineeringBomPolicyReference" }
+        optimisticVersion: { type: integer, minimum: 1 }
+        latestRevision:
+          oneOf:
+            - { $ref: "#/components/schemas/EngineeringBomRevisionReference" }
+            - { type: "null" }
+    EngineeringBomLine:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          lineKey,
+          parentLineKey,
+          engineeringItemId,
+          description,
+          quantity,
+          engineeringUom,
+          alternateForLineKey,
+          alternateGroupKey,
+          effectivityStart,
+          effectivityEnd,
+          attributes,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        lineKey: { type: string, minLength: 1, maxLength: 64 }
+        parentLineKey: { type: [string, "null"], maxLength: 64 }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string, minLength: 1, maxLength: 280 }
+        quantity: { type: string, pattern: "^[0-9]+(?:\\.[0-9]+)?$", maxLength: 64 }
+        engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+        alternateForLineKey: { type: [string, "null"], maxLength: 64 }
+        alternateGroupKey: { type: [string, "null"], maxLength: 64 }
+        effectivityStart: { type: [string, "null"], format: date }
+        effectivityEnd: { type: [string, "null"], format: date }
+        attributes:
+          type: object
+          propertyNames: { pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+          additionalProperties: { type: string }
+          maxProperties: 50
+    EngineeringBomLifecycle:
+      type: object
+      additionalProperties: false
+      required: [state, version, lastEventId]
+      properties:
+        state: { type: string, enum: [draft, in_review, approved, released] }
+        version: { type: integer, minimum: 1 }
+        lastEventId: { type: [string, "null"], format: uuid }
+    EngineeringBomLifecycleEvent:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          eventType,
+          fromState,
+          toState,
+          fromVersion,
+          toVersion,
+          actorUserId,
+          decision,
+          reason,
+          confirmationIntent,
+          occurredAt,
+          eventHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        eventType:
+          type: string
+          enum: [review_submitted, review_approved, review_rejected, released]
+        fromState: { type: string, enum: [draft, in_review, approved, released] }
+        toState: { type: string, enum: [draft, in_review, approved, released] }
+        fromVersion: { type: integer, minimum: 1 }
+        toVersion: { type: integer, minimum: 2 }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        decision: { type: [string, "null"], enum: [approve, reject, null] }
+        reason: { type: [string, "null"], maxLength: 280 }
+        confirmationIntent:
+          type: [string, "null"]
+          enum: [release_exact_ebom_revision, null]
+        occurredAt: { type: string, format: date-time }
+        eventHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomCapabilities:
+      type: object
+      additionalProperties: false
+      required: [revise, submitReview, review, release, compare]
+      properties:
+        revise: { type: boolean }
+        submitReview: { type: boolean }
+        review: { type: boolean }
+        release: { type: boolean }
+        compare: { type: boolean }
+    EngineeringBomRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          revisionNumber,
+          snapshotHash,
+          predecessorRevisionId,
+          predecessorSnapshotHash,
+          reason,
+          effectivityNote,
+          policy,
+          quantityScale,
+          lines,
+          createdByUserId,
+          createdAt,
+          lifecycle,
+          events,
+          capabilities,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        predecessorRevisionId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 280 }
+        effectivityNote: { type: [string, "null"], maxLength: 280 }
+        policy: { $ref: "#/components/schemas/EngineeringBomPolicyReference" }
+        quantityScale: { type: integer, minimum: 0, maximum: 6 }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/EngineeringBomLine" }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        lifecycle: { $ref: "#/components/schemas/EngineeringBomLifecycle" }
+        events:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/EngineeringBomLifecycleEvent" }
+        capabilities: { $ref: "#/components/schemas/EngineeringBomCapabilities" }
+    EngineeringBomList:
+      type: object
+      additionalProperties: false
+      required: [project, permissions, policies, items]
+      properties:
+        project: { $ref: "#/components/schemas/EngineeringBomProject" }
+        permissions: { $ref: "#/components/schemas/EngineeringBomPermissions" }
+        policies:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/EngineeringBomPolicyOption" }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/EngineeringBomSummary" }
+    EngineeringBomDetail:
+      type: object
+      additionalProperties: false
+      required: [project, permissions, policy, ebom, revisions]
+      properties:
+        project: { $ref: "#/components/schemas/EngineeringBomProject" }
+        permissions: { $ref: "#/components/schemas/EngineeringBomPermissions" }
+        policy: { $ref: "#/components/schemas/EngineeringBomPolicyOption" }
+        ebom: { $ref: "#/components/schemas/EngineeringBomSummary" }
+        revisions:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/EngineeringBomRevision" }
+    EngineeringBomCommand:
+      type: object
+      additionalProperties: false
+      required: [ebom, revision]
+      properties:
+        ebom: { $ref: "#/components/schemas/EngineeringBomSummary" }
+        revision: { $ref: "#/components/schemas/EngineeringBomRevision" }
+    EngineeringBomDifferenceValue:
+      type: object
+      additionalProperties: false
+      properties:
+        globalId: { type: string, format: uuid }
+        lineKey: { type: string }
+        quantity: { type: string }
+        engineeringItemId: { type: [string, "null"] }
+        alternateForLineKey: { type: [string, "null"] }
+        alternateGroupKey: { type: [string, "null"] }
+        parentLineKey: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        engineeringUom: { type: [string, "null"] }
+        effectivityStart: { type: [string, "null"], format: date }
+        effectivityEnd: { type: [string, "null"], format: date }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+          maxProperties: 50
+    EngineeringBomDifference:
+      type: object
+      additionalProperties: false
+      required: [lineKey, changeType, changedFields, before, after]
+      properties:
+        lineKey: { type: string, minLength: 1, maxLength: 64 }
+        changeType:
+          type: string
+          enum: [added, removed, quantity, substitution, attribute]
+        changedFields:
+          type: array
+          minItems: 1
+          maxItems: 6
+          uniqueItems: true
+          items: { type: string }
+        before:
+          oneOf:
+            - { $ref: "#/components/schemas/EngineeringBomDifferenceValue" }
+            - { type: "null" }
+        after:
+          oneOf:
+            - { $ref: "#/components/schemas/EngineeringBomDifferenceValue" }
+            - { type: "null" }
+    EngineeringBomComparisonSummary:
+      type: object
+      additionalProperties: false
+      required: [added, removed, quantity, substitution, attribute]
+      properties:
+        added: { type: integer, minimum: 0 }
+        removed: { type: integer, minimum: 0 }
+        quantity: { type: integer, minimum: 0 }
+        substitution: { type: integer, minimum: 0 }
+        attribute: { type: integer, minimum: 0 }
+    EngineeringBomComparison:
+      type: object
+      additionalProperties: false
+      required: [ebom, fromRevision, toRevision, identical, summary, changes]
+      properties:
+        ebom: { $ref: "#/components/schemas/EngineeringBomSummary" }
+        fromRevision: { $ref: "#/components/schemas/EngineeringBomRevisionReference" }
+        toRevision: { $ref: "#/components/schemas/EngineeringBomRevisionReference" }
+        identical: { type: boolean }
+        summary: { $ref: "#/components/schemas/EngineeringBomComparisonSummary" }
+        changes:
+          type: array
+          maxItems: 2500
+          items: { $ref: "#/components/schemas/EngineeringBomDifference" }
     ToolingCockpit:
       type: object
       required: [tooling, lifecycle, source]

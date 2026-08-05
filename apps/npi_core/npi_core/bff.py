@@ -12,6 +12,7 @@ from .foundation.errors import (
     DocumentBaselineRoutesDisabled,
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
+    EngineeringBomRoutesDisabled,
     MalformedRequest,
     ProjectCollaborationRoutesDisabled,
 )
@@ -20,6 +21,7 @@ from .request_security import (
     document_baseline_routes_are_disabled,
     document_release_routes_are_disabled,
     document_routes_are_disabled,
+    engineering_bom_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
 )
@@ -83,6 +85,43 @@ _PROJECT_DOCUMENT_BASELINES_ROUTE = re.compile(
 _PROJECT_DOCUMENT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
     r"(?P<document_id>[^/:]+)$"
+)
+_PROJECT_EBOMS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms$"
+)
+_PROJECT_EBOM_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/(?P<ebom_id>[^/:]+)$"
+)
+_EBOM_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+    r"(?P<ebom_id>[^/:]+)/revisions$"
+)
+_EBOM_COMPARE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+    r"(?P<ebom_id>[^/:]+)/compare$"
+)
+_EBOM_COMMAND_ROUTES = (
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+            r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+):submit-review$"
+        ),
+        "npi_core.ebom_api.submit_ebom_review",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+            r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+):review$"
+        ),
+        "npi_core.ebom_api.review_ebom_revision",
+    ),
+    (
+        re.compile(
+            r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+            r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+):release$"
+        ),
+        "npi_core.ebom_api.release_ebom_revision",
+    ),
 )
 _DOCUMENT_CHECK_OUT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/documents/"
@@ -336,6 +375,37 @@ def route_request() -> None:
                 else "npi_core.document_api.create_document"
             )
             route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_EBOMS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.ebom_api.get_eboms"
+                if request.method == "GET"
+                else "npi_core.ebom_api.create_ebom"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _EBOM_COMPARE_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.ebom_api.compare_ebom_revisions"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _EBOM_REVISIONS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.ebom_api.create_ebom_revision"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        for route, candidate in _EBOM_COMMAND_ROUTES:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
+        match = _PROJECT_EBOM_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.ebom_api.get_ebom"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _DOCUMENT_FILE_CAPABILITIES_ROUTE.fullmatch(path)
         if match is not None:
@@ -436,6 +506,9 @@ def route_request() -> None:
     if _p5_03_routes_disabled(command):
         command = "npi_core.bff.document_baseline_routes_disabled"
         route_params = {}
+    if _p5_04_routes_disabled(command):
+        command = "npi_core.bff.engineering_bom_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -522,6 +595,23 @@ def document_baseline_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def engineering_bom_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P5-04 while retaining earlier Phase 5 routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise EngineeringBomRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -548,6 +638,12 @@ def _p5_03_routes_disabled(command: str | None) -> bool:
         "npi_core.document_api.get_document_baselines",
         "npi_core.document_api.create_document_baseline",
     }
+
+
+def _p5_04_routes_disabled(command: str | None) -> bool:
+    return engineering_bom_routes_are_disabled() and (
+        isinstance(command, str) and command.startswith("npi_core.ebom_api.")
+    )
 
 
 def _p5_01_routes_disabled(command: str | None) -> bool:
@@ -654,6 +750,12 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method in {"GET", "POST"} and (
         _PROJECT_DOCUMENTS_ROUTE.fullmatch(path) is not None
         or _PROJECT_DOCUMENT_BASELINES_ROUTE.fullmatch(path) is not None
+        or _PROJECT_EBOMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method == "GET" and (
+        _PROJECT_EBOM_ROUTE.fullmatch(path) is not None
+        or _EBOM_COMPARE_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method == "GET" and (
@@ -670,6 +772,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or any(
             route.fullmatch(path) is not None
             for route, _command in _DOCUMENT_RELEASE_COMMAND_ROUTES
+        )
+    ):
+        return True
+    if method == "POST" and (
+        _EBOM_REVISIONS_ROUTE.fullmatch(path) is not None
+        or any(
+            route.fullmatch(path) is not None
+            for route, _command in _EBOM_COMMAND_ROUTES
         )
     ):
         return True

@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T10:27:46Z`
+Updated: `2026-08-05T11:06:55Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI`
+- Mode: `IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI CLEAN CI`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `a11b37379e462b3a83e75a6b49c6b6b71bb5fadd` (`0 ahead / 0 behind`)
+  `7be6e3fea4dbf376f5543bcf900919107ab3366b` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
   `30996305240` (`PASS`, exact pushed checkpoint SHA `484af5b`)
 - P5-03 final unchanged controlled-Site Gate:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T10:27:46Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI`)
+  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI CLEAN CI`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -49,13 +49,22 @@ Exact-SHA ordinary CI `30996305240` passed the bounded evidence repairs with
 complete repository, `288/288` browser, fixed-Linux `59/59`, zero-vulnerability
 and both no-leak secret lanes. The foundation clean-CI checkpoint is closed.
 
+The bounded repository/BFF/OpenAPI slice now passes local Level 1: complete P5
+Document/EBOM `217/217`, complete tracked Python `939/939`, frontend unit
+`671/671`, TypeScript, lint, production bundle, OpenAPI/YAML, reconciliation,
+direct `3,421`-source trilingual coverage, prohibited-pattern and diff checks.
+Evidence is
+`implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
+The exact candidate is not yet a stage PASS until its pushed SHA passes complete
+ordinary CI.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: implement and test only the P5-04 repository,
-BFF/OpenAPI and authorization/transaction slice defined by the audit plan.
-Do not begin the frontend workspace until that checkpoint passes.
+First incomplete action: commit and push the bounded repository/BFF/OpenAPI
+candidate, then require complete ordinary CI at the exact pushed SHA. Do not
+begin the frontend workspace until that checkpoint passes.
 
 ## Historical passing and reusable evidence
 

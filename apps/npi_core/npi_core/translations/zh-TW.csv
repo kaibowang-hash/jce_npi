@@ -3408,3 +3408,14 @@ EBOM Revision Key,EBOM 修訂版鍵
 Predecessor EBOM Snapshot Hash,前序 EBOM 快照雜湊
 Engineering Effectivity Note,工程生效說明
 EBOM Line Count,EBOM 列數
+The EBOM is unavailable or you do not have access.,EBOM 無法使用，或您沒有存取權限。
+The EBOM command key was already used for different input.,EBOM 命令鍵已用於其他輸入。
+Enter a lowercase SHA-256 value.,輸入小寫 SHA-256 值。
+Enter a bounded text value.,輸入長度受限的文字值。
+Select the required confirmation intent.,選擇所需的確認意圖。
+Enter a valid EBOM line.,輸入有效的 EBOM 列。
+EBOM line fields are invalid.,EBOM 列欄位無效。
+Enter controlled text attributes.,輸入受控文字屬性。
+Enter a supported engineering identity.,輸入支援的工程識別。
+Enter a canonical effectivity date.,輸入規範的生效日期。
+An EBOM with this engineering key already exists.,已存在使用此工程鍵的 EBOM。

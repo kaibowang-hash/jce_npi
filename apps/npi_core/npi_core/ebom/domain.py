@@ -110,6 +110,33 @@ class EngineeringBomStateConflict(NpiProblem):
         )
 
 
+class EngineeringBomUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "EBOM_UNAVAILABLE",
+            _("The EBOM is unavailable or you do not have access."),
+        )
+
+
+class EngineeringBomIdempotencyConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "EBOM_IDEMPOTENCY_CONFLICT",
+            _("The EBOM command key was already used for different input."),
+        )
+
+
+class EngineeringBomIdentityConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "EBOM_IDENTITY_CONFLICT",
+            _("An EBOM with this engineering key already exists."),
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class EngineeringBomPolicyReference:
     global_id: UUID

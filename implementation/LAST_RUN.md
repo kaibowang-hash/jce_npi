@@ -1,5 +1,30 @@
 # Last Run
 
+## P5-04 repository/BFF/OpenAPI local Level 1 PASS; clean CI required — 2026-08-05T11:06:55Z
+
+- Refreshed the remote and confirmed exact starting SHA
+  `7be6e3fea4dbf376f5543bcf900919107ab3366b` at `0/0` divergence; all
+  pre-existing user workspace modifications remain preserved and unstaged.
+- Added Project-first EBOM repository/API/BFF/OpenAPI behavior for exact
+  first/successor immutable revisions, separate lifecycle submit/review/
+  confirmed release, actor-bound replay/conflict and deterministic comparison
+  of two explicit revisions.
+- Closed and bounded all eight public operations, retained the independent
+  P5-04 route switch and introduced no formal Item/MBOM/ERPNext ownership,
+  production policy, raw SQL, permission bypass, fake success or mutable-latest
+  selector.
+- Complete P5 Document/EBOM tests passed `217/217`; complete tracked Python
+  passed `939/939`; Project/Document/EBOM contract smoke passed `33/33`;
+  reconciliation, YAML, generation, compilation, prohibited-pattern and diff
+  checks passed.
+- Frontend TypeScript, complete lint, `671/671` unit tests and production
+  bundle passed. i18n passed `3,421` literal English sources with direct
+  `100%` `zh` and `zh-TW` coverage.
+- Exact pushed-SHA ordinary CI remains mandatory before this stage can pass or
+  the frontend workspace can activate. P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
+
 ## P5-04 foundation clean CI PASS; repository stage active — 2026-08-05T10:27:46Z
 
 - Exact repair checkpoint
