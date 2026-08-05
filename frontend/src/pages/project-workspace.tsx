@@ -8,6 +8,7 @@ import type {
 import { ProjectWorkRequestCancelledError } from "../api/project-work-data-source";
 import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
 import type { DocumentDataSource } from "../api/document-data-source";
+import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -48,6 +49,7 @@ import {
   type ProjectGovernanceSection,
 } from "./project-governance-workspace";
 import { ProjectDocumentWorkspace } from "./project-document-workspace";
+import { ProjectEngineeringBomWorkspace } from "./project-ebom-workspace";
 
 type ProjectWorkspaceTab =
   | "overview"
@@ -55,6 +57,7 @@ type ProjectWorkspaceTab =
   | "plan"
   | "work-items"
   | "documents"
+  | "ebom"
   | ProjectGovernanceSection;
 
 const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
@@ -66,6 +69,7 @@ const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
   "activity",
   "learning",
   "documents",
+  "ebom",
 ]);
 
 function initialProjectWorkspaceTab(): ProjectWorkspaceTab {
@@ -1266,6 +1270,7 @@ export function ProjectWorkspace({
   contextDataSource,
   documentDataSource,
   domainWorkItemsDataSource,
+  engineeringBomDataSource,
   navigate,
   onProjectChanged,
   overview,
@@ -1277,6 +1282,7 @@ export function ProjectWorkspace({
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
+  engineeringBomDataSource?: EngineeringBomDataSource | undefined;
   navigate: (target: string) => void;
   onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
   overview: ReactNode;
@@ -1445,6 +1451,7 @@ export function ProjectWorkspace({
     { id: "activity", label: t("Activity") },
     { id: "learning", label: t("Learning") },
     { id: "documents", label: t("Design and documents") },
+    { id: "ebom", label: t("EBOM") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
     label: string;
@@ -1616,6 +1623,14 @@ export function ProjectWorkspace({
         projectId={cockpit.project.globalId}
         reportWorkspaceDirty={reportWorkspaceDirty}
         requestWorkspaceTransition={requestWorkspaceTransition}
+      />
+    );
+  } else if (activeTab === "ebom") {
+    content = (
+      <ProjectEngineeringBomWorkspace
+        dataSource={engineeringBomDataSource}
+        projectId={cockpit.project.globalId}
+        reportWorkspaceDirty={reportWorkspaceDirty}
       />
     );
   }

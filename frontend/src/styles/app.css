@@ -2628,6 +2628,222 @@ textarea::placeholder {
   overflow-x: auto;
 }
 
+.ebom-workspace {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.ebom-workspace__toolbar,
+.ebom-workspace__revision-toolbar,
+.ebom-line-editor__toolbar {
+  display: flex;
+  min-height: var(--npi-density-toolbar);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--npi-space-2);
+}
+
+.ebom-workspace__toolbar {
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.ebom-workspace__title,
+.ebom-workspace__summary {
+  margin: var(--npi-space-0);
+}
+
+.ebom-workspace__title {
+  font-size: var(--npi-typography-size-md);
+}
+
+.ebom-workspace__summary,
+.ebom-line-editor__toolbar {
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.ebom-workspace__command {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.ebom-workspace__command .problem-details {
+  flex: 1 1 100%;
+}
+
+.ebom-workspace__layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(440px, 1fr) minmax(
+      260px,
+      300px
+    );
+  align-items: start;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.ebom-workspace__center {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.ebom-workspace__revision-toolbar {
+  justify-content: flex-end;
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.ebom-line-table {
+  min-width: 1080px;
+}
+
+.ebom-attributes {
+  display: grid;
+  gap: var(--npi-space-1);
+  margin: var(--npi-space-0);
+}
+
+.ebom-attributes__entry {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(80px, 1fr);
+  gap: var(--npi-space-1);
+}
+
+.ebom-attributes__key,
+.ebom-attributes__value {
+  margin: var(--npi-space-0);
+}
+
+.ebom-attributes__key {
+  color: var(--npi-color-text-secondary);
+}
+
+.detail-actions--vertical {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ebom-events {
+  display: grid;
+  gap: var(--npi-space-1);
+  margin: var(--npi-space-0);
+  padding: var(--npi-space-0);
+  list-style: none;
+}
+
+.ebom-events__entry {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--npi-space-1);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.ebom-events__time,
+.ebom-events__actor {
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.ebom-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--npi-space-2);
+}
+
+.ebom-form > label {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.ebom-form__wide,
+.ebom-line-editor {
+  grid-column: 1 / -1;
+}
+
+.ebom-form--transition,
+.ebom-form--compare {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ebom-line-editor {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+  padding-top: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.ebom-line-editor__scroll {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.ebom-line-editor__scroll .data-table {
+  min-width: 1760px;
+}
+
+.ebom-line-editor__scroll input,
+.ebom-line-editor__scroll select {
+  min-width: 108px;
+}
+
+.confirmation-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-selected) solid
+    var(--npi-color-semantic-warning);
+  background: var(--npi-color-semantic-warningSubtle);
+  color: var(--npi-color-text-primary);
+}
+
+.confirmation-check input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--npi-color-brand-primary);
+}
+
+.ebom-comparison {
+  display: grid;
+  grid-column: 1 / -1;
+  min-width: 0;
+  gap: var(--npi-space-2);
+  padding-top: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+  overflow-x: auto;
+}
+
+.ebom-comparison__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--npi-space-2);
+}
+
+.ebom-comparison__summary > span:not(.semantic-status) {
+  padding-left: var(--npi-space-2);
+  border-left: var(--npi-border-default) solid var(--npi-color-border-default);
+  font-size: var(--npi-typography-size-xs);
+}
+
 .document-baseline__tables .data-table {
   min-width: 980px;
 }
@@ -3530,7 +3746,16 @@ textarea::placeholder {
     grid-template-columns: minmax(440px, 1fr) minmax(280px, 320px);
   }
 
-  .document-form {
+  .ebom-workspace__layout {
+    grid-template-columns: minmax(200px, 240px) minmax(560px, 1fr);
+  }
+
+  .ebom-workspace__layout > .docked-inspector {
+    grid-column: 1 / -1;
+  }
+
+  .document-form,
+  .ebom-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3580,11 +3805,16 @@ textarea::placeholder {
   .document-workspace__release-history,
   .document-release__summary,
   .document-form,
-  .document-form--revision {
+  .document-form--revision,
+  .ebom-workspace__layout,
+  .ebom-form,
+  .ebom-form--transition,
+  .ebom-form--compare {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .document-workspace__toolbar {
+  .document-workspace__toolbar,
+  .ebom-workspace__toolbar {
     align-items: stretch;
     flex-direction: column;
   }
@@ -3593,7 +3823,8 @@ textarea::placeholder {
   .project-activity-layout > .docked-inspector,
   .project-learning-layout > .docked-inspector,
   .review-layout > .docked-inspector,
-  .trial-layout > .docked-inspector {
+  .trial-layout > .docked-inspector,
+  .ebom-workspace__layout > .docked-inspector {
     position: static;
     grid-row: auto;
     grid-column: auto;

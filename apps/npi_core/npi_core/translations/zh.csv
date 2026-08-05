@@ -3419,3 +3419,90 @@ Enter controlled text attributes.,输入受控文本属性。
 Enter a supported engineering identity.,输入支持的工程标识。
 Enter a canonical effectivity date.,输入规范的生效日期。
 An EBOM with this engineering key already exists.,已存在使用此工程键的 EBOM。
+Added,新增
+Removed,移除
+Quantity changed,数量已变更
+Substitution changed,替代关系已变更
+Attributes changed,属性已变更
+Command failed,命令失败
+Lines,行
+Add line,添加行
+Line key,行键
+Parent line,父级行
+Engineering item,工程物料
+Description,描述
+Quantity,数量
+Alternate for,替代目标
+Alternate group,替代组
+Attributes,属性
+Line {{number}} key,第 {{number}} 行键
+Line {{number}} parent,第 {{number}} 行父级
+Line {{number}} engineering item,第 {{number}} 行工程物料
+Line {{number}} description,第 {{number}} 行描述
+Line {{number}} quantity,第 {{number}} 行数量
+Line {{number}} engineering UOM,第 {{number}} 行工程计量单位
+Select UOM,选择计量单位
+Line {{number}} alternate target,第 {{number}} 行替代目标
+Line {{number}} alternate group,第 {{number}} 行替代组
+Line {{number}} effective from,第 {{number}} 行生效开始日期
+Line {{number}} effective to,第 {{number}} 行生效结束日期
+Line {{number}} attributes,第 {{number}} 行属性
+key=value; key=value,属性键=属性值；属性键=属性值
+Remove line {{number}},移除第 {{number}} 行
+"Line identity, hierarchy, alternates, effectivity, quantities and attributes are validated by the exact EBOM policy.","行标识、层级、替代关系、生效范围、数量和属性均由精确 EBOM 策略验证。"
+"Complete the exact policy, reason and every required EBOM line field before continuing.","继续前，请完整填写精确策略、原因和每个必填 EBOM 行字段。"
+Creating EBOM,正在创建 EBOM
+Creating immutable EBOM revision,正在创建不可变 EBOM 修订版
+Submitting EBOM for review,正在提交 EBOM 以供审查
+A rejection reason is required.,必须填写驳回原因。
+Approving EBOM review,正在批准 EBOM 审查
+Rejecting EBOM review,正在驳回 EBOM 审查
+Confirm the exact EBOM revision before release.,发布前请确认精确 EBOM 修订版。
+Releasing exact EBOM revision,正在发布精确 EBOM 修订版
+Select two different exact revisions to compare.,请选择两个不同的精确修订版进行比较。
+The live EBOM data source is not configured.,未配置实时 EBOM 数据源。
+Loading project EBOM workspace,正在加载项目 EBOM 工作区
+Project EBOM workspace,项目 EBOM 工作区
+EBOM working revisions,EBOM 工作修订版
+NPI-owned working structures,NPI 主责的工作结构
+Create EBOM,创建 EBOM
+Working structure,工作结构
+"This workspace does not create formal ERPNext Items, MBOMs, routings or production execution.","此工作区不会创建正式 ERPNext 物料、MBOM、工艺路线或生产执行记录。"
+You can inspect EBOM history but cannot create or change it.,您可以查看 EBOM 历史，但不能创建或更改内容。
+EBOM creation is unavailable because no accepted synthetic EBOM policy is published.,由于尚未发布已接受的合成 EBOM 策略，因此无法创建 EBOM。
+No EBOM working structure,没有 EBOM 工作结构
+Create the first EBOM under an exact published synthetic policy.,请依据精确的已发布合成策略创建第一个 EBOM。
+EBOM structures,EBOM 结构
+EBOM key,EBOM 键
+Latest revision,最新修订版
+Loading exact EBOM revisions,正在加载精确 EBOM 修订版
+Immutable revisions,不可变修订版
+Create successor revision,创建后继修订版
+Compare revisions,比较修订版
+Exact revision lines,精确修订版行
+Alternate,替代项
+EBOM inspector,EBOM 检查器
+Record review decision,记录审查决定
+No lifecycle event has been recorded.,尚未记录生命周期事件。
+Create EBOM working structure,创建 EBOM 工作结构
+Create immutable successor revision,创建不可变后继修订版
+Exact EBOM policy,精确 EBOM 策略
+Effectivity note,生效说明
+EBOM lifecycle review,EBOM 生命周期审查
+This action applies only to EBOM revision {{revision}} with {{lines}} immutable lines.,此操作仅适用于包含 {{lines}} 个不可变行的 EBOM 修订版 {{revision}}。
+Approve,批准
+I confirm release of this exact immutable EBOM revision. No ERPNext execution will occur.,我确认发布此精确不可变的 EBOM 修订版。不会执行任何 ERPNext 操作。
+Record decision,记录决定
+Release exact revision,发布精确修订版
+Compare exact EBOM revisions,比较精确 EBOM 修订版
+From revision,起始修订版
+To revision,目标修订版
+Comparing exact EBOM revisions,正在比较精确 EBOM 修订版
+Identical revisions,修订版相同
+Differences found,发现差异
+The selected exact revisions have no line differences.,所选精确修订版没有行差异。
+Change type,变更类型
+Changed fields,已变更字段
+Before,变更前
+After,变更后
+EBOM,EBOM

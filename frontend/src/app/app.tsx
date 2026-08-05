@@ -22,6 +22,7 @@ import {
   LiveProjectWorkContextDataSource,
 } from "../api/project-work-data-source";
 import { LiveDocumentDataSource } from "../api/document-data-source";
+import { LiveEngineeringBomDataSource } from "../api/ebom-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -42,6 +43,7 @@ const liveProjectWorkContextDataSource = new LiveProjectWorkContextDataSource();
 const liveProjectDomainWorkItemsDataSource =
   new LiveProjectDomainWorkItemsDataSource();
 const liveDocumentDataSource = new LiveDocumentDataSource();
+const liveEngineeringBomDataSource = new LiveEngineeringBomDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
 
@@ -154,6 +156,7 @@ export function App(): React.JSX.Element {
         dataSource={liveProjectDataSource}
         documentDataSource={liveDocumentDataSource}
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
+        engineeringBomDataSource={liveEngineeringBomDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
         reportWorkspaceDirty={reportWorkspaceDirty}

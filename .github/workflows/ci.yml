@@ -86,6 +86,7 @@ jobs:
           tests/e2e/r1-05-panes.spec.ts
           tests/e2e/r1-05-field-attachments.spec.ts
           tests/e2e/p5-01-documents-live.spec.ts
+          tests/e2e/p5-04-ebom-live.spec.ts
           tests/e2e/gate-evidence-live.spec.ts
           --grep @visual
         env:
@@ -98,6 +99,7 @@ jobs:
           path: |
             frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts-snapshots/r1-06-p0-normal-*-linux.png
             frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-0*-linux.png
+            frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-*-linux.png
             frontend/tests/e2e/gate-evidence-live.spec.ts-snapshots/p5-03-*-linux.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json

@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 FRONTEND WORKSPACE`
+`IN_PROGRESS — P5-04 FRONTEND EXACT-SHA CI`
 
-Recovery time: `2026-08-05T11:35:29Z`
+Recovery time: `2026-08-05T12:25:54Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`40e7b7036b9f39a8298b6bb44df9749c75337c5e`
+`0ad13b835c622fce9028dadf29d6fe9b2ee755ca`
 
 Latest complete ordinary CI:
-`31001529719` (`PASS`, exact pushed checkpoint SHA)
+`31002288210` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -50,14 +50,8 @@ SHA-256
   baselines. Both bounded evidence roots were repaired without product or Gate
   changes, and exact-SHA CI `30996305240` passed complete repository,
   `288/288` browser, fixed-Linux `59/59` and both secret lanes.
-- The repository/BFF/OpenAPI candidate passes local Level 1: P5
-  Document/EBOM `217/217`, tracked Python `939/939`, frontend unit `671/671`,
-  TypeScript, complete lint, production bundle, OpenAPI/YAML, reconciliation,
-  direct `3,421`-source trilingual coverage, prohibited-pattern and diff
-  checks. Evidence is
-  `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
-- That candidate is not a stage PASS until complete ordinary CI passes its
-  exact pushed SHA. The frontend workspace therefore remains inactive.
+- The repository/BFF/OpenAPI stage is closed at checkpoint `40e7b70` and
+  ordinary CI `31001529719`; it is reusable and is not reopened.
 - Exact-SHA CI `31000405445` passed repository job `92287612411`, including
   complete verification, non-visual browser and both secret lanes. Visual job
   `92287612467` alone passed `41/59` and isolated exactly the eighteen durable
@@ -72,6 +66,22 @@ SHA-256
   `31001529719`: repository `92291319560`, fixed-Linux `92291319718`
   (`59/59`), complete non-visual browser and both secret lanes all passed.
   The repository/BFF/OpenAPI stage is closed.
+- Controller synchronization checkpoint `0ad13b8` passed exact-SHA ordinary
+  CI `31002288210`: repository `92293780397` and fixed-Linux visual
+  `92293780586` both passed; the controlled runtime correctly remained
+  inactive.
+- The Project EBOM frontend workspace now passes local Level 1. It includes
+  strict closed view models/data source, exact create/successor/lifecycle/
+  comparison interactions, actor-bound idempotency retry, dense industrial
+  states, focus/dirty navigation, single-primary-action truth and direct
+  trilingual coverage. Evidence is
+  `implementation/evidence/phase-5/p5-04-frontend-checkpoint.md`.
+- Complete frontend unit passed `690/690`; complete non-visual browser passed
+  `293/293` before the final isolated repairs; the final affected P5-04
+  browser/visual run passed `8/8`; TypeScript, full lint, generated artifacts,
+  production bundle and `3,508`-source direct `zh`/`zh-TW` coverage passed.
+- The frontend candidate remains uncommitted. Exact-SHA ordinary CI is
+  mandatory before controlled runtime can activate.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -93,15 +103,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Implement and test only the P5-04 Project EBOM frontend workspace defined in
-the audited plan: strict data source and view models, dense industrial
-revision/line/comparison views, exact submit/review/release command handling,
-normal/empty/loading/no-permission/read-only/error/conflict/processing states,
-accessibility and direct English/zh/zh-TW coverage. Production EBOM numbering,
-line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
-set, release authority and formal Item conversion remain Class-B holds;
-install no production defaults. Controlled runtime, P5-05 and Phase 6 remain
-inactive.
+Create one exact P5-04 frontend checkpoint containing only its product,
+tests, translations, governed visual evidence, workflow, trace and controller
+files. Preserve every user-owned local modification and untracked asset.
+Push the development branch, confirm the remote SHA and require complete
+ordinary CI on that exact SHA. Classify any fixed-Linux visual delta from the
+CI artifact without changing thresholds or the matrix. Controlled runtime,
+P5-05 and Phase 6 remain inactive until the clean frontend CI stage passes.
 
 ## Frozen predecessor invariants
 
@@ -123,8 +131,9 @@ inactive.
 
 ## Completion boundary
 
-The audit and domain/metadata foundation checkpoints are complete with
-Requirement -> Code -> Test -> Evidence and changed-files -> affected-tests
-maps, scoped holds and rollback. P5-04 remains `IN_PROGRESS`; P5-05 stays
-inactive until P5-04 passes its Level 2 Task Gate. Phase 5 Level 3 runs only
-after P5-05 reaches the Phase boundary.
+The audit, domain/metadata, Repository/BFF/OpenAPI and local frontend
+checkpoints are complete with Requirement -> Code -> Test -> Evidence and
+changed-files -> affected-tests maps, scoped holds and rollback. P5-04 remains
+`IN_PROGRESS`; the next boundary is exact-SHA frontend ordinary CI, followed
+by controlled-Site proof and the Level 2 Task Gate. P5-05 stays inactive.
+Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.

@@ -1,5 +1,39 @@
 # Last Run
 
+## P5-04 frontend workspace local Level 1 PASS; exact-SHA CI next — 2026-08-05T12:25:54Z
+
+- Confirmed local/remote branch checkpoint
+  `0ad13b835c622fce9028dadf29d6fe9b2ee755ca` at `0/0` divergence and verified
+  its complete ordinary CI `31002288210`: repository `92293780397` and
+  fixed-Linux visual `92293780586` passed; controlled runtime remained
+  correctly inactive.
+- Added strict Project-scoped EBOM browser contracts and a dense industrial
+  Project workspace for immutable revision/line truth, exact first/successor
+  creation, separate lifecycle commands, explicit high-risk release and
+  deterministic comparison of two exact revisions.
+- Closed every command request body, retained trusted CSRF, actor-bound
+  idempotency and exact concurrency/policy inputs, and proved retry reuses the
+  original user-intent key. Invalid decision/confirmation values fail before
+  transport; undeclared formal-MBOM fields cannot leak.
+- During affected review, repaired only four proven frontend/test roots: an
+  undersized synthetic CSRF token, the Project-tab `End` expectation after
+  adding EBOM, editable business line keys being misused as React row keys,
+  and multiple/read-only primary-action prominence.
+- Full frontend unit passed `690/690`; TypeScript, full lint, generation,
+  production Vite build and direct `3,508`-source `zh`/`zh-TW` coverage passed.
+  Complete non-visual browser passed `293/293` before the final isolated
+  repairs, and the final affected P5-04 browser/visual suite passed unchanged
+  `8/8`.
+- Original-resolution English `1366×768@100%`, Simplified Chinese
+  `1440×900@125%` and Traditional Chinese `1920×1080@150%` images passed the
+  industrial UX, Axe, overflow and mixed-language review.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-frontend-checkpoint.md`.
+- P5-04 remains `IN_PROGRESS`. First incomplete action is an exact scoped
+  commit/push followed by complete ordinary CI. Controlled runtime, P5-05 and
+  Phase 6 remain inactive. User-owned local changes and untracked assets remain
+  preserved and unstaged.
+
 ## P5-04 repository/BFF/OpenAPI clean CI PASS; frontend active — 2026-08-05T11:35:29Z
 
 - Exact repair checkpoint

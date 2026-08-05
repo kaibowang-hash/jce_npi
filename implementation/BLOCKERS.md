@@ -8,18 +8,20 @@ None.
 
 The former P5-03 pre-dispatch ordinary-CI and response-contract holds are
 resolved. Exact product SHA `302b1e9` passed ordinary CI `30990594281` and the
-final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2; the
-P5-04 Requirement/domain audit and domain/metadata foundation passed. Its
-repository/BFF/OpenAPI checkpoint `40e7b70` passed exact-SHA ordinary CI
-`31001529719`, including complete repository, non-visual browser, fixed-Linux
-`59/59` and both secret lanes. Only the P5-04 frontend workspace is active;
-controlled runtime, P5-05 and Phase 6 remain inactive. Production EBOM policy
-facts remain scoped Class-B holds rather than a global blocker. Historical
-blocker evidence remains retained below and in `implementation/evidence/phase-5/`.
+final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2. The
+P5-04 Requirement/domain audit, domain/metadata foundation and
+repository/BFF/OpenAPI stage passed; checkpoint `40e7b70` passed exact-SHA
+ordinary CI `31001529719`. Controller checkpoint `0ad13b8` then passed
+ordinary CI `31002288210`. The frontend workspace now passes its local Level 1
+candidate and is awaiting an exact scoped commit/push and ordinary CI; this is
+normal Gate work, not a blocker. Controlled runtime, P5-05 and Phase 6 remain
+inactive. Production EBOM policy facts remain scoped Class-B holds rather than
+a global blocker. Historical blocker evidence remains retained below and in
+`implementation/evidence/phase-5/`.
 
 The P5-03 evidence/controller checkpoint `5676f79` and P5-04 audit checkpoint
 `0eb10a8` passed complete ordinary CI `30992850240` and `30993437267`
-respectively; no checkpoint CI hold remains.
+respectively. No Hard Blocker or diagnostic activation exists.
 
 ## Active diagnostic progress
 
