@@ -2045,7 +2045,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "database=npi_one_runtime",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
             f'frappe_commit={toolchain["FRAPPE_COMMIT"]}',
-            "p5-document-runtime-${{ github.run_id }}",
+            "p5-document-ebom-runtime-${{ github.run_id }}",
             "docker compose down --volumes",
         )
         for fragment in required_fragments:

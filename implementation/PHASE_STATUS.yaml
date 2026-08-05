@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T12:47:15Z'
+updated_at: '2026-08-05T13:21:38Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_FRONTEND_CI_EVIDENCE_REPAIR
-current_task_completed_stage: FRONTEND_EXACT_SHA_CI_CLASSIFIED
-current_task_next_stage: P5-04-FRONTEND-CI-REPAIR-EXACT-SHA
+current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME_CANDIDATE
+current_task_completed_stage: FRONTEND_CLEAN_EXACT_SHA_CI_PASS
+current_task_next_stage: P5-04-CONTROLLED-RUNTIME-CANDIDATE-EXACT-SHA-CI
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_FRONTEND_CI_EVIDENCE_REPAIR
+resumed_product_task_status: ACTIVE_CONTROLLED_RUNTIME_CANDIDATE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -147,8 +147,15 @@ p5_04:
   frontend_candidate_visual_job: 92306322226
   frontend_candidate_visual_artifact: 8930443639
   frontend_candidate_ci_outcome: CLASSIFIED_EVIDENCE_REPAIR_REQUIRED
-  completed_stage: FRONTEND_EXACT_SHA_CI_CLASSIFIED
-  next_stage: FRONTEND_CI_REPAIR_EXACT_SHA
+  frontend_repair_checkpoint: 0c344fef0dbab4a84dc9ee84e3400a626de8d0c9
+  frontend_repair_normal_ci: 31008027534
+  frontend_repair_repository_job: 92312741415
+  frontend_repair_visual_job: 92312741300
+  frontend_repair_visual_artifact: 8931239683
+  frontend_repair_secret_artifact: 8931400483
+  frontend_repair_ci_outcome: PASS
+  completed_stage: FRONTEND_CLEAN_EXACT_SHA_CI_PASS
+  next_stage: CONTROLLED_RUNTIME_CANDIDATE_EXACT_SHA_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY
@@ -164,6 +171,7 @@ p5_04:
     - implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md
     - implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md
     - implementation/evidence/phase-5/p5-04-frontend-checkpoint.md
+    - implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

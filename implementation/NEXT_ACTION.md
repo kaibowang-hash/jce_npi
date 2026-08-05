@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 FRONTEND CI EVIDENCE REPAIR`
+`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CANDIDATE`
 
-Recovery time: `2026-08-05T12:47:15Z`
+Recovery time: `2026-08-05T13:21:38Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`85fd03fdc936db03b61985e03caced0e0b68f760`
+`0c344fef0dbab4a84dc9ee84e3400a626de8d0c9`
 
 Latest complete ordinary CI:
-`31002288210` (`PASS`, exact pushed checkpoint SHA)
+`31008027534` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -95,6 +95,23 @@ SHA-256
   only to their matching Linux baselines. The history repair adds only the two
   immutable exact fingerprints to the strict reviewed allowlist and removes
   the lexical false-positive pattern from current fixture code.
+- Repair checkpoint `0c344fe` passed complete unchanged ordinary CI
+  `31008027534`: repository job `92312741415` passed complete verification
+  and both secret lanes; fixed-Linux job `92312741300` passed `62/62`.
+  The frontend stage is closed.
+- The P5-04 controlled-runtime harness passes local Level 1. It uses only the
+  fixed disposable Site, an explicit synthetic policy and one normal internal
+  Project member; proves immutable R1/R2, deterministic comparison, lifecycle,
+  authorization, replay/conflict, rollback, audit, two migrations and an
+  independent route-disable/recovery cycle.
+- Runtime failures are reduced to one allowlisted `P504_RUNTIME_*` stage code,
+  one validated exception type and the exact request trace ID; response bodies,
+  messages, paths and credentials are never emitted. No diagnostic header or
+  server behavior is activated.
+- Affected runtime/domain tests passed `87/87`; complete tracked Python passed
+  `948/948`; pinned devcontainer, compilation, prototype/P0 governance,
+  Reconciliation, prohibited-pattern and diff checks passed. Evidence is
+  `implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -116,13 +133,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one bounded P5-04 CI-evidence repair checkpoint containing only the 24
-reviewed Linux baselines, two exact historical synthetic fingerprints, their
-strict verifier/test inventory, lexical fixture hardening and synchronized
-evidence/controller files. Preserve every user-owned local modification and
-untracked asset. Push the development branch, confirm the remote SHA and
-require complete unchanged ordinary CI on that exact SHA. Controlled runtime,
-P5-05 and Phase 6 remain inactive until that clean frontend CI stage passes.
+Create one bounded P5-04 controlled-runtime candidate checkpoint containing
+only the new verifier, shell/workflow activation, runtime contract tests and
+synchronized evidence/controller files. Preserve every user-owned local
+modification and untracked asset. Push the development branch, confirm the
+remote SHA and require complete unchanged ordinary CI on that exact SHA. Only
+then dispatch one controlled Site run; repair only a uniquely proven product
+root within the controller budget. P5-05 and Phase 6 remain inactive.
 
 ## Frozen predecessor invariants
 
@@ -144,9 +161,10 @@ P5-05 and Phase 6 remain inactive until that clean frontend CI stage passes.
 
 ## Completion boundary
 
-The audit, domain/metadata, Repository/BFF/OpenAPI and local frontend
+The audit, domain/metadata, Repository/BFF/OpenAPI, frontend and local
+controlled-runtime harness
 checkpoints are complete with Requirement -> Code -> Test -> Evidence and
 changed-files -> affected-tests maps, scoped holds and rollback. P5-04 remains
-`IN_PROGRESS`; the next boundary is exact-SHA frontend ordinary CI, followed
-by controlled-Site proof and the Level 2 Task Gate. P5-05 stays inactive.
+`IN_PROGRESS`; the next boundary is exact-SHA runtime-candidate ordinary CI,
+followed by controlled-Site proof and the Level 2 Task Gate. P5-05 stays inactive.
 Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.

@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-05T09:51:10Z`
+Updated: `2026-08-05T13:21:38Z`
 
 ## Active hard blockers
 
@@ -12,9 +12,11 @@ final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2. The
 P5-04 Requirement/domain audit, domain/metadata foundation and
 repository/BFF/OpenAPI stage passed; checkpoint `40e7b70` passed exact-SHA
 ordinary CI `31001529719`. Controller checkpoint `0ad13b8` then passed
-ordinary CI `31002288210`. The frontend workspace now passes its local Level 1
-candidate and is awaiting an exact scoped commit/push and ordinary CI; this is
-normal Gate work, not a blocker. Controlled runtime, P5-05 and Phase 6 remain
+ordinary CI `31002288210`. Frontend repair checkpoint `0c344fe` passed complete
+ordinary CI `31008027534`, including fixed-Linux `62/62` and both secret lanes.
+The controlled-runtime harness now passes local Level 1 and is awaiting an
+exact scoped checkpoint and ordinary CI before one manual controlled-Site
+dispatch; this is normal Gate work, not a blocker. P5-05 and Phase 6 remain
 inactive. Production EBOM policy facts remain scoped Class-B holds rather than
 a global blocker. Historical blocker evidence remains retained below and in
 `implementation/evidence/phase-5/`.

@@ -3,7 +3,7 @@
 Recorded: `2026-08-05T12:47:15Z`
 
 Status:
-`PASS — LOCAL LEVEL 1 FRONTEND WORKSPACE; EXACT-SHA CI ROOTS CLASSIFIED; BOUNDED EVIDENCE REPAIR READY`
+`PASS — LEVEL 1 FRONTEND WORKSPACE AND CLEAN EXACT-SHA ORDINARY CI`
 
 Task:
 `P5-04 — EBOM revision and comparison`
@@ -32,8 +32,7 @@ Reusable predecessor evidence:
   predecessor evidence.
 
 This is not the P5-04 Level 2 Task Gate. The controlled-Site EBOM proof,
-P5-05 and Phase 6 remain inactive until this frontend candidate passes clean
-exact-SHA ordinary CI.
+P5-05 and Phase 6 remain inactive.
 
 ## Delivered boundary
 
@@ -198,9 +197,17 @@ identifier or unit exemptions.
 
 ## First incomplete action
 
-Create and push one bounded CI-evidence repair checkpoint containing only the
-24 reviewed Linux baselines, two exact historical synthetic fingerprints,
-their strict verifier/test inventory, the lexical fixture hardening and
-synchronized evidence/controller files. Then require complete unchanged
-ordinary CI on that exact SHA. Do not activate controlled runtime, P5-05 or
-Phase 6 before that clean run passes.
+The bounded repair checkpoint
+`0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` passed complete unchanged
+ordinary CI `31008027534`: repository job `92312741415` passed complete
+verification and both secret lanes, while fixed-Linux job `92312741300`
+passed `62/62`. Secret artifact `8931400483` has digest
+`sha256:3c86ce6fc0b48fb15894b52b85bedd0ee04a2e1b09f8f7f244ad6614e102be81`;
+visual artifact `8931239683` has digest
+`sha256:050b7fc6c8bf9ae351e789b5f521cd3adf9c34b45e27dc95d308935ff1bda648`.
+The frontend stage is closed.
+
+Implement and push only the P5-04 controlled-Site runtime candidate recorded
+in `implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`,
+then require complete ordinary CI on its exact SHA before one manual
+controlled-Site dispatch. P5-05 and Phase 6 remain inactive.

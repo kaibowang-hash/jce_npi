@@ -1,5 +1,37 @@
 # Last Run
 
+## P5-04 controlled-runtime harness local Level 1 PASS; exact-SHA normal CI next — 2026-08-05T13:21:38Z
+
+- Confirmed local and remote branch at exact checkpoint
+  `0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` with `0/0` divergence and
+  complete unchanged ordinary CI `31008027534`.
+- Repository job `92312741415` passed complete verification and both secret
+  lanes; fixed-Linux job `92312741300` passed `62/62`. Secret artifact
+  `8931400483` has digest
+  `sha256:3c86ce6fc0b48fb15894b52b85bedd0ee04a2e1b09f8f7f244ad6614e102be81`;
+  visual artifact `8931239683` has digest
+  `sha256:050b7fc6c8bf9ae351e789b5f521cd3adf9c34b45e27dc95d308935ff1bda648`.
+- Added one bounded P5-04 controlled-Site verifier on the fixed disposable P5
+  Project. A normal internal member proves synthetic policy truth, immutable
+  R1/R2, deterministic comparison, lifecycle, guest/non-member denial,
+  replay/conflict, invalid/stale rollback, exact persistence and audit.
+- Added an independent P5-04 route-disable/recovery cycle which proves the
+  earlier Document route remains available, plus a separate-process replay of
+  the original create and exact release commands. The shell still runs two
+  migrations and restores every route switch to absent on exit.
+- Runtime failure output is limited to an allowlisted `P504_RUNTIME_*` stage
+  code, validated exception type and exact trace ID. Tests prove response
+  bodies, server messages, paths and credentials cannot enter diagnostics.
+- Runtime/Document and adjacent EBOM suites passed `87/87`; complete tracked
+  Python passed `948/948`; pinned devcontainer, compileall, prototype/P0
+  governance, Reconciliation, prohibited-pattern and diff checks passed.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`.
+- P5-04 remains `IN_PROGRESS`. First incomplete action is a scoped candidate
+  commit/push and complete unchanged ordinary CI on its exact SHA. Only then
+  may one controlled-Site dispatch run. P5-05 and Phase 6 remain inactive;
+  every user-owned local modification and untracked asset remains unstaged.
+
 ## P5-04 exact-SHA CI roots classified; bounded evidence repair ready — 2026-08-05T12:47:15Z
 
 - Pushed frontend candidate

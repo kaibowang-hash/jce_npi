@@ -116,7 +116,7 @@ jobs:
           retention-days: 30
 
   document_runtime:
-    name: P5 controlled document runtime
+    name: P5 controlled document and EBOM runtime
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -139,7 +139,7 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify P5 controlled document runtime
+      - name: Verify P5 controlled document and EBOM runtime
         run: bash scripts/verify-frappe-runtime.sh --document-only
       - name: Record controlled runtime result
         run: |
@@ -151,12 +151,13 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
+            printf 'scope=p5-01-through-p5-04\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
             printf 'command=bash scripts/verify-frappe-runtime.sh --document-only\n'
           } >"${RUNNER_TEMP}/p5-document-runtime/result.txt"
       - uses: actions/upload-artifact@v4
         with:
-          name: p5-document-runtime-${{ github.run_id }}
+          name: p5-document-ebom-runtime-${{ github.run_id }}
           path: ${{ runner.temp }}/p5-document-runtime/result.txt
           if-no-files-found: error
           retention-days: 30

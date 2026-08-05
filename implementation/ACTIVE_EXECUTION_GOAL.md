@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T12:47:15Z`
+Updated: `2026-08-05T13:21:38Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 FRONTEND CI EVIDENCE REPAIR`
+- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CANDIDATE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `85fd03fdc936db03b61985e03caced0e0b68f760` (`0 ahead / 0 behind`)
+  `0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `31002288210` (`PASS`, exact pushed checkpoint SHA `0ad13b8`)
+  `31008027534` (`PASS`, exact pushed checkpoint SHA `0c344fe`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T12:47:15Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — FRONTEND CI EVIDENCE REPAIR`)
+  (`IN_PROGRESS — CONTROLLED-RUNTIME CANDIDATE`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -98,16 +98,31 @@ catalog fingerprint changed. Artifact `8930443639`, digest
 was reviewed at original resolution; its 24 actuals now match only their
 corresponding Linux baselines byte for byte. No threshold or matrix changed.
 
+Repair checkpoint `0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` passed
+complete unchanged ordinary CI `31008027534`: repository job `92312741415`
+passed complete verification and both secret lanes, and fixed-Linux job
+`92312741300` passed `62/62`. The frontend stage is closed.
+
+The local P5-04 controlled-runtime harness now passes Level 1. It reuses only
+the fixed disposable P5 Project and a normal internal Project member; proves
+synthetic policy, immutable R1/R2, deterministic comparison, lifecycle,
+authorization, rollback, audit, route isolation/recovery and cross-process
+replay; and emits only allowlisted stage code, validated exception type and
+exact trace identity on a failure. Complete tracked Python passed `948/948`;
+the affected EBOM/Document modules passed `87/87`; pinned devcontainer,
+Reconciliation, compilation, prohibited-pattern and diff checks passed.
+Evidence is
+`implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: create and push one bounded P5-04 CI-evidence repair
-checkpoint containing only the reviewed Linux baselines, two exact historical
-synthetic fingerprints, their strict verifier/test inventory, lexical fixture
-hardening and synchronized evidence/controller files. Require complete
-unchanged ordinary CI on that exact SHA. Controlled runtime, P5-05 and Phase 6
-remain inactive.
+First incomplete action: create and push one bounded P5-04 controlled-runtime
+candidate checkpoint containing only the runtime verifier, shell/workflow
+activation, contract tests and synchronized evidence/controller files.
+Require complete unchanged ordinary CI on that exact SHA before one manual
+controlled-Site dispatch. P5-05 and Phase 6 remain inactive.
 
 ## Historical passing and reusable evidence
 
