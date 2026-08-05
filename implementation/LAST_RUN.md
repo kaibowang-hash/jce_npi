@@ -1,5 +1,27 @@
 # Last Run
 
+## P5-04 domain/metadata foundation Level 1 PASS — 2026-08-05T09:51:10Z
+
+- Added a pure policy/revision/line/lifecycle/event/comparison domain and eight
+  guarded additive DocTypes without installing a production policy.
+- Exact graph, quantity, engineering-UOM, alternate/effectivity, controlled
+  attribute, predecessor, authority, lifecycle and deterministic diff rules
+  fail closed.
+- Added independent private policy/content/lifecycle write scopes, retained
+  history deletion audit and the literal-boolean P5-04 route-disable seam.
+- Updated ownership while leaving formal Item Code, stock UOM, MBOM, routing
+  and production execution in ERPNext.
+- Focused P5-04 tests passed `27/27`; all P5 Document/EBOM tests passed
+  `201/201`; Python compilation, eight JSON parses, ownership YAML, prohibited
+  pattern review and `git diff --check` passed.
+- i18n passed `3,410` literal-English sources with direct `100%` `zh` and
+  `zh-TW` coverage.
+- The preceding audit checkpoint `0eb10a8` passed ordinary CI `30993437267`.
+- P5-04 remains `IN_PROGRESS`; only repository/BFF/OpenAPI is active next.
+  P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
+
 ## P5-04 Requirement/domain audit PASS; foundation active — 2026-08-05T09:22:56Z
 
 - Confirmed the pushed P5-03 Level 2 evidence checkpoint at exact local/remote

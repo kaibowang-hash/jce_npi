@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 DOMAIN/METADATA FOUNDATION`
+`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI`
 
-Recovery time: `2026-08-05T09:22:56Z`
+Recovery time: `2026-08-05T09:51:10Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`5676f799ef2af8e1b3006ed69ec2b2f39539600f`
+`0eb10a8ade30590cc2a922314e21dfeed069d026`
 
 Latest complete ordinary CI:
-`30992850240` (`PASS`, exact pushed checkpoint SHA)
+`30993437267` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -41,6 +41,10 @@ SHA-256
 - P5-04 is the only active task. P5-05 and Phase 6 remain inactive.
 - The P5-04 bounded Requirement/domain audit passed and is recorded in
   `implementation/evidence/phase-5/p5-04-plan.md`.
+- The P5-04 domain/metadata foundation passed its Level 1 checkpoint with
+  focused `27/27`, adjacent P5 `201/201`, direct `3,410`-source trilingual
+  coverage, compilation, JSON/YAML and diff checks. Evidence is
+  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -62,22 +66,24 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Implement the controlled P5-04 domain/metadata foundation defined in
+Implement only the controlled P5-04 repository/BFF/OpenAPI slice defined in
 `implementation/evidence/phase-5/p5-04-plan.md`:
 
-1. exact published synthetic-policy values and authority bindings;
-2. immutable EBOM/revision/line snapshots with strict graph, quantity,
-   engineering-UOM, alternate/effectivity and attribute validation;
-3. separate optimistic lifecycle and append-only review/release events;
-4. deterministic exact-revision added/removed/quantity/substitution/attribute
-   comparison; and
-5. additive guarded DocTypes/controllers plus independent route/write flags.
+1. authorize tenant/Project and exact policy actor binding before protected
+   EBOM/revision lookup;
+2. create immutable first/successor revisions and materialized lines in one
+   atomic command boundary with actor-bound replay/conflict receipts;
+3. submit, review and confirmed release through the separate lifecycle scope;
+4. expose deterministic exact-revision comparison without a mutable-latest
+   selector; and
+5. add closed BFF/OpenAPI schemas, stable problems and independent route
+   recovery while retaining all P5-01 through P5-03 routes.
 
-Run focused domain, metadata, controller, compile/JSON and diff checks. Record
-the Level 1 foundation checkpoint before repository/BFF/OpenAPI/frontend work.
-Production EBOM numbering, line identity, quantity precision, stock-UOM,
-alternate/effectivity, attribute set, release authority and formal Item
-conversion remain Class-B holds; install no production defaults.
+Run affected repository/API/contract/permission/transaction checks and record
+the next Level 1 checkpoint before frontend work. Production EBOM numbering,
+line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
+set, release authority and formal Item conversion remain Class-B holds;
+install no production defaults.
 
 ## Frozen predecessor invariants
 
@@ -99,7 +105,8 @@ conversion remain Class-B holds; install no production defaults.
 
 ## Completion boundary
 
-The audit prerequisite is complete with Requirement -> Code -> Test ->
-Evidence and changed-files -> affected-tests maps, scoped holds and rollback.
-P5-04 remains `IN_PROGRESS`; P5-05 stays inactive until P5-04 passes its Level
-2 Task Gate. Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.
+The audit and domain/metadata foundation checkpoints are complete with
+Requirement -> Code -> Test -> Evidence and changed-files -> affected-tests
+maps, scoped holds and rollback. P5-04 remains `IN_PROGRESS`; P5-05 stays
+inactive until P5-04 passes its Level 2 Task Gate. Phase 5 Level 3 runs only
+after P5-05 reaches the Phase boundary.

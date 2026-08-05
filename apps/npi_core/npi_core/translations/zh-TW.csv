@@ -3230,3 +3230,181 @@ Remove,移除
 No released revision is selected.,未選擇已發布修訂版。
 "The server revalidates every exact revision, release snapshot and clean private file before creating the immutable baseline.",伺服器會在建立不可變基線前重新驗證每個精確修訂版、發布快照和掃描乾淨的私有文件。
 Create immutable baseline,建立不可變基線
+The EBOM policy is unavailable.,EBOM 策略無法使用。
+You are not authorized to perform this EBOM action.,您無權執行此 EBOM 操作。
+The EBOM revision changed. Reload it before continuing.,EBOM 修訂版已變更。請重新載入後繼續。
+Use an explicitly synthetic EBOM namespace.,請使用明確標示為合成資料的 EBOM 命名空間。
+Select the supported stable line identity mode.,請選擇支援的穩定列識別模式。
+The fail-closed EBOM validation rule is required.,必須啟用故障關閉的 EBOM 驗證規則。
+The EBOM policy snapshot hash does not match its rules.,EBOM 策略快照雜湊與其規則不相符。
+Enter a valid effectivity date.,請輸入有效的生效日期。
+Effectivity end cannot be before its start.,生效結束日期不能早於開始日期。
+An alternate line requires an alternate group.,替代列必須指定替代群組。
+Predecessor identity and snapshot hash must be supplied together.,必須同時提供前序修訂識別和快照雜湊。
+The first EBOM revision cannot have a predecessor.,第一個 EBOM 修訂版不能有前序修訂。
+A successor EBOM revision requires an exact predecessor.,後繼 EBOM 修訂版必須指定精確的前序修訂。
+Select an exact EBOM policy version.,請選擇精確的 EBOM 策略版本。
+Enter a bounded EBOM line list.,請輸入數量受限的 EBOM 列清單。
+EBOM line identities and keys must be unique.,EBOM 列識別和鍵必須唯一。
+The EBOM revision snapshot hash does not match its lines.,EBOM 修訂版快照雜湊與其列不相符。
+The first EBOM revision must use revision number 1.,第一個 EBOM 修訂版的修訂號必須為 1。
+Select the exact current EBOM predecessor.,請選擇精確的目前 EBOM 前序修訂。
+The EBOM key does not match the selected synthetic policy.,EBOM 鍵與所選合成策略不相符。
+The EBOM contains more lines than the selected policy allows.,EBOM 列數超過所選策略允許的上限。
+Select an engineering UOM allowed by the EBOM policy.,請選擇 EBOM 策略允許的工程計量單位。
+Use only attributes allowed by the EBOM policy.,只能使用 EBOM 策略允許的屬性。
+Quantity precision exceeds the EBOM policy.,數量精度超過 EBOM 策略允許的範圍。
+Select a supported EBOM lifecycle state.,請選擇支援的 EBOM 生命週期狀態。
+Select a supported EBOM lifecycle event.,請選擇支援的 EBOM 生命週期事件。
+Select supported EBOM lifecycle states.,請選擇支援的 EBOM 生命週期狀態。
+The EBOM lifecycle version must advance exactly once.,EBOM 生命週期版本必須恰好遞增一次。
+Select a supported EBOM review decision.,請選擇支援的 EBOM 評審決定。
+The EBOM lifecycle event does not match its exact transition.,EBOM 生命週期事件與其精確轉換不相符。
+Enter a reason for rejecting the EBOM revision.,請輸入駁回 EBOM 修訂版的原因。
+Confirm release of the exact EBOM revision.,請確認發布精確的 EBOM 修訂版。
+Confirmation intent is only valid for EBOM release.,確認意圖僅適用於 EBOM 發布。
+The EBOM lifecycle event hash does not match its content.,EBOM 生命週期事件雜湊與其內容不相符。
+Select approve or reject.,請選擇核准或駁回。
+Compare exact revisions from the same EBOM.,請選擇同一 EBOM 的精確修訂版進行比較。
+Every EBOM parent must be another exact line in the revision.,每個 EBOM 父級都必須是該修訂版中的另一個精確列。
+Every EBOM alternate must reference one unambiguous sibling line.,每個 EBOM 替代項都必須引用一個明確的同層列。
+The EBOM hierarchy cannot contain a cycle.,EBOM 階層不能包含循環。
+Enter a whole number within the allowed range.,請輸入允許範圍內的整數。
+Enter a positive decimal quantity.,請輸入正十進位數量。
+Enter a bounded list of values.,請輸入數量受限的值清單。
+Enter controlled attributes.,請輸入受控屬性。
+Enter a controlled attribute key and value.,請輸入受控屬性鍵和值。
+Attribute keys must be unique.,屬性鍵必須唯一。
+EBOM policy versions can only be changed through authorized administration.,只能透過獲授權的管理操作變更 EBOM 策略版本。
+EBOM revisions can only be changed through an authorized NPI command.,只能透過獲授權的 NPI 命令變更 EBOM 修訂版。
+EBOM review and release history can only be changed through an authorized NPI command.,只能透過獲授權的 NPI 命令變更 EBOM 評審和發布歷史。
+Select a supported EBOM policy publication state.,請選擇支援的 EBOM 策略發布狀態。
+Engineering UOM Allowlist,工程計量單位允許清單
+Controlled Attribute Keys,受控屬性鍵
+Creator User IDs,建立者使用者識別
+Review Submitter User IDs,評審提交者使用者識別
+Reviewer User IDs,評審者使用者識別
+Canonical EBOM Line Snapshot,規範 EBOM 列快照
+Canonical EBOM Line Snapshot contains unsupported fields.,規範 EBOM 列快照包含不支援的欄位。
+Controlled Attributes,受控屬性
+EBOM history cannot be changed.,EBOM 歷史不能變更。
+EBOM policy users must be enabled internal system users.,EBOM 策略使用者必須是已啟用的內部系統使用者。
+EBOM history cannot be deleted.,EBOM 歷史不能刪除。
+The EBOM workspace is temporarily unavailable.,EBOM 工作區暫時無法使用。
+Engineering BOM Global ID,工程 BOM 全域識別
+EBOM Revision Global ID,EBOM 修訂版全域識別
+Select a supported EBOM command operation.,請選擇支援的 EBOM 命令操作。
+The EBOM command receipt does not match its Project.,EBOM 命令回執與其專案不相符。
+An EBOM command response must be sealed after success.,EBOM 命令回應必須在成功後封存。
+An EBOM command response can only be sealed once.,EBOM 命令回應只能封存一次。
+The EBOM command response does not match its exact revision.,EBOM 命令回應與其精確修訂版不相符。
+Engineering BOM,工程 BOM
+Engineering BOM Revision,工程 BOM 修訂版
+EBOM Policy Global ID,EBOM 策略全域識別
+Engineering BOM must match its exact Global ID.,工程 BOM 必須與其精確全域識別相符。
+Engineering BOM Revision must match its exact Global ID.,工程 BOM 修訂版必須與其精確全域識別相符。
+The EBOM lifecycle event does not match its exact revision.,EBOM 生命週期事件與其精確修訂版不相符。
+The exact published EBOM policy is unavailable.,精確的已發布 EBOM 策略無法使用。
+Select supported EBOM lifecycle event values.,請選擇支援的 EBOM 生命週期事件值。
+EBOM Policy Version,EBOM 策略版本
+Prior Lifecycle Version,前一生命週期版本
+Canonical EBOM Lifecycle Event,規範 EBOM 生命週期事件
+Canonical EBOM Lifecycle Event does not match its transition.,規範 EBOM 生命週期事件與其轉換不相符。
+EBOM Revision Snapshot Hash,EBOM 修訂版快照雜湊
+EBOM Policy Snapshot Hash,EBOM 策略快照雜湊
+EBOM Lifecycle Event Hash,EBOM 生命週期事件雜湊
+EBOM Policy Key,EBOM 策略鍵
+EBOM Policy Title,EBOM 策略標題
+The EBOM policy does not match its Project and tenant.,EBOM 策略與其專案和租戶不相符。
+A published EBOM policy version cannot be changed.,已發布的 EBOM 策略版本不能變更。
+A new EBOM policy version must start as a draft.,新的 EBOM 策略版本必須從草稿開始。
+Enable the EBOM policy before publishing this version.,發布此版本前請啟用 EBOM 策略。
+Select an existing EBOM policy.,請選擇現有的 EBOM 策略。
+Enter a valid EBOM policy version.,請輸入有效的 EBOM 策略版本。
+Publish each EBOM policy version before creating the next.,建立下一版本前請發布目前 EBOM 策略版本。
+Canonical EBOM Policy Snapshot,規範 EBOM 策略快照
+Canonical EBOM Policy Snapshot does not match its rules.,規範 EBOM 策略快照與其規則不相符。
+EBOM Policy Snapshot Hash does not match its rules.,EBOM 策略快照雜湊與其規則不相符。
+A draft EBOM policy cannot have a publication time.,草稿 EBOM 策略不能有發布時間。
+Last EBOM Lifecycle Event,最近 EBOM 生命週期事件
+EBOM lifecycle identity must match the exact revision.,EBOM 生命週期識別必須與精確修訂版相符。
+The EBOM lifecycle does not match its exact revision.,EBOM 生命週期與其精確修訂版不相符。
+A new EBOM lifecycle must start as draft version 1.,新的 EBOM 生命週期必須從草稿版本 1 開始。
+The EBOM lifecycle does not match its exact event.,EBOM 生命週期與其精確事件不相符。
+The EBOM lifecycle must advance exactly once.,EBOM 生命週期必須恰好推進一次。
+Updated By User ID,更新者使用者識別
+Engineering BOM Key,工程 BOM 鍵
+Latest EBOM Revision,最新 EBOM 修訂版
+The EBOM does not match its Project and tenant.,EBOM 與其專案和租戶不相符。
+Engineering BOM Title,工程 BOM 標題
+"Latest EBOM revision identity, number and hash must be supplied together.",必須同時提供最新 EBOM 修訂版識別、編號和雜湊。
+Latest EBOM Revision Number,最新 EBOM 修訂號
+Latest EBOM Revision Snapshot Hash,最新 EBOM 修訂版快照雜湊
+The latest EBOM revision pointer is unavailable.,最新 EBOM 修訂版指標無法使用。
+The latest EBOM revision must advance exactly once.,最新 EBOM 修訂版必須恰好遞增一次。
+The EBOM line does not match its exact revision.,EBOM 列與其精確修訂版不相符。
+Canonical EBOM Line Snapshot does not match its Global ID.,規範 EBOM 列快照與其全域識別不相符。
+Quantity Scale,數量精度位數
+Quantity Scale cannot be greater than six.,數量精度位數不能大於六。
+Canonical EBOM Revision Snapshot,規範 EBOM 修訂版快照
+Canonical EBOM Line Snapshot does not match its revision.,規範 EBOM 列快照與其修訂版不相符。
+EBOM Line Identity Key is invalid.,EBOM 列識別鍵無效。
+EBOM Line Hash does not match its snapshot.,EBOM 列雜湊與其快照不相符。
+EBOM line creation time must match its revision.,EBOM 列建立時間必須與其修訂版相符。
+EBOM Line Hash,EBOM 列雜湊
+Predecessor EBOM Revision,前序 EBOM 修訂版
+The EBOM revision does not match its Engineering BOM.,EBOM 修訂版與其工程 BOM 不相符。
+Canonical EBOM Revision Snapshot contains unsupported fields.,規範 EBOM 修訂版快照包含不支援的欄位。
+EBOM Policy Reference,EBOM 策略引用
+EBOM Policy Reference contains unsupported fields.,EBOM 策略引用包含不支援的欄位。
+Canonical EBOM Revision Snapshot does not match its exact lines.,規範 EBOM 修訂版快照與其精確列不相符。
+EBOM Line Count does not match the revision snapshot.,EBOM 列數與修訂版快照不相符。
+The exact predecessor EBOM revision is unavailable.,精確的前序 EBOM 修訂版無法使用。
+EBOM Revision Number,EBOM 修訂號
+NPI EBOM Command Idempotency,NPI EBOM 命令冪等回執
+ebom.create,建立 EBOM
+ebom.revise,修訂 EBOM
+ebom.submit_review,提交 EBOM 評審
+ebom.review,評審 EBOM
+ebom.release,發布 EBOM
+NPI EBOM Lifecycle Event,NPI EBOM 生命週期事件
+review_submitted,已提交評審
+Authority Action,授權操作
+submit_review,提交評審
+review,評審
+Review Decision,評審決定
+approve,核准
+Decision Reason,決定原因
+NPI EBOM Policy,NPI EBOM 策略
+EBOM Policy Key Hash,EBOM 策略鍵雜湊
+NPI EBOM Policy Version,NPI EBOM 策略版本
+EBOM Policy,EBOM 策略
+EBOM Policy Version Key,EBOM 策略版本鍵
+Synthetic EBOM Namespace,合成 EBOM 命名空間
+Line Identity Mode,列識別模式
+caller_supplied_stable_key,呼叫方提供的穩定鍵
+Maximum Nodes,最大節點數
+Require Acyclic Graph,要求無環圖
+Require Closed Alternates,要求封閉替代關係
+Require Effectivity Order,要求生效時間有序
+NPI EBOM Revision Lifecycle,NPI EBOM 修訂版生命週期
+Current State,目前狀態
+NPI Engineering BOM,NPI 工程 BOM
+Engineering BOM Key Hash,工程 BOM 鍵雜湊
+NPI Engineering BOM Line,NPI 工程 BOM 列
+EBOM Line Identity Key,EBOM 列識別鍵
+EBOM Line Key,EBOM 列鍵
+Parent EBOM Line Key,父級 EBOM 列鍵
+Engineering Item Identity,工程物料識別
+Engineering Description,工程描述
+Engineering Quantity,工程數量
+Engineering UOM,工程計量單位
+Alternate For EBOM Line Key,所替代的 EBOM 列鍵
+Alternate Group Key,替代群組鍵
+Effectivity Start,生效開始日期
+Effectivity End,生效結束日期
+NPI Engineering BOM Revision,NPI 工程 BOM 修訂版
+EBOM Revision Key,EBOM 修訂版鍵
+Predecessor EBOM Snapshot Hash,前序 EBOM 快照雜湊
+Engineering Effectivity Note,工程生效說明
+EBOM Line Count,EBOM 列數

@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-05T09:22:56Z`
+Updated: `2026-08-05T09:51:10Z`
 
 ## Authority and operating mode
 
@@ -248,12 +248,14 @@ pending until that proof is produced in Codespaces.
   `30990594281`, final unchanged controlled-Site workflow `30991177478` and
   its Level 2 Task Gate. Complete evidence:
   `implementation/evidence/phase-5/p5-03-validation.md`.
-- The pushed P5-03 evidence/controller checkpoint `5676f79` passed complete
-  ordinary CI `30992850240` before P5-04 implementation began.
+- The pushed P5-03 evidence/controller checkpoint `5676f79` and P5-04 audit
+  checkpoint `0eb10a8` passed complete ordinary CI `30992850240` and
+  `30993437267` respectively.
 - P5-04 is the only active atomic task. Its bounded Requirement/domain audit
-  for `FR-DS-011` and `FR-DS-012` passed at checkpoint base `5676f79` and is
-  recorded in `implementation/evidence/phase-5/p5-04-plan.md`. Only its
-  domain/metadata foundation is active next.
+  for `FR-DS-011` and `FR-DS-012` and its domain/metadata foundation passed.
+  Evidence is recorded in `implementation/evidence/phase-5/p5-04-plan.md` and
+  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`. Only
+  its repository/BFF/OpenAPI stage is active next.
 - P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker or execution hold exists. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and

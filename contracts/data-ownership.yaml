@@ -249,6 +249,63 @@ objects:
       manufacturing_routing: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       conversion_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
 
+  EngineeringBOMPolicy:
+    owner_system: NPI_ONE_ADMIN
+    erp_view: none
+    fields:
+      policy_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      production_numbering_line_quantity_uom_alternate_effectivity_attribute_rules: {owner: FUTURE_APPROVED_PRODUCT_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  EngineeringBOMPolicyVersion:
+    owner_system: VERSIONED_EBOM_POLICY
+    erp_view: none
+    fields:
+      synthetic_rules_and_authority_bindings: {owner: VERSIONED_EBOM_POLICY, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_snapshot_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOM:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      engineering_identity: {owner: NPI_ONE, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      latest_exact_revision_pointer: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [NPI_ONE_EBOM_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      formal_item_code_mbom_and_routing: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  EngineeringBOMRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_content_and_policy_snapshot: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      exact_predecessor_lineage: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringBOMLine:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      hierarchy_quantity_engineering_uom_alternate_effectivity_attributes: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_mapping_and_stock_uom: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+
+  EngineeringBOMRevisionLifecycle:
+    owner_system: NPI_ONE_RULE_ENGINE
+    erp_view: none
+    fields:
+      state_and_optimistic_version: {owner: VERSIONED_EBOM_POLICY, editable_in: [NPI_ONE_EBOM_LIFECYCLE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      exact_revision_and_last_event: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+
+  EngineeringBOMLifecycleEvent:
+    owner_system: NPI_ONE_RULE_ENGINE
+    erp_view: none
+    fields:
+      transition_policy_authority_and_confirmation: {owner: VERSIONED_EBOM_POLICY, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_revision_actor_request_trace_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMCommandIdempotency:
+    owner_system: NPI_ONE_EBOM_COMMAND
+    erp_view: none
+    fields:
+      actor_operation_and_payload_identity: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [NPI_ONE_EBOM_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+
   Tooling:
     owner_system: SPLIT_BY_LIFECYCLE
     fields:
