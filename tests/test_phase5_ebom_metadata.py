@@ -318,7 +318,7 @@ class Phase5EngineeringBomMetadataTest(unittest.TestCase):
                 self.assertIn(guard, source)
                 self.assertIn("deny_ebom_history_delete", source)
                 self.assertNotIn("ignore_" "permissions", source)
-                self.assertNotIn("frappe.db.sql", source)
+                self.assertNotIn("frappe.db." "sql", source)
 
     def test_domain_is_pure_and_comparison_uses_exact_line_keys(self) -> None:
         source = EBOM_DOMAIN.read_text(encoding="utf-8")

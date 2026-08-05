@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI`
+`IN_PROGRESS — P5-04 FOUNDATION CLEAN-CI REPAIR`
 
-Recovery time: `2026-08-05T09:51:10Z`
+Recovery time: `2026-08-05T10:06:19Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`0eb10a8ade30590cc2a922314e21dfeed069d026`
+`a11b37379e462b3a83e75a6b49c6b6b71bb5fadd`
 
 Latest complete ordinary CI:
 `30993437267` (`PASS`, exact pushed checkpoint SHA)
@@ -41,10 +41,14 @@ SHA-256
 - P5-04 is the only active task. P5-05 and Phase 6 remain inactive.
 - The P5-04 bounded Requirement/domain audit passed and is recorded in
   `implementation/evidence/phase-5/p5-04-plan.md`.
-- The P5-04 domain/metadata foundation passed its Level 1 checkpoint with
+- The P5-04 domain/metadata foundation passed its local Level 1 checkpoint with
   focused `27/27`, adjacent P5 `201/201`, direct `3,410`-source trilingual
   coverage, compilation, JSON/YAML and diff checks. Evidence is
   `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
+- Exact-SHA CI `30995489793` isolated only the test-literal prohibited-scan
+  match and the visible generated-catalog fingerprint in 18 fixed-Linux
+  baselines. Both bounded evidence roots are repaired without product or Gate
+  changes; a clean exact-SHA rerun remains pending.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -66,24 +70,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Implement only the controlled P5-04 repository/BFF/OpenAPI slice defined in
-`implementation/evidence/phase-5/p5-04-plan.md`:
-
-1. authorize tenant/Project and exact policy actor binding before protected
-   EBOM/revision lookup;
-2. create immutable first/successor revisions and materialized lines in one
-   atomic command boundary with actor-bound replay/conflict receipts;
-3. submit, review and confirmed release through the separate lifecycle scope;
-4. expose deterministic exact-revision comparison without a mutable-latest
-   selector; and
-5. add closed BFF/OpenAPI schemas, stable problems and independent route
-   recovery while retaining all P5-01 through P5-03 routes.
-
-Run affected repository/API/contract/permission/transaction checks and record
-the next Level 1 checkpoint before frontend work. Production EBOM numbering,
-line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
-set, release authority and formal Item conversion remain Class-B holds;
-install no production defaults.
+Commit and push only the reviewed foundation clean-CI repair, then require the
+complete ordinary workflow to pass on its exact SHA. Only after that PASS may
+the controlled P5-04 repository/BFF/OpenAPI slice in
+`implementation/evidence/phase-5/p5-04-plan.md` activate. Production EBOM
+numbering, line identity, quantity precision, stock-UOM,
+alternate/effectivity, attribute set, release authority and formal Item
+conversion remain Class-B holds; install no production defaults.
 
 ## Frozen predecessor invariants
 

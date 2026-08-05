@@ -91,6 +91,35 @@ not staged or part of this checkpoint. Complete brand/audit and fixed-Linux
 visual truth must come from the clean exact-SHA ordinary CI before the next
 product stage mutates shared code.
 
+## Exact-SHA clean-CI repair
+
+Foundation checkpoint `a11b37379e462b3a83e75a6b49c6b6b71bb5fadd`
+was synchronized at `0 ahead / 0 behind`. Ordinary CI `30995489793` then
+isolated two evidence-only roots without disproving the domain foundation:
+
+- repository job `92271453993` completed the Python, frontend, i18n, audit
+  and reconciliation checks, then the final prohibited-pattern scan matched
+  the literal assertion string `frappe.db.sql` in
+  `tests/test_phase5_ebom_metadata.py`; the test now uses an adjacent Python
+  literal split while retaining both the assertion and the fail-closed scan;
+- visual job `92271454078` passed `41/59` governed cases and failed the exact
+  18 normal P0 English/Simplified Chinese/Traditional Chinese Linux images
+  whose visible status-bar catalog fingerprint changed from
+  `e9acf460698ad2d7` to the generated `18fefcf811fde25b`; and
+- artifact `8926019049`, digest
+  `sha256:444ff3d55847a87722ddc26000b6d922efe40d8eaf5dd175ad8cf0b99ec28912`,
+  supplied the fixed-Linux actuals. Every changed pixel is confined to
+  `y=879..898` of the 1440x900 status bar. The strong Playwright deltas are
+  `251` or `252` pixels; three Trial images also contain only 20 subthreshold
+  native-select corner pixels. No product-workspace pixel changed.
+
+The 18 reviewed artifact actuals are now accepted byte-for-byte as the
+corresponding tracked Linux baselines. No matrix, threshold, viewport,
+language or state was removed or weakened. The focused metadata suite passes
+`7/7`, the exact prohibited-pattern scan returns no match, all 18 accepted
+baselines equal the reviewed artifact bytes, and `git diff --check` passes.
+A clean exact-SHA CI rerun remains required before repository/BFF/OpenAPI work.
+
 ## Domain, permission, security, UX and i18n review
 
 - Domain: content revision truth is immutable and separate from lifecycle;

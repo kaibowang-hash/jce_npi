@@ -1,5 +1,26 @@
 # Last Run
 
+## P5-04 foundation clean-CI roots repaired; rerun required — 2026-08-05T10:06:19Z
+
+- Foundation checkpoint `a11b37379e462b3a83e75a6b49c6b6b71bb5fadd`
+  is synchronized at `0/0`; ordinary CI `30995489793` isolated two
+  evidence-only roots.
+- Repository job `92271453993` reached the final prohibited-pattern scan and
+  matched only its own test assertion literal. The adjacent-literal repair
+  preserves the assertion and fail-closed scanner; the focused suite passes
+  `7/7` and the exact scan now passes.
+- Visual job `92271454078` passed `41/59`; the 18 failures were confined to
+  the 1440x900 bottom status-bar catalog fingerprint change to
+  `18fefcf811fde25b` in all three languages.
+- Reviewed artifact `8926019049`, digest
+  `sha256:444ff3d55847a87722ddc26000b6d922efe40d8eaf5dd175ad8cf0b99ec28912`,
+  is accepted byte-for-byte for only those 18 fixed-Linux baselines. No
+  matrix, threshold, product-workspace pixel or product behavior changed.
+- P5-04 remains `IN_PROGRESS`; clean exact-SHA CI must pass before activating
+  repository/BFF/OpenAPI. P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
+
 ## P5-04 domain/metadata foundation Level 1 PASS — 2026-08-05T09:51:10Z
 
 - Added a pure policy/revision/line/lifecycle/event/comparison domain and eight
