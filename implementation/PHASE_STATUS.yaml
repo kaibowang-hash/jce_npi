@@ -1,23 +1,23 @@
 version: '1.2'
-overall_status: IN_PROGRESS
+overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-05T14:36:45Z'
+updated_at: '2026-08-05T14:56:54Z'
 authorization: automatic_transition_after_pass
-execution_hold: NONE
+execution_hold: P5_04_POLICY_VERSION_PUBLISH_PRODUCT_REPAIR_AUTHORITY
 current_task: P5-04
-current_task_status: IN_PROGRESS_POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC
-current_task_completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_BOUNDARY_NON_UNIQUE
-current_task_next_stage: P5-04-POLICY-FIXTURE-SUBSTAGE-DIAGNOSTIC-EXACT-SHA
-current_task_next_stage_status: ACTIVE
+current_task_status: BLOCKED_EXTERNAL
+current_task_completed_stage: POLICY_VERSION_PUBLISH_PRODUCT_ROOT_PROVEN
+current_task_next_stage: USER_AUTHORIZATION_P5_04_POLICY_VERSION_PUBLISH_REPAIR
+current_task_next_stage_status: BLOCKED_EXTERNAL
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC
+resumed_product_task_status: BLOCKED_EXTERNAL_PRODUCT_REPAIR_AUTHORITY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_POLICY_FIXTURE_INNER_OPERATION_NOT_YET_UNIQUE
+  current_root: P5_04_POLICY_VERSION_PUBLISH_PRIOR_DRAFT_HASH
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -51,6 +51,16 @@ p5_01:
   product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
   normal_ci: 30610355829
   controlled_site_gate: 30610747931
+  additional_checkout_diagnostic_authority:
+    authority: USER_AUTHORIZED_2026_08_05
+    scope: P5_01_CHECKOUT_STAGE_ONLY
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    product_repair_authorized_if_proven: 1
+    product_repair_used: 0
+    transferable_to_p5_04: false
+    status: UNUSED_SEALED_TASK_PASS
+    latest_unchanged_runtime_pass: 31017098820
   evidence: implementation/evidence/phase-5/p5-01-validation.md
 p5_02:
   status: PASS_LEVEL_2
@@ -134,7 +144,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: IN_PROGRESS
+  status: BLOCKED_EXTERNAL
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -193,10 +203,29 @@ p5_04:
   final_unchanged_controlled_trace_id: trace-38a09ee9b80150e98daef921d5b01fd1
   final_unchanged_controlled_predecessor_document_outcome: PASS
   diagnostic_checkpoints_completed: 1
-  diagnostic_dispatches_used: 0
+  diagnostic_checkpoint: 217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6
+  diagnostic_checkpoint_normal_ci: 31016624361
+  diagnostic_checkpoint_repository_job: 92342241345
+  diagnostic_checkpoint_visual_job: 92342241381
+  diagnostic_checkpoint_ci_outcome: PASS
+  diagnostic_dispatch: 31017098820
+  diagnostic_dispatch_head: 217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6
+  diagnostic_dispatch_controlled_job: 92343913010
+  diagnostic_dispatch_repository_job: 92343913023
+  diagnostic_dispatch_visual_job: 92343913060
+  diagnostic_dispatch_companion_outcome: PASS
+  diagnostic_dispatch_outcome: FAILED_POLICY_VERSION_PUBLISH_ROOT_PROVEN
+  diagnostic_dispatch_code: P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE
+  diagnostic_dispatch_exception_type: ValidationError
+  diagnostic_dispatch_trace_id: trace-9d081239bf095af1a7f41eeaa65a0d9d
+  diagnostic_dispatch_predecessor_document_outcome: PASS
+  diagnostic_dispatches_used: 1
   diagnostic_dispatches_planned: 1
-  completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_BOUNDARY_NON_UNIQUE
-  next_stage: POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC_EXACT_SHA
+  proven_product_root: EBOM_POLICY_PUBLISH_PASSES_PRIOR_DRAFT_HASH_TO_PUBLISHED_DOMAIN_RECONSTRUCTION
+  proven_product_root_repairs_authorized: 0
+  p5_01_additional_authority_transferable: false
+  completed_stage: POLICY_VERSION_PUBLISH_PRODUCT_ROOT_PROVEN
+  next_stage: USER_AUTHORIZATION_P5_04_POLICY_VERSION_PUBLISH_REPAIR
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

@@ -427,3 +427,23 @@ must preserve that boundary.
   closed substage diagnostic is active under the controller and consumes no
   product-root round. No product or fixture repair is allowed before it proves
   one exact substage. P5-05 and Phase 6 remain inactive.
+
+## Active Hard Blocker — P5-04 policy-version publication repair authority — 2026-08-05T14:56:54Z
+
+- Diagnostic checkpoint `217632f` passed complete ordinary CI `31016624361`.
+- Diagnostic workflow `31017098820` passed fixed Bench/Site, migrations,
+  unchanged P5-01/02/03 runtime, route recovery, cleanup and both companion
+  jobs, then returned only
+  `P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE / ValidationError /
+  trace-9d081239bf095af1a7f41eeaa65a0d9d`.
+- The stage and code prove one product root: a legal EBOM policy
+  draft-to-published transition feeds its server-owned draft hash into
+  published-state domain reconstruction, so the domain rejects it before the
+  controller reaches its exact-prior-hash allowance.
+- Five product-root rounds are exhausted. Existing extra authority is scoped
+  only to P5-01 checkout and is not transferable. A necessary Gate still
+  failing after five rounds is an exhaustive Hard Blocker in the controller.
+- Single action to unblock: explicitly authorize one additional bounded P5-04
+  product-root repair round for only this prior-draft-hash publication defect,
+  affected tests, complete ordinary CI and one final unchanged controlled-Site
+  Gate. No product change or further dispatch is allowed before authorization.

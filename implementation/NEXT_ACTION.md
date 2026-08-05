@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`
+`BLOCKED_EXTERNAL — P5-04 POLICY VERSION PUBLISH REPAIR AUTHORITY`
 
-Recovery time: `2026-08-05T14:36:45Z`
+Recovery time: `2026-08-05T14:56:54Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`cb314ffb2f5e6600bec126463fbcb7e9ac645069`
+`217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6`
 
 Latest complete ordinary CI:
-`31014577854` (`PASS`, exact pushed checkpoint SHA)
+`31016624361` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -154,6 +154,21 @@ SHA-256
   and discards all other child stderr. Focused verifier `14/14`, complete
   P5-04 EBOM `57/57` and complete tracked Python `953/953` pass. This consumes
   no product-root repair round.
+- Diagnostic checkpoint `217632f` passed complete exact-SHA ordinary CI
+  `31016624361`. Diagnostic-only controlled workflow `31017098820` then passed
+  fixed Bench/Site, migrations, unchanged P5-01/02/03 runtime, route recovery
+  and cleanup before emitting exactly
+  `P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE / ValidationError /
+  trace-9d081239bf095af1a7f41eeaa65a0d9d`. Companion repository `92343913023`
+  and visual `92343913060` passed; controlled `92343913010` alone failed.
+- The stage proves root and draft-version insertion passed. The EBOM controller
+  then passes the server-owned draft hash into published-state domain
+  reconstruction, which rejects it before the controller's later exact-prior
+  allowance can validate and replace it. This is one uniquely proven product
+  root, not a fixture or environment root.
+- All five product-root rounds are exhausted. The user's extra authorization is
+  scoped only to P5-01 checkout and cannot authorize this P5-04 fix. Under the
+  controller, the still-failing necessary Gate is a true Hard Blocker.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -175,15 +190,13 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one bounded behavior-neutral P5-04 policy-fixture substage diagnostic
-checkpoint containing only the closed stage inventory, strict relay validation,
-affected tests and synchronized evidence/controller files. Preserve every
-user-owned local modification and untracked asset. Push the development branch,
-confirm the remote SHA and require complete ordinary CI on that exact SHA.
-Only then execute one diagnostic-only controlled-Site dispatch. Repair only a
-uniquely proven synthetic fixture substage, rerun affected checks and ordinary
-CI, then execute one final unchanged controlled-Site Gate. No P5-01 range is
-reopened; P5-05 and Phase 6 remain inactive.
+Stop at `BLOCKED_EXTERNAL`. The single action required is explicit user
+authorization for one additional bounded P5-04 product-root repair round,
+limited to the policy-version draft-to-published prior-snapshot-hash defect,
+affected tests, complete ordinary CI and one final unchanged controlled-Site
+Gate. Do not modify product code, run another controlled Site, activate P5-05
+or start Phase 6 before that authority exists. The P5-01-only extra checkout
+authorization remains unused and is not transferable.
 
 ## Frozen predecessor invariants
 
@@ -208,7 +221,9 @@ reopened; P5-05 and Phase 6 remain inactive.
 The audit, domain/metadata, Repository/BFF/OpenAPI, frontend and local
 controlled-runtime harness
 checkpoints are complete with Requirement -> Code -> Test -> Evidence and
-changed-files -> affected-tests maps, scoped holds and rollback. P5-04 remains
-`IN_PROGRESS`; the next boundary is exact-SHA runtime-repair ordinary CI,
-followed by controlled-Site proof and the Level 2 Task Gate. P5-05 stays inactive.
-Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.
+changed-files -> affected-tests maps, scoped holds and rollback. P5-04 is
+`BLOCKED_EXTERNAL` only on explicit authority for the uniquely proven
+policy-version publication repair. If authorized, the next boundary is the
+bounded repair, affected tests, exact-SHA ordinary CI and one final unchanged
+controlled-Site Gate before Level 2. P5-05 stays inactive. Phase 5 Level 3 runs
+only after P5-05 reaches the Phase boundary.

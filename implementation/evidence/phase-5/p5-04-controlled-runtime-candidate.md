@@ -294,3 +294,58 @@ Gate PASS. Complete exact-SHA ordinary CI is required before one diagnostic-only
 controlled-Site dispatch. Only a uniquely proven synthetic fixture substage may
 then be repaired, followed by affected checks, ordinary CI and one final
 unchanged controlled-Site Gate. P5-05 and Phase 6 remain inactive.
+
+## Diagnostic result and product-root authority blocker
+
+Diagnostic checkpoint `217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6`
+passed complete exact-SHA ordinary CI `31016624361`:
+
+- repository job `92342241345` passed `verify.sh`, complete E2E, Gitleaks and
+  complete PR branch history;
+- fixed-Linux visual job `92342241381` passed unchanged `62/62`; and
+- controlled job `92342242244` remained correctly skipped.
+
+Diagnostic-only controlled workflow `31017098820` retained exact SHA
+`217632f`. Controlled job `92343913010` passed pinned tools, fixed Bench,
+disposable Site, both migrations, complete unchanged P5-01/02/03 Document
+runtime, every route-disable/recovery cycle and cleanup. Companion repository
+job `92343913023` and fixed-Linux visual job `92343913060` passed. The
+controlled job emitted only:
+
+`P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE / ValidationError /
+trace-9d081239bf095af1a7f41eeaa65a0d9d`
+
+This proves policy-root build/insert and policy-version build/draft insert all
+passed. Direct controller/domain cross-validation proves the remaining root:
+
+1. draft insert computes and persists the canonical draft `policy_snapshot`
+   and `snapshot_hash`;
+2. the legal transition changes only `publication_state` to `published`;
+3. `ebom_policy_value(self)` forwards that persisted draft hash into
+   `EngineeringBomPolicyVersion(state=published, snapshot_hash=draft_hash)`;
+4. the domain correctly compares the supplied hash with the published
+   canonical payload and raises before `_apply_policy()` runs; and
+5. `_apply_policy()` already contains the intended exact-prior-hash allowance,
+   but it is unreachable for this valid transition.
+
+The bounded solution is to treat only the exact persisted prior draft hash as
+server-owned during published-state domain reconstruction. The original
+document value remains unchanged for `_apply_policy()` to accept only the exact
+prior or new canonical hash. Any different caller hash, changed snapshot,
+non-draft predecessor or mutation of a published version remains rejected.
+Affected controller/domain/runtime tests, complete ordinary CI and one final
+unchanged controlled-Site Gate are required. No Requirement, public API,
+permission, DocType, Schema, ownership, policy authority, transaction order,
+idempotency or PASS criterion needs to change.
+
+This is one uniquely proven product root, not an environment/verifier/fixture
+root. `PHASE_STATUS.yaml` records all five product-root rounds consumed. The
+additional user authorization currently on record is explicitly limited to
+P5-01 checkout diagnostics and cannot be transferred to P5-04. Under
+`AUTOPILOT_CONTROLLER.md`, a necessary Gate still failing after those five
+rounds is a true Hard Blocker. State is therefore `BLOCKED_EXTERNAL`.
+
+Single user action required: explicitly authorize one additional bounded P5-04
+product-root repair round, limited to this policy-version draft-to-published
+prior-snapshot-hash defect, affected tests, complete ordinary CI and one final
+unchanged controlled-Site Gate. P5-05 and Phase 6 remain inactive.

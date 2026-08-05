@@ -1,19 +1,20 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T14:36:45Z`
+Updated: `2026-08-05T14:56:54Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`
+- Mode: `BLOCKED_EXTERNAL — P5-04 POLICY VERSION PUBLISH REPAIR AUTHORITY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `cb314ffb2f5e6600bec126463fbcb7e9ac645069` (`0 ahead / 0 behind`)
+  `217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `31014577854` (`PASS`, exact pushed checkpoint SHA `cb314ff`)
+  `31016624361` (`PASS`, exact pushed checkpoint SHA `217632f`)
 - Latest controlled-Site run:
-  `31015391479` (`FAILED_POLICY_FIXTURE_NON_UNIQUE`, exact SHA `cb314ff`)
+  `31017098820` (`FAILED_POLICY_VERSION_PUBLISH_ROOT_PROVEN`, exact SHA
+  `217632f`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -21,7 +22,7 @@ Updated: `2026-08-05T14:36:45Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`)
+  (`BLOCKED_EXTERNAL — PRODUCT REPAIR AUTHORITY EXHAUSTED`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -166,18 +167,44 @@ all stderr, traceback, messages, paths and response content remain discarded.
 Focused runtime-verifier and complete P5-04 EBOM tests pass `14/14` and `57/57`;
 complete tracked Python passes `953/953`.
 
+Diagnostic checkpoint `217632f` passed exact-SHA complete ordinary CI
+`31016624361`. Diagnostic-only controlled workflow `31017098820` passed pinned
+Bench, disposable Site, migrations, unchanged P5-01/02/03 Document runtime,
+every route-disable/recovery cycle and cleanup, then returned exactly
+`P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE / ValidationError /
+trace-9d081239bf095af1a7f41eeaa65a0d9d`. Repository job `92343913023` and
+fixed-Linux visual job `92343913060` passed; controlled job `92343913010`
+alone failed.
+
+The closed substage proves root construction/insertion and draft version
+construction/insertion passed. Code cross-validation proves the remaining
+product root: during a legal draft-to-published transition, the EBOM policy
+controller supplies the server-owned draft snapshot hash to the published
+domain reconstruction. The domain correctly rejects that stale-state hash
+before `_apply_policy()` can apply its existing exact-prior-hash allowance.
+The safe bounded repair is to omit only the exact persisted prior draft hash
+from domain reconstruction during that transition, while leaving the original
+document value for `_apply_policy()` to validate against the exact prior or
+new canonical hash. Tampered, unrelated or already-published hashes remain
+rejected.
+
+This is a uniquely proven product root. The controller's five product-root
+rounds are exhausted. The user's additional authorization is expressly limited
+to P5-01 checkout diagnostics and cannot be repurposed for P5-04. A necessary
+Gate therefore remains failing after the five-round limit, which is a defined
+Hard Blocker. No product fix or further controlled dispatch is authorized.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: complete and push the behavior-neutral P5-04
-policy-fixture substage diagnostic checkpoint, require complete ordinary CI on
-its exact SHA, then execute one diagnostic-only controlled-Site dispatch. Fix
-only the uniquely proven synthetic fixture substage, rerun affected checks and
-ordinary CI, and reserve the next unchanged controlled-Site run as the final
-Gate. No P5-01 range is reopened; the user's additional P5-01 checkout
-authorization remains unused because P5-01 is sealed and again passed
-unchanged in run `31015391479`. P5-05 and Phase 6 remain inactive.
+Single action required from the user: explicitly authorize one additional
+bounded P5-04 product-root repair round for only the policy-version
+draft-to-published prior-snapshot-hash defect, including affected tests,
+complete ordinary CI and one final unchanged controlled-Site Gate. No P5-01
+range is reopened; its additional checkout authorization remains unused because
+P5-01 passed unchanged again in run `31017098820`. P5-05 and Phase 6 remain
+inactive.
 
 ## Historical passing and reusable evidence
 

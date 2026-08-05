@@ -1,5 +1,38 @@
 # Last Run
 
+## P5-04 policy publication product root proved; five-round authority exhausted — `BLOCKED_EXTERNAL` — 2026-08-05T14:56:54Z
+
+- Diagnostic checkpoint `217632f7f1c4a1c5cdd68d20e04c81b6bbbeddd6`
+  passed complete exact-SHA ordinary CI `31016624361`: repository
+  `92342241345` passed complete verification/E2E/Gitleaks/history and visual
+  `92342241381` passed unchanged `62/62`.
+- Diagnostic-only controlled workflow `31017098820` retained that exact SHA.
+  Pinned Bench, disposable Site, both migrations, unchanged P5-01/02/03
+  Document runtime, every route-disable/recovery cycle and cleanup passed.
+  Companion repository `92343913023` and visual `92343913060` passed;
+  controlled job `92343913010` alone failed.
+- The only emitted tuple was
+  `P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE / ValidationError /
+  trace-9d081239bf095af1a7f41eeaa65a0d9d`. Root and draft-version creation passed.
+- Code cross-validation proves the product root: on legal draft→published,
+  `NPIEBOMPolicyVersion` passes its server-owned draft snapshot hash into the
+  published domain object. That object correctly rejects the stale-state hash
+  before `_apply_policy()` reaches its existing exact-prior-hash allowance.
+- The safe bounded repair would omit only the exact persisted prior draft hash
+  during published domain reconstruction, then let `_apply_policy()` validate
+  the unchanged document value against the exact prior/new canonical hash.
+  Tampered, unrelated and already-published values remain rejected. No public
+  contract, permission, Schema, ownership or transaction change is required.
+- This is a new uniquely proved product root, while all five product-root rounds
+  are already consumed. The user's extra authorization is P5-01-checkout-only
+  and is not transferable. A necessary Gate still failing after five rounds is
+  a controller-defined Hard Blocker.
+- Single user action required: explicitly authorize one additional bounded
+  P5-04 product-root repair round for only this policy-version publication
+  defect, affected tests, complete ordinary CI and one final unchanged
+  controlled-Site Gate. Until then, do not change product code, dispatch another
+  Site, activate P5-05 or start Phase 6.
+
 ## P5-04 final controlled Gate isolates a non-unique fixed-Bench fixture boundary; closed substage diagnostic active — 2026-08-05T14:36:45Z
 
 - Fixture repair checkpoint `cb314ffb2f5e6600bec126463fbcb7e9ac645069`
