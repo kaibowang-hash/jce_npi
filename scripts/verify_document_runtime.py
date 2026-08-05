@@ -2402,20 +2402,37 @@ def run_replay(
         "Document replay did not retain its exact identity",
     )
     document_id = str(documents["globalId"])
+    baseline_actor = login(base_url, BASELINE_USER, fixture_password)
+    baseline_csrf = bootstrap_csrf(
+        baseline_actor,
+        base_url,
+        BASELINE_USER,
+    )
+    workspace = document_baseline_request(
+        baseline_actor,
+        base_url,
+        project_id,
+        query_key="baseline-cross-process-replay",
+    )
+    baselines = workspace.body.get("items", [])
+    impacts = workspace.body.get("impacts", [])
+    require(
+        workspace.status == 200
+        and len(baselines) == 1
+        and len(impacts) == 1
+        and len(baselines[0].get("members", [])) == 1,
+        "Retained Document baseline or impact lineage is unavailable for replay",
+    )
+    baseline = baselines[0]
+    member = baseline["members"][0]
+    revision_id = str(member["revisionGlobalId"])
     detail = npi_request(
         administrator,
         base_url,
         f"/api/npi/v1/projects/{project_id}/documents/{document_id}",
         query_key="release-replay-detail",
     )
-    require(
-        detail.status == 200
-        and len(detail.body.get("releaseWorkspace", {}).get("revisions", []))
-        == 1,
-        "Retained Document release history is unavailable for replay",
-    )
-    revision_history = detail.body["releaseWorkspace"]["revisions"][0]
-    revision_id = str(revision_history["revisionId"])
+    exact_released_revision_history(detail, revision_id)
     release_replay = release_command(
         administrator,
         base_url,
@@ -2440,28 +2457,6 @@ def run_replay(
         expected_confirmation="release",
         replayed=True,
     )
-    baseline_actor = login(base_url, BASELINE_USER, fixture_password)
-    baseline_csrf = bootstrap_csrf(
-        baseline_actor,
-        base_url,
-        BASELINE_USER,
-    )
-    workspace = document_baseline_request(
-        baseline_actor,
-        base_url,
-        project_id,
-        query_key="baseline-cross-process-replay",
-    )
-    baselines = workspace.body.get("items", [])
-    impacts = workspace.body.get("impacts", [])
-    require(
-        workspace.status == 200
-        and len(baselines) == 1
-        and len(impacts) == 1,
-        "Retained Document baseline or impact lineage is unavailable for replay",
-    )
-    baseline = baselines[0]
-    member = baseline["members"][0]
     payload = baseline_command_payload(
         policy_snapshot_hash=str(baseline["policy"]["snapshotHash"]),
         revision_id=str(member["revisionGlobalId"]),
@@ -2490,6 +2485,30 @@ def run_replay(
         replayed_baseline == baseline,
         "Cross-process Document baseline replay changed its sealed response",
     )
+
+
+def exact_released_revision_history(
+    detail: HttpResult,
+    revision_id: str,
+) -> dict[str, Any]:
+    histories = detail.body.get("releaseWorkspace", {}).get("revisions", [])
+    matches = (
+        [
+            value
+            for value in histories
+            if isinstance(value, dict) and value.get("revisionId") == revision_id
+        ]
+        if isinstance(histories, list)
+        else []
+    )
+    require(
+        detail.status == 200
+        and len(matches) == 1
+        and matches[0].get("lifecycle", {}).get("state") == "released"
+        and matches[0].get("lifecycle", {}).get("version") == 5,
+        "Retained exact Document release history is unavailable for replay",
+    )
+    return matches[0]
 
 
 def verify_review_release_runtime(

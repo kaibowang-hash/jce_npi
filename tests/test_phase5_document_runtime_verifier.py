@@ -1914,6 +1914,43 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 "controlled-fixture-password",
             )
 
+    def test_replay_selects_exact_baseline_revision_from_successor_history(
+        self,
+    ) -> None:
+        revision_id = "66997315-516a-4a5d-800b-0933f70a1e7d"
+        histories = [
+            {
+                "revisionId": "10000000-0000-4000-8000-000000000001",
+                "lifecycle": {"state": "draft", "version": 0},
+            },
+            {
+                "revisionId": revision_id,
+                "lifecycle": {"state": "released", "version": 5},
+            },
+            {
+                "revisionId": "10000000-0000-4000-8000-000000000002",
+                "lifecycle": {"state": "draft", "version": 0},
+            },
+        ]
+        detail = self.module.HttpResult(
+            status=200,
+            headers={},
+            body={"releaseWorkspace": {"revisions": histories}},
+        )
+
+        self.assertIs(
+            self.module.exact_released_revision_history(detail, revision_id),
+            histories[1],
+        )
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "exact Document release history is unavailable",
+        ):
+            self.module.exact_released_revision_history(
+                detail,
+                "10000000-0000-4000-8000-000000000003",
+            )
+
     def test_runtime_shell_migrates_twice_and_restores_route_switch(self) -> None:
         required_fragments = (
             '"--document-only"',
