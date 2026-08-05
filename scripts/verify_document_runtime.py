@@ -3438,7 +3438,6 @@ def verify_document_baseline_runtime(
         },
         csrf_token=csrf_token,
         idempotency_key=GATE_BASELINE_ATTACH_KEY,
-        gate_evidence_attach_diagnostic=True,
     )
     post_workspace_verifier_stage(stage_code, attached.trace_id)
     attached_evidence = validate_gate_baseline_attachment(

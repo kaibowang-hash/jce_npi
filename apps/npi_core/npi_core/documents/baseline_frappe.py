@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Iterator
 from uuid import UUID
 
@@ -212,17 +212,25 @@ def _uuid(value: object) -> UUID:
 
 def _datetime(value: object) -> datetime:
     if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
+        parsed = value
+    elif isinstance(value, str):
         try:
-            return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError:
-            pass
-    frappe.throw(
-        _("Enter a valid date and time."),
-        frappe.ValidationError,
-    )
-    raise AssertionError("Frappe validation must raise.")
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as error:
+            frappe.throw(
+                _("Enter a valid date and time."),
+                frappe.ValidationError,
+            )
+            raise AssertionError("Frappe validation must raise.") from error
+    else:
+        frappe.throw(
+            _("Enter a valid date and time."),
+            frappe.ValidationError,
+        )
+        raise AssertionError("Frappe validation must raise.")
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def _json_array(value: object) -> list[object]:

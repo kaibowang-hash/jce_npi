@@ -493,26 +493,14 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
-    def test_evidence_attach_diagnostic_activates_only_attach_request(self) -> None:
+    def test_repaired_flow_does_not_activate_evidence_attach_diagnostic(self) -> None:
         source = Path(self.module.__file__).read_text(encoding="utf-8")
         function_start = source.index("def verify_document_baseline_runtime(")
         function_end = source.index("\ndef run_fresh(", function_start)
         function = source[function_start:function_end]
-        attach_start = function.index("attached = npi_request(")
-        attach_validator = function.index(
-            "attached_evidence = validate_gate_baseline_attachment("
-        )
         self.assertNotIn(
             "gate_evidence_attach_diagnostic=True",
-            function[:attach_start],
-        )
-        self.assertIn(
-            "gate_evidence_attach_diagnostic=True",
-            function[attach_start:attach_validator],
-        )
-        self.assertNotIn(
-            "gate_evidence_attach_diagnostic=True",
-            function[attach_validator:],
+            function,
         )
         self.assertNotIn("baseline_create_diagnostic=True", function)
 
