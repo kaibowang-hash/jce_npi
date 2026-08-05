@@ -239,3 +239,58 @@ This is behavior-neutral verifier/fixture repair and consumes no product-root
 repair round. The next action is one scoped checkpoint, complete unchanged
 ordinary CI on its exact SHA and then the retained final unchanged
 controlled-Site Gate. P5-05 and Phase 6 remain inactive.
+
+## Final unchanged Gate and closed policy-fixture substage diagnostic
+
+Fixture repair checkpoint `cb314ffb2f5e6600bec126463fbcb7e9ac645069`
+passed complete exact-SHA ordinary CI `31014577854`:
+
+- repository job `92335171956` passed `verify.sh`, complete E2E, current-tree
+  Gitleaks and the complete PR branch-history scan;
+- fixed-Linux visual job `92335172189` passed the unchanged `62/62` matrix; and
+- controlled job `92335172839` remained correctly skipped.
+
+Final unchanged controlled workflow `31015391479` retained exact SHA
+`cb314ff`. Controlled job `92338012425` passed pinned tools, the fixed Bench,
+fixed disposable Site, both migrations, the complete unchanged P5-01/02/03
+Document runtime, every route-disable/recovery cycle and cleanup. Companion
+repository job `92338012349` passed complete verification/E2E/Gitleaks and
+fixed-Linux visual job `92338012500` passed `62/62`.
+
+P5-04 stopped before EBOM creation and emitted only:
+
+`P504_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+trace-38a09ee9b80150e98daef921d5b01fd1`
+
+That tuple proves the fixed-Bench synthetic policy fixture boundary but cannot
+distinguish root document construction/insertion, version construction/
+insertion, publication or final persistence validation. Guessing a repair is
+therefore prohibited.
+
+The active behavior-neutral diagnostic checkpoint:
+
+- divides only that verifier fixture into closed root-build, root-insert,
+  version-build, version-insert, publish and persistence substages;
+- maps an exception to its Python type only after the fixed type allowlist
+  syntax succeeds and uses the deterministic substage trace ID;
+- accepts a child-process diagnostic only when the final non-empty stderr line
+  exactly matches an allowed substage, validated type and exact deterministic
+  trace;
+- falls back to the existing aggregate `BenchFixtureError` on any malformed,
+  non-allowlisted or trace-mismatched child output; and
+- never forwards stderr, traceback, exception text, response data, paths,
+  cookies, CSRF values, fixture passwords or database material.
+
+Focused verification passes:
+
+- runtime verifier: `14/14`;
+- complete P5-04 EBOM suites: `57/57`;
+- complete tracked Python: `953/953`.
+
+No product API, permission, DocType, Schema, ownership, policy, transaction,
+lifecycle, idempotency or PASS rule changes. Under the controller this remains
+`IN_PROGRESS_DIAGNOSTIC`, consumes no product-root repair round and cannot be a
+Gate PASS. Complete exact-SHA ordinary CI is required before one diagnostic-only
+controlled-Site dispatch. Only a uniquely proven synthetic fixture substage may
+then be repaired, followed by affected checks, ordinary CI and one final
+unchanged controlled-Site Gate. P5-05 and Phase 6 remain inactive.

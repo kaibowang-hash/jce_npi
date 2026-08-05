@@ -8,7 +8,7 @@ import subprocess
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 import verify_document_runtime as document_runtime
@@ -87,10 +87,26 @@ EBOM_DOCTYPES = (
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
+_BENCH_DIAGNOSTIC_PATTERN = re.compile(
+    r"^\[diagnostic_code=(?P<code>[A-Z0-9_]+); "
+    r"exc_type=(?P<exception_type>[A-Za-z][A-Za-z0-9_.]{0,127}); "
+    r"trace_id=(?P<trace_id>trace-[a-f0-9]{32})\]$"
+)
+_POLICY_FIXTURE_SUBSTAGES = frozenset(
+    {
+        "P504_RUNTIME_POLICY_ROOT_BUILD_FIXTURE",
+        "P504_RUNTIME_POLICY_ROOT_INSERT_FIXTURE",
+        "P504_RUNTIME_POLICY_VERSION_BUILD_FIXTURE",
+        "P504_RUNTIME_POLICY_VERSION_INSERT_FIXTURE",
+        "P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE",
+        "P504_RUNTIME_POLICY_PERSISTENCE_FIXTURE",
+    }
+)
 _RUNTIME_STAGE_CODES = frozenset(
     {
         "P504_RUNTIME_EMPTY_WORKSPACE",
         "P504_RUNTIME_POLICY_FIXTURE",
+        *_POLICY_FIXTURE_SUBSTAGES,
         "P504_RUNTIME_SCHEMA_FIXTURE",
         "P504_RUNTIME_GUEST_AUTHORIZATION",
         "P504_RUNTIME_UNRELATED_AUTHORIZATION",
@@ -1007,48 +1023,68 @@ def provision_ebom_runtime_policy(
         "Controlled EBOM policy fixture namespace is not fresh",
     )
     with ebom_policy_write():
-        root = frappe.get_doc(
-            {
-                "doctype": "NPI EBOM Policy",
-                "global_id": POLICY_ID,
-                "tenant_id": TENANT_ID,
-                "project_global_id": project_id,
-                "policy_key": POLICY_KEY,
-                "title": "Synthetic controlled EBOM policy",
-                "enabled": 1,
-            }
-        ).insert()
-        version = frappe.get_doc(
-            {
-                "doctype": "NPI EBOM Policy Version",
-                "ebom_policy": POLICY_ID,
-                "policy_version": POLICY_VERSION,
-                "title": "Synthetic controlled EBOM policy",
-                "publication_state": "draft",
-                "synthetic_namespace": "synthetic_runtime",
-                "line_identity_mode": "caller_supplied_stable_key",
-                "quantity_scale": 3,
-                "maximum_nodes": 20,
-                "engineering_uoms": ["EA"],
-                "attribute_keys": ["material"],
-                "creator_user_ids": [actor_user_id],
-                "review_submitter_user_ids": [actor_user_id],
-                "reviewer_user_ids": [actor_user_id],
-                "release_authority_user_ids": [actor_user_id],
-                "require_acyclic_graph": 1,
-                "require_closed_alternates": 1,
-                "require_effectivity_order": 1,
-            }
-        ).insert()
+        root_document = policy_fixture_stage(
+            "P504_RUNTIME_POLICY_ROOT_BUILD_FIXTURE",
+            lambda: frappe.get_doc(
+                {
+                    "doctype": "NPI EBOM Policy",
+                    "global_id": POLICY_ID,
+                    "tenant_id": TENANT_ID,
+                    "project_global_id": project_id,
+                    "policy_key": POLICY_KEY,
+                    "title": "Synthetic controlled EBOM policy",
+                    "enabled": 1,
+                }
+            ),
+        )
+        root = policy_fixture_stage(
+            "P504_RUNTIME_POLICY_ROOT_INSERT_FIXTURE",
+            root_document.insert,
+        )
+        version_document = policy_fixture_stage(
+            "P504_RUNTIME_POLICY_VERSION_BUILD_FIXTURE",
+            lambda: frappe.get_doc(
+                {
+                    "doctype": "NPI EBOM Policy Version",
+                    "ebom_policy": POLICY_ID,
+                    "policy_version": POLICY_VERSION,
+                    "title": "Synthetic controlled EBOM policy",
+                    "publication_state": "draft",
+                    "synthetic_namespace": "synthetic_runtime",
+                    "line_identity_mode": "caller_supplied_stable_key",
+                    "quantity_scale": 3,
+                    "maximum_nodes": 20,
+                    "engineering_uoms": ["EA"],
+                    "attribute_keys": ["material"],
+                    "creator_user_ids": [actor_user_id],
+                    "review_submitter_user_ids": [actor_user_id],
+                    "reviewer_user_ids": [actor_user_id],
+                    "release_authority_user_ids": [actor_user_id],
+                    "require_acyclic_graph": 1,
+                    "require_closed_alternates": 1,
+                    "require_effectivity_order": 1,
+                }
+            ),
+        )
+        version = policy_fixture_stage(
+            "P504_RUNTIME_POLICY_VERSION_INSERT_FIXTURE",
+            version_document.insert,
+        )
         version.publication_state = "published"
-        version.save()
+        policy_fixture_stage(
+            "P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE",
+            version.save,
+        )
     policy_hash = str(version.snapshot_hash or "")
-    require(
-        root.name == POLICY_ID
-        and version.name == POLICY_VERSION_KEY
-        and version.publication_state == "published"
-        and _HASH_PATTERN.fullmatch(policy_hash) is not None,
-        "Controlled EBOM policy fixture persistence drifted",
+    policy_fixture_stage(
+        "P504_RUNTIME_POLICY_PERSISTENCE_FIXTURE",
+        lambda: require(
+            root.name == POLICY_ID
+            and version.name == POLICY_VERSION_KEY
+            and version.publication_state == "published"
+            and _HASH_PATTERN.fullmatch(policy_hash) is not None,
+            "Controlled EBOM policy fixture persistence drifted",
+        ),
     )
     frappe.db.commit()
     return {
@@ -1058,6 +1094,58 @@ def provision_ebom_runtime_policy(
         "publicationState": version.publication_state,
         "snapshotHash": policy_hash,
     }
+
+
+def policy_fixture_stage(code: str, operation: Callable[[], Any]) -> Any:
+    require(
+        code in _POLICY_FIXTURE_SUBSTAGES,
+        "Controlled EBOM policy fixture stage is unavailable",
+    )
+    try:
+        return operation()
+    except RuntimeStageFailure:
+        raise
+    except Exception as error:
+        exception_type = type(error).__name__
+        if _TYPE_PATTERN.fullmatch(exception_type) is None:
+            exception_type = "RuntimeError"
+        raise RuntimeStageFailure(
+            code,
+            document_runtime.fixture_trace_id(code),
+            exception_type=exception_type,
+        ) from None
+
+
+def bench_fixture_stage_failure(
+    method: str,
+    stderr: str,
+) -> RuntimeStageFailure | None:
+    allowed_codes = {
+        "provision_ebom_runtime_policy": _POLICY_FIXTURE_SUBSTAGES,
+        "verify_ebom_runtime_schema": frozenset(),
+    }.get(method)
+    if allowed_codes is None:
+        return None
+    lines = [line.strip() for line in stderr.splitlines() if line.strip()]
+    if not lines:
+        return None
+    matched = _BENCH_DIAGNOSTIC_PATTERN.fullmatch(lines[-1])
+    if matched is None:
+        return None
+    code = matched.group("code")
+    exception_type = matched.group("exception_type")
+    trace_id = matched.group("trace_id")
+    if (
+        code not in allowed_codes
+        or _TYPE_PATTERN.fullmatch(exception_type) is None
+        or trace_id != document_runtime.fixture_trace_id(code)
+    ):
+        return None
+    return RuntimeStageFailure(
+        code,
+        trace_id,
+        exception_type=exception_type,
+    )
 
 
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
@@ -1104,6 +1192,9 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         text=True,
     )
     if completed.returncode != 0:
+        stage_failure = bench_fixture_stage_failure(method, completed.stderr)
+        if stage_failure is not None:
+            raise stage_failure
         raise RuntimeStageFailure(
             stage_code,
             trace_id,

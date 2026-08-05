@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T14:10:59Z'
+updated_at: '2026-08-05T14:36:45Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME_FIXTURE_REPAIR
-current_task_completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_ROOT_PROVEN
-current_task_next_stage: P5-04-CONTROLLED-RUNTIME-POLICY-FIXTURE-REPAIR-EXACT-SHA
+current_task_status: IN_PROGRESS_POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC
+current_task_completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_BOUNDARY_NON_UNIQUE
+current_task_next_stage: P5-04-POLICY-FIXTURE-SUBSTAGE-DIAGNOSTIC-EXACT-SHA
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_CONTROLLED_RUNTIME_FIXTURE_REPAIR
+resumed_product_task_status: ACTIVE_POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_VERIFIER_POLICY_PROVISIONING_BOUNDARY_NOT_PRODUCT
+  current_root: P5_04_POLICY_FIXTURE_INNER_OPERATION_NOT_YET_UNIQUE
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -176,8 +176,27 @@ p5_04:
   controlled_runtime_failure_root: VERIFIER_GENERIC_REST_WRITE_CONFLICTS_WITH_CLOSED_EBOM_POLICY_ADMIN_BOUNDARY
   controlled_runtime_failure_is_product_root: false
   verifier_fixture_repairs_completed: 1
-  completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_ROOT_PROVEN
-  next_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_REPAIR_EXACT_SHA
+  fixture_repair_checkpoint: cb314ffb2f5e6600bec126463fbcb7e9ac645069
+  fixture_repair_normal_ci: 31014577854
+  fixture_repair_repository_job: 92335171956
+  fixture_repair_visual_job: 92335172189
+  fixture_repair_ci_outcome: PASS
+  final_unchanged_controlled_dispatch: 31015391479
+  final_unchanged_controlled_dispatch_head: cb314ffb2f5e6600bec126463fbcb7e9ac645069
+  final_unchanged_controlled_job: 92338012425
+  final_unchanged_controlled_repository_job: 92338012349
+  final_unchanged_controlled_visual_job: 92338012500
+  final_unchanged_controlled_companion_outcome: PASS
+  final_unchanged_controlled_outcome: FAILED_POLICY_FIXTURE_NON_UNIQUE
+  final_unchanged_controlled_diagnostic_code: P504_RUNTIME_POLICY_FIXTURE
+  final_unchanged_controlled_exception_type: BenchFixtureError
+  final_unchanged_controlled_trace_id: trace-38a09ee9b80150e98daef921d5b01fd1
+  final_unchanged_controlled_predecessor_document_outcome: PASS
+  diagnostic_checkpoints_completed: 1
+  diagnostic_dispatches_used: 0
+  diagnostic_dispatches_planned: 1
+  completed_stage: CONTROLLED_RUNTIME_POLICY_FIXTURE_BOUNDARY_NON_UNIQUE
+  next_stage: POLICY_FIXTURE_SUBSTAGE_DIAGNOSTIC_EXACT_SHA
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

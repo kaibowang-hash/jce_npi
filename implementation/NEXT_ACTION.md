@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME FIXTURE REPAIR`
+`IN_PROGRESS — P5-04 POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`
 
-Recovery time: `2026-08-05T14:10:59Z`
+Recovery time: `2026-08-05T14:36:45Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`bc81d468b12cc959e4761a593c451cf8785914b2`
+`cb314ffb2f5e6600bec126463fbcb7e9ac645069`
 
 Latest complete ordinary CI:
-`31011531101` (`PASS`, exact pushed checkpoint SHA)
+`31014577854` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -138,6 +138,22 @@ SHA-256
   It does not change product API, permission, Schema, ownership, transaction
   or policy rules. Focused EBOM passed `54/54`, the retained Document runtime
   contract passed `35/35`, and complete tracked Python passed `950/950`.
+- Repair checkpoint `cb314ff` passed complete exact-SHA ordinary CI
+  `31014577854`: repository `92335171956` passed verification, E2E, Gitleaks
+  and complete branch history; fixed-Linux visual `92335172189` passed `62/62`.
+- Final unchanged controlled run `31015391479` retained exact SHA `cb314ff`.
+  Pinned Bench, fixed Site, migrations, unchanged P5-01/02/03 runtime, route
+  recovery and cleanup passed. P5-04 returned only
+  `P504_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+  trace-38a09ee9b80150e98daef921d5b01fd1`; repository `92338012349` and visual
+  `92338012500` passed. The tuple proves the fixed-Bench policy fixture
+  boundary but not a unique inner operation, so no repair is yet permitted.
+- The active behavior-neutral diagnostic splits only that fixture into closed
+  root-build/root-insert/version-build/version-insert/publish/persistence
+  substages. The parent validates the exact allowlist/type/deterministic trace
+  and discards all other child stderr. Focused verifier `14/14`, complete
+  P5-04 EBOM `57/57` and complete tracked Python `953/953` pass. This consumes
+  no product-root repair round.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -159,13 +175,15 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one bounded P5-04 policy-fixture repair checkpoint containing only the
-proven verifier boundary correction, affected tests and synchronized
-evidence/controller files. Preserve every user-owned local modification and
-untracked asset. Push the development branch, confirm the remote SHA and
-require complete unchanged ordinary CI on that exact SHA. Only then run the
-retained final unchanged controlled-Site Gate. No product repair is authorized
-or needed by this root; P5-05 and Phase 6 remain inactive.
+Create one bounded behavior-neutral P5-04 policy-fixture substage diagnostic
+checkpoint containing only the closed stage inventory, strict relay validation,
+affected tests and synchronized evidence/controller files. Preserve every
+user-owned local modification and untracked asset. Push the development branch,
+confirm the remote SHA and require complete ordinary CI on that exact SHA.
+Only then execute one diagnostic-only controlled-Site dispatch. Repair only a
+uniquely proven synthetic fixture substage, rerun affected checks and ordinary
+CI, then execute one final unchanged controlled-Site Gate. No P5-01 range is
+reopened; P5-05 and Phase 6 remain inactive.
 
 ## Frozen predecessor invariants
 

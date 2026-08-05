@@ -1,5 +1,36 @@
 # Last Run
 
+## P5-04 final controlled Gate isolates a non-unique fixed-Bench fixture boundary; closed substage diagnostic active — 2026-08-05T14:36:45Z
+
+- Fixture repair checkpoint `cb314ffb2f5e6600bec126463fbcb7e9ac645069`
+  passed complete exact-SHA ordinary CI `31014577854`: repository job
+  `92335171956` passed `verify.sh`, E2E, current-tree Gitleaks and the complete
+  branch-history scan; fixed-Linux visual job `92335172189` passed `62/62`.
+- Final unchanged controlled workflow `31015391479` retained exact SHA
+  `cb314ff`. Pinned Bench, fixed disposable Site, both migrations, the complete
+  unchanged P5-01/02/03 Document runtime, every route-disable/recovery cycle
+  and cleanup passed. Repository `92338012349` and visual `92338012500` passed.
+- P5-04 emitted only
+  `P504_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+  trace-38a09ee9b80150e98daef921d5b01fd1`. This proves the fixed-Bench synthetic
+  policy fixture boundary but not a unique root-build, insert, publish or
+  persistence operation. No product or fixture repair is inferred.
+- The active behavior-neutral diagnostic inventory adds only closed
+  root-build/root-insert/version-build/version-insert/publish/persistence
+  substage codes. The parent accepts only the exact allowlisted last line,
+  validated exception type and deterministic substage trace. It discards raw
+  stderr, traceback, exception message, request/response, paths and secrets.
+- Focused runtime-verifier contract passed `14/14`; complete P5-04 EBOM suites
+  passed `57/57`; complete tracked Python passed `953/953`. Product API,
+  permission, Schema, ownership, policy,
+  transaction and PASS criteria remain unchanged. This consumes no
+  product-root repair round.
+- Next: push the scoped diagnostic checkpoint, require complete ordinary CI on
+  the exact SHA, execute one diagnostic-only controlled-Site dispatch and fix
+  only a uniquely proven synthetic fixture substage. P5-05 and Phase 6 remain
+  inactive. The additional P5-01 checkout diagnostic authorization remains
+  unused because sealed P5-01 passed unchanged again.
+
 ## P5-04 controlled Site proves verifier policy-boundary root; bounded fixture repair passes locally — 2026-08-05T14:10:59Z
 
 - History-scan repair checkpoint

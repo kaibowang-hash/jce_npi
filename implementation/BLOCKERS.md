@@ -413,3 +413,17 @@ must preserve that boundary.
   `24/24`, zero dependency vulnerabilities and an independent post-repair
   PASS. This closes only `FR-UX-041`; Stage 3 is the sole next task and there
   is no active Hard Blocker.
+
+## P5-04 policy-fixture diagnostic state — 2026-08-05T14:36:45Z
+
+- There is no active Hard Blocker. P5-00 through P5-03 remain sealed PASS.
+- Exact-SHA ordinary CI `31014577854` passed repair checkpoint `cb314ff`.
+- Final unchanged controlled workflow `31015391479` passed the fixed Bench,
+  disposable Site, migrations, unchanged P5-01/02/03 runtime, route recovery,
+  companion repository/visual jobs and cleanup, then returned only
+  `P504_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+  trace-38a09ee9b80150e98daef921d5b01fd1` at P5-04 policy provisioning.
+- The tuple is non-unique inside the synthetic fixture. A behavior-neutral
+  closed substage diagnostic is active under the controller and consumes no
+  product-root round. No product or fixture repair is allowed before it proves
+  one exact substage. P5-05 and Phase 6 remain inactive.

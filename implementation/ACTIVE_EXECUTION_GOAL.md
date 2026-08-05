@@ -1,17 +1,19 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T14:10:59Z`
+Updated: `2026-08-05T14:36:45Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME FIXTURE REPAIR`
+- Mode: `IN_PROGRESS — P5-04 POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `bc81d468b12cc959e4761a593c451cf8785914b2` (`0 ahead / 0 behind`)
+  `cb314ffb2f5e6600bec126463fbcb7e9ac645069` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `31011531101` (`PASS`, exact pushed checkpoint SHA `bc81d46`)
+  `31014577854` (`PASS`, exact pushed checkpoint SHA `cb314ff`)
+- Latest controlled-Site run:
+  `31015391479` (`FAILED_POLICY_FIXTURE_NON_UNIQUE`, exact SHA `cb314ff`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -19,7 +21,7 @@ Updated: `2026-08-05T14:10:59Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — CONTROLLED-RUNTIME FIXTURE REPAIR`)
+  (`IN_PROGRESS — POLICY-FIXTURE SUBSTAGE DIAGNOSTIC`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -138,24 +140,44 @@ verifier also emitted a traceback instead of the promised sanitized tuple.
 Code/controller cross-validation uniquely proves a verifier/fixture boundary
 root, not a product root; no product repair round is consumed.
 
-The bounded local repair removes only generic policy CRUD from the verifier
-and provisions that visibly synthetic policy through one allowlisted fixed
-Bench fixture using the existing guarded admin context. Product API,
-permission, Schema, ownership, transaction and policy rules are unchanged.
-Focused EBOM passed `54/54`, the retained Document runtime contract passed
-`35/35`, and complete tracked Python passed `950/950`.
+The bounded fixture repair checkpoint `cb314ff` removes only generic policy
+CRUD from the verifier and provisions that visibly synthetic policy through
+one allowlisted fixed-Bench fixture using the existing guarded admin context.
+Product API, permission, Schema, ownership, transaction and policy rules are
+unchanged. Focused EBOM passed `54/54`, the retained Document runtime contract
+passed `35/35`, complete tracked Python passed `950/950`, and exact-SHA
+ordinary CI `31014577854` passed repository and fixed-Linux visual.
+
+Final unchanged controlled run `31015391479` retained the exact `cb314ff` SHA.
+Pinned Bench, fixed disposable Site, both migrations, the complete unchanged
+P5-01/02/03 Document runtime and every route-disable/recovery cycle passed.
+P5-04 stopped only at the fixed-Bench synthetic policy fixture and emitted the
+closed tuple `P504_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+trace-38a09ee9b80150e98daef921d5b01fd1`. Repository job `92338012349` and
+fixed-Linux visual job `92338012500` passed; cleanup passed. The tuple proves
+the fixture boundary but not a unique operation inside it, so no product or
+fixture repair is yet permitted.
+
+The active behavior-neutral checkpoint splits only that synthetic fixture into
+closed root-build/root-insert/version-build/version-insert/publish/persistence
+substage codes. The parent accepts a child diagnostic only when its final line
+matches the exact allowlist, validated exception type and deterministic trace;
+all stderr, traceback, messages, paths and response content remain discarded.
+Focused runtime-verifier and complete P5-04 EBOM tests pass `14/14` and `57/57`;
+complete tracked Python passes `953/953`.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: create and push one bounded P5-04 policy-fixture
-repair checkpoint containing only the proven verifier correction, affected
-tests and synchronized evidence/controller files. Require complete unchanged
-ordinary CI on that exact SHA before the retained final unchanged
-controlled-Site Gate. No P5-01 range is reopened; the user's additional
-P5-01 checkout authorization remains unused because P5-01 is already sealed
-and passed unchanged in run `31013199095`. P5-05 and Phase 6 remain inactive.
+First incomplete action: complete and push the behavior-neutral P5-04
+policy-fixture substage diagnostic checkpoint, require complete ordinary CI on
+its exact SHA, then execute one diagnostic-only controlled-Site dispatch. Fix
+only the uniquely proven synthetic fixture substage, rerun affected checks and
+ordinary CI, and reserve the next unchanged controlled-Site run as the final
+Gate. No P5-01 range is reopened; the user's additional P5-01 checkout
+authorization remains unused because P5-01 is sealed and again passed
+unchanged in run `31015391479`. P5-05 and Phase 6 remain inactive.
 
 ## Historical passing and reusable evidence
 

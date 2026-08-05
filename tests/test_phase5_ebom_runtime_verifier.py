@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -117,6 +118,12 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         expected_codes = {
             "P504_RUNTIME_EMPTY_WORKSPACE",
             "P504_RUNTIME_POLICY_FIXTURE",
+            "P504_RUNTIME_POLICY_ROOT_BUILD_FIXTURE",
+            "P504_RUNTIME_POLICY_ROOT_INSERT_FIXTURE",
+            "P504_RUNTIME_POLICY_VERSION_BUILD_FIXTURE",
+            "P504_RUNTIME_POLICY_VERSION_INSERT_FIXTURE",
+            "P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE",
+            "P504_RUNTIME_POLICY_PERSISTENCE_FIXTURE",
             "P504_RUNTIME_SCHEMA_FIXTURE",
             "P504_RUNTIME_GUEST_AUTHORIZATION",
             "P504_RUNTIME_UNRELATED_AUTHORIZATION",
@@ -283,6 +290,96 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             "ResponseShapeError",
         )
         self.assertRegex(failure.exception.trace_id, r"^trace-[a-f0-9]{32}$")
+
+    def test_policy_fixture_substage_diagnostic_is_validated_and_sanitized(
+        self,
+    ) -> None:
+        module = self.module
+        code = "P504_RUNTIME_POLICY_VERSION_INSERT_FIXTURE"
+        trace_id = module.document_runtime.fixture_trace_id(code)
+        stderr = (
+            "sensitive traceback and /tmp/private path\n"
+            f"[diagnostic_code={code}; exc_type=ValidationError; "
+            f"trace_id={trace_id}]\n"
+        )
+        failure = module.bench_fixture_stage_failure(
+            "provision_ebom_runtime_policy",
+            stderr,
+        )
+        self.assertIsNotNone(failure)
+        assert failure is not None
+        self.assertEqual(failure.code, code)
+        self.assertEqual(failure.exception_type, "ValidationError")
+        self.assertEqual(failure.trace_id, trace_id)
+        diagnostic = module.runtime_stage_diagnostic(failure)
+        self.assertNotIn("traceback", diagnostic)
+        self.assertNotIn("/tmp", diagnostic)
+        self.assertNotIn("private", diagnostic)
+
+        for invalid in (
+            stderr.replace(code, "P504_RUNTIME_CREATE"),
+            stderr.replace(trace_id, "trace-" + ("f" * 32)),
+            stderr + "unexpected trailing content\n",
+        ):
+            with self.subTest(stderr=invalid):
+                self.assertIsNone(
+                    module.bench_fixture_stage_failure(
+                        "provision_ebom_runtime_policy",
+                        invalid,
+                    )
+                )
+
+    def test_policy_fixture_stage_maps_only_validated_exception_type(self) -> None:
+        module = self.module
+        code = "P504_RUNTIME_POLICY_ROOT_INSERT_FIXTURE"
+
+        def fail() -> None:
+            raise ValueError("sensitive database message")
+
+        with self.assertRaises(module.RuntimeStageFailure) as failure:
+            module.policy_fixture_stage(code, fail)
+        self.assertEqual(failure.exception.code, code)
+        self.assertEqual(failure.exception.exception_type, "ValueError")
+        self.assertEqual(
+            failure.exception.trace_id,
+            module.document_runtime.fixture_trace_id(code),
+        )
+        self.assertNotIn(
+            "sensitive",
+            module.runtime_stage_diagnostic(failure.exception),
+        )
+
+    def test_policy_fixture_subprocess_relays_only_validated_diagnostic(self) -> None:
+        module = self.module
+        code = "P504_RUNTIME_POLICY_VERSION_PUBLISH_FIXTURE"
+        trace_id = module.document_runtime.fixture_trace_id(code)
+        completed = Mock(
+            returncode=1,
+            stdout="sensitive stdout",
+            stderr=(
+                "sensitive traceback\n"
+                f"[diagnostic_code={code}; exc_type=ValidationError; "
+                f"trace_id={trace_id}]\n"
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            bench_path = Path(directory).resolve()
+            (bench_path / "sites").mkdir()
+            with patch.object(module, "BENCH_PATH", bench_path), patch.object(
+                module.subprocess,
+                "run",
+                return_value=completed,
+            ), self.assertRaises(module.RuntimeStageFailure) as failure:
+                module.run_bench_fixture(
+                    "provision_ebom_runtime_policy",
+                    {"fixture_run_id": module.FIXTURE_RUN_ID},
+                )
+        self.assertEqual(failure.exception.code, code)
+        self.assertEqual(failure.exception.exception_type, "ValidationError")
+        self.assertEqual(failure.exception.trace_id, trace_id)
+        diagnostic = module.runtime_stage_diagnostic(failure.exception)
+        self.assertNotIn("sensitive", diagnostic)
+        self.assertNotIn("traceback", diagnostic)
 
     def test_runtime_shell_migrates_twice_and_restores_p504_switch(self) -> None:
         required_fragments = (
