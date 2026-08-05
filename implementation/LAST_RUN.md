@@ -1,5 +1,29 @@
 # Last Run
 
+## P5-04 Requirement/domain audit PASS; foundation active — 2026-08-05T09:22:56Z
+
+- Confirmed the pushed P5-03 Level 2 evidence checkpoint at exact local/remote
+  SHA `5676f799ef2af8e1b3006ed69ec2b2f39539600f` with `0/0` divergence and
+  complete ordinary CI `30992850240`; preserved every pre-existing user
+  workspace modification unstaged.
+- Audited `FR-DS-011`, `FR-DS-012`, the Phase 5 anchor, current trace,
+  Engineering Item/EBOM/MBOM ownership and the exact Project/Document/release/
+  baseline/Gate predecessor boundaries.
+- Froze NPI-owned immutable EBOM revision/line snapshots, a separate guarded
+  review/release lifecycle, deterministic exact-revision comparison and an
+  explicit published synthetic-policy boundary.
+- Production EBOM numbering, line identity, quantity precision, stock UOM,
+  alternate/effectivity rules, attribute set, release authority and formal
+  Item/MBOM conversion remain Class-B holds; no production default or ERPNext
+  execution is authorized or represented.
+- Recorded Requirement -> Code -> Test -> Evidence, changed-files ->
+  affected-tests, migration/rollback, permission, concurrency, deletion, UX
+  and i18n boundaries.
+- P5-04 remains `IN_PROGRESS`; only its domain/metadata foundation is active.
+  P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-plan.md`.
+
 ## P5-03 Level 2 PASS; P5-04 audit active — 2026-08-05T09:14:10Z
 
 - Exact product checkpoint

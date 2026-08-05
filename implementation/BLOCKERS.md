@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-05T09:14:10Z`
+Updated: `2026-08-05T09:22:56Z`
 
 ## Active hard blockers
 
@@ -8,9 +8,14 @@ None.
 
 The former P5-03 pre-dispatch ordinary-CI and response-contract holds are
 resolved. Exact product SHA `302b1e9` passed ordinary CI `30990594281` and the
-final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2; P5-04
-is active at Requirement/domain audit. Historical blocker evidence remains
-retained below and in `implementation/evidence/phase-5/`.
+final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2; the
+P5-04 Requirement/domain audit passed and only its domain/metadata foundation
+is active. Production EBOM policy facts remain scoped Class-B holds rather
+than a global blocker. Historical blocker evidence remains retained below and
+in `implementation/evidence/phase-5/`.
+
+The pushed P5-03 evidence/controller checkpoint `5676f79` also passed complete
+ordinary CI `30992850240`; no checkpoint CI hold remains.
 
 ## Active diagnostic progress
 

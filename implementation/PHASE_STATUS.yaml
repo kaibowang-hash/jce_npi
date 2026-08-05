@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T09:14:10Z'
+updated_at: '2026-08-05T09:22:56Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
-current_task_completed_stage: NOT_STARTED
-current_task_next_stage: P5-04-REQUIREMENT-DOMAIN-AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_METADATA_FOUNDATION
+current_task_completed_stage: REQUIREMENT_DOMAIN_AUDIT_PASS
+current_task_next_stage: P5-04-DOMAIN-METADATA-FOUNDATION
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_REQUIREMENT_DOMAIN_AUDIT
+resumed_product_task_status: ACTIVE_DOMAIN_METADATA_FOUNDATION
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -133,6 +133,24 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-diagnostic-resume.md
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
+p5_04:
+  status: IN_PROGRESS
+  requirements: [FR-DS-011, FR-DS-012]
+  recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
+  completed_stage: REQUIREMENT_DOMAIN_AUDIT_PASS
+  next_stage: DOMAIN_METADATA_FOUNDATION
+  scoped_holds:
+    - PRODUCTION_EBOM_NUMBERING
+    - PRODUCTION_LINE_IDENTITY
+    - PRODUCTION_QUANTITY_PRECISION
+    - STOCK_UOM_AUTHORITY
+    - PRODUCTION_ALTERNATE_EFFECTIVITY_RULES
+    - PRODUCTION_ATTRIBUTE_SET
+    - PRODUCTION_REVIEW_RELEASE_AUTHORITY
+    - FORMAL_ITEM_MBOM_CONVERSION
+  evidence:
+    - implementation/phase-5-requirement-anchor.md
+    - implementation/evidence/phase-5/p5-04-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T09:14:10Z`
+Updated: `2026-08-05T09:22:56Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 REQUIREMENT/DOMAIN AUDIT`
+- Mode: `IN_PROGRESS — P5-04 DOMAIN/METADATA FOUNDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest verified product HEAD and remote HEAD before this controller sync:
-  `302b1e90d3561b57d6815dca186e5c33bcb8e693` (`0 ahead / 0 behind`)
+- Latest pushed checkpoint and remote HEAD before this controller sync:
+  `5676f799ef2af8e1b3006ed69ec2b2f39539600f` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `30990594281` (`PASS`, exact product SHA `302b1e9`)
+  `30992850240` (`PASS`, exact pushed checkpoint SHA `5676f79`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T09:14:10Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN AUDIT`)
+  (`IN_PROGRESS — DOMAIN/METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -35,16 +35,23 @@ P5-03 is complete at Level 2. Its immutable baseline, exact Gate evidence,
 explicit dependency registration and append-only successor impact truth are
 now reusable predecessor evidence and must not be reopened by P5-04.
 
-P5-04 begins only with a bounded Requirement/domain audit of `FR-DS-011` and
-`FR-DS-012`. It may design NPI-owned EBOM working revisions and deterministic
-comparisons only from reconciled facts. Production numbering, line identity,
-quantity precision, stock-UOM, alternate/effectivity, attribute-set, release
-authority and formal Item conversion remain Class-B held unless an exact
-versioned synthetic policy can support the generic technical foundation.
+The bounded Requirement/domain audit of `FR-DS-011` and `FR-DS-012` passed and
+is recorded in `implementation/evidence/phase-5/p5-04-plan.md`. P5-04 now
+implements only its controlled domain/metadata foundation: explicit published
+synthetic policy, immutable NPI-owned EBOM revisions/lines, separate lifecycle
+events and deterministic exact-revision comparison. Production numbering,
+line identity, quantity precision, stock-UOM, alternate/effectivity,
+attribute-set, release authority and formal Item conversion remain Class-B
+held and no production default is installed.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
+
+First incomplete action: implement and test only the P5-04 domain values,
+additive guarded DocTypes/controllers and independent route/write flags defined
+by the audit plan. Do not begin repository/BFF/frontend work until that
+foundation passes its Level 1 checkpoint.
 
 ## Historical passing and reusable evidence
 

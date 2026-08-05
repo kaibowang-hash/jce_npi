@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REQUIREMENT/DOMAIN AUDIT`
+`IN_PROGRESS — P5-04 DOMAIN/METADATA FOUNDATION`
 
-Recovery time: `2026-08-05T09:14:10Z`
+Recovery time: `2026-08-05T09:22:56Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
-Latest verified product checkpoint:
-`302b1e90d3561b57d6815dca186e5c33bcb8e693`
+Latest pushed recovery checkpoint:
+`5676f799ef2af8e1b3006ed69ec2b2f39539600f`
 
-Complete ordinary CI:
-`30990594281` (`PASS`, exact product SHA)
+Latest complete ordinary CI:
+`30992850240` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -39,6 +39,8 @@ SHA-256
 - The historical P5-03 diagnostic and blocker evidence remains retained; there
   is no active Hard Blocker.
 - P5-04 is the only active task. P5-05 and Phase 6 remain inactive.
+- The P5-04 bounded Requirement/domain audit passed and is recorded in
+  `implementation/evidence/phase-5/p5-04-plan.md`.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -60,18 +62,22 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Read `FR-DS-011`, `FR-DS-012`, the Phase 5 anchor, current trace, ownership
-contract and existing Project/Document/baseline/Gate boundaries. Record the
-P5-04 Requirement/domain audit before adding code. Freeze identity, hierarchy,
-quantity/UOM/alternate/effectivity, revision lifecycle, comparison semantics,
-permissions, concurrency, audit, deletion and rollback rules only where the
-reconciled specifications provide facts.
+Implement the controlled P5-04 domain/metadata foundation defined in
+`implementation/evidence/phase-5/p5-04-plan.md`:
 
-If production EBOM numbering, line identity, quantity precision, stock-UOM,
-alternate/effectivity, attribute set, release authority or formal Item
-conversion remains unavailable, retain it as Class-B held scope and proceed
-only with explicit versioned synthetic policies/fixtures. Do not infer these
-rules from sample data.
+1. exact published synthetic-policy values and authority bindings;
+2. immutable EBOM/revision/line snapshots with strict graph, quantity,
+   engineering-UOM, alternate/effectivity and attribute validation;
+3. separate optimistic lifecycle and append-only review/release events;
+4. deterministic exact-revision added/removed/quantity/substitution/attribute
+   comparison; and
+5. additive guarded DocTypes/controllers plus independent route/write flags.
+
+Run focused domain, metadata, controller, compile/JSON and diff checks. Record
+the Level 1 foundation checkpoint before repository/BFF/OpenAPI/frontend work.
+Production EBOM numbering, line identity, quantity precision, stock-UOM,
+alternate/effectivity, attribute set, release authority and formal Item
+conversion remain Class-B holds; install no production defaults.
 
 ## Frozen predecessor invariants
 
@@ -93,8 +99,7 @@ rules from sample data.
 
 ## Completion boundary
 
-P5-04 may advance from audit to implementation only after its plan records
-Requirement -> Code -> Test -> Evidence and changed-files -> affected-tests
-maps, scoped holds and rollback. P5-05 remains inactive until P5-04 passes its
-Level 2 Task Gate. Phase 5 Level 3 runs only after P5-05 reaches the Phase
-boundary.
+The audit prerequisite is complete with Requirement -> Code -> Test ->
+Evidence and changed-files -> affected-tests maps, scoped holds and rollback.
+P5-04 remains `IN_PROGRESS`; P5-05 stays inactive until P5-04 passes its Level
+2 Task Gate. Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.
