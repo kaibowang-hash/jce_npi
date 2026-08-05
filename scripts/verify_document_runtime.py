@@ -3210,6 +3210,7 @@ def verify_document_baseline_runtime(
         payload=payload,
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
+        diagnostic=True,
     )
     post_workspace_verifier_stage(stage_code, created_result.trace_id)
     stage_code = "P503_BASELINE_CREATE_RESPONSE_SHAPE"
