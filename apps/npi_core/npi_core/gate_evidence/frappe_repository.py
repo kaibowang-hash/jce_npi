@@ -17,6 +17,9 @@ from npi_core.documents.baseline_domain import (
     DocumentBaseline,
     DocumentBaselineInputUnavailable,
 )
+from npi_core.documents.baseline_diagnostics import (
+    gate_evidence_attach_server_step,
+)
 from npi_core.documents.baseline_frappe import baseline_dependency_system_write
 from npi_core.documents.baseline_repository import (
     document_baseline_impact_response,
@@ -195,49 +198,64 @@ class FrappeGateEvidenceRepository:
         source_version: int,
         source_hash: str,
     ) -> GateCommandOutcome | None:
-        project = self._locked_authorized_project(
-            project_id,
-            ProjectAccess.ADMINISTER,
-        )
+        with gate_evidence_attach_server_step(
+            "P503_GATE_EVIDENCE_ATTACH_PROJECT_LOCK"
+        ):
+            project = self._locked_authorized_project(
+                project_id,
+                ProjectAccess.ADMINISTER,
+            )
         if project is None:
             return None
-        gate = self._locked_gate_for_project(project, gate_id)
+        with gate_evidence_attach_server_step(
+            "P503_GATE_EVIDENCE_ATTACH_GATE_LOCK"
+        ):
+            gate = self._locked_gate_for_project(project, gate_id)
         if gate is None:
             return None
-        payload_hash = _payload_hash(
-            {
-                "projectId": project_id,
-                "gateId": gate_id,
-                "requirementKey": requirement_key,
-                "expectedGateVersion": expected_gate_version,
-                "evidenceKind": evidence_kind,
-                "sourceGlobalId": source_global_id,
-                "sourceVersion": source_version,
-                "sourceHash": source_hash,
-            }
-        )
-        replay = self._idempotency_replay(idempotency_key, payload_hash)
+        with gate_evidence_attach_server_step(
+            "P503_GATE_EVIDENCE_ATTACH_IDEMPOTENCY_REPLAY"
+        ):
+            payload_hash = _payload_hash(
+                {
+                    "projectId": project_id,
+                    "gateId": gate_id,
+                    "requirementKey": requirement_key,
+                    "expectedGateVersion": expected_gate_version,
+                    "evidenceKind": evidence_kind,
+                    "sourceGlobalId": source_global_id,
+                    "sourceVersion": source_version,
+                    "sourceHash": source_hash,
+                }
+            )
+            replay = self._idempotency_replay(idempotency_key, payload_hash)
         if replay is not None:
             return GateCommandOutcome(replay, replayed=True)
-        require_mutable_project(project)
-        self._require_gate_version(gate, expected_gate_version)
-        snapshot = self._requirement_snapshot(gate)
-        requirement = _requirement_by_key(snapshot, requirement_key)
-        allowed = requirement.get("allowedEvidenceKinds")
-        if not isinstance(allowed, list) or evidence_kind not in allowed:
-            raise _field_problem(
-                "evidenceKind",
-                _("Select an evidence kind allowed by this requirement."),
+        with gate_evidence_attach_server_step(
+            "P503_GATE_EVIDENCE_ATTACH_PRECONDITION"
+        ):
+            require_mutable_project(project)
+            self._require_gate_version(gate, expected_gate_version)
+            snapshot = self._requirement_snapshot(gate)
+            requirement = _requirement_by_key(snapshot, requirement_key)
+            allowed = requirement.get("allowedEvidenceKinds")
+            if not isinstance(allowed, list) or evidence_kind not in allowed:
+                raise _field_problem(
+                    "evidenceKind",
+                    _("Select an evidence kind allowed by this requirement."),
+                )
+            if evidence_kind not in _SUPPORTED_EVIDENCE_KINDS:
+                raise EvidenceSourceUnavailable()
+        with gate_evidence_attach_server_step(
+            "P503_GATE_EVIDENCE_ATTACH_SOURCE_RESOLVE"
+        ):
+            source_snapshot, baseline = self._resolve_exact_source(
+                project,
+                evidence_kind=evidence_kind,
+                source_global_id=source_global_id,
+                source_version=source_version,
+                source_hash=source_hash,
             )
-        if evidence_kind not in _SUPPORTED_EVIDENCE_KINDS:
-            raise EvidenceSourceUnavailable()
-        source_snapshot, baseline = self._resolve_exact_source(
-            project,
-            evidence_kind=evidence_kind,
-            source_global_id=source_global_id,
-            source_version=source_version,
-            source_hash=source_hash,
-        )
         requirement_global_id = UUID(str(requirement["globalId"]))
         reference_key = evidence_reference_key(
             tenant_id=str(project.tenant_id),
@@ -279,66 +297,90 @@ class FrappeGateEvidenceRepository:
         evidence_global_id = uuid4()
         attached_at = datetime.now(UTC)
         with _controlled_gate_write_scope():
-            idempotency = self._insert_idempotency(
-                idempotency_key,
-                payload_hash,
-                project,
-                "gate.evidence.attach",
-            )
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_RECEIPT_INSERT"
+            ):
+                idempotency = self._insert_idempotency(
+                    idempotency_key,
+                    payload_hash,
+                    project,
+                    "gate.evidence.attach",
+                )
             if type(idempotency) is dict:
                 return GateCommandOutcome(idempotency, replayed=True)
-            frappe.get_doc(
-                {
-                    "doctype": "NPI Gate Evidence Reference",
-                    "global_id": str(evidence_global_id),
-                    "reference_key": reference_key,
-                    "tenant_id": str(project.tenant_id),
-                    "project_global_id": str(project_id),
-                    "gate_global_id": str(gate_id),
-                    "requirement_global_id": str(requirement_global_id),
-                    "requirement_key": str(requirement["key"]),
-                    "evidence_kind": evidence_kind,
-                    "source_object_type": evidence_kind,
-                    "source_global_id": str(source_global_id),
-                    "source_version": source_version,
-                    "source_hash": source_hash,
-                    "source_snapshot": source_snapshot,
-                    "created_by": self.actor,
-                    "created_at": _database_datetime(attached_at),
-                    "optimistic_version": 1,
-                }
-            ).insert()
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_REFERENCE_INSERT"
+            ):
+                frappe.get_doc(
+                    {
+                        "doctype": "NPI Gate Evidence Reference",
+                        "global_id": str(evidence_global_id),
+                        "reference_key": reference_key,
+                        "tenant_id": str(project.tenant_id),
+                        "project_global_id": str(project_id),
+                        "gate_global_id": str(gate_id),
+                        "requirement_global_id": str(requirement_global_id),
+                        "requirement_key": str(requirement["key"]),
+                        "evidence_kind": evidence_kind,
+                        "source_object_type": evidence_kind,
+                        "source_global_id": str(source_global_id),
+                        "source_version": source_version,
+                        "source_hash": source_hash,
+                        "source_snapshot": source_snapshot,
+                        "created_by": self.actor,
+                        "created_at": _database_datetime(attached_at),
+                        "optimistic_version": 1,
+                    }
+                ).insert()
             if baseline is not None:
-                self._insert_baseline_dependencies(
-                    project,
-                    gate,
-                    requirement_global_id=requirement_global_id,
-                    requirement_key=str(requirement["key"]),
-                    evidence_global_id=evidence_global_id,
-                    baseline=baseline,
-                    registered_at=attached_at,
+                with gate_evidence_attach_server_step(
+                    "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT"
+                ):
+                    self._insert_baseline_dependencies(
+                        project,
+                        gate,
+                        requirement_global_id=requirement_global_id,
+                        requirement_key=str(requirement["key"]),
+                        evidence_global_id=evidence_global_id,
+                        baseline=baseline,
+                        registered_at=attached_at,
+                    )
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_GATE_SAVE"
+            ):
+                gate.optimistic_version = int(gate.optimistic_version) + 1
+                gate.save()
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_REVIEW_REFRESH"
+            ):
+                self._refresh_gate_review_locked(project, gate)
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_AUDIT_APPEND"
+            ):
+                self._append_audit(
+                    operation="gate.evidence.attach",
+                    global_id=evidence_global_id,
+                    object_version=1,
+                    result="created",
+                    summary={
+                        "evidenceKind": evidence_kind,
+                        "gateId": str(gate_id),
+                        "projectId": str(project_id),
+                        "requestId": self.request_id,
+                        "requirementKey": str(requirement["key"]),
+                        "sourceGlobalId": str(source_global_id),
+                        "sourceHash": source_hash,
+                        "sourceVersion": source_version,
+                    },
                 )
-            gate.optimistic_version = int(gate.optimistic_version) + 1
-            gate.save()
-            self._refresh_gate_review_locked(project, gate)
-            self._append_audit(
-                operation="gate.evidence.attach",
-                global_id=evidence_global_id,
-                object_version=1,
-                result="created",
-                summary={
-                    "evidenceKind": evidence_kind,
-                    "gateId": str(gate_id),
-                    "projectId": str(project_id),
-                    "requestId": self.request_id,
-                    "requirementKey": str(requirement["key"]),
-                    "sourceGlobalId": str(source_global_id),
-                    "sourceHash": source_hash,
-                    "sourceVersion": source_version,
-                },
-            )
-            response = self._workspace_for(project, gate)
-            self._seal_idempotency(idempotency, response)
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BUILD"
+            ):
+                response = self._workspace_for(project, gate)
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_RECEIPT_SEAL"
+            ):
+                self._seal_idempotency(idempotency, response)
         return GateCommandOutcome(response)
 
     def _insert_baseline_dependencies(

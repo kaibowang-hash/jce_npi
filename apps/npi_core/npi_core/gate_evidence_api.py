@@ -9,6 +9,10 @@ import frappe
 from frappe import _
 
 from npi_core.api import frappe_domain_call
+from npi_core.documents.baseline_diagnostics import (
+    gate_evidence_attach_server_diagnostics,
+    gate_evidence_attach_server_step,
+)
 from npi_core.foundation.errors import (
     NpiProblem,
     PermissionDenied,
@@ -195,39 +199,60 @@ def attach_gate_evidence(
     success_headers = _command_response_headers()
 
     def handle() -> dict[str, Any]:
-        request_id, idempotency_key, repository = _command_context(
-            _ATTACH_FIELDS,
-            request_fields,
-        )
-        outcome = repository.attach_evidence(
-            _route_uuid("project_id", "projectId"),
-            _route_uuid("gate_id", "gateId"),
-            _route_key("requirement_key", "requirementKey"),
-            idempotency_key=idempotency_key,
-            expected_gate_version=_positive_integer(
-                expectedGateVersion,
-                "expectedGateVersion",
-            ),
-            evidence_kind=_enum_text(
-                evidenceKind,
-                "evidenceKind",
-                _EVIDENCE_KINDS,
-            ),
-            source_global_id=_uuid_value(
-                sourceGlobalId,
-                "sourceGlobalId",
-            ),
-            source_version=_positive_integer(
-                sourceVersion,
-                "sourceVersion",
-            ),
-            source_hash=_hash_value(sourceHash, "sourceHash"),
-        )
-        return _command_response(
-            outcome,
-            request_id=request_id,
-            success_headers=success_headers,
-        )
+        with gate_evidence_attach_server_diagnostics(current_trace_id.get()):
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_COMMAND_CONTEXT"
+            ):
+                request_id, idempotency_key, repository = _command_context(
+                    _ATTACH_FIELDS,
+                    request_fields,
+                )
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_INPUT_PARSE"
+            ):
+                project_id = _route_uuid("project_id", "projectId")
+                gate_id = _route_uuid("gate_id", "gateId")
+                requirement_key = _route_key(
+                    "requirement_key",
+                    "requirementKey",
+                )
+                expected_gate_version = _positive_integer(
+                    expectedGateVersion,
+                    "expectedGateVersion",
+                )
+                evidence_kind = _enum_text(
+                    evidenceKind,
+                    "evidenceKind",
+                    _EVIDENCE_KINDS,
+                )
+                source_global_id = _uuid_value(
+                    sourceGlobalId,
+                    "sourceGlobalId",
+                )
+                source_version = _positive_integer(
+                    sourceVersion,
+                    "sourceVersion",
+                )
+                source_hash = _hash_value(sourceHash, "sourceHash")
+            with gate_evidence_attach_server_step(
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BUILD"
+            ):
+                outcome = repository.attach_evidence(
+                    project_id,
+                    gate_id,
+                    requirement_key,
+                    idempotency_key=idempotency_key,
+                    expected_gate_version=expected_gate_version,
+                    evidence_kind=evidence_kind,
+                    source_global_id=source_global_id,
+                    source_version=source_version,
+                    source_hash=source_hash,
+                )
+                return _command_response(
+                    outcome,
+                    request_id=request_id,
+                    success_headers=success_headers,
+                )
 
     return frappe_domain_call(
         handle,

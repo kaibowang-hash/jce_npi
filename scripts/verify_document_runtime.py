@@ -240,6 +240,38 @@ _BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES = frozenset(
 )
 _BASELINE_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _BASELINE_CREATE_DIAGNOSTIC_SCOPE = "p503-baseline-create-v1"
+_GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P503_GATE_EVIDENCE_ATTACH_COMMAND_CONTEXT",
+        "P503_GATE_EVIDENCE_ATTACH_INPUT_PARSE",
+        "P503_GATE_EVIDENCE_ATTACH_PROJECT_LOCK",
+        "P503_GATE_EVIDENCE_ATTACH_GATE_LOCK",
+        "P503_GATE_EVIDENCE_ATTACH_IDEMPOTENCY_REPLAY",
+        "P503_GATE_EVIDENCE_ATTACH_PRECONDITION",
+        "P503_GATE_EVIDENCE_ATTACH_SOURCE_RESOLVE",
+        "P503_GATE_EVIDENCE_ATTACH_RECEIPT_INSERT",
+        "P503_GATE_EVIDENCE_ATTACH_REFERENCE_INSERT",
+        "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT",
+        "P503_GATE_EVIDENCE_ATTACH_GATE_SAVE",
+        "P503_GATE_EVIDENCE_ATTACH_REVIEW_REFRESH",
+        "P503_GATE_EVIDENCE_ATTACH_AUDIT_APPEND",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BUILD",
+        "P503_GATE_EVIDENCE_ATTACH_RECEIPT_SEAL",
+    }
+)
+_GATE_EVIDENCE_ATTACH_VERIFIER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P503_GATE_EVIDENCE_ATTACH_CLIENT_HTTP",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_SHAPE",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_GATE_VERSION",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_EVIDENCE_CARDINALITY",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_IDENTITY",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BASELINE",
+        "P503_GATE_EVIDENCE_ATTACH_RESPONSE_URL_EXCLUSION",
+    }
+)
+_GATE_EVIDENCE_ATTACH_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_GATE_EVIDENCE_ATTACH_DIAGNOSTIC_SCOPE = "p503-gate-evidence-attach-v1"
 _POST_WORKSPACE_VERIFIER_STAGE_CODES = frozenset(
     {
         "P503_VERIFIER_POST_WORKSPACE_PAYLOAD_BUILD",
@@ -271,6 +303,8 @@ _RUNTIME_DIAGNOSTIC_CODES = (
     | _BASELINE_WORKSPACE_DIAGNOSTIC_CODES
     | _BASELINE_CREATE_SERVER_DIAGNOSTIC_CODES
     | _BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES
+    | _GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES
+    | _GATE_EVIDENCE_ATTACH_VERIFIER_DIAGNOSTIC_CODES
     | _POST_WORKSPACE_VERIFIER_STAGE_CODES
 )
 _SENSITIVE_DIAGNOSTIC_PATTERN = re.compile(
@@ -610,6 +644,12 @@ def _sanitized_bff_log_diagnostic(
                     if (
                         isinstance(diagnostic_code, str)
                         and diagnostic_code
+                        in _GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES
+                    ):
+                        return diagnostic_type, diagnostic_code, trace_id
+                    if (
+                        isinstance(diagnostic_code, str)
+                        and diagnostic_code
                         in (
                             _CHECKOUT_STAGE_DIAGNOSTIC_CODES
                             | _REVISION_STAGE_DIAGNOSTIC_CODES
@@ -691,6 +731,7 @@ def npi_request(
     idempotency_key: str | None = None,
     query_key: str = "query",
     baseline_create_diagnostic: bool = False,
+    gate_evidence_attach_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         command_headers(csrf_token, idempotency_key)
@@ -700,6 +741,12 @@ def npi_request(
     if baseline_create_diagnostic:
         headers[_BASELINE_CREATE_DIAGNOSTIC_HEADER] = (
             _BASELINE_CREATE_DIAGNOSTIC_SCOPE
+        )
+    if gate_evidence_attach_diagnostic:
+        if baseline_create_diagnostic:
+            raise ValueError("Only one request diagnostic scope may be active")
+        headers[_GATE_EVIDENCE_ATTACH_DIAGNOSTIC_HEADER] = (
+            _GATE_EVIDENCE_ATTACH_DIAGNOSTIC_SCOPE
         )
     result = request(
         opener,
@@ -3002,6 +3049,83 @@ def validate_document_baseline_command(
     return baseline
 
 
+def require_gate_evidence_attach_http(result: HttpResult) -> None:
+    if result.status == 201:
+        return
+    diagnostic = _sanitized_bff_log_diagnostic(result.trace_id)
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+        if code in _GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES:
+            raise RuntimeSubstageFailure(
+                code,
+                trace_id,
+                exception_type=exception_type,
+            )
+    require_runtime_substage(
+        False,
+        code="P503_GATE_EVIDENCE_ATTACH_CLIENT_HTTP",
+        trace_id=result.trace_id,
+    )
+
+
+def validate_gate_baseline_attachment(
+    result: HttpResult,
+    *,
+    baseline_id: str,
+    baseline_hash: str,
+    baseline: dict[str, Any],
+) -> dict[str, Any]:
+    require_gate_evidence_attach_http(result)
+    trace_id = result.trace_id
+    require_runtime_substage(
+        isinstance(result.body, dict),
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_SHAPE",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        result.headers.get("Idempotency-Replayed") == "false"
+        and result.body.get("gate", {}).get("version") == 3,
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_GATE_VERSION",
+        trace_id=trace_id,
+    )
+    requirements = result.body.get("requirements")
+    evidence = (
+        requirements[0].get("evidence")
+        if isinstance(requirements, list)
+        and len(requirements) == 1
+        and isinstance(requirements[0], dict)
+        else None
+    )
+    require_runtime_substage(
+        isinstance(evidence, list)
+        and len(evidence) == 1
+        and isinstance(evidence[0], dict),
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_EVIDENCE_CARDINALITY",
+        trace_id=trace_id,
+    )
+    attached_evidence = evidence[0]
+    require_runtime_substage(
+        attached_evidence.get("kind") == "release_baseline"
+        and attached_evidence.get("sourceGlobalId") == baseline_id
+        and attached_evidence.get("revision") == 1
+        and attached_evidence.get("objectHash") == baseline_hash,
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_IDENTITY",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        attached_evidence.get("baseline") == baseline,
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_BASELINE",
+        trace_id=trace_id,
+    )
+    require_runtime_substage(
+        '"url"'
+        not in json.dumps(attached_evidence, sort_keys=True).casefold(),
+        code="P503_GATE_EVIDENCE_ATTACH_RESPONSE_URL_EXCLUSION",
+        trace_id=trace_id,
+    )
+    return attached_evidence
+
+
 def validate_initial_document_baseline_workspace(
     result: HttpResult,
     *,
@@ -3314,28 +3438,16 @@ def verify_document_baseline_runtime(
         },
         csrf_token=csrf_token,
         idempotency_key=GATE_BASELINE_ATTACH_KEY,
+        gate_evidence_attach_diagnostic=True,
     )
     post_workspace_verifier_stage(stage_code, attached.trace_id)
-    requirements = attached.body.get("requirements", [])
-    evidence = (
-        requirements[0].get("evidence", [])
-        if len(requirements) == 1
-        else []
+    attached_evidence = validate_gate_baseline_attachment(
+        attached,
+        baseline_id=baseline_id,
+        baseline_hash=baseline_hash,
+        baseline=baseline,
     )
-    require(
-        attached.status == 201
-        and attached.headers.get("Idempotency-Replayed") == "false"
-        and attached.body.get("gate", {}).get("version") == 3
-        and len(evidence) == 1
-        and evidence[0].get("kind") == "release_baseline"
-        and evidence[0].get("sourceGlobalId") == baseline_id
-        and evidence[0].get("revision") == 1
-        and evidence[0].get("objectHash") == baseline_hash
-        and evidence[0].get("baseline") == baseline
-        and '"url"' not in json.dumps(evidence[0], sort_keys=True).casefold(),
-        "Exact baseline Gate evidence attachment drifted",
-    )
-    evidence_reference_id = str(evidence[0]["globalId"])
+    evidence_reference_id = str(attached_evidence["globalId"])
     stage_code = "P503_VERIFIER_POST_WORKSPACE_DEPENDENCY_QUERY"
     post_workspace_verifier_stage(stage_code, fixture_trace_id(stage_code))
     dependencies = list_resources(

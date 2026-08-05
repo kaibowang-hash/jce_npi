@@ -219,6 +219,7 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
         "frappe.model.document",
         "frappe.utils",
         "npi_core.controlled_evidence_validation",
+        "npi_core.documents.baseline_diagnostics",
         "npi_core.npi_core.doctype.npi_file_revision.npi_file_revision",
         (
             "npi_core.npi_core.doctype.npi_gate_evidence_reference."
@@ -332,6 +333,29 @@ class Phase4GateEvidenceRepositoryTest(unittest.TestCase):
         for name, module in self.saved_modules.items():
             if module is not None:
                 sys.modules[name] = module
+
+    def test_attach_evidence_has_closed_server_diagnostic_boundaries(self) -> None:
+        source = inspect.getsource(
+            self.repository_module.FrappeGateEvidenceRepository.attach_evidence
+        )
+        expected = {
+            "P503_GATE_EVIDENCE_ATTACH_PROJECT_LOCK",
+            "P503_GATE_EVIDENCE_ATTACH_GATE_LOCK",
+            "P503_GATE_EVIDENCE_ATTACH_IDEMPOTENCY_REPLAY",
+            "P503_GATE_EVIDENCE_ATTACH_PRECONDITION",
+            "P503_GATE_EVIDENCE_ATTACH_SOURCE_RESOLVE",
+            "P503_GATE_EVIDENCE_ATTACH_RECEIPT_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_REFERENCE_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_GATE_SAVE",
+            "P503_GATE_EVIDENCE_ATTACH_REVIEW_REFRESH",
+            "P503_GATE_EVIDENCE_ATTACH_AUDIT_APPEND",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BUILD",
+            "P503_GATE_EVIDENCE_ATTACH_RECEIPT_SEAL",
+        }
+        for code in expected:
+            with self.subTest(code=code):
+                self.assertEqual(source.count(f'"{code}"'), 1)
 
     def _template_snapshot(self, *, include_release_baseline: bool = True):
         EvidenceKind = self.template_domain.EvidenceKind

@@ -493,12 +493,28 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
-    def test_final_baseline_flow_does_not_activate_diagnostics(self) -> None:
+    def test_evidence_attach_diagnostic_activates_only_attach_request(self) -> None:
         source = Path(self.module.__file__).read_text(encoding="utf-8")
         function_start = source.index("def verify_document_baseline_runtime(")
         function_end = source.index("\ndef run_fresh(", function_start)
         function = source[function_start:function_end]
-        self.assertNotIn("diagnostic=True", function)
+        attach_start = function.index("attached = npi_request(")
+        attach_validator = function.index(
+            "attached_evidence = validate_gate_baseline_attachment("
+        )
+        self.assertNotIn(
+            "gate_evidence_attach_diagnostic=True",
+            function[:attach_start],
+        )
+        self.assertIn(
+            "gate_evidence_attach_diagnostic=True",
+            function[attach_start:attach_validator],
+        )
+        self.assertNotIn(
+            "gate_evidence_attach_diagnostic=True",
+            function[attach_validator:],
+        )
+        self.assertNotIn("baseline_create_diagnostic=True", function)
 
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
@@ -1103,6 +1119,37 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             module._BASELINE_CREATE_DIAGNOSTIC_SCOPE,
         )
 
+        attach_key = module.GATE_BASELINE_ATTACH_KEY
+        attach_response = module.HttpResult(
+            status=500,
+            headers={
+                "X-Request-ID": module.fixture_request_id(attach_key),
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        with patch.object(
+            module,
+            "request",
+            return_value=attach_response,
+        ) as attach_call:
+            module.npi_request(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/example/gates/example/requirements/x/evidence",
+                method="POST",
+                payload={},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=attach_key,
+                gate_evidence_attach_diagnostic=True,
+            )
+        self.assertEqual(
+            attach_call.call_args.kwargs["request_headers"].get(
+                module._GATE_EVIDENCE_ATTACH_DIAGNOSTIC_HEADER
+            ),
+            module._GATE_EVIDENCE_ATTACH_DIAGNOSTIC_SCOPE,
+        )
+
     def test_baseline_create_server_diagnostic_precedes_client_http_code(
         self,
     ) -> None:
@@ -1232,6 +1279,162 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             client_failure.exception.code,
             "P503_BASELINE_CREATE_CLIENT_HTTP",
         )
+
+    def test_gate_evidence_attach_diagnostic_is_exact_and_closed(self) -> None:
+        module = self.module
+        server_codes = {
+            "P503_GATE_EVIDENCE_ATTACH_COMMAND_CONTEXT",
+            "P503_GATE_EVIDENCE_ATTACH_INPUT_PARSE",
+            "P503_GATE_EVIDENCE_ATTACH_PROJECT_LOCK",
+            "P503_GATE_EVIDENCE_ATTACH_GATE_LOCK",
+            "P503_GATE_EVIDENCE_ATTACH_IDEMPOTENCY_REPLAY",
+            "P503_GATE_EVIDENCE_ATTACH_PRECONDITION",
+            "P503_GATE_EVIDENCE_ATTACH_SOURCE_RESOLVE",
+            "P503_GATE_EVIDENCE_ATTACH_RECEIPT_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_REFERENCE_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT",
+            "P503_GATE_EVIDENCE_ATTACH_GATE_SAVE",
+            "P503_GATE_EVIDENCE_ATTACH_REVIEW_REFRESH",
+            "P503_GATE_EVIDENCE_ATTACH_AUDIT_APPEND",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BUILD",
+            "P503_GATE_EVIDENCE_ATTACH_RECEIPT_SEAL",
+        }
+        verifier_codes = {
+            "P503_GATE_EVIDENCE_ATTACH_CLIENT_HTTP",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_SHAPE",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_GATE_VERSION",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_EVIDENCE_CARDINALITY",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_IDENTITY",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BASELINE",
+            "P503_GATE_EVIDENCE_ATTACH_RESPONSE_URL_EXCLUSION",
+        }
+        self.assertEqual(
+            module._GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES,
+            server_codes,
+        )
+        self.assertEqual(
+            module._GATE_EVIDENCE_ATTACH_VERIFIER_DIAGNOSTIC_CODES,
+            verifier_codes,
+        )
+        trace_id = module.fixture_trace_id(module.GATE_BASELINE_ATTACH_KEY)
+        safe_record = json.dumps(
+            {
+                "code": "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT",
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        result = module.HttpResult(
+            status=500,
+            headers=Mock(),
+            body={"response": "must-not-be-emitted"},
+            trace_id=trace_id,
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            bench_path = Path(temporary_directory)
+            log_directory = bench_path / "logs"
+            log_directory.mkdir()
+            (log_directory / "npi_core.log").write_text(
+                safe_record,
+                encoding="utf-8",
+            )
+            with (
+                patch.object(module, "BENCH_PATH", bench_path),
+                self.assertRaises(module.RuntimeSubstageFailure) as failure,
+            ):
+                module.require_gate_evidence_attach_http(result)
+        self.assertEqual(
+            failure.exception.code,
+            "P503_GATE_EVIDENCE_ATTACH_DEPENDENCY_INSERT",
+        )
+        self.assertEqual(failure.exception.exception_type, "ValidationError")
+        self.assertEqual(failure.exception.trace_id, trace_id)
+
+    def test_gate_evidence_attach_response_predicates_are_exact(self) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.GATE_BASELINE_ATTACH_KEY)
+        baseline_id = "6cfd51d9-6e47-4c47-92ae-8a5ca1eff081"
+        baseline_hash = "a" * 64
+        baseline = {"globalId": baseline_id, "snapshotHash": baseline_hash}
+        valid_body = {
+            "gate": {"version": 3},
+            "requirements": [
+                {
+                    "evidence": [
+                        {
+                            "globalId": "2e96f421-5872-4c96-a0dd-718d5c970a21",
+                            "kind": "release_baseline",
+                            "sourceGlobalId": baseline_id,
+                            "revision": 1,
+                            "objectHash": baseline_hash,
+                            "baseline": baseline,
+                        }
+                    ]
+                }
+            ],
+        }
+
+        def changed(mutator):
+            body = json.loads(json.dumps(valid_body))
+            headers = {"Idempotency-Replayed": "false"}
+            mutator(body, headers)
+            return module.HttpResult(
+                status=201,
+                headers=headers,
+                body=body,
+                trace_id=trace_id,
+            )
+
+        cases = (
+            (
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_GATE_VERSION",
+                lambda body, _headers: body["gate"].update({"version": 2}),
+            ),
+            (
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_EVIDENCE_CARDINALITY",
+                lambda body, _headers: body.update({"requirements": []}),
+            ),
+            (
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_IDENTITY",
+                lambda body, _headers: body["requirements"][0]["evidence"][
+                    0
+                ].update({"revision": 2}),
+            ),
+            (
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_BASELINE",
+                lambda body, _headers: body["requirements"][0]["evidence"][
+                    0
+                ].update({"baseline": {}}),
+            ),
+            (
+                "P503_GATE_EVIDENCE_ATTACH_RESPONSE_URL_EXCLUSION",
+                lambda body, _headers: body["requirements"][0]["evidence"][
+                    0
+                ].update({"url": "/private"}),
+            ),
+        )
+        for expected_code, mutator in cases:
+            with self.subTest(code=expected_code):
+                with self.assertRaises(
+                    module.RuntimeSubstageFailure
+                ) as failure:
+                    module.validate_gate_baseline_attachment(
+                        changed(mutator),
+                        baseline_id=baseline_id,
+                        baseline_hash=baseline_hash,
+                        baseline=baseline,
+                    )
+                self.assertEqual(failure.exception.code, expected_code)
+
+        attached = module.validate_gate_baseline_attachment(
+            changed(lambda _body, _headers: None),
+            baseline_id=baseline_id,
+            baseline_hash=baseline_hash,
+            baseline=baseline,
+        )
+        self.assertEqual(attached, valid_body["requirements"][0]["evidence"][0])
 
     def test_baseline_create_response_diagnostics_are_shape_then_predicate(
         self,

@@ -119,6 +119,7 @@ class Phase4GateEvidenceApiTest(unittest.TestCase):
     MODULES_TO_RELOAD = (
         "frappe",
         "frappe.sessions",
+        "npi_core.documents.baseline_diagnostics",
         "npi_core.gate_evidence_api",
         "npi_core.bff",
     )
