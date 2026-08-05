@@ -1,5 +1,34 @@
 # Last Run
 
+## P5-03 Level 2 PASS; P5-04 audit active — 2026-08-05T09:14:10Z
+
+- Exact product checkpoint
+  `302b1e90d3561b57d6815dca186e5c33bcb8e693` passed complete ordinary CI
+  `30990594281` and final unchanged controlled-Site Gate `30991177478` with
+  diagnostic activation closed.
+- The PASS-only runtime artifact is `8924223239`; extracted result SHA-256 is
+  `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`.
+- Immutable exact released-revision/File/hash baselines, independent baseline
+  authority, actor-bound replay/conflict, exact Gate attachment, explicit
+  dependency registration, registered/unregistered successor impact and
+  existing Gate Review invalidation/successor resolution passed.
+- Local affected backend/contract/permission/runtime modules passed `233/233`;
+  affected frontend units passed `162/162`; i18n passed at `3,232` literal
+  English sources with direct `100%` `zh` and `zh-TW`; reconciliation and
+  trace checks passed.
+- Original-resolution English/Simplified Chinese/Traditional Chinese baseline
+  and Gate-impact images at 1366/1440/1920 and 100%/125%/150% passed the
+  industrial UX, accessibility and mixed-language review.
+- `FR-DS-006` is `TECHNICAL_VERIFIED`; production baseline authority,
+  contents/completeness, replacement/effectivity/retention and external
+  connectors remain explicit scoped holds.
+- P5-03 result:
+  `PASS — LEVEL 2 BASELINE AND IMPACT INVALIDATION TASK GATE`.
+- Phase 5 remains `IN_PROGRESS`; only P5-04 Requirement/domain audit for
+  `FR-DS-011` and `FR-DS-012` is active. P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-03-validation.md`.
+
 ## P5-03 repository/BFF/OpenAPI Level 1 PASS — 2026-07-31T22:22:10Z
 
 - Added the Project-scoped immutable baseline list/create repository, strict

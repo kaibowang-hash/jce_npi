@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-07-31T07:00:05Z`
+Updated: `2026-08-05T09:14:10Z`
 
 ## Authority and operating mode
 
@@ -242,21 +242,22 @@ pending until that proof is produced in Codespaces.
 
 - Active execution goal: `implementation/ACTIVE_EXECUTION_GOAL.md`.
 - Branch: `codex/npi-v1.2-implementation`.
-- Phase 5 remains `IN_PROGRESS`; P5-00, P5-01 and P5-02 are `PASS`.
-- P5-02 product checkpoint
-  `f088d70b00b54488587b2a83a311b636ef48cf78` passed complete normal CI
-  `30661086073`, final unchanged controlled-Site workflow `30661586342` and
+- Phase 5 remains `IN_PROGRESS`; P5-00, P5-01, P5-02 and P5-03 are `PASS`.
+- P5-03 product checkpoint
+  `302b1e90d3561b57d6815dca186e5c33bcb8e693` passed complete normal CI
+  `30990594281`, final unchanged controlled-Site workflow `30991177478` and
   its Level 2 Task Gate. Complete evidence:
-  `implementation/evidence/phase-5/p5-02-validation.md`.
-- P5-03 is the only active atomic task. Its bounded Requirement/domain audit
-  passed, and the domain/metadata foundation is active in
+  `implementation/evidence/phase-5/p5-03-validation.md`.
+- P5-04 is the only active atomic task. It begins at the bounded
+  Requirement/domain audit for `FR-DS-011` and `FR-DS-012` recorded in
   `implementation/NEXT_ACTION.md`.
-- P5-04, P5-05 and Phase 6 remain inactive.
+- P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker or execution hold exists. Production numbering,
-  reviewer/approver authority, signatures, baseline/invalidation authority,
-  production dependency matrix, external identity/retrieval, scanner/viewer
-  providers, CAD/PDM and production ERPNext remain scoped fail-closed holds
-  and are not represented as implemented.
+  reviewer/approver authority, signatures, production baseline contents and
+  authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
+  alternate/effectivity/release rules, external identity/retrieval,
+  scanner/viewer providers, CAD/PDM and production ERPNext remain scoped
+  fail-closed holds and are not represented as implemented.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 - Existing uncommitted workspace changes remain user-owned and must not be

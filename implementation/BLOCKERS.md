@@ -1,78 +1,46 @@
 # Blockers
 
-Updated: `2026-08-05T06:28:34Z`
+Updated: `2026-08-05T09:14:10Z`
 
 ## Active hard blockers
 
-`P5-03-RESPONSE-CONTRACT-PRE-DISPATCH-ORDINARY-CI`
+None.
 
-Exact diagnostic checkpoint `9d25e50` passed affected P5 Document tests
-`168/168`. All Git-tracked Python tests passed `883/883`; a clean committed
-frontend snapshot passed generation, type, lint, `671/671` unit tests,
-coverage, build and brand checks. Pull-request CI `30980622113` matched that
-SHA and its visual job passed, but its repository job failed twice inside
-`bash scripts/verify.sh`. The controlled-Site job was skipped both times.
-
-GitHub's safe structured metadata does not identify the failing subcommand.
-Complete-log access was rejected by the current non-disclosure boundary, a
-direct online npm audit was rejected because it sends dependency metadata, and
-Dependabot alerts are disabled. The offline cached audit reports zero, but
-cannot replace the required current online ordinary CI. No unique dependency,
-fixture, verifier or product root is proven, so no repair is allowed.
-
-The response-contract diagnostic dispatch remains `0/1` used. The final
-unchanged Gate and P5-03 Level 2 Task Gate have not run. Resume requires one
-explicit bounded authority to read only the failed ordinary-CI subcommand and,
-if applicable, package/GHSA/severity/first-patched-version metadata. No raw
-exception, traceback, request/response, Cookie, credential, business data or
-storage path may be exposed.
-
-Evidence:
-`implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md`.
+The former P5-03 pre-dispatch ordinary-CI and response-contract holds are
+resolved. Exact product SHA `302b1e9` passed ordinary CI `30990594281` and the
+final unchanged controlled-Site Gate `30991177478`. P5-03 passed Level 2; P5-04
+is active at Requirement/domain audit. Historical blocker evidence remains
+retained below and in `implementation/evidence/phase-5/`.
 
 ## Active diagnostic progress
 
-`P5-03-BASELINE-CREATE-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC`
-
-Paused before dispatch by the active ordinary-CI blocker above. The predicate
-ladder is committed at `9d25e50`; its single controlled-Site allowance remains
-unused and no response predicate has been repaired.
-
-Candidate `15abf26` passed affected P5 Document tests `167/167` and complete
-ordinary CI `30777828197`. The two authorized diagnostic-only dispatches were
-used and safely converged from `MEMBER_RESOLVE` to
-`MEMBER_RELEASE_LINEAGE`. Cross-validation against `FR-DS-006`, the Phase 5
-anchor, OpenAPI, real lifecycle/event/review DocType fields, permissions and
-transaction invariants uniquely proved the release-snapshot lineage
-comparison. The one extra bounded repair changed only that predicate and
-closed the diagnostic activation path.
-
-The single final unchanged controlled-Site workflow `30778190537` matched
-`15abf26`. Its repository, E2E, security and visual lanes passed; fixed tools,
-pinned Bench, the disposable Site, migrations and cleanup passed. The normal
-verifier failed with only the closed tuple
-`P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
-trace-062ce39fc49457a384bc1acba7afd785`.
-
-That tuple covers multiple response predicates and does not uniquely prove a
-repair. The new authority permits a behavior-neutral allowlisted predicate
-ladder and at most one diagnostic-only controlled-Site dispatch after affected
-tests and complete ordinary CI. A product repair is permitted only if that
-dispatch uniquely proves one predicate and the result matches FR-DS-006, its
-anchor, OpenAPI, true DocType fields, permissions, ownership and transaction
-invariants. The separate response-contract exception does not change the
-global five-round rule. No P5-03 `PASS` is claimed.
-
-Evidence:
-`implementation/evidence/phase-5/p5-03-response-contract-diagnostic-resume.md`.
+None.
 
 ## Resolved hard blockers
 
+`P5-03-RESPONSE-CONTRACT-PRE-DISPATCH-ORDINARY-CI`
+
+The failed historical run `30980622113` remains valid evidence for the
+pre-dispatch stop. The audited transitive dependency checkpoint restored the
+unchanged ordinary CI criterion. Later exact-SHA ordinary CI `30990594281` and
+final controlled-Site Gate `30991177478` passed. Resolution evidence:
+`implementation/evidence/phase-5/p5-03-validation.md`.
+
+`P5-03-BASELINE-CREATE-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC`
+
+The bounded diagnostic/repair sequence and subsequent exact verifier/fixture
+corrections converged without changing the frozen public contract or PASS
+criterion. The final workflow passed with diagnostic activation closed.
+Resolution evidence:
+`implementation/evidence/phase-5/p5-03-validation.md`.
+
 `P5-03-BASELINE-CREATE-FINAL-RESPONSE-CONTRACT-GATE`
 
-Resolved only as an execution-authority blocker by the user's strictly bounded
-2026-08-03 response-contract authorization. The historical failed Gate and
-safe tuple remain unchanged; the underlying predicate is not yet proven.
+The historical failed Gate and safe tuple remain unchanged as evidence. The
+strictly bounded response-contract recovery later converged at product SHA
+`302b1e9`; ordinary CI `30990594281` and the unchanged controlled-Site Gate
+`30991177478` passed with diagnostics closed. P5-03 Level 2 is recorded in
+`implementation/evidence/phase-5/p5-03-validation.md`.
 
 `P5-01-CONTROLLED-RUNTIME-POST-CHECKOUT-PDFSTREAM-DIAGNOSTIC-LIMIT`
 

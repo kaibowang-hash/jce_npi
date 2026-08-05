@@ -403,11 +403,11 @@ class V12ReconciliationTests(unittest.TestCase):
                 "TECHNICAL_VERIFIED_FOUNDATION",
             )
 
-    def test_p5_03_trace_records_only_the_active_planned_scope(self) -> None:
+    def test_p5_03_trace_records_level_2_truth(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         expected_status, expected_evidence = (
-            self.verifier.EXPECTED_P5_03_ACTIVE_TRACE["FR-DS-006"]
+            self.verifier.EXPECTED_P5_03_COMPLETED_TRACE["FR-DS-006"]
         )
         row = by_id["FR-DS-006"]
         self.assertEqual(row["status"], expected_status)
@@ -419,7 +419,7 @@ class V12ReconciliationTests(unittest.TestCase):
             },
             expected_evidence,
         )
-        self.assertFalse(row["status"].startswith("TECHNICAL_VERIFIED"))
+        self.assertTrue(row["status"].startswith("TECHNICAL_VERIFIED"))
         for evidence_path in expected_evidence:
             self.assertTrue(
                 (self.verifier.ROOT / evidence_path).is_file(),

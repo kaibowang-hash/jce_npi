@@ -349,13 +349,15 @@ EXPECTED_P5_02_PRIORITIES = {
     "FR-DS-005": "P0",
     "FR-DS-010": "P0",
 }
-EXPECTED_P5_03_ACTIVE_TRACE = {
+EXPECTED_P5_03_COMPLETED_TRACE = {
     "FR-DS-006": (
-        "IN_PROGRESS_P5_03_FOUNDATION_VERIFIED",
+        "TECHNICAL_VERIFIED",
         {
             "implementation/phase-5-requirement-anchor.md",
             "implementation/evidence/phase-5/p5-03-plan.md",
             "implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md",
+            "implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md",
+            "implementation/evidence/phase-5/p5-03-validation.md",
         },
     )
 }
@@ -848,7 +850,7 @@ def verify_trace_sets() -> None:
     for requirement_id, (
         expected_status,
         expected_evidence,
-    ) in EXPECTED_P5_03_ACTIVE_TRACE.items():
+    ) in EXPECTED_P5_03_COMPLETED_TRACE.items():
         row = by_id[requirement_id]
         actual_evidence = {
             value.strip() for value in row["evidence"].split(";") if value.strip()
@@ -869,11 +871,11 @@ def verify_trace_sets() -> None:
             requirement_id,
         ):
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain the active P5-03 trace truth"
+                f"{requirement_id} must retain the completed P5-03 trace truth"
             )
         if actual_evidence != expected_evidence:
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain its complete P5-03 plan evidence"
+                f"{requirement_id} must retain its complete P5-03 evidence set"
             )
         missing_evidence = sorted(
             path for path in expected_evidence if not (ROOT / path).is_file()

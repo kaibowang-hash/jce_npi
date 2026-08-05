@@ -1,81 +1,50 @@
 # Active Execution Goal
 
-Updated: `2026-08-03T02:30:57Z`
+Updated: `2026-08-05T09:14:10Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
-- Codex Goal ID: `019fb65e-318b-7fb1-8775-0d600b154ef0`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE RESPONSE CONTRACT`
+- Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
+- Mode: `IN_PROGRESS — P5-04 REQUIREMENT/DOMAIN AUDIT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Current controller/evidence HEAD and remote HEAD:
-  `a8a20ec18f5d9d16f28953f3bc100fb8728fb069` (`0 ahead / 0 behind`)
+- Latest verified product HEAD and remote HEAD before this controller sync:
+  `302b1e90d3561b57d6815dca186e5c33bcb8e693` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
-  `30778815782` (`PASS`, exact controller/evidence SHA `a8a20ec`)
-- Additional diagnostic-only controlled-Site runs:
-  `30776554186` and `30777405187` (`2/2` used)
-- Unique repair proof:
-  `P503_BASELINE_CREATE_MEMBER_RELEASE_LINEAGE /
-  DocumentBaselineInputUnavailable /
-  trace-0e5e8f157cb05c66935396e6bdae896f`
+  `30990594281` (`PASS`, exact product SHA `302b1e9`)
 - P5-03 final unchanged controlled-Site Gate:
-  `30778190537` (`FAIL`, diagnostic activation closed)
-- Final safe diagnostic tuple:
-  `P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
-  trace-062ce39fc49457a384bc1acba7afd785`
+  `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
+- Controlled PASS artifact:
+  `8924223239`, SHA-256
+  `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
-  `P5-03 — Baseline and impact invalidation`
-  (`IN_PROGRESS_DIAGNOSTIC — RESPONSE CONTRACT PREDICATE LADDER`)
+  `P5-04 — EBOM revision and comparison`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN AUDIT`)
 - Current Requirement IDs:
-  `FR-DS-006`
-- Completed P5-02 evidence:
-  `implementation/evidence/phase-5/p5-02-validation.md`
-- Current P5-03 audit/plan:
-  `implementation/evidence/phase-5/p5-03-plan.md`
-- Current P5-03 Level 1 foundation evidence:
-  `implementation/evidence/phase-5/p5-03-domain-metadata-checkpoint.md`
-- Current P5-03 repository/API evidence:
-  `implementation/evidence/phase-5/p5-03-repository-api-checkpoint.md`
-- Current P5-03 diagnostic recovery evidence:
-  `implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md`
-- Current P5-03 final-Gate blocker evidence:
-  `implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md`
+  `FR-DS-011`, `FR-DS-012`
+- Completed P5-03 evidence:
+  `implementation/evidence/phase-5/p5-03-validation.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
 
-## Resumed bounded diagnostic
+## Current atomic scope
 
-The prior Hard Blocker is resolved only as an execution-authority hold. The
-user authorized one behavior-neutral, closed response-contract predicate
-ladder and at most one diagnostic-only controlled-Site dispatch. The
-diagnostic may expose only an allowlisted predicate code, validated exception
-type and exact trace ID; it may not expose exception text, traceback, request,
-response, Cookie, credentials, business data or storage paths.
+P5-03 is complete at Level 2. Its immutable baseline, exact Gate evidence,
+explicit dependency registration and append-only successor impact truth are
+now reusable predecessor evidence and must not be reopened by P5-04.
 
-The controller and the accepted P5-03 plan recorded four completed genuine
-product-root repairs before `2b067c1`. The safe baseline-workspace diagnostic
-uniquely proved the project-field mapping root; repair `2b067c1` advanced the
-same unchanged Gate to the new baseline-create failure. It is therefore the
-fifth completed product-root repair under the product-root definition.
+P5-04 begins only with a bounded Requirement/domain audit of `FR-DS-011` and
+`FR-DS-012`. It may design NPI-owned EBOM working revisions and deterministic
+comparisons only from reconciled facts. Production numbering, line identity,
+quantity precision, stock-UOM, alternate/effectivity, attribute-set, release
+authority and formal Item conversion remain Class-B held unless an exact
+versioned synthetic policy can support the generic technical foundation.
 
-Both additional diagnostic-only dispatches were used after their required
-affected tests and complete ordinary CI. They narrowed the server failure to
-the release-lineage predicate. `FR-DS-006`, its anchor, OpenAPI, the true
-Lifecycle Event/Lifecycle/Review Cycle fields, permissions and transaction
-invariants uniquely proved that a released event binds the release snapshot,
-not the independent review-evidence snapshot. Repair `15abf26` changed only
-that comparison, passed affected `167/167` and complete ordinary CI
-`30777828197`, and closed the diagnostic header activation path.
-
-The historical final unchanged Gate `30778190537` advanced to the closed tuple
-`P503_BASELINE_CREATE_RESPONSE_CONTRACT / RuntimeError /
-trace-062ce39fc49457a384bc1acba7afd785`. That historical tuple still does not
-prove a predicate. The new authority does not change the global five-round
-rule; it permits a new product-root exception only if the sole diagnostic
-uniquely proves a product predicate and it is cross-validated against the
-frozen contracts. No P5-03 `PASS` or Level 2 result exists yet.
+P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
+production execution, a cross-database dependency or optimistic ERP success.
+P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
 ## Historical passing and reusable evidence
 
