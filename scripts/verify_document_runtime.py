@@ -3210,7 +3210,6 @@ def verify_document_baseline_runtime(
         payload=payload,
         csrf_token=baseline_csrf,
         idempotency_key=DOCUMENT_BASELINE_KEY,
-        diagnostic=True,
     )
     post_workspace_verifier_stage(stage_code, created_result.trace_id)
     stage_code = "P503_BASELINE_CREATE_RESPONSE_SHAPE"
@@ -3225,7 +3224,6 @@ def verify_document_baseline_runtime(
         release_snapshot_hash=release_snapshot_hash,
         policy_snapshot_hash=baseline_policy_hash,
         replayed=False,
-        diagnostic=True,
     )
     baseline_id = str(baseline["globalId"])
     baseline_hash = str(baseline["snapshotHash"])

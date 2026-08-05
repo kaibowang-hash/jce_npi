@@ -266,6 +266,21 @@ class Phase5DocumentBaselineMetadataTest(unittest.TestCase):
                 self.assertIn("deny_document_history_delete", source)
                 self.assertNotIn("ignore_" "permissions", source)
 
+    def test_baseline_member_binds_release_event_to_release_snapshot(self) -> None:
+        source = (
+            DOCTYPE_ROOT
+            / "npi_document_baseline_member"
+            / "npi_document_baseline_member.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            '"evidence_snapshot_hash": self.release_snapshot_hash',
+            source,
+        )
+        self.assertNotIn(
+            '"evidence_snapshot_hash": member.release_evidence.snapshot_hash',
+            source,
+        )
+
     def test_ownership_declares_exact_future_held_boundaries(self) -> None:
         ownership = (ROOT / "contracts/data-ownership.yaml").read_text(
             encoding="utf-8"

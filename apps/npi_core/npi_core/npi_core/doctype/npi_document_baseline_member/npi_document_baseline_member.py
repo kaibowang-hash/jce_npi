@@ -199,7 +199,7 @@ class NPIDocumentBaselineMember(Document):
                 "event_type": "released",
                 "to_state": "released",
                 "to_version": self.lifecycle_version,
-                "evidence_snapshot_hash": member.release_evidence.snapshot_hash,
+                "evidence_snapshot_hash": self.release_snapshot_hash,
             },
             _("The baseline member release event is unavailable."),
         )

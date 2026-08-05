@@ -493,33 +493,12 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
-    def test_response_contract_diagnostic_activates_only_create_request(
-        self,
-    ) -> None:
+    def test_final_baseline_flow_does_not_activate_diagnostics(self) -> None:
         source = Path(self.module.__file__).read_text(encoding="utf-8")
         function_start = source.index("def verify_document_baseline_runtime(")
         function_end = source.index("\ndef run_fresh(", function_start)
         function = source[function_start:function_end]
-        create_start = function.index(
-            "created_result = document_baseline_request("
-        )
-        validator_start = function.index(
-            "baseline = validate_document_baseline_command("
-        )
-        replay_start = function.index(
-            "replayed_baseline = validate_document_baseline_command("
-        )
-        self.assertNotIn("diagnostic=True", function[:create_start])
-        self.assertIn(
-            "diagnostic=True",
-            function[create_start:validator_start],
-        )
-        self.assertIn(
-            "diagnostic=True",
-            function[validator_start:replay_start],
-        )
-        self.assertNotIn("diagnostic=True", function[replay_start:])
-        self.assertEqual(function.count("diagnostic=True"), 2)
+        self.assertNotIn("diagnostic=True", function)
 
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
