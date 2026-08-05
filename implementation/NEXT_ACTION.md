@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 FOUNDATION CLEAN-CI REPAIR`
+`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI`
 
-Recovery time: `2026-08-05T10:06:19Z`
+Recovery time: `2026-08-05T10:27:46Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`a11b37379e462b3a83e75a6b49c6b6b71bb5fadd`
+`484af5bfaa8a033e128396febf468fdf632e8b83`
 
 Latest complete ordinary CI:
-`30993437267` (`PASS`, exact pushed checkpoint SHA)
+`30996305240` (`PASS`, exact pushed checkpoint SHA)
 
 Final unchanged P5 controlled-Site Gate:
 `30991177478` (`PASS`, exact product SHA, diagnostics closed)
@@ -47,8 +47,9 @@ SHA-256
   `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
 - Exact-SHA CI `30995489793` isolated only the test-literal prohibited-scan
   match and the visible generated-catalog fingerprint in 18 fixed-Linux
-  baselines. Both bounded evidence roots are repaired without product or Gate
-  changes; a clean exact-SHA rerun remains pending.
+  baselines. Both bounded evidence roots were repaired without product or Gate
+  changes, and exact-SHA CI `30996305240` passed complete repository,
+  `288/288` browser, fixed-Linux `59/59` and both secret lanes.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -70,13 +71,24 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Commit and push only the reviewed foundation clean-CI repair, then require the
-complete ordinary workflow to pass on its exact SHA. Only after that PASS may
-the controlled P5-04 repository/BFF/OpenAPI slice in
-`implementation/evidence/phase-5/p5-04-plan.md` activate. Production EBOM
-numbering, line identity, quantity precision, stock-UOM,
-alternate/effectivity, attribute set, release authority and formal Item
-conversion remain Class-B holds; install no production defaults.
+Implement only the controlled P5-04 repository/BFF/OpenAPI slice defined in
+`implementation/evidence/phase-5/p5-04-plan.md`:
+
+1. authorize tenant/Project and exact policy actor binding before protected
+   EBOM/revision lookup;
+2. create immutable first/successor revisions and materialized lines in one
+   atomic command boundary with actor-bound replay/conflict receipts;
+3. submit, review and confirmed release through the separate lifecycle scope;
+4. expose deterministic exact-revision comparison without a mutable-latest
+   selector; and
+5. add closed BFF/OpenAPI schemas, stable problems and independent route
+   recovery while retaining all P5-01 through P5-03 routes.
+
+Run affected repository/API/contract/permission/transaction checks and record
+the next Level 1 checkpoint before frontend work. Production EBOM numbering,
+line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
+set, release authority and formal Item conversion remain Class-B holds;
+install no production defaults.
 
 ## Frozen predecessor invariants
 

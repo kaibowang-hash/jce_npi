@@ -1,5 +1,24 @@
 # Last Run
 
+## P5-04 foundation clean CI PASS; repository stage active — 2026-08-05T10:27:46Z
+
+- Exact repair checkpoint
+  `484af5bfaa8a033e128396febf468fdf632e8b83` passed complete ordinary CI
+  `30996305240`.
+- Repository job `92274102102` passed `917/917` Python, `671/671` frontend
+  unit with coverage/build, `288/288` non-visual browser cases, direct
+  `3,410`-source trilingual coverage, both zero-vulnerability audits and both
+  no-leak secret lanes (`22` current commits; `132` complete branch commits).
+- Visual job `92274102087` passed exact fixed-Linux `59/59`; artifact
+  `8926356756` has digest
+  `sha256:3fc3941fa97871c2c7a57f4043505a0409ed550a69d1c94a951eb851f95660bc`.
+- The bounded scanner-literal and catalog-fingerprint roots are closed. No
+  product rule, visual threshold or matrix was changed.
+- P5-04 remains `IN_PROGRESS`; only repository/BFF/OpenAPI is active next.
+  Frontend, P5-05 and Phase 6 remain inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`.
+
 ## P5-04 foundation clean-CI roots repaired; rerun required — 2026-08-05T10:06:19Z
 
 - Foundation checkpoint `a11b37379e462b3a83e75a6b49c6b6b71bb5fadd`

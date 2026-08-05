@@ -118,7 +118,25 @@ corresponding tracked Linux baselines. No matrix, threshold, viewport,
 language or state was removed or weakened. The focused metadata suite passes
 `7/7`, the exact prohibited-pattern scan returns no match, all 18 accepted
 baselines equal the reviewed artifact bytes, and `git diff --check` passes.
-A clean exact-SHA CI rerun remains required before repository/BFF/OpenAPI work.
+
+Repair checkpoint `484af5bfaa8a033e128396febf468fdf632e8b83` then
+passed complete ordinary CI `30996305240` on its exact synchronized SHA:
+
+- repository job `92274102102`: `917/917` Python, `671/671` frontend unit,
+  coverage and production bundle, `288/288` non-visual browser cases,
+  `3,410` literal-English sources with direct `100%` `zh`/`zh-TW`, both npm
+  audits at zero vulnerabilities, the current `22`-commit scan and complete
+  `132`-commit branch-history scan with no leaks;
+- visual job `92274102087`: exact fixed-Linux `59/59` PASS;
+- visual artifact `8926356756`, digest
+  `sha256:3fc3941fa97871c2c7a57f4043505a0409ed550a69d1c94a951eb851f95660bc`;
+  and
+- secret-scan artifact `8926504402`, digest
+  `sha256:0c8d1ab0a9bdc60e70188e52168bcabe7bc533eb2c47b1befb1b104eb7490531`.
+
+This exact-SHA PASS closes the foundation clean-CI checkpoint. Only the
+repository/BFF/OpenAPI stage may activate next; the frontend workspace,
+controlled-Site runtime, P5-04 Level 2 Gate, P5-05 and Phase 6 remain inactive.
 
 ## Domain, permission, security, UX and i18n review
 
