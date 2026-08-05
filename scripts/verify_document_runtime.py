@@ -217,6 +217,25 @@ _BASELINE_CREATE_VERIFIER_DIAGNOSTIC_CODES = frozenset(
         "P503_BASELINE_CREATE_CLIENT_HTTP",
         "P503_BASELINE_CREATE_RESPONSE_SHAPE",
         "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+        "P503_BASELINE_CREATE_RESPONSE_PROJECT_IDENTITY",
+        "P503_BASELINE_CREATE_RESPONSE_IDEMPOTENCY_REPLAY_HEADER",
+        "P503_BASELINE_CREATE_RESPONSE_BASELINE_SHAPE",
+        "P503_BASELINE_CREATE_RESPONSE_VERSION",
+        "P503_BASELINE_CREATE_RESPONSE_CREATOR",
+        "P503_BASELINE_CREATE_RESPONSE_GLOBAL_IDENTITY",
+        "P503_BASELINE_CREATE_RESPONSE_SNAPSHOT_HASH",
+        "P503_BASELINE_CREATE_RESPONSE_POLICY_IDENTITY",
+        "P503_BASELINE_CREATE_RESPONSE_POLICY_VERSION",
+        "P503_BASELINE_CREATE_RESPONSE_POLICY_HASH",
+        "P503_BASELINE_CREATE_RESPONSE_MEMBER_CARDINALITY",
+        "P503_BASELINE_CREATE_RESPONSE_REVISION_IDENTITY",
+        "P503_BASELINE_CREATE_RESPONSE_REVISION_HASH",
+        "P503_BASELINE_CREATE_RESPONSE_LIFECYCLE_VERSION",
+        "P503_BASELINE_CREATE_RESPONSE_RELEASE_SNAPSHOT_HASH",
+        "P503_BASELINE_CREATE_RESPONSE_FILE_CARDINALITY",
+        "P503_BASELINE_CREATE_RESPONSE_SCAN_STATE",
+        "P503_BASELINE_CREATE_RESPONSE_PRIVATE_PATH_EXCLUSION",
+        "P503_BASELINE_CREATE_RESPONSE_URL_EXCLUSION",
     }
 )
 _BASELINE_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
@@ -2829,6 +2848,118 @@ def validate_document_baseline_command(
         require_http_status(result, {201}, "Document baseline command")
     baseline = result.body.get("baseline")
     members = baseline.get("members") if isinstance(baseline, dict) else None
+    if diagnostic:
+        trace_id = result.trace_id
+        require_runtime_substage(
+            result.body.get("projectId") == project_id,
+            code="P503_BASELINE_CREATE_RESPONSE_PROJECT_IDENTITY",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            result.headers.get("Idempotency-Replayed")
+            == ("true" if replayed else "false"),
+            code="P503_BASELINE_CREATE_RESPONSE_IDEMPOTENCY_REPLAY_HEADER",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            isinstance(baseline, dict),
+            code="P503_BASELINE_CREATE_RESPONSE_BASELINE_SHAPE",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            baseline.get("version") == 1,
+            code="P503_BASELINE_CREATE_RESPONSE_VERSION",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            baseline.get("createdByUserId") == BASELINE_USER,
+            code="P503_BASELINE_CREATE_RESPONSE_CREATOR",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            isinstance(baseline.get("globalId"), str)
+            and re.fullmatch(r"[a-f0-9-]{36}", baseline["globalId"])
+            is not None,
+            code="P503_BASELINE_CREATE_RESPONSE_GLOBAL_IDENTITY",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            isinstance(baseline.get("snapshotHash"), str)
+            and re.fullmatch(r"[a-f0-9]{64}", baseline["snapshotHash"])
+            is not None,
+            code="P503_BASELINE_CREATE_RESPONSE_SNAPSHOT_HASH",
+            trace_id=trace_id,
+        )
+        policy = baseline.get("policy")
+        require_runtime_substage(
+            isinstance(policy, dict)
+            and policy.get("globalId") == DOCUMENT_BASELINE_POLICY_ID,
+            code="P503_BASELINE_CREATE_RESPONSE_POLICY_IDENTITY",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            policy.get("version") == DOCUMENT_BASELINE_POLICY_VERSION,
+            code="P503_BASELINE_CREATE_RESPONSE_POLICY_VERSION",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            policy.get("snapshotHash") == policy_snapshot_hash
+            and set(policy) == {"globalId", "version", "snapshotHash"},
+            code="P503_BASELINE_CREATE_RESPONSE_POLICY_HASH",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            isinstance(members, list)
+            and len(members) == 1
+            and isinstance(members[0], dict),
+            code="P503_BASELINE_CREATE_RESPONSE_MEMBER_CARDINALITY",
+            trace_id=trace_id,
+        )
+        member = members[0]
+        require_runtime_substage(
+            member.get("revisionGlobalId") == revision_id,
+            code="P503_BASELINE_CREATE_RESPONSE_REVISION_IDENTITY",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            member.get("revisionSnapshotHash") == revision_snapshot_hash,
+            code="P503_BASELINE_CREATE_RESPONSE_REVISION_HASH",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            member.get("lifecycleVersion") == 5,
+            code="P503_BASELINE_CREATE_RESPONSE_LIFECYCLE_VERSION",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            member.get("releaseSnapshotHash") == release_snapshot_hash,
+            code="P503_BASELINE_CREATE_RESPONSE_RELEASE_SNAPSHOT_HASH",
+            trace_id=trace_id,
+        )
+        files = member.get("files")
+        require_runtime_substage(
+            isinstance(files, list)
+            and len(files) == 1
+            and isinstance(files[0], dict),
+            code="P503_BASELINE_CREATE_RESPONSE_FILE_CARDINALITY",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            files[0].get("scanState") == "clean",
+            code="P503_BASELINE_CREATE_RESPONSE_SCAN_STATE",
+            trace_id=trace_id,
+        )
+        serialized_baseline = json.dumps(baseline, sort_keys=True)
+        require_runtime_substage(
+            "/private/files/" not in serialized_baseline,
+            code="P503_BASELINE_CREATE_RESPONSE_PRIVATE_PATH_EXCLUSION",
+            trace_id=trace_id,
+        )
+        require_runtime_substage(
+            '"url"' not in serialized_baseline.casefold(),
+            code="P503_BASELINE_CREATE_RESPONSE_URL_EXCLUSION",
+            trace_id=trace_id,
+        )
     contract_matches = (
         result.body.get("projectId") == project_id
         and result.headers.get("Idempotency-Replayed")
@@ -3093,6 +3224,7 @@ def verify_document_baseline_runtime(
         release_snapshot_hash=release_snapshot_hash,
         policy_snapshot_hash=baseline_policy_hash,
         replayed=False,
+        diagnostic=True,
     )
     baseline_id = str(baseline["globalId"])
     baseline_hash = str(baseline["snapshotHash"])

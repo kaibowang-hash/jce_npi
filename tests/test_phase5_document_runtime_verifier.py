@@ -493,12 +493,26 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(function.count("post_workspace_verifier_stage("), 34)
 
-    def test_final_baseline_flow_does_not_activate_diagnostic_header(self) -> None:
+    def test_response_contract_diagnostic_does_not_activate_server_header(
+        self,
+    ) -> None:
         source = Path(self.module.__file__).read_text(encoding="utf-8")
         function_start = source.index("def verify_document_baseline_runtime(")
         function_end = source.index("\ndef run_fresh(", function_start)
         function = source[function_start:function_end]
-        self.assertNotIn("diagnostic=True", function)
+        validator_start = function.index(
+            "baseline = validate_document_baseline_command("
+        )
+        replay_start = function.index(
+            "replayed_baseline = validate_document_baseline_command("
+        )
+        self.assertNotIn("diagnostic=True", function[:validator_start])
+        self.assertIn(
+            "diagnostic=True",
+            function[validator_start:replay_start],
+        )
+        self.assertNotIn("diagnostic=True", function[replay_start:])
+        self.assertEqual(function.count("diagnostic=True"), 1)
 
     def test_runtime_schema_inventory_is_exact_and_additive(self) -> None:
         self.assertEqual(
@@ -1145,6 +1159,25 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
                 "P503_BASELINE_CREATE_CLIENT_HTTP",
                 "P503_BASELINE_CREATE_RESPONSE_SHAPE",
                 "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+                "P503_BASELINE_CREATE_RESPONSE_PROJECT_IDENTITY",
+                "P503_BASELINE_CREATE_RESPONSE_IDEMPOTENCY_REPLAY_HEADER",
+                "P503_BASELINE_CREATE_RESPONSE_BASELINE_SHAPE",
+                "P503_BASELINE_CREATE_RESPONSE_VERSION",
+                "P503_BASELINE_CREATE_RESPONSE_CREATOR",
+                "P503_BASELINE_CREATE_RESPONSE_GLOBAL_IDENTITY",
+                "P503_BASELINE_CREATE_RESPONSE_SNAPSHOT_HASH",
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_IDENTITY",
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_VERSION",
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_HASH",
+                "P503_BASELINE_CREATE_RESPONSE_MEMBER_CARDINALITY",
+                "P503_BASELINE_CREATE_RESPONSE_REVISION_IDENTITY",
+                "P503_BASELINE_CREATE_RESPONSE_REVISION_HASH",
+                "P503_BASELINE_CREATE_RESPONSE_LIFECYCLE_VERSION",
+                "P503_BASELINE_CREATE_RESPONSE_RELEASE_SNAPSHOT_HASH",
+                "P503_BASELINE_CREATE_RESPONSE_FILE_CARDINALITY",
+                "P503_BASELINE_CREATE_RESPONSE_SCAN_STATE",
+                "P503_BASELINE_CREATE_RESPONSE_PRIVATE_PATH_EXCLUSION",
+                "P503_BASELINE_CREATE_RESPONSE_URL_EXCLUSION",
             },
         )
         trace_id = module.fixture_trace_id(module.DOCUMENT_BASELINE_KEY)
@@ -1214,7 +1247,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "P503_BASELINE_CREATE_CLIENT_HTTP",
         )
 
-    def test_baseline_create_response_diagnostics_are_shape_then_contract(
+    def test_baseline_create_response_diagnostics_are_shape_then_predicate(
         self,
     ) -> None:
         module = self.module
@@ -1257,8 +1290,209 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             )
         self.assertEqual(
             contract_failure.exception.code,
-            "P503_BASELINE_CREATE_RESPONSE_CONTRACT",
+            "P503_BASELINE_CREATE_RESPONSE_VERSION",
         )
+
+    def test_baseline_create_response_predicate_ladder_is_exact_and_closed(
+        self,
+    ) -> None:
+        module = self.module
+        trace_id = module.fixture_trace_id(module.DOCUMENT_BASELINE_KEY)
+        project_id = "2e96f421-5872-4c96-a0dd-718d5c970a21"
+        revision_id = "590b332e-1ec4-44d8-8778-8b84eaf079bc"
+        revision_hash = "a" * 64
+        release_hash = "b" * 64
+        policy_hash = "c" * 64
+        valid_body = {
+            "projectId": project_id,
+            "baseline": {
+                "version": 1,
+                "createdByUserId": module.BASELINE_USER,
+                "globalId": "6cfd51d9-6e47-4c47-92ae-8a5ca1eff081",
+                "snapshotHash": "d" * 64,
+                "policy": {
+                    "globalId": module.DOCUMENT_BASELINE_POLICY_ID,
+                    "version": module.DOCUMENT_BASELINE_POLICY_VERSION,
+                    "snapshotHash": policy_hash,
+                },
+                "members": [
+                    {
+                        "revisionGlobalId": revision_id,
+                        "revisionSnapshotHash": revision_hash,
+                        "lifecycleVersion": 5,
+                        "releaseSnapshotHash": release_hash,
+                        "files": [{"scanState": "clean"}],
+                    }
+                ],
+            },
+        }
+        shared = {
+            "project_id": project_id,
+            "revision_id": revision_id,
+            "revision_snapshot_hash": revision_hash,
+            "release_snapshot_hash": release_hash,
+            "policy_snapshot_hash": policy_hash,
+            "replayed": False,
+            "diagnostic": True,
+        }
+
+        def changed(mutator):
+            body = json.loads(json.dumps(valid_body))
+            headers = {"Idempotency-Replayed": "false"}
+            mutator(body, headers)
+            return module.HttpResult(
+                status=201,
+                headers=headers,
+                body=body,
+                trace_id=trace_id,
+            )
+
+        cases = (
+            (
+                "P503_BASELINE_CREATE_RESPONSE_PROJECT_IDENTITY",
+                lambda body, _headers: body.update({"projectId": "wrong"}),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_IDEMPOTENCY_REPLAY_HEADER",
+                lambda _body, headers: headers.update(
+                    {"Idempotency-Replayed": "true"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_BASELINE_SHAPE",
+                lambda body, _headers: body.update({"baseline": []}),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_VERSION",
+                lambda body, _headers: body["baseline"].update({"version": 2}),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_CREATOR",
+                lambda body, _headers: body["baseline"].update(
+                    {"createdByUserId": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_GLOBAL_IDENTITY",
+                lambda body, _headers: body["baseline"].update(
+                    {"globalId": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_SNAPSHOT_HASH",
+                lambda body, _headers: body["baseline"].update(
+                    {"snapshotHash": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_IDENTITY",
+                lambda body, _headers: body["baseline"]["policy"].update(
+                    {"globalId": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_VERSION",
+                lambda body, _headers: body["baseline"]["policy"].update(
+                    {"version": 2}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_POLICY_HASH",
+                lambda body, _headers: body["baseline"]["policy"].update(
+                    {"snapshotHash": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_MEMBER_CARDINALITY",
+                lambda body, _headers: body["baseline"].update(
+                    {"members": []}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_REVISION_IDENTITY",
+                lambda body, _headers: body["baseline"]["members"][0].update(
+                    {"revisionGlobalId": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_REVISION_HASH",
+                lambda body, _headers: body["baseline"]["members"][0].update(
+                    {"revisionSnapshotHash": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_LIFECYCLE_VERSION",
+                lambda body, _headers: body["baseline"]["members"][0].update(
+                    {"lifecycleVersion": 6}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_RELEASE_SNAPSHOT_HASH",
+                lambda body, _headers: body["baseline"]["members"][0].update(
+                    {"releaseSnapshotHash": "wrong"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_FILE_CARDINALITY",
+                lambda body, _headers: body["baseline"]["members"][0].update(
+                    {"files": []}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_SCAN_STATE",
+                lambda body, _headers: body["baseline"]["members"][0][
+                    "files"
+                ][0].update({"scanState": "pending"}),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_PRIVATE_PATH_EXCLUSION",
+                lambda body, _headers: body["baseline"].update(
+                    {"privatePath": "/private/files/redacted.pdf"}
+                ),
+            ),
+            (
+                "P503_BASELINE_CREATE_RESPONSE_URL_EXCLUSION",
+                lambda body, _headers: body["baseline"].update(
+                    {"url": "/redacted"}
+                ),
+            ),
+        )
+        for expected_code, mutator in cases:
+            with self.subTest(code=expected_code):
+                with self.assertRaises(
+                    module.RuntimeSubstageFailure
+                ) as failure:
+                    module.validate_document_baseline_command(
+                        changed(mutator),
+                        **shared,
+                    )
+                self.assertEqual(failure.exception.code, expected_code)
+                diagnostic = module.runtime_substage_diagnostic(
+                    failure.exception
+                )
+                self.assertEqual(
+                    diagnostic,
+                    (
+                        f"[diagnostic_code={expected_code}; "
+                        "exc_type=RuntimeSubstageFailure; "
+                        f"trace_id={trace_id}]"
+                    ),
+                )
+                for forbidden in (
+                    "redacted.pdf",
+                    "/redacted",
+                    project_id,
+                    revision_id,
+                    policy_hash,
+                    module.BASELINE_USER,
+                ):
+                    self.assertNotIn(forbidden, diagnostic)
+
+        baseline = module.validate_document_baseline_command(
+            changed(lambda _body, _headers: None),
+            **shared,
+        )
+        self.assertEqual(baseline, valid_body["baseline"])
 
     def test_bff_log_diagnostic_rejects_symlink_and_stale_oversize_tail(
         self,
