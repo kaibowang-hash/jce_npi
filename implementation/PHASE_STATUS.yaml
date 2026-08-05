@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T13:21:38Z'
+updated_at: '2026-08-05T13:38:32Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME_CANDIDATE
-current_task_completed_stage: FRONTEND_CLEAN_EXACT_SHA_CI_PASS
-current_task_next_stage: P5-04-CONTROLLED-RUNTIME-CANDIDATE-EXACT-SHA-CI
+current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME_CI_REPAIR
+current_task_completed_stage: CONTROLLED_RUNTIME_CANDIDATE_EXACT_SHA_CI_CLASSIFIED
+current_task_next_stage: P5-04-CONTROLLED-RUNTIME-HISTORY-SCAN-REPAIR-EXACT-SHA
 current_task_next_stage_status: ACTIVE
 resumed_product_task: P5-04
-resumed_product_task_status: ACTIVE_CONTROLLED_RUNTIME_CANDIDATE
+resumed_product_task_status: ACTIVE_CONTROLLED_RUNTIME_CI_REPAIR
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -154,8 +154,14 @@ p5_04:
   frontend_repair_visual_artifact: 8931239683
   frontend_repair_secret_artifact: 8931400483
   frontend_repair_ci_outcome: PASS
-  completed_stage: FRONTEND_CLEAN_EXACT_SHA_CI_PASS
-  next_stage: CONTROLLED_RUNTIME_CANDIDATE_EXACT_SHA_CI
+  controlled_runtime_candidate: b74511ea084a6b87604c861360fcb8004b645892
+  controlled_runtime_candidate_ci: 31010444857
+  controlled_runtime_candidate_repository_job: 92320943724
+  controlled_runtime_candidate_visual_job: 92320943829
+  controlled_runtime_candidate_job: 92320944597
+  controlled_runtime_candidate_ci_outcome: CLASSIFIED_HISTORY_SCAN_REPAIR_REQUIRED
+  completed_stage: CONTROLLED_RUNTIME_CANDIDATE_EXACT_SHA_CI_CLASSIFIED
+  next_stage: CONTROLLED_RUNTIME_HISTORY_SCAN_REPAIR_EXACT_SHA
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

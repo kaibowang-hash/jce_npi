@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-05T13:21:38Z`
+Updated: `2026-08-05T13:38:32Z`
 
 ## Active hard blockers
 
@@ -14,9 +14,12 @@ repository/BFF/OpenAPI stage passed; checkpoint `40e7b70` passed exact-SHA
 ordinary CI `31001529719`. Controller checkpoint `0ad13b8` then passed
 ordinary CI `31002288210`. Frontend repair checkpoint `0c344fe` passed complete
 ordinary CI `31008027534`, including fixed-Linux `62/62` and both secret lanes.
-The controlled-runtime harness now passes local Level 1 and is awaiting an
-exact scoped checkpoint and ordinary CI before one manual controlled-Site
-dispatch; this is normal Gate work, not a blocker. P5-05 and Phase 6 remain
+The controlled-runtime harness passes local Level 1. Candidate `b74511e`
+passed product/static/E2E, current-tree secret and fixed-Linux `62/62`; its
+only ordinary-CI failure is one exact synthetic query-label false positive in
+the immutable full-history scan. The bounded exact-fingerprint/current-source
+repair is normal Gate work, not a blocker. The controlled Site has not run.
+P5-05 and Phase 6 remain
 inactive. Production EBOM policy facts remain scoped Class-B holds rather than
 a global blocker. Historical blocker evidence remains retained below and in
 `implementation/evidence/phase-5/`.

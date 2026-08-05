@@ -1,9 +1,9 @@
 # P5-04 Controlled-Site Runtime Candidate
 
-Recorded: `2026-08-05T13:21:38Z`
+Recorded: `2026-08-05T13:21:38Z`; CI classified: `2026-08-05T13:38:32Z`
 
 Status:
-`PASS — LOCAL LEVEL 1 CONTROLLED-RUNTIME HARNESS; EXACT-SHA NORMAL CI NEXT`
+`PASS — LOCAL LEVEL 1 HARNESS; EXACT-SHA CI CLASSIFIED; BOUNDED HISTORY REPAIR`
 
 Task:
 `P5-04 — EBOM revision and comparison`
@@ -15,6 +15,9 @@ Requirements:
 
 Starting synchronized checkpoint and remote HEAD:
 `0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` (`0 ahead / 0 behind`)
+
+Pushed controlled-runtime candidate:
+`b74511ea084a6b87604c861360fcb8004b645892` (`0 ahead / 0 behind`)
 
 Reusable predecessor evidence:
 
@@ -36,6 +39,29 @@ Reusable predecessor evidence:
 This checkpoint activates only the P5-04 controlled-Site proof harness. It is
 not a controlled-Site PASS and is not the P5-04 Level 2 Task Gate. P5-05 and
 Phase 6 remain inactive.
+
+## Exact-SHA ordinary CI classification
+
+Ordinary CI `31010444857` ran against exact candidate `b74511e`:
+
+- repository job `92320943724` passed complete `verify.sh`, the complete
+  non-visual browser suite, current-tree Gitleaks and every setup/security
+  step before the final full-history scan;
+- fixed-Linux visual job `92320943829` passed the complete governed `62/62`
+  matrix without a baseline or threshold change;
+- controlled runtime job `92320944597` remained correctly skipped; and
+- the repository job failed only the `139`-commit history scan on one exact
+  `generic-api-key` match at immutable candidate line `842`:
+  `b74511ea084a6b87604c861360fcb8004b645892:scripts/verify_ebom_runtime.py:generic-api-key:842`.
+
+The matched source is the literal non-secret query fixture
+`p504-predecessor-route-isolation` adjacent to the `query_key` keyword. It is
+not a credential, token, external identifier or product value. The bounded
+repair adds only that exact immutable fingerprint to `.gitleaksignore`, the
+strict reviewed-fingerprint verifier and its exact test inventory. Current
+source builds the same visible synthetic query fixture from two fixed pieces
+and passes a named constant, preventing recurrence without changing any HTTP
+request, product behavior, test criterion or scanner rule.
 
 ## Delivered runtime boundary
 
@@ -101,6 +127,7 @@ header or server-side behavior is activated by this candidate.
 | `scripts/verify_ebom_runtime.py` | new runtime verifier contract; complete P5 EBOM domain/API/repository/security suites | PASS |
 | `scripts/verify-frappe-runtime.sh` | Bash syntax; existing Document runtime inventory; new migration/switch/fresh/recovery/replay inventory | PASS |
 | `.github/workflows/ci.yml` | existing and new manual-lane declaration tests; pinned devcontainer verifier | PASS |
+| exact historical synthetic fingerprint and current lexical fixture | strict devcontainer/Gitleaks allowlist verifier and test inventory; runtime contract | focused `30/30` and network-backed pinned verifier PASS |
 | runtime tests | `tests.test_phase5_ebom_runtime_verifier`; `tests.test_phase5_document_runtime_verifier` | `44/44` PASS |
 | adjacent EBOM/Document modules | all EBOM suites plus both runtime verifiers | `87/87` PASS |
 | complete tracked Python | `python3 -m unittest discover -s tests` | `948/948` PASS |
@@ -135,10 +162,11 @@ the repository wrapper before the controlled Site may be dispatched.
 
 ## First incomplete action
 
-Create and push one scoped controlled-runtime candidate checkpoint containing
-only the harness, its contract tests, manual-lane declaration and synchronized
-P5-04 evidence/controller files. Preserve every user-owned local modification
-and untracked asset. Require complete unchanged ordinary CI on the exact SHA;
-only then dispatch one controlled Site run. If that run fails, classify the
-exact safe stage and repair only a uniquely proven product root within the
-controller budget. P5-05 and Phase 6 remain inactive.
+Create and push one bounded history-evidence repair checkpoint containing only
+the exact immutable fingerprint, strict verifier/test inventory, current
+fixture lexical hardening and synchronized P5-04 evidence/controller files.
+Preserve every user-owned local modification and untracked asset. Require
+complete unchanged ordinary CI on the repair SHA; only then dispatch one
+controlled Site run. If that run fails, classify the exact safe stage and
+repair only a uniquely proven product root within the controller budget.
+P5-05 and Phase 6 remain inactive.

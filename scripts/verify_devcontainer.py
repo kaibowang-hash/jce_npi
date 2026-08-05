@@ -67,6 +67,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "85fd03fdc936db03b61985e03caced0e0b68f760:"
             "frontend/tests/support/ebom-fixture.ts:generic-api-key:46"
         ),
+        (
+            "b74511ea084a6b87604c861360fcb8004b645892:"
+            "scripts/verify_ebom_runtime.py:generic-api-key:842"
+        ),
     }
 )
 

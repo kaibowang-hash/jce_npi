@@ -1,5 +1,32 @@
 # Last Run
 
+## P5-04 candidate CI isolates one synthetic history-scan match; bounded repair ready — 2026-08-05T13:38:32Z
+
+- Pushed controlled-runtime candidate
+  `b74511ea084a6b87604c861360fcb8004b645892` and confirmed local/remote `0/0`.
+  Ordinary CI `31010444857` ran on that exact SHA.
+- Repository job `92320943724` passed complete `verify.sh`, complete
+  non-visual browser and current-tree Gitleaks. Fixed-Linux visual job
+  `92320943829` passed the governed `62/62` matrix. Controlled runtime job
+  `92320944597` correctly remained skipped.
+- The repository failed only the final `139`-commit history scan on exact
+  fingerprint
+  `b74511ea084a6b87604c861360fcb8004b645892:scripts/verify_ebom_runtime.py:generic-api-key:842`.
+  The matched source is the non-secret synthetic query label
+  `p504-predecessor-route-isolation` adjacent to the `query_key` keyword.
+- The bounded repair adds only that exact immutable fingerprint to the strict
+  reviewed allowlist/verifier/test inventory. Current source constructs the
+  same fixture label from fixed pieces and passes a named constant, preventing
+  lexical recurrence without changing product or runtime behavior.
+- Focused strict-verifier/runtime tests passed `30/30`; Python compilation,
+  Reconciliation, diff and the network-backed pinned devcontainer verifier
+  passed. No Gate, threshold, scanner rule, API, permission, transaction,
+  ownership or controlled-Site behavior changed.
+- First incomplete action is a scoped repair commit/push and complete unchanged
+  ordinary CI. The controlled Site has not run; P5-05 and Phase 6 remain
+  inactive. Every user-owned local modification and untracked asset remains
+  preserved and unstaged.
+
 ## P5-04 controlled-runtime harness local Level 1 PASS; exact-SHA normal CI next — 2026-08-05T13:21:38Z
 
 - Confirmed local and remote branch at exact checkpoint

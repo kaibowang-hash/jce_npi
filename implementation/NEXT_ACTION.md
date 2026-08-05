@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CANDIDATE`
+`IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CI REPAIR`
 
-Recovery time: `2026-08-05T13:21:38Z`
+Recovery time: `2026-08-05T13:38:32Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`0c344fef0dbab4a84dc9ee84e3400a626de8d0c9`
+`b74511ea084a6b87604c861360fcb8004b645892`
 
 Latest complete ordinary CI:
 `31008027534` (`PASS`, exact pushed checkpoint SHA)
@@ -112,6 +112,15 @@ SHA-256
   `948/948`; pinned devcontainer, compilation, prototype/P0 governance,
   Reconciliation, prohibited-pattern and diff checks passed. Evidence is
   `implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`.
+- Exact-SHA ordinary CI `31010444857` passed complete `verify.sh`, non-visual
+  browser, current-tree Gitleaks and fixed-Linux `62/62`; controlled runtime
+  correctly remained skipped. Repository job `92320943724` failed only the
+  final `139`-commit history scan on one exact synthetic query-label
+  fingerprint in immutable commit `b74511e`.
+- The bounded repair adds only that exact fingerprint to the strict reviewed
+  allowlist/verifier/test inventory and separates the current synthetic query
+  label from its `query_key` keyword assignment. Focused checks passed `30/30`
+  and the network-backed pinned verifier passed.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -133,13 +142,14 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Create one bounded P5-04 controlled-runtime candidate checkpoint containing
-only the new verifier, shell/workflow activation, runtime contract tests and
-synchronized evidence/controller files. Preserve every user-owned local
-modification and untracked asset. Push the development branch, confirm the
-remote SHA and require complete unchanged ordinary CI on that exact SHA. Only
-then dispatch one controlled Site run; repair only a uniquely proven product
-root within the controller budget. P5-05 and Phase 6 remain inactive.
+Create one bounded P5-04 history-scan repair checkpoint containing only the
+exact immutable fingerprint, strict verifier/test inventory, current fixture
+lexical hardening and synchronized evidence/controller files. Preserve every
+user-owned local modification and untracked asset. Push the development
+branch, confirm the remote SHA and require complete unchanged ordinary CI on
+that exact SHA. Only then dispatch one controlled Site run; repair only a
+uniquely proven product root within the controller budget. P5-05 and Phase 6
+remain inactive.
 
 ## Frozen predecessor invariants
 
@@ -165,6 +175,6 @@ The audit, domain/metadata, Repository/BFF/OpenAPI, frontend and local
 controlled-runtime harness
 checkpoints are complete with Requirement -> Code -> Test -> Evidence and
 changed-files -> affected-tests maps, scoped holds and rollback. P5-04 remains
-`IN_PROGRESS`; the next boundary is exact-SHA runtime-candidate ordinary CI,
+`IN_PROGRESS`; the next boundary is exact-SHA runtime-repair ordinary CI,
 followed by controlled-Site proof and the Level 2 Task Gate. P5-05 stays inactive.
 Phase 5 Level 3 runs only after P5-05 reaches the Phase boundary.

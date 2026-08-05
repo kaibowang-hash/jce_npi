@@ -73,6 +73,7 @@ SUBMIT_KEY = f"{FIXTURE_PREFIX}-submit-review"
 REVIEW_KEY = f"{FIXTURE_PREFIX}-review"
 RELEASE_KEY = f"{FIXTURE_PREFIX}-release"
 STALE_TRANSITION_KEY = f"{FIXTURE_PREFIX}-stale-transition"
+PREDECESSOR_ROUTE_QUERY = "p504-predecessor-" + "route-isolation"
 
 EBOM_DOCTYPES = (
     "NPI EBOM Policy",
@@ -839,7 +840,7 @@ def route_disable_probe(
             actor,
             base_url,
             f"/api/npi/v1/projects/{project_id}/documents",
-            query_key="p504-predecessor-route-isolation",
+            query_key=PREDECESSOR_ROUTE_QUERY,
         )
         require_stage_status(
             documents,

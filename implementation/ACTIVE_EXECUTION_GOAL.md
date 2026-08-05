@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T13:21:38Z`
+Updated: `2026-08-05T13:38:32Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CANDIDATE`
+- Mode: `IN_PROGRESS — P5-04 CONTROLLED-RUNTIME CI REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `0c344fef0dbab4a84dc9ee84e3400a626de8d0c9` (`0 ahead / 0 behind`)
+  `b74511ea084a6b87604c861360fcb8004b645892` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
   `31008027534` (`PASS`, exact pushed checkpoint SHA `0c344fe`)
 - P5-03 final unchanged controlled-Site Gate:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T13:21:38Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — CONTROLLED-RUNTIME CANDIDATE`)
+  (`IN_PROGRESS — CONTROLLED-RUNTIME CI REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -114,15 +114,26 @@ Reconciliation, compilation, prohibited-pattern and diff checks passed.
 Evidence is
 `implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md`.
 
+Exact-SHA CI `31010444857` proved complete `verify.sh`, non-visual browser,
+current-tree Gitleaks and fixed-Linux `62/62` PASS. The controlled runtime
+correctly remained skipped. The repository job failed only its final
+`139`-commit history scan on the exact immutable fingerprint
+`b74511ea084a6b87604c861360fcb8004b645892:scripts/verify_ebom_runtime.py:generic-api-key:842`.
+The matched value is a synthetic query label beside the `query_key` keyword,
+not a secret. The bounded repair adds only that exact fingerprint to the
+strict reviewed inventory and separates the current label from the lexical
+keyword assignment.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: create and push one bounded P5-04 controlled-runtime
-candidate checkpoint containing only the runtime verifier, shell/workflow
-activation, contract tests and synchronized evidence/controller files.
-Require complete unchanged ordinary CI on that exact SHA before one manual
-controlled-Site dispatch. P5-05 and Phase 6 remain inactive.
+First incomplete action: create and push one bounded P5-04 history-scan repair
+checkpoint containing only the exact immutable fingerprint, strict
+verifier/test inventory, current fixture lexical hardening and synchronized
+evidence/controller files. Require complete unchanged ordinary CI on that
+exact SHA before one manual controlled-Site dispatch. P5-05 and Phase 6 remain
+inactive.
 
 ## Historical passing and reusable evidence
 
