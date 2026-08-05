@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI CLEAN CI`
+`IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`
 
-Recovery time: `2026-08-05T11:06:55Z`
+Recovery time: `2026-08-05T11:24:06Z`
 
 Required development branch:
 `codex/npi-v1.2-implementation`
 
 Latest pushed recovery checkpoint:
-`7be6e3fea4dbf376f5543bcf900919107ab3366b`
+`ed2a7f87729b2f0e635969948e12f7625b0d52a3`
 
 Latest complete ordinary CI:
 `30996305240` (`PASS`, exact pushed checkpoint SHA)
@@ -58,6 +58,16 @@ SHA-256
   `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
 - That candidate is not a stage PASS until complete ordinary CI passes its
   exact pushed SHA. The frontend workspace therefore remains inactive.
+- Exact-SHA CI `31000405445` passed repository job `92287612411`, including
+  complete verification, non-visual browser and both secret lanes. Visual job
+  `92287612467` alone passed `41/59` and isolated exactly the eighteen durable
+  1440x900 P0 images whose bottom catalog fingerprint changed from
+  `18fefcf811fde25b` to `e24def7bfc10bf59`.
+- Artifact `8928055413`, digest
+  `sha256:0528cc2c344c1ed79a794727b543607a991a4aeca85e0c03e0431a43eb105b1e`,
+  was reviewed. Every strong delta is `256` pixels in the status bar; no
+  product-workspace pixel changed. Its eighteen actuals are accepted
+  byte-for-byte only as their corresponding fixed-Linux baselines.
 - The trace remains `282` unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
 
@@ -79,14 +89,14 @@ Approved task boundary from the Phase 5 anchor:
 
 ## First incomplete action
 
-Commit and push only the reviewed P5-04 repository/BFF/OpenAPI candidate and
-its evidence/controller truth, confirm the remote SHA, and require complete
-ordinary CI at that exact SHA. Inspect and repair only a proven failure root;
-do not weaken any Gate. Only exact-SHA CI PASS may mark this stage complete and
-activate the frontend workspace. Production EBOM numbering, line identity,
-quantity precision, stock-UOM, alternate/effectivity, attribute set, release
-authority and formal Item conversion remain Class-B holds; install no
-production defaults.
+Commit and push only the eighteen reviewed fixed-Linux actuals plus their
+evidence/controller truth, confirm the remote SHA, and require complete
+unchanged ordinary CI at that exact SHA. Inspect and repair only a proven
+failure root; do not weaken any Gate. Only exact-SHA CI PASS may mark this
+stage complete and activate the frontend workspace. Production EBOM numbering,
+line identity, quantity precision, stock-UOM, alternate/effectivity, attribute
+set, release authority and formal Item conversion remain Class-B holds;
+install no production defaults.
 
 ## Frozen predecessor invariants
 

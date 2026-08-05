@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T11:06:55Z`
+Updated: `2026-08-05T11:24:06Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI CLEAN CI`
+- Mode: `IN_PROGRESS — P5-04 REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest pushed checkpoint and remote HEAD:
-  `7be6e3fea4dbf376f5543bcf900919107ab3366b` (`0 ahead / 0 behind`)
+  `ed2a7f87729b2f0e635969948e12f7625b0d52a3` (`0 ahead / 0 behind`)
 - Latest complete normal CI:
   `30996305240` (`PASS`, exact pushed checkpoint SHA `484af5b`)
 - P5-03 final unchanged controlled-Site Gate:
@@ -19,7 +19,7 @@ Updated: `2026-08-05T11:06:55Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI CLEAN CI`)
+  (`IN_PROGRESS — REPOSITORY/BFF/OPENAPI VISUAL EVIDENCE REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -58,13 +58,22 @@ Evidence is
 The exact candidate is not yet a stage PASS until its pushed SHA passes complete
 ordinary CI.
 
+Exact-SHA CI `31000405445` proved the product/repository lane, complete
+non-visual browser and both secret lanes PASS. Its only failure was the exact
+18-case shared 1440x900 catalog fingerprint matrix: every strong delta was
+`256` pixels in the bottom status bar, from catalog `18fefcf811fde25b` to
+`e24def7bfc10bf59`. Artifact `8928055413` was reviewed and its eighteen
+actuals were accepted byte-for-byte only for those fixed-Linux baselines. No
+workspace pixel, matrix, threshold or product behavior changed.
+
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
 P5-05 and Phase 6 remain inactive. There is no active Hard Blocker.
 
-First incomplete action: commit and push the bounded repository/BFF/OpenAPI
-candidate, then require complete ordinary CI at the exact pushed SHA. Do not
-begin the frontend workspace until that checkpoint passes.
+First incomplete action: commit and push only the reviewed eighteen Linux
+catalog baselines plus evidence/controller truth, then require complete
+unchanged ordinary CI at the exact pushed SHA. Do not begin the frontend
+workspace until that checkpoint passes.
 
 ## Historical passing and reusable evidence
 

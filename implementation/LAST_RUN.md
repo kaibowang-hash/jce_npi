@@ -1,5 +1,29 @@
 # Last Run
 
+## P5-04 exact-SHA CI isolates only catalog visuals; bounded repair ready — 2026-08-05T11:24:06Z
+
+- Candidate `ed2a7f87729b2f0e635969948e12f7625b0d52a3` matched the remote
+  branch and ran ordinary CI `31000405445`.
+- Repository job `92287612411` passed in `7m23s`, including complete
+  repository verification, non-visual browser and both secret lanes. The P5
+  controlled runtime correctly remained skipped for this stage.
+- Visual job `92287612467` passed `41/59` and failed only the exact eighteen
+  durable 1440x900 P0 language/state images whose visible bottom catalog
+  fingerprint changed from `18fefcf811fde25b` to `e24def7bfc10bf59`.
+- Every strong delta is exactly `256` pixels (`0.01%`). Pixel and
+  original-resolution review found no product-workspace change; only the
+  catalog text plus one known subthreshold native-select corner case lies in
+  the `y=879..898` status bar.
+- Artifact `8928055413`, digest
+  `sha256:0528cc2c344c1ed79a794727b543607a991a4aeca85e0c03e0431a43eb105b1e`,
+  supplied the reviewed actuals. Exactly `18/18` tracked Linux baselines now
+  equal those artifact bytes.
+- No visual matrix, threshold, viewport, language, state, product behavior or
+  Gate changed. Complete unchanged exact-SHA CI is required next; the frontend
+  workspace remains inactive.
+- Evidence:
+  `implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md`.
+
 ## P5-04 repository/BFF/OpenAPI local Level 1 PASS; clean CI required — 2026-08-05T11:06:55Z
 
 - Refreshed the remote and confirmed exact starting SHA

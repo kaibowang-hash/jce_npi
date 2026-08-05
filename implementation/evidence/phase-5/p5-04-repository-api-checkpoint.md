@@ -3,7 +3,7 @@
 Recorded: `2026-08-05T11:06:55Z`
 
 Status:
-`PASS — LOCAL LEVEL 1; EXACT-SHA ORDINARY CI REQUIRED`
+`IN_PROGRESS — LOCAL LEVEL 1 PASS; BOUNDED CI VISUAL EVIDENCE REPAIR`
 
 Requirements:
 
@@ -87,6 +87,37 @@ is visible in fixed-Linux snapshots and local user-owned untracked public
 assets are intentionally excluded from this Checkpoint. No visual baseline is
 changed before exact clean-run evidence isolates any affected pixels.
 
+## Exact-SHA CI isolation and bounded visual evidence repair
+
+Candidate `ed2a7f87729b2f0e635969948e12f7625b0d52a3` was pushed and
+matched the remote branch. Ordinary CI `31000405445` completed with exactly
+one evidence failure:
+
+- repository job `92287612411` passed in `7m23s`, including complete
+  repository verification, non-visual browser, current-tree and complete
+  branch-history secret lanes;
+- controlled P5 runtime correctly remained skipped at this non-runtime stage;
+- visual job `92287612467` passed `41/59` and failed only the exact eighteen
+  normal 1440x900 P0 English/Simplified Chinese/Traditional Chinese cases;
+- every Playwright strong delta was exactly `256` pixels (`0.01%`) and every
+  reviewed actual changed only the bottom catalog fingerprint from
+  `18fefcf811fde25b` to the generated `e24def7bfc10bf59`; and
+- artifact `8928055413`, size `39,350,326` bytes, digest
+  `sha256:0528cc2c344c1ed79a794727b543607a991a4aeca85e0c03e0431a43eb105b1e`,
+  supplied the exact Linux actuals and diffs.
+
+Pixel inspection found the strong changes only in the catalog text. Seventeen
+raw difference boxes are within `y=882..891`; one Trial Simplified-Chinese
+case additionally contains the same subthreshold twenty native-select corner
+pixels previously classified at this shared status bar, keeping its entire
+raw box within `y=879..898`. No product-workspace pixel changed.
+
+The eighteen reviewed CI actuals are accepted byte-for-byte as only their
+corresponding tracked fixed-Linux baselines. All `18/18` source/target SHA-256
+values match after copying. No matrix, threshold, viewport, scale, language,
+fixture state, product behavior or test is removed or weakened. A complete
+unchanged ordinary CI rerun remains mandatory before this stage can pass.
+
 ## Domain, permission, security, UX and i18n review
 
 - Domain/ownership: NPI One owns only immutable working EBOM revisions and
@@ -125,7 +156,7 @@ changed before exact clean-run evidence isolates any affected pixels.
 
 ## Next action
 
-Commit and push this exact candidate, require complete ordinary CI at that
-exact SHA, and inspect any failure by proven root without weakening a Gate.
-Only an exact-SHA PASS may close the repository/BFF/OpenAPI stage and activate
-the P5-04 frontend workspace. P5-05 and Phase 6 remain inactive.
+Commit and push only the eighteen reviewed fixed-Linux actuals plus this exact
+evidence/controller truth, then require complete unchanged ordinary CI at the
+new exact SHA. Only that PASS may close the repository/BFF/OpenAPI stage and
+activate the P5-04 frontend workspace. P5-05 and Phase 6 remain inactive.
