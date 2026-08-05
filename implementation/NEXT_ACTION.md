@@ -1,15 +1,22 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P5-03 BASELINE CREATE RESPONSE CONTRACT`
+`BLOCKED_EXTERNAL — P5-03 RESPONSE-CONTRACT PRE-DISPATCH ORDINARY CI`
 
-Recovery time: `2026-08-03T02:30:57Z`
+Recovery time: `2026-08-05T06:28:34Z`
 
-Current controller/evidence HEAD:
-`a8a20ec18f5d9d16f28953f3bc100fb8728fb069`
+Current response-contract diagnostic checkpoint:
+`9d25e50085aa97a4c959136ec04e4606c17522fc`
 
-Latest complete normal CI:
-`30778815782` (`PASS`, exact controller/evidence SHA `a8a20ec`)
+Affected P5 Document tests:
+`168/168` (`PASS`)
+
+Required pre-dispatch complete ordinary CI:
+`30980622113` (`FAIL`, two repository attempts on exact SHA `9d25e50`;
+visual `PASS`; controlled Site `SKIPPED`)
+
+Response-contract diagnostic-only controlled-Site dispatch:
+`0/1` used
 
 Additional diagnostic-only controlled-Site runs:
 `30776554186` and `30777405187` (`2/2` used)
@@ -52,6 +59,12 @@ Required development branch:
   response-contract diagnostic authority. It permits one predicate ladder,
   at most one diagnostic-only controlled-Site dispatch and, only after unique
   proof, one response-contract-only product-root exception.
+- The predicate ladder checkpoint is complete, but its required pre-dispatch
+  complete ordinary CI failed twice inside `bash scripts/verify.sh`. Safe
+  structured metadata exposes no exact subcommand. Current authority forbids
+  reading a potentially unsafe full log or sending the lockfile audit payload
+  to npm. The diagnostic dispatch remains unused and cannot run while the
+  ordinary CI prerequisite is red.
 - No P5-03 `PASS` or Level 2 result is claimed.
 - Current trace remains 282 unique IDs:
   `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
@@ -75,14 +88,14 @@ Primary boundary:
 
 ## First incomplete action
 
-Add a behavior-neutral closed predicate ladder only to
-`validate_document_baseline_command`, covering project identity, replay
-header, baseline shape/version/creator/global identity/snapshot hash, policy
-identity/version/hash, member and file cardinality, revision identity/hash,
-lifecycle version, release snapshot hash, scan state, private-path exclusion
-and URL exclusion. Run affected tests and complete ordinary CI before the sole
-diagnostic-only controlled-Site dispatch. Repair nothing unless the returned
-allowlisted code uniquely proves one predicate.
+Stop product changes and controlled-Site dispatches. Resume only after explicit
+bounded authority to read the failed ordinary-CI subcommand identity and, if
+it is an npm advisory, only package name, GHSA identifier, severity and first
+patched version. Do not expose raw exception text, traceback, request,
+response, Cookie, credentials, business data or storage paths. Close only that
+uniquely proved ordinary-CI root, rerun complete ordinary CI, and then execute
+the still-unused single diagnostic-only controlled-Site dispatch. Repair no
+response predicate unless its allowlisted tuple uniquely proves it.
 
 ## Frozen invariants and non-scope
 

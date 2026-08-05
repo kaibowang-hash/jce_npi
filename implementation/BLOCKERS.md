@@ -1,15 +1,42 @@
 # Blockers
 
-Updated: `2026-08-03T02:30:57Z`
+Updated: `2026-08-05T06:28:34Z`
 
 ## Active hard blockers
 
-None. The prior response-contract execution-authority hold is resolved by the
-new strictly bounded user authorization. No P5-03 PASS is claimed.
+`P5-03-RESPONSE-CONTRACT-PRE-DISPATCH-ORDINARY-CI`
+
+Exact diagnostic checkpoint `9d25e50` passed affected P5 Document tests
+`168/168`. All Git-tracked Python tests passed `883/883`; a clean committed
+frontend snapshot passed generation, type, lint, `671/671` unit tests,
+coverage, build and brand checks. Pull-request CI `30980622113` matched that
+SHA and its visual job passed, but its repository job failed twice inside
+`bash scripts/verify.sh`. The controlled-Site job was skipped both times.
+
+GitHub's safe structured metadata does not identify the failing subcommand.
+Complete-log access was rejected by the current non-disclosure boundary, a
+direct online npm audit was rejected because it sends dependency metadata, and
+Dependabot alerts are disabled. The offline cached audit reports zero, but
+cannot replace the required current online ordinary CI. No unique dependency,
+fixture, verifier or product root is proven, so no repair is allowed.
+
+The response-contract diagnostic dispatch remains `0/1` used. The final
+unchanged Gate and P5-03 Level 2 Task Gate have not run. Resume requires one
+explicit bounded authority to read only the failed ordinary-CI subcommand and,
+if applicable, package/GHSA/severity/first-patched-version metadata. No raw
+exception, traceback, request/response, Cookie, credential, business data or
+storage path may be exposed.
+
+Evidence:
+`implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md`.
 
 ## Active diagnostic progress
 
 `P5-03-BASELINE-CREATE-RESPONSE-CONTRACT-PREDICATE-DIAGNOSTIC`
+
+Paused before dispatch by the active ordinary-CI blocker above. The predicate
+ladder is committed at `9d25e50`; its single controlled-Site allowance remains
+unused and no response predicate has been repaired.
 
 Candidate `15abf26` passed affected P5 Document tests `167/167` and complete
 ordinary CI `30777828197`. The two authorized diagnostic-only dispatches were

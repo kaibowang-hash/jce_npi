@@ -1,16 +1,16 @@
 version: '1.2'
-overall_status: IN_PROGRESS
+overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-03T02:30:57Z'
+updated_at: '2026-08-05T06:28:34Z'
 authorization: automatic_transition_after_pass
-execution_hold: null
+execution_hold: P5_03_RESPONSE_CONTRACT_PRE_DISPATCH_ORDINARY_CI
 current_task: P5-03
-current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: P5-03-RESPONSE-CONTRACT-DIAGNOSTIC-AUTHORIZED
-current_task_next_stage: P5-03-RESPONSE-CONTRACT-PREDICATE-LADDER
-current_task_next_stage_status: AUTHORIZED_ACTIVE
+current_task_status: BLOCKED_EXTERNAL
+current_task_completed_stage: P5-03-RESPONSE-CONTRACT-PREDICATE-LADDER-CHECKPOINT
+current_task_next_stage: P5-03-RESPONSE-CONTRACT-DIAGNOSTIC-ONLY-CONTROLLED-SITE
+current_task_next_stage_status: BLOCKED_PRE_DISPATCH_ORDINARY_CI
 resumed_product_task: P5-03
-resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
+resumed_product_task_status: BLOCKED_PRE_DISPATCH_ORDINARY_CI
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -36,7 +36,7 @@ repair_accounting:
     authority: USER_AUTHORIZED_2026_08_03
     task: P5-03
     root: BASELINE_CREATE_RESPONSE_CONTRACT_ONLY
-    status: AUTHORIZED_ACTIVE
+    status: ACTIVE_PRE_DISPATCH_ORDINARY_CI_BLOCKED
     diagnostic_dispatches_authorized: 1
     diagnostic_dispatches_used: 0
     verifier_or_fixture_root_classified_by_controller: true
@@ -63,7 +63,7 @@ p5_02:
     - implementation/evidence/phase-5/p5-02-implementation-checkpoint.md
     - implementation/evidence/phase-5/p5-02-validation.md
 p5_03:
-  status: IN_PROGRESS_DIAGNOSTIC
+  status: BLOCKED_EXTERNAL
   requirements: [FR-DS-006]
   recovery_base_head: a1d84294641cb0b8cf71002c3d3557cb6b485ce7
   repaired_candidate: 15abf26834027045ccb98e5167a45390e94cb32b
@@ -98,6 +98,19 @@ p5_03:
     product_root_exception_authorized_if_uniquely_proven: 1
     product_root_exception_used: 0
     changes_global_five_round_rule: false
+  response_contract_diagnostic_checkpoint:
+    commit: 9d25e50085aa97a4c959136ec04e4606c17522fc
+    affected_tests: 168_PASS
+    diagnostic_dispatches_used: 0
+  response_contract_pre_dispatch_normal_ci:
+    run: 30980622113
+    status: FAIL
+    attempts: 2
+    head_sha: 9d25e50085aa97a4c959136ec04e4606c17522fc
+    failed_step: REPOSITORY_VERIFY_SH
+    visual_job: PASS
+    controlled_site_job: SKIPPED
+    safe_exact_root: NOT_AVAILABLE_WITHIN_CURRENT_NON_DISCLOSURE_AUTHORITY
   additional_diagnostic_dispatches:
     authorized: 2
     used: 2
@@ -105,8 +118,8 @@ p5_03:
     authorized: 1
     used: 1
     changes_global_five_round_rule: false
-  completed_stage: RESPONSE_CONTRACT_PREDICATE_DIAGNOSTIC_AUTHORIZED
-  next_stage: RESPONSE_CONTRACT_PREDICATE_LADDER
+  completed_stage: RESPONSE_CONTRACT_PREDICATE_LADDER_CHECKPOINT
+  next_stage: PRE_DISPATCH_ORDINARY_CI_REQUIRES_BOUNDED_FAILURE_AUTHORITY
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-03-plan.md
@@ -115,6 +128,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-baseline-create-diagnostic-recovery.md
     - implementation/evidence/phase-5/p5-03-baseline-create-final-gate-blocker.md
     - implementation/evidence/phase-5/p5-03-response-contract-diagnostic-resume.md
+    - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
