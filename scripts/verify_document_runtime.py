@@ -3555,7 +3555,7 @@ def verify_document_baseline_runtime(
         and checked_out.headers.get("Idempotency-Replayed") == "false"
         and isinstance(lock, dict)
         and lock.get("holderUserId") == "Administrator"
-        and lock.get("version") == 2,
+        and lock.get("version") == 1,
         "Document successor lock truth drifted",
     )
     stage_code = "P503_VERIFIER_POST_WORKSPACE_SUCCESSOR_CREATE"
@@ -3568,7 +3568,7 @@ def verify_document_baseline_runtime(
         document_id=document_id,
         predecessor_revision_id=revision_id,
         expected_document_version=5,
-        lock_version=2,
+        lock_version=1,
         minor=2,
         idempotency_key=DOCUMENT_SUCCESSOR_KEY,
     )
@@ -3649,7 +3649,7 @@ def verify_document_baseline_runtime(
         document_id=document_id,
         predecessor_revision_id=successor_id,
         expected_document_version=6,
-        lock_version=2,
+        lock_version=1,
         minor=3,
         idempotency_key=DOCUMENT_UNREGISTERED_SUCCESSOR_KEY,
     )

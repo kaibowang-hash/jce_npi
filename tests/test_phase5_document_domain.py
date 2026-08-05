@@ -223,6 +223,11 @@ class Phase5DocumentDomainTest(unittest.TestCase):
             now=NOW + timedelta(minutes=6),
             lease_minutes=30,
         )
+        self.assertNotEqual(
+            second.active_lock.global_id,
+            acquired.active_lock.global_id,
+        )
+        self.assertEqual(second.active_lock.version, 1)
         recovered_document, recovered = recover_document_lock(
             second.document,
             second.active_lock,
