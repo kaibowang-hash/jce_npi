@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'da1371bd0cacf5c2';
+export const catalogVersion = '95e79988fcab291e';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -555,6 +555,7 @@ export const catalogs = {
     "Confirm the exact EBOM revision before release.": "发布前请确认精确 EBOM 修订版。",
     "Confirm the hot runner interface drawing": "确认热流道接口图纸",
     "Confirm tooling correction revision B": "确认模具开发纠正修订版 B",
+    "Confirm validation of the exact released EBOM.": "请确认验证精确的已发布 EBOM。",
     "Confirmation": "确认",
     "Confirmation Evidence": "确认证据",
     "Confirmation Evidence does not match the exact action.": "确认证据与精确操作不匹配。",
@@ -3426,6 +3427,7 @@ export const catalogs = {
     "The scanner detected a threat. The registered revision remains visible for recovery, but no file action is available.": "扫描器检测到威胁。已注册修订版仍可见以便恢复，但当前没有可用的文件操作。",
     "The scanner reported no threat for this exact registered revision.": "扫描器报告此精确注册修订版未发现威胁。",
     "The sealed publish request is unavailable.": "已封存的发布请求不可用。",
+    "The sealed response does not match its exact publish request.": "已封存响应与其精确发布请求不匹配。",
     "The sealed response hash does not match its payload.": "已封存响应哈希与其载荷不匹配。",
     "The selected document policy version is unavailable.": "所选文档策略版本不可用。",
     "The selected document release policy version is unavailable.": "所选文件发布策略版本不可用。",
@@ -4240,6 +4242,7 @@ export const catalogs = {
     "Confirm the exact EBOM revision before release.": "發佈前請確認精確 EBOM 修訂版。",
     "Confirm the hot runner interface drawing": "確認熱流道介面圖紙",
     "Confirm tooling correction revision B": "確認模具開發矯正修訂版 B",
+    "Confirm validation of the exact released EBOM.": "請確認驗證精確的已發佈 EBOM。",
     "Confirmation": "確認",
     "Confirmation Evidence": "確認證據",
     "Confirmation Evidence does not match the exact action.": "確認證據與精確操作不符。",
@@ -7111,6 +7114,7 @@ export const catalogs = {
     "The scanner detected a threat. The registered revision remains visible for recovery, but no file action is available.": "掃描器偵測到威脅。已登錄修訂版仍可見以便復原，但目前沒有可用的檔案操作。",
     "The scanner reported no threat for this exact registered revision.": "掃描器報告此精確登錄修訂版未發現威脅。",
     "The sealed publish request is unavailable.": "已封存的發佈請求無法使用。",
+    "The sealed response does not match its exact publish request.": "已封存回應與其精確發佈請求不相符。",
     "The sealed response hash does not match its payload.": "已封存回應雜湊與其承載不相符。",
     "The selected document policy version is unavailable.": "所選文件策略版本無法使用。",
     "The selected document release policy version is unavailable.": "所選文件發布策略版本無法使用。",

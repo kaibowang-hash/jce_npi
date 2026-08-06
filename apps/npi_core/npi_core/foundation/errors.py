@@ -208,3 +208,14 @@ class EngineeringBomRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class PublishRequestRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "EBOM_PUBLISH_REQUEST_ROUTES_DISABLED",
+            _("The EBOM workspace is temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

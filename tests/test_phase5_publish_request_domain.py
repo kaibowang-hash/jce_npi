@@ -236,7 +236,9 @@ class Phase5PublishRequestDomainTest(unittest.TestCase):
                 engineering_uom="pcs",
                 line_hash=HASH_A,
             )
-        for quantity in ("0", "01", "1.0", " 1", "-1", "NaN"):
+        fixed_scale = replace(self.lines()[1], quantity="1.000", line_hash="")
+        self.assertEqual(fixed_scale.quantity, "1.000")
+        for quantity in ("0", "01", " 1", "-1", "NaN"):
             with self.subTest(quantity=quantity), self.assertRaises(
                 RequestValidationFailed
             ):

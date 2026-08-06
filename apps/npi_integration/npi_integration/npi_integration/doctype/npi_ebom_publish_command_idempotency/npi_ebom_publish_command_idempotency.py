@@ -92,7 +92,7 @@ class NPIEBOMPublishCommandIdempotency(Document):
                     _("A sealed publish command receipt requires its exact response."),
                     frappe.ValidationError,
                 )
-            require_exact_parent(
+            request = require_exact_parent(
                 "NPI EBOM Publish Request",
                 self.request_global_id,
                 {
@@ -100,13 +100,21 @@ class NPIEBOMPublishCommandIdempotency(Document):
                     "tenant_id": self.tenant_id,
                     "project_global_id": self.project_global_id,
                     "actor_user_id": self.actor_user_id,
-                    "payload_hash": self.payload_hash,
                 },
                 _("The sealed publish request is unavailable."),
+                extra_fields=("payload_hash",),
             )
             response = json_object(
                 self.response_payload, _("Sealed Response Payload")
             )
+            if (
+                response.get("globalId") != self.request_global_id
+                or response.get("payloadHash") != str(request.payload_hash)
+            ):
+                frappe.throw(
+                    _("The sealed response does not match its exact publish request."),
+                    frappe.ValidationError,
+                )
             canonical = canonical_json(response)
             if lowercase_sha256(self.response_hash, _("Sealed Response Hash")) != sha256_json(response):
                 frappe.throw(

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from uuid import UUID, uuid4
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 
 try:
     from frappe import _
@@ -32,6 +32,51 @@ _KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$")
 _LINE_KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 _UOM_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,15}$")
+
+
+class PublishRequestUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "EBOM_PUBLISH_REQUEST_UNAVAILABLE",
+            _("The exact EBOM publish request is unavailable."),
+        )
+
+
+class PublishRequestPolicyUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "EBOM_PUBLISH_POLICY_UNAVAILABLE",
+            _("The exact published EBOM publish policy is unavailable."),
+        )
+
+
+class PublishRequestAuthorityUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            403,
+            "EBOM_PUBLISH_AUTHORITY_UNAVAILABLE",
+            _("You are not authorized to perform this EBOM action."),
+        )
+
+
+class PublishRequestStateConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "EBOM_PUBLISH_STATE_CONFLICT",
+            _("The EBOM revision changed. Reload it before continuing."),
+        )
+
+
+class PublishRequestIdempotencyConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "EBOM_PUBLISH_IDEMPOTENCY_CONFLICT",
+            _("The idempotency key was already used for a different request."),
+        )
 
 
 def sha256_json(value: object) -> str:
@@ -1073,8 +1118,6 @@ def _quantity(value: object, path: str) -> str:
     if value.startswith("0") and value not in {"0"} and not value.startswith("0."):
         raise _field_problem(path, _("Use a canonical positive quantity."))
     if value == "0" or value.startswith("0.") and set(value[2:]) <= {"0"}:
-        raise _field_problem(path, _("Use a canonical positive quantity."))
-    if "." in value and value.endswith("0"):
         raise _field_problem(path, _("Use a canonical positive quantity."))
     return value
 

@@ -3681,3 +3681,5 @@ NPI EBOM Publish Request,NPI EBOM 發佈請求
 Publish Request State,發佈請求狀態
 manual_intervention,人工介入
 Dispatch Allowed,允許分派
+The sealed response does not match its exact publish request.,已封存回應與其精確發佈請求不相符。
+Confirm validation of the exact released EBOM.,請確認驗證精確的已發佈 EBOM。

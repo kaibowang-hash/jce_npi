@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+import ast
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+PATH = (
+    ROOT
+    / "apps/npi_integration/npi_integration/publish_request/frappe_repository.py"
+)
+SOURCE = PATH.read_text(encoding="utf-8")
+TREE = ast.parse(SOURCE)
+
+
+def function(name: str) -> str:
+    matches = [
+        node
+        for node in ast.walk(TREE)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == name
+    ]
+    if len(matches) != 1:
+        raise AssertionError(f"Expected one {name}, found {len(matches)}")
+    value = ast.get_source_segment(SOURCE, matches[0])
+    if value is None:
+        raise AssertionError(f"Unable to read {name}")
+    return value
+
+
+class Phase5PublishRequestRepositoryTest(unittest.TestCase):
+    def test_queries_require_publish_authority_before_released_ebom_resolution(self) -> None:
+        for name in ("list_requests", "request_detail"):
+            with self.subTest(name=name):
+                value = function(name)
+                order = (
+                    "self._authorized_project(project_id)",
+                    "self._published_publish_policy_options(project)",
+                    "self._released_context(",
+                )
+                positions = [value.index(fragment) for fragment in order]
+                self.assertEqual(positions, sorted(positions))
+
+    def test_create_is_actor_bound_replay_safe_and_atomically_sealed(self) -> None:
+        value = function("create_request")
+        order = (
+            "self._locked_command_project(project_id)",
+            "self._load_exact_publish_policy(",
+            "self._require_publish_policy_actor(policy)",
+            "self._released_context(",
+            "command_payload_hash(",
+            "self._receipt_replay(",
+            "require_mutable_project(project)",
+            "create_mock_publish_request(",
+            "with publish_request_write()",
+            "self._insert_receipt(",
+            "self._insert_request_bundle(",
+            "self._append_audit(",
+            "response = request.public_dict()",
+            "self._seal_receipt(",
+        )
+        positions = [value.index(fragment) for fragment in order]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_receipt_replay_revalidates_scope_actor_payload_and_sealed_hash(self) -> None:
+        value = function("_receipt_replay")
+        for fragment in (
+            '"tenant_id"',
+            '"project_global_id"',
+            '"actor_user_id"',
+            '"operation"',
+            '"idempotency_key_hash"',
+            '"payload_hash"',
+            '"request_global_id"',
+            '"response_hash"',
+            '"sealed"',
+            "sha256_json(response)",
+        ):
+            self.assertIn(fragment, value)
+
+    def test_mock_bundle_has_no_dispatch_outbox_or_formal_identifiers(self) -> None:
+        value = function("_insert_node_bundle")
+        self.assertIn('"source_system": "NPI_ONE"', value)
+        self.assertIn('"mapping_state": "unmapped"', value)
+        self.assertIn('"phase5_dispatch_allowed": 0', value)
+        self.assertNotIn("formal_item_code", value)
+        self.assertNotIn("formal_mbom_id", value)
+        lowered = SOURCE.casefold()
+        for forbidden in (
+            "outbox",
+            "http://",
+            "https://",
+            "requests.",
+            "frappe.db." "sql",
+            "ignore_" "permissions",
+            "commit()",
+        ):
+            self.assertNotIn(forbidden, lowered)
+
+    def test_receipt_command_hash_is_distinct_from_frozen_request_hash(self) -> None:
+        controller = (
+            ROOT
+            / "apps/npi_integration/npi_integration/npi_integration/doctype/"
+            "npi_ebom_publish_command_idempotency/"
+            "npi_ebom_publish_command_idempotency.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('extra_fields=("payload_hash",)', controller)
+        self.assertIn('response.get("payloadHash")', controller)
+        parent_filter = controller.split("request = require_exact_parent(", 1)[1].split(
+            ")\n            response =", 1
+        )[0]
+        self.assertNotIn('"payload_hash": self.payload_hash', parent_filter)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -14,6 +14,7 @@ from .foundation.errors import (
     DocumentRoutesDisabled,
     EngineeringBomRoutesDisabled,
     MalformedRequest,
+    PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
@@ -22,6 +23,7 @@ from .request_security import (
     document_release_routes_are_disabled,
     document_routes_are_disabled,
     engineering_bom_routes_are_disabled,
+    publish_request_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
 )
@@ -99,6 +101,15 @@ _EBOM_REVISIONS_ROUTE = re.compile(
 _EBOM_COMPARE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
     r"(?P<ebom_id>[^/:]+)/compare$"
+)
+_EBOM_PUBLISH_REQUESTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+    r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)/publish-requests$"
+)
+_EBOM_PUBLISH_REQUEST_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/"
+    r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)/publish-requests/"
+    r"(?P<publish_request_id>[^/:]+)$"
 )
 _EBOM_COMMAND_ROUTES = (
     (
@@ -389,6 +400,20 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.ebom_api.compare_ebom_revisions"
             route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _EBOM_PUBLISH_REQUESTS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_integration.publish_request_api.get_publish_requests"
+                if request.method == "GET"
+                else "npi_integration.publish_request_api.create_publish_request"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _EBOM_PUBLISH_REQUEST_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_integration.publish_request_api.get_publish_request"
+            route_params = match.groupdict()
     if command is None and request.method == "POST":
         match = _EBOM_REVISIONS_ROUTE.fullmatch(path)
         if match is not None:
@@ -509,6 +534,9 @@ def route_request() -> None:
     if _p5_04_routes_disabled(command):
         command = "npi_core.bff.engineering_bom_routes_disabled"
         route_params = {}
+    if _p5_05_routes_disabled(command):
+        command = "npi_core.bff.publish_request_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -612,6 +640,23 @@ def engineering_bom_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def publish_request_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P5-05 while retaining P5-04 EBOM routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise PublishRequestRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -643,6 +688,13 @@ def _p5_03_routes_disabled(command: str | None) -> bool:
 def _p5_04_routes_disabled(command: str | None) -> bool:
     return engineering_bom_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.ebom_api.")
+    )
+
+
+def _p5_05_routes_disabled(command: str | None) -> bool:
+    return publish_request_routes_are_disabled() and (
+        isinstance(command, str)
+        and command.startswith("npi_integration.publish_request_api.")
     )
 
 
@@ -756,6 +808,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "GET" and (
         _PROJECT_EBOM_ROUTE.fullmatch(path) is not None
         or _EBOM_COMPARE_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _EBOM_PUBLISH_REQUESTS_ROUTE.fullmatch(path) is not None
+        or _EBOM_PUBLISH_REQUEST_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method == "GET" and (

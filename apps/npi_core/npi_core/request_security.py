@@ -12,6 +12,7 @@ from .foundation.errors import (
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
     EngineeringBomRoutesDisabled,
+    PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
@@ -104,6 +105,27 @@ def require_engineering_bom_routes_enabled() -> None:
 
     if engineering_bom_routes_are_disabled():
         raise EngineeringBomRoutesDisabled()
+
+
+def publish_request_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P5-05 emergency switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p5_05_routes_disabled")
+        if hasattr(configuration, "get")
+        else False
+    )
+    return value is True
+
+
+def require_publish_request_routes_enabled() -> None:
+    """Close only P5-05 handlers while retaining P5-04 EBOM routes."""
+
+    if publish_request_routes_are_disabled():
+        raise PublishRequestRoutesDisabled()
 
 
 def project_collaboration_routes_are_disabled() -> bool:

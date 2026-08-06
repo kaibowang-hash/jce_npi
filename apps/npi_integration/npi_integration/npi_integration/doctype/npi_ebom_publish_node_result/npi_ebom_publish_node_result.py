@@ -132,9 +132,14 @@ class NPIEBOMPublishNodeResult(Document):
                 frappe.ValidationError,
             )
         self.result_snapshot = canonical_json(expected)
+        public_result = {
+            key: value
+            for key, value in expected.items()
+            if key not in {"schemaVersion", "requestGlobalId"}
+        }
         if lowercase_sha256(
             self.result_hash, _("Node Result Hash")
-        ) != sha256_json(expected):
+        ) != sha256_json(public_result):
             frappe.throw(
                 _("The node result hash does not match its exact content."),
                 frappe.ValidationError,
