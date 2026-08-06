@@ -485,3 +485,40 @@ Compilation, V1.2 reconciliation, 282-row trace uniqueness, YAML parse,
 prohibited-pattern and `git diff --check` pass. Exact-SHA ordinary CI and the
 single reserved final unchanged controlled Gate remain required. P5-04 is
 `IN_PROGRESS_REPAIR_VALIDATION`; P5-05 and Phase 6 remain inactive.
+
+## Fixture repair ordinary CI and exhausted final Gate
+
+Fixture repair checkpoint `158ef02cda2319418393a51cbb860c7d9648f091`
+passed complete local Python `959/959`, P5-04 EBOM `63/63`, reconciliation,
+trace, YAML and diff checks. Complete exact-SHA ordinary CI `31070341154`
+then passed repository job `92516810153`, complete E2E, current/history secret
+lanes and fixed-Linux visual job `92516810141`; controlled job `92516810582`
+remained correctly skipped.
+
+The single reserved final unchanged controlled workflow `31070732986`
+retained exact SHA `158ef02` with diagnostic activation closed. Controlled job
+`92517955405` passed pinned tools, fixed Bench/Site, migrations, complete
+unchanged P5-01/02/03 runtime, policy publication, repaired fixture/domain
+preconditions and cleanup, then emitted only:
+
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-462662eec74c5c4f9e3e5a07258f1a7b`
+
+The same workflow's repository job `92517955490` and visual job `92517955368`
+both passed. This confines the workflow failure to the controlled create-stage
+runtime rather than repository, E2E, secret-scan or visual regressions.
+
+The former `P504_CREATE_DOMAIN_BUILD / RequestValidationFailed` did not recur,
+so the repair is not disproved: it advanced the unchanged Gate. The new
+aggregate is still non-unique across remaining receipt/root/revision/line/
+lifecycle writes, projection, audit, response and receipt-seal boundaries.
+Choosing any one would be an unproven repair.
+
+The authorized diagnostic dispatch is consumed `1/1`, the uniquely proved
+fixture repair is complete, and the reserved final unchanged Gate is consumed
+`1/1`. Under the controller and `release-gate` rules the truthful result is
+`BLOCKED_EXTERNAL`, not PASS. The single action to resume is explicit
+authority to reactivate only the existing response-neutral create diagnostic,
+run affected/full ordinary CI, execute at most one diagnostic Site, repair
+only the uniquely proved remaining root, rerun ordinary CI and reserve one
+final unchanged Gate. Frozen invariants and P5-05/Phase 6 remain unchanged.

@@ -530,3 +530,26 @@ must preserve that boundary.
   `IN_PROGRESS_REPAIR_VALIDATION`; full tests, exact-SHA ordinary CI and the
   reserved final unchanged Gate remain before Level 2 or Autopilot
   continuation.
+
+## Active Hard Blocker — P5-04 remaining create-stage diagnostic authority — 2026-08-06T04:18:19Z
+
+- Fixture repair `158ef02` passed EBOM `63/63`, complete Python `959/959` and
+  complete ordinary CI `31070341154`.
+- Final unchanged controlled workflow `31070732986` retained exact SHA
+  `158ef02` with diagnostic activation closed. It advanced beyond the former
+  `P504_CREATE_DOMAIN_BUILD / RequestValidationFailed`, then returned only
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-462662eec74c5c4f9e3e5a07258f1a7b`.
+- Companion repository job `92517955490` and visual job `92517955368` passed,
+  isolating the failed workflow lane to the controlled create-stage runtime.
+- The new tuple is non-unique across remaining create transaction/response
+  stages. The authorized diagnostic Site, one uniquely proved fixture repair
+  and the reserved final unchanged Gate are exhausted. Guessing another
+  repair or dispatching another Site is prohibited.
+- Single user action to unblock: explicitly authorize one new bounded
+  remaining-create-stage recovery consisting of response-neutral diagnostic
+  reactivation, affected/full ordinary CI, at most one diagnostic Site,
+  repair only of the uniquely proved remaining root, affected/full ordinary
+  CI and one final unchanged Gate. No Requirement, API, permission, Schema,
+  ownership, transaction, idempotency, audit or PASS criterion may change.
+- P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.

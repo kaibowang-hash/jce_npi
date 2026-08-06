@@ -1,23 +1,23 @@
 version: '1.2'
-overall_status: IN_PROGRESS
+overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-06T04:02:59Z'
+updated_at: '2026-08-06T04:23:15Z'
 authorization: automatic_transition_after_pass
-execution_hold: NONE
+execution_hold: P5_04_REMAINING_CREATE_STAGE_DIAGNOSTIC_AUTHORITY_REQUIRED
 current_task: P5-04
-current_task_status: IN_PROGRESS_REPAIR_VALIDATION
-current_task_completed_stage: SYNTHETIC_FIXTURE_REPAIR_LOCAL_PASS
-current_task_next_stage: SYNTHETIC_FIXTURE_REPAIR_CHECKPOINT_NORMAL_CI
-current_task_next_stage_status: IN_PROGRESS
+current_task_status: BLOCKED_EXTERNAL
+current_task_completed_stage: FIXTURE_REPAIR_ADVANCED_FINAL_GATE
+current_task_next_stage: USER_AUTHORITY_FOR_REMAINING_CREATE_DIAGNOSTIC
+current_task_next_stage_status: BLOCKED
 resumed_product_task: P5-04
-resumed_product_task_status: IN_PROGRESS_CREATE_STAGE_FIXTURE_REPAIR
+resumed_product_task_status: BLOCKED_EXTERNAL_REMAINING_CREATE_STAGE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_SYNTHETIC_FIXTURE_NAMESPACE_KEY_MISMATCH
+  current_root: P5_04_REMAINING_CREATE_STAGE_NON_UNIQUE
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -166,7 +166,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: IN_PROGRESS_REPAIR_VALIDATION
+  status: BLOCKED_EXTERNAL
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -271,7 +271,8 @@ p5_04:
   create_stage_diagnostic_dispatches_used: 1
   create_stage_product_repairs_authorized_if_proven: 1
   create_stage_product_repairs_used: 0
-  create_stage_final_unchanged_gate_reserved: true
+  create_stage_final_unchanged_gate_reserved: false
+  create_stage_final_unchanged_gates_used: 1
   create_stage_diagnostic_local_ebom_tests: 62_PASS
   create_stage_diagnostic_local_regression_tests: 70_PASS
   create_stage_diagnostic_local_complete_python: 958_PASS
@@ -293,8 +294,25 @@ p5_04:
   create_stage_repair_local_complete_python: 959_PASS
   create_stage_repair_local_reconciliation_trace_diff: PASS
   create_stage_repair_diagnostic_activation: CLOSED
-  completed_stage: SYNTHETIC_FIXTURE_REPAIR_LOCAL_PASS
-  next_stage: SYNTHETIC_FIXTURE_REPAIR_CHECKPOINT_NORMAL_CI
+  create_stage_repair_checkpoint: 158ef02cda2319418393a51cbb860c7d9648f091
+  create_stage_repair_normal_ci: 31070341154
+  create_stage_repair_repository_job: 92516810153
+  create_stage_repair_visual_job: 92516810141
+  create_stage_repair_controlled_job: 92516810582
+  create_stage_repair_normal_ci_outcome: PASS_CONTROLLED_CORRECTLY_SKIPPED
+  create_stage_final_unchanged_gate: 31070732986
+  create_stage_final_unchanged_gate_head: 158ef02cda2319418393a51cbb860c7d9648f091
+  create_stage_final_unchanged_gate_controlled_job: 92517955405
+  create_stage_final_unchanged_gate_repository_job: 92517955490
+  create_stage_final_unchanged_gate_visual_job: 92517955368
+  create_stage_final_unchanged_gate_companion_outcome: REPOSITORY_AND_VISUAL_PASS
+  create_stage_final_unchanged_gate_diagnostic_activation: CLOSED
+  create_stage_final_unchanged_gate_outcome: FAILED_REMAINING_CREATE_STAGE_NON_UNIQUE
+  create_stage_final_unchanged_gate_code: P504_RUNTIME_CREATE
+  create_stage_final_unchanged_gate_exception_type: HttpStatusError
+  create_stage_final_unchanged_gate_trace_id: trace-462662eec74c5c4f9e3e5a07258f1a7b
+  completed_stage: FIXTURE_REPAIR_ADVANCED_FINAL_GATE
+  next_stage: USER_AUTHORITY_FOR_REMAINING_CREATE_DIAGNOSTIC
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

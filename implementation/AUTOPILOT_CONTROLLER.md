@@ -263,11 +263,18 @@ pending until that proof is produced in Codespaces.
   policy namespace and EBOM key did not satisfy the frozen
   `syntheticNamespace + "-"` relation. The bounded fixture-only repair shares
   one `synthetic_ebom` namespace, preserves the domain rule and has closed
-  diagnostic activation. Complete EBOM tests pass `63/63`; full validation,
-  exact-SHA ordinary CI and the reserved final unchanged Gate remain.
+  diagnostic activation. Complete EBOM tests pass `63/63`; repair checkpoint
+  `158ef02` passed complete Python `959/959` and ordinary CI `31070341154`.
+- Final unchanged workflow `31070732986` advanced beyond the former domain
+  failure, then returned only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-462662eec74c5c4f9e3e5a07258f1a7b`. This tuple remains non-unique across
+  the remaining create transaction/response stages. Companion repository job
+  `92517955490` and visual job `92517955368` passed. The sole diagnostic Site,
+  one fixture repair and final Gate are exhausted; a new explicitly bounded
+  remaining-create-stage authority is required before any further mutation or
+  controlled dispatch.
 - P5-05 and Phase 6 remain inactive.
-- No active Hard Blocker or execution hold exists. P5-04 is
-  `IN_PROGRESS_REPAIR_VALIDATION`, never a Gate PASS. Production numbering,
+- P5-04 is `BLOCKED_EXTERNAL`, never a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

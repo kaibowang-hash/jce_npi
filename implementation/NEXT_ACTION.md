@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPAIR_VALIDATION — P5-04 SYNTHETIC FIXTURE NAMESPACE`
+`BLOCKED_EXTERNAL — P5-04 REMAINING CREATE STAGE NON-UNIQUE`
 
-Recovery time: `2026-08-06T04:02:59Z`
+Recovery time: `2026-08-06T04:23:15Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`008e6ed2c55d08dd53639942fb2392649d3af6c9`
+`158ef02cda2319418393a51cbb860c7d9648f091`
 
 ## Authority
 
@@ -54,17 +54,34 @@ transaction order, idempotency, audit or PASS criteria.
   trace uniqueness, YAML parse, prohibited-pattern and `git diff --check`
   pass.
 - The diagnostic dispatch allowance is consumed (`1/1`); the reserved final
-  unchanged controlled Gate remains unused.
+  unchanged controlled Gate is also consumed (`1/1`).
+- Fixture repair checkpoint `158ef02` passed local `63/63` EBOM and
+  `959/959` complete Python, then complete exact-SHA ordinary CI
+  `31070341154` passed repository, E2E, both secret lanes and fixed-Linux
+  visual; the controlled job remained correctly skipped.
+- Final unchanged controlled workflow `31070732986` retained exact SHA
+  `158ef02` with diagnostic activation closed. It passed the predecessor
+  runtime, policy publication and repaired domain precondition, then emitted
+  only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-462662eec74c5c4f9e3e5a07258f1a7b`.
+- Its repository job `92517955490` and visual job `92517955368` both passed;
+  the workflow failure is confined to the controlled create-stage runtime.
+- The former `P504_CREATE_DOMAIN_BUILD / RequestValidationFailed` did not
+  recur, so the fixture repair advanced the Gate. The new aggregate tuple is
+  non-unique across the remaining create transaction/response stages; the
+  authorized diagnostic Site, fixture repair and final Gate are exhausted.
 
 ## First unfinished action
 
-Commit and push only the two-file synthetic fixture repair plus synchronized
-controller/evidence files. Require complete ordinary CI on that exact SHA;
-only after it passes, execute the single reserved final unchanged controlled
-Gate with diagnostic activation closed.
+Explicitly authorize one new bounded remaining-create-stage recovery:
+reactivate only the already closed response-neutral diagnostic header, run
+affected/full ordinary CI, use at most one diagnostic controlled Site, repair
+only the uniquely proven remaining verifier/fixture or product root, rerun
+affected/full ordinary CI and reserve one final unchanged controlled Gate.
+No Requirement, API, permission, Schema, ownership, transaction order,
+idempotency, audit or PASS criterion may change.
 
-P5-04 remains `IN_PROGRESS_REPAIR_VALIDATION`. P5-05 and Phase 6 remain
-inactive until the final Gate and Level 2 evidence pass.
+P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 
