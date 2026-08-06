@@ -558,3 +558,45 @@ asset, which remains untouched and is absent from a clean CI checkout. The
 host itself has Node/npm `24.2.0/11.3.0` rather than the required
 `24.18.0/11.16.0`, so the exact-SHA ordinary GitHub CI remains the authoritative
 complete ordinary-CI prerequisite and must pass before dispatch.
+
+## Remaining create revision-insert proof and repair
+
+Diagnostic checkpoint `40d2d47f8e551ea5809af488cf6230f93520d5b5`
+passed complete exact-SHA ordinary CI `31073500593`: repository job
+`92526237591`, complete E2E/current and history secret scans and fixed-Linux
+visual job `92526237583` passed; controlled job `92526238095` was correctly
+skipped.
+
+The sole authorized diagnostic workflow `31073915463` retained exact SHA
+`40d2d47`. Controlled job `92527559599` passed pinned Bench, fixed disposable
+Site, both migrations, complete unchanged P5-01/02/03 runtime, policy fixture,
+authorization and cleanup, then emitted only:
+
+`P504_CREATE_REVISION_INSERT / ValidationError /
+trace-9b23575185625a1998ac184bfefaa272`
+
+Companion repository job `92527559637` and visual job `92527559893` passed.
+All earlier create substages, including domain construction, transaction,
+receipt and root insert, passed.
+
+Direct code/DocType/contract cross-validation uniquely proves the root. The
+revision insert contains one `NPI Engineering BOM Revision` insertion. Its
+controller resolves the exact published policy through `require_exact_parent`
+and immediately hydrates `ebom_policy_value(policy_row)`. The helper returns
+only fields named by the expected predicate and `extra_fields`; query-filter
+keys are not automatically returned. The projection included the policy
+version document `global_id` and rule fields but omitted the required
+`policy_global_id` and `policy_version`, so hydration received an invalid UUID
+and version and mapped the resulting domain validation to the observed Frappe
+`ValidationError`.
+
+The bounded repair adds only those two existing fields to the read projection,
+retains the same exact published-policy predicate and complete domain
+revalidation, and changes no Requirement, OpenAPI, DocType, permission,
+ownership, transaction, idempotency, audit or PASS criterion. The first-create
+diagnostic activation is closed before affected/full ordinary CI and the
+reserved final unchanged Gate. Local repair validation passes the combined
+controller/runtime-verifier suite `25/25`, complete P5-04 EBOM suite `64/64`,
+related Document regression `70/70`, complete tracked Python suite `960/960`,
+compilation, reconciliation, prototype-approval, P0 visual-governance, YAML
+and diff checks.

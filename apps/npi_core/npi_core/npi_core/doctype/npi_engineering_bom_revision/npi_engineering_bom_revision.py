@@ -126,7 +126,9 @@ class NPIEngineeringBOMRevision(Document):
             _("The exact published EBOM policy is unavailable."),
             extra_fields=(
                 "global_id",
+                "policy_global_id",
                 "policy_key",
+                "policy_version",
                 "title",
                 "synthetic_namespace",
                 "line_identity_mode",

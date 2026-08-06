@@ -283,8 +283,19 @@ pending until that proof is produced in Codespaces.
   one diagnostic Site, repair only one uniquely proved in-scope root, rerun
   affected/full ordinary CI and reserve one final unchanged Gate. New counters
   are diagnostic `0/1`, uniquely proved repair `0/1` and final Gate `0/1`.
+- Diagnostic checkpoint `40d2d47` passed complete exact-SHA ordinary CI
+  `31073500593`. The sole diagnostic workflow `31073915463` then emitted only
+  `P504_CREATE_REVISION_INSERT / ValidationError /
+  trace-9b23575185625a1998ac184bfefaa272`; companion repository and visual jobs
+  and disposable cleanup passed.
+- `require_exact_parent()` returns expected plus explicit extra fields, not
+  its filter keys. The revision controller passed that row to
+  `ebom_policy_value()` without selecting required `policy_global_id` and
+  `policy_version`, uniquely proving the observed validation root. The bounded
+  repair selects only those two existing fields and closes diagnostics; its
+  affected/full ordinary CI and reserved final unchanged Gate remain pending.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_REPAIR_VALIDATION`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

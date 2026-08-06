@@ -570,3 +570,21 @@ must preserve that boundary.
   repair may be selected without one allowlisted stage/type/trace tuple plus
   direct contract, DocType, permission and transaction cross-validation.
 - P5-04 is `IN_PROGRESS_DIAGNOSTIC`; P5-05 and Phase 6 remain inactive.
+
+## Diagnostic proof — P5-04 remaining create revision insert — 2026-08-06T05:45:43Z
+
+- Diagnostic checkpoint `40d2d47` passed exact-SHA ordinary CI `31073500593`;
+  repository `92526237591` and visual `92526237583` passed, while controlled
+  job `92526238095` correctly remained skipped.
+- The sole diagnostic workflow `31073915463` retained that exact SHA and
+  returned only `P504_CREATE_REVISION_INSERT / ValidationError /
+  trace-9b23575185625a1998ac184bfefaa272`; repository and visual companions
+  passed, and disposable cleanup passed.
+- The stage contains one revision document insert. Its exact-policy query uses
+  `policy_global_id` and `policy_version` as filters, but `require_exact_parent`
+  returns only expected plus explicit extra fields. Both identity fields were
+  omitted from the returned row immediately passed to `ebom_policy_value`,
+  uniquely producing the mapped validation failure.
+- The authorized repair selects only those two existing fields and closes the
+  diagnostic activation. There is no active Hard Blocker; affected/full
+  ordinary CI and one final unchanged Gate remain before P5-04 Level 2.

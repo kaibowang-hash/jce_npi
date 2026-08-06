@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REMAINING CREATE STAGE DIAGNOSTIC`
+`IN_PROGRESS — P5-04 REMAINING CREATE REPAIR VALIDATION`
 
-Recovery time: `2026-08-06T04:48:37Z`
+Recovery time: `2026-08-06T05:45:43Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -77,17 +77,27 @@ transaction order, idempotency, audit or PASS criteria.
 - Recovery checkpoint `40c8956` passed exact-SHA ordinary CI `31071143272`:
   repository job `92519171196`, complete E2E/history secret scan and visual
   job `92519171311` passed; controlled job `92519171741` was correctly skipped.
+- New diagnostic checkpoint `40d2d47` passed complete exact-SHA ordinary CI
+  `31073500593`; repository `92526237591` and visual `92526237583` passed and
+  controlled job `92526238095` correctly remained skipped.
+- The sole diagnostic workflow `31073915463` retained that exact SHA and
+  emitted only `P504_CREATE_REVISION_INSERT / ValidationError /
+  trace-9b23575185625a1998ac184bfefaa272`. Its repository and visual companions
+  passed and disposable cleanup completed.
+- Cross-validation uniquely proves the product root: exact policy identity
+  fields used only as query filters were absent from the selected row passed
+  into domain hydration. The repair selects existing `policy_global_id` and
+  `policy_version` fields only and has closed diagnostic activation.
 
 ## First unfinished action
 
-Run the affected create diagnostic/verifier tests and the complete ordinary
-local CI from the exact `c7edac8` recovery base with only the first create
-request diagnostic active. Commit and push that checkpoint, require exact-SHA
-ordinary CI PASS, then execute at most one diagnostic controlled Site.
-No repair is permitted before its closed tuple uniquely proves and direct
-contract/DocType/permission/transaction cross-validation confirms one root.
+Run affected revision-controller/runtime and complete P5-04 regression tests,
+then complete tracked Python, reconciliation, trace/YAML and diff checks with
+diagnostic activation closed. Commit and push only the two-field projection
+repair plus evidence, require complete exact-SHA ordinary CI PASS, then execute
+the single reserved final unchanged controlled Gate.
 
-P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
+P5-04 is `IN_PROGRESS_REPAIR_VALIDATION`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 

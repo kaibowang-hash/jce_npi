@@ -5,6 +5,7 @@ import sys
 import types
 import unittest
 from typing import Any
+from unittest.mock import patch
 
 
 sys.path.insert(0, "apps/npi_core")
@@ -335,6 +336,74 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
             self.helper.validate_internal_ebom_policy_users(
                 ("reviewer@example.invalid",)
             )
+
+    def test_revision_policy_hydration_selects_exact_policy_identity(self) -> None:
+        class StopAfterPolicyProjection(Exception):
+            pass
+
+        calls: list[tuple[Any, ...]] = []
+
+        def require_exact_parent(*args: Any, **kwargs: Any) -> dict[str, object]:
+            calls.append((*args, kwargs))
+            return {}
+
+        ebom_id = "c2f4a4a5-57ba-44ea-abba-6d906d0922d1"
+        project_id = "2b47c9da-9f8c-4d98-bf45-42985cd26a60"
+        policy_id = "ed80d97e-42fe-4db0-9703-bbed01150908"
+        revision = self.revision_module.NPIEngineeringBOMRevision(
+            {
+                "engineering_bom": ebom_id,
+                "ebom_global_id": ebom_id,
+                "tenant_id": "tenant-local",
+                "project_global_id": project_id,
+                "engineering_bom_key": "synthetic_ebom-controller",
+                "policy_global_id": policy_id,
+                "policy_version": 1,
+                "policy_snapshot_hash": "a" * 64,
+                "revision_snapshot": {},
+            }
+        )
+        with patch.object(
+            self.revision_module,
+            "require_exact_parent",
+            side_effect=require_exact_parent,
+        ), patch.object(
+            self.revision_module,
+            "json_object",
+            side_effect=StopAfterPolicyProjection,
+        ), self.assertRaises(StopAfterPolicyProjection):
+            revision.validate()
+
+        self.assertEqual(len(calls), 2)
+        policy_call = calls[1]
+        self.assertEqual(policy_call[0], "NPI EBOM Policy Version")
+        self.assertEqual(
+            policy_call[1],
+            {"policy_global_id": policy_id, "policy_version": 1},
+        )
+        selected = set(policy_call[-1]["extra_fields"])
+        self.assertTrue(
+            {
+                "global_id",
+                "policy_global_id",
+                "policy_key",
+                "policy_version",
+                "title",
+                "synthetic_namespace",
+                "line_identity_mode",
+                "quantity_scale",
+                "maximum_nodes",
+                "engineering_uoms",
+                "attribute_keys",
+                "creator_user_ids",
+                "review_submitter_user_ids",
+                "reviewer_user_ids",
+                "release_authority_user_ids",
+                "require_acyclic_graph",
+                "require_closed_alternates",
+                "require_effectivity_order",
+            }.issubset(selected)
+        )
 
 
 if __name__ == "__main__":

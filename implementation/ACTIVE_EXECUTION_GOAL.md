@@ -1,23 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T04:48:37Z`
+Updated: `2026-08-06T05:45:43Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS — P5-04 REMAINING CREATE STAGE DIAGNOSTIC`
+- Mode: `IN_PROGRESS — P5-04 REMAINING CREATE REPAIR VALIDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
 - Latest complete normal CI:
-  `31071703360` (`PASS`, exact controller-reconciliation SHA `c7edac8`;
+  `31073500593` (`PASS`, exact diagnostic checkpoint SHA `40d2d47`;
   repository, E2E, Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31070732986` (`FAILED_REMAINING_CREATE_STAGE_NON_UNIQUE`, exact fixture
-  repair SHA `158ef02`, diagnostic activation closed;
-  `P504_RUNTIME_CREATE / HttpStatusError /
-  trace-462662eec74c5c4f9e3e5a07258f1a7b`)
+  `31073915463` (`FAILED_UNIQUE_REVISION_INSERT_ROOT`, exact diagnostic
+  checkpoint SHA `40d2d47`; `P504_CREATE_REVISION_INSERT / ValidationError /
+  trace-9b23575185625a1998ac184bfefaa272`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -25,7 +24,7 @@ Updated: `2026-08-06T04:48:37Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REMAINING CREATE DIAGNOSTIC`)
+  (`IN_PROGRESS — REMAINING CREATE REPAIR VALIDATION`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -198,11 +197,13 @@ separate bounded remaining-create-stage authority on exact base `c7edac8`.
 Historical counters remain exhausted; the new sequence begins at diagnostic
 `0/1`, uniquely proved repair `0/1` and final unchanged Gate `0/1` reserved.
 
-Only the existing response-neutral diagnostic is active on the first create
-request. Affected and complete ordinary CI must pass before at most one
-diagnostic Site. Any repair must be uniquely proved by the closed tuple and
-direct Requirement/OpenAPI/DocType/permission/transaction cross-validation;
-activation must be closed before the final unchanged Gate.
+Only the existing response-neutral diagnostic was active on the first create
+request for the now-consumed diagnostic Site. Exact tuple and direct code/
+DocType/contract cross-validation proved that the revision controller omitted
+`policy_global_id` and `policy_version` from the row immediately passed into
+exact policy domain hydration. The repair selects only those existing fields;
+diagnostic activation is now closed. Affected/full ordinary CI and the single
+reserved final unchanged Gate remain mandatory.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
