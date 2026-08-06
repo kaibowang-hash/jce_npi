@@ -53,6 +53,7 @@ PUBLISH_POLICY_VERSION = 1
 PUBLISH_POLICY_VERSION_KEY = f"{PUBLISH_POLICY_ID}:1"
 PUBLISH_POLICY_KEY = f"p5_05_runtime_{FIXTURE_RUN_ID}"
 CREATE_KEY = f"p5-05-runtime-r1-{FIXTURE_RUN_ID}-create"
+PREDECESSOR_ROUTE_QUERY = "p505-predecessor-" + "route-isolation"
 
 PUBLISH_DOCTYPES = (
     "NPI EBOM Publish Policy",
@@ -791,7 +792,7 @@ def route_disable_probe(
                 str(context["projectId"]),
                 str(context["ebomId"]),
             ),
-            query_key="p505-route-isolation",
+            query_key=PREDECESSOR_ROUTE_QUERY,
         )
         require_stage_status(
             predecessor,

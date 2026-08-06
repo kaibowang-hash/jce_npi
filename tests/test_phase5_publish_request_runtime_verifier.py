@@ -73,6 +73,10 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
             f"{module.PUBLISH_POLICY_ID}:1",
         )
         self.assertTrue(module.PUBLISH_POLICY_KEY.startswith("p5_05_runtime_"))
+        self.assertEqual(
+            module.PREDECESSOR_ROUTE_QUERY,
+            "p505-predecessor-route-isolation",
+        )
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertNotIn("core." + "whjichen.cn", self.source)
         self.assertNotIn("ERP-", self.source)

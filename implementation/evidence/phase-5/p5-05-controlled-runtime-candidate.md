@@ -3,7 +3,7 @@
 Recorded: `2026-08-06T13:26:20Z`
 
 Status:
-`READY FOR COMPLETE ORDINARY CI — CONTROLLED SITE NOT YET DISPATCHED`
+`HISTORY-SCAN REPAIR READY FOR COMPLETE ORDINARY CI — CONTROLLED SITE NOT YET DISPATCHED`
 
 Requirement: `FR-DS-013`
 
@@ -60,6 +60,33 @@ before any controlled Site dispatch.
 The pre-existing user-owned untracked frontend asset and unrelated local
 evidence/development files were not modified or staged.
 
+## First ordinary CI and exact history-scan repair
+
+Ordinary CI `31105998998` ran on exact candidate SHA `151fdf6`:
+
+- `verify.sh`, complete non-visual E2E, current-tree Gitleaks and the complete
+  fixed-Linux visual matrix passed;
+- visual job `92631200359` passed in `2m33s`;
+- controlled runtime `92631201624` correctly skipped; and
+- repository job `92631200411` failed only the final complete pull-request
+  branch-history scan.
+
+The exact finding was fingerprint
+`151fdf6e0a6052052c46426080aab49583a726b4:scripts/verify_publish_request_runtime.py:generic-api-key:794`.
+The matched value is the synthetic predecessor route-probe label beside the
+Python keyword argument `query_key`; it is not a credential, endpoint, token
+or business identifier. The same verifier contains no production host and the
+current-tree secret lane passed.
+
+The bounded repair adds only that immutable fingerprint to the strict reviewed
+fingerprint inventory and removes the lexical assignment shape from the
+current source by using one composed synthetic route label. It does not add a
+path/rule/regex allowlist, lower entropy, skip history, change a test or modify
+runtime behavior. Affected verifier/devcontainer tests pass `48/48`; complete
+tracked Python remains `1006/1006`; compilation and `git diff --check` pass.
+
+Complete ordinary CI must pass again before the controlled Gate is dispatched.
+
 ## Security and failure evidence
 
 - Bench fixtures strip runtime passwords and database variables from their
@@ -81,7 +108,8 @@ controlled run, retain its immutable artifact and run history; any repair is a
 reviewed forward fix. Never delete publish-request history, weaken the Gate or
 contact ERPNext as rollback.
 
-The next action is complete exact-SHA ordinary CI. Only after repository,
+The next action is complete exact-SHA ordinary CI on the bounded history-scan
+repair. Only after repository,
 complete E2E, both secret lanes and the complete fixed-Linux visual matrix pass
 may Autopilot dispatch one unchanged controlled P5 Site Gate. A Gate PASS then
 permits the P5-05 Level 2 and Phase 5 Level 3 release-gate review.

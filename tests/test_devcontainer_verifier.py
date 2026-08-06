@@ -120,6 +120,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "b74511ea084a6b87604c861360fcb8004b645892:"
                 "scripts/verify_ebom_runtime.py:generic-api-key:842"
             ),
+            (
+                "151fdf6e0a6052052c46426080aab49583a726b4:"
+                "scripts/verify_publish_request_runtime.py:generic-api-key:794"
+            ),
         )
         safe = "\n".join(reviewed) + "\n"
         validate_gitleaks_ignore(safe)

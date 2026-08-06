@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-06T13:14:50Z`
+Updated: `2026-08-06T13:37:01Z`
 
 ## Active hard blockers
 
@@ -11,9 +11,18 @@ authorization is required.
 
 ## Active recovery
 
-None. Autopilot is continuing with P5-05 checkpoint 4: controlled disposable-
-Site runtime, Level 2 and the Phase 5 Level 3 Gate. Production ERPNext access
-and Phase 8 execution remain scoped holds, not Hard Blockers.
+`P5-05-CONTROLLED-CANDIDATE-HISTORY-SCAN-REPAIR` — ordinary CI `31105998998`
+passed `verify.sh`, complete E2E, current-tree Gitleaks and fixed-Linux visual,
+then failed only the final full-history scan on exact fingerprint
+`151fdf6e0a6052052c46426080aab49583a726b4:scripts/verify_publish_request_runtime.py:generic-api-key:794`.
+The matched value is a synthetic route-probe label beside `query_key`, not a
+secret. The minimal repair adds only that exact immutable fingerprint to the
+strict reviewed inventory and removes the current lexical assignment shape.
+Local affected `48/48`, complete Python `1006/1006`, compilation and diff
+checks pass. Complete ordinary CI remains required before the controlled Site.
+
+No user action is required. Production ERPNext access and Phase 8 execution
+remain scoped holds, not Hard Blockers.
 
 ## Historical recovery
 
