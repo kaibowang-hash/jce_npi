@@ -3,7 +3,7 @@
 Recorded: `2026-08-06T13:56:00Z`
 
 Status:
-`DIAGNOSTIC CHECKPOINT READY FOR COMPLETE ORDINARY CI`
+`UNIQUE POLICY-VERSION REPAIR READY FOR AFFECTED/FULL ORDINARY CI`
 
 Requirement: `FR-DS-013`
 
@@ -139,3 +139,31 @@ before at most one diagnostic Site run; no product repair is selected yet.
 Affected verifier/devcontainer tests pass `49/49`; complete tracked Python
 passes `1007/1007`; compilation, prototype/P0 visual/V1.2 reconciliation,
 prohibited-pattern and whitespace checks pass.
+
+## Diagnostic proof and unique repair
+
+Diagnostic checkpoint `6dda929` passed exact-SHA ordinary CI `31108331223`:
+repository `92639216458` passed `verify.sh`, complete non-visual E2E, current
+tree and complete-history secret scans; visual `92639216649` passed `65/65`;
+the controlled job correctly skipped.
+
+The sole diagnostic workflow `31109004441` retained exact SHA `6dda929` and
+returned only `P505_RUNTIME_POLICY_VERSION_INSERT / ValidationError /
+trace-15862f223d9e5261ae306210781daca3` after the fixed Site, two migrations and
+all predecessor runtime checks passed. Pinned Frappe commit `a3d8090` proves
+its `BaseDocument.get_valid_dict()` rejects any Python list on a non-table
+field before persistence. The policy-version controller validates
+`requester_user_ids` as an array but, unlike the already proven EBOM policy
+controller, omitted the canonical JSON-string assignment. This uniquely
+explains the observed version-insert `ValidationError`.
+
+The bounded repair assigns the already validated requester tuple through the
+existing `canonical_json()` helper before persistence and closes fixture
+substage diagnostic output. It changes no requester membership, snapshot,
+hash, Requirement, API, permission, Schema, ownership, transaction,
+idempotency, audit or PASS rule. Affected/full ordinary CI and one final
+unchanged controlled Gate remain required.
+Local affected publish tests pass `43/43`, EBOM regression passes `69/69`,
+complete tracked Python passes `1008/1008`, and compilation,
+prototype/P0-visual/V1.2 reconciliation, prohibited-pattern and whitespace
+checks pass.

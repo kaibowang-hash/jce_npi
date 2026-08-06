@@ -54,6 +54,7 @@ PUBLISH_POLICY_VERSION_KEY = f"{PUBLISH_POLICY_ID}:1"
 PUBLISH_POLICY_KEY = f"p5_05_runtime_{FIXTURE_RUN_ID}"
 CREATE_KEY = f"p5-05-runtime-r1-{FIXTURE_RUN_ID}-create"
 PREDECESSOR_ROUTE_QUERY = "p505-predecessor-" + "route-isolation"
+POLICY_FIXTURE_DIAGNOSTICS_ENABLED = False
 
 PUBLISH_DOCTYPES = (
     "NPI EBOM Publish Policy",
@@ -1016,7 +1017,8 @@ if __name__ == "__main__":
     try:
         main()
     except FixtureStageFailure as error:
-        print(fixture_stage_diagnostic(error), file=sys.stderr)
+        if POLICY_FIXTURE_DIAGNOSTICS_ENABLED:
+            print(fixture_stage_diagnostic(error), file=sys.stderr)
         raise SystemExit(1) from None
     except RuntimeStageFailure as error:
         print(runtime_stage_diagnostic(error), file=sys.stderr)

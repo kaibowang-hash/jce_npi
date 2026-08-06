@@ -776,3 +776,19 @@ must preserve that boundary.
 - There is no authorization blocker and no product contract is being changed.
   P5-05 remains `IN_PROGRESS_DIAGNOSTIC`; the next action is affected/full
   ordinary CI for the diagnostic checkpoint.
+
+## P5-05 policy-version insert root proven; repair in progress — 2026-08-06T14:07:30Z
+
+- Diagnostic checkpoint `6dda929` passed ordinary CI `31108331223`; repository,
+  complete E2E/history secret scan and `65/65` visual verification passed.
+- The sole diagnostic Site `31109004441` returned only
+  `P505_RUNTIME_POLICY_VERSION_INSERT / ValidationError /
+  trace-15862f223d9e5261ae306210781daca3` after all predecessor boundaries.
+- Pinned Frappe source proves a non-table Python list is rejected during
+  `get_valid_dict()`. The publish-policy controller validated its requester
+  array but omitted the canonical JSON-string assignment already used by the
+  proven EBOM policy controller. This is the unique root.
+- The one-line controller repair canonicalizes only the already validated
+  requester tuple and closes diagnostic output. No product rule or contract is
+  changed. There is no active Hard Blocker; affected/full ordinary CI and one
+  final unchanged controlled Gate remain.

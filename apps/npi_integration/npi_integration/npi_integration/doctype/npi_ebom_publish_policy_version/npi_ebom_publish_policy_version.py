@@ -161,6 +161,7 @@ class NPIEBOMPublishPolicyVersion(Document):
                 _("The publish policy snapshot hash does not match its rules."),
                 frappe.ValidationError,
             )
+        self.requester_user_ids = canonical_json(list(requesters))
         self.policy_snapshot = canonical
         if self.publication_state == "published":
             utc_datetime_text(self.published_at, _("Published At"))
