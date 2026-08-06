@@ -3,13 +3,13 @@
 Status:
 `BLOCKED_EXTERNAL — P5-04 REMAINING CREATE STAGE NON-UNIQUE`
 
-Recovery time: `2026-08-06T04:23:15Z`
+Recovery time: `2026-08-06T04:35:01Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`158ef02cda2319418393a51cbb860c7d9648f091`
+`40c89560aa8a3a8a36ff3b11149499dd72c6705c`
 
 ## Authority
 
@@ -70,6 +70,9 @@ transaction order, idempotency, audit or PASS criteria.
   recur, so the fixture repair advanced the Gate. The new aggregate tuple is
   non-unique across the remaining create transaction/response stages; the
   authorized diagnostic Site, fixture repair and final Gate are exhausted.
+- Recovery checkpoint `40c8956` passed exact-SHA ordinary CI `31071143272`:
+  repository job `92519171196`, complete E2E/history secret scan and visual
+  job `92519171311` passed; controlled job `92519171741` was correctly skipped.
 
 ## First unfinished action
 

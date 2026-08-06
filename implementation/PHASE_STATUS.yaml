@@ -1,7 +1,7 @@
 version: '1.2'
 overall_status: BLOCKED_EXTERNAL
 current_phase: 5
-updated_at: '2026-08-06T04:23:15Z'
+updated_at: '2026-08-06T04:35:01Z'
 authorization: automatic_transition_after_pass
 execution_hold: P5_04_REMAINING_CREATE_STAGE_DIAGNOSTIC_AUTHORITY_REQUIRED
 current_task: P5-04
@@ -60,12 +60,16 @@ repair_accounting:
   p5_04_create_stage_authority:
     authority: USER_AUTHORIZED_2026_08_06
     scope: P5_04_CREATE_STAGE_CLOSED_RESPONSE_NEUTRAL_DIAGNOSTIC_AND_ONE_PROVEN_REPAIR
-    status: DIAGNOSTIC_IMPLEMENTED_LOCAL_PASS_PRE_CI
+    status: EXHAUSTED_FINAL_GATE_FAILED
     diagnostic_dispatches_authorized: 1
-    diagnostic_dispatches_used: 0
+    diagnostic_dispatches_used: 1
     product_or_fixture_repairs_authorized_if_uniquely_proven: 1
     product_or_fixture_repairs_used: 0
-    final_unchanged_gate_reserved: true
+    final_unchanged_gate_reserved: false
+    diagnostic_checkpoint: 008e6ed2c55d08dd53639942fb2392649d3af6c9
+    fixture_repair_checkpoint: 158ef02cda2319418393a51cbb860c7d9648f091
+    final_unchanged_gate: 31070732986
+    outcome: ADVANCED_TO_REMAINING_CREATE_STAGE_NON_UNIQUE
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
 p5_01:
@@ -311,6 +315,12 @@ p5_04:
   create_stage_final_unchanged_gate_code: P504_RUNTIME_CREATE
   create_stage_final_unchanged_gate_exception_type: HttpStatusError
   create_stage_final_unchanged_gate_trace_id: trace-462662eec74c5c4f9e3e5a07258f1a7b
+  remaining_create_blocker_checkpoint: 40c89560aa8a3a8a36ff3b11149499dd72c6705c
+  remaining_create_blocker_normal_ci: 31071143272
+  remaining_create_blocker_repository_job: 92519171196
+  remaining_create_blocker_visual_job: 92519171311
+  remaining_create_blocker_controlled_job: 92519171741
+  remaining_create_blocker_ci_outcome: PASS_CONTROLLED_CORRECTLY_SKIPPED
   completed_stage: FIXTURE_REPAIR_ADVANCED_FINAL_GATE
   next_stage: USER_AUTHORITY_FOR_REMAINING_CREATE_DIAGNOSTIC
   scoped_holds:

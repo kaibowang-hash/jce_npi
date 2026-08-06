@@ -542,6 +542,9 @@ must preserve that boundary.
   trace-462662eec74c5c4f9e3e5a07258f1a7b`.
 - Companion repository job `92517955490` and visual job `92517955368` passed,
   isolating the failed workflow lane to the controlled create-stage runtime.
+- Recovery checkpoint `40c8956` passed ordinary CI `31071143272`; repository,
+  complete E2E/history secret scan and visual passed, and the controlled job
+  remained correctly skipped.
 - The new tuple is non-unique across remaining create transaction/response
   stages. The authorized diagnostic Site, one uniquely proved fixture repair
   and the reserved final unchanged Gate are exhausted. Guessing another

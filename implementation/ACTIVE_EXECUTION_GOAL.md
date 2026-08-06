@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T04:23:15Z`
+Updated: `2026-08-06T04:35:01Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -11,7 +11,7 @@ Updated: `2026-08-06T04:23:15Z`
 - Latest exact product repair checkpoint:
   `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
 - Latest complete normal CI:
-  `31070341154` (`PASS`, exact fixture repair SHA `158ef02`;
+  `31071143272` (`PASS`, exact blocker checkpoint SHA `40c8956`;
   repository, E2E, Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
   `31070732986` (`FAILED_REMAINING_CREATE_STAGE_NON_UNIQUE`, exact fixture

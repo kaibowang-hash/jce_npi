@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T03:47:13Z`
+Updated: `2026-08-06T04:35:01Z`
 
 ## Authority and operating mode
 
@@ -273,6 +273,10 @@ pending until that proof is produced in Codespaces.
   one fixture repair and final Gate are exhausted; a new explicitly bounded
   remaining-create-stage authority is required before any further mutation or
   controlled dispatch.
+- Blocker recovery checkpoint `40c8956` passed exact-SHA ordinary CI
+  `31071143272`; repository job `92519171196`, complete E2E/history secret
+  scan and visual job `92519171311` passed, while the controlled job
+  `92519171741` remained correctly skipped.
 - P5-05 and Phase 6 remain inactive.
 - P5-04 is `BLOCKED_EXTERNAL`, never a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and

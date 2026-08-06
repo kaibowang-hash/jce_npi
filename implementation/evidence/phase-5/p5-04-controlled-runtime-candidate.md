@@ -522,3 +522,10 @@ authority to reactivate only the existing response-neutral create diagnostic,
 run affected/full ordinary CI, execute at most one diagnostic Site, repair
 only the uniquely proved remaining root, rerun ordinary CI and reserve one
 final unchanged Gate. Frozen invariants and P5-05/Phase 6 remain unchanged.
+
+Blocker recovery checkpoint `40c89560aa8a3a8a36ff3b11149499dd72c6705c`
+then passed exact-SHA ordinary CI `31071143272`: repository job `92519171196`
+passed complete verification, E2E and current/history secret scans; visual job
+`92519171311` passed; controlled job `92519171741` remained correctly skipped.
+This seals the recovery metadata without adding a diagnostic dispatch or
+changing the `BLOCKED_EXTERNAL` classification.
