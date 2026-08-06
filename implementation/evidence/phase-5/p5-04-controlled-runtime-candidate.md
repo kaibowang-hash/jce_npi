@@ -796,3 +796,50 @@ P5-04 EBOM passes `65/65`, and tracked Python passes `955/955`. Compilation,
 V1.2 reconciliation, trace uniqueness, prototype approval, P0 visual
 governance, YAML and diff checks pass. Current counters are diagnostic `1/1`,
 repair `1/1` and final unchanged Gate `0/1`.
+
+## Audit-scope repair ordinary CI and downstream submit-review boundary
+
+Repair checkpoint `1fda74a1cd44e2702d8072951973a1839274ef2c` passed
+complete exact-SHA ordinary CI `31086008989`. Repository job `92565500998`
+passed the exact Node/npm toolchain, complete `verify.sh`, E2E, current-tree
+Gitleaks and branch-history scan. Visual job `92565500984` passed the
+fixed-Linux matrix. Controlled job `92565501739` correctly skipped.
+
+The final unchanged workflow `31086562000` retained exact SHA `1fda74a` with
+create diagnostics closed. Repository job `92567276324` and visual job
+`92567276329` passed. Controlled job `92567276189` passed pinned Bench tools,
+disposable Site setup, both migrations, the unchanged P5-01/02/03 runtime,
+the repaired EBOM create command and cleanup, then emitted only:
+
+`P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
+trace-1494387c76f6549899ce007d429ba163`
+
+The earlier audit-append code did not recur, so the repair advanced the Gate.
+The new outer tuple is non-unique across submit-review policy/authority,
+version, transition, receipt, event, lifecycle projection, audit, response and
+receipt-seal stages. It cannot authorize a guessed repair.
+
+## Standing-authority submit-review diagnostic activation
+
+The standing authority opens a new serial cycle with counters diagnostic
+`0/1`, uniquely proved repair `0/1` and final unchanged Gate `0/1`. A separate
+response-neutral diagnostic scope is active only on the controlled
+submit-review request. It records at most one allowlisted transition substage,
+validated exception type and exact trace ID in the local controlled log. It
+does not modify the HTTP response, and create, review and release requests do
+not activate it.
+
+The changed-files-to-affected-tests map is:
+
+| Changed boundary | Affected evidence |
+|---|---|
+| transition diagnostic scope and API/repository substage wrappers | response-neutral API test, exact repository stage/order test and complete EBOM API/repository/controller suite |
+| controlled submit-review activation and safe log relay | runtime-verifier header isolation, allowlist, exact trace/type sanitization and activation-count tests |
+| controller/evidence synchronization | V1.2 reconciliation, trace uniqueness, prototype approval, P0 visual governance, YAML parse and diff check |
+
+Local validation passes controller/runtime `28/28`, complete P5-04 EBOM
+`68/68` and tracked Python `958/958`. Compilation, V1.2 reconciliation,
+282-row trace uniqueness, prototype approval, P0 visual governance, YAML and
+diff checks pass. Affected/full ordinary CI remains mandatory before the
+single diagnostic Site. Requirement, API, permission, Schema, ownership,
+transaction, idempotency, audit and PASS criteria remain frozen.

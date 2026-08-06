@@ -1,22 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T08:38:39Z`
+Updated: `2026-08-06T09:05:37Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_VALIDATION — P5-04 CREATE AUDIT SCOPE REPAIR`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 SUBMIT-REVIEW TRANSITION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
-  `6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac` (pushed)
+  `1fda74a1cd44e2702d8072951973a1839274ef2c` (pushed)
 - Latest complete normal CI:
-  `31084462702` (`PASS`, exact diagnostic SHA `233b23f`; repository, E2E,
-  Gitleaks/history and fixed-Linux visual passed)
+  `31086008989` (`PASS`, exact repair SHA `1fda74a`; repository
+  `92565500998`, E2E, Gitleaks/history and visual `92565500984` passed;
+  controlled job `92565501739` correctly skipped)
 - Latest controlled-Site run:
-  `31085013974` (`FAILED_UNIQUE_CREATE_AUDIT_APPEND`, exact diagnostic SHA
-  `233b23f`; `P504_CREATE_AUDIT_APPEND / PermissionError /
-  trace-ee528c1626eb59c4ba40f1ffea1b86ce`)
+  `31086562000` (`FAILED_NON_UNIQUE_SUBMIT_REVIEW`, exact repair SHA
+  `1fda74a`; `P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
+  trace-1494387c76f6549899ce007d429ba163`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +25,7 @@ Updated: `2026-08-06T08:38:39Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — CREATE AUDIT SCOPE REPAIR`)
+  (`IN_PROGRESS — SUBMIT-REVIEW TRANSITION DIAGNOSTIC`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -291,6 +292,25 @@ trace uniqueness, prototype approval, P0 visual governance, YAML and diff
 checks pass. The repair has consumed the current cycle's uniquely proved
 repair `1/1`; complete exact-SHA ordinary CI and the final unchanged Gate
 remain pending.
+
+Repair checkpoint `1fda74a` then passed complete ordinary repository and
+visual CI in workflow `31086562000`: repository `92567276324` passed
+`verify.sh`, E2E and Gitleaks; visual `92567276329` passed the fixed-Linux
+matrix. Controlled job `92567276189` passed exact Bench tools, disposable Site
+setup, migrations, the unchanged P5-01/02/03 runtime, repaired EBOM create and
+cleanup, then returned only `P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
+trace-1494387c76f6549899ce007d429ba163`. This proves the audit-scope repair
+advanced the runtime beyond create; it does not identify a unique
+submit-review substage because final diagnostics were correctly closed.
+
+Under the standing authority, the next serial cycle is now
+`P5_04_SUBMIT_REVIEW_TRANSITION`. It adds a separate response-neutral header
+scope only to the submit-review request and records at most one allowlisted
+transition stage, validated exception type and exact trace ID. The response,
+permission, transaction order, idempotency, audit and PASS rules are
+unchanged. Create, review and release requests do not activate it. The cycle
+is diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged Gate
+`0/1`; affected/full ordinary CI must pass before the diagnostic Site.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

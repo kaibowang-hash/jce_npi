@@ -46,7 +46,10 @@ from npi_core.ebom.frappe_validation import (
     ebom_line_value,
     ebom_policy_value,
 )
-from npi_core.ebom.diagnostics import ebom_create_server_step
+from npi_core.ebom.diagnostics import (
+    ebom_create_server_step,
+    ebom_transition_server_step,
+)
 from npi_core.foundation.security import Principal
 from npi_core.foundation.errors import RequestValidationFailed
 from npi_core.project_controls.terminal_guard import require_mutable_project
@@ -497,19 +500,22 @@ class FrappeEngineeringBomRepository(FrappeDocumentRepository):
         confirmed: bool = False,
         confirmation_intent: str | None = None,
     ) -> DocumentCommandOutcome | None:
-        context = self._locked_command_context(project_id, ebom_id)
+        with ebom_transition_server_step("P504_TRANSITION_PROJECT_LOCK"):
+            context = self._locked_command_context(project_id, ebom_id)
         if context is None:
             return None
         project, root = context
-        policy = self._load_exact_policy(
-            project,
-            policy_global_id=policy_global_id,
-            policy_version=policy_version,
-            snapshot_hash=policy_snapshot_hash,
-            lock=True,
-        )
-        self._require_policy_actor(policy, action)
-        self._require_root_policy(root, policy)
+        with ebom_transition_server_step("P504_TRANSITION_POLICY_LOAD"):
+            policy = self._load_exact_policy(
+                project,
+                policy_global_id=policy_global_id,
+                policy_version=policy_version,
+                snapshot_hash=policy_snapshot_hash,
+                lock=True,
+            )
+        with ebom_transition_server_step("P504_TRANSITION_POLICY_AUTHORITY"):
+            self._require_policy_actor(policy, action)
+            self._require_root_policy(root, policy)
         payload = {
             "expectedEbomVersion": expected_ebom_version,
             "expectedRevisionSnapshotHash": expected_revision_snapshot_hash,
@@ -523,125 +529,151 @@ class FrappeEngineeringBomRepository(FrappeDocumentRepository):
             "confirmationIntent": confirmation_intent,
             "revisionId": str(revision_id),
         }
-        payload_hash = self._command_payload_hash(
-            operation=operation,
-            project=project,
-            ebom_id=ebom_id,
-            payload=payload,
-        )
-        replay = self._receipt_replay(
-            project,
-            operation=operation,
-            idempotency_key_hash=idempotency_key_hash,
-            payload_hash=payload_hash,
-        )
-        if replay is not None:
-            return DocumentCommandOutcome(replay, replayed=True)
-        require_mutable_project(project)
-        self._require_root_version(root, expected_ebom_version)
-        revision_row = self._revision_for_root(
-            project,
-            root,
-            revision_id,
-            lock=True,
-        )
-        if revision_row is None:
-            return None
-        revision = self._revision_value(revision_row)
-        if revision.snapshot_hash != expected_revision_snapshot_hash:
-            raise EngineeringBomStateConflict()
-        lifecycle_row = self._lifecycle_for_revision(
-            project,
-            root,
-            revision,
-            lock=True,
-        )
-        lifecycle = self._lifecycle_value(lifecycle_row)
-        if lifecycle.lifecycle_version != expected_lifecycle_version:
-            raise EngineeringBomStateConflict()
-        now = datetime.now(UTC)
-        transition = transition_engineering_bom(
-            lifecycle=lifecycle,
-            policy=policy,
-            actor=self.actor,
-            event_global_id=uuid4(),
-            now=now,
-            request_id=self.request_id,
-            trace_id=self.trace_id,
-            expected_version=expected_lifecycle_version,
-            action=action,
-            decision=decision,
-            reason=reason,
-            confirmed=confirmed,
-            confirmation_intent=confirmation_intent,
-        )
-        with ebom_lifecycle_write():
-            receipt = self._insert_receipt(
+        with ebom_transition_server_step("P504_TRANSITION_PAYLOAD_HASH"):
+            payload_hash = self._command_payload_hash(
+                operation=operation,
+                project=project,
+                ebom_id=ebom_id,
+                payload=payload,
+            )
+        with ebom_transition_server_step("P504_TRANSITION_IDEMPOTENCY_REPLAY"):
+            replay = self._receipt_replay(
                 project,
                 operation=operation,
                 idempotency_key_hash=idempotency_key_hash,
                 payload_hash=payload_hash,
+            )
+        if replay is not None:
+            return DocumentCommandOutcome(replay, replayed=True)
+        with ebom_transition_server_step("P504_TRANSITION_PROJECT_MUTABILITY"):
+            require_mutable_project(project)
+        with ebom_transition_server_step("P504_TRANSITION_ROOT_VERSION"):
+            self._require_root_version(root, expected_ebom_version)
+        with ebom_transition_server_step("P504_TRANSITION_REVISION_LOAD"):
+            revision_row = self._revision_for_root(
+                project,
+                root,
+                revision_id,
+                lock=True,
+            )
+        if revision_row is None:
+            return None
+        revision = self._revision_value(revision_row)
+        with ebom_transition_server_step("P504_TRANSITION_REVISION_HASH"):
+            if revision.snapshot_hash != expected_revision_snapshot_hash:
+                raise EngineeringBomStateConflict()
+        with ebom_transition_server_step("P504_TRANSITION_LIFECYCLE_LOAD"):
+            lifecycle_row = self._lifecycle_for_revision(
+                project,
+                root,
+                revision,
+                lock=True,
+            )
+            lifecycle = self._lifecycle_value(lifecycle_row)
+        with ebom_transition_server_step("P504_TRANSITION_LIFECYCLE_VERSION"):
+            if lifecycle.lifecycle_version != expected_lifecycle_version:
+                raise EngineeringBomStateConflict()
+        now = datetime.now(UTC)
+        with ebom_transition_server_step("P504_TRANSITION_DOMAIN_BUILD"):
+            transition = transition_engineering_bom(
+                lifecycle=lifecycle,
+                policy=policy,
+                actor=self.actor,
+                event_global_id=uuid4(),
                 now=now,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
+                expected_version=expected_lifecycle_version,
+                action=action,
+                decision=decision,
+                reason=reason,
+                confirmed=confirmed,
+                confirmation_intent=confirmation_intent,
             )
-            event = transition.event
-            frappe.get_doc(
-                {
-                    "doctype": "NPI EBOM Lifecycle Event",
-                    "global_id": str(event.global_id),
-                    "tenant_id": str(project.tenant_id),
-                    "project_global_id": str(project.global_id),
-                    "engineering_bom": str(root.global_id),
-                    "ebom_global_id": str(root.global_id),
-                    "engineering_bom_revision": str(revision.global_id),
-                    "revision_global_id": str(revision.global_id),
-                    "revision_snapshot_hash": revision.snapshot_hash,
-                    "policy_global_id": str(policy.policy_global_id),
-                    "policy_version": policy.policy_version,
-                    "policy_snapshot_hash": policy.snapshot_hash,
-                    "event_type": event.event_type.value,
-                    "from_state": event.from_state.value,
-                    "to_state": event.to_state.value,
-                    "from_version": event.from_version,
-                    "to_version": event.to_version,
-                    "actor_user_id": event.actor_user_id,
-                    "authority_action": event.authority_action,
-                    "decision": event.decision.value if event.decision else None,
-                    "reason": event.reason,
-                    "confirmation_intent": event.confirmation_intent,
-                    "occurred_at": _database_datetime(event.occurred_at),
-                    "request_id": event.request_id,
-                    "trace_id": event.trace_id,
-                    "event_snapshot": event.event_payload(),
-                    "event_hash": event.event_hash,
-                }
-            ).insert()
-            lifecycle_row.current_state = transition.lifecycle.current_state.value
-            lifecycle_row.lifecycle_version = transition.lifecycle.lifecycle_version
-            lifecycle_row.last_event_global_id = str(event.global_id)
-            lifecycle_row.updated_by_user_id = self.actor
-            lifecycle_row.updated_at = _database_datetime(now)
-            lifecycle_row.request_id = self.request_id
-            lifecycle_row.trace_id = self.trace_id
-            lifecycle_row.save()
-            self._append_audit(
-                operation=operation,
-                global_id=revision.global_id,
-                object_version=transition.lifecycle.lifecycle_version,
-                result=transition.lifecycle.current_state.value,
-                summary={
-                    "ebomGlobalId": str(ebom_id),
-                    "revisionSnapshotHash": revision.snapshot_hash,
-                    "eventHash": event.event_hash,
-                },
-            )
-            response = self._command_result(project, root, revision)
-            self._seal_receipt(
-                receipt,
-                ebom_id=ebom_id,
-                revision_id=revision.global_id,
-                response=response,
-                now=now,
-            )
+        with ebom_transition_server_step("P504_TRANSITION_TRANSACTION_SCOPE"):
+            with ebom_lifecycle_write():
+                with ebom_transition_server_step(
+                    "P504_TRANSITION_RECEIPT_INSERT"
+                ):
+                    receipt = self._insert_receipt(
+                        project,
+                        operation=operation,
+                        idempotency_key_hash=idempotency_key_hash,
+                        payload_hash=payload_hash,
+                        now=now,
+                    )
+                event = transition.event
+                with ebom_transition_server_step("P504_TRANSITION_EVENT_INSERT"):
+                    frappe.get_doc(
+                        {
+                            "doctype": "NPI EBOM Lifecycle Event",
+                            "global_id": str(event.global_id),
+                            "tenant_id": str(project.tenant_id),
+                            "project_global_id": str(project.global_id),
+                            "engineering_bom": str(root.global_id),
+                            "ebom_global_id": str(root.global_id),
+                            "engineering_bom_revision": str(revision.global_id),
+                            "revision_global_id": str(revision.global_id),
+                            "revision_snapshot_hash": revision.snapshot_hash,
+                            "policy_global_id": str(policy.policy_global_id),
+                            "policy_version": policy.policy_version,
+                            "policy_snapshot_hash": policy.snapshot_hash,
+                            "event_type": event.event_type.value,
+                            "from_state": event.from_state.value,
+                            "to_state": event.to_state.value,
+                            "from_version": event.from_version,
+                            "to_version": event.to_version,
+                            "actor_user_id": event.actor_user_id,
+                            "authority_action": event.authority_action,
+                            "decision": (
+                                event.decision.value if event.decision else None
+                            ),
+                            "reason": event.reason,
+                            "confirmation_intent": event.confirmation_intent,
+                            "occurred_at": _database_datetime(event.occurred_at),
+                            "request_id": event.request_id,
+                            "trace_id": event.trace_id,
+                            "event_snapshot": event.event_payload(),
+                            "event_hash": event.event_hash,
+                        }
+                    ).insert()
+                with ebom_transition_server_step(
+                    "P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE"
+                ):
+                    lifecycle_row.current_state = (
+                        transition.lifecycle.current_state.value
+                    )
+                    lifecycle_row.lifecycle_version = (
+                        transition.lifecycle.lifecycle_version
+                    )
+                    lifecycle_row.last_event_global_id = str(event.global_id)
+                    lifecycle_row.updated_by_user_id = self.actor
+                    lifecycle_row.updated_at = _database_datetime(now)
+                    lifecycle_row.request_id = self.request_id
+                    lifecycle_row.trace_id = self.trace_id
+                    lifecycle_row.save()
+                with ebom_transition_server_step("P504_TRANSITION_AUDIT_APPEND"):
+                    self._append_audit(
+                        operation=operation,
+                        global_id=revision.global_id,
+                        object_version=transition.lifecycle.lifecycle_version,
+                        result=transition.lifecycle.current_state.value,
+                        summary={
+                            "ebomGlobalId": str(ebom_id),
+                            "revisionSnapshotHash": revision.snapshot_hash,
+                            "eventHash": event.event_hash,
+                        },
+                    )
+                with ebom_transition_server_step("P504_TRANSITION_RESPONSE_BUILD"):
+                    response = self._command_result(project, root, revision)
+                with ebom_transition_server_step("P504_TRANSITION_RECEIPT_SEAL"):
+                    self._seal_receipt(
+                        receipt,
+                        ebom_id=ebom_id,
+                        revision_id=revision.global_id,
+                        response=response,
+                        now=now,
+                    )
         return DocumentCommandOutcome(response)
 
     def _locked_command_project(self, project_id: UUID):

@@ -122,6 +122,30 @@ class Phase5EngineeringBomRepositoryTest(unittest.TestCase):
         )
         positions = [value.index(fragment) for fragment in order]
         self.assertEqual(positions, sorted(positions))
+        diagnostic_codes = (
+            "P504_TRANSITION_PROJECT_LOCK",
+            "P504_TRANSITION_POLICY_LOAD",
+            "P504_TRANSITION_POLICY_AUTHORITY",
+            "P504_TRANSITION_PAYLOAD_HASH",
+            "P504_TRANSITION_IDEMPOTENCY_REPLAY",
+            "P504_TRANSITION_PROJECT_MUTABILITY",
+            "P504_TRANSITION_ROOT_VERSION",
+            "P504_TRANSITION_REVISION_LOAD",
+            "P504_TRANSITION_REVISION_HASH",
+            "P504_TRANSITION_LIFECYCLE_LOAD",
+            "P504_TRANSITION_LIFECYCLE_VERSION",
+            "P504_TRANSITION_DOMAIN_BUILD",
+            "P504_TRANSITION_TRANSACTION_SCOPE",
+            "P504_TRANSITION_RECEIPT_INSERT",
+            "P504_TRANSITION_EVENT_INSERT",
+            "P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE",
+            "P504_TRANSITION_AUDIT_APPEND",
+            "P504_TRANSITION_RESPONSE_BUILD",
+            "P504_TRANSITION_RECEIPT_SEAL",
+        )
+        for code in diagnostic_codes:
+            with self.subTest(code=code):
+                self.assertEqual(value.count(code), 1)
         for forbidden in ("commit()", "rollback()", "traceback", "cookie", "credential"):
             self.assertNotIn(forbidden, value.casefold())
 

@@ -18,6 +18,8 @@ from npi_core.ebom.domain import (
 from npi_core.ebom.diagnostics import (
     ebom_create_server_diagnostics,
     ebom_create_server_step,
+    ebom_transition_server_diagnostics,
+    ebom_transition_server_step,
 )
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
@@ -431,54 +433,94 @@ def _transition_call(
     headers = _command_headers()
 
     def handle() -> dict[str, Any]:
-        request_id, key_hash, repository, project_id, ebom_id = _command_context(
-            allowed,
-            required,
-            request_fields,
-            require_ebom=True,
-        )
-        assert ebom_id is not None
-        revision_id = _opaque_route_uuid("revision_id")
-        common = {
-            "idempotency_key_hash": key_hash,
-            "expected_ebom_version": _positive(values["expectedEbomVersion"], "expectedEbomVersion"),
-            "expected_revision_snapshot_hash": _hash(values["expectedRevisionSnapshotHash"], "expectedRevisionSnapshotHash"),
-            "expected_lifecycle_version": _positive(values["expectedLifecycleVersion"], "expectedLifecycleVersion"),
-            "policy_global_id": _uuid(values["policyGlobalId"], "policyGlobalId"),
-            "policy_version": _positive(values["policyVersion"], "policyVersion"),
-            "policy_snapshot_hash": _hash(values["policySnapshotHash"], "policySnapshotHash"),
-        }
-        if action == "submit_review":
-            outcome = repository.submit_review(
-                project_id,
-                ebom_id,
-                revision_id,
-                **common,
-                reason=_optional_text(values.get("reason"), "reason", 280),
-            )
-        elif action == "review":
-            outcome = repository.review(
-                project_id,
-                ebom_id,
-                revision_id,
-                **common,
-                decision=_decision(values.get("decision")),
-                reason=_optional_text(values.get("reason"), "reason", 280),
-            )
-        else:
-            outcome = repository.release(
-                project_id,
-                ebom_id,
-                revision_id,
-                **common,
-                confirmed=_confirmed(values.get("confirmed")),
-                confirmation_intent=_exact_text(
-                    values.get("confirmationIntent"),
-                    "confirmationIntent",
-                    "release_exact_ebom_revision",
-                ),
-            )
-        return _command_response(outcome, request_id=request_id, headers=headers)
+        with ebom_transition_server_diagnostics(current_trace_id.get()):
+            with ebom_transition_server_step("P504_TRANSITION_COMMAND_CONTEXT"):
+                request_id, key_hash, repository, project_id, ebom_id = (
+                    _command_context(
+                        allowed,
+                        required,
+                        request_fields,
+                        require_ebom=True,
+                    )
+                )
+                assert ebom_id is not None
+                revision_id = _opaque_route_uuid("revision_id")
+            with ebom_transition_server_step("P504_TRANSITION_INPUT_PARSE"):
+                common = {
+                    "idempotency_key_hash": key_hash,
+                    "expected_ebom_version": _positive(
+                        values["expectedEbomVersion"], "expectedEbomVersion"
+                    ),
+                    "expected_revision_snapshot_hash": _hash(
+                        values["expectedRevisionSnapshotHash"],
+                        "expectedRevisionSnapshotHash",
+                    ),
+                    "expected_lifecycle_version": _positive(
+                        values["expectedLifecycleVersion"],
+                        "expectedLifecycleVersion",
+                    ),
+                    "policy_global_id": _uuid(
+                        values["policyGlobalId"], "policyGlobalId"
+                    ),
+                    "policy_version": _positive(
+                        values["policyVersion"], "policyVersion"
+                    ),
+                    "policy_snapshot_hash": _hash(
+                        values["policySnapshotHash"], "policySnapshotHash"
+                    ),
+                }
+                if action == "submit_review":
+                    action_values = {
+                        "reason": _optional_text(
+                            values.get("reason"), "reason", 280
+                        )
+                    }
+                elif action == "review":
+                    action_values = {
+                        "decision": _decision(values.get("decision")),
+                        "reason": _optional_text(
+                            values.get("reason"), "reason", 280
+                        ),
+                    }
+                else:
+                    action_values = {
+                        "confirmed": _confirmed(values.get("confirmed")),
+                        "confirmation_intent": _exact_text(
+                            values.get("confirmationIntent"),
+                            "confirmationIntent",
+                            "release_exact_ebom_revision",
+                        ),
+                    }
+            with ebom_transition_server_step("P504_TRANSITION_API_RESPONSE"):
+                if action == "submit_review":
+                    outcome = repository.submit_review(
+                        project_id,
+                        ebom_id,
+                        revision_id,
+                        **common,
+                        **action_values,
+                    )
+                elif action == "review":
+                    outcome = repository.review(
+                        project_id,
+                        ebom_id,
+                        revision_id,
+                        **common,
+                        **action_values,
+                    )
+                else:
+                    outcome = repository.release(
+                        project_id,
+                        ebom_id,
+                        revision_id,
+                        **common,
+                        **action_values,
+                    )
+                return _command_response(
+                    outcome,
+                    request_id=request_id,
+                    headers=headers,
+                )
 
     return frappe_domain_call(
         handle,

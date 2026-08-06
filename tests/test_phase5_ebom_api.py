@@ -341,6 +341,62 @@ class Phase5EngineeringBomApiTest(unittest.TestCase):
             )
         )
 
+    def test_transition_diagnostic_is_header_gated_response_neutral_and_sanitized(
+        self,
+    ) -> None:
+        diagnostics = importlib.import_module("npi_core.ebom.diagnostics")
+        trace_id = "trace-" + ("e" * 32)
+        self.repository.error = ValueError("sensitive database /tmp/private")
+
+        result_without_header = self.call(
+            self.api.submit_ebom_review,
+            self.transition_payload(),
+        )
+        self.assertEqual(result_without_header["code"], "INTERNAL_SERVER_ERROR")
+        self.assertFalse(
+            any("P504_TRANSITION" in message for message in self.safe_logs)
+        )
+        self.safe_logs.clear()
+
+        self.headers[diagnostics.EBOM_TRANSITION_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.EBOM_TRANSITION_SERVER_DIAGNOSTIC_SCOPE
+        )
+        self.headers["X-Trace-ID"] = trace_id
+        result = self.call(
+            self.api.submit_ebom_review,
+            self.transition_payload(),
+        )
+
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        serialized = json.dumps(result, sort_keys=True)
+        self.assertNotIn("P504_TRANSITION", serialized)
+        self.assertNotIn("sensitive", serialized)
+        self.assertNotIn("/tmp", serialized)
+        records = []
+        for message in self.safe_logs:
+            try:
+                record = json.loads(message)
+            except (TypeError, ValueError):
+                continue
+            if record.get("code") == "P504_TRANSITION_API_RESPONSE":
+                records.append(record)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P504_TRANSITION_API_RESPONSE",
+                    "exceptionType": "ValueError",
+                    "traceId": trace_id,
+                }
+            ],
+        )
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p504_ebom_transition_diagnostic",
+            )
+        )
+
     def test_review_and_release_are_exact_and_separately_confirmed(self) -> None:
         review = self.transition_payload()
         review["decision"] = "approve"

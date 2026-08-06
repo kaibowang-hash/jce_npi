@@ -163,6 +163,28 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             "P504_RUNTIME_SUCCESSOR_REVISION",
             "P504_RUNTIME_COMPARISON",
             "P504_RUNTIME_SUBMIT_REVIEW",
+            "P504_TRANSITION_COMMAND_CONTEXT",
+            "P504_TRANSITION_INPUT_PARSE",
+            "P504_TRANSITION_PROJECT_LOCK",
+            "P504_TRANSITION_POLICY_LOAD",
+            "P504_TRANSITION_POLICY_AUTHORITY",
+            "P504_TRANSITION_PAYLOAD_HASH",
+            "P504_TRANSITION_IDEMPOTENCY_REPLAY",
+            "P504_TRANSITION_PROJECT_MUTABILITY",
+            "P504_TRANSITION_ROOT_VERSION",
+            "P504_TRANSITION_REVISION_LOAD",
+            "P504_TRANSITION_REVISION_HASH",
+            "P504_TRANSITION_LIFECYCLE_LOAD",
+            "P504_TRANSITION_LIFECYCLE_VERSION",
+            "P504_TRANSITION_DOMAIN_BUILD",
+            "P504_TRANSITION_TRANSACTION_SCOPE",
+            "P504_TRANSITION_RECEIPT_INSERT",
+            "P504_TRANSITION_EVENT_INSERT",
+            "P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE",
+            "P504_TRANSITION_AUDIT_APPEND",
+            "P504_TRANSITION_RESPONSE_BUILD",
+            "P504_TRANSITION_RECEIPT_SEAL",
+            "P504_TRANSITION_API_RESPONSE",
             "P504_RUNTIME_REVIEW",
             "P504_RUNTIME_RELEASE",
             "P504_RUNTIME_STALE_TRANSITION",
@@ -526,12 +548,73 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             },
         )
 
-    def test_autonomous_recovery_closes_diagnostic_before_final_gate(self) -> None:
+    def test_transition_request_activates_only_the_closed_diagnostic_header(
+        self,
+    ) -> None:
+        module = self.module
+        request_id = "10000000-0000-4000-8000-000000000001"
+        trace_id = "trace-" + ("f" * 32)
+        raw = Mock(
+            status=201,
+            headers={
+                "X-Request-ID": request_id,
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        headers = {
+            "Idempotency-Key": module.SUBMIT_KEY,
+            "X-Request-ID": request_id,
+            "X-Trace-ID": trace_id,
+        }
+        with patch.object(
+            module.document_runtime,
+            "command_headers",
+            return_value=headers,
+        ), patch.object(
+            module.document_runtime,
+            "request",
+            return_value=raw,
+        ) as request:
+            result = module.ebom_request(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/eboms/ebom/revisions/revision:submit-review",
+                method="POST",
+                payload={"value": True},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=module.SUBMIT_KEY,
+                transition_diagnostic=True,
+            )
+        self.assertEqual(result.status, 201)
+        sent = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            sent[module._TRANSITION_DIAGNOSTIC_HEADER],
+            module._TRANSITION_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            set(sent),
+            {
+                "Idempotency-Key",
+                "X-Request-ID",
+                "X-Trace-ID",
+                "X-NPI-Diagnostic-Scope",
+            },
+        )
+
+    def test_autonomous_recovery_activates_only_submit_transition_diagnostic(
+        self,
+    ) -> None:
         run_fresh_source = self.source.split("def run_fresh(", 1)[1].split(
             "\ndef ", 1
         )[0]
-        self.assertNotIn("diagnostic=True", run_fresh_source)
+        self.assertNotIn("\n            diagnostic=True", run_fresh_source)
         self.assertNotIn("create_diagnostic=True", run_fresh_source)
+        self.assertEqual(run_fresh_source.count("transition_diagnostic=True"), 1)
+        submit_source = run_fresh_source.split("submitted = command(", 1)[1].split(
+            ")\n", 1
+        )[0]
+        self.assertIn("transition_diagnostic=True", submit_source)
 
     def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
         module = self.module
@@ -573,6 +656,53 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             return_value=diagnostic,
         ), self.assertRaises(module.RuntimeStageFailure) as failure:
             module.require_create_status(failure_result)
+        self.assertEqual(failure.exception.code, code)
+        sanitized = module.runtime_stage_diagnostic(failure.exception)
+        self.assertNotIn("sensitive", sanitized)
+        self.assertNotIn("database", sanitized)
+
+    def test_transition_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
+        module = self.module
+        trace_id = "trace-" + ("9" * 32)
+        code = "P504_TRANSITION_EVENT_INSERT"
+        record = json.dumps(
+            {
+                "code": code,
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            bench = Path(directory).resolve()
+            logs = bench / "logs"
+            logs.mkdir()
+            (logs / "npi_core.log").write_text(
+                "sensitive prefix " + record + "\n",
+                encoding="utf-8",
+            )
+            with patch.object(module, "BENCH_PATH", bench):
+                diagnostic = module._sanitized_transition_server_diagnostic(
+                    trace_id
+                )
+        self.assertEqual(diagnostic, ("ValidationError", code, trace_id))
+        failure_result = module.HttpResult(
+            status=500,
+            headers={},
+            body={"message": "sensitive database"},
+            request_id="10000000-0000-4000-8000-000000000001",
+            trace_id=trace_id,
+        )
+        with patch.object(
+            module,
+            "_sanitized_transition_server_diagnostic",
+            return_value=diagnostic,
+        ), self.assertRaises(module.RuntimeStageFailure) as failure:
+            module.require_transition_status(
+                failure_result,
+                "P504_RUNTIME_SUBMIT_REVIEW",
+            )
         self.assertEqual(failure.exception.code, code)
         sanitized = module.runtime_stage_diagnostic(failure.exception)
         self.assertNotIn("sensitive", sanitized)

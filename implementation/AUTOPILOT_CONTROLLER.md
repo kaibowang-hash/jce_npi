@@ -357,8 +357,25 @@ pending until that proof is produced in Codespaces.
   `955/955` and governance checks pass with diagnostics closed. The next
   boundary is complete exact-SHA ordinary CI, followed by the one final
   unchanged Gate.
+- Repair checkpoint `1fda74a` passed exact-SHA ordinary CI `31086008989`:
+  repository `92565500998` and visual `92565500984` passed, and controlled
+  job `92565501739` correctly skipped. Final unchanged workflow `31086562000`
+  retained that exact SHA. Repository `92567276324`, visual `92567276329`,
+  fixed Bench/Site, migrations, predecessor runtime and cleanup passed;
+  controlled job `92567276189` advanced through repaired create and emitted
+  only `P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
+  trace-1494387c76f6549899ce007d429ba163`.
+- The audit repair therefore worked; the new aggregate is a distinct
+  downstream submit-review boundary. Standing authority opens the next
+  serial cycle without user intervention. Only the submit-review request may
+  activate the separate response-neutral transition diagnostic. It records
+  at most one allowlisted stage/type/trace tuple and changes no response,
+  permission, Schema, ownership, transaction, idempotency, audit or PASS
+  invariant. Affected/full ordinary CI must pass before its one diagnostic
+  Site; only a uniquely proved root may be repaired; diagnostics must close
+  before one final unchanged Gate.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_VALIDATION`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

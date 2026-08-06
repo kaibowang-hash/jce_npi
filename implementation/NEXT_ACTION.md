@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_VALIDATION — P5-04 CREATE AUDIT SCOPE REPAIR`
+`IN_PROGRESS_DIAGNOSTIC — P5-04 SUBMIT-REVIEW TRANSITION`
 
-Recovery time: `2026-08-06T08:38:39Z`
+Recovery time: `2026-08-06T09:05:37Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`233b23f4b7f4528b5303b2cb3f22325bc69eb758`
+`1fda74a1cd44e2702d8072951973a1839274ef2c`
 
 ## Authority
 
@@ -162,16 +162,34 @@ actions and external manual operations still require the user.
 - Local controller/runtime `26/26`, complete EBOM `65/65`, tracked Python
   `955/955`, compilation, reconciliation, trace uniqueness, prototype/P0
   governance, YAML and diff checks pass.
+- Repair checkpoint `1fda74a` passed complete exact-SHA ordinary CI
+  `31086008989`: repository `92565500998`, visual `92565500984`, E2E and both
+  secret lanes passed; controlled job `92565501739` correctly skipped.
+- Final unchanged workflow `31086562000` retained that exact SHA. Repository
+  `92567276324`, visual `92567276329`, fixed Bench/Site, migrations,
+  predecessor runtime and cleanup passed. Controlled job `92567276189`
+  advanced beyond create and returned only `P504_RUNTIME_SUBMIT_REVIEW /
+  HttpStatusError / trace-1494387c76f6549899ce007d429ba163`.
+- This proves the audit-scope repair worked. The new tuple is non-unique only
+  within submit-review, so standing authority opens a new serial cycle with
+  diagnostic `0/1`, uniquely proved repair `0/1` and final Gate `0/1`.
+- The active diagnostic is response-neutral and submit-review-only. It emits
+  only an allowlisted transition substage, validated exception type and exact
+  trace ID. Create, review and release do not activate it; no public response,
+  role, DocPerm, Schema, ownership, transaction, idempotency, audit or PASS
+  rule changes.
 
 ## First unfinished action
 
-Run affected and complete EBOM/Python/governance validation for the internal
-audit-scope repair with diagnostics closed. Commit and push only the repair
-files, require complete exact-SHA ordinary CI, then execute one final unchanged
+Finish affected and complete EBOM/Python/governance validation for the
+submit-review-only response-neutral diagnostic. Commit and push only the
+diagnostic/controller files, require complete exact-SHA ordinary CI, then run
+one diagnostic Site. Repair only a uniquely proved transition root, close the
+diagnostic and repeat affected/full ordinary CI before one final unchanged
 Gate. Do not broaden roles, DocPerms, API, Schema, transaction order or audit
 content.
 
-P5-04 is `IN_PROGRESS_VALIDATION`. P5-05 and Phase 6 remain inactive until its
+P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive until its
 Level 2 Gate passes.
 
 ## Frozen non-scope

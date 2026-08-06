@@ -1,15 +1,15 @@
 # Blockers
 
-Updated: `2026-08-06T08:38:39Z`
+Updated: `2026-08-06T09:05:37Z`
 
 ## Active hard blockers
 
-None requiring external authorization. The P5-04 post-lifecycle create
-failure is in an authorized diagnostic recovery cycle.
+None requiring external authorization. The P5-04 submit-review failure is in
+an authorized diagnostic recovery cycle.
 
 ## Active recovery
 
-`P5-04-POST-LIFECYCLE-CREATE-FINAL-GATE`
+`P5-04-SUBMIT-REVIEW-TRANSITION-DIAGNOSTIC`
 
 Diagnostic Site `31080379082` uniquely proved the lifecycle UUID-boundary root.
 Repair `6a4ba7c` added only the exact string-to-`UUID` conversion, closed
@@ -48,6 +48,25 @@ DocPerms, API, Schema, transaction order, audit content and PASS criteria.
 Local affected `26/26`, complete EBOM `65/65`, tracked Python `955/955` and
 governance validation pass. Complete ordinary CI and one final unchanged Gate
 remain required.
+
+Repair checkpoint `1fda74a` passed complete exact-SHA ordinary CI
+`31086008989`; repository `92565500998` and visual `92565500984` passed, while
+controlled runtime correctly skipped. Final unchanged workflow `31086562000`
+retained the exact SHA. Repository `92567276324`, visual `92567276329`, fixed
+Bench/Site initialization, migrations, predecessor runtime and cleanup passed.
+Controlled job `92567276189` advanced past EBOM create and emitted only
+`P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
+trace-1494387c76f6549899ce007d429ba163`.
+
+The former audit-append root did not recur, so its repair is effective. The
+new tuple is non-unique inside submit-review. Standing authority automatically
+opens a new bounded cycle: only the submit-review request activates a
+separate response-neutral transition diagnostic; affected/full ordinary CI
+must pass before one diagnostic Site; at most one uniquely proved root may be
+repaired; the diagnostic must close before one final unchanged Gate. Current
+counters are diagnostic `0/1`, repair `0/1`, final Gate `0/1`. No Requirement,
+API, permission, Schema, ownership, transaction, idempotency, audit or PASS
+criterion changes, and no user action is currently required.
 
 Historical resolved context follows.
 

@@ -129,6 +129,34 @@ _CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
 )
 _CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _CREATE_DIAGNOSTIC_SCOPE = "p504-ebom-create-v1"
+_TRANSITION_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P504_TRANSITION_COMMAND_CONTEXT",
+        "P504_TRANSITION_INPUT_PARSE",
+        "P504_TRANSITION_PROJECT_LOCK",
+        "P504_TRANSITION_POLICY_LOAD",
+        "P504_TRANSITION_POLICY_AUTHORITY",
+        "P504_TRANSITION_PAYLOAD_HASH",
+        "P504_TRANSITION_IDEMPOTENCY_REPLAY",
+        "P504_TRANSITION_PROJECT_MUTABILITY",
+        "P504_TRANSITION_ROOT_VERSION",
+        "P504_TRANSITION_REVISION_LOAD",
+        "P504_TRANSITION_REVISION_HASH",
+        "P504_TRANSITION_LIFECYCLE_LOAD",
+        "P504_TRANSITION_LIFECYCLE_VERSION",
+        "P504_TRANSITION_DOMAIN_BUILD",
+        "P504_TRANSITION_TRANSACTION_SCOPE",
+        "P504_TRANSITION_RECEIPT_INSERT",
+        "P504_TRANSITION_EVENT_INSERT",
+        "P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE",
+        "P504_TRANSITION_AUDIT_APPEND",
+        "P504_TRANSITION_RESPONSE_BUILD",
+        "P504_TRANSITION_RECEIPT_SEAL",
+        "P504_TRANSITION_API_RESPONSE",
+    }
+)
+_TRANSITION_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_TRANSITION_DIAGNOSTIC_SCOPE = "p504-ebom-transition-v1"
 _DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _RUNTIME_STAGE_CODES = frozenset(
     {
@@ -146,6 +174,7 @@ _RUNTIME_STAGE_CODES = frozenset(
         "P504_RUNTIME_SUCCESSOR_REVISION",
         "P504_RUNTIME_COMPARISON",
         "P504_RUNTIME_SUBMIT_REVIEW",
+        *_TRANSITION_SERVER_DIAGNOSTIC_CODES,
         "P504_RUNTIME_REVIEW",
         "P504_RUNTIME_RELEASE",
         "P504_RUNTIME_STALE_TRANSITION",
@@ -248,6 +277,7 @@ def ebom_request(
     idempotency_key: str | None = None,
     query_key: str = "query",
     create_diagnostic: bool = False,
+    transition_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
@@ -262,6 +292,14 @@ def ebom_request(
             "The EBOM create diagnostic requires one command request",
         )
         headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
+    if transition_diagnostic:
+        require(
+            method == "POST"
+            and idempotency_key is not None
+            and not create_diagnostic,
+            "The EBOM transition diagnostic requires one command request",
+        )
+        headers[_TRANSITION_DIAGNOSTIC_HEADER] = _TRANSITION_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -287,10 +325,11 @@ def ebom_request(
     )
 
 
-def _sanitized_create_server_diagnostic(
+def _sanitized_server_diagnostic(
     trace_id: str | None,
+    allowed_codes: frozenset[str],
 ) -> tuple[str, str, str] | None:
-    """Read only an allowlisted P5-04 create record for this exact trace."""
+    """Read only an allowlisted P5-04 server record for this exact trace."""
 
     if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
         return None
@@ -338,12 +377,27 @@ def _sanitized_create_server_diagnostic(
                 if (
                     record.get("traceId") == trace_id
                     and isinstance(code, str)
-                    and code in _CREATE_SERVER_DIAGNOSTIC_CODES
+                    and code in allowed_codes
                     and isinstance(exception_type, str)
                     and _TYPE_PATTERN.fullmatch(exception_type) is not None
                 ):
                     return exception_type, code, trace_id
     return None
+
+
+def _sanitized_create_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    return _sanitized_server_diagnostic(trace_id, _CREATE_SERVER_DIAGNOSTIC_CODES)
+
+
+def _sanitized_transition_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    return _sanitized_server_diagnostic(
+        trace_id,
+        _TRANSITION_SERVER_DIAGNOSTIC_CODES,
+    )
 
 
 def require_create_status(result: HttpResult) -> None:
@@ -358,6 +412,20 @@ def require_create_status(result: HttpResult) -> None:
             exception_type=exception_type,
         )
     require_stage_status(result, {201}, "P504_RUNTIME_CREATE")
+
+
+def require_transition_status(result: HttpResult, code: str) -> None:
+    if result.status == 201:
+        return
+    diagnostic = _sanitized_transition_server_diagnostic(result.trace_id)
+    if diagnostic is not None:
+        exception_type, diagnostic_code, trace_id = diagnostic
+        raise RuntimeStageFailure(
+            diagnostic_code,
+            trace_id,
+            exception_type=exception_type,
+        )
+    require_stage_status(result, {201}, code)
 
 
 def initial_lines() -> list[dict[str, object]]:
@@ -497,6 +565,7 @@ def command(
     code: str,
     *,
     diagnostic: bool = False,
+    transition_diagnostic: bool = False,
 ) -> HttpResult:
     result = ebom_request(
         actor,
@@ -507,9 +576,12 @@ def command(
         csrf_token=csrf_token,
         idempotency_key=key,
         create_diagnostic=diagnostic,
+        transition_diagnostic=transition_diagnostic,
     )
     if diagnostic:
         require_create_status(result)
+    elif transition_diagnostic:
+        require_transition_status(result, code)
     else:
         require_stage_status(result, {201}, code)
     return result
@@ -766,6 +838,7 @@ def run_fresh(
             {**transition_base, "reason": "Ready for controlled review."},
             SUBMIT_KEY,
             "P504_RUNTIME_SUBMIT_REVIEW",
+            transition_diagnostic=True,
         )
         require(
             submitted.body.get("revision", {}).get("lifecycle", {}).get("state")
