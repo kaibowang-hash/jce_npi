@@ -118,7 +118,7 @@ jobs:
           retention-days: 30
 
   document_runtime:
-    name: P5 controlled document and EBOM runtime
+    name: P5 controlled document, EBOM, and publish runtime
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -153,7 +153,7 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p5-04\n'
+            printf 'scope=p5-01-through-p5-05\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
             printf 'command=bash scripts/verify-frappe-runtime.sh --document-only\n'
           } >"${RUNNER_TEMP}/p5-document-runtime/result.txt"
