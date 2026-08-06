@@ -270,15 +270,21 @@ pending until that proof is produced in Codespaces.
   trace-462662eec74c5c4f9e3e5a07258f1a7b`. This tuple remains non-unique across
   the remaining create transaction/response stages. Companion repository job
   `92517955490` and visual job `92517955368` passed. The sole diagnostic Site,
-  one fixture repair and final Gate are exhausted; a new explicitly bounded
-  remaining-create-stage authority is required before any further mutation or
-  controlled dispatch.
+  one fixture repair and final Gate are exhausted historical allowances.
 - Blocker recovery checkpoint `40c8956` passed exact-SHA ordinary CI
   `31071143272`; repository job `92519171196`, complete E2E/history secret
   scan and visual job `92519171311` passed, while the controlled job
   `92519171741` remained correctly skipped.
+- Controller-reconciliation checkpoint `c7edac8` passed exact-SHA ordinary CI
+  `31071703360`; the controlled job remained correctly skipped.
+- The user explicitly authorized a new separate remaining-create-stage
+  sequence on `c7edac8`: reactivate only the existing first-create
+  response-neutral diagnostic, require affected/full ordinary CI, run at most
+  one diagnostic Site, repair only one uniquely proved in-scope root, rerun
+  affected/full ordinary CI and reserve one final unchanged Gate. New counters
+  are diagnostic `0/1`, uniquely proved repair `0/1` and final Gate `0/1`.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `BLOCKED_EXTERNAL`, never a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

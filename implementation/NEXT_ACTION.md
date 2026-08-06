@@ -1,21 +1,23 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-04 REMAINING CREATE STAGE NON-UNIQUE`
+`IN_PROGRESS — P5-04 REMAINING CREATE STAGE DIAGNOSTIC`
 
-Recovery time: `2026-08-06T04:35:01Z`
+Recovery time: `2026-08-06T04:48:37Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`40c89560aa8a3a8a36ff3b11149499dd72c6705c`
+`c7edac8411614efab1a56348964f7c274cb6f18b`
 
 ## Authority
 
-The user authorized the previously requested bounded P5-04 create-stage
-diagnostic/repair sequence by asking to repair and continue the existing
-Goal/Autopilot.
+The user explicitly authorized one new bounded P5-04 remaining-create-stage
+recovery on `c7edac8`: reactivate only the existing response-neutral
+diagnostic, require affected/full ordinary CI, use at most one diagnostic
+Site, repair only the uniquely proved root, rerun affected/full ordinary CI
+and reserve one final unchanged Gate before Autopilot continues.
 
 The sequence permits:
 
@@ -53,8 +55,10 @@ transaction order, idempotency, audit or PASS criteria.
 - Complete tracked Python passes `959/959`; compilation, V1.2 reconciliation,
   trace uniqueness, YAML parse, prohibited-pattern and `git diff --check`
   pass.
-- The diagnostic dispatch allowance is consumed (`1/1`); the reserved final
-  unchanged controlled Gate is also consumed (`1/1`).
+- The historical create-stage diagnostic dispatch and final Gate are consumed
+  (`1/1` each) and remain immutable history. The newly authorized
+  remaining-create-stage sequence has separate counters: diagnostic `0/1`,
+  uniquely proved repair `0/1`, final unchanged Gate `0/1` reserved.
 - Fixture repair checkpoint `158ef02` passed local `63/63` EBOM and
   `959/959` complete Python, then complete exact-SHA ordinary CI
   `31070341154` passed repository, E2E, both secret lanes and fixed-Linux
@@ -76,15 +80,14 @@ transaction order, idempotency, audit or PASS criteria.
 
 ## First unfinished action
 
-Explicitly authorize one new bounded remaining-create-stage recovery:
-reactivate only the already closed response-neutral diagnostic header, run
-affected/full ordinary CI, use at most one diagnostic controlled Site, repair
-only the uniquely proven remaining verifier/fixture or product root, rerun
-affected/full ordinary CI and reserve one final unchanged controlled Gate.
-No Requirement, API, permission, Schema, ownership, transaction order,
-idempotency, audit or PASS criterion may change.
+Run the affected create diagnostic/verifier tests and the complete ordinary
+local CI from the exact `c7edac8` recovery base with only the first create
+request diagnostic active. Commit and push that checkpoint, require exact-SHA
+ordinary CI PASS, then execute at most one diagnostic controlled Site.
+No repair is permitted before its closed tuple uniquely proves and direct
+contract/DocType/permission/transaction cross-validation confirms one root.
 
-P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
+P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 

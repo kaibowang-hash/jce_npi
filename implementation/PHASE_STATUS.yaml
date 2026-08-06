@@ -1,16 +1,16 @@
 version: '1.2'
-overall_status: BLOCKED_EXTERNAL
+overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T04:35:01Z'
+updated_at: '2026-08-06T04:48:37Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5_04_REMAINING_CREATE_STAGE_DIAGNOSTIC_AUTHORITY_REQUIRED
+execution_hold: null
 current_task: P5-04
-current_task_status: BLOCKED_EXTERNAL
+current_task_status: IN_PROGRESS_DIAGNOSTIC
 current_task_completed_stage: FIXTURE_REPAIR_ADVANCED_FINAL_GATE
-current_task_next_stage: USER_AUTHORITY_FOR_REMAINING_CREATE_DIAGNOSTIC
-current_task_next_stage_status: BLOCKED
+current_task_next_stage: REMAINING_CREATE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
+current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-04
-resumed_product_task_status: BLOCKED_EXTERNAL_REMAINING_CREATE_STAGE
+resumed_product_task_status: IN_PROGRESS_REMAINING_CREATE_STAGE_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -72,6 +72,20 @@ repair_accounting:
     outcome: ADVANCED_TO_REMAINING_CREATE_STAGE_NON_UNIQUE
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
+  p5_04_remaining_create_stage_authority:
+    authority: USER_AUTHORIZED_2026_08_06
+    base_checkpoint: c7edac8411614efab1a56348964f7c274cb6f18b
+    scope: P5_04_REMAINING_CREATE_STAGE_EXISTING_RESPONSE_NEUTRAL_DIAGNOSTIC_AND_ONE_PROVEN_REPAIR
+    status: IN_PROGRESS_DIAGNOSTIC
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    product_or_fixture_repairs_authorized_if_uniquely_proven: 1
+    product_or_fixture_repairs_used: 0
+    final_unchanged_gate_reserved: true
+    final_unchanged_gates_used: 0
+    changes_global_five_round_rule: false
+    behavior_neutral_diagnostics_consume_product_root_round: false
+    frozen_invariants: REQUIREMENT_API_PERMISSION_SCHEMA_OWNERSHIP_TRANSACTION_IDEMPOTENCY_AUDIT_PASS_CRITERIA
 p5_01:
   status: PASS_LEVEL_2
   product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
@@ -170,7 +184,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: BLOCKED_EXTERNAL
+  status: IN_PROGRESS_DIAGNOSTIC
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -321,8 +335,22 @@ p5_04:
   remaining_create_blocker_visual_job: 92519171311
   remaining_create_blocker_controlled_job: 92519171741
   remaining_create_blocker_ci_outcome: PASS_CONTROLLED_CORRECTLY_SKIPPED
-  completed_stage: FIXTURE_REPAIR_ADVANCED_FINAL_GATE
-  next_stage: USER_AUTHORITY_FOR_REMAINING_CREATE_DIAGNOSTIC
+  remaining_create_recovery_base: c7edac8411614efab1a56348964f7c274cb6f18b
+  remaining_create_diagnostic_dispatches_authorized: 1
+  remaining_create_diagnostic_dispatches_used: 0
+  remaining_create_repairs_authorized_if_uniquely_proven: 1
+  remaining_create_repairs_used: 0
+  remaining_create_final_unchanged_gate_reserved: true
+  remaining_create_final_unchanged_gates_used: 0
+  remaining_create_diagnostic_activation: FIRST_CREATE_ONLY
+  remaining_create_diagnostic_local_verifier_tests: 17_PASS
+  remaining_create_diagnostic_local_ebom_tests: 63_PASS
+  remaining_create_diagnostic_local_document_regression_tests: 70_PASS
+  remaining_create_diagnostic_local_complete_python: 959_PASS
+  remaining_create_diagnostic_local_reconciliation_trace_diff: PASS
+  remaining_create_diagnostic_registry_verification: PASS
+  completed_stage: REMAINING_CREATE_RECOVERY_AUTHORIZED
+  next_stage: REMAINING_CREATE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

@@ -529,3 +529,32 @@ passed complete verification, E2E and current/history secret scans; visual job
 `92519171311` passed; controlled job `92519171741` remained correctly skipped.
 This seals the recovery metadata without adding a diagnostic dispatch or
 changing the `BLOCKED_EXTERNAL` classification.
+
+## Remaining create-stage bounded recovery
+
+At `2026-08-06T04:48:37Z` the user explicitly authorized one new bounded
+recovery on exact base `c7edac8411614efab1a56348964f7c274cb6f18b`.
+Historical diagnostic, fixture-repair and final-Gate counters remain exhausted
+and unchanged. The new independent counters begin at diagnostic `0/1`, one
+repair only if a remaining verifier/fixture or product root is uniquely
+proved, and final unchanged Gate `0/1` reserved.
+
+Only the existing response-neutral header is reactivated, and only for the
+first create request in `run_fresh()`. Server diagnostics remain closed to one
+allowlisted stage code, validated exception type and exact trace ID; HTTP
+responses, Requirement, API, permission, Schema, ownership, transaction,
+idempotency, audit and PASS criteria remain unchanged. Affected/full ordinary
+CI must pass on the exact diagnostic checkpoint before at most one controlled
+diagnostic Site is dispatched.
+
+Local pre-dispatch evidence passes the verifier `17/17`, complete P5-04 EBOM
+`63/63`, related Document regression `70/70`, complete tracked Python
+`959/959`, compilation, V1.2 reconciliation, YAML, prohibited-pattern and
+diff checks. The network-backed pinned devcontainer registry verification also
+passes. Supplemental frontend generation, type, lint, direct i18n coverage,
+`690/690` unit/coverage tests and production build passed; its final static
+asset guard correctly rejected a pre-existing user-owned untracked public
+asset, which remains untouched and is absent from a clean CI checkout. The
+host itself has Node/npm `24.2.0/11.3.0` rather than the required
+`24.18.0/11.16.0`, so the exact-SHA ordinary GitHub CI remains the authoritative
+complete ordinary-CI prerequisite and must pass before dispatch.

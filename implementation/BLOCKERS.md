@@ -556,3 +556,17 @@ must preserve that boundary.
   CI and one final unchanged Gate. No Requirement, API, permission, Schema,
   ownership, transaction, idempotency, audit or PASS criterion may change.
 - P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.
+
+## Resumed — P5-04 remaining create-stage diagnostic authority — 2026-08-06T04:48:37Z
+
+- The user explicitly supplied the requested new bounded authority on exact
+  base `c7edac8411614efab1a56348964f7c274cb6f18b`.
+- The preceding Hard Blocker is resolved as an authorization blocker only;
+  its failed Gate and exhausted historical counters remain retained evidence.
+- The new independent allowance is diagnostic `0/1`, uniquely proved repair
+  `0/1`, and one reserved final unchanged Gate. The first create request alone
+  reactivates the existing response-neutral diagnostic.
+- Affected/full ordinary CI must pass before the sole diagnostic Site. No
+  repair may be selected without one allowlisted stage/type/trace tuple plus
+  direct contract, DocType, permission and transaction cross-validation.
+- P5-04 is `IN_PROGRESS_DIAGNOSTIC`; P5-05 and Phase 6 remain inactive.

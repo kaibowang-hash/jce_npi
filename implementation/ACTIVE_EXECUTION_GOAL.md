@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T04:35:01Z`
+Updated: `2026-08-06T04:48:37Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `BLOCKED_EXTERNAL — P5-04 REMAINING CREATE STAGE NON-UNIQUE`
+- Mode: `IN_PROGRESS — P5-04 REMAINING CREATE STAGE DIAGNOSTIC`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
 - Latest complete normal CI:
-  `31071143272` (`PASS`, exact blocker checkpoint SHA `40c8956`;
+  `31071703360` (`PASS`, exact controller-reconciliation SHA `c7edac8`;
   repository, E2E, Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
   `31070732986` (`FAILED_REMAINING_CREATE_STAGE_NON_UNIQUE`, exact fixture
@@ -25,7 +25,7 @@ Updated: `2026-08-06T04:35:01Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`BLOCKED_EXTERNAL — NEW BOUNDED DIAGNOSTIC AUTHORITY REQUIRED`)
+  (`IN_PROGRESS — REMAINING CREATE DIAGNOSTIC`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -191,24 +191,22 @@ document value for `_apply_policy()` to validate against the exact prior or
 new canonical hash. Tampered, unrelated or already-published hashes remain
 rejected.
 
-This is a uniquely proven product root. The controller's five product-root
-rounds are exhausted. The user's additional authorization is expressly limited
-to P5-01 checkout diagnostics and cannot be repurposed for P5-04. A necessary
-Gate therefore remains failing after the five-round limit, which is a defined
-Hard Blocker. No product fix or further controlled dispatch is authorized.
+The prior policy-version root was repaired at `d21d21a`; its final Gate later
+advanced through the first diagnosed fixture root and stopped at the remaining
+non-unique `P504_RUNTIME_CREATE` boundary. The user has now supplied one new,
+separate bounded remaining-create-stage authority on exact base `c7edac8`.
+Historical counters remain exhausted; the new sequence begins at diagnostic
+`0/1`, uniquely proved repair `0/1` and final unchanged Gate `0/1` reserved.
+
+Only the existing response-neutral diagnostic is active on the first create
+request. Affected and complete ordinary CI must pass before at most one
+diagnostic Site. Any repair must be uniquely proved by the closed tuple and
+direct Requirement/OpenAPI/DocType/permission/transaction cross-validation;
+activation must be closed before the final unchanged Gate.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.
-P5-05 and Phase 6 remain inactive. The policy-version publication repair
-authority is the active controller-defined Hard Blocker.
-
-Single action required from the user: explicitly authorize one additional
-bounded P5-04 product-root repair round for only the policy-version
-draft-to-published prior-snapshot-hash defect, including affected tests,
-complete ordinary CI and one final unchanged controlled-Site Gate. No P5-01
-range is reopened; its additional checkout authorization remains unused because
-P5-01 passed unchanged again in run `31017098820`. P5-05 and Phase 6 remain
-inactive.
+P5-05 and Phase 6 remain inactive until P5-04 Level 2 passes.
 
 ## Historical passing and reusable evidence
 
