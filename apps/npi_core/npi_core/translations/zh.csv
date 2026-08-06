@@ -3506,3 +3506,178 @@ Changed fields,已变更字段
 Before,变更前
 After,变更后
 EBOM,EBOM
+Publish Request Global ID,发布请求全局标识符
+Select the operation-specific EBOM publish command.,请选择特定操作的 EBOM 发布命令。
+Publish Request Payload Hash,发布请求载荷哈希
+The publish command receipt identity cannot be changed.,发布命令回执标识不可更改。
+A sealed publish command receipt cannot be changed.,已封存的发布命令回执不可更改。
+A sealed publish command receipt requires its exact response.,已封存的发布命令回执必须包含其精确响应。
+The sealed publish request is unavailable.,已封存的发布请求不可用。
+Sealed Response Payload,已封存响应载荷
+Sealed Response Hash,已封存响应哈希
+The sealed response hash does not match its payload.,已封存响应哈希与其载荷不匹配。
+An unsealed publish command receipt cannot contain a response.,未封存的发布命令回执不能包含响应。
+EBOM Line Global ID,EBOM 行全局标识符
+The exact EBOM line is unavailable.,精确 EBOM 行不可用。
+Engineering Item ID,工程物料标识符
+Mapping Version,映射版本
+Phase 5 can persist only an unmapped Mock observation without ERP identifiers.,第 5 阶段只能持久化不含企业资源计划系统标识符的未映射模拟观察记录。
+Mapping Observation Snapshot,映射观察快照
+The mapping observation snapshot does not match its fields.,映射观察快照与其字段不匹配。
+Mapping Observation Hash,映射观察哈希
+The mapping observation hash does not match its fields.,映射观察哈希与其字段不匹配。
+EBOM Publish Request,EBOM 发布请求
+Mapping Observation,映射观察
+The publish node must match its exact request Global ID.,发布节点必须与其精确请求全局标识符匹配。
+The exact EBOM publish request is unavailable.,精确 EBOM 发布请求不可用。
+Exact EBOM Line Snapshot,精确 EBOM 行快照
+The publish node does not match the exact EBOM line snapshot.,发布节点与精确 EBOM 行快照不匹配。
+The publish node does not match the exact EBOM line hash.,发布节点与精确 EBOM 行哈希不匹配。
+The exact mapping observation is unavailable.,精确映射观察记录不可用。
+Server-Derived Operations,服务器派生操作
+Select a supported mapping state.,请选择支持的映射状态。
+The publish node operations do not match its mapping state.,发布节点操作与其映射状态不匹配。
+Publish Node Input Hash,发布节点输入哈希
+The publish node input hash does not match its exact content.,发布节点输入哈希与其精确内容不匹配。
+EBOM Publish Node,EBOM 发布节点
+Publish Node Global ID,发布节点全局标识符
+The node result must match its exact request and node identities.,节点结果必须与其精确请求和节点标识匹配。
+The exact EBOM publish node is unavailable.,精确 EBOM 发布节点不可用。
+Attempt Number,尝试次数
+Phase 5 node results can record Mock validation only.,第 5 阶段节点结果只能记录模拟验证。
+The Mock node result contains unsupported execution truth.,模拟节点结果包含不支持的执行事实。
+Node Result Snapshot,节点结果快照
+The node result snapshot does not match its fields.,节点结果快照与其字段不匹配。
+Node Result Hash,节点结果哈希
+The node result hash does not match its exact content.,节点结果哈希与其精确内容不匹配。
+The publish policy Project is unavailable.,发布策略项目不可用。
+Publish Policy Key,发布策略键
+Publish Policy Title,发布策略标题
+Publish Policy Key Hash,发布策略键哈希
+The publish policy key hash does not match its exact scope.,发布策略键哈希与其精确范围不匹配。
+EBOM Publish Policy,EBOM 发布策略
+Publish Policy Global ID,发布策略全局标识符
+The publish policy must match its exact Global ID.,发布策略必须与其精确全局标识符匹配。
+The exact enabled publish policy is unavailable.,精确的已启用发布策略不可用。
+Publish Policy Version,发布策略版本
+The publish policy version key is invalid.,发布策略版本键无效。
+Select a supported publish policy state.,请选择支持的发布策略状态。
+Only Mock target mode is available in Phase 5.,第 5 阶段仅提供模拟目标模式。
+The formal Item and MBOM publish operation is invalid.,正式物料和 MBOM 发布操作无效。
+Requester User IDs,请求者用户标识符
+Use between 1 and 100 unique requester users.,请使用 1 至 100 个唯一请求者用户。
+Canonical Publish Policy Snapshot,规范发布策略快照
+Canonical Publish Policy Snapshot contains unsupported fields.,规范发布策略快照包含不支持的字段。
+Canonical Publish Policy Snapshot does not match its fields.,规范发布策略快照与其字段不匹配。
+Publish Policy Snapshot Hash,发布策略快照哈希
+The publish policy snapshot hash does not match its rules.,发布策略快照哈希与其规则不匹配。
+A draft publish policy cannot have a publication time.,草稿发布策略不能包含发布时间。
+The publish request must use exact EBOM identities.,发布请求必须使用精确 EBOM 标识。
+The exact Engineering BOM is unavailable.,精确工程 BOM 不可用。
+The exact released EBOM revision is unavailable.,精确的已发布 EBOM 修订版不可用。
+The exact EBOM revision is not released.,精确 EBOM 修订版尚未发布。
+The exact EBOM release event is unavailable.,精确 EBOM 发布事件不可用。
+The exact published EBOM publish policy is unavailable.,精确的已发布 EBOM 发布策略不可用。
+Phase 5 publish requests must remain Mock-only with dispatch disabled.,第 5 阶段发布请求必须保持仅模拟且禁用分派。
+Mock publish requests cannot report ERP execution progress or success.,模拟发布请求不能报告企业资源计划系统的执行进度或成功。
+Publish Node Count,发布节点数
+A publish request cannot contain more than 500 nodes.,发布请求不能包含超过 500 个节点。
+Exact Released EBOM Evidence,精确的已发布 EBOM 证据
+Exact Released EBOM Evidence contains unsupported fields.,精确的已发布 EBOM 证据包含不支持的字段。
+Released At,发布时间
+Exact Released EBOM Evidence does not match the released revision.,精确的已发布 EBOM 证据与已发布修订版不匹配。
+Exact Released EBOM Evidence must include the release event.,精确的已发布 EBOM 证据必须包含发布事件。
+Include the exact EBOM release event as approval evidence.,请将精确 EBOM 发布事件作为审批证据。
+Use no more than 50 unique engineering attributes.,请使用不超过 50 个唯一工程属性。
+The EBOM line hash does not match its exact content.,EBOM 行哈希与其精确内容不匹配。
+An unmapped node cannot contain formal ERP identifiers.,未映射节点不能包含正式企业资源计划系统标识符。
+A current mapping requires its formal Item identifier.,当前映射需要其正式物料标识符。
+Select a supported node state.,请选择支持的节点状态。
+Select a supported target fault.,请选择支持的目标故障。
+Select a supported future retry directive.,请选择支持的未来重试指令。
+The publish node input is invalid.,发布节点输入无效。
+The node operations do not match its exact mapping state.,节点操作与其精确映射状态不匹配。
+The node result does not match its mapping validation.,节点结果与其映射验证不匹配。
+The publish node hash does not match its exact input.,发布节点哈希与其精确输入不匹配。
+Phase 5 requires one exact Mock validation result per node.,第 5 阶段要求每个节点恰有一个精确模拟验证结果。
+The node result does not match its exact publish input.,节点结果与其精确发布输入不匹配。
+The publish request evidence is invalid.,发布请求证据无效。
+Select a supported target mode.,请选择支持的目标模式。
+Select a supported request state.,请选择支持的请求状态。
+Include between 1 and 500 exact EBOM nodes.,请包含 1 至 500 个精确 EBOM 节点。
+Each publish request node and EBOM line must be unique.,每个发布请求节点和 EBOM 行必须唯一。
+Each publish node must belong to the exact request.,每个发布节点必须属于精确请求。
+The request state does not match its node validation results.,请求状态与其节点验证结果不匹配。
+ERP dispatch is unavailable in this Phase 5 boundary.,此第 5 阶段边界不提供企业资源计划系统分派。
+Mock validation cannot report ERP execution success.,模拟验证不能报告企业资源计划系统执行成功。
+The publish request hash does not match its exact input.,发布请求哈希与其精确输入不匹配。
+Fault evidence cannot enable Phase 5 ERP dispatch.,故障证据不能启用第 5 阶段企业资源计划系统分派。
+Include between 1 and 500 exact released EBOM lines.,请包含 1 至 500 个精确的已发布 EBOM 行。
+Each released EBOM line identity must be unique.,每个已发布 EBOM 行标识必须唯一。
+A mapping observation does not belong to the exact EBOM revision.,映射观察记录不属于精确 EBOM 修订版。
+Use a valid UUID.,请使用有效的 UUID。
+Use a positive integer.,请使用正整数。
+Use a non-negative integer.,请使用非负整数。
+Use a lowercase SHA-256 hash.,请使用小写 SHA-256 哈希。
+Use a valid value.,请使用有效值。
+Use a canonical positive quantity.,请使用规范正数量。
+Include a bounded set of exact UUID values.,请包含有界的精确 UUID 值集合。
+Use each exact UUID only once.,每个精确 UUID 只能使用一次。
+Use an explicit UTC date and time.,请使用明确的协调世界时日期和时间。
+EBOM publish policies can only be changed through authorized administration.,EBOM 发布策略只能通过授权管理操作更改。
+Formal Item and MBOM publish requests can only be changed through an authorized NPI command.,正式物料和 MBOM 发布请求只能通过授权 NPI 命令更改。
+Formal Item and MBOM publish-request history cannot be changed.,正式物料和 MBOM 发布请求历史不可更改。
+Formal Item and MBOM publish-request history cannot be deleted.,正式物料和 MBOM 发布请求历史不可删除。
+Publish-request policy users must be enabled internal system users.,发布请求策略用户必须是已启用的内部系统用户。
+NPI EBOM Publish Command Idempotency,NPI EBOM 发布命令幂等性
+Publish Operation,发布操作
+NPI EBOM Publish Mapping Observation,NPI EBOM 发布映射观察
+Mapping State,映射状态
+unmapped,未映射
+current,当前
+stale,已过期
+conflict,冲突
+Formal Item Code,正式物料代码
+Formal MBOM ID,正式 MBOM 标识符
+Observed At,观察时间
+NPI EBOM Publish Node,NPI EBOM 发布节点
+Node Result State,节点结果状态
+validated,已验证
+blocked_mapping,映射已阻断
+NPI EBOM Publish Node Result,NPI EBOM 发布节点结果
+Target Fault Kind,目标故障类型
+duplicate_request,重复请求
+payload_conflict,载荷冲突
+timeout_after_possible_commit,可能提交后超时
+rate_limited,受到速率限制
+target_server_error,目标服务器错误
+business_validation,业务验证失败
+partial_node_success,节点部分成功
+stale_mapping,映射已过期
+target_unavailable,目标不可用
+restart_replay,重启后重放
+Future Retry Directive,未来重试指令
+none,无
+replay_sealed_response,重放已封存响应
+reject_payload_conflict,拒绝载荷冲突
+reconcile_before_retry,重试前对账
+retry_after,延后重试
+retry_same_idempotency,使用相同幂等键重试
+manual_correction,人工修正
+retry_failed_nodes_only,仅重试失败节点
+resolve_mapping,解决映射问题
+replay_original_request,重放原始请求
+Future Retryable,未来可重试
+Reconciliation Required,需要对账
+Retry After Required,需要延后重试
+Phase 5 Dispatch Allowed,允许第 5 阶段分派
+NPI EBOM Publish Policy,NPI EBOM 发布策略
+NPI EBOM Publish Policy Version,NPI EBOM 发布策略版本
+Publish Policy Version Key,发布策略版本键
+Target Mode,目标模式
+mock,模拟
+Publish API Version,发布 API 版本
+NPI EBOM Publish Request,NPI EBOM 发布请求
+Publish Request State,发布请求状态
+manual_intervention,人工干预
+Dispatch Allowed,允许分派

@@ -3506,3 +3506,178 @@ Changed fields,已變更欄位
 Before,變更前
 After,變更後
 EBOM,EBOM
+Publish Request Global ID,發佈請求全域識別碼
+Select the operation-specific EBOM publish command.,請選擇特定操作的 EBOM 發佈命令。
+Publish Request Payload Hash,發佈請求承載雜湊
+The publish command receipt identity cannot be changed.,發佈命令回執識別不可變更。
+A sealed publish command receipt cannot be changed.,已封存的發佈命令回執不可變更。
+A sealed publish command receipt requires its exact response.,已封存的發佈命令回執必須包含其精確回應。
+The sealed publish request is unavailable.,已封存的發佈請求無法使用。
+Sealed Response Payload,已封存回應承載
+Sealed Response Hash,已封存回應雜湊
+The sealed response hash does not match its payload.,已封存回應雜湊與其承載不相符。
+An unsealed publish command receipt cannot contain a response.,未封存的發佈命令回執不能包含回應。
+EBOM Line Global ID,EBOM 列全域識別碼
+The exact EBOM line is unavailable.,精確 EBOM 列無法使用。
+Engineering Item ID,工程物料識別碼
+Mapping Version,映射版本
+Phase 5 can persist only an unmapped Mock observation without ERP identifiers.,第 5 階段只能持久化不含企業資源規劃系統識別碼的未映射模擬觀察記錄。
+Mapping Observation Snapshot,映射觀察快照
+The mapping observation snapshot does not match its fields.,映射觀察快照與其欄位不相符。
+Mapping Observation Hash,映射觀察雜湊
+The mapping observation hash does not match its fields.,映射觀察雜湊與其欄位不相符。
+EBOM Publish Request,EBOM 發佈請求
+Mapping Observation,映射觀察
+The publish node must match its exact request Global ID.,發佈節點必須與其精確請求全域識別碼相符。
+The exact EBOM publish request is unavailable.,精確 EBOM 發佈請求無法使用。
+Exact EBOM Line Snapshot,精確 EBOM 列快照
+The publish node does not match the exact EBOM line snapshot.,發佈節點與精確 EBOM 列快照不相符。
+The publish node does not match the exact EBOM line hash.,發佈節點與精確 EBOM 列雜湊不相符。
+The exact mapping observation is unavailable.,精確映射觀察記錄無法使用。
+Server-Derived Operations,伺服器衍生操作
+Select a supported mapping state.,請選擇支援的映射狀態。
+The publish node operations do not match its mapping state.,發佈節點操作與其映射狀態不相符。
+Publish Node Input Hash,發佈節點輸入雜湊
+The publish node input hash does not match its exact content.,發佈節點輸入雜湊與其精確內容不相符。
+EBOM Publish Node,EBOM 發佈節點
+Publish Node Global ID,發佈節點全域識別碼
+The node result must match its exact request and node identities.,節點結果必須與其精確請求和節點識別相符。
+The exact EBOM publish node is unavailable.,精確 EBOM 發佈節點無法使用。
+Attempt Number,嘗試次數
+Phase 5 node results can record Mock validation only.,第 5 階段節點結果只能記錄模擬驗證。
+The Mock node result contains unsupported execution truth.,模擬節點結果包含不支援的執行事實。
+Node Result Snapshot,節點結果快照
+The node result snapshot does not match its fields.,節點結果快照與其欄位不相符。
+Node Result Hash,節點結果雜湊
+The node result hash does not match its exact content.,節點結果雜湊與其精確內容不相符。
+The publish policy Project is unavailable.,發佈策略專案無法使用。
+Publish Policy Key,發佈策略鍵
+Publish Policy Title,發佈策略標題
+Publish Policy Key Hash,發佈策略鍵雜湊
+The publish policy key hash does not match its exact scope.,發佈策略鍵雜湊與其精確範圍不相符。
+EBOM Publish Policy,EBOM 發佈策略
+Publish Policy Global ID,發佈策略全域識別碼
+The publish policy must match its exact Global ID.,發佈策略必須與其精確全域識別碼相符。
+The exact enabled publish policy is unavailable.,精確的已啟用發佈策略無法使用。
+Publish Policy Version,發佈策略版本
+The publish policy version key is invalid.,發佈策略版本鍵無效。
+Select a supported publish policy state.,請選擇支援的發佈策略狀態。
+Only Mock target mode is available in Phase 5.,第 5 階段僅提供模擬目標模式。
+The formal Item and MBOM publish operation is invalid.,正式物料和 MBOM 發佈操作無效。
+Requester User IDs,請求者使用者識別碼
+Use between 1 and 100 unique requester users.,請使用 1 至 100 個唯一請求者使用者。
+Canonical Publish Policy Snapshot,規範發佈策略快照
+Canonical Publish Policy Snapshot contains unsupported fields.,規範發佈策略快照包含不支援的欄位。
+Canonical Publish Policy Snapshot does not match its fields.,規範發佈策略快照與其欄位不相符。
+Publish Policy Snapshot Hash,發佈策略快照雜湊
+The publish policy snapshot hash does not match its rules.,發佈策略快照雜湊與其規則不相符。
+A draft publish policy cannot have a publication time.,草稿發佈策略不能包含發佈時間。
+The publish request must use exact EBOM identities.,發佈請求必須使用精確 EBOM 識別。
+The exact Engineering BOM is unavailable.,精確工程 BOM 無法使用。
+The exact released EBOM revision is unavailable.,精確的已發佈 EBOM 修訂版無法使用。
+The exact EBOM revision is not released.,精確 EBOM 修訂版尚未發佈。
+The exact EBOM release event is unavailable.,精確 EBOM 發佈事件無法使用。
+The exact published EBOM publish policy is unavailable.,精確的已發佈 EBOM 發佈策略無法使用。
+Phase 5 publish requests must remain Mock-only with dispatch disabled.,第 5 階段發佈請求必須保持僅模擬且停用分派。
+Mock publish requests cannot report ERP execution progress or success.,模擬發佈請求不能報告企業資源規劃系統的執行進度或成功。
+Publish Node Count,發佈節點數
+A publish request cannot contain more than 500 nodes.,發佈請求不能包含超過 500 個節點。
+Exact Released EBOM Evidence,精確的已發佈 EBOM 證據
+Exact Released EBOM Evidence contains unsupported fields.,精確的已發佈 EBOM 證據包含不支援的欄位。
+Released At,發佈時間
+Exact Released EBOM Evidence does not match the released revision.,精確的已發佈 EBOM 證據與已發佈修訂版不相符。
+Exact Released EBOM Evidence must include the release event.,精確的已發佈 EBOM 證據必須包含發佈事件。
+Include the exact EBOM release event as approval evidence.,請將精確 EBOM 發佈事件作為核准證據。
+Use no more than 50 unique engineering attributes.,請使用不超過 50 個唯一工程屬性。
+The EBOM line hash does not match its exact content.,EBOM 列雜湊與其精確內容不相符。
+An unmapped node cannot contain formal ERP identifiers.,未映射節點不能包含正式企業資源規劃系統識別碼。
+A current mapping requires its formal Item identifier.,目前映射需要其正式物料識別碼。
+Select a supported node state.,請選擇支援的節點狀態。
+Select a supported target fault.,請選擇支援的目標故障。
+Select a supported future retry directive.,請選擇支援的未來重試指令。
+The publish node input is invalid.,發佈節點輸入無效。
+The node operations do not match its exact mapping state.,節點操作與其精確映射狀態不相符。
+The node result does not match its mapping validation.,節點結果與其映射驗證不相符。
+The publish node hash does not match its exact input.,發佈節點雜湊與其精確輸入不相符。
+Phase 5 requires one exact Mock validation result per node.,第 5 階段要求每個節點恰有一個精確模擬驗證結果。
+The node result does not match its exact publish input.,節點結果與其精確發佈輸入不相符。
+The publish request evidence is invalid.,發佈請求證據無效。
+Select a supported target mode.,請選擇支援的目標模式。
+Select a supported request state.,請選擇支援的請求狀態。
+Include between 1 and 500 exact EBOM nodes.,請包含 1 至 500 個精確 EBOM 節點。
+Each publish request node and EBOM line must be unique.,每個發佈請求節點和 EBOM 列必須唯一。
+Each publish node must belong to the exact request.,每個發佈節點必須屬於精確請求。
+The request state does not match its node validation results.,請求狀態與其節點驗證結果不相符。
+ERP dispatch is unavailable in this Phase 5 boundary.,此第 5 階段邊界不提供企業資源規劃系統分派。
+Mock validation cannot report ERP execution success.,模擬驗證不能報告企業資源規劃系統執行成功。
+The publish request hash does not match its exact input.,發佈請求雜湊與其精確輸入不相符。
+Fault evidence cannot enable Phase 5 ERP dispatch.,故障證據不能啟用第 5 階段企業資源規劃系統分派。
+Include between 1 and 500 exact released EBOM lines.,請包含 1 至 500 個精確的已發佈 EBOM 列。
+Each released EBOM line identity must be unique.,每個已發佈 EBOM 列識別必須唯一。
+A mapping observation does not belong to the exact EBOM revision.,映射觀察記錄不屬於精確 EBOM 修訂版。
+Use a valid UUID.,請使用有效的 UUID。
+Use a positive integer.,請使用正整數。
+Use a non-negative integer.,請使用非負整數。
+Use a lowercase SHA-256 hash.,請使用小寫 SHA-256 雜湊。
+Use a valid value.,請使用有效值。
+Use a canonical positive quantity.,請使用規範正數量。
+Include a bounded set of exact UUID values.,請包含有界的精確 UUID 值集合。
+Use each exact UUID only once.,每個精確 UUID 只能使用一次。
+Use an explicit UTC date and time.,請使用明確的世界協調時間日期和時間。
+EBOM publish policies can only be changed through authorized administration.,EBOM 發佈策略只能透過授權管理操作變更。
+Formal Item and MBOM publish requests can only be changed through an authorized NPI command.,正式物料和 MBOM 發佈請求只能透過授權 NPI 命令變更。
+Formal Item and MBOM publish-request history cannot be changed.,正式物料和 MBOM 發佈請求歷史不可變更。
+Formal Item and MBOM publish-request history cannot be deleted.,正式物料和 MBOM 發佈請求歷史不可刪除。
+Publish-request policy users must be enabled internal system users.,發佈請求策略使用者必須是已啟用的內部系統使用者。
+NPI EBOM Publish Command Idempotency,NPI EBOM 發佈命令冪等性
+Publish Operation,發佈操作
+NPI EBOM Publish Mapping Observation,NPI EBOM 發佈映射觀察
+Mapping State,映射狀態
+unmapped,未映射
+current,目前
+stale,已過期
+conflict,衝突
+Formal Item Code,正式物料代碼
+Formal MBOM ID,正式 MBOM 識別碼
+Observed At,觀察時間
+NPI EBOM Publish Node,NPI EBOM 發佈節點
+Node Result State,節點結果狀態
+validated,已驗證
+blocked_mapping,映射已阻斷
+NPI EBOM Publish Node Result,NPI EBOM 發佈節點結果
+Target Fault Kind,目標故障類型
+duplicate_request,重複請求
+payload_conflict,承載衝突
+timeout_after_possible_commit,可能提交後逾時
+rate_limited,受到速率限制
+target_server_error,目標伺服器錯誤
+business_validation,業務驗證失敗
+partial_node_success,節點部分成功
+stale_mapping,映射已過期
+target_unavailable,目標無法使用
+restart_replay,重新啟動後重播
+Future Retry Directive,未來重試指令
+none,無
+replay_sealed_response,重播已封存回應
+reject_payload_conflict,拒絕承載衝突
+reconcile_before_retry,重試前對帳
+retry_after,延後重試
+retry_same_idempotency,使用相同冪等鍵重試
+manual_correction,人工修正
+retry_failed_nodes_only,僅重試失敗節點
+resolve_mapping,解決映射問題
+replay_original_request,重播原始請求
+Future Retryable,未來可重試
+Reconciliation Required,需要對帳
+Retry After Required,需要延後重試
+Phase 5 Dispatch Allowed,允許第 5 階段分派
+NPI EBOM Publish Policy,NPI EBOM 發佈策略
+NPI EBOM Publish Policy Version,NPI EBOM 發佈策略版本
+Publish Policy Version Key,發佈策略版本鍵
+Target Mode,目標模式
+mock,模擬
+Publish API Version,發佈 API 版本
+NPI EBOM Publish Request,NPI EBOM 發佈請求
+Publish Request State,發佈請求狀態
+manual_intervention,人工介入
+Dispatch Allowed,允許分派

@@ -2897,68 +2897,88 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
-  /execution-requests:
+  /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}/publish-requests:
+    get:
+      tags: [Execution]
+      operationId: listEngineeringBomPublishRequests
+      description: >
+        Returns exact formal Item/MBOM publish-request truth for one released
+        EBOM revision. Project visibility does not grant publish authority,
+        and the response contains no service credential or production target.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/EngineeringBomPublishRequestListResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
     post:
       tags: [Execution]
-      operationId: createExecutionRequest
+      operationId: createEngineeringBomPublishRequest
+      description: >
+        Atomically freezes one exact released EBOM, release/approval evidence
+        and complete server-resolved node intents into the operation-specific
+        publish_released_ebom_item_mbom request. The caller cannot select an
+        arbitrary operation or payload. Phase 5 Mock can end only at validated
+        or manual_intervention, creates no Outbox dispatch and cannot report a
+        formal Item/MBOM identifier or ERP success.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-publish-request-policy-requester
+      x-transaction-boundary: ebom-publish-request-input-mapping-result
+      x-audit-operation: ebom.publish_request.create
       parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
         - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateExecutionRequest"
+              $ref: "#/components/schemas/CreateEngineeringBomPublishRequest"
       responses:
-        "202":
-          description: ERP execution queued; not yet completed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExecutionRequest"
-        default:
-          $ref: "#/components/responses/Error"
+        "201": { $ref: "#/components/responses/EngineeringBomPublishRequestCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
 
-  /execution-requests/{requestId}:
+  /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}/publish-requests/{publishRequestId}:
     get:
       tags: [Execution]
-      operationId: getExecutionRequest
+      operationId: getEngineeringBomPublishRequest
+      description: >
+        Returns the immutable exact request input and append-only per-node
+        mapping/result truth. Retry capability is descriptive and remains
+        disabled in Phase 5; this operation never contacts ERPNext.
       parameters:
-        - in: path
-          name: requestId
-          required: true
-          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/EngineeringBomId"
+        - $ref: "#/components/parameters/EngineeringBomRevisionId"
+        - $ref: "#/components/parameters/EngineeringBomPublishRequestId"
+        - $ref: "#/components/parameters/RequestId"
       responses:
-        "200":
-          description: Current execution truth
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExecutionRequest"
-        default:
-          $ref: "#/components/responses/Error"
-
-  /execution-requests/{requestId}:retry:
-    post:
-      tags: [Execution]
-      operationId: retryExecutionRequest
-      parameters:
-        - in: path
-          name: requestId
-          required: true
-          schema: { type: string, format: uuid }
-        - $ref: "#/components/parameters/IdempotencyKey"
-      responses:
-        "202":
-          description: Safe retry queued
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExecutionRequest"
-        "409":
-          $ref: "#/components/responses/Conflict"
-        default:
-          $ref: "#/components/responses/Error"
+        "200": { $ref: "#/components/responses/EngineeringBomPublishRequestDetailResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
 
 components:
   securitySchemes:
@@ -3022,6 +3042,12 @@ components:
       name: revisionId
       required: true
       description: Immutable exact NPI-owned EBOM Revision global_id
+      schema: { type: string, format: uuid }
+    EngineeringBomPublishRequestId:
+      in: path
+      name: publishRequestId
+      required: true
+      description: Immutable operation-specific formal Item/MBOM publish-request global_id
       schema: { type: string, format: uuid }
     FileRevisionId:
       in: path
@@ -3731,6 +3757,54 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/EngineeringBomComparison" }
+    EngineeringBomPublishRequestListResult:
+      description: Authorized operation-specific publish-request workspace for one exact released EBOM revision
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomPublishRequestList" }
+    EngineeringBomPublishRequestDetailResult:
+      description: Immutable request input and append-only per-node mapping/result truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomPublishRequest" }
+    EngineeringBomPublishRequestCommandResult:
+      description: Mock-validated exact request or safe actor-bound replay; never ERP execution success
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/EngineeringBomPublishRequest" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -8905,60 +8979,376 @@ components:
         defects: { type: array, items: { type: object } }
         qualityResults: { type: array, items: { type: object } }
         comparison: { type: object }
-    CreateExecutionRequest:
+    CreateEngineeringBomPublishRequest:
       type: object
       additionalProperties: false
-      required: [operation, globalId, objectVersion, inputSnapshotHash]
+      required:
+        [
+          expectedEbomVersion,
+          expectedRevisionSnapshotHash,
+          expectedLifecycleVersion,
+          publishPolicyGlobalId,
+          publishPolicyVersion,
+          publishPolicySnapshotHash,
+          targetMode,
+          confirmed,
+          confirmationIntent,
+          reason,
+        ]
       properties:
-        operation:
-          type: string
-          enum:
-            [
-              create_item,
-              update_item_engineering_fields,
-              create_or_update_mbom,
-              create_purchase_request,
-              create_or_update_tool_asset,
-              publish_controlled_file_reference,
-              request_quality_inspection,
-              update_project_handover_status,
-            ]
+        expectedEbomVersion: { type: integer, minimum: 1 }
+        expectedRevisionSnapshotHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedLifecycleVersion: { type: integer, minimum: 1 }
+        publishPolicyGlobalId: { type: string, format: uuid }
+        publishPolicyVersion: { type: integer, minimum: 1 }
+        publishPolicySnapshotHash:
+          { type: string, pattern: "^[a-f0-9]{64}$" }
+        targetMode: { type: string, const: mock }
+        confirmed: { type: boolean, const: true }
+        confirmationIntent:
+          {
+            type: string,
+            const: validate_exact_released_ebom_for_item_mbom_publish,
+          }
+        reason: { type: string, minLength: 1, maxLength: 280 }
+    EngineeringBomPublishPolicyReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
         globalId: { type: string, format: uuid }
-        objectVersion: { type: integer, minimum: 0 }
-        inputSnapshotHash: { type: string, pattern: "^[a-fA-F0-9]{64}$" }
-        payload: { type: object }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomPublishPolicyOption:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash, key, title, targetMode]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        key: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        targetMode: { type: string, const: mock }
+    ReleasedEngineeringBomPublishEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          projectGlobalId,
+          ebomGlobalId,
+          ebomVersion,
+          revisionGlobalId,
+          revisionNumber,
+          revisionSnapshotHash,
+          lifecycleVersion,
+          releaseEventGlobalId,
+          releaseEventHash,
+          ebomPolicyGlobalId,
+          ebomPolicyVersion,
+          ebomPolicySnapshotHash,
+          approvalEvidenceIds,
+          releasedAt,
+        ]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        ebomGlobalId: { type: string, format: uuid }
+        ebomVersion: { type: integer, minimum: 1 }
+        revisionGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        revisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        lifecycleVersion: { type: integer, minimum: 1 }
+        releaseEventGlobalId: { type: string, format: uuid }
+        releaseEventHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        ebomPolicyGlobalId: { type: string, format: uuid }
+        ebomPolicyVersion: { type: integer, minimum: 1 }
+        ebomPolicySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         approvalEvidenceIds:
           type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
           items: { type: string, format: uuid }
-    ExecutionRequest:
+        releasedAt: { type: string, format: date-time }
+    EngineeringBomPublishLineInput:
       type: object
-      required: [id, operation, state, globalId, createdAt]
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          lineKey,
+          parentLineKey,
+          engineeringItemId,
+          description,
+          quantity,
+          engineeringUom,
+          alternateForLineKey,
+          alternateGroupKey,
+          effectivityStart,
+          effectivityEnd,
+          attributes,
+          lineHash,
+        ]
       properties:
-        id: { type: string, format: uuid }
-        operation: { type: string }
+        globalId: { type: string, format: uuid }
+        lineKey: { type: string, minLength: 1, maxLength: 64 }
+        parentLineKey: { type: [string, "null"], maxLength: 64 }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string, minLength: 1, maxLength: 280 }
+        quantity: { type: string, pattern: "^[0-9]+(?:\\.[0-9]+)?$", maxLength: 64 }
+        engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+        alternateForLineKey: { type: [string, "null"], maxLength: 64 }
+        alternateGroupKey: { type: [string, "null"], maxLength: 64 }
+        effectivityStart: { type: [string, "null"], format: date }
+        effectivityEnd: { type: [string, "null"], format: date }
+        attributes:
+          type: object
+          propertyNames: { pattern: "^[a-z][a-z0-9_.-]{0,63}$" }
+          additionalProperties: { type: string, maxLength: 280 }
+          maxProperties: 50
+        lineHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomPublishMappingObservation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          state,
+          version,
+          formalItemCode,
+          formalMbomId,
+          targetVersion,
+          observedAt,
+        ]
+      properties:
+        state: { type: string, enum: [unmapped, current, stale, conflict] }
+        version: { type: integer, minimum: 0 }
+        formalItemCode: { type: "null" }
+        formalMbomId: { type: "null" }
+        targetVersion: { type: "null" }
+        observedAt: { type: [string, "null"], format: date-time }
+    EngineeringBomPublishNodeResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          nodeGlobalId,
+          nodeInputHash,
+          attemptNumber,
+          state,
+          faultKind,
+          futureRetryDirective,
+          futureRetryable,
+          reconciliationRequired,
+          retryAfterRequired,
+          phase5DispatchAllowed,
+          formalItemCode,
+          formalMbomId,
+          targetVersion,
+          occurredAt,
+          resultHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        nodeGlobalId: { type: string, format: uuid }
+        nodeInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        attemptNumber: { type: integer, minimum: 0 }
         state:
           type: string
           enum:
             [
-              draft,
               validated,
               queued,
               processing,
               succeeded,
-              partially_succeeded,
               failed_retryable,
               failed_final,
-              cancelled,
+              uncertain_after_timeout,
+              blocked_mapping,
+              target_unavailable,
             ]
+        faultKind:
+          type: [string, "null"]
+          enum:
+            [
+              duplicate_request,
+              payload_conflict,
+              timeout_after_possible_commit,
+              rate_limited,
+              target_server_error,
+              business_validation,
+              partial_node_success,
+              stale_mapping,
+              target_unavailable,
+              restart_replay,
+              null,
+            ]
+        futureRetryDirective:
+          type: string
+          enum:
+            [
+              none,
+              replay_sealed_response,
+              reject_payload_conflict,
+              reconcile_before_retry,
+              retry_after,
+              retry_same_idempotency,
+              manual_correction,
+              retry_failed_nodes_only,
+              resolve_mapping,
+              replay_original_request,
+            ]
+        futureRetryable: { type: boolean }
+        reconciliationRequired: { type: boolean }
+        retryAfterRequired: { type: boolean }
+        phase5DispatchAllowed: { type: boolean, const: false }
+        formalItemCode: { type: "null" }
+        formalMbomId: { type: "null" }
+        targetVersion: { type: "null" }
+        occurredAt: { type: string, format: date-time }
+        resultHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringBomPublishNode:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, line, mapping, operations, resultState, inputHash, results]
+      properties:
         globalId: { type: string, format: uuid }
-        erpObjectType: { type: string }
-        erpObjectId: { type: string }
-        attemptCount: { type: integer }
-        nextRetryAt: { type: string, format: date-time }
-        userMessage: { type: string }
-        traceId: { type: string }
+        line: { $ref: "#/components/schemas/EngineeringBomPublishLineInput" }
+        mapping:
+          $ref: "#/components/schemas/EngineeringBomPublishMappingObservation"
+        operations:
+          type: array
+          maxItems: 2
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              [create_item, update_item_engineering_fields, create_or_update_mbom]
+        resultState:
+          type: string
+          enum:
+            [
+              validated,
+              queued,
+              processing,
+              succeeded,
+              failed_retryable,
+              failed_final,
+              uncertain_after_timeout,
+              blocked_mapping,
+              target_unavailable,
+            ]
+        inputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        results:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/EngineeringBomPublishNodeResult"
+    EngineeringBomPublishCapabilities:
+      type: object
+      additionalProperties: false
+      required: [view, create, dispatch, retry, reconcile]
+      properties:
+        view: { type: boolean }
+        create: { type: boolean }
+        dispatch: { type: boolean, const: false }
+        retry: { type: boolean, const: false }
+        reconcile: { type: boolean, const: false }
+    EngineeringBomPublishRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          operation,
+          apiVersion,
+          policy,
+          releasedEbom,
+          targetMode,
+          state,
+          dispatchAllowed,
+          actorUserId,
+          requestId,
+          traceId,
+          payloadHash,
+          ownedFields,
+          nodes,
+          capabilities,
+          createdAt,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        operation: { type: string, const: publish_released_ebom_item_mbom }
+        apiVersion: { type: string, const: npi.erp-publish.v1 }
+        policy:
+          $ref: "#/components/schemas/EngineeringBomPublishPolicyReference"
+        releasedEbom:
+          $ref: "#/components/schemas/ReleasedEngineeringBomPublishEvidence"
+        targetMode: { type: string, const: mock }
+        state: { type: string, enum: [validated, manual_intervention] }
+        dispatchAllowed: { type: boolean, const: false }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        requestId: { type: string, format: uuid }
+        traceId:
+          { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        ownedFields:
+          type: array
+          minItems: 1
+          maxItems: 8
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              [
+                engineering_item_id,
+                engineering_description,
+                ebom_hierarchy,
+                engineering_quantity,
+                engineering_uom,
+                alternates,
+                effectivity,
+                engineering_attributes,
+              ]
+        nodes:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/EngineeringBomPublishNode" }
+        capabilities:
+          $ref: "#/components/schemas/EngineeringBomPublishCapabilities"
         createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
+    EngineeringBomPublishPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, create]
+      properties:
+        view: { type: boolean }
+        create: { type: boolean }
+    EngineeringBomPublishRequestList:
+      type: object
+      additionalProperties: false
+      required: [project, ebom, revision, permissions, policies, items]
+      properties:
+        project: { $ref: "#/components/schemas/EngineeringBomProject" }
+        ebom: { $ref: "#/components/schemas/EngineeringBomSummary" }
+        revision:
+          $ref: "#/components/schemas/EngineeringBomRevisionReference"
+        permissions:
+          $ref: "#/components/schemas/EngineeringBomPublishPermissions"
+        policies:
+          type: array
+          maxItems: 64
+          items:
+            $ref: "#/components/schemas/EngineeringBomPublishPolicyOption"
+        items:
+          type: array
+          maxItems: 200
+          items:
+            $ref: "#/components/schemas/EngineeringBomPublishRequest"
     CommandResult:
       type: object
       required: [globalId, version, status]

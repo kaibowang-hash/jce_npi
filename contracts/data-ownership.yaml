@@ -306,6 +306,58 @@ objects:
       actor_operation_and_payload_identity: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
       response_and_seal: {owner: NPI_ONE_EBOM_COMMAND, editable_in: [NPI_ONE_EBOM_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
 
+  EngineeringBOMPublishPolicy:
+    owner_system: NPI_ONE_INTEGRATION_ADMIN
+    erp_view: none
+    fields:
+      policy_identity_and_project_scope: {owner: NPI_ONE, editable_in: [NPI_ONE_INTEGRATION_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      production_authority_and_target_activation: {owner: FUTURE_APPROVED_INTEGRATION_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  EngineeringBOMPublishPolicyVersion:
+    owner_system: VERSIONED_INTEGRATION_POLICY
+    erp_view: none
+    fields:
+      synthetic_requester_bindings_and_mock_mode: {owner: VERSIONED_INTEGRATION_POLICY, editable_in: [NPI_ONE_INTEGRATION_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_snapshot_and_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      request_actor_trace_idempotency_and_state: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      exact_released_ebom_policy_and_approval_snapshot: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      dispatch_state_and_target_completion: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: BIDIRECTIONAL_EVENT, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  EngineeringBOMPublishNode:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_ebom_line_and_owned_field_input: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      server_derived_item_and_mbom_operations: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+
+  EngineeringBOMPublishMappingObservation:
+    owner_system: SPLIT_BY_SOURCE
+    erp_view: source_record
+    fields:
+      engineering_line_and_request_identity: {owner: NPI_ONE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      formal_item_code_mbom_id_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_MAPPING}
+      mapping_state_and_observation_hash: {owner: NPI_ONE_INTEGRATION_PROJECTION, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+
+  EngineeringBOMPublishNodeResult:
+    owner_system: SPLIT_BY_EXECUTION_STAGE
+    erp_view: source_record
+    fields:
+      mock_validation_result: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      target_attempt_result_and_formal_identifiers: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      retry_and_reconciliation_classification: {owner: NPI_ONE_INTEGRATION_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  EngineeringBOMPublishCommandIdempotency:
+    owner_system: NPI_ONE_PUBLISH_REQUEST_COMMAND
+    erp_view: none
+    fields:
+      actor_operation_and_payload_identity: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [NPI_ONE_PUBLISH_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+
   Tooling:
     owner_system: SPLIT_BY_LIFECYCLE
     fields:
