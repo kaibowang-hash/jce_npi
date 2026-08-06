@@ -880,3 +880,29 @@ P5-04 EBOM passes `69/69`; tracked Python passes `959/959`. Compilation,
 V1.2 reconciliation, 282-row trace uniqueness, prototype approval, P0 visual
 governance, YAML and diff checks pass. Complete exact-SHA ordinary CI remains
 before the final unchanged Gate.
+
+## Final unchanged Gate PASS
+
+Repair checkpoint `2c0734a4201ac5ee4b53eae913ce01172634da3f`
+passed complete exact-SHA ordinary CI `31089637022`. Repository job
+`92577257354` passed complete `verify.sh`, E2E and both Gitleaks lanes; visual
+job `92577257429` passed; controlled job `92577258111` correctly skipped.
+
+The single final unchanged workflow `31090154694` retained that exact SHA and
+all diagnostic activation remained closed. Repository job `92578962756`,
+controlled job `92578962766` and visual job `92578962797` passed. The
+controlled Site completed the unchanged P5-01 through P5-04 runtime, both
+migrations, EBOM create/replay/conflict/rollback/successor/comparison and the
+complete review/release lifecycle, route recovery and bounded cleanup.
+
+Artifact `8963145655`,
+`p5-document-ebom-runtime-31090154694`, has GitHub digest
+`sha256:04bccbcb01a1028075c1472cf02d7b4bffa41362de2804ebaf2892890ae898df`.
+Its extracted `result.txt` has SHA-256
+`4d84b4992ea8264ec1b12599ce7c7ae508f98b41925de2f32b07ccf3adc2d7a7`
+and records `result=PASS`, exact head `2c0734a`, run `31090154694`, the fixed
+disposable runtime marker and `scope=p5-01-through-p5-04`.
+
+This closes the lifecycle-event UUID repair and the complete P5-04 controlled
+runtime. The Level 2 conclusion is recorded in
+`implementation/evidence/phase-5/p5-04-validation.md`; P5-05 may now start.

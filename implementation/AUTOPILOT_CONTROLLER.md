@@ -503,3 +503,30 @@ repeat or rewrite it merely to restore context. See
 `implementation/evidence/phase-5/p5-01-plan.md`,
 `implementation/evidence/phase-5/p5-01-resume-audit.md` and
 `implementation/LAST_RUN.md` for the exact latest result.
+
+## 2026-08-06 P5-04 final PASS and automatic P5-05 transition
+
+- Product repair `2c0734a4201ac5ee4b53eae913ce01172634da3f`
+  passed exact-SHA ordinary CI `31089637022` and the single final unchanged
+  controlled-Site Gate `31090154694` with every P5-04 diagnostic activation
+  closed.
+- The final Gate passed repository `92578962756`, controlled Site
+  `92578962766`, fixed-Linux visual `92578962797`, both migrations, unchanged
+  P5-01/02/03 runtime, complete EBOM lifecycle and bounded cleanup. Artifact
+  `8963145655` records `result=PASS` and
+  `scope=p5-01-through-p5-04` at exact SHA `2c0734a`.
+- The lifecycle projection UUID repair changed only the already-canonical,
+  exact-parent-validated hydration type boundary. No Requirement, API,
+  permission, Schema, ownership, state, transaction, idempotency, audit or
+  PASS criterion changed.
+- Release-gate review concludes `PASS — LEVEL 2 P5-04`.
+  `FR-DS-011` and `FR-DS-012` are `TECHNICAL_VERIFIED`; evidence is
+  `implementation/evidence/phase-5/p5-04-validation.md`.
+- Automatic-transition authority activates P5-05 for `FR-DS-013`. Its first
+  action is the pure operation-specific Item/MBOM publish-request domain,
+  closed contract and additive metadata described by
+  `implementation/evidence/phase-5/p5-05-plan.md`.
+- Mock is the only enabled Phase 5 mode and cannot report target identifiers
+  or `succeeded`. Production ERPNext access, credentials, network dispatch,
+  actual retry/replay/webhooks and reconciliation remain prohibited and
+  deferred to Phase 8.

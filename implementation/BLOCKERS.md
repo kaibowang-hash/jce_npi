@@ -625,6 +625,35 @@ must preserve that boundary.
   ownership, transaction, idempotency, audit or PASS criterion may change.
 - P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.
 
+## Current authoritative blocker state — 2026-08-06T09:57:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- The historical entries above remain append-only evidence but no longer
+  describe current execution state.
+- P5-04 repair `2c0734a`, ordinary CI `31089637022` and final unchanged Gate
+  `31090154694` passed with diagnostics closed; P5-04 is `PASS_LEVEL_2`.
+- P5-05 is active. Its production ERPNext facts are scoped holds, not blockers
+  to Mock/default, operation-specific contract, persistence, UI or no-network
+  fault evidence.
+
+## 2026-08-06 — P5-04 lifecycle projection blocker resolved
+
+- Status: `RESOLVED`; this supersedes only the active status of the historical
+  P5-04 blocker entries and does not rewrite their evidence or counters.
+- Unique root: the submit-review controller passed an already canonical and
+  exact-parent-validated lifecycle-event ID string into a UUID-only pure
+  domain field.
+- Repair: `2c0734a4201ac5ee4b53eae913ce01172634da3f`; only that non-null hydration
+  value is converted to `UUID`, and diagnostic activation is closed.
+- Verification: affected controller/runtime `29/29`, complete EBOM `69/69`,
+  tracked Python `959/959`, exact ordinary CI `31089637022` and final unchanged
+  controlled-Site Gate `31090154694` all passed.
+- Gate artifact: `8963145655`, GitHub digest
+  `04bccbcb01a1028075c1472cf02d7b4bffa41362de2804ebaf2892890ae898df`,
+  records exact SHA `2c0734a` and `result=PASS`.
+- Outcome: P5-04 passes Level 2. No active Hard Blocker remains; P5-05 is now
+  active under standing Autopilot authority.
+
 ## Resumed — P5-04 post-revision create diagnostic — 2026-08-06T07:02:38Z
 
 - The user requested that the problem be fixed, resuming the same Goal on
@@ -702,3 +731,15 @@ must preserve that boundary.
   final unchanged Gate. Requirements, API, permissions, Schema, ownership,
   transaction, idempotency, audit and PASS criteria must remain frozen.
 - P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.
+
+## Current authoritative blocker state — 2026-08-06T09:57:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- The preceding exhausted recovery is immutable historical evidence. Later
+  standing-authority cycles uniquely repaired the downstream audit and
+  lifecycle-projection roots.
+- Exact product SHA `2c0734a4201ac5ee4b53eae913ce01172634da3f`
+  passed ordinary CI `31089637022` and final unchanged controlled-Site Gate
+  `31090154694` with all diagnostics closed.
+- P5-04 is `PASS_LEVEL_2`; P5-05 is active. Its production ERPNext inputs are
+  scoped holds, not blockers to Mock/default contracts and no-network proof.

@@ -1,41 +1,57 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T09:28:15Z`
+Updated: `2026-08-06T09:57:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_VALIDATION — P5-04 LIFECYCLE EVENT UUID REPAIR`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-05 FORMAL ITEM/MBOM PUBLISH REQUEST`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact product repair checkpoint:
-  `1fda74a1cd44e2702d8072951973a1839274ef2c` (pushed)
+- Latest exact product checkpoint:
+  `2c0734a4201ac5ee4b53eae913ce01172634da3f` (pushed)
 - Latest complete normal CI:
-  `31087964089` (`PASS`, exact diagnostic SHA `f47f4ef`; repository
-  `92571837026`, E2E, Gitleaks/history and visual `92571836950` passed;
-  controlled job `92571837971` correctly skipped)
+  `31089637022` (`PASS`, exact SHA `2c0734a`; repository `92577257354`,
+  E2E, Gitleaks/history and visual `92577257429` passed; controlled job
+  `92577258111` correctly skipped)
 - Latest controlled-Site run:
-  `31088548041` (`FAILED_UNIQUE_LIFECYCLE_PROJECTION_SAVE`, exact diagnostic
-  SHA `f47f4ef`; `P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE /
-  ValidationError / trace-15866486cf445bb0bac3dc35120d6318`)
-- P5-03 final unchanged controlled-Site Gate:
-  `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
+  `31090154694` (`PASS`, exact SHA `2c0734a`, diagnostic activation closed;
+  repository `92578962756`, controlled `92578962766`, visual `92578962797`)
 - Controlled PASS artifact:
-  `8924223239`, SHA-256
-  `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
+  `8963145655`, GitHub SHA-256
+  `04bccbcb01a1028075c1472cf02d7b4bffa41362de2804ebaf2892890ae898df`
 - Current controller task:
-  `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — LIFECYCLE EVENT UUID REPAIR`)
-- Current Requirement IDs:
-  `FR-DS-011`, `FR-DS-012`
-- Completed P5-03 evidence:
-  `implementation/evidence/phase-5/p5-03-validation.md`
+  `P5-05 — Formal publish request stub and contract`
+  (`IN_PROGRESS — DOMAIN/CONTRACT/METADATA FOUNDATION`)
+- Current Requirement ID:
+  `FR-DS-013`
+- Completed P5-04 evidence:
+  `implementation/evidence/phase-5/p5-04-validation.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
   `4 — Project Work Items and Stage Gates` (`PASS`)
 
-## Current atomic scope
+## Authoritative current atomic scope
+
+P5-04 passed Level 2 at exact checkpoint `2c0734a`: ordinary CI
+`31089637022` and the final unchanged controlled-Site Gate `31090154694`
+passed with all diagnostics closed. `FR-DS-011` and `FR-DS-012` are
+`TECHNICAL_VERIFIED`; their retained history is not reopened by P5-05.
+
+P5-05 is active only for `FR-DS-013`. The audited first slice replaces the
+generic caller-selected `operation + payload` seed with a closed
+`publish_released_ebom_item_mbom` request. It binds one exact released EBOM,
+release/approval evidence, actor/trace/idempotency/payload hash and per-node
+mapping/result truth. Mock is the only enabled Phase 5 target and can end only
+at `validated`; it cannot return ERP identifiers or `succeeded`.
+
+Production endpoints/credentials, any network dispatch, formal Item/MBOM
+mutation, worker retry/replay, webhooks and reconciliation remain prohibited
+and deferred to Phase 8. The active evidence and full scope/test/rollback map
+are in `implementation/evidence/phase-5/p5-05-plan.md`.
+
+## Retained P5-04 recovery history
 
 P5-03 is complete at Level 2. Its immutable baseline, exact Gate evidence,
 explicit dependency registration and append-only successor impact truth are

@@ -1,15 +1,40 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_VALIDATION — P5-04 LIFECYCLE EVENT UUID REPAIR`
+`IN_PROGRESS_IMPLEMENTATION — P5-05 DOMAIN/CONTRACT/METADATA FOUNDATION`
 
-Recovery time: `2026-08-06T09:28:15Z`
+Recovery time: `2026-08-06T09:57:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`f47f4efc9b5369990a9c6cd55924487c8403e4a9`
+`2c0734a4201ac5ee4b53eae913ce01172634da3f`
+
+## Current authoritative action
+
+P5-04 is complete at Level 2. Exact ordinary CI `31089637022` and final
+unchanged controlled-Site Gate `31090154694` passed on `2c0734a` with
+diagnostics closed. Evidence is
+`implementation/evidence/phase-5/p5-04-validation.md`.
+
+The first unfinished atomic action is P5-05 checkpoint 1:
+
+1. implement the pure operation-specific
+   `publish_released_ebom_item_mbom` request/fault domain;
+2. replace the accepted generic create payload with closed EBOM publish
+   OpenAPI and ownership/event vocabulary;
+3. add only additive metadata needed for exact request, node mapping/result
+   and actor-bound idempotency truth;
+4. prove Mock cannot return an ERP identifier or `succeeded`, and prove every
+   required duplicate/conflict/timeout/429/5xx/4xx/partial/stale/unavailable/
+   restart/replay classification without network contact; and
+5. run the affected Level 1 checks and exact diff review before repository/API
+   implementation.
+
+The complete scope, non-scope, risks, expected files, tests and rollback are
+frozen in `implementation/evidence/phase-5/p5-05-plan.md`. Production ERPNext
+access and Phase 8 execution/reconciliation remain inactive.
 
 ## Authority
 
@@ -48,7 +73,7 @@ closed before the final Gate. A new downstream opaque aggregate may start the
 next identical cycle automatically. Business decisions, high-risk/destructive
 actions and external manual operations still require the user.
 
-## Current evidence
+## Retained P5-04 recovery evidence
 
 - Diagnostic checkpoint `008e6ed` passed complete exact-SHA ordinary CI
   `31069567886`: repository, complete E2E, both secret lanes and fixed-Linux
@@ -194,20 +219,16 @@ actions and external manual operations still require the user.
   compilation, reconciliation, trace uniqueness, prototype/P0 governance,
   YAML and diff checks pass.
 
-## First unfinished action
+## Retained former unfinished action
 
-Finish affected and complete EBOM/Python/governance validation for the
-lifecycle event UUID repair with diagnostics closed. Commit and push only the
-repair/controller files, require complete exact-SHA ordinary CI, then run one
-final unchanged Gate. Do not broaden roles, DocPerms, API, Schema, transaction
-order or audit content.
-
-P5-04 is `IN_PROGRESS_VALIDATION`. P5-05 and Phase 6 remain inactive until its
-Level 2 Gate passes.
+The lifecycle-event UUID repair sequence described above is complete.
+Checkpoint `2c0734a` passed ordinary CI `31089637022` and final unchanged Gate
+`31090154694`; it is historical evidence, not the current action. The current
+P5-05 checkpoint is authoritative at the top of this file.
 
 ## Frozen non-scope
 
-- P5-01 through P5-03 remain sealed `PASS`.
+- P5-01 through P5-04 remain sealed `PASS` at their accepted task boundaries.
 - NPI One owns only EBOM working revisions; ERPNext retains formal Item, MBOM,
   routing, stock UOM and execution ownership.
 - No production ERPNext access, cross-database write, raw Desk product path,
