@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T05:45:43Z`
+Updated: `2026-08-06T06:08:29Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS — P5-04 REMAINING CREATE REPAIR VALIDATION`
+- Mode: `BLOCKED_EXTERNAL — P5-04 REMAINING CREATE AUTHORITY EXHAUSTED`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
-  `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
+  `f4aba879e47ea758a6c090016cb069a74b5c154b` (pushed)
 - Latest complete normal CI:
-  `31073500593` (`PASS`, exact diagnostic checkpoint SHA `40d2d47`;
-  repository, E2E, Gitleaks/history and fixed-Linux visual passed)
+  `31075372272` (`PASS`, exact repair SHA `f4aba87`; repository, E2E,
+  Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31073915463` (`FAILED_UNIQUE_REVISION_INSERT_ROOT`, exact diagnostic
-  checkpoint SHA `40d2d47`; `P504_CREATE_REVISION_INSERT / ValidationError /
-  trace-9b23575185625a1998ac184bfefaa272`)
+  `31075730002` (`FAILED_NON_UNIQUE_CREATE_STAGE`, exact repair SHA
+  `f4aba87`; `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-6fa26f47b241558db7fdafa0b9c1a46e`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-06T05:45:43Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — REMAINING CREATE REPAIR VALIDATION`)
+  (`BLOCKED_EXTERNAL — REMAINING CREATE AUTHORITY EXHAUSTED`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -202,8 +202,16 @@ request for the now-consumed diagnostic Site. Exact tuple and direct code/
 DocType/contract cross-validation proved that the revision controller omitted
 `policy_global_id` and `policy_version` from the row immediately passed into
 exact policy domain hydration. The repair selects only those existing fields;
-diagnostic activation is now closed. Affected/full ordinary CI and the single
-reserved final unchanged Gate remain mandatory.
+diagnostic activation is now closed. Exact repair SHA `f4aba87` passed complete
+ordinary CI `31075372272`. The single final unchanged Gate `31075730002`
+retained that SHA and passed its repository and visual companions, predecessor
+runtime, migrations and cleanup, but the create command returned only
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-6fa26f47b241558db7fdafa0b9c1a46e`. With diagnostics closed, that outer
+tuple cannot prove whether the revision-insert failure recurred or a later
+create substage failed. The diagnostic, repair and final-Gate allowances are
+all consumed, so another dispatch or guessed repair is outside current
+authority.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

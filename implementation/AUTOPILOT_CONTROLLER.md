@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T04:35:01Z`
+Updated: `2026-08-06T06:08:29Z`
 
 ## Authority and operating mode
 
@@ -292,10 +292,23 @@ pending until that proof is produced in Codespaces.
   its filter keys. The revision controller passed that row to
   `ebom_policy_value()` without selecting required `policy_global_id` and
   `policy_version`, uniquely proving the observed validation root. The bounded
-  repair selects only those two existing fields and closes diagnostics; its
-  affected/full ordinary CI and reserved final unchanged Gate remain pending.
+  repair selects only those two existing fields and closes diagnostics.
+- Repair checkpoint `f4aba87` passed complete exact-SHA ordinary CI
+  `31075372272`: repository `92532129789` and visual `92532130528` passed;
+  controlled job `92532130580` correctly skipped.
+- The sole final unchanged workflow `31075730002` retained exact SHA
+  `f4aba87`. Repository `92533233067`, visual `92533232990`, predecessor
+  runtime, migrations and disposable cleanup passed, but controlled job
+  `92533233034` returned only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-6fa26f47b241558db7fdafa0b9c1a46e`.
+- Because diagnostic activation was correctly closed, the final tuple cannot
+  distinguish recurrence of the revision-insert validation from a later
+  create transaction/response failure. The new diagnostic `1/1`, uniquely
+  proved repair `1/1` and final unchanged Gate `1/1` are exhausted. P5-04 is
+  `BLOCKED_EXTERNAL`; another Site dispatch or repair requires new explicit
+  bounded authority and may not guess a root.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_REPAIR_VALIDATION`, never yet a Gate PASS. Production numbering,
+- P5-04 is `BLOCKED_EXTERNAL`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

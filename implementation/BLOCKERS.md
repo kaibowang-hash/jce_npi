@@ -1,24 +1,24 @@
 # Blockers
 
-Updated: `2026-08-05T15:39:03Z`
+Updated: `2026-08-06T06:08:29Z`
 
 ## Active hard blockers
 
 `P5-04-CREATE-STAGE-DIAGNOSTIC-REPAIR-AUTHORITY`
 
-Repair `d21d21a` resolved the former policy-publication root and passed local
-EBOM `58/58`, complete Python `954/954` and ordinary CI `31020190868`. Final
-unchanged workflow `31020886002` passed policy publication and every
-predecessor/environment boundary, then advanced to the first EBOM create
-command and returned only `P504_RUNTIME_CREATE / HttpStatusError /
-trace-f92a1e065fe35759b261601244cca7d4`.
+Repair `f4aba87` passed local controller/runtime `25/25`, EBOM `64/64`,
+complete Python `960/960` and complete ordinary CI `31075372272`. The sole
+final unchanged workflow `31075730002` passed repository, visual, predecessor
+runtime, migrations and disposable cleanup, then the first EBOM create command
+returned only `P504_RUNTIME_CREATE / HttpStatusError /
+trace-6fa26f47b241558db7fdafa0b9c1a46e`.
 
-That aggregate stage is not a unique repair proof: policy load/authority,
-idempotency, root/revision/line/lifecycle writes, projection save, audit,
-response and receipt sealing all remain possible. The prior bounded repair
-and final-Gate authority is exhausted. No safe diagnostic dispatch or product
-repair remains under current authority. The authoritative record is the final
-section below.
+Because final diagnostics were correctly closed, that aggregate stage cannot
+prove whether the diagnosed revision insert recurred or a later
+line/lifecycle/projection/audit/response/receipt substage failed. The new
+diagnostic, one uniquely proved repair and final Gate are all consumed. No
+safe diagnostic dispatch or product repair remains under current authority.
+The authoritative record is the final section below.
 
 Historical resolved context follows.
 
@@ -586,5 +586,33 @@ must preserve that boundary.
   omitted from the returned row immediately passed to `ebom_policy_value`,
   uniquely producing the mapped validation failure.
 - The authorized repair selects only those two existing fields and closes the
-  diagnostic activation. There is no active Hard Blocker; affected/full
-  ordinary CI and one final unchanged Gate remain before P5-04 Level 2.
+  diagnostic activation. At that checkpoint no Hard Blocker was active;
+  affected/full ordinary CI and one final unchanged Gate remained before
+  P5-04 Level 2.
+
+## Active Hard Blocker — P5-04 remaining create final Gate — 2026-08-06T06:08:29Z
+
+- Repair checkpoint `f4aba879e47ea758a6c090016cb069a74b5c154b` passed
+  complete exact-SHA ordinary CI `31075372272`; repository `92532129789` and
+  visual `92532130528` passed, while controlled job `92532130580` correctly
+  remained skipped.
+- The authorized final unchanged workflow `31075730002` retained that exact
+  SHA with create diagnostics closed. Repository `92533233067`, visual
+  `92533232990`, all predecessor runtime checks, both migrations and cleanup
+  passed. Controlled job `92533233034` returned only
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-6fa26f47b241558db7fdafa0b9c1a46e`.
+- The final log contains no `P504_CREATE_*` server substage for that trace.
+  Therefore evidence cannot distinguish recurrence of the repaired revision
+  insert from a later create transaction/response failure. Treating either as
+  proved would be a guess.
+- This separate authority is exhausted: diagnostic `1/1`, uniquely proved
+  repair `1/1`, final unchanged Gate `1/1`. No retry, new diagnostic activation
+  or further repair is allowed by the governing instruction.
+- Single user action to unblock: explicitly authorize another bounded
+  remaining-create-stage recovery using only the existing response-neutral
+  substage diagnostic, affected/full ordinary CI, at most one diagnostic Site,
+  only one uniquely proved in-scope repair, affected/full ordinary CI and one
+  final unchanged Gate. Requirements, API, permissions, Schema, ownership,
+  transaction, idempotency, audit and PASS criteria must remain frozen.
+- P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.

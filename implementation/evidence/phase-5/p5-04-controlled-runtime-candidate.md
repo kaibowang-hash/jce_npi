@@ -600,3 +600,31 @@ controller/runtime-verifier suite `25/25`, complete P5-04 EBOM suite `64/64`,
 related Document regression `70/70`, complete tracked Python suite `960/960`,
 compilation, reconciliation, prototype-approval, P0 visual-governance, YAML
 and diff checks.
+
+## Remaining create final unchanged Gate result
+
+Repair checkpoint `f4aba879e47ea758a6c090016cb069a74b5c154b`
+passed complete exact-SHA ordinary CI `31075372272`. Repository job
+`92532129789` passed complete verification, E2E, current-tree and history
+secret scans; visual job `92532130528` passed; controlled job `92532130580`
+was correctly skipped.
+
+The sole reserved final unchanged workflow `31075730002` retained exact SHA
+`f4aba87` with create diagnostic activation closed. Repository job
+`92533233067` and visual job `92533232990` passed. Controlled job
+`92533233034` passed pinned Bench tools, fixed disposable Site initialization,
+both migrations, unchanged predecessor P5-01/02/03 runtime, policy fixture and
+authorization setup. Cleanup passed. The first EBOM create command returned
+only:
+
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-6fa26f47b241558db7fdafa0b9c1a46e`
+
+The complete job log contains no `P504_CREATE_*` server substage for that
+trace because the final Gate correctly did not activate the response-neutral
+diagnostic. Consequently, this evidence cannot distinguish recurrence of the
+diagnosed revision insert from a later line/lifecycle/projection/audit/
+response/receipt failure. The final Gate is not PASS, P5-04 cannot pass Level
+2, and no additional dispatch or speculative repair is authorized. The
+separate bounded counters are exhausted: diagnostic `1/1`, uniquely proved
+repair `1/1`, final unchanged Gate `1/1`.

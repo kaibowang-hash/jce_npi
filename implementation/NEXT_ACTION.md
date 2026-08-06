@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 REMAINING CREATE REPAIR VALIDATION`
+`BLOCKED_EXTERNAL — P5-04 REMAINING CREATE AUTHORITY EXHAUSTED`
 
-Recovery time: `2026-08-06T05:45:43Z`
+Recovery time: `2026-08-06T06:08:29Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -88,16 +88,30 @@ transaction order, idempotency, audit or PASS criteria.
   fields used only as query filters were absent from the selected row passed
   into domain hydration. The repair selects existing `policy_global_id` and
   `policy_version` fields only and has closed diagnostic activation.
+- Repair checkpoint `f4aba87` passed local controller/runtime `25/25`, EBOM
+  `64/64`, related Document `70/70`, complete Python `960/960` and complete
+  exact-SHA ordinary CI `31075372272`. Repository `92532129789` and visual
+  `92532130528` passed; controlled job `92532130580` correctly skipped.
+- The sole final unchanged workflow `31075730002` retained exact SHA
+  `f4aba87`. Repository `92533233067`, visual `92533232990`, predecessor
+  runtime, migrations and cleanup passed; controlled job `92533233034`
+  returned only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-6fa26f47b241558db7fdafa0b9c1a46e`.
+- With diagnostic activation closed, no `P504_CREATE_*` substage exists for
+  that trace. The result cannot uniquely prove recurrence of the revision
+  insert or a later create failure. Diagnostic, repair and final Gate are all
+  consumed `1/1`.
 
 ## First unfinished action
 
-Run affected revision-controller/runtime and complete P5-04 regression tests,
-then complete tracked Python, reconciliation, trace/YAML and diff checks with
-diagnostic activation closed. Commit and push only the two-field projection
-repair plus evidence, require complete exact-SHA ordinary CI PASS, then execute
-the single reserved final unchanged controlled Gate.
+Await explicit authority for a new bounded remaining-create-stage recovery.
+If granted, reactivate only the existing response-neutral diagnostic on the
+first create request, run affected/full ordinary CI, use at most one diagnostic
+Site, repair only one uniquely proved in-scope root, close diagnostics, rerun
+affected/full ordinary CI and use one final unchanged Gate. Do not infer a root
+from the current aggregate tuple.
 
-P5-04 is `IN_PROGRESS_REPAIR_VALIDATION`. P5-05 and Phase 6 remain inactive.
+P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 
