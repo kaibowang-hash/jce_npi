@@ -602,19 +602,13 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             },
         )
 
-    def test_autonomous_recovery_activates_only_submit_transition_diagnostic(
-        self,
-    ) -> None:
+    def test_autonomous_recovery_closes_diagnostics_before_final_gate(self) -> None:
         run_fresh_source = self.source.split("def run_fresh(", 1)[1].split(
             "\ndef ", 1
         )[0]
         self.assertNotIn("\n            diagnostic=True", run_fresh_source)
         self.assertNotIn("create_diagnostic=True", run_fresh_source)
-        self.assertEqual(run_fresh_source.count("transition_diagnostic=True"), 1)
-        submit_source = run_fresh_source.split("submitted = command(", 1)[1].split(
-            ")\n", 1
-        )[0]
-        self.assertIn("transition_diagnostic=True", submit_source)
+        self.assertNotIn("transition_diagnostic=True", run_fresh_source)
 
     def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
         module = self.module

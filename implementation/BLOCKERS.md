@@ -1,15 +1,15 @@
 # Blockers
 
-Updated: `2026-08-06T09:05:37Z`
+Updated: `2026-08-06T09:28:15Z`
 
 ## Active hard blockers
 
-None requiring external authorization. The P5-04 submit-review failure is in
-an authorized diagnostic recovery cycle.
+None requiring external authorization. The P5-04 submit-review lifecycle
+projection repair is in authorized validation.
 
 ## Active recovery
 
-`P5-04-SUBMIT-REVIEW-TRANSITION-DIAGNOSTIC`
+`P5-04-SUBMIT-REVIEW-LIFECYCLE-EVENT-UUID-REPAIR`
 
 Diagnostic Site `31080379082` uniquely proved the lifecycle UUID-boundary root.
 Repair `6a4ba7c` added only the exact string-to-`UUID` conversion, closed
@@ -67,6 +67,26 @@ repaired; the diagnostic must close before one final unchanged Gate. Current
 counters are diagnostic `0/1`, repair `0/1`, final Gate `0/1`. No Requirement,
 API, permission, Schema, ownership, transaction, idempotency, audit or PASS
 criterion changes, and no user action is currently required.
+
+Diagnostic checkpoint `f47f4ef` passed complete ordinary CI `31087964089`;
+repository `92571837026` and visual `92571836950` passed, while controlled
+runtime correctly skipped. The one diagnostic Site `31088548041` retained
+that exact SHA. Repository `92573744222`, visual `92573744180`, fixed
+Bench/Site, migrations, predecessor runtime and cleanup passed. Controlled job
+`92573744244` returned only
+`P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE / ValidationError /
+trace-15866486cf445bb0bac3dc35120d6318` after the receipt and exact lifecycle
+event were inserted.
+
+The projection controller canonicalizes `last_event_global_id` and proves the
+exact event relation, but then passes that string to
+`EngineeringBomRevisionLifecycle.last_event_global_id`, whose domain boundary
+requires `UUID`. The same constructor already converts the canonical revision
+ID. This uniquely selects one type-boundary repair: convert only the non-null,
+already-validated event ID to `UUID`. Diagnostic activation is closed; every
+parent/state/version/transaction/audit predicate stays unchanged. Local
+controller/runtime `29/29` and complete EBOM `69/69` pass. No user action is
+required; full validation, ordinary CI and one final unchanged Gate remain.
 
 Historical resolved context follows.
 

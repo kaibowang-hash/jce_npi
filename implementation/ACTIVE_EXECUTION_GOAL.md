@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T09:05:37Z`
+Updated: `2026-08-06T09:28:15Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 SUBMIT-REVIEW TRANSITION`
+- Mode: `IN_PROGRESS_VALIDATION — P5-04 LIFECYCLE EVENT UUID REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `1fda74a1cd44e2702d8072951973a1839274ef2c` (pushed)
 - Latest complete normal CI:
-  `31086008989` (`PASS`, exact repair SHA `1fda74a`; repository
-  `92565500998`, E2E, Gitleaks/history and visual `92565500984` passed;
-  controlled job `92565501739` correctly skipped)
+  `31087964089` (`PASS`, exact diagnostic SHA `f47f4ef`; repository
+  `92571837026`, E2E, Gitleaks/history and visual `92571836950` passed;
+  controlled job `92571837971` correctly skipped)
 - Latest controlled-Site run:
-  `31086562000` (`FAILED_NON_UNIQUE_SUBMIT_REVIEW`, exact repair SHA
-  `1fda74a`; `P504_RUNTIME_SUBMIT_REVIEW / HttpStatusError /
-  trace-1494387c76f6549899ce007d429ba163`)
+  `31088548041` (`FAILED_UNIQUE_LIFECYCLE_PROJECTION_SAVE`, exact diagnostic
+  SHA `f47f4ef`; `P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE /
+  ValidationError / trace-15866486cf445bb0bac3dc35120d6318`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -25,7 +25,7 @@ Updated: `2026-08-06T09:05:37Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — SUBMIT-REVIEW TRANSITION DIAGNOSTIC`)
+  (`IN_PROGRESS — LIFECYCLE EVENT UUID REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -311,6 +311,29 @@ permission, transaction order, idempotency, audit and PASS rules are
 unchanged. Create, review and release requests do not activate it. The cycle
 is diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged Gate
 `0/1`; affected/full ordinary CI must pass before the diagnostic Site.
+
+Diagnostic checkpoint `f47f4ef` passed complete exact-SHA ordinary CI
+`31087964089`; repository `92571837026` and visual `92571836950` passed while
+controlled runtime correctly skipped. The one diagnostic Site `31088548041`
+retained that exact SHA. Repository `92573744222`, visual `92573744180`, fixed
+Bench/Site, migrations, predecessor runtime and cleanup passed. Controlled job
+`92573744244` returned only
+`P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE / ValidationError /
+trace-15866486cf445bb0bac3dc35120d6318` after receipt and lifecycle-event insert
+passed.
+
+Code and domain cross-validation uniquely prove the root. The lifecycle
+controller canonicalizes `last_event_global_id` to a string, validates the
+exact inserted event, then passes that string directly to
+`EngineeringBomRevisionLifecycle`, whose `_uuid` boundary accepts only a
+`UUID`. The already-canonical revision ID uses the correct conversion in the
+same constructor. The minimal repair applies the identical conversion only to
+the non-null last-event ID, retains every exact-parent/version/state check and
+closes submit-review diagnostic activation. Local controller/runtime passes
+`29/29`, complete EBOM passes `69/69` and tracked Python passes `959/959`.
+Compilation, reconciliation, trace uniqueness, prototype approval, P0 visual
+governance, YAML and diff checks pass. Ordinary CI remains before the final
+unchanged Gate.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

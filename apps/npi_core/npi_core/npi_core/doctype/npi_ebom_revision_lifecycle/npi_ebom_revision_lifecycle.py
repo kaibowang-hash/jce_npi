@@ -145,7 +145,11 @@ class NPIEBOMRevisionLifecycle(Document):
                 revision_snapshot_hash=self.revision_snapshot_hash,
                 current_state=state,
                 lifecycle_version=version,
-                last_event_global_id=self.last_event_global_id,
+                last_event_global_id=(
+                    UUID(self.last_event_global_id)
+                    if self.last_event_global_id is not None
+                    else None
+                ),
             )
         )
         self.revision_snapshot_hash = lowercase_sha256(

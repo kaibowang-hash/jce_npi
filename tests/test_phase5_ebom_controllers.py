@@ -449,6 +449,56 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
         self.assertEqual(lifecycle.current_state, "draft")
         self.assertEqual(lifecycle.lifecycle_version, 1)
 
+    def test_lifecycle_transition_converts_canonical_event_id_for_domain(
+        self,
+    ) -> None:
+        revision_id = "c2f4a4a5-57ba-44ea-abba-6d906d0922d1"
+        ebom_id = "ed80d97e-42fe-4db0-9703-bbed01150908"
+        project_id = "2b47c9da-9f8c-4d98-bf45-42985cd26a60"
+        event_id = "aa16dcc6-f553-4b86-a4b2-2d52be90fa19"
+        identity = {
+            "global_id": revision_id,
+            "tenant_id": "tenant-local",
+            "project_global_id": project_id,
+            "engineering_bom": ebom_id,
+            "ebom_global_id": ebom_id,
+            "engineering_bom_revision": revision_id,
+            "revision_global_id": revision_id,
+            "revision_snapshot_hash": "a" * 64,
+        }
+        lifecycle = self.lifecycle_module.NPIEBOMRevisionLifecycle(
+            {
+                **identity,
+                "current_state": "in_review",
+                "lifecycle_version": 2,
+                "last_event_global_id": event_id,
+                "updated_by_user_id": "engineer@example.invalid",
+                "updated_at": "2026-08-06 00:00:00.000000",
+                "request_id": "request-lifecycle-transition",
+                "trace_id": "trace-lifecycle-transition",
+            }
+        )
+        lifecycle._previous = StubDocument(
+            {
+                **identity,
+                "current_state": "draft",
+                "lifecycle_version": 1,
+                "last_event_global_id": None,
+            }
+        )
+
+        with patch.object(
+            self.lifecycle_module,
+            "require_exact_parent",
+            return_value={"global_id": event_id},
+        ):
+            lifecycle.before_validate()
+            lifecycle.validate()
+
+        self.assertEqual(lifecycle.last_event_global_id, event_id)
+        self.assertEqual(lifecycle.current_state, "in_review")
+        self.assertEqual(lifecycle.lifecycle_version, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

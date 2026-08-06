@@ -838,7 +838,6 @@ def run_fresh(
             {**transition_base, "reason": "Ready for controlled review."},
             SUBMIT_KEY,
             "P504_RUNTIME_SUBMIT_REVIEW",
-            transition_diagnostic=True,
         )
         require(
             submitted.body.get("revision", {}).get("lifecycle", {}).get("state")

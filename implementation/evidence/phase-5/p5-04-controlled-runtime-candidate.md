@@ -843,3 +843,40 @@ Local validation passes controller/runtime `28/28`, complete P5-04 EBOM
 diff checks pass. Affected/full ordinary CI remains mandatory before the
 single diagnostic Site. Requirement, API, permission, Schema, ownership,
 transaction, idempotency, audit and PASS criteria remain frozen.
+
+## Submit-review diagnostic proof and lifecycle event UUID repair
+
+Diagnostic checkpoint `f47f4efc9b5369990a9c6cd55924487c8403e4a9`
+passed complete exact-SHA ordinary CI `31087964089`. Repository job
+`92571837026` passed `verify.sh`, complete E2E, current-tree Gitleaks and full
+branch-history scan; visual job `92571836950` passed; controlled job
+`92571837971` correctly skipped.
+
+The one diagnostic Site `31088548041` retained that exact SHA. Repository job
+`92573744222` and visual job `92573744180` passed. Controlled job `92573744244`
+passed exact Bench/Site setup, migrations, unchanged P5-01/02/03 runtime and
+cleanup, then emitted exactly:
+
+`P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE / ValidationError /
+trace-15866486cf445bb0bac3dc35120d6318`
+
+The closed stage order proves idempotency receipt insertion and exact
+lifecycle-event insertion passed. The lifecycle projection controller then
+canonicalizes `last_event_global_id` with `optional_uuid`, validates the exact
+event relation and passes the resulting canonical string directly to
+`EngineeringBomRevisionLifecycle`. That domain type requires a non-null
+`last_event_global_id` to be a `UUID`; the same constructor already converts
+the canonical `revision_global_id`. `ebom_domain_value` maps this exact domain
+failure to the observed Frappe `ValidationError`.
+
+The uniquely proved repair converts only the already-validated non-null event
+ID to `UUID` at domain hydration. It changes no persisted value, state/version
+rule, parent predicate, response, permission, Schema, ownership, transaction,
+idempotency, audit or PASS criterion. A behavioral controller regression
+exercises the draft-to-in-review projection and fails on the prior code.
+Submit-review diagnostic activation is closed before repair validation and the
+final unchanged Gate. Local controller/runtime passes `29/29` and complete
+P5-04 EBOM passes `69/69`; tracked Python passes `959/959`. Compilation,
+V1.2 reconciliation, 282-row trace uniqueness, prototype approval, P0 visual
+governance, YAML and diff checks pass. Complete exact-SHA ordinary CI remains
+before the final unchanged Gate.

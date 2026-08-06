@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P5-04 SUBMIT-REVIEW TRANSITION`
+`IN_PROGRESS_VALIDATION — P5-04 LIFECYCLE EVENT UUID REPAIR`
 
-Recovery time: `2026-08-06T09:05:37Z`
+Recovery time: `2026-08-06T09:28:15Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`1fda74a1cd44e2702d8072951973a1839274ef2c`
+`f47f4efc9b5369990a9c6cd55924487c8403e4a9`
 
 ## Authority
 
@@ -178,18 +178,31 @@ actions and external manual operations still require the user.
   trace ID. Create, review and release do not activate it; no public response,
   role, DocPerm, Schema, ownership, transaction, idempotency, audit or PASS
   rule changes.
+- Diagnostic checkpoint `f47f4ef` passed complete ordinary CI `31087964089`:
+  repository `92571837026`, visual `92571836950`, E2E and both secret lanes
+  passed; controlled job `92571837971` correctly skipped.
+- The one diagnostic Site `31088548041` retained that exact SHA. Repository
+  `92573744222`, visual `92573744180`, setup, migrations, predecessor runtime
+  and cleanup passed. Controlled job `92573744244` emitted only
+  `P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE / ValidationError /
+  trace-15866486cf445bb0bac3dc35120d6318` after receipt/event insert passed.
+- The lifecycle controller canonicalizes and exact-parent-validates the event
+  ID as text, then passes it to a UUID-only pure-domain field. The unique
+  repair converts only that already-validated non-null event ID to `UUID` and
+  closes submit-review diagnostic activation. Local controller/runtime
+  `29/29`, complete EBOM `69/69` and tracked Python `959/959` pass;
+  compilation, reconciliation, trace uniqueness, prototype/P0 governance,
+  YAML and diff checks pass.
 
 ## First unfinished action
 
 Finish affected and complete EBOM/Python/governance validation for the
-submit-review-only response-neutral diagnostic. Commit and push only the
-diagnostic/controller files, require complete exact-SHA ordinary CI, then run
-one diagnostic Site. Repair only a uniquely proved transition root, close the
-diagnostic and repeat affected/full ordinary CI before one final unchanged
-Gate. Do not broaden roles, DocPerms, API, Schema, transaction order or audit
-content.
+lifecycle event UUID repair with diagnostics closed. Commit and push only the
+repair/controller files, require complete exact-SHA ordinary CI, then run one
+final unchanged Gate. Do not broaden roles, DocPerms, API, Schema, transaction
+order or audit content.
 
-P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive until its
+P5-04 is `IN_PROGRESS_VALIDATION`. P5-05 and Phase 6 remain inactive until its
 Level 2 Gate passes.
 
 ## Frozen non-scope

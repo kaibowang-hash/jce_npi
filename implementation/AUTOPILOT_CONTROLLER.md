@@ -374,8 +374,21 @@ pending until that proof is produced in Codespaces.
   invariant. Affected/full ordinary CI must pass before its one diagnostic
   Site; only a uniquely proved root may be repaired; diagnostics must close
   before one final unchanged Gate.
+- Diagnostic checkpoint `f47f4ef` passed exact-SHA ordinary CI `31087964089`;
+  repository `92571837026` and visual `92571836950` passed and controlled
+  runtime correctly skipped. The one diagnostic Site `31088548041` retained
+  that SHA; repository `92573744222`, visual `92573744180`, setup, migrations,
+  predecessor runtime and cleanup passed. Controlled job `92573744244`
+  emitted only `P504_TRANSITION_LIFECYCLE_PROJECTION_SAVE / ValidationError /
+  trace-15866486cf445bb0bac3dc35120d6318` after receipt/event insertion.
+- The controller normalizes `last_event_global_id` to canonical text and
+  validates the exact event, then handed that text to a UUID-only domain
+  field. Convert only the already-validated non-null event ID to `UUID`, keep
+  every state/version/parent predicate, close diagnostic activation and run
+  affected/full ordinary CI before the final unchanged Gate. Local
+  controller/runtime `29/29` and complete EBOM `69/69` pass.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_VALIDATION`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,
