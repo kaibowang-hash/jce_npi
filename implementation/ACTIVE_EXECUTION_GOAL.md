@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T07:29:44Z`
+Updated: `2026-08-06T07:53:33Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS — P5-04 LIFECYCLE UUID REPAIR VALIDATION`
+- Mode: `BLOCKED_EXTERNAL — P5-04 POST-LIFECYCLE CREATE STAGE OPAQUE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest diagnostic checkpoint:
-  `1400a8bd62552a152007e14023065f6943ed4786` (pushed)
+- Latest exact product repair checkpoint:
+  `6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac` (pushed)
 - Latest complete normal CI:
-  `31079745399` (`PASS`, exact diagnostic SHA `1400a8b`; repository, E2E,
+  `31081784934` (`PASS`, exact repair SHA `6a4ba7c`; repository, E2E,
   Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31080379082` (`FAILED_UNIQUE_LIFECYCLE_INSERT`, exact diagnostic SHA
-  `1400a8b`; `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
-  trace-16676d79fc405e76805261a931550f32`)
+  `31082337133` (`FAILED_NON_UNIQUE_CREATE_STAGE`, exact repair SHA
+  `6a4ba7c`; `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-ef925ea360245bd6b58daf326b910afe`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-06T07:29:44Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — LIFECYCLE UUID REPAIR VALIDATION`)
+  (`BLOCKED_EXTERNAL — FINAL AUTHORITY EXHAUSTED`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -236,6 +236,22 @@ maps that exact domain failure to the observed Frappe `ValidationError`.
 The one authorized repair therefore converts only that already-validated
 revision ID at the domain boundary. Diagnostic activation is closed before
 repair validation and the reserved final unchanged Gate.
+
+Repair checkpoint `6a4ba7c` passed complete exact-SHA ordinary CI
+`31081784934`, including repository `92552039959`, complete E2E, both secret
+lanes and visual `92552040040`. The sole final unchanged workflow
+`31082337133` retained exact SHA `6a4ba7c` with diagnostics closed. Its visual
+job `92553782973` and repository job `92553782998` passed; controlled job
+`92553782979` passed pinned tools,
+Site initialization, migrations, unchanged P5-01/02/03 runtime and cleanup,
+then returned only `P504_RUNTIME_CREATE / HttpStatusError /
+trace-ef925ea360245bd6b58daf326b910afe`. Because final diagnostics were closed,
+that tuple cannot prove recurrence of lifecycle insertion versus a later root
+projection/audit/response/receipt failure. Diagnostic `1/1`, repair `1/1` and
+final Gate `1/1` are exhausted; another dispatch or product edit would exceed
+the explicit bounded authority. P5-04 Level 2 and Autopilot continuation
+remain blocked pending a new bounded post-lifecycle diagnostic/repair/final-
+Gate authorization.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

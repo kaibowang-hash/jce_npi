@@ -1,20 +1,32 @@
 # Blockers
 
-Updated: `2026-08-06T07:29:44Z`
+Updated: `2026-08-06T07:53:33Z`
 
 ## Active hard blockers
 
-None under the resumed bounded P5-04 post-revision-create authority.
+`P5-04-POST-LIFECYCLE-CREATE-FINAL-GATE`
 
-Diagnostic checkpoint `1400a8b` passed complete ordinary CI `31079745399`.
-The sole diagnostic Site `31080379082` passed repository and visual companions
-and uniquely emitted `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
-trace-16676d79fc405e76805261a931550f32`. Direct controller/domain
-cross-validation proved one exact boundary defect: the lifecycle controller
-passed a canonical UUID string to a domain type that requires `UUID`. The one
-authorized repair is in progress, only converts that validated value, and
-closes diagnostic activation before affected/full ordinary CI. The reserved
-final unchanged Gate remains unused.
+Diagnostic Site `31080379082` uniquely proved the lifecycle UUID-boundary root.
+Repair `6a4ba7c` added only the exact string-to-`UUID` conversion, closed
+diagnostics, passed affected tests and complete ordinary CI `31081784934`.
+The sole final unchanged workflow `31082337133` retained that exact SHA.
+Repository `92553782998` and visual `92553782973` passed; controlled job
+`92553782979` passed pinned tools, Site setup, migrations, predecessor runtime
+and cleanup, then returned only
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-ef925ea360245bd6b58daf326b910afe`.
+
+The final response-neutral diagnostic was correctly closed, so the aggregate
+tuple cannot distinguish recurrence of the repaired lifecycle insert from a
+later root projection, audit, response or receipt-seal failure. The bounded
+diagnostic, repair and final-Gate counters are all consumed `1/1`; another
+Site dispatch or guessed repair is not authorized. The single action to
+unblock is explicit authority for one new post-lifecycle sequence: re-enable
+only the existing first-create response-neutral diagnostic, require
+affected/full ordinary CI, use at most one diagnostic Site, repair only one
+uniquely proved root, close diagnostics, rerun ordinary CI and reserve one
+final unchanged Gate. Requirement, API, permission, Schema, ownership,
+transaction, idempotency, audit and PASS criteria must remain frozen.
 
 Historical resolved context follows.
 

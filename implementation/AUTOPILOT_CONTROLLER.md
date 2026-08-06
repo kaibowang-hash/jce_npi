@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T07:29:44Z`
+Updated: `2026-08-06T07:53:33Z`
 
 ## Authority and operating mode
 
@@ -317,9 +317,18 @@ pending until that proof is produced in Codespaces.
   tenant, Project and snapshot-hash predicate. The lifecycle controller then
   supplied its canonical string ID to the UUID-only domain boundary, uniquely
   proving the one authorized repair. Counters are diagnostic `1/1`, repair
-  `1/1`, final unchanged Gate `0/1`; diagnostic activation is closed.
+  `1/1`, final unchanged Gate `1/1`; diagnostic activation is closed. Repair
+  checkpoint `6a4ba7c` passed complete ordinary CI `31081784934`. The sole
+  final workflow `31082337133` retained that exact SHA, passed repository and
+  visual companions, predecessor runtime, setup, migrations and cleanup, then
+  returned only
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-ef925ea360245bd6b58daf326b910afe`. The aggregate final tuple cannot
+  distinguish lifecycle recurrence from a later create stage, so P5-04 is
+  `BLOCKED_EXTERNAL`; another diagnostic, repair or Site requires new explicit
+  bounded authority.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_REPAIR`, never yet a Gate PASS. Production numbering,
+- P5-04 is `BLOCKED_EXTERNAL`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

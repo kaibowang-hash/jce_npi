@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 LIFECYCLE UUID REPAIR VALIDATION`
+`BLOCKED_EXTERNAL — P5-04 POST-LIFECYCLE CREATE STAGE OPAQUE`
 
-Recovery time: `2026-08-06T07:29:44Z`
+Recovery time: `2026-08-06T07:53:33Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`1400a8bd62552a152007e14023065f6943ed4786`
+`6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac`
 
 ## Authority
 
@@ -122,17 +122,28 @@ runs and counters remain immutable history.
   only `UUID`. That exact failure is translated to the observed
   `ValidationError`, uniquely selecting one type-boundary repair. Diagnostic
   activation is now closed.
+- Repair checkpoint `6a4ba7c` passed affected validation and complete exact-SHA
+  ordinary CI `31081784934`; repository `92552039959` and visual
+  `92552040040` passed, and controlled runtime correctly skipped.
+- The sole final unchanged workflow `31082337133` retained SHA `6a4ba7c` with
+  diagnostics closed. Repository `92553782998` and visual `92553782973`
+  passed. Controlled job `92553782979` passed setup, migrations, predecessor
+  runtime and cleanup, then returned only `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-ef925ea360245bd6b58daf326b910afe`.
+- The final aggregate tuple is non-unique across recurrence of lifecycle insert
+  and later projection/audit/response/receipt stages. Diagnostic, repair and
+  final Gate are consumed `1/1`; no further edit or dispatch is authorized.
 
 ## First unfinished action
 
-Run affected controller/runtime-verifier and complete P5-04 EBOM tests, then
-complete tracked Python, compilation, reconciliation, trace/YAML and diff
-checks with the diagnostic closed. Commit and push the one UUID-boundary
-repair, require complete exact-SHA ordinary CI PASS, and execute the one
-reserved final unchanged Gate. If it passes, complete P5-04 Level 2 through
-the release-gate skill and resume Autopilot.
+Obtain explicit authority for one new bounded post-lifecycle create-stage
+diagnostic/repair sequence. It must use only the existing response-neutral
+first-create diagnostic, affected/full ordinary CI, at most one diagnostic
+Site, one repair only for a uniquely proved root, diagnostics closed before
+ordinary CI and one final unchanged Gate. Do not infer a product edit from the
+current aggregate tuple.
 
-P5-04 is `IN_PROGRESS_REPAIR`. P5-05 and Phase 6 remain inactive.
+P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 

@@ -703,3 +703,33 @@ visual governance, YAML and diff checks pass. The aggregate local `verify.sh`
 correctly refuses the host's Node `24.2.0` / npm `11.3.0` because the repository
 requires Node `24.18.0` / npm `11.16.0`; complete exact-toolchain ordinary CI
 therefore remains mandatory before the final Site.
+
+## Post-lifecycle repair ordinary CI and final Gate
+
+Repair checkpoint `6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac`
+passed complete exact-SHA ordinary CI `31081784934`. Repository job
+`92552039959` passed the exact Node/npm toolchain, complete `verify.sh`, E2E,
+current-tree Gitleaks and complete pull-request history scan. Visual job
+`92552040040` passed the fixed-Linux matrix. Controlled runtime was correctly
+skipped.
+
+The sole reserved final unchanged workflow `31082337133` retained exact SHA
+`6a4ba7c` with first-create diagnostics closed. Visual job `92553782973`
+and repository job `92553782998` passed; repository included complete
+`verify.sh`, E2E and current-tree Gitleaks. Controlled job `92553782979`
+passed pinned Bench tools, disposable Site initialization, migrations, the
+unchanged P5-01/02/03 Document runtime and cleanup, then emitted only:
+
+`P504_RUNTIME_CREATE / HttpStatusError /
+trace-ef925ea360245bd6b58daf326b910afe`
+
+The final log contains no `P504_CREATE_*` server substage because diagnostic
+activation was correctly closed. The aggregate tuple cannot prove recurrence
+of the repaired lifecycle insert or select among later root projection, audit,
+response and receipt-seal paths. Therefore the workflow is not a P5-04 Gate
+PASS, Level 2 and release-gate are not run, and Autopilot cannot activate
+P5-05. Diagnostic `1/1`, uniquely proved repair `1/1` and final unchanged Gate
+`1/1` are exhausted. A further Site dispatch or code change requires new
+explicit bounded post-lifecycle authority; no Requirement, API, permission,
+Schema, ownership, transaction, idempotency, audit or PASS criterion may
+change.
