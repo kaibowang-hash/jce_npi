@@ -62,7 +62,8 @@ POLICY_VERSION = 1
 POLICY_VERSION_KEY = f"{POLICY_ID}:{POLICY_VERSION}"
 POLICY_KEY = f"p5_04_runtime_{FIXTURE_RUN_ID}"
 ENGINEERING_BOM_FIELD = "engineering" + "BomKey"
-ENGINEERING_BOM_KEY = f"synthetic_ebom_{FIXTURE_RUN_ID[:16]}"
+SYNTHETIC_NAMESPACE = "synthetic_ebom"
+ENGINEERING_BOM_KEY = f"{SYNTHETIC_NAMESPACE}-{FIXTURE_RUN_ID[:16]}"
 CREATE_KEY = f"{FIXTURE_PREFIX}-create"
 CREATE_CONFLICT_KEY = CREATE_KEY
 INVALID_REVISION_KEY = f"{FIXTURE_PREFIX}-invalid-revision"
@@ -605,7 +606,6 @@ def run_fresh(
             create_payload(policy_hash),
             CREATE_KEY,
             "P504_RUNTIME_CREATE",
-            diagnostic=True,
         )
         assert_replayed(created, "false")
         ebom, revision_one = exact_revision(created)
@@ -1185,7 +1185,7 @@ def provision_ebom_runtime_policy(
                     "policy_version": POLICY_VERSION,
                     "title": "Synthetic controlled EBOM policy",
                     "publication_state": "draft",
-                    "synthetic_namespace": "synthetic_runtime",
+                    "synthetic_namespace": SYNTHETIC_NAMESPACE,
                     "line_identity_mode": "caller_supplied_stable_key",
                     "quantity_scale": 3,
                     "maximum_nodes": 20,
@@ -1430,7 +1430,7 @@ def main() -> None:
     validate_local_fixture_inputs(base_url, "Administrator", UNRELATED_USER)
     require(
         FIXTURE_RUN_ID != "0" * 32
-        and ENGINEERING_BOM_KEY.startswith("synthetic_ebom_")
+        and ENGINEERING_BOM_KEY.startswith(f"{SYNTHETIC_NAMESPACE}-")
         and ACTOR_USER.endswith("@example.invalid")
         and UNRELATED_USER.endswith("@example.invalid"),
         "Controlled EBOM fixture identity drifted",

@@ -510,3 +510,23 @@ must preserve that boundary.
 - There is no active Hard Blocker. P5-04 is `IN_PROGRESS_DIAGNOSTIC`; the sole
   diagnostic Site remains unused until the exact diagnostic checkpoint passes
   complete ordinary CI. P5-05 and Phase 6 remain inactive.
+
+## P5-04 create-stage diagnostic root proven; fixture repair in progress — 2026-08-06T04:02:59Z
+
+- Diagnostic checkpoint `008e6ed` passed complete ordinary CI `31069567886`.
+- The sole diagnostic workflow `31069924517` returned only
+  `P504_CREATE_DOMAIN_BUILD / RequestValidationFailed /
+  trace-79bcd3a2408c5f71bb8c0cad8bd9db21` after all predecessor, environment,
+  policy and authorization boundaries passed.
+- Cross-validation uniquely proves a synthetic fixture precondition root: the
+  policy published `synthetic_runtime` while the key used
+  `synthetic_ebom_...`; neither satisfies the frozen
+  `syntheticNamespace + "-"` relation.
+- The bounded repair shares the existing `synthetic_ebom` namespace between
+  policy and key, changes no product rule and closes diagnostic activation.
+  Focused `43/43`, complete EBOM `63/63` and complete Python `959/959` pass;
+  reconciliation, trace, YAML and diff checks also pass.
+- There is no active Hard Blocker. P5-04 is
+  `IN_PROGRESS_REPAIR_VALIDATION`; full tests, exact-SHA ordinary CI and the
+  reserved final unchanged Gate remain before Level 2 or Autopilot
+  continuation.

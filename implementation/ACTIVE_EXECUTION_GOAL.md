@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T03:47:13Z`
+Updated: `2026-08-06T04:02:59Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 CREATE STAGE`
+- Mode: `IN_PROGRESS_REPAIR_VALIDATION — P5-04 SYNTHETIC FIXTURE NAMESPACE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `d21d21ad52efa2a88bc459adc43f97f265715071` (pushed)
 - Latest complete normal CI:
-  `31020190868` (`PASS`, exact repair SHA `d21d21a`;
-  repository, E2E, Gitleaks/history and fixed-Linux `62/62` passed)
+  `31069567886` (`PASS`, exact diagnostic SHA `008e6ed`;
+  repository, E2E, Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31020886002` (`FAILED_NEW_CREATE_STAGE_NON_UNIQUE`, exact SHA `d21d21a`;
-  `P504_RUNTIME_CREATE / HttpStatusError /
-  trace-f92a1e065fe35759b261601244cca7d4`)
+  `31069924517` (`FAILED_SYNTHETIC_FIXTURE_PRECONDITION_ROOT_PROVEN`, exact
+  diagnostic SHA `008e6ed`; `P504_CREATE_DOMAIN_BUILD /
+  RequestValidationFailed / trace-79bcd3a2408c5f71bb8c0cad8bd9db21`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-06T03:47:13Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS_DIAGNOSTIC — LOCAL PASS; EXACT-SHA CI NEXT`)
+  (`IN_PROGRESS_REPAIR_VALIDATION — LOCAL PASS; EXACT-SHA CI NEXT`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:

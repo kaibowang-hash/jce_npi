@@ -255,13 +255,19 @@ pending until that proof is produced in Codespaces.
   `P504_RUNTIME_CREATE / HttpStatusError /
   trace-f92a1e065fe35759b261601244cca7d4` boundary.
 - The user authorized one bounded create-stage diagnostic/repair sequence on
-  2026-08-06. The closed response-neutral diagnostic passed local EBOM
-  `62/62`, related regression `70/70` and complete Python `958/958`.
-  `NEXT_ACTION.md` requires its exact-SHA ordinary CI before the sole
-  diagnostic controlled Site; no diagnostic dispatch has yet been consumed.
+  2026-08-06. Diagnostic checkpoint `008e6ed` passed complete ordinary CI
+  `31069567886`; the sole diagnostic workflow `31069924517` returned only
+  `P504_CREATE_DOMAIN_BUILD / RequestValidationFailed /
+  trace-79bcd3a2408c5f71bb8c0cad8bd9db21`.
+- Cross-validation uniquely proves a synthetic fixture precondition root: its
+  policy namespace and EBOM key did not satisfy the frozen
+  `syntheticNamespace + "-"` relation. The bounded fixture-only repair shares
+  one `synthetic_ebom` namespace, preserves the domain rule and has closed
+  diagnostic activation. Complete EBOM tests pass `63/63`; full validation,
+  exact-SHA ordinary CI and the reserved final unchanged Gate remain.
 - P5-05 and Phase 6 remain inactive.
 - No active Hard Blocker or execution hold exists. P5-04 is
-  `IN_PROGRESS_DIAGNOSTIC`, never a Gate PASS. Production numbering,
+  `IN_PROGRESS_REPAIR_VALIDATION`, never a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

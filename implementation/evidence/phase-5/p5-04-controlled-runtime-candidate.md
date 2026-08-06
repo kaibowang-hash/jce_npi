@@ -435,3 +435,53 @@ transaction order, idempotency, audit, UI, localization or PASS rule changed.
 The diagnostic is `IN_PROGRESS_DIAGNOSTIC`, not a Gate PASS and not a product
 repair round. Complete exact-SHA ordinary CI is mandatory before the single
 diagnostic dispatch.
+
+## Create-stage diagnostic result and synthetic fixture repair
+
+Diagnostic checkpoint `008e6ed2c55d08dd53639942fb2392649d3af6c9`
+passed complete exact-SHA ordinary CI `31069567886`:
+
+- repository job `92514453771` passed complete `verify.sh`, E2E, current-tree
+  Gitleaks and complete branch history;
+- visual job `92514453836` passed the unchanged fixed-Linux matrix; and
+- controlled job `92514454247` remained correctly skipped.
+
+The sole diagnostic controlled workflow `31069924517` retained that exact
+SHA. Controlled job `92515528171` passed exact Bench tools, fixed disposable
+Site, App installation, two migrations, unchanged P5-01/02/03 runtime,
+policy publication, empty workspace, guest/unrelated authorization and
+cleanup, then emitted only:
+
+`P504_CREATE_DOMAIN_BUILD / RequestValidationFailed /
+trace-79bcd3a2408c5f71bb8c0cad8bd9db21`
+
+The diagnostic dispatch allowance is therefore consumed `1/1`. Companion
+repository job `92515528138` and visual job `92515528202` passed; the workflow
+conclusion remains failure because the controlled diagnostic intentionally
+failed closed.
+
+Direct cross-validation proves one synthetic verifier/fixture precondition
+root before any transaction or product persistence:
+
+1. the accepted P5-04 domain policy uses namespace `synthetic_ebom`;
+2. `validate_revision_against_policy()` requires the EBOM key to begin with
+   the exact published `syntheticNamespace + "-"`;
+3. the controlled fixture instead published `synthetic_runtime`; and
+4. its create payload independently used `synthetic_ebom_...`, which does not
+   satisfy either the policy value or the required delimiter.
+
+The bounded repair defines one `SYNTHETIC_NAMESPACE = "synthetic_ebom"`, uses
+it for both the published synthetic policy and the visibly synthetic
+`synthetic_ebom-...` key, and adds a cross-fixture invariant test. It does not
+change the domain rule, Requirement, public API, permission, DocType, Schema,
+ownership, transaction, idempotency, audit or PASS criterion. Diagnostic
+header activation is removed from `run_fresh()` before the reserved final
+unchanged Gate; the dormant closed capability remains tested and
+response-neutral.
+
+Focused verifier/domain/API/repository tests pass `43/43`; complete P5-04
+EBOM tests pass `63/63`; complete tracked Python passes `959/959`.
+Compilation, V1.2 reconciliation, 282-row trace uniqueness, YAML parse,
+prohibited-pattern and `git diff --check` pass. Exact-SHA ordinary CI and the
+single reserved final unchanged controlled Gate remain required. P5-04 is
+`IN_PROGRESS_REPAIR_VALIDATION`; P5-05 and Phase 6 remain inactive.

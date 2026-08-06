@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P5-04 CREATE STAGE`
+`IN_PROGRESS_REPAIR_VALIDATION — P5-04 SYNTHETIC FIXTURE NAMESPACE`
 
-Recovery time: `2026-08-06T03:47:13Z`
+Recovery time: `2026-08-06T04:02:59Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`2b6004750f73504705a18a8592fab843246abbd2`
+`008e6ed2c55d08dd53639942fb2392649d3af6c9`
 
 ## Authority
 
@@ -33,28 +33,38 @@ transaction order, idempotency, audit or PASS criteria.
 
 ## Current evidence
 
-- Previous final controlled workflow `31020886002` returned only
-  `P504_RUNTIME_CREATE / HttpStatusError /
-  trace-f92a1e065fe35759b261601244cca7d4` after every predecessor and policy
-  boundary passed.
-- The closed create ladder is implemented locally. It writes only the first
-  allowlisted substage, validated exception type and exact trace ID through
-  the safe logger; responses and transactions are unchanged.
-- Complete P5-04 EBOM tests pass `62/62`.
-- Related Document diagnostic/runtime regression passes `70/70`.
-- Complete tracked Python passes `958/958`; compilation and
-  `git diff --check` pass.
-- The diagnostic dispatch allowance remains unused (`0/1`).
+- Diagnostic checkpoint `008e6ed` passed complete exact-SHA ordinary CI
+  `31069567886`: repository, complete E2E, both secret lanes and fixed-Linux
+  visual passed; the controlled job remained correctly skipped.
+- The sole diagnostic workflow `31069924517` retained exact SHA `008e6ed`.
+  The controlled job passed pinned Bench, disposable Site, migrations,
+  unchanged P5-01/02/03 runtime, policy publication, authorization probes and
+  cleanup, then emitted only `P504_CREATE_DOMAIN_BUILD /
+  RequestValidationFailed / trace-79bcd3a2408c5f71bb8c0cad8bd9db21`.
+- Domain, policy fixture and create-payload cross-validation uniquely proves
+  one synthetic fixture precondition defect: the fixture policy used
+  `synthetic_runtime`, its EBOM key used the unrelated `synthetic_ebom_`
+  prefix, while the frozen domain requires `syntheticNamespace + "-"` and
+  the accepted P5-04 policy namespace is `synthetic_ebom`.
+- The bounded repair defines that namespace once, uses it in the policy and
+  key, preserves the domain rule and closes diagnostic activation before the
+  reserved final Gate. Focused and complete EBOM tests pass `43/43` and
+  `63/63` respectively.
+- Complete tracked Python passes `959/959`; compilation, V1.2 reconciliation,
+  trace uniqueness, YAML parse, prohibited-pattern and `git diff --check`
+  pass.
+- The diagnostic dispatch allowance is consumed (`1/1`); the reserved final
+  unchanged controlled Gate remains unused.
 
 ## First unfinished action
 
-Commit and push only the diagnostic/code/test/controller/evidence files, then
-require complete ordinary CI on the exact SHA. The controlled P5 Site job must
-remain skipped in ordinary CI. If ordinary CI passes, execute the single
-diagnostic controlled-Site workflow and classify only its safe
-`code / exceptionType / traceId` tuple.
+Commit and push only the two-file synthetic fixture repair plus synchronized
+controller/evidence files. Require complete ordinary CI on that exact SHA;
+only after it passes, execute the single reserved final unchanged controlled
+Gate with diagnostic activation closed.
 
-P5-04 remains `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
+P5-04 remains `IN_PROGRESS_REPAIR_VALIDATION`. P5-05 and Phase 6 remain
+inactive until the final Gate and Level 2 evidence pass.
 
 ## Frozen non-scope
 

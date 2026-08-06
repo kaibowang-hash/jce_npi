@@ -58,7 +58,16 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(module.FIXTURE_RUN_ID, FIXTURE_RUN_ID)
         self.assertRegex(module.POLICY_ID, r"^[a-f0-9-]{36}$")
         self.assertEqual(module.POLICY_VERSION_KEY, f"{module.POLICY_ID}:1")
-        self.assertTrue(module.ENGINEERING_BOM_KEY.startswith("synthetic_ebom_"))
+        self.assertEqual(module.SYNTHETIC_NAMESPACE, "synthetic_ebom")
+        self.assertTrue(
+            module.ENGINEERING_BOM_KEY.startswith(
+                f"{module.SYNTHETIC_NAMESPACE}-"
+            )
+        )
+        self.assertIn(
+            '"synthetic_namespace": SYNTHETIC_NAMESPACE',
+            self.source,
+        )
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertTrue(module.UNRELATED_USER.endswith("@example.invalid"))
         self.assertNotEqual(module.ACTOR_USER, module.UNRELATED_USER)
@@ -516,6 +525,13 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
                 "X-NPI-Diagnostic-Scope",
             },
         )
+
+    def test_final_gate_create_diagnostic_activation_is_closed(self) -> None:
+        run_fresh_source = self.source.split("def run_fresh(", 1)[1].split(
+            "\ndef ", 1
+        )[0]
+        self.assertNotIn("diagnostic=True", run_fresh_source)
+        self.assertNotIn("create_diagnostic=True", run_fresh_source)
 
     def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
         module = self.module

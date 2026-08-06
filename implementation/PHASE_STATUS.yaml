@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T03:47:13Z'
+updated_at: '2026-08-06T04:02:59Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P5-04
-current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: CREATE_STAGE_DIAGNOSTIC_LOCAL_PASS
-current_task_next_stage: CREATE_STAGE_DIAGNOSTIC_CHECKPOINT_NORMAL_CI
+current_task_status: IN_PROGRESS_REPAIR_VALIDATION
+current_task_completed_stage: SYNTHETIC_FIXTURE_REPAIR_LOCAL_PASS
+current_task_next_stage: SYNTHETIC_FIXTURE_REPAIR_CHECKPOINT_NORMAL_CI
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-04
-resumed_product_task_status: IN_PROGRESS_CREATE_STAGE_DIAGNOSTIC
+resumed_product_task_status: IN_PROGRESS_CREATE_STAGE_FIXTURE_REPAIR
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_CREATE_STAGE_DIAGNOSTIC_PENDING
+  current_root: P5_04_SYNTHETIC_FIXTURE_NAMESPACE_KEY_MISMATCH
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -166,7 +166,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: IN_PROGRESS_DIAGNOSTIC
+  status: IN_PROGRESS_REPAIR_VALIDATION
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -268,15 +268,33 @@ p5_04:
   policy_publish_repair_predecessor_document_outcome: PASS
   policy_publish_repair_policy_fixture_outcome: PASS
   create_stage_diagnostic_dispatches_authorized: 1
-  create_stage_diagnostic_dispatches_used: 0
+  create_stage_diagnostic_dispatches_used: 1
   create_stage_product_repairs_authorized_if_proven: 1
   create_stage_product_repairs_used: 0
   create_stage_final_unchanged_gate_reserved: true
   create_stage_diagnostic_local_ebom_tests: 62_PASS
   create_stage_diagnostic_local_regression_tests: 70_PASS
   create_stage_diagnostic_local_complete_python: 958_PASS
-  completed_stage: CREATE_STAGE_DIAGNOSTIC_LOCAL_PASS
-  next_stage: CREATE_STAGE_DIAGNOSTIC_CHECKPOINT_NORMAL_CI
+  create_stage_diagnostic_checkpoint: 008e6ed2c55d08dd53639942fb2392649d3af6c9
+  create_stage_diagnostic_normal_ci: 31069567886
+  create_stage_diagnostic_normal_ci_outcome: PASS
+  create_stage_diagnostic_dispatch: 31069924517
+  create_stage_diagnostic_dispatch_head: 008e6ed2c55d08dd53639942fb2392649d3af6c9
+  create_stage_diagnostic_controlled_job: 92515528171
+  create_stage_diagnostic_repository_job: 92515528138
+  create_stage_diagnostic_visual_job: 92515528202
+  create_stage_diagnostic_companion_outcome: PASS
+  create_stage_diagnostic_code: P504_CREATE_DOMAIN_BUILD
+  create_stage_diagnostic_exception_type: RequestValidationFailed
+  create_stage_diagnostic_trace_id: trace-79bcd3a2408c5f71bb8c0cad8bd9db21
+  create_stage_diagnostic_root: SYNTHETIC_POLICY_NAMESPACE_AND_EBOM_KEY_PREFIX_DRIFT
+  create_stage_diagnostic_root_classification: VERIFIER_FIXTURE_PRECONDITION
+  create_stage_repair_local_ebom_tests: 63_PASS
+  create_stage_repair_local_complete_python: 959_PASS
+  create_stage_repair_local_reconciliation_trace_diff: PASS
+  create_stage_repair_diagnostic_activation: CLOSED
+  completed_stage: SYNTHETIC_FIXTURE_REPAIR_LOCAL_PASS
+  next_stage: SYNTHETIC_FIXTURE_REPAIR_CHECKPOINT_NORMAL_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY
