@@ -850,3 +850,23 @@ must preserve that boundary.
   responses and transaction behavior are unchanged. Affected/full ordinary CI
   and at most one diagnostic Site precede any product repair. There is no
   authorization blocker.
+
+## P5-05 receipt-seal root proven; repair in progress — 2026-08-06T15:20:00Z
+
+- Diagnostic checkpoint `abbfade` passed exact-SHA ordinary CI `31113883296`,
+  including repository verification, complete E2E, both secret lanes and the
+  unchanged `65/65` visual matrix.
+- The sole diagnostic Site `31114594791` progressed through all predecessor
+  checks and every create write through response construction, then emitted
+  only `P505_CREATE_RECEIPT_SEAL / PermissionError /
+  trace-2c7c41e0a54e53efb306c9117e6e280f`.
+- The same request had already inserted the receipt under an actor with the
+  exact metadata-granted create/write role. On first seal the previous receipt
+  is unsealed, so the remaining denial is the controller's raw immutable
+  comparison. Frappe reloads the persisted `created_at` as Datetime while the
+  inserted document retains database text, causing unequal Python
+  representations for the same UTC instant.
+- The bounded repair normalizes only that comparison through the existing UTC
+  validator and closes diagnostic activation. No product contract, permission
+  or persistence shape changes. `NO_ACTIVE_HARD_BLOCKER`; affected/full
+  ordinary CI and one final unchanged controlled Gate remain.

@@ -143,6 +143,27 @@ class Phase5PublishRequestRepositoryTest(unittest.TestCase):
         )[0]
         self.assertNotIn('"payload_hash": self.payload_hash', parent_filter)
 
+    def test_receipt_seal_compares_frappe_datetime_by_utc_value(self) -> None:
+        controller = (
+            ROOT
+            / "apps/npi_integration/npi_integration/npi_integration/doctype/"
+            "npi_ebom_publish_command_idempotency/"
+            "npi_ebom_publish_command_idempotency.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'created_at = utc_datetime_text(self.created_at, _("Created At"))',
+            controller,
+        )
+        self.assertIn(
+            'before_created_at = utc_datetime_text(\n'
+            '                before.created_at, _("Created At")\n'
+            "            )",
+            controller,
+        )
+        immutable = controller.split("immutable = (", 1)[1].split(")\n", 1)[0]
+        self.assertNotIn('"created_at"', immutable)
+        self.assertIn("before_created_at != created_at", controller)
+
 
 if __name__ == "__main__":
     unittest.main()

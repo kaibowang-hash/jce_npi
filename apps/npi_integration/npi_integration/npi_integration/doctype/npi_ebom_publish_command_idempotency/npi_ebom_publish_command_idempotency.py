@@ -61,7 +61,7 @@ class NPIEBOMPublishCommandIdempotency(Document):
         self.payload_hash = lowercase_sha256(
             self.payload_hash, _("Publish Request Payload Hash")
         )
-        utc_datetime_text(self.created_at, _("Created At"))
+        created_at = utc_datetime_text(self.created_at, _("Created At"))
         utc_datetime_text(self.updated_at, _("Updated At"))
         before = self.get_doc_before_save()
         if before is not None:
@@ -74,9 +74,17 @@ class NPIEBOMPublishCommandIdempotency(Document):
                 "operation",
                 "idempotency_key_hash",
                 "payload_hash",
-                "created_at",
             )
-            if any(getattr(before, name) != getattr(self, name) for name in immutable):
+            before_created_at = utc_datetime_text(
+                before.created_at, _("Created At")
+            )
+            if (
+                any(
+                    getattr(before, name) != getattr(self, name)
+                    for name in immutable
+                )
+                or before_created_at != created_at
+            ):
                 frappe.throw(
                     _("The publish command receipt identity cannot be changed."),
                     frappe.PermissionError,

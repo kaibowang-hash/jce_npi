@@ -255,3 +255,36 @@ the request trace. Requirement, API response contract, permission, Schema,
 ownership, transaction, idempotency, audit and PASS criteria are unchanged.
 Affected/full ordinary CI must pass before at most one diagnostic Site; no
 product repair is selected.
+
+## Create diagnostic proof and unique receipt-seal repair
+
+Create diagnostic checkpoint `abbfade` passed complete exact-SHA ordinary CI
+`31113883296`: repository job `92658369228` passed `verify.sh`, complete
+non-visual E2E, current-tree and complete-history secret scans; visual job
+`92658369260` passed the unchanged `65/65` matrix; the controlled job correctly
+skipped.
+
+The sole diagnostic workflow `31114594791` retained exact SHA `abbfade`. Its
+fixed Bench/Site, migrations, policy fixture and every create substage through
+receipt insertion, request/mapping/node/result insertion, audit append and
+response construction passed. The server emitted only
+`P505_CREATE_RECEIPT_SEAL / PermissionError /
+trace-2c7c41e0a54e53efb306c9117e6e280f`.
+
+The synthetic internal actor retained the required `NPI API User` role, and
+the receipt insert had already passed under the same request and write scope.
+The receipt metadata explicitly grants that role both create and write, so the
+observed seal-only `PermissionError` is not a missing role or a reason to widen
+permissions. On the first seal, the persisted `sealed` value is still `0`,
+leaving the controller's raw immutable-identity comparison as the only active
+permission denial. Its sole Frappe representation-sensitive identity field is
+`created_at`: the inserted document retains database text while
+`get_doc_before_save()` loads a Datetime value. Comparing those raw Python
+representations rejects an unchanged instant.
+
+The bounded repair compares both `created_at` values through the existing
+`utc_datetime_text()` normalization while preserving the original immutable
+field set and denial message. It also closes create diagnostic activation.
+There is no Requirement, API, role/permission, Schema, ownership,
+transaction, idempotency, audit or PASS-rule change. Affected and complete
+ordinary CI plus one final unchanged controlled Gate remain required.
