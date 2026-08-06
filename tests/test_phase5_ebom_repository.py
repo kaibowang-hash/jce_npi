@@ -54,6 +54,36 @@ class Phase5EngineeringBomRepositoryTest(unittest.TestCase):
         )
         positions = [value.index(fragment) for fragment in order]
         self.assertEqual(positions, sorted(positions))
+        diagnostic_codes = (
+            "P504_CREATE_PROJECT_LOCK",
+            "P504_CREATE_POLICY_LOAD",
+            "P504_CREATE_POLICY_AUTHORITY",
+            "P504_CREATE_PAYLOAD_HASH",
+            "P504_CREATE_IDEMPOTENCY_REPLAY",
+            "P504_CREATE_PROJECT_MUTABILITY",
+            "P504_CREATE_DOMAIN_BUILD",
+            "P504_CREATE_TRANSACTION_SCOPE",
+            "P504_CREATE_RECEIPT_INSERT",
+            "P504_CREATE_ROOT_INSERT",
+            "P504_CREATE_ROOT_PROJECTION_SAVE",
+            "P504_CREATE_AUDIT_APPEND",
+            "P504_CREATE_RESPONSE_BUILD",
+            "P504_CREATE_RECEIPT_SEAL",
+        )
+        for code in diagnostic_codes:
+            with self.subTest(code=code):
+                self.assertEqual(value.count(code), 1)
+
+    def test_revision_bundle_diagnostics_preserve_insert_order(self) -> None:
+        value = function("_insert_revision_bundle")
+        order = (
+            "P504_CREATE_REVISION_INSERT",
+            "P504_CREATE_LINE_INSERT",
+            "P504_CREATE_LIFECYCLE_INSERT",
+        )
+        positions = [value.index(code) for code in order]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(value.count(".insert()"), 3)
 
     def test_successor_binds_exact_root_and_predecessor_before_append(self) -> None:
         value = function("create_revision")

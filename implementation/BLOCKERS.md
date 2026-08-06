@@ -491,3 +491,22 @@ must preserve that boundary.
   verifier/fixture or product root, affected/ordinary CI and one final
   unchanged Gate. No Requirement, API, permission, Schema, ownership,
   transaction, idempotency, audit or PASS criterion may change.
+
+## P5-04 create-stage authority received; diagnostic in progress — 2026-08-06T03:47:13Z
+
+- The user explicitly requested repair and continuation of the existing
+  Goal/Autopilot after receiving the exact bounded authority text. The prior
+  execution-authority blocker is resolved.
+- The active scope permits one closed response-neutral create substage ladder,
+  affected/full ordinary CI, at most one diagnostic controlled Site, one
+  uniquely proved in-scope verifier/fixture or product repair, affected/full
+  ordinary CI and one final unchanged Gate.
+- The diagnostic records only one allowlisted stage code, validated exception
+  type and exact trace ID in the existing safe local log. It changes no HTTP
+  response, transaction order, permission, Schema, ownership, idempotency,
+  audit or PASS criterion.
+- Local EBOM `62/62`, related Document regression `70/70`, complete Python
+  `958/958`, compilation and `git diff --check` pass.
+- There is no active Hard Blocker. P5-04 is `IN_PROGRESS_DIAGNOSTIC`; the sole
+  diagnostic Site remains unused until the exact diagnostic checkpoint passes
+  complete ordinary CI. P5-05 and Phase 6 remain inactive.

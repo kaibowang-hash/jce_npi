@@ -400,3 +400,38 @@ diagnostic, affected/full ordinary CI, at most one diagnostic controlled Site,
 repair of only one uniquely proven in-scope verifier/fixture or product root,
 and one final unchanged Gate. P5-04 remains `BLOCKED_EXTERNAL`; P5-05 and
 Phase 6 remain inactive.
+
+## Authorized create-stage diagnostic checkpoint
+
+Recorded: `2026-08-06T03:47:13Z`
+
+The user explicitly requested repair and continuation of the existing
+Goal/Autopilot after receiving the exact bounded create-stage authority text.
+The execution-authority blocker is closed. The active sequence retains at most
+one diagnostic controlled Site, one uniquely proved repair and one final
+unchanged Gate.
+
+The behavior-neutral diagnostic adds one closed header scope to only the first
+synthetic EBOM create command. Server instrumentation covers command context,
+input parsing, Project lock, exact policy load/authority, payload hash,
+idempotency replay, Project mutability, domain build, receipt/root/revision/
+line/lifecycle persistence, root projection, audit, response and receipt seal.
+Only the first failing allowlisted code, validated exception type and exact
+request trace are written through the existing safe logger. The response body,
+status, request contract and transaction remain unchanged; the verifier reads
+only an exact three-field JSON record beneath the fixed Bench path.
+
+Changed-files to affected-tests:
+
+| Boundary | Proof | Result |
+|---|---|---|
+| EBOM diagnostic/API/repository and controlled verifier | complete `test_phase5_ebom*.py` | `62/62 PASS` |
+| shared Document diagnostic/runtime non-regression | Document API, baseline repository and runtime verifier | `70/70 PASS` |
+| complete tracked Python | `python3 -m unittest discover -s tests` | `958/958 PASS` |
+| syntax and whitespace | `compileall`; `git diff --check` | `PASS` |
+
+No Requirement, public API, permission, DocType, Schema, ownership, policy,
+transaction order, idempotency, audit, UI, localization or PASS rule changed.
+The diagnostic is `IN_PROGRESS_DIAGNOSTIC`, not a Gate PASS and not a product
+repair round. Complete exact-SHA ordinary CI is mandatory before the single
+diagnostic dispatch.

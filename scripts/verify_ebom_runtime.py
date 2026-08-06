@@ -9,7 +9,7 @@ import sys
 import urllib.request
 from pathlib import Path
 from typing import Any, Callable
-from uuid import NAMESPACE_URL, UUID, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 import verify_document_runtime as document_runtime
 from verify_frappe_runtime import (
@@ -102,6 +102,33 @@ _POLICY_FIXTURE_SUBSTAGES = frozenset(
         "P504_RUNTIME_POLICY_PERSISTENCE_FIXTURE",
     }
 )
+_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P504_CREATE_COMMAND_CONTEXT",
+        "P504_CREATE_INPUT_PARSE",
+        "P504_CREATE_PROJECT_LOCK",
+        "P504_CREATE_POLICY_LOAD",
+        "P504_CREATE_POLICY_AUTHORITY",
+        "P504_CREATE_PAYLOAD_HASH",
+        "P504_CREATE_IDEMPOTENCY_REPLAY",
+        "P504_CREATE_PROJECT_MUTABILITY",
+        "P504_CREATE_DOMAIN_BUILD",
+        "P504_CREATE_TRANSACTION_SCOPE",
+        "P504_CREATE_RECEIPT_INSERT",
+        "P504_CREATE_ROOT_INSERT",
+        "P504_CREATE_REVISION_INSERT",
+        "P504_CREATE_LINE_INSERT",
+        "P504_CREATE_LIFECYCLE_INSERT",
+        "P504_CREATE_ROOT_PROJECTION_SAVE",
+        "P504_CREATE_AUDIT_APPEND",
+        "P504_CREATE_RESPONSE_BUILD",
+        "P504_CREATE_RECEIPT_SEAL",
+        "P504_CREATE_API_RESPONSE",
+    }
+)
+_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_CREATE_DIAGNOSTIC_SCOPE = "p504-ebom-create-v1"
+_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _RUNTIME_STAGE_CODES = frozenset(
     {
         "P504_RUNTIME_EMPTY_WORKSPACE",
@@ -111,6 +138,7 @@ _RUNTIME_STAGE_CODES = frozenset(
         "P504_RUNTIME_GUEST_AUTHORIZATION",
         "P504_RUNTIME_UNRELATED_AUTHORIZATION",
         "P504_RUNTIME_CREATE",
+        *_CREATE_SERVER_DIAGNOSTIC_CODES,
         "P504_RUNTIME_CREATE_REPLAY",
         "P504_RUNTIME_IDEMPOTENCY_CONFLICT",
         "P504_RUNTIME_INVALID_REVISION_ROLLBACK",
@@ -218,17 +246,117 @@ def ebom_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    create_diagnostic: bool = False,
 ) -> HttpResult:
-    return document_runtime.npi_request(
+    headers = (
+        document_runtime.command_headers(csrf_token, idempotency_key)
+        if idempotency_key is not None
+        else document_runtime.query_headers(
+            f"p504-{query_key}-{uuid4().hex}"
+        )
+    )
+    if create_diagnostic:
+        require(
+            method == "POST" and idempotency_key is not None,
+            "The EBOM create diagnostic requires one command request",
+        )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
+    result = document_runtime.request(
         opener,
         base_url,
         path,
         method=method,
         payload=payload,
-        csrf_token=csrf_token,
-        idempotency_key=idempotency_key,
-        query_key=f"p504-{query_key}",
+        request_headers=headers,
     )
+    require(
+        result.headers.get("X-Request-ID") == headers["X-Request-ID"],
+        f"NPI request identity was not echoed for {path}",
+    )
+    require(
+        result.headers.get("Cache-Control") == "private, no-store",
+        f"NPI cache control drifted for {path}",
+    )
+    return HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=headers["X-Trace-ID"],
+    )
+
+
+def _sanitized_create_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    """Read only an allowlisted P5-04 create record for this exact trace."""
+
+    if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    candidates = (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                continue
+            with resolved.open("rb") as log_file:
+                log_file.seek(0, os.SEEK_END)
+                size = log_file.tell()
+                log_file.seek(max(0, size - _DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_DIAGNOSTIC_LOG_TAIL_LIMIT)
+        except (OSError, RuntimeError):
+            continue
+        for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
+            if trace_id not in line:
+                continue
+            for start, character in enumerate(line):
+                if character != "{":
+                    continue
+                try:
+                    record, _end = decoder.raw_decode(line[start:])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(record, dict) or set(record) != {
+                    "code",
+                    "exceptionType",
+                    "traceId",
+                }:
+                    continue
+                code = record.get("code")
+                exception_type = record.get("exceptionType")
+                if (
+                    record.get("traceId") == trace_id
+                    and isinstance(code, str)
+                    and code in _CREATE_SERVER_DIAGNOSTIC_CODES
+                    and isinstance(exception_type, str)
+                    and _TYPE_PATTERN.fullmatch(exception_type) is not None
+                ):
+                    return exception_type, code, trace_id
+    return None
+
+
+def require_create_status(result: HttpResult) -> None:
+    if result.status == 201:
+        return
+    diagnostic = _sanitized_create_server_diagnostic(result.trace_id)
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+        raise RuntimeStageFailure(
+            code,
+            trace_id,
+            exception_type=exception_type,
+        )
+    require_stage_status(result, {201}, "P504_RUNTIME_CREATE")
 
 
 def initial_lines() -> list[dict[str, object]]:
@@ -366,6 +494,8 @@ def command(
     payload: dict[str, object],
     key: str,
     code: str,
+    *,
+    diagnostic: bool = False,
 ) -> HttpResult:
     result = ebom_request(
         actor,
@@ -375,8 +505,12 @@ def command(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
+        create_diagnostic=diagnostic,
     )
-    require_stage_status(result, {201}, code)
+    if diagnostic:
+        require_create_status(result)
+    else:
+        require_stage_status(result, {201}, code)
     return result
 
 
@@ -471,6 +605,7 @@ def run_fresh(
             create_payload(policy_hash),
             CREATE_KEY,
             "P504_RUNTIME_CREATE",
+            diagnostic=True,
         )
         assert_replayed(created, "false")
         ebom, revision_one = exact_revision(created)

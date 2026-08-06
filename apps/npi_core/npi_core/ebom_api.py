@@ -15,6 +15,10 @@ from npi_core.ebom.domain import (
     EngineeringBomReviewDecision,
     EngineeringBomUnavailable,
 )
+from npi_core.ebom.diagnostics import (
+    ebom_create_server_diagnostics,
+    ebom_create_server_step,
+)
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
 from npi_core.foundation.tracing import current_trace_id
@@ -163,24 +167,54 @@ def create_ebom(
     headers = _command_headers()
 
     def handle() -> dict[str, Any]:
-        request_id, key_hash, repository, project_id, _ebom_id = _command_context(
-            _CREATE_FIELDS,
-            _CREATE_REQUIRED,
-            request_fields,
-        )
-        outcome = repository.create_ebom(
-            project_id,
-            idempotency_key_hash=key_hash,
-            policy_global_id=_uuid(policyGlobalId, "policyGlobalId"),
-            policy_version=_positive(policyVersion, "policyVersion"),
-            policy_snapshot_hash=_hash(policySnapshotHash, "policySnapshotHash"),
-            engineering_bom_key=_text(engineeringBomKey, "engineeringBomKey", 64),
-            title=_text(title, "title", 140),
-            reason=_text(reason, "reason", 280),
-            effectivity_note=_optional_text(effectivityNote, "effectivityNote", 280),
-            lines=_lines(lines),
-        )
-        return _command_response(outcome, request_id=request_id, headers=headers)
+        with ebom_create_server_diagnostics(current_trace_id.get()):
+            with ebom_create_server_step("P504_CREATE_COMMAND_CONTEXT"):
+                request_id, key_hash, repository, project_id, _ebom_id = (
+                    _command_context(
+                        _CREATE_FIELDS,
+                        _CREATE_REQUIRED,
+                        request_fields,
+                    )
+                )
+            with ebom_create_server_step("P504_CREATE_INPUT_PARSE"):
+                values = {
+                    "policy_global_id": _uuid(
+                        policyGlobalId,
+                        "policyGlobalId",
+                    ),
+                    "policy_version": _positive(
+                        policyVersion,
+                        "policyVersion",
+                    ),
+                    "policy_snapshot_hash": _hash(
+                        policySnapshotHash,
+                        "policySnapshotHash",
+                    ),
+                    "engineering_bom_key": _text(
+                        engineeringBomKey,
+                        "engineeringBomKey",
+                        64,
+                    ),
+                    "title": _text(title, "title", 140),
+                    "reason": _text(reason, "reason", 280),
+                    "effectivity_note": _optional_text(
+                        effectivityNote,
+                        "effectivityNote",
+                        280,
+                    ),
+                    "lines": _lines(lines),
+                }
+            with ebom_create_server_step("P504_CREATE_API_RESPONSE"):
+                outcome = repository.create_ebom(
+                    project_id,
+                    idempotency_key_hash=key_hash,
+                    **values,
+                )
+                return _command_response(
+                    outcome,
+                    request_id=request_id,
+                    headers=headers,
+                )
 
     return frappe_domain_call(
         handle,

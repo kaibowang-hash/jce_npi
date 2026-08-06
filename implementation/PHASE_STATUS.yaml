@@ -1,23 +1,23 @@
 version: '1.2'
-overall_status: BLOCKED_EXTERNAL
+overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-05T15:39:03Z'
+updated_at: '2026-08-06T03:47:13Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR_AUTHORITY
+execution_hold: NONE
 current_task: P5-04
-current_task_status: BLOCKED_EXTERNAL
-current_task_completed_stage: POLICY_PUBLISH_REPAIR_ADVANCED_GATE_TO_CREATE
-current_task_next_stage: USER_AUTHORIZATION_P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR
-current_task_next_stage_status: BLOCKED_EXTERNAL
+current_task_status: IN_PROGRESS_DIAGNOSTIC
+current_task_completed_stage: CREATE_STAGE_DIAGNOSTIC_LOCAL_PASS
+current_task_next_stage: CREATE_STAGE_DIAGNOSTIC_CHECKPOINT_NORMAL_CI
+current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-04
-resumed_product_task_status: BLOCKED_EXTERNAL_CREATE_STAGE_AUTHORITY
+resumed_product_task_status: IN_PROGRESS_CREATE_STAGE_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_CREATE_STAGE_NOT_UNIQUELY_PROVEN
+  current_root: P5_04_CREATE_STAGE_DIAGNOSTIC_PENDING
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -57,6 +57,17 @@ repair_accounting:
     final_unchanged_controlled_gate: 31020886002
     outcome: ADVANCED_TO_P504_RUNTIME_CREATE
     changes_global_five_round_rule: false
+  p5_04_create_stage_authority:
+    authority: USER_AUTHORIZED_2026_08_06
+    scope: P5_04_CREATE_STAGE_CLOSED_RESPONSE_NEUTRAL_DIAGNOSTIC_AND_ONE_PROVEN_REPAIR
+    status: DIAGNOSTIC_IMPLEMENTED_LOCAL_PASS_PRE_CI
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    product_or_fixture_repairs_authorized_if_uniquely_proven: 1
+    product_or_fixture_repairs_used: 0
+    final_unchanged_gate_reserved: true
+    changes_global_five_round_rule: false
+    behavior_neutral_diagnostics_consume_product_root_round: false
 p5_01:
   status: PASS_LEVEL_2
   product_checkpoint: 5a9cd3d85885895819a730dd0da4e7abe86c2646
@@ -155,7 +166,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: BLOCKED_EXTERNAL
+  status: IN_PROGRESS_DIAGNOSTIC
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -256,10 +267,16 @@ p5_04:
   policy_publish_repair_controlled_trace_id: trace-f92a1e065fe35759b261601244cca7d4
   policy_publish_repair_predecessor_document_outcome: PASS
   policy_publish_repair_policy_fixture_outcome: PASS
-  create_stage_diagnostic_dispatches_authorized: 0
-  create_stage_product_repairs_authorized_if_proven: 0
-  completed_stage: POLICY_PUBLISH_REPAIR_ADVANCED_GATE_TO_CREATE
-  next_stage: USER_AUTHORIZATION_P5_04_CREATE_STAGE_DIAGNOSTIC_REPAIR
+  create_stage_diagnostic_dispatches_authorized: 1
+  create_stage_diagnostic_dispatches_used: 0
+  create_stage_product_repairs_authorized_if_proven: 1
+  create_stage_product_repairs_used: 0
+  create_stage_final_unchanged_gate_reserved: true
+  create_stage_diagnostic_local_ebom_tests: 62_PASS
+  create_stage_diagnostic_local_regression_tests: 70_PASS
+  create_stage_diagnostic_local_complete_python: 958_PASS
+  completed_stage: CREATE_STAGE_DIAGNOSTIC_LOCAL_PASS
+  next_stage: CREATE_STAGE_DIAGNOSTIC_CHECKPOINT_NORMAL_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-05T15:39:03Z`
+Updated: `2026-08-06T03:47:13Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
-- Codex Goal ID: `019fb25f-41fb-7901-9773-c24ebe7e6e34`
-- Mode: `BLOCKED_EXTERNAL — P5-04 CREATE-STAGE DIAGNOSTIC/REPAIR AUTHORITY`
+- Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 CREATE STAGE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -24,7 +24,7 @@ Updated: `2026-08-05T15:39:03Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`BLOCKED_EXTERNAL — CREATE-STAGE AUTHORITY REQUIRED`)
+  (`IN_PROGRESS_DIAGNOSTIC — LOCAL PASS; EXACT-SHA CI NEXT`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:

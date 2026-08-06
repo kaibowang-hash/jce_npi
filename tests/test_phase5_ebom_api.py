@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib
+import json
 import sys
 import types
 import unittest
@@ -51,6 +52,7 @@ class MockRepository:
         self.scope = True
         self.replayed = False
         self.unavailable = False
+        self.error: Exception | None = None
 
     def authorize_scope(self, *args: object, **kwargs: Any) -> bool:
         self.calls.append(("authorize", args, kwargs))
@@ -85,6 +87,8 @@ class MockRepository:
         return None if self.unavailable else copy.deepcopy(self.owner.response)
 
     def _command(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
+        if self.error is not None:
+            raise self.error
         response = self._query(name, args, kwargs)
         return None if response is None else types.SimpleNamespace(
             response=response,
@@ -98,6 +102,7 @@ class Phase5EngineeringBomApiTest(unittest.TestCase):
         "frappe.sessions",
         "npi_core.api",
         "npi_core.request_security",
+        "npi_core.ebom.diagnostics",
         "npi_core.ebom_api",
         "npi_core.bff",
     )
@@ -150,7 +155,10 @@ class Phase5EngineeringBomApiTest(unittest.TestCase):
         self.frappe.get_roles = lambda user: self.roles.get(user, [])
         self.frappe.db = StubDatabase(self.user_types)
         self.frappe.log_error = lambda **_values: None
-        self.frappe.logger = lambda _name: types.SimpleNamespace(error=lambda *_args, **_kwargs: None)
+        self.safe_logs: list[str] = []
+        self.frappe.logger = lambda _name: types.SimpleNamespace(
+            error=lambda message, *_args, **_kwargs: self.safe_logs.append(message)
+        )
 
         def whitelist(*, methods: list[str], allow_guest: bool = False):
             def decorate(function):
@@ -278,6 +286,60 @@ class Phase5EngineeringBomApiTest(unittest.TestCase):
         self.frappe.session.user = "viewer@example.invalid"
         result = self.call(self.api.create_ebom, self.create_payload())
         self.assertEqual(result["code"], "PERMISSION_DENIED")
+
+    def test_create_diagnostic_is_header_gated_response_neutral_and_sanitized(
+        self,
+    ) -> None:
+        diagnostics = importlib.import_module("npi_core.ebom.diagnostics")
+        trace_id = "trace-" + ("d" * 32)
+        self.repository.error = ValueError("sensitive database /tmp/private")
+
+        result_without_header = self.call(
+            self.api.create_ebom,
+            self.create_payload(),
+        )
+        self.assertEqual(result_without_header["code"], "INTERNAL_SERVER_ERROR")
+        self.assertFalse(
+            any("P504_CREATE" in message for message in self.safe_logs)
+        )
+        self.safe_logs.clear()
+
+        self.headers[diagnostics.EBOM_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.EBOM_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        self.headers["X-Trace-ID"] = trace_id
+
+        result = self.call(self.api.create_ebom, self.create_payload())
+
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        serialized = json.dumps(result, sort_keys=True)
+        self.assertNotIn("P504_CREATE", serialized)
+        self.assertNotIn("sensitive", serialized)
+        self.assertNotIn("/tmp", serialized)
+        records = []
+        for message in self.safe_logs:
+            try:
+                record = json.loads(message)
+            except (TypeError, ValueError):
+                continue
+            if record.get("code") == "P504_CREATE_API_RESPONSE":
+                records.append(record)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P504_CREATE_API_RESPONSE",
+                    "exceptionType": "ValueError",
+                    "traceId": trace_id,
+                }
+            ],
+        )
+        self.assertFalse(
+            hasattr(
+                self.frappe.flags,
+                "npi_p504_ebom_create_diagnostic",
+            )
+        )
 
     def test_review_and_release_are_exact_and_separately_confirmed(self) -> None:
         review = self.transition_payload()

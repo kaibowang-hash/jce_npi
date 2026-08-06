@@ -1,85 +1,67 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-04 CREATE-STAGE DIAGNOSTIC/REPAIR AUTHORITY`
+`IN_PROGRESS_DIAGNOSTIC — P5-04 CREATE STAGE`
 
-Recovery time: `2026-08-05T15:39:03Z`
+Recovery time: `2026-08-06T03:47:13Z`
 
-Required development branch:
+Required branch:
 `codex/npi-v1.2-implementation`
 
-Authorized repair checkpoint:
-`d21d21ad52efa2a88bc459adc43f97f265715071`
+Recovery checkpoint:
+`2b6004750f73504705a18a8592fab843246abbd2`
 
-Complete ordinary CI:
-[`31020190868`](https://github.com/kaibowang-hash/jce_npi/actions/runs/31020190868)
-(`PASS`, repository/E2E/Gitleaks/history and fixed-Linux visual)
+## Authority
 
-Final unchanged controlled-Site workflow:
-[`31020886002`](https://github.com/kaibowang-hash/jce_npi/actions/runs/31020886002)
-(`FAIL`, exact SHA `d21d21a`)
+The user authorized the previously requested bounded P5-04 create-stage
+diagnostic/repair sequence by asking to repair and continue the existing
+Goal/Autopilot.
 
-Safe result:
-`P504_RUNTIME_CREATE / HttpStatusError /
-trace-f92a1e065fe35759b261601244cca7d4`
+The sequence permits:
 
-## Controller state
+1. one closed response-neutral create diagnostic checkpoint;
+2. affected tests and complete exact-SHA ordinary CI;
+3. at most one diagnostic controlled Site;
+4. one repair only when an in-scope verifier/fixture or product root is
+   uniquely proven;
+5. affected tests, complete ordinary CI and one final unchanged controlled
+   Gate; and
+6. automatic continuation only after P5-04 Level 2 passes.
 
-- P5-00 through P5-03 remain sealed `PASS`; P5-04 is the only active task.
-- The policy-publication blocker is resolved. Repair `d21d21a` passed local
-  EBOM `58/58`, complete Python `954/954` and ordinary CI `31020190868`.
-- The final Gate passed fixed Bench/Site, two migrations, unchanged
-  P5-01/02/03 runtime, EBOM policy publication, empty workspace,
-  guest/unrelated authorization, route recovery, visual and cleanup.
-- The Gate advanced to the first EBOM create command, then returned only the
-  safe aggregate result above. The former policy-publication code did not
-  recur, so the repair was effective.
-- `P504_RUNTIME_CREATE` is not a unique root. It spans exact policy load and
-  actor authority, idempotency, root/revision/line/lifecycle persistence,
-  projection save, audit, response construction and receipt sealing.
-- The prior bounded repair/final-Gate authority is exhausted. No further
-  diagnostic Site or product repair is currently authorized.
-- P5-04 cannot pass Level 2; P5-05 and Phase 6 remain inactive.
-- Trace remains 282 unique IDs:
-  `173 PACK_CANONICAL / 95 DOCX_RECONCILED / 14 ADDENDUM_DIRECT`.
+It may not change Requirements, public API, permissions, Schema, ownership,
+transaction order, idempotency, audit or PASS criteria.
 
-## Current task
+## Current evidence
 
-`P5-04 — EBOM revision and comparison`
+- Previous final controlled workflow `31020886002` returned only
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-f92a1e065fe35759b261601244cca7d4` after every predecessor and policy
+  boundary passed.
+- The closed create ladder is implemented locally. It writes only the first
+  allowlisted substage, validated exception type and exact trace ID through
+  the safe logger; responses and transactions are unchanged.
+- Complete P5-04 EBOM tests pass `62/62`.
+- Related Document diagnostic/runtime regression passes `70/70`.
+- Complete tracked Python passes `958/958`; compilation and
+  `git diff --check` pass.
+- The diagnostic dispatch allowance remains unused (`0/1`).
 
-Requirements:
+## First unfinished action
 
-- `FR-DS-011`
-- `FR-DS-012`
+Commit and push only the diagnostic/code/test/controller/evidence files, then
+require complete ordinary CI on the exact SHA. The controlled P5 Site job must
+remain skipped in ordinary CI. If ordinary CI passes, execute the single
+diagnostic controlled-Site workflow and classify only its safe
+`code / exceptionType / traceId` tuple.
 
-Approved boundary:
+P5-04 remains `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
 
-> Deliver NPI-owned EBOM working revisions with validated hierarchy,
-> quantities, alternates/effectivity fields, review/release state and
-> deterministic added/removed/quantity/substitution/attribute differences.
-> Do not create formal ERPNext Item/MBOM ownership or manufacturing routing.
+## Frozen non-scope
 
-## Single action required
-
-Explicitly authorize one bounded P5-04 create-stage diagnostic/repair
-sequence. It may add only closed response-neutral create substages, run
-affected and complete ordinary CI, execute at most one diagnostic controlled
-Site, repair only one uniquely proven in-scope verifier/fixture or product
-root, rerun affected/ordinary CI, and reserve one final unchanged controlled
-Gate. It may not change Requirements, public API, permissions, Schema,
-ownership, transaction order, idempotency, audit or PASS criteria.
-
-## Frozen invariants and non-scope
-
-- P5-01 exact Document/File revision, lock, authorization, audit and
-  idempotency truth remains unchanged.
-- P5-02 immutable release lifecycle, confirmation and private-file integrity
-  remains unchanged.
-- P5-03 immutable baseline, Gate attachment, dependency and successor impact
-  truth remains unchanged.
-- NPI One owns only EBOM working revisions. ERPNext retains formal Item,
-  MBOM, routing, stock UOM and execution ownership.
+- P5-01 through P5-03 remain sealed `PASS`.
+- NPI One owns only EBOM working revisions; ERPNext retains formal Item, MBOM,
+  routing, stock UOM and execution ownership.
 - No production ERPNext access, cross-database write, raw Desk product path,
   core patch, production policy default, TODO/stub or fake success is allowed.
-- Existing uncommitted workspace changes remain user-owned and must not be
-  staged with an Autopilot checkpoint.
+- Existing unrelated workspace changes remain user-owned and must not be
+  staged with the checkpoint.

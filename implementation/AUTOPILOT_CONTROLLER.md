@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-05T09:51:10Z`
+Updated: `2026-08-06T03:47:13Z`
 
 ## Authority and operating mode
 
@@ -248,16 +248,20 @@ pending until that proof is produced in Codespaces.
   `30990594281`, final unchanged controlled-Site workflow `30991177478` and
   its Level 2 Task Gate. Complete evidence:
   `implementation/evidence/phase-5/p5-03-validation.md`.
-- The pushed P5-03 evidence/controller checkpoint `5676f79` and P5-04 audit
-  checkpoint `0eb10a8` passed complete ordinary CI `30992850240` and
-  `30993437267` respectively.
-- P5-04 is the only active atomic task. Its bounded Requirement/domain audit
-  for `FR-DS-011` and `FR-DS-012` and its domain/metadata foundation passed.
-  Evidence is recorded in `implementation/evidence/phase-5/p5-04-plan.md` and
-  `implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md`. Only
-  its repository/BFF/OpenAPI stage is active next.
+- P5-04 is the only active atomic task. Its domain/metadata,
+  repository/BFF/OpenAPI and frontend stages passed their recorded checks.
+  Policy publication repair `d21d21a` passed ordinary CI `31020190868`; final
+  controlled workflow `31020886002` advanced to the non-unique
+  `P504_RUNTIME_CREATE / HttpStatusError /
+  trace-f92a1e065fe35759b261601244cca7d4` boundary.
+- The user authorized one bounded create-stage diagnostic/repair sequence on
+  2026-08-06. The closed response-neutral diagnostic passed local EBOM
+  `62/62`, related regression `70/70` and complete Python `958/958`.
+  `NEXT_ACTION.md` requires its exact-SHA ordinary CI before the sole
+  diagnostic controlled Site; no diagnostic dispatch has yet been consumed.
 - P5-05 and Phase 6 remain inactive.
-- No active Hard Blocker or execution hold exists. Production numbering,
+- No active Hard Blocker or execution hold exists. P5-04 is
+  `IN_PROGRESS_DIAGNOSTIC`, never a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

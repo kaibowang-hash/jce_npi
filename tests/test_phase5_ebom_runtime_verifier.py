@@ -128,6 +128,26 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             "P504_RUNTIME_GUEST_AUTHORIZATION",
             "P504_RUNTIME_UNRELATED_AUTHORIZATION",
             "P504_RUNTIME_CREATE",
+            "P504_CREATE_COMMAND_CONTEXT",
+            "P504_CREATE_INPUT_PARSE",
+            "P504_CREATE_PROJECT_LOCK",
+            "P504_CREATE_POLICY_LOAD",
+            "P504_CREATE_POLICY_AUTHORITY",
+            "P504_CREATE_PAYLOAD_HASH",
+            "P504_CREATE_IDEMPOTENCY_REPLAY",
+            "P504_CREATE_PROJECT_MUTABILITY",
+            "P504_CREATE_DOMAIN_BUILD",
+            "P504_CREATE_TRANSACTION_SCOPE",
+            "P504_CREATE_RECEIPT_INSERT",
+            "P504_CREATE_ROOT_INSERT",
+            "P504_CREATE_REVISION_INSERT",
+            "P504_CREATE_LINE_INSERT",
+            "P504_CREATE_LIFECYCLE_INSERT",
+            "P504_CREATE_ROOT_PROJECTION_SAVE",
+            "P504_CREATE_AUDIT_APPEND",
+            "P504_CREATE_RESPONSE_BUILD",
+            "P504_CREATE_RECEIPT_SEAL",
+            "P504_CREATE_API_RESPONSE",
             "P504_RUNTIME_CREATE_REPLAY",
             "P504_RUNTIME_IDEMPOTENCY_CONFLICT",
             "P504_RUNTIME_INVALID_REVISION_ROLLBACK",
@@ -444,6 +464,103 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         self.assertIs(actual, result)
         self.assertEqual(call.call_args.kwargs["idempotency_key"], self.module.CREATE_KEY)
         self.assertEqual(call.call_args.kwargs["csrf_token"], "csrf-" + ("a" * 48))
+
+    def test_create_request_activates_only_the_closed_diagnostic_header(self) -> None:
+        module = self.module
+        request_id = "10000000-0000-4000-8000-000000000001"
+        trace_id = "trace-" + ("d" * 32)
+        raw = Mock(
+            status=201,
+            headers={
+                "X-Request-ID": request_id,
+                "Cache-Control": "private, no-store",
+            },
+            body={},
+        )
+        headers = {
+            "Idempotency-Key": module.CREATE_KEY,
+            "X-Request-ID": request_id,
+            "X-Trace-ID": trace_id,
+        }
+        with patch.object(
+            module.document_runtime,
+            "command_headers",
+            return_value=headers,
+        ), patch.object(
+            module.document_runtime,
+            "request",
+            return_value=raw,
+        ) as request:
+            result = module.ebom_request(
+                Mock(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/eboms",
+                method="POST",
+                payload={"value": True},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=module.CREATE_KEY,
+                create_diagnostic=True,
+            )
+        self.assertEqual(result.status, 201)
+        sent = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            sent[module._CREATE_DIAGNOSTIC_HEADER],
+            module._CREATE_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            set(sent),
+            {
+                "Idempotency-Key",
+                "X-Request-ID",
+                "X-Trace-ID",
+                "X-NPI-Diagnostic-Scope",
+            },
+        )
+
+    def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
+        module = self.module
+        trace_id = "trace-" + ("e" * 32)
+        code = "P504_CREATE_ROOT_INSERT"
+        record = json.dumps(
+            {
+                "code": code,
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            bench = Path(directory).resolve()
+            logs = bench / "logs"
+            logs.mkdir()
+            (logs / "npi_core.log").write_text(
+                "sensitive prefix " + record + "\n",
+                encoding="utf-8",
+            )
+            with patch.object(module, "BENCH_PATH", bench):
+                diagnostic = module._sanitized_create_server_diagnostic(trace_id)
+        self.assertEqual(
+            diagnostic,
+            ("ValidationError", code, trace_id),
+        )
+        failure_result = module.HttpResult(
+            status=500,
+            headers={},
+            body={"message": "sensitive database"},
+            request_id="10000000-0000-4000-8000-000000000001",
+            trace_id=trace_id,
+        )
+        with patch.object(
+            module,
+            "_sanitized_create_server_diagnostic",
+            return_value=diagnostic,
+        ), self.assertRaises(module.RuntimeStageFailure) as failure:
+            module.require_create_status(failure_result)
+        self.assertEqual(failure.exception.code, code)
+        sanitized = module.runtime_stage_diagnostic(failure.exception)
+        self.assertNotIn("sensitive", sanitized)
+        self.assertNotIn("database", sanitized)
 
 
 if __name__ == "__main__":

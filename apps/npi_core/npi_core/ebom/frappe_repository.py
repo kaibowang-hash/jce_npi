@@ -46,6 +46,7 @@ from npi_core.ebom.frappe_validation import (
     ebom_line_value,
     ebom_policy_value,
 )
+from npi_core.ebom.diagnostics import ebom_create_server_step
 from npi_core.foundation.security import Principal
 from npi_core.foundation.errors import RequestValidationFailed
 from npi_core.project_controls.terminal_guard import require_mutable_project
@@ -142,113 +143,129 @@ class FrappeEngineeringBomRepository(FrappeDocumentRepository):
         effectivity_note: str | None,
         lines: Sequence[Mapping[str, object]],
     ) -> DocumentCommandOutcome | None:
-        project = self._locked_command_project(project_id)
+        with ebom_create_server_step("P504_CREATE_PROJECT_LOCK"):
+            project = self._locked_command_project(project_id)
         if project is None:
             return None
-        policy = self._load_exact_policy(
-            project,
-            policy_global_id=policy_global_id,
-            policy_version=policy_version,
-            snapshot_hash=policy_snapshot_hash,
-            lock=True,
-        )
-        self._require_policy_actor(policy, "create")
-        payload = {
-            "policyGlobalId": str(policy_global_id),
-            "policyVersion": policy_version,
-            "policySnapshotHash": policy_snapshot_hash,
-            "engineeringBomKey": engineering_bom_key,
-            "title": title,
-            "reason": reason,
-            "effectivityNote": effectivity_note,
-            "lines": [dict(value) for value in lines],
-        }
-        payload_hash = self._command_payload_hash(
-            operation="ebom.create",
-            project=project,
-            ebom_id=None,
-            payload=payload,
-        )
-        replay = self._receipt_replay(
-            project,
-            operation="ebom.create",
-            idempotency_key_hash=idempotency_key_hash,
-            payload_hash=payload_hash,
-        )
-        if replay is not None:
-            return DocumentCommandOutcome(replay, replayed=True)
-        require_mutable_project(project)
-        now = datetime.now(UTC)
-        ebom_id = uuid4()
-        revision = create_engineering_bom_revision(
-            global_id=uuid4(),
-            ebom_global_id=ebom_id,
-            tenant_id=str(project.tenant_id),
-            project_global_id=project_id,
-            engineering_bom_key=engineering_bom_key,
-            revision_number=1,
-            predecessor=None,
-            reason=reason,
-            effectivity_note=effectivity_note,
-            policy=policy,
-            lines=self._input_lines(lines),
-            actor=self.actor,
-            now=now,
-            request_id=self.request_id,
-            trace_id=self.trace_id,
-        )
-        with ebom_command_write():
-            receipt = self._insert_receipt(
+        with ebom_create_server_step("P504_CREATE_POLICY_LOAD"):
+            policy = self._load_exact_policy(
+                project,
+                policy_global_id=policy_global_id,
+                policy_version=policy_version,
+                snapshot_hash=policy_snapshot_hash,
+                lock=True,
+            )
+        with ebom_create_server_step("P504_CREATE_POLICY_AUTHORITY"):
+            self._require_policy_actor(policy, "create")
+        with ebom_create_server_step("P504_CREATE_PAYLOAD_HASH"):
+            payload = {
+                "policyGlobalId": str(policy_global_id),
+                "policyVersion": policy_version,
+                "policySnapshotHash": policy_snapshot_hash,
+                "engineeringBomKey": engineering_bom_key,
+                "title": title,
+                "reason": reason,
+                "effectivityNote": effectivity_note,
+                "lines": [dict(value) for value in lines],
+            }
+            payload_hash = self._command_payload_hash(
+                operation="ebom.create",
+                project=project,
+                ebom_id=None,
+                payload=payload,
+            )
+        with ebom_create_server_step("P504_CREATE_IDEMPOTENCY_REPLAY"):
+            replay = self._receipt_replay(
                 project,
                 operation="ebom.create",
                 idempotency_key_hash=idempotency_key_hash,
                 payload_hash=payload_hash,
+            )
+        if replay is not None:
+            return DocumentCommandOutcome(replay, replayed=True)
+        with ebom_create_server_step("P504_CREATE_PROJECT_MUTABILITY"):
+            require_mutable_project(project)
+        with ebom_create_server_step("P504_CREATE_DOMAIN_BUILD"):
+            now = datetime.now(UTC)
+            ebom_id = uuid4()
+            revision = create_engineering_bom_revision(
+                global_id=uuid4(),
+                ebom_global_id=ebom_id,
+                tenant_id=str(project.tenant_id),
+                project_global_id=project_id,
+                engineering_bom_key=engineering_bom_key,
+                revision_number=1,
+                predecessor=None,
+                reason=reason,
+                effectivity_note=effectivity_note,
+                policy=policy,
+                lines=self._input_lines(lines),
+                actor=self.actor,
                 now=now,
+                request_id=self.request_id,
+                trace_id=self.trace_id,
             )
-            try:
-                root = frappe.get_doc(
-                    {
-                        "doctype": "NPI Engineering BOM",
-                        "global_id": str(ebom_id),
-                        "tenant_id": str(project.tenant_id),
-                        "project_global_id": str(project.global_id),
-                        "engineering_bom_key": engineering_bom_key,
-                        "title": title,
-                        "policy_global_id": str(policy.policy_global_id),
-                        "policy_version": policy.policy_version,
-                        "policy_snapshot_hash": policy.snapshot_hash,
-                        "optimistic_version": 1,
-                    }
-                ).insert()
-            except (
-                frappe.UniqueValidationError,
-                frappe.DuplicateEntryError,
-            ) as error:
-                raise EngineeringBomIdentityConflict() from error
-            self._insert_revision_bundle(project, root, revision, now=now)
-            root.latest_revision_global_id = str(revision.global_id)
-            root.latest_revision_number = revision.revision_number
-            root.latest_revision_snapshot_hash = revision.snapshot_hash
-            root.save()
-            self._append_audit(
-                operation="ebom.create",
-                global_id=ebom_id,
-                object_version=int(root.optimistic_version),
-                result="created",
-                summary={
-                    "revisionGlobalId": str(revision.global_id),
-                    "revisionSnapshotHash": revision.snapshot_hash,
-                    "policySnapshotHash": policy.snapshot_hash,
-                },
-            )
-            response = self._command_result(project, root, revision)
-            self._seal_receipt(
-                receipt,
-                ebom_id=ebom_id,
-                revision_id=revision.global_id,
-                response=response,
-                now=now,
-            )
+        with ebom_create_server_step("P504_CREATE_TRANSACTION_SCOPE"):
+            with ebom_command_write():
+                with ebom_create_server_step("P504_CREATE_RECEIPT_INSERT"):
+                    receipt = self._insert_receipt(
+                        project,
+                        operation="ebom.create",
+                        idempotency_key_hash=idempotency_key_hash,
+                        payload_hash=payload_hash,
+                        now=now,
+                    )
+                with ebom_create_server_step("P504_CREATE_ROOT_INSERT"):
+                    try:
+                        root = frappe.get_doc(
+                            {
+                                "doctype": "NPI Engineering BOM",
+                                "global_id": str(ebom_id),
+                                "tenant_id": str(project.tenant_id),
+                                "project_global_id": str(project.global_id),
+                                "engineering_bom_key": engineering_bom_key,
+                                "title": title,
+                                "policy_global_id": str(policy.policy_global_id),
+                                "policy_version": policy.policy_version,
+                                "policy_snapshot_hash": policy.snapshot_hash,
+                                "optimistic_version": 1,
+                            }
+                        ).insert()
+                    except (
+                        frappe.UniqueValidationError,
+                        frappe.DuplicateEntryError,
+                    ) as error:
+                        raise EngineeringBomIdentityConflict() from error
+                self._insert_revision_bundle(project, root, revision, now=now)
+                with ebom_create_server_step(
+                    "P504_CREATE_ROOT_PROJECTION_SAVE"
+                ):
+                    root.latest_revision_global_id = str(revision.global_id)
+                    root.latest_revision_number = revision.revision_number
+                    root.latest_revision_snapshot_hash = revision.snapshot_hash
+                    root.save()
+                with ebom_create_server_step("P504_CREATE_AUDIT_APPEND"):
+                    self._append_audit(
+                        operation="ebom.create",
+                        global_id=ebom_id,
+                        object_version=int(root.optimistic_version),
+                        result="created",
+                        summary={
+                            "revisionGlobalId": str(revision.global_id),
+                            "revisionSnapshotHash": revision.snapshot_hash,
+                            "policySnapshotHash": policy.snapshot_hash,
+                        },
+                    )
+                with ebom_create_server_step("P504_CREATE_RESPONSE_BUILD"):
+                    response = self._command_result(project, root, revision)
+                with ebom_create_server_step("P504_CREATE_RECEIPT_SEAL"):
+                    self._seal_receipt(
+                        receipt,
+                        ebom_id=ebom_id,
+                        revision_id=revision.global_id,
+                        response=response,
+                        now=now,
+                    )
         return DocumentCommandOutcome(response)
 
     def create_revision(
@@ -851,86 +868,94 @@ class FrappeEngineeringBomRepository(FrappeDocumentRepository):
 
     @staticmethod
     def _insert_revision_bundle(project, root, revision: EngineeringBomRevision, *, now: datetime) -> None:
-        frappe.get_doc(
-            {
-                "doctype": "NPI Engineering BOM Revision",
-                "global_id": str(revision.global_id),
-                "engineering_bom": str(root.global_id),
-                "ebom_global_id": str(root.global_id),
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "engineering_bom_key": revision.engineering_bom_key,
-                "revision_number": revision.revision_number,
-                "predecessor_global_id": (
-                    str(revision.predecessor_global_id)
-                    if revision.predecessor_global_id is not None else None
-                ),
-                "predecessor_snapshot_hash": revision.predecessor_snapshot_hash,
-                "reason": revision.reason,
-                "effectivity_note": revision.effectivity_note,
-                "policy_global_id": str(revision.policy_ref.global_id),
-                "policy_version": revision.policy_ref.version,
-                "policy_snapshot_hash": revision.policy_ref.snapshot_hash,
-                "quantity_scale": revision.quantity_scale,
-                "line_count": len(revision.lines),
-                "revision_snapshot": revision.snapshot_payload(),
-                "snapshot_hash": revision.snapshot_hash,
-                "created_by_user_id": revision.created_by_user_id,
-                "created_at": _database_datetime(revision.created_at),
-                "request_id": revision.request_id,
-                "trace_id": revision.trace_id,
-            }
-        ).insert()
-        for line in revision.lines:
-            line_snapshot = line.canonical_dict(revision.quantity_scale)
+        with ebom_create_server_step("P504_CREATE_REVISION_INSERT"):
             frappe.get_doc(
                 {
-                    "doctype": "NPI Engineering BOM Line",
-                    "global_id": str(line.global_id),
-                    "line_identity_key": f"{revision.global_id}:{line.line_key.casefold()}",
-                    "engineering_bom": str(root.global_id),
-                    "ebom_global_id": str(root.global_id),
-                    "engineering_bom_revision": str(revision.global_id),
-                    "revision_global_id": str(revision.global_id),
-                    "revision_snapshot_hash": revision.snapshot_hash,
-                    "tenant_id": str(project.tenant_id),
-                    "project_global_id": str(project.global_id),
-                    "line_key": line.line_key,
-                    "parent_line_key": line.parent_line_key,
-                    "engineering_item_id": line.engineering_item_id,
-                    "description": line.description,
-                    "quantity": line_snapshot["quantity"],
-                    "engineering_uom": line.engineering_uom,
-                    "alternate_for_line_key": line.alternate_for_line_key,
-                    "alternate_group_key": line.alternate_group_key,
-                    "effectivity_start": line.effectivity_start,
-                    "effectivity_end": line.effectivity_end,
-                    "attributes": dict(line.attributes),
-                    "line_snapshot": line_snapshot,
-                    "line_hash": sha256_json(line_snapshot),
-                    "created_at": _database_datetime(revision.created_at),
-                }
-            ).insert()
-        with ebom_lifecycle_write():
-            frappe.get_doc(
-                {
-                    "doctype": "NPI EBOM Revision Lifecycle",
+                    "doctype": "NPI Engineering BOM Revision",
                     "global_id": str(revision.global_id),
-                    "tenant_id": str(project.tenant_id),
-                    "project_global_id": str(project.global_id),
                     "engineering_bom": str(root.global_id),
                     "ebom_global_id": str(root.global_id),
-                    "engineering_bom_revision": str(revision.global_id),
-                    "revision_global_id": str(revision.global_id),
-                    "revision_snapshot_hash": revision.snapshot_hash,
-                    "current_state": EngineeringBomLifecycleState.DRAFT.value,
-                    "lifecycle_version": 1,
-                    "updated_by_user_id": revision.created_by_user_id,
-                    "updated_at": _database_datetime(now),
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "engineering_bom_key": revision.engineering_bom_key,
+                    "revision_number": revision.revision_number,
+                    "predecessor_global_id": (
+                        str(revision.predecessor_global_id)
+                        if revision.predecessor_global_id is not None
+                        else None
+                    ),
+                    "predecessor_snapshot_hash": revision.predecessor_snapshot_hash,
+                    "reason": revision.reason,
+                    "effectivity_note": revision.effectivity_note,
+                    "policy_global_id": str(revision.policy_ref.global_id),
+                    "policy_version": revision.policy_ref.version,
+                    "policy_snapshot_hash": revision.policy_ref.snapshot_hash,
+                    "quantity_scale": revision.quantity_scale,
+                    "line_count": len(revision.lines),
+                    "revision_snapshot": revision.snapshot_payload(),
+                    "snapshot_hash": revision.snapshot_hash,
+                    "created_by_user_id": revision.created_by_user_id,
+                    "created_at": _database_datetime(revision.created_at),
                     "request_id": revision.request_id,
                     "trace_id": revision.trace_id,
                 }
             ).insert()
+        with ebom_create_server_step("P504_CREATE_LINE_INSERT"):
+            for line in revision.lines:
+                line_snapshot = line.canonical_dict(revision.quantity_scale)
+                frappe.get_doc(
+                    {
+                        "doctype": "NPI Engineering BOM Line",
+                        "global_id": str(line.global_id),
+                        "line_identity_key": (
+                            f"{revision.global_id}:{line.line_key.casefold()}"
+                        ),
+                        "engineering_bom": str(root.global_id),
+                        "ebom_global_id": str(root.global_id),
+                        "engineering_bom_revision": str(revision.global_id),
+                        "revision_global_id": str(revision.global_id),
+                        "revision_snapshot_hash": revision.snapshot_hash,
+                        "tenant_id": str(project.tenant_id),
+                        "project_global_id": str(project.global_id),
+                        "line_key": line.line_key,
+                        "parent_line_key": line.parent_line_key,
+                        "engineering_item_id": line.engineering_item_id,
+                        "description": line.description,
+                        "quantity": line_snapshot["quantity"],
+                        "engineering_uom": line.engineering_uom,
+                        "alternate_for_line_key": line.alternate_for_line_key,
+                        "alternate_group_key": line.alternate_group_key,
+                        "effectivity_start": line.effectivity_start,
+                        "effectivity_end": line.effectivity_end,
+                        "attributes": dict(line.attributes),
+                        "line_snapshot": line_snapshot,
+                        "line_hash": sha256_json(line_snapshot),
+                        "created_at": _database_datetime(revision.created_at),
+                    }
+                ).insert()
+        with ebom_create_server_step("P504_CREATE_LIFECYCLE_INSERT"):
+            with ebom_lifecycle_write():
+                frappe.get_doc(
+                    {
+                        "doctype": "NPI EBOM Revision Lifecycle",
+                        "global_id": str(revision.global_id),
+                        "tenant_id": str(project.tenant_id),
+                        "project_global_id": str(project.global_id),
+                        "engineering_bom": str(root.global_id),
+                        "ebom_global_id": str(root.global_id),
+                        "engineering_bom_revision": str(revision.global_id),
+                        "revision_global_id": str(revision.global_id),
+                        "revision_snapshot_hash": revision.snapshot_hash,
+                        "current_state": (
+                            EngineeringBomLifecycleState.DRAFT.value
+                        ),
+                        "lifecycle_version": 1,
+                        "updated_by_user_id": revision.created_by_user_id,
+                        "updated_at": _database_datetime(now),
+                        "request_id": revision.request_id,
+                        "trace_id": revision.trace_id,
+                    }
+                ).insert()
 
     def _command_payload_hash(self, *, operation: str, project, ebom_id: UUID | None, payload: Mapping[str, object]) -> str:
         return command_payload_hash(
