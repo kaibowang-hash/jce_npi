@@ -9,6 +9,7 @@ import { ProjectWorkRequestCancelledError } from "../api/project-work-data-sourc
 import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
 import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
+import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -1271,6 +1272,7 @@ export function ProjectWorkspace({
   documentDataSource,
   domainWorkItemsDataSource,
   engineeringBomDataSource,
+  publishRequestDataSource,
   navigate,
   onProjectChanged,
   overview,
@@ -1283,6 +1285,7 @@ export function ProjectWorkspace({
   documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
+  publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   navigate: (target: string) => void;
   onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
   overview: ReactNode;
@@ -1629,6 +1632,7 @@ export function ProjectWorkspace({
     content = (
       <ProjectEngineeringBomWorkspace
         dataSource={engineeringBomDataSource}
+        publishRequestDataSource={publishRequestDataSource}
         projectId={cockpit.project.globalId}
         reportWorkspaceDirty={reportWorkspaceDirty}
       />

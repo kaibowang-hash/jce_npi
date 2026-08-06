@@ -11,6 +11,7 @@ import type {
 import type { ProjectControlsDataSource } from "../api/project-controls-data-source";
 import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
+import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -227,6 +228,7 @@ function ProjectCockpit({
   documentDataSource,
   domainWorkItemsDataSource,
   engineeringBomDataSource,
+  publishRequestDataSource,
   navigate,
   reportWorkspaceDirty,
   requestWorkspaceTransition,
@@ -237,6 +239,7 @@ function ProjectCockpit({
   documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
+  publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
   requestWorkspaceTransition?: RequestWorkspaceTransition | undefined;
@@ -341,6 +344,7 @@ function ProjectCockpit({
         documentDataSource={documentDataSource}
         domainWorkItemsDataSource={domainWorkItemsDataSource}
         engineeringBomDataSource={engineeringBomDataSource}
+        publishRequestDataSource={publishRequestDataSource}
         navigate={navigate}
         onProjectChanged={synchronizeProjectControlState}
         reportWorkspaceDirty={reportWorkspaceDirty}
@@ -534,6 +538,7 @@ export default function ProjectPage({
   domainWorkItemsDataSource,
   documentDataSource,
   engineeringBomDataSource,
+  publishRequestDataSource,
   globalId,
   navigate,
   reportWorkspaceDirty,
@@ -545,6 +550,7 @@ export default function ProjectPage({
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   documentDataSource?: DocumentDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
+  publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   globalId: string;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
@@ -629,6 +635,7 @@ export default function ProjectPage({
       documentDataSource={documentDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
       engineeringBomDataSource={engineeringBomDataSource}
+      publishRequestDataSource={publishRequestDataSource}
       key={`${state.cockpit.project.globalId}:${String(state.cockpit.project.version)}`}
       navigate={navigate}
       reportWorkspaceDirty={reportWorkspaceDirty}

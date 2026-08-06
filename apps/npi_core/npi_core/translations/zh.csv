@@ -3683,3 +3683,77 @@ manual_intervention,人工干预
 Dispatch Allowed,允许分派
 The sealed response does not match its exact publish request.,已封存响应与其精确发布请求不匹配。
 Confirm validation of the exact released EBOM.,请确认验证精确的已发布 EBOM。
+Validated in Mock,已通过模拟验证
+Manual intervention,人工干预
+Target reported success,目标系统报告成功
+Uncertain after timeout,超时后结果不确定
+Blocked by mapping,因映射而阻断
+Target unavailable,目标系统不可用
+Unmapped,未映射
+Current mapping,当前映射
+Stale mapping,过期映射
+Mapping conflict,映射冲突
+Create Item intent,创建物料意图
+Update engineering fields intent,更新工程字段意图
+Create or update MBOM intent,创建或更新 MBOM 意图
+Duplicate request,重复请求
+Payload conflict,载荷冲突
+Timeout after possible commit,可能提交后的超时
+Rate limited,受到速率限制
+Target server error,目标服务器错误
+Business validation failure,业务验证失败
+Partial node success,部分节点成功
+Restart replay,重启后重放
+No retry action,无重试动作
+Replay sealed response,重放已封存响应
+Reject payload conflict,拒绝载荷冲突
+Reconcile before retry,重试前对账
+Retry after target delay,按目标系统延迟后重试
+Retry with the same idempotency key,使用相同幂等键重试
+Manual correction required,需要人工修正
+Retry failed nodes only,仅重试失败节点
+Resolve mapping first,先解决映射问题
+Replay original request,重放原始请求
+"Select the exact publish policy, enter a reason and confirm Mock validation before continuing.",请选择精确发布策略、输入原因并确认模拟验证后再继续。
+Formal publish requests,正式发布请求
+Released revision required,需要已发布修订
+Release this exact EBOM revision before preparing a formal Item and MBOM publish request.,请先发布此精确 EBOM 修订，再准备正式物料和 MBOM 发布请求。
+The publish-request data source is not configured. No target system was contacted.,未配置发布请求数据源。未联系任何目标系统。
+EBOM publish-request workspace,EBOM 发布请求工作区
+Mock validation only,仅模拟验证
+"Validated means the frozen NPI request passed local checks. It was not queued, sent or completed in ERPNext.",“已验证”表示冻结的 NPI 请求通过本地检查。请求未排队、未发送，也未在 ERPNext 中完成。
+Loading formal publish requests,正在加载正式发布请求
+Requests,请求
+Prepare publish request,准备发布请求
+You can inspect exact publish evidence but cannot prepare a new request.,您可以查看精确发布证据，但不能准备新请求。
+Publish authority unavailable,发布权限不可用
+No exact published Mock policy grants you permission to prepare this request.,没有精确的已发布模拟策略授权您准备此请求。
+Validating the exact released EBOM in Mock mode,正在模拟模式下验证精确的已发布 EBOM
+The immutable request was recorded locally. ERPNext was not contacted.,不可变请求已在本地记录。未联系 ERPNext。
+Exact released input,精确的已发布输入
+EBOM version,EBOM 版本
+Target mode,目标模式
+Mock only,仅模拟
+Exact publish policy,精确发布策略
+I confirm validation of this exact released EBOM in Mock mode. No Item or MBOM will be created in ERPNext.,我确认在模拟模式下验证此精确的已发布 EBOM。不会在 ERPNext 中创建物料或 MBOM。
+Validate exact released EBOM,验证精确的已发布 EBOM
+No publish request,没有发布请求
+No immutable Mock validation request has been recorded for this exact revision.,尚未为此精确修订记录不可变模拟验证请求。
+Request,请求
+Nodes,节点
+Loading exact publish-request evidence,正在加载精确发布请求证据
+Dispatch,分派
+Disabled,已禁用
+Release event,发布事件
+Publish policy version,发布策略版本
+Payload hash,载荷哈希
+Formal target identifiers,正式目标标识
+Not assigned,未分配
+Line,行
+Requested operations,请求的操作
+Mapping,映射
+Fault,故障
+Future recovery,未来恢复
+Reconciliation required,需要对账
+Select an immutable request to inspect its exact evidence.,请选择一个不可变请求以查看其精确证据。
+Publish-request node results,发布请求节点结果

@@ -195,6 +195,10 @@ export function engineeringBomCommandFixture(): EngineeringBomCommandViewModel {
   return { ebom: summary, revision: revisionTwo };
 }
 
+export function releasedEngineeringBomRevisionFixture(): EngineeringBomRevisionViewModel {
+  return revisionOne;
+}
+
 export function engineeringBomComparisonFixture(): EngineeringBomComparisonViewModel {
   return {
     ebom: summary,

@@ -14,6 +14,7 @@ import type {
   EngineeringBomRevisionViewModel,
 } from "../api/ebom-data-source";
 import { EngineeringBomRequestCancelledError } from "../api/ebom-data-source";
+import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import { DockedInspector } from "../components/object-components";
@@ -31,6 +32,7 @@ import {
 } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import { EngineeringBomPublishRequestWorkspace } from "./project-ebom-publish-workspace";
 
 type ResourceState<T> =
   | { kind: "loading" }
@@ -568,10 +570,12 @@ function LineEditor({
 
 export function ProjectEngineeringBomWorkspace({
   dataSource,
+  publishRequestDataSource,
   projectId,
   reportWorkspaceDirty,
 }: {
   dataSource?: EngineeringBomDataSource | undefined;
+  publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
   projectId: string;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
 }): React.JSX.Element {
@@ -597,6 +601,7 @@ export function ProjectEngineeringBomWorkspace({
   const [commandState, setCommandState] = useState<CommandState>({
     kind: "idle",
   });
+  const [publishDirty, setPublishDirty] = useState(false);
   const [policyRef, setPolicyRef] = useState("");
   const [engineeringBomKey, setEngineeringBomKey] = useState("");
   const [title, setTitle] = useState("");
@@ -628,7 +633,8 @@ export function ProjectEngineeringBomWorkspace({
       null,
     [detail?.revisions, selectedRevisionId],
   );
-  const dirty = editor !== null && editor !== "compare" && editorTouched;
+  const dirty =
+    (editor !== null && editor !== "compare" && editorTouched) || publishDirty;
   const commandProcessing = commandState.kind === "processing";
 
   const closeEditor = useCallback((): void => {
@@ -653,7 +659,11 @@ export function ProjectEngineeringBomWorkspace({
         ? `ebom-revision-${String(selectedRevision.revisionNumber)}`
         : "unsaved-ebom",
       returnFocusTarget: () =>
-        editorFocusTarget(firstEditorControl.current) ??
+        (publishDirty
+          ? document.querySelector<HTMLElement>(
+              ".publish-request__form select, .publish-request__form input",
+            )
+          : editorFocusTarget(firstEditorControl.current)) ??
         document.getElementById("project-workspace-tab-ebom"),
     });
     return () => {
@@ -662,6 +672,7 @@ export function ProjectEngineeringBomWorkspace({
   }, [
     dirty,
     projectId,
+    publishDirty,
     reportWorkspaceDirty,
     selectedEbomId,
     selectedRevision,
@@ -1046,7 +1057,7 @@ export function ProjectEngineeringBomWorkspace({
             onClick={(event) => {
               startEditor("create", event.currentTarget);
             }}
-            visual={canCreate && editor === null ? "primary" : "secondary"}
+            visual="secondary"
           >
             {t("Create EBOM")}
           </Button>
@@ -1269,92 +1280,103 @@ export function ProjectEngineeringBomWorkspace({
                   </table>
                 </Panel>
                 {selectedRevision ? (
-                  <Panel scrollableBody title={t("Exact revision lines")}>
-                    <table className="data-table data-table--compact ebom-line-table">
-                      <thead>
-                        <tr>
-                          <th>{t("Line key")}</th>
-                          <th>{t("Parent line")}</th>
-                          <th>{t("Engineering item")}</th>
-                          <th>{t("Description")}</th>
-                          <th>{t("Quantity")}</th>
-                          <th>{t("Engineering UOM")}</th>
-                          <th>{t("Alternate")}</th>
-                          <th>{t("Effectivity")}</th>
-                          <th>{t("Attributes")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedRevision.lines.map((line) => (
-                          <tr key={line.globalId}>
-                            <td data-language-exempt="identifier">
-                              {line.lineKey}
-                            </td>
-                            <td data-language-exempt="identifier">
-                              {line.parentLineKey ?? "—"}
-                            </td>
-                            <td data-language-exempt="identifier">
-                              {line.engineeringItemId}
-                            </td>
-                            <td data-language-exempt="business-data">
-                              {line.description}
-                            </td>
-                            <td>
-                              {formatDecimal(locale, line.quantity)}{" "}
-                              <span data-language-exempt="unit">
-                                {line.engineeringUom}
-                              </span>
-                            </td>
-                            <td data-language-exempt="unit">
-                              {line.engineeringUom}
-                            </td>
-                            <td data-language-exempt="identifier">
-                              {line.alternateForLineKey ??
-                                line.alternateGroupKey ??
-                                "—"}
-                            </td>
-                            <td>
-                              {line.effectivityStart
-                                ? formatDate(locale, line.effectivityStart)
-                                : "—"}
-                              {line.effectivityEnd
-                                ? ` → ${formatDate(locale, line.effectivityEnd)}`
-                                : ""}
-                            </td>
-                            <td>
-                              {Object.entries(line.attributes).length ? (
-                                <dl className="ebom-attributes">
-                                  {Object.entries(line.attributes).map(
-                                    ([key, value]) => (
-                                      <div
-                                        className="ebom-attributes__entry"
-                                        key={key}
-                                      >
-                                        <dt
-                                          className="ebom-attributes__key"
-                                          data-language-exempt="identifier"
-                                        >
-                                          {key}
-                                        </dt>
-                                        <dd
-                                          className="ebom-attributes__value"
-                                          data-language-exempt="business-data"
-                                        >
-                                          {value}
-                                        </dd>
-                                      </div>
-                                    ),
-                                  )}
-                                </dl>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
+                  <>
+                    <Panel scrollableBody title={t("Exact revision lines")}>
+                      <table className="data-table data-table--compact ebom-line-table">
+                        <thead>
+                          <tr>
+                            <th>{t("Line key")}</th>
+                            <th>{t("Parent line")}</th>
+                            <th>{t("Engineering item")}</th>
+                            <th>{t("Description")}</th>
+                            <th>{t("Quantity")}</th>
+                            <th>{t("Engineering UOM")}</th>
+                            <th>{t("Alternate")}</th>
+                            <th>{t("Effectivity")}</th>
+                            <th>{t("Attributes")}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </Panel>
+                        </thead>
+                        <tbody>
+                          {selectedRevision.lines.map((line) => (
+                            <tr key={line.globalId}>
+                              <td data-language-exempt="identifier">
+                                {line.lineKey}
+                              </td>
+                              <td data-language-exempt="identifier">
+                                {line.parentLineKey ?? "—"}
+                              </td>
+                              <td data-language-exempt="identifier">
+                                {line.engineeringItemId}
+                              </td>
+                              <td data-language-exempt="business-data">
+                                {line.description}
+                              </td>
+                              <td>
+                                {formatDecimal(locale, line.quantity)}{" "}
+                                <span data-language-exempt="unit">
+                                  {line.engineeringUom}
+                                </span>
+                              </td>
+                              <td data-language-exempt="unit">
+                                {line.engineeringUom}
+                              </td>
+                              <td data-language-exempt="identifier">
+                                {line.alternateForLineKey ??
+                                  line.alternateGroupKey ??
+                                  "—"}
+                              </td>
+                              <td>
+                                {line.effectivityStart
+                                  ? formatDate(locale, line.effectivityStart)
+                                  : "—"}
+                                {line.effectivityEnd
+                                  ? ` → ${formatDate(locale, line.effectivityEnd)}`
+                                  : ""}
+                              </td>
+                              <td>
+                                {Object.entries(line.attributes).length ? (
+                                  <dl className="ebom-attributes">
+                                    {Object.entries(line.attributes).map(
+                                      ([key, value]) => (
+                                        <div
+                                          className="ebom-attributes__entry"
+                                          key={key}
+                                        >
+                                          <dt
+                                            className="ebom-attributes__key"
+                                            data-language-exempt="identifier"
+                                          >
+                                            {key}
+                                          </dt>
+                                          <dd
+                                            className="ebom-attributes__value"
+                                            data-language-exempt="business-data"
+                                          >
+                                            {value}
+                                          </dd>
+                                        </div>
+                                      ),
+                                    )}
+                                  </dl>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </Panel>
+                    <EngineeringBomPublishRequestWorkspace
+                      dataSource={publishRequestDataSource}
+                      disabled={commandProcessing || editor !== null}
+                      ebom={detailState.value.ebom}
+                      key={selectedRevision.globalId}
+                      onDirtyChange={setPublishDirty}
+                      projectId={projectId}
+                      revision={selectedRevision}
+                    />
+                  </>
                 ) : null}
               </div>
               <DockedInspector title={t("EBOM inspector")}>
