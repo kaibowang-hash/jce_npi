@@ -628,3 +628,28 @@ response/receipt failure. The final Gate is not PASS, P5-04 cannot pass Level
 2, and no additional dispatch or speculative repair is authorized. The
 separate bounded counters are exhausted: diagnostic `1/1`, uniquely proved
 repair `1/1`, final unchanged Gate `1/1`.
+
+## Post-revision create diagnostic recovery
+
+The user requested that the unresolved create problem be fixed, resuming the
+same Goal on exact controller checkpoint
+`16ed463e352c98328ea2e993aac0f80eeded7110`. That checkpoint passed complete
+ordinary CI `31076595986`: repository `92535872417` and visual `92535872350`
+passed; controlled job `92535872991` correctly skipped.
+
+This is a new independent bounded sequence after the prior allowance was
+exhausted: existing response-neutral first-create diagnostic `0/1`, at most one
+uniquely proved repair `0/1`, and one reserved final unchanged Gate `0/1`.
+Historical counters and failed runs are unchanged. The diagnostic adds only
+the existing allowlisted request header and sanitized server stage/type/trace
+lookup; it does not change HTTP responses or product behavior. Affected/full
+ordinary CI must pass before the sole diagnostic Site. Requirement, OpenAPI,
+DocType, permission, ownership, transaction, idempotency, audit and PASS
+criteria remain frozen.
+
+Local pre-dispatch validation passes the runtime verifier `17/17`, complete
+P5-04 EBOM suite `64/64`, related Document API/baseline/runtime regression
+`70/70`, complete tracked Python `960/960`, compilation, V1.2 reconciliation,
+prototype-approval, P0 visual-governance, YAML and diff checks. The diagnostic
+activation assertion proves exactly one `diagnostic=True` call in `run_fresh`
+and no direct `create_diagnostic=True` bypass.

@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-04 REMAINING CREATE AUTHORITY EXHAUSTED`
+`IN_PROGRESS — P5-04 POST-REVISION CREATE DIAGNOSTIC`
 
-Recovery time: `2026-08-06T06:08:29Z`
+Recovery time: `2026-08-06T07:02:38Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`c7edac8411614efab1a56348964f7c274cb6f18b`
+`16ed463e352c98328ea2e993aac0f80eeded7110`
 
 ## Authority
 
@@ -32,6 +32,12 @@ The sequence permits:
 
 It may not change Requirements, public API, permissions, Schema, ownership,
 transaction order, idempotency, audit or PASS criteria.
+
+After the preceding sequence was exhausted, the user requested that the
+problem be fixed. This resumes the same Goal with a new independent bounded
+post-revision-create sequence on `16ed463`: existing first-create diagnostic
+`0/1`, uniquely proved repair `0/1`, and reserved final Gate `0/1`. All prior
+runs and counters remain immutable history.
 
 ## Current evidence
 
@@ -101,17 +107,20 @@ transaction order, idempotency, audit or PASS criteria.
   that trace. The result cannot uniquely prove recurrence of the revision
   insert or a later create failure. Diagnostic, repair and final Gate are all
   consumed `1/1`.
+- Controller checkpoint `16ed463` passed complete ordinary CI `31076595986`;
+  repository and visual passed, while controlled runtime correctly skipped.
+  The new recovery reactivates only the existing response-neutral diagnostic
+  on the first create request. No product fix is selected yet.
 
 ## First unfinished action
 
-Await explicit authority for a new bounded remaining-create-stage recovery.
-If granted, reactivate only the existing response-neutral diagnostic on the
-first create request, run affected/full ordinary CI, use at most one diagnostic
-Site, repair only one uniquely proved in-scope root, close diagnostics, rerun
-affected/full ordinary CI and use one final unchanged Gate. Do not infer a root
-from the current aggregate tuple.
+Run the affected runtime-verifier/EBOM suites and complete tracked Python,
+reconciliation, trace/YAML and diff checks with only the first-create
+response-neutral diagnostic active. Commit and push the diagnostic checkpoint,
+require complete exact-SHA ordinary CI PASS, then execute at most one
+diagnostic Site. Do not infer a repair from the current aggregate tuple.
 
-P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
+P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 

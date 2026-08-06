@@ -1,17 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T06:08:29Z`
+Updated: `2026-08-06T07:02:38Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `BLOCKED_EXTERNAL — P5-04 REMAINING CREATE AUTHORITY EXHAUSTED`
+- Mode: `IN_PROGRESS — P5-04 POST-REVISION CREATE DIAGNOSTIC`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `f4aba879e47ea758a6c090016cb069a74b5c154b` (pushed)
 - Latest complete normal CI:
-  `31075372272` (`PASS`, exact repair SHA `f4aba87`; repository, E2E,
+  `31076595986` (`PASS`, exact controller SHA `16ed463`; repository, E2E,
   Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
   `31075730002` (`FAILED_NON_UNIQUE_CREATE_STAGE`, exact repair SHA
@@ -24,7 +24,7 @@ Updated: `2026-08-06T06:08:29Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`BLOCKED_EXTERNAL — REMAINING CREATE AUTHORITY EXHAUSTED`)
+  (`IN_PROGRESS — POST-REVISION CREATE DIAGNOSTIC`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -212,6 +212,15 @@ tuple cannot prove whether the revision-insert failure recurred or a later
 create substage failed. The diagnostic, repair and final-Gate allowances are
 all consumed, so another dispatch or guessed repair is outside current
 authority.
+
+The user subsequently requested that this problem be fixed, resuming the same
+Goal on exact base `16ed463`. This creates one new independent bounded
+post-revision-create recovery: existing response-neutral diagnostic `0/1`, at
+most one uniquely proved repair `0/1`, and one final unchanged Gate `0/1`.
+Only the first create request may activate the existing diagnostic, complete
+affected/full ordinary CI must pass before the diagnostic Site, and all frozen
+Requirement/API/permission/Schema/ownership/transaction/idempotency/audit/PASS
+invariants remain unchanged.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

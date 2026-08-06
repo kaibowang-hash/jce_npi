@@ -1,10 +1,10 @@
 # Blockers
 
-Updated: `2026-08-06T06:08:29Z`
+Updated: `2026-08-06T07:02:38Z`
 
 ## Active hard blockers
 
-`P5-04-CREATE-STAGE-DIAGNOSTIC-REPAIR-AUTHORITY`
+None under the resumed bounded P5-04 post-revision-create authority.
 
 Repair `f4aba87` passed local controller/runtime `25/25`, EBOM `64/64`,
 complete Python `960/960` and complete ordinary CI `31075372272`. The sole
@@ -15,10 +15,10 @@ trace-6fa26f47b241558db7fdafa0b9c1a46e`.
 
 Because final diagnostics were correctly closed, that aggregate stage cannot
 prove whether the diagnosed revision insert recurred or a later
-line/lifecycle/projection/audit/response/receipt substage failed. The new
-diagnostic, one uniquely proved repair and final Gate are all consumed. No
-safe diagnostic dispatch or product repair remains under current authority.
-The authoritative record is the final section below.
+line/lifecycle/projection/audit/response/receipt substage failed. The user has
+now resumed the Goal with one new bounded recovery on exact base `16ed463`;
+only the existing response-neutral diagnostic is active on the first create
+request before a uniquely proved repair.
 
 Historical resolved context follows.
 
@@ -556,6 +556,24 @@ must preserve that boundary.
   CI and one final unchanged Gate. No Requirement, API, permission, Schema,
   ownership, transaction, idempotency, audit or PASS criterion may change.
 - P5-04 is `BLOCKED_EXTERNAL`; P5-05 and Phase 6 remain inactive.
+
+## Resumed — P5-04 post-revision create diagnostic — 2026-08-06T07:02:38Z
+
+- The user requested that the problem be fixed, resuming the same Goal on
+  exact base `16ed463e352c98328ea2e993aac0f80eeded7110`.
+- This is a new independent bounded sequence: response-neutral first-create
+  diagnostic `0/1`, at most one uniquely proved in-scope repair `0/1`, and one
+  reserved final unchanged Gate `0/1`.
+- The existing diagnostic changes only sanitized server logging and emits only
+  an allowlisted substage, validated exception type and exact trace ID; it does
+  not change the HTTP response or product behavior.
+- Affected/full ordinary CI must pass before the sole diagnostic Site. No
+  repair may be selected without direct controller/DocType/domain/transaction
+  cross-validation, and diagnostic activation must close before the final
+  unchanged Gate.
+- Requirement, API, permission, Schema, ownership, transaction, idempotency,
+  audit and PASS criteria remain frozen. P5-04 is `IN_PROGRESS_DIAGNOSTIC`;
+  P5-05 and Phase 6 remain inactive.
 
 ## Resumed — P5-04 remaining create-stage diagnostic authority — 2026-08-06T04:48:37Z
 

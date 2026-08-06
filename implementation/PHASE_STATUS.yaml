@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T06:08:29Z'
+updated_at: '2026-08-06T07:02:38Z'
 authorization: automatic_transition_after_pass
-execution_hold: P5_04_REMAINING_CREATE_STAGE_AUTHORITY_EXHAUSTED
+execution_hold: null
 current_task: P5-04
-current_task_status: BLOCKED_EXTERNAL
-current_task_completed_stage: REMAINING_CREATE_REPAIR_FINAL_GATE_FAILED_OPAQUE_CREATE
-current_task_next_stage: AWAIT_BOUNDED_REMAINING_CREATE_RECOVERY_AUTHORITY
-current_task_next_stage_status: BLOCKED
+current_task_status: IN_PROGRESS_DIAGNOSTIC
+current_task_completed_stage: POST_REVISION_CREATE_RECOVERY_AUTHORIZED
+current_task_next_stage: POST_REVISION_CREATE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
+current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-04
-resumed_product_task_status: BLOCKED_EXTERNAL_REMAINING_CREATE_STAGE
+resumed_product_task_status: IN_PROGRESS_POST_REVISION_CREATE_STAGE_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_REMAINING_CREATE_STAGE_NON_UNIQUE
+  current_root: P5_04_POST_REVISION_CREATE_STAGE_NON_UNIQUE
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -87,6 +87,20 @@ repair_accounting:
     repair_normal_ci: 31075372272
     final_unchanged_gate: 31075730002
     outcome: RETURNED_TO_OPAQUE_P504_RUNTIME_CREATE
+    changes_global_five_round_rule: false
+    behavior_neutral_diagnostics_consume_product_root_round: false
+    frozen_invariants: REQUIREMENT_API_PERMISSION_SCHEMA_OWNERSHIP_TRANSACTION_IDEMPOTENCY_AUDIT_PASS_CRITERIA
+  p5_04_post_revision_create_stage_authority:
+    authority: USER_AUTHORIZED_2026_08_06_FIX_REQUEST
+    base_checkpoint: 16ed463e352c98328ea2e993aac0f80eeded7110
+    scope: P5_04_POST_REVISION_CREATE_STAGE_EXISTING_RESPONSE_NEUTRAL_DIAGNOSTIC_AND_ONE_PROVEN_REPAIR
+    status: IN_PROGRESS_DIAGNOSTIC
+    diagnostic_dispatches_authorized: 1
+    diagnostic_dispatches_used: 0
+    product_or_fixture_repairs_authorized_if_uniquely_proven: 1
+    product_or_fixture_repairs_used: 0
+    final_unchanged_gate_reserved: true
+    final_unchanged_gates_used: 0
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
     frozen_invariants: REQUIREMENT_API_PERMISSION_SCHEMA_OWNERSHIP_TRANSACTION_IDEMPOTENCY_AUDIT_PASS_CRITERIA
@@ -188,7 +202,7 @@ p5_03:
     - implementation/evidence/phase-5/p5-03-response-contract-pre-dispatch-ci-blocker.md
     - implementation/evidence/phase-5/p5-03-validation.md
 p5_04:
-  status: BLOCKED_EXTERNAL
+  status: IN_PROGRESS_DIAGNOSTIC
   requirements: [FR-DS-011, FR-DS-012]
   recovery_base_head: 5676f799ef2af8e1b3006ed69ec2b2f39539600f
   repository_checkpoint: 40e7b7036b9f39a8298b6bb44df9749c75337c5e
@@ -393,8 +407,21 @@ p5_04:
   remaining_create_final_unchanged_gate_trace_id: trace-6fa26f47b241558db7fdafa0b9c1a46e
   remaining_create_final_unchanged_gate_outcome: FAILED_NON_UNIQUE_CREATE_STAGE
   remaining_create_final_unchanged_gate_cleanup: PASS
-  completed_stage: REMAINING_CREATE_REPAIR_FINAL_GATE_FAILED_OPAQUE_CREATE
-  next_stage: AWAIT_BOUNDED_REMAINING_CREATE_RECOVERY_AUTHORITY
+  post_revision_create_recovery_base: 16ed463e352c98328ea2e993aac0f80eeded7110
+  post_revision_create_diagnostic_dispatches_authorized: 1
+  post_revision_create_diagnostic_dispatches_used: 0
+  post_revision_create_repairs_authorized_if_uniquely_proven: 1
+  post_revision_create_repairs_used: 0
+  post_revision_create_final_unchanged_gate_reserved: true
+  post_revision_create_final_unchanged_gates_used: 0
+  post_revision_create_diagnostic_activation: FIRST_CREATE_ONLY
+  post_revision_create_diagnostic_local_verifier_tests: 17_PASS
+  post_revision_create_diagnostic_local_ebom_tests: 64_PASS
+  post_revision_create_diagnostic_local_document_regression_tests: 70_PASS
+  post_revision_create_diagnostic_local_complete_python: 960_PASS
+  post_revision_create_diagnostic_local_reconciliation_trace_diff: PASS
+  completed_stage: POST_REVISION_CREATE_RECOVERY_AUTHORIZED
+  next_stage: POST_REVISION_CREATE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

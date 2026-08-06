@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T06:08:29Z`
+Updated: `2026-08-06T07:02:38Z`
 
 ## Authority and operating mode
 
@@ -307,8 +307,15 @@ pending until that proof is produced in Codespaces.
   proved repair `1/1` and final unchanged Gate `1/1` are exhausted. P5-04 is
   `BLOCKED_EXTERNAL`; another Site dispatch or repair requires new explicit
   bounded authority and may not guess a root.
+- The user then requested that the problem be fixed, resuming the same Goal on
+  exact base `16ed463`. One new independent post-revision-create sequence is
+  active: existing first-create response-neutral diagnostic `0/1`, uniquely
+  proved repair `0/1`, and reserved final unchanged Gate `0/1`. Affected/full
+  ordinary CI is mandatory before the sole diagnostic Site; diagnostics must
+  close before the final Gate. Frozen invariants and global repair accounting
+  do not change.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `BLOCKED_EXTERNAL`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

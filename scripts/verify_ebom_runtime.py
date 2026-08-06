@@ -606,6 +606,7 @@ def run_fresh(
             create_payload(policy_hash),
             CREATE_KEY,
             "P504_RUNTIME_CREATE",
+            diagnostic=True,
         )
         assert_replayed(created, "false")
         ebom, revision_one = exact_revision(created)
