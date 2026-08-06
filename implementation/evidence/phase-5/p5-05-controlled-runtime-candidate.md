@@ -167,3 +167,27 @@ Local affected publish tests pass `43/43`, EBOM regression passes `69/69`,
 complete tracked Python passes `1008/1008`, and compilation,
 prototype/P0-visual/V1.2 reconciliation, prohibited-pattern and whitespace
 checks pass.
+
+## Final Gate progression and second bounded diagnostic checkpoint
+
+Repair checkpoint `c61654c` passed complete ordinary CI `31109664009`:
+repository `92643838183` passed `verify.sh`, complete non-visual E2E, current
+tree and complete-history secret scans; visual `92643838306` passed `65/65`;
+the controlled job correctly skipped.
+
+The final unchanged workflow `31110350103` retained exact SHA `c61654c`. Its
+fixed Bench/Site, two migrations, P5-01 through P5-04 runtime, released EBOM
+replay and visual job passed. The candidate retained the repaired policy field
+serialization, but the policy fixture still failed behind its closed parent
+boundary as `P505_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+trace-376ca4d931515968986afb62e0706987`. With the child marker closed, this
+tuple cannot prove whether the remaining failure is context, namespace,
+root/version insert, result or commit.
+
+The user's standing Hard Blocker recovery authority therefore reactivates
+only the existing allowlisted, response-neutral fixture substage and exception
+class marker. HTTP responses, exception messages, tracebacks, paths,
+credentials and fixture values remain absent. Product Requirement, API,
+permission, Schema, ownership, transaction, idempotency, audit and PASS rules
+are unchanged. Affected/full ordinary CI must pass before at most one
+diagnostic Site run; no second product repair is selected yet.

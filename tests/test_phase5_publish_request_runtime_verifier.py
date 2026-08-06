@@ -77,7 +77,7 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
             module.PREDECESSOR_ROUTE_QUERY,
             "p505-predecessor-route-isolation",
         )
-        self.assertFalse(module.POLICY_FIXTURE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.POLICY_FIXTURE_DIAGNOSTICS_ENABLED)
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertNotIn("core." + "whjichen.cn", self.source)
         self.assertNotIn("ERP-", self.source)

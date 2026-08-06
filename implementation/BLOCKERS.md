@@ -792,3 +792,22 @@ must preserve that boundary.
   requester tuple and closes diagnostic output. No product rule or contract is
   changed. There is no active Hard Blocker; affected/full ordinary CI and one
   final unchanged controlled Gate remain.
+
+## P5-05 second policy-fixture diagnostic in progress — 2026-08-06T14:24:00Z
+
+- Repair checkpoint `c61654c` passed complete ordinary CI `31109664009`,
+  including repository verification, complete E2E, both secret lanes and the
+  `65/65` visual matrix.
+- Final unchanged workflow `31110350103` retained exact SHA `c61654c`; fixed
+  Bench/Site, migrations, all predecessor runtime checks, released EBOM replay
+  and visual verification passed. P5-05 then returned only
+  `P505_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+  trace-376ca4d931515968986afb62e0706987`.
+- The closed parent tuple cannot distinguish the remaining policy context,
+  namespace, root/version insert, result or commit substage. Under the user's
+  standing recovery authority, only the existing response-neutral allowlisted
+  child marker is reactivated, followed by affected/full ordinary CI and at
+  most one diagnostic Site.
+- No second product repair has been selected. Requirement, API, permission,
+  Schema, ownership, transaction, idempotency, audit and PASS rules remain
+  frozen; there is no authorization blocker.
