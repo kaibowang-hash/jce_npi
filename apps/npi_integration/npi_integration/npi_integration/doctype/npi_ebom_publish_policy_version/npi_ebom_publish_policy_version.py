@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_array,
     json_object,
     lowercase_sha256,
@@ -14,7 +15,6 @@ from npi_core.documents.frappe_validation import (
     require_exact_parent,
     required_text,
     tenant_text,
-    utc_datetime_text,
 )
 from npi_integration.publish_request.domain import sha256_json
 from npi_integration.publish_request.frappe_validation import (
@@ -164,7 +164,9 @@ class NPIEBOMPublishPolicyVersion(Document):
         self.requester_user_ids = canonical_json(list(requesters))
         self.policy_snapshot = canonical
         if self.publication_state == "published":
-            utc_datetime_text(self.published_at, _("Published At"))
+            self.published_at = frappe_utc_datetime_text(
+                self.published_at, _("Published At")
+            )
         elif self.published_at:
             frappe.throw(
                 _("A draft publish policy cannot have a publication time."),

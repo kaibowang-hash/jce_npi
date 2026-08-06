@@ -811,3 +811,21 @@ must preserve that boundary.
 - No second product repair has been selected. Requirement, API, permission,
   Schema, ownership, transaction, idempotency, audit and PASS rules remain
   frozen; there is no authorization blocker.
+
+## P5-05 policy-version Datetime root proven; repair in progress — 2026-08-06T14:39:00Z
+
+- Diagnostic checkpoint `de4f327` passed complete ordinary CI `31110928691`,
+  including repository verification, complete E2E, both secret lanes and the
+  `65/65` visual matrix.
+- The sole diagnostic Site `31111511594` returned only
+  `P505_RUNTIME_POLICY_VERSION_INSERT / OperationalError /
+  trace-f71914ae558753a1b2889bf1f6747700` after all predecessor boundaries.
+- Root insertion succeeded; controller rule failures use `ValidationError`.
+  Pinned Frappe source preserves Python Datetime values through
+  `get_valid_dict()`, and the controlled P5-01 proof requires the shared
+  Frappe/MariaDB database text format. The remaining timezone-aware
+  `published_at` value is therefore the unique root.
+- The bounded repair assigns only the existing shared Datetime normalization
+  result and closes diagnostic output. No product rule or contract changes;
+  there is no authorization blocker. Affected/full ordinary CI and one final
+  unchanged controlled Gate remain.

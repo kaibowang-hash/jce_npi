@@ -167,6 +167,8 @@ class Phase5PublishPolicyControllerTest(unittest.TestCase):
             document.requester_user_ids,
             json.dumps([ACTOR_USER], separators=(",", ":"), sort_keys=True),
         )
+        self.assertIsInstance(document.published_at, str)
+        self.assertEqual(document.published_at, "2026-08-06 12:00:00.000000")
 
 
 if __name__ == "__main__":

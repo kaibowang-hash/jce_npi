@@ -191,3 +191,35 @@ credentials and fixture values remain absent. Product Requirement, API,
 permission, Schema, ownership, transaction, idempotency, audit and PASS rules
 are unchanged. Affected/full ordinary CI must pass before at most one
 diagnostic Site run; no second product repair is selected yet.
+
+## Second diagnostic proof and unique Datetime repair
+
+Diagnostic checkpoint `de4f327` passed complete ordinary CI `31110928691`:
+repository `92648223678` passed `verify.sh`, complete non-visual E2E, current
+tree and complete-history secret scans; visual `92648223627` passed `65/65`;
+the controlled job correctly skipped.
+
+The sole diagnostic workflow `31111511594` retained exact SHA `de4f327` and
+returned only `P505_RUNTIME_POLICY_VERSION_INSERT / OperationalError /
+trace-f71914ae558753a1b2889bf1f6747700` after its fixed Site, migrations and
+all predecessor runtime checks passed. Root insertion therefore succeeded,
+and controller rule failures would be `ValidationError`, not the observed
+database `OperationalError`. After canonical requester and snapshot fields,
+the version fixture's only non-Frappe database value is the timezone-aware
+Python `published_at` value.
+
+Pinned Frappe commit `a3d8090` preserves Python Datetime values through
+`BaseDocument.get_valid_dict()` rather than converting them to database text.
+The controlled P5-01 runtime already proved that Frappe/MariaDB Datetime
+persistence requires the shared space-separated, timezone-naive database
+format. The publish-policy controller only validated `published_at` and
+discarded the canonical return value, unlike the proven Document and EBOM
+policy controllers. This uniquely explains the version-insert
+`OperationalError`.
+
+The bounded repair assigns only the existing shared
+`frappe_utc_datetime_text()` result to `published_at` before persistence and
+closes fixture diagnostic output. UTC meaning is unchanged. No Requirement,
+API, permission, Schema, ownership, transaction, idempotency, audit or PASS
+rule changes. Affected/full ordinary CI and one final unchanged controlled
+Gate remain required.
