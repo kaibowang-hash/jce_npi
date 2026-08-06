@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T08:38:39Z`
+Updated: `2026-08-06T10:59:30Z`
 
 ## Authority and operating mode
 
@@ -530,3 +530,27 @@ repeat or rewrite it merely to restore context. See
   or `succeeded`. Production ERPNext access, credentials, network dispatch,
   actual retry/replay/webhooks and reconciliation remain prohibited and
   deferred to Phase 8.
+
+## 2026-08-06 P5-05 domain/contract/metadata checkpoint
+
+- Product foundation `258277cc018a9e8b72cccb921b94e84b3dd0cb59`
+  adds only the closed operation-specific domain, OpenAPI/ownership/event
+  vocabulary, seven additive guarded DocTypes and complete direct trilingual
+  catalog. Mock cannot dispatch, expose formal Item/MBOM identifiers or report
+  execution success.
+- Ordinary CI `31093873820` proved repository `92591063338`, complete E2E and
+  both secret lanes PASS. Its visual job isolated exactly eighteen durable P0
+  status-bar catalog fingerprint deltas; all other `44/62` cases passed.
+- Artifact `8964668073` and original-resolution/exact-pixel review proved every
+  delta was confined to `y=879..899`, with zero workspace changes and only the
+  approved catalog fingerprint moving from `b4eead0d9711948` to
+  `da1371bd0cacf5c2`.
+- Evidence repair `a76f9c0cac313dabb80d0b31846345b5593c8d35`
+  changes only those eighteen exact Linux baselines. Complete ordinary CI
+  `31094889018` then passed repository `92594388442`, E2E, both secret lanes
+  and fixed-Linux visual `92594388260` at `62/62`; controlled runtime correctly
+  skipped.
+- Checkpoint 1 is closed. Autopilot continues with repository, independent
+  authority, actor-bound idempotency, atomic audit/persistence and BFF Mock
+  create/read behavior. Production ERPNext, network dispatch, Outbox execution
+  and Phase 8 retry/reconciliation remain inactive.

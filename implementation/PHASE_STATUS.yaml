@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T09:57:00Z'
+updated_at: '2026-08-06T10:59:30Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-05
 current_task_status: IN_PROGRESS_IMPLEMENTATION
-current_task_completed_stage: REQUIREMENT_OWNERSHIP_INTEGRATION_AUDIT_PASS
-current_task_next_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
+current_task_completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+current_task_next_stage: REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-05
-resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
+resumed_product_task_status: IN_PROGRESS_REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: NONE_P5_04_LEVEL_2_PASS
+  current_root: NONE_P5_05_FOUNDATION_CLEAN_CI
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -546,8 +546,13 @@ p5_05:
   status: IN_PROGRESS_IMPLEMENTATION
   requirements: [FR-DS-013]
   starting_product_checkpoint: 2c0734a4201ac5ee4b53eae913ce01172634da3f
-  completed_stage: REQUIREMENT_OWNERSHIP_INTEGRATION_AUDIT_PASS
-  next_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
+  domain_contract_metadata_checkpoint: 258277cc018a9e8b72cccb921b94e84b3dd0cb59
+  catalog_visual_evidence_checkpoint: a76f9c0cac313dabb80d0b31846345b5593c8d35
+  foundation_normal_ci: 31094889018
+  foundation_repository_job: 92594388442
+  foundation_visual_job: 92594388260
+  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+  next_stage: REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
   delivery_boundary: MOCK_DEFAULT_SANDBOX_READY_NO_PRODUCTION_OR_EXTERNAL_DISPATCH
   generic_execution_request_seed_accepted_as_completion: false
   outbox_inbox_foundation_accepted_as_completion: false
@@ -563,6 +568,7 @@ p5_05:
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-05-plan.md
+    - implementation/evidence/phase-5/p5-05-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

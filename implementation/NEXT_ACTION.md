@@ -1,36 +1,39 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-05 DOMAIN/CONTRACT/METADATA FOUNDATION`
+`IN_PROGRESS_IMPLEMENTATION — P5-05 REPOSITORY/PERMISSION/IDEMPOTENCY/AUDIT/BFF`
 
-Recovery time: `2026-08-06T09:57:00Z`
+Recovery time: `2026-08-06T10:59:30Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`2c0734a4201ac5ee4b53eae913ce01172634da3f`
+`a76f9c0cac313dabb80d0b31846345b5593c8d35`
 
 ## Current authoritative action
 
-P5-04 is complete at Level 2. Exact ordinary CI `31089637022` and final
-unchanged controlled-Site Gate `31090154694` passed on `2c0734a` with
-diagnostics closed. Evidence is
-`implementation/evidence/phase-5/p5-04-validation.md`.
+P5-05 checkpoint 1 is closed at `a76f9c0`. Its pure domain, closed OpenAPI,
+ownership/event vocabulary, seven additive DocTypes, direct `zh`/`zh-TW`
+catalogs and exact visual evidence passed complete ordinary CI `31094889018`:
+repository `92594388442` and visual `92594388260` (`62/62`) passed, while the
+controlled P5 runtime correctly skipped. Evidence is
+`implementation/evidence/phase-5/p5-05-domain-metadata-checkpoint.md`.
 
-The first unfinished atomic action is P5-05 checkpoint 1:
+The first unfinished atomic action is P5-05 checkpoint 2:
 
-1. implement the pure operation-specific
-   `publish_released_ebom_item_mbom` request/fault domain;
-2. replace the accepted generic create payload with closed EBOM publish
-   OpenAPI and ownership/event vocabulary;
-3. add only additive metadata needed for exact request, node mapping/result
-   and actor-bound idempotency truth;
-4. prove Mock cannot return an ERP identifier or `succeeded`, and prove every
-   required duplicate/conflict/timeout/429/5xx/4xx/partial/stale/unavailable/
-   restart/replay classification without network contact; and
-5. run the affected Level 1 checks and exact diff review before repository/API
-   implementation.
+1. implement repository resolution of one exact released EBOM and published
+   publish-request policy after independent Project/publish authority;
+2. implement actor-bound idempotent create/replay and changed-payload conflict
+   with one atomic receipt -> request -> mapping/node/result -> audit -> sealed
+   response transaction;
+3. expose only the operation-specific list/create/detail BFF paths with
+   auth-before-resolution, tenant/Project isolation, CSRF, optimistic root/
+   lifecycle checks and route disable/recovery;
+4. prove Mock persistence never creates Outbox work, dispatches, returns
+   formal target identifiers or reports `succeeded`; and
+5. run affected repository/API/permission/security/rollback checks and exact
+   diff review before any frontend workspace work.
 
 The complete scope, non-scope, risks, expected files, tests and rollback are
 frozen in `implementation/evidence/phase-5/p5-05-plan.md`. Production ERPNext

@@ -3,7 +3,7 @@
 Recorded: `2026-08-06T10:46:00Z`
 
 Status:
-`IN_PROGRESS — EXACT CATALOG-FINGERPRINT VISUAL REPAIR CANDIDATE`
+`PASS — DOMAIN, CLOSED CONTRACT, ADDITIVE METADATA AND CLEAN ORDINARY CI`
 
 Requirement: `FR-DS-013`
 
@@ -94,8 +94,19 @@ The bounded evidence repair copies only those eighteen exact CI `actual.png`
 files over their corresponding tracked `*-linux.png` baselines. Every copied
 file was compared byte-for-byte with its source. No test, threshold, matrix,
 layout, source string, translation, product code or PASS criterion changes.
-The repaired candidate must pass complete ordinary CI before this checkpoint
-is closed and before repository/BFF implementation begins.
+The repaired candidate `a76f9c0cac313dabb80d0b31846345b5593c8d35`
+passed complete ordinary CI `31094889018`:
+
+- repository `92594388442` passed complete `verify.sh`, complete non-visual
+  E2E, current-tree Gitleaks and complete branch-history secret scan;
+- fixed-Linux visual `92594388260` passed the complete unchanged `62/62`
+  governed matrix; and
+- controlled P5 runtime `92594389158` correctly skipped for this ordinary
+  pull-request event.
+
+The P5-05 domain/contract/metadata checkpoint is closed. The next and only
+active implementation boundary is repository, authorization, actor-bound
+idempotency, atomic audit/persistence and BFF Mock create/read behavior.
 
 ## Rollback
 
