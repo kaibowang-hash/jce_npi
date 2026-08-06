@@ -27,6 +27,7 @@ import {
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,
   expectNoMixedLanguage,
+  expectSinglePrimaryAction,
   type TestLocale,
 } from "./support";
 
@@ -238,6 +239,7 @@ test.describe("P5-05 live EBOM publish-request workspace", () => {
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);
+      await expectSinglePrimaryAction(page);
       await expectAxeClean(page);
 
       const publishReads = observed.filter((item) =>

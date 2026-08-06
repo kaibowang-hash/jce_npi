@@ -1057,7 +1057,13 @@ export function ProjectEngineeringBomWorkspace({
             onClick={(event) => {
               startEditor("create", event.currentTarget);
             }}
-            visual="secondary"
+            visual={
+              canCreate &&
+              editor === null &&
+              selectedRevision?.lifecycle.state !== "released"
+                ? "primary"
+                : "secondary"
+            }
           >
             {t("Create EBOM")}
           </Button>
