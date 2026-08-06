@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T07:53:33Z`
+Updated: `2026-08-06T08:12:47Z`
 
 ## Authority and operating mode
 
@@ -18,6 +18,19 @@ crosswalk is machine-readable in
 `implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv`; historical differences
 remain in `DOCX_PACK_DEVIATIONS.md`. A material conflict pauses only affected
 work unless it blocks everything.
+
+The user's 2026-08-06 standing recovery authority permits Autopilot to resolve
+this and later technical Hard Blockers without requesting another prompt. It
+does not broaden product scope or weaken any invariant. For an opaque runtime
+failure, Autopilot must execute serial bounded cycles: activate only an
+existing response-neutral diagnostic for the first affected request, pass
+affected/full ordinary CI, run one diagnostic Site, repair only the uniquely
+proved root, close diagnostics, pass affected/full ordinary CI and run one
+final unchanged Gate. If that Gate exposes a new opaque downstream root, a
+new identical cycle may begin automatically while all historical counters and
+evidence remain immutable. Autopilot still pauses for a Class-B business
+decision, Class-C/high-risk or destructive approval, or an external manual
+action that only the user can perform.
 
 The Execution Pack means the repository's actual `GOAL.md`, contracts, docs,
 design rules, specifications, implementation records, prompts, localization
@@ -324,11 +337,14 @@ pending until that proof is produced in Codespaces.
   returned only
   `P504_RUNTIME_CREATE / HttpStatusError /
   trace-ef925ea360245bd6b58daf326b910afe`. The aggregate final tuple cannot
-  distinguish lifecycle recurrence from a later create stage, so P5-04 is
-  `BLOCKED_EXTERNAL`; another diagnostic, repair or Site requires new explicit
-  bounded authority.
+  distinguish lifecycle recurrence from a later create stage. The standing
+  recovery authority therefore opens a new bounded post-lifecycle cycle
+  automatically: only the first-create diagnostic is active, affected/full
+  ordinary CI is required before one diagnostic Site, and only its uniquely
+  proved root may be repaired before diagnostics are closed and the unchanged
+  Gate is rerun.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `BLOCKED_EXTERNAL`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

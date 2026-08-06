@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T07:53:33Z`
+Updated: `2026-08-06T08:12:47Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `BLOCKED_EXTERNAL — P5-04 POST-LIFECYCLE CREATE STAGE OPAQUE`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 AUTONOMOUS HARD-BLOCKER RECOVERY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -24,7 +24,7 @@ Updated: `2026-08-06T07:53:33Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`BLOCKED_EXTERNAL — FINAL AUTHORITY EXHAUSTED`)
+  (`IN_PROGRESS — POST-LIFECYCLE CREATE DIAGNOSTIC`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -249,9 +249,23 @@ trace-ef925ea360245bd6b58daf326b910afe`. Because final diagnostics were closed,
 that tuple cannot prove recurrence of lifecycle insertion versus a later root
 projection/audit/response/receipt failure. Diagnostic `1/1`, repair `1/1` and
 final Gate `1/1` are exhausted; another dispatch or product edit would exceed
-the explicit bounded authority. P5-04 Level 2 and Autopilot continuation
-remain blocked pending a new bounded post-lifecycle diagnostic/repair/final-
-Gate authorization.
+the explicit bounded authority. At that historical checkpoint, P5-04 Level 2
+and Autopilot continuation were blocked pending a new bounded post-lifecycle
+diagnostic/repair/final-Gate authorization.
+
+The user has now supplied standing authority to resolve this and later Hard
+Blockers autonomously and continue Autopilot unless a business decision,
+high-risk/destructive approval or external manual action is genuinely
+required. Historical counters and failed Gates remain immutable. Each
+automatic recovery cycle is still bounded to the existing response-neutral
+diagnostic on the first create request, affected/full ordinary CI before one
+diagnostic Site, one repair only for the uniquely proved root, diagnostics
+closed, affected/full ordinary CI and one final unchanged Gate. A new opaque
+downstream aggregate may open the next identical bounded cycle without asking
+the user again; no cycle may change Requirement, API, permission, Schema,
+ownership, transaction, idempotency, audit or PASS invariants. The current
+post-lifecycle cycle is diagnostic `0/1`, uniquely proved repair `0/1` and
+final unchanged Gate `0/1`.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

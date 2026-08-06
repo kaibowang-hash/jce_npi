@@ -1,8 +1,13 @@
 # Blockers
 
-Updated: `2026-08-06T07:53:33Z`
+Updated: `2026-08-06T08:12:47Z`
 
 ## Active hard blockers
+
+None requiring external authorization. The P5-04 post-lifecycle create
+failure is in an authorized diagnostic recovery cycle.
+
+## Active recovery
 
 `P5-04-POST-LIFECYCLE-CREATE-FINAL-GATE`
 
@@ -18,15 +23,16 @@ trace-ef925ea360245bd6b58daf326b910afe`.
 
 The final response-neutral diagnostic was correctly closed, so the aggregate
 tuple cannot distinguish recurrence of the repaired lifecycle insert from a
-later root projection, audit, response or receipt-seal failure. The bounded
-diagnostic, repair and final-Gate counters are all consumed `1/1`; another
-Site dispatch or guessed repair is not authorized. The single action to
-unblock is explicit authority for one new post-lifecycle sequence: re-enable
-only the existing first-create response-neutral diagnostic, require
-affected/full ordinary CI, use at most one diagnostic Site, repair only one
+later root projection, audit, response or receipt-seal failure. The historical
+bounded diagnostic, repair and final-Gate counters remain consumed `1/1`.
+The user's standing recovery authority opens the next cycle without another
+prompt: re-enable only the existing first-create response-neutral diagnostic,
+require affected/full ordinary CI, use one diagnostic Site, repair only one
 uniquely proved root, close diagnostics, rerun ordinary CI and reserve one
 final unchanged Gate. Requirement, API, permission, Schema, ownership,
-transaction, idempotency, audit and PASS criteria must remain frozen.
+transaction, idempotency, audit and PASS criteria remain frozen. A further
+opaque downstream result opens another identical serial cycle; it does not
+authorize a guessed repair.
 
 Historical resolved context follows.
 

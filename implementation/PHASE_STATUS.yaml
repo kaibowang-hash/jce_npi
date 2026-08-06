@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T07:02:38Z'
+updated_at: '2026-08-06T08:12:47Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-04
 current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: POST_REVISION_CREATE_RECOVERY_AUTHORIZED
-current_task_next_stage: POST_REVISION_CREATE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
+current_task_completed_stage: POST_LIFECYCLE_AUTONOMOUS_RECOVERY_AUTHORIZED
+current_task_next_stage: POST_LIFECYCLE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-04
-resumed_product_task_status: IN_PROGRESS_POST_REVISION_CREATE_STAGE_DIAGNOSTIC
+resumed_product_task_status: IN_PROGRESS_POST_LIFECYCLE_CREATE_STAGE_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P5_04_POST_REVISION_CREATE_STAGE_NON_UNIQUE
+  current_root: P5_04_POST_LIFECYCLE_CREATE_STAGE_NON_UNIQUE
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -101,6 +101,23 @@ repair_accounting:
     product_or_fixture_repairs_used: 1
     final_unchanged_gate_reserved: true
     final_unchanged_gates_used: 1
+    changes_global_five_round_rule: false
+    behavior_neutral_diagnostics_consume_product_root_round: false
+    frozen_invariants: REQUIREMENT_API_PERMISSION_SCHEMA_OWNERSHIP_TRANSACTION_IDEMPOTENCY_AUDIT_PASS_CRITERIA
+  p5_04_autonomous_hard_blocker_recovery_authority:
+    authority: USER_STANDING_AUTHORIZATION_2026_08_06
+    base_checkpoint: 0575fec54682a580d51a1a700a1f9197166ce922
+    scope: SERIAL_UNIQUE_ROOT_DIAGNOSTIC_REPAIR_FINAL_GATE_CYCLES
+    status: IN_PROGRESS_POST_LIFECYCLE_DIAGNOSTIC
+    current_cycle: P5_04_POST_LIFECYCLE_CREATE_STAGE
+    diagnostic_dispatches_authorized_current_cycle: 1
+    diagnostic_dispatches_used_current_cycle: 0
+    repairs_authorized_if_uniquely_proven_current_cycle: 1
+    repairs_used_current_cycle: 0
+    final_unchanged_gates_authorized_current_cycle: 1
+    final_unchanged_gates_used_current_cycle: 0
+    future_technical_hard_blocker_cycles_authorized: true
+    manual_pause_only_for: BUSINESS_DECISION_HIGH_RISK_DESTRUCTIVE_OR_EXTERNAL_MANUAL_ACTION
     changes_global_five_round_rule: false
     behavior_neutral_diagnostics_consume_product_root_round: false
     frozen_invariants: REQUIREMENT_API_PERMISSION_SCHEMA_OWNERSHIP_TRANSACTION_IDEMPOTENCY_AUDIT_PASS_CRITERIA
@@ -450,8 +467,18 @@ p5_04:
   post_revision_create_diagnostic_local_document_regression_tests: 70_PASS
   post_revision_create_diagnostic_local_complete_python: 960_PASS
   post_revision_create_diagnostic_local_reconciliation_trace_diff: PASS
-  completed_stage: POST_REVISION_CREATE_FINAL_GATE_FAILED_NON_UNIQUE
-  next_stage: EXPLICIT_POST_LIFECYCLE_DIAGNOSTIC_AUTHORITY_REQUIRED
+  autonomous_recovery_authority: USER_STANDING_AUTHORIZATION_2026_08_06
+  autonomous_recovery_base: 0575fec54682a580d51a1a700a1f9197166ce922
+  autonomous_recovery_current_cycle: P5_04_POST_LIFECYCLE_CREATE_STAGE
+  autonomous_recovery_diagnostic_activation: ACTIVE_FIRST_CREATE_ONLY
+  autonomous_recovery_diagnostic_dispatches_authorized: 1
+  autonomous_recovery_diagnostic_dispatches_used: 0
+  autonomous_recovery_repairs_authorized_if_uniquely_proven: 1
+  autonomous_recovery_repairs_used: 0
+  autonomous_recovery_final_unchanged_gates_authorized: 1
+  autonomous_recovery_final_unchanged_gates_used: 0
+  completed_stage: POST_LIFECYCLE_AUTONOMOUS_RECOVERY_AUTHORIZED
+  next_stage: POST_LIFECYCLE_DIAGNOSTIC_AFFECTED_AND_FULL_ORDINARY_CI
   scoped_holds:
     - PRODUCTION_EBOM_NUMBERING
     - PRODUCTION_LINE_IDENTITY

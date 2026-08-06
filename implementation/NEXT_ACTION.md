@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`BLOCKED_EXTERNAL — P5-04 POST-LIFECYCLE CREATE STAGE OPAQUE`
+`IN_PROGRESS_DIAGNOSTIC — P5-04 POST-LIFECYCLE CREATE RECOVERY`
 
-Recovery time: `2026-08-06T07:53:33Z`
+Recovery time: `2026-08-06T08:12:47Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac`
+`0575fec54682a580d51a1a700a1f9197166ce922`
 
 ## Authority
 
@@ -38,6 +38,15 @@ problem be fixed. This resumes the same Goal with a new independent bounded
 post-revision-create sequence on `16ed463`: existing first-create diagnostic
 `0/1`, uniquely proved repair `0/1`, and reserved final Gate `0/1`. All prior
 runs and counters remain immutable history.
+
+The user now grants standing authority to resolve this and later technical
+Hard Blockers and continue Autopilot without another prompt. Each recovery is
+still a separate serial bounded cycle: first-create response-neutral
+diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged Gate `0/1`,
+with affected/full ordinary CI before each Site boundary and diagnostics
+closed before the final Gate. A new downstream opaque aggregate may start the
+next identical cycle automatically. Business decisions, high-risk/destructive
+actions and external manual operations still require the user.
 
 ## Current evidence
 
@@ -132,18 +141,19 @@ runs and counters remain immutable history.
   trace-ef925ea360245bd6b58daf326b910afe`.
 - The final aggregate tuple is non-unique across recurrence of lifecycle insert
   and later projection/audit/response/receipt stages. Diagnostic, repair and
-  final Gate are consumed `1/1`; no further edit or dispatch is authorized.
+  final Gate remain historically consumed `1/1`; standing authority has opened
+  a new post-lifecycle cycle with counters `0/1`, `0/1`, `0/1`.
 
 ## First unfinished action
 
-Obtain explicit authority for one new bounded post-lifecycle create-stage
-diagnostic/repair sequence. It must use only the existing response-neutral
-first-create diagnostic, affected/full ordinary CI, at most one diagnostic
-Site, one repair only for a uniquely proved root, diagnostics closed before
-ordinary CI and one final unchanged Gate. Do not infer a product edit from the
-current aggregate tuple.
+Commit the reactivated existing response-neutral first-create diagnostic and
+synchronized controller evidence, run affected/full ordinary CI, then execute
+one diagnostic Site. Repair only the uniquely proved root, close diagnostics,
+rerun affected/full ordinary CI and execute one final unchanged Gate. Do not
+infer a product edit from the current aggregate tuple.
 
-P5-04 is `BLOCKED_EXTERNAL`. P5-05 and Phase 6 remain inactive.
+P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive until its
+Level 2 Gate passes.
 
 ## Frozen non-scope
 

@@ -733,3 +733,30 @@ P5-05. Diagnostic `1/1`, uniquely proved repair `1/1` and final unchanged Gate
 explicit bounded post-lifecycle authority; no Requirement, API, permission,
 Schema, ownership, transaction, idempotency, audit or PASS criterion may
 change.
+
+## Standing-authority post-lifecycle recovery
+
+The user now authorizes autonomous resolution of this and later technical Hard
+Blockers followed by continued Autopilot. Historical diagnostic, repair and
+Gate counters remain immutable. The current opaque aggregate opens one new
+serial bounded cycle only: activate the existing response-neutral diagnostic
+on the first create request, pass affected/full ordinary CI, execute one
+diagnostic Site, repair only the uniquely proved root, close diagnostics, pass
+affected/full ordinary CI and execute one final unchanged Gate. If that Gate
+proves a new downstream opaque aggregate, the same bounded sequence may start
+again without another prompt. The authority excludes business decisions,
+high-risk/destructive actions, external manual operations and any change to
+Requirement, API, permission, Schema, ownership, transaction, idempotency,
+audit or PASS criteria.
+
+The diagnostic activation is response-neutral and first-create-only. The
+changed-files-to-tests map is:
+
+| Changed scope | Required affected checks |
+| --- | --- |
+| first-create diagnostic activation | runtime-verifier diagnostic activation, sanitization and controller tests |
+| controller/evidence synchronization | reconciliation, trace uniqueness, prototype approval, P0 visual governance, YAML parse and diff check |
+
+Current cycle counters are diagnostic `0/1`, uniquely proved repair `0/1` and
+final unchanged Gate `0/1`. No product root is inferred from the retained
+aggregate tuple.

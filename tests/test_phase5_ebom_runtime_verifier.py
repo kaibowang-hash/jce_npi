@@ -526,11 +526,15 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
             },
         )
 
-    def test_recovery_diagnostic_is_closed_before_final_gate(self) -> None:
+    def test_autonomous_recovery_activates_only_the_first_create_request(self) -> None:
         run_fresh_source = self.source.split("def run_fresh(", 1)[1].split(
             "\ndef ", 1
         )[0]
-        self.assertNotIn("diagnostic=True", run_fresh_source)
+        self.assertEqual(run_fresh_source.count("diagnostic=True"), 1)
+        self.assertIn(
+            '"P504_RUNTIME_CREATE",\n            diagnostic=True,',
+            run_fresh_source,
+        )
         self.assertNotIn("create_diagnostic=True", run_fresh_source)
 
     def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
