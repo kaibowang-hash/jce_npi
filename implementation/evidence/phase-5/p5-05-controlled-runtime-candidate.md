@@ -1,9 +1,9 @@
 # P5-05 Controlled Runtime Candidate
 
-Recorded: `2026-08-06T13:26:20Z`
+Recorded: `2026-08-06T13:56:00Z`
 
 Status:
-`HISTORY-SCAN REPAIR READY FOR COMPLETE ORDINARY CI — CONTROLLED SITE NOT YET DISPATCHED`
+`DIAGNOSTIC CHECKPOINT READY FOR COMPLETE ORDINARY CI`
 
 Requirement: `FR-DS-013`
 
@@ -113,3 +113,29 @@ repair. Only after repository,
 complete E2E, both secret lanes and the complete fixed-Linux visual matrix pass
 may Autopilot dispatch one unchanged controlled P5 Site Gate. A Gate PASS then
 permits the P5-05 Level 2 and Phase 5 Level 3 release-gate review.
+
+## First controlled Site result and bounded diagnostic checkpoint
+
+History-scan repair `c7b135e` passed complete ordinary CI `31106844016`:
+repository `92634104994` passed `verify.sh`, complete non-visual E2E, current
+tree and complete-history secret scans; visual `92634105130` passed `65/65`;
+the controlled job correctly skipped.
+
+The first unchanged controlled workflow `31107489349` retained exact SHA
+`c7b135e`. Its fixed Bench/Site, two migrations, P5-01 through P5-04 runtime,
+released EBOM replay, cleanup and visual job passed. The new P5-05 verifier
+then failed only as
+`P505_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+trace-8eae3b72953359208ae41905ed58f363`. This proves the boundary but cannot
+distinguish context, namespace, root insert, version insert, result or commit.
+
+The authorized diagnostic checkpoint therefore adds only an allowlisted,
+response-neutral child-fixture substage and exception-class marker. The parent
+still emits one validated stage/type/trace tuple; HTTP responses, messages,
+tracebacks, paths, credentials and fixture values remain absent. Product
+Requirement, API, permission, Schema, ownership, transaction, idempotency,
+audit and PASS rules are unchanged. Affected and full ordinary CI must pass
+before at most one diagnostic Site run; no product repair is selected yet.
+Affected verifier/devcontainer tests pass `49/49`; complete tracked Python
+passes `1007/1007`; compilation, prototype/P0 visual/V1.2 reconciliation,
+prohibited-pattern and whitespace checks pass.

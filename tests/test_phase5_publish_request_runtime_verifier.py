@@ -153,6 +153,49 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("message", module.runtime_stage_diagnostic(error))
         self.assertNotIn("traceback", module.runtime_stage_diagnostic(error))
 
+        fixture_error = module.FixtureStageFailure(
+            "P505_RUNTIME_POLICY_VERSION_INSERT",
+            exception_type="ValidationError",
+        )
+        self.assertEqual(
+            module.fixture_stage_diagnostic(fixture_error),
+            (
+                "[fixture_diagnostic_code=P505_RUNTIME_POLICY_VERSION_INSERT; "
+                "exc_type=ValidationError]"
+            ),
+        )
+        diagnostic = module.fixture_stage_diagnostic(fixture_error)
+        self.assertNotIn("message", diagnostic)
+        self.assertNotIn("traceback", diagnostic)
+        with self.assertRaises(ValueError):
+            module.FixtureStageFailure(
+                "P505_RUNTIME_CREATE",
+                exception_type="ValidationError",
+            )
+
+    def test_bench_fixture_translates_only_allowlisted_safe_marker(self) -> None:
+        module = self.module
+        completed = module.subprocess.CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="",
+            stderr=(
+                "[fixture_diagnostic_code=P505_RUNTIME_POLICY_ROOT_INSERT; "
+                "exc_type=ValidationError]\n"
+            ),
+        )
+        path_type = type(module.BENCH_PATH)
+        with patch.object(path_type, "is_dir", return_value=True), patch.object(
+            path_type, "is_symlink", return_value=False
+        ), patch.object(
+            path_type, "resolve", return_value=module.BENCH_PATH
+        ), patch.object(
+            module.subprocess, "run", return_value=completed
+        ), self.assertRaises(module.RuntimeStageFailure) as raised:
+            module.run_bench_fixture("provision_publish_policy", {})
+        self.assertEqual(raised.exception.code, "P505_RUNTIME_POLICY_ROOT_INSERT")
+        self.assertEqual(raised.exception.exception_type, "ValidationError")
+
     def test_policy_fixture_uses_guarded_admin_boundary(self) -> None:
         self.assertIn("with publish_policy_write():", self.source)
         self.assertIn('"publication_state": "published"', self.source)

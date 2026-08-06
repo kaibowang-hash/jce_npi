@@ -760,3 +760,19 @@ must preserve that boundary.
   `31090154694` with all diagnostics closed.
 - P5-04 is `PASS_LEVEL_2`; P5-05 is active. Its production ERPNext inputs are
   scoped holds, not blockers to Mock/default contracts and no-network proof.
+
+## P5-05 controlled policy-fixture diagnostic in progress — 2026-08-06T13:49:04Z
+
+- Ordinary exact-SHA CI `31106844016` passed repository, complete E2E, current
+  and complete-history secret scans, and `65/65` visual verification.
+- First unchanged controlled workflow `31107489349` passed its fixed
+  Bench/Site, migrations and all P5-01 through P5-04 runtime checks, then
+  returned only `P505_RUNTIME_POLICY_FIXTURE / BenchFixtureError /
+  trace-8eae3b72953359208ae41905ed58f363` from the new P5-05 policy fixture.
+- This tuple is not unique across fixture context, namespace, root/version
+  insert, result and commit. The user's standing recovery authority activates
+  one response-neutral allowlisted substage checkpoint, complete ordinary CI
+  and at most one diagnostic Site before any repair is selected.
+- There is no authorization blocker and no product contract is being changed.
+  P5-05 remains `IN_PROGRESS_DIAGNOSTIC`; the next action is affected/full
+  ordinary CI for the diagnostic checkpoint.

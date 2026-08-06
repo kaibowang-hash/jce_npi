@@ -68,10 +68,20 @@ PUBLISH_DOCTYPES = (
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
 _TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_FIXTURE_DIAGNOSTIC_PATTERN = re.compile(
+    r"^\[fixture_diagnostic_code=(P505_RUNTIME_POLICY_[A-Z_]+); "
+    r"exc_type=([A-Za-z][A-Za-z0-9_.]{0,127})\]$"
+)
 _RUNTIME_STAGE_CODES = frozenset(
     {
         "P505_RUNTIME_SCHEMA_FIXTURE",
         "P505_RUNTIME_POLICY_FIXTURE",
+        "P505_RUNTIME_POLICY_CONTEXT",
+        "P505_RUNTIME_POLICY_NAMESPACE",
+        "P505_RUNTIME_POLICY_ROOT_INSERT",
+        "P505_RUNTIME_POLICY_VERSION_INSERT",
+        "P505_RUNTIME_POLICY_COMMIT",
+        "P505_RUNTIME_POLICY_RESULT",
         "P505_RUNTIME_RELEASED_INPUT",
         "P505_RUNTIME_EMPTY_LIST",
         "P505_RUNTIME_GUEST_AUTHORIZATION",
@@ -104,12 +114,38 @@ class RuntimeStageFailure(RuntimeError):
         self.exception_type = exception_type
 
 
+class FixtureStageFailure(RuntimeError):
+    """Carry only an allowlisted fixture substage and exception class."""
+
+    def __init__(self, code: str, *, exception_type: str) -> None:
+        super().__init__("Controlled publish fixture substage failed")
+        if code not in _RUNTIME_STAGE_CODES or not code.startswith(
+            "P505_RUNTIME_POLICY_"
+        ):
+            raise ValueError("Publish-policy fixture code is not allowlisted")
+        if _TYPE_PATTERN.fullmatch(exception_type) is None:
+            raise ValueError("Publish-policy fixture exception type is invalid")
+        self.code = code
+        self.exception_type = exception_type
+
+
 def runtime_stage_diagnostic(error: RuntimeStageFailure) -> str:
     return (
         f"[diagnostic_code={error.code}; "
         f"exc_type={error.exception_type}; "
         f"trace_id={error.trace_id}]"
     )
+
+
+def fixture_stage_diagnostic(error: FixtureStageFailure) -> str:
+    return (
+        f"[fixture_diagnostic_code={error.code}; "
+        f"exc_type={error.exception_type}]"
+    )
+
+
+def fixture_stage_failure(code: str, error: Exception) -> FixtureStageFailure:
+    return FixtureStageFailure(code, exception_type=type(error).__name__)
 
 
 def require_stage_status(
@@ -355,36 +391,46 @@ def provision_publish_policy(
         and actor_user_id == ACTOR_USER,
         "Controlled publish-policy fixture identity drifted",
     )
-    project = frappe.db.get_value(
-        "NPI Engineering Project",
-        project_id,
-        ["global_id", "tenant_id"],
-        as_dict=True,
-    )
-    actor = frappe.db.get_value(
-        "User",
-        actor_user_id,
-        ["name", "enabled", "user_type"],
-        as_dict=True,
-    )
-    require(
-        project is not None
-        and str(project.get("global_id")) == project_id
-        and str(project.get("tenant_id")) == TENANT_ID
-        and actor is not None
-        and str(actor.get("name")) == actor_user_id
-        and int(actor.get("enabled") or 0) == 1
-        and str(actor.get("user_type")) == "System User",
-        "Controlled publish-policy fixture parent or actor is unavailable",
-    )
-    require(
-        not frappe.db.exists("NPI EBOM Publish Policy", PUBLISH_POLICY_ID)
-        and not frappe.db.exists(
-            "NPI EBOM Publish Policy Version",
-            PUBLISH_POLICY_VERSION_ID,
-        ),
-        "Controlled publish-policy namespace is not fresh",
-    )
+    try:
+        project = frappe.db.get_value(
+            "NPI Engineering Project",
+            project_id,
+            ["global_id", "tenant_id"],
+            as_dict=True,
+        )
+        actor = frappe.db.get_value(
+            "User",
+            actor_user_id,
+            ["name", "enabled", "user_type"],
+            as_dict=True,
+        )
+        require(
+            project is not None
+            and str(project.get("global_id")) == project_id
+            and str(project.get("tenant_id")) == TENANT_ID
+            and actor is not None
+            and str(actor.get("name")) == actor_user_id
+            and int(actor.get("enabled") or 0) == 1
+            and str(actor.get("user_type")) == "System User",
+            "Controlled publish-policy fixture parent or actor is unavailable",
+        )
+    except Exception as error:
+        raise fixture_stage_failure(
+            "P505_RUNTIME_POLICY_CONTEXT", error
+        ) from error
+    try:
+        require(
+            not frappe.db.exists("NPI EBOM Publish Policy", PUBLISH_POLICY_ID)
+            and not frappe.db.exists(
+                "NPI EBOM Publish Policy Version",
+                PUBLISH_POLICY_VERSION_ID,
+            ),
+            "Controlled publish-policy namespace is not fresh",
+        )
+    except Exception as error:
+        raise fixture_stage_failure(
+            "P505_RUNTIME_POLICY_NAMESPACE", error
+        ) from error
     title = "Synthetic controlled Mock publish policy"
     snapshot = {
         "schemaVersion": 1,
@@ -406,49 +452,69 @@ def provision_publish_policy(
         f"{TENANT_ID}:{project_id}:{PUBLISH_POLICY_KEY}".encode()
     ).hexdigest()
     with publish_policy_write():
-        root = frappe.get_doc(
-            {
-                "doctype": "NPI EBOM Publish Policy",
-                "global_id": PUBLISH_POLICY_ID,
-                "tenant_id": TENANT_ID,
-                "project_global_id": project_id,
-                "policy_key": PUBLISH_POLICY_KEY,
-                "policy_key_hash": policy_key_hash,
-                "title": title,
-                "enabled": 1,
-                "optimistic_version": 1,
-            }
-        ).insert()
-        version = frappe.get_doc(
-            {
-                "doctype": "NPI EBOM Publish Policy Version",
-                "global_id": PUBLISH_POLICY_VERSION_ID,
-                "publish_policy": PUBLISH_POLICY_ID,
-                "tenant_id": TENANT_ID,
-                "project_global_id": project_id,
-                "policy_global_id": PUBLISH_POLICY_ID,
-                "policy_key": PUBLISH_POLICY_KEY,
-                "policy_version": PUBLISH_POLICY_VERSION,
-                "version_key": PUBLISH_POLICY_VERSION_KEY,
-                "title": title,
-                "publication_state": "published",
-                "target_mode": "mock",
-                "api_version": "npi.erp-publish.v1",
-                "operation": "publish_released_ebom_item_mbom",
-                "requester_user_ids": [actor_user_id],
-                "policy_snapshot": snapshot,
-                "snapshot_hash": snapshot_hash,
-                "published_at": datetime.now(UTC),
-                "optimistic_version": 1,
-            }
-        ).insert()
-    require(
-        root.name == PUBLISH_POLICY_ID
-        and version.name == PUBLISH_POLICY_VERSION_ID
-        and str(version.snapshot_hash) == snapshot_hash,
-        "Controlled publish-policy persistence drifted",
-    )
-    frappe.db.commit()
+        try:
+            root = frappe.get_doc(
+                {
+                    "doctype": "NPI EBOM Publish Policy",
+                    "global_id": PUBLISH_POLICY_ID,
+                    "tenant_id": TENANT_ID,
+                    "project_global_id": project_id,
+                    "policy_key": PUBLISH_POLICY_KEY,
+                    "policy_key_hash": policy_key_hash,
+                    "title": title,
+                    "enabled": 1,
+                    "optimistic_version": 1,
+                }
+            ).insert()
+        except Exception as error:
+            raise fixture_stage_failure(
+                "P505_RUNTIME_POLICY_ROOT_INSERT", error
+            ) from error
+        try:
+            version = frappe.get_doc(
+                {
+                    "doctype": "NPI EBOM Publish Policy Version",
+                    "global_id": PUBLISH_POLICY_VERSION_ID,
+                    "publish_policy": PUBLISH_POLICY_ID,
+                    "tenant_id": TENANT_ID,
+                    "project_global_id": project_id,
+                    "policy_global_id": PUBLISH_POLICY_ID,
+                    "policy_key": PUBLISH_POLICY_KEY,
+                    "policy_version": PUBLISH_POLICY_VERSION,
+                    "version_key": PUBLISH_POLICY_VERSION_KEY,
+                    "title": title,
+                    "publication_state": "published",
+                    "target_mode": "mock",
+                    "api_version": "npi.erp-publish.v1",
+                    "operation": "publish_released_ebom_item_mbom",
+                    "requester_user_ids": [actor_user_id],
+                    "policy_snapshot": snapshot,
+                    "snapshot_hash": snapshot_hash,
+                    "published_at": datetime.now(UTC),
+                    "optimistic_version": 1,
+                }
+            ).insert()
+        except Exception as error:
+            raise fixture_stage_failure(
+                "P505_RUNTIME_POLICY_VERSION_INSERT", error
+            ) from error
+    try:
+        require(
+            root.name == PUBLISH_POLICY_ID
+            and version.name == PUBLISH_POLICY_VERSION_ID
+            and str(version.snapshot_hash) == snapshot_hash,
+            "Controlled publish-policy persistence drifted",
+        )
+    except Exception as error:
+        raise fixture_stage_failure(
+            "P505_RUNTIME_POLICY_RESULT", error
+        ) from error
+    try:
+        frappe.db.commit()
+    except Exception as error:
+        raise fixture_stage_failure(
+            "P505_RUNTIME_POLICY_COMMIT", error
+        ) from error
     return {
         "fixtureRunId": fixture_run_id,
         "policyGlobalId": root.name,
@@ -545,6 +611,14 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         text=True,
     )
     if completed.returncode != 0:
+        for line in completed.stderr.splitlines():
+            match = _FIXTURE_DIAGNOSTIC_PATTERN.fullmatch(line.strip())
+            if match is not None and match.group(1) in _RUNTIME_STAGE_CODES:
+                raise RuntimeStageFailure(
+                    match.group(1),
+                    trace_id,
+                    exception_type=match.group(2),
+                )
         raise RuntimeStageFailure(
             stage_code,
             trace_id,
@@ -941,6 +1015,9 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
+    except FixtureStageFailure as error:
+        print(fixture_stage_diagnostic(error), file=sys.stderr)
+        raise SystemExit(1) from None
     except RuntimeStageFailure as error:
         print(runtime_stage_diagnostic(error), file=sys.stderr)
         raise SystemExit(1) from None
