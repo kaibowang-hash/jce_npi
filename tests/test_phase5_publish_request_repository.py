@@ -62,6 +62,37 @@ class Phase5PublishRequestRepositoryTest(unittest.TestCase):
         )
         positions = [value.index(fragment) for fragment in order]
         self.assertEqual(positions, sorted(positions))
+        diagnostic_codes = (
+            "P505_CREATE_PROJECT_LOCK",
+            "P505_CREATE_POLICY_LOAD",
+            "P505_CREATE_POLICY_AUTHORITY",
+            "P505_CREATE_RELEASED_CONTEXT",
+            "P505_CREATE_PAYLOAD_HASH",
+            "P505_CREATE_IDEMPOTENCY_REPLAY",
+            "P505_CREATE_PROJECT_MUTABILITY",
+            "P505_CREATE_DOMAIN_BUILD",
+            "P505_CREATE_TRANSACTION_SCOPE",
+            "P505_CREATE_RECEIPT_INSERT",
+            "P505_CREATE_AUDIT_APPEND",
+            "P505_CREATE_RESPONSE_BUILD",
+            "P505_CREATE_RECEIPT_SEAL",
+        )
+        for code in diagnostic_codes:
+            with self.subTest(code=code):
+                self.assertEqual(value.count(code), 1)
+
+    def test_create_bundle_diagnostics_preserve_insert_order(self) -> None:
+        request_bundle = function("_insert_request_bundle")
+        node_bundle = function("_insert_node_bundle")
+        self.assertEqual(request_bundle.count("P505_CREATE_REQUEST_INSERT"), 1)
+        order = (
+            "P505_CREATE_MAPPING_INSERT",
+            "P505_CREATE_NODE_INSERT",
+            "P505_CREATE_RESULT_INSERT",
+        )
+        positions = [node_bundle.index(code) for code in order]
+        self.assertEqual(positions, sorted(positions))
+        self.assertEqual(node_bundle.count(".insert()"), 3)
 
     def test_receipt_replay_revalidates_scope_actor_payload_and_sealed_hash(self) -> None:
         value = function("_receipt_replay")

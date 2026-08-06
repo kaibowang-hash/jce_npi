@@ -223,3 +223,35 @@ closes fixture diagnostic output. UTC meaning is unchanged. No Requirement,
 API, permission, Schema, ownership, transaction, idempotency, audit or PASS
 rule changes. Affected/full ordinary CI and one final unchanged controlled
 Gate remain required.
+
+## Create boundary progression and response-neutral diagnostic checkpoint
+
+Datetime repair `25fa93e` passed complete repository ordinary CI
+`31111959654`: repository job `92651747310` passed `verify.sh`, complete
+non-visual E2E, current-tree and complete-history secret scans. The first
+visual attempt had one isolated, frontend-unaffected 210-pixel antialiasing
+difference in the legacy R1-05 Traditional Chinese 1920x1080/150% case while
+the other `64/65` cases passed. A same-SHA failed-job-only rerun
+`92654292840` passed the unchanged `65/65` matrix, proving a transient render
+variation without changing code, snapshots or thresholds. The controlled job
+remained skipped.
+
+Final unchanged workflow `31112969969` retained exact SHA `25fa93e`. Its fixed
+Bench/Site, migrations, policy fixture and all predecessor runtime boundaries
+passed, proving both policy-version repairs. The first create command then
+returned only `P505_RUNTIME_CREATE / HttpStatusError /
+trace-900c2129c31a5b16b0e872c6f674246d`. That HTTP boundary cannot distinguish
+command context, policy/released-input loading, domain construction, receipt,
+request/mapping/node/result insertion, audit, seal or response reconstruction.
+
+Under the user's standing Hard Blocker recovery authority, the diagnostic
+checkpoint reuses the already proven P5-04 pattern: one exact-scope request
+header enables allowlisted substage context managers that record only stage
+code, validated exception class and exact synthetic trace in the server log.
+The HTTP status, problem body, response headers, transaction and rollback
+behavior remain unchanged. The verifier reads only a bounded tail under the
+resolved disposable Bench and accepts only the exact three-key JSON record for
+the request trace. Requirement, API response contract, permission, Schema,
+ownership, transaction, idempotency, audit and PASS criteria are unchanged.
+Affected/full ordinary CI must pass before at most one diagnostic Site; no
+product repair is selected.

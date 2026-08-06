@@ -55,6 +55,7 @@ PUBLISH_POLICY_KEY = f"p5_05_runtime_{FIXTURE_RUN_ID}"
 CREATE_KEY = f"p5-05-runtime-r1-{FIXTURE_RUN_ID}-create"
 PREDECESSOR_ROUTE_QUERY = "p505-predecessor-" + "route-isolation"
 POLICY_FIXTURE_DIAGNOSTICS_ENABLED = False
+CREATE_SERVER_DIAGNOSTICS_ENABLED = True
 
 PUBLISH_DOCTYPES = (
     "NPI EBOM Publish Policy",
@@ -95,8 +96,34 @@ _RUNTIME_STAGE_CODES = frozenset(
         "P505_RUNTIME_ROUTE_RECOVERED",
         "P505_RUNTIME_PREDECESSOR_ROUTE_ISOLATION",
         "P505_RUNTIME_CROSS_PROCESS_REPLAY",
+        "P505_CREATE_COMMAND_CONTEXT",
+        "P505_CREATE_INPUT_PARSE",
+        "P505_CREATE_PROJECT_LOCK",
+        "P505_CREATE_POLICY_LOAD",
+        "P505_CREATE_POLICY_AUTHORITY",
+        "P505_CREATE_RELEASED_CONTEXT",
+        "P505_CREATE_PAYLOAD_HASH",
+        "P505_CREATE_IDEMPOTENCY_REPLAY",
+        "P505_CREATE_PROJECT_MUTABILITY",
+        "P505_CREATE_DOMAIN_BUILD",
+        "P505_CREATE_TRANSACTION_SCOPE",
+        "P505_CREATE_RECEIPT_INSERT",
+        "P505_CREATE_REQUEST_INSERT",
+        "P505_CREATE_MAPPING_INSERT",
+        "P505_CREATE_NODE_INSERT",
+        "P505_CREATE_RESULT_INSERT",
+        "P505_CREATE_AUDIT_APPEND",
+        "P505_CREATE_RESPONSE_BUILD",
+        "P505_CREATE_RECEIPT_SEAL",
+        "P505_CREATE_API_RESPONSE",
     }
 )
+_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    code for code in _RUNTIME_STAGE_CODES if code.startswith("P505_CREATE_")
+)
+_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_CREATE_DIAGNOSTIC_SCOPE = "p505-publish-create-v1"
+_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 
 
 class RuntimeStageFailure(RuntimeError):
@@ -191,6 +218,7 @@ def publish_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    create_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         ebom_runtime.document_runtime.command_headers(
@@ -202,6 +230,12 @@ def publish_request(
             f"p505-{query_key}"
         )
     )
+    if create_diagnostic:
+        require(
+            method == "POST" and idempotency_key is not None,
+            "The publish create diagnostic requires one command request",
+        )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
     result = ebom_runtime.document_runtime.request(
         opener,
         base_url,
@@ -225,6 +259,75 @@ def publish_request(
         request_id=headers["X-Request-ID"],
         trace_id=headers["X-Trace-ID"],
     )
+
+
+def _sanitized_create_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    """Read only an allowlisted P5-05 server record for this exact trace."""
+
+    if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    candidates = (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                continue
+            with resolved.open("rb") as log_file:
+                log_file.seek(0, os.SEEK_END)
+                size = log_file.tell()
+                log_file.seek(max(0, size - _DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_DIAGNOSTIC_LOG_TAIL_LIMIT)
+        except (OSError, RuntimeError):
+            continue
+        for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
+            if trace_id not in line:
+                continue
+            for start, character in enumerate(line):
+                if character != "{":
+                    continue
+                try:
+                    record, _end = decoder.raw_decode(line[start:])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(record, dict) or set(record) != {
+                    "code",
+                    "exceptionType",
+                    "traceId",
+                }:
+                    continue
+                code = record.get("code")
+                exception_type = record.get("exceptionType")
+                if (
+                    record.get("traceId") == trace_id
+                    and isinstance(code, str)
+                    and code in _CREATE_SERVER_DIAGNOSTIC_CODES
+                    and isinstance(exception_type, str)
+                    and _TYPE_PATTERN.fullmatch(exception_type) is not None
+                ):
+                    return exception_type, code, trace_id
+    return None
+
+
+def require_create_status(result: HttpResult) -> None:
+    if result.status == 201:
+        return
+    diagnostic = _sanitized_create_server_diagnostic(result.trace_id)
+    if diagnostic is not None:
+        exception_type, code, trace_id = diagnostic
+        raise RuntimeStageFailure(code, trace_id, exception_type=exception_type)
+    require_stage_status(result, {201}, "P505_RUNTIME_CREATE")
 
 
 def released_context(
@@ -709,8 +812,9 @@ def run_fresh(
         payload=payload,
         csrf_token=actor_csrf,
         idempotency_key=CREATE_KEY,
+        create_diagnostic=CREATE_SERVER_DIAGNOSTICS_ENABLED,
     )
-    require_stage_status(created, {201}, "P505_RUNTIME_CREATE")
+    require_create_status(created)
     require(
         created.headers.get("Idempotency-Replayed") == "false",
         "Controlled publish create replay header drifted",

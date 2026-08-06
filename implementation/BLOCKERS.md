@@ -829,3 +829,24 @@ must preserve that boundary.
   result and closes diagnostic output. No product rule or contract changes;
   there is no authorization blocker. Affected/full ordinary CI and one final
   unchanged controlled Gate remain.
+
+## P5-05 create-stage diagnostic in progress — 2026-08-06T14:57:00Z
+
+- Datetime repair `25fa93e` passed ordinary repository CI `31111959654`; the
+  only initial visual failure was an isolated 210-pixel difference in one
+  legacy R1-05 case, and the same-SHA failed-job-only rerun passed `65/65`
+  without changing code, baselines or thresholds.
+- Final unchanged workflow `31112969969` retained exact SHA `25fa93e`; fixed
+  Bench/Site, migrations, all predecessor runtime checks and the publish policy
+  fixture passed. The create command then returned only
+  `P505_RUNTIME_CREATE / HttpStatusError /
+  trace-900c2129c31a5b16b0e872c6f674246d`.
+- The HTTP tuple cannot distinguish command context, policy/release loading,
+  domain construction, receipt, request/mapping/node/result insertion, audit,
+  receipt seal or response reconstruction. Guessing a repair would be unsafe.
+- Standing recovery authority activates one header-gated, response-neutral
+  server-log diagnostic using the proven P5-04 pattern. It records only an
+  allowlisted substage, validated exception type and exact synthetic trace;
+  responses and transaction behavior are unchanged. Affected/full ordinary CI
+  and at most one diagnostic Site precede any product repair. There is no
+  authorization blocker.

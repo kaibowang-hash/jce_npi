@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
 import unittest
@@ -78,6 +79,7 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
             "p505-predecessor-route-isolation",
         )
         self.assertFalse(module.POLICY_FIXTURE_DIAGNOSTICS_ENABLED)
+        self.assertTrue(module.CREATE_SERVER_DIAGNOSTICS_ENABLED)
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertNotIn("core." + "whjichen.cn", self.source)
         self.assertNotIn("ERP-", self.source)
@@ -196,6 +198,71 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
             module.run_bench_fixture("provision_publish_policy", {})
         self.assertEqual(raised.exception.code, "P505_RUNTIME_POLICY_ROOT_INSERT")
         self.assertEqual(raised.exception.exception_type, "ValidationError")
+
+    def test_create_server_log_diagnostic_is_exact_and_sanitized(self) -> None:
+        module = self.module
+        trace_id = "trace-" + ("b" * 32)
+        code = "P505_CREATE_REQUEST_INSERT"
+        record = json.dumps(
+            {
+                "code": code,
+                "exceptionType": "ValidationError",
+                "traceId": trace_id,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as directory:
+            bench = Path(directory)
+            log = bench / "logs" / "npi_core.log"
+            log.parent.mkdir(parents=True)
+            log.write_text(
+                "sensitive /tmp/private\n" + record + "\n",
+                encoding="utf-8",
+            )
+            with patch.object(module, "BENCH_PATH", bench):
+                diagnostic = module._sanitized_create_server_diagnostic(trace_id)
+        self.assertEqual(diagnostic, ("ValidationError", code, trace_id))
+        self.assertNotIn("sensitive", str(diagnostic))
+        self.assertNotIn("/tmp", str(diagnostic))
+
+    def test_create_request_activates_only_the_closed_diagnostic_header(self) -> None:
+        module = self.module
+        captured: dict[str, object] = {}
+
+        def request(_opener, _base_url, _path, **values):
+            captured.update(values["request_headers"])
+            return type(
+                "Result",
+                (),
+                {
+                    "status": 500,
+                    "headers": {
+                        "X-Request-ID": values["request_headers"]["X-Request-ID"],
+                        "Cache-Control": "private, no-store",
+                    },
+                    "body": {"code": "INTERNAL_SERVER_ERROR"},
+                    "trace_id": values["request_headers"]["X-Trace-ID"],
+                },
+            )()
+
+        with patch.object(module.ebom_runtime.document_runtime, "request", request):
+            module.publish_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/synthetic",
+                method="POST",
+                payload={},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key="synthetic-create-key",
+                create_diagnostic=True,
+            )
+        self.assertEqual(
+            captured.get(module._CREATE_DIAGNOSTIC_HEADER),
+            module._CREATE_DIAGNOSTIC_SCOPE,
+        )
 
     def test_policy_fixture_uses_guarded_admin_boundary(self) -> None:
         self.assertIn("with publish_policy_write():", self.source)

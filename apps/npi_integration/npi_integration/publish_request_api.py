@@ -22,6 +22,10 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_integration.publish_request.domain import PublishRequestUnavailable
+from npi_integration.publish_request.diagnostics import (
+    publish_create_server_diagnostics,
+    publish_create_server_step,
+)
 
 
 _HASH = re.compile(r"^[a-f0-9]{64}$")
@@ -149,60 +153,64 @@ def create_publish_request(
     }
 
     def handle() -> dict[str, Any]:
-        request_id, key_hash, repository, project_id = _command_context(
-            request_fields
-        )
-        values = {
-            "expected_ebom_version": _positive(
-                expectedEbomVersion, "expectedEbomVersion"
-            ),
-            "expected_revision_snapshot_hash": _hash(
-                expectedRevisionSnapshotHash,
-                "expectedRevisionSnapshotHash",
-            ),
-            "expected_lifecycle_version": _positive(
-                expectedLifecycleVersion,
-                "expectedLifecycleVersion",
-            ),
-            "publish_policy_global_id": _uuid(
-                publishPolicyGlobalId,
-                "publishPolicyGlobalId",
-            ),
-            "publish_policy_version": _positive(
-                publishPolicyVersion,
-                "publishPolicyVersion",
-            ),
-            "publish_policy_snapshot_hash": _hash(
-                publishPolicySnapshotHash,
-                "publishPolicySnapshotHash",
-            ),
-            "reason": _text(reason, "reason", 280),
-        }
-        _exact(targetMode, "targetMode", "mock")
-        if confirmed is not True:
-            raise _field(
-                "confirmed",
-                _("Confirm validation of the exact released EBOM."),
-            )
-        _exact(
-            confirmationIntent,
-            "confirmationIntent",
-            "validate_exact_released_ebom_for_item_mbom_publish",
-        )
-        outcome = repository.create_request(
-            project_id,
-            _opaque_route_uuid("ebom_id"),
-            _opaque_route_uuid("revision_id"),
-            idempotency_key_hash=key_hash,
-            **values,
-        )
-        if outcome is None:
-            raise PublishRequestUnavailable()
-        if type(outcome.replayed) is not bool:
-            raise RuntimeError("The publish command replay result is invalid.")
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
-        return _response(outcome.response)
+        with publish_create_server_diagnostics(current_trace_id.get()):
+            with publish_create_server_step("P505_CREATE_COMMAND_CONTEXT"):
+                request_id, key_hash, repository, project_id = _command_context(
+                    request_fields
+                )
+            with publish_create_server_step("P505_CREATE_INPUT_PARSE"):
+                values = {
+                    "expected_ebom_version": _positive(
+                        expectedEbomVersion, "expectedEbomVersion"
+                    ),
+                    "expected_revision_snapshot_hash": _hash(
+                        expectedRevisionSnapshotHash,
+                        "expectedRevisionSnapshotHash",
+                    ),
+                    "expected_lifecycle_version": _positive(
+                        expectedLifecycleVersion,
+                        "expectedLifecycleVersion",
+                    ),
+                    "publish_policy_global_id": _uuid(
+                        publishPolicyGlobalId,
+                        "publishPolicyGlobalId",
+                    ),
+                    "publish_policy_version": _positive(
+                        publishPolicyVersion,
+                        "publishPolicyVersion",
+                    ),
+                    "publish_policy_snapshot_hash": _hash(
+                        publishPolicySnapshotHash,
+                        "publishPolicySnapshotHash",
+                    ),
+                    "reason": _text(reason, "reason", 280),
+                }
+                _exact(targetMode, "targetMode", "mock")
+                if confirmed is not True:
+                    raise _field(
+                        "confirmed",
+                        _("Confirm validation of the exact released EBOM."),
+                    )
+                _exact(
+                    confirmationIntent,
+                    "confirmationIntent",
+                    "validate_exact_released_ebom_for_item_mbom_publish",
+                )
+            with publish_create_server_step("P505_CREATE_API_RESPONSE"):
+                outcome = repository.create_request(
+                    project_id,
+                    _opaque_route_uuid("ebom_id"),
+                    _opaque_route_uuid("revision_id"),
+                    idempotency_key_hash=key_hash,
+                    **values,
+                )
+                if outcome is None:
+                    raise PublishRequestUnavailable()
+                if type(outcome.replayed) is not bool:
+                    raise RuntimeError("The publish command replay result is invalid.")
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+                return _response(outcome.response)
 
     return frappe_domain_call(
         handle,

@@ -46,6 +46,7 @@ from npi_integration.publish_request.domain import (
     create_mock_publish_request,
     sha256_json,
 )
+from npi_integration.publish_request.diagnostics import publish_create_server_step
 from npi_integration.publish_request.frappe_validation import publish_request_write
 
 
@@ -176,133 +177,146 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
         publish_policy_snapshot_hash: str,
         reason: str,
     ) -> DocumentCommandOutcome | None:
-        project = self._locked_command_project(project_id)
+        with publish_create_server_step("P505_CREATE_PROJECT_LOCK"):
+            project = self._locked_command_project(project_id)
         if project is None:
             return None
-        policy = self._load_exact_publish_policy(
-            project,
-            policy_global_id=publish_policy_global_id,
-            policy_version=publish_policy_version,
-            snapshot_hash=publish_policy_snapshot_hash,
-            lock=True,
-        )
-        self._require_publish_policy_actor(policy)
-        context = self._released_context(
-            project,
-            ebom_id=ebom_id,
-            revision_id=revision_id,
-            lock=True,
-        )
+        with publish_create_server_step("P505_CREATE_POLICY_LOAD"):
+            policy = self._load_exact_publish_policy(
+                project,
+                policy_global_id=publish_policy_global_id,
+                policy_version=publish_policy_version,
+                snapshot_hash=publish_policy_snapshot_hash,
+                lock=True,
+            )
+        with publish_create_server_step("P505_CREATE_POLICY_AUTHORITY"):
+            self._require_publish_policy_actor(policy)
+        with publish_create_server_step("P505_CREATE_RELEASED_CONTEXT"):
+            context = self._released_context(
+                project,
+                ebom_id=ebom_id,
+                revision_id=revision_id,
+                lock=True,
+            )
         if context is None:
             return None
         root, _revision_row, revision, _lifecycle_row, lifecycle, release = context
-        command_payload = {
-            "ebomGlobalId": str(ebom_id),
-            "revisionGlobalId": str(revision_id),
-            "expectedEbomVersion": expected_ebom_version,
-            "expectedRevisionSnapshotHash": expected_revision_snapshot_hash,
-            "expectedLifecycleVersion": expected_lifecycle_version,
-            "publishPolicyGlobalId": str(publish_policy_global_id),
-            "publishPolicyVersion": publish_policy_version,
-            "publishPolicySnapshotHash": publish_policy_snapshot_hash,
-            "targetMode": "mock",
-            "confirmed": True,
-            "confirmationIntent": (
-                "validate_exact_released_ebom_for_item_mbom_publish"
-            ),
-            "reason": reason,
-        }
-        command_hash = command_payload_hash(
-            operation=_OPERATION,
-            actor=self.actor,
-            tenant_id=str(project.tenant_id),
-            project_id=project_id,
-            document_id=ebom_id,
-            payload=command_payload,
-        )
-        replay = self._receipt_replay(
-            project,
-            idempotency_key_hash=idempotency_key_hash,
-            payload_hash=command_hash,
-        )
-        if replay is not None:
-            return DocumentCommandOutcome(replay, replayed=True)
-        require_mutable_project(project)
-        if (
-            int(root.optimistic_version) != expected_ebom_version
-            or revision.snapshot_hash != expected_revision_snapshot_hash
-            or lifecycle.lifecycle_version != expected_lifecycle_version
-        ):
-            raise PublishRequestStateConflict()
-
-        evidence = ReleasedEbomEvidence(
-            project_global_id=project_id,
-            ebom_global_id=ebom_id,
-            ebom_version=int(root.optimistic_version),
-            revision_global_id=revision_id,
-            revision_number=revision.revision_number,
-            revision_snapshot_hash=revision.snapshot_hash,
-            lifecycle_version=lifecycle.lifecycle_version,
-            release_event_global_id=release.global_id,
-            release_event_hash=release.event_hash,
-            ebom_policy_global_id=revision.policy_ref.global_id,
-            ebom_policy_version=revision.policy_ref.version,
-            ebom_policy_snapshot_hash=revision.policy_ref.snapshot_hash,
-            approval_evidence_ids=self._approval_evidence_ids(
-                project,
-                root,
-                revision,
-                release.global_id,
-            ),
-            released_at=release.occurred_at,
-        )
-        now = datetime.now(UTC)
-        request = create_mock_publish_request(
-            policy=PublishPolicyReference(
-                publish_policy_global_id,
-                publish_policy_version,
-                publish_policy_snapshot_hash,
-            ),
-            evidence=evidence,
-            lines=self._publish_lines(revision),
-            actor_user_id=self.actor,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-            idempotency_key_hash=idempotency_key_hash,
-            created_at=now,
-        )
-        with publish_request_write():
-            receipt = self._insert_receipt(
+        with publish_create_server_step("P505_CREATE_PAYLOAD_HASH"):
+            command_payload = {
+                "ebomGlobalId": str(ebom_id),
+                "revisionGlobalId": str(revision_id),
+                "expectedEbomVersion": expected_ebom_version,
+                "expectedRevisionSnapshotHash": expected_revision_snapshot_hash,
+                "expectedLifecycleVersion": expected_lifecycle_version,
+                "publishPolicyGlobalId": str(publish_policy_global_id),
+                "publishPolicyVersion": publish_policy_version,
+                "publishPolicySnapshotHash": publish_policy_snapshot_hash,
+                "targetMode": "mock",
+                "confirmed": True,
+                "confirmationIntent": (
+                    "validate_exact_released_ebom_for_item_mbom_publish"
+                ),
+                "reason": reason,
+            }
+            command_hash = command_payload_hash(
+                operation=_OPERATION,
+                actor=self.actor,
+                tenant_id=str(project.tenant_id),
+                project_id=project_id,
+                document_id=ebom_id,
+                payload=command_payload,
+            )
+        with publish_create_server_step("P505_CREATE_IDEMPOTENCY_REPLAY"):
+            replay = self._receipt_replay(
                 project,
                 idempotency_key_hash=idempotency_key_hash,
                 payload_hash=command_hash,
-                now=now,
             )
-            self._insert_request_bundle(project, request, now=now)
-            self._append_audit(
-                operation=_OPERATION,
-                global_id=request.global_id,
-                object_version=1,
-                result=request.state.value,
-                summary={
-                    "ebomGlobalId": str(ebom_id),
-                    "revisionGlobalId": str(revision_id),
-                    "revisionSnapshotHash": revision.snapshot_hash,
-                    "publishPolicySnapshotHash": publish_policy_snapshot_hash,
-                    "requestPayloadHash": request.payload_hash,
-                    "nodeCount": len(request.nodes),
-                    "targetMode": "mock",
-                    "dispatchAllowed": False,
-                    "reason": reason,
-                },
+        if replay is not None:
+            return DocumentCommandOutcome(replay, replayed=True)
+        with publish_create_server_step("P505_CREATE_PROJECT_MUTABILITY"):
+            require_mutable_project(project)
+            if (
+                int(root.optimistic_version) != expected_ebom_version
+                or revision.snapshot_hash != expected_revision_snapshot_hash
+                or lifecycle.lifecycle_version != expected_lifecycle_version
+            ):
+                raise PublishRequestStateConflict()
+
+        with publish_create_server_step("P505_CREATE_DOMAIN_BUILD"):
+            evidence = ReleasedEbomEvidence(
+                project_global_id=project_id,
+                ebom_global_id=ebom_id,
+                ebom_version=int(root.optimistic_version),
+                revision_global_id=revision_id,
+                revision_number=revision.revision_number,
+                revision_snapshot_hash=revision.snapshot_hash,
+                lifecycle_version=lifecycle.lifecycle_version,
+                release_event_global_id=release.global_id,
+                release_event_hash=release.event_hash,
+                ebom_policy_global_id=revision.policy_ref.global_id,
+                ebom_policy_version=revision.policy_ref.version,
+                ebom_policy_snapshot_hash=revision.policy_ref.snapshot_hash,
+                approval_evidence_ids=self._approval_evidence_ids(
+                    project,
+                    root,
+                    revision,
+                    release.global_id,
+                ),
+                released_at=release.occurred_at,
             )
-            response = request.public_dict()
-            self._seal_receipt(
-                receipt,
-                request_id=request.global_id,
-                response=response,
-                now=now,
+            now = datetime.now(UTC)
+            request = create_mock_publish_request(
+                policy=PublishPolicyReference(
+                    publish_policy_global_id,
+                    publish_policy_version,
+                    publish_policy_snapshot_hash,
+                ),
+                evidence=evidence,
+                lines=self._publish_lines(revision),
+                actor_user_id=self.actor,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+                idempotency_key_hash=idempotency_key_hash,
+                created_at=now,
             )
+        with publish_create_server_step("P505_CREATE_TRANSACTION_SCOPE"):
+            with publish_request_write():
+                with publish_create_server_step("P505_CREATE_RECEIPT_INSERT"):
+                    receipt = self._insert_receipt(
+                        project,
+                        idempotency_key_hash=idempotency_key_hash,
+                        payload_hash=command_hash,
+                        now=now,
+                    )
+                self._insert_request_bundle(project, request, now=now)
+                with publish_create_server_step("P505_CREATE_AUDIT_APPEND"):
+                    self._append_audit(
+                        operation=_OPERATION,
+                        global_id=request.global_id,
+                        object_version=1,
+                        result=request.state.value,
+                        summary={
+                            "ebomGlobalId": str(ebom_id),
+                            "revisionGlobalId": str(revision_id),
+                            "revisionSnapshotHash": revision.snapshot_hash,
+                            "publishPolicySnapshotHash": publish_policy_snapshot_hash,
+                            "requestPayloadHash": request.payload_hash,
+                            "nodeCount": len(request.nodes),
+                            "targetMode": "mock",
+                            "dispatchAllowed": False,
+                            "reason": reason,
+                        },
+                    )
+                with publish_create_server_step("P505_CREATE_RESPONSE_BUILD"):
+                    response = request.public_dict()
+                with publish_create_server_step("P505_CREATE_RECEIPT_SEAL"):
+                    self._seal_receipt(
+                        receipt,
+                        request_id=request.global_id,
+                        response=response,
+                        now=now,
+                    )
         return DocumentCommandOutcome(response)
 
     def _released_context(
@@ -706,8 +720,9 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
 
     @staticmethod
     def _insert_request_bundle(project, request: PublishRequest, *, now: datetime) -> None:
-        frappe.get_doc(
-            {
+        with publish_create_server_step("P505_CREATE_REQUEST_INSERT"):
+            frappe.get_doc(
+                {
                 "doctype": "NPI EBOM Publish Request",
                 "global_id": str(request.global_id),
                 "tenant_id": str(project.tenant_id),
@@ -732,8 +747,8 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
                 "trace_id": request.trace_id,
                 "idempotency_key_hash": request.idempotency_key_hash,
                 "created_at": _database_datetime(request.created_at),
-            }
-        ).insert()
+                }
+            ).insert()
         for node in request.nodes:
             FrappePublishRequestRepository._insert_node_bundle(
                 project,
@@ -765,8 +780,9 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
             "observedAt": None,
             "sourceSystem": "NPI_ONE",
         }
-        frappe.get_doc(
-            {
+        with publish_create_server_step("P505_CREATE_MAPPING_INSERT"):
+            frappe.get_doc(
+                {
                 "doctype": "NPI EBOM Publish Mapping Observation",
                 "global_id": str(mapping_id),
                 "tenant_id": str(project.tenant_id),
@@ -779,10 +795,11 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
                 "observation_snapshot": observation,
                 "observation_hash": sha256_json(observation),
                 "created_at": _database_datetime(now),
-            }
-        ).insert()
-        frappe.get_doc(
-            {
+                }
+            ).insert()
+        with publish_create_server_step("P505_CREATE_NODE_INSERT"):
+            frappe.get_doc(
+                {
                 "doctype": "NPI EBOM Publish Node",
                 "global_id": str(node.global_id),
                 "publish_request": str(request.global_id),
@@ -803,16 +820,17 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
                 "result_state": node.result_state.value,
                 "input_hash": node.input_hash,
                 "created_at": _database_datetime(now),
-            }
-        ).insert()
+                }
+            ).insert()
         for result in node.results:
             result_snapshot = {
                 "schemaVersion": 1,
                 "requestGlobalId": str(request.global_id),
                 **result.payload(expose_target_identifiers=True),
             }
-            frappe.get_doc(
-                {
+            with publish_create_server_step("P505_CREATE_RESULT_INSERT"):
+                frappe.get_doc(
+                    {
                     "doctype": "NPI EBOM Publish Node Result",
                     "global_id": str(result.global_id),
                     "publish_request": str(request.global_id),
@@ -832,8 +850,8 @@ class FrappePublishRequestRepository(FrappeEngineeringBomRepository):
                     "occurred_at": _database_datetime(result.occurred_at),
                     "result_snapshot": result_snapshot,
                     "result_hash": result.result_hash,
-                }
-            ).insert()
+                    }
+                ).insert()
 
     def _request_for_scope(
         self,

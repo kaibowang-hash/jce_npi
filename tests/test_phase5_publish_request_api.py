@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib
+import json
 import sys
 import types
 import unittest
@@ -80,6 +81,7 @@ class Phase5PublishRequestApiTest(unittest.TestCase):
         "frappe.sessions",
         "npi_core.api",
         "npi_core.request_security",
+        "npi_integration.publish_request.diagnostics",
         "npi_integration.publish_request_api",
         "npi_core.bff",
     )
@@ -135,8 +137,9 @@ class Phase5PublishRequestApiTest(unittest.TestCase):
         self.frappe.get_roles = lambda user: self.roles.get(user, [])
         self.frappe.db = StubDatabase(user_types)
         self.frappe.log_error = lambda **_values: None
+        self.safe_logs: list[str] = []
         self.frappe.logger = lambda _name: types.SimpleNamespace(
-            error=lambda *_args, **_kwargs: None
+            error=lambda message, *_args, **_kwargs: self.safe_logs.append(message)
         )
 
         def whitelist(*, methods: list[str], allow_guest: bool = False):
@@ -286,6 +289,56 @@ class Phase5PublishRequestApiTest(unittest.TestCase):
         self.assertTrue(result["retryable"])
         self.assertNotIn("sensitive", str(result).casefold())
         self.assertEqual(self.frappe.db.rollback_count, 1)
+
+    def test_create_diagnostic_is_header_gated_response_neutral_and_sanitized(
+        self,
+    ) -> None:
+        diagnostics = importlib.import_module(
+            "npi_integration.publish_request.diagnostics"
+        )
+        trace_id = "trace-" + ("f" * 32)
+        self.repository.error = ValueError("sensitive database /tmp/private")
+
+        result_without_header = self.call(
+            self.api.create_publish_request,
+            self.payload(),
+        )
+        self.assertEqual(result_without_header["code"], "INTERNAL_SERVER_ERROR")
+        self.assertFalse(any("P505_CREATE" in value for value in self.safe_logs))
+        self.safe_logs.clear()
+
+        self.headers[diagnostics.PUBLISH_CREATE_SERVER_DIAGNOSTIC_HEADER] = (
+            diagnostics.PUBLISH_CREATE_SERVER_DIAGNOSTIC_SCOPE
+        )
+        self.headers["X-Trace-ID"] = trace_id
+        result = self.call(self.api.create_publish_request, self.payload())
+
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        serialized = json.dumps(result, sort_keys=True)
+        self.assertNotIn("P505_CREATE", serialized)
+        self.assertNotIn("sensitive", serialized)
+        self.assertNotIn("/tmp", serialized)
+        records = []
+        for message in self.safe_logs:
+            try:
+                record = json.loads(message)
+            except (TypeError, ValueError):
+                continue
+            if record.get("code") == "P505_CREATE_API_RESPONSE":
+                records.append(record)
+        self.assertEqual(
+            records,
+            [
+                {
+                    "code": "P505_CREATE_API_RESPONSE",
+                    "exceptionType": "ValueError",
+                    "traceId": trace_id,
+                }
+            ],
+        )
+        self.assertFalse(
+            hasattr(self.frappe.flags, "npi_p505_publish_create_diagnostic")
+        )
 
     def test_routes_are_exact_and_p5_05_switch_is_independent(self) -> None:
         base = (
