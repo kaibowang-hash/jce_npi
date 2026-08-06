@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T10:59:30Z`
+Updated: `2026-08-06T13:14:50Z`
 
 ## Authority and operating mode
 
@@ -580,3 +580,31 @@ repeat or rewrite it merely to restore context. See
   the EBOM publish-request workspace, complete trilingual/accessibility/
   browser/visual evidence and ordinary CI. Controlled runtime, P5-05 Level 2
   and the Phase 5 Level 3 Gate remain inactive until checkpoint 3 passes.
+
+## 2026-08-06 P5-05 publish-request workspace checkpoint
+
+- Product checkpoint `358db2045e944d9d3bebb738245938977801028c`
+  adds the closed live data source and dense Project EBOM publish-request
+  workspace. It exposes exact released-input, policy, request, node, mapping
+  and result truth; Mock remains no-contact and cannot report formal target
+  identifiers or execution success.
+- Ordinary CI `31100523170` proved the repository, complete E2E and both secret
+  lanes PASS. Its visual artifact isolated eighteen P0 catalog-only deltas and
+  three P5-04 single-primary-action regressions. Exact pixel proof found zero
+  changed P0 workspace pixels.
+- Repair `82d23595479c023d2dd625ff3d005e9b49c9a831` accepts only the eighteen
+  reviewed P0 fingerprints, restores the context-dependent single primary
+  action and additively governs three P5-05 language/viewport cases.
+- CI `31103164950` then passed all pre-existing/repaired visuals `62/65` and
+  failed only the three not-yet-created P5-05 Linux baselines. All three
+  actuals passed original-resolution industrial UX and localization review and
+  became the exact initial baselines at `4f4baf9`.
+- Complete ordinary CI `31104305011` passed repository `92625383049`, complete
+  non-visual E2E, both secret lanes and visual `92625383029` at `65/65`.
+  Evidence is
+  `implementation/evidence/phase-5/p5-05-frontend-checkpoint.md`.
+- Checkpoint 3 and its bounded visual Hard Blocker are closed. Autopilot
+  continues with the controlled disposable-Site P5-05 verifier, ordinary CI,
+  one unchanged controlled Gate, P5-05 Level 2 and Phase 5 Level 3. No
+  Requirement, API, permission, Schema, ownership, transaction, idempotency,
+  audit or PASS criterion changed.

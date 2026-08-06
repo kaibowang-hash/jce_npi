@@ -1,18 +1,19 @@
 # Blockers
 
-Updated: `2026-08-06T11:44:35Z`
+Updated: `2026-08-06T13:14:50Z`
 
 ## Active hard blockers
 
-None. P5-05 repository/API checkpoint 2 and its isolated catalog-fingerprint
-visual failure are resolved at exact SHA `f3018eb` by complete ordinary CI
-`31097900948`. No user action or external authorization is required.
+None. P5-05 workspace checkpoint 3 and its bounded visual-evidence repairs are
+resolved at exact SHA `4f4baf9` by complete ordinary CI `31104305011`,
+including the fixed-Linux matrix `65/65`. No user action or external
+authorization is required.
 
 ## Active recovery
 
-None. Autopilot is continuing with P5-05 checkpoint 3, the EBOM
-publish-request workspace. Production ERPNext access and Phase 8 execution
-remain scoped holds, not Hard Blockers.
+None. Autopilot is continuing with P5-05 checkpoint 4: controlled disposable-
+Site runtime, Level 2 and the Phase 5 Level 3 Gate. Production ERPNext access
+and Phase 8 execution remain scoped holds, not Hard Blockers.
 
 ## Historical recovery
 

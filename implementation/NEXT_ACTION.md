@@ -1,44 +1,42 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-05 PUBLISH-REQUEST WORKSPACE`
+`IN_PROGRESS_IMPLEMENTATION — P5-05 CONTROLLED-SITE RUNTIME AND FINAL GATES`
 
-Recovery time: `2026-08-06T11:44:35Z`
+Recovery time: `2026-08-06T13:14:50Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`f3018eb94a54fa63cd87e87fb501835510765145`
+`4f4baf97fc0db787decd6c5a5bdcca1c90c2da79`
 
 ## Current authoritative action
 
-P5-05 checkpoints 1 and 2 are closed. Product checkpoint `0e3b13d` implements
-exact released-EBOM/published-policy resolution, independent requester
-authority, actor-bound idempotency, atomic request/node/mapping/result/audit/
-response persistence, Mock no-fake-success and operation-specific list/create/
-detail BFF behavior. Evidence repair `f3018eb` changed only eighteen reviewed
-catalog-fingerprint Linux baselines after exact pixel proof found zero changed
-workspace pixels.
+P5-05 checkpoints 1 through 3 are closed. Workspace product checkpoint
+`358db20`, bounded visual-governance repair `82d2359` and reviewed initial
+Linux baselines `4f4baf9` preserve exact Mock/no-contact truth, one primary
+action, direct three-language coverage and all existing visual criteria.
 
-Complete ordinary CI `31097900948` passed repository `92604192980` and the
-unchanged fixed-Linux visual matrix `92604192993`; controlled runtime correctly
-skipped. Evidence is
-`implementation/evidence/phase-5/p5-05-repository-api-checkpoint.md`.
+Complete ordinary CI `31104305011` passed repository `92625383049`, complete
+non-visual E2E, both secret lanes and fixed-Linux visual `92625383029` at
+`65/65`; controlled runtime correctly skipped. Evidence is
+`implementation/evidence/phase-5/p5-05-frontend-checkpoint.md`.
 
-The first unfinished atomic action is P5-05 checkpoint 3:
+The first unfinished atomic action is P5-05 checkpoint 4:
 
-1. add closed Project/EBOM-scoped publish-request data and view-model
-   contracts to the existing EBOM workspace;
-2. provide dense industrial request list/detail, exact released-input/policy
-   evidence, node/mapping/result truth and one guarded Mock create action;
-3. handle loading, empty, no-permission, read-only, validation, conflict,
-   processing, partial, unavailable and failure states without fake ERP
-   success or formal target identifiers;
-4. provide literal English sources, direct `zh`/`zh-TW` translations,
-   accessibility and non-color-only status truth; and
-5. pass affected unit/component/browser/visual/i18n checks, exact diff review
-   and complete ordinary CI before any controlled-Site runtime work.
+1. extend the existing fixed disposable-Site P5 verifier and independent
+   route switch to cover P5-05 without contacting ERPNext;
+2. provision only a visibly synthetic published requester policy and exact
+   released EBOM input through the existing guarded administrative contexts;
+3. prove Mock create, list/detail, exact replay, changed-payload conflict,
+   immutable node/mapping/result/audit truth, no Outbox/network/formal target
+   ID/`succeeded` state, route disable/recovery and bounded cleanup;
+4. update the controlled artifact scope to `p5-01-through-p5-05`, pass affected
+   verifier/runtime tests and complete ordinary CI; and
+5. dispatch one unchanged controlled Gate, then execute the P5-05 Level 2 and
+   Phase 5 Level 3 `release-gate` review with complete trace, rollback,
+   security, migration, i18n, accessibility and visual evidence.
 
 The complete scope, non-scope, risks, expected files, tests and rollback are
 frozen in `implementation/evidence/phase-5/p5-05-plan.md`. Production ERPNext
