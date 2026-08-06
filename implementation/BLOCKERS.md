@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-06T08:12:47Z`
+Updated: `2026-08-06T08:38:39Z`
 
 ## Active hard blockers
 
@@ -33,6 +33,21 @@ final unchanged Gate. Requirement, API, permission, Schema, ownership,
 transaction, idempotency, audit and PASS criteria remain frozen. A further
 opaque downstream result opens another identical serial cycle; it does not
 authorize a guessed repair.
+
+Diagnostic checkpoint `233b23f` passed ordinary CI `31084462702`. The one
+diagnostic Site `31085013974` returned only
+`P504_CREATE_AUDIT_APPEND / PermissionError /
+trace-ee528c1626eb59c4ba40f1ffea1b86ce`; repository `92562319188`, visual
+`92562319268`, setup and cleanup passed. The tuple and code prove that every
+prior create substage passed and that the inherited direct audit append runs
+without the `npi_audit_append` flag required by the immutable audit DocType.
+The EBOM command and lifecycle scopes are the only affected contexts and peer
+authorized scopes already set/restore this flag. The active minimal repair
+adds it only to those contexts, closes diagnostics and preserves roles,
+DocPerms, API, Schema, transaction order, audit content and PASS criteria.
+Local affected `26/26`, complete EBOM `65/65`, tracked Python `955/955` and
+governance validation pass. Complete ordinary CI and one final unchanged Gate
+remain required.
 
 Historical resolved context follows.
 

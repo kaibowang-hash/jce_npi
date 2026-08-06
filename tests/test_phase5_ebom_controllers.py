@@ -182,11 +182,19 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
         with self.helper.ebom_command_write():
             self.helper.require_ebom_command_write()
             self.assertTrue(self.frappe.flags.npi_ebom_command_write)
+            self.assertTrue(self.frappe.flags.npi_audit_append)
             with self.assertRaises(self.PermissionError):
                 self.helper.require_ebom_policy_write()
             with self.assertRaises(self.PermissionError):
                 self.helper.require_ebom_lifecycle_write()
         self.assertEqual(self.frappe.flags.npi_ebom_command_write, "prior")
+        self.assertFalse(hasattr(self.frappe.flags, "npi_audit_append"))
+
+        self.frappe.flags.npi_audit_append = "audit-prior"
+        with self.helper.ebom_lifecycle_write():
+            self.helper.require_ebom_lifecycle_write()
+            self.assertTrue(self.frappe.flags.npi_audit_append)
+        self.assertEqual(self.frappe.flags.npi_audit_append, "audit-prior")
 
     def test_policy_and_content_controllers_reject_generic_writes(self) -> None:
         for controller in (

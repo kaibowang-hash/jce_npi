@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T08:12:47Z`
+Updated: `2026-08-06T08:38:39Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P5-04 AUTONOMOUS HARD-BLOCKER RECOVERY`
+- Mode: `IN_PROGRESS_VALIDATION — P5-04 CREATE AUDIT SCOPE REPAIR`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product repair checkpoint:
   `6a4ba7c43e778f22a8de45ce9be8bf5c07a63aac` (pushed)
 - Latest complete normal CI:
-  `31081784934` (`PASS`, exact repair SHA `6a4ba7c`; repository, E2E,
+  `31084462702` (`PASS`, exact diagnostic SHA `233b23f`; repository, E2E,
   Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31082337133` (`FAILED_NON_UNIQUE_CREATE_STAGE`, exact repair SHA
-  `6a4ba7c`; `P504_RUNTIME_CREATE / HttpStatusError /
-  trace-ef925ea360245bd6b58daf326b910afe`)
+  `31085013974` (`FAILED_UNIQUE_CREATE_AUDIT_APPEND`, exact diagnostic SHA
+  `233b23f`; `P504_CREATE_AUDIT_APPEND / PermissionError /
+  trace-ee528c1626eb59c4ba40f1ffea1b86ce`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-06T08:12:47Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — POST-LIFECYCLE CREATE DIAGNOSTIC`)
+  (`IN_PROGRESS — CREATE AUDIT SCOPE REPAIR`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -266,6 +266,31 @@ the user again; no cycle may change Requirement, API, permission, Schema,
 ownership, transaction, idempotency, audit or PASS invariants. The current
 post-lifecycle cycle is diagnostic `0/1`, uniquely proved repair `0/1` and
 final unchanged Gate `0/1`.
+
+Diagnostic checkpoint `233b23f` passed complete ordinary CI `31084462702`;
+repository `92560556676` and visual `92560556671` passed while controlled
+runtime correctly skipped. The one diagnostic Site `31085013974` retained
+that exact SHA. Repository `92562319188`, visual `92562319268`, fixed Bench,
+disposable Site setup, migrations and cleanup passed. Controlled job
+`92562319221` returned only `P504_CREATE_AUDIT_APPEND / PermissionError /
+trace-ee528c1626eb59c4ba40f1ffea1b86ce`. All preceding create substages,
+including lifecycle insert and root projection save, therefore passed.
+`NPI Audit Event.before_insert()` requires the internal
+`npi_audit_append` flag; the EBOM repository inherits the same direct audit
+append used by passing domains, but its command and lifecycle write scopes set
+only their EBOM flags. Peer authorized write scopes include the audit flag.
+This uniquely proves one missing internal audit scope, not a role/DocPerm or
+business-authority failure. The bounded repair adds that flag only inside the
+existing authorized EBOM command/lifecycle contexts, restores prior flag
+state, and closes first-create diagnostics before validation and the final
+Gate.
+
+Local repair validation passes controller/runtime `26/26`, complete P5-04
+EBOM `65/65` and tracked Python `955/955`. Compilation, V1.2 reconciliation,
+trace uniqueness, prototype approval, P0 visual governance, YAML and diff
+checks pass. The repair has consumed the current cycle's uniquely proved
+repair `1/1`; complete exact-SHA ordinary CI and the final unchanged Gate
+remain pending.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

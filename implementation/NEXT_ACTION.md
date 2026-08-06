@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P5-04 POST-LIFECYCLE CREATE RECOVERY`
+`IN_PROGRESS_VALIDATION — P5-04 CREATE AUDIT SCOPE REPAIR`
 
-Recovery time: `2026-08-06T08:12:47Z`
+Recovery time: `2026-08-06T08:38:39Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`0575fec54682a580d51a1a700a1f9197166ce922`
+`233b23f4b7f4528b5303b2cb3f22325bc69eb758`
 
 ## Authority
 
@@ -143,16 +143,35 @@ actions and external manual operations still require the user.
   and later projection/audit/response/receipt stages. Diagnostic, repair and
   final Gate remain historically consumed `1/1`; standing authority has opened
   a new post-lifecycle cycle with counters `0/1`, `0/1`, `0/1`.
+- Diagnostic checkpoint `233b23f` passed exact-SHA ordinary CI `31084462702`:
+  repository `92560556676`, visual `92560556671`, complete E2E and both secret
+  lanes passed; controlled runtime correctly skipped.
+- The one diagnostic Site `31085013974` retained exact SHA `233b23f`.
+  Repository `92562319188` and visual `92562319268` passed. Controlled job
+  `92562319221` passed fixed tools, disposable Site setup, migrations and
+  cleanup, then emitted only `P504_CREATE_AUDIT_APPEND / PermissionError /
+  trace-ee528c1626eb59c4ba40f1ffea1b86ce`.
+- Root, revision, line, lifecycle and root-projection stages passed. Static
+  cross-validation proves the audit DocType requires `npi_audit_append`, but
+  the EBOM command/lifecycle scopes omit it while invoking the inherited audit
+  append. Peer authorized write scopes include and restore that exact flag.
+- The unique repair adds only the internal audit flag to the existing EBOM
+  command/lifecycle scopes, restores prior flag state and closes the
+  first-create diagnostic. Current counters are diagnostic `1/1`, repair
+  `1/1` and final unchanged Gate `0/1`.
+- Local controller/runtime `26/26`, complete EBOM `65/65`, tracked Python
+  `955/955`, compilation, reconciliation, trace uniqueness, prototype/P0
+  governance, YAML and diff checks pass.
 
 ## First unfinished action
 
-Commit the reactivated existing response-neutral first-create diagnostic and
-synchronized controller evidence, run affected/full ordinary CI, then execute
-one diagnostic Site. Repair only the uniquely proved root, close diagnostics,
-rerun affected/full ordinary CI and execute one final unchanged Gate. Do not
-infer a product edit from the current aggregate tuple.
+Run affected and complete EBOM/Python/governance validation for the internal
+audit-scope repair with diagnostics closed. Commit and push only the repair
+files, require complete exact-SHA ordinary CI, then execute one final unchanged
+Gate. Do not broaden roles, DocPerms, API, Schema, transaction order or audit
+content.
 
-P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive until its
+P5-04 is `IN_PROGRESS_VALIDATION`. P5-05 and Phase 6 remain inactive until its
 Level 2 Gate passes.
 
 ## Frozen non-scope

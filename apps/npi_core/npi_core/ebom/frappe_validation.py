@@ -27,6 +27,7 @@ from npi_core.foundation.tracing import resolve_trace_id
 EBOM_POLICY_WRITE_FLAG = "npi_ebom_policy_write"
 EBOM_COMMAND_WRITE_FLAG = "npi_ebom_command_write"
 EBOM_LIFECYCLE_WRITE_FLAG = "npi_ebom_lifecycle_command_write"
+AUDIT_APPEND_FLAG = "npi_audit_append"
 
 
 def require_ebom_policy_write() -> None:
@@ -61,13 +62,13 @@ def ebom_policy_write() -> Iterator[None]:
 
 @contextmanager
 def ebom_command_write() -> Iterator[None]:
-    with _flag_scope(EBOM_COMMAND_WRITE_FLAG):
+    with _flag_scope(EBOM_COMMAND_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
         yield
 
 
 @contextmanager
 def ebom_lifecycle_write() -> Iterator[None]:
-    with _flag_scope(EBOM_LIFECYCLE_WRITE_FLAG):
+    with _flag_scope(EBOM_LIFECYCLE_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
         yield
 
 

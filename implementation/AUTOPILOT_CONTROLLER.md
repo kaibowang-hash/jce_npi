@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T08:12:47Z`
+Updated: `2026-08-06T08:38:39Z`
 
 ## Authority and operating mode
 
@@ -343,8 +343,22 @@ pending until that proof is produced in Codespaces.
   ordinary CI is required before one diagnostic Site, and only its uniquely
   proved root may be repaired before diagnostics are closed and the unchanged
   Gate is rerun.
+- Diagnostic checkpoint `233b23f` passed ordinary CI `31084462702`. The sole
+  diagnostic Site `31085013974` retained that SHA and uniquely returned
+  `P504_CREATE_AUDIT_APPEND / PermissionError /
+  trace-ee528c1626eb59c4ba40f1ffea1b86ce`; repository and visual companions,
+  fixed setup and cleanup passed. Earlier create substages passed. The audit
+  DocType requires `npi_audit_append`, while the authorized EBOM command and
+  lifecycle scopes omit that flag even though they call the inherited direct
+  audit append. The current repair adds only that internal flag to those two
+  existing scopes, restores prior values and closes diagnostics. It changes
+  no role, DocPerm, public contract, transaction order or audit content.
+  Local controller/runtime `26/26`, complete EBOM `65/65`, tracked Python
+  `955/955` and governance checks pass with diagnostics closed. The next
+  boundary is complete exact-SHA ordinary CI, followed by the one final
+  unchanged Gate.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_VALIDATION`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

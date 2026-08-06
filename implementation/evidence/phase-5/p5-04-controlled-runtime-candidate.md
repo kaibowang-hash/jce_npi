@@ -760,3 +760,39 @@ changed-files-to-tests map is:
 Current cycle counters are diagnostic `0/1`, uniquely proved repair `0/1` and
 final unchanged Gate `0/1`. No product root is inferred from the retained
 aggregate tuple.
+
+## Post-lifecycle diagnostic result and audit-scope repair
+
+Diagnostic checkpoint `233b23f4b7f4528b5303b2cb3f22325bc69eb758`
+passed complete ordinary CI `31084462702`. Repository job `92560556676`
+passed `verify.sh`, complete E2E, current-tree Gitleaks and full branch-history
+scan; visual job `92560556671` passed; controlled runtime correctly skipped.
+
+The one diagnostic Site `31085013974` retained that exact SHA. Repository job
+`92562319188` and visual job `92562319268` passed. Controlled job
+`92562319221` passed exact Bench tools, disposable Site initialization,
+migrations and cleanup, then emitted only:
+
+`P504_CREATE_AUDIT_APPEND / PermissionError /
+trace-ee528c1626eb59c4ba40f1ffea1b86ce`
+
+The closed stage order proves receipt, root, revision, line and lifecycle
+inserts plus root projection save all passed. Code cross-validation proves
+`NPI Audit Event.before_insert()` accepts writes only while
+`npi_audit_append` is true. The EBOM repository inherits the direct audit
+append from the Document repository but `ebom_command_write()` and
+`ebom_lifecycle_write()` set only their EBOM-specific flags. Passing Project,
+Project Work, Project Controls, Document and Baseline command scopes include
+and restore the same audit flag. This uniquely classifies the root as an
+incomplete internal authorized scope, not an actor role, DocPerm, public API,
+Schema, transaction, audit-data or PASS-rule defect.
+
+The minimal repair defines the existing audit flag once, activates it only
+inside the authorized EBOM command and lifecycle contexts, and relies on the
+existing nested flag scope to restore missing or prior values. It also closes
+the first-create diagnostic before affected/full validation and the reserved
+final unchanged Gate. Local controller/runtime tests pass `26/26`, complete
+P5-04 EBOM passes `65/65`, and tracked Python passes `955/955`. Compilation,
+V1.2 reconciliation, trace uniqueness, prototype approval, P0 visual
+governance, YAML and diff checks pass. Current counters are diagnostic `1/1`,
+repair `1/1` and final unchanged Gate `0/1`.
