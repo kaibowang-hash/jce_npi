@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T07:02:38Z`
+Updated: `2026-08-06T07:29:44Z`
 
 ## Authority and operating mode
 
@@ -309,13 +309,17 @@ pending until that proof is produced in Codespaces.
   bounded authority and may not guess a root.
 - The user then requested that the problem be fixed, resuming the same Goal on
   exact base `16ed463`. One new independent post-revision-create sequence is
-  active: existing first-create response-neutral diagnostic `0/1`, uniquely
-  proved repair `0/1`, and reserved final unchanged Gate `0/1`. Affected/full
-  ordinary CI is mandatory before the sole diagnostic Site; diagnostics must
-  close before the final Gate. Frozen invariants and global repair accounting
-  do not change.
+  active. Diagnostic checkpoint `1400a8b` passed complete ordinary CI
+  `31079745399`; the sole diagnostic Site `31080379082` uniquely emitted
+  `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
+  trace-16676d79fc405e76805261a931550f32`, while repository and visual passed.
+  The preceding line controller already passed the same exact revision,
+  tenant, Project and snapshot-hash predicate. The lifecycle controller then
+  supplied its canonical string ID to the UUID-only domain boundary, uniquely
+  proving the one authorized repair. Counters are diagnostic `1/1`, repair
+  `1/1`, final unchanged Gate `0/1`; diagnostic activation is closed.
 - P5-05 and Phase 6 remain inactive.
-- P5-04 is `IN_PROGRESS_DIAGNOSTIC`, never yet a Gate PASS. Production numbering,
+- P5-04 is `IN_PROGRESS_REPAIR`, never yet a Gate PASS. Production numbering,
   reviewer/approver authority, signatures, production baseline contents and
   authority, production dependency matrix, EBOM numbering/line/quantity/UOM/
   alternate/effectivity/release rules, external identity/retrieval,

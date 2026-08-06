@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -139,7 +141,7 @@ class NPIEBOMRevisionLifecycle(Document):
                 raise AssertionError("Exact event validation must return a row.")
         lifecycle = ebom_domain_value(
             lambda: EngineeringBomRevisionLifecycle(
-                revision_global_id=self.revision_global_id,
+                revision_global_id=UUID(self.revision_global_id),
                 revision_snapshot_hash=self.revision_snapshot_hash,
                 current_state=state,
                 lifecycle_version=version,

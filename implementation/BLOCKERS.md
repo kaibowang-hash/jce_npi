@@ -1,24 +1,20 @@
 # Blockers
 
-Updated: `2026-08-06T07:02:38Z`
+Updated: `2026-08-06T07:29:44Z`
 
 ## Active hard blockers
 
 None under the resumed bounded P5-04 post-revision-create authority.
 
-Repair `f4aba87` passed local controller/runtime `25/25`, EBOM `64/64`,
-complete Python `960/960` and complete ordinary CI `31075372272`. The sole
-final unchanged workflow `31075730002` passed repository, visual, predecessor
-runtime, migrations and disposable cleanup, then the first EBOM create command
-returned only `P504_RUNTIME_CREATE / HttpStatusError /
-trace-6fa26f47b241558db7fdafa0b9c1a46e`.
-
-Because final diagnostics were correctly closed, that aggregate stage cannot
-prove whether the diagnosed revision insert recurred or a later
-line/lifecycle/projection/audit/response/receipt substage failed. The user has
-now resumed the Goal with one new bounded recovery on exact base `16ed463`;
-only the existing response-neutral diagnostic is active on the first create
-request before a uniquely proved repair.
+Diagnostic checkpoint `1400a8b` passed complete ordinary CI `31079745399`.
+The sole diagnostic Site `31080379082` passed repository and visual companions
+and uniquely emitted `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
+trace-16676d79fc405e76805261a931550f32`. Direct controller/domain
+cross-validation proved one exact boundary defect: the lifecycle controller
+passed a canonical UUID string to a domain type that requires `UUID`. The one
+authorized repair is in progress, only converts that validated value, and
+closes diagnostic activation before affected/full ordinary CI. The reserved
+final unchanged Gate remains unused.
 
 Historical resolved context follows.
 

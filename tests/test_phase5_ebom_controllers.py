@@ -405,6 +405,42 @@ class Phase5EngineeringBomControllerTest(unittest.TestCase):
             }.issubset(selected)
         )
 
+    def test_initial_lifecycle_converts_canonical_revision_id_for_domain(self) -> None:
+        revision_id = "c2f4a4a5-57ba-44ea-abba-6d906d0922d1"
+        ebom_id = "ed80d97e-42fe-4db0-9703-bbed01150908"
+        project_id = "2b47c9da-9f8c-4d98-bf45-42985cd26a60"
+        lifecycle = self.lifecycle_module.NPIEBOMRevisionLifecycle(
+            {
+                "global_id": revision_id,
+                "tenant_id": "tenant-local",
+                "project_global_id": project_id,
+                "engineering_bom": ebom_id,
+                "ebom_global_id": ebom_id,
+                "engineering_bom_revision": revision_id,
+                "revision_global_id": revision_id,
+                "revision_snapshot_hash": "a" * 64,
+                "current_state": "draft",
+                "lifecycle_version": 1,
+                "last_event_global_id": None,
+                "updated_by_user_id": "engineer@example.invalid",
+                "updated_at": "2026-08-06 00:00:00.000000",
+                "request_id": "request-lifecycle-create",
+                "trace_id": "trace-lifecycle-create",
+            }
+        )
+
+        with patch.object(
+            self.lifecycle_module,
+            "require_exact_parent",
+            return_value={"global_id": revision_id},
+        ):
+            lifecycle.before_validate()
+            lifecycle.validate()
+
+        self.assertEqual(lifecycle.revision_global_id, revision_id)
+        self.assertEqual(lifecycle.current_state, "draft")
+        self.assertEqual(lifecycle.lifecycle_version, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -653,3 +653,53 @@ P5-04 EBOM suite `64/64`, related Document API/baseline/runtime regression
 prototype-approval, P0 visual-governance, YAML and diff checks. The diagnostic
 activation assertion proves exactly one `diagnostic=True` call in `run_fresh`
 and no direct `create_diagnostic=True` bypass.
+
+## Post-revision lifecycle-insert proof and bounded repair
+
+Diagnostic checkpoint `1400a8bd62552a152007e14023065f6943ed4786`
+passed complete exact-SHA ordinary CI `31079745399`. Repository job
+`92545602652` passed complete verification, E2E and both secret lanes; visual
+job `92545602649` passed; the controlled job was correctly skipped.
+
+The sole authorized diagnostic Site `31080379082` retained exact SHA
+`1400a8b`. Repository job `92547610775` and visual job `92547610707` passed.
+Controlled job `92547611196` passed the fixed Bench/Site setup, migrations,
+unchanged predecessor runtime, synthetic policy and authorization stages, then
+emitted exactly:
+
+`P504_CREATE_LIFECYCLE_INSERT / ValidationError /
+trace-16676d79fc405e76805261a931550f32`
+
+The earlier revision and line insert stages passed. The line controller
+already resolves the same exact revision by revision ID and verifies its EBOM,
+tenant, Project and snapshot hash, so the lifecycle failure is not missing
+parent state, transaction visibility or hash drift. The lifecycle controller
+then constructs `EngineeringBomRevisionLifecycle` with
+`revision_global_id=self.revision_global_id`; `before_validate` has normalized
+that value to a canonical string, while the domain `_uuid` function accepts
+only a non-zero `UUID` instance. `ebom_domain_value` maps that exact
+`RequestValidationFailed` to the observed Frappe `ValidationError`.
+
+The one authorized repair converts only the already-validated value with
+`UUID(self.revision_global_id)` at domain hydration and adds a behavioral
+regression that fails on the prior controller. No Requirement, OpenAPI,
+DocType, permission, ownership, transaction, idempotency, audit, response or
+PASS criterion changes. First-create diagnostic activation is closed before
+affected/full ordinary CI and the reserved final unchanged Gate.
+
+The changed-files-to-affected-tests map is:
+
+| Changed boundary | Affected evidence |
+|---|---|
+| EBOM revision lifecycle controller | controller behavioral regression plus complete EBOM controller/domain/metadata/repository/API/security suite |
+| first-create diagnostic activation closure | runtime-verifier diagnostic-closure and sanitized diagnostic tests |
+| controller/evidence synchronization | V1.2 reconciliation, prototype approval, P0 visual governance, YAML parse and diff check |
+
+Local repair validation passes controller plus runtime verifier `26/26`, the
+complete P5-04 EBOM suite `65/65`, tracked Python `955/955`, and full workspace
+discovery `961/961` without modifying the six user-owned untracked local
+prerequisite tests. Compilation, reconciliation, prototype approval, P0
+visual governance, YAML and diff checks pass. The aggregate local `verify.sh`
+correctly refuses the host's Node `24.2.0` / npm `11.3.0` because the repository
+requires Node `24.18.0` / npm `11.16.0`; complete exact-toolchain ordinary CI
+therefore remains mandatory before the final Site.

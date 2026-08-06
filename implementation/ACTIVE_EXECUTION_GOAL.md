@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T07:02:38Z`
+Updated: `2026-08-06T07:29:44Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS — P5-04 POST-REVISION CREATE DIAGNOSTIC`
+- Mode: `IN_PROGRESS — P5-04 LIFECYCLE UUID REPAIR VALIDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact product repair checkpoint:
-  `f4aba879e47ea758a6c090016cb069a74b5c154b` (pushed)
+- Latest diagnostic checkpoint:
+  `1400a8bd62552a152007e14023065f6943ed4786` (pushed)
 - Latest complete normal CI:
-  `31076595986` (`PASS`, exact controller SHA `16ed463`; repository, E2E,
+  `31079745399` (`PASS`, exact diagnostic SHA `1400a8b`; repository, E2E,
   Gitleaks/history and fixed-Linux visual passed)
 - Latest controlled-Site run:
-  `31075730002` (`FAILED_NON_UNIQUE_CREATE_STAGE`, exact repair SHA
-  `f4aba87`; `P504_RUNTIME_CREATE / HttpStatusError /
-  trace-6fa26f47b241558db7fdafa0b9c1a46e`)
+  `31080379082` (`FAILED_UNIQUE_LIFECYCLE_INSERT`, exact diagnostic SHA
+  `1400a8b`; `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
+  trace-16676d79fc405e76805261a931550f32`)
 - P5-03 final unchanged controlled-Site Gate:
   `30991177478` (`PASS`, exact product SHA, diagnostic activation closed)
 - Controlled PASS artifact:
@@ -24,7 +24,7 @@ Updated: `2026-08-06T07:02:38Z`
   `6038ab3371de189330b8046e16315b19dc1f41ee8165e1da2fbfd6f2aac37153`
 - Current controller task:
   `P5-04 — EBOM revision and comparison`
-  (`IN_PROGRESS — POST-REVISION CREATE DIAGNOSTIC`)
+  (`IN_PROGRESS — LIFECYCLE UUID REPAIR VALIDATION`)
 - Current Requirement IDs:
   `FR-DS-011`, `FR-DS-012`
 - Completed P5-03 evidence:
@@ -221,6 +221,21 @@ Only the first create request may activate the existing diagnostic, complete
 affected/full ordinary CI must pass before the diagnostic Site, and all frozen
 Requirement/API/permission/Schema/ownership/transaction/idempotency/audit/PASS
 invariants remain unchanged.
+
+Diagnostic checkpoint `1400a8b` passed exact-SHA ordinary CI `31079745399`.
+The sole diagnostic Site `31080379082` retained that SHA; repository job
+`92547610775` and visual job `92547610707` passed, while controlled job
+`92547611196` emitted the unique tuple `P504_CREATE_LIFECYCLE_INSERT /
+ValidationError / trace-16676d79fc405e76805261a931550f32`. Earlier revision
+and line insert stages passed. The line controller already performed the same
+exact-revision parent/hash check, eliminating missing parent, transaction
+visibility and snapshot drift. The remaining lifecycle controller then passed
+the canonical UUID string directly into `EngineeringBomRevisionLifecycle`,
+whose `_uuid` boundary accepts only a `UUID` instance; `ebom_domain_value`
+maps that exact domain failure to the observed Frappe `ValidationError`.
+The one authorized repair therefore converts only that already-validated
+revision ID at the domain boundary. Diagnostic activation is closed before
+repair validation and the reserved final unchanged Gate.
 
 P5-04 may not create formal ERPNext Item/MBOM ownership, manufacturing routing,
 production execution, a cross-database dependency or optimistic ERP success.

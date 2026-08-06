@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P5-04 POST-REVISION CREATE DIAGNOSTIC`
+`IN_PROGRESS — P5-04 LIFECYCLE UUID REPAIR VALIDATION`
 
-Recovery time: `2026-08-06T07:02:38Z`
+Recovery time: `2026-08-06T07:29:44Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`16ed463e352c98328ea2e993aac0f80eeded7110`
+`1400a8bd62552a152007e14023065f6943ed4786`
 
 ## Authority
 
@@ -109,18 +109,30 @@ runs and counters remain immutable history.
   consumed `1/1`.
 - Controller checkpoint `16ed463` passed complete ordinary CI `31076595986`;
   repository and visual passed, while controlled runtime correctly skipped.
-  The new recovery reactivates only the existing response-neutral diagnostic
-  on the first create request. No product fix is selected yet.
+  The new recovery reactivated only the existing response-neutral diagnostic
+  on the first create request.
+- Diagnostic checkpoint `1400a8b` passed complete ordinary CI `31079745399`.
+  Its sole diagnostic Site `31080379082` passed repository job `92547610775`
+  and visual job `92547610707`; controlled job `92547611196` uniquely emitted
+  `P504_CREATE_LIFECYCLE_INSERT / ValidationError /
+  trace-16676d79fc405e76805261a931550f32`.
+- The preceding line insert already validates the same exact revision parent,
+  tenant, Project and snapshot hash. The lifecycle controller then hands its
+  canonical string ID directly to a domain type whose `_uuid` boundary accepts
+  only `UUID`. That exact failure is translated to the observed
+  `ValidationError`, uniquely selecting one type-boundary repair. Diagnostic
+  activation is now closed.
 
 ## First unfinished action
 
-Run the affected runtime-verifier/EBOM suites and complete tracked Python,
-reconciliation, trace/YAML and diff checks with only the first-create
-response-neutral diagnostic active. Commit and push the diagnostic checkpoint,
-require complete exact-SHA ordinary CI PASS, then execute at most one
-diagnostic Site. Do not infer a repair from the current aggregate tuple.
+Run affected controller/runtime-verifier and complete P5-04 EBOM tests, then
+complete tracked Python, compilation, reconciliation, trace/YAML and diff
+checks with the diagnostic closed. Commit and push the one UUID-boundary
+repair, require complete exact-SHA ordinary CI PASS, and execute the one
+reserved final unchanged Gate. If it passes, complete P5-04 Level 2 through
+the release-gate skill and resume Autopilot.
 
-P5-04 is `IN_PROGRESS_DIAGNOSTIC`. P5-05 and Phase 6 remain inactive.
+P5-04 is `IN_PROGRESS_REPAIR`. P5-05 and Phase 6 remain inactive.
 
 ## Frozen non-scope
 
