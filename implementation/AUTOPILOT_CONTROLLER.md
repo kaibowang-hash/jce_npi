@@ -554,3 +554,29 @@ repeat or rewrite it merely to restore context. See
   authority, actor-bound idempotency, atomic audit/persistence and BFF Mock
   create/read behavior. Production ERPNext, network dispatch, Outbox execution
   and Phase 8 retry/reconciliation remain inactive.
+
+## 2026-08-06 P5-05 repository/API checkpoint
+
+- Product checkpoint `0e3b13d87e4106be7a748db920f57ab43fda2d37`
+  adds exact released-EBOM/published-policy resolution, independent requester
+  authority, actor-bound idempotency, atomic request/node/mapping/result/audit/
+  response persistence and operation-specific Mock list/create/detail BFF
+  behavior. It creates no Outbox work, network request, formal target ID or
+  `succeeded` state.
+- Ordinary CI `31096833679` proved repository `92600762979`, complete E2E and
+  both secret lanes PASS. Its visual job failed only the exact eighteen
+  durable normal P0 catalog-fingerprint cases; all other `44/62` passed.
+- Artifact `8965851155` and original RGB comparison proved every delta was
+  confined to two bottom-status-bar boxes at `y=882..891`, with only
+  `694..696` pixels per image and zero product-workspace pixels changed.
+- Evidence repair `f3018eb94a54fa63cd87e87fb501835510765145`
+  copies only those eighteen exact CI actuals to their matching tracked Linux
+  baselines. No matrix, threshold, product code or PASS criterion changed.
+- Complete unchanged ordinary CI `31097900948` then passed repository
+  `92604192980` and fixed-Linux visual `92604192993`; controlled runtime
+  correctly skipped. Evidence is
+  `implementation/evidence/phase-5/p5-05-repository-api-checkpoint.md`.
+- Checkpoint 2 and its Hard Blocker are closed. Autopilot continues with only
+  the EBOM publish-request workspace, complete trilingual/accessibility/
+  browser/visual evidence and ordinary CI. Controlled runtime, P5-05 Level 2
+  and the Phase 5 Level 3 Gate remain inactive until checkpoint 3 passes.

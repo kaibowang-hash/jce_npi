@@ -1,39 +1,44 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-05 REPOSITORY/PERMISSION/IDEMPOTENCY/AUDIT/BFF`
+`IN_PROGRESS_IMPLEMENTATION — P5-05 PUBLISH-REQUEST WORKSPACE`
 
-Recovery time: `2026-08-06T10:59:30Z`
+Recovery time: `2026-08-06T11:44:35Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`a76f9c0cac313dabb80d0b31846345b5593c8d35`
+`f3018eb94a54fa63cd87e87fb501835510765145`
 
 ## Current authoritative action
 
-P5-05 checkpoint 1 is closed at `a76f9c0`. Its pure domain, closed OpenAPI,
-ownership/event vocabulary, seven additive DocTypes, direct `zh`/`zh-TW`
-catalogs and exact visual evidence passed complete ordinary CI `31094889018`:
-repository `92594388442` and visual `92594388260` (`62/62`) passed, while the
-controlled P5 runtime correctly skipped. Evidence is
-`implementation/evidence/phase-5/p5-05-domain-metadata-checkpoint.md`.
+P5-05 checkpoints 1 and 2 are closed. Product checkpoint `0e3b13d` implements
+exact released-EBOM/published-policy resolution, independent requester
+authority, actor-bound idempotency, atomic request/node/mapping/result/audit/
+response persistence, Mock no-fake-success and operation-specific list/create/
+detail BFF behavior. Evidence repair `f3018eb` changed only eighteen reviewed
+catalog-fingerprint Linux baselines after exact pixel proof found zero changed
+workspace pixels.
 
-The first unfinished atomic action is P5-05 checkpoint 2:
+Complete ordinary CI `31097900948` passed repository `92604192980` and the
+unchanged fixed-Linux visual matrix `92604192993`; controlled runtime correctly
+skipped. Evidence is
+`implementation/evidence/phase-5/p5-05-repository-api-checkpoint.md`.
 
-1. implement repository resolution of one exact released EBOM and published
-   publish-request policy after independent Project/publish authority;
-2. implement actor-bound idempotent create/replay and changed-payload conflict
-   with one atomic receipt -> request -> mapping/node/result -> audit -> sealed
-   response transaction;
-3. expose only the operation-specific list/create/detail BFF paths with
-   auth-before-resolution, tenant/Project isolation, CSRF, optimistic root/
-   lifecycle checks and route disable/recovery;
-4. prove Mock persistence never creates Outbox work, dispatches, returns
-   formal target identifiers or reports `succeeded`; and
-5. run affected repository/API/permission/security/rollback checks and exact
-   diff review before any frontend workspace work.
+The first unfinished atomic action is P5-05 checkpoint 3:
+
+1. add closed Project/EBOM-scoped publish-request data and view-model
+   contracts to the existing EBOM workspace;
+2. provide dense industrial request list/detail, exact released-input/policy
+   evidence, node/mapping/result truth and one guarded Mock create action;
+3. handle loading, empty, no-permission, read-only, validation, conflict,
+   processing, partial, unavailable and failure states without fake ERP
+   success or formal target identifiers;
+4. provide literal English sources, direct `zh`/`zh-TW` translations,
+   accessibility and non-color-only status truth; and
+5. pass affected unit/component/browser/visual/i18n checks, exact diff review
+   and complete ordinary CI before any controlled-Site runtime work.
 
 The complete scope, non-scope, risks, expected files, tests and rollback are
 frozen in `implementation/evidence/phase-5/p5-05-plan.md`. Production ERPNext

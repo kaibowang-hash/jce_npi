@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T10:59:30Z`
+Updated: `2026-08-06T11:44:35Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -9,11 +9,12 @@ Updated: `2026-08-06T10:59:30Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `a76f9c0cac313dabb80d0b31846345b5593c8d35` (pushed)
+  `f3018eb94a54fa63cd87e87fb501835510765145` (pushed; product code
+  `0e3b13d87e4106be7a748db920f57ab43fda2d37`)
 - Latest complete normal CI:
-  `31094889018` (`PASS`, exact SHA `a76f9c0`; repository `92594388442`,
-  E2E, Gitleaks/history and visual `92594388260` passed `62/62`; controlled
-  job `92594389158` correctly skipped)
+  `31097900948` (`PASS`, exact SHA `f3018eb`; repository `92604192980`,
+  E2E, Gitleaks/history and visual `92604192993` passed the unchanged complete
+  matrix; controlled job `92604193576` correctly skipped)
 - Latest controlled-Site run:
   `31090154694` (`PASS`, exact SHA `2c0734a`, diagnostic activation closed;
   repository `92578962756`, controlled `92578962766`, visual `92578962797`)
@@ -22,7 +23,7 @@ Updated: `2026-08-06T10:59:30Z`
   `04bccbcb01a1028075c1472cf02d7b4bffa41362de2804ebaf2892890ae898df`
 - Current controller task:
   `P5-05 — Formal publish request stub and contract`
-  (`IN_PROGRESS — REPOSITORY/PERMISSION/IDEMPOTENCY/AUDIT/BFF`)
+  (`IN_PROGRESS — PUBLISH-REQUEST WORKSPACE`)
 - Current Requirement ID:
   `FR-DS-013`
 - Completed P5-04 evidence:
@@ -39,18 +40,19 @@ P5-04 passed Level 2 at exact checkpoint `2c0734a`: ordinary CI
 passed with all diagnostics closed. `FR-DS-011` and `FR-DS-012` are
 `TECHNICAL_VERIFIED`; their retained history is not reopened by P5-05.
 
-P5-05 is active only for `FR-DS-013`. Checkpoint 1 is closed at `a76f9c0` and
-ordinary CI `31094889018`: the pure domain, closed contract, additive guarded
-metadata, direct trilingual catalog and exact catalog-fingerprint visual
-evidence pass. Mock is the only enabled Phase 5 target and can end only at
-`validated` or `manual_intervention`; it cannot return ERP identifiers or
-`succeeded`.
+P5-05 is active only for `FR-DS-013`. Checkpoints 1 and 2 are closed at
+`f3018eb` and ordinary CI `31097900948`. The pure domain, closed contract,
+additive guarded metadata, exact released-input/published-policy repository,
+independent requester authority, actor-bound idempotency, atomic audit/
+persistence, operation-specific BFF and exact trilingual visual evidence pass.
+Mock is the only enabled Phase 5 target and can end only at `validated` or
+`manual_intervention`; it cannot return ERP identifiers or `succeeded`.
 
-The active slice is now repository/permission/idempotency/audit/BFF. It must
-resolve exact released input and separate publish authority before protected
-identity, atomically persist and seal one actor-bound response, fail changed
-replay closed, enforce CSRF and optimistic versions, and keep dispatch/Outbox/
-formal target identifiers unavailable.
+The active slice is now the EBOM publish-request workspace. It must expose
+closed list/create/detail truth, exact immutable input and per-node evidence,
+one guarded Mock action, all required loading/permission/conflict/partial/
+unavailable states, complete trilingual coverage, accessibility and exact
+browser/visual evidence without inventing formal ERP truth.
 
 Production endpoints/credentials, any network dispatch, formal Item/MBOM
 mutation, worker retry/replay, webhooks and reconciliation remain prohibited

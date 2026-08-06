@@ -1,13 +1,20 @@
 # Blockers
 
-Updated: `2026-08-06T09:28:15Z`
+Updated: `2026-08-06T11:44:35Z`
 
 ## Active hard blockers
 
-None requiring external authorization. The P5-04 submit-review lifecycle
-projection repair is in authorized validation.
+None. P5-05 repository/API checkpoint 2 and its isolated catalog-fingerprint
+visual failure are resolved at exact SHA `f3018eb` by complete ordinary CI
+`31097900948`. No user action or external authorization is required.
 
 ## Active recovery
+
+None. Autopilot is continuing with P5-05 checkpoint 3, the EBOM
+publish-request workspace. Production ERPNext access and Phase 8 execution
+remain scoped holds, not Hard Blockers.
+
+## Historical recovery
 
 `P5-04-SUBMIT-REVIEW-LIFECYCLE-EVENT-UUID-REPAIR`
 
