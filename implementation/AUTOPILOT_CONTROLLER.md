@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T09:58:00Z`
+Updated: `2026-08-07T10:55:32Z`
 
 ## Authority and operating mode
 
@@ -817,3 +817,35 @@ repeat or rewrite it merely to restore context. See
   contract/ownership and six additive guarded DocTypes. A live route,
   repository, SPA and controlled Site remain inactive until their sequential
   checkpoints.
+
+## 2026-08-07 P6-01 domain, contract and metadata checkpoint
+
+- Product checkpoint `73c8a7a` adds the distinct Part/PartRevision,
+  ToolingRequirement, ToolingMaster and immutable versioned/effective
+  ToolingApplicability domain, six guarded additive DocTypes, closed schemas,
+  exact ownership rows and direct English/`zh`/`zh-TW` coverage. It activates
+  no route, live UI, business fixture, lifecycle, policy, default, adapter,
+  ERPNext endpoint or credential.
+- Local affected tests pass `21/21`; complete tracked Python passes
+  `1,106/1,106`; i18n passes at `3,985` sources with direct `100%` `zh` and
+  `100%` `zh-TW`; compilation, reconciliation, contract/metadata parsing,
+  prototype/P0 governance and diff checks pass.
+- Initial ordinary CI `31170493815` passed repository `92840992551` and all 50
+  non-P0 visual cases. Its only failure was the exact eighteen P0 bottom-footer
+  catalog fingerprints changing from `fd8d72a35779b6ea` to
+  `05fc637e0c1286cb`. Artifact `8990825369`, digest
+  `sha256:e9926ae4ab30a6e1b91ef3c1b02f7ecfa945a15decd41fe621a5fee20eca8ae2`,
+  proves no workspace component, layout or state change.
+- Baseline-only commit `62c063e` synchronizes those eighteen exact fixed-Linux
+  actuals byte-for-byte. It changes no assertion, matrix, threshold or PASS
+  rule and leaves every user Darwin image untouched.
+- Final exact-SHA ordinary CI `31171293330` passes repository `92843457513`,
+  complete E2E and both secret lanes, plus fixed-Linux visual `92843457422` at
+  `68/68`; controlled runtime `92843458095` correctly skips. Visual artifact
+  `8991126144` has digest
+  `sha256:f163ed7b82018fe3ad807f3e90409a89214b5fd83d86f65b56e979cf422e9b81`.
+- Checkpoint 1 is PASS, not P6-01 Level 2. Autopilot activates only the
+  Project-first repository/BFF checkpoint with bounded queries, seven frozen
+  narrow paths, actor-bound idempotency, transaction/audit, route switch and
+  exact API/security tests. The live cockpit and controlled Site remain
+  inactive until the sequential Gates pass.

@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P6-01 TOOLING`
+`IN_PROGRESS_REPOSITORY_BFF — P6-01 TOOLING`
 
-Recovery time: `2026-08-07T09:58:00Z`
+Recovery time: `2026-08-07T10:55:32Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery controller/evidence checkpoint:
-`6b5d034fb2910d692f0499961fb5b30ab72cfd8f`
+Recovery product checkpoint:
+`62c063e43bb582e270b6e5adf326382c70f2b393`
 
 ## Current authoritative action
 
@@ -38,27 +38,42 @@ is `implementation/evidence/phase-6/p6-01-plan.md`; entry ordinary CI
 `31167356140` passed exact SHA `6b5d034` with repository `92831145862` and
 visual `92831145989`, while controlled runtime correctly skipped.
 
+P6-01 checkpoint 1 is PASS. Product commit `73c8a7a` added the distinct pure
+domain, six guarded additive DocTypes, exact ownership rows, closed schemas and
+direct trilingual coverage without activating a route. Its initial ordinary CI
+isolated only eighteen bottom-footer catalog fingerprints; artifact
+`8990825369` proved no component or layout change. Baseline-only repair
+`62c063e` then passed complete ordinary CI `31171293330`: repository
+`92843457513`, visual `92843457422` (`68/68`) and controlled runtime
+`92843458095` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-01-domain-metadata-checkpoint.md`.
+
 The next unfinished checkpoint is:
 
-`P6-01 checkpoint 1 — pure domain, closed contract/ownership and additive guarded metadata`
+`P6-01 checkpoint 2 — authorized repository and closed BFF`
 
 Implement only:
 
-1. non-collapsible pure identities and invariants for Part/PartRevision,
-   ToolingRequirement, ToolingMaster and immutable versioned/effective
-   ToolingApplicability;
-2. six additive guarded DocTypes with no lifecycle-state convenience field,
-   no business fixture/default and no generic normal-user write/delete;
-3. exact NPI/ERP ownership rows plus closed OpenAPI schemas without activating
-   a route;
-4. domain, metadata, controller, contract, ownership, security and additive/
-   idempotent migration tests; and
-5. affected checks, complete ordinary CI and evidence before activating the
-   repository/BFF checkpoint.
+1. Project-first authorization before resolving protected Part, Requirement,
+   Master or Applicability identities;
+2. bounded repository queries for the Project cockpit and one authorized
+   Master, with same-tenant/reference/current-revision/effectivity checks;
+3. the seven frozen closed paths from the plan: two GET projections and narrow
+   POST commands for Part/initial Revision, successor Revision, Requirement,
+   Master and Applicability;
+4. System Manager-only mutation capability until an approved authority policy
+   exists, actor-bound idempotency, exact version conflicts, one transaction,
+   append-only audit, sealed replay and an independent closed-by-default route
+   switch;
+5. exact API, authorization-before-resolution, IDOR, ambiguity, replay,
+   conflict, rollback and route-disable tests; and
+6. affected checks, complete ordinary CI and evidence before activating the
+   live cockpit checkpoint.
 
-Do not add a live route or UI yet. Do not install production lifecycle,
-numbering, ownership/custody, Revision/Set/Trial, mapping, adapter, ERPNext
-endpoint or credential behavior. P6-02 through P6-08 remain inactive.
+Do not add the live SPA or dispatch a controlled Site yet. Do not install
+production lifecycle, numbering, ownership/custody, Tooling Revision,
+physical Set, Trial, workbook mapping, adapter, ERPNext endpoint, credential or
+production default behavior. P6-02 through P6-08 remain inactive.
 
 ## Authority
 

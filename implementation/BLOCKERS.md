@@ -1,21 +1,22 @@
 # Blockers
 
-Updated: `2026-08-07T09:58:00Z`
+Updated: `2026-08-07T10:55:32Z`
 
 ## Active hard blockers
 
-None. P6-00 exact checkpoint `6b5d034` passed ordinary CI `31167356140`, and
-the P6-01 Requirement/domain/existing-capability audit is PASS. No user action
-or external authorization is required for its domain/contract/additive-metadata
-foundation.
+None. P6-01 checkpoint 1 passed complete ordinary CI `31171293330` at exact
+stable checkpoint `62c063e`. No user action or external authorization is
+required for the repository/BFF checkpoint.
 
 ## Active recovery
 
-`P6-01-DOMAIN-CONTRACT-METADATA` — active, not blocked. It is limited to pure
-non-collapsible identities, closed contract/ownership and six additive guarded
-DocTypes. `DR-REC-010` continues to hold exact production lifecycle states,
-transitions and authority, so no lifecycle field, command or production
-default may be installed. That scoped hold does not block this foundation.
+`P6-01-REPOSITORY-BFF` — active, not blocked. It is limited to Project-first
+authorized bounded queries and the seven frozen narrow BFF paths, with
+same-tenant/reference/effectivity validation, actor-bound idempotency,
+transaction/audit/replay and an independent route switch. `DR-REC-010`
+continues to hold exact production lifecycle states, transitions and authority,
+so no lifecycle field, command or production default may be installed. That
+scoped hold does not block this checkpoint.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
@@ -929,3 +930,17 @@ must preserve that boundary.
 - The P6-01 audit is PASS. Only the domain/contract/additive-metadata
   foundation is active; the exact lifecycle decision remains scoped and does
   not prevent safe checkpoint 1 implementation.
+
+## Current authoritative blocker state — 2026-08-07T10:55:32Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P6-01 foundation product checkpoint `73c8a7a` passed the complete repository
+  lane; its only initial failure was eighteen fixed P0 footer catalog
+  fingerprints, proved by artifact `8990825369` and synchronized without
+  changing a component, threshold, matrix or PASS rule.
+- Stable checkpoint `62c063e` passed complete ordinary CI `31171293330` with
+  repository `92843457513` and fixed-Linux visual `92843457422` at `68/68`;
+  controlled runtime `92843458095` correctly skipped.
+- Checkpoint 1 is PASS. The repository/BFF checkpoint is active. Exact
+  lifecycle and all later physical/import/integration behavior remain scoped
+  holds rather than global blockers.
