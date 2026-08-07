@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_AUDIT — P6-01 TOOLING`
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P6-01 TOOLING`
 
-Recovery time: `2026-08-07T09:52:00Z`
+Recovery time: `2026-08-07T09:58:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery controller/evidence checkpoint:
-`ce401b87612c946225ef0106fb344cfdcfb21190`
+`6b5d034fb2910d692f0499961fb5b30ab72cfd8f`
 
 ## Current authoritative action
 
@@ -33,31 +33,32 @@ credential or external mutation. Evidence is
 `implementation/evidence/phase-6/p6-00-validation.md` and the frozen boundary
 is `implementation/phase-6-requirement-anchor.md`.
 
-The first unfinished atomic task is now:
+The P6-01 Requirement/domain/existing-capability audit is PASS. The frozen plan
+is `implementation/evidence/phase-6/p6-01-plan.md`; entry ordinary CI
+`31167356140` passed exact SHA `6b5d034` with repository `92831145862` and
+visual `92831145989`, while controlled runtime correctly skipped.
 
-`P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
+The next unfinished checkpoint is:
 
-Execute only its initial requirement/domain/existing-capability audit and task
-plan:
+`P6-01 checkpoint 1 — pure domain, closed contract/ownership and additive guarded metadata`
 
-1. freeze the non-collapsible `Part`, `PartRevision`, `ToolingRequirement`,
-   `ToolingMaster` and versioned/effective `ToolingApplicability` identities;
-2. map `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001` and the
-   `FR-TL-003` foundation to exact acceptance and trace evidence;
-3. inspect reusable Project authorization, audit/idempotency, metadata,
-   repository/BFF/OpenAPI and dense Tooling prototype mechanisms without
-   treating the prototype as persisted product truth;
-4. define Project/tenant permission, create/reference/reuse semantics,
-   uniqueness, version/effectivity, cockpit state, migration and rollback
-   boundaries without inventing lifecycle commands held by `DR-REC-010`;
-5. produce the exact changed-files-to-affected-tests matrix and staged
-   implementation plan before product mutation; and
-6. keep P6-02 through P6-08 inactive until their predecessor Task Gates pass.
+Implement only:
 
-The P6-01 audit may not install a Tooling DocType, BFF route, production
-lifecycle policy/default, workbook mapping, source adapter, fixture, ERPNext
-endpoint or credential. Product implementation begins only after the P6-01
-plan proves the exact safe boundary and Level 1 entry checks.
+1. non-collapsible pure identities and invariants for Part/PartRevision,
+   ToolingRequirement, ToolingMaster and immutable versioned/effective
+   ToolingApplicability;
+2. six additive guarded DocTypes with no lifecycle-state convenience field,
+   no business fixture/default and no generic normal-user write/delete;
+3. exact NPI/ERP ownership rows plus closed OpenAPI schemas without activating
+   a route;
+4. domain, metadata, controller, contract, ownership, security and additive/
+   idempotent migration tests; and
+5. affected checks, complete ordinary CI and evidence before activating the
+   repository/BFF checkpoint.
+
+Do not add a live route or UI yet. Do not install production lifecycle,
+numbering, ownership/custody, Revision/Set/Trial, mapping, adapter, ERPNext
+endpoint or credential behavior. P6-02 through P6-08 remain inactive.
 
 ## Authority
 

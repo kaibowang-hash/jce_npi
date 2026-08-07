@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T09:52:00Z'
+updated_at: '2026-08-07T09:58:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
-current_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
-current_task_completed_stage: P6_00_LEVEL_2_REQUIREMENT_ANCHOR_PASS
-current_task_next_stage: P6_01_REQUIREMENT_DOMAIN_AND_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+current_task_completed_stage: P6_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+current_task_next_stage: P6_01_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-01
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -652,6 +652,10 @@ p6_00:
   entry_normal_ci: 31165764919
   entry_repository_job: 92826073031
   entry_visual_job: 92826073108
+  final_checkpoint: 6b5d034fb2910d692f0499961fb5b30ab72cfd8f
+  final_normal_ci: 31167356140
+  final_repository_job: 92831145862
+  final_visual_job: 92831145989
   product_code_changed: false
   scoped_decisions: [DR-REC-002, DR-REC-007, DR-REC-008, DR-REC-010]
   completed_stage: LEVEL_2_DOCUMENTATION_TRACE_TASK_GATE_PASS
@@ -660,14 +664,22 @@ p6_00:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-00-validation.md
 p6_01:
-  status: IN_PROGRESS_REQUIREMENT_AUDIT
+  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
   backlog_task: M5-01
   requirements: [FR-TX-001, FR-TX-002, UX-004, FR-TL-001, FR-TL-003]
   delivery_boundary: DISTINCT_PART_REQUIREMENT_MASTER_APPLICABILITY_AND_LIVE_COCKPIT
   exact_lifecycle_commands_active: false
   production_lifecycle_policy_active: false
   scoped_decision: DR-REC-010
-  next_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  starting_checkpoint: 6b5d034fb2910d692f0499961fb5b30ab72cfd8f
+  entry_normal_ci: 31167356140
+  entry_repository_job: 92831145862
+  entry_visual_job: 92831145989
+  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+  next_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - implementation/evidence/phase-6/p6-01-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

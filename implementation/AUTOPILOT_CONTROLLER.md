@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T09:52:00Z`
+Updated: `2026-08-07T09:58:00Z`
 
 ## Authority and operating mode
 
@@ -796,3 +796,24 @@ repeat or rewrite it merely to restore context. See
   ToolingMaster, versioned ToolingApplicability and the dense live cockpit.
   No product mutation is permitted until that plan freezes the exact
   no-lifecycle-command boundary.
+
+## 2026-08-07 P6-01 requirement/domain audit PASS
+
+- P6-00 exact checkpoint `6b5d034` passed ordinary CI `31167356140`:
+  repository `92831145862`, complete E2E/current-tree/history secret lanes and
+  fixed-Linux visual `92831145989` passed; controlled runtime correctly
+  skipped.
+- The P6-01 audit confirms no live Part, Part Revision, Tooling Requirement,
+  Tooling Master or Tooling Applicability backend exists. The current Tooling
+  SPA is an in-memory prototype and remains isolated from live product truth.
+- `implementation/evidence/phase-6/p6-01-plan.md` freezes the minimum vertical
+  slice, non-collapse/shared-master/effectivity invariants, fail-closed
+  Project-first authorization, closed BFF, additive migration, staged test
+  map and forward-only rollback.
+- `DR-REC-010` continues to hold exact production lifecycle states,
+  transitions and authorities. P6-01 introduces no lifecycle state or command,
+  production policy/default, mapping, adapter, ERPNext endpoint or credential.
+- Standing authority activates only checkpoint 1: pure domain, closed
+  contract/ownership and six additive guarded DocTypes. A live route,
+  repository, SPA and controlled Site remain inactive until their sequential
+  checkpoints.

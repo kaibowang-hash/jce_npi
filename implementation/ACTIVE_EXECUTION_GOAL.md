@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T09:52:00Z`
+Updated: `2026-08-07T09:58:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P6-01 TOOLING`
+- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P6-01 TOOLING`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,11 +12,11 @@ Updated: `2026-08-07T09:52:00Z`
   `6ba2763cc14b3a044e2225d7a960ce02175f88a7` (pushed; P5-06 final exact
   controlled-print foundation and verifier repair checkpoint)
 - Latest pushed controller/evidence checkpoint:
-  `ce401b87612c946225ef0106fb344cfdcfb21190` (P5-06/Phase 5 evidence close;
+  `6b5d034fb2910d692f0499961fb5b30ab72cfd8f` (P6-00 requirement anchor;
   exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31165764919` (`PASS`, exact SHA `ce401b8`; repository `92826073031`,
-  complete E2E, Gitleaks/history and fixed-Linux visual `92826073108` passed;
+  `31167356140` (`PASS`, exact SHA `6b5d034`; repository `92831145862`,
+  complete E2E, Gitleaks/history and fixed-Linux visual `92831145989` passed;
   controlled runtime correctly skipped)
 - Latest controlled-Site run:
   `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
@@ -27,13 +27,13 @@ Updated: `2026-08-07T09:52:00Z`
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — DOMAIN/CONTRACT/ADDITIVE-METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 REQUIREMENT AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 FOUNDATION`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -60,13 +60,18 @@ workbook boundary through `xlsx-tooling-import`, and retains scoped
 `DR-REC-002/007/008/010` holds. It introduced no product code, metadata,
 mapping, adapter, credential, production policy or external mutation.
 
-Standing automatic-transition authority activates only P6-01. Its current
-checkpoint is the bounded Requirement/domain/existing-capability audit and
-task plan for distinct Part/PartRevision, ToolingRequirement, ToolingMaster
-and versioned ToolingApplicability plus the dense live cockpit. It must retain
-the no-production-lifecycle-command boundary under `DR-REC-010`. Product
-mutation remains inactive until that P6-01 plan freezes the exact domain,
-permission, contract, migration, verification and rollback boundary.
+The P6-01 bounded Requirement/domain/existing-capability audit passed and its
+task plan freezes distinct Part/PartRevision, ToolingRequirement,
+ToolingMaster and immutable versioned/effective ToolingApplicability identities,
+Project-first authorization, closed BFF, additive migration, staged validation
+and forward-only rollback. Exact production lifecycle commands remain held by
+`DR-REC-010`.
+
+Standing automatic-transition authority activates only P6-01 checkpoint 1:
+pure domain invariants, closed contract/ownership and six additive guarded
+DocTypes. It installs no route, live UI, production policy/default, workbook
+mapping, adapter, ERPNext endpoint or credential. Repository/BFF and SPA work
+remain inactive until checkpoint 1 passes its affected tests and ordinary CI.
 
 ## Retained P5-04 recovery history
 

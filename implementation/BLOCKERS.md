@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-07T09:52:00Z`
+Updated: `2026-08-07T09:58:00Z`
 
 ## Active hard blockers
 
-None. P5-06 and the Phase 5 Level 3 Gate are PASS; P6-00 has passed its
-documentation/trace Task Gate. No user action or external authorization is
-required for the active P6-01 Requirement/domain/existing-capability audit.
+None. P6-00 exact checkpoint `6b5d034` passed ordinary CI `31167356140`, and
+the P6-01 Requirement/domain/existing-capability audit is PASS. No user action
+or external authorization is required for its domain/contract/additive-metadata
+foundation.
 
 ## Active recovery
 
-`P6-01-REQUIREMENT-AUDIT` — active, not blocked. It is limited to the task plan
-for distinct Part/PartRevision, ToolingRequirement, ToolingMaster and versioned
-ToolingApplicability plus the live cockpit. `DR-REC-010` continues to hold exact
-production lifecycle states/transitions/authority, so no lifecycle command or
-production default may be installed. That scoped hold does not block identity,
-authorization, contract, metadata or read-only cockpit planning.
+`P6-01-DOMAIN-CONTRACT-METADATA` — active, not blocked. It is limited to pure
+non-collapsible identities, closed contract/ownership and six additive guarded
+DocTypes. `DR-REC-010` continues to hold exact production lifecycle states,
+transitions and authority, so no lifecycle field, command or production
+default may be installed. That scoped hold does not block this foundation.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
@@ -919,3 +919,13 @@ must preserve that boundary.
 - P6-01 is active only for its Requirement/domain/existing-capability audit and
   exact task plan. `DR-REC-010` holds formal lifecycle commands; the audit and
   safe identity/authorization/contract planning can proceed autonomously.
+
+## Current authoritative blocker state — 2026-08-07T09:58:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P6-00 exact checkpoint `6b5d034` passed ordinary CI `31167356140` with
+  repository `92831145862` and visual `92831145989`; controlled runtime was
+  correctly closed.
+- The P6-01 audit is PASS. Only the domain/contract/additive-metadata
+  foundation is active; the exact lifecycle decision remains scoped and does
+  not prevent safe checkpoint 1 implementation.
