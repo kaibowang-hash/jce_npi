@@ -953,3 +953,12 @@ repeat or rewrite it merely to restore context. See
   opens one new route-gated, response-neutral Applicability-create diagnostic
   cycle with counters diagnostic `0/1`, uniquely proved repair `0/1`, final
   unchanged Gate `0/1`; every frozen boundary remains unchanged.
+- Applicability diagnostic checkpoint `f82906f` passed complete ordinary CI
+  `31192675103`. The sole diagnostic Site `31193365348` returned only
+  `P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT / ValidationError /
+  trace-59e45d5266c05965a8e353f52abe26c5`; repository `92915506746` and visual
+  `92915506767` passed. Pinned Frappe fills empty Selects from their first
+  options. Both optional Product/Model source-system fields listed `NPI_ONE`
+  first, so row validation correctly rejected those systems without paired
+  object IDs. The unique repair prepends only empty options to those two
+  optional Selects and closes verifier diagnostic activation.

@@ -222,7 +222,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             ].get("X-NPI-Diagnostic-Scope"),
             "p601-applicability-create-v1",
         )
-        self.assertTrue(module.APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED)
 
     def test_fresh_proves_reuse_replay_conflict_rollback_idor_and_history(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]

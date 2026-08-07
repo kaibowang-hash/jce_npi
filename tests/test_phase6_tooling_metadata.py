@@ -158,6 +158,12 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             "predecessor_global_id", "effective_from", "effective_to",
         ):
             self.assertIn(fieldname, fields)
+        for fieldname in ("product_source_system", "model_source_system"):
+            with self.subTest(fieldname=fieldname):
+                self.assertEqual(
+                    str(fields[fieldname].get("options", "")).splitlines(),
+                    ["", "NPI_ONE", "ERPNEXT"],
+                )
         self.assertNotIn("tooling_requirement_global_id", fields)
         self.assertNotIn("physical_set_count", fields)
 

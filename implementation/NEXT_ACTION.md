@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P6-01 APPLICABILITY CREATE`
+`IN_PROGRESS_REPAIR — P6-01 APPLICABILITY OPTIONAL REFERENCES`
 
-Recovery time: `2026-08-07T15:23:00Z`
+Recovery time: `2026-08-07T15:43:06Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`84ac63bdc3f18bdc241106efcf3443fd4594b41e`
+`f82906ffc2a93325df5ba49e5cdaf0bde9ca923d`
 
 ## Current authoritative action
 
@@ -105,6 +105,14 @@ Applicability-create response-neutral diagnostic for that first synthetic
 request, run affected/full ordinary CI, dispatch one diagnostic Site, and
 repair only the uniquely proved root before closing diagnostics and reserving
 one final unchanged Gate.
+
+Diagnostic checkpoint `f82906f` passed complete ordinary CI `31192675103`.
+The sole diagnostic Site `31193365348` returned only the Applicability
+relationship-insert `ValidationError` and exact trace. Pinned Frappe defaults
+an empty Select from its first option; both optional Product/Model source
+systems listed `NPI_ONE` first, producing unpaired references. Prepend only
+the empty option to both optional Selects, close diagnostic activation, run
+affected/full ordinary CI and one final unchanged Gate.
 
 Implement only:
 

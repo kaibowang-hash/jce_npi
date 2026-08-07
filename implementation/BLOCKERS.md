@@ -1,27 +1,27 @@
 # Blockers
 
-Updated: `2026-08-07T15:23:00Z`
+Updated: `2026-08-07T15:43:06Z`
 
 ## Active hard blockers
 
-None. Repair checkpoint `84ac63b` passed complete ordinary CI `31190599179`.
-Final unchanged workflow `31191425881` passed repository `92908918643`, visual
-`92908918453`, pinned Bench, Site, migrations and retained P5/P6-01 commands
-before the first Applicability create returned non-201. This is an opaque
-technical failure with a safe in-scope diagnostic action, not a Hard Blocker
-and requires no user action.
+None. Diagnostic checkpoint `f82906f` passed complete ordinary CI
+`31192675103`. The sole diagnostic workflow `31193365348` passed repository,
+visual, pinned Bench, Site, migrations and all preceding runtime before its
+safe tuple uniquely proved the Applicability relationship-insert root. The
+minimal in-scope repair is active and requires no user action.
 
 ## Active recovery
 
-`P6-01-APPLICABILITY-CREATE-DIAGNOSTIC` — `IN_PROGRESS_DIAGNOSTIC`, not
-blocked. The former receipt-insert repair is proven effective because final
-unchanged Gate `31191425881` advanced to the first Applicability create.
-Standing authority opens one route-gated, response-neutral diagnostic cycle
-that records only one allowlisted Applicability substage, validated exception
-type and exact trace. Affected/full ordinary CI must pass before the sole
-diagnostic Site. Only its uniquely proved root may be repaired; activation must
-then close before ordinary CI and one final unchanged Gate. Counters are
-diagnostic `0/1`, repair `0/1`, final Gate `0/1`.
+`P6-01-APPLICABILITY-OPTIONAL-REFERENCE-REPAIR` — `IN_PROGRESS_REPAIR`, not
+blocked. The sole diagnostic Site returned only
+`P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT / ValidationError /
+trace-59e45d5266c05965a8e353f52abe26c5`. Pinned Frappe Select defaults plus the
+two optional source-system metadata fields prove that empty Product/Model
+references were defaulted to `NPI_ONE` without paired object IDs, correctly
+failing the immutable paired-reference invariant. The unique repair prepends
+the empty option to those two optional Selects and closes diagnostic
+activation. Counters are diagnostic `1/1`, repair `0/1` in progress, final
+Gate `0/1`.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
