@@ -1,8 +1,9 @@
 # P6-01 Applicability-create Diagnostic Checkpoint
 
-Updated: `2026-08-07T15:43:06Z`
+Updated: `2026-08-07T16:05:11Z`
 
-Status: `ROOT PROVEN — REPAIR IN PROGRESS`; this is not a P6-01 Task Gate PASS.
+Status: `SECOND ROOT PROVEN — VERSION-KEY REPAIR IN PROGRESS`; this is not a
+P6-01 Task Gate PASS.
 
 ## Trigger evidence
 
@@ -86,3 +87,38 @@ Affected Tooling `31/31` and complete tracked Python `1,130/1,130` pass after
 the repair. Compilation, YAML parse, prototype/P0 governance, reconciliation,
 prohibited-pattern and diff checks pass. Complete exact-SHA ordinary CI and one
 final unchanged controlled Gate remain mandatory.
+
+## Closed-diagnostic final Gate and second deterministic root
+
+Optional-reference repair checkpoint `c1f627c` passed complete ordinary CI
+`31194339295`: repository `92918744817` and fixed-Linux visual `92918744821`
+passed; controlled job `92918745415` correctly skipped. Final unchanged
+workflow `31195049338` retained that exact SHA with both diagnostic activations
+false. Repository `92921107120`, visual `92921106655`, pinned Bench, disposable
+Site, migrations and every predecessor passed. Controlled job `92921106746`
+then reached the same coarse relationship-insert stage after the optional
+paired-reference contradiction was removed.
+
+The next unconditional validator check provides a unique code-contract proof
+without another diagnostic dispatch:
+
+- repository `_insert_applicability()` writes the raw canonical string
+  `relationship_global_id:applicability_version` to `version_key`;
+- `tooling_applicability.validate()` calculates the SHA-256 digest of that
+  exact canonical string and rejects any non-empty different value;
+- therefore the repository value cannot pass the immutable DocType invariant.
+
+The uniquely proved root is
+`P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH`. Repair only the repository
+formula to use the required SHA-256 digest and add a direct regression
+assertion. Diagnostics remain closed. Changed-files to affected-tests mapping:
+
+- repository version-key helper -> `tests.test_phase6_tooling_repository`;
+- cumulative Tooling safety -> metadata and runtime-verifier tests;
+- controller/evidence truth -> YAML parse, reconciliation and diff checks.
+
+Affected tests pass `23/23`; complete tracked Python passes `1,130/1,130`.
+Compilation, workflow/status YAML parse, prototype approval, P0 visual
+governance, V1.2 reconciliation, prohibited-pattern scan and `git diff --check`
+pass locally. Complete exact-SHA ordinary CI and one diagnostics-closed final
+unchanged Gate remain mandatory.

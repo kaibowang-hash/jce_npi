@@ -1,27 +1,23 @@
 # Blockers
 
-Updated: `2026-08-07T15:43:06Z`
+Updated: `2026-08-07T16:05:11Z`
 
 ## Active hard blockers
 
-None. Diagnostic checkpoint `f82906f` passed complete ordinary CI
-`31192675103`. The sole diagnostic workflow `31193365348` passed repository,
-visual, pinned Bench, Site, migrations and all preceding runtime before its
-safe tuple uniquely proved the Applicability relationship-insert root. The
-minimal in-scope repair is active and requires no user action.
+None. Optional-reference repair `c1f627c` passed complete ordinary CI
+`31194339295`. Diagnostics-closed Gate `31195049338` passed repository and
+visual and advanced to a later deterministic Applicability version-key
+contract failure. The minimal in-scope formula repair is active and requires
+no user action.
 
 ## Active recovery
 
-`P6-01-APPLICABILITY-OPTIONAL-REFERENCE-REPAIR` — `IN_PROGRESS_REPAIR`, not
-blocked. The sole diagnostic Site returned only
-`P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT / ValidationError /
-trace-59e45d5266c05965a8e353f52abe26c5`. Pinned Frappe Select defaults plus the
-two optional source-system metadata fields prove that empty Product/Model
-references were defaulted to `NPI_ONE` without paired object IDs, correctly
-failing the immutable paired-reference invariant. The unique repair prepends
-the empty option to those two optional Selects and closes diagnostic
-activation. Counters are diagnostic `1/1`, repair `0/1` in progress, final
-Gate `0/1`.
+`P6-01-APPLICABILITY-VERSION-KEY-REPAIR` — `IN_PROGRESS_REPAIR`, not blocked.
+The optional Select repair is effective. The repository currently supplies a
+raw `relationship_global_id:applicability_version` version key, while the
+DocType invariant requires its SHA-256 digest; both formulas are fixed code
+and cannot agree. Repair only the repository formula, retain diagnostics
+closed, run affected/full ordinary CI and reserve one final unchanged Gate.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

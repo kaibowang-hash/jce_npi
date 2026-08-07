@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPAIR — P6-01 APPLICABILITY OPTIONAL REFERENCES`
+`IN_PROGRESS_REPAIR — P6-01 APPLICABILITY VERSION KEY`
 
-Recovery time: `2026-08-07T15:43:06Z`
+Recovery time: `2026-08-07T16:05:11Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`f82906ffc2a93325df5ba49e5cdaf0bde9ca923d`
+`c1f627ccf3d596519e06bcb6f420654f05accd32`
 
 ## Current authoritative action
 
@@ -113,6 +113,16 @@ an empty Select from its first option; both optional Product/Model source
 systems listed `NPI_ONE` first, producing unpaired references. Prepend only
 the empty option to both optional Selects, close diagnostic activation, run
 affected/full ordinary CI and one final unchanged Gate.
+
+Optional-reference repair `c1f627c` passed complete ordinary CI
+`31194339295`. Diagnostics-closed final workflow `31195049338` passed
+repository `92921107120` and visual `92921106655`, then controlled job
+`92921106746` reached the Applicability relationship insert. The repository
+uses a raw canonical version string, but the DocType invariant requires its
+SHA-256 digest. Align only that repository formula, keep diagnostics closed,
+run affected and full checks, require complete exact-SHA ordinary CI, then run
+one final unchanged controlled Gate. On PASS, record controlled artifact
+identity/digest and execute the P6-01 Level 2 Task Gate.
 
 Implement only:
 

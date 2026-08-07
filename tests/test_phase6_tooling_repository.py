@@ -141,6 +141,14 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         self.assertIn("len(matches) != 1", reference)
         self.assertIn("row.source_system", reference)
         self.assertIn("row.source_object_id", reference)
+        insert = function("_insert_applicability")
+        self.assertIn("_applicability_version_key(", insert)
+        version_key = function("_applicability_version_key")
+        self.assertIn("hashlib.sha256(", version_key)
+        self.assertIn(
+            'f"{relationship_global_id}:{applicability_version}".encode()',
+            version_key,
+        )
 
     def test_applicability_diagnostic_covers_each_atomic_substage(self) -> None:
         value = function("create_applicability")

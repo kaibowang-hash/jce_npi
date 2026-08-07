@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T15:43:06Z'
+updated_at: '2026-08-07T16:05:11Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
 current_task_status: IN_PROGRESS_REPAIR
-current_task_completed_stage: P6_01_APPLICABILITY_DIAGNOSTIC_ROOT_PROVEN
-current_task_next_stage: P6_01_APPLICABILITY_OPTIONAL_REFERENCE_REPAIR
+current_task_completed_stage: P6_01_APPLICABILITY_OPTIONAL_REFERENCE_REPAIR_EFFECTIVE
+current_task_next_stage: P6_01_APPLICABILITY_VERSION_KEY_REPAIR
 current_task_next_stage_status: IN_PROGRESS_REPAIR
 resumed_product_task: P6-01
 resumed_product_task_status: IN_PROGRESS_REPAIR
@@ -17,7 +17,7 @@ repair_accounting:
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P601_APPLICABILITY_OPTIONAL_SELECT_DEFAULTS
+  current_root: P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -749,9 +749,24 @@ p6_01:
   applicability_diagnostic_exception_type: ValidationError
   applicability_diagnostic_trace_id: trace-59e45d5266c05965a8e353f52abe26c5
   applicability_repairs_authorized_if_uniquely_proven: 1
-  applicability_repairs_used: 0
+  applicability_repairs_used: 1
   applicability_final_unchanged_gates_authorized: 1
-  applicability_final_unchanged_gates_used: 0
+  applicability_final_unchanged_gates_used: 1
+  applicability_repair_checkpoint: c1f627ccf3d596519e06bcb6f420654f05accd32
+  applicability_repair_normal_ci: 31194339295
+  applicability_repair_normal_repository_job: 92918744817
+  applicability_repair_normal_visual_job: 92918744821
+  applicability_repair_normal_controlled_job: 92918745415
+  applicability_final_unchanged_gate: 31195049338
+  applicability_final_repository_job: 92921107120
+  applicability_final_visual_job: 92921106655
+  applicability_final_controlled_job: 92921106746
+  applicability_final_outcome: FAILED_SAME_RELATIONSHIP_INSERT_VERSION_KEY_PROVEN
+  applicability_optional_reference_repair_effective: true
+  applicability_version_key_root: P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH
+  applicability_version_key_repair_status: IN_PROGRESS
+  applicability_version_key_final_gates_authorized: 1
+  applicability_version_key_final_gates_used: 0
   completed_stage: LIVE_COCKPIT_CHECKPOINT_PASS
   next_stage: CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
   evidence:

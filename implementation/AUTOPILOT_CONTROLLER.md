@@ -962,3 +962,20 @@ repeat or rewrite it merely to restore context. See
   first, so row validation correctly rejected those systems without paired
   object IDs. The unique repair prepends only empty options to those two
   optional Selects and closes verifier diagnostic activation.
+- Optional-reference repair checkpoint `c1f627c` passed complete ordinary CI
+  `31194339295`: repository `92918744817` and visual `92918744821` passed,
+  while controlled runtime correctly skipped. Final unchanged workflow
+  `31195049338` retained that SHA and diagnostics remained closed. Repository
+  `92921107120`, visual `92921106655`, pinned Bench, Site, migrations and all
+  predecessors passed; controlled job `92921106746` reached the same coarse
+  relationship-insert stage after the former paired-reference root had been
+  removed. The next unconditional contract check is deterministically
+  contradictory: repository `_insert_applicability()` writes the raw
+  `relationship_global_id:applicability_version` string, while the immutable
+  DocType validator accepts only the SHA-256 digest of that exact canonical
+  string. This uniquely proves
+  `P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH`. Standing recovery authority
+  activates only that formula-alignment repair, affected/full ordinary CI and
+  one diagnostics-closed final unchanged Gate. It changes no Requirement,
+  public API, permission, Schema intent, ownership, transaction, idempotency,
+  audit or PASS rule.

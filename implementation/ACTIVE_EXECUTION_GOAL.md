@@ -1,34 +1,34 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T15:43:06Z`
+Updated: `2026-08-07T16:05:11Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REPAIR — P6-01 APPLICABILITY OPTIONAL REFERENCES`
+- Mode: `IN_PROGRESS_REPAIR — P6-01 APPLICABILITY VERSION KEY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `f82906ffc2a93325df5ba49e5cdaf0bde9ca923d` (pushed; bounded P6-01
-  Applicability-create diagnostic checkpoint)
+  `c1f627ccf3d596519e06bcb6f420654f05accd32` (pushed; optional
+  Applicability references remain empty when omitted)
 - Latest completed controller/evidence checkpoint before this update:
   `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
   exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31192675103` (`PASS`, exact SHA `f82906f`; repository `92913143816`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92913143717`
-  passed `73/73`; controlled runtime `92913144500` correctly skipped)
+  `31194339295` (`PASS`, exact SHA `c1f627c`; repository `92918744817`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92918744821`
+  passed `73/73`; controlled runtime `92918745415` correctly skipped)
 - Latest controlled-Site run:
-  `31193365348` (`FAIL`, exact SHA `f82906f`, sole Applicability diagnostic;
-  repository `92915506746` and visual `92915506767` passed; controlled
-  `92915506979` returned only `P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT /
-  ValidationError / trace-59e45d5266c05965a8e353f52abe26c5`)
+  `31195049338` (`FAIL`, exact SHA `c1f627c`, diagnostics closed; repository
+  `92921107120` and visual `92921106655` passed; controlled `92921106746`
+  advanced through all predecessors and failed at the first Applicability
+  create)
 - Controlled PASS artifact:
   `8988384460`, GitHub SHA-256
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS_REPAIR — APPLICABILITY OPTIONAL REFERENCES`)
+  (`IN_PROGRESS_REPAIR — APPLICABILITY VERSION KEY`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
@@ -135,6 +135,17 @@ option; both optional Product/Model source-system fields listed `NPI_ONE`
 first, creating source systems without their required paired object IDs. The
 active repair prepends only the empty Select option to those two optional
 fields and closes verifier diagnostic activation.
+
+Optional-reference repair checkpoint `c1f627c` passed complete ordinary CI
+`31194339295`. Final unchanged workflow `31195049338` passed repository
+`92921107120`, visual `92921106655`, pinned Bench, Site, migrations and every
+predecessor before controlled job `92921106746` again reached the Applicability
+relationship insert. Code-contract comparison proves a later independent
+root: the repository writes the raw `relationship_global_id:version` string,
+while the DocType validator requires the SHA-256 of that exact canonical
+string. The active repair makes the repository use the already-required hash
+formula and adds a regression assertion. Diagnostics remain closed; no frozen
+product or Gate boundary changes.
 
 ## Retained P5-04 recovery history
 

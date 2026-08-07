@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -1111,8 +1112,9 @@ class FrappeToolingRepository(FrappeDocumentRepository):
                 "global_id": str(value.global_id),
                 "relationship_global_id": str(value.relationship_global_id),
                 "relationship_key_hash": value.relationship_key_hash,
-                "version_key": (
-                    f"{value.relationship_global_id}:{value.applicability_version}"
+                "version_key": _applicability_version_key(
+                    value.relationship_global_id,
+                    value.applicability_version,
                 ),
                 "tenant_id": value.tenant_id,
                 "project_global_id": str(value.project_global_id),
@@ -1486,6 +1488,15 @@ def _datetime(value: object) -> datetime:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)
+
+
+def _applicability_version_key(
+    relationship_global_id: UUID,
+    applicability_version: int,
+) -> str:
+    return hashlib.sha256(
+        f"{relationship_global_id}:{applicability_version}".encode()
+    ).hexdigest()
 
 
 def _database_datetime(value: datetime) -> str:
