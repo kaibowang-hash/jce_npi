@@ -2040,13 +2040,15 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             f'test "$(yarn --version)" = "{toolchain["YARN_EXPECTED_VERSION"]}"',
             "bash scripts/init-frappe-bench.sh",
             "bash scripts/init-npi-site.sh",
-            "bash scripts/verify-frappe-runtime.sh --document-only",
+            "bash scripts/verify-frappe-runtime.sh --tooling-only",
             "site=npi.localhost",
             "database=npi_one_runtime",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
-            "scope=p5-01-through-p5-06",
+            "scope=p5-01-through-p6-01",
+            "predecessor_scope=p5-01-through-p5-06",
+            "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             f'frappe_commit={toolchain["FRAPPE_COMMIT"]}',
-            "p5-document-ebom-runtime-${{ github.run_id }}",
+            "p6-tooling-runtime-${{ github.run_id }}",
             "docker compose down --volumes",
         )
         for fragment in required_fragments:

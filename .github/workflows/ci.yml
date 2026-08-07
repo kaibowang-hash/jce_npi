@@ -124,7 +124,7 @@ jobs:
           retention-days: 30
 
   document_runtime:
-    name: P5 controlled document, EBOM, publish, and print runtime
+    name: P5 controlled document, EBOM, publish, and print runtime and P6 Tooling
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -147,11 +147,11 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify P5 controlled document, EBOM, publish, and print runtime
-        run: bash scripts/verify-frappe-runtime.sh --document-only
+      - name: Verify cumulative P5 and P6-01 controlled runtime
+        run: bash scripts/verify-frappe-runtime.sh --tooling-only
       - name: Record controlled runtime result
         run: |
-          mkdir -p "${RUNNER_TEMP}/p5-document-runtime"
+          mkdir -p "${RUNNER_TEMP}/p6-tooling-runtime"
           {
             printf 'result=PASS\n'
             printf 'head_sha=%s\n' "${GITHUB_SHA}"
@@ -159,14 +159,16 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p5-06\n'
+            printf 'scope=p5-01-through-p6-01\n'
+            printf 'predecessor_scope=p5-01-through-p5-06\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
-            printf 'command=bash scripts/verify-frappe-runtime.sh --document-only\n'
-          } >"${RUNNER_TEMP}/p5-document-runtime/result.txt"
+            printf 'command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'
+            printf 'predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
+          } >"${RUNNER_TEMP}/p6-tooling-runtime/result.txt"
       - uses: actions/upload-artifact@v4
         with:
-          name: p5-document-ebom-runtime-${{ github.run_id }}
-          path: ${{ runner.temp }}/p5-document-runtime/result.txt
+          name: p6-tooling-runtime-${{ github.run_id }}
+          path: ${{ runner.temp }}/p6-tooling-runtime/result.txt
           if-no-files-found: error
           retention-days: 30
       - name: Clean ephemeral runtime resources

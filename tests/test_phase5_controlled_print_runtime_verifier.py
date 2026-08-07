@@ -299,8 +299,10 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         for fragment in (
             "P5 controlled document, EBOM, publish, and print runtime",
-            "bash scripts/verify-frappe-runtime.sh --document-only",
-            "scope=p5-01-through-p5-06",
+            "bash scripts/verify-frappe-runtime.sh --tooling-only",
+            "scope=p5-01-through-p6-01",
+            "predecessor_scope=p5-01-through-p5-06",
+            "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
             "docker compose down --volumes",
         ):
