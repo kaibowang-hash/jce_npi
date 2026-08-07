@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import type { DocumentDataSource } from "../api/document-data-source";
 import type {
   CreateToolingApplicabilityCommand,
   ToolingCockpitViewModel,
@@ -24,6 +25,7 @@ import {
 import { formatDate, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import ToolingSetWorkspace from "./tooling-set-workspace";
 
 type ResourceState =
   | { kind: "loading" }
@@ -161,12 +163,14 @@ function LoadingSurface(): React.JSX.Element {
 
 export default function LiveToolingPage({
   dataSource,
+  documentDataSource,
   projectId,
   masterId,
   navigate,
   reportWorkspaceDirty,
 }: {
   dataSource: ToolingDataSource;
+  documentDataSource?: DocumentDataSource | undefined;
   projectId: string;
   masterId: string | null;
   navigate: (target: string) => void;
@@ -538,6 +542,10 @@ export default function LiveToolingPage({
             id: "tooling-live-applicability",
             label: t("Applicability and Part Revisions"),
           },
+          {
+            id: "tooling-live-sets",
+            label: t("Physical Tooling Sets and intake"),
+          },
           { id: "tooling-live-inspector", label: t("Tooling truth inspector") },
         ]}
       />
@@ -833,7 +841,6 @@ export default function LiveToolingPage({
               [
                 ["lifecycle", cockpit.downstream.lifecycle],
                 ["revision", cockpit.downstream.revision],
-                ["physical-set", cockpit.downstream.physicalSet],
                 ["trial", cockpit.downstream.trial],
                 ["erp", cockpit.downstream.erp],
               ] as const
@@ -846,11 +853,22 @@ export default function LiveToolingPage({
           </div>
           <small>
             {t(
-              "No lifecycle, Tooling Revision, physical Set, Trial or ERPNext success is inferred by this workspace.",
+              "No lifecycle, Tooling Revision, Trial or ERPNext success is inferred by this workspace.",
             )}
           </small>
         </DockedInspector>
       </div>
+      {selectedMaster ? (
+        <ToolingSetWorkspace
+          dataSource={dataSource}
+          documentDataSource={documentDataSource}
+          key={selectedMaster.globalId}
+          masterId={selectedMaster.globalId}
+          projectId={projectId}
+          reportWorkspaceDirty={reportWorkspaceDirty}
+          requirements={cockpit.requirements}
+        />
+      ) : null}
       {editor ? (
         <Panel id="tooling-live-editor" title={editorLabel(t, editor.kind)}>
           <form

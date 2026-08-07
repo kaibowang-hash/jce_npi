@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  isToolingSetCollectionResponse,
+  isToolingSetDetailResponse,
   isToolingCockpitResponse,
   LiveToolingDataSource,
   ToolingRequestCancelledError,
   type ToolingCockpitViewModel,
+  type ToolingSetCollectionViewModel,
+  type ToolingSetDetailViewModel,
 } from "../../src/api/tooling-data-source";
 
 const projectId = "11111111-1111-4111-8111-111111111111";
@@ -14,6 +18,18 @@ const revisionId = "44444444-4444-4444-8444-444444444444";
 const requirementId = "55555555-5555-4555-8555-555555555555";
 const applicabilityId = "66666666-6666-4666-8666-666666666666";
 const relationshipId = "77777777-7777-4777-8777-777777777777";
+const setId = "88888888-8888-4888-8888-888888888888";
+const intakeId = "99999999-9999-4999-8999-999999999999";
+const inspectionIds = [
+  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
+  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3",
+  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4",
+  "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa5",
+] as const;
+const differenceId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const evidenceId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const fileRevisionId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const source = {
   editableIn: "NPI_ONE" as const,
   sourceSystem: "NPI_ONE" as const,
@@ -111,6 +127,127 @@ function fixture(): ToolingCockpitViewModel {
       },
     ],
   };
+}
+
+function setCollection(): ToolingSetCollectionViewModel {
+  return {
+    items: [
+      {
+        custodyResponsibility: "Customer-owned custody",
+        customer: { sourceObjectId: "CUST-001", sourceSystem: "ERPNEXT" },
+        erpLocationAndAsset: {
+          reasonCode: "erp_projection_unavailable",
+          state: "unavailable",
+        },
+        globalId: setId,
+        lifecycle: {
+          reasonCode: "lifecycle_policy_unavailable",
+          state: "unavailable",
+        },
+        physicalSerial: "SET-001",
+        projectGlobalId: projectId,
+        repairAuthorizationReference: "AUTH-001",
+        requirementKind: "customer_owned_intake",
+        returnConditions: "Return on request",
+        snapshotHash: "1".repeat(64),
+        sourceRevision: {
+          reasonCode: "tooling_revision_not_delivered",
+          state: "unavailable",
+        },
+        supplier: {
+          reasonCode: "formal_supplier_unavailable",
+          state: "unavailable",
+        },
+        toolingMasterGlobalId: masterId,
+        toolingRequirementGlobalId: requirementId,
+      },
+    ],
+    permissions: {
+      attachEvidence: true,
+      createIntake: true,
+      createSet: true,
+      transitionLifecycle: false,
+      view: true,
+    },
+    toolingMasterGlobalId: masterId,
+  };
+}
+
+function setDetail(): ToolingSetDetailViewModel {
+  const toolingSet = setCollection().items[0];
+  if (!toolingSet) throw new Error("The Set fixture is required.");
+  const inspections = (
+    [
+      "appearance",
+      "water_circuit",
+      "hot_runner",
+      "electrical",
+      "safety",
+    ] as const
+  ).map((category, index) => ({
+    category,
+    differenceObserved: index === 0,
+    globalId: inspectionIds[index] ?? inspectionIds[0],
+    observation: index === 0 ? "Scratch observed" : "No difference",
+  }));
+  return {
+    evidence: [
+      {
+        differenceGlobalIds: [differenceId],
+        evidenceRole: "arrival_photo",
+        fileContentHash: "2".repeat(64),
+        fileName: "arrival.jpg",
+        fileOptimisticVersion: 1,
+        fileRevisionGlobalId: fileRevisionId,
+        globalId: evidenceId,
+        intakeSnapshotHash: "3".repeat(64),
+        mimeType: "image/jpeg",
+        sha256: "4".repeat(64),
+        sizeBytes: 128,
+        snapshotHash: "5".repeat(64),
+        toolingIntakeGlobalId: intakeId,
+      },
+    ],
+    intakes: [
+      {
+        accessories: [],
+        arrivedAt: "2026-08-07T08:00:00Z",
+        custodyHandover: "Accepted at receiving dock",
+        differences: [
+          {
+            customerConfirmationRequired: true,
+            description: "Scratch observed",
+            globalId: differenceId,
+            sourceGlobalId: inspectionIds[0],
+            sourceKind: "inspection",
+          },
+        ],
+        globalId: intakeId,
+        inspections,
+        predecessorGlobalId: null,
+        snapshotHash: "3".repeat(64),
+        toolingSetGlobalId: setId,
+        transportProvider: "Synthetic carrier",
+        transportReference: "SHIP-001",
+        version: 1,
+      },
+    ],
+    permissions: setCollection().permissions,
+    toolingSet,
+  };
+}
+
+function governedResponse(value: unknown, init?: RequestInit): Response {
+  const headers = new Headers(init?.headers);
+  return new Response(JSON.stringify(value), {
+    headers: {
+      "Cache-Control": "private, no-store",
+      "Idempotency-Replayed": "false",
+      "X-Request-ID": headers.get("X-Request-ID") ?? "",
+      "X-Trace-ID": "trace-tooling-set-test",
+    },
+    status: init?.method === "POST" ? 201 : 200,
+  });
 }
 
 function responseFor(request: RequestInfo | URL, init?: RequestInit): Response {
@@ -289,6 +426,159 @@ describe("live Tooling data source", () => {
     await expect(
       dataSource.loadCockpit(projectId, cancelled.signal),
     ).rejects.toBeInstanceOf(ToolingRequestCancelledError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("accepts only coherent bounded Set, intake and exact evidence graphs", () => {
+    expect(isToolingSetCollectionResponse(setCollection())).toBe(true);
+    expect(isToolingSetDetailResponse(setDetail())).toBe(true);
+    expect(
+      isToolingSetCollectionResponse({
+        ...setCollection(),
+        unexpected: true,
+      }),
+    ).toBe(false);
+    const detail = setDetail();
+    const firstIntake = detail.intakes[0];
+    if (!firstIntake) throw new Error("The intake fixture is required.");
+    expect(
+      isToolingSetDetailResponse({
+        ...detail,
+        evidence: [
+          {
+            ...detail.evidence[0],
+            intakeSnapshotHash: "f".repeat(64),
+          },
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      isToolingSetDetailResponse({
+        ...detail,
+        intakes: [
+          {
+            ...firstIntake,
+            inspections: firstIntake.inspections.slice(0, 4),
+          },
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("uses only the closed Set, intake and evidence routes", async () => {
+    const fetch = vi.fn((request: RequestInfo | URL, init?: RequestInit) => {
+      const url =
+        typeof request === "string"
+          ? request
+          : request instanceof URL
+            ? request.href
+            : request.url;
+      return Promise.resolve(
+        governedResponse(
+          url.endsWith("/sets") ? setCollection() : setDetail(),
+          init,
+        ),
+      );
+    });
+    vi.stubGlobal("fetch", fetch);
+    const dataSource = new LiveToolingDataSource();
+    const intake = setDetail().intakes[0];
+    if (!intake) throw new Error("The intake fixture is required.");
+    const context = (suffix: string) => ({
+      csrfToken: "c".repeat(32),
+      idempotencyKey: `tooling-set-${suffix}-12345678`,
+      signal: new AbortController().signal,
+    });
+
+    await dataSource.loadSets(
+      projectId,
+      masterId,
+      new AbortController().signal,
+    );
+    await dataSource.loadSet(
+      projectId,
+      masterId,
+      setId,
+      new AbortController().signal,
+    );
+    await dataSource.createSet(
+      projectId,
+      masterId,
+      {
+        custodyResponsibility: "Customer custody",
+        physicalSerial: "SET-001",
+        repairAuthorizationReference: "AUTH-001",
+        returnConditions: "Return on request",
+        toolingRequirementGlobalId: requirementId,
+      },
+      context("create"),
+    );
+    await dataSource.createIntake(
+      projectId,
+      masterId,
+      setId,
+      {
+        accessories: [],
+        arrivedAt: "2026-08-07T08:00:00Z",
+        custodyHandover: "Accepted",
+        differences: intake.differences,
+        inspections: intake.inspections,
+        transportProvider: "Carrier",
+        transportReference: "SHIP-001",
+      },
+      context("intake"),
+    );
+    await dataSource.attachIntakeEvidence(
+      projectId,
+      masterId,
+      setId,
+      intakeId,
+      {
+        differenceGlobalIds: [differenceId],
+        evidenceRole: "arrival_photo",
+        fileRevisionGlobalId: fileRevisionId,
+      },
+      context("evidence"),
+    );
+
+    expect(
+      fetch.mock.calls.map(([url]) =>
+        typeof url === "string" ? url : url instanceof URL ? url.href : url.url,
+      ),
+    ).toEqual([
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets`,
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}`,
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets`,
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/intakes`,
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/intakes/${intakeId}/evidence`,
+    ]);
+    expect(
+      fetch.mock.calls.slice(2).every(([, init]) => init?.method === "POST"),
+    ).toBe(true);
+  });
+
+  it("rejects malformed Set commands before transport", async () => {
+    const fetch = vi.fn(responseFor);
+    vi.stubGlobal("fetch", fetch);
+    const dataSource = new LiveToolingDataSource();
+    await expect(
+      dataSource.createSet(
+        projectId,
+        masterId,
+        {
+          custodyResponsibility: "",
+          physicalSerial: "SET-001",
+          repairAuthorizationReference: "AUTH-001",
+          returnConditions: "Return",
+          toolingRequirementGlobalId: requirementId,
+        },
+        {
+          csrfToken: "c".repeat(32),
+          idempotencyKey: "tooling-set-invalid-12345678",
+          signal: new AbortController().signal,
+        },
+      ),
+    ).rejects.toMatchObject({ kind: "request_not_ready" });
     expect(fetch).not.toHaveBeenCalled();
   });
 });

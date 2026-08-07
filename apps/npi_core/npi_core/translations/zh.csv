@@ -4054,7 +4054,7 @@ Master identity,主档标识
 Originating Project,发起项目
 Select or create a logical Tooling Master to inspect exact identity truth.,请选择或创建逻辑模具主档以检查精确标识事实。
 Downstream capability truth,下游能力事实
-"No lifecycle, Tooling Revision, physical Set, Trial or ERPNext success is inferred by this workspace.","此工作区不会推断生命周期、模具修订、实体模具套、试模或 ERPNext 成功。"
+"No lifecycle, Tooling Revision, Trial or ERPNext success is inferred by this workspace.","此工作区不会推断生命周期、模具修订、试模或 ERPNext 成功。"
 Command,命令
 Requirement kind,需求类型
 Applicability relationship,适用关系
@@ -4131,3 +4131,81 @@ arrival_photo,到厂照片
 customer_confirmation,客户确认
 inspection_evidence,检查证据
 transport_document,运输文件
+Accessory,附件
+Accessory document,附件清单
+Add accessory,添加附件
+Appearance,外观
+Arrival intake history,到厂验收历史
+Arrival photo,到厂照片
+Arrived,到厂时间
+Arrived at,到厂时间
+Attach evidence,附加证据
+Attach governed intake evidence,附加受控验收证据
+Attaching governed intake evidence,正在附加受控验收证据
+Bind exact intake differences,绑定精确验收差异
+Bound differences,已绑定差异
+Complete each accessory with nonnegative quantities.,请完整填写每项附件且数量不得为负数。
+Complete every required physical Set field.,请完整填写实体模具套的所有必填字段。
+"Complete transport, handover and all five inspections.",请完整填写运输、交接和全部五类检查。
+Controlled document,受控文档
+Create a customer-owned intake or copy/additional Set requirement before recording a physical Set.,记录实体模具套前请先创建客户自有模具接收或复制/附加模具套需求。
+Create physical Set,创建实体模具套
+Create physical Tooling Set,创建实体模具套
+Creating physical Tooling Set,正在创建实体模具套
+Custody handover,保管交接
+Custody responsibility,保管责任
+Customer confirmation,客户确认
+Customer confirmation required,需要客户确认
+Customer reference,客户引用
+Customer source,客户来源
+Declared,申报数量
+Declared and received accessories,申报与实收附件
+Difference observed,发现差异
+Differences,差异
+Electrical,电气
+ERPNext location and Asset projection are unavailable.,ERPNext 库位与资产投影不可用。
+Evidence references,证据引用
+Evidence role,证据角色
+Exact File Revision,精确文件修订
+Five-category arrival inspection,五类到厂检查
+Formal Supplier is not delivered yet.,尚未提供正式供应商。
+Governed intake evidence,受控验收证据
+Hot runner,热流道
+Inspection evidence,检查证据
+Intake version,验收版本
+Intake versions,验收版本数
+Loading controlled documents,正在加载受控文档
+Loading exact File Revisions,正在加载精确文件修订
+Loading exact Set intake history,正在加载精确模具套验收历史
+Loading physical Tooling Sets,正在加载实体模具套
+No arrival intake has been recorded for this Set.,此模具套尚未记录到厂验收。
+No governed evidence reference has been attached.,尚未附加受控证据引用。
+No physical Tooling Set has been recorded for this Master.,此模具主档尚未记录实体模具套。
+Physical serial,实体序列号
+Physical Set data is read only until this session is verified.,会话验证完成前实体模具套数据为只读。
+Physical Set repository,实体模具套存储库
+Physical Set truth inspector,实体模具套事实检查器
+Physical Set truth remains empty; no downstream success is inferred.,实体模具套事实仍为空；不会推断任何下游成功。
+Physical Tooling Sets,实体模具套
+Physical Tooling Sets and intake,实体模具套与到厂验收
+Received,实收数量
+Record arrival intake,记录到厂验收
+Record intake,记录验收
+Recording Tooling intake,正在记录模具验收
+Remove accessory,移除附件
+Repair authorization reference,维修授权引用
+Return conditions,返还条件
+Role,角色
+Safety,安全
+Select clean exact File Revision,选择干净的精确文件修订
+Select controlled document,选择受控文档
+Select one intake and one clean exact File Revision.,请选择一次验收和一个干净的精确文件修订。
+Select to inspect,选择以检查
+"Set custody, arrival inspection, differences and exact file evidence are retained without lifecycle or ERPNext inference.","模具套保管、到厂检查、差异和精确文件证据会被保留，且不会推断生命周期或 ERPNext 事实。"
+Set snapshot hash,模具套快照哈希
+Transport,运输
+Transport document,运输单据
+Transport provider,运输服务方
+Transport reference,运输引用
+Water circuit,水路
+NPI One,NPI One

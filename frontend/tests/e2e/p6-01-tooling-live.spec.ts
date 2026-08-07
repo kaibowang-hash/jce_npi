@@ -20,6 +20,8 @@ const requestIdPattern =
 const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const toolingEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/(?:tooling(?:\/[^/?]+)?|parts(?:\/[^/?]+\/revisions)?|tooling-requirements|tooling-masters|tooling-applicabilities)$/u;
+const toolingSetEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/tooling\/[^/?]+\/sets$/u;
 
 type FixtureState = "normal" | "empty" | "read_only";
 
@@ -231,6 +233,19 @@ async function installToolingApi(
   } = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
+  await page.route(toolingSetEndpoint, async (route) => {
+    await fulfillJson(route, {
+      items: [],
+      permissions: {
+        attachEvidence: options.state !== "read_only",
+        createIntake: options.state !== "read_only",
+        createSet: options.state !== "read_only",
+        transitionLifecycle: false,
+        view: true,
+      },
+      toolingMasterGlobalId: masterId,
+    });
+  });
   await page.route(toolingEndpoint, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -319,7 +334,7 @@ test.describe("P6-01 live Tooling cockpit", () => {
       ).toBeVisible();
       await expect(
         page.locator(".tooling-live__downstream .semantic-status"),
-      ).toHaveCount(5);
+      ).toHaveCount(4);
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

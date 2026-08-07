@@ -1228,6 +1228,87 @@ textarea::placeholder {
   background: var(--npi-color-surface-subtle);
 }
 
+.tooling-set__toolbar,
+.tooling-set__accessory-row,
+.tooling-set__inspection-row {
+  align-items: end;
+  display: flex;
+  gap: var(--npi-space-2);
+  justify-content: space-between;
+}
+
+.tooling-set__toolbar {
+  align-items: center;
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+  margin-bottom: var(--npi-space-3);
+  padding-bottom: var(--npi-space-2);
+}
+
+.tooling-set__toolbar > div:first-child,
+.tooling-set__history,
+.tooling-set__inspection-observation {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
+.tooling-set__detail-grid {
+  display: grid;
+  gap: var(--npi-space-3);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.32fr);
+  margin-top: var(--npi-space-3);
+}
+
+.tooling-set__inspector {
+  border-left: var(--npi-border-default) solid var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-2);
+  padding-left: var(--npi-space-3);
+}
+
+.tooling-set__inspection-grid,
+.tooling-set__accessories,
+.tooling-set__difference-picker {
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-2);
+  margin: 0;
+  padding: var(--npi-space-2);
+}
+
+.tooling-set__inspection-row {
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  padding-bottom: var(--npi-space-2);
+}
+
+.tooling-set__accessory-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 100px 100px 100px auto;
+}
+
+.tooling-set__form .checkbox-field,
+.tooling-set__difference-picker .checkbox-field {
+  align-items: center;
+  display: flex;
+  gap: var(--npi-space-1);
+}
+
+@media (width <= 1100px) {
+  .tooling-set__detail-grid,
+  .tooling-set__inspection-row,
+  .tooling-set__accessory-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tooling-set__inspector {
+    border-left: var(--npi-space-0);
+    border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+    padding-left: 0;
+    padding-top: var(--npi-space-3);
+  }
+}
+
 .worklist-layout {
   display: grid;
   grid-template-columns: minmax(600px, 1fr) var(

@@ -113,13 +113,29 @@ function dataSource(
 ): ToolingDataSource {
   const value = cockpit();
   return {
+    attachIntakeEvidence: () => Promise.reject(new Error("not used")),
     createApplicability: () => Promise.resolve(value),
+    createIntake: () => Promise.reject(new Error("not used")),
     createMaster: () => Promise.resolve(value),
     createPart: () => Promise.resolve(value),
     createPartRevision: () => Promise.resolve(value),
     createRequirement: () => Promise.resolve(value),
+    createSet: () => Promise.reject(new Error("not used")),
     loadCockpit: () => Promise.resolve(value),
     loadMaster: () => Promise.resolve(value),
+    loadSet: () => Promise.reject(new Error("not used")),
+    loadSets: () =>
+      Promise.resolve({
+        items: [],
+        permissions: {
+          attachEvidence: false,
+          createIntake: false,
+          createSet: false,
+          transitionLifecycle: false,
+          view: true,
+        },
+        toolingMasterGlobalId: masterId,
+      }),
     ...overrides,
   };
 }
@@ -181,10 +197,10 @@ describe("live Tooling cockpit", () => {
     expect(
       screen.getByText("Project and exact Part Revision only"),
     ).toBeVisible();
-    expect(screen.getAllByText("Unavailable")).toHaveLength(5);
+    expect(screen.getAllByText("Unavailable")).toHaveLength(4);
     expect(
       screen.getByText(
-        "No lifecycle, Tooling Revision, physical Set, Trial or ERPNext success is inferred by this workspace.",
+        "No lifecycle, Tooling Revision, Trial or ERPNext success is inferred by this workspace.",
       ),
     ).toBeVisible();
     expect(
@@ -288,6 +304,6 @@ describe("live Tooling cockpit", () => {
     expect(
       screen.getByRole("button", { name: "Add Tooling record" }),
     ).toBeDisabled();
-    expect(screen.getAllByText("Unavailable")).toHaveLength(5);
+    expect(screen.getAllByText("Unavailable")).toHaveLength(4);
   });
 });

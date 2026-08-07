@@ -156,6 +156,150 @@ export interface CreateToolingApplicabilityCommand {
   reason: string;
 }
 
+export type ToolingSetRequirementKind =
+  | "customer_owned_intake"
+  | "copy_or_additional_set";
+export type ToolingIntakeInspectionCategory =
+  | "appearance"
+  | "water_circuit"
+  | "hot_runner"
+  | "electrical"
+  | "safety";
+export type ToolingIntakeEvidenceRole =
+  | "arrival_photo"
+  | "transport_document"
+  | "accessory_document"
+  | "inspection_evidence"
+  | "customer_confirmation";
+
+export interface ToolingSetPermissionsViewModel {
+  view: boolean;
+  createSet: boolean;
+  createIntake: boolean;
+  attachEvidence: boolean;
+  transitionLifecycle: false;
+}
+
+export interface ToolingSetUnavailableFieldViewModel {
+  state: "unavailable";
+  reasonCode:
+    | "lifecycle_policy_unavailable"
+    | "tooling_revision_not_delivered"
+    | "formal_supplier_unavailable"
+    | "erp_projection_unavailable";
+}
+
+export interface ToolingSetSummaryViewModel {
+  globalId: string;
+  projectGlobalId: string;
+  toolingMasterGlobalId: string;
+  toolingRequirementGlobalId: string;
+  requirementKind: ToolingSetRequirementKind;
+  physicalSerial: string;
+  customer: ToolingExternalReferenceViewModel | null;
+  custodyResponsibility: string;
+  repairAuthorizationReference: string;
+  returnConditions: string;
+  sourceRevision: ToolingSetUnavailableFieldViewModel;
+  supplier: ToolingSetUnavailableFieldViewModel;
+  lifecycle: ToolingSetUnavailableFieldViewModel;
+  erpLocationAndAsset: ToolingSetUnavailableFieldViewModel;
+  snapshotHash: string;
+}
+
+export interface ToolingIntakeAccessoryViewModel {
+  globalId: string;
+  description: string;
+  declaredQuantity: number;
+  receivedQuantity: number;
+  unit: string;
+}
+
+export interface ToolingIntakeInspectionViewModel {
+  globalId: string;
+  category: ToolingIntakeInspectionCategory;
+  observation: string;
+  differenceObserved: boolean;
+}
+
+export interface ToolingIntakeDifferenceViewModel {
+  globalId: string;
+  sourceKind: "accessory" | "inspection";
+  sourceGlobalId: string;
+  description: string;
+  customerConfirmationRequired: boolean;
+}
+
+export interface ToolingIntakeSummaryViewModel {
+  globalId: string;
+  toolingSetGlobalId: string;
+  version: number;
+  predecessorGlobalId: string | null;
+  transportProvider: string;
+  transportReference: string;
+  arrivedAt: string;
+  custodyHandover: string;
+  accessories: readonly ToolingIntakeAccessoryViewModel[];
+  inspections: readonly ToolingIntakeInspectionViewModel[];
+  differences: readonly ToolingIntakeDifferenceViewModel[];
+  snapshotHash: string;
+}
+
+export interface ToolingIntakeEvidenceReferenceViewModel {
+  globalId: string;
+  toolingIntakeGlobalId: string;
+  intakeSnapshotHash: string;
+  evidenceRole: ToolingIntakeEvidenceRole;
+  differenceGlobalIds: readonly string[];
+  fileRevisionGlobalId: string;
+  fileOptimisticVersion: number;
+  fileContentHash: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  snapshotHash: string;
+}
+
+export interface ToolingSetCollectionViewModel {
+  toolingMasterGlobalId: string;
+  permissions: ToolingSetPermissionsViewModel;
+  items: readonly ToolingSetSummaryViewModel[];
+}
+
+export interface ToolingSetDetailViewModel {
+  toolingSet: ToolingSetSummaryViewModel;
+  permissions: ToolingSetPermissionsViewModel;
+  intakes: readonly ToolingIntakeSummaryViewModel[];
+  evidence: readonly ToolingIntakeEvidenceReferenceViewModel[];
+}
+
+export interface CreateToolingSetCommand {
+  toolingRequirementGlobalId: string;
+  physicalSerial: string;
+  customer?: ToolingExternalReferenceViewModel | undefined;
+  custodyResponsibility: string;
+  repairAuthorizationReference: string;
+  returnConditions: string;
+}
+
+export interface CreateToolingIntakeCommand {
+  expectedVersion?: number | undefined;
+  transportProvider: string;
+  transportReference: string;
+  arrivedAt: string;
+  custodyHandover: string;
+  accessories: readonly ToolingIntakeAccessoryViewModel[];
+  inspections: readonly ToolingIntakeInspectionViewModel[];
+  differences: readonly ToolingIntakeDifferenceViewModel[];
+}
+
+export interface CreateToolingIntakeEvidenceCommand {
+  evidenceRole: ToolingIntakeEvidenceRole;
+  differenceGlobalIds: readonly string[];
+  fileRevisionGlobalId: string;
+}
+
 export interface ToolingDataSource {
   loadCockpit(
     projectId: string,
@@ -192,6 +336,38 @@ export interface ToolingDataSource {
     command: CreateToolingApplicabilityCommand,
     context: ToolingCommandContext,
   ): Promise<ToolingCockpitViewModel>;
+  loadSets(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingSetCollectionViewModel>;
+  loadSet(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingSetDetailViewModel>;
+  createSet(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingSetCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetCollectionViewModel>;
+  createIntake(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolingIntakeCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel>;
+  attachIntakeEvidence(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    intakeId: string,
+    command: CreateToolingIntakeEvidenceCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel>;
 }
 
 export class ToolingRequestCancelledError extends Error {
@@ -549,6 +725,406 @@ export function isToolingCockpitResponse(
   );
 }
 
+const toolingSetRequirementKinds = new Set<ToolingSetRequirementKind>([
+  "customer_owned_intake",
+  "copy_or_additional_set",
+]);
+const inspectionCategories = new Set<ToolingIntakeInspectionCategory>([
+  "appearance",
+  "water_circuit",
+  "hot_runner",
+  "electrical",
+  "safety",
+]);
+const evidenceRoles = new Set<ToolingIntakeEvidenceRole>([
+  "arrival_photo",
+  "transport_document",
+  "accessory_document",
+  "inspection_evidence",
+  "customer_confirmation",
+]);
+const unavailableReasons = new Set<
+  ToolingSetUnavailableFieldViewModel["reasonCode"]
+>([
+  "lifecycle_policy_unavailable",
+  "tooling_revision_not_delivered",
+  "formal_supplier_unavailable",
+  "erp_projection_unavailable",
+]);
+
+function isNonnegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function isDateTime(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= 40 &&
+    !Number.isNaN(Date.parse(value)) &&
+    /(?:Z|[+-]\d{2}:\d{2})$/u.test(value)
+  );
+}
+
+function isUnavailableField(
+  value: unknown,
+  reasonCode: ToolingSetUnavailableFieldViewModel["reasonCode"],
+): value is ToolingSetUnavailableFieldViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["state", "reasonCode"]) &&
+    value.state === "unavailable" &&
+    value.reasonCode === reasonCode &&
+    unavailableReasons.has(reasonCode)
+  );
+}
+
+function isToolingSetPermissions(
+  value: unknown,
+): value is ToolingSetPermissionsViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "view",
+      "createSet",
+      "createIntake",
+      "attachEvidence",
+      "transitionLifecycle",
+    ]) &&
+    typeof value.view === "boolean" &&
+    typeof value.createSet === "boolean" &&
+    typeof value.createIntake === "boolean" &&
+    typeof value.attachEvidence === "boolean" &&
+    value.transitionLifecycle === false
+  );
+}
+
+function isToolingSetSummary(
+  value: unknown,
+): value is ToolingSetSummaryViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "projectGlobalId",
+      "toolingMasterGlobalId",
+      "toolingRequirementGlobalId",
+      "requirementKind",
+      "physicalSerial",
+      "customer",
+      "custodyResponsibility",
+      "repairAuthorizationReference",
+      "returnConditions",
+      "sourceRevision",
+      "supplier",
+      "lifecycle",
+      "erpLocationAndAsset",
+      "snapshotHash",
+    ]) &&
+    isUuid(value.globalId) &&
+    isUuid(value.projectGlobalId) &&
+    isUuid(value.toolingMasterGlobalId) &&
+    isUuid(value.toolingRequirementGlobalId) &&
+    typeof value.requirementKind === "string" &&
+    toolingSetRequirementKinds.has(
+      value.requirementKind as ToolingSetRequirementKind,
+    ) &&
+    isString(value.physicalSerial, 80) &&
+    isNullableReference(value.customer) &&
+    isString(value.custodyResponsibility, 500) &&
+    isString(value.repairAuthorizationReference, 500) &&
+    isString(value.returnConditions, 500) &&
+    isUnavailableField(
+      value.sourceRevision,
+      "tooling_revision_not_delivered",
+    ) &&
+    isUnavailableField(value.supplier, "formal_supplier_unavailable") &&
+    isUnavailableField(value.lifecycle, "lifecycle_policy_unavailable") &&
+    isUnavailableField(
+      value.erpLocationAndAsset,
+      "erp_projection_unavailable",
+    ) &&
+    isHash(value.snapshotHash)
+  );
+}
+
+function isAccessory(value: unknown): value is ToolingIntakeAccessoryViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "description",
+      "declaredQuantity",
+      "receivedQuantity",
+      "unit",
+    ]) &&
+    isUuid(value.globalId) &&
+    isString(value.description, 200) &&
+    isNonnegativeInteger(value.declaredQuantity) &&
+    isNonnegativeInteger(value.receivedQuantity) &&
+    isString(value.unit, 24)
+  );
+}
+
+function isInspection(
+  value: unknown,
+): value is ToolingIntakeInspectionViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "category",
+      "observation",
+      "differenceObserved",
+    ]) &&
+    isUuid(value.globalId) &&
+    typeof value.category === "string" &&
+    inspectionCategories.has(
+      value.category as ToolingIntakeInspectionCategory,
+    ) &&
+    isString(value.observation, 500) &&
+    typeof value.differenceObserved === "boolean"
+  );
+}
+
+function isDifference(
+  value: unknown,
+): value is ToolingIntakeDifferenceViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "sourceKind",
+      "sourceGlobalId",
+      "description",
+      "customerConfirmationRequired",
+    ]) &&
+    isUuid(value.globalId) &&
+    (value.sourceKind === "accessory" || value.sourceKind === "inspection") &&
+    isUuid(value.sourceGlobalId) &&
+    isString(value.description, 500) &&
+    typeof value.customerConfirmationRequired === "boolean"
+  );
+}
+
+function isCoherentIntakeParts(
+  accessories: readonly ToolingIntakeAccessoryViewModel[],
+  inspections: readonly ToolingIntakeInspectionViewModel[],
+  differences: readonly ToolingIntakeDifferenceViewModel[],
+): boolean {
+  const accessoryIds = new Set(accessories.map((item) => item.globalId));
+  const inspectionIds = new Set(inspections.map((item) => item.globalId));
+  return (
+    unique(accessories.map((item) => item.globalId)) &&
+    unique(inspections.map((item) => item.globalId)) &&
+    unique(inspections.map((item) => item.category)) &&
+    inspectionCategories.size === inspections.length &&
+    unique(differences.map((item) => item.globalId)) &&
+    differences.every((item) =>
+      item.sourceKind === "accessory"
+        ? accessoryIds.has(item.sourceGlobalId)
+        : inspectionIds.has(item.sourceGlobalId),
+    )
+  );
+}
+
+function isIntake(value: unknown): value is ToolingIntakeSummaryViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "globalId",
+      "toolingSetGlobalId",
+      "version",
+      "predecessorGlobalId",
+      "transportProvider",
+      "transportReference",
+      "arrivedAt",
+      "custodyHandover",
+      "accessories",
+      "inspections",
+      "differences",
+      "snapshotHash",
+    ]) ||
+    !isUuid(value.globalId) ||
+    !isUuid(value.toolingSetGlobalId) ||
+    !isPositiveInteger(value.version) ||
+    !isNullableUuid(value.predecessorGlobalId) ||
+    !isString(value.transportProvider, 140) ||
+    !isString(value.transportReference, 140) ||
+    !isDateTime(value.arrivedAt) ||
+    !isString(value.custodyHandover, 500) ||
+    !Array.isArray(value.accessories) ||
+    value.accessories.length > 100 ||
+    !value.accessories.every(isAccessory) ||
+    !Array.isArray(value.inspections) ||
+    value.inspections.length !== 5 ||
+    !value.inspections.every(isInspection) ||
+    !Array.isArray(value.differences) ||
+    value.differences.length > 100 ||
+    !value.differences.every(isDifference) ||
+    !isHash(value.snapshotHash)
+  ) {
+    return false;
+  }
+  return isCoherentIntakeParts(
+    value.accessories,
+    value.inspections,
+    value.differences,
+  );
+}
+
+function isEvidence(
+  value: unknown,
+): value is ToolingIntakeEvidenceReferenceViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "globalId",
+      "toolingIntakeGlobalId",
+      "intakeSnapshotHash",
+      "evidenceRole",
+      "differenceGlobalIds",
+      "fileRevisionGlobalId",
+      "fileOptimisticVersion",
+      "fileContentHash",
+      "fileName",
+      "mimeType",
+      "sizeBytes",
+      "sha256",
+      "snapshotHash",
+    ]) &&
+    isUuid(value.globalId) &&
+    isUuid(value.toolingIntakeGlobalId) &&
+    isHash(value.intakeSnapshotHash) &&
+    typeof value.evidenceRole === "string" &&
+    evidenceRoles.has(value.evidenceRole as ToolingIntakeEvidenceRole) &&
+    Array.isArray(value.differenceGlobalIds) &&
+    value.differenceGlobalIds.length <= 100 &&
+    value.differenceGlobalIds.every(isUuid) &&
+    unique(value.differenceGlobalIds) &&
+    isUuid(value.fileRevisionGlobalId) &&
+    isPositiveInteger(value.fileOptimisticVersion) &&
+    typeof value.fileContentHash === "string" &&
+    /^[a-f0-9]{32,128}$/u.test(value.fileContentHash) &&
+    isString(value.fileName, 255) &&
+    isString(value.mimeType, 255) &&
+    isPositiveInteger(value.sizeBytes) &&
+    isHash(value.sha256) &&
+    isHash(value.snapshotHash)
+  );
+}
+
+export function isToolingSetCollectionResponse(
+  value: unknown,
+): value is ToolingSetCollectionViewModel {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["toolingMasterGlobalId", "permissions", "items"]) &&
+    isUuid(value.toolingMasterGlobalId) &&
+    isToolingSetPermissions(value.permissions) &&
+    Array.isArray(value.items) &&
+    value.items.length <= 200 &&
+    value.items.every(isToolingSetSummary) &&
+    unique(
+      (value.items as readonly ToolingSetSummaryViewModel[]).map(
+        (item) => item.globalId,
+      ),
+    ) &&
+    (value.items as readonly ToolingSetSummaryViewModel[]).every(
+      (item) => item.toolingMasterGlobalId === value.toolingMasterGlobalId,
+    )
+  );
+}
+
+export function isToolingSetDetailResponse(
+  value: unknown,
+): value is ToolingSetDetailViewModel {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "toolingSet",
+      "permissions",
+      "intakes",
+      "evidence",
+    ]) ||
+    !isToolingSetSummary(value.toolingSet) ||
+    !isToolingSetPermissions(value.permissions) ||
+    !Array.isArray(value.intakes) ||
+    value.intakes.length > 100 ||
+    !value.intakes.every(isIntake) ||
+    !Array.isArray(value.evidence) ||
+    value.evidence.length > 500 ||
+    !value.evidence.every(isEvidence)
+  ) {
+    return false;
+  }
+  const toolingSet = value.toolingSet;
+  const intakes = value.intakes as readonly ToolingIntakeSummaryViewModel[];
+  const evidence =
+    value.evidence as readonly ToolingIntakeEvidenceReferenceViewModel[];
+  const intakeById = new Map(intakes.map((item) => [item.globalId, item]));
+  return (
+    unique(intakes.map((item) => item.globalId)) &&
+    unique(evidence.map((item) => item.globalId)) &&
+    intakes.every((item) => item.toolingSetGlobalId === toolingSet.globalId) &&
+    evidence.every((item) => {
+      const intake = intakeById.get(item.toolingIntakeGlobalId);
+      return (
+        item.intakeSnapshotHash === intake?.snapshotHash &&
+        item.differenceGlobalIds.every((differenceId) =>
+          intake.differences.some(
+            (difference) => difference.globalId === differenceId,
+          ),
+        )
+      );
+    })
+  );
+}
+
+function isCreateSetCommand(value: CreateToolingSetCommand): boolean {
+  return (
+    isUuid(value.toolingRequirementGlobalId) &&
+    isString(value.physicalSerial, 80) &&
+    (value.customer === undefined || isExternalReference(value.customer)) &&
+    isString(value.custodyResponsibility, 500) &&
+    isString(value.repairAuthorizationReference, 500) &&
+    isString(value.returnConditions, 500)
+  );
+}
+
+function isCreateIntakeCommand(value: CreateToolingIntakeCommand): boolean {
+  return (
+    (value.expectedVersion === undefined ||
+      isPositiveInteger(value.expectedVersion)) &&
+    isString(value.transportProvider, 140) &&
+    isString(value.transportReference, 140) &&
+    isDateTime(value.arrivedAt) &&
+    isString(value.custodyHandover, 500) &&
+    value.accessories.length <= 100 &&
+    value.accessories.every(isAccessory) &&
+    value.inspections.length === 5 &&
+    value.inspections.every(isInspection) &&
+    value.differences.length <= 100 &&
+    value.differences.every(isDifference) &&
+    isCoherentIntakeParts(
+      value.accessories,
+      value.inspections,
+      value.differences,
+    )
+  );
+}
+
+function isCreateEvidenceCommand(
+  value: CreateToolingIntakeEvidenceCommand,
+): boolean {
+  return (
+    evidenceRoles.has(value.evidenceRole) &&
+    value.differenceGlobalIds.length <= 100 &&
+    value.differenceGlobalIds.every(isUuid) &&
+    unique(value.differenceGlobalIds) &&
+    isUuid(value.fileRevisionGlobalId)
+  );
+}
+
 function requestNotReady(): NpiTransportError {
   return new NpiTransportError(
     "request_not_ready",
@@ -662,6 +1238,112 @@ export class LiveToolingDataSource implements ToolingDataSource {
     );
   }
 
+  async loadSets(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingSetCollectionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets`,
+      signal,
+      (value): value is ToolingSetCollectionViewModel =>
+        isToolingSetCollectionResponse(value) &&
+        value.toolingMasterGlobalId === expectedMasterId &&
+        value.items.every((item) => item.projectGlobalId === expectedProjectId),
+    );
+  }
+
+  async loadSet(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingSetDetailViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedSetId = requireUuid(setId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets/${expectedSetId}`,
+      signal,
+      (value): value is ToolingSetDetailViewModel =>
+        isToolingSetDetailResponse(value) &&
+        value.toolingSet.globalId === expectedSetId &&
+        value.toolingSet.projectGlobalId === expectedProjectId &&
+        value.toolingSet.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async createSet(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingSetCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetCollectionViewModel> {
+    if (!isCreateSetCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets`,
+      command,
+      context,
+      (value): value is ToolingSetCollectionViewModel =>
+        isToolingSetCollectionResponse(value) &&
+        value.toolingMasterGlobalId === expectedMasterId &&
+        value.items.every((item) => item.projectGlobalId === expectedProjectId),
+    );
+  }
+
+  async createIntake(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolingIntakeCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel> {
+    if (!isCreateIntakeCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedSetId = requireUuid(setId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets/${expectedSetId}/intakes`,
+      command,
+      context,
+      (value): value is ToolingSetDetailViewModel =>
+        isToolingSetDetailResponse(value) &&
+        value.toolingSet.globalId === expectedSetId &&
+        value.toolingSet.projectGlobalId === expectedProjectId &&
+        value.toolingSet.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async attachIntakeEvidence(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    intakeId: string,
+    command: CreateToolingIntakeEvidenceCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel> {
+    if (!isCreateEvidenceCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedSetId = requireUuid(setId);
+    const expectedIntakeId = requireUuid(intakeId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets/${expectedSetId}/intakes/${expectedIntakeId}/evidence`,
+      command,
+      context,
+      (value): value is ToolingSetDetailViewModel =>
+        isToolingSetDetailResponse(value) &&
+        value.toolingSet.globalId === expectedSetId &&
+        value.toolingSet.projectGlobalId === expectedProjectId &&
+        value.toolingSet.toolingMasterGlobalId === expectedMasterId &&
+        value.intakes.some((item) => item.globalId === expectedIntakeId),
+    );
+  }
+
   private async query(
     path: string,
     signal: AbortSignal,
@@ -707,6 +1389,61 @@ export class LiveToolingDataSource implements ToolingDataSource {
           requireRequestIdEcho: true,
           requireTraceId: true,
           validate: isToolingCockpitResponse,
+        },
+      );
+    } catch (error) {
+      throwIfCancelled(context.signal);
+      throw error;
+    }
+  }
+
+  private async queryValidated<T>(
+    path: string,
+    signal: AbortSignal,
+    validate: (value: unknown) => value is T,
+  ): Promise<T> {
+    throwIfCancelled(signal);
+    try {
+      return await this.http.request<T>(
+        path,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate,
+        },
+      );
+    } catch (error) {
+      throwIfCancelled(signal);
+      throw error;
+    }
+  }
+
+  private async commandValidated<T>(
+    path: string,
+    body: object,
+    context: ToolingCommandContext,
+    validate: (value: unknown) => value is T,
+  ): Promise<T> {
+    if (!isCommandContext(context)) throw requestNotReady();
+    throwIfCancelled(context.signal);
+    try {
+      return await this.http.request<T>(
+        path,
+        {
+          body: JSON.stringify(body),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate,
         },
       );
     } catch (error) {

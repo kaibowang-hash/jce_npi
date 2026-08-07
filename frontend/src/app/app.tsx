@@ -188,6 +188,7 @@ export function App(): React.JSX.Element {
     ) : route.screen === "tooling" && route.toolingMode === "live" ? (
       <LiveToolingPage
         dataSource={liveToolingDataSource}
+        documentDataSource={liveDocumentDataSource}
         masterId={route.toolingMasterGlobalId}
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}
