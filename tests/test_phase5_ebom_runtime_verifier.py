@@ -461,9 +461,9 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
     def test_manual_lane_records_cumulative_p505_scope_without_secrets(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         required_fragments = (
-            "P5 controlled document, EBOM, and publish runtime",
+            "P5 controlled document, EBOM, publish, and print runtime",
             "bash scripts/verify-frappe-runtime.sh --document-only",
-            "scope=p5-01-through-p5-05",
+            "scope=p5-01-through-p5-06",
             "p5-document-ebom-runtime-${{ github.run_id }}",
             "docker compose down --volumes",
         )

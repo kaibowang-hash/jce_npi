@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -81,6 +83,25 @@ class Phase5ControlledPrintSourceRegistryTest(unittest.TestCase):
                 source_global_id=SOURCE_ID,
                 expected_source_version=4,
             )
+
+    def test_synthetic_source_is_enabled_only_by_exact_disposable_site_marker(
+        self,
+    ) -> None:
+        for marker, expected in (
+            (None, ()),
+            ("npi-one-local-runtime-disposable", ()),
+            (
+                "npi-one-local-runtime-disposable-v1",
+                ("npi.synthetic_runtime_project",),
+            ),
+        ):
+            with self.subTest(marker=marker):
+                frappe = SimpleNamespace(
+                    conf={"npi_runtime_disposable_marker": marker},
+                )
+                with patch.dict("sys.modules", {"frappe": frappe}):
+                    registry = default_controlled_print_source_registry()
+                self.assertEqual(registry.source_object_types, expected)
 
     def test_exact_registered_source_resolves_and_snapshot_is_frozen(self) -> None:
         mutable = {

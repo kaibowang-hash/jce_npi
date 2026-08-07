@@ -9,6 +9,7 @@ from uuid import UUID
 from npi_core.controlled_print.domain import (
     ControlledPrintContext,
     ControlledPrintMappingUnavailable,
+    ControlledPrintRegistryReference,
     ControlledPrintRegistryVersion,
     resolve_controlled_print_mapping,
 )
@@ -118,7 +119,11 @@ def _capability_response(
         "language": context.language,
         "deliveryMode": context.delivery_mode.value if available else None,
         "copyState": context.copy_state.value if available else None,
-        "registry": mapping.public_reference() if available and mapping else None,
+        "registry": (
+            ControlledPrintRegistryReference.from_mapping(mapping).canonical_dict()
+            if available and mapping
+            else None
+        ),
         "permissions": {
             "create": available,
             "download": available,

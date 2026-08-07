@@ -140,10 +140,84 @@ class ControlledPrintSourceRegistry:
         return source
 
 
+_DISPOSABLE_RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"
+_DISPOSABLE_RUNTIME_SOURCE_KIND = "npi.synthetic_runtime_project"
+
+
+class _DisposableRuntimeProjectSourceAdapter:
+    """Synthetic adapter available only inside the fixed disposable CI Site."""
+
+    source_object_type = _DISPOSABLE_RUNTIME_SOURCE_KIND
+
+    def resolve_exact(
+        self,
+        *,
+        project_global_id: UUID,
+        source_global_id: UUID,
+    ) -> ResolvedControlledPrintSource | None:
+        if project_global_id != source_global_id:
+            return None
+        import frappe
+
+        try:
+            project = frappe.get_doc(
+                "NPI Engineering Project",
+                str(project_global_id),
+            )
+        except frappe.DoesNotExistError:
+            return None
+        if str(project.global_id) != str(project_global_id):
+            return None
+        snapshot: dict[str, object] = {
+            "schemaVersion": 1,
+            "sourceKind": self.source_object_type,
+            "globalId": str(project_global_id),
+            "tenantId": str(project.tenant_id),
+            "businessCode": str(project.business_code),
+            "title": str(project.title),
+            "projectType": str(project.project_type),
+            "lifecycleState": str(project.lifecycle_state),
+            "ownerUserId": str(project.owner_user_id),
+            "targetSop": str(project.target_sop),
+            "sourceSystem": str(project.source_system),
+            "version": int(project.optimistic_version),
+        }
+        return ResolvedControlledPrintSource(
+            project_global_id=project_global_id,
+            project_type_key=str(project.project_type),
+            gate_key=None,
+            reference=ControlledPrintSourceReference(
+                source_object_type=self.source_object_type,
+                source_global_id=source_global_id,
+                source_version=int(project.optimistic_version),
+                source_state=str(project.lifecycle_state),
+                source_snapshot_hash=sha256_json(snapshot),
+            ),
+            snapshot=snapshot,
+        )
+
+
+def _is_disposable_runtime_site() -> bool:
+    try:
+        import frappe
+    except ModuleNotFoundError:
+        return False
+    configuration = getattr(frappe, "conf", None)
+    marker = (
+        configuration.get("npi_runtime_disposable_marker")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return marker == _DISPOSABLE_RUNTIME_MARKER
+
+
 def default_controlled_print_source_registry() -> ControlledPrintSourceRegistry:
-    """Return the intentionally empty foundation registry.
+    """Return the closed registry, empty outside the exact disposable CI Site.
 
     Exact production source adapters are added only with their approved domain form.
     """
 
-    return ControlledPrintSourceRegistry()
+    adapters: tuple[ControlledPrintSourceAdapter, ...] = ()
+    if _is_disposable_runtime_site():
+        adapters = (_DisposableRuntimeProjectSourceAdapter(),)
+    return ControlledPrintSourceRegistry(adapters)

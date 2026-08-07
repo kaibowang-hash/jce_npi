@@ -155,8 +155,22 @@ class Phase5ControlledPrintServiceTest(unittest.TestCase):
         self.assertEqual(result["deliveryMode"], "controlled_pdf")
         self.assertEqual(result["copyState"], "not_numbered")
         self.assertEqual(result["permissions"], {"create": True, "download": True})
+        self.assertEqual(
+            set(result["registry"]),
+            {
+                "globalId",
+                "registryGlobalId",
+                "version",
+                "snapshotHash",
+                "templateSha256",
+            },
+        )
+        self.assertEqual(
+            result["registry"]["templateSha256"],
+            mapping().template_sha256,
+        )
         self.assertNotIn("printFormatName", str(result))
-        self.assertNotIn("template", str(result).casefold())
+        self.assertNotIn("templateContent", str(result))
         self.assertEqual(repository.calls, ["authorize", "mappings"])
 
     def test_project_authorization_precedes_source_and_mapping_resolution(self) -> None:

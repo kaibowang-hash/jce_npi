@@ -326,9 +326,9 @@ class Phase5PublishRequestRuntimeVerifierTest(unittest.TestCase):
     def test_controlled_lane_records_cumulative_scope_without_secrets(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         for fragment in (
-            "P5 controlled document, EBOM, and publish runtime",
+            "P5 controlled document, EBOM, publish, and print runtime",
             "bash scripts/verify-frappe-runtime.sh --document-only",
-            "scope=p5-01-through-p5-05",
+            "scope=p5-01-through-p5-06",
             "docker compose down --volumes",
         ):
             with self.subTest(fragment=fragment):
