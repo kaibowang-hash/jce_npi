@@ -435,8 +435,8 @@ test.describe("R1-03 application Shell behavior", () => {
       commandButton(dialog, translate("en", "Open Part")),
     ).toHaveAttribute("aria-disabled", "true");
     await expect(
-      commandButton(dialog, translate("en", "Open Tooling prototype")),
-    ).toHaveAttribute("aria-disabled", "true");
+      commandButton(dialog, translate("en", "Open Project Tooling")),
+    ).toHaveAttribute("aria-disabled", "false");
     await expect(
       commandButton(dialog, translate("en", "Open Trial prototype")),
     ).toHaveAttribute("aria-disabled", "true");
