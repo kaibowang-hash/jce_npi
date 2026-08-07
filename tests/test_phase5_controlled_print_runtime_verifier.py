@@ -5,6 +5,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import UUID
 
@@ -99,6 +100,26 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, serialized)
+
+    def test_http_failure_evidence_exposes_only_code_and_field_paths(self) -> None:
+        result = SimpleNamespace(
+            status=422,
+            body={
+                "code": "VALIDATION_FAILED",
+                "errors": [
+                    {"path": "requestId", "message": "private-message"},
+                    {"path": "sourceGlobalId", "message": "private-message"},
+                ],
+            },
+        )
+
+        evidence = self.module.http_failure_evidence(result)
+
+        self.assertEqual(
+            evidence,
+            "HTTP 422; code=VALIDATION_FAILED; paths=requestId,sourceGlobalId",
+        )
+        self.assertNotIn("private-message", evidence)
 
     def test_schema_and_fixture_surface_are_exactly_guarded(self) -> None:
         self.assertEqual(len(self.module.CONTROLLED_PRINT_DOCTYPES), 6)

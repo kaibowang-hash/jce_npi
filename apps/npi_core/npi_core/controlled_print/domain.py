@@ -515,7 +515,11 @@ class ControlledPrintSnapshot:
             "printed_at",
             _aware_utc(self.printed_at, "printedAt"),
         )
-        object.__setattr__(self, "request_id", _uuid(self.request_id, "requestId"))
+        object.__setattr__(
+            self,
+            "request_id",
+            _reference_uuid(self.request_id, "requestId"),
+        )
         object.__setattr__(self, "trace_id", _trace(self.trace_id))
         object.__setattr__(self, "version", _positive(self.version, "version"))
         if self.version != 1:
@@ -873,10 +877,14 @@ def _uuid(value: object, path: str) -> UUID:
 def _project_uuid(value: object) -> UUID:
     """Accept the immutable Project identity defined by the Project contract."""
 
+    return _reference_uuid(value, "projectGlobalId")
+
+
+def _reference_uuid(value: object, path: str) -> UUID:
     try:
         return value if isinstance(value, UUID) else UUID(str(value))
     except (AttributeError, TypeError, ValueError) as error:
-        raise _field_problem("projectGlobalId", _("Enter a valid UUID.")) from error
+        raise _field_problem(path, _("Enter a valid UUID.")) from error
 
 
 def _positive(value: object, path: str) -> int:

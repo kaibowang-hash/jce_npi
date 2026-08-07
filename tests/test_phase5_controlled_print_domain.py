@@ -45,7 +45,7 @@ class Phase5ControlledPrintDomainTest(unittest.TestCase):
         self.source_id = UUID("00000000-0000-4000-8000-000000000604")
         self.snapshot_id = UUID("00000000-0000-4000-8000-000000000605")
         self.output_id = UUID("00000000-0000-4000-8000-000000000606")
-        self.request_id = UUID("00000000-0000-4000-8000-000000000607")
+        self.request_id = UUID("9321128c-675d-5b41-b1e6-9d7519fc5d81")
         self.template = "<section>{{ doc.title }}</section>"
         self.source_snapshot = {
             "globalId": str(self.source_id),

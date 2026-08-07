@@ -567,6 +567,21 @@ def assert_snapshot(value: object, project_id: str, source_version: int) -> None
     )
 
 
+def http_failure_evidence(result: HttpResult) -> str:
+    code = result.body.get("code") if isinstance(result.body, dict) else None
+    errors = result.body.get("errors") if isinstance(result.body, dict) else None
+    paths: list[str] = []
+    if isinstance(errors, list):
+        paths = sorted(
+            {
+                str(error.get("path"))
+                for error in errors
+                if isinstance(error, dict) and isinstance(error.get("path"), str)
+            }
+        )
+    return f"HTTP {result.status}; code={code!s}; paths={','.join(paths) or '-'}"
+
+
 def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, object]:
     schema = run_bench_fixture("verify_controlled_print_schema", {})
     project_id, source_version = document_runtime.fixture_project(administrator, base_url)
@@ -591,7 +606,10 @@ def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, 
         capability_path(project_id, source_version),
         correlation_label="p506-capability",
     )
-    require(capability.status == 200, f"P5-06 capability returned HTTP {capability.status}")
+    require(
+        capability.status == 200,
+        f"P5-06 capability failed: {http_failure_evidence(capability)}",
+    )
     assert_capability(capability.body, project_id, source_version)
     missing_csrf = api_request(
         actor,

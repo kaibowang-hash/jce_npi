@@ -296,7 +296,22 @@ def _opaque_project_uuid() -> UUID:
 
 
 def _request_id() -> str:
-    return str(_uuid(frappe.get_request_header("X-Request-ID"), "requestId"))
+    return str(
+        _canonical_uuid(
+            frappe.get_request_header("X-Request-ID"),
+            "requestId",
+        )
+    )
+
+
+def _canonical_uuid(value: object, path: str) -> UUID:
+    try:
+        parsed = UUID(str(value))
+    except (AttributeError, TypeError, ValueError) as error:
+        raise _field(path, _("Enter a valid global ID.")) from error
+    if str(parsed) != str(value).casefold():
+        raise _field(path, _("Enter a canonical global ID."))
+    return parsed
 
 
 def _uuid(value: object, path: str) -> UUID:
