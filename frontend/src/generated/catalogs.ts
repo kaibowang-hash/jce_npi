@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '8c614f1fb035060a';
+export const catalogVersion = '1d6522b0316f586f';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -616,6 +616,7 @@ export const catalogs = {
     "Controlled Print Registry": "受控打印注册表",
     "Controlled Print Snapshot": "受控打印快照",
     "Controlled print snapshots start at version 1.": "受控打印快照必须从版本 1 开始。",
+    "Controlled print verification code": "受控打印验证码",
     "Controlled Project activity and governance history cannot be deleted.": "受控项目活动和治理历史不能删除。",
     "Controlled Project work history cannot be deleted.": "不能删除受控的项目工作历史记录。",
     "Controlled reason": "受控原因",
@@ -4474,6 +4475,7 @@ export const catalogs = {
     "Controlled Print Registry": "受控列印登錄",
     "Controlled Print Snapshot": "受控列印快照",
     "Controlled print snapshots start at version 1.": "受控列印快照必須從版本 1 開始。",
+    "Controlled print verification code": "受控列印驗證碼",
     "Controlled Project activity and governance history cannot be deleted.": "受控專案活動與治理歷程不能刪除。",
     "Controlled Project work history cannot be deleted.": "不能刪除受控的專案工作歷程記錄。",
     "Controlled reason": "受控原因",

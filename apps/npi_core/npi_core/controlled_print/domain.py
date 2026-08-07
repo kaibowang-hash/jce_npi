@@ -755,6 +755,14 @@ def sha256_json(value: object) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def freeze_controlled_print_source(
+    value: object,
+) -> Mapping[str, object]:
+    """Freeze one complete server-resolved source before mapping or rendering."""
+
+    return _freeze_json_object(value, "sourceSnapshot")
+
+
 def _freeze_json_object(value: object, path: str) -> Mapping[str, object]:
     if not isinstance(value, Mapping) or not value:
         raise _field_problem(path, _("Enter a non-empty JSON object."))

@@ -3758,6 +3758,7 @@ Reconciliation required,需要對帳
 Select an immutable request to inspect its exact evidence.,請選擇一個不可變請求以檢視其精確證據。
 Publish-request node results,發佈請求節點結果
 No approved controlled print mapping is available.,沒有可用的已核准受控列印映射。
+Controlled print verification code,受控列印驗證碼
 The controlled print mapping is unavailable.,受控列印映射無法使用。
 The controlled print output is unavailable.,受控列印輸出無法使用。
 You are not authorized to create this controlled print output.,您無權建立此受控列印輸出。
