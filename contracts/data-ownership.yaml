@@ -358,6 +358,54 @@ objects:
       actor_operation_and_payload_identity: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
       response_and_seal: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [NPI_ONE_PUBLISH_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
 
+  EngineeringPart:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      stable_part_identity_and_title: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_exact_revision_pointer: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [NPI_ONE_TOOLING_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      formal_item_mapping: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  EngineeringPartRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_revision_identity_predecessor_and_reason: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      immutable_snapshot_hash_and_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      material_color_compliance_and_process_specification: {owner: FUTURE_P6_03_PART_SPECIFICATION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingRequirement:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      project_need_identity_kind_title_and_reason: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_target_part_revision_and_date: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingMaster:
+    owner_system: NPI_ONE
+    erp_view: summary_link
+    fields:
+      stable_logical_identity_title_and_origin: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      revision_and_physical_set_truth: {owner: FUTURE_P6_02_P6_03_TOOLING_COMMANDS, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingApplicability:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_master_project_product_model_part_revision_scope: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      relationship_version_predecessor_and_effectivity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      normalized_relationship_key_and_snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
+
+  ToolingCommandIdempotency:
+    owner_system: NPI_ONE_TOOLING_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [NPI_ONE_TOOLING_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
   Tooling:
     owner_system: SPLIT_BY_LIFECYCLE
     fields:

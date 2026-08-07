@@ -1,0 +1,1 @@
+"""NPI Tooling Applicability DocType."""

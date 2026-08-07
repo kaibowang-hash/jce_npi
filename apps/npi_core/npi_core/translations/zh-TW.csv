@@ -3887,3 +3887,99 @@ Creates one immutable controlled snapshot and retains one private PDF.,建立一
 "The snapshot, output, and audit history cannot be replaced or deleted.",快照、輸出和稽核歷史無法取代或刪除。
 Exact controlled-print policy printer authority.,精確受控列印策略的列印權限。
 Create immutable controlled PDF,建立不可變受控文件
+A Tooling command response can only be sealed once.,模具開發命令回應只能封存一次。
+A Tooling command response must be sealed after success.,模具開發命令回應必須在成功後封存。
+A successor Applicability requires its exact predecessor.,後續適用關係需要其精確前序版本。
+A successor Part Revision requires its exact predecessor.,後續零件修訂需要其精確前序版本。
+Applicability Reason,適用關係原因
+Applicability Relationship Global ID,適用關係全域識別碼
+Applicability Relationship Key Hash,適用關係鍵雜湊
+Applicability Version,適用關係版本
+Applicability Version Key,適用關係版本鍵
+Applicability Version Key does not match the exact version.,適用關係版本鍵與精確版本不相符。
+Applicability effectivity cannot overlap for the same relationship.,同一關係的適用生效期不能重疊。
+Current Part Revision Global ID,目前零件修訂全域識別碼
+Current Part Revision Number,目前零件修訂序號
+Current Part Revision Snapshot Hash,目前零件修訂快照雜湊
+"Current Part Revision identity, number and hash must be supplied together.",必須同時提供目前零件修訂識別、序號和雜湊。
+Engineering Part,工程零件
+Engineering Part must match its exact Global ID.,工程零件必須與其精確全域識別碼相符。
+Model Source Object ID,機型來源物件識別碼
+Model Source System,機型來源系統
+NPI Engineering Part,NPI 工程零件
+NPI Engineering Part Revision,NPI 工程零件修訂
+NPI Tooling Applicability,NPI 模具適用關係
+NPI Tooling Command Idempotency,NPI 模具開發命令冪等回條
+NPI Tooling Master,NPI 模具主檔
+NPI Tooling Requirement,NPI 模具開發需求
+Originating Project Global ID,發起專案全域識別碼
+Part Global ID,零件全域識別碼
+Part Revision Global ID,零件修訂全域識別碼
+Part Revision Key,零件修訂鍵
+Part Revision Key does not match the exact revision.,零件修訂鍵與精確修訂不相符。
+Part Revision Number,零件修訂序號
+Part Revision Snapshot,零件修訂快照
+Part Revision Snapshot does not match its exact revision.,零件修訂快照與其精確修訂不相符。
+Part Title,零件標題
+Predecessor Applicability Global ID,前序適用關係全域識別碼
+Predecessor Part Revision Global ID,前序零件修訂全域識別碼
+Predecessor Snapshot Hash,前序快照雜湊
+Product Source Object ID,產品來源物件識別碼
+Product Source System,產品來源系統
+Reference source and object identity must be supplied together.,必須同時提供引用來源和物件識別。
+Requirement Reason,需求原因
+Revision Label,修訂標籤
+Select a supported Tooling command operation.,請選擇受支援的模具開發命令操作。
+Target Date,目標日期
+Target Global ID,目標全域識別碼
+Target Object Type,目標物件類型
+Target Part Revision Global ID,目標零件修訂全域識別碼
+The Applicability does not match its Project and tenant.,適用關係與其專案和租戶不相符。
+The Applicability relationship key does not match.,適用關係鍵不相符。
+The Applicability snapshot hash does not match.,適用關係快照雜湊不相符。
+The Applicability version does not advance its exact predecessor.,適用關係版本未從其精確前序版本遞進。
+The Part Revision does not advance the exact current revision.,零件修訂未從精確的目前修訂遞進。
+The Part Revision does not match its Engineering Part.,零件修訂與其工程零件不相符。
+The Part Revision snapshot hash does not match.,零件修訂快照雜湊不相符。
+The Part does not match its originating Project and tenant.,零件與其發起專案和租戶不相符。
+The Tooling Master does not match its originating Project and tenant.,模具主檔與其發起專案和租戶不相符。
+The Tooling Master is unavailable.,模具主檔不可用。
+The Tooling Master snapshot hash does not match.,模具主檔快照雜湊不相符。
+The Tooling Requirement does not match its Project and tenant.,模具開發需求與其專案和租戶不相符。
+The Tooling Requirement snapshot hash does not match.,模具開發需求快照雜湊不相符。
+The Tooling command receipt does not match its Project.,模具開發命令回條與其專案不相符。
+The current Part Revision must advance exactly once.,目前零件修訂必須精確遞進一個版本。
+The current Part Revision pointer is unavailable.,目前零件修訂指標不可用。
+The exact Part Revision is unavailable.,精確零件修訂不可用。
+The first Applicability version cannot have a predecessor.,首個適用關係版本不能有前序版本。
+The first Part Revision cannot have a predecessor.,首個零件修訂不能有前序版本。
+The target Part Revision is unavailable.,目標零件修訂不可用。
+The value is too long.,值過長。
+Tooling Applicability Snapshot,模具適用關係快照
+Tooling Applicability Snapshot does not match its exact relationship.,模具適用關係快照與其精確關係不相符。
+Tooling Master Global ID,模具主檔全域識別碼
+Tooling Master Snapshot,模具主檔快照
+Tooling Master Snapshot does not match its exact identity.,模具主檔快照與其精確識別不相符。
+Tooling Master Title,模具主檔標題
+Tooling Requirement Kind,模具開發需求類型
+Tooling Requirement Snapshot,模具開發需求快照
+Tooling Requirement Snapshot does not match its exact requirement.,模具開發需求快照與其精確需求不相符。
+Tooling Requirement Title,模具開發需求標題
+Tooling history cannot be changed.,模具開發歷史不能變更。
+Tooling history cannot be deleted.,模具開發歷史不能刪除。
+Tooling records can only be changed through an authorized NPI command.,只能透過已授權的 NPI 命令變更模具開發記錄。
+Use a valid key.,請輸入有效的鍵值。
+part.create,建立零件
+part.revise,修訂零件
+tooling_requirement.create,建立模具開發需求
+tooling_master.create,建立模具主檔
+tooling_applicability.create,建立模具適用關係
+part_revision,零件修訂
+tooling_requirement,模具開發需求
+tooling_master,模具主檔
+tooling_applicability,模具適用關係
+customer_owned_intake,客戶自有模具接收
+copy_or_additional_set,複製或增加模具套數
+modification,改模
+repair,維修
+capacity_need,產能需求

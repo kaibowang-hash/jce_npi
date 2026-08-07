@@ -9613,6 +9613,222 @@ components:
           maxItems: 200
           items:
             $ref: "#/components/schemas/EngineeringBomPublishRequest"
+    ToolingRequirementKind:
+      type: string
+      enum:
+        [
+          new_tool,
+          customer_owned_intake,
+          copy_or_additional_set,
+          modification,
+          repair,
+          capacity_need,
+        ]
+    ToolingExternalReference:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, sourceObjectId]
+      properties:
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+    EngineeringPartRevisionReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, partGlobalId, revisionNumber, revisionLabel, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        partGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        revisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    EngineeringPartSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, title, version, currentRevision, source]
+      properties:
+        globalId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        version: { type: integer, minimum: 1 }
+        currentRevision:
+          $ref: "#/components/schemas/EngineeringPartRevisionReference"
+        source: { $ref: "#/components/schemas/ProjectSourceStatus" }
+    ToolingRequirementSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, projectGlobalId, kind, title, reason, targetPartRevisionGlobalId, targetDate, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/ToolingRequirementKind" }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        targetPartRevisionGlobalId: { type: [string, "null"], format: uuid }
+        targetDate: { type: [string, "null"], format: date }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingMasterSummary:
+      type: object
+      additionalProperties: false
+      required: [globalId, title, originatingProjectGlobalId, snapshotHash, source]
+      properties:
+        globalId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        originatingProjectGlobalId: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        source: { $ref: "#/components/schemas/ProjectSourceStatus" }
+    ToolingApplicabilitySummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          relationshipGlobalId,
+          relationshipKeyHash,
+          projectGlobalId,
+          toolingMasterGlobalId,
+          part,
+          product,
+          model,
+          version,
+          predecessorGlobalId,
+          effectiveFrom,
+          effectiveTo,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        relationshipGlobalId: { type: string, format: uuid }
+        relationshipKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        part: { $ref: "#/components/schemas/EngineeringPartRevisionReference" }
+        product:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingExternalReference" }
+            - { type: "null" }
+        model:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingExternalReference" }
+            - { type: "null" }
+        version: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: [string, "null"], format: date }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, createPart, createRequirement, createMaster, createApplicability, transitionLifecycle]
+      properties:
+        view: { type: boolean }
+        createPart: { type: boolean }
+        createRequirement: { type: boolean }
+        createMaster: { type: boolean }
+        createApplicability: { type: boolean }
+        transitionLifecycle: { type: boolean, const: false }
+    ToolingDownstreamCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode:
+          type: string
+          enum:
+            [
+              lifecycle_policy_unavailable,
+              physical_set_not_delivered,
+              tooling_revision_not_delivered,
+              trial_not_delivered,
+              erp_projection_unavailable,
+            ]
+    ToolingProjectReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, businessCode, title]
+      properties:
+        globalId: { type: string, format: uuid }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+    ToolingProjectCockpit:
+      type: object
+      additionalProperties: false
+      required: [project, permissions, masters, requirements, parts, applicability, downstream]
+      properties:
+        project: { $ref: "#/components/schemas/ToolingProjectReference" }
+        permissions: { $ref: "#/components/schemas/ToolingPermissions" }
+        masters:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingMasterSummary" }
+        requirements:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingRequirementSummary" }
+        parts:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/EngineeringPartSummary" }
+        applicability:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ToolingApplicabilitySummary" }
+        downstream:
+          type: object
+          additionalProperties: false
+          required: [lifecycle, revision, physicalSet, trial, erp]
+          properties:
+            lifecycle: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+            revision: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+            physicalSet: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+            trial: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+            erp: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+    CreateEngineeringPart:
+      type: object
+      additionalProperties: false
+      required: [title, revisionLabel, reason]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 140 }
+        revisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    CreateEngineeringPartRevision:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, revisionLabel, title, reason]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        revisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    CreateToolingRequirement:
+      type: object
+      additionalProperties: false
+      required: [kind, title, reason]
+      properties:
+        kind: { $ref: "#/components/schemas/ToolingRequirementKind" }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        targetPartRevisionGlobalId: { type: string, format: uuid }
+        targetDate: { type: string, format: date }
+    CreateToolingMaster:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 140 }
+    CreateToolingApplicability:
+      type: object
+      additionalProperties: false
+      required: [toolingMasterGlobalId, partRevisionGlobalId, effectiveFrom, reason]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        product: { $ref: "#/components/schemas/ToolingExternalReference" }
+        model: { $ref: "#/components/schemas/ToolingExternalReference" }
+        relationshipGlobalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date }
+        reason: { type: string, minLength: 1, maxLength: 500 }
     CommandResult:
       type: object
       required: [globalId, version, status]
