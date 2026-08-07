@@ -1,65 +1,55 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-06 SPA CONTROLLED-PRINT AFFORDANCE`
+`IN_PROGRESS_REQUIREMENT_ANCHOR — P6-00 TOOLING`
 
-Recovery time: `2026-08-07T03:28:43Z`
+Recovery time: `2026-08-07T09:16:14Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery checkpoint:
-`10963ddaa535f3fd335ca30031b3039b1da398c6`
+Recovery product checkpoint:
+`6ba2763cc14b3a044e2225d7a960ce02175f88a7`
 
 ## Current authoritative action
 
-P5-05 passed Level 2 at exact checkpoint `7624497`. Ordinary CI
-`31134844746` passed repository `92731803737` and visual `92731803668`; final
-unchanged controlled Gate `31135330539` passed repository `92733288503`,
-controlled runtime `92733288519` and visual `92733288492`. Evidence is
-`implementation/evidence/phase-5/p5-05-validation.md`.
+P5-06 passed Level 2 at exact product checkpoint `6ba2763`. Complete ordinary
+CI `31163598955` passed repository, complete E2E/history secret scanning and
+fixed-Linux visual verification. Final unchanged controlled workflow
+`31164225729` passed repository `92821257912`, controlled Site
+`92821257859` and visual `92821257937` (`68/68`) with diagnostics closed.
+Evidence is `implementation/evidence/phase-5/p5-06-validation.md`.
 
-The P5-06 Requirement/domain/existing-capability audit passed. It proves there
-is no existing print implementation to relabel, while the canonical snapshot,
-private File hash, audit, idempotency and BFF switch patterns are reusable.
-The frozen plan is
-`implementation/evidence/phase-5/p5-06-plan.md`.
+Independent Release Gate review passes Phase 5 at Level 3. The decision and
+cumulative task evidence are recorded in `implementation/phase-5-gate.md`.
+There is no active technical Hard Blocker.
 
-The first implementation checkpoint passed at exact stable checkpoint
-`68a79fd`: pure registry/snapshot/output domain, six guarded additive
-DocTypes, closed OpenAPI/ownership vocabulary, direct three-language coverage
-and ordinary CI `31139557282` all passed. Evidence is
-`implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md`.
+The first unfinished atomic task is now:
 
-The repository/render/API checkpoint passed at exact stable checkpoint
-`10963dd`: exact source/mapping authorization, immutable one-time render,
-private retained output, actor-bound idempotency/audit and the closed
-capability/create/detail/content BFF behavior are proven. Ordinary CI
-`31144008180` passed repository `92759644660`, complete E2E and secret lanes,
-plus visual `92759644740` at `65/65`; controlled runtime correctly skipped.
-Evidence is
-`implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md`.
+`P6-00 — Phase 6 Tooling requirement anchor`
 
-The next implementation checkpoint is now:
+Execute only the requirement/domain/existing-capability audit:
 
-1. add a reusable controlled-print data source that validates the exact closed
-   capability/create/detail/content responses and fails closed without a live
-   adapter;
-2. expose a dense, accessible controlled-print action/status surface in the
-   existing Project context without adding a second primary action;
-3. keep the action visibly unavailable when no approved mapping resolves and
-   make loading, no-permission, read-only, processing, replay, conflict,
-   integrity failure and retained-download truth explicit;
-4. use literal English source strings with direct `zh` and `zh-TW` catalog
-   coverage and repository-owned icon adapters only; and
-5. prove the affected unit, browser, accessibility, mixed-language and visual
-   cases before complete ordinary CI.
+1. allocate `FR-TX-001` through `FR-TX-020` and applicable Tooling UX aliases
+   across a minimal Phase 6 atomic order compatible with M5-01 through M5-08;
+2. preserve distinct Tooling Requirement, Tooling Master, Tooling Revision and
+   physical Tooling Set identities, and do not invent exact lifecycle states,
+   transitions or authorities held by `DR-REC-010`;
+3. inspect current repository prototypes/contracts and supplied ERPNext facts
+   before defining reuse/replace/interface boundaries; preserve ERPNext formal
+   asset/cost/execution ownership;
+4. route the specialized 43-column workbook boundary through the
+   `xlsx-tooling-import` Skill and keep production mapping activation and
+   destructive downstream rollback held by `DR-REC-007/008`;
+5. retain `DR-REC-002` only for production exception-color semantics; and
+6. produce the Phase 6 requirement anchor, trace/controller updates,
+   changed-files-to-affected-tests map, migration/rollback strategy and a
+   Level 2 evidence-only Gate before any P6-01 product code.
 
-No production ERPNext endpoint, credential, external dispatch, raw normal-user
-Desk CRUD or default production Print Format may be introduced. The complete
-full-repository CI at `7624497` is reusable readiness evidence, but the Phase 5
-terminal Level 3 Gate is not declared until the planned P0 print foundation
-completes.
+No Tooling DocType, BFF route, production policy, workbook mapping, source
+adapter, fixture/default, ERPNext endpoint or credential may be installed by
+P6-00. On anchor PASS, automatic transition activates P6-01/M5-01 only within
+the frozen safe boundary.
 
 ## Authority
 

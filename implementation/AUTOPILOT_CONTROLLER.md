@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T01:00:15Z`
+Updated: `2026-08-07T09:16:14Z`
 
 ## Authority and operating mode
 
@@ -730,3 +730,43 @@ repeat or rewrite it merely to restore context. See
   and affected browser/visual evidence. No production adapter, Print Format,
   enabled mapping, form, signer, copy policy, dependency, external service or
   ERPNext endpoint is active.
+
+## 2026-08-07 P5-06 final PASS and Phase 5 Level 3 transition
+
+- Frontend checkpoint `83ffafc` completes the strict controlled-print data
+  source, dense accessible Project action/status surface, direct trilingual
+  coverage and exact three-case visual evidence. The action remains visibly
+  unavailable without an approved mapping and does not add a second primary
+  action.
+- Final exact product checkpoint
+  `6ba2763cc14b3a044e2225d7a960ce02175f88a7` passed ordinary CI
+  `31163598955`: repository `92819270517`, complete E2E/history secret scan
+  and visual `92819270398`; controlled runtime correctly skipped.
+- Final unchanged Gate `31164225729` passed repository `92821257912`, visual
+  `92821257937` at `68/68` and controlled disposable Site `92821257859` with
+  all diagnostic activation closed. Artifact `8988384460` records
+  `result=PASS`, the exact SHA and `scope=p5-01-through-p5-06`; its GitHub
+  digest is
+  `sha256:6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
+  and extracted result digest is
+  `aa84e488856c0eab31aa226a29169515de3097ef2655a544716a9eaf9b4155ff`.
+- The serial P5-06 runtime repairs were effective rather than repeats. Each
+  uniquely proved root advanced the same request to a later previously
+  unreachable boundary, and earlier roots never recurred. The final two roots
+  were verifier credential/probe defects after controlled-print creation had
+  passed. No Requirement, API, permission, Schema intent, ownership,
+  transaction, idempotency, audit, baseline, threshold or PASS rule changed.
+- Release-gate review concludes `PASS — LEVEL 2 P5-06` and
+  `PASS — LEVEL 3 PHASE 5`. `FR-PRN-001/002` are
+  `TECHNICAL_VERIFIED`; `FR-PRN-003` remains decision-held by
+  `DR-REC-003/004`. No production form, mapping, adapter, signer, copy policy,
+  service, dependency, ERPNext endpoint or credential is active.
+- Evidence is `implementation/evidence/phase-5/p5-06-validation.md`; the
+  terminal decision is `implementation/phase-5-gate.md`. There is no active
+  technical Hard Blocker.
+- Standing transition authority activates only `P6-00 — Phase 6 Tooling
+  requirement anchor`. It allocates `FR-TX-001..020`, preserves distinct
+  Tooling identities and NPI/ERPNext ownership, routes the specialized
+  workbook boundary through `xlsx-tooling-import`, retains
+  `DR-REC-002/007/008/010`, and defines task/test/rollback sequencing without
+  product code. P6-01/M5-01 remains inactive until that anchor passes.

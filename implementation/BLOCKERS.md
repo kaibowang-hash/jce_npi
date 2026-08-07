@@ -890,3 +890,24 @@ must preserve that boundary.
   reconciliation amendment still schedules the generic controlled-print
   foundation for `FR-PRN-001/002`; this planned next task is not a Hard
   Blocker. `FR-PRN-003` exact form/signature policy remains decision-held.
+
+## Current authoritative blocker state — 2026-08-07T09:16:14Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P5-06 final exact product checkpoint
+  `6ba2763cc14b3a044e2225d7a960ce02175f88a7` passed ordinary CI
+  `31163598955` and final unchanged controlled-Site Gate `31164225729` with
+  diagnostics closed. Repository `92821257912`, controlled runtime
+  `92821257859` and visual `92821257937` (`68/68`) all passed.
+- The earlier apparent repeated failure was sequential convergence, not a
+  failed repair loop. Each bounded diagnostic proved a different later stage;
+  the prior stage did not recur. The final two failures were verifier-only:
+  consuming the same environment secret twice and probing a predecessor route
+  with an actor intentionally lacking Project-owner access.
+- Controlled artifact `8988384460` records `result=PASS`, exact SHA
+  `6ba2763` and `scope=p5-01-through-p5-06`. P5-06 is `PASS_LEVEL_2`; Phase 5
+  is `PASS_LEVEL_3`.
+- `FR-PRN-003` production form/signature/copy policy remains a scoped Class-B
+  hold under `DR-REC-003/004`, not a global blocker. Phase 6 P6-00 may proceed
+  with requirement anchoring while its own `DR-REC-002/007/008/010` facts stay
+  scoped to dependent behavior.

@@ -72,14 +72,14 @@ class V12ReconciliationTests(unittest.TestCase):
             row["evidence"],
         )
 
-    def test_p5_06_print_foundation_trace_is_active_without_form_policy(self) -> None:
+    def test_p5_06_print_foundation_trace_is_verified_without_form_policy(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}
         for requirement_id in ("FR-PRN-001", "FR-PRN-002"):
             row = by_id[requirement_id]
             self.assertEqual(
                 row["status"],
-                "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION",
+                "TECHNICAL_VERIFIED",
             )
             self.assertEqual(
                 {

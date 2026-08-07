@@ -1,70 +1,68 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T03:28:43Z`
+Updated: `2026-08-07T09:16:14Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-06 SPA CONTROLLED-PRINT AFFORDANCE`
+- Mode: `IN_PROGRESS_REQUIREMENT_ANCHOR — P6-00 TOOLING`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `10963ddaa535f3fd335ca30031b3039b1da398c6` (pushed; P5-06 exact repository,
-  immutable one-time render, private retained output and closed BFF API)
+  `6ba2763cc14b3a044e2225d7a960ce02175f88a7` (pushed; P5-06 final exact
+  controlled-print foundation and verifier repair checkpoint)
 - Latest complete normal CI:
-  `31144008180` (`PASS`, exact SHA `10963dd`; repository `92759644660`,
-  complete E2E, Gitleaks/history and fixed-Linux visual `92759644740` passed
-  `65/65`; controlled job `92759645318` correctly skipped)
+  `31163598955` (`PASS`, exact SHA `6ba2763`; repository `92819270517`,
+  complete E2E, Gitleaks/history and fixed-Linux visual `92819270398` passed;
+  controlled runtime correctly skipped)
 - Latest controlled-Site run:
-  `31135330539` (`PASS`, exact SHA `7624497`, all diagnostic activation
-  closed; repository `92733288503`, controlled `92733288519`, visual
-  `92733288492`)
+  `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
+  closed; repository `92821257912`, controlled `92821257859`, visual
+  `92821257937` passed `68/68`)
 - Controlled PASS artifact:
-  `8977753018`, GitHub SHA-256
-  `bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`
+  `8988384460`, GitHub SHA-256
+  `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
-  `P5-06 — Controlled print registry and immutable output snapshot foundation`
-  (`IN_PROGRESS — SPA CONTROLLED-PRINT AFFORDANCE`)
+  `P6-00 — Phase 6 Tooling requirement anchor`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
 - Current Requirement IDs:
-  `FR-PRN-001`, `FR-PRN-002`
-- Completed P5-05 evidence:
-  `implementation/evidence/phase-5/p5-05-validation.md`
+  `FR-TX-001` through `FR-TX-020` plus applicable Tooling UX aliases
+- Completed Phase 5 evidence:
+  `implementation/phase-5-gate.md`
 - Current product Phase:
-  `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
+  `6 — Tooling Domain` (`IN_PROGRESS — REQUIREMENT ANCHOR ONLY`)
 - Latest complete product Phase:
-  `4 — Project Work Items and Stage Gates` (`PASS`)
+  `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P5-05 passed Level 2 at exact checkpoint `7624497`: ordinary CI
-`31134844746` and final unchanged controlled-Site Gate `31135330539` passed
-with diagnostics closed. `FR-DS-013` is
-`TECHNICAL_VERIFIED_FOUNDATION`: NPI-owned request truth, Mock no-contact
-behavior and the disposable-Site runtime are proven, while formal ERPNext
-execution remains deferred to Phase 8.
+P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
+`6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate
+`31164225729` passed with every diagnostic activation closed. The terminal
+Gate proves `1,079` tracked Python tests, `719` frontend unit tests, `303`
+non-visual browser cases, `68/68` fixed-Linux visuals and the complete
+P5-01-through-P5-06 disposable-Site runtime.
 
-The reconciliation-amended Phase 5 anchor contains a further planned P0
-slice. P5-06 is therefore the first unfinished atomic task and is active only
-for `FR-PRN-001` and `FR-PRN-002`: a generic server-side Print Format registry
-and immutable controlled-output snapshot foundation with language, version,
-hash, provenance and audit truth. The exact forms, signers, copy count and
-production print policy in `FR-PRN-003` remain decision-held by `DR-REC-003`
-and `DR-REC-004`; P5-06 must not invent them or install production defaults.
+The former hard blocker is resolved. Its serial repairs were effective: each
+proved root advanced the same runtime path to a later, previously unreachable
+boundary; earlier failures never recurred. The final two failures were
+verifier defects after controlled-print creation had passed. No Requirement,
+API, permission, Schema intent, ownership, transaction, idempotency, audit,
+baseline, threshold or PASS criterion changed.
 
-The complete final CI at `7624497` is reusable release-readiness evidence, but
-Phase 5 remains `IN_PROGRESS` until this planned P0 print foundation is
-implemented and its own Level 2 evidence passes. Production endpoints,
-credentials, ERPNext mutation/network dispatch, exact production forms and
-formal release semantics remain prohibited.
+Standing automatic-transition authority activates only P6-00. This is an
+evidence/requirement anchor for the Tooling phase, not authorization for
+Tooling product code. It must allocate `FR-TX-001` through `FR-TX-020`, keep
+Tooling Requirement/Master/Revision/physical Set identities separate,
+reconcile NPI/ERPNext ownership, route the specialized 43-column workbook
+boundary through the `xlsx-tooling-import` Skill, preserve scoped
+`DR-REC-002/007/008/010` holds and define the Phase 6 task/test/rollback order.
 
-The bounded Requirement/domain/existing-capability audit, pure
-domain/contract/metadata checkpoint and repository/render/API checkpoint have
-passed. Evidence is
-`implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md` and
-ordinary CI `31144008180`. The active checkpoint is now only the reusable SPA
-controlled-print data/action/status boundary with direct three-language,
-accessibility, browser and visual proof. No production fixture, Print Format,
-enabled mapping or external delivery is active.
+P6-00 may inspect repository and specification truth and update only the
+anchor, trace/controller and evidence. It may not invent exact Tooling
+lifecycle states/authority, production exception colors, production workbook
+mapping activation or destructive downstream rollback. P6-01/M5-01 product
+implementation remains inactive until the P6-00 anchor passes.
 
 ## Retained P5-04 recovery history
 

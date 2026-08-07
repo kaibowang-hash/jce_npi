@@ -362,16 +362,38 @@ EXPECTED_P5_03_COMPLETED_TRACE = {
     )
 }
 EXPECTED_P5_06_TRACE = {
-    requirement_id: (
-        "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION",
+    "FR-PRN-001": (
+        "TECHNICAL_VERIFIED",
         {
             "implementation/V1_2_RECONCILIATION_DECISIONS.md",
             "implementation/phase-5-requirement-anchor.md",
-            "implementation/evidence/phase-5/p5-06-plan.md",
-            "implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md",
+            "apps/npi_core/npi_core/controlled_print/domain.py",
+            "apps/npi_core/npi_core/controlled_print/frappe_repository.py",
+            "apps/npi_core/npi_core/controlled_print_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/components/controlled-print-action.tsx",
+            "tests/test_phase5_controlled_print_repository.py",
+            "scripts/verify_controlled_print_runtime.py",
+            "implementation/evidence/phase-5/p5-06-validation.md",
+            "implementation/phase-5-gate.md",
         },
-    )
-    for requirement_id in ("FR-PRN-001", "FR-PRN-002")
+    ),
+    "FR-PRN-002": (
+        "TECHNICAL_VERIFIED",
+        {
+            "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+            "implementation/phase-5-requirement-anchor.md",
+            "apps/npi_core/npi_core/controlled_print/rendering.py",
+            "apps/npi_core/npi_core/controlled_print/qr.py",
+            "apps/npi_core/npi_core/controlled_print/frappe_repository.py",
+            "frontend/src/api/controlled-print-data-source.ts",
+            "tests/test_phase5_controlled_print_rendering.py",
+            "tests/test_phase5_controlled_print_repository_transaction.py",
+            "scripts/verify_controlled_print_runtime.py",
+            "implementation/evidence/phase-5/p5-06-validation.md",
+            "implementation/phase-5-gate.md",
+        },
+    ),
 }
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
@@ -921,7 +943,7 @@ def verify_trace_sets() -> None:
             requirement_id,
         ):
             raise ReconciliationVerificationError(
-                f"{requirement_id} must retain the active P5-06 trace truth"
+                f"{requirement_id} must retain the completed P5-06 trace truth"
             )
         if actual_evidence != expected_evidence:
             raise ReconciliationVerificationError(

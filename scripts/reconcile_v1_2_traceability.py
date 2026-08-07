@@ -29,8 +29,8 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-041", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
     ("FR-UX-043", "P0", "5", "TECHNICAL_VERIFIED"),
-    ("FR-PRN-001", "P0", "5", "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION"),
-    ("FR-PRN-002", "P0", "5", "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION"),
+    ("FR-PRN-001", "P0", "5", "TECHNICAL_VERIFIED"),
+    ("FR-PRN-002", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
     ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
@@ -242,13 +242,32 @@ R1_06_STAGE_3_EVIDENCE = {
     ),
 }
 P5_06_PLAN_EVIDENCE = {
-    requirement_id: (
+    "FR-PRN-001": (
         "implementation/V1_2_RECONCILIATION_DECISIONS.md",
         "implementation/phase-5-requirement-anchor.md",
-        "implementation/evidence/phase-5/p5-06-plan.md",
-        "implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md",
-    )
-    for requirement_id in ("FR-PRN-001", "FR-PRN-002")
+        "apps/npi_core/npi_core/controlled_print/domain.py",
+        "apps/npi_core/npi_core/controlled_print/frappe_repository.py",
+        "apps/npi_core/npi_core/controlled_print_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/components/controlled-print-action.tsx",
+        "tests/test_phase5_controlled_print_repository.py",
+        "scripts/verify_controlled_print_runtime.py",
+        "implementation/evidence/phase-5/p5-06-validation.md",
+        "implementation/phase-5-gate.md",
+    ),
+    "FR-PRN-002": (
+        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        "implementation/phase-5-requirement-anchor.md",
+        "apps/npi_core/npi_core/controlled_print/rendering.py",
+        "apps/npi_core/npi_core/controlled_print/qr.py",
+        "apps/npi_core/npi_core/controlled_print/frappe_repository.py",
+        "frontend/src/api/controlled-print-data-source.ts",
+        "tests/test_phase5_controlled_print_rendering.py",
+        "tests/test_phase5_controlled_print_repository_transaction.py",
+        "scripts/verify_controlled_print_runtime.py",
+        "implementation/evidence/phase-5/p5-06-validation.md",
+        "implementation/phase-5-gate.md",
+    ),
 }
 
 
