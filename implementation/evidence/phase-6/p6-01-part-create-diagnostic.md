@@ -1,8 +1,8 @@
 # P6-01 Part-create Diagnostic Checkpoint
 
-Updated: `2026-08-07T14:56:08Z`
+Updated: `2026-08-07T15:23:00Z`
 
-Status: `ROOT PROVEN — REPAIR IN PROGRESS`; this is not a P6-01 Task Gate PASS.
+Status: `REPAIR EFFECTIVE — GATE ADVANCED`; this is not a P6-01 Task Gate PASS.
 
 ## Trigger evidence
 
@@ -55,5 +55,17 @@ raised `ValidationError`.
 The unique repair prepends the empty Select option and sets verifier diagnostic
 activation to false. The allowed sealed target values remain exactly `part`,
 `part_revision`, `tooling_requirement`, `tooling_master` and
-`tooling_applicability`. Counters are diagnostic `1/1`, repair `0/1` in
-progress, final unchanged Gate `0/1`.
+`tooling_applicability`. At that point counters were diagnostic `1/1`, repair
+`0/1` in progress, final unchanged Gate `0/1`.
+
+## Repair result
+
+Repair checkpoint `84ac63b` passed complete ordinary CI `31190599179`:
+repository `92906131044`, visual `92906130984` at `73/73`, and controlled
+runtime skipped. Final unchanged workflow `31191425881` retained the same SHA.
+Repository `92908918643` and visual `92908918453` passed. Controlled job
+`92908918591` passed the pinned environment, Site, migrations, retained P5
+runtime and the earlier P6-01 commands, then the first Applicability create did
+not return HTTP 201. The receipt insert root did not recur; counters for this
+cycle are diagnostic `1/1`, repair `1/1`, final Gate `1/1` and the repair is
+effective. The new downstream opaque stage is governed separately.

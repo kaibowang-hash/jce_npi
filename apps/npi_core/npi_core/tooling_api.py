@@ -24,6 +24,8 @@ from npi_core.request_security import (
 )
 from npi_core.tooling.domain import ToolingRequirementKind, ToolingUnavailable
 from npi_core.tooling.diagnostics import (
+    applicability_create_server_diagnostics,
+    applicability_create_server_step,
     part_create_server_diagnostics,
     part_create_server_step,
 )
@@ -310,6 +312,7 @@ def create_tooling_applicability(
             project_id,
             **parsed,
         ),
+        applicability_create_diagnostic=True,
     )
 
 
@@ -364,6 +367,8 @@ def _command(
     request_fields: dict[str, Any],
     values,
     operation,
+    *,
+    applicability_create_diagnostic: bool = False,
 ) -> dict[str, Any] | None:
     headers = {
         "X-Request-ID": response_request_id(),
@@ -371,17 +376,34 @@ def _command(
     }
 
     def handle() -> dict[str, Any]:
-        with part_create_server_diagnostics(current_trace_id.get()):
-            with part_create_server_step("P601_PART_CREATE_COMMAND_CONTEXT"):
+        with part_create_server_diagnostics(
+            current_trace_id.get()
+        ), applicability_create_server_diagnostics(
+            current_trace_id.get(),
+            route_enabled=applicability_create_diagnostic,
+        ):
+            with part_create_server_step(
+                "P601_PART_CREATE_COMMAND_CONTEXT"
+            ), applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_COMMAND_CONTEXT"
+            ):
                 request_id, key_hash, repository, project_id = _command_context(
                     allowed,
                     required,
                     request_fields,
                 )
-            with part_create_server_step("P601_PART_CREATE_INPUT_PARSE"):
+            with part_create_server_step(
+                "P601_PART_CREATE_INPUT_PARSE"
+            ), applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_INPUT_PARSE"
+            ):
                 parsed = values()
             parsed["idempotency_key_hash"] = key_hash
-            with part_create_server_step("P601_PART_CREATE_API_RESPONSE"):
+            with part_create_server_step(
+                "P601_PART_CREATE_API_RESPONSE"
+            ), applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_API_RESPONSE"
+            ):
                 outcome = operation(repository, project_id, parsed)
                 if outcome is None:
                     raise ToolingUnavailable()

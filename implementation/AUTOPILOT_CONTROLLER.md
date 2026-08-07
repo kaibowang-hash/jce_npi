@@ -944,3 +944,12 @@ repeat or rewrite it merely to restore context. See
   pending receipt. This uniquely selects one metadata repair: prepend the
   empty Select option and close verifier diagnostic activation. Allowed sealed
   target values and every frozen product/Gate boundary remain unchanged.
+- Receipt repair checkpoint `84ac63b` passed complete ordinary CI
+  `31190599179`. Final unchanged workflow `31191425881` passed repository
+  `92908918643`, visual `92908918453`, pinned Bench, Site, migrations and all
+  predecessor runtime. Controlled job `92908918591` advanced beyond the former
+  receipt-insert root and failed only when the first Applicability create did
+  not return HTTP 201. The former repair is effective. Standing authority
+  opens one new route-gated, response-neutral Applicability-create diagnostic
+  cycle with counters diagnostic `0/1`, uniquely proved repair `0/1`, final
+  unchanged Gate `0/1`; every frozen boundary remains unchanged.

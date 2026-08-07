@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T14:56:08Z'
+updated_at: '2026-08-07T15:23:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
-current_task_status: IN_PROGRESS_REPAIR
-current_task_completed_stage: P6_01_PART_CREATE_DIAGNOSTIC_ROOT_PROVEN
-current_task_next_stage: P6_01_RECEIPT_SELECT_DEFAULT_REPAIR
-current_task_next_stage_status: IN_PROGRESS_REPAIR
+current_task_status: IN_PROGRESS_DIAGNOSTIC
+current_task_completed_stage: P6_01_RECEIPT_SELECT_DEFAULT_REPAIR_EFFECTIVE
+current_task_next_stage: P6_01_APPLICABILITY_CREATE_DIAGNOSTIC
+current_task_next_stage_status: IN_PROGRESS_DIAGNOSTIC
 resumed_product_task: P6-01
-resumed_product_task_status: IN_PROGRESS_REPAIR
+resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P601_PART_CREATE_RECEIPT_OPTIONAL_SELECT_DEFAULT
+  current_root: P601_APPLICABILITY_CREATE_OPAQUE_PENDING_DIAGNOSTIC
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -725,6 +725,22 @@ p6_01:
   cockpit_final_gitleaks_artifact: 8995862579
   cockpit_final_gitleaks_digest: sha256:4be64953d6cc5fef3924d50ed3730a33b5857bab63ebda8208d3495c79c59e36
   cockpit_controlled_job: 92880986862
+  controlled_runtime_checkpoint: 84ac63bdc3f18bdc241106efcf3443fd4594b41e
+  controlled_runtime_normal_ci: 31190599179
+  controlled_runtime_normal_repository_job: 92906131044
+  controlled_runtime_normal_visual_job: 92906130984
+  controlled_runtime_final_gate: 31191425881
+  controlled_runtime_final_repository_job: 92908918643
+  controlled_runtime_final_visual_job: 92908918453
+  controlled_runtime_final_job: 92908918591
+  controlled_runtime_final_outcome: FAILED_APPLICABILITY_CREATE_NON_UNIQUE
+  part_create_receipt_default_repair_effective: true
+  applicability_diagnostic_dispatches_authorized: 1
+  applicability_diagnostic_dispatches_used: 0
+  applicability_repairs_authorized_if_uniquely_proven: 1
+  applicability_repairs_used: 0
+  applicability_final_unchanged_gates_authorized: 1
+  applicability_final_unchanged_gates_used: 0
   completed_stage: LIVE_COCKPIT_CHECKPOINT_PASS
   next_stage: CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
   evidence:
@@ -733,6 +749,8 @@ p6_01:
     - implementation/evidence/phase-6/p6-01-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-01-repository-api-checkpoint.md
     - implementation/evidence/phase-6/p6-01-live-cockpit-checkpoint.md
+    - implementation/evidence/phase-6/p6-01-part-create-diagnostic.md
+    - implementation/evidence/phase-6/p6-01-applicability-create-diagnostic.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

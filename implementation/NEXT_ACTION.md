@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPAIR — P6-01 RECEIPT SELECT DEFAULT`
+`IN_PROGRESS_DIAGNOSTIC — P6-01 APPLICABILITY CREATE`
 
-Recovery time: `2026-08-07T14:56:08Z`
+Recovery time: `2026-08-07T15:23:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`7bd0819700bf3e4c3f07bfd15816ff6e9c5c7c85`
+`84ac63bdc3f18bdc241106efcf3443fd4594b41e`
 
 ## Current authoritative action
 
@@ -96,6 +96,15 @@ optional receipt `target_object_type` incorrectly listed `part` first, making
 an unsealed receipt appear already target-bound. Repair only that optional
 Select with an empty first option, close diagnostic activation, run affected/
 full ordinary CI, and reserve one final unchanged controlled Gate.
+
+Repair checkpoint `84ac63b` passed complete ordinary CI `31190599179`. Final
+unchanged workflow `31191425881` passed repository, visual, environment,
+migrations and every prior runtime stage, then the first Applicability create
+returned non-201. The receipt-insert repair is effective. Activate only a new
+Applicability-create response-neutral diagnostic for that first synthetic
+request, run affected/full ordinary CI, dispatch one diagnostic Site, and
+repair only the uniquely proved root before closing diagnostics and reserving
+one final unchanged Gate.
 
 Implement only:
 

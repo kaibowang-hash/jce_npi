@@ -1,31 +1,27 @@
 # Blockers
 
-Updated: `2026-08-07T14:56:08Z`
+Updated: `2026-08-07T15:23:00Z`
 
 ## Active hard blockers
 
-None. Exact P6-01 runtime-verifier checkpoint `42e2435` passed complete ordinary
-CI `31186227371`: repository `92891339039`, visual `92891338846` at `73/73`,
-and the controlled job correctly skipped. Controlled workflow `31186957232`
-then passed repository `92893817844`, visual `92893817888`, pinned Bench, Site,
-migration and every retained P5 runtime before the first P6-01 `part.create`
-returned a non-201 response. This is an opaque technical failure with a safe
-in-scope diagnostic action, not a Hard Blocker and requires no user action.
+None. Repair checkpoint `84ac63b` passed complete ordinary CI `31190599179`.
+Final unchanged workflow `31191425881` passed repository `92908918643`, visual
+`92908918453`, pinned Bench, Site, migrations and retained P5/P6-01 commands
+before the first Applicability create returned non-201. This is an opaque
+technical failure with a safe in-scope diagnostic action, not a Hard Blocker
+and requires no user action.
 
 ## Active recovery
 
-`P6-01-PART-CREATE-SELECT-DEFAULT-REPAIR` — `IN_PROGRESS_REPAIR`, not blocked.
-Diagnostic checkpoint `7bd0819` passed ordinary CI `31188466252`. The sole
-diagnostic Site `31189263393` returned only
-`P601_PART_CREATE_RECEIPT_INSERT / ValidationError /
-trace-fdeec6ebee38563791fb6f338ef1aa0e`. Code and pinned Frappe runtime prove
-the optional `target_object_type` Select defaulted to its first option `part`
-during `Document.insert()`, so the intentionally unsealed receipt was falsely
-validated as already target-bound. The unique repair adds the Frappe-standard
-empty first Select option and closes verifier diagnostic activation. It does
-not change the field, allowed sealed target values, receipt transaction,
-idempotency, audit or public response. Counters are diagnostic `1/1`, repair
-`0/1` in progress, final unchanged Gate `0/1`.
+`P6-01-APPLICABILITY-CREATE-DIAGNOSTIC` — `IN_PROGRESS_DIAGNOSTIC`, not
+blocked. The former receipt-insert repair is proven effective because final
+unchanged Gate `31191425881` advanced to the first Applicability create.
+Standing authority opens one route-gated, response-neutral diagnostic cycle
+that records only one allowlisted Applicability substage, validated exception
+type and exact trace. Affected/full ordinary CI must pass before the sole
+diagnostic Site. Only its uniquely proved root may be repaired; activation must
+then close before ordinary CI and one final unchanged Gate. Counters are
+diagnostic `0/1`, repair `0/1`, final Gate `0/1`.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

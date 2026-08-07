@@ -337,6 +337,49 @@ class Phase6ToolingApiTest(unittest.TestCase):
         )
         self.assertNotIn("sensitive synthetic detail", str(record.call_args))
 
+    def test_applicability_diagnostic_is_route_gated_and_response_neutral(
+        self,
+    ) -> None:
+        payload = {
+            "toolingMasterGlobalId": MASTER_ID,
+            "partRevisionGlobalId": REVISION_ID,
+            "effectiveFrom": "2026-08-01",
+            "reason": "Initial exact relationship",
+        }
+        self.repository.failure = RuntimeError("sensitive applicability detail")
+        self.headers["X-NPI-Diagnostic-Scope"] = (
+            "p601-applicability-create-v1"
+        )
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            result = self.call(self.api.create_tooling_applicability, payload)
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        record.assert_any_call(
+            code="P601_APPLICABILITY_CREATE_API_RESPONSE",
+            title="NPI Tooling Applicability create substage failed",
+            exception_type="RuntimeError",
+            trace_id=self.headers["X-Trace-ID"],
+        )
+        self.assertEqual(
+            [call.kwargs["code"] for call in record.call_args_list],
+            [
+                "P601_APPLICABILITY_CREATE_API_RESPONSE",
+                "UNEXPECTED_BFF_EXCEPTION",
+            ],
+        )
+        self.assertNotIn("sensitive applicability detail", str(record.call_args))
+
+        with patch("npi_core.api.record_safe_diagnostic") as wrong_route_record:
+            wrong_route_result = self.call(self.api.create_engineering_part, {
+                "title": "Front housing",
+                "revisionLabel": "A",
+                "reason": "Initial engineering release",
+            })
+        self.assertEqual(wrong_route_result, result)
+        self.assertEqual(
+            [call.kwargs["code"] for call in wrong_route_record.call_args_list],
+            ["UNEXPECTED_BFF_EXCEPTION"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

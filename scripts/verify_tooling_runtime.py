@@ -61,9 +61,11 @@ SHARED_APPLICABILITY_KEY = (
 )
 PREDECESSOR_ROUTE_QUERY = "p601-predecessor-route-isolation"
 PART_CREATE_DIAGNOSTICS_ENABLED = False
+APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED = True
 _PART_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _PART_CREATE_DIAGNOSTIC_SCOPE = "p601-part-create-v1"
-_PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
+_APPLICABILITY_CREATE_DIAGNOSTIC_SCOPE = "p601-applicability-create-v1"
+_SERVER_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _PART_CREATE_DIAGNOSTIC_CODES = frozenset(
     {
         "P601_PART_CREATE_COMMAND_CONTEXT",
@@ -79,6 +81,26 @@ _PART_CREATE_DIAGNOSTIC_CODES = frozenset(
         "P601_PART_CREATE_RESPONSE_BUILD",
         "P601_PART_CREATE_RECEIPT_SEAL",
         "P601_PART_CREATE_API_RESPONSE",
+    }
+)
+_APPLICABILITY_CREATE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P601_APPLICABILITY_CREATE_COMMAND_CONTEXT",
+        "P601_APPLICABILITY_CREATE_INPUT_PARSE",
+        "P601_APPLICABILITY_CREATE_PROJECT_LOCK",
+        "P601_APPLICABILITY_CREATE_IDEMPOTENCY_CONTEXT",
+        "P601_APPLICABILITY_CREATE_REFERENCE_LOAD",
+        "P601_APPLICABILITY_CREATE_REFERENCE_VALIDATE",
+        "P601_APPLICABILITY_CREATE_RETAINED_LOAD",
+        "P601_APPLICABILITY_CREATE_PREDECESSOR_RESOLVE",
+        "P601_APPLICABILITY_CREATE_DOMAIN_BUILD",
+        "P601_APPLICABILITY_CREATE_DOMAIN_VALIDATE",
+        "P601_APPLICABILITY_CREATE_RECEIPT_INSERT",
+        "P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT",
+        "P601_APPLICABILITY_CREATE_AUDIT_APPEND",
+        "P601_APPLICABILITY_CREATE_RESPONSE_BUILD",
+        "P601_APPLICABILITY_CREATE_RECEIPT_SEAL",
+        "P601_APPLICABILITY_CREATE_API_RESPONSE",
     }
 )
 _TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
@@ -109,18 +131,27 @@ def tooling_request(
     idempotency_key: str | None = None,
     query_key: str = "query",
     part_create_diagnostic: bool = False,
+    applicability_create_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else document_runtime.query_headers(f"p601-{query_key}")
     )
-    if part_create_diagnostic:
+    if part_create_diagnostic or applicability_create_diagnostic:
         require(
             method == "POST" and idempotency_key is not None,
-            "The P6-01 Part-create diagnostic requires one command request",
+            "The P6-01 diagnostic requires one command request",
         )
-        headers[_PART_CREATE_DIAGNOSTIC_HEADER] = _PART_CREATE_DIAGNOSTIC_SCOPE
+        require(
+            part_create_diagnostic is not applicability_create_diagnostic,
+            "Exactly one P6-01 diagnostic scope must be active",
+        )
+        headers[_PART_CREATE_DIAGNOSTIC_HEADER] = (
+            _PART_CREATE_DIAGNOSTIC_SCOPE
+            if part_create_diagnostic
+            else _APPLICABILITY_CREATE_DIAGNOSTIC_SCOPE
+        )
     result = document_runtime.request(
         opener,
         base_url,
@@ -155,6 +186,7 @@ def command(
     key: str,
     *,
     part_create_diagnostic: bool = False,
+    applicability_create_diagnostic: bool = False,
 ) -> HttpResult:
     result = tooling_request(
         opener,
@@ -165,9 +197,19 @@ def command(
         csrf_token=csrf_token,
         idempotency_key=key,
         part_create_diagnostic=part_create_diagnostic,
+        applicability_create_diagnostic=applicability_create_diagnostic,
     )
-    if result.status != 201 and part_create_diagnostic:
-        diagnostic = _sanitized_part_create_server_diagnostic(result.trace_id)
+    if result.status != 201 and (
+        part_create_diagnostic or applicability_create_diagnostic
+    ):
+        diagnostic = _sanitized_server_diagnostic(
+            result.trace_id,
+            (
+                _PART_CREATE_DIAGNOSTIC_CODES
+                if part_create_diagnostic
+                else _APPLICABILITY_CREATE_DIAGNOSTIC_CODES
+            ),
+        )
         if diagnostic is not None:
             exception_type, code, trace_id = diagnostic
             raise RuntimeError(
@@ -186,6 +228,15 @@ def _sanitized_part_create_server_diagnostic(
     trace_id: str | None,
 ) -> tuple[str, str, str] | None:
     """Read only one allowlisted P6-01 server record for the exact trace."""
+
+    return _sanitized_server_diagnostic(trace_id, _PART_CREATE_DIAGNOSTIC_CODES)
+
+
+def _sanitized_server_diagnostic(
+    trace_id: str | None,
+    allowed_codes: frozenset[str],
+) -> tuple[str, str, str] | None:
+    """Read one allowlisted P6-01 server record for the exact trace."""
 
     if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
         return None
@@ -208,8 +259,8 @@ def _sanitized_part_create_server_diagnostic(
             with resolved.open("rb") as log_file:
                 log_file.seek(0, os.SEEK_END)
                 size = log_file.tell()
-                log_file.seek(max(0, size - _PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT))
-                tail = log_file.read(_PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT)
+                log_file.seek(max(0, size - _SERVER_DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_SERVER_DIAGNOSTIC_LOG_TAIL_LIMIT)
         except (OSError, RuntimeError):
             continue
         for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
@@ -233,7 +284,7 @@ def _sanitized_part_create_server_diagnostic(
                 if (
                     record.get("traceId") == trace_id
                     and isinstance(code, str)
-                    and code in _PART_CREATE_DIAGNOSTIC_CODES
+                    and code in allowed_codes
                     and isinstance(exception_type, str)
                     and _TYPE_PATTERN.fullmatch(exception_type) is not None
                 ):
@@ -749,6 +800,7 @@ def run_fresh(
             effective_to="2026-09-01",
         ),
         APPLICABILITY_ONE_KEY,
+        applicability_create_diagnostic=APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED,
     )
     first_applicability_workspace = assert_workspace(
         first_applicability,

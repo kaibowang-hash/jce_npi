@@ -142,6 +142,26 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         self.assertIn("row.source_system", reference)
         self.assertIn("row.source_object_id", reference)
 
+    def test_applicability_diagnostic_covers_each_atomic_substage(self) -> None:
+        value = function("create_applicability")
+        for code in (
+            "P601_APPLICABILITY_CREATE_PROJECT_LOCK",
+            "P601_APPLICABILITY_CREATE_IDEMPOTENCY_CONTEXT",
+            "P601_APPLICABILITY_CREATE_REFERENCE_LOAD",
+            "P601_APPLICABILITY_CREATE_REFERENCE_VALIDATE",
+            "P601_APPLICABILITY_CREATE_RETAINED_LOAD",
+            "P601_APPLICABILITY_CREATE_PREDECESSOR_RESOLVE",
+            "P601_APPLICABILITY_CREATE_DOMAIN_BUILD",
+            "P601_APPLICABILITY_CREATE_DOMAIN_VALIDATE",
+            "P601_APPLICABILITY_CREATE_RECEIPT_INSERT",
+            "P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT",
+            "P601_APPLICABILITY_CREATE_AUDIT_APPEND",
+            "P601_APPLICABILITY_CREATE_RESPONSE_BUILD",
+            "P601_APPLICABILITY_CREATE_RECEIPT_SEAL",
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(value.count(code), 1)
+
     def test_receipt_replay_revalidates_instance_actor_scope_payload_and_seal(self) -> None:
         value = function("_receipt_replay")
         for fragment in (

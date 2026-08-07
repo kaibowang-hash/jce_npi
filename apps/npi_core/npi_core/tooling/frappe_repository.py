@@ -28,7 +28,10 @@ from npi_core.tooling.domain import (
     validate_applicability_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
-from npi_core.tooling.diagnostics import part_create_server_step
+from npi_core.tooling.diagnostics import (
+    applicability_create_server_step,
+    part_create_server_step,
+)
 
 
 _MAX_MASTERS = 200
@@ -464,7 +467,10 @@ class FrappeToolingRepository(FrappeDocumentRepository):
         effective_to: date | None,
         reason: str,
     ) -> ToolingCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_PROJECT_LOCK"
+        ):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
         payload = {
@@ -480,111 +486,157 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             "effectiveTo": effective_to.isoformat() if effective_to else None,
             "reason": reason,
         }
-        context = self._command_context(
-            project,
-            operation="tooling_applicability.create",
-            idempotency_key_hash=idempotency_key_hash,
-            payload=payload,
-        )
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_IDEMPOTENCY_CONTEXT"
+        ):
+            context = self._command_context(
+                project,
+                operation="tooling_applicability.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload=payload,
+            )
         if isinstance(context, dict):
             return ToolingCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
-        master_row = self._same_tenant_master(project, tooling_master_id)
-        revision = self._part_revision_for_project(
-            project,
-            part_revision_id,
-            require_current=True,
-        )
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_REFERENCE_LOAD"
+        ):
+            master_row = self._same_tenant_master(project, tooling_master_id)
+            revision = self._part_revision_for_project(
+                project,
+                part_revision_id,
+                require_current=True,
+            )
         if master_row is None or revision is None:
             raise ToolingReferenceUnavailable()
         part_id = revision.part_global_id
-        self._require_project_reference(project, product)
-        self._require_project_reference(project, model)
-        retained = self._applicabilities(project)
-        previous = None
-        if relationship_id is not None:
-            versions = tuple(
-                value
-                for value in retained
-                if value.relationship_global_id == relationship_id
-            )
-            if not versions:
-                raise ToolingReferenceUnavailable()
-            previous = max(versions, key=lambda value: value.applicability_version)
-            if previous.applicability_version != expected_version:
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_REFERENCE_VALIDATE"
+        ):
+            self._require_project_reference(project, product)
+            self._require_project_reference(project, model)
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_RETAINED_LOAD"
+        ):
+            retained = self._applicabilities(project)
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_PREDECESSOR_RESOLVE"
+        ):
+            previous = None
+            if relationship_id is not None:
+                versions = tuple(
+                    value
+                    for value in retained
+                    if value.relationship_global_id == relationship_id
+                )
+                if not versions:
+                    raise ToolingReferenceUnavailable()
+                previous = max(
+                    versions,
+                    key=lambda value: value.applicability_version,
+                )
+                if previous.applicability_version != expected_version:
+                    raise ToolingVersionConflict()
+            elif expected_version is not None:
                 raise ToolingVersionConflict()
-        elif expected_version is not None:
-            raise ToolingVersionConflict()
-        now = self._now()
-        applicability = ToolingApplicability(
-            global_id=self._new_uuid(),
-            relationship_global_id=relationship_id or self._new_uuid(),
-            tenant_id=str(project.tenant_id),
-            project_global_id=project_id,
-            tooling_master_global_id=tooling_master_id,
-            part_global_id=part_id,
-            part_revision_global_id=part_revision_id,
-            product_source_system=(product or {}).get("sourceSystem"),
-            product_source_object_id=(product or {}).get("sourceObjectId"),
-            model_source_system=(model or {}).get("sourceSystem"),
-            model_source_object_id=(model or {}).get("sourceObjectId"),
-            applicability_version=(
-                previous.applicability_version + 1 if previous is not None else 1
-            ),
-            predecessor_global_id=(previous.global_id if previous is not None else None),
-            predecessor_snapshot_hash=(
-                previous.snapshot_hash if previous is not None else None
-            ),
-            effective_from=effective_from,
-            effective_to=effective_to,
-            reason=reason,
-            created_by_user_id=self.actor,
-            created_at=now,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-        )
-        try:
-            if previous is not None:
-                validate_applicability_successor(previous, applicability)
-            elif any(
-                value.relationship_key_hash == applicability.relationship_key_hash
-                for value in retained
-            ):
-                raise ToolingApplicabilityConflict()
-            ensure_no_effectivity_overlap(applicability, retained)
-        except RequestValidationFailed as error:
-            raise ToolingApplicabilityConflict() from error
-        with tooling_command_write():
-            receipt = self._insert_receipt(
-                project,
-                receipt_key=receipt_key,
-                operation="tooling_applicability.create",
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                now=now,
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_DOMAIN_BUILD"
+        ):
+            now = self._now()
+            applicability = ToolingApplicability(
+                global_id=self._new_uuid(),
+                relationship_global_id=relationship_id or self._new_uuid(),
+                tenant_id=str(project.tenant_id),
+                project_global_id=project_id,
+                tooling_master_global_id=tooling_master_id,
+                part_global_id=part_id,
+                part_revision_global_id=part_revision_id,
+                product_source_system=(product or {}).get("sourceSystem"),
+                product_source_object_id=(product or {}).get("sourceObjectId"),
+                model_source_system=(model or {}).get("sourceSystem"),
+                model_source_object_id=(model or {}).get("sourceObjectId"),
+                applicability_version=(
+                    previous.applicability_version + 1
+                    if previous is not None
+                    else 1
+                ),
+                predecessor_global_id=(
+                    previous.global_id if previous is not None else None
+                ),
+                predecessor_snapshot_hash=(
+                    previous.snapshot_hash if previous is not None else None
+                ),
+                effective_from=effective_from,
+                effective_to=effective_to,
+                reason=reason,
+                created_by_user_id=self.actor,
+                created_at=now,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
             )
+        with applicability_create_server_step(
+            "P601_APPLICABILITY_CREATE_DOMAIN_VALIDATE"
+        ):
             try:
-                self._insert_applicability(applicability)
-            except (frappe.DuplicateEntryError, frappe.UniqueValidationError) as error:
+                if previous is not None:
+                    validate_applicability_successor(previous, applicability)
+                elif any(
+                    value.relationship_key_hash == applicability.relationship_key_hash
+                    for value in retained
+                ):
+                    raise ToolingApplicabilityConflict()
+                ensure_no_effectivity_overlap(applicability, retained)
+            except RequestValidationFailed as error:
                 raise ToolingApplicabilityConflict() from error
-            self._append_audit(
-                operation="tooling_applicability.create",
-                global_id=applicability.global_id,
-                object_version=applicability.applicability_version,
-                summary={
-                    "projectId": str(project_id),
-                    "relationshipId": str(applicability.relationship_global_id),
-                    "requestId": self.request_id,
-                },
-            )
-            response = self._cockpit_for(project)
-            self._seal_receipt(
-                receipt,
-                target_type="tooling_applicability",
-                target_id=applicability.global_id,
-                response=response,
-                now=now,
-            )
+        with tooling_command_write():
+            with applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_RECEIPT_INSERT"
+            ):
+                receipt = self._insert_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    operation="tooling_applicability.create",
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_RELATIONSHIP_INSERT"
+            ):
+                try:
+                    self._insert_applicability(applicability)
+                except (
+                    frappe.DuplicateEntryError,
+                    frappe.UniqueValidationError,
+                ) as error:
+                    raise ToolingApplicabilityConflict() from error
+            with applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_AUDIT_APPEND"
+            ):
+                self._append_audit(
+                    operation="tooling_applicability.create",
+                    global_id=applicability.global_id,
+                    object_version=applicability.applicability_version,
+                    summary={
+                        "projectId": str(project_id),
+                        "relationshipId": str(applicability.relationship_global_id),
+                        "requestId": self.request_id,
+                    },
+                )
+            with applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_RESPONSE_BUILD"
+            ):
+                response = self._cockpit_for(project)
+            with applicability_create_server_step(
+                "P601_APPLICABILITY_CREATE_RECEIPT_SEAL"
+            ):
+                self._seal_receipt(
+                    receipt,
+                    target_type="tooling_applicability",
+                    target_id=applicability.global_id,
+                    response=response,
+                    now=now,
+                )
         return ToolingCommandOutcome(response)
 
     def _cockpit_for(self, project: object) -> dict[str, Any]:
