@@ -147,7 +147,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         with patch.object(
             module.document_runtime,
             "command_headers",
-            return_value=headers,
+            side_effect=lambda *_values: dict(headers),
         ), patch.object(
             module.document_runtime,
             "request",
@@ -169,6 +169,33 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             headers,
         )
         self.assertNotIn("X-NPI-Diagnostic-Scope", headers)
+
+        with patch.object(
+            module.document_runtime,
+            "command_headers",
+            side_effect=lambda *_values: dict(headers),
+        ), patch.object(
+            module.document_runtime,
+            "request",
+            return_value=raw,
+        ) as diagnostic_request:
+            module.tooling_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/parts",
+                method="POST",
+                payload={"title": "Part"},
+                csrf_token=headers["X-Frappe-CSRF-Token"],
+                idempotency_key=headers["Idempotency-Key"],
+                part_create_diagnostic=True,
+            )
+        self.assertEqual(
+            diagnostic_request.call_args.kwargs["request_headers"].get(
+                "X-NPI-Diagnostic-Scope"
+            ),
+            "p601-part-create-v1",
+        )
+        self.assertTrue(module.PART_CREATE_DIAGNOSTICS_ENABLED)
 
     def test_fresh_proves_reuse_replay_conflict_rollback_idor_and_history(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]

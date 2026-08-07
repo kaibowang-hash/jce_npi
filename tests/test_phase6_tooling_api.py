@@ -6,6 +6,7 @@ import sys
 import types
 import unittest
 from typing import Any
+from unittest.mock import patch
 
 
 sys.path.insert(0, "apps/npi_core")
@@ -93,6 +94,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
         "frappe.sessions",
         "npi_core.api",
         "npi_core.request_security",
+        "npi_core.tooling.diagnostics",
         "npi_core.tooling_api",
         "npi_core.bff",
     )
@@ -105,7 +107,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             "Idempotency-Key": "p6-tooling-command-0001",
             "X-Frappe-CSRF-Token": "csrf-" + "a" * 48,
             "X-Request-ID": REQUEST_ID,
-            "X-Trace-ID": "trace-phase6-tooling-api",
+            "X-Trace-ID": "trace-" + "a" * 32,
         }
         self.roles = {
             "admin@example.invalid": ["System Manager"],
@@ -301,6 +303,39 @@ class Phase6ToolingApiTest(unittest.TestCase):
         self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
         self.assertEqual(self.frappe.local.response.http_status_code, 500)
         self.assertEqual(self.frappe.db.rollback_count, 2)
+
+    def test_part_create_diagnostic_is_header_gated_response_neutral_and_sanitized(
+        self,
+    ) -> None:
+        payload = {
+            "title": "Front housing",
+            "revisionLabel": "A",
+            "reason": "Initial engineering release",
+        }
+        self.repository.failure = RuntimeError("sensitive synthetic detail")
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            result = self.call(self.api.create_engineering_part, payload)
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        self.assertEqual(
+            [call.kwargs["code"] for call in record.call_args_list],
+            ["UNEXPECTED_BFF_EXCEPTION"],
+        )
+
+        self.headers["X-NPI-Diagnostic-Scope"] = "p601-part-create-v1"
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            diagnostic_result = self.call(self.api.create_engineering_part, payload)
+        self.assertEqual(diagnostic_result, result)
+        record.assert_any_call(
+            code="P601_PART_CREATE_API_RESPONSE",
+            title="NPI Part create substage failed",
+            exception_type="RuntimeError",
+            trace_id=self.headers["X-Trace-ID"],
+        )
+        self.assertEqual(
+            [call.kwargs["code"] for call in record.call_args_list],
+            ["P601_PART_CREATE_API_RESPONSE", "UNEXPECTED_BFF_EXCEPTION"],
+        )
+        self.assertNotIn("sensitive synthetic detail", str(record.call_args))
 
 
 if __name__ == "__main__":

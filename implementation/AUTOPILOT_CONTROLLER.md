@@ -915,3 +915,22 @@ repeat or rewrite it merely to restore context. See
   route-disable proof. Its verifier/workflow changes require affected checks
   and complete ordinary CI before dispatch. Exact lifecycle policy and every
   P6-02-through-P6-08 behavior remain inactive.
+
+## 2026-08-07 P6-01 controlled runtime diagnostic
+
+- Runtime-verifier checkpoint `42e2435` passed complete ordinary CI
+  `31186227371`; repository `92891339039` and visual `92891338846` at `73/73`
+  passed while controlled runtime correctly skipped.
+- Controlled workflow `31186957232` retained that exact SHA. Repository
+  `92893817844`, visual `92893817888`, pinned Bench, disposable Site,
+  migrations and the cumulative P5 runtime passed. Controlled job
+  `92893817778` then reached the first P6-01 `part.create`, which returned
+  non-201; the diagnostics-closed verifier exposed no status-specific or
+  substage root.
+- Standing recovery authority activates one response-neutral Part-create
+  diagnostic cycle: one allowlisted substage code, validated exception type
+  and exact trace ID for only the first affected request; affected/full
+  ordinary CI; at most one diagnostic Site; one repair only for the uniquely
+  proved root; diagnostic closure; affected/full ordinary CI; and one final
+  unchanged Gate. Counters are diagnostic `0/1`, repair `0/1`, final Gate
+  `0/1`. This is `IN_PROGRESS_DIAGNOSTIC`, not a Hard Blocker.

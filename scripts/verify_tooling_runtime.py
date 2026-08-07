@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -59,6 +60,29 @@ SHARED_APPLICABILITY_KEY = (
     f"p6-01-runtime-r1-{FIXTURE_RUN_ID}-shared-applicability"
 )
 PREDECESSOR_ROUTE_QUERY = "p601-predecessor-route-isolation"
+PART_CREATE_DIAGNOSTICS_ENABLED = True
+_PART_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_PART_CREATE_DIAGNOSTIC_SCOPE = "p601-part-create-v1"
+_PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
+_PART_CREATE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P601_PART_CREATE_COMMAND_CONTEXT",
+        "P601_PART_CREATE_INPUT_PARSE",
+        "P601_PART_CREATE_PROJECT_LOCK",
+        "P601_PART_CREATE_IDEMPOTENCY_CONTEXT",
+        "P601_PART_CREATE_DOMAIN_BUILD",
+        "P601_PART_CREATE_RECEIPT_INSERT",
+        "P601_PART_CREATE_ROOT_INSERT",
+        "P601_PART_CREATE_REVISION_INSERT",
+        "P601_PART_CREATE_ROOT_POINTER_SAVE",
+        "P601_PART_CREATE_AUDIT_APPEND",
+        "P601_PART_CREATE_RESPONSE_BUILD",
+        "P601_PART_CREATE_RECEIPT_SEAL",
+        "P601_PART_CREATE_API_RESPONSE",
+    }
+)
+_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
 
 TOOLING_DOCTYPES = (
     "NPI Engineering Part",
@@ -84,12 +108,19 @@ def tooling_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    part_create_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else document_runtime.query_headers(f"p601-{query_key}")
     )
+    if part_create_diagnostic:
+        require(
+            method == "POST" and idempotency_key is not None,
+            "The P6-01 Part-create diagnostic requires one command request",
+        )
+        headers[_PART_CREATE_DIAGNOSTIC_HEADER] = _PART_CREATE_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -122,6 +153,8 @@ def command(
     path: str,
     payload: dict[str, object],
     key: str,
+    *,
+    part_create_diagnostic: bool = False,
 ) -> HttpResult:
     result = tooling_request(
         opener,
@@ -131,13 +164,81 @@ def command(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
+        part_create_diagnostic=part_create_diagnostic,
     )
+    if result.status != 201 and part_create_diagnostic:
+        diagnostic = _sanitized_part_create_server_diagnostic(result.trace_id)
+        if diagnostic is not None:
+            exception_type, code, trace_id = diagnostic
+            raise RuntimeError(
+                f"[diagnostic_code={code}; exception_type={exception_type}; "
+                f"trace_id={trace_id}]"
+            )
     require(result.status == 201, f"P6-01 command {key} did not return HTTP 201")
     require(
         result.headers.get("Idempotency-Replayed") in {"true", "false"},
         "P6-01 replay header is invalid",
     )
     return result
+
+
+def _sanitized_part_create_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    """Read only one allowlisted P6-01 server record for the exact trace."""
+
+    if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    candidates = (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                continue
+            with resolved.open("rb") as log_file:
+                log_file.seek(0, os.SEEK_END)
+                size = log_file.tell()
+                log_file.seek(max(0, size - _PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_PART_CREATE_DIAGNOSTIC_LOG_TAIL_LIMIT)
+        except (OSError, RuntimeError):
+            continue
+        for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
+            if trace_id not in line:
+                continue
+            for start, character in enumerate(line):
+                if character != "{":
+                    continue
+                try:
+                    record, _end = decoder.raw_decode(line[start:])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(record, dict) or set(record) != {
+                    "code",
+                    "exceptionType",
+                    "traceId",
+                }:
+                    continue
+                code = record.get("code")
+                exception_type = record.get("exceptionType")
+                if (
+                    record.get("traceId") == trace_id
+                    and isinstance(code, str)
+                    and code in _PART_CREATE_DIAGNOSTIC_CODES
+                    and isinstance(exception_type, str)
+                    and _TYPE_PATTERN.fullmatch(exception_type) is not None
+                ):
+                    return exception_type, code, trace_id
+    return None
 
 
 def assert_workspace(
@@ -558,6 +659,7 @@ def run_fresh(
         f"/api/npi/v1/projects/{first_project_id}/parts",
         first_part_payload,
         PART_ONE_KEY,
+        part_create_diagnostic=PART_CREATE_DIAGNOSTICS_ENABLED,
     )
     require(
         created_part.headers.get("Idempotency-Replayed") == "false",

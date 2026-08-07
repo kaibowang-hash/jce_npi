@@ -1,34 +1,34 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T13:42:12Z`
+Updated: `2026-08-07T14:32:07Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-01 TOOLING`
+- Mode: `IN_PROGRESS_DIAGNOSTIC — P6-01 PART CREATE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `1f11f3c3e88085e0615aaf3d08be397d29a7525e` (pushed; P6-01 live
-  cockpit and artifact-proved fixed-Linux visual checkpoint)
+  `42e24354effd1da9c2a5b8b3d17139c828696865` (pushed; P6-01 cumulative
+  controlled-runtime verifier, diagnostics closed)
 - Latest completed controller/evidence checkpoint before this update:
   `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
   exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31183116349` (`PASS`, exact SHA `1f11f3c`; repository `92880986264`,
-  `311/311` E2E and Gitleaks/history passed; fixed-Linux visual
-  `92880986015` passed `73/73`; controlled runtime `92880986862` correctly
-  skipped)
+  `31186227371` (`PASS`, exact SHA `42e2435`; repository `92891339039`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92891338846`
+  passed `73/73`; controlled runtime `92891340007` correctly skipped)
 - Latest controlled-Site run:
-  `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
-  closed; repository `92821257912`, controlled `92821257859`, visual
-  `92821257937` passed `68/68`)
+  `31186957232` (`FAIL`, exact SHA `42e2435`, diagnostics closed; repository
+  `92893817844` and visual `92893817888` passed; controlled `92893817778`
+  passed pinned Bench, Site, migration and retained P5 runtime, then the first
+  P6-01 Part command returned non-201 without a unique root)
 - Controlled PASS artifact:
   `8988384460`, GitHub SHA-256
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
+  (`IN_PROGRESS_DIAGNOSTIC — PART CREATE`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
@@ -100,6 +100,16 @@ rollback/IDOR/route-disable proof, followed by complete ordinary CI and the
 P6-01 Level 2 Task Gate. No lifecycle, numbering, physical Set, Tooling
 Revision, Trial, mapping, adapter, ERPNext endpoint, credential or production
 default may be added.
+
+Checkpoint `42e2435` passed complete ordinary CI `31186227371`. Controlled
+workflow `31186957232` proved the fixed environment, migration and cumulative
+P5 predecessor, but the first P6-01 Part command returned non-201 and the
+closed verifier exposed no safe unique root. The active atomic substage is one
+header-gated, response-neutral Part-create diagnostic. It may emit only an
+allowlisted stage code, validated exception type and exact trace ID. Affected
+and full ordinary CI precede the one diagnostic Site; only its uniquely proved
+root may be repaired before diagnostics are closed and the unchanged Gate is
+repeated.
 
 ## Retained P5-04 recovery history
 

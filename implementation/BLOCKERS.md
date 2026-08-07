@@ -1,25 +1,30 @@
 # Blockers
 
-Updated: `2026-08-07T13:42:12Z`
+Updated: `2026-08-07T14:32:07Z`
 
 ## Active hard blockers
 
-None. P6-01 checkpoint 3 passed complete ordinary CI `31183116349` at exact
-stable checkpoint `1f11f3c`, including repository, `311/311` E2E, both secret
-lanes and `73/73` fixed-Linux visuals. No user action or external
-authorization is required for the controlled-runtime checkpoint.
+None. Exact P6-01 runtime-verifier checkpoint `42e2435` passed complete ordinary
+CI `31186227371`: repository `92891339039`, visual `92891338846` at `73/73`,
+and the controlled job correctly skipped. Controlled workflow `31186957232`
+then passed repository `92893817844`, visual `92893817888`, pinned Bench, Site,
+migration and every retained P5 runtime before the first P6-01 `part.create`
+returned a non-201 response. This is an opaque technical failure with a safe
+in-scope diagnostic action, not a Hard Blocker and requires no user action.
 
 ## Active recovery
 
-`P6-01-CONTROLLED-RUNTIME` — active, not blocked. It is limited to extending
-the existing disposable-Site verifier/workflow scope for additive migration,
-distinct create/shared-Master reuse, immutable revision/applicability,
-actor-bound replay/conflict, rollback/audit, same-tenant/IDOR and independent
-route-disable/recovery proof. Complete ordinary CI is required before a
-controlled Site. `DR-REC-010` continues to hold exact production lifecycle
-states, transitions and authority, so no lifecycle field, command or
-production default may be installed. That scoped hold does not block this
-checkpoint.
+`P6-01-PART-CREATE-DIAGNOSTIC` — `IN_PROGRESS_DIAGNOSTIC`, not blocked.
+Standing recovery authority opens one response-neutral diagnostic cycle with
+counters diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged Gate
+`0/1`. The checkpoint records only one allowlisted Part-create substage code,
+validated exception type and exact trace ID for the first affected request;
+the safe public response and transaction are unchanged. Affected and complete
+ordinary CI must pass before the one diagnostic Site. Only its uniquely proved
+root may be repaired, diagnostics must then close, and complete ordinary CI
+must pass before the final unchanged Gate. `DR-REC-010` and every Requirement,
+API, permission, Schema intent, ownership, transaction, idempotency, audit,
+baseline, threshold and PASS rule remain frozen.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

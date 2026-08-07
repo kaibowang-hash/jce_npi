@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CONTROLLED_RUNTIME — P6-01 TOOLING`
+`IN_PROGRESS_DIAGNOSTIC — P6-01 PART CREATE`
 
-Recovery time: `2026-08-07T13:42:12Z`
+Recovery time: `2026-08-07T14:32:07Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`1f11f3c3e88085e0615aaf3d08be397d29a7525e`
+`42e24354effd1da9c2a5b8b3d17139c828696865`
 
 ## Current authoritative action
 
@@ -76,6 +76,16 @@ at `73/73`; controlled runtime `92880986862` correctly skipped. Evidence is
 The next unfinished checkpoint is:
 
 `P6-01 checkpoint 4 — controlled runtime and Level 2 Task Gate`
+
+Runtime-verifier commit `42e2435` passed complete ordinary CI `31186227371`.
+The first controlled workflow `31186957232` passed every predecessor and Site
+boundary, then returned only that the first P6-01 Part command was non-201.
+Because the public response did not identify a unique root, standing authority
+activates one closed response-neutral Part-create substage diagnostic. The
+immediate action is affected/full ordinary CI for that diagnostic checkpoint,
+followed by at most one diagnostic Site, repair of only its uniquely proved
+root, diagnostic closure, affected/full ordinary CI and one final unchanged
+Gate.
 
 Implement only:
 

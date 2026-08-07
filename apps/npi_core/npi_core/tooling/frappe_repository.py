@@ -28,6 +28,7 @@ from npi_core.tooling.domain import (
     validate_applicability_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
+from npi_core.tooling.diagnostics import part_create_server_step
 
 
 _MAX_MASTERS = 200
@@ -119,7 +120,8 @@ class FrappeToolingRepository(FrappeDocumentRepository):
         revision_label: str,
         reason: str,
     ) -> ToolingCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with part_create_server_step("P601_PART_CREATE_PROJECT_LOCK"):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
         payload = {
@@ -127,79 +129,88 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             "revisionLabel": revision_label,
             "reason": reason,
         }
-        context = self._command_context(
-            project,
-            operation="part.create",
-            idempotency_key_hash=idempotency_key_hash,
-            payload=payload,
-        )
+        with part_create_server_step("P601_PART_CREATE_IDEMPOTENCY_CONTEXT"):
+            context = self._command_context(
+                project,
+                operation="part.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload=payload,
+            )
         if isinstance(context, dict):
             return ToolingCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
         now = self._now()
         part_id = self._new_uuid()
-        revision = EngineeringPartRevision(
-            global_id=self._new_uuid(),
-            part_global_id=part_id,
-            tenant_id=str(project.tenant_id),
-            originating_project_global_id=project_id,
-            revision_number=1,
-            revision_label=revision_label,
-            title=title,
-            reason=reason,
-            predecessor_global_id=None,
-            predecessor_snapshot_hash=None,
-            created_by_user_id=self.actor,
-            created_at=now,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-        )
+        with part_create_server_step("P601_PART_CREATE_DOMAIN_BUILD"):
+            revision = EngineeringPartRevision(
+                global_id=self._new_uuid(),
+                part_global_id=part_id,
+                tenant_id=str(project.tenant_id),
+                originating_project_global_id=project_id,
+                revision_number=1,
+                revision_label=revision_label,
+                title=title,
+                reason=reason,
+                predecessor_global_id=None,
+                predecessor_snapshot_hash=None,
+                created_by_user_id=self.actor,
+                created_at=now,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+            )
         with tooling_command_write():
-            receipt = self._insert_receipt(
-                project,
-                receipt_key=receipt_key,
-                operation="part.create",
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                now=now,
-            )
-            root = frappe.get_doc(
-                {
-                    "doctype": "NPI Engineering Part",
-                    "global_id": str(part_id),
-                    "tenant_id": str(project.tenant_id),
-                    "originating_project_global_id": str(project_id),
-                    "title": title,
-                    "current_revision_global_id": None,
-                    "current_revision_number": None,
-                    "current_revision_snapshot_hash": None,
-                    "optimistic_version": 1,
-                }
-            ).insert()
-            self._insert_part_revision(revision)
-            root.current_revision_global_id = str(revision.global_id)
-            root.current_revision_number = revision.revision_number
-            root.current_revision_snapshot_hash = revision.snapshot_hash
-            root.title = revision.title
-            root.save()
-            self._append_audit(
-                operation="part.create",
-                global_id=part_id,
-                object_version=int(root.optimistic_version),
-                summary={
-                    "projectId": str(project_id),
-                    "revisionId": str(revision.global_id),
-                    "requestId": self.request_id,
-                },
-            )
-            response = self._cockpit_for(project)
-            self._seal_receipt(
-                receipt,
-                target_type="part",
-                target_id=part_id,
-                response=response,
-                now=now,
-            )
+            with part_create_server_step("P601_PART_CREATE_RECEIPT_INSERT"):
+                receipt = self._insert_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    operation="part.create",
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with part_create_server_step("P601_PART_CREATE_ROOT_INSERT"):
+                root = frappe.get_doc(
+                    {
+                        "doctype": "NPI Engineering Part",
+                        "global_id": str(part_id),
+                        "tenant_id": str(project.tenant_id),
+                        "originating_project_global_id": str(project_id),
+                        "title": title,
+                        "current_revision_global_id": None,
+                        "current_revision_number": None,
+                        "current_revision_snapshot_hash": None,
+                        "optimistic_version": 1,
+                    }
+                ).insert()
+            with part_create_server_step("P601_PART_CREATE_REVISION_INSERT"):
+                self._insert_part_revision(revision)
+            with part_create_server_step("P601_PART_CREATE_ROOT_POINTER_SAVE"):
+                root.current_revision_global_id = str(revision.global_id)
+                root.current_revision_number = revision.revision_number
+                root.current_revision_snapshot_hash = revision.snapshot_hash
+                root.title = revision.title
+                root.save()
+            with part_create_server_step("P601_PART_CREATE_AUDIT_APPEND"):
+                self._append_audit(
+                    operation="part.create",
+                    global_id=part_id,
+                    object_version=int(root.optimistic_version),
+                    summary={
+                        "projectId": str(project_id),
+                        "revisionId": str(revision.global_id),
+                        "requestId": self.request_id,
+                    },
+                )
+            with part_create_server_step("P601_PART_CREATE_RESPONSE_BUILD"):
+                response = self._cockpit_for(project)
+            with part_create_server_step("P601_PART_CREATE_RECEIPT_SEAL"):
+                self._seal_receipt(
+                    receipt,
+                    target_type="part",
+                    target_id=part_id,
+                    response=response,
+                    now=now,
+                )
         return ToolingCommandOutcome(response)
 
     def create_part_revision(
