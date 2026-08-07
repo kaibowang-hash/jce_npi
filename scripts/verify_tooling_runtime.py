@@ -59,6 +59,38 @@ PART_TWO_KEY = f"p6-01-runtime-r1-{FIXTURE_RUN_ID}-part-two"
 SHARED_APPLICABILITY_KEY = (
     f"p6-01-runtime-r1-{FIXTURE_RUN_ID}-shared-applicability"
 )
+CUSTOMER_INTAKE_REQUIREMENT_KEY = (
+    f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-customer-intake-requirement"
+)
+COPY_SET_REQUIREMENT_KEY = (
+    f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-copy-set-requirement"
+)
+SET_ONE_KEY = f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-set-one"
+SET_ONE_CONFLICT_KEY = SET_ONE_KEY
+SET_TWO_KEY = f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-set-two"
+INTAKE_ONE_KEY = f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-intake-one"
+INTAKE_STALE_KEY = f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-intake-stale"
+INTAKE_TWO_KEY = f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-intake-two"
+ARRIVAL_EVIDENCE_KEY = (
+    f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-arrival-evidence"
+)
+EVIDENCE_CONFLICT_KEY = (
+    f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-evidence-conflict"
+)
+CONFIRMATION_EVIDENCE_KEY = (
+    f"p6-02-runtime-r1-{FIXTURE_RUN_ID}-confirmation-evidence"
+)
+TOOLING_PHOTO_DOCUMENT_ID = document_runtime.fixture_request_id(
+    f"p6-02-{FIXTURE_RUN_ID}-arrival-photo-document"
+)
+TOOLING_PHOTO_FILE_REVISION_ID = document_runtime.fixture_request_id(
+    f"p6-02-{FIXTURE_RUN_ID}-arrival-photo-file"
+)
+TOOLING_ARRIVAL_PHOTO_CONTENT = bytes.fromhex(
+    "89504e470d0a1a0a0000000d4948445200000001000000010806000000"
+    "1f15c4890000000d4944415408d763f8ffff3f0005fe02fea73581a800"
+    "00000049454e44ae426082"
+)
 PREDECESSOR_ROUTE_QUERY = "p601-predecessor-route-isolation"
 PART_CREATE_DIAGNOSTICS_ENABLED = False
 APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED = False
@@ -112,12 +144,23 @@ TOOLING_DOCTYPES = (
     "NPI Tooling Requirement",
     "NPI Tooling Master",
     "NPI Tooling Applicability",
+    "NPI Tooling Set",
+    "NPI Tooling Intake",
+    "NPI Tooling Intake Evidence Reference",
     "NPI Tooling Command Idempotency",
 )
 
 
 def tooling_path(project_id: str, suffix: str = "") -> str:
     return f"/api/npi/v1/projects/{project_id}/tooling{suffix}"
+
+
+def tooling_set_path(
+    project_id: str,
+    master_id: str,
+    suffix: str = "",
+) -> str:
+    return tooling_path(project_id, f"/{master_id}/sets{suffix}")
 
 
 def tooling_request(
@@ -378,6 +421,296 @@ def applicability_payload(
     return value
 
 
+def fixture_uuid(label: str) -> str:
+    return document_runtime.fixture_request_id(
+        f"p6-02-{FIXTURE_RUN_ID}-{label}"
+    )
+
+
+def tooling_set_payload(
+    requirement_id: str,
+    physical_serial: str,
+    *,
+    customer_owned: bool,
+) -> dict[str, object]:
+    value: dict[str, object] = {
+        "toolingRequirementGlobalId": requirement_id,
+        "physicalSerial": physical_serial,
+        "custodyResponsibility": "NPI receiving cage under Quality custody.",
+        "repairAuthorizationReference": "Customer authorization is required before repair.",
+        "returnConditions": "Return with retained intake evidence and accessories.",
+    }
+    if customer_owned:
+        value["customer"] = {
+            "sourceSystem": "ERPNEXT",
+            "sourceObjectId": f"SYNTHETIC-{FIXTURE_RUN_ID[:16]}",
+        }
+    return value
+
+
+def tooling_intake_payload(
+    *,
+    expected_version: int | None = None,
+    corrected: bool = False,
+) -> dict[str, object]:
+    accessory_id = fixture_uuid("accessory-lifting-eye")
+    appearance_id = fixture_uuid("inspection-appearance")
+    inspections = [
+        {
+            "globalId": appearance_id,
+            "category": "appearance",
+            "observation": (
+                "Surface mark retained after customer handover."
+                if not corrected
+                else "Surface mark retained; corrected intake wording."
+            ),
+            "differenceObserved": True,
+        },
+        {
+            "globalId": fixture_uuid("inspection-water-circuit"),
+            "category": "water_circuit",
+            "observation": "Connections present; no visible leakage.",
+            "differenceObserved": False,
+        },
+        {
+            "globalId": fixture_uuid("inspection-hot-runner"),
+            "category": "hot_runner",
+            "observation": "Connector and cable count match handover.",
+            "differenceObserved": False,
+        },
+        {
+            "globalId": fixture_uuid("inspection-electrical"),
+            "category": "electrical",
+            "observation": "Electrical interfaces retained without damage.",
+            "differenceObserved": False,
+        },
+        {
+            "globalId": fixture_uuid("inspection-safety"),
+            "category": "safety",
+            "observation": "Lifting points are identified and accessible.",
+            "differenceObserved": False,
+        },
+    ]
+    value: dict[str, object] = {
+        "transportProvider": "Synthetic controlled carrier",
+        "transportReference": (
+            "P6-02-ARRIVAL-002" if corrected else "P6-02-ARRIVAL-001"
+        ),
+        "arrivedAt": "2026-08-07T08:30:00Z",
+        "custodyHandover": "Received by the internal Quality representative.",
+        "accessories": [
+            {
+                "globalId": accessory_id,
+                "description": "Lifting eye",
+                "declaredQuantity": 4,
+                "receivedQuantity": 3,
+                "unit": "pc",
+            }
+        ],
+        "inspections": inspections,
+        "differences": [
+            {
+                "globalId": fixture_uuid("difference-accessory"),
+                "sourceKind": "accessory",
+                "sourceGlobalId": accessory_id,
+                "description": "One declared lifting eye was not received.",
+                "customerConfirmationRequired": False,
+            },
+            {
+                "globalId": fixture_uuid("difference-appearance"),
+                "sourceKind": "inspection",
+                "sourceGlobalId": appearance_id,
+                "description": "Customer confirmation is required for the surface mark.",
+                "customerConfirmationRequired": True,
+            },
+        ],
+    }
+    if expected_version is not None:
+        value["expectedVersion"] = expected_version
+    return value
+
+
+def assert_tooling_set_summary(
+    value: object,
+    *,
+    project_id: str,
+    master_id: str,
+) -> dict[str, Any]:
+    require(isinstance(value, dict), "P6-02 Tooling Set summary is invalid")
+    require(
+        set(value)
+        == {
+            "globalId",
+            "projectGlobalId",
+            "toolingMasterGlobalId",
+            "toolingRequirementGlobalId",
+            "requirementKind",
+            "physicalSerial",
+            "customer",
+            "custodyResponsibility",
+            "repairAuthorizationReference",
+            "returnConditions",
+            "sourceRevision",
+            "supplier",
+            "lifecycle",
+            "erpLocationAndAsset",
+            "snapshotHash",
+        },
+        "P6-02 Tooling Set summary keys drifted",
+    )
+    global_id = value.get("globalId")
+    require(
+        isinstance(global_id, str)
+        and str(UUID(global_id)) == global_id
+        and value.get("projectGlobalId") == project_id
+        and value.get("toolingMasterGlobalId") == master_id
+        and value.get("requirementKind")
+        in {"customer_owned_intake", "copy_or_additional_set"}
+        and isinstance(value.get("snapshotHash"), str)
+        and len(str(value["snapshotHash"])) == 64,
+        "P6-02 Tooling Set identity or hash drifted",
+    )
+    expected_unavailable = {
+        "sourceRevision": "tooling_revision_not_delivered",
+        "supplier": "formal_supplier_unavailable",
+        "lifecycle": "lifecycle_policy_unavailable",
+        "erpLocationAndAsset": "erp_projection_unavailable",
+    }
+    require(
+        {
+            name: value.get(name, {}).get("reasonCode")
+            for name in expected_unavailable
+            if isinstance(value.get(name), dict)
+            and value[name].get("state") == "unavailable"
+        }
+        == expected_unavailable,
+        "P6-02 unavailable capability truth drifted",
+    )
+    require(
+        "fileUrl" not in json.dumps(value)
+        and "/private/files/" not in json.dumps(value),
+        "P6-02 Tooling Set summary exposed a private URL",
+    )
+    return value
+
+
+def assert_tooling_set_collection(
+    result: HttpResult,
+    *,
+    project_id: str,
+    master_id: str,
+    expected_count: int,
+) -> dict[str, Any]:
+    require(result.status in {200, 201}, "P6-02 Tooling Set collection failed")
+    require(
+        set(result.body) == {"toolingMasterGlobalId", "permissions", "items"}
+        and result.body.get("toolingMasterGlobalId") == master_id
+        and result.body.get("permissions")
+        == {
+            "view": True,
+            "createSet": True,
+            "createIntake": True,
+            "attachEvidence": True,
+            "transitionLifecycle": False,
+        },
+        "P6-02 Tooling Set collection capability truth drifted",
+    )
+    items = result.body.get("items")
+    require(
+        isinstance(items, list) and len(items) == expected_count,
+        "P6-02 Tooling Set collection cardinality drifted",
+    )
+    for item in items:
+        assert_tooling_set_summary(
+            item,
+            project_id=project_id,
+            master_id=master_id,
+        )
+    require(
+        len({item["globalId"] for item in items}) == len(items),
+        "P6-02 physical Tooling Sets collapsed into one identity",
+    )
+    return result.body
+
+
+def assert_tooling_set_detail(
+    result: HttpResult,
+    *,
+    project_id: str,
+    master_id: str,
+    set_id: str,
+    intake_count: int,
+    evidence_count: int,
+) -> dict[str, Any]:
+    require(result.status in {200, 201}, "P6-02 Tooling Set detail failed")
+    require(
+        set(result.body) == {"toolingSet", "permissions", "intakes", "evidence"},
+        "P6-02 Tooling Set detail keys drifted",
+    )
+    summary = assert_tooling_set_summary(
+        result.body.get("toolingSet"),
+        project_id=project_id,
+        master_id=master_id,
+    )
+    require(summary.get("globalId") == set_id, "P6-02 Tooling Set detail drifted")
+    intakes = result.body.get("intakes")
+    evidence = result.body.get("evidence")
+    require(
+        result.body.get("permissions")
+        == {
+            "view": True,
+            "createSet": True,
+            "createIntake": True,
+            "attachEvidence": True,
+            "transitionLifecycle": False,
+        }
+        and isinstance(intakes, list)
+        and len(intakes) == intake_count
+        and isinstance(evidence, list)
+        and len(evidence) == evidence_count,
+        "P6-02 Tooling Set detail capability or cardinality drifted",
+    )
+    for index, intake in enumerate(intakes):
+        require(
+            isinstance(intake, dict)
+            and intake.get("toolingSetGlobalId") == set_id
+            and intake.get("version") == index + 1
+            and len(intake.get("inspections", [])) == 5
+            and len({row["category"] for row in intake["inspections"]}) == 5
+            and isinstance(intake.get("snapshotHash"), str)
+            and len(intake["snapshotHash"]) == 64,
+            "P6-02 immutable Tooling Intake chain drifted",
+        )
+        if index:
+            require(
+                intake.get("predecessorGlobalId")
+                == intakes[index - 1].get("globalId"),
+                "P6-02 Tooling Intake predecessor drifted",
+            )
+    intake_by_id = {value.get("globalId"): value for value in intakes}
+    for reference in evidence:
+        require(
+            isinstance(reference, dict),
+            "P6-02 retained evidence response is invalid",
+        )
+        intake = intake_by_id.get(reference.get("toolingIntakeGlobalId"))
+        require(
+            intake is not None
+            and reference.get("intakeSnapshotHash") == intake.get("snapshotHash")
+            and reference.get("fileRevisionGlobalId")
+            == TOOLING_PHOTO_FILE_REVISION_ID
+            and isinstance(reference.get("sha256"), str)
+            and len(reference["sha256"]) == 64,
+            "P6-02 retained evidence identity drifted",
+        )
+    serialized = json.dumps(result.body)
+    require(
+        "fileUrl" not in serialized and "/private/files/" not in serialized,
+        "P6-02 Tooling Set detail exposed a private URL",
+    )
+    return result.body
+
+
 def exact_single(values: object, label: str) -> dict[str, Any]:
     require(
         isinstance(values, list)
@@ -457,6 +790,9 @@ def verify_persistence(
     second_project_id: str,
     master_id: str,
     first_revision_id: str,
+    first_set_id: str,
+    first_intake_id: str,
+    arrival_evidence_id: str,
 ) -> None:
     expected_counts = (
         (
@@ -471,8 +807,16 @@ def verify_persistence(
             first_project_id,
             2,
         ),
-        ("NPI Tooling Requirement", "project_global_id", first_project_id, 1),
+        ("NPI Tooling Requirement", "project_global_id", first_project_id, 3),
         ("NPI Tooling Applicability", "project_global_id", first_project_id, 2),
+        ("NPI Tooling Set", "project_global_id", first_project_id, 2),
+        ("NPI Tooling Intake", "project_global_id", first_project_id, 2),
+        (
+            "NPI Tooling Intake Evidence Reference",
+            "project_global_id",
+            first_project_id,
+            2,
+        ),
         (
             "NPI Engineering Part",
             "originating_project_global_id",
@@ -520,7 +864,7 @@ def verify_persistence(
         ],
     )
     require(
-        len(receipts) == 8
+        len(receipts) == 16
         and all(value.get("actor_user_id") == ACTOR_USER for value in receipts)
         and all(value.get("sealed") == 1 for value in receipts)
         and all(
@@ -540,9 +884,12 @@ def verify_persistence(
     expected_audits = {
         "part.create": 2,
         "part.revise": 1,
-        "tooling_requirement.create": 1,
+        "tooling_requirement.create": 3,
         "tooling_master.create": 1,
         "tooling_applicability.create": 3,
+        "tooling_set.create": 2,
+        "tooling_intake.create": 2,
+        "tooling_intake_evidence.create": 2,
     }
     audit_rows: list[dict[str, object]] = []
     for operation, expected in expected_audits.items():
@@ -603,6 +950,44 @@ def verify_persistence(
         and after.body.get("data", {}).get("snapshot_hash") == snapshot_hash,
         "P6-01 rejected mutation changed immutable Part Revision truth",
     )
+    immutable_rows = (
+        ("NPI Tooling Set", first_set_id),
+        ("NPI Tooling Intake", first_intake_id),
+        ("NPI Tooling Intake Evidence Reference", arrival_evidence_id),
+    )
+    for doctype, name in immutable_rows:
+        before = get_resource(administrator, base_url, doctype, name)
+        retained_hash = before.body.get("data", {}).get("snapshot_hash")
+        require(
+            before.status == 200
+            and isinstance(retained_hash, str)
+            and len(retained_hash) == 64,
+            f"P6-02 immutable {doctype} is unavailable",
+        )
+        rejected_update = update_resource(
+            administrator,
+            base_url,
+            doctype,
+            name,
+            {"snapshot_hash": "0" * 64},
+            csrf_token,
+        )
+        rejected_delete = delete_resource(
+            administrator,
+            base_url,
+            doctype,
+            name,
+            csrf_token,
+        )
+        retained = get_resource(administrator, base_url, doctype, name)
+        require(
+            rejected_update.status in {403, 417}
+            and rejected_delete.status in {403, 417}
+            and retained.status == 200
+            and retained.body.get("data", {}).get("snapshot_hash")
+            == retained_hash,
+            f"P6-02 immutable {doctype} accepted generic mutation",
+        )
     audit_name = str(audit_rows[0]["name"])
     audit_update = update_resource(
         administrator,
@@ -990,6 +1375,448 @@ def run_fresh(
         == master_id,
         "P6-01 shared Master detail is unavailable in its authorized Project",
     )
+
+    customer_requirement = command(
+        administrator,
+        base_url,
+        csrf_token,
+        f"/api/npi/v1/projects/{first_project_id}/tooling-requirements",
+        {
+            "kind": "customer_owned_intake",
+            "title": "Synthetic customer-owned Tooling intake",
+            "reason": "Retain exact ownership and physical Set identity.",
+            "targetPartRevisionGlobalId": revision_one_id,
+            "targetDate": "2027-01-20",
+        },
+        CUSTOMER_INTAKE_REQUIREMENT_KEY,
+    )
+    customer_workspace = assert_workspace(customer_requirement, first_project_id)
+    customer_requirement_value = exact_single(
+        [
+            value
+            for value in customer_workspace["requirements"]
+            if value.get("kind") == "customer_owned_intake"
+        ],
+        "customer-owned intake Requirement",
+    )
+    customer_requirement_id = str(customer_requirement_value["globalId"])
+    copy_requirement = command(
+        administrator,
+        base_url,
+        csrf_token,
+        f"/api/npi/v1/projects/{first_project_id}/tooling-requirements",
+        {
+            "kind": "copy_or_additional_set",
+            "title": "Synthetic additional physical Tooling Set",
+            "reason": "Prove independent physical identity without quantity collapse.",
+            "targetPartRevisionGlobalId": revision_one_id,
+            "targetDate": "2027-01-21",
+        },
+        COPY_SET_REQUIREMENT_KEY,
+    )
+    copy_workspace = assert_workspace(copy_requirement, first_project_id)
+    copy_requirement_value = exact_single(
+        [
+            value
+            for value in copy_workspace["requirements"]
+            if value.get("kind") == "copy_or_additional_set"
+        ],
+        "copy or additional Set Requirement",
+    )
+    copy_requirement_id = str(copy_requirement_value["globalId"])
+
+    photo = run_bench_fixture(
+        "seed_tooling_arrival_photo",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": first_project_id,
+        },
+    )
+    require(
+        photo.get("fileRevisionId") == TOOLING_PHOTO_FILE_REVISION_ID
+        and photo.get("mimeType") == "image/png"
+        and photo.get("scanState") == "clean"
+        and photo.get("private") is True,
+        "P6-02 clean private arrival-photo fixture drifted",
+    )
+
+    empty_sets = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id),
+        query_key="p602-q0",
+    )
+    assert_tooling_set_collection(
+        empty_sets,
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=0,
+    )
+    first_set_payload = tooling_set_payload(
+        customer_requirement_id,
+        "P6-02-PHYSICAL-001",
+        customer_owned=True,
+    )
+    first_set_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id),
+        first_set_payload,
+        SET_ONE_KEY,
+    )
+    first_set_collection = assert_tooling_set_collection(
+        first_set_result,
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=1,
+    )
+    first_set = exact_single(first_set_collection["items"], "first physical Set")
+    first_set_id = str(first_set["globalId"])
+    require(
+        first_set.get("customer")
+        == {
+            "sourceSystem": "ERPNEXT",
+            "sourceObjectId": f"SYNTHETIC-{FIXTURE_RUN_ID[:16]}",
+        },
+        "P6-02 customer-owned Set lost its exact Project customer reference",
+    )
+    first_set_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id),
+        first_set_payload,
+        SET_ONE_KEY,
+    )
+    require(
+        first_set_replay.headers.get("Idempotency-Replayed") == "true"
+        and first_set_replay.body == first_set_result.body,
+        "P6-02 exact physical Set replay changed response truth",
+    )
+    conflicting_set_payload = dict(first_set_payload)
+    conflicting_set_payload["physicalSerial"] = "P6-02-DIFFERENT-INTENT"
+    set_conflict = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id),
+        method="POST",
+        payload=conflicting_set_payload,
+        csrf_token=csrf_token,
+        idempotency_key=SET_ONE_CONFLICT_KEY,
+    )
+    validate_problem(set_conflict, 409, "TOOLING_IDEMPOTENCY_CONFLICT")
+    after_set_conflict = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id),
+        query_key="p602-q1",
+    )
+    assert_tooling_set_collection(
+        after_set_conflict,
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=1,
+    )
+
+    second_set_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id),
+        tooling_set_payload(
+            copy_requirement_id,
+            "P6-02-PHYSICAL-002",
+            customer_owned=False,
+        ),
+        SET_TWO_KEY,
+    )
+    two_sets = assert_tooling_set_collection(
+        second_set_result,
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=2,
+    )
+    require(
+        {value["physicalSerial"] for value in two_sets["items"]}
+        == {"P6-02-PHYSICAL-001", "P6-02-PHYSICAL-002"},
+        "P6-02 independent physical serial truth drifted",
+    )
+    second_project_sets = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(second_project_id, master_id),
+        query_key="p602-q2",
+    )
+    assert_tooling_set_collection(
+        second_project_sets,
+        project_id=second_project_id,
+        master_id=master_id,
+        expected_count=0,
+    )
+
+    initial_intake_payload = tooling_intake_payload()
+    initial_intake_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}/intakes"),
+        initial_intake_payload,
+        INTAKE_ONE_KEY,
+    )
+    initial_detail = assert_tooling_set_detail(
+        initial_intake_result,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=1,
+        evidence_count=0,
+    )
+    first_intake = exact_single(initial_detail["intakes"], "initial Tooling Intake")
+    first_intake_id = str(first_intake["globalId"])
+    first_intake_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}/intakes"),
+        initial_intake_payload,
+        INTAKE_ONE_KEY,
+    )
+    require(
+        first_intake_replay.headers.get("Idempotency-Replayed") == "true"
+        and first_intake_replay.body == initial_intake_result.body,
+        "P6-02 exact intake replay changed response truth",
+    )
+    stale_intake_payload = tooling_intake_payload(
+        expected_version=99,
+        corrected=True,
+    )
+    stale_intake = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}/intakes"),
+        method="POST",
+        payload=stale_intake_payload,
+        csrf_token=csrf_token,
+        idempotency_key=INTAKE_STALE_KEY,
+    )
+    validate_problem(stale_intake, 409, "TOOLING_INTAKE_VERSION_CONFLICT")
+    after_stale_intake = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}"),
+        query_key="p602-q3",
+    )
+    assert_tooling_set_detail(
+        after_stale_intake,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=1,
+        evidence_count=0,
+    )
+    successor_intake = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}/intakes"),
+        tooling_intake_payload(expected_version=1, corrected=True),
+        INTAKE_TWO_KEY,
+    )
+    successor_detail = assert_tooling_set_detail(
+        successor_intake,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=2,
+        evidence_count=0,
+    )
+    require(
+        successor_detail["intakes"][1].get("predecessorGlobalId")
+        == first_intake_id,
+        "P6-02 intake successor does not retain its exact predecessor",
+    )
+
+    evidence_path = tooling_set_path(
+        first_project_id,
+        master_id,
+        f"/{first_set_id}/intakes/{first_intake_id}/evidence",
+    )
+    arrival_payload = {
+        "evidenceRole": "arrival_photo",
+        "differenceGlobalIds": [],
+        "fileRevisionGlobalId": TOOLING_PHOTO_FILE_REVISION_ID,
+    }
+    arrival_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        evidence_path,
+        arrival_payload,
+        ARRIVAL_EVIDENCE_KEY,
+    )
+    arrival_detail = assert_tooling_set_detail(
+        arrival_result,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=2,
+        evidence_count=1,
+    )
+    arrival_reference = exact_single(
+        [
+            value
+            for value in arrival_detail["evidence"]
+            if value.get("evidenceRole") == "arrival_photo"
+        ],
+        "arrival photo evidence",
+    )
+    arrival_evidence_id = str(arrival_reference["globalId"])
+    arrival_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        evidence_path,
+        arrival_payload,
+        ARRIVAL_EVIDENCE_KEY,
+    )
+    require(
+        arrival_replay.headers.get("Idempotency-Replayed") == "true"
+        and arrival_replay.body == arrival_result.body,
+        "P6-02 exact arrival-photo replay changed response truth",
+    )
+    duplicate_evidence = tooling_request(
+        administrator,
+        base_url,
+        evidence_path,
+        method="POST",
+        payload=arrival_payload,
+        csrf_token=csrf_token,
+        idempotency_key=EVIDENCE_CONFLICT_KEY,
+    )
+    validate_problem(duplicate_evidence, 409, "TOOLING_EVIDENCE_CONFLICT")
+    after_evidence_conflict = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}"),
+        query_key="p602-q4",
+    )
+    assert_tooling_set_detail(
+        after_evidence_conflict,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=2,
+        evidence_count=1,
+    )
+    confirmation_difference_id = fixture_uuid("difference-appearance")
+    confirmation_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        evidence_path,
+        {
+            "evidenceRole": "customer_confirmation",
+            "differenceGlobalIds": [confirmation_difference_id],
+            "fileRevisionGlobalId": TOOLING_PHOTO_FILE_REVISION_ID,
+        },
+        CONFIRMATION_EVIDENCE_KEY,
+    )
+    confirmed_detail = assert_tooling_set_detail(
+        confirmation_result,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=2,
+        evidence_count=2,
+    )
+    confirmation = exact_single(
+        [
+            value
+            for value in confirmed_detail["evidence"]
+            if value.get("evidenceRole") == "customer_confirmation"
+        ],
+        "customer confirmation evidence",
+    )
+    require(
+        confirmation.get("differenceGlobalIds") == [confirmation_difference_id],
+        "P6-02 customer confirmation lost its exact difference scope",
+    )
+
+    document_runtime.create_internal_fixture_user(
+        administrator,
+        base_url,
+        UNRELATED_USER,
+        fixture_password,
+        csrf_token,
+    )
+    try:
+        unrelated = login(base_url, UNRELATED_USER, fixture_password)
+        denied_set = tooling_request(
+            unrelated,
+            base_url,
+            tooling_set_path(first_project_id, master_id, f"/{first_set_id}"),
+            query_key="p602-q5",
+        )
+        absent_set = tooling_request(
+            unrelated,
+            base_url,
+            tooling_set_path(
+                "00000000-0000-4000-8000-000000000001",
+                "00000000-0000-4000-8000-000000000002",
+                "/00000000-0000-4000-8000-000000000003",
+            ),
+            query_key="p602-q6",
+        )
+        validate_problem(denied_set, 404, "TOOLING_UNAVAILABLE")
+        validate_problem(absent_set, 404, "TOOLING_UNAVAILABLE")
+        require(
+            {
+                key: denied_set.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            }
+            == {
+                key: absent_set.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            },
+            "P6-02 unauthorized and absent Set identities are distinguishable",
+        )
+    finally:
+        delete_disposable_user(
+            administrator,
+            base_url,
+            UNRELATED_USER,
+            csrf_token,
+        )
+    cross_project_set = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(second_project_id, master_id, f"/{first_set_id}"),
+        query_key="p602-q7",
+    )
+    absent_authorized_set = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(
+            first_project_id,
+            master_id,
+            "/00000000-0000-4000-8000-000000000004",
+        ),
+        query_key="p602-q8",
+    )
+    validate_problem(cross_project_set, 404, "TOOLING_UNAVAILABLE")
+    validate_problem(absent_authorized_set, 404, "TOOLING_UNAVAILABLE")
+    require(
+        {
+            key: cross_project_set.body.get(key)
+            for key in ("type", "title", "status", "code", "retryable")
+        }
+        == {
+            key: absent_authorized_set.body.get(key)
+            for key in ("type", "title", "status", "code", "retryable")
+        },
+        "P6-02 cross-Project and absent Sets are distinguishable",
+    )
     verify_persistence(
         administrator,
         base_url,
@@ -998,15 +1825,21 @@ def run_fresh(
         second_project_id=second_project_id,
         master_id=master_id,
         first_revision_id=revision_one_id,
+        first_set_id=first_set_id,
+        first_intake_id=first_intake_id,
+        arrival_evidence_id=arrival_evidence_id,
     )
     return {
-        "appendOnlyAudits": 8,
+        "appendOnlyAudits": 16,
         "crossProcessReplayReady": True,
         "fixtureRunId": FIXTURE_RUN_ID,
         "immutablePartRevisions": 3,
+        "immutableToolingIntakes": 2,
         "metadataSynchronized": schema.get("metadataSynchronized"),
+        "physicalToolingSets": 2,
         "projectApplicabilities": 3,
         "projects": 2,
+        "retainedEvidenceReferences": 2,
         "rollbackVerified": True,
         "sharedMasterCount": 1,
     }
@@ -1019,14 +1852,29 @@ def route_disable_probe(
     expected_mode: str,
 ) -> None:
     project_id, _version = document_runtime.fixture_project(administrator, base_url)
+    master_rows = rows(
+        administrator,
+        base_url,
+        "NPI Tooling Master",
+        [["tenant_id", "=", TENANT_ID]],
+        ["global_id"],
+    )
+    master_id = str(exact_single(master_rows, "route-probe Master")["global_id"])
     tooling = tooling_request(
         administrator,
         base_url,
         tooling_path(project_id),
         query_key=f"route-{expected_mode}",
     )
+    tooling_sets = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(project_id, master_id),
+        query_key=f"p602-route-{expected_mode}",
+    )
     if expected_mode == "disabled":
         validate_problem(tooling, 503, "TOOLING_ROUTES_DISABLED")
+        validate_problem(tooling_sets, 503, "TOOLING_SET_ROUTES_DISABLED")
         documents = document_runtime.npi_request(
             administrator,
             base_url,
@@ -1044,6 +1892,34 @@ def route_disable_probe(
         and len(workspace["parts"]) == 1
         and len(workspace["applicability"]) == 2,
         "P6-01 recovered route truth drifted",
+    )
+    recovered_sets = assert_tooling_set_collection(
+        tooling_sets,
+        project_id=project_id,
+        master_id=master_id,
+        expected_count=2,
+    )
+    first_set = exact_single(
+        [
+            value
+            for value in recovered_sets["items"]
+            if value.get("physicalSerial") == "P6-02-PHYSICAL-001"
+        ],
+        "recovered physical Set",
+    )
+    recovered_detail = tooling_request(
+        administrator,
+        base_url,
+        tooling_set_path(project_id, master_id, f"/{first_set['globalId']}"),
+        query_key="p602-q9",
+    )
+    assert_tooling_set_detail(
+        recovered_detail,
+        project_id=project_id,
+        master_id=master_id,
+        set_id=str(first_set["globalId"]),
+        intake_count=2,
+        evidence_count=2,
     )
 
 
@@ -1123,6 +1999,209 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         == master_id,
         "P6-01 cross-process shared-Master replay drifted",
     )
+    retained_sets = assert_tooling_set_collection(
+        tooling_request(
+            administrator,
+            base_url,
+            tooling_set_path(first_project_id, master_id),
+            query_key="p602-q10",
+        ),
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=2,
+    )
+    first_set = exact_single(
+        [
+            value
+            for value in retained_sets["items"]
+            if value.get("physicalSerial") == "P6-02-PHYSICAL-001"
+        ],
+        "replay physical Set",
+    )
+    first_set_id = str(first_set["globalId"])
+    set_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id),
+        tooling_set_payload(
+            str(first_set["toolingRequirementGlobalId"]),
+            "P6-02-PHYSICAL-001",
+            customer_owned=True,
+        ),
+        SET_ONE_KEY,
+    )
+    replayed_set_collection = assert_tooling_set_collection(
+        set_replay,
+        project_id=first_project_id,
+        master_id=master_id,
+        expected_count=1,
+    )
+    require(
+        set_replay.headers.get("Idempotency-Replayed") == "true"
+        and exact_single(
+            replayed_set_collection["items"],
+            "replayed physical Set",
+        ).get("globalId")
+        == first_set_id,
+        "P6-02 cross-process physical Set replay drifted",
+    )
+    intake_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(first_project_id, master_id, f"/{first_set_id}/intakes"),
+        tooling_intake_payload(),
+        INTAKE_ONE_KEY,
+    )
+    replayed_intake = assert_tooling_set_detail(
+        intake_replay,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=1,
+        evidence_count=0,
+    )
+    first_intake_id = str(
+        exact_single(replayed_intake["intakes"], "replayed intake")["globalId"]
+    )
+    require(
+        intake_replay.headers.get("Idempotency-Replayed") == "true",
+        "P6-02 cross-process intake replay was not declared",
+    )
+    evidence_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        tooling_set_path(
+            first_project_id,
+            master_id,
+            f"/{first_set_id}/intakes/{first_intake_id}/evidence",
+        ),
+        {
+            "evidenceRole": "arrival_photo",
+            "differenceGlobalIds": [],
+            "fileRevisionGlobalId": TOOLING_PHOTO_FILE_REVISION_ID,
+        },
+        ARRIVAL_EVIDENCE_KEY,
+    )
+    replayed_evidence = assert_tooling_set_detail(
+        evidence_replay,
+        project_id=first_project_id,
+        master_id=master_id,
+        set_id=first_set_id,
+        intake_count=2,
+        evidence_count=1,
+    )
+    require(
+        evidence_replay.headers.get("Idempotency-Replayed") == "true"
+        and exact_single(
+            replayed_evidence["evidence"],
+            "replayed arrival evidence",
+        ).get("evidenceRole")
+        == "arrival_photo",
+        "P6-02 cross-process evidence replay drifted",
+    )
+
+
+def seed_tooling_arrival_photo(
+    fixture_run_id: str,
+    project_id: str,
+) -> dict[str, object]:
+    import frappe
+    from frappe.utils import now_datetime
+    from frappe.utils.file_manager import save_file
+
+    from npi_core.controlled_evidence_validation import (
+        FILE_REVISION_COMMAND_FLAG,
+        FILE_SCAN_RESULT_FLAG,
+    )
+    from npi_core.npi_core.doctype.npi_file_revision.npi_file_revision import (
+        has_live_private_file_identity,
+    )
+
+    document_runtime._validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "P6-02 arrival-photo fixture namespace drifted",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.global_id) == project_id
+        and str(project.business_code) == document_runtime.BUSINESS_CODE
+        and str(project.tenant_id) == TENANT_ID,
+        "P6-02 arrival-photo fixture Project identity drifted",
+    )
+    require(
+        not frappe.db.exists(
+            "NPI File Revision",
+            TOOLING_PHOTO_FILE_REVISION_ID,
+        ),
+        "P6-02 fresh arrival-photo File Revision already exists",
+    )
+    file_document = save_file(
+        f"p6-02-arrival-{FIXTURE_RUN_ID[:16]}.png",
+        TOOLING_ARRIVAL_PHOTO_CONTENT,
+        "",
+        "",
+        is_private=1,
+    )
+    previous_command = getattr(frappe.flags, FILE_REVISION_COMMAND_FLAG, None)
+    setattr(frappe.flags, FILE_REVISION_COMMAND_FLAG, True)
+    try:
+        revision = frappe.get_doc(
+            {
+                "doctype": "NPI File Revision",
+                "global_id": TOOLING_PHOTO_FILE_REVISION_ID,
+                "tenant_id": TENANT_ID,
+                "project_global_id": project_id,
+                "document_global_id": TOOLING_PHOTO_DOCUMENT_ID,
+                "revision": 1,
+                "frappe_file_id": file_document.name,
+                "file": file_document.file_url,
+                "sha256": "0" * 64,
+                "scan_state": "pending",
+            }
+        ).insert()
+    finally:
+        if previous_command is None:
+            delattr(frappe.flags, FILE_REVISION_COMMAND_FLAG)
+        else:
+            setattr(
+                frappe.flags,
+                FILE_REVISION_COMMAND_FLAG,
+                previous_command,
+            )
+    previous_scan = getattr(frappe.flags, FILE_SCAN_RESULT_FLAG, None)
+    setattr(frappe.flags, FILE_SCAN_RESULT_FLAG, True)
+    try:
+        revision.scan_state = "clean"
+        revision.scan_observed_at = now_datetime()
+        revision.save()
+    finally:
+        if previous_scan is None:
+            delattr(frappe.flags, FILE_SCAN_RESULT_FLAG)
+        else:
+            setattr(frappe.flags, FILE_SCAN_RESULT_FLAG, previous_scan)
+    frappe.db.commit()
+    require(
+        str(revision.global_id) == TOOLING_PHOTO_FILE_REVISION_ID
+        and str(revision.project_global_id) == project_id
+        and str(revision.mime_type) == "image/png"
+        and str(revision.scan_state) == "clean"
+        and int(revision.is_private or 0) == 1
+        and int(revision.optimistic_version) == 2
+        and has_live_private_file_identity(revision),
+        "P6-02 arrival-photo live private identity drifted",
+    )
+    return {
+        "fileRevisionId": str(revision.global_id),
+        "mimeType": str(revision.mime_type),
+        "optimisticVersion": int(revision.optimistic_version),
+        "private": True,
+        "scanState": str(revision.scan_state),
+        "sha256": str(revision.sha256),
+    }
 
 
 def verify_tooling_runtime_schema(fixture_run_id: str) -> dict[str, object]:
@@ -1167,6 +2246,30 @@ def verify_tooling_runtime_schema(fixture_run_id: str) -> dict[str, object]:
             "effective_to",
             "applicability_snapshot",
         },
+        "NPI Tooling Set": {
+            "global_id",
+            "tooling_master_global_id",
+            "tooling_requirement_global_id",
+            "physical_serial",
+            "set_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Tooling Intake": {
+            "intake_key",
+            "tooling_set_global_id",
+            "intake_version",
+            "predecessor_global_id",
+            "intake_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Tooling Intake Evidence Reference": {
+            "evidence_key_hash",
+            "tooling_intake_global_id",
+            "intake_snapshot_hash",
+            "file_revision_global_id",
+            "evidence_snapshot",
+            "snapshot_hash",
+        },
         "NPI Tooling Command Idempotency": {
             "receipt_key",
             "actor_user_id",
@@ -1199,8 +2302,8 @@ def verify_tooling_runtime_schema(fixture_run_id: str) -> dict[str, object]:
 
 def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
     require(
-        method == "verify_tooling_runtime_schema",
-        "P6-01 Bench fixture is unavailable",
+        method in {"seed_tooling_arrival_photo", "verify_tooling_runtime_schema"},
+        "P6 Tooling Bench fixture is unavailable",
     )
     require(
         BENCH_PATH.is_dir()
@@ -1237,18 +2340,18 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         capture_output=True,
         text=True,
     )
-    require(completed.returncode == 0, "P6-01 schema fixture failed")
+    require(completed.returncode == 0, f"P6 Tooling fixture failed: {method}")
     lines = [line for line in completed.stdout.splitlines() if line.strip()]
-    require(bool(lines), "P6-01 schema fixture was silent")
+    require(bool(lines), f"P6 Tooling fixture was silent: {method}")
     result = json.loads(lines[-1])
-    require(isinstance(result, dict), "P6-01 schema fixture result is invalid")
+    require(isinstance(result, dict), "P6 Tooling fixture result is invalid")
     return result
 
 
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     require(
-        method == "verify_tooling_runtime_schema",
-        "P6-01 Bench fixture is unavailable",
+        method in {"seed_tooling_arrival_photo", "verify_tooling_runtime_schema"},
+        "P6 Tooling Bench fixture is unavailable",
     )
     import frappe
 
@@ -1256,7 +2359,11 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     frappe.connect()
     try:
         frappe.set_user(ACTOR_USER)
-        result = verify_tooling_runtime_schema(**kwargs)
+        fixtures = {
+            "seed_tooling_arrival_photo": seed_tooling_arrival_photo,
+            "verify_tooling_runtime_schema": verify_tooling_runtime_schema,
+        }
+        result = fixtures[method](**kwargs)
         print(json.dumps(result, separators=(",", ":"), sort_keys=True))
     except Exception:
         frappe.db.rollback()
@@ -1267,12 +2374,12 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Verify the real P6-01 controlled Tooling runtime.",
+        description="Verify the real cumulative P6-01 and P6-02 Tooling runtime.",
     )
     parser.add_argument("--base-url")
     parser.add_argument(
         "--bench-fixture",
-        choices=("verify_tooling_runtime_schema",),
+        choices=("seed_tooling_arrival_photo", "verify_tooling_runtime_schema"),
     )
     parser.add_argument("--fixture-kwargs")
     parser.add_argument(

@@ -151,7 +151,7 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 and P6-01 controlled runtime
+      - name: Verify cumulative P5 and P6-02 controlled runtime
         run: bash scripts/verify-frappe-runtime.sh --tooling-only
       - name: Record controlled runtime result
         run: |
@@ -163,7 +163,7 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p6-01\n'
+            printf 'scope=p5-01-through-p6-02\n'
             printf 'predecessor_scope=p5-01-through-p5-06\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
             printf 'command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'

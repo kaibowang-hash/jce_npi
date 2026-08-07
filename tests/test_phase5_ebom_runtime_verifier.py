@@ -463,7 +463,7 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
         required_fragments = (
             "P5 controlled document, EBOM, publish, and print runtime",
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
-            "scope=p5-01-through-p6-01",
+            "scope=p5-01-through-p6-02",
             "predecessor_scope=p5-01-through-p5-06",
             "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             "p6-tooling-runtime-${{ github.run_id }}",

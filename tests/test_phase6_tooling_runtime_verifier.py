@@ -65,7 +65,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(module.FIXTURE_RUN_ID, FIXTURE_RUN_ID)
         self.assertEqual(module.TENANT_ID, "runtime-tenant")
         self.assertTrue(module.UNRELATED_USER.endswith("@example.invalid"))
-        self.assertEqual(len(module.TOOLING_DOCTYPES), 6)
+        self.assertEqual(len(module.TOOLING_DOCTYPES), 9)
         self.assertEqual(module.SECOND_PROJECT_CODE, "P6-01-0123456789ABCDEF")
         self.assertNotIn("core." + "whjichen.cn", self.source)
         for forbidden in (
@@ -127,6 +127,42 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             ):
                 with self.subTest(payload=payload, forbidden=forbidden):
                     self.assertNotIn(forbidden, serialized)
+
+        tooling_set = module.tooling_set_payload(
+            "10000000-0000-4000-8000-000000000001",
+            "PHYSICAL-001",
+            customer_owned=True,
+        )
+        self.assertEqual(
+            tooling_set["customer"],
+            {
+                "sourceSystem": "ERPNEXT",
+                "sourceObjectId": "SYNTHETIC-0123456789abcdef",
+            },
+        )
+        intake = module.tooling_intake_payload()
+        self.assertNotIn("expectedVersion", intake)
+        self.assertEqual(len(intake["inspections"]), 5)
+        self.assertEqual(
+            {row["category"] for row in intake["inspections"]},
+            {
+                "appearance",
+                "water_circuit",
+                "hot_runner",
+                "electrical",
+                "safety",
+            },
+        )
+        self.assertEqual(len(intake["differences"]), 2)
+        successor = module.tooling_intake_payload(
+            expected_version=1,
+            corrected=True,
+        )
+        self.assertEqual(successor["expectedVersion"], 1)
+        self.assertNotEqual(
+            successor["transportReference"],
+            intake["transportReference"],
+        )
 
     def test_request_uses_only_closed_command_or_query_headers(self) -> None:
         module = self.module
@@ -233,22 +269,34 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             "TOOLING_IDEMPOTENCY_CONFLICT",
             "TOOLING_APPLICABILITY_CONFLICT",
             "TOOLING_VERSION_CONFLICT",
+            "TOOLING_INTAKE_VERSION_CONFLICT",
+            "TOOLING_EVIDENCE_CONFLICT",
             "TOOLING_UNAVAILABLE",
             "Idempotency-Replayed",
             "second_project_id",
             "master_id",
             "relationship_id",
             "predecessorGlobalId",
+            "customer_owned_intake",
+            "copy_or_additional_set",
+            "arrival_photo",
+            "customer_confirmation",
+            "seed_tooling_arrival_photo",
         ):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, fresh)
         for fragment in (
             "len(masters) == 1",
-            "len(receipts) == 8",
+            "len(receipts) == 16",
             '"actor_user_id"',
             '"sealed"',
             '"part.revise": 1',
             '"tooling_applicability.create": 3',
+            '"tooling_set.create": 2',
+            '"tooling_intake.create": 2',
+            '"tooling_intake_evidence.create": 2',
+            '"NPI Tooling Set", first_set_id',
+            '"NPI Tooling Intake", first_intake_id',
             "update_resource(",
             "delete_resource(",
         ):
@@ -270,6 +318,9 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             '"relationship_key_hash"',
             '"predecessor_global_id"',
             '"response_hash"',
+            '"intake_key"',
+            '"evidence_key_hash"',
+            '"file_revision_global_id"',
         ):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, schema)
@@ -292,6 +343,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         for fragment in (
             "--tooling-only",
             "npi_p6_01_routes_disabled",
+            "npi_p6_02_routes_disabled",
             "tooling_route_disable_original_state",
             "restore_tooling_route_switch",
             "P6-01 route-disable switch to absent",
@@ -304,7 +356,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         for fragment in (
             "P6 Tooling",
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
-            "scope=p5-01-through-p6-01",
+            "scope=p5-01-through-p6-02",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
             "p6-tooling-runtime-${{ github.run_id }}",
             "docker compose down --volumes",
