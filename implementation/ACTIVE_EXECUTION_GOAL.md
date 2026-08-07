@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T16:50:49Z`
+Updated: `2026-08-07T17:09:06Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `P6-01 PASS — P6-02 REQUIREMENT/DOMAIN AUDIT`
+- Mode: `P6-02 DOMAIN/CONTRACT/ADDITIVE METADATA FOUNDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,12 +12,12 @@ Updated: `2026-08-07T16:50:49Z`
   `d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac` (pushed; final P6-01
   tenant-namespaced Applicability version-key correction)
 - Latest completed controller/evidence checkpoint before this update:
-  `implementation/evidence/phase-6/p6-01-validation.md` (P6-01 Level 2 PASS;
-  this evidence-only transition is pending commit)
+  `49a8931d0e9ab66ea132f232f4eb144879fd4ae0` (P6-01 Level 2 evidence and
+  P6-02 transition; pushed)
 - Latest complete normal CI:
-  `31197968661` (`PASS`, exact SHA `d0a9258`; repository `92930758119`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92930757760`
-  passed `73/73`; controlled runtime `92930758895` correctly skipped)
+  `31200277175` (`PASS`, exact SHA `49a8931`; repository `92938356572`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92938356975`
+  passed; controlled runtime `92938357521` correctly skipped)
 - Latest controlled-Site run:
   `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
   `92932746371`, visual `92932746394` and controlled `92932746437` passed)
@@ -26,13 +26,13 @@ Updated: `2026-08-07T16:50:49Z`
   `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
 - Current controller task:
   `P6-02 — Customer-owned intake and physical Tooling Sets`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN AUDIT`)
+  (`IN_PROGRESS — DOMAIN/CONTRACT/ADDITIVE METADATA`)
 - Current Requirement IDs:
   `FR-TX-003`, `FR-TL-004`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -158,6 +158,17 @@ Revisions, eight append-only audits, replay and rollback. P6-01 passes Level 2
 in `implementation/evidence/phase-6/p6-01-validation.md`. Standing authority
 activates only the bounded P6-02 Requirement/domain/existing-capability audit;
 `DR-REC-010` still blocks invented lifecycle states or commands.
+
+P6-01 evidence checkpoint `49a8931` passed complete ordinary CI
+`31200277175` with repository `92938356572`, visual `92938356975` and
+controlled runtime correctly skipped. The P6-02 bounded audit passes in
+`implementation/evidence/phase-6/p6-02-plan.md`. It freezes one UUID per
+physical Set, immutable customer-owned intake/difference truth and exact clean
+private File Revision references while leaving Set lifecycle, Tooling Revision,
+formal Supplier/location/Asset and external customer authority unavailable.
+Standing authority activates only the pure domain, closed contract and three-
+DocType additive metadata foundation; no route or live product behavior is
+active yet.
 
 ## Retained P5-04 recovery history
 

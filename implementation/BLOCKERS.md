@@ -1,20 +1,21 @@
 # Blockers
 
-Updated: `2026-08-07T16:50:49Z`
+Updated: `2026-08-07T17:09:06Z`
 
 ## Active hard blockers
 
 None. Corrective checkpoint `d0a9258` passed complete ordinary CI
 `31197968661` and diagnostics-closed controlled Gate `31198574475`. P6-01 is
-Level 2 PASS and P6-02 begins with a bounded audit; no user action is required.
+Level 2 PASS. Evidence checkpoint `49a8931` passed complete ordinary CI
+`31200277175`; the P6-02 bounded audit also passes with no user action required.
 
 ## Active recovery
 
 None. The P6-01 version-key recovery is closed `PASS`. P6-02 is
-`IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked. `DR-REC-010` remains a
-scoped hold on exact lifecycle states/transitions/authorities only; it does not
-block physical Set identity, ownership/custody provenance or intake evidence
-planning.
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA`, not blocked. `DR-REC-010` remains a
+scoped hold on exact lifecycle states/transitions/authorities only. P6-02 keeps
+source Revision, formal Supplier/location/Asset and external signature truth
+explicitly unavailable while implementing Set identity and intake evidence.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

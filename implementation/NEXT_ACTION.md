@@ -1,33 +1,36 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P6-02 REQUIREMENT/DOMAIN AUDIT`
+`IN_PROGRESS — P6-02 DOMAIN/CONTRACT/ADDITIVE METADATA`
 
-Recovery time: `2026-08-07T16:50:49Z`
+Recovery time: `2026-08-07T17:09:06Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac`
+`49a8931d0e9ab66ea132f232f4eb144879fd4ae0`
 
 ## Current authoritative action
 
-P6-01 passes Level 2. Corrective checkpoint `d0a9258` passed ordinary CI
-`31197968661`; final diagnostics-closed workflow `31198574475` passed
-repository `92932746371`, visual `92932746394` (`73/73`) and controlled Site
-`92932746437`. Runtime artifact `9001947238` has GitHub digest
-`sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`.
-Evidence is `implementation/evidence/phase-6/p6-01-validation.md`.
+P6-01 passes Level 2. Evidence checkpoint `49a8931` passed complete ordinary
+CI `31200277175`: repository `92938356572`, visual `92938356975`, and
+controlled runtime `92938357521` correctly skipped. The P6-02 Requirement/
+domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-02-plan.md`.
 
-The first unfinished atomic task is P6-02 only. Audit `FR-TX-003` and
-`FR-TL-004` against the Phase 6 anchor, Tooling domain/specification, current
-P6-01 identities, File/evidence capabilities and ERP ownership contract. Freeze
-a minimum vertical slice for one identity per physical Tooling Set plus
-customer-owned transport, arrival photos, accessory list, inspection and
-difference/customer-confirmation evidence. Keep exact Set lifecycle states,
-transitions and authorities held by `DR-REC-010`; make no ERPNext Asset success
-claim and install no adapter, endpoint, credential or production default.
+The first unfinished checkpoint is P6-02 checkpoint 1 only. Implement pure
+domain invariants, closed OpenAPI schemas, exact ownership rows and three
+guarded additive DocTypes for one independently identified physical Set,
+immutable versioned customer-owned intake, and append-only exact File Revision
+evidence. Add domain/metadata/contract/security tests and direct trilingual
+coverage, but activate no repository route or live SPA behavior.
+
+Keep Set lifecycle states/transitions/authorities held by `DR-REC-010`. Keep
+source Tooling Revision, formal Supplier, ERP location/Asset, customer login/
+signature and all external mutations explicitly unavailable. P6-02 may only
+reference an existing live clean private File Revision; it may not upload,
+release, overwrite, delete or expose the customer file.
 
 ## Retained P6-01 execution history
 

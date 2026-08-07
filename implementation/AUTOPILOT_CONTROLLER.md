@@ -1012,3 +1012,24 @@ repeat or rewrite it merely to restore context. See
   intake evidence, but may not invent lifecycle states/transitions/authorities
   held by `DR-REC-010`, claim ERPNext Asset success, or install production
   adapters, endpoints, credentials or defaults.
+
+## 2026-08-07 P6-02 requirement/domain audit PASS
+
+- P6-01 evidence checkpoint `49a8931` passed exact-SHA ordinary CI
+  `31200277175`: repository `92938356572`, visual `92938356975`, complete E2E
+  and both secret lanes passed; controlled job `92938357521` correctly
+  skipped.
+- The bounded P6-02 audit for `FR-TX-003` and `FR-TL-004` passes in
+  `implementation/evidence/phase-6/p6-02-plan.md`. It freezes one immutable
+  UUID per physical Set, no quantity collapse, customer ownership and custody/
+  repair/return provenance, versioned intake snapshots, five exact inspection
+  categories, independently identified differences and append-only URL-free
+  references to exact clean private File Revisions.
+- `DR-REC-010` continues to block exact Set lifecycle states/transitions/
+  authorities. P6-03 owns exact source Tooling Revision, P6-04 owns formal
+  Supplier projection, and ERPNext/P6-06/Phase 8 own Asset/state/location and
+  external execution. Customer login/signature and file mutation are absent.
+- Standing authority activates only P6-02 checkpoint 1: pure domain, closed
+  contract, exact ownership rows, three guarded additive DocTypes and direct
+  tests/i18n coverage. No repository route, live SPA behavior, business row,
+  policy, adapter, endpoint, credential or external mutation may be activated.

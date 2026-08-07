@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T16:50:49Z'
+updated_at: '2026-08-07T17:09:06Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-02
-current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
-current_task_completed_stage: P6_01_LEVEL_2_TASK_GATE_PASS
-current_task_next_stage: P6_02_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+current_task_completed_stage: P6_02_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+current_task_next_stage: P6_02_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-02
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -803,16 +803,33 @@ p6_01:
     - implementation/evidence/phase-6/p6-01-applicability-create-diagnostic.md
     - implementation/evidence/phase-6/p6-01-validation.md
 p6_02:
-  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
   backlog_task: M5-02
   requirements: [FR-TX-003, FR-TL-004]
   delivery_boundary: CUSTOMER_OWNED_INTAKE_AND_DISTINCT_PHYSICAL_TOOLING_SETS
   exact_lifecycle_commands_active: false
   production_lifecycle_policy_active: false
   scoped_decision: DR-REC-010
-  starting_checkpoint: d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac
-  completed_stage: NONE
-  next_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  starting_checkpoint: 49a8931d0e9ab66ea132f232f4eb144879fd4ae0
+  entry_normal_ci: 31200277175
+  entry_repository_job: 92938356572
+  entry_visual_job: 92938356975
+  entry_controlled_job: 92938357521
+  product_code_changed: false
+  source_revision_active: false
+  formal_supplier_projection_active: false
+  erp_asset_location_projection_active: false
+  customer_file_mutation_active: false
+  planned_additive_doctypes:
+    - NPI Tooling Set
+    - NPI Tooling Intake
+    - NPI Tooling Intake Evidence Reference
+  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+  next_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - implementation/evidence/phase-6/p6-01-validation.md
+    - implementation/evidence/phase-6/p6-02-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
