@@ -1,40 +1,38 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T16:28:34Z`
+Updated: `2026-08-07T16:50:49Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REPAIR — P6-01 APPLICABILITY VERSION KEY`
+- Mode: `P6-01 PASS — P6-02 REQUIREMENT/DOMAIN AUDIT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `ab718e693e35df6fbc8fee09b14c7024ddaf547f` (pushed; initial
-  Applicability version-key repair, now proved incomplete)
+  `d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac` (pushed; final P6-01
+  tenant-namespaced Applicability version-key correction)
 - Latest completed controller/evidence checkpoint before this update:
-  `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
-  exact-SHA ordinary CI passed)
+  `implementation/evidence/phase-6/p6-01-validation.md` (P6-01 Level 2 PASS;
+  this evidence-only transition is pending commit)
 - Latest complete normal CI:
-  `31196125343` (`PASS`, exact SHA `ab718e6`; repository `92924661787`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92924661816`
-  passed `73/73`; controlled runtime `92924662804` correctly skipped)
+  `31197968661` (`PASS`, exact SHA `d0a9258`; repository `92930758119`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92930757760`
+  passed `73/73`; controlled runtime `92930758895` correctly skipped)
 - Latest controlled-Site run:
-  `31196918023` (`FAIL`, exact SHA `ab718e6`, diagnostics closed; repository
-  `92927290257` and visual `92927290466` passed; controlled `92927290342`
-  passed environment, Site, migrations and every predecessor, then the first
-  Applicability create remained non-201)
+  `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
+  `92932746371`, visual `92932746394` and controlled `92932746437` passed)
 - Controlled PASS artifact:
-  `8988384460`, GitHub SHA-256
-  `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
+  `9001947238`, GitHub digest
+  `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
 - Current controller task:
-  `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS_REPAIR — APPLICABILITY VERSION KEY`)
+  `P6-02 — Customer-owned intake and physical Tooling Sets`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN AUDIT`)
 - Current Requirement IDs:
-  `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
+  `FR-TX-003`, `FR-TL-004`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 CONTROLLED RUNTIME`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -150,6 +148,16 @@ with the validator. Diagnostics-closed Gate `31196918023` then reproduced the
 same first Applicability non-201 after all predecessors. The active corrective
 repair includes `tenant_id` and cross-checks the repository formula against
 the DocType source. No frozen product or Gate boundary changes.
+
+Corrective checkpoint `d0a9258` passed ordinary CI `31197968661`. Final
+diagnostics-closed workflow `31198574475` then passed repository, `73/73`
+visual and the complete cumulative controlled runtime. Artifact `9001947238`
+and its GitHub digest retain exact-SHA Site evidence; the runtime proves two
+Projects, one shared Master, three Applicabilities, three immutable Part
+Revisions, eight append-only audits, replay and rollback. P6-01 passes Level 2
+in `implementation/evidence/phase-6/p6-01-validation.md`. Standing authority
+activates only the bounded P6-02 Requirement/domain/existing-capability audit;
+`DR-REC-010` still blocks invented lifecycle states or commands.
 
 ## Retained P5-04 recovery history
 

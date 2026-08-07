@@ -61,7 +61,7 @@ ADDENDUM_IDS = {
 }
 EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
-    "UX-004": ("6", "ANCHORED_P6_01_TOOLING_WORKSPACE"),
+    "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "ANCHORED_P6_07_PHASE_8_ASYNC_JOB_TRUTH"),
@@ -1012,9 +1012,9 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "expected 34 non-product ARCH/COD governance links"
         )
-    if len(tooling_ids) != 18:
+    if len(tooling_ids) != 16:
         raise ReconciliationVerificationError(
-            "expected 18 anchored Phase 6 Tooling requirements"
+            "expected 16 remaining anchored Phase 6 Tooling requirements"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(

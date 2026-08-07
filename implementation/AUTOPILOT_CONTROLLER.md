@@ -991,3 +991,24 @@ repeat or rewrite it merely to restore context. See
   exact `tenant_id:relationship_global_id:version` SHA-256 formula, add a
   cross-file contract assertion, run affected/full ordinary CI, then one
   diagnostics-closed unchanged Gate.
+
+## 2026-08-07 P6-01 Level 2 PASS and P6-02 transition
+
+- Corrective checkpoint `d0a9258` includes the exact tenant-namespaced
+  Applicability version-key formula and a cross-file validator assertion.
+  Complete ordinary CI `31197968661` passed repository `92930758119`, visual
+  `92930757760` at `73/73`, both secret lanes and complete E2E; controlled job
+  `92930758895` correctly skipped.
+- Final diagnostics-closed workflow `31198574475` retained that exact SHA.
+  Repository `92932746371`, visual `92932746394` and controlled runtime
+  `92932746437` all passed. Runtime artifact `9001947238` has GitHub digest
+  `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`.
+- P6-01 passes its Level 2 Task Gate. `FR-TX-002` is technically verified;
+  `FR-TX-001`, `UX-004`, `FR-TL-001` and `FR-TL-003` are technically verified
+  foundations with their exact later dependencies retained.
+- Standing automatic-transition authority activates only the P6-02 bounded
+  Requirement/domain/existing-capability audit for `FR-TX-003` and
+  `FR-TL-004`. It may plan distinct physical Set identity and customer-owned
+  intake evidence, but may not invent lifecycle states/transitions/authorities
+  held by `DR-REC-010`, claim ERPNext Asset success, or install production
+  adapters, endpoints, credentials or defaults.

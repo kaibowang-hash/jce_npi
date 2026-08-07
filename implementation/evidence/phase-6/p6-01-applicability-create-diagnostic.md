@@ -1,9 +1,9 @@
 # P6-01 Applicability-create Diagnostic Checkpoint
 
-Updated: `2026-08-07T16:28:34Z`
+Updated: `2026-08-07T16:50:49Z`
 
-Status: `VERSION-KEY ROOT PROVEN — CORRECTIVE REPAIR IN PROGRESS`; this is not
-a P6-01 Task Gate PASS.
+Status: `CLOSED — CORRECTIVE REPAIR EFFECTIVE`; final Task Gate evidence is in
+`implementation/evidence/phase-6/p6-01-validation.md`.
 
 ## Trigger evidence
 
@@ -148,3 +148,19 @@ permission, Schema intent, ownership, transaction, idempotency, audit or PASS
 rule. Affected tests pass `23/23`, complete tracked Python passes
 `1,130/1,130`, compilation and diff checks pass. Complete ordinary CI and one
 diagnostics-closed unchanged Gate remain mandatory.
+
+## Corrective PASS
+
+Corrective checkpoint `d0a9258` passed complete ordinary CI `31197968661`:
+repository `92930758119` and visual `92930757760` passed, while controlled
+`92930758895` correctly skipped. Final diagnostics-closed workflow
+`31198574475` retained the exact SHA and passed repository `92932746371`,
+visual `92932746394` and controlled runtime `92932746437`.
+
+Artifact `9001947238`, `p6-tooling-runtime-31198574475`, has GitHub digest
+`sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`.
+It proves that the tenant-namespaced version-key correction advanced through
+all Applicability, replay, rollback, IDOR and route-disable/recovery checks.
+The diagnostic cycle is closed with both verifier diagnostic activations
+false; no Requirement, public API, permission, Schema intent, ownership,
+transaction, idempotency, audit or PASS criterion changed.

@@ -1,17 +1,35 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPAIR — P6-01 APPLICABILITY VERSION KEY`
+`IN_PROGRESS — P6-02 REQUIREMENT/DOMAIN AUDIT`
 
-Recovery time: `2026-08-07T16:28:34Z`
+Recovery time: `2026-08-07T16:50:49Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`ab718e693e35df6fbc8fee09b14c7024ddaf547f`
+`d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac`
 
 ## Current authoritative action
+
+P6-01 passes Level 2. Corrective checkpoint `d0a9258` passed ordinary CI
+`31197968661`; final diagnostics-closed workflow `31198574475` passed
+repository `92932746371`, visual `92932746394` (`73/73`) and controlled Site
+`92932746437`. Runtime artifact `9001947238` has GitHub digest
+`sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`.
+Evidence is `implementation/evidence/phase-6/p6-01-validation.md`.
+
+The first unfinished atomic task is P6-02 only. Audit `FR-TX-003` and
+`FR-TL-004` against the Phase 6 anchor, Tooling domain/specification, current
+P6-01 identities, File/evidence capabilities and ERP ownership contract. Freeze
+a minimum vertical slice for one identity per physical Tooling Set plus
+customer-owned transport, arrival photos, accessory list, inspection and
+difference/customer-confirmation evidence. Keep exact Set lifecycle states,
+transitions and authorities held by `DR-REC-010`; make no ERPNext Asset success
+claim and install no adapter, endpoint, credential or production default.
+
+## Retained P6-01 execution history
 
 P5-06 passed Level 2 at exact product checkpoint `6ba2763`. Complete ordinary
 CI `31163598955` passed repository, complete E2E/history secret scanning and
@@ -73,7 +91,7 @@ governed job and then added their five first Linux baselines. Final checkpoint
 at `73/73`; controlled runtime `92880986862` correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-01-live-cockpit-checkpoint.md`.
 
-The next unfinished checkpoint is:
+The completed checkpoint 4 recovery history is:
 
 `P6-01 checkpoint 4 — controlled runtime and Level 2 Task Gate`
 
@@ -147,10 +165,10 @@ Implement only:
    Site dispatch; and
 5. on controlled PASS, record the evidence and run the P6-01 Level 2 Task Gate.
 
-Do not install production lifecycle, numbering, ownership/custody, Tooling
-Revision, physical Set, Trial, workbook mapping, adapter, ERPNext endpoint,
-credential or production default behavior. P6-02 through P6-08 remain
-inactive until P6-01 Level 2 passes.
+This recovery installed no production lifecycle, numbering, ownership/custody,
+Tooling Revision, physical Set, Trial, workbook mapping, adapter, ERPNext
+endpoint, credential or production default behavior. P6-02 remained inactive
+until the P6-01 Level 2 PASS recorded above.
 
 ## Authority
 

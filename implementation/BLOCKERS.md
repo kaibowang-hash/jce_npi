@@ -1,23 +1,20 @@
 # Blockers
 
-Updated: `2026-08-07T16:28:34Z`
+Updated: `2026-08-07T16:50:49Z`
 
 ## Active hard blockers
 
-None. Initial version-key repair `ab718e6` passed complete ordinary CI
-`31196125343`, but diagnostics-closed Gate `31196918023` proved it incomplete.
-The missing tenant namespace is now directly established from the repository
-and DocType formulas. The corrective in-scope repair requires no user action.
+None. Corrective checkpoint `d0a9258` passed complete ordinary CI
+`31197968661` and diagnostics-closed controlled Gate `31198574475`. P6-01 is
+Level 2 PASS and P6-02 begins with a bounded audit; no user action is required.
 
 ## Active recovery
 
-`P6-01-APPLICABILITY-VERSION-KEY-REPAIR` — `IN_PROGRESS_REPAIR`, not blocked.
-The optional Select repair is effective. The first hash repair omitted
-`tenant_id:` from the DocType's canonical version-key input, and its test
-mirrored the incomplete helper. Correct only the repository formula to SHA-256
-of `tenant_id:relationship_global_id:applicability_version`, add a validator
-cross-check, retain diagnostics closed, run affected/full ordinary CI and one
-final unchanged Gate.
+None. The P6-01 version-key recovery is closed `PASS`. P6-02 is
+`IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked. `DR-REC-010` remains a
+scoped hold on exact lifecycle states/transitions/authorities only; it does not
+block physical Set identity, ownership/custody provenance or intake evidence
+planning.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
