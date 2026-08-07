@@ -1,24 +1,24 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T19:05:22Z`
+Updated: `2026-08-07T20:32:18Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `P6-02 LIVE WORKSPACE CHECKPOINT`
+- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-02 TOOLING SET`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `39fe0e8445079bb7a811ca2f24910ba96624a0ac` (pushed; P6-02
-  Project-first Set/intake repository, closed BFF, exact receipt whitelist and
-  catalog-fingerprint baseline checkpoint)
+  `b1df79f7cd225154060534e1bc558a593b9fe31f` (pushed; P6-02 live
+  physical Set/intake workspace and artifact-proved fixed-Linux visual
+  checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
-  `a78c91d2e58ed9b746d2f0d9cb8cb6b1c6b2deba` (P6-02 checkpoint-1 evidence;
-  pushed; ordinary CI `31205863774` PASS)
+  `7fa322df5406d92de44e9ca2d8704f3b73903fcd` (P6-02 checkpoint-2 evidence;
+  pushed; ordinary CI `31210314113` PASS)
 - Latest complete normal CI:
-  `31209234574` (`PASS`, exact SHA `39fe0e8`; repository `92967755668`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92967755547`
-  passed `73/73`; controlled runtime `92967756711` correctly skipped)
+  `31215596601` (`PASS`, exact SHA `b1df79f`; repository `92988260703`,
+  `315/315` E2E and Gitleaks/history passed; fixed-Linux visual `92988260754`
+  passed `76/76`; controlled runtime `92988261221` correctly skipped)
 - Latest controlled-Site run:
   `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
   `92932746371`, visual `92932746394` and controlled `92932746437` passed)
@@ -27,13 +27,13 @@ Updated: `2026-08-07T19:05:22Z`
   `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
 - Current controller task:
   `P6-02 — Customer-owned intake and physical Tooling Sets`
-  (`IN_PROGRESS — LIVE WORKSPACE CHECKPOINT`)
+  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
 - Current Requirement IDs:
   `FR-TX-003`, `FR-TL-004`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 3`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CONTROLLED RUNTIME`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -195,14 +195,22 @@ controlled runtime correctly stayed closed. Its only preceding failure was the
 exact eighteen footer catalog fingerprints, proved by artifact `9005792248`
 before the byte-exact Linux baseline sync.
 
+P6-02 checkpoint 3 passed at stable checkpoint `b1df79f`. It provides a strict
+server-backed Set/intake data source, dense Project/Master-scoped physical Set
+repository, five-category arrival inspection and difference truth, and an
+exact clean File Revision evidence picker with no raw URL. Complete ordinary
+CI `31215596601` passed repository, `315/315` non-visual E2E, both secret lanes
+and the expanded fixed-Linux visual matrix `76/76`; controlled runtime
+correctly stayed closed. The two preceding visual failures were evidence-only:
+artifact `9007770198` proved the five affected Tooling and eighteen catalog
+footer baselines, then artifact `9008140984` supplied exactly the three newly
+governed P6-02 Linux images.
+
 Standing automatic-transition authority now activates only P6-02 checkpoint
-3: a strict server-backed Set/intake data source, dense live Tooling workspace,
-exact governed File Revision picker, honest unavailable states,
-capability-driven actions and complete English/`zh`/`zh-TW`, accessibility and
-affected visual evidence. Controlled Site remains inactive until checkpoint 3
-passes affected checks and complete ordinary CI. No held lifecycle, source
-Revision, Supplier, ERP Asset/location or external-customer/file behavior may
-be added.
+4: disposable-Site migration and controlled Set/intake/evidence/replay/
+rollback/IDOR/route-disable proof, followed by complete ordinary CI and the
+P6-02 Level 2 Task Gate. No held lifecycle, source Revision, Supplier, ERP
+Asset/location or external-customer/file behavior may be added.
 
 ## Retained P5-04 recovery history
 

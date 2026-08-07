@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P6-02 LIVE WORKSPACE CHECKPOINT`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P6-02 TOOLING SET`
 
-Recovery time: `2026-08-07T19:05:22Z`
+Recovery time: `2026-08-07T20:32:18Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`39fe0e8445079bb7a811ca2f24910ba96624a0ac`
+`b1df79f7cd225154060534e1bc558a593b9fe31f`
 
 ## Current authoritative action
 
@@ -45,19 +45,28 @@ CI `31209234574`: repository `92967755668`, visual `92967755547` (`73/73`)
 and controlled runtime `92967756711` correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-02-repository-api-checkpoint.md`.
 
-The first unfinished checkpoint is P6-02 checkpoint 3 only. Implement the
-strict server-backed Set/intake data source and dense live Tooling workspace,
-including the exact governed File Revision picker, capability-driven actions,
-complete loading/empty/error/no-permission/read-only/conflict/processing states,
-keyboard/focus/accessibility behavior and direct English/`zh`/`zh-TW` plus
-affected visual evidence.
+P6-02 checkpoint 3 is PASS. Product commit `3b62046` added the strict
+server-backed Set/intake data source, dense live physical Set workspace, exact
+clean File Revision picker, complete operational states and direct trilingual,
+accessibility and affected visual coverage. Evidence-only commits `26685ff`
+and `b1df79f` synchronized only artifact-proved fixed-Linux baselines and added
+the P6-02 visual spec to the existing governed matrix. Final complete ordinary
+CI `31215596601` passed repository `92988260703`, `315/315` non-visual E2E,
+visual `92988260754` (`76/76`) and both secret lanes; controlled runtime
+`92988261221` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-02-live-workspace-checkpoint.md`.
 
-Do not dispatch the controlled Site until checkpoint 3 passes affected checks
-and complete ordinary CI. Keep lifecycle, source Tooling Revision, formal
-Supplier, ERP location/Asset, customer login/signature and all external
-mutations explicitly unavailable. P6-02 may only reference an existing live
-clean private File Revision; it may not upload, release, overwrite, delete or
-expose the customer file.
+The first unfinished checkpoint is P6-02 checkpoint 4 only. Implement the
+bounded cumulative disposable-Site verifier/workflow for migration and exact
+Set creation, versioned intake, difference/evidence binding, replay,
+authorization/IDOR, rollback and independent route-disable proof. Run affected
+checks and complete ordinary CI before one diagnostics-closed controlled Site,
+then close the P6-02 Level 2 Task Gate from evidence only.
+
+Keep lifecycle, source Tooling Revision, formal Supplier, ERP location/Asset,
+customer login/signature and all external mutations explicitly unavailable.
+P6-02 may only reference an existing live clean private File Revision; it may
+not upload, release, overwrite, delete or expose the customer file.
 
 ## Retained P6-01 execution history
 

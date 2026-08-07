@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T19:05:22Z'
+updated_at: '2026-08-07T20:32:18Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-02
-current_task_status: IN_PROGRESS_LIVE_WORKSPACE
-current_task_completed_stage: P6_02_REPOSITORY_BFF_CHECKPOINT_PASS
-current_task_next_stage: P6_02_LIVE_WORKSPACE_CHECKPOINT
+current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
+current_task_completed_stage: P6_02_LIVE_WORKSPACE_CHECKPOINT_PASS
+current_task_next_stage: P6_02_CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-02
-resumed_product_task_status: IN_PROGRESS_LIVE_WORKSPACE
+resumed_product_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -803,7 +803,7 @@ p6_01:
     - implementation/evidence/phase-6/p6-01-applicability-create-diagnostic.md
     - implementation/evidence/phase-6/p6-01-validation.md
 p6_02:
-  status: IN_PROGRESS_LIVE_WORKSPACE
+  status: IN_PROGRESS_CONTROLLED_RUNTIME
   backlog_task: M5-02
   requirements: [FR-TX-003, FR-TL-004]
   delivery_boundary: CUSTOMER_OWNED_INTAKE_AND_DISTINCT_PHYSICAL_TOOLING_SETS
@@ -864,14 +864,39 @@ p6_02:
   repository_final_visual_digest: sha256:02a6db63a056cf03b4e5f3261c0a1d05ae7b16f49b7bf44d8c5d80fdee098991
   repository_final_gitleaks_artifact: 9006216901
   repository_final_gitleaks_digest: sha256:7c2051e7809b5b17c8c0aa3691a3dec0513b1e52dffefbad50709091d7ed1397
-  completed_stage: REPOSITORY_BFF_CHECKPOINT_PASS
-  next_stage: LIVE_WORKSPACE_CHECKPOINT
+  workspace_product_checkpoint: 3b62046d73c694b13f300ca72d7d761f8d76738e
+  workspace_initial_ci: 31213774878
+  workspace_initial_repository_job: 92982448302
+  workspace_initial_visual_job: 92982448359
+  workspace_initial_controlled_job: 92982448993
+  workspace_initial_visual_artifact: 9007770198
+  workspace_initial_visual_digest: sha256:f71a5a5e6489c4c296956cdb75b835a9578e033c82c68eea8e9474be093082cc
+  workspace_governed_matrix_checkpoint: 26685ff229a2960a12677a58dda3f20738389eb0
+  workspace_matrix_ci: 31214796127
+  workspace_matrix_repository_job: 92985692894
+  workspace_matrix_visual_job: 92985692814
+  workspace_matrix_controlled_job: 92985693561
+  workspace_matrix_visual_artifact: 9008140984
+  workspace_matrix_visual_digest: sha256:77af8f873636df087154b02d423126a1eb3f96956b31c7c5249b4b97852c2a62
+  workspace_visual_baseline_checkpoint: b1df79f7cd225154060534e1bc558a593b9fe31f
+  workspace_final_ci: 31215596601
+  workspace_final_repository_job: 92988260703
+  workspace_final_visual_job: 92988260754
+  workspace_final_controlled_job: 92988261221
+  workspace_final_visual_result: 76_OF_76_PASS
+  workspace_final_visual_artifact: 9008421671
+  workspace_final_visual_digest: sha256:0023f78a46b48728fe87fe28e415989faa451c1eeabb89907a75d4d7d020214d
+  workspace_final_gitleaks_artifact: 9008567686
+  workspace_final_gitleaks_digest: sha256:bd3662c8d2a5526a590253eb96d51789890884ebae0cb16a78f3e71e0458d90b
+  completed_stage: LIVE_WORKSPACE_CHECKPOINT_PASS
+  next_stage: CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-01-validation.md
     - implementation/evidence/phase-6/p6-02-plan.md
     - implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-02-repository-api-checkpoint.md
+    - implementation/evidence/phase-6/p6-02-live-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
