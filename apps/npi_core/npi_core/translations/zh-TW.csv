@@ -4057,3 +4057,71 @@ Part title,零件標題
 Revision label,修訂標籤
 Tooling data is read only because this session has no mutation capability.,此工作階段沒有變更能力，因此模具開發資料為唯讀。
 "The server, not the browser, controls each available Tooling action.","每個可用模具開發操作均由伺服器控制，而不是由瀏覽器決定。"
+A successor Tooling Intake requires its exact predecessor.,後續模具接收記錄必須引用精確的前序版本。
+Accessory Snapshot,配件快照
+Arrival photo evidence must use an image file.,到廠照片證據必須使用圖像檔案。
+Arrived At,到廠時間
+Custody Handover,保管交接
+Custody Responsibility,保管責任
+Customer Source Object ID,客戶來源物件識別碼
+Customer Source System,客戶來源系統
+Customer confirmation evidence must identify an exact difference.,客戶確認資料必須標識精確的差異項。
+Customer ownership reference is required for a customer-owned intake.,客戶自有模具接收必須提供客戶所有權引用。
+Difference Global ID,差異全域識別碼
+Difference Global IDs,差異全域識別碼清單
+Difference Snapshot,差異快照
+Enter a non-negative whole number.,請輸入非負整數。
+Enter a valid bounded list.,請輸入有效且有界的清單。
+Global IDs must be unique within this list.,此清單中的全域識別碼必須唯一。
+Inspection Snapshot,檢查快照
+NPI Tooling Intake,NPI 模具接收記錄
+NPI Tooling Intake Evidence Reference,NPI 模具接收證據引用
+NPI Tooling Set,NPI 實體模具套
+Only customer confirmation evidence can identify differences.,只有客戶確認資料可以標識差異項。
+Physical Serial,實體序號
+Predecessor Tooling Intake Global ID,前序模具接收全域識別碼
+Record a difference for every inspection or accessory discrepancy.,每個檢查或配件差異都必須記錄差異項。
+Record exactly one observation for each required inspection category.,每個必要檢查類別必須且只能記錄一條觀察結果。
+Repair Authorization Reference,維修授權引用
+Return Conditions,返還條件
+Select a customer-owned intake or copy/additional Set requirement.,請選擇客戶自有模具接收或複製/增加套數需求。
+The Tooling Intake difference source is unavailable.,模具接收差異來源不可用。
+The Tooling Intake evidence does not match its exact File Revision.,模具接收證據與其精確檔案修訂不相符。
+The Tooling Intake evidence key does not match.,模具接收證據鍵不相符。
+The Tooling Intake evidence snapshot hash does not match.,模具接收證據快照雜湊不相符。
+The Tooling Intake snapshot hash does not match.,模具接收快照雜湊不相符。
+The Tooling Intake version does not advance its exact predecessor.,模具接收版本未從其精確前序版本遞進。
+The Tooling Requirement is unavailable for this physical Set.,此實體模具套對應的模具開發需求不可用。
+The Tooling Set does not match its Project and tenant.,實體模具套與其專案和租戶不相符。
+The Tooling Set is unavailable for this intake.,此接收記錄對應的實體模具套不可用。
+The Tooling Set snapshot hash does not match.,實體模具套快照雜湊不相符。
+The customer confirmation difference is unavailable.,客戶確認對應的差異項不可用。
+The exact Tooling Intake version is unavailable.,精確的模具接收版本不可用。
+The exact clean private File Revision is unavailable.,精確且已清潔掃描的私有檔案修訂不可用。
+The first Tooling Intake version cannot have a predecessor.,首個模具接收版本不能有前序版本。
+The predecessor Tooling Intake is unavailable.,前序模具接收記錄不可用。
+Tooling Intake,模具接收記錄
+Tooling Intake Evidence Key Hash,模具接收證據鍵雜湊
+Tooling Intake Evidence Role,模具接收證據用途
+Tooling Intake Evidence Snapshot,模具接收證據快照
+Tooling Intake Evidence Snapshot does not match its exact evidence.,模具接收證據快照與其精確證據不相符。
+Tooling Intake Global ID,模具接收全域識別碼
+Tooling Intake Key,模具接收鍵
+Tooling Intake Key does not match the exact version.,模具接收鍵與精確版本不相符。
+Tooling Intake Snapshot,模具接收快照
+Tooling Intake Snapshot Hash,模具接收快照雜湊
+Tooling Intake Snapshot does not match its exact intake version.,模具接收快照與其精確接收版本不相符。
+Tooling Intake Version,模具接收版本
+Tooling Requirement,模具開發需求
+Tooling Requirement Global ID,模具開發需求全域識別碼
+Tooling Set,實體模具套
+Tooling Set Global ID,實體模具套全域識別碼
+Tooling Set Snapshot,實體模具套快照
+Tooling Set Snapshot does not match its exact physical Set.,實體模具套快照與其精確實體不相符。
+Transport Provider,運輸服務方
+Transport Reference,運輸引用
+accessory_document,配件檔案
+arrival_photo,到廠照片
+customer_confirmation,客戶確認
+inspection_evidence,檢查證據
+transport_document,運輸檔案

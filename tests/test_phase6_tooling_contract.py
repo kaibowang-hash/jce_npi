@@ -34,6 +34,19 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "CreateToolingRequirement",
             "CreateToolingMaster",
             "CreateToolingApplicability",
+            "ToolingSetUnavailableField",
+            "ToolingSetPermissions",
+            "ToolingSetSummary",
+            "ToolingIntakeAccessory",
+            "ToolingIntakeInspection",
+            "ToolingIntakeDifference",
+            "ToolingIntakeSummary",
+            "ToolingIntakeEvidenceReference",
+            "ToolingSetCollection",
+            "ToolingSetDetail",
+            "CreateToolingSet",
+            "CreateToolingIntake",
+            "CreateToolingIntakeEvidenceReference",
         )
         for name in schema_names:
             with self.subTest(name=name):
@@ -60,6 +73,11 @@ class Phase6ToolingContractTest(unittest.TestCase):
         ):
             self.assertIn(command, BFF)
         self.assertIn("_p6_01_routes_disabled", BFF)
+        self.assertNotIn(
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets:",
+            paths,
+        )
+        self.assertNotIn("tooling_api.create_tooling_set", BFF)
 
     def test_browser_requests_cannot_supply_server_owned_truth(self) -> None:
         requests = "\n".join(
@@ -70,12 +88,15 @@ class Phase6ToolingContractTest(unittest.TestCase):
                 "CreateToolingRequirement",
                 "CreateToolingMaster",
                 "CreateToolingApplicability",
+                "CreateToolingSet",
+                "CreateToolingIntake",
+                "CreateToolingIntakeEvidenceReference",
             )
         )
         for forbidden in (
             "tenantId:", "actorUserId:", "snapshotHash:",
             "relationshipKeyHash:", "sourceSystem:", "assetId:",
-            "lifecycleState:", "setCount:", "doctype:",
+            "lifecycleState:", "setCount:", "doctype:", "fileUrl:",
         ):
             self.assertNotIn(forbidden, requests)
 
@@ -101,10 +122,41 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertIn("lifecycle_policy_unavailable", capability)
         self.assertIn("transitionLifecycle: { type: boolean, const: false }", permissions)
 
+    def test_physical_set_intake_contract_is_distinct_url_free_and_not_active(self) -> None:
+        tooling_set = _schema("ToolingSetSummary")
+        intake = _schema("ToolingIntakeSummary")
+        inspection = _schema("ToolingIntakeInspection")
+        evidence = _schema("ToolingIntakeEvidenceReference")
+        create_set = _schema("CreateToolingSet")
+        for marker in (
+            "globalId:", "toolingMasterGlobalId:",
+            "toolingRequirementGlobalId:", "physicalSerial:",
+            "custodyResponsibility:", "repairAuthorizationReference:",
+            "returnConditions:", "sourceRevision:", "supplier:",
+            "lifecycle:", "erpLocationAndAsset:",
+        ):
+            self.assertIn(marker, tooling_set)
+        self.assertNotIn("setCount:", tooling_set)
+        self.assertNotIn("status:", tooling_set)
+        for category in (
+            "appearance", "water_circuit", "hot_runner", "electrical", "safety",
+        ):
+            self.assertIn(category, inspection)
+        self.assertIn("inspections:", intake)
+        for marker in (
+            "fileRevisionGlobalId:", "fileOptimisticVersion:",
+            "fileContentHash:", "sha256:", "differenceGlobalIds:",
+        ):
+            self.assertIn(marker, evidence)
+        self.assertNotIn("fileUrl:", evidence)
+        self.assertNotIn("assetId:", create_set)
+        self.assertNotIn("sourceRevisionGlobalId:", create_set)
+
     def test_exact_ownership_rows_preserve_npi_erp_boundary(self) -> None:
         for object_name in (
             "EngineeringPart", "EngineeringPartRevision", "ToolingRequirement",
             "ToolingMaster", "ToolingApplicability", "ToolingCommandIdempotency",
+            "ToolingSet", "ToolingIntake", "ToolingIntakeEvidenceReference",
         ):
             self.assertIn(f"  {object_name}:\n", OWNERSHIP)
         self.assertIn("formal_item_mapping: {owner: ERPNEXT", OWNERSHIP)
@@ -112,6 +164,10 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertIn("lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY", OWNERSHIP)
         self.assertIn("raw_idempotency_key:", OWNERSHIP)
         self.assertIn("conflict: NEVER_PERSIST", OWNERSHIP)
+        self.assertIn("exact_source_tooling_revision: {owner: FUTURE_P6_03", OWNERSHIP)
+        self.assertIn("formal_supplier: {owner: ERPNEXT", OWNERSHIP)
+        self.assertIn("raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE", OWNERSHIP)
+        self.assertIn("conflict: NEVER_EXPOSE_OR_MUTATE", OWNERSHIP)
 
 
 if __name__ == "__main__":

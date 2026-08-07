@@ -78,6 +78,37 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             "target_object_type", "target_global_id", "response_payload",
             "response_hash", "sealed", "created_at", "updated_at",
         },
+        "npi_tooling_set": {
+            "global_id", "tenant_id", "project_global_id", "tooling_master",
+            "tooling_master_global_id", "tooling_requirement",
+            "tooling_requirement_global_id", "requirement_kind",
+            "physical_serial", "customer_source_system",
+            "customer_source_object_id", "custody_responsibility",
+            "repair_authorization_reference", "return_conditions",
+            "created_by_user_id", "created_at", "request_id", "trace_id",
+            "set_snapshot", "snapshot_hash",
+        },
+        "npi_tooling_intake": {
+            "global_id", "intake_key", "tenant_id", "project_global_id",
+            "tooling_master_global_id", "tooling_set",
+            "tooling_set_global_id", "intake_version",
+            "predecessor_global_id", "predecessor_snapshot_hash",
+            "transport_provider", "transport_reference", "arrived_at",
+            "custody_handover", "accessory_snapshot", "inspection_snapshot",
+            "difference_snapshot", "created_by_user_id", "created_at",
+            "request_id", "trace_id", "intake_snapshot", "snapshot_hash",
+        },
+        "npi_tooling_intake_evidence_reference": {
+            "global_id", "evidence_key_hash", "tenant_id",
+            "project_global_id", "tooling_master_global_id",
+            "tooling_set_global_id", "tooling_intake",
+            "tooling_intake_global_id", "intake_snapshot_hash",
+            "evidence_role", "difference_global_ids", "file_revision",
+            "file_revision_global_id", "file_optimistic_version",
+            "frappe_content_hash", "file_name", "mime_type", "size_bytes",
+            "sha256", "created_by_user_id", "created_at", "request_id",
+            "trace_id", "evidence_snapshot", "snapshot_hash",
+        },
     }
 
     def load(self, folder: str) -> dict[str, object]:
@@ -111,6 +142,9 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             "npi_tooling_requirement",
             "npi_tooling_master",
             "npi_tooling_applicability",
+            "npi_tooling_set",
+            "npi_tooling_intake",
+            "npi_tooling_intake_evidence_reference",
         ):
             metadata = self.load(folder)
             self.assertEqual(metadata.get("permissions"), [SYSTEM_MANAGER_APPEND, API_APPEND])
@@ -136,7 +170,7 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             ],
         )
 
-    def test_metadata_does_not_invent_lifecycle_set_or_erp_truth(self) -> None:
+    def test_metadata_does_not_invent_lifecycle_or_erp_truth(self) -> None:
         serialized = json.dumps(
             [self.load(folder) for folder in self.FIELDS],
             sort_keys=True,
@@ -166,6 +200,47 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 )
         self.assertNotIn("tooling_requirement_global_id", fields)
         self.assertNotIn("physical_set_count", fields)
+
+    def test_physical_set_is_one_identity_and_serial_is_not_a_unique_key(self) -> None:
+        fields = self.fields(self.load("npi_tooling_set"))
+        self.assertEqual(fields["global_id"].get("unique"), 1)
+        self.assertNotEqual(fields["physical_serial"].get("unique"), 1)
+        self.assertEqual(
+            str(fields["requirement_kind"].get("options", "")).splitlines(),
+            ["customer_owned_intake", "copy_or_additional_set"],
+        )
+        for forbidden in (
+            "quantity", "lifecycle_state", "source_revision_global_id",
+            "supplier_id", "location", "asset_id",
+        ):
+            self.assertNotIn(forbidden, fields)
+
+    def test_intake_and_evidence_are_versioned_append_only_and_url_free(self) -> None:
+        intake = self.fields(self.load("npi_tooling_intake"))
+        evidence = self.fields(
+            self.load("npi_tooling_intake_evidence_reference")
+        )
+        for fieldname in (
+            "intake_version", "predecessor_global_id",
+            "predecessor_snapshot_hash", "accessory_snapshot",
+            "inspection_snapshot", "difference_snapshot", "snapshot_hash",
+        ):
+            self.assertIn(fieldname, intake)
+        for fieldname in (
+            "intake_snapshot_hash", "evidence_role", "difference_global_ids",
+            "file_revision_global_id", "file_optimistic_version",
+            "frappe_content_hash", "sha256", "snapshot_hash",
+        ):
+            self.assertIn(fieldname, evidence)
+        self.assertNotIn("file", evidence)
+        self.assertNotIn("file_url", evidence)
+        self.assertEqual(
+            str(evidence["evidence_role"].get("options", "")).splitlines(),
+            [
+                "arrival_photo", "transport_document", "accessory_document",
+                "inspection_evidence", "customer_confirmation",
+            ],
+        )
 
     def test_all_controllers_require_closed_command_flag_and_deny_delete(self) -> None:
         validation = VALIDATION.read_text(encoding="utf-8")

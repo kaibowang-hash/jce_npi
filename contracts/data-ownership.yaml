@@ -398,6 +398,34 @@ objects:
       relationship_version_predecessor_and_effectivity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       normalized_relationship_key_and_snapshot_hash: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: HASH_MISMATCH_EXCEPTION}
 
+  ToolingSet:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      physical_set_identity_master_requirement_and_serial: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      customer_ownership_custody_repair_authorization_and_return_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_source_tooling_revision: {owner: FUTURE_P6_03_TOOLING_REVISION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_supplier: {owner: ERPNEXT, editable_in: [FUTURE_P6_04_ERP_PROJECTION], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingIntake:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_set_version_predecessor_transport_and_custody_handover: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      accessory_inspection_and_difference_snapshot: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      lifecycle_or_acceptance_result: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingIntakeEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_intake_difference_role_and_file_revision_identity: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      immutable_file_hash_metadata_snapshot: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE_OR_MUTATE}
+      external_customer_signature_or_approval: {owner: FUTURE_APPROVED_CUSTOMER_AUTHORITY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
   ToolingCommandIdempotency:
     owner_system: NPI_ONE_TOOLING_COMMAND
     erp_view: none

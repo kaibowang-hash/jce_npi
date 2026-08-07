@@ -10029,6 +10029,289 @@ components:
             physicalSet: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
             trial: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
             erp: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+    ToolingSetUnavailableField:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode:
+          type: string
+          enum:
+            [
+              lifecycle_policy_unavailable,
+              tooling_revision_not_delivered,
+              formal_supplier_unavailable,
+              erp_projection_unavailable,
+            ]
+    ToolingSetPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, createSet, createIntake, attachEvidence, transitionLifecycle]
+      properties:
+        view: { type: boolean }
+        createSet: { type: boolean }
+        createIntake: { type: boolean }
+        attachEvidence: { type: boolean }
+        transitionLifecycle: { type: boolean, const: false }
+    ToolingSetSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          projectGlobalId,
+          toolingMasterGlobalId,
+          toolingRequirementGlobalId,
+          requirementKind,
+          physicalSerial,
+          customer,
+          custodyResponsibility,
+          repairAuthorizationReference,
+          returnConditions,
+          sourceRevision,
+          supplier,
+          lifecycle,
+          erpLocationAndAsset,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRequirementGlobalId: { type: string, format: uuid }
+        requirementKind:
+          type: string
+          enum: [customer_owned_intake, copy_or_additional_set]
+        physicalSerial: { type: string, minLength: 1, maxLength: 80 }
+        customer:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingExternalReference" }
+            - { type: "null" }
+        custodyResponsibility: { type: string, minLength: 1, maxLength: 500 }
+        repairAuthorizationReference: { type: string, minLength: 1, maxLength: 500 }
+        returnConditions: { type: string, minLength: 1, maxLength: 500 }
+        sourceRevision: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
+        supplier: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
+        lifecycle: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
+        erpLocationAndAsset: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingIntakeAccessory:
+      type: object
+      additionalProperties: false
+      required: [globalId, description, declaredQuantity, receivedQuantity, unit]
+      properties:
+        globalId: { type: string, format: uuid }
+        description: { type: string, minLength: 1, maxLength: 200 }
+        declaredQuantity: { type: integer, minimum: 0 }
+        receivedQuantity: { type: integer, minimum: 0 }
+        unit: { type: string, minLength: 1, maxLength: 24 }
+    ToolingIntakeInspection:
+      type: object
+      additionalProperties: false
+      required: [globalId, category, observation, differenceObserved]
+      properties:
+        globalId: { type: string, format: uuid }
+        category:
+          type: string
+          enum: [appearance, water_circuit, hot_runner, electrical, safety]
+        observation: { type: string, minLength: 1, maxLength: 500 }
+        differenceObserved: { type: boolean }
+    ToolingIntakeDifference:
+      type: object
+      additionalProperties: false
+      required: [globalId, sourceKind, sourceGlobalId, description, customerConfirmationRequired]
+      properties:
+        globalId: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [accessory, inspection] }
+        sourceGlobalId: { type: string, format: uuid }
+        description: { type: string, minLength: 1, maxLength: 500 }
+        customerConfirmationRequired: { type: boolean }
+    ToolingIntakeSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          toolingSetGlobalId,
+          version,
+          predecessorGlobalId,
+          transportProvider,
+          transportReference,
+          arrivedAt,
+          custodyHandover,
+          accessories,
+          inspections,
+          differences,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        toolingSetGlobalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        transportProvider: { type: string, minLength: 1, maxLength: 140 }
+        transportReference: { type: string, minLength: 1, maxLength: 140 }
+        arrivedAt: { type: string, format: date-time }
+        custodyHandover: { type: string, minLength: 1, maxLength: 500 }
+        accessories:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingIntakeAccessory" }
+        inspections:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ToolingIntakeInspection" }
+        differences:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingIntakeDifference" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingIntakeEvidenceReference:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          toolingIntakeGlobalId,
+          intakeSnapshotHash,
+          evidenceRole,
+          differenceGlobalIds,
+          fileRevisionGlobalId,
+          fileOptimisticVersion,
+          fileContentHash,
+          fileName,
+          mimeType,
+          sizeBytes,
+          sha256,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        toolingIntakeGlobalId: { type: string, format: uuid }
+        intakeSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        evidenceRole:
+          type: string
+          enum:
+            [
+              arrival_photo,
+              transport_document,
+              accessory_document,
+              inspection_evidence,
+              customer_confirmation,
+            ]
+        differenceGlobalIds:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        fileContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingSetCollection:
+      type: object
+      additionalProperties: false
+      required: [toolingMasterGlobalId, permissions, items]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingSetPermissions" }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingSetSummary" }
+    ToolingSetDetail:
+      type: object
+      additionalProperties: false
+      required: [toolingSet, permissions, intakes, evidence]
+      properties:
+        toolingSet: { $ref: "#/components/schemas/ToolingSetSummary" }
+        permissions: { $ref: "#/components/schemas/ToolingSetPermissions" }
+        intakes:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingIntakeSummary" }
+        evidence:
+          type: array
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/ToolingIntakeEvidenceReference"
+    CreateToolingSet:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          toolingRequirementGlobalId,
+          physicalSerial,
+          custodyResponsibility,
+          repairAuthorizationReference,
+          returnConditions,
+        ]
+      properties:
+        toolingRequirementGlobalId: { type: string, format: uuid }
+        physicalSerial: { type: string, minLength: 1, maxLength: 80 }
+        customer: { $ref: "#/components/schemas/ToolingExternalReference" }
+        custodyResponsibility: { type: string, minLength: 1, maxLength: 500 }
+        repairAuthorizationReference: { type: string, minLength: 1, maxLength: 500 }
+        returnConditions: { type: string, minLength: 1, maxLength: 500 }
+    CreateToolingIntake:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          transportProvider,
+          transportReference,
+          arrivedAt,
+          custodyHandover,
+          accessories,
+          inspections,
+          differences,
+        ]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        transportProvider: { type: string, minLength: 1, maxLength: 140 }
+        transportReference: { type: string, minLength: 1, maxLength: 140 }
+        arrivedAt: { type: string, format: date-time }
+        custodyHandover: { type: string, minLength: 1, maxLength: 500 }
+        accessories:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingIntakeAccessory" }
+        inspections:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ToolingIntakeInspection" }
+        differences:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingIntakeDifference" }
+    CreateToolingIntakeEvidenceReference:
+      type: object
+      additionalProperties: false
+      required: [evidenceRole, differenceGlobalIds, fileRevisionGlobalId]
+      properties:
+        evidenceRole:
+          type: string
+          enum:
+            [
+              arrival_photo,
+              transport_document,
+              accessory_document,
+              inspection_evidence,
+              customer_confirmation,
+            ]
+        differenceGlobalIds:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        fileRevisionGlobalId: { type: string, format: uuid }
     CreateEngineeringPart:
       type: object
       additionalProperties: false
