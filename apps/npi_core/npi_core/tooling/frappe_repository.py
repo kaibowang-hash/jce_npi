@@ -1113,6 +1113,7 @@ class FrappeToolingRepository(FrappeDocumentRepository):
                 "relationship_global_id": str(value.relationship_global_id),
                 "relationship_key_hash": value.relationship_key_hash,
                 "version_key": _applicability_version_key(
+                    value.tenant_id,
                     value.relationship_global_id,
                     value.applicability_version,
                 ),
@@ -1491,11 +1492,12 @@ def _datetime(value: object) -> datetime:
 
 
 def _applicability_version_key(
+    tenant_id: str,
     relationship_global_id: UUID,
     applicability_version: int,
 ) -> str:
     return hashlib.sha256(
-        f"{relationship_global_id}:{applicability_version}".encode()
+        f"{tenant_id}:{relationship_global_id}:{applicability_version}".encode()
     ).hexdigest()
 
 

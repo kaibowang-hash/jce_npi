@@ -1,23 +1,23 @@
 # Blockers
 
-Updated: `2026-08-07T16:05:11Z`
+Updated: `2026-08-07T16:28:34Z`
 
 ## Active hard blockers
 
-None. Optional-reference repair `c1f627c` passed complete ordinary CI
-`31194339295`. Diagnostics-closed Gate `31195049338` passed repository and
-visual and advanced to a later deterministic Applicability version-key
-contract failure. The minimal in-scope formula repair is active and requires
-no user action.
+None. Initial version-key repair `ab718e6` passed complete ordinary CI
+`31196125343`, but diagnostics-closed Gate `31196918023` proved it incomplete.
+The missing tenant namespace is now directly established from the repository
+and DocType formulas. The corrective in-scope repair requires no user action.
 
 ## Active recovery
 
 `P6-01-APPLICABILITY-VERSION-KEY-REPAIR` — `IN_PROGRESS_REPAIR`, not blocked.
-The optional Select repair is effective. The repository currently supplies a
-raw `relationship_global_id:applicability_version` version key, while the
-DocType invariant requires its SHA-256 digest; both formulas are fixed code
-and cannot agree. Repair only the repository formula, retain diagnostics
-closed, run affected/full ordinary CI and reserve one final unchanged Gate.
+The optional Select repair is effective. The first hash repair omitted
+`tenant_id:` from the DocType's canonical version-key input, and its test
+mirrored the incomplete helper. Correct only the repository formula to SHA-256
+of `tenant_id:relationship_global_id:applicability_version`, add a validator
+cross-check, retain diagnostics closed, run affected/full ordinary CI and one
+final unchanged Gate.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

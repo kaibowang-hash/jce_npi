@@ -1,13 +1,13 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T16:05:11Z'
+updated_at: '2026-08-07T16:28:34Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
 current_task_status: IN_PROGRESS_REPAIR
-current_task_completed_stage: P6_01_APPLICABILITY_OPTIONAL_REFERENCE_REPAIR_EFFECTIVE
-current_task_next_stage: P6_01_APPLICABILITY_VERSION_KEY_REPAIR
+current_task_completed_stage: P6_01_APPLICABILITY_VERSION_KEY_REPAIR_PROVED_INCOMPLETE
+current_task_next_stage: P6_01_APPLICABILITY_VERSION_KEY_TENANT_NAMESPACE_REPAIR
 current_task_next_stage_status: IN_PROGRESS_REPAIR
 resumed_product_task: P6-01
 resumed_product_task_status: IN_PROGRESS_REPAIR
@@ -764,9 +764,21 @@ p6_01:
   applicability_final_outcome: FAILED_SAME_RELATIONSHIP_INSERT_VERSION_KEY_PROVEN
   applicability_optional_reference_repair_effective: true
   applicability_version_key_root: P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH
-  applicability_version_key_repair_status: IN_PROGRESS
+  applicability_version_key_repair_status: IN_PROGRESS_CORRECTIVE
+  applicability_version_key_initial_repair_checkpoint: ab718e693e35df6fbc8fee09b14c7024ddaf547f
+  applicability_version_key_initial_normal_ci: 31196125343
+  applicability_version_key_initial_repository_job: 92924661787
+  applicability_version_key_initial_visual_job: 92924661816
+  applicability_version_key_initial_controlled_job: 92924662804
   applicability_version_key_final_gates_authorized: 1
-  applicability_version_key_final_gates_used: 0
+  applicability_version_key_final_gates_used: 1
+  applicability_version_key_initial_final_gate: 31196918023
+  applicability_version_key_initial_final_repository_job: 92927290257
+  applicability_version_key_initial_final_visual_job: 92927290466
+  applicability_version_key_initial_final_controlled_job: 92927290342
+  applicability_version_key_initial_outcome: FAILED_SAME_COMMAND_TENANT_NAMESPACE_OMITTED
+  applicability_version_key_corrective_final_gates_authorized: 1
+  applicability_version_key_corrective_final_gates_used: 0
   completed_stage: LIVE_COCKPIT_CHECKPOINT_PASS
   next_stage: CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
   evidence:

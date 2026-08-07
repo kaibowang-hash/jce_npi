@@ -3,13 +3,13 @@
 Status:
 `IN_PROGRESS_REPAIR — P6-01 APPLICABILITY VERSION KEY`
 
-Recovery time: `2026-08-07T16:05:11Z`
+Recovery time: `2026-08-07T16:28:34Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`c1f627ccf3d596519e06bcb6f420654f05accd32`
+`ab718e693e35df6fbc8fee09b14c7024ddaf547f`
 
 ## Current authoritative action
 
@@ -123,6 +123,17 @@ SHA-256 digest. Align only that repository formula, keep diagnostics closed,
 run affected and full checks, require complete exact-SHA ordinary CI, then run
 one final unchanged controlled Gate. On PASS, record controlled artifact
 identity/digest and execute the P6-01 Level 2 Task Gate.
+
+Initial formula repair `ab718e6` passed complete ordinary CI `31196125343`,
+but diagnostics-closed Gate `31196918023` passed repository/visual and every
+controlled predecessor before the first Applicability command remained
+non-201. Full validator comparison proves the repair omitted its required
+`tenant_id:` prefix and its regression test mirrored the incomplete helper.
+Correct the helper to SHA-256
+`tenant_id:relationship_global_id:applicability_version`, assert the same
+namespace in the DocType validator, rerun affected/full ordinary CI, then one
+diagnostics-closed unchanged Gate. Do not dispatch another diagnostic for this
+already deterministic same-root correction.
 
 Implement only:
 

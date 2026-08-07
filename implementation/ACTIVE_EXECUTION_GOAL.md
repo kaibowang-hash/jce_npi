@@ -1,6 +1,6 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T16:05:11Z`
+Updated: `2026-08-07T16:28:34Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
@@ -9,20 +9,20 @@ Updated: `2026-08-07T16:05:11Z`
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `c1f627ccf3d596519e06bcb6f420654f05accd32` (pushed; optional
-  Applicability references remain empty when omitted)
+  `ab718e693e35df6fbc8fee09b14c7024ddaf547f` (pushed; initial
+  Applicability version-key repair, now proved incomplete)
 - Latest completed controller/evidence checkpoint before this update:
   `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
   exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31194339295` (`PASS`, exact SHA `c1f627c`; repository `92918744817`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92918744821`
-  passed `73/73`; controlled runtime `92918745415` correctly skipped)
+  `31196125343` (`PASS`, exact SHA `ab718e6`; repository `92924661787`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92924661816`
+  passed `73/73`; controlled runtime `92924662804` correctly skipped)
 - Latest controlled-Site run:
-  `31195049338` (`FAIL`, exact SHA `c1f627c`, diagnostics closed; repository
-  `92921107120` and visual `92921106655` passed; controlled `92921106746`
-  advanced through all predecessors and failed at the first Applicability
-  create)
+  `31196918023` (`FAIL`, exact SHA `ab718e6`, diagnostics closed; repository
+  `92927290257` and visual `92927290466` passed; controlled `92927290342`
+  passed environment, Site, migrations and every predecessor, then the first
+  Applicability create remained non-201)
 - Controlled PASS artifact:
   `8988384460`, GitHub SHA-256
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
@@ -140,12 +140,16 @@ Optional-reference repair checkpoint `c1f627c` passed complete ordinary CI
 `31194339295`. Final unchanged workflow `31195049338` passed repository
 `92921107120`, visual `92921106655`, pinned Bench, Site, migrations and every
 predecessor before controlled job `92921106746` again reached the Applicability
-relationship insert. Code-contract comparison proves a later independent
-root: the repository writes the raw `relationship_global_id:version` string,
-while the DocType validator requires the SHA-256 of that exact canonical
-string. The active repair makes the repository use the already-required hash
-formula and adds a regression assertion. Diagnostics remain closed; no frozen
-product or Gate boundary changes.
+relationship insert. Initial code-contract comparison correctly identified a
+version-key mismatch but incompletely transcribed the validator formula: it
+omitted the tenant namespace. Checkpoint `ab718e6` therefore hashed
+`relationship_global_id:version`, while the DocType requires SHA-256 of
+`tenant_id:relationship_global_id:version`. Ordinary CI `31196125343` passed
+because the new test mirrored that incomplete helper instead of comparing it
+with the validator. Diagnostics-closed Gate `31196918023` then reproduced the
+same first Applicability non-201 after all predecessors. The active corrective
+repair includes `tenant_id` and cross-checks the repository formula against
+the DocType source. No frozen product or Gate boundary changes.
 
 ## Retained P5-04 recovery history
 

@@ -1,9 +1,9 @@
 # P6-01 Applicability-create Diagnostic Checkpoint
 
-Updated: `2026-08-07T16:05:11Z`
+Updated: `2026-08-07T16:28:34Z`
 
-Status: `SECOND ROOT PROVEN — VERSION-KEY REPAIR IN PROGRESS`; this is not a
-P6-01 Task Gate PASS.
+Status: `VERSION-KEY ROOT PROVEN — CORRECTIVE REPAIR IN PROGRESS`; this is not
+a P6-01 Task Gate PASS.
 
 ## Trigger evidence
 
@@ -102,10 +102,10 @@ paired-reference contradiction was removed.
 The next unconditional validator check provides a unique code-contract proof
 without another diagnostic dispatch:
 
-- repository `_insert_applicability()` writes the raw canonical string
-  `relationship_global_id:applicability_version` to `version_key`;
-- `tooling_applicability.validate()` calculates the SHA-256 digest of that
-  exact canonical string and rejects any non-empty different value;
+- repository `_insert_applicability()` writes a raw version string to
+  `version_key`;
+- `tooling_applicability.validate()` calculates a tenant-namespaced SHA-256
+  digest and rejects any non-empty different value;
 - therefore the repository value cannot pass the immutable DocType invariant.
 
 The uniquely proved root is
@@ -122,3 +122,29 @@ Compilation, workflow/status YAML parse, prototype approval, P0 visual
 governance, V1.2 reconciliation, prohibited-pattern scan and `git diff --check`
 pass locally. Complete exact-SHA ordinary CI and one diagnostics-closed final
 unchanged Gate remain mandatory.
+
+## Initial repair failure and exact corrective formula
+
+Initial repair checkpoint `ab718e6` hashed
+`relationship_global_id:applicability_version` and passed complete ordinary CI
+`31196125343`: repository `92924661787` and visual `92924661816` passed, while
+controlled `92924662804` correctly skipped. Diagnostics-closed workflow
+`31196918023` retained that exact SHA. Repository `92927290257`, visual
+`92927290466`, pinned Bench, Site, migrations and every predecessor passed;
+controlled job `92927290342` then returned the same first Applicability command
+non-201.
+
+The initial implementation and evidence omitted a material part of the full
+DocType formula. The validator actually hashes
+`tenant_id:relationship_global_id:applicability_version`. The new regression
+assertion had mirrored the incomplete repository helper, so ordinary CI could
+not detect the cross-file contract mismatch. This explains why the apparent
+repair passed all ordinary checks but had no effect on the controlled Site.
+
+The corrective repair adds `tenant_id` to the repository helper input and
+asserts the same namespace in the DocType validator source. This remains the
+same uniquely proved version-key root; it changes no Requirement, public API,
+permission, Schema intent, ownership, transaction, idempotency, audit or PASS
+rule. Affected tests pass `23/23`, complete tracked Python passes
+`1,130/1,130`, compilation and diff checks pass. Complete ordinary CI and one
+diagnostics-closed unchanged Gate remain mandatory.

@@ -970,12 +970,24 @@ repeat or rewrite it merely to restore context. See
   predecessors passed; controlled job `92921106746` reached the same coarse
   relationship-insert stage after the former paired-reference root had been
   removed. The next unconditional contract check is deterministically
-  contradictory: repository `_insert_applicability()` writes the raw
-  `relationship_global_id:applicability_version` string, while the immutable
-  DocType validator accepts only the SHA-256 digest of that exact canonical
-  string. This uniquely proves
+  contradictory: repository `_insert_applicability()` writes a raw version
+  string, while the immutable DocType validator accepts only a namespaced
+  SHA-256 digest. This uniquely proves
   `P601_APPLICABILITY_VERSION_KEY_HASH_MISMATCH`. Standing recovery authority
   activates only that formula-alignment repair, affected/full ordinary CI and
   one diagnostics-closed final unchanged Gate. It changes no Requirement,
   public API, permission, Schema intent, ownership, transaction, idempotency,
   audit or PASS rule.
+- Initial repair `ab718e6` passed complete ordinary CI `31196125343` with
+  repository `92924661787` and visual `92924661816`. Final unchanged Gate
+  `31196918023` passed repository `92927290257`, visual `92927290466`, pinned
+  Bench, Site, migrations and all predecessors; controlled job `92927290342`
+  still returned the first Applicability command non-201. Direct re-audit of
+  the full validator proves the repair transcribed only
+  `relationship_global_id:version` and omitted the required leading
+  `tenant_id:` namespace. Its test mirrored the incomplete helper and did not
+  cross-check the validator. This is the same proved root and an incomplete
+  technical repair, not a new product decision or Hard Blocker. Correct the
+  exact `tenant_id:relationship_global_id:version` SHA-256 formula, add a
+  cross-file contract assertion, run affected/full ordinary CI, then one
+  diagnostics-closed unchanged Gate.

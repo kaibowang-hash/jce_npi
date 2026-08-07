@@ -9,6 +9,10 @@ ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "apps/npi_core/npi_core/tooling/frappe_repository.py"
 SOURCE = PATH.read_text(encoding="utf-8")
 TREE = ast.parse(SOURCE)
+APPLICABILITY_VALIDATOR_SOURCE = (
+    ROOT
+    / "apps/npi_core/npi_core/npi_core/doctype/npi_tooling_applicability/npi_tooling_applicability.py"
+).read_text(encoding="utf-8")
 
 
 def function(name: str) -> str:
@@ -143,11 +147,20 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         self.assertIn("row.source_object_id", reference)
         insert = function("_insert_applicability")
         self.assertIn("_applicability_version_key(", insert)
+        self.assertIn("value.tenant_id", insert)
         version_key = function("_applicability_version_key")
         self.assertIn("hashlib.sha256(", version_key)
         self.assertIn(
-            'f"{relationship_global_id}:{applicability_version}".encode()',
+            'f"{tenant_id}:{relationship_global_id}:{applicability_version}".encode()',
             version_key,
+        )
+        self.assertIn(
+            'f"{self.tenant_id}:{applicability.relationship_global_id}:"',
+            APPLICABILITY_VALIDATOR_SOURCE,
+        )
+        self.assertIn(
+            'f"{applicability.applicability_version}"',
+            APPLICABILITY_VALIDATOR_SOURCE,
         )
 
     def test_applicability_diagnostic_covers_each_atomic_substage(self) -> None:
