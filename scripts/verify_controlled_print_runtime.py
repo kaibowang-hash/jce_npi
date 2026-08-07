@@ -53,6 +53,17 @@ def fixture_uuid4(scope: str) -> str:
     return str(UUID(bytes=bytes(digest)))
 
 
+def runtime_source_id(project_id: str) -> str:
+    """Mirror the closed disposable adapter's server-owned source identity."""
+
+    digest = bytearray(
+        hashlib.sha256(f"{RUNTIME_MARKER}\0{project_id}".encode("utf-8")).digest()[:16]
+    )
+    digest[6] = (digest[6] & 0x0F) | 0x40
+    digest[8] = (digest[8] & 0x3F) | 0x80
+    return str(UUID(bytes=bytes(digest)))
+
+
 REGISTRY_ID = fixture_uuid4("registry")
 MAPPING_ID = fixture_uuid4("mapping-1")
 PRINT_FORMAT_NAME = f"P506 Runtime {FIXTURE_RUN_ID[:12]}"
@@ -408,7 +419,7 @@ def capability_path(project_id: str, source_version: int) -> str:
     query = urllib.parse.urlencode(
         {
             "sourceKind": SOURCE_KIND,
-            "sourceGlobalId": project_id,
+            "sourceGlobalId": runtime_source_id(project_id),
             "sourceVersion": source_version,
             "language": "en",
         }
@@ -487,7 +498,7 @@ def create_payload(
 ) -> dict[str, object]:
     return {
         "sourceKind": SOURCE_KIND,
-        "sourceGlobalId": project_id,
+        "sourceGlobalId": runtime_source_id(project_id),
         "sourceVersion": source_version,
         "language": language,
     }
@@ -502,7 +513,7 @@ def assert_capability(value: object, project_id: str, source_version: int) -> No
     require(
         value.get("available") is True
         and value.get("sourceKind") == SOURCE_KIND
-        and value.get("sourceGlobalId") == project_id
+        and value.get("sourceGlobalId") == runtime_source_id(project_id)
         and value.get("sourceVersion") == source_version
         and value.get("language") == "en"
         and value.get("deliveryMode") == "controlled_pdf"
@@ -533,7 +544,7 @@ def assert_snapshot(value: object, project_id: str, source_version: int) -> None
     require(
         isinstance(source, dict)
         and source.get("sourceKind") == SOURCE_KIND
-        and source.get("sourceGlobalId") == project_id
+        and source.get("sourceGlobalId") == runtime_source_id(project_id)
         and source.get("sourceVersion") == source_version
         and _HASH.fullmatch(str(source.get("sourceSnapshotHash"))) is not None
         and isinstance(registry, dict)

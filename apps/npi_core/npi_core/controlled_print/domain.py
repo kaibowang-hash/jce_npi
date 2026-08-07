@@ -123,7 +123,7 @@ class ControlledPrintContext:
         object.__setattr__(
             self,
             "project_global_id",
-            _uuid(self.project_global_id, "projectGlobalId"),
+            _project_uuid(self.project_global_id),
         )
         for fieldname in ("source_object_type", "project_type_key", "source_state"):
             object.__setattr__(
@@ -476,7 +476,7 @@ class ControlledPrintSnapshot:
         object.__setattr__(
             self,
             "project_global_id",
-            _uuid(self.project_global_id, "projectGlobalId"),
+            _project_uuid(self.project_global_id),
         )
         object.__setattr__(
             self,
@@ -605,12 +605,17 @@ class ControlledPrintOutput:
     record_hash: str = ""
 
     def __post_init__(self) -> None:
-        for fieldname in ("global_id", "project_global_id", "snapshot_global_id"):
+        for fieldname in ("global_id", "snapshot_global_id"):
             object.__setattr__(
                 self,
                 fieldname,
                 _uuid(getattr(self, fieldname), _camel(fieldname)),
             )
+        object.__setattr__(
+            self,
+            "project_global_id",
+            _project_uuid(self.project_global_id),
+        )
         object.__setattr__(self, "tenant_id", _key(self.tenant_id, "tenantId"))
         object.__setattr__(
             self,
@@ -692,7 +697,6 @@ class ControlledPrintAccessEvent:
     def __post_init__(self) -> None:
         for fieldname in (
             "global_id",
-            "project_global_id",
             "snapshot_global_id",
             "output_global_id",
         ):
@@ -701,6 +705,11 @@ class ControlledPrintAccessEvent:
                 fieldname,
                 _uuid(getattr(self, fieldname), _camel(fieldname)),
             )
+        object.__setattr__(
+            self,
+            "project_global_id",
+            _project_uuid(self.project_global_id),
+        )
         object.__setattr__(self, "tenant_id", _key(self.tenant_id, "tenantId"))
         if not isinstance(self.event_type, PrintAccessEventType):
             raise _field_problem("eventType", _("Select a supported value."))
@@ -780,7 +789,7 @@ def controlled_print_command_payload_hash(
             "operation": CONTROLLED_PRINT_OPERATION,
             "actorUserId": _actor(actor_user_id, "actorUserId"),
             "tenantId": _key(tenant_id, "tenantId"),
-            "projectGlobalId": str(_uuid(project_global_id, "projectGlobalId")),
+            "projectGlobalId": str(_project_uuid(project_global_id)),
             "sourceKind": _key(source_object_type, "sourceKind"),
             "sourceGlobalId": str(_uuid(source_global_id, "sourceGlobalId")),
             "sourceVersion": _positive(source_version, "sourceVersion"),
@@ -800,7 +809,7 @@ def controlled_print_receipt_key(
 
     actor = _actor(actor_user_id, "actorUserId")
     tenant = _key(tenant_id, "tenantId")
-    project_id = _uuid(project_global_id, "projectGlobalId")
+    project_id = _project_uuid(project_global_id)
     key_hash = _hash(idempotency_key_hash, "idempotencyKeyHash")
     return hashlib.sha256(
         (
@@ -859,6 +868,15 @@ def _uuid(value: object, path: str) -> UUID:
     if result.version != 4:
         raise _field_problem(path, _("Enter a version 4 UUID."))
     return result
+
+
+def _project_uuid(value: object) -> UUID:
+    """Accept the immutable Project identity defined by the Project contract."""
+
+    try:
+        return value if isinstance(value, UUID) else UUID(str(value))
+    except (AttributeError, TypeError, ValueError) as error:
+        raise _field_problem("projectGlobalId", _("Enter a valid UUID.")) from error
 
 
 def _positive(value: object, path: str) -> int:

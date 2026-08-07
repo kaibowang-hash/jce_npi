@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -29,10 +30,7 @@ class ResolvedControlledPrintSource:
     snapshot: Mapping[str, object]
 
     def __post_init__(self) -> None:
-        if (
-            not isinstance(self.project_global_id, UUID)
-            or self.project_global_id.version != 4
-        ):
+        if not isinstance(self.project_global_id, UUID):
             raise RuntimeError(
                 "Controlled print source returned an invalid Project identity."
             )
@@ -155,7 +153,7 @@ class _DisposableRuntimeProjectSourceAdapter:
         project_global_id: UUID,
         source_global_id: UUID,
     ) -> ResolvedControlledPrintSource | None:
-        if project_global_id != source_global_id:
+        if source_global_id != _disposable_runtime_source_global_id(project_global_id):
             return None
         import frappe
 
@@ -171,7 +169,7 @@ class _DisposableRuntimeProjectSourceAdapter:
         snapshot: dict[str, object] = {
             "schemaVersion": 1,
             "sourceKind": self.source_object_type,
-            "globalId": str(project_global_id),
+            "globalId": str(source_global_id),
             "tenantId": str(project.tenant_id),
             "businessCode": str(project.business_code),
             "title": str(project.title),
@@ -209,6 +207,17 @@ def _is_disposable_runtime_site() -> bool:
         else None
     )
     return marker == _DISPOSABLE_RUNTIME_MARKER
+
+
+def _disposable_runtime_source_global_id(project_global_id: UUID) -> UUID:
+    digest = bytearray(
+        hashlib.sha256(
+            f"{_DISPOSABLE_RUNTIME_MARKER}\0{project_global_id}".encode("utf-8")
+        ).digest()[:16]
+    )
+    digest[6] = (digest[6] & 0x0F) | 0x40
+    digest[8] = (digest[8] & 0x3F) | 0x80
+    return UUID(bytes=bytes(digest))
 
 
 def default_controlled_print_source_registry() -> ControlledPrintSourceRegistry:

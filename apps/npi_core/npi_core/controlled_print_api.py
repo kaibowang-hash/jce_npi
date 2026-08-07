@@ -112,7 +112,7 @@ def get_controlled_print_capability(
             actor_user_id=actor,
         )
         response = service.capability(
-            project_global_id=_opaque_route_uuid("project_id"),
+            project_global_id=_opaque_project_uuid(),
             source_object_type=_key(sourceKind, "sourceKind"),
             source_global_id=_uuid(sourceGlobalId, "sourceGlobalId"),
             expected_source_version=_query_positive(sourceVersion, "sourceVersion"),
@@ -152,7 +152,7 @@ def create_controlled_print_snapshot(
         principal = authenticated_principal(actor)
         _require_role(principal)
         request_id, repository = _new_repository(principal)
-        project_id = _opaque_route_uuid("project_id")
+        project_id = _opaque_project_uuid()
         if repository.authorize_project(project_id) is None:
             raise ControlledPrintUnavailable()
         reject_unexpected_request_fields(_CAPABILITY_FIELDS, request_fields)
@@ -197,7 +197,7 @@ def get_controlled_print_snapshot(**request_fields: Any) -> dict[str, Any] | Non
         request_id, repository = _new_repository(principal)
         reject_unexpected_request_fields(frozenset(), request_fields)
         response = repository.snapshot_detail(
-            _opaque_route_uuid("project_id"),
+            _opaque_project_uuid(),
             _opaque_route_uuid("controlled_print_id"),
         )
         if response is None:
@@ -224,7 +224,7 @@ def download_controlled_print_output(**request_fields: Any) -> None:
         request_id, repository = _new_repository(principal)
         reject_unexpected_request_fields(frozenset(), request_fields)
         outcome = repository.content(
-            _opaque_route_uuid("project_id"),
+            _opaque_project_uuid(),
             _opaque_route_uuid("controlled_print_id"),
         )
         if outcome is None:
@@ -279,6 +279,18 @@ def _opaque_route_uuid(name: str) -> UUID:
     except (AttributeError, TypeError, ValueError) as error:
         raise ControlledPrintUnavailable() from error
     if parsed.version != 4 or str(parsed) != str(value).casefold():
+        raise ControlledPrintUnavailable()
+    return parsed
+
+
+def _opaque_project_uuid() -> UUID:
+    params = getattr(frappe.flags, "npi_route_params", None)
+    value = params.get("project_id") if hasattr(params, "get") else None
+    try:
+        parsed = UUID(str(value))
+    except (AttributeError, TypeError, ValueError) as error:
+        raise ControlledPrintUnavailable() from error
+    if str(parsed) != str(value).casefold():
         raise ControlledPrintUnavailable()
     return parsed
 

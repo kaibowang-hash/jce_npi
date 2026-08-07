@@ -81,11 +81,13 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
             payload,
             {
                 "sourceKind": "npi.synthetic_runtime_project",
-                "sourceGlobalId": project_id,
+                "sourceGlobalId": self.module.runtime_source_id(project_id),
                 "sourceVersion": 7,
                 "language": "en",
             },
         )
+        self.assertEqual(UUID(str(payload["sourceGlobalId"])).version, 4)
+        self.assertNotEqual(payload["sourceGlobalId"], project_id)
         serialized = str(payload).casefold()
         for forbidden in (
             "template",

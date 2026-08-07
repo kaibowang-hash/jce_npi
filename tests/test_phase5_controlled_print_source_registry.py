@@ -18,12 +18,13 @@ from npi_core.controlled_print.domain import (
 from npi_core.controlled_print.source_registry import (
     ControlledPrintSourceRegistry,
     ResolvedControlledPrintSource,
+    _disposable_runtime_source_global_id,
     default_controlled_print_source_registry,
 )
 
 
-PROJECT_ID = UUID("00000000-0000-4000-8000-000000000621")
-OTHER_PROJECT_ID = UUID("00000000-0000-4000-8000-000000000622")
+PROJECT_ID = UUID("822ce4ac-0a90-5c0e-8c30-d791dc56e3a9")
+OTHER_PROJECT_ID = UUID("48124772-9b21-5237-9564-36a9c955cc2c")
 SOURCE_ID = UUID("00000000-0000-4000-8000-000000000623")
 SOURCE_KIND = "synthetic_controlled_source"
 
@@ -102,6 +103,16 @@ class Phase5ControlledPrintSourceRegistryTest(unittest.TestCase):
                 with patch.dict("sys.modules", {"frappe": frappe}):
                     registry = default_controlled_print_source_registry()
                 self.assertEqual(registry.source_object_types, expected)
+
+    def test_disposable_source_identity_is_server_owned_uuid4(self) -> None:
+        source_id = _disposable_runtime_source_global_id(PROJECT_ID)
+
+        self.assertEqual(source_id.version, 4)
+        self.assertEqual(source_id, _disposable_runtime_source_global_id(PROJECT_ID))
+        self.assertNotEqual(
+            source_id,
+            _disposable_runtime_source_global_id(OTHER_PROJECT_ID),
+        )
 
     def test_exact_registered_source_resolves_and_snapshot_is_frozen(self) -> None:
         mutable = {

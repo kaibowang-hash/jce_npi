@@ -28,7 +28,7 @@ from npi_core.controlled_print.source_registry import (  # noqa: E402
 )
 
 
-PROJECT_ID = "2e96f421-5872-4c96-a0dd-718d5c970a21"
+PROJECT_ID = "822ce4ac-0a90-5c0e-8c30-d791dc56e3a9"
 SOURCE_ID = "0878087f-6192-4e40-862d-05e0a5927638"
 REGISTRY_ID = "29e933a3-3954-4a96-9400-2be1987ae370"
 MAPPING_ID = "89953948-4178-46dc-b7ca-8b94f2ac4e36"

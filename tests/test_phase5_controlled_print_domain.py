@@ -39,7 +39,7 @@ HASH_B = "b" * 64
 
 class Phase5ControlledPrintDomainTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.project_id = UUID("00000000-0000-4000-8000-000000000601")
+        self.project_id = UUID("822ce4ac-0a90-5c0e-8c30-d791dc56e3a9")
         self.registry_id = UUID("00000000-0000-4000-8000-000000000602")
         self.mapping_id = UUID("00000000-0000-4000-8000-000000000603")
         self.source_id = UUID("00000000-0000-4000-8000-000000000604")
