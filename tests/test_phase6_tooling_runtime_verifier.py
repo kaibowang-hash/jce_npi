@@ -195,7 +195,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             ),
             "p601-part-create-v1",
         )
-        self.assertTrue(module.PART_CREATE_DIAGNOSTICS_ENABLED)
+        self.assertFalse(module.PART_CREATE_DIAGNOSTICS_ENABLED)
 
     def test_fresh_proves_reuse_replay_conflict_rollback_idor_and_history(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]

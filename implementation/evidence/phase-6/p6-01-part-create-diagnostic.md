@@ -1,8 +1,8 @@
 # P6-01 Part-create Diagnostic Checkpoint
 
-Updated: `2026-08-07T14:32:07Z`
+Updated: `2026-08-07T14:56:08Z`
 
-Status: `IN_PROGRESS_DIAGNOSTIC`; this is not a P6-01 Task Gate PASS.
+Status: `ROOT PROVEN — REPAIR IN PROGRESS`; this is not a P6-01 Task Gate PASS.
 
 ## Trigger evidence
 
@@ -24,12 +24,36 @@ payloads, business values, messages, stack traces, credentials or response
 changes. Diagnostic recording is secondary and cannot change the original
 exception, transaction, rollback or safe public problem response.
 
-Counters are diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged
-Gate `0/1`. Affected and complete ordinary CI must pass before the diagnostic
-Site. Only the one uniquely proved root may be repaired; diagnostic activation
-must then close before the final ordinary CI and unchanged controlled Gate.
+Before dispatch, counters were diagnostic `0/1`, uniquely proved repair `0/1`,
+final unchanged Gate `0/1`. Affected and complete ordinary CI were required
+before that diagnostic Site. Only its uniquely proved root may be repaired;
+diagnostic activation must then close before the final ordinary CI and
+unchanged controlled Gate.
 
 No Requirement, public API, permission, Schema intent, ownership, transaction,
 idempotency, audit, baseline, threshold or PASS criterion changes. Production
 lifecycle, numbering, Tooling Revision/Set/Trial, mapping, adapter, ERPNext
 endpoint, credential and production default remain absent.
+
+## Diagnostic result and unique root
+
+Diagnostic checkpoint `7bd0819` passed complete ordinary CI `31188466252`:
+repository `92898914533`, visual `92898914186` at `73/73`, and controlled
+runtime `92898915318` correctly skipped. The sole diagnostic Site
+`31189263393`, controlled job `92901612106`, returned only:
+
+`P601_PART_CREATE_RECEIPT_INSERT / ValidationError /
+trace-fdeec6ebee38563791fb6f338ef1aa0e`
+
+All prior create substages and every predecessor passed. Pinned Frappe
+`Document.insert()` calls `_set_defaults()` and the framework's Select fallback
+uses the first listed option when a new value is empty. The optional
+`target_object_type` listed `part` first. Therefore the new unsealed receipt was
+silently defaulted to an already-bound target and its own invariant correctly
+raised `ValidationError`.
+
+The unique repair prepends the empty Select option and sets verifier diagnostic
+activation to false. The allowed sealed target values remain exactly `part`,
+`part_revision`, `tooling_requirement`, `tooling_master` and
+`tooling_applicability`. Counters are diagnostic `1/1`, repair `0/1` in
+progress, final unchanged Gate `0/1`.

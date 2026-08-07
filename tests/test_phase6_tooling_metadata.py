@@ -123,6 +123,18 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             receipt.get("permissions"),
             [SYSTEM_MANAGER_ADMIN, {**API_APPEND, "write": 1}],
         )
+        target_type = self.fields(receipt)["target_object_type"]
+        self.assertEqual(
+            str(target_type.get("options", "")).splitlines(),
+            [
+                "",
+                "part",
+                "part_revision",
+                "tooling_requirement",
+                "tooling_master",
+                "tooling_applicability",
+            ],
+        )
 
     def test_metadata_does_not_invent_lifecycle_set_or_erp_truth(self) -> None:
         serialized = json.dumps(
@@ -193,7 +205,11 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             sources.update(str(field["label"]) for field in metadata["fields"])
             for field in metadata["fields"]:
                 if field.get("fieldtype") == "Select":
-                    sources.update(str(field.get("options", "")).splitlines())
+                    sources.update(
+                        option
+                        for option in str(field.get("options", "")).splitlines()
+                        if option
+                    )
             python_paths.append(DOCTYPE_ROOT / folder / f"{folder}.py")
         for path in python_paths:
             tree = ast.parse(path.read_text(encoding="utf-8"))

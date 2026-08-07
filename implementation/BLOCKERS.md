@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-07T14:32:07Z`
+Updated: `2026-08-07T14:56:08Z`
 
 ## Active hard blockers
 
@@ -14,17 +14,18 @@ in-scope diagnostic action, not a Hard Blocker and requires no user action.
 
 ## Active recovery
 
-`P6-01-PART-CREATE-DIAGNOSTIC` — `IN_PROGRESS_DIAGNOSTIC`, not blocked.
-Standing recovery authority opens one response-neutral diagnostic cycle with
-counters diagnostic `0/1`, uniquely proved repair `0/1`, final unchanged Gate
-`0/1`. The checkpoint records only one allowlisted Part-create substage code,
-validated exception type and exact trace ID for the first affected request;
-the safe public response and transaction are unchanged. Affected and complete
-ordinary CI must pass before the one diagnostic Site. Only its uniquely proved
-root may be repaired, diagnostics must then close, and complete ordinary CI
-must pass before the final unchanged Gate. `DR-REC-010` and every Requirement,
-API, permission, Schema intent, ownership, transaction, idempotency, audit,
-baseline, threshold and PASS rule remain frozen.
+`P6-01-PART-CREATE-SELECT-DEFAULT-REPAIR` — `IN_PROGRESS_REPAIR`, not blocked.
+Diagnostic checkpoint `7bd0819` passed ordinary CI `31188466252`. The sole
+diagnostic Site `31189263393` returned only
+`P601_PART_CREATE_RECEIPT_INSERT / ValidationError /
+trace-fdeec6ebee38563791fb6f338ef1aa0e`. Code and pinned Frappe runtime prove
+the optional `target_object_type` Select defaulted to its first option `part`
+during `Document.insert()`, so the intentionally unsealed receipt was falsely
+validated as already target-bound. The unique repair adds the Frappe-standard
+empty first Select option and closes verifier diagnostic activation. It does
+not change the field, allowed sealed target values, receipt transaction,
+idempotency, audit or public response. Counters are diagnostic `1/1`, repair
+`0/1` in progress, final unchanged Gate `0/1`.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

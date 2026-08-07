@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T14:32:07Z'
+updated_at: '2026-08-07T14:56:08Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
-current_task_status: IN_PROGRESS_DIAGNOSTIC
-current_task_completed_stage: P6_01_CONTROLLED_RUNTIME_ORDINARY_CI_PASS
-current_task_next_stage: P6_01_PART_CREATE_DIAGNOSTIC
-current_task_next_stage_status: IN_PROGRESS_DIAGNOSTIC
+current_task_status: IN_PROGRESS_REPAIR
+current_task_completed_stage: P6_01_PART_CREATE_DIAGNOSTIC_ROOT_PROVEN
+current_task_next_stage: P6_01_RECEIPT_SELECT_DEFAULT_REPAIR
+current_task_next_stage_status: IN_PROGRESS_REPAIR
 resumed_product_task: P6-01
-resumed_product_task_status: IN_PROGRESS_DIAGNOSTIC
+resumed_product_task_status: IN_PROGRESS_REPAIR
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: P601_PART_CREATE_OPAQUE_PENDING_DIAGNOSTIC
+  current_root: P601_PART_CREATE_RECEIPT_OPTIONAL_SELECT_DEFAULT
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR

@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DIAGNOSTIC — P6-01 PART CREATE`
+`IN_PROGRESS_REPAIR — P6-01 RECEIPT SELECT DEFAULT`
 
-Recovery time: `2026-08-07T14:32:07Z`
+Recovery time: `2026-08-07T14:56:08Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`42e24354effd1da9c2a5b8b3d17139c828696865`
+`7bd0819700bf3e4c3f07bfd15816ff6e9c5c7c85`
 
 ## Current authoritative action
 
@@ -86,6 +86,16 @@ immediate action is affected/full ordinary CI for that diagnostic checkpoint,
 followed by at most one diagnostic Site, repair of only its uniquely proved
 root, diagnostic closure, affected/full ordinary CI and one final unchanged
 Gate.
+
+Diagnostic checkpoint `7bd0819` passed complete ordinary CI `31188466252`.
+The sole diagnostic workflow `31189263393` returned only
+`P601_PART_CREATE_RECEIPT_INSERT / ValidationError` with exact trace
+`trace-fdeec6ebee38563791fb6f338ef1aa0e`. The pinned Frappe implementation
+proves `Document.insert()` fills an empty Select from its first option. The
+optional receipt `target_object_type` incorrectly listed `part` first, making
+an unsealed receipt appear already target-bound. Repair only that optional
+Select with an empty first option, close diagnostic activation, run affected/
+full ordinary CI, and reserve one final unchanged controlled Gate.
 
 Implement only:
 

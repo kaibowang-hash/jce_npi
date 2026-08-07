@@ -934,3 +934,13 @@ repeat or rewrite it merely to restore context. See
   proved root; diagnostic closure; affected/full ordinary CI; and one final
   unchanged Gate. Counters are diagnostic `0/1`, repair `0/1`, final Gate
   `0/1`. This is `IN_PROGRESS_DIAGNOSTIC`, not a Hard Blocker.
+- Diagnostic checkpoint `7bd0819` passed complete ordinary CI `31188466252`.
+  The sole diagnostic Site `31189263393` returned only
+  `P601_PART_CREATE_RECEIPT_INSERT / ValidationError /
+  trace-fdeec6ebee38563791fb6f338ef1aa0e`. Pinned Frappe
+  `Document.insert()` calls `_set_defaults()`, whose Select fallback uses the
+  first option. The optional unsealed receipt target type had `part` as its
+  first option, so validation correctly rejected the falsely target-bound
+  pending receipt. This uniquely selects one metadata repair: prepend the
+  empty Select option and close verifier diagnostic activation. Allowed sealed
+  target values and every frozen product/Gate boundary remain unchanged.

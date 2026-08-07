@@ -15,7 +15,7 @@
     {"fieldname": "operation", "fieldtype": "Select", "label": "Operation", "options": "part.create\npart.revise\ntooling_requirement.create\ntooling_master.create\ntooling_applicability.create", "reqd": 1, "read_only": 1},
     {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "payload_hash", "fieldtype": "Data", "label": "Payload Hash", "reqd": 1, "read_only": 1},
-    {"fieldname": "target_object_type", "fieldtype": "Select", "label": "Target Object Type", "options": "part\npart_revision\ntooling_requirement\ntooling_master\ntooling_applicability", "read_only": 1},
+    {"fieldname": "target_object_type", "fieldtype": "Select", "label": "Target Object Type", "options": "\npart\npart_revision\ntooling_requirement\ntooling_master\ntooling_applicability", "read_only": 1},
     {"fieldname": "target_global_id", "fieldtype": "Data", "label": "Target Global ID", "read_only": 1},
     {"fieldname": "response_payload", "fieldtype": "JSON", "label": "Response Payload", "read_only": 1},
     {"fieldname": "response_hash", "fieldtype": "Data", "label": "Response Hash", "read_only": 1},

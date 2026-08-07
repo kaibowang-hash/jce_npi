@@ -1,34 +1,34 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T14:32:07Z`
+Updated: `2026-08-07T14:56:08Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DIAGNOSTIC — P6-01 PART CREATE`
+- Mode: `IN_PROGRESS_REPAIR — P6-01 RECEIPT SELECT DEFAULT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `42e24354effd1da9c2a5b8b3d17139c828696865` (pushed; P6-01 cumulative
-  controlled-runtime verifier, diagnostics closed)
+  `7bd0819700bf3e4c3f07bfd15816ff6e9c5c7c85` (pushed; bounded P6-01
+  Part-create diagnostic checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
   `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
   exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31186227371` (`PASS`, exact SHA `42e2435`; repository `92891339039`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92891338846`
-  passed `73/73`; controlled runtime `92891340007` correctly skipped)
+  `31188466252` (`PASS`, exact SHA `7bd0819`; repository `92898914533`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92898914186`
+  passed `73/73`; controlled runtime `92898915318` correctly skipped)
 - Latest controlled-Site run:
-  `31186957232` (`FAIL`, exact SHA `42e2435`, diagnostics closed; repository
-  `92893817844` and visual `92893817888` passed; controlled `92893817778`
-  passed pinned Bench, Site, migration and retained P5 runtime, then the first
-  P6-01 Part command returned non-201 without a unique root)
+  `31189263393` (`FAIL`, exact SHA `7bd0819`, sole diagnostic Site; controlled
+  `92901612106` returned only `P601_PART_CREATE_RECEIPT_INSERT /
+  ValidationError / trace-fdeec6ebee38563791fb6f338ef1aa0e` after pinned
+  Bench, Site, migration and retained P5 runtime passed)
 - Controlled PASS artifact:
   `8988384460`, GitHub SHA-256
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS_DIAGNOSTIC — PART CREATE`)
+  (`IN_PROGRESS_REPAIR — RECEIPT SELECT DEFAULT`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
@@ -110,6 +110,15 @@ allowlisted stage code, validated exception type and exact trace ID. Affected
 and full ordinary CI precede the one diagnostic Site; only its uniquely proved
 root may be repaired before diagnostics are closed and the unchanged Gate is
 repeated.
+
+Diagnostic checkpoint `7bd0819` passed complete ordinary CI `31188466252`.
+The sole diagnostic Site `31189263393` uniquely isolated
+`P601_PART_CREATE_RECEIPT_INSERT / ValidationError`. Pinned Frappe source and
+the exact Tooling metadata prove `Document.insert()` populates an empty Select
+from its first option; the optional receipt target type incorrectly defaulted
+to `part`, violating the controller's required unsealed initial state. The
+active repair adds only an empty first Select option and closes diagnostic
+activation. No sealed target value or product contract changes.
 
 ## Retained P5-04 recovery history
 
