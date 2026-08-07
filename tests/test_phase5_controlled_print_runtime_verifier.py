@@ -182,6 +182,47 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
 
         self.assertNotIn("create_diagnostic=True", fresh_source)
 
+    def test_route_disable_probe_reuses_consumed_secret_values(self) -> None:
+        module = self.module
+        capability = SimpleNamespace(status=200, body={"capability": "available"})
+        cockpit = SimpleNamespace(status=200, body={})
+        with patch.object(
+            module,
+            "secret_from_environment",
+            side_effect=AssertionError("route probe reread a consumed secret"),
+        ), patch.object(
+            module,
+            "login",
+            side_effect=("administrator-session", "actor-session"),
+        ) as login, patch.object(
+            module.document_runtime,
+            "fixture_project",
+            return_value=("project-id", 7),
+        ), patch.object(
+            module,
+            "api_request",
+            side_effect=(capability, cockpit),
+        ), patch.object(module, "assert_capability"):
+            result = module.route_disable_probe(
+                "http://127.0.0.1:8003",
+                "administrator-password",
+                "fixture-password",
+                "recovered",
+            )
+
+        self.assertEqual(
+            login.call_args_list[0].args,
+            ("http://127.0.0.1:8003", "Administrator", "administrator-password"),
+        )
+        self.assertEqual(
+            login.call_args_list[1].args,
+            ("http://127.0.0.1:8003", module.ACTOR_USER, "fixture-password"),
+        )
+        self.assertEqual(
+            result,
+            {"routeMode": "recovered", "predecessorRouteRetained": True},
+        )
+
     def test_server_diagnostic_reader_is_exact_allowlisted_and_bounded(self) -> None:
         module = self.module
         trace_id = "trace-" + ("e" * 32)

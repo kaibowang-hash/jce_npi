@@ -856,13 +856,14 @@ def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, 
 
 def route_disable_probe(
     base_url: str,
+    administrator_password: str,
     fixture_password: str,
     expected_mode: str,
 ) -> dict[str, object]:
     administrator = login(
         base_url,
         "Administrator",
-        secret_from_environment("NPI_RUNTIME_ADMINISTRATOR_PASSWORD"),
+        administrator_password,
     )
     project_id, current_version = document_runtime.fixture_project(administrator, base_url)
     actor = login(base_url, ACTOR_USER, fixture_password)
@@ -959,7 +960,12 @@ def main() -> None:
     fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
     base_url = validate_local_fixture_inputs(arguments.base_url, "Administrator", ACTOR_USER)
     if arguments.route_disable_probe is not None:
-        result = route_disable_probe(base_url, fixture_password, arguments.route_disable_probe)
+        result = route_disable_probe(
+            base_url,
+            administrator_password,
+            fixture_password,
+            arguments.route_disable_probe,
+        )
     else:
         administrator = login(base_url, "Administrator", administrator_password)
         result = (
