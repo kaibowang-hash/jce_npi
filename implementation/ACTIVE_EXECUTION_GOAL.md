@@ -1,21 +1,20 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T02:03:59Z`
+Updated: `2026-08-07T03:28:43Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-06 REPOSITORY, RENDER AND API FOUNDATION`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-06 SPA CONTROLLED-PRINT AFFORDANCE`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `68a79fd2f1572bd4b15c42bc6e4f1d038c272ebc` (pushed; P5-06 pure domain,
-  closed contract, guarded metadata and exact catalog-fingerprint visual
-  evidence)
+  `10963ddaa535f3fd335ca30031b3039b1da398c6` (pushed; P5-06 exact repository,
+  immutable one-time render, private retained output and closed BFF API)
 - Latest complete normal CI:
-  `31139557282` (`PASS`, exact SHA `68a79fd`; repository `92746365839`,
-  complete E2E, Gitleaks/history and fixed-Linux visual `92746365786` passed
-  `65/65`; controlled job `92746366536` correctly skipped)
+  `31144008180` (`PASS`, exact SHA `10963dd`; repository `92759644660`,
+  complete E2E, Gitleaks/history and fixed-Linux visual `92759644740` passed
+  `65/65`; controlled job `92759645318` correctly skipped)
 - Latest controlled-Site run:
   `31135330539` (`PASS`, exact SHA `7624497`, all diagnostic activation
   closed; repository `92733288503`, controlled `92733288519`, visual
@@ -25,7 +24,7 @@ Updated: `2026-08-07T02:03:59Z`
   `bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`
 - Current controller task:
   `P5-06 — Controlled print registry and immutable output snapshot foundation`
-  (`IN_PROGRESS — REPOSITORY, RENDER AND API FOUNDATION`)
+  (`IN_PROGRESS — SPA CONTROLLED-PRINT AFFORDANCE`)
 - Current Requirement IDs:
   `FR-PRN-001`, `FR-PRN-002`
 - Completed P5-05 evidence:
@@ -58,14 +57,14 @@ implemented and its own Level 2 evidence passes. Production endpoints,
 credentials, ERPNext mutation/network dispatch, exact production forms and
 formal release semantics remain prohibited.
 
-The bounded Requirement/domain/existing-capability audit and the first pure
-domain/contract/metadata checkpoint passed. Evidence is
-`implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md` and
-ordinary CI `31139557282`. The active checkpoint is now the exact registry and
-source repository, deterministic verification SVG, frozen-template render,
-private File/output persistence, atomic idempotency/audit transaction and
-closed BFF capability/detail/content behavior. No UI action, production
-fixture, Print Format or enabled mapping is active.
+The bounded Requirement/domain/existing-capability audit, pure
+domain/contract/metadata checkpoint and repository/render/API checkpoint have
+passed. Evidence is
+`implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md` and
+ordinary CI `31144008180`. The active checkpoint is now only the reusable SPA
+controlled-print data/action/status boundary with direct three-language,
+accessibility, browser and visual proof. No production fixture, Print Format,
+enabled mapping or external delivery is active.
 
 ## Retained P5-04 recovery history
 

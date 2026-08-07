@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-06 REPOSITORY, RENDER AND API FOUNDATION`
+`IN_PROGRESS_IMPLEMENTATION — P5-06 SPA CONTROLLED-PRINT AFFORDANCE`
 
-Recovery time: `2026-08-07T02:03:59Z`
+Recovery time: `2026-08-07T03:28:43Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`68a79fd2f1572bd4b15c42bc6e4f1d038c272ebc`
+`10963ddaa535f3fd335ca30031b3039b1da398c6`
 
 ## Current authoritative action
 
@@ -31,19 +31,29 @@ DocTypes, closed OpenAPI/ownership vocabulary, direct three-language coverage
 and ordinary CI `31139557282` all passed. Evidence is
 `implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md`.
 
+The repository/render/API checkpoint passed at exact stable checkpoint
+`10963dd`: exact source/mapping authorization, immutable one-time render,
+private retained output, actor-bound idempotency/audit and the closed
+capability/create/detail/content BFF behavior are proven. Ordinary CI
+`31144008180` passed repository `92759644660`, complete E2E and secret lanes,
+plus visual `92759644740` at `65/65`; controlled runtime correctly skipped.
+Evidence is
+`implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md`.
+
 The next implementation checkpoint is now:
 
-1. implement exact Frappe registry/source repositories with a closed
-   server-owned adapter registry and authorization-before-resolution;
-2. freeze the exact source and captured template before one-time PDF render,
-   use a deterministic repository-owned verification SVG, and persist one
-   private local File plus immutable output identity;
-3. implement actor/Project-bound idempotency, atomic snapshot/output/access
-   audit/receipt persistence and retained-byte reuse without rerendering;
-4. expose only the closed capability/create/detail/content BFF behavior with
-   independent disable/recovery truth and no raw File URL; and
-5. prove template/source drift, private-file/hash integrity, replay/conflict,
-   IDOR, rollback and route-disable behavior before complete ordinary CI.
+1. add a reusable controlled-print data source that validates the exact closed
+   capability/create/detail/content responses and fails closed without a live
+   adapter;
+2. expose a dense, accessible controlled-print action/status surface in the
+   existing Project context without adding a second primary action;
+3. keep the action visibly unavailable when no approved mapping resolves and
+   make loading, no-permission, read-only, processing, replay, conflict,
+   integrity failure and retained-download truth explicit;
+4. use literal English source strings with direct `zh` and `zh-TW` catalog
+   coverage and repository-owned icon adapters only; and
+5. prove the affected unit, browser, accessibility, mixed-language and visual
+   cases before complete ordinary CI.
 
 No production ERPNext endpoint, credential, external dispatch, raw normal-user
 Desk CRUD or default production Print Format may be introduced. The complete

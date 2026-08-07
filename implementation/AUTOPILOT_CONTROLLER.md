@@ -702,3 +702,31 @@ repeat or rewrite it merely to restore context. See
   repository, deterministic verification SVG, frozen-template one-time render,
   private retained File/output, atomic idempotency/audit transaction and
   closed BFF behavior. Exact forms/signers/copy policy remain decision-held.
+
+## 2026-08-07 P5-06 repository, retained render and API checkpoint
+
+- Exact stable checkpoint `10963dd` adds the server-owned source/registry
+  repository, deterministic verification SVG, frozen-template one-time PDF
+  render, private local File/output retention, actor/Project-bound
+  idempotency/audit transaction and closed capability/create/detail/content
+  BFF behavior.
+- Authorization precedes protected resolution. Missing, ambiguous, stale or
+  drifted mappings fail closed; create/render/download never accept a raw
+  DocType, template, source payload, controlled provenance or File URL from
+  the browser. Replays and downloads reuse the same verified retained bytes
+  without source resolution or rerendering.
+- Focused P5-06 validation passed `56/56`; complete tracked Python passed
+  `1,070/1,070`; compilation, reconciliation, P0 governance, i18n at `3,857`
+  sources and exact diff/security scans passed.
+- Complete exact-SHA ordinary CI `31144008180` passed repository
+  `92759644660`, complete E2E and both secret lanes, plus visual
+  `92759644740` at `65/65`; controlled job `92759645318` correctly skipped.
+  Visual artifact `8980844734` has digest
+  `sha256:f85a143df03444c3805561f3f9eafcd874b385ccc856d0d3ac7a2cc8918da262`.
+- Evidence is
+  `implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md`.
+  Checkpoint 2 is PASS. Autopilot continues with only the reusable dense SPA
+  print affordance/status surface, direct English/`zh`/`zh-TW`, accessibility
+  and affected browser/visual evidence. No production adapter, Print Format,
+  enabled mapping, form, signer, copy policy, dependency, external service or
+  ERPNext endpoint is active.

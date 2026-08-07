@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-07T02:03:59Z'
+updated_at: '2026-08-07T03:28:43Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-06
 current_task_status: IN_PROGRESS_IMPLEMENTATION
-current_task_completed_stage: PRINT_FOUNDATION_DOMAIN_CONTRACT_METADATA_PASS
-current_task_next_stage: PRINT_FOUNDATION_REPOSITORY_RENDER_API
+current_task_completed_stage: PRINT_FOUNDATION_REPOSITORY_RENDER_API_PASS
+current_task_next_stage: PRINT_FOUNDATION_FRONTEND_AFFORDANCE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-06
-resumed_product_task_status: IN_PROGRESS_REPOSITORY_RENDER_API
+resumed_product_task_status: IN_PROGRESS_FRONTEND_AFFORDANCE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -592,14 +592,23 @@ p5_06:
   backlog_task: M4-06
   requirements: [FR-PRN-001, FR-PRN-002]
   starting_checkpoint: ac890c08e7cfa7c428d1a487805527239f0659f5
-  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_RENDER_API_FOUNDATION
+  completed_stage: REPOSITORY_RENDER_API_FOUNDATION_PASS
+  next_stage: FRONTEND_AFFORDANCE_AND_VISUAL_EVIDENCE
   domain_metadata_product_checkpoint: 07111e3
   stable_checkpoint: 68a79fd
   ordinary_ci: 31139557282
   ordinary_repository_job: 92746365839
   ordinary_visual_job: 92746365786
   ordinary_visual_result: 65_OF_65_PASS
+  repository_api_checkpoint: 10963ddaa535f3fd335ca30031b3039b1da398c6
+  repository_api_ordinary_ci: 31144008180
+  repository_api_repository_job: 92759644660
+  repository_api_visual_job: 92759644740
+  repository_api_visual_result: 65_OF_65_PASS
+  repository_api_visual_artifact_id: 8980844734
+  repository_api_visual_artifact_digest: sha256:f85a143df03444c3805561f3f9eafcd874b385ccc856d0d3ac7a2cc8918da262
+  repository_api_gitleaks_artifact_id: 8980926561
+  repository_api_gitleaks_artifact_digest: sha256:209451760ce9befc7b600501d9ab95a6ad2fad5d998d9287422433179ed95a0b
   delivery_boundary: GENERIC_CONTROLLED_PRINT_REGISTRY_AND_IMMUTABLE_SNAPSHOT_FOUNDATION
   exact_form_policy_active: false
   production_print_policy_active: false
@@ -612,6 +621,7 @@ p5_06:
     - implementation/V1_2_RECONCILIATION_DECISIONS.md
     - implementation/evidence/phase-5/p5-06-plan.md
     - implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-5/p5-06-repository-api-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
