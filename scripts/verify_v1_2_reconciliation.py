@@ -397,6 +397,62 @@ EXPECTED_P5_06_TRACE = {
         },
     ),
 }
+EXPECTED_P6_02_TRACE = {
+    "FR-TL-001": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-001",
+        {
+            "apps/npi_core/npi_core/tooling/domain.py",
+            "apps/npi_core/npi_core/tooling/frappe_repository.py",
+            "frontend/src/pages/live-tooling-page.tsx",
+            "frontend/src/pages/tooling-set-workspace.tsx",
+            "scripts/verify_tooling_runtime.py",
+            "implementation/evidence/phase-6/p6-01-validation.md",
+            "implementation/evidence/phase-6/p6-02-validation.md",
+            "Requirement ownership custody repair and return provenance are live while exact lifecycle and authority policy remains held by DR-REC-010",
+        },
+    ),
+    "FR-TL-004": (
+        "P0",
+        "TECHNICAL_VERIFIED",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-004",
+        {
+            "apps/npi_core/npi_core/tooling/domain.py",
+            "apps/npi_core/npi_core/tooling/frappe_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "frontend/src/pages/tooling-set-workspace.tsx",
+            "tests/test_phase6_tooling_domain.py",
+            "tests/test_phase6_tooling_repository.py",
+            "scripts/verify_tooling_runtime.py",
+            "implementation/evidence/phase-6/p6-02-validation.md",
+            "customer owner transport arrival photo accessories five inspections differences and customer confirmation are retained authorized and live",
+        },
+    ),
+    "FR-TX-003": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/domain.py",
+            "apps/npi_core/npi_core/tooling/frappe_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-set-workspace.tsx",
+            "tests/test_phase6_tooling_domain.py",
+            "tests/test_phase6_tooling_repository.py",
+            "scripts/verify_tooling_runtime.py",
+            "implementation/evidence/phase-6/p6-02-validation.md",
+            "one immutable record per physical Set and no quantity collapse are proven while source Revision Supplier lifecycle ERP location Asset and later execution remain P6-03 P6-04 P6-06 and Phase 8",
+        },
+    ),
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -959,6 +1015,50 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} references missing P5-06 evidence files: "
                 f"{missing_evidence}"
             )
+    for requirement_id, (
+        expected_priority,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_02_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            "6",
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-02 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-02 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-02 evidence files: "
+                f"{missing_evidence}"
+            )
     canonical_ids = {
         requirement_id
         for requirement_id, row in by_id.items()
@@ -1012,9 +1112,9 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "expected 34 non-product ARCH/COD governance links"
         )
-    if len(tooling_ids) != 16:
+    if len(tooling_ids) != 15:
         raise ReconciliationVerificationError(
-            "expected 16 remaining anchored Phase 6 Tooling requirements"
+            "expected 15 remaining anchored Phase 6 Tooling requirements"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(

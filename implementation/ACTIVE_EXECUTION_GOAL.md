@@ -1,39 +1,39 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T20:32:18Z`
+Updated: `2026-08-07T21:50:21Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-02 TOOLING SET`
+- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P6-03 TOOLING REVISION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `b1df79f7cd225154060534e1bc558a593b9fe31f` (pushed; P6-02 live
-  physical Set/intake workspace and artifact-proved fixed-Linux visual
-  checkpoint)
+  `b80aae5efb88ad91a26857e65ff0fd6bf75cd950` (pushed; P6-02 cumulative
+  controlled-runtime repair and audited transitive security lock checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
-  `7fa322df5406d92de44e9ca2d8704f3b73903fcd` (P6-02 checkpoint-2 evidence;
-  pushed; ordinary CI `31210314113` PASS)
+  `a5b631ddf3493f47135c050347140a6fbeb0f248` (P6-02 checkpoint-3 evidence;
+  pushed; ordinary CI `31216608331` PASS)
 - Latest complete normal CI:
-  `31215596601` (`PASS`, exact SHA `b1df79f`; repository `92988260703`,
-  `315/315` E2E and Gitleaks/history passed; fixed-Linux visual `92988260754`
-  passed `76/76`; controlled runtime `92988261221` correctly skipped)
+  `31220440401` (`PASS`, exact SHA `b80aae5`; repository `93003610445`,
+  `315/315` E2E and both Gitleaks lanes passed; fixed-Linux visual
+  `93003610420` passed `76/76`; controlled runtime `93003611017` correctly
+  skipped)
 - Latest controlled-Site run:
-  `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
-  `92932746371`, visual `92932746394` and controlled `92932746437` passed)
+  `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
+  `93005400488`, visual `93005400579` and controlled `93005400541` passed)
 - Controlled PASS artifact:
-  `9001947238`, GitHub digest
-  `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
+  `9010425982`, GitHub digest
+  `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
 - Current controller task:
-  `P6-02 — Customer-owned intake and physical Tooling Sets`
-  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
+  `P6-03 — Revision, specification, cavities, inserts and process chain`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
 - Current Requirement IDs:
-  `FR-TX-003`, `FR-TL-004`
+  `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CONTROLLED RUNTIME`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 REQUIREMENT AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -206,11 +206,38 @@ artifact `9007770198` proved the five affected Tooling and eighteen catalog
 footer baselines, then artifact `9008140984` supplied exactly the three newly
 governed P6-02 Linux images.
 
-Standing automatic-transition authority now activates only P6-02 checkpoint
-4: disposable-Site migration and controlled Set/intake/evidence/replay/
-rollback/IDOR/route-disable proof, followed by complete ordinary CI and the
-P6-02 Level 2 Task Gate. No held lifecycle, source Revision, Supplier, ERP
-Asset/location or external-customer/file behavior may be added.
+P6-02 checkpoint 4 and the Level 2 Task Gate pass at exact task checkpoint
+`b80aae5`. Runtime checkpoint `55db50e` passed complete ordinary CI
+`31218807211`; its first diagnostics-closed controlled Site `31219316958`
+uniquely exposed a stale fixture reference after the Part had advanced from
+Revision A to current Revision B. Repair `8fe1730` changes only the two
+synthetic Requirement references and adds a current-Revision regression
+assertion. The next ordinary run found a newly active high-severity advisory
+for transitive development package `nanoid 3.3.16`; checkpoint `b80aae5`
+updates only the lock record to compatible `3.3.18`, adds no dependency and
+keeps the audit fail closed.
+
+Final ordinary CI `31220440401` passes repository `93003610445`, `1,140`
+tracked Python tests, `738` frontend unit tests, `315` non-visual E2E, both
+secret lanes and fixed-Linux visual `93003610420` at `76/76`; controlled job
+`93003611017` correctly skips. The one final diagnostics-closed workflow
+`31221016483` retains the exact SHA and passes repository `93005400488`, visual
+`93005400579` and controlled runtime `93005400541`. Artifact `9010425982`,
+digest
+`sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`,
+records cumulative scope `p5-01-through-p6-02`. Runtime proves two independent
+physical Sets, two immutable intakes, two evidence references, sixteen audits,
+replay, rollback, IDOR and independent route disable/recovery.
+
+P6-02 passes Level 2 in
+`implementation/evidence/phase-6/p6-02-validation.md`. `FR-TL-004` is
+technically verified; `FR-TX-003` is a technically verified foundation with
+source Revision, formal Supplier, lifecycle and ERP Asset/location/execution
+dependencies retained. Standing transition authority activates only the
+bounded P6-03 Requirement/domain/existing-capability audit for
+`FR-TX-004..008`, `FR-TL-002`, `FR-TL-003` and `FR-TL-006`. Exact lifecycle
+states/transitions/authorities remain held by `DR-REC-010`; no production
+Supplier, ERPNext endpoint, credential or external mutation may be invented.
 
 ## Retained P5-04 recovery history
 

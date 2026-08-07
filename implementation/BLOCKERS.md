@@ -1,21 +1,26 @@
 # Blockers
 
-Updated: `2026-08-07T19:05:22Z`
+Updated: `2026-08-07T21:50:21Z`
 
 ## Active hard blockers
 
-None. P6-02 checkpoint 2 stable checkpoint `39fe0e8` passed complete ordinary
-CI `31209234574`: repository `92967755668`, visual `92967755547` at `73/73`
-and controlled runtime `92967756711` correctly skipped. No user action is
-required.
+None. P6-02 passes Level 2 at exact task checkpoint `b80aae5`. Complete
+ordinary CI `31220440401` passed repository `93003610445`, visual
+`93003610420` at `76/76` and both secret lanes; controlled job `93003611017`
+correctly skipped. Final diagnostics-closed workflow `31221016483` passed
+repository `93005400488`, visual `93005400579` and cumulative controlled
+runtime `93005400541`. Runtime artifact `9010425982` has digest
+`sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
+No user action is required.
 
 ## Active recovery
 
-None. P6-02 is `IN_PROGRESS_LIVE_WORKSPACE`, not blocked. `DR-REC-010` remains
-a scoped hold on exact lifecycle states/transitions/authorities only. P6-02
-keeps source Revision, formal Supplier/location/Asset and external signature
-truth explicitly unavailable while implementing the strict Set/intake data
-source and live Tooling workspace.
+None. P6-03 is `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked.
+`DR-REC-010` remains a scoped hold on exact lifecycle
+states/transitions/authorities only. The audit keeps formal Supplier,
+production ERP location/Asset, production workbook mapping, external execution
+and credentials explicitly unavailable while bounding immutable Tooling
+Revision/specification, cavity, insert and process-chain truth.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

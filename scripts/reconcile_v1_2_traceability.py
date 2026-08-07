@@ -56,7 +56,7 @@ UX_REMEDIATION_ALLOCATION = {
 P6_TOOLING_ALLOCATION = {
     "FR-TX-001": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-002": "TECHNICAL_VERIFIED",
-    "FR-TX-003": "ANCHORED_P6_02",
+    "FR-TX-003": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-004": "ANCHORED_P6_03",
     "FR-TX-005": "ANCHORED_P6_03",
     "FR-TX-006": "ANCHORED_P6_03",
@@ -324,6 +324,20 @@ P6_01_COMPLETED_EVIDENCE = {
         "one shared Master is reused through immutable versioned effective Applicability without cloning",
     ),
 }
+P6_02_COMPLETED_EVIDENCE = {
+    "FR-TX-003": (
+        "apps/npi_core/npi_core/tooling/domain.py",
+        "apps/npi_core/npi_core/tooling/frappe_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-set-workspace.tsx",
+        "tests/test_phase6_tooling_domain.py",
+        "tests/test_phase6_tooling_repository.py",
+        "scripts/verify_tooling_runtime.py",
+        "implementation/evidence/phase-6/p6-02-validation.md",
+        "one immutable record per physical Set and no quantity collapse are proven while source Revision Supplier lifecycle ERP location Asset and later execution remain P6-03 P6-04 P6-06 and Phase 8",
+    ),
+}
 P6_UX_ANCHOR_EVIDENCE["UX-004"] = (
     "frontend/src/api/tooling-data-source.ts",
     "frontend/src/pages/live-tooling-page.tsx",
@@ -437,6 +451,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_UX_ANCHOR_EVIDENCE[requirement_id])
         if requirement_id in P6_01_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_01_COMPLETED_EVIDENCE[requirement_id])
+        elif requirement_id in P6_02_COMPLETED_EVIDENCE:
+            evidence = "; ".join(P6_02_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_TOOLING_ALLOCATION:
             evidence = "; ".join(
                 (

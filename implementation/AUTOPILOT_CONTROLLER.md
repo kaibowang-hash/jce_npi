@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T18:07:22Z`
+Updated: `2026-08-07T21:50:21Z`
 
 ## Authority and operating mode
 
@@ -1111,3 +1111,57 @@ repeat or rewrite it merely to restore context. See
   coverage and affected visual matrix. Controlled Site remains inactive until
   checkpoint 3 passes affected checks and complete ordinary CI. All scoped
   lifecycle/Revision/Supplier/ERP/customer/file holds remain.
+
+## 2026-08-07 P6-02 live workspace checkpoint
+
+- Product commit `3b62046` adds only the strict server-backed Set/intake data
+  source, dense Project/Master-scoped physical Set workspace, exact clean File
+  Revision picker, operational states and direct trilingual/accessibility
+  coverage already closed by checkpoint 2.
+- Artifact-proved evidence commits `26685ff` and `b1df79f` add the P6-02 visual
+  cases to the existing governed job and synchronize only the exact Linux
+  actuals. They change no assertion, threshold or PASS criterion.
+- Final ordinary CI `31215596601` passed repository `92988260703`, `315/315`
+  non-visual E2E, both secret lanes and visual `92988260754` at `76/76`;
+  controlled job `92988261221` correctly skipped.
+- Checkpoint 3 is PASS, not P6-02 Level 2. Automatic transition activates only
+  checkpoint 4: cumulative disposable-Site Set/intake/evidence/replay/
+  rollback/IDOR/route-disable proof, complete ordinary CI and the Level 2 Task
+  Gate. All lifecycle/Revision/Supplier/ERP/customer/file holds remain.
+
+## 2026-08-07 P6-02 Level 2 PASS and P6-03 transition
+
+- Runtime checkpoint `55db50e` passed complete ordinary CI `31218807211`.
+  Its first diagnostics-closed Site `31219316958` passed every cumulative
+  predecessor before the first customer-intake Requirement returned non-201.
+  Exact repository/verifier review proved the fixture had advanced the Part to
+  current Revision B but still referenced obsolete Revision A. Repair
+  `8fe1730` changes only the two synthetic references and adds a current-
+  Revision regression assertion; the product rule remains fail closed.
+- The next ordinary CI `31219948750` passed product tests/build and failed only
+  because the current npm advisory database newly classified transitive
+  development package `nanoid <3.3.17` as high severity. Checkpoint `b80aae5`
+  updates only the lock record from `3.3.16` to compatible `3.3.18`, adds no
+  dependency and retains the zero-vulnerability gate.
+- Final ordinary CI `31220440401` passed repository `93003610445`, `1,140`
+  tracked Python tests, `738` frontend unit tests, `315` non-visual E2E, both
+  Gitleaks lanes and visual `93003610420` at `76/76`; controlled job
+  `93003611017` correctly skipped.
+- The one final diagnostics-closed workflow `31221016483` retained exact SHA
+  `b80aae5` and passed repository `93005400488`, visual `93005400579` and
+  controlled runtime `93005400541`. Runtime artifact `9010425982` has digest
+  `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
+  It proves two independent physical Sets, two immutable intakes, two retained
+  evidence references, sixteen audits, replay, rollback, IDOR and independent
+  P6-01/P6-02 route disable/recovery under cumulative scope
+  `p5-01-through-p6-02`.
+- P6-02 passes Level 2 in
+  `implementation/evidence/phase-6/p6-02-validation.md`. `FR-TL-004` is
+  technically verified; `FR-TX-003` is a technically verified foundation with
+  its exact later Revision/Supplier/lifecycle/ERP dependencies retained.
+- Standing transition authority activates only the bounded P6-03
+  Requirement/domain/existing-capability audit for `FR-TX-004..008`,
+  `FR-TL-002`, `FR-TL-003` and `FR-TL-006`. Exact lifecycle
+  states/transitions/authorities remain held by `DR-REC-010`; no formal
+  Supplier, production Asset/location, workbook mapping, external execution,
+  endpoint, credential or ERPNext success may be invented.

@@ -1,72 +1,56 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CONTROLLED_RUNTIME — P6-02 TOOLING SET`
+`IN_PROGRESS_REQUIREMENT_AUDIT — P6-03 TOOLING REVISION`
 
-Recovery time: `2026-08-07T20:32:18Z`
+Recovery time: `2026-08-07T21:50:21Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`b1df79f7cd225154060534e1bc558a593b9fe31f`
+`b80aae5efb88ad91a26857e65ff0fd6bf75cd950`
 
 ## Current authoritative action
 
-P6-01 passes Level 2. Evidence checkpoint `49a8931` passed complete ordinary
-CI `31200277175`: repository `92938356572`, visual `92938356975`, and
-controlled runtime `92938357521` correctly skipped. The P6-02 Requirement/
-domain/existing-capability audit passes in
-`implementation/evidence/phase-6/p6-02-plan.md`.
+P6-02 passes Level 2 at exact task checkpoint `b80aae5`. Final ordinary CI
+`31220440401` passes repository `93003610445`, `1,140/1,140` clean-tree Python,
+`738/738` frontend unit, `315/315` non-visual E2E, zero-vulnerability audit,
+both secret lanes and fixed-Linux visual `93003610420` at `76/76`; controlled
+job `93003611017` correctly skipped.
 
-P6-02 checkpoint 1 is PASS. Product commit `e659d46` added independent physical
-Set identity, immutable versioned intake/difference truth, append-only exact
-clean private File Revision evidence, three guarded DocTypes, closed schemas,
-ownership rows and direct trilingual coverage without activating a route. Its
-initial ordinary CI `31203653903` passed repository and 55 non-P0 visuals,
-then isolated only eighteen bottom-footer catalog fingerprints. Artifact
-`9003910006` proved no component or layout change. Baseline-only repair
-`7b5dda1` passed complete ordinary CI `31204720858`: repository
-`92952842864`, visual `92952842802` (`73/73`) and controlled runtime
-`92952843426` correctly skipped. Evidence is
-`implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md`.
+The one final diagnostics-closed controlled workflow `31221016483` retains
+the exact SHA and passes repository `93005400488`, visual `93005400579` and
+controlled runtime `93005400541`. Runtime artifact `9010425982` has GitHub
+digest
+`sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
+It records cumulative scope `p5-01-through-p6-02` and proves two independent
+physical Sets, two immutable intakes, two evidence references, sixteen
+append-only audits, cross-process replay, rollback, IDOR and both Tooling route
+disable/recovery boundaries.
 
-P6-02 checkpoint 2 is PASS. Product commit `c8f2ebc` added the Project-first
-bounded Set/intake repository, five frozen closed paths, exact containment,
-System Manager mutation, actor-bound replay, conflicts, one transaction,
-append-only audit and independent fail-closed switch. Pre-Site cross-layer
-review proved the reused receipt DocType/controller lacked the three P6-02
-operation/target pairs; correction `d339da5` added only those exact whitelist
-values plus administrator-visible translations and metadata tests. Its
-ordinary CI passed repository and failed only eighteen bottom-footer catalog
-fingerprints. Artifact `9005792248` proved every significant delta remained at
-`y=882..891`. Baseline-only checkpoint `39fe0e8` then passed complete ordinary
-CI `31209234574`: repository `92967755668`, visual `92967755547` (`73/73`)
-and controlled runtime `92967756711` correctly skipped. Evidence is
-`implementation/evidence/phase-6/p6-02-repository-api-checkpoint.md`.
+The controlled recovery changed only a stale synthetic Requirement reference
+from obsolete Part Revision A to current Revision B, then updated transitive
+development lock `nanoid 3.3.16` to compatible `3.3.18` after GitHub's current
+audit database exposed a new high-severity advisory. No product contract,
+permission, Schema intent, ownership, transaction, idempotency, audit,
+baseline, threshold or PASS rule changed. Evidence is
+`implementation/evidence/phase-6/p6-02-validation.md`.
 
-P6-02 checkpoint 3 is PASS. Product commit `3b62046` added the strict
-server-backed Set/intake data source, dense live physical Set workspace, exact
-clean File Revision picker, complete operational states and direct trilingual,
-accessibility and affected visual coverage. Evidence-only commits `26685ff`
-and `b1df79f` synchronized only artifact-proved fixed-Linux baselines and added
-the P6-02 visual spec to the existing governed matrix. Final complete ordinary
-CI `31215596601` passed repository `92988260703`, `315/315` non-visual E2E,
-visual `92988260754` (`76/76`) and both secret lanes; controlled runtime
-`92988261221` correctly skipped. Evidence is
-`implementation/evidence/phase-6/p6-02-live-workspace-checkpoint.md`.
+The first unfinished atomic action is the bounded P6-03
+Requirement/domain/existing-capability audit only. Read the Phase 6 anchor,
+M5-03 and exact traces for `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003` and
+`FR-TL-006`; inspect existing Tooling domain/metadata/contracts/repository/UI,
+the passive workbook inspector and retained decisions; then freeze the
+minimum vertical-slice plan, non-scope, changed-files→affected-tests map,
+migration and rollback boundary before product implementation.
 
-The first unfinished checkpoint is P6-02 checkpoint 4 only. Implement the
-bounded cumulative disposable-Site verifier/workflow for migration and exact
-Set creation, versioned intake, difference/evidence binding, replay,
-authorization/IDOR, rollback and independent route-disable proof. Run affected
-checks and complete ordinary CI before one diagnostics-closed controlled Site,
-then close the P6-02 Level 2 Task Gate from evidence only.
-
-Keep lifecycle, source Tooling Revision, formal Supplier, ERP location/Asset,
-customer login/signature and all external mutations explicitly unavailable.
-P6-02 may only reference an existing live clean private File Revision; it may
-not upload, release, overwrite, delete or expose the customer file.
+P6-03 may plan immutable Tooling Revision/specification structure, cavity/part
+mapping, inserts/changeovers, multi-shot/overmold process chain, external IDs
+and controlled material/color/compliance links. It must not invent lifecycle
+states/transitions/authorities held by `DR-REC-010`, formal Supplier/ERP
+Asset/location truth, a production workbook mapping, external execution,
+endpoint, credential or success claim.
 
 ## Retained P6-01 execution history
 
