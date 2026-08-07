@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T21:50:21Z'
+updated_at: '2026-08-07T22:10:17Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-03
-current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
-current_task_completed_stage: P6_02_LEVEL_2_TASK_GATE_PASS
-current_task_next_stage: P6_03_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
+current_task_completed_stage: P6_03_REQUIREMENT_DOMAIN_AUDIT_PASS
+current_task_next_stage: P6_03_DOMAIN_CONTRACT_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-03
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -917,10 +917,19 @@ p6_02:
   final_controlled_visual_digest: sha256:0fc1efab91fefefd33d4fc692128a92a31cac8de4bad4694bec22665a68a65ca
   final_controlled_gitleaks_artifact: 9010488742
   final_controlled_gitleaks_digest: sha256:3ba2397e45fef1bf398f06e955bb42b080e89cd3820d1a5c60c2754fb459676b
+  evidence_checkpoint: 36e2b9b16f4168f2d04e84f98dd370bd2f39c635
+  evidence_ordinary_ci: 31222318731
+  evidence_repository_job: 93009313398
+  evidence_visual_job: 93009313360
+  evidence_controlled_job: 93009313685
+  evidence_visual_artifact: 9010879069
+  evidence_visual_digest: sha256:61b68e9f5055cbe02161ece8511886d910c2356ea1c69d24513bcd275cd02bdc
+  evidence_gitleaks_artifact: 9010971627
+  evidence_gitleaks_digest: sha256:6ee0736518ab9758ddfcbe6e8eef93850adb2fa445db1bbb6be2aa2f1811f333
   diagnostics_closed: true
   level_2_decision: PASS
   completed_stage: LEVEL_2_TASK_GATE_PASS
-  next_stage: P6_03_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  next_stage: P6_03_DOMAIN_CONTRACT_METADATA_FOUNDATION
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-01-validation.md
@@ -930,22 +939,32 @@ p6_02:
     - implementation/evidence/phase-6/p6-02-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-02-validation.md
 p6_03:
-  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
   backlog_task: M5-03
   requirements: [FR-TX-004, FR-TX-005, FR-TX-006, FR-TX-007, FR-TX-008, FR-TL-002, FR-TL-003, FR-TL-006]
   delivery_boundary: TOOLING_REVISION_SPECIFICATION_CAVITIES_INSERTS_AND_PROCESS_CHAIN
   exact_lifecycle_commands_active: false
   production_lifecycle_policy_active: false
   scoped_decision: DR-REC-010
-  starting_checkpoint: b80aae5efb88ad91a26857e65ff0fd6bf75cd950
+  starting_product_checkpoint: b80aae5efb88ad91a26857e65ff0fd6bf75cd950
+  starting_synchronized_checkpoint: 36e2b9b16f4168f2d04e84f98dd370bd2f39c635
+  audit_entry_ci: 31222318731
+  audit_entry_repository_job: 93009313398
+  audit_entry_visual_job: 93009313360
+  audit_entry_controlled_job: 93009313685
+  audit_decision: PASS
   source_revision_active: false
   formal_supplier_projection_active: false
   erp_asset_location_projection_active: false
   external_execution_active: false
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  current_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
+  planned_additive_doctypes: 4
+  routes_active: false
+  controlled_site_active: false
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-02-validation.md
+    - implementation/evidence/phase-6/p6-03-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

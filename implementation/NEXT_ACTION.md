@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_AUDIT — P6-03 TOOLING REVISION`
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-03 TOOLING REVISION`
 
-Recovery time: `2026-08-07T21:50:21Z`
+Recovery time: `2026-08-07T22:10:17Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery product checkpoint:
-`b80aae5efb88ad91a26857e65ff0fd6bf75cd950`
+Recovery synchronized checkpoint:
+`36e2b9b16f4168f2d04e84f98dd370bd2f39c635`
 
 ## Current authoritative action
 
@@ -37,20 +37,30 @@ permission, Schema intent, ownership, transaction, idempotency, audit,
 baseline, threshold or PASS rule changed. Evidence is
 `implementation/evidence/phase-6/p6-02-validation.md`.
 
-The first unfinished atomic action is the bounded P6-03
-Requirement/domain/existing-capability audit only. Read the Phase 6 anchor,
-M5-03 and exact traces for `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003` and
-`FR-TL-006`; inspect existing Tooling domain/metadata/contracts/repository/UI,
-the passive workbook inspector and retained decisions; then freeze the
-minimum vertical-slice plan, non-scope, changed-files→affected-tests map,
-migration and rollback boundary before product implementation.
+P6-02 Level 2 evidence checkpoint `36e2b9b` passes complete ordinary CI
+`31222318731`: repository `93009313398`, visual `93009313360`, and controlled
+runtime `93009313685` correctly skipped. Visual artifact `9010879069` has
+digest
+`sha256:61b68e9f5055cbe02161ece8511886d910c2356ea1c69d24513bcd275cd02bdc`;
+Gitleaks artifact `9010971627` has digest
+`sha256:6ee0736518ab9758ddfcbe6e8eef93850adb2fa445db1bbb6be2aa2f1811f333`.
 
-P6-03 may plan immutable Tooling Revision/specification structure, cavity/part
-mapping, inserts/changeovers, multi-shot/overmold process chain, external IDs
-and controlled material/color/compliance links. It must not invent lifecycle
-states/transitions/authorities held by `DR-REC-010`, formal Supplier/ERP
-Asset/location truth, a production workbook mapping, external execution,
-endpoint, credential or success claim.
+The P6-03 Requirement/domain/existing-capability audit passes. The frozen plan
+is `implementation/evidence/phase-6/p6-03-plan.md`.
+
+The first unfinished checkpoint is P6-03 checkpoint 1 only. Add pure immutable
+Tooling Revision/specification/cavity/insert/external-identity/process-chain/
+Set-binding domain invariants, four guarded additive DocTypes, exact ownership
+rows, four closed receipt operation/target values, closed OpenAPI schemas and
+direct domain/metadata/contract/security tests. Do not activate a repository,
+BFF route, frontend command or controlled Site in checkpoint 1.
+
+Preserve existing P6-01/P6-02 immutable snapshots. A Set-source Revision uses
+an append-only initial binding rather than rewriting `NPI Tooling Set`.
+`DR-REC-010` continues to hold lifecycle states/transitions/release authority;
+formal Supplier, ERP Asset/location, combined Trial, automatic impact action,
+production workbook mapping, external execution, endpoint and credential
+remain unavailable.
 
 ## Retained P6-01 execution history
 

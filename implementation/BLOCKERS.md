@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-07T21:50:21Z`
+Updated: `2026-08-07T22:10:17Z`
 
 ## Active hard blockers
 
@@ -13,14 +13,18 @@ runtime `93005400541`. Runtime artifact `9010425982` has digest
 `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
 No user action is required.
 
+P6-02 evidence checkpoint `36e2b9b` also passed complete ordinary CI
+`31222318731`: repository `93009313398`, visual `93009313360`, and controlled
+runtime `93009313685` correctly skipped.
+
 ## Active recovery
 
-None. P6-03 is `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked.
-`DR-REC-010` remains a scoped hold on exact lifecycle
-states/transitions/authorities only. The audit keeps formal Supplier,
-production ERP location/Asset, production workbook mapping, external execution
-and credentials explicitly unavailable while bounding immutable Tooling
-Revision/specification, cavity, insert and process-chain truth.
+None. The P6-03 audit passes and checkpoint 1 is
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION`, not blocked. `DR-REC-010`
+remains a scoped hold on exact lifecycle states/transitions/release authority
+only. The frozen plan uses append-only Revision/specification/cavity/insert/
+process-chain truth and a one-time Set-source binding; it does not rewrite a
+P6-02 Set or activate routes.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

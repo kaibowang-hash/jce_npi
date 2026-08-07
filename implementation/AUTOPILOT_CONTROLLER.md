@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T21:50:21Z`
+Updated: `2026-08-07T22:10:17Z`
 
 ## Authority and operating mode
 
@@ -1165,3 +1165,32 @@ repeat or rewrite it merely to restore context. See
   states/transitions/authorities remain held by `DR-REC-010`; no formal
   Supplier, production Asset/location, workbook mapping, external execution,
   endpoint, credential or ERPNext success may be invented.
+
+## 2026-08-07 P6-03 bounded audit and plan
+
+- P6-02 Level 2 evidence checkpoint `36e2b9b` passed complete ordinary CI
+  `31222318731`: repository `93009313398`, visual `93009313360`, and
+  controlled runtime `93009313685` correctly skipped. Visual artifact
+  `9010879069` has digest
+  `sha256:61b68e9f5055cbe02161ece8511886d910c2356ea1c69d24513bcd275cd02bdc`;
+  Gitleaks artifact `9010971627` has digest
+  `sha256:6ee0736518ab9758ddfcbe6e8eef93850adb2fa445db1bbb6be2aa2f1811f333`.
+- The bounded P6-03 Requirement/domain/existing-capability audit passes in
+  `implementation/evidence/phase-6/p6-03-plan.md`. Repository truth has no
+  Tooling Revision, cavity, insert, process chain or controlled Part
+  specification record; existing cockpit and Set contracts correctly return
+  `tooling_revision_not_delivered`.
+- The plan freezes four additive append-only persistence records and a minimum
+  complete vertical slice for immutable Tooling Revision/specification,
+  cavity-to-Applicability mapping, inserts/changeovers, one-to-many external
+  identities, controlled Part material/color/compliance truth, ordered
+  primary/second-shot/overmold process chain and a one-time exact Set-source
+  binding. The binding never rewrites a P6-02 Set snapshot.
+- Standing transition authority activates only checkpoint 1: pure domain
+  invariants, four guarded additive DocTypes, ownership, four closed receipt
+  operation/target values, closed OpenAPI schemas and direct tests. No route,
+  frontend command or controlled Site may activate in this checkpoint.
+- `DR-REC-010` still holds exact lifecycle states, transitions and release
+  authority. Formal Supplier, ERP Asset/location, combined Trial, automatic
+  impact action, production workbook mapping, endpoint, credential and every
+  external mutation remain unavailable.

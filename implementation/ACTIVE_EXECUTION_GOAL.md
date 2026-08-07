@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T21:50:21Z`
+Updated: `2026-08-07T22:10:17Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P6-03 TOOLING REVISION`
+- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-03 TOOLING REVISION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,13 +12,12 @@ Updated: `2026-08-07T21:50:21Z`
   `b80aae5efb88ad91a26857e65ff0fd6bf75cd950` (pushed; P6-02 cumulative
   controlled-runtime repair and audited transitive security lock checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
-  `a5b631ddf3493f47135c050347140a6fbeb0f248` (P6-02 checkpoint-3 evidence;
-  pushed; ordinary CI `31216608331` PASS)
+  `36e2b9b16f4168f2d04e84f98dd370bd2f39c635` (P6-02 Level 2 evidence;
+  pushed; ordinary CI `31222318731` PASS)
 - Latest complete normal CI:
-  `31220440401` (`PASS`, exact SHA `b80aae5`; repository `93003610445`,
-  `315/315` E2E and both Gitleaks lanes passed; fixed-Linux visual
-  `93003610420` passed `76/76`; controlled runtime `93003611017` correctly
-  skipped)
+  `31222318731` (`PASS`, exact SHA `36e2b9b`; repository `93009313398` and
+  fixed-Linux visual `93009313360` passed; controlled runtime `93009313685`
+  correctly skipped)
 - Latest controlled-Site run:
   `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
   `93005400488`, visual `93005400579` and controlled `93005400541` passed)
@@ -27,13 +26,13 @@ Updated: `2026-08-07T21:50:21Z`
   `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
 - Current controller task:
   `P6-03 — Revision, specification, cavities, inserts and process chain`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — DOMAIN/CONTRACT/METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 REQUIREMENT AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 DOMAIN FOUNDATION`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -230,14 +229,21 @@ physical Sets, two immutable intakes, two evidence references, sixteen audits,
 replay, rollback, IDOR and independent route disable/recovery.
 
 P6-02 passes Level 2 in
-`implementation/evidence/phase-6/p6-02-validation.md`. `FR-TL-004` is
-technically verified; `FR-TX-003` is a technically verified foundation with
-source Revision, formal Supplier, lifecycle and ERP Asset/location/execution
-dependencies retained. Standing transition authority activates only the
-bounded P6-03 Requirement/domain/existing-capability audit for
-`FR-TX-004..008`, `FR-TL-002`, `FR-TL-003` and `FR-TL-006`. Exact lifecycle
-states/transitions/authorities remain held by `DR-REC-010`; no production
-Supplier, ERPNext endpoint, credential or external mutation may be invented.
+`implementation/evidence/phase-6/p6-02-validation.md`. Evidence checkpoint
+`36e2b9b` passed complete ordinary CI `31222318731`: repository
+`93009313398`, visual `93009313360`, and controlled runtime `93009313685`
+correctly skipped.
+
+The bounded P6-03 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-03-plan.md`. It freezes four additive
+append-only persistence records, exact Revision/specification/cavity/insert/
+external-identity/process-chain truth, and a one-time Set-source binding that
+does not rewrite P6-02 Set snapshots. Standing transition authority activates
+only checkpoint 1: pure domain invariants, closed contract, ownership,
+receipt values and guarded additive metadata with no active route. Exact
+lifecycle states/transitions/authorities remain held by `DR-REC-010`; formal
+Supplier, ERP Asset/location, production workbook mapping, external execution,
+endpoint and credential remain unavailable.
 
 ## Retained P5-04 recovery history
 
