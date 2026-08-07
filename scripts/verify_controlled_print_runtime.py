@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
-from uuid import NAMESPACE_URL, UUID, uuid5
+from uuid import UUID
 
 import verify_document_runtime as document_runtime
 from verify_frappe_runtime import (
@@ -35,18 +35,26 @@ RUNTIME_MARKER = document_runtime.RUNTIME_MARKER
 ACTOR_USER = document_runtime.BASELINE_USER
 SOURCE_KIND = "npi.synthetic_runtime_project"
 CREATE_KEY = f"p5-06-runtime-r1-{FIXTURE_RUN_ID}-create"
-REGISTRY_ID = str(
-    uuid5(
-        NAMESPACE_URL,
-        f"https://npi-one.example.invalid/runtime/p5-06/r1-{FIXTURE_RUN_ID}/registry",
+
+
+def fixture_uuid4(scope: str) -> str:
+    """Return a deterministic synthetic UUID with exact RFC version/variant bits."""
+
+    digest = bytearray(
+        hashlib.sha256(
+            (
+                "https://npi-one.example.invalid/runtime/p5-06/"
+                f"r1-{FIXTURE_RUN_ID}/{scope}"
+            ).encode()
+        ).digest()[:16]
     )
-)
-MAPPING_ID = str(
-    uuid5(
-        NAMESPACE_URL,
-        f"https://npi-one.example.invalid/runtime/p5-06/r1-{FIXTURE_RUN_ID}/mapping-1",
-    )
-)
+    digest[6] = (digest[6] & 0x0F) | 0x40
+    digest[8] = (digest[8] & 0x3F) | 0x80
+    return str(UUID(bytes=bytes(digest)))
+
+
+REGISTRY_ID = fixture_uuid4("registry")
+MAPPING_ID = fixture_uuid4("mapping-1")
 PRINT_FORMAT_NAME = f"P506 Runtime {FIXTURE_RUN_ID[:12]}"
 CONTROLLED_PRINT_DOCTYPES = (
     "NPI Controlled Print Registry",

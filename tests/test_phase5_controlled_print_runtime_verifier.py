@@ -6,6 +6,7 @@ import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +65,8 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(module.SOURCE_KIND, "npi.synthetic_runtime_project")
         self.assertRegex(module.REGISTRY_ID, r"^[a-f0-9-]{36}$")
         self.assertRegex(module.MAPPING_ID, r"^[a-f0-9-]{36}$")
+        self.assertEqual(UUID(module.REGISTRY_ID).version, 4)
+        self.assertEqual(UUID(module.MAPPING_ID).version, 4)
         self.assertNotEqual(module.REGISTRY_ID, module.MAPPING_ID)
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertNotIn("core." + "whjichen.cn", self.source)
