@@ -116,9 +116,12 @@ def frappe_render_template(
 
 
 def frappe_convert_pdf(document: str) -> bytes:
-    from frappe.utils.pdf import get_pdf
+    from frappe.utils.weasyprint import import_weasyprint
 
-    content = get_pdf(document)
+    HTML, _CSS = import_weasyprint()
+    # The controlled shell is self-contained and rejects remote/active content.
+    # Do not give the renderer a base URL that could resolve ambient Site assets.
+    content = HTML(string=document).write_pdf()
     if isinstance(content, bytearray):
         return bytes(content)
     return content

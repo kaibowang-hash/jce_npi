@@ -5,6 +5,8 @@ import sys
 import unittest
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from types import ModuleType
+from unittest.mock import patch
 from uuid import UUID
 
 sys.path.insert(0, "apps/npi_core")
@@ -21,7 +23,10 @@ from npi_core.controlled_print.domain import (
     PrintRegistryState,
     sha256_json,
 )
-from npi_core.controlled_print.rendering import render_controlled_print_pdf
+from npi_core.controlled_print.rendering import (
+    frappe_convert_pdf,
+    render_controlled_print_pdf,
+)
 
 
 NOW = datetime(2026, 8, 7, 2, 0, tzinfo=UTC)
@@ -101,6 +106,39 @@ def snapshot(
 
 
 class Phase5ControlledPrintRenderingTest(unittest.TestCase):
+    def test_frappe_pdf_adapter_uses_the_pinned_self_contained_backend(self) -> None:
+        calls: list[dict[str, object]] = []
+
+        class SyntheticHTML:
+            def __init__(self, **kwargs: object) -> None:
+                calls.append(kwargs)
+
+            def write_pdf(self) -> bytearray:
+                return bytearray(b"%PDF-1.7\nsynthetic weasyprint bytes")
+
+        frappe = ModuleType("frappe")
+        frappe_utils = ModuleType("frappe.utils")
+        frappe_weasyprint = ModuleType("frappe.utils.weasyprint")
+        frappe_weasyprint.import_weasyprint = lambda: (SyntheticHTML, object)  # type: ignore[attr-defined]
+        frappe.utils = frappe_utils  # type: ignore[attr-defined]
+        frappe_utils.weasyprint = frappe_weasyprint  # type: ignore[attr-defined]
+
+        with patch.dict(
+            sys.modules,
+            {
+                "frappe": frappe,
+                "frappe.utils": frappe_utils,
+                "frappe.utils.weasyprint": frappe_weasyprint,
+            },
+        ):
+            content = frappe_convert_pdf("<html><body>Frozen</body></html>")
+
+        self.assertEqual(content, b"%PDF-1.7\nsynthetic weasyprint bytes")
+        self.assertEqual(
+            calls,
+            [{"string": "<html><body>Frozen</body></html>"}],
+        )
+
     def test_render_uses_only_frozen_source_and_server_controlled_shell(self) -> None:
         selected = mapping()
         frozen = snapshot(selected)
