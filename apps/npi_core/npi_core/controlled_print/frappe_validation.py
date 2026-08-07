@@ -4,6 +4,7 @@ import hashlib
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import PurePosixPath
 from typing import Any
 from uuid import UUID
 
@@ -415,7 +416,6 @@ def validate_output(document: Any) -> None:
         {
             "name": document.frappe_file_id,
             "is_private": 1,
-            "is_remote_file": 0,
             "file_name": document.file_name,
             "file_size": document.size_bytes,
             "content_hash": document.frappe_content_hash,
@@ -423,7 +423,14 @@ def validate_output(document: Any) -> None:
         _("The controlled print output does not match its exact private file."),
         extra_fields=("file_url",),
     )
-    if not str(_value(file_row, "file_url") or "").startswith("/private/files/"):
+    file_url = str(_value(file_row, "file_url") or "")
+    file_path = PurePosixPath(file_url)
+    if (
+        not file_url.startswith("/private/files/")
+        or len(file_path.parts) != 4
+        or file_path.parts[:3] != ("/", "private", "files")
+        or file_path.name != document.file_name
+    ):
         frappe.throw(
             _("The controlled print output does not match its exact private file."),
             frappe.ValidationError,

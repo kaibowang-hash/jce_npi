@@ -360,18 +360,21 @@ class Phase5ControlledPrintTransactionTest(unittest.TestCase):
         *,
         is_private: int,
     ):
+        content_hash = hashlib.md5(
+            content,
+            usedforsecurity=False,
+        ).hexdigest()
+        stem, extension = file_name.rsplit(".", 1)
+        retained_file_name = f"{stem}{content_hash[-6:]}.{extension}"
         document = FakeFile(
             self,
             {
                 "doctype": "File",
                 "name": "controlled-print-file-1",
-                "file_name": file_name,
+                "file_name": retained_file_name,
                 "file_size": len(content),
-                "content_hash": hashlib.md5(
-                    content,
-                    usedforsecurity=False,
-                ).hexdigest(),
-                "file_url": f"/private/files/{file_name}",
+                "content_hash": content_hash,
+                "file_url": f"/private/files/{retained_file_name}",
                 "is_private": is_private,
                 "is_remote_file": 0,
                 "attached_to_doctype": attached_to_doctype,
@@ -402,6 +405,10 @@ class Phase5ControlledPrintTransactionTest(unittest.TestCase):
         self.assertFalse(outcome.replayed)
         self.assertEqual(outcome.response["source"]["sourceVersion"], 3)
         self.assertEqual(outcome.response["output"]["mimeType"], "application/pdf")
+        self.assertEqual(
+            outcome.response["output"]["fileName"],
+            self.documents[("File", "controlled-print-file-1")].file_name,
+        )
         self.assertEqual(
             self.writes,
             [

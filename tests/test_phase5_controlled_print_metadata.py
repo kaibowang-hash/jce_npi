@@ -179,12 +179,12 @@ class Phase5ControlledPrintMetadataTest(unittest.TestCase):
             self.assertIn(exact_parent, helper)
         for private_file_field in (
             '"is_private": 1',
-            '"is_remote_file": 0',
             '"content_hash": document.frappe_content_hash',
             '"file_size": document.size_bytes',
             '"/private/files/"',
         ):
             self.assertIn(private_file_field, helper)
+        self.assertNotIn('"is_remote_file": 0', helper)
         for folder in self.FIELDS:
             source = (DOCTYPE_ROOT / folder / f"{folder}.py").read_text(
                 encoding="utf-8"

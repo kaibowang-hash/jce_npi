@@ -517,7 +517,7 @@ class FrappeControlledPrintRepository(FrappeDocumentRepository):
             project_global_id=snapshot.project_global_id,
             snapshot_global_id=snapshot.global_id,
             frappe_file_id=str(_value(file_document, "name")),
-            file_name=rendered.file_name,
+            file_name=str(_value(file_document, "file_name")),
             mime_type=rendered.mime_type,
             size_bytes=rendered.size_bytes,
             frappe_content_hash=str(_value(file_document, "content_hash")),
@@ -895,24 +895,40 @@ def _saved_file_matches(
     content = file_document.get_content()
     if isinstance(content, str):
         content = content.encode("utf-8")
+    file_name = str(_value(file_document, "file_name"))
+    content_hash = _value(file_document, "content_hash")
+    private_path = _private_file_url(_value(file_document, "file_url"))
     return bool(
         isinstance(content, bytes)
         and content == rendered.content
         and str(_value(file_document, "attached_to_doctype"))
         == "NPI Controlled Print Snapshot"
         and str(_value(file_document, "attached_to_name")) == str(snapshot.global_id)
-        and str(_value(file_document, "file_name")) == rendered.file_name
         and int(_value(file_document, "file_size") or 0) == rendered.size_bytes
         and int(_value(file_document, "is_private") or 0) == 1
         and int(_value(file_document, "is_remote_file") or 0) == 0
-        and _private_file_url(_value(file_document, "file_url")) is not None
-        and isinstance(_value(file_document, "content_hash"), str)
-        and len(str(_value(file_document, "content_hash"))) == 32
+        and private_path is not None
+        and private_path.name == file_name
+        and isinstance(content_hash, str)
+        and len(content_hash) == 32
         and all(
             character in "0123456789abcdef"
-            for character in str(_value(file_document, "content_hash"))
+            for character in content_hash
         )
+        and _retained_file_name_matches(file_name, rendered.file_name, content_hash)
     )
+
+
+def _retained_file_name_matches(
+    actual: str,
+    requested: str,
+    content_hash: str,
+) -> bool:
+    requested_path = PurePosixPath(requested)
+    frappe_conflict_safe_name = (
+        f"{requested_path.stem}{content_hash[-6:]}{requested_path.suffix}"
+    )
+    return actual in {requested, frappe_conflict_safe_name}
 
 
 def _file_identity_matches(
