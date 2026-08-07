@@ -361,6 +361,17 @@ EXPECTED_P5_03_COMPLETED_TRACE = {
         },
     )
 }
+EXPECTED_P5_06_TRACE = {
+    requirement_id: (
+        "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION",
+        {
+            "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+            "implementation/phase-5-requirement-anchor.md",
+            "implementation/evidence/phase-5/p5-06-plan.md",
+        },
+    )
+    for requirement_id in ("FR-PRN-001", "FR-PRN-002")
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -883,6 +894,44 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing P5-03 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_status,
+        expected_evidence,
+    ) in EXPECTED_P5_06_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            "P0",
+            "5",
+            expected_status,
+            "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+            "ADDENDUM_DIRECT",
+            requirement_id,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the active P5-06 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P5-06 plan evidence set"
+            )
+        missing_evidence = sorted(
+            path for path in expected_evidence if not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P5-06 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

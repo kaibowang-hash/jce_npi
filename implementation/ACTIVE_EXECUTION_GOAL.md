@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T00:50:00Z`
+Updated: `2026-08-07T01:00:15Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P5-06 CONTROLLED PRINT FOUNDATION`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-06 DOMAIN, CONTRACT AND METADATA FOUNDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -25,7 +25,7 @@ Updated: `2026-08-07T00:50:00Z`
   `bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`
 - Current controller task:
   `P5-06 — Controlled print registry and immutable output snapshot foundation`
-  (`IN_PROGRESS — REQUIREMENT AND DOMAIN AUDIT`)
+  (`IN_PROGRESS — DOMAIN, CONTRACT AND METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-PRN-001`, `FR-PRN-002`
 - Completed P5-05 evidence:
@@ -57,6 +57,12 @@ Phase 5 remains `IN_PROGRESS` until this planned P0 print foundation is
 implemented and its own Level 2 evidence passes. Production endpoints,
 credentials, ERPNext mutation/network dispatch, exact production forms and
 formal release semantics remain prohibited.
+
+The bounded Requirement/domain/existing-capability audit passed at
+`implementation/evidence/phase-5/p5-06-plan.md`. The active first checkpoint
+is now pure registry/snapshot/output domain, closed OpenAPI/ownership
+vocabulary and additive guarded metadata only. It installs no route, renderer,
+File write, UI action, fixture, Print Format or enabled mapping.
 
 ## Retained P5-04 recovery history
 

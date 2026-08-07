@@ -72,6 +72,28 @@ class V12ReconciliationTests(unittest.TestCase):
             row["evidence"],
         )
 
+    def test_p5_06_print_foundation_trace_is_active_without_form_policy(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id in ("FR-PRN-001", "FR-PRN-002"):
+            row = by_id[requirement_id]
+            self.assertEqual(
+                row["status"],
+                "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION",
+            )
+            self.assertEqual(
+                {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                },
+                self.verifier.EXPECTED_P5_06_TRACE[requirement_id][1],
+            )
+        self.assertEqual(
+            by_id["FR-PRN-003"]["status"],
+            "DECISION_REQUIRED_DR_REC_003_004",
+        )
+
     def test_r1_03_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}

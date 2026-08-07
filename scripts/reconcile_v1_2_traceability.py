@@ -29,8 +29,8 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-041", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
     ("FR-UX-043", "P0", "5", "TECHNICAL_VERIFIED"),
-    ("FR-PRN-001", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
-    ("FR-PRN-002", "P0", "5", "PLANNED_PHASE_5_PRINT_FOUNDATION"),
+    ("FR-PRN-001", "P0", "5", "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION"),
+    ("FR-PRN-002", "P0", "5", "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION"),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
     ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
@@ -241,6 +241,14 @@ R1_06_STAGE_3_EVIDENCE = {
         "implementation/evidence/reconciliation/r1-06-validation.md",
     ),
 }
+P5_06_PLAN_EVIDENCE = {
+    requirement_id: (
+        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        "implementation/phase-5-requirement-anchor.md",
+        "implementation/evidence/phase-5/p5-06-plan.md",
+    )
+    for requirement_id in ("FR-PRN-001", "FR-PRN-002")
+}
 
 
 class TraceError(RuntimeError):
@@ -379,6 +387,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
         if requirement_id in R1_06_STAGE_3_EVIDENCE:
             evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
+        if requirement_id in P5_06_PLAN_EVIDENCE:
+            evidence = "; ".join(P5_06_PLAN_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

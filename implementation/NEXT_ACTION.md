@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_AUDIT — P5-06 CONTROLLED PRINT FOUNDATION`
+`IN_PROGRESS_IMPLEMENTATION — P5-06 DOMAIN, CONTRACT AND METADATA FOUNDATION`
 
-Recovery time: `2026-08-07T00:50:00Z`
+Recovery time: `2026-08-07T01:00:15Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -19,20 +19,25 @@ unchanged controlled Gate `31135330539` passed repository `92733288503`,
 controlled runtime `92733288519` and visual `92733288492`. Evidence is
 `implementation/evidence/phase-5/p5-05-validation.md`.
 
-The reconciliation amendment makes P5-06 the first unfinished atomic task.
-Its bounded first action is a Requirement/domain audit for `FR-PRN-001` and
-`FR-PRN-002`:
+The P5-06 Requirement/domain/existing-capability audit passed. It proves there
+is no existing print implementation to relabel, while the canonical snapshot,
+private File hash, audit, idempotency and BFF switch patterns are reusable.
+The frozen plan is
+`implementation/evidence/phase-5/p5-06-plan.md`.
 
-1. inspect existing Frappe print hooks, formats and APIs together with current
-   contracts, ownership, immutable-file/snapshot and audit foundations;
-2. anchor both Requirement IDs and record the exact existing-code reuse/gaps;
-3. define the smallest generic server-side registry plus immutable output
-   snapshot boundary, including language, format version, content hash,
-   provenance, authorization, audit and BFF-only access;
-4. keep exact forms, signers, copy count and production policy out of scope;
-   `FR-PRN-003` remains held by `DR-REC-003` and `DR-REC-004`; and
-5. freeze changed-files to affected-tests mapping and rollback, then implement
-   one complete vertical slice after the audit passes.
+The first implementation checkpoint is now:
+
+1. implement pure versioned registry and immutable snapshot/output domain
+   values with exact mapping, canonical hash and no-default invariants;
+2. add closed capability/create/detail/content OpenAPI schemas and NPI-owned
+   ownership rows without exposing raw DocType, template HTML/name, arbitrary
+   payload or File URL;
+3. add only additive guarded registry-version, snapshot, output, access-event
+   and command-idempotency metadata;
+4. prove draft/published lifecycle, exact/ambiguous/missing mapping,
+   immutability, update/delete denial and zero seeded mapping/format; and
+5. run affected domain/metadata/contract/security checks, reconciliation and
+   `git diff --check` before complete ordinary CI.
 
 No production ERPNext endpoint, credential, external dispatch, raw normal-user
 Desk CRUD or default production Print Format may be introduced. The complete

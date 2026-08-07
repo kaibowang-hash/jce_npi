@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T00:50:00Z`
+Updated: `2026-08-07T01:00:15Z`
 
 ## Authority and operating mode
 
@@ -644,3 +644,33 @@ repeat or rewrite it merely to restore context. See
 - Exact production forms, signers, copy count and policy under `FR-PRN-003`
   remain held for P5-07 by `DR-REC-003` and `DR-REC-004`. P5-06 may not invent
   those business rules, install production defaults or contact ERPNext.
+
+## 2026-08-07 P5-06 requirement and existing-capability audit
+
+- Evidence-only checkpoint `ac890c0` passed the complete product repository
+  verification and fixed-Linux visual `65/65`; its sole ordinary-CI failure
+  was the history scanner classifying the public Git checkpoint stored at
+  `PHASE_STATUS.yaml:554` as a generic API key. The bounded repair retains only
+  that exact immutable commit/path/rule/line fingerprint in the existing
+  strict reviewed set; no regex, path, rule, entropy, history scope or secret
+  criterion is relaxed.
+- The bounded audit for `FR-PRN-001/002` passes. NPI Core contains no existing
+  print route, registry mapping, output snapshot or seeded template that could
+  be relabelled as completion.
+- Existing canonical JSON/SHA-256 baseline patterns, exact private local File
+  validation, immutable audit, Project authorization, actor-bound
+  idempotency, atomic receipt and independent route-switch conventions are
+  reusable without moving ownership.
+- Official source at the pinned Frappe commit provides native `Print Format`
+  and server-side PDF generation. Its live-Document print path cannot be used
+  to substitute current data after snapshot creation; P5-06 freezes source
+  data and exact template content/hash first, renders once, and retains the
+  same private output for audited reprint.
+- No QR dependency exists in the pinned runtime, so no package or external
+  service is authorized. The plan requires a bounded repository-owned
+  deterministic SVG utility with fixed-vector tests and fail-closed behavior.
+- Evidence and the complete scope/test/rollback map are frozen in
+  `implementation/evidence/phase-5/p5-06-plan.md`. Autopilot proceeds with the
+  pure domain, closed contract and additive guarded metadata checkpoint only.
+  No live route, renderer, File write, UI action, fixture, Print Format or
+  enabled mapping is part of that first checkpoint.

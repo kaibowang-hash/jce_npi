@@ -75,6 +75,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "151fdf6e0a6052052c46426080aab49583a726b4:"
             "scripts/verify_publish_request_runtime.py:generic-api-key:794"
         ),
+        (
+            "ac890c08e7cfa7c428d1a487805527239f0659f5:"
+            "implementation/PHASE_STATUS.yaml:generic-api-key:554"
+        ),
     }
 )
 

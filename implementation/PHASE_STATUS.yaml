@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-07T00:50:00Z'
+updated_at: '2026-08-07T01:00:15Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-06
-current_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
-current_task_completed_stage: P5_05_LEVEL_2_PASS
-current_task_next_stage: PRINT_FOUNDATION_REQUIREMENT_DOMAIN_CONTRACT_AUDIT
+current_task_status: IN_PROGRESS_IMPLEMENTATION
+current_task_completed_stage: PRINT_FOUNDATION_REQUIREMENT_DOMAIN_CONTRACT_AUDIT_PASS
+current_task_next_stage: PRINT_FOUNDATION_DOMAIN_CONTRACT_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-06
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -588,10 +588,12 @@ p5_05:
     - implementation/evidence/phase-5/p5-05-controlled-runtime-candidate.md
     - implementation/evidence/phase-5/p5-05-validation.md
 p5_06:
-  status: IN_PROGRESS_REQUIREMENT_AUDIT
+  status: IN_PROGRESS_IMPLEMENTATION
   backlog_task: M4-06
   requirements: [FR-PRN-001, FR-PRN-002]
-  next_stage: REQUIREMENT_DOMAIN_CONTRACT_AUDIT
+  starting_checkpoint: ac890c08e7cfa7c428d1a487805527239f0659f5
+  completed_stage: REQUIREMENT_DOMAIN_CONTRACT_AUDIT_PASS
+  next_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
   delivery_boundary: GENERIC_CONTROLLED_PRINT_REGISTRY_AND_IMMUTABLE_SNAPSHOT_FOUNDATION
   exact_form_policy_active: false
   production_print_policy_active: false
@@ -602,6 +604,7 @@ p5_06:
   evidence:
     - implementation/phase-5-requirement-anchor.md
     - implementation/V1_2_RECONCILIATION_DECISIONS.md
+    - implementation/evidence/phase-5/p5-06-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
