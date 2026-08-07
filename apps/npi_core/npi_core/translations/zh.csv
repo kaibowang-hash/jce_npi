@@ -3757,3 +3757,100 @@ Future recovery,未来恢复
 Reconciliation required,需要对账
 Select an immutable request to inspect its exact evidence.,请选择一个不可变请求以查看其精确证据。
 Publish-request node results,发布请求节点结果
+No approved controlled print mapping is available.,没有可用的已批准受控打印映射。
+The controlled print mapping is unavailable.,受控打印映射不可用。
+The controlled print output is unavailable.,受控打印输出不可用。
+You are not authorized to create this controlled print output.,您无权创建此受控打印输出。
+The controlled print source changed. Reload it before continuing.,受控打印源已更改。请重新加载后继续。
+The idempotency key was already used for a different print request.,幂等键已用于其他打印请求。
+The Print Format content hash does not match.,打印格式内容哈希不匹配。
+Effective To must be later than Effective From.,生效结束时间必须晚于生效开始时间。
+Published At is required for a published mapping.,已发布映射必须填写发布时间。
+A draft mapping cannot have a publication time.,草稿映射不能包含发布时间。
+The controlled print mapping snapshot hash does not match.,受控打印映射快照哈希不匹配。
+The controlled print source snapshot hash does not match.,受控打印源快照哈希不匹配。
+Controlled print snapshots start at version 1.,受控打印快照必须从版本 1 开始。
+The controlled print snapshot hash does not match.,受控打印快照哈希不匹配。
+The controlled print verification payload does not match.,受控打印验证载荷不匹配。
+The controlled print output record hash does not match.,受控打印输出记录哈希不匹配。
+The controlled print access event hash does not match.,受控打印访问事件哈希不匹配。
+Enter a non-empty JSON object.,请输入非空数据对象。
+The source snapshot is too large.,源快照过大。
+Enter a valid JSON value.,请输入有效的数据值。
+Enter a valid UUID.,请输入有效的 UUID。
+Enter a version 4 UUID.,请输入版本 4 UUID。
+Select a supported language.,请选择支持的语言。
+Enter a valid lowercase hexadecimal value.,请输入有效的小写十六进制值。
+Enter a valid user ID.,请输入有效的用户标识。
+Enter one or more user IDs.,请输入一个或多个用户标识。
+Enter one or more unique user IDs.,请输入一个或多个不重复的用户标识。
+Enter a valid Trace ID.,请输入有效的跟踪标识。
+Enter a valid PDF file name.,请输入有效的受控文档文件名。
+Controlled print mappings require an authorized administrative command.,受控打印映射需要经授权的管理命令。
+Controlled print history requires an authorized NPI command.,受控打印历史需要经授权的 NPI 命令。
+Registry Key,注册表键
+Registry Key Hash does not match Registry Key.,注册表键哈希与注册表键不匹配。
+Mapping Snapshot,映射快照
+Registry Global ID,注册表全局标识
+Printer User IDs,打印用户标识
+Mapping Snapshot does not match the exact registry version.,映射快照与精确注册表版本不匹配。
+Snapshot,快照
+Mapping Global ID,映射全局标识
+Printed At,打印时间
+Snapshot does not match the exact controlled print source.,快照与精确受控打印源不匹配。
+Output Snapshot,输出快照
+Snapshot Global ID,快照全局标识
+Output Snapshot does not match the exact private output.,输出快照与精确私有输出不匹配。
+Event Snapshot,事件快照
+Output Global ID,输出全局标识
+Event Snapshot does not match the exact access event.,事件快照与精确访问事件不匹配。
+Select a supported operation.,请选择支持的操作。
+A sealed controlled print receipt requires an exact response.,已封存的受控打印回执必须包含精确响应。
+Response Hash does not match Response Payload.,响应哈希与响应载荷不匹配。
+An unsealed controlled print receipt cannot contain a response.,未封存的受控打印回执不能包含响应。
+Controlled print command receipts can only be sealed once.,受控打印命令回执只能封存一次。
+Published controlled print mappings are immutable.,已发布的受控打印映射不可变。
+NPI Controlled Print Access Event,NPI 受控打印访问事件
+Controlled Print Snapshot,受控打印快照
+Controlled Print Output,受控打印输出
+created,已创建
+downloaded,已下载
+Event Hash,事件哈希
+NPI Controlled Print Command Idempotency,NPI 受控打印命令幂等
+NPI Controlled Print Output,NPI 受控打印输出
+Frappe File ID,Frappe 文件标识
+Size Bytes,字节大小
+Record Hash,记录哈希
+NPI Controlled Print Registry,NPI 受控打印注册表
+Registry Key Hash,注册表键哈希
+NPI Controlled Print Registry Version,NPI 受控打印注册表版本
+Controlled Print Registry,受控打印注册表
+Mapping Key,映射键
+Project Type Key,项目类型键
+Source State,源状态
+en,英语
+zh,简体中文
+zh-TW,繁体中文
+Delivery Mode,交付模式
+controlled_pdf,受控文档
+Copy State,副本状态
+not_numbered,未编号
+Print Format Name,打印格式名称
+Template Content,模板内容
+Template SHA-256,模板 SHA-256
+Watermark Source,水印源
+NPI Controlled Print Snapshot,NPI 受控打印快照
+Source Snapshot Hash,源快照哈希
+Mapping Snapshot Hash,映射快照哈希
+Snapshot Version,快照版本
+Verification Payload,验证载荷
+The controlled print mapping does not match its registry.,受控打印映射与其注册表不匹配。
+The controlled print snapshot does not match an enabled registry.,受控打印快照与已启用的注册表不匹配。
+The controlled print snapshot does not match its exact mapping.,受控打印快照与其精确映射不匹配。
+The controlled print mapping is not effective at the print time.,受控打印映射在打印时间尚未生效。
+The controlled print output does not match its snapshot.,受控打印输出与其快照不匹配。
+The controlled print output does not match its exact private file.,受控打印输出与其精确私有文件不匹配。
+The controlled print access event does not match its snapshot.,受控打印访问事件与其快照不匹配。
+The controlled print access event does not match its output.,受控打印访问事件与其输出不匹配。
+The controlled print receipt does not match its snapshot.,受控打印回执与其快照不匹配。
+The controlled print record does not match its Project and tenant.,受控打印记录与其项目和租户不匹配。

@@ -17,6 +17,7 @@ tags:
   - { name: Gates }
   - { name: Documents }
   - { name: EBOM }
+  - { name: ControlledPrint }
   - { name: Tooling }
   - { name: Trials }
   - { name: Execution }
@@ -2980,6 +2981,159 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/controlled-print/capability:
+    get:
+      tags: [ControlledPrint]
+      operationId: getControlledPrintCapability
+      description: >
+        Resolves only a closed server-owned source adapter and one exact
+        published mapping. Unknown source kinds, missing mappings and ambiguous
+        mappings fail closed; the response never exposes a raw DocType, Print
+        Format name/template or private File URL.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-controlled-print-policy-printer
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: sourceKind
+          required: true
+          description: Stable closed source-adapter key; never a raw Frappe DocType
+          schema:
+            { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]*$" }
+        - in: query
+          name: sourceGlobalId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: sourceVersion
+          required: true
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: language
+          required: true
+          schema: { type: string, enum: [en, zh, zh-TW] }
+      responses:
+        "200":
+          description: Exact controlled-print availability and authority truth
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ControlledPrintCapability" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/controlled-prints:
+    post:
+      tags: [ControlledPrint]
+      operationId: createControlledPrintSnapshot
+      description: >
+        Atomically resolves one exact approved mapping and server-owned source,
+        freezes source/template truth, renders one retained controlled PDF and
+        seals the response. The caller cannot supply template, snapshot,
+        watermark, copy state, actor, time, hash or File identity.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-controlled-print-policy-printer
+      x-transaction-boundary: controlled-print-snapshot-output-audit-receipt
+      x-audit-operation: controlled_print.snapshot.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateControlledPrintSnapshot" }
+      responses:
+        "201":
+          description: Immutable controlled print snapshot and retained output metadata
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ControlledPrintSnapshot" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/controlled-prints/{controlledPrintId}:
+    get:
+      tags: [ControlledPrint]
+      operationId: getControlledPrintSnapshot
+      description: >
+        Returns immutable snapshot and retained output metadata after Project
+        and independent controlled-print authorization. It never rerenders
+        from current live source or template data.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-controlled-print-policy-printer
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: controlledPrintId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Immutable controlled print snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ControlledPrintSnapshot" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/controlled-prints/{controlledPrintId}/content:
+    get:
+      tags: [ControlledPrint]
+      operationId: downloadControlledPrintOutput
+      description: >
+        Streams the exact retained private PDF after authorization and appends
+        an access event. The endpoint never returns or redirects to a raw
+        private Frappe File URL and never rerenders newer live data.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-controlled-print-policy-printer
+      x-audit-operation: controlled_print.output.download
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: controlledPrintId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Exact retained controlled PDF bytes
+          headers:
+            X-NPI-Snapshot-Hash:
+              schema: { type: string, pattern: "^[a-f0-9]{64}$" }
+            X-NPI-Output-Hash:
+              schema: { type: string, pattern: "^[a-f0-9]{64}$" }
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -3827,6 +3981,116 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    ControlledPrintSourceReference:
+      type: object
+      additionalProperties: false
+      required:
+        [sourceKind, sourceGlobalId, sourceVersion, sourceState, sourceSnapshotHash]
+      properties:
+        sourceKind:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+          description: Stable server-owned adapter key; never a raw Frappe DocType
+        sourceGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        sourceState:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]*$" }
+        sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ControlledPrintRegistryReference:
+      type: object
+      additionalProperties: false
+      description: Public hash reference only; Print Format name and template remain server-side
+      required:
+        [globalId, registryGlobalId, version, snapshotHash, templateSha256]
+      properties:
+        globalId: { type: string, format: uuid }
+        registryGlobalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        templateSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ControlledPrintPermissions:
+      type: object
+      additionalProperties: false
+      required: [create, download]
+      properties:
+        create: { type: boolean }
+        download: { type: boolean }
+    ControlledPrintCapability:
+      type: object
+      additionalProperties: false
+      required: [available, sourceKind, sourceGlobalId, sourceVersion, language, permissions]
+      properties:
+        available: { type: boolean }
+        sourceKind:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]*$" }
+        sourceGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        language: { type: string, enum: [en, zh, zh-TW] }
+        deliveryMode:
+          description: Present only for one exact approved mapping
+          oneOf:
+            - { type: string, const: controlled_pdf }
+            - { type: "null" }
+        copyState:
+          description: Structural non-numbered foundation; no copy policy is claimed
+          oneOf:
+            - { type: string, const: not_numbered }
+            - { type: "null" }
+        registry:
+          oneOf:
+            - { $ref: "#/components/schemas/ControlledPrintRegistryReference" }
+            - { type: "null" }
+        permissions: { $ref: "#/components/schemas/ControlledPrintPermissions" }
+    CreateControlledPrintSnapshot:
+      type: object
+      additionalProperties: false
+      required: [sourceKind, sourceGlobalId, sourceVersion, language]
+      properties:
+        sourceKind:
+          type: string
+          minLength: 1
+          maxLength: 128
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+          description: Stable server-owned adapter key; never a raw Frappe DocType
+        sourceGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        language: { type: string, enum: [en, zh, zh-TW] }
+    ControlledPrintOutput:
+      type: object
+      additionalProperties: false
+      description: URL-free exact private output metadata
+      required: [globalId, fileName, mimeType, sizeBytes, sha256, recordHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        fileName: { type: string, minLength: 5, maxLength: 140, pattern: "^[^/\\]+[.]pdf$" }
+        mimeType: { type: string, const: application/pdf }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        recordHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ControlledPrintSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, version, source, registry, language, deliveryMode, copyState,
+         watermarkSource, actorUserId, printedAt, snapshotHash,
+         verificationPayload, output]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, const: 1 }
+        source: { $ref: "#/components/schemas/ControlledPrintSourceReference" }
+        registry: { $ref: "#/components/schemas/ControlledPrintRegistryReference" }
+        language: { type: string, enum: [en, zh, zh-TW] }
+        deliveryMode: { type: string, const: controlled_pdf }
+        copyState: { type: string, const: not_numbered }
+        watermarkSource: { type: string, minLength: 1, maxLength: 140 }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        printedAt: { type: string, format: date-time }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        verificationPayload:
+          { type: string, minLength: 1, maxLength: 256, pattern: "^urn:npi:controlled-print:[0-9a-f-]+:[a-f0-9]{64}$" }
+        output: { $ref: "#/components/schemas/ControlledPrintOutput" }
     LanguageCode:
       type: string
       enum: [en, zh, zh-TW]

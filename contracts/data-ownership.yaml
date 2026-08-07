@@ -582,6 +582,49 @@ objects:
       external_identity_and_retrieval_authority: {owner: FUTURE_EXTERNAL_ACCESS_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
       raw_token_or_private_url: {owner: FUTURE_EXTERNAL_ACCESS_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_EXPOSE}
 
+  ControlledPrintRegistry:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      registry_identity: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      draft_mapping_version: {owner: NPI_ONE, editable_in: [NPI_ONE_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION}
+      published_mapping_and_template_snapshot: {owner: NPI_ONE_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_source_project_gate_state_language_effectivity: {owner: NPI_ONE_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+      exact_form_signer_retention_and_copy_policy: {owner: FUTURE_APPROVED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ControlledPrintSnapshot:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_source_and_mapping_snapshot: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      language_actor_time_watermark_copy_and_verification_truth: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      source_live_state: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: NEVER_SUBSTITUTE_LIVE_DATA}
+
+  ControlledPrintOutput:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_private_file_identity_and_hash: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      retained_pdf_bytes: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_RERENDER_IN_PLACE}
+      raw_private_file_url: {owner: FRAPPE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE}
+
+  ControlledPrintAccessEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_snapshot_output_actor_time_and_type: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      event_hash_and_trace: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ControlledPrintCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [NPI_ONE_CONTROLLED_PRINT_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_snapshot_identity: {owner: NPI_ONE_CONTROLLED_PRINT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
 exception_policy:
   create_object: IntegrationException
   required_fields:
