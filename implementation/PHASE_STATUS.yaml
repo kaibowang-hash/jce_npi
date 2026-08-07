@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T09:16:14Z'
+updated_at: '2026-08-07T09:52:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P6-00
-current_task_status: IN_PROGRESS_REQUIREMENT_ANCHOR
-current_task_completed_stage: PHASE_5_LEVEL_3_GATE_PASS
-current_task_next_stage: PHASE_6_REQUIREMENT_DOMAIN_AND_EXISTING_CAPABILITY_AUDIT
+current_task: P6-01
+current_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
+current_task_completed_stage: P6_00_LEVEL_2_REQUIREMENT_ANCHOR_PASS
+current_task_next_stage: P6_01_REQUIREMENT_DOMAIN_AND_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: null
-resumed_product_task_status: NOT_ACTIVE_BEFORE_P6_00_PASS
+resumed_product_task: P6-01
+resumed_product_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -643,13 +643,30 @@ p5_06:
     - implementation/evidence/phase-5/p5-06-validation.md
     - implementation/phase-5-gate.md
 p6_00:
-  status: IN_PROGRESS_REQUIREMENT_ANCHOR
+  status: PASS_LEVEL_2
   phase: 6
   milestone: M5
   requirements: [FR-TX-001, FR-TX-002, FR-TX-003, FR-TX-004, FR-TX-005, FR-TX-006, FR-TX-007, FR-TX-008, FR-TX-009, FR-TX-010, FR-TX-011, FR-TX-012, FR-TX-013, FR-TX-014, FR-TX-015, FR-TX-016, FR-TX-017, FR-TX-018, FR-TX-019, FR-TX-020]
   compatibility_first_product_task: M5-01
-  product_code_authorized_before_anchor_pass: false
+  starting_checkpoint: ce401b87612c946225ef0106fb344cfdcfb21190
+  entry_normal_ci: 31165764919
+  entry_repository_job: 92826073031
+  entry_visual_job: 92826073108
+  product_code_changed: false
   scoped_decisions: [DR-REC-002, DR-REC-007, DR-REC-008, DR-REC-010]
+  completed_stage: LEVEL_2_DOCUMENTATION_TRACE_TASK_GATE_PASS
+  next_stage: COMPLETE
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - implementation/evidence/phase-6/p6-00-validation.md
+p6_01:
+  status: IN_PROGRESS_REQUIREMENT_AUDIT
+  backlog_task: M5-01
+  requirements: [FR-TX-001, FR-TX-002, UX-004, FR-TL-001, FR-TL-003]
+  delivery_boundary: DISTINCT_PART_REQUIREMENT_MASTER_APPLICABILITY_AND_LIVE_COCKPIT
+  exact_lifecycle_commands_active: false
+  production_lifecycle_policy_active: false
+  scoped_decision: DR-REC-010
   next_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 bridge:
   id: R1
@@ -675,7 +692,7 @@ phases:
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
-  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P6-00}
+  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00], current_task: P6-01}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

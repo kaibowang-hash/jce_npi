@@ -1,28 +1,25 @@
 # Blockers
 
-Updated: `2026-08-06T13:37:01Z`
+Updated: `2026-08-07T09:52:00Z`
 
 ## Active hard blockers
 
-None. P5-05 workspace checkpoint 3 and its bounded visual-evidence repairs are
-resolved at exact SHA `4f4baf9` by complete ordinary CI `31104305011`,
-including the fixed-Linux matrix `65/65`. No user action or external
-authorization is required.
+None. P5-06 and the Phase 5 Level 3 Gate are PASS; P6-00 has passed its
+documentation/trace Task Gate. No user action or external authorization is
+required for the active P6-01 Requirement/domain/existing-capability audit.
 
 ## Active recovery
 
-`P5-05-CONTROLLED-CANDIDATE-HISTORY-SCAN-REPAIR` — ordinary CI `31105998998`
-passed `verify.sh`, complete E2E, current-tree Gitleaks and fixed-Linux visual,
-then failed only the final full-history scan on exact fingerprint
-`151fdf6e0a6052052c46426080aab49583a726b4:scripts/verify_publish_request_runtime.py:generic-api-key:794`.
-The matched value is a synthetic route-probe label beside `query_key`, not a
-secret. The minimal repair adds only that exact immutable fingerprint to the
-strict reviewed inventory and removes the current lexical assignment shape.
-Local affected `48/48`, complete Python `1006/1006`, compilation and diff
-checks pass. Complete ordinary CI remains required before the controlled Site.
+`P6-01-REQUIREMENT-AUDIT` — active, not blocked. It is limited to the task plan
+for distinct Part/PartRevision, ToolingRequirement, ToolingMaster and versioned
+ToolingApplicability plus the live cockpit. `DR-REC-010` continues to hold exact
+production lifecycle states/transitions/authority, so no lifecycle command or
+production default may be installed. That scoped hold does not block identity,
+authorization, contract, metadata or read-only cockpit planning.
 
-No user action is required. Production ERPNext access and Phase 8 execution
-remain scoped holds, not Hard Blockers.
+Production ERPNext access, exact lifecycle policy, production Tooling-list
+mapping, destructive downstream rollback and exception-color semantics remain
+scoped holds for their dependent behavior, not global Hard Blockers.
 
 ## Historical recovery
 
@@ -911,3 +908,14 @@ must preserve that boundary.
   hold under `DR-REC-003/004`, not a global blocker. Phase 6 P6-00 may proceed
   with requirement anchoring while its own `DR-REC-002/007/008/010` facts stay
   scoped to dependent behavior.
+
+## Current authoritative blocker state — 2026-08-07T09:52:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P6-00 passed its documentation/trace Level 2 Gate and introduced no product
+  code, Schema, production policy, mapping, adapter, credential or external
+  mutation. Evidence is
+  `implementation/evidence/phase-6/p6-00-validation.md`.
+- P6-01 is active only for its Requirement/domain/existing-capability audit and
+  exact task plan. `DR-REC-010` holds formal lifecycle commands; the audit and
+  safe identity/authorization/contract planning can proceed autonomously.

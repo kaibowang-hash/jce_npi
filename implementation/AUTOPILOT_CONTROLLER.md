@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T09:16:14Z`
+Updated: `2026-08-07T09:52:00Z`
 
 ## Authority and operating mode
 
@@ -770,3 +770,29 @@ repeat or rewrite it merely to restore context. See
   workbook boundary through `xlsx-tooling-import`, retains
   `DR-REC-002/007/008/010`, and defines task/test/rollback sequencing without
   product code. P6-01/M5-01 remains inactive until that anchor passes.
+
+## 2026-08-07 P6-00 requirement anchor PASS and P6-01 transition
+
+- P6-00 completed the bounded repository/specification audit and froze the
+  Phase 6 requirement, identity, ownership, task, test, migration and rollback
+  boundary in `implementation/phase-6-requirement-anchor.md`.
+- `FR-TX-001..020`, `FR-TL-001..018`, `UX-004`, `UX-007` and `UX-016` are
+  allocated to P6-01 through P6-08. Anchored trace states mean allocation only;
+  no Tooling requirement is relabelled implemented or accepted.
+- Existing repository truth remains explicit: there is no live Tooling backend,
+  metadata or BFF; the SPA Tooling page is an in-memory prototype; and the
+  passive XLSX inspector is parser-safety foundation, not a runtime import.
+- `DR-REC-002/007/008/010` remain scoped holds. No production lifecycle policy,
+  exception-color semantics, workbook mapping, destructive rollback, adapter,
+  ERPNext endpoint or credential was installed.
+- P6-00 Level 2 documentation/trace checks pass: canonical 282-row trace,
+  focused reconciliation `18/18`, YAML/source/evidence checks and
+  `git diff --check`. Its entry checkpoint `ce401b8` passed exact-SHA ordinary
+  CI `31165764919` with repository `92826073031`, complete E2E/history secret
+  lanes and fixed-Linux visual `92826073108`; controlled runtime correctly
+  skipped.
+- Standing authority activates only the P6-01 Requirement/domain/existing-
+  capability audit and task plan for Part/PartRevision, ToolingRequirement,
+  ToolingMaster, versioned ToolingApplicability and the dense live cockpit.
+  No product mutation is permitted until that plan freezes the exact
+  no-lifecycle-command boundary.

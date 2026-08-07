@@ -1,19 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T09:16:14Z`
+Updated: `2026-08-07T09:52:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_ANCHOR — P6-00 TOOLING`
+- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P6-01 TOOLING`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
   `6ba2763cc14b3a044e2225d7a960ce02175f88a7` (pushed; P5-06 final exact
   controlled-print foundation and verifier repair checkpoint)
+- Latest pushed controller/evidence checkpoint:
+  `ce401b87612c946225ef0106fb344cfdcfb21190` (P5-06/Phase 5 evidence close;
+  exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31163598955` (`PASS`, exact SHA `6ba2763`; repository `92819270517`,
-  complete E2E, Gitleaks/history and fixed-Linux visual `92819270398` passed;
+  `31165764919` (`PASS`, exact SHA `ce401b8`; repository `92826073031`,
+  complete E2E, Gitleaks/history and fixed-Linux visual `92826073108` passed;
   controlled runtime correctly skipped)
 - Latest controlled-Site run:
   `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
@@ -23,14 +26,14 @@ Updated: `2026-08-07T09:16:14Z`
   `8988384460`, GitHub SHA-256
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
-  `P6-00 — Phase 6 Tooling requirement anchor`
+  `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
   (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
 - Current Requirement IDs:
-  `FR-TX-001` through `FR-TX-020` plus applicable Tooling UX aliases
+  `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — REQUIREMENT ANCHOR ONLY`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 REQUIREMENT AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -50,19 +53,20 @@ verifier defects after controlled-print creation had passed. No Requirement,
 API, permission, Schema intent, ownership, transaction, idempotency, audit,
 baseline, threshold or PASS criterion changed.
 
-Standing automatic-transition authority activates only P6-00. This is an
-evidence/requirement anchor for the Tooling phase, not authorization for
-Tooling product code. It must allocate `FR-TX-001` through `FR-TX-020`, keep
-Tooling Requirement/Master/Revision/physical Set identities separate,
-reconcile NPI/ERPNext ownership, route the specialized 43-column workbook
-boundary through the `xlsx-tooling-import` Skill, preserve scoped
-`DR-REC-002/007/008/010` holds and define the Phase 6 task/test/rollback order.
+P6-00 passed its documentation/trace Level 2 Gate. The Phase 6 anchor allocates
+`FR-TX-001..020` and `FR-TL-001..018` across P6-01 through P6-08, preserves
+distinct Tooling identities and NPI/ERPNext ownership, routes the specialized
+workbook boundary through `xlsx-tooling-import`, and retains scoped
+`DR-REC-002/007/008/010` holds. It introduced no product code, metadata,
+mapping, adapter, credential, production policy or external mutation.
 
-P6-00 may inspect repository and specification truth and update only the
-anchor, trace/controller and evidence. It may not invent exact Tooling
-lifecycle states/authority, production exception colors, production workbook
-mapping activation or destructive downstream rollback. P6-01/M5-01 product
-implementation remains inactive until the P6-00 anchor passes.
+Standing automatic-transition authority activates only P6-01. Its current
+checkpoint is the bounded Requirement/domain/existing-capability audit and
+task plan for distinct Part/PartRevision, ToolingRequirement, ToolingMaster
+and versioned ToolingApplicability plus the dense live cockpit. It must retain
+the no-production-lifecycle-command boundary under `DR-REC-010`. Product
+mutation remains inactive until that P6-01 plan freezes the exact domain,
+permission, contract, migration, verification and rollback boundary.
 
 ## Retained P5-04 recovery history
 

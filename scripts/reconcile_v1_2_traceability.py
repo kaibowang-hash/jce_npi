@@ -35,15 +35,15 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-BR-002", "P1", "8", "PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET"),
-    ("FR-TX-019", "P0", "6", "PLANNED_PHASE_6_RECONCILED"),
+    ("FR-TX-019", "P0", "6", "ANCHORED_P6_05"),
     ("FR-TX-020", "P0", "6", "DECISION_REQUIRED_DR_REC_002"),
 )
 UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
-    "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
+    "UX-004": ("6", "ANCHORED_P6_01_TOOLING_WORKSPACE"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
-    "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
+    "UX-016": ("8", "ANCHORED_P6_07_PHASE_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
@@ -52,6 +52,26 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
     "UX-035": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
     "UX-036": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
+}
+P6_TOOLING_ALLOCATION = {
+    "FR-TX-001": "ANCHORED_P6_01",
+    "FR-TX-002": "ANCHORED_P6_01",
+    "FR-TX-003": "ANCHORED_P6_02",
+    "FR-TX-004": "ANCHORED_P6_03",
+    "FR-TX-005": "ANCHORED_P6_03",
+    "FR-TX-006": "ANCHORED_P6_03",
+    "FR-TX-007": "ANCHORED_P6_03",
+    "FR-TX-008": "ANCHORED_P6_03",
+    "FR-TX-009": "ANCHORED_P6_05",
+    "FR-TX-010": "ANCHORED_P6_05",
+    "FR-TX-011": "ANCHORED_P6_05",
+    "FR-TX-012": "ANCHORED_P6_07",
+    "FR-TX-013": "ANCHORED_P6_07",
+    "FR-TX-014": "ANCHORED_P6_07",
+    "FR-TX-015": "ANCHORED_P6_07",
+    "FR-TX-016": "ANCHORED_P6_07",
+    "FR-TX-017": "ANCHORED_P6_07",
+    "FR-TX-018": "ANCHORED_P6_07",
 }
 R1_03_EVIDENCE = {
     "FR-UX-039": (
@@ -100,6 +120,8 @@ R1_04_EVIDENCE = {
         "frontend/tests/unit/dense-grid.test.tsx",
         "frontend/tests/e2e/r1-04-grid.spec.ts",
         "implementation/evidence/reconciliation/r1-04-validation.md",
+        "implementation/phase-6-requirement-anchor.md",
+        "implementation/evidence/phase-6/p6-00-validation.md",
     ),
     "UX-027": (
         "apps/npi_core/npi_core/grid_personalization/controller.py",
@@ -269,6 +291,20 @@ P5_06_PLAN_EVIDENCE = {
         "implementation/phase-5-gate.md",
     ),
 }
+P6_ANCHOR_EVIDENCE = (
+    "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+    "implementation/phase-6-requirement-anchor.md",
+    "implementation/evidence/phase-6/p6-00-validation.md",
+)
+P6_UX_ANCHOR_EVIDENCE = {
+    requirement_id: (
+        "implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "implementation/phase-6-requirement-anchor.md",
+        "implementation/evidence/phase-6/p6-00-validation.md",
+    )
+    for requirement_id in ("UX-004", "UX-016")
+}
 
 
 class TraceError(RuntimeError):
@@ -304,7 +340,12 @@ def _phase_and_status(requirement_id: str, coverage_status: str) -> tuple[str, s
     if requirement_id.startswith("I18N-"):
         return "3", "RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS"
     if requirement_id.startswith("FR-TX-"):
-        return "6", "PLANNED_PHASE_6_RECONCILED"
+        try:
+            return "6", P6_TOOLING_ALLOCATION[requirement_id]
+        except KeyError as error:
+            raise TraceError(
+                f"missing Phase 6 allocation for {requirement_id}"
+            ) from error
     raise TraceError(f"unexpected DOCX-only requirement ID: {requirement_id}")
 
 
@@ -365,6 +406,18 @@ def _expanded_rows(
             evidence = "; ".join(R1_06_STAGE_1_EVIDENCE[requirement_id])
         if requirement_id in R1_06_STAGE_3_EVIDENCE:
             evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
+        if requirement_id in P6_UX_ANCHOR_EVIDENCE:
+            evidence = "; ".join(P6_UX_ANCHOR_EVIDENCE[requirement_id])
+        if requirement_id in P6_TOOLING_ALLOCATION:
+            evidence = "; ".join(
+                (
+                    "implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv",
+                    "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+                    "docs/TOOLING_LIST_IMPORT_SPEC.md",
+                    "implementation/phase-6-requirement-anchor.md",
+                    "implementation/evidence/phase-6/p6-00-validation.md",
+                )
+            )
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": requirement["priority"],
@@ -409,6 +462,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
         if requirement_id in P5_06_PLAN_EVIDENCE:
             evidence = "; ".join(P5_06_PLAN_EVIDENCE[requirement_id])
+        if requirement_id in {"FR-TX-019", "FR-TX-020"}:
+            evidence = "; ".join(P6_ANCHOR_EVIDENCE)
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

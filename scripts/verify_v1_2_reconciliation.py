@@ -61,10 +61,10 @@ ADDENDUM_IDS = {
 }
 EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
-    "UX-004": ("6", "PLANNED_PHASE_6_TOOLING_WORKSPACE"),
+    "UX-004": ("6", "ANCHORED_P6_01_TOOLING_WORKSPACE"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
-    "UX-016": ("8", "PLANNED_PHASE_6_8_ASYNC_JOB_TRUTH"),
+    "UX-016": ("8", "ANCHORED_P6_07_PHASE_8_ASYNC_JOB_TRUTH"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
@@ -135,6 +135,8 @@ EXPECTED_R1_04_TRACE = {
             "frontend/tests/unit/dense-grid.test.tsx",
             "frontend/tests/e2e/r1-04-grid.spec.ts",
             "implementation/evidence/reconciliation/r1-04-validation.md",
+            "implementation/phase-6-requirement-anchor.md",
+            "implementation/evidence/phase-6/p6-00-validation.md",
         },
     ),
     "UX-027": (
@@ -997,8 +999,9 @@ def verify_trace_sets() -> None:
     tooling_ids = {
         requirement_id
         for requirement_id, row in by_id.items()
-        if row["trace_kind"] == "DOCX_RECONCILED"
-        and row["status"] == "PLANNED_PHASE_6_RECONCILED"
+        if requirement_id.startswith("FR-TX-")
+        and row["trace_kind"] == "DOCX_RECONCILED"
+        and row["status"].startswith("ANCHORED_P6_")
         and row["phase"] == "6"
     }
     if len(linked_alias_ids) != 30:
@@ -1011,7 +1014,7 @@ def verify_trace_sets() -> None:
         )
     if len(tooling_ids) != 18:
         raise ReconciliationVerificationError(
-            "expected 18 Phase 6 Tooling requirements"
+            "expected 18 anchored Phase 6 Tooling requirements"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(

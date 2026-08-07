@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_ANCHOR — P6-00 TOOLING`
+`IN_PROGRESS_REQUIREMENT_AUDIT — P6-01 TOOLING`
 
-Recovery time: `2026-08-07T09:16:14Z`
+Recovery time: `2026-08-07T09:52:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery product checkpoint:
-`6ba2763cc14b3a044e2225d7a960ce02175f88a7`
+Recovery controller/evidence checkpoint:
+`ce401b87612c946225ef0106fb344cfdcfb21190`
 
 ## Current authoritative action
 
@@ -24,32 +24,40 @@ Independent Release Gate review passes Phase 5 at Level 3. The decision and
 cumulative task evidence are recorded in `implementation/phase-5-gate.md`.
 There is no active technical Hard Blocker.
 
+P6-00 passed its documentation/trace Level 2 Gate. It allocated the complete
+Tooling requirement set, froze distinct aggregate and ERPNext ownership
+boundaries, recorded the scoped Decision Requests, audited the current
+prototype/import-inspector truth and defined task/test/rollback order. It
+installed no product runtime, Schema, route, policy, mapping, adapter,
+credential or external mutation. Evidence is
+`implementation/evidence/phase-6/p6-00-validation.md` and the frozen boundary
+is `implementation/phase-6-requirement-anchor.md`.
+
 The first unfinished atomic task is now:
 
-`P6-00 — Phase 6 Tooling requirement anchor`
+`P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
 
-Execute only the requirement/domain/existing-capability audit:
+Execute only its initial requirement/domain/existing-capability audit and task
+plan:
 
-1. allocate `FR-TX-001` through `FR-TX-020` and applicable Tooling UX aliases
-   across a minimal Phase 6 atomic order compatible with M5-01 through M5-08;
-2. preserve distinct Tooling Requirement, Tooling Master, Tooling Revision and
-   physical Tooling Set identities, and do not invent exact lifecycle states,
-   transitions or authorities held by `DR-REC-010`;
-3. inspect current repository prototypes/contracts and supplied ERPNext facts
-   before defining reuse/replace/interface boundaries; preserve ERPNext formal
-   asset/cost/execution ownership;
-4. route the specialized 43-column workbook boundary through the
-   `xlsx-tooling-import` Skill and keep production mapping activation and
-   destructive downstream rollback held by `DR-REC-007/008`;
-5. retain `DR-REC-002` only for production exception-color semantics; and
-6. produce the Phase 6 requirement anchor, trace/controller updates,
-   changed-files-to-affected-tests map, migration/rollback strategy and a
-   Level 2 evidence-only Gate before any P6-01 product code.
+1. freeze the non-collapsible `Part`, `PartRevision`, `ToolingRequirement`,
+   `ToolingMaster` and versioned/effective `ToolingApplicability` identities;
+2. map `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001` and the
+   `FR-TL-003` foundation to exact acceptance and trace evidence;
+3. inspect reusable Project authorization, audit/idempotency, metadata,
+   repository/BFF/OpenAPI and dense Tooling prototype mechanisms without
+   treating the prototype as persisted product truth;
+4. define Project/tenant permission, create/reference/reuse semantics,
+   uniqueness, version/effectivity, cockpit state, migration and rollback
+   boundaries without inventing lifecycle commands held by `DR-REC-010`;
+5. produce the exact changed-files-to-affected-tests matrix and staged
+   implementation plan before product mutation; and
+6. keep P6-02 through P6-08 inactive until their predecessor Task Gates pass.
 
-No Tooling DocType, BFF route, production policy, workbook mapping, source
-adapter, fixture/default, ERPNext endpoint or credential may be installed by
-P6-00. On anchor PASS, automatic transition activates P6-01/M5-01 only within
-the frozen safe boundary.
+The P6-01 audit may not install a Tooling DocType, BFF route, production
+lifecycle policy/default, workbook mapping, source adapter, fixture, ERPNext
+endpoint or credential. Product implementation begins only after the P6-01
+plan proves the exact safe boundary and Level 1 entry checks.
 
 ## Authority
 
