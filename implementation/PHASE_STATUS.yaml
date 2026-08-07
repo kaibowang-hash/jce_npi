@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-07T01:00:15Z'
+updated_at: '2026-08-07T02:03:59Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P5-06
 current_task_status: IN_PROGRESS_IMPLEMENTATION
-current_task_completed_stage: PRINT_FOUNDATION_REQUIREMENT_DOMAIN_CONTRACT_AUDIT_PASS
-current_task_next_stage: PRINT_FOUNDATION_DOMAIN_CONTRACT_METADATA
+current_task_completed_stage: PRINT_FOUNDATION_DOMAIN_CONTRACT_METADATA_PASS
+current_task_next_stage: PRINT_FOUNDATION_REPOSITORY_RENDER_API
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P5-06
-resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+resumed_product_task_status: IN_PROGRESS_REPOSITORY_RENDER_API
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -592,8 +592,14 @@ p5_06:
   backlog_task: M4-06
   requirements: [FR-PRN-001, FR-PRN-002]
   starting_checkpoint: ac890c08e7cfa7c428d1a487805527239f0659f5
-  completed_stage: REQUIREMENT_DOMAIN_CONTRACT_AUDIT_PASS
-  next_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
+  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+  next_stage: REPOSITORY_RENDER_API_FOUNDATION
+  domain_metadata_product_checkpoint: 07111e3
+  stable_checkpoint: 68a79fd
+  ordinary_ci: 31139557282
+  ordinary_repository_job: 92746365839
+  ordinary_visual_job: 92746365786
+  ordinary_visual_result: 65_OF_65_PASS
   delivery_boundary: GENERIC_CONTROLLED_PRINT_REGISTRY_AND_IMMUTABLE_SNAPSHOT_FOUNDATION
   exact_form_policy_active: false
   production_print_policy_active: false
@@ -605,6 +611,7 @@ p5_06:
     - implementation/phase-5-requirement-anchor.md
     - implementation/V1_2_RECONCILIATION_DECISIONS.md
     - implementation/evidence/phase-5/p5-06-plan.md
+    - implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -674,3 +674,31 @@ repeat or rewrite it merely to restore context. See
   pure domain, closed contract and additive guarded metadata checkpoint only.
   No live route, renderer, File write, UI action, fixture, Print Format or
   enabled mapping is part of that first checkpoint.
+
+## 2026-08-07 P5-06 domain, contract and metadata checkpoint
+
+- Product checkpoint `07111e3` adds the pure exact-mapping and immutable
+  snapshot/output/access domain, six guarded additive DocTypes, closed
+  capability/create/detail/content schemas, NPI-owned ownership vocabulary and
+  direct English/`zh`/`zh-TW` coverage. It installs no route, renderer, File
+  write, mapping, Print Format, fixture or production default.
+- Local affected and complete regression passed: focused `20/20`, contract
+  `85/85`, metadata `88/88`, localization `41/41`, complete Python
+  `1,034/1,034`, catalog generation/i18n at `3,856` sources and V1.2/P0
+  governance checks.
+- Initial ordinary CI `31138842148` passed repository `92744201653` and all
+  `47` non-P0 governed visual cases. Its only failure was the exact eighteen
+  fixed P0 footer catalog fingerprints changing from `2ad33967abb8b251` to
+  `8c614f1fb035060a`; artifact `8979072126` proved no component/layout/state
+  change. The exact stable Linux actuals were synchronized byte-for-byte in
+  isolated commit `68a79fd`; no threshold, assertion, matrix or PASS rule
+  changed and no user Darwin evidence was touched.
+- Clean exact-SHA ordinary CI `31139557282` passes repository `92746365839`,
+  complete E2E and both secret lanes, plus visual `92746365786` at `65/65`;
+  controlled job `92746366536` correctly skips. The visual artifact is
+  `8979344607` with digest
+  `sha256:3aa906402ec918ed7c1903b10d8e0e410aa867d39ba1f5fe71feb5d187c5b67e`.
+- Checkpoint 1 is PASS. P5-06 remains active for the exact source/registry
+  repository, deterministic verification SVG, frozen-template one-time render,
+  private retained File/output, atomic idempotency/audit transaction and
+  closed BFF behavior. Exact forms/signers/copy policy remain decision-held.

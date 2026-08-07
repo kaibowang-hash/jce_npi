@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-06 DOMAIN, CONTRACT AND METADATA FOUNDATION`
+`IN_PROGRESS_IMPLEMENTATION — P5-06 REPOSITORY, RENDER AND API FOUNDATION`
 
-Recovery time: `2026-08-07T01:00:15Z`
+Recovery time: `2026-08-07T02:03:59Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`7624497acf19ca280d7331c41d4fc2eedb69e12e`
+`68a79fd2f1572bd4b15c42bc6e4f1d038c272ebc`
 
 ## Current authoritative action
 
@@ -25,19 +25,25 @@ private File hash, audit, idempotency and BFF switch patterns are reusable.
 The frozen plan is
 `implementation/evidence/phase-5/p5-06-plan.md`.
 
-The first implementation checkpoint is now:
+The first implementation checkpoint passed at exact stable checkpoint
+`68a79fd`: pure registry/snapshot/output domain, six guarded additive
+DocTypes, closed OpenAPI/ownership vocabulary, direct three-language coverage
+and ordinary CI `31139557282` all passed. Evidence is
+`implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md`.
 
-1. implement pure versioned registry and immutable snapshot/output domain
-   values with exact mapping, canonical hash and no-default invariants;
-2. add closed capability/create/detail/content OpenAPI schemas and NPI-owned
-   ownership rows without exposing raw DocType, template HTML/name, arbitrary
-   payload or File URL;
-3. add only additive guarded registry-version, snapshot, output, access-event
-   and command-idempotency metadata;
-4. prove draft/published lifecycle, exact/ambiguous/missing mapping,
-   immutability, update/delete denial and zero seeded mapping/format; and
-5. run affected domain/metadata/contract/security checks, reconciliation and
-   `git diff --check` before complete ordinary CI.
+The next implementation checkpoint is now:
+
+1. implement exact Frappe registry/source repositories with a closed
+   server-owned adapter registry and authorization-before-resolution;
+2. freeze the exact source and captured template before one-time PDF render,
+   use a deterministic repository-owned verification SVG, and persist one
+   private local File plus immutable output identity;
+3. implement actor/Project-bound idempotency, atomic snapshot/output/access
+   audit/receipt persistence and retained-byte reuse without rerendering;
+4. expose only the closed capability/create/detail/content BFF behavior with
+   independent disable/recovery truth and no raw File URL; and
+5. prove template/source drift, private-file/hash integrity, replay/conflict,
+   IDOR, rollback and route-disable behavior before complete ordinary CI.
 
 No production ERPNext endpoint, credential, external dispatch, raw normal-user
 Desk CRUD or default production Print Format may be introduced. The complete

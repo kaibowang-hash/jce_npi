@@ -79,7 +79,7 @@ class V12ReconciliationTests(unittest.TestCase):
             row = by_id[requirement_id]
             self.assertEqual(
                 row["status"],
-                "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION",
+                "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION",
             )
             self.assertEqual(
                 {

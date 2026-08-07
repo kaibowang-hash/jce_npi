@@ -363,11 +363,12 @@ EXPECTED_P5_03_COMPLETED_TRACE = {
 }
 EXPECTED_P5_06_TRACE = {
     requirement_id: (
-        "IN_PROGRESS_P5_06_DOMAIN_CONTRACT_METADATA_FOUNDATION",
+        "IN_PROGRESS_P5_06_REPOSITORY_RENDER_API_FOUNDATION",
         {
             "implementation/V1_2_RECONCILIATION_DECISIONS.md",
             "implementation/phase-5-requirement-anchor.md",
             "implementation/evidence/phase-5/p5-06-plan.md",
+            "implementation/evidence/phase-5/p5-06-domain-metadata-checkpoint.md",
         },
     )
     for requirement_id in ("FR-PRN-001", "FR-PRN-002")
