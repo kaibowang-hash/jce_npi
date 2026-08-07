@@ -24,8 +24,9 @@ function route(
 ): AppRoute {
   const demo = pathname.startsWith("/demo/");
   const pathParts = pathname.split("/");
+  const liveTooling = screen === "tooling" && pathname.startsWith("/projects/");
   const liveProjectGlobalId =
-    (screen === "project" || screen === "gate") && !demo
+    (screen === "project" || screen === "gate" || liveTooling) && !demo
       ? (pathParts[2] ?? null)
       : null;
   const liveGateGlobalId =
@@ -39,6 +40,8 @@ function route(
     screen,
     projectGlobalId: liveProjectGlobalId,
     projectMode: screen === "project" ? (demo ? "demo" : "live") : null,
+    toolingMasterGlobalId: liveTooling ? (pathParts[4] ?? null) : null,
+    toolingMode: screen === "tooling" ? (liveTooling ? "live" : "demo") : null,
     workMode: screen === "work" ? (demo ? "demo" : "live") : null,
   };
 }
@@ -538,10 +541,11 @@ describe("application shell behavior", () => {
   it("labels live Project data, hides fixture controls, and dispatches a real refresh", async () => {
     const globalId = "11111111-1111-4111-8111-111111111111";
     const dispatchEvent = vi.spyOn(globalThis, "dispatchEvent");
+    const navigate = vi.fn();
     const user = userEvent.setup();
     renderWithLocale(
       <AppShell
-        navigate={vi.fn()}
+        navigate={navigate}
         route={route("project", `/projects/${globalId}`)}
       >
         <p>Live project workspace</p>
@@ -567,9 +571,12 @@ describe("application shell behavior", () => {
     expect(
       within(domainNavigation).getByLabelText("Project Portfolio"),
     ).toHaveAttribute("aria-disabled", "true");
-    expect(
-      within(domainNavigation).getByRole("button", { name: "Tooling" }),
-    ).toHaveAttribute("aria-disabled", "true");
+    const tooling = within(domainNavigation).getByRole("button", {
+      name: "Tooling",
+    });
+    expect(tooling).not.toHaveAttribute("aria-disabled");
+    await user.click(tooling);
+    expect(navigate).toHaveBeenCalledWith(`/projects/${globalId}/tooling`);
 
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(dispatchEvent).toHaveBeenCalledWith(

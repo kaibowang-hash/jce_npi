@@ -16,6 +16,14 @@ const liveGateRoutePattern = new RegExp(
   "u",
 );
 const liveGatePathPattern = /^\/projects\/[^/]+\/gates\/[^/]+\/?$/u;
+const liveToolingRoutePattern = new RegExp(
+  `^/projects/(${uuidRouteSegment})/tooling/?$`,
+  "u",
+);
+const liveToolingMasterRoutePattern = new RegExp(
+  `^/projects/(${uuidRouteSegment})/tooling/(${uuidRouteSegment})/?$`,
+  "u",
+);
 const approvedPathPatterns = [
   /^\/work\/?$/u,
   /^\/demo\/work\/?$/u,
@@ -26,6 +34,8 @@ const approvedPathPatterns = [
   ),
   liveProjectRoutePattern,
   liveGateRoutePattern,
+  liveToolingRoutePattern,
+  liveToolingMasterRoutePattern,
   new RegExp(`^/tooling/${fixtureRouteSegment}/?$`, "u"),
   new RegExp(`^/trials/${fixtureRouteSegment}/?$`, "u"),
   /^\/execution\/?$/u,
@@ -48,6 +58,8 @@ export interface AppRoute {
   projectMode: "live" | "demo" | null;
   gateGlobalId: string | null;
   gateMode: "live" | "demo" | null;
+  toolingMasterGlobalId: string | null;
+  toolingMode: "live" | "demo" | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -124,27 +136,40 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
   );
   const liveProjectMatch = liveProjectRoutePattern.exec(pathname);
   const liveGateMatch = liveGateRoutePattern.exec(pathname);
+  const liveToolingMatch = liveToolingRoutePattern.exec(pathname);
+  const liveToolingMasterMatch = liveToolingMasterRoutePattern.exec(pathname);
   const demoWork = /^\/demo\/work\/?$/u.test(pathname);
   const screen: ScreenId =
     demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
       ? "gate"
-      : demoProjectMatch
-        ? "project"
-        : pathname.startsWith("/projects/")
+      : liveToolingMatch || liveToolingMasterMatch
+        ? "tooling"
+        : demoProjectMatch
           ? "project"
-          : pathname.startsWith("/tooling/")
-            ? "tooling"
-            : pathname.startsWith("/trials/")
-              ? "trial"
-              : pathname.startsWith("/execution")
-                ? "execution"
-                : "work";
+          : pathname.startsWith("/projects/")
+            ? "project"
+            : pathname.startsWith("/tooling/")
+              ? "tooling"
+              : pathname.startsWith("/trials/")
+                ? "trial"
+                : pathname.startsWith("/execution")
+                  ? "execution"
+                  : "work";
   const projectMode =
     screen === "project" ? (demoProjectMatch ? "demo" : "live") : null;
   const gateMode = screen === "gate" ? (demoGateMatch ? "demo" : "live") : null;
+  const toolingMode =
+    screen === "tooling"
+      ? liveToolingMatch || liveToolingMasterMatch
+        ? "live"
+        : "demo"
+      : null;
   const workMode = screen === "work" ? (demoWork ? "demo" : "live") : null;
   const liveRoute =
-    workMode === "live" || projectMode === "live" || gateMode === "live";
+    workMode === "live" ||
+    projectMode === "live" ||
+    gateMode === "live" ||
+    toolingMode === "live";
   return {
     gateGlobalId: liveGateMatch?.[2] ?? null,
     gateMode,
@@ -152,8 +177,15 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
     pathname,
     scenario: liveRoute ? "normal" : parseScenario(parameters.get("scenario")),
     qualityFailure: parameters.get("quality") === "failed",
-    projectGlobalId: liveProjectMatch?.[1] ?? liveGateMatch?.[1] ?? null,
+    projectGlobalId:
+      liveProjectMatch?.[1] ??
+      liveGateMatch?.[1] ??
+      liveToolingMatch?.[1] ??
+      liveToolingMasterMatch?.[1] ??
+      null,
     projectMode,
+    toolingMasterGlobalId: liveToolingMasterMatch?.[2] ?? null,
+    toolingMode,
     workMode,
   };
 }

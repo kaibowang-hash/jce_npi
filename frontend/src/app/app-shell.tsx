@@ -148,14 +148,17 @@ export function AppShell({
   const isLiveProject =
     route.screen === "project" && route.projectMode === "live";
   const isLiveGate = route.screen === "gate" && route.gateMode === "live";
+  const isLiveTooling =
+    route.screen === "tooling" && route.toolingMode === "live";
   const isLiveWork = route.screen === "work" && route.workMode === "live";
-  const isLiveProjectContext = isLiveProject || isLiveGate;
+  const isLiveProjectContext = isLiveProject || isLiveGate || isLiveTooling;
   const isLiveDataContext = isLiveWork || isLiveProjectContext;
   const prototypeNavigationAllowed = !isLiveDataContext;
   const liveProjectPath =
     route.projectGlobalId === null
       ? null
       : `/projects/${route.projectGlobalId}`;
+  const liveToolingPath = liveProjectPath ? `${liveProjectPath}/tooling` : null;
   const denied = route.scenario === "no_permission";
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
@@ -178,7 +181,16 @@ export function AppShell({
                 : `${route.qualityFailure ? "G6" : "G5"} · PJ-26018`,
             }
           : route.screen === "tooling"
-            ? { exempt: true, value: "PJ-26018 · TL-26018-01" }
+            ? {
+                exempt: true,
+                value: isLiveTooling
+                  ? `${route.projectGlobalId ?? ""}${
+                      route.toolingMasterGlobalId
+                        ? ` · ${route.toolingMasterGlobalId}`
+                        : ""
+                    }`
+                  : "PJ-26018 · TL-26018-01",
+              }
             : route.screen === "trial"
               ? { exempt: true, value: "TL-26018-01 · T1" }
               : { exempt: false, value: t("Cross-system operations") };
@@ -232,9 +244,11 @@ export function AppShell({
       id: "tooling",
       icon: "maintenance",
       label: t("Tooling"),
-      ...(prototypeNavigationAllowed
-        ? { path: "/tooling/TL-26018-01" }
-        : { unavailableReason: liveNavigationUnavailable }),
+      ...(isLiveProjectContext && liveToolingPath
+        ? { path: liveToolingPath }
+        : prototypeNavigationAllowed
+          ? { path: "/tooling/TL-26018-01" }
+          : { unavailableReason: liveNavigationUnavailable }),
       screen: "tooling",
     },
     {
@@ -320,13 +334,19 @@ export function AppShell({
       },
       {
         id: "tooling",
-        label: t("Open Tooling prototype"),
-        description: t("Open the existing Tooling prototype workspace."),
+        label: isLiveProjectContext
+          ? t("Open Project Tooling")
+          : t("Open Tooling prototype"),
+        description: isLiveProjectContext
+          ? t("Open the authorized live Tooling workspace for this Project.")
+          : t("Open the existing Tooling prototype workspace."),
         icon: "maintenance",
         keywords: [t("Tooling"), t("Mould")],
-        ...(prototypeNavigationAllowed
-          ? { target: "/tooling/TL-26018-01" }
-          : { unavailableReason: liveNavigationUnavailable }),
+        ...(isLiveProjectContext && liveToolingPath
+          ? { target: liveToolingPath }
+          : prototypeNavigationAllowed
+            ? { target: "/tooling/TL-26018-01" }
+            : { unavailableReason: liveNavigationUnavailable }),
       },
       {
         id: "trial",
@@ -355,6 +375,7 @@ export function AppShell({
       isLiveProjectContext,
       liveNavigationUnavailable,
       liveProjectPath,
+      liveToolingPath,
       prototypeNavigationAllowed,
       t,
     ],

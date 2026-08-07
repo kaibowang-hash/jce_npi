@@ -25,6 +25,11 @@ describe("application routing", () => {
       "gate",
     ],
     ["/tooling/TL-26018-01", "tooling"],
+    ["/projects/11111111-1111-4111-8111-111111111111/tooling", "tooling"],
+    [
+      "/projects/11111111-1111-4111-8111-111111111111/tooling/22222222-2222-4222-8222-222222222222",
+      "tooling",
+    ],
     ["/trials/T1", "trial"],
     ["/execution", "execution"],
   ] as const)("maps %s to the %s screen", (path, screen) => {
@@ -92,6 +97,23 @@ describe("application routing", () => {
     expect(
       parseRoute(
         locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/tooling/22222222-2222-4222-8222-222222222222?scenario=error",
+        ),
+      ),
+    ).toMatchObject({
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      scenario: "normal",
+      toolingMasterGlobalId: "22222222-2222-4222-8222-222222222222",
+      toolingMode: "live",
+    });
+    expect(parseRoute(locationFor("/tooling/TL-26018-01"))).toMatchObject({
+      projectGlobalId: null,
+      toolingMasterGlobalId: null,
+      toolingMode: "demo",
+    });
+    expect(
+      parseRoute(
+        locationFor(
           "/projects/11111111-1111-4111-8111-111111111111/gates/not-a-uuid",
         ),
       ),
@@ -131,6 +153,8 @@ describe("application routing", () => {
       "/demo/projects/PJ-26018/gates/G5",
       `/projects/${projectId}?tab=learning`,
       `/projects/${projectId}/gates/${gateId}`,
+      `/projects/${projectId}/tooling`,
+      `/projects/${projectId}/tooling/${gateId}`,
       "/tooling/TL-26018-01",
       "/trials/T1",
       "/execution",

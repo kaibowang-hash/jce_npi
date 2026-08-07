@@ -3985,3 +3985,75 @@ copy_or_additional_set,复制或增加模具套数
 modification,改模
 repair,维修
 capacity_need,产能需求
+Open Project Tooling,打开项目模具开发
+Open the authorized live Tooling workspace for this Project.,打开此项目的已授权实时模具开发工作区。
+New Tooling,新模具
+Customer-owned Tooling intake,客户自有模具接收
+Copy or additional Set,复制或增加模具套数
+Tooling modification,模具改造
+Tooling repair,模具维修
+Capacity need,产能需求
+Lifecycle policy is not approved.,生命周期策略尚未批准。
+Tooling Revision is not delivered yet.,模具修订尚未交付。
+Physical Tooling Set is not delivered yet.,实体模具套尚未交付。
+Trial truth is not delivered yet.,试模事实尚未交付。
+ERPNext projection is unavailable.,ERPNext 投影视图不可用。
+Create Part and initial Revision,创建零件和初始修订
+Create immutable Part Revision,创建不可变零件修订
+Record Tooling requirement,记录模具开发需求
+Create logical Tooling Master,创建逻辑模具主档
+Append Tooling applicability,追加模具适用关系
+Loading Tooling workspace,正在加载模具开发工作区
+Enter a reason before submitting this Tooling command.,提交此模具开发命令前请输入原因。
+Enter the Part title and initial Revision label.,请输入零件标题和初始修订标签。
+Creating Part and initial Revision,正在创建零件和初始修订
+Select the Part and enter the successor Revision details.,请选择零件并输入后续修订详情。
+Creating immutable Part Revision,正在创建不可变零件修订
+Enter the Tooling requirement title.,请输入模具开发需求标题。
+Recording Tooling requirement,正在记录模具开发需求
+Enter the logical Tooling Master title.,请输入逻辑模具主档标题。
+Creating logical Tooling Master,正在创建逻辑模具主档
+"Select the exact Master, Part Revision and effective date.",请选择精确的主档、零件修订和生效日期。
+Appending Tooling applicability,正在追加模具适用关系
+Tooling workspace unavailable,模具开发工作区不可用
+Logical Masters,逻辑主档
+Parts,零件
+Applicability relationships,适用关系
+Add Tooling record,添加模具开发记录
+Identity and applicability foundation,标识与适用关系基础
+Tooling objects,模具开发对象
+Applicability and Part Revisions,适用关系与零件修订
+Tooling truth inspector,模具开发事实检查器
+Tooling data is read only in this session.,此会话中的模具开发数据为只读。
+Session verification is required before a Tooling command can be submitted.,提交模具开发命令前需要验证会话。
+No Tooling identity has been recorded for this Project.,尚未为此项目记录模具标识。
+"Create distinct Part, Requirement, Master and Applicability records without inventing lifecycle or ERPNext truth.",请创建彼此独立的零件、需求、主档和适用关系记录，不得虚构生命周期或 ERPNext 事实。
+The command is processing. Keep this workspace open.,命令正在处理。请保持此工作区打开。
+Retry exact command,重试精确命令
+Logical Tooling Master,逻辑模具主档
+Tooling Master,模具主档
+Part Revision,零件修订
+Applicability version,适用关系版本
+Product and model context,产品和车型上下文
+Open ended,无结束日期
+Project and exact Part Revision only,仅项目和精确零件修订
+No Tooling applicability has been recorded.,尚未记录模具适用关系。
+Tooling requirements,模具开发需求
+Exact Part Revision,精确零件修订
+Target date,目标日期
+Not set,未设置
+No Tooling requirement has been recorded.,尚未记录模具开发需求。
+Logical Master,逻辑主档
+Master identity,主档标识
+Originating Project,发起项目
+Select or create a logical Tooling Master to inspect exact identity truth.,请选择或创建逻辑模具主档以检查精确标识事实。
+Downstream capability truth,下游能力事实
+"No lifecycle, Tooling Revision, physical Set, Trial or ERPNext success is inferred by this workspace.","此工作区不会推断生命周期、模具修订、实体模具套、试模或 ERPNext 成功。"
+Command,命令
+Requirement kind,需求类型
+Applicability relationship,适用关系
+New relationship,新建关系
+Part title,零件标题
+Revision label,修订标签
+Tooling data is read only because this session has no mutation capability.,此会话没有变更能力，因此模具开发数据为只读。
+"The server, not the browser, controls each available Tooling action.","每个可用模具开发操作均由服务器控制，而不是由浏览器决定。"

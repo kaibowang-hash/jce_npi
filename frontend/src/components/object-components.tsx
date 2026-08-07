@@ -38,12 +38,14 @@ export function ObjectHeader({
   status: ReactNode;
   source: SourceStatus;
   secondaryAction?: ReactNode;
-  primaryAction?: {
-    label: string;
-    onClick: () => void;
-    disabled?: boolean;
-    id?: string;
-  };
+  primaryAction?:
+    | {
+        label: string;
+        onClick: () => void;
+        disabled?: boolean;
+        id?: string;
+      }
+    | undefined;
   nameIsBusinessData?: boolean;
 }): React.JSX.Element {
   return (

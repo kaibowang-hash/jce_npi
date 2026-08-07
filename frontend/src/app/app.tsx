@@ -25,6 +25,7 @@ import { LiveDocumentDataSource } from "../api/document-data-source";
 import { LiveEngineeringBomDataSource } from "../api/ebom-data-source";
 import { LiveEngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import { LiveControlledPrintDataSource } from "../api/controlled-print-data-source";
+import { LiveToolingDataSource } from "../api/tooling-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -37,6 +38,7 @@ const ProjectDemoPage = lazy(() => import("../pages/project-demo-page"));
 const GatePage = lazy(() => import("../pages/gate-page"));
 const GateEvidencePage = lazy(() => import("../pages/gate-evidence-page"));
 const ToolingPage = lazy(() => import("../pages/tooling-page"));
+const LiveToolingPage = lazy(() => import("../pages/live-tooling-page"));
 const TrialPage = lazy(() => import("../pages/trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
@@ -51,6 +53,7 @@ const liveEngineeringBomPublishRequestDataSource =
 const liveControlledPrintDataSource = new LiveControlledPrintDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
+const liveToolingDataSource = new LiveToolingDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -182,6 +185,14 @@ export function App(): React.JSX.Element {
         qualityFailure={route.qualityFailure}
         scenario={route.scenario}
       />
+    ) : route.screen === "tooling" && route.toolingMode === "live" ? (
+      <LiveToolingPage
+        dataSource={liveToolingDataSource}
+        masterId={route.toolingMasterGlobalId}
+        navigate={guardedNavigate}
+        projectId={route.projectGlobalId ?? ""}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+      />
     ) : route.screen === "tooling" ? (
       <ToolingPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "trial" ? (
@@ -200,6 +211,7 @@ export function App(): React.JSX.Element {
     route.workMode !== "live" &&
     route.projectMode !== "live" &&
     route.gateMode !== "live" &&
+    route.toolingMode !== "live" &&
     !["normal", "read_only", "partial", "dirty"].includes(route.scenario);
   const pageClass =
     route.screen === "work"
