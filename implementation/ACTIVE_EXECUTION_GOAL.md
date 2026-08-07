@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T10:55:32Z`
+Updated: `2026-08-07T11:55:19Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REPOSITORY_BFF — P6-01 TOOLING`
+- Mode: `IN_PROGRESS_LIVE_COCKPIT — P6-01 TOOLING`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `62c063e43bb582e270b6e5adf326382c70f2b393` (pushed; P6-01 domain,
-  contract, guarded metadata and exact catalog-fingerprint baseline checkpoint)
-- Latest pushed controller/evidence checkpoint:
-  `590ffdaac5831b454ee2db0c1b9689ba9f007b0f` (P6-01 plan; exact-SHA
+  `4215bbe392c72010ffd036348647c745d37cbc84` (pushed; P6-01 authorized
+  repository/BFF and exact catalog-fingerprint baseline checkpoint)
+- Latest completed controller/evidence checkpoint before this update:
+  `455673d92f437b5626219485f62e5d5be62a4315` (P6-01 checkpoint 1 evidence; exact-SHA
   ordinary CI passed)
 - Latest complete normal CI:
-  `31171293330` (`PASS`, exact SHA `62c063e`; repository `92843457513`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92843457422`
-  passed `68/68`; controlled runtime `92843458095` correctly skipped)
+  `31175388717` (`PASS`, exact SHA `4215bbe`; repository `92856145644`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92856145467`
+  passed `68/68`; controlled runtime `92856146245` correctly skipped)
 - Latest controlled-Site run:
   `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
   closed; repository `92821257912`, controlled `92821257859`, visual
@@ -27,13 +27,13 @@ Updated: `2026-08-07T10:55:32Z`
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS — REPOSITORY/BFF CHECKPOINT`)
+  (`IN_PROGRESS — LIVE COCKPIT CHECKPOINT`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 REPOSITORY/BFF`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 LIVE COCKPIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -76,14 +76,21 @@ controlled runtime correctly closed. The only initial CI failure was the
 expected footer catalog fingerprint change, proved by artifact `8990825369`
 and repaired only in the eighteen exact fixed-Linux P0 baselines.
 
+P6-01 checkpoint 2 passed at stable checkpoint `4215bbe`. The Project-first
+repository, seven closed BFF paths, same-tenant/reference/effectivity checks,
+actor-bound sealed replay, exact conflicts, one transaction, append-only audit
+and independent fail-closed route switch passed local affected/full checks and
+complete ordinary CI `31175388717`. Its only initial failure was the exact
+eighteen P0 footer catalog fingerprints; artifact `8992324656` proved no
+component or layout change before the byte-exact Linux baseline sync.
+
 Standing automatic-transition authority now activates only P6-01 checkpoint
-2: Project-first authorized repository queries and narrow BFF commands,
-same-tenant/reference/effectivity validation, actor-bound idempotency, one
-transaction, append-only audit, independent route switch and exact API tests.
-The live SPA and controlled Site remain inactive until checkpoint 2 passes
-affected checks and complete ordinary CI. No lifecycle, numbering, physical
-Set, Tooling Revision, Trial, mapping, adapter, ERPNext endpoint, credential or
-production default may be added.
+3: the server-backed dense Tooling cockpit, capability-driven actions, honest
+downstream unavailable states, full English/`zh`/`zh-TW`, accessibility and
+affected visual matrix. The controlled Site remains inactive until checkpoint
+3 passes affected checks and complete ordinary CI. No lifecycle, numbering,
+physical Set, Tooling Revision, Trial, mapping, adapter, ERPNext endpoint,
+credential or production default may be added.
 
 ## Retained P5-04 recovery history
 

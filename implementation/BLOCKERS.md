@@ -1,22 +1,23 @@
 # Blockers
 
-Updated: `2026-08-07T10:55:32Z`
+Updated: `2026-08-07T11:55:19Z`
 
 ## Active hard blockers
 
-None. P6-01 checkpoint 1 passed complete ordinary CI `31171293330` at exact
-stable checkpoint `62c063e`. No user action or external authorization is
-required for the repository/BFF checkpoint.
+None. P6-01 checkpoint 2 passed complete ordinary CI `31175388717` at exact
+stable checkpoint `4215bbe`. No user action or external authorization is
+required for the live cockpit checkpoint.
 
 ## Active recovery
 
-`P6-01-REPOSITORY-BFF` — active, not blocked. It is limited to Project-first
-authorized bounded queries and the seven frozen narrow BFF paths, with
-same-tenant/reference/effectivity validation, actor-bound idempotency,
-transaction/audit/replay and an independent route switch. `DR-REC-010`
-continues to hold exact production lifecycle states, transitions and authority,
-so no lifecycle field, command or production default may be installed. That
-scoped hold does not block this checkpoint.
+`P6-01-LIVE-COCKPIT` — active, not blocked. It is limited to the server-backed
+dense Tooling worklist/Object Page, capability-driven actions, honest
+downstream unavailable states, full trilingual/accessibility/state coverage
+and the affected visual matrix. The passed repository/BFF remains behind its
+independent closed-by-default Site switch until the later controlled runtime
+checkpoint. `DR-REC-010` continues to hold exact production lifecycle states,
+transitions and authority, so no lifecycle field, command or production
+default may be installed. That scoped hold does not block this checkpoint.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

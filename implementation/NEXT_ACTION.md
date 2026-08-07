@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPOSITORY_BFF — P6-01 TOOLING`
+`IN_PROGRESS_LIVE_COCKPIT — P6-01 TOOLING`
 
-Recovery time: `2026-08-07T10:55:32Z`
+Recovery time: `2026-08-07T11:55:19Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`62c063e43bb582e270b6e5adf326382c70f2b393`
+`4215bbe392c72010ffd036348647c745d37cbc84`
 
 ## Current authoritative action
 
@@ -48,30 +48,41 @@ isolated only eighteen bottom-footer catalog fingerprints; artifact
 `92843458095` correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-01-domain-metadata-checkpoint.md`.
 
+P6-01 checkpoint 2 is PASS. Product commit `96fdd84` added Project-first
+bounded repository queries, the seven frozen closed BFF paths, exact
+same-tenant/reference/current-revision/effectivity validation, System
+Manager-only mutation, actor-bound sealed replay, one transaction,
+append-only audit and an independent fail-closed route switch. Its first
+ordinary CI passed repository and all 50 non-P0 visuals, then isolated only
+the eighteen bottom-footer catalog fingerprints; artifact `8992324656`
+proved no component or layout change. Baseline-only repair `4215bbe` passed
+complete ordinary CI `31175388717`: repository `92856145644`, visual
+`92856145467` (`68/68`) and controlled runtime `92856146245` correctly
+skipped. Evidence is
+`implementation/evidence/phase-6/p6-01-repository-api-checkpoint.md`.
+
 The next unfinished checkpoint is:
 
-`P6-01 checkpoint 2 — authorized repository and closed BFF`
+`P6-01 checkpoint 3 — live Tooling cockpit`
 
 Implement only:
 
-1. Project-first authorization before resolving protected Part, Requirement,
-   Master or Applicability identities;
-2. bounded repository queries for the Project cockpit and one authorized
-   Master, with same-tenant/reference/current-revision/effectivity checks;
-3. the seven frozen closed paths from the plan: two GET projections and narrow
-   POST commands for Part/initial Revision, successor Revision, Requirement,
-   Master and Applicability;
-4. System Manager-only mutation capability until an approved authority policy
-   exists, actor-bound idempotency, exact version conflicts, one transaction,
-   append-only audit, sealed replay and an independent closed-by-default route
-   switch;
-5. exact API, authorization-before-resolution, IDOR, ambiguity, replay,
-   conflict, rollback and route-disable tests; and
-6. affected checks, complete ordinary CI and evidence before activating the
-   live cockpit checkpoint.
+1. a server-backed Tooling data source using only the seven passed closed BFF
+   paths and exact typed projections;
+2. the dense industrial Tooling Object Page/worklist with stable tree/table,
+   central applicability/Part revision truth and docked inspector;
+3. capability-driven Part, Revision, Requirement, Master and Applicability
+   actions, with at most one visible primary action per context;
+4. explicit normal, empty, loading, no-permission, read-only, unavailable,
+   validation, version/applicability conflict, processing, retryable/final and
+   unsaved-context states;
+5. complete literal-English plus direct `zh`/`zh-TW`, keyboard/focus/labels,
+   non-color-only state, component/E2E and affected visual evidence; and
+6. affected checks, complete ordinary CI and evidence before any controlled
+   Site dispatch.
 
-Do not add the live SPA or dispatch a controlled Site yet. Do not install
-production lifecycle, numbering, ownership/custody, Tooling Revision,
+Do not dispatch a controlled Site yet. Do not install production lifecycle,
+numbering, ownership/custody, Tooling Revision,
 physical Set, Trial, workbook mapping, adapter, ERPNext endpoint, credential or
 production default behavior. P6-02 through P6-08 remain inactive.
 

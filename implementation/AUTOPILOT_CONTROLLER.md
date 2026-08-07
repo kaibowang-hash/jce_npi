@@ -849,3 +849,33 @@ repeat or rewrite it merely to restore context. See
   narrow paths, actor-bound idempotency, transaction/audit, route switch and
   exact API/security tests. The live cockpit and controlled Site remain
   inactive until the sequential Gates pass.
+
+## 2026-08-07 P6-01 authorized repository and closed BFF checkpoint
+
+- Product checkpoint `96fdd84` adds Project-first authorized bounded cockpit
+  and exact Master projections, the seven frozen BFF paths, same-tenant/
+  current-revision/reference/effectivity validation, System Manager-only
+  mutation, actor-bound sealed replay, one request transaction, append-only
+  audit and an independent fail-closed route switch.
+- Local affected tests pass `35/35`; complete Python passes `1,120/1,120`;
+  i18n passes at `3,987` sources with direct `100%` `zh` and `100%` `zh-TW`;
+  OpenAPI, configuration, reconciliation, governance and diff checks pass.
+- Initial ordinary CI `31174458472` passed repository `92853267311`, complete
+  E2E and both secret lanes plus all 50 non-P0 visuals. Its only failure was
+  the exact eighteen P0 footer catalog fingerprints changing from
+  `05fc637e0c1286cb` to `088d4637dea1703c`. Artifact `8992324656`, digest
+  `sha256:e697467a89b314a6ed31ba2dc5275628c15de4d62a8362b7b17e4142cfa66691`,
+  proves no workspace component, layout or state change.
+- Baseline-only commit `4215bbe` synchronizes those eighteen exact fixed-Linux
+  actuals byte-for-byte. It changes no assertion, matrix, threshold or PASS
+  rule and leaves every user Darwin image untouched.
+- Final exact-SHA ordinary CI `31175388717` passes repository `92856145644`,
+  complete E2E and both secret lanes, plus fixed-Linux visual `92856145467` at
+  `68/68`; controlled runtime `92856146245` correctly skips. Visual artifact
+  `8992669663` has digest
+  `sha256:6e0a0c711e8dd19f2962581f529faf2fcf1faa9c66bf06db01a6b4b54ade1831`.
+- Checkpoint 2 is PASS, not P6-01 Level 2. Autopilot activates only the live
+  dense Tooling cockpit/data-source checkpoint with capability-driven actions,
+  honest downstream unavailable states, trilingual/accessibility/state and
+  affected visual evidence. No controlled Site may run before its affected
+  checks and complete ordinary CI pass.
