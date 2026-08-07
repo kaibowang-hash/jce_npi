@@ -879,3 +879,39 @@ repeat or rewrite it merely to restore context. See
   honest downstream unavailable states, trilingual/accessibility/state and
   affected visual evidence. No controlled Site may run before its affected
   checks and complete ordinary CI pass.
+
+## 2026-08-07 P6-01 live Tooling cockpit checkpoint
+
+- Product checkpoint `a541cf9` adds the strict seven-route browser data source,
+  Project-scoped cockpit/Master routes and dense tree/table/inspector. Create
+  actions remain server-capability-driven and preserve CSRF, actor-bound
+  idempotency and an exact-key/fresh-signal retry. Lifecycle, Tooling Revision,
+  physical Set, Trial and ERPNext stay explicitly unavailable.
+- Local affected frontend checks pass `64/64`; full frontend unit passes
+  `730/730`; complete Python passes `1,120/1,120`; direct browser passes
+  `13/13`; i18n passes `4,059` literal sources at direct `100%` `zh`/`zh-TW`;
+  type, lint, generated, accessibility, P0/prototype/reconciliation, visual
+  inspection, audit and diff checks pass.
+- Initial ordinary CI `31180308383` isolated one stale inherited Shell
+  expectation and `56` catalog-footer visual fingerprints. Artifact
+  `8994577675`, digest
+  `sha256:e517ad8161c0f591f945e8a75c6934e5ad1b3be7c91da565210198d342b8455f`,
+  supplied exactly those stable Linux actuals.
+- Repair checkpoint `2f3de3f` changes only that Shell assertion, synchronizes
+  the `56` proved baselines and adds the five P6-01 visual cases to the
+  governed matrix. Ordinary CI `31182336001` then passed repository and all
+  `311` non-visual cases; its visual job passed the prior `68` and failed only
+  the five newly governed cases without Linux baselines. Artifact `8995357252`,
+  digest
+  `sha256:f56e9f1e7eec67bf5c0e953670f736bb7a28251da3dedd2f2a7053e77c27591f`,
+  contained exactly those five CRC-validated actuals.
+- Final checkpoint `1f11f3c` adds only the five exact Linux baselines. Ordinary
+  CI `31183116349` passes repository `92880986264`, `311/311` E2E, current-tree
+  and history Gitleaks, and visual `92880986015` at `73/73`; controlled job
+  `92880986862` correctly skips. Visual artifact `8995663993` has digest
+  `sha256:aae122bfd243e5da75090182be806e14d052a36e2bb6083271cdc2d91ea7b89b`.
+- Checkpoint 3 is PASS, not P6-01 Level 2. Autopilot activates only controlled
+  disposable-Site migration/create/reuse/applicability/replay/rollback/IDOR/
+  route-disable proof. Its verifier/workflow changes require affected checks
+  and complete ordinary CI before dispatch. Exact lifecycle policy and every
+  P6-02-through-P6-08 behavior remain inactive.

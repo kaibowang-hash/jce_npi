@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T11:55:19Z'
+updated_at: '2026-08-07T13:42:12Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-01
-current_task_status: IN_PROGRESS_LIVE_COCKPIT
-current_task_completed_stage: P6_01_AUTHORIZED_REPOSITORY_CLOSED_BFF_PASS
-current_task_next_stage: P6_01_LIVE_COCKPIT_CHECKPOINT
+current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
+current_task_completed_stage: P6_01_LIVE_COCKPIT_CHECKPOINT_PASS
+current_task_next_stage: P6_01_CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-01
-resumed_product_task_status: IN_PROGRESS_LIVE_COCKPIT
+resumed_product_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -664,7 +664,7 @@ p6_00:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-00-validation.md
 p6_01:
-  status: IN_PROGRESS_LIVE_COCKPIT
+  status: IN_PROGRESS_CONTROLLED_RUNTIME
   backlog_task: M5-01
   requirements: [FR-TX-001, FR-TX-002, UX-004, FR-TL-001, FR-TL-003]
   delivery_boundary: DISTINCT_PART_REQUIREMENT_MASTER_APPLICABILITY_AND_LIVE_COCKPIT
@@ -703,13 +703,36 @@ p6_01:
   repository_final_gitleaks_artifact: 8992813445
   repository_final_gitleaks_digest: sha256:c50fd6f6a0fc1279b8abb5c8842b82a0f3522342362742c9b7b440a173c6709e
   repository_controlled_job: 92856146245
-  completed_stage: AUTHORIZED_REPOSITORY_CLOSED_BFF_PASS
-  next_stage: LIVE_COCKPIT_CHECKPOINT
+  cockpit_product_checkpoint: a541cf9b96d3247a7d1c9561c1e328e06a377b4f
+  cockpit_initial_normal_ci: 31180308383
+  cockpit_initial_repository_job: 92871730526
+  cockpit_initial_visual_job: 92871730518
+  cockpit_initial_visual_evidence_artifact: 8994577675
+  cockpit_initial_visual_evidence_digest: sha256:e517ad8161c0f591f945e8a75c6934e5ad1b3be7c91da565210198d342b8455f
+  cockpit_governed_matrix_checkpoint: 2f3de3f75fa468204ad18a23f1b35002b58da29b
+  cockpit_matrix_normal_ci: 31182336001
+  cockpit_matrix_repository_job: 92878385031
+  cockpit_matrix_visual_job: 92878385176
+  cockpit_matrix_visual_evidence_artifact: 8995357252
+  cockpit_matrix_visual_evidence_digest: sha256:f56e9f1e7eec67bf5c0e953670f736bb7a28251da3dedd2f2a7053e77c27591f
+  cockpit_visual_baseline_checkpoint: 1f11f3c3e88085e0615aaf3d08be397d29a7525e
+  cockpit_final_normal_ci: 31183116349
+  cockpit_final_repository_job: 92880986264
+  cockpit_final_visual_job: 92880986015
+  cockpit_final_visual_result: 73_OF_73_PASS
+  cockpit_final_visual_artifact: 8995663993
+  cockpit_final_visual_digest: sha256:aae122bfd243e5da75090182be806e14d052a36e2bb6083271cdc2d91ea7b89b
+  cockpit_final_gitleaks_artifact: 8995862579
+  cockpit_final_gitleaks_digest: sha256:4be64953d6cc5fef3924d50ed3730a33b5857bab63ebda8208d3495c79c59e36
+  cockpit_controlled_job: 92880986862
+  completed_stage: LIVE_COCKPIT_CHECKPOINT_PASS
+  next_stage: CONTROLLED_RUNTIME_AND_LEVEL_2_TASK_GATE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-01-plan.md
     - implementation/evidence/phase-6/p6-01-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-01-repository-api-checkpoint.md
+    - implementation/evidence/phase-6/p6-01-live-cockpit-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

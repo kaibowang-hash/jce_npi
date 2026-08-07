@@ -1,23 +1,24 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T11:55:19Z`
+Updated: `2026-08-07T13:42:12Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_LIVE_COCKPIT — P6-01 TOOLING`
+- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-01 TOOLING`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `4215bbe392c72010ffd036348647c745d37cbc84` (pushed; P6-01 authorized
-  repository/BFF and exact catalog-fingerprint baseline checkpoint)
+  `1f11f3c3e88085e0615aaf3d08be397d29a7525e` (pushed; P6-01 live
+  cockpit and artifact-proved fixed-Linux visual checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
-  `455673d92f437b5626219485f62e5d5be62a4315` (P6-01 checkpoint 1 evidence; exact-SHA
-  ordinary CI passed)
+  `e7610bccb6c41a3ad6ba20c514154dfec00eb175` (P6-01 checkpoint 2 evidence;
+  exact-SHA ordinary CI passed)
 - Latest complete normal CI:
-  `31175388717` (`PASS`, exact SHA `4215bbe`; repository `92856145644`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92856145467`
-  passed `68/68`; controlled runtime `92856146245` correctly skipped)
+  `31183116349` (`PASS`, exact SHA `1f11f3c`; repository `92880986264`,
+  `311/311` E2E and Gitleaks/history passed; fixed-Linux visual
+  `92880986015` passed `73/73`; controlled runtime `92880986862` correctly
+  skipped)
 - Latest controlled-Site run:
   `31164225729` (`PASS`, exact SHA `6ba2763`, all diagnostic activation
   closed; repository `92821257912`, controlled `92821257859`, visual
@@ -27,13 +28,13 @@ Updated: `2026-08-07T11:55:19Z`
   `6d77c9357dfd6c1fa354c93dd1a6773dfc20837246a9a37bc0edfd9cd4ee6bee`
 - Current controller task:
   `P6-01 — Part, Tooling Requirement, Master, Applicability and cockpit`
-  (`IN_PROGRESS — LIVE COCKPIT CHECKPOINT`)
+  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
 - Current Requirement IDs:
   `FR-TX-001`, `FR-TX-002`, `UX-004`, `FR-TL-001`, `FR-TL-003`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 LIVE COCKPIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-01 CONTROLLED RUNTIME`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -84,13 +85,21 @@ complete ordinary CI `31175388717`. Its only initial failure was the exact
 eighteen P0 footer catalog fingerprints; artifact `8992324656` proved no
 component or layout change before the byte-exact Linux baseline sync.
 
+P6-01 checkpoint 3 passed at stable checkpoint `1f11f3c`. The strict live
+data source, Project-scoped routes and dense Tooling tree/table/inspector expose
+only the closed checkpoint-2 contract and server capabilities. Part, successor
+Revision, Requirement, Master and Applicability commands preserve CSRF,
+actor-bound idempotency and exact retry semantics; lifecycle, Tooling Revision,
+physical Set, Trial and ERPNext remain honestly unavailable. Complete ordinary
+CI `31183116349` passed repository, `311/311` non-visual E2E, both secret lanes
+and the expanded `73/73` fixed-Linux matrix.
+
 Standing automatic-transition authority now activates only P6-01 checkpoint
-3: the server-backed dense Tooling cockpit, capability-driven actions, honest
-downstream unavailable states, full English/`zh`/`zh-TW`, accessibility and
-affected visual matrix. The controlled Site remains inactive until checkpoint
-3 passes affected checks and complete ordinary CI. No lifecycle, numbering,
-physical Set, Tooling Revision, Trial, mapping, adapter, ERPNext endpoint,
-credential or production default may be added.
+4: disposable-Site migration and controlled create/reuse/applicability/replay/
+rollback/IDOR/route-disable proof, followed by complete ordinary CI and the
+P6-01 Level 2 Task Gate. No lifecycle, numbering, physical Set, Tooling
+Revision, Trial, mapping, adapter, ERPNext endpoint, credential or production
+default may be added.
 
 ## Retained P5-04 recovery history
 

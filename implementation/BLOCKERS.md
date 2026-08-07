@@ -1,23 +1,25 @@
 # Blockers
 
-Updated: `2026-08-07T11:55:19Z`
+Updated: `2026-08-07T13:42:12Z`
 
 ## Active hard blockers
 
-None. P6-01 checkpoint 2 passed complete ordinary CI `31175388717` at exact
-stable checkpoint `4215bbe`. No user action or external authorization is
-required for the live cockpit checkpoint.
+None. P6-01 checkpoint 3 passed complete ordinary CI `31183116349` at exact
+stable checkpoint `1f11f3c`, including repository, `311/311` E2E, both secret
+lanes and `73/73` fixed-Linux visuals. No user action or external
+authorization is required for the controlled-runtime checkpoint.
 
 ## Active recovery
 
-`P6-01-LIVE-COCKPIT` — active, not blocked. It is limited to the server-backed
-dense Tooling worklist/Object Page, capability-driven actions, honest
-downstream unavailable states, full trilingual/accessibility/state coverage
-and the affected visual matrix. The passed repository/BFF remains behind its
-independent closed-by-default Site switch until the later controlled runtime
-checkpoint. `DR-REC-010` continues to hold exact production lifecycle states,
-transitions and authority, so no lifecycle field, command or production
-default may be installed. That scoped hold does not block this checkpoint.
+`P6-01-CONTROLLED-RUNTIME` — active, not blocked. It is limited to extending
+the existing disposable-Site verifier/workflow scope for additive migration,
+distinct create/shared-Master reuse, immutable revision/applicability,
+actor-bound replay/conflict, rollback/audit, same-tenant/IDOR and independent
+route-disable/recovery proof. Complete ordinary CI is required before a
+controlled Site. `DR-REC-010` continues to hold exact production lifecycle
+states, transitions and authority, so no lifecycle field, command or
+production default may be installed. That scoped hold does not block this
+checkpoint.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

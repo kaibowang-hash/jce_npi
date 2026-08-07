@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_LIVE_COCKPIT — P6-01 TOOLING`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P6-01 TOOLING`
 
-Recovery time: `2026-08-07T11:55:19Z`
+Recovery time: `2026-08-07T13:42:12Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`4215bbe392c72010ffd036348647c745d37cbc84`
+`1f11f3c3e88085e0615aaf3d08be397d29a7525e`
 
 ## Current authoritative action
 
@@ -61,30 +61,38 @@ complete ordinary CI `31175388717`: repository `92856145644`, visual
 skipped. Evidence is
 `implementation/evidence/phase-6/p6-01-repository-api-checkpoint.md`.
 
+P6-01 checkpoint 3 is PASS. Product commit `a541cf9` added the strict live
+data source, Project-scoped cockpit/Master routes, dense Tooling tree/table/
+inspector, server-capability-driven create actions, exact retry idempotency and
+complete trilingual/accessibility/state coverage. Ordinary CI evidence-only
+repairs updated one stale inherited Shell assertion, synchronized only
+artifact-proved catalog fingerprints, added the P6-01 visual cases to the
+governed job and then added their five first Linux baselines. Final checkpoint
+`1f11f3c` passed complete ordinary CI `31183116349`: repository
+`92880986264`, `311/311` E2E, both secret lanes and visual `92880986015`
+at `73/73`; controlled runtime `92880986862` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-01-live-cockpit-checkpoint.md`.
+
 The next unfinished checkpoint is:
 
-`P6-01 checkpoint 3 — live Tooling cockpit`
+`P6-01 checkpoint 4 — controlled runtime and Level 2 Task Gate`
 
 Implement only:
 
-1. a server-backed Tooling data source using only the seven passed closed BFF
-   paths and exact typed projections;
-2. the dense industrial Tooling Object Page/worklist with stable tree/table,
-   central applicability/Part revision truth and docked inspector;
-3. capability-driven Part, Revision, Requirement, Master and Applicability
-   actions, with at most one visible primary action per context;
-4. explicit normal, empty, loading, no-permission, read-only, unavailable,
-   validation, version/applicability conflict, processing, retryable/final and
-   unsaved-context states;
-5. complete literal-English plus direct `zh`/`zh-TW`, keyboard/focus/labels,
-   non-color-only state, component/E2E and affected visual evidence; and
-6. affected checks, complete ordinary CI and evidence before any controlled
-   Site dispatch.
+1. extend only the existing controlled disposable-Site verifier/workflow scope
+   for additive migration and P6-01 route-switch truth;
+2. prove exact distinct create, shared-Master reuse, immutable Part Revision
+   and versioned/effective Applicability without collapsing identities;
+3. prove actor-bound idempotent replay, stale conflict, rollback, append-only
+   audit, same-tenant/IDOR denial and route disable/recovery;
+4. run affected checks and complete ordinary CI before the first controlled
+   Site dispatch; and
+5. on controlled PASS, record the evidence and run the P6-01 Level 2 Task Gate.
 
-Do not dispatch a controlled Site yet. Do not install production lifecycle,
-numbering, ownership/custody, Tooling Revision,
-physical Set, Trial, workbook mapping, adapter, ERPNext endpoint, credential or
-production default behavior. P6-02 through P6-08 remain inactive.
+Do not install production lifecycle, numbering, ownership/custody, Tooling
+Revision, physical Set, Trial, workbook mapping, adapter, ERPNext endpoint,
+credential or production default behavior. P6-02 through P6-08 remain
+inactive until P6-01 Level 2 passes.
 
 ## Authority
 
