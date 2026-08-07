@@ -166,6 +166,24 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             self.assertIn("optional_date_text", source)
             self.assertNotIn("date.fromisoformat(str(self.", source)
 
+    def test_part_projection_allows_revision_title_and_versions_pointer_once(self) -> None:
+        source = (
+            DOCTYPE_ROOT
+            / "npi_engineering_part"
+            / "npi_engineering_part.py"
+        ).read_text(encoding="utf-8")
+        identity = source.split("_IDENTITY_FIELDS = (", 1)[1].split(")\n", 1)[0]
+        self.assertNotIn('"title"', identity)
+        self.assertIn(
+            'if previous.get("current_revision_global_id") in (None, "")',
+            source,
+        )
+        self.assertIn("else previous_version + 1", source)
+        self.assertIn(
+            "self.current_revision_number != previous_number + 1",
+            source,
+        )
+
     def test_all_visible_sources_have_symmetric_chinese_translations(self) -> None:
         sources: set[str] = set()
         python_paths = [VALIDATION, VALIDATION.with_name("domain.py")]

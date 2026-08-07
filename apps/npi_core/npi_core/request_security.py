@@ -17,11 +17,33 @@ from .foundation.errors import (
     ProjectCollaborationRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
+    ToolingRoutesDisabled,
 )
 from .foundation.security import Principal
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
+
+
+def tooling_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P6-01 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_01_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_routes_enabled() -> None:
+    """Keep P6-01 handlers closed unless the Site explicitly enables them."""
+
+    if tooling_routes_are_disabled():
+        raise ToolingRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

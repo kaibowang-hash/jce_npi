@@ -18,7 +18,7 @@ def _schema(name: str) -> str:
 
 
 class Phase6ToolingContractTest(unittest.TestCase):
-    def test_foundation_schemas_are_closed_and_no_route_is_active(self) -> None:
+    def test_schemas_are_closed_and_exact_routes_are_active(self) -> None:
         schema_names = (
             "ToolingExternalReference",
             "EngineeringPartRevisionReference",
@@ -39,8 +39,27 @@ class Phase6ToolingContractTest(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", _schema(name))
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("/projects/{projectId}/tooling", paths)
-        self.assertNotIn("tooling_api", BFF)
+        for path in (
+            "/projects/{projectId}/tooling:",
+            "/projects/{projectId}/tooling/{toolingMasterId}:",
+            "/projects/{projectId}/parts:",
+            "/projects/{projectId}/parts/{partId}/revisions:",
+            "/projects/{projectId}/tooling-requirements:",
+            "/projects/{projectId}/tooling-masters:",
+            "/projects/{projectId}/tooling-applicabilities:",
+        ):
+            self.assertIn(path, paths)
+        for command in (
+            "tooling_api.get_tooling_cockpit",
+            "tooling_api.get_tooling_master",
+            "tooling_api.create_engineering_part",
+            "tooling_api.create_engineering_part_revision",
+            "tooling_api.create_tooling_requirement",
+            "tooling_api.create_tooling_master",
+            "tooling_api.create_tooling_applicability",
+        ):
+            self.assertIn(command, BFF)
+        self.assertIn("_p6_01_routes_disabled", BFF)
 
     def test_browser_requests_cannot_supply_server_owned_truth(self) -> None:
         requests = "\n".join(

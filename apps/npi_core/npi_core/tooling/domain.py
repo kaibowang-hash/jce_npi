@@ -8,7 +8,7 @@ from datetime import UTC, date, datetime
 from enum import StrEnum
 from uuid import UUID
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 
 try:
     from frappe import _
@@ -25,6 +25,51 @@ _ACTOR_PATTERN = re.compile(r"^[^\s\x00-\x1f\x7f]{1,254}$")
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _REFERENCE_SYSTEMS = frozenset({"NPI_ONE", "ERPNEXT"})
+
+
+class ToolingUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TOOLING_UNAVAILABLE",
+            _("The related object is unavailable."),
+        )
+
+
+class ToolingReferenceUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TOOLING_REFERENCE_UNAVAILABLE",
+            _("The related Project reference is unavailable."),
+        )
+
+
+class ToolingVersionConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TOOLING_VERSION_CONFLICT",
+            _("The object was changed by another user."),
+        )
+
+
+class ToolingApplicabilityConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TOOLING_APPLICABILITY_CONFLICT",
+            _("Applicability effectivity cannot overlap for the same relationship."),
+        )
+
+
+class ToolingIdempotencyConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TOOLING_IDEMPOTENCY_CONFLICT",
+            _("The idempotency key was already used for a different request."),
+        )
 
 
 class ToolingRequirementKind(StrEnum):

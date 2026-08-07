@@ -24,7 +24,6 @@ _IDENTITY_FIELDS = (
     "global_id",
     "tenant_id",
     "originating_project_global_id",
-    "title",
 )
 
 
@@ -67,10 +66,15 @@ class NPIEngineeringPart(Document):
         previous = self.get_doc_before_save()
         if previous is not None:
             assert_immutable_fields(self, previous, _IDENTITY_FIELDS)
-            self.optimistic_version = positive_integer(
+            previous_version = positive_integer(
                 previous.get("optimistic_version"),
                 _("Optimistic Version"),
-            ) + 1
+            )
+            self.optimistic_version = (
+                previous_version
+                if previous.get("current_revision_global_id") in (None, "")
+                else previous_version + 1
+            )
         else:
             self.optimistic_version = positive_integer(
                 self.optimistic_version,

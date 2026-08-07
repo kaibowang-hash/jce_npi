@@ -230,3 +230,14 @@ class ControlledPrintRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class ToolingRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "TOOLING_ROUTES_DISABLED",
+            _("The Tooling workspace is temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

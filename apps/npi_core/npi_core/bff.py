@@ -17,6 +17,7 @@ from .foundation.errors import (
     MalformedRequest,
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
+    ToolingRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
@@ -28,6 +29,7 @@ from .request_security import (
     publish_request_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
+    tooling_routes_are_disabled,
 )
 
 _ROUTES = {
@@ -61,6 +63,29 @@ _ROUTES = {
 
 _PROJECT_COCKPIT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/cockpit$"
+)
+_PROJECT_TOOLING_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
+)
+_PROJECT_TOOLING_MASTER_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)$"
+)
+_PROJECT_PARTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts$"
+)
+_PROJECT_PART_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
+    r"(?P<part_id>[^/:]+)/revisions$"
+)
+_PROJECT_TOOLING_REQUIREMENTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-requirements$"
+)
+_PROJECT_TOOLING_MASTERS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-masters$"
+)
+_PROJECT_TOOLING_APPLICABILITIES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-applicabilities$"
 )
 _PROJECT_WORK_CONTEXT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/work-context$"
@@ -346,6 +371,42 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.project_api.get_project_cockpit"
             route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_TOOLING_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.tooling_api.get_tooling_cockpit"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_TOOLING_MASTER_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.tooling_api.get_tooling_master"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        tooling_commands = (
+            (_PROJECT_PARTS_ROUTE, "npi_core.tooling_api.create_engineering_part"),
+            (
+                _PROJECT_PART_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_engineering_part_revision",
+            ),
+            (
+                _PROJECT_TOOLING_REQUIREMENTS_ROUTE,
+                "npi_core.tooling_api.create_tooling_requirement",
+            ),
+            (
+                _PROJECT_TOOLING_MASTERS_ROUTE,
+                "npi_core.tooling_api.create_tooling_master",
+            ),
+            (
+                _PROJECT_TOOLING_APPLICABILITIES_ROUTE,
+                "npi_core.tooling_api.create_tooling_applicability",
+            ),
+        )
+        for route, candidate in tooling_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         match = _PROJECT_CONTROLLED_PRINTS_ROUTE.fullmatch(path)
         if match is not None:
@@ -576,6 +637,9 @@ def route_request() -> None:
     if _p5_06_routes_disabled(command):
         command = "npi_core.bff.controlled_print_routes_disabled"
         route_params = {}
+    if _p6_01_routes_disabled(command):
+        command = "npi_core.bff.tooling_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -713,6 +777,23 @@ def controlled_print_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_routes_disabled() -> dict[str, object] | None:
+    """Fail closed for the P6-01 slice until the Site explicitly enables it."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -758,6 +839,12 @@ def _p5_06_routes_disabled(command: str | None) -> bool:
     return controlled_print_routes_are_disabled() and (
         isinstance(command, str)
         and command.startswith("npi_core.controlled_print_api.")
+    )
+
+
+def _p6_01_routes_disabled(command: str | None) -> bool:
+    return tooling_routes_are_disabled() and (
+        isinstance(command, str) and command.startswith("npi_core.tooling_api.")
     )
 
 

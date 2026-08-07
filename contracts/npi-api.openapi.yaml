@@ -3134,6 +3134,220 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingCockpit
+      description: >
+        Returns the bounded live Part, Requirement, logical Master and exact
+        versioned/effective Applicability projection only after Project-first
+        tenant and membership authorization. Lifecycle, Revision, physical Set,
+        Trial and ERP sections remain explicitly unavailable.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingQueryResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingMaster
+      description: >
+        Returns one exact same-tenant Master only when it originates in or has
+        an Applicability to the already-authorized Project. Missing,
+        unauthorized, cross-tenant and unrelated identities are indistinguishable.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingQueryResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/parts:
+    post:
+      tags: [Tooling]
+      operationId: createEngineeringPart
+      description: >
+        Atomically creates one stable NPI Part and its immutable initial exact
+        Revision. It creates no ERPNext Item, lifecycle state or numbering claim.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: part.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEngineeringPart" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/parts/{partId}/revisions:
+    post:
+      tags: [Tooling]
+      operationId: createEngineeringPartRevision
+      description: >
+        Appends one immutable exact successor Revision and advances the guarded
+        current pointer once under an exact optimistic Part version.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: part.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: partId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateEngineeringPartRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-requirements:
+    post:
+      tags: [Tooling]
+      operationId: createToolingRequirement
+      description: >
+        Records one immutable Project statement of Tooling need without
+        creating a logical Master, physical Set or lifecycle transition.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_requirement.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingRequirement" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-masters:
+    post:
+      tags: [Tooling]
+      operationId: createToolingMaster
+      description: >
+        Creates one tenant-stable logical Tooling Master. It creates no
+        Tooling Revision, physical Set, ERPNext Asset or lifecycle state.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_master.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingMaster" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-applicabilities:
+    post:
+      tags: [Tooling]
+      operationId: createToolingApplicability
+      description: >
+        Appends an exact immutable initial or direct successor Applicability
+        after same-tenant Master, current Part Revision, Project reference,
+        predecessor, normalized relationship and half-open effectivity checks.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_applicability.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingApplicability" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -3959,6 +4173,39 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/EngineeringBomPublishRequest" }
+    ToolingQueryResult:
+      description: Authorized bounded Project Tooling identity and applicability truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingProjectCockpit" }
+    ToolingCommandResult:
+      description: Exact Project Tooling cockpit after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingProjectCockpit" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:

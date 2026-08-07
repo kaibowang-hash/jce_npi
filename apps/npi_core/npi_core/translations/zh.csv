@@ -3944,6 +3944,8 @@ The Part Revision snapshot hash does not match.,零件修订快照哈希不匹�
 The Part does not match its originating Project and tenant.,零件与其发起项目和租户不匹配。
 The Tooling Master does not match its originating Project and tenant.,模具主档与其发起项目和租户不匹配。
 The Tooling Master is unavailable.,模具主档不可用。
+The Tooling workspace is temporarily unavailable.,模具开发工作区暂时不可用。
+Supply the relationship identity and expected version together.,请同时提供关系标识和预期版本。
 The Tooling Master snapshot hash does not match.,模具主档快照哈希不匹配。
 The Tooling Requirement does not match its Project and tenant.,模具开发需求与其项目和租户不匹配。
 The Tooling Requirement snapshot hash does not match.,模具开发需求快照哈希不匹配。

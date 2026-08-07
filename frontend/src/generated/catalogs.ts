@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '05fc637e0c1286cb';
+export const catalogVersion = '088d4637dea1703c';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -3237,6 +3237,7 @@ export const catalogs = {
     "Superseded": "已取代",
     "Superseded on {{date}}": "已于 {{date}} 被取代",
     "Supplier": "供应商",
+    "Supply the relationship identity and expected version together.": "请同时提供关系标识和预期版本。",
     "Synchronized": "已同步",
     "Synthetic EBOM Namespace": "合成 EBOM 命名空间",
     "System": "系统",
@@ -3728,6 +3729,7 @@ export const catalogs = {
     "The Tooling Master snapshot hash does not match.": "模具主档快照哈希不匹配。",
     "The Tooling Requirement does not match its Project and tenant.": "模具开发需求与其项目和租户不匹配。",
     "The Tooling Requirement snapshot hash does not match.": "模具开发需求快照哈希不匹配。",
+    "The Tooling workspace is temporarily unavailable.": "模具开发工作区暂时不可用。",
     "The transition is auditable. Any later state change requires another policy-authorized server action.": "此转换可审计。此后的任何状态更改都需要另一次策略授权的服务器操作。",
     "The unavailable connector must report that no provider is configured.": "不可用的连接器必须报告尚未配置提供方。",
     "The value is too long.": "值过长。",
@@ -7224,6 +7226,7 @@ export const catalogs = {
     "Superseded": "已取代",
     "Superseded on {{date}}": "已於 {{date}} 被取代",
     "Supplier": "供應商",
+    "Supply the relationship identity and expected version together.": "請同時提供關係識別和預期版本。",
     "Synchronized": "已同步",
     "Synthetic EBOM Namespace": "合成 EBOM 命名空間",
     "System": "系統",
@@ -7715,6 +7718,7 @@ export const catalogs = {
     "The Tooling Master snapshot hash does not match.": "模具主檔快照雜湊不相符。",
     "The Tooling Requirement does not match its Project and tenant.": "模具開發需求與其專案和租戶不相符。",
     "The Tooling Requirement snapshot hash does not match.": "模具開發需求快照雜湊不相符。",
+    "The Tooling workspace is temporarily unavailable.": "模具開發工作區暫時不可用。",
     "The transition is auditable. Any later state change requires another policy-authorized server action.": "此轉換可稽核。此後的任何狀態變更都需要另一次策略授權的伺服器操作。",
     "The unavailable connector must report that no provider is configured.": "無法使用的連接器必須報告尚未設定提供者。",
     "The value is too long.": "值過長。",
