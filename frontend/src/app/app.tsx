@@ -24,6 +24,7 @@ import {
 import { LiveDocumentDataSource } from "../api/document-data-source";
 import { LiveEngineeringBomDataSource } from "../api/ebom-data-source";
 import { LiveEngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
+import { LiveControlledPrintDataSource } from "../api/controlled-print-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -47,6 +48,7 @@ const liveDocumentDataSource = new LiveDocumentDataSource();
 const liveEngineeringBomDataSource = new LiveEngineeringBomDataSource();
 const liveEngineeringBomPublishRequestDataSource =
   new LiveEngineeringBomPublishRequestDataSource();
+const liveControlledPrintDataSource = new LiveControlledPrintDataSource();
 const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
 
@@ -156,6 +158,7 @@ export function App(): React.JSX.Element {
       <ProjectPage
         contextDataSource={liveProjectWorkContextDataSource}
         controlsDataSource={liveProjectControlsDataSource}
+        controlledPrintDataSource={liveControlledPrintDataSource}
         dataSource={liveProjectDataSource}
         documentDataSource={liveDocumentDataSource}
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}

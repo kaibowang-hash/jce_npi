@@ -28,6 +28,7 @@ export function ObjectHeader({
   metadata,
   status,
   source,
+  secondaryAction,
   primaryAction,
   nameIsBusinessData = true,
 }: {
@@ -36,6 +37,7 @@ export function ObjectHeader({
   metadata: ReactNode;
   status: ReactNode;
   source: SourceStatus;
+  secondaryAction?: ReactNode;
   primaryAction?: {
     label: string;
     onClick: () => void;
@@ -66,15 +68,20 @@ export function ObjectHeader({
           <SyncBadge state={source.syncState} />
         </div>
       </div>
-      {primaryAction ? (
-        <Button
-          disabled={primaryAction.disabled}
-          id={primaryAction.id}
-          onClick={primaryAction.onClick}
-          visual="primary"
-        >
-          {primaryAction.label}
-        </Button>
+      {secondaryAction || primaryAction ? (
+        <div className="object-header__actions">
+          {secondaryAction}
+          {primaryAction ? (
+            <Button
+              disabled={primaryAction.disabled}
+              id={primaryAction.id}
+              onClick={primaryAction.onClick}
+              visual="primary"
+            >
+              {primaryAction.label}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </header>
   );

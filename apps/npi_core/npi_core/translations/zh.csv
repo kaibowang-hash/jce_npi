@@ -3855,3 +3855,35 @@ The controlled print access event does not match its snapshot.,受控打印访�
 The controlled print access event does not match its output.,受控打印访问事件与其输出不匹配。
 The controlled print receipt does not match its snapshot.,受控打印回执与其快照不匹配。
 The controlled print record does not match its Project and tenant.,受控打印记录与其项目和租户不匹配。
+Controlled print not checked,尚未检查受控打印
+Check controlled print availability,检查受控打印可用性
+Checking controlled print availability,正在检查受控打印可用性
+Controlled print is unavailable,受控打印不可用
+Check again,重新检查
+Controlled print permission unavailable,受控打印权限不可用
+Controlled print is ready,受控打印已就绪
+Create controlled PDF,创建受控文档
+Creating controlled PDF,正在创建受控文档
+Downloading retained PDF,正在下载保留的受控文档
+Retained PDF downloaded,已下载保留的受控文档
+Controlled PDF replayed from retained output,已从保留输出重放受控文档
+Controlled PDF retained,受控文档已保留
+Download retained PDF,下载保留的受控文档
+Retry retained PDF download,重试下载保留的受控文档
+Controlled print conflict,受控打印冲突
+Retry controlled PDF creation,重试创建受控文档
+Retry controlled print,重试受控打印
+Controlled print,受控打印
+"No approved controlled print is available for this exact source, version, and language.",没有适用于此精确源、版本和语言的已批准受控打印。
+You do not have permission to use controlled print for this source.,您无权对此源使用受控打印。
+An authenticated session is required to create a controlled PDF.,创建受控文档需要已认证的会话。
+Reload the Project before creating another controlled print.,创建其他受控打印前请重新加载项目。
+Controlled print could not be completed safely,无法安全完成受控打印
+Create retained PDF,创建保留的受控文档
+Mapping version,映射版本
+Creation and each retained download are recorded.,创建和每次保留输出下载都会记录。
+"No success is shown unless the snapshot, private file, output, audit, and receipt are sealed atomically.",仅当快照、私有文件、输出、审计和回执以原子方式封存后才会显示成功。
+Creates one immutable controlled snapshot and retains one private PDF.,创建一个不可变受控快照并保留一份私有受控文档。
+"The snapshot, output, and audit history cannot be replaced or deleted.",快照、输出和审计历史无法替换或删除。
+Exact controlled-print policy printer authority.,精确受控打印策略的打印权限。
+Create immutable controlled PDF,创建不可变受控文档

@@ -1074,6 +1074,37 @@ textarea::placeholder {
   font-size: var(--npi-typography-size-xs);
 }
 
+.object-header__actions,
+.controlled-print-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.object-header__actions {
+  margin-left: auto;
+}
+
+.controlled-print-action__truth {
+  display: grid;
+  max-width: 320px;
+  justify-items: end;
+  gap: var(--npi-space-1);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+  text-align: right;
+}
+
+.controlled-print-action__truth small {
+  overflow-wrap: anywhere;
+}
+
+.controlled-print-action__reference code {
+  color: var(--npi-color-text-primary);
+}
+
 .panel {
   min-width: 0;
   overflow: hidden;
@@ -3973,6 +4004,11 @@ textarea::placeholder {
   .object-header__identity + *,
   .page-heading--actions > div:last-child {
     margin-left: auto;
+  }
+
+  .object-header__actions,
+  .controlled-print-action {
+    flex-wrap: wrap;
   }
 
   .table-tools {

@@ -12,6 +12,7 @@ import type { ProjectControlsDataSource } from "../api/project-controls-data-sou
 import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
+import type { ControlledPrintDataSource } from "../api/controlled-print-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -24,6 +25,7 @@ import {
   SectionAnchors,
 } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
+import { ControlledPrintAction } from "../components/controlled-print-action";
 import {
   DefinitionList,
   Panel,
@@ -224,6 +226,7 @@ function ProjectFailureSurface({
 function ProjectCockpit({
   cockpit,
   controlsDataSource,
+  controlledPrintDataSource,
   contextDataSource,
   documentDataSource,
   domainWorkItemsDataSource,
@@ -235,6 +238,7 @@ function ProjectCockpit({
 }: {
   cockpit: ProjectCockpitViewModel;
   controlsDataSource?: ProjectControlsDataSource | undefined;
+  controlledPrintDataSource?: ControlledPrintDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   documentDataSource?: DocumentDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
@@ -321,6 +325,19 @@ function ProjectCockpit({
           </span>
         }
         name={project.title}
+        secondaryAction={
+          controlledPrintDataSource ? (
+            <ControlledPrintAction
+              dataSource={controlledPrintDataSource}
+              projectId={project.globalId}
+              source={{
+                sourceGlobalId: project.globalId,
+                sourceKind: "npi.project",
+                sourceVersion: project.version,
+              }}
+            />
+          ) : undefined
+        }
         source={project.source}
         status={
           <SemanticStatus
@@ -534,6 +551,7 @@ function ProjectCockpit({
 export default function ProjectPage({
   dataSource,
   controlsDataSource,
+  controlledPrintDataSource,
   contextDataSource,
   domainWorkItemsDataSource,
   documentDataSource,
@@ -546,6 +564,7 @@ export default function ProjectPage({
 }: {
   dataSource: ProjectCockpitDataSource;
   controlsDataSource?: ProjectControlsDataSource | undefined;
+  controlledPrintDataSource?: ControlledPrintDataSource | undefined;
   contextDataSource?: ProjectWorkContextDataSource | undefined;
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   documentDataSource?: DocumentDataSource | undefined;
@@ -631,6 +650,7 @@ export default function ProjectPage({
     <ProjectCockpit
       cockpit={state.cockpit}
       controlsDataSource={controlsDataSource}
+      controlledPrintDataSource={controlledPrintDataSource}
       contextDataSource={contextDataSource}
       documentDataSource={documentDataSource}
       domainWorkItemsDataSource={domainWorkItemsDataSource}
