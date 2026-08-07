@@ -185,7 +185,7 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
     def test_route_disable_probe_reuses_consumed_secret_values(self) -> None:
         module = self.module
         capability = SimpleNamespace(status=200, body={"capability": "available"})
-        cockpit = SimpleNamespace(status=200, body={})
+        documents = SimpleNamespace(status=200, body={"items": [{"globalId": "document"}]})
         with patch.object(
             module,
             "secret_from_environment",
@@ -201,8 +201,15 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
         ), patch.object(
             module,
             "api_request",
-            side_effect=(capability, cockpit),
-        ), patch.object(module, "assert_capability"):
+            return_value=capability,
+        ), patch.object(
+            module.document_runtime,
+            "npi_request",
+            return_value=documents,
+        ) as predecessor, patch.object(
+            module,
+            "assert_capability",
+        ):
             result = module.route_disable_probe(
                 "http://127.0.0.1:8003",
                 "administrator-password",
@@ -221,6 +228,12 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             result,
             {"routeMode": "recovered", "predecessorRouteRetained": True},
+        )
+        predecessor.assert_called_once_with(
+            "actor-session",
+            "http://127.0.0.1:8003",
+            "/api/npi/v1/projects/project-id/documents",
+            query_key=module.PREDECESSOR_ROUTE_QUERY,
         )
 
     def test_server_diagnostic_reader_is_exact_allowlisted_and_bounded(self) -> None:

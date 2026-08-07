@@ -35,6 +35,7 @@ RUNTIME_MARKER = document_runtime.RUNTIME_MARKER
 ACTOR_USER = document_runtime.BASELINE_USER
 SOURCE_KIND = "npi.synthetic_runtime_project"
 CREATE_KEY = f"p5-06-runtime-r1-{FIXTURE_RUN_ID}-create"
+PREDECESSOR_ROUTE_QUERY = "p506-predecessor-" + "route-isolation"
 
 
 def fixture_uuid4(scope: str) -> str:
@@ -879,13 +880,16 @@ def route_disable_probe(
         validate_problem(capability, 503, "CONTROLLED_PRINT_ROUTES_DISABLED")
     else:
         assert_capability(capability.body, project_id, current_version)
-    cockpit = api_request(
+    documents = document_runtime.npi_request(
         actor,
         base_url,
-        f"/api/npi/v1/projects/{project_id}/cockpit",
-        correlation_label=f"p506-predecessor-{expected_mode}",
+        f"/api/npi/v1/projects/{project_id}/documents",
+        query_key=PREDECESSOR_ROUTE_QUERY,
     )
-    require(cockpit.status == 200, "P5-06 route switch disabled a predecessor route")
+    require(
+        documents.status == 200 and len(documents.body.get("items", [])) == 1,
+        "P5-06 route switch disabled a predecessor route",
+    )
     return {"routeMode": expected_mode, "predecessorRouteRetained": True}
 
 
