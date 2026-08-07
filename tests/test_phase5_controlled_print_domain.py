@@ -24,6 +24,8 @@ from npi_core.controlled_print.domain import (
     PrintCopyState,
     PrintDeliveryMode,
     PrintRegistryState,
+    controlled_print_command_payload_hash,
+    controlled_print_receipt_key,
     resolve_controlled_print_mapping,
     sha256_json,
 )
@@ -260,6 +262,43 @@ class Phase5ControlledPrintDomainTest(unittest.TestCase):
         self.assertEqual(event.event_hash, sha256_json(event.event_payload()))
         with self.assertRaises(RequestValidationFailed):
             replace(event, actor_user_id="invalid user", event_hash="")
+
+    def test_command_and_receipt_hashes_bind_actor_project_and_exact_payload(self) -> None:
+        payload = controlled_print_command_payload_hash(
+            actor_user_id="engineer@example.invalid",
+            tenant_id="synthetic-tenant",
+            project_global_id=self.project_id,
+            source_object_type="synthetic_document_baseline",
+            source_global_id=self.source_id,
+            source_version=3,
+            language="en",
+        )
+        changed = controlled_print_command_payload_hash(
+            actor_user_id="engineer@example.invalid",
+            tenant_id="synthetic-tenant",
+            project_global_id=self.project_id,
+            source_object_type="synthetic_document_baseline",
+            source_global_id=self.source_id,
+            source_version=4,
+            language="en",
+        )
+        self.assertNotEqual(payload, changed)
+        self.assertRegex(payload, r"^[a-f0-9]{64}$")
+
+        first = controlled_print_receipt_key(
+            actor_user_id="engineer@example.invalid",
+            tenant_id="synthetic-tenant",
+            project_global_id=self.project_id,
+            idempotency_key_hash=HASH_A,
+        )
+        second = controlled_print_receipt_key(
+            actor_user_id="other@example.invalid",
+            tenant_id="synthetic-tenant",
+            project_global_id=self.project_id,
+            idempotency_key_hash=HASH_A,
+        )
+        self.assertNotEqual(first, second)
+        self.assertRegex(first, r"^[a-f0-9]{64}$")
 
     def test_context_rejects_unknown_language_delivery_and_copy_semantics(self) -> None:
         with self.assertRaises(RequestValidationFailed) as captured:

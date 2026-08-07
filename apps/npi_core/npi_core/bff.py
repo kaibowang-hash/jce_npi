@@ -9,6 +9,7 @@ from .api import frappe_domain_call
 from .foundation.errors import (
     ApiRouteNotFound,
     CsrfTokenInvalid,
+    ControlledPrintRoutesDisabled,
     DocumentBaselineRoutesDisabled,
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
@@ -19,6 +20,7 @@ from .foundation.errors import (
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
+    controlled_print_routes_are_disabled,
     document_baseline_routes_are_disabled,
     document_release_routes_are_disabled,
     document_routes_are_disabled,
@@ -90,6 +92,20 @@ _PROJECT_DOCUMENT_ROUTE = re.compile(
 )
 _PROJECT_EBOMS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms$"
+)
+_CONTROLLED_PRINT_CAPABILITY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/controlled-print/capability$"
+)
+_PROJECT_CONTROLLED_PRINTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/controlled-prints$"
+)
+_PROJECT_CONTROLLED_PRINT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/controlled-prints/"
+    r"(?P<controlled_print_id>[^/:]+)$"
+)
+_PROJECT_CONTROLLED_PRINT_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/controlled-prints/"
+    r"(?P<controlled_print_id>[^/:]+)/content$"
 )
 _PROJECT_EBOM_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/eboms/(?P<ebom_id>[^/:]+)$"
@@ -330,6 +346,21 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.project_api.get_project_cockpit"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        match = _PROJECT_CONTROLLED_PRINTS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.controlled_print_api.create_controlled_print_snapshot"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_CONTROLLED_PRINT_CONTENT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.controlled_print_api.download_controlled_print_output"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_CONTROLLED_PRINT_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.controlled_print_api.get_controlled_print_snapshot"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path)
         if match is not None:
@@ -343,6 +374,11 @@ def route_request() -> None:
                 if request.method == "GET"
                 else "npi_core.project_work_api.create_project_domain_work_item"
             )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _CONTROLLED_PRINT_CAPABILITY_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.controlled_print_api.get_controlled_print_capability"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
         match = _PROJECT_CONTROLS_ROUTE.fullmatch(path)
@@ -537,6 +573,9 @@ def route_request() -> None:
     if _p5_05_routes_disabled(command):
         command = "npi_core.bff.publish_request_routes_disabled"
         route_params = {}
+    if _p5_06_routes_disabled(command):
+        command = "npi_core.bff.controlled_print_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -657,6 +696,23 @@ def publish_request_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def controlled_print_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P5-06 while retaining prior Phase 5 routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ControlledPrintRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -695,6 +751,13 @@ def _p5_05_routes_disabled(command: str | None) -> bool:
     return publish_request_routes_are_disabled() and (
         isinstance(command, str)
         and command.startswith("npi_integration.publish_request_api.")
+    )
+
+
+def _p5_06_routes_disabled(command: str | None) -> bool:
+    return controlled_print_routes_are_disabled() and (
+        isinstance(command, str)
+        and command.startswith("npi_core.controlled_print_api.")
     )
 
 
@@ -780,6 +843,16 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if (
+        (method == "GET" and _CONTROLLED_PRINT_CAPABILITY_ROUTE.fullmatch(path))
+        or (method == "POST" and _PROJECT_CONTROLLED_PRINTS_ROUTE.fullmatch(path))
+        or (method == "GET" and _PROJECT_CONTROLLED_PRINT_ROUTE.fullmatch(path))
+        or (
+            method == "GET"
+            and _PROJECT_CONTROLLED_PRINT_CONTENT_ROUTE.fullmatch(path)
+        )
     ):
         return True
     if method == "GET" and (

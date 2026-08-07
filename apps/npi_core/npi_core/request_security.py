@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from .foundation.errors import (
     AuthenticationRequired,
     CsrfTokenInvalid,
+    ControlledPrintRoutesDisabled,
     DocumentBaselineRoutesDisabled,
     DocumentReleaseRoutesDisabled,
     DocumentRoutesDisabled,
@@ -21,6 +22,27 @@ from .foundation.security import Principal
 
 TRANSPORT_FIELDS = frozenset({"cmd"})
 TENANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
+
+
+def controlled_print_routes_are_disabled() -> bool:
+    """Read the exact Site-scoped P5-06 emergency switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p5_06_routes_disabled")
+        if hasattr(configuration, "get")
+        else False
+    )
+    return value is True
+
+
+def require_controlled_print_routes_enabled() -> None:
+    """Close only P5-06 handlers while retaining prior Phase 5 routes."""
+
+    if controlled_print_routes_are_disabled():
+        raise ControlledPrintRoutesDisabled()
 
 
 def document_routes_are_disabled() -> bool:

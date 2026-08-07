@@ -126,10 +126,14 @@ class Phase5ControlledPrintContractTest(unittest.TestCase):
         self.assertIn("raw_idempotency_key:", OWNERSHIP)
         self.assertIn("conflict: NEVER_PERSIST", OWNERSHIP)
 
-    def test_first_checkpoint_does_not_activate_a_live_bff_route(self) -> None:
-        self.assertNotIn("controlled-print/capability", BFF)
-        self.assertNotIn("controlled-prints", BFF)
-        self.assertNotIn("controlled_print_api", BFF)
+    def test_closed_controlled_print_routes_are_wired_without_raw_file_access(self) -> None:
+        self.assertIn("controlled-print/capability", BFF)
+        self.assertIn("controlled-prints", BFF)
+        self.assertIn("controlled_print_api.get_controlled_print_capability", BFF)
+        self.assertIn("controlled_print_api.create_controlled_print_snapshot", BFF)
+        self.assertIn("controlled_print_api.get_controlled_print_snapshot", BFF)
+        self.assertIn("controlled_print_api.download_controlled_print_output", BFF)
+        self.assertNotIn("file_url", BFF)
 
 
 if __name__ == "__main__":

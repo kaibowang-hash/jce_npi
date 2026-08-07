@@ -219,3 +219,14 @@ class PublishRequestRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class ControlledPrintRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "CONTROLLED_PRINT_ROUTES_DISABLED",
+            _("The controlled print output is unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

@@ -763,6 +763,53 @@ def freeze_controlled_print_source(
     return _freeze_json_object(value, "sourceSnapshot")
 
 
+def controlled_print_command_payload_hash(
+    *,
+    actor_user_id: object,
+    tenant_id: object,
+    project_global_id: object,
+    source_object_type: object,
+    source_global_id: object,
+    source_version: object,
+    language: object,
+) -> str:
+    """Bind one create request to its actor, Project and exact browser fields."""
+
+    return sha256_json(
+        {
+            "operation": CONTROLLED_PRINT_OPERATION,
+            "actorUserId": _actor(actor_user_id, "actorUserId"),
+            "tenantId": _key(tenant_id, "tenantId"),
+            "projectGlobalId": str(_uuid(project_global_id, "projectGlobalId")),
+            "sourceKind": _key(source_object_type, "sourceKind"),
+            "sourceGlobalId": str(_uuid(source_global_id, "sourceGlobalId")),
+            "sourceVersion": _positive(source_version, "sourceVersion"),
+            "language": _language(language),
+        }
+    )
+
+
+def controlled_print_receipt_key(
+    *,
+    actor_user_id: object,
+    tenant_id: object,
+    project_global_id: object,
+    idempotency_key_hash: object,
+) -> str:
+    """Return the persisted actor/Project/operation idempotency identity."""
+
+    actor = _actor(actor_user_id, "actorUserId")
+    tenant = _key(tenant_id, "tenantId")
+    project_id = _uuid(project_global_id, "projectGlobalId")
+    key_hash = _hash(idempotency_key_hash, "idempotencyKeyHash")
+    return hashlib.sha256(
+        (
+            f"{tenant}\0{project_id}\0{actor}\0{CONTROLLED_PRINT_OPERATION}\0"
+            f"{key_hash}"
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def _freeze_json_object(value: object, path: str) -> Mapping[str, object]:
     if not isinstance(value, Mapping) or not value:
         raise _field_problem(path, _("Enter a non-empty JSON object."))
