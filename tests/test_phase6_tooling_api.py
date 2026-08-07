@@ -8,8 +8,12 @@ import unittest
 from typing import Any
 from unittest.mock import patch
 
-
 sys.path.insert(0, "apps/npi_core")
+
+from npi_core.tooling.domain import (
+    ToolingEvidenceConflict,
+    ToolingIntakeVersionConflict,
+)
 
 PROJECT_ID = "2e96f421-5872-4c96-a0dd-718d5c970a21"
 MASTER_ID = "0878087f-6192-4e40-862d-05e0a5927638"
@@ -17,6 +21,10 @@ PART_ID = "29e933a3-3954-4a96-9400-2be1987ae370"
 REVISION_ID = "89953948-4178-46dc-b7ca-8b94f2ac4e36"
 RELATIONSHIP_ID = "eb233de2-5d4d-4556-ad16-9476d8f0776f"
 REQUEST_ID = "a6bfd0bf-8ab3-4a92-b49e-818735db4f55"
+SET_ID = "5dc0ef7b-8563-46ad-9f40-76dd474566ea"
+INTAKE_ID = "45af7c0e-d4c0-4f25-9bdf-3912a4671e1e"
+REQUIREMENT_ID = "d78d72bf-014f-49db-a733-0c76ce4fc3cb"
+FILE_REVISION_ID = "c32eb45b-e4df-4c7e-b879-bd8e1685d1ae"
 
 
 class AttrDict(dict):
@@ -77,6 +85,25 @@ class MockRepository:
     def create_applicability(self, *args: object, **kwargs: Any):
         return self._command("applicability", args, kwargs)
 
+    def tooling_sets(self, *args: object, **kwargs: Any):
+        return self._query("sets", args, kwargs)
+
+    def tooling_set_detail(self, *args: object, **kwargs: Any):
+        return self._query("set_detail", args, kwargs)
+
+    def create_tooling_set(self, *args: object, **kwargs: Any):
+        return self._command("set_create", args, kwargs)
+
+    def create_tooling_intake(self, *args: object, **kwargs: Any):
+        return self._command("intake_create", args, kwargs)
+
+    def create_tooling_intake_evidence_reference(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("evidence_create", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         if self.failure is not None:
@@ -132,6 +159,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             npi_p5_05_routes_disabled=False,
             npi_p5_06_routes_disabled=False,
             npi_p6_01_routes_disabled=False,
+            npi_p6_02_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -139,6 +167,8 @@ class Phase6ToolingApiTest(unittest.TestCase):
                 "project_id": PROJECT_ID,
                 "tooling_master_id": MASTER_ID,
                 "part_id": PART_ID,
+                "tooling_set_id": SET_ID,
+                "intake_id": INTAKE_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -191,6 +221,50 @@ class Phase6ToolingApiTest(unittest.TestCase):
     def call(self, function, payload: dict[str, object] | None = None):
         self.frappe.local.form_dict = AttrDict(payload or {})
         return function(**(payload or {}))
+
+    @staticmethod
+    def intake_payload() -> dict[str, object]:
+        inspection_ids = (
+            "7e88d1ce-2db4-4b0e-b5fd-0948673c8b01",
+            "7e88d1ce-2db4-4b0e-b5fd-0948673c8b02",
+            "7e88d1ce-2db4-4b0e-b5fd-0948673c8b03",
+            "7e88d1ce-2db4-4b0e-b5fd-0948673c8b04",
+            "7e88d1ce-2db4-4b0e-b5fd-0948673c8b05",
+        )
+        categories = (
+            "appearance",
+            "water_circuit",
+            "hot_runner",
+            "electrical",
+            "safety",
+        )
+        return {
+            "transportProvider": "Controlled carrier",
+            "transportReference": "ARRIVAL-001",
+            "arrivedAt": "2026-08-07T08:30:00Z",
+            "custodyHandover": "Received by Tooling Engineering",
+            "accessories": [],
+            "inspections": [
+                {
+                    "globalId": global_id,
+                    "category": category,
+                    "observation": "Recorded inspection observation",
+                    "differenceObserved": index == 0,
+                }
+                for index, (global_id, category) in enumerate(
+                    zip(inspection_ids, categories, strict=True)
+                )
+            ],
+            "differences": [
+                {
+                    "globalId": "a18ab34f-f6ae-4b7c-935e-17bb5ea80d44",
+                    "sourceKind": "inspection",
+                    "sourceGlobalId": inspection_ids[0],
+                    "description": "Surface mark recorded at arrival",
+                    "customerConfirmationRequired": True,
+                }
+            ],
+        }
 
     def test_queries_authorize_project_before_protected_master(self) -> None:
         self.assertEqual(self.call(self.api.get_tooling_cockpit), self.response)
@@ -286,6 +360,173 @@ class Phase6ToolingApiTest(unittest.TestCase):
             self.frappe.local.form_dict.cmd,
             "npi_core.bff.tooling_routes_disabled",
         )
+
+    def test_set_queries_authorize_project_and_master_before_set_resolution(
+        self,
+    ) -> None:
+        self.assertEqual(self.call(self.api.get_tooling_sets), self.response)
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "sets"],
+        )
+        self.repository.calls.clear()
+        self.assertEqual(self.call(self.api.get_tooling_set), self.response)
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "set_detail"],
+        )
+        self.assertEqual(str(self.repository.calls[2][1][2]), SET_ID)
+
+    def test_set_intake_and_evidence_commands_parse_only_closed_inputs(self) -> None:
+        set_payload = {
+            "toolingRequirementGlobalId": REQUIREMENT_ID,
+            "physicalSerial": "CUSTOMER-SET-01",
+            "customer": {
+                "sourceSystem": "ERPNEXT",
+                "sourceObjectId": "CUST-001",
+            },
+            "custodyResponsibility": "NPI One custody boundary",
+            "repairAuthorizationReference": "Customer agreement CA-001",
+            "returnConditions": "Return on written request",
+        }
+        self.call(self.api.create_tooling_set, set_payload)
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "set_create")
+        self.assertEqual(str(args[1]), MASTER_ID)
+        self.assertEqual(str(values["tooling_requirement_id"]), REQUIREMENT_ID)
+        self.assertNotIn("tenant_id", values)
+
+        self.repository.calls.clear()
+        self.call(self.api.create_tooling_intake, self.intake_payload())
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "intake_create")
+        self.assertEqual(str(args[2]), SET_ID)
+        self.assertEqual(len(values["inspections"]), 5)
+        self.assertEqual(len(values["differences"]), 1)
+        self.assertIsNone(values["expected_version"])
+
+        self.repository.calls.clear()
+        evidence_payload = {
+            "evidenceRole": "customer_confirmation",
+            "differenceGlobalIds": [
+                "a18ab34f-f6ae-4b7c-935e-17bb5ea80d44"
+            ],
+            "fileRevisionGlobalId": FILE_REVISION_ID,
+        }
+        self.call(
+            self.api.create_tooling_intake_evidence_reference,
+            evidence_payload,
+        )
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "evidence_create")
+        self.assertEqual(str(args[3]), INTAKE_ID)
+        self.assertEqual(str(values["file_revision_id"]), FILE_REVISION_ID)
+        self.assertEqual(values["evidence_role"].value, "customer_confirmation")
+
+    def test_router_maps_five_set_paths_with_independent_fail_closed_switch(
+        self,
+    ) -> None:
+        cases = {
+            (
+                "GET",
+                f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets",
+            ): "get_tooling_sets",
+            (
+                "GET",
+                f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}",
+            ): "get_tooling_set",
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets",
+            ): "create_tooling_set",
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/intakes",
+            ): "create_tooling_intake",
+            (
+                "POST",
+                f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/intakes/{INTAKE_ID}/evidence",
+            ): "create_tooling_intake_evidence_reference",
+        }
+        for (method, path), suffix in cases.items():
+            with self.subTest(path=path):
+                self.frappe.local.request = types.SimpleNamespace(
+                    path=path,
+                    method=method,
+                )
+                self.router.route_request()
+                self.assertTrue(self.frappe.local.form_dict.cmd.endswith(suffix))
+
+        self.frappe.conf.npi_p6_01_routes_disabled = True
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertTrue(self.frappe.local.form_dict.cmd.endswith("get_tooling_sets"))
+
+        self.frappe.conf.npi_p6_01_routes_disabled = False
+        del self.frappe.conf["npi_p6_02_routes_disabled"]
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.tooling_set_routes_disabled",
+        )
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/tooling",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertTrue(self.frappe.local.form_dict.cmd.endswith("get_tooling_cockpit"))
+
+    def test_set_route_switch_is_directly_fail_closed(self) -> None:
+        self.frappe.conf.npi_p6_02_routes_disabled = True
+        result = self.call(self.api.get_tooling_sets)
+        self.assertEqual(result["code"], "TOOLING_SET_ROUTES_DISABLED")
+        self.assertEqual(self.frappe.local.response.http_status_code, 503)
+
+    def test_set_commands_fail_closed_replay_and_roll_back_exact_conflicts(
+        self,
+    ) -> None:
+        self.repository.scope = False
+        result = self.call(self.api.create_tooling_set, {"doctype": "Secret"})
+        self.assertEqual(result["code"], "TOOLING_UNAVAILABLE")
+        self.assertEqual(self.repository.calls[0][0], "authorize")
+
+        self.repository.scope = True
+        set_payload = {
+            "toolingRequirementGlobalId": REQUIREMENT_ID,
+            "physicalSerial": "CUSTOMER-SET-02",
+            "custodyResponsibility": "NPI One custody boundary",
+            "repairAuthorizationReference": "Customer agreement CA-002",
+            "returnConditions": "Return on written request",
+        }
+        self.repository.replayed = True
+        self.call(self.api.create_tooling_set, set_payload)
+        self.assertEqual(
+            self.frappe.flags.npi_response_headers["Idempotency-Replayed"],
+            "true",
+        )
+
+        self.repository.replayed = False
+        self.repository.failure = ToolingIntakeVersionConflict()
+        result = self.call(self.api.create_tooling_intake, self.intake_payload())
+        self.assertEqual(result["code"], "TOOLING_INTAKE_VERSION_CONFLICT")
+        self.assertEqual(self.frappe.local.response.http_status_code, 409)
+        self.assertEqual(self.frappe.db.rollback_count, 2)
+
+        self.repository.failure = ToolingEvidenceConflict()
+        result = self.call(
+            self.api.create_tooling_intake_evidence_reference,
+            {
+                "evidenceRole": "arrival_photo",
+                "differenceGlobalIds": [],
+                "fileRevisionGlobalId": FILE_REVISION_ID,
+            },
+        )
+        self.assertEqual(result["code"], "TOOLING_EVIDENCE_CONFLICT")
+        self.assertEqual(self.frappe.local.response.http_status_code, 409)
+        self.assertEqual(self.frappe.db.rollback_count, 3)
 
     def test_direct_route_switch_and_command_failure_roll_back_fail_closed(self) -> None:
         self.frappe.conf.npi_p6_01_routes_disabled = True

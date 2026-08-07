@@ -75,6 +75,24 @@ class ToolingIdempotencyConflict(NpiProblem):
         )
 
 
+class ToolingIntakeVersionConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TOOLING_INTAKE_VERSION_CONFLICT",
+            _("The object was changed by another user."),
+        )
+
+
+class ToolingEvidenceConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TOOLING_EVIDENCE_CONFLICT",
+            _("The exact evidence reference is already attached."),
+        )
+
+
 class ToolingRequirementKind(StrEnum):
     NEW_TOOL = "new_tool"
     CUSTOMER_OWNED_INTAKE = "customer_owned_intake"

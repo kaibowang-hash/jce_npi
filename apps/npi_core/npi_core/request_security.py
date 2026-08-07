@@ -18,6 +18,7 @@ from .foundation.errors import (
     RequestValidationFailed,
     TenantScopeUnavailable,
     ToolingRoutesDisabled,
+    ToolingSetRoutesDisabled,
 )
 from .foundation.security import Principal
 
@@ -44,6 +45,27 @@ def require_tooling_routes_enabled() -> None:
 
     if tooling_routes_are_disabled():
         raise ToolingRoutesDisabled()
+
+
+def tooling_set_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P6-02 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_02_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_set_routes_enabled() -> None:
+    """Keep only P6-02 Set/intake handlers closed unless explicitly enabled."""
+
+    if tooling_set_routes_are_disabled():
+        raise ToolingSetRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

@@ -60,6 +60,10 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "/projects/{projectId}/tooling-requirements:",
             "/projects/{projectId}/tooling-masters:",
             "/projects/{projectId}/tooling-applicabilities:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes/{intakeId}/evidence:",
         ):
             self.assertIn(path, paths)
         for command in (
@@ -70,14 +74,15 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "tooling_api.create_tooling_requirement",
             "tooling_api.create_tooling_master",
             "tooling_api.create_tooling_applicability",
+            "tooling_api.get_tooling_sets",
+            "tooling_api.get_tooling_set",
+            "tooling_api.create_tooling_set",
+            "tooling_api.create_tooling_intake",
+            "tooling_api.create_tooling_intake_evidence_reference",
         ):
             self.assertIn(command, BFF)
         self.assertIn("_p6_01_routes_disabled", BFF)
-        self.assertNotIn(
-            "/projects/{projectId}/tooling/{toolingMasterId}/sets:",
-            paths,
-        )
-        self.assertNotIn("tooling_api.create_tooling_set", BFF)
+        self.assertIn("_p6_02_routes_disabled", BFF)
 
     def test_browser_requests_cannot_supply_server_owned_truth(self) -> None:
         requests = "\n".join(
@@ -122,7 +127,7 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertIn("lifecycle_policy_unavailable", capability)
         self.assertIn("transitionLifecycle: { type: boolean, const: false }", permissions)
 
-    def test_physical_set_intake_contract_is_distinct_url_free_and_not_active(self) -> None:
+    def test_physical_set_intake_contract_is_distinct_url_free_and_active(self) -> None:
         tooling_set = _schema("ToolingSetSummary")
         intake = _schema("ToolingIntakeSummary")
         inspection = _schema("ToolingIntakeInspection")
@@ -151,6 +156,10 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertNotIn("fileUrl:", evidence)
         self.assertNotIn("assetId:", create_set)
         self.assertNotIn("sourceRevisionGlobalId:", create_set)
+        paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
+        self.assertIn("x-audit-operation: tooling_set.create", paths)
+        self.assertIn("x-audit-operation: tooling_intake.create", paths)
+        self.assertIn("x-audit-operation: tooling_intake_evidence.create", paths)
 
     def test_exact_ownership_rows_preserve_npi_erp_boundary(self) -> None:
         for object_name in (

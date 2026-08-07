@@ -11,22 +11,37 @@ from uuid import UUID, uuid4
 import frappe
 
 from npi_core.documents.frappe_repository import FrappeDocumentRepository
+from npi_core.npi_core.doctype.npi_file_revision.npi_file_revision import (
+    has_live_private_file_identity,
+)
 from npi_core.foundation.audit import create_audit_event
 from npi_core.foundation.errors import RequestValidationFailed
 from npi_core.tooling.domain import (
     EngineeringPart,
     EngineeringPartRevision,
+    ToolingAccessoryLine,
     ToolingApplicability,
     ToolingApplicabilityConflict,
+    ToolingDifferenceSourceKind,
+    ToolingEvidenceConflict,
     ToolingIdempotencyConflict,
+    ToolingInspectionCategory,
+    ToolingInspectionObservation,
+    ToolingIntake,
+    ToolingIntakeDifference,
+    ToolingIntakeEvidenceReference,
+    ToolingIntakeEvidenceRole,
+    ToolingIntakeVersionConflict,
     ToolingMaster,
     ToolingReferenceUnavailable,
     ToolingRequirement,
     ToolingRequirementKind,
+    ToolingSet,
     ToolingVersionConflict,
     ensure_no_effectivity_overlap,
     sha256_json,
     validate_applicability_successor,
+    validate_intake_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
 from npi_core.tooling.diagnostics import (
@@ -39,6 +54,9 @@ _MAX_MASTERS = 200
 _MAX_REQUIREMENTS = 200
 _MAX_PARTS = 500
 _MAX_APPLICABILITY = 1_000
+_MAX_SETS = 200
+_MAX_INTAKES = 100
+_MAX_EVIDENCE = 500
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +132,38 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             parts=parts,
             applications=applications,
         )
+
+    def tooling_sets(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any] | None:
+        project = self._authorized_project(project_id)
+        if project is None:
+            return None
+        if self._master_for_project(project, tooling_master_id) is None:
+            return None
+        return self._tooling_set_collection(project, tooling_master_id)
+
+    def tooling_set_detail(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+    ) -> dict[str, Any] | None:
+        project = self._authorized_project(project_id)
+        if project is None:
+            return None
+        if self._master_for_project(project, tooling_master_id) is None:
+            return None
+        tooling_set = self._tooling_set_for_project(
+            project,
+            tooling_master_id,
+            tooling_set_id,
+        )
+        if tooling_set is None:
+            return None
+        return self._tooling_set_detail(project, tooling_set)
 
     def create_part(
         self,
@@ -640,6 +690,325 @@ class FrappeToolingRepository(FrappeDocumentRepository):
                 )
         return ToolingCommandOutcome(response)
 
+    def create_tooling_set(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        *,
+        idempotency_key_hash: str,
+        tooling_requirement_id: UUID,
+        physical_serial: str,
+        customer: Mapping[str, str] | None,
+        custody_responsibility: str,
+        repair_authorization_reference: str,
+        return_conditions: str,
+    ) -> ToolingCommandOutcome | None:
+        project = self._locked_authorized_project(project_id)
+        if project is None:
+            return None
+        payload = {
+            "toolingMasterGlobalId": str(tooling_master_id),
+            "toolingRequirementGlobalId": str(tooling_requirement_id),
+            "physicalSerial": physical_serial,
+            "customer": dict(customer) if customer is not None else None,
+            "custodyResponsibility": custody_responsibility,
+            "repairAuthorizationReference": repair_authorization_reference,
+            "returnConditions": return_conditions,
+        }
+        context = self._command_context(
+            project,
+            operation="tooling_set.create",
+            idempotency_key_hash=idempotency_key_hash,
+            payload=payload,
+        )
+        if isinstance(context, dict):
+            return ToolingCommandOutcome(context, replayed=True)
+        receipt_key, payload_hash = context
+        if self._master_for_project(project, tooling_master_id) is None:
+            return None
+        requirement = self._requirement_for_set(project, tooling_requirement_id)
+        if requirement is None:
+            return None
+        self._require_customer_reference(project, customer)
+        now = self._now()
+        tooling_set = ToolingSet(
+            global_id=self._new_uuid(),
+            tenant_id=str(project.tenant_id),
+            project_global_id=project_id,
+            tooling_master_global_id=tooling_master_id,
+            tooling_requirement_global_id=tooling_requirement_id,
+            requirement_kind=requirement.kind,
+            physical_serial=physical_serial,
+            customer_source_system=(
+                customer["sourceSystem"] if customer is not None else None
+            ),
+            customer_source_object_id=(
+                customer["sourceObjectId"] if customer is not None else None
+            ),
+            custody_responsibility=custody_responsibility,
+            repair_authorization_reference=repair_authorization_reference,
+            return_conditions=return_conditions,
+            created_by_user_id=self.actor,
+            created_at=now,
+            request_id=UUID(self.request_id),
+            trace_id=self.trace_id,
+        )
+        with tooling_command_write():
+            receipt = self._insert_receipt(
+                project,
+                receipt_key=receipt_key,
+                operation="tooling_set.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload_hash=payload_hash,
+                now=now,
+            )
+            self._insert_tooling_set(tooling_set)
+            self._append_audit(
+                operation="tooling_set.create",
+                global_id=tooling_set.global_id,
+                object_version=1,
+                summary={
+                    "projectId": str(project_id),
+                    "toolingMasterId": str(tooling_master_id),
+                    "toolingRequirementId": str(tooling_requirement_id),
+                    "requestId": self.request_id,
+                },
+            )
+            response = self._tooling_set_collection(project, tooling_master_id)
+            self._seal_receipt(
+                receipt,
+                target_type="tooling_set",
+                target_id=tooling_set.global_id,
+                response=response,
+                now=now,
+            )
+        return ToolingCommandOutcome(response)
+
+    def create_tooling_intake(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+        *,
+        idempotency_key_hash: str,
+        expected_version: int | None,
+        transport_provider: str,
+        transport_reference: str,
+        arrived_at: datetime,
+        custody_handover: str,
+        accessories: tuple[ToolingAccessoryLine, ...],
+        inspections: tuple[ToolingInspectionObservation, ...],
+        differences: tuple[ToolingIntakeDifference, ...],
+    ) -> ToolingCommandOutcome | None:
+        project = self._locked_authorized_project(project_id)
+        if project is None:
+            return None
+        payload = {
+            "toolingMasterGlobalId": str(tooling_master_id),
+            "toolingSetGlobalId": str(tooling_set_id),
+            "expectedVersion": expected_version,
+            "transportProvider": transport_provider,
+            "transportReference": transport_reference,
+            "arrivedAt": arrived_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+            "custodyHandover": custody_handover,
+            "accessories": [value.snapshot_payload() for value in accessories],
+            "inspections": [value.snapshot_payload() for value in inspections],
+            "differences": [value.snapshot_payload() for value in differences],
+        }
+        context = self._command_context(
+            project,
+            operation="tooling_intake.create",
+            idempotency_key_hash=idempotency_key_hash,
+            payload=payload,
+        )
+        if isinstance(context, dict):
+            return ToolingCommandOutcome(context, replayed=True)
+        receipt_key, payload_hash = context
+        if self._master_for_project(project, tooling_master_id) is None:
+            return None
+        tooling_set = self._tooling_set_for_project(
+            project,
+            tooling_master_id,
+            tooling_set_id,
+        )
+        if tooling_set is None:
+            return None
+        retained = self._intakes_for_set(project, tooling_set)
+        previous = retained[-1] if retained else None
+        if previous is None:
+            if expected_version is not None:
+                raise ToolingIntakeVersionConflict()
+            intake_version = 1
+        else:
+            if expected_version != previous.intake_version:
+                raise ToolingIntakeVersionConflict()
+            intake_version = previous.intake_version + 1
+        now = self._now()
+        intake = ToolingIntake(
+            global_id=self._new_uuid(),
+            tenant_id=str(project.tenant_id),
+            project_global_id=project_id,
+            tooling_master_global_id=tooling_master_id,
+            tooling_set_global_id=tooling_set_id,
+            intake_version=intake_version,
+            predecessor_global_id=(previous.global_id if previous else None),
+            predecessor_snapshot_hash=(previous.snapshot_hash if previous else None),
+            transport_provider=transport_provider,
+            transport_reference=transport_reference,
+            arrived_at=arrived_at,
+            custody_handover=custody_handover,
+            accessories=accessories,
+            inspections=inspections,
+            differences=differences,
+            created_by_user_id=self.actor,
+            created_at=now,
+            request_id=UUID(self.request_id),
+            trace_id=self.trace_id,
+        )
+        if previous is not None:
+            validate_intake_successor(previous, intake)
+        with tooling_command_write():
+            receipt = self._insert_receipt(
+                project,
+                receipt_key=receipt_key,
+                operation="tooling_intake.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload_hash=payload_hash,
+                now=now,
+            )
+            try:
+                self._insert_tooling_intake(intake)
+            except (frappe.DuplicateEntryError, frappe.UniqueValidationError) as error:
+                raise ToolingIntakeVersionConflict() from error
+            self._append_audit(
+                operation="tooling_intake.create",
+                global_id=intake.global_id,
+                object_version=intake.intake_version,
+                summary={
+                    "projectId": str(project_id),
+                    "toolingMasterId": str(tooling_master_id),
+                    "toolingSetId": str(tooling_set_id),
+                    "requestId": self.request_id,
+                },
+            )
+            response = self._tooling_set_detail(project, tooling_set)
+            self._seal_receipt(
+                receipt,
+                target_type="tooling_intake",
+                target_id=intake.global_id,
+                response=response,
+                now=now,
+            )
+        return ToolingCommandOutcome(response)
+
+    def create_tooling_intake_evidence_reference(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+        intake_id: UUID,
+        *,
+        idempotency_key_hash: str,
+        evidence_role: ToolingIntakeEvidenceRole,
+        difference_ids: tuple[UUID, ...],
+        file_revision_id: UUID,
+    ) -> ToolingCommandOutcome | None:
+        project = self._locked_authorized_project(project_id)
+        if project is None:
+            return None
+        payload = {
+            "toolingMasterGlobalId": str(tooling_master_id),
+            "toolingSetGlobalId": str(tooling_set_id),
+            "toolingIntakeGlobalId": str(intake_id),
+            "evidenceRole": evidence_role.value,
+            "differenceGlobalIds": [str(value) for value in difference_ids],
+            "fileRevisionGlobalId": str(file_revision_id),
+        }
+        context = self._command_context(
+            project,
+            operation="tooling_intake_evidence.create",
+            idempotency_key_hash=idempotency_key_hash,
+            payload=payload,
+        )
+        if isinstance(context, dict):
+            return ToolingCommandOutcome(context, replayed=True)
+        receipt_key, payload_hash = context
+        if self._master_for_project(project, tooling_master_id) is None:
+            return None
+        tooling_set = self._tooling_set_for_project(
+            project,
+            tooling_master_id,
+            tooling_set_id,
+        )
+        if tooling_set is None:
+            return None
+        intake = self._intake_for_set(project, tooling_set, intake_id)
+        if intake is None:
+            return None
+        available_difference_ids = {value.global_id for value in intake.differences}
+        if any(value not in available_difference_ids for value in difference_ids):
+            return None
+        file_revision = self._file_revision_for_project(project, file_revision_id)
+        if file_revision is None:
+            return None
+        now = self._now()
+        evidence = ToolingIntakeEvidenceReference(
+            global_id=self._new_uuid(),
+            tenant_id=str(project.tenant_id),
+            project_global_id=project_id,
+            tooling_master_global_id=tooling_master_id,
+            tooling_set_global_id=tooling_set_id,
+            tooling_intake_global_id=intake_id,
+            intake_snapshot_hash=intake.snapshot_hash,
+            evidence_role=evidence_role,
+            difference_global_ids=difference_ids,
+            file_revision_global_id=file_revision_id,
+            file_optimistic_version=int(file_revision.optimistic_version),
+            frappe_content_hash=str(file_revision.frappe_content_hash).lower(),
+            file_name=str(file_revision.file_name),
+            mime_type=str(file_revision.mime_type),
+            size_bytes=int(file_revision.size_bytes),
+            sha256=str(file_revision.sha256).lower(),
+            created_by_user_id=self.actor,
+            created_at=now,
+            request_id=UUID(self.request_id),
+            trace_id=self.trace_id,
+        )
+        with tooling_command_write():
+            receipt = self._insert_receipt(
+                project,
+                receipt_key=receipt_key,
+                operation="tooling_intake_evidence.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload_hash=payload_hash,
+                now=now,
+            )
+            try:
+                self._insert_tooling_intake_evidence(evidence)
+            except (frappe.DuplicateEntryError, frappe.UniqueValidationError) as error:
+                raise ToolingEvidenceConflict() from error
+            self._append_audit(
+                operation="tooling_intake_evidence.create",
+                global_id=evidence.global_id,
+                object_version=intake.intake_version,
+                summary={
+                    "projectId": str(project_id),
+                    "toolingMasterId": str(tooling_master_id),
+                    "toolingSetId": str(tooling_set_id),
+                    "toolingIntakeId": str(intake_id),
+                    "requestId": self.request_id,
+                },
+            )
+            response = self._tooling_set_detail(project, tooling_set)
+            self._seal_receipt(
+                receipt,
+                target_type="tooling_intake_evidence",
+                target_id=evidence.global_id,
+                response=response,
+                now=now,
+            )
+        return ToolingCommandOutcome(response)
+
     def _cockpit_for(self, project: object) -> dict[str, Any]:
         return self._cockpit_response(
             project,
@@ -791,6 +1160,196 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             maximum=_MAX_APPLICABILITY,
         )
         return tuple(self._applicability_value(value) for value in rows)
+
+    def _tooling_set_collection(
+        self,
+        project: object,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any]:
+        return {
+            "toolingMasterGlobalId": str(tooling_master_id),
+            "permissions": self._tooling_set_permissions(),
+            "items": [
+                self._tooling_set_response(value)
+                for value in self._tooling_sets_for_master(project, tooling_master_id)
+            ],
+        }
+
+    def _tooling_set_detail(
+        self,
+        project: object,
+        tooling_set: ToolingSet,
+    ) -> dict[str, Any]:
+        intakes = self._intakes_for_set(project, tooling_set)
+        evidence = self._evidence_for_set(project, tooling_set)
+        return {
+            "toolingSet": self._tooling_set_response(tooling_set),
+            "permissions": self._tooling_set_permissions(),
+            "intakes": [self._intake_response(value) for value in intakes],
+            "evidence": [self._evidence_response(value) for value in evidence],
+        }
+
+    def _tooling_sets_for_master(
+        self,
+        project: object,
+        tooling_master_id: UUID,
+    ) -> tuple[ToolingSet, ...]:
+        rows = self._bounded_documents(
+            "NPI Tooling Set",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "tooling_master_global_id": str(tooling_master_id),
+            },
+            maximum=_MAX_SETS,
+        )
+        return tuple(
+            sorted(
+                (self._tooling_set_value(value) for value in rows),
+                key=lambda item: str(item.global_id),
+            )
+        )
+
+    def _tooling_set_for_project(
+        self,
+        project: object,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+    ) -> ToolingSet | None:
+        row = _optional_doc("NPI Tooling Set", str(tooling_set_id))
+        if row is None or any(
+            (
+                str(row.global_id) != str(tooling_set_id),
+                str(row.tenant_id) != str(project.tenant_id),
+                str(row.project_global_id) != str(project.global_id),
+                str(row.tooling_master_global_id) != str(tooling_master_id),
+            )
+        ):
+            return None
+        return self._tooling_set_value(row)
+
+    def _intakes_for_set(
+        self,
+        project: object,
+        tooling_set: ToolingSet,
+    ) -> tuple[ToolingIntake, ...]:
+        rows = self._bounded_documents(
+            "NPI Tooling Intake",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "tooling_master_global_id": str(tooling_set.tooling_master_global_id),
+                "tooling_set_global_id": str(tooling_set.global_id),
+            },
+            maximum=_MAX_INTAKES,
+        )
+        result = tuple(
+            sorted(
+                (self._intake_value(value) for value in rows),
+                key=lambda item: item.intake_version,
+            )
+        )
+        for index, value in enumerate(result):
+            if value.intake_version != index + 1:
+                raise RuntimeError("The Tooling Intake version chain is not contiguous.")
+            if index:
+                validate_intake_successor(result[index - 1], value)
+        return result
+
+    def _intake_for_set(
+        self,
+        project: object,
+        tooling_set: ToolingSet,
+        intake_id: UUID,
+    ) -> ToolingIntake | None:
+        row = _optional_doc("NPI Tooling Intake", str(intake_id))
+        if row is None or any(
+            (
+                str(row.global_id) != str(intake_id),
+                str(row.tenant_id) != str(project.tenant_id),
+                str(row.project_global_id) != str(project.global_id),
+                str(row.tooling_master_global_id)
+                != str(tooling_set.tooling_master_global_id),
+                str(row.tooling_set_global_id) != str(tooling_set.global_id),
+            )
+        ):
+            return None
+        return self._intake_value(row)
+
+    def _evidence_for_set(
+        self,
+        project: object,
+        tooling_set: ToolingSet,
+    ) -> tuple[ToolingIntakeEvidenceReference, ...]:
+        rows = self._bounded_documents(
+            "NPI Tooling Intake Evidence Reference",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "tooling_master_global_id": str(tooling_set.tooling_master_global_id),
+                "tooling_set_global_id": str(tooling_set.global_id),
+            },
+            maximum=_MAX_EVIDENCE,
+        )
+        return tuple(
+            sorted(
+                (self._evidence_value(value) for value in rows),
+                key=lambda item: str(item.global_id),
+            )
+        )
+
+    def _requirement_for_set(
+        self,
+        project: object,
+        requirement_id: UUID,
+    ) -> ToolingRequirement | None:
+        row = _optional_doc("NPI Tooling Requirement", str(requirement_id))
+        if row is None or any(
+            (
+                str(row.global_id) != str(requirement_id),
+                str(row.tenant_id) != str(project.tenant_id),
+                str(row.project_global_id) != str(project.global_id),
+                str(row.requirement_kind)
+                not in {
+                    ToolingRequirementKind.CUSTOMER_OWNED_INTAKE.value,
+                    ToolingRequirementKind.COPY_OR_ADDITIONAL_SET.value,
+                },
+            )
+        ):
+            return None
+        return self._requirement_value(row)
+
+    @staticmethod
+    def _require_customer_reference(
+        project: object,
+        value: Mapping[str, str] | None,
+    ) -> None:
+        if value is None:
+            return
+        expected = (value["sourceSystem"], value["sourceObjectId"])
+        matches = [
+            row
+            for row in project.references
+            if str(row.reference_type) == "customer"
+            and (str(row.source_system), str(row.source_object_id)) == expected
+        ]
+        if len(matches) != 1:
+            raise ToolingReferenceUnavailable()
+
+    @staticmethod
+    def _file_revision_for_project(project: object, revision_id: UUID):
+        row = _optional_doc("NPI File Revision", str(revision_id))
+        if row is None or any(
+            (
+                str(row.global_id) != str(revision_id),
+                str(row.tenant_id) != str(project.tenant_id),
+                str(row.project_global_id) != str(project.global_id),
+                str(row.scan_state) != "clean",
+                not has_live_private_file_identity(row),
+            )
+        ):
+            return None
+        return row
 
     def _master_for_project(self, project: object, master_id: UUID):
         master = self._same_tenant_master(project, master_id)
@@ -1147,6 +1706,116 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             }
         ).insert()
 
+    @staticmethod
+    def _insert_tooling_set(value: ToolingSet) -> object:
+        return frappe.get_doc(
+            {
+                "doctype": "NPI Tooling Set",
+                "global_id": str(value.global_id),
+                "tenant_id": value.tenant_id,
+                "project_global_id": str(value.project_global_id),
+                "tooling_master": str(value.tooling_master_global_id),
+                "tooling_master_global_id": str(value.tooling_master_global_id),
+                "tooling_requirement": str(value.tooling_requirement_global_id),
+                "tooling_requirement_global_id": str(
+                    value.tooling_requirement_global_id
+                ),
+                "requirement_kind": value.requirement_kind.value,
+                "physical_serial": value.physical_serial,
+                "customer_source_system": value.customer_source_system,
+                "customer_source_object_id": value.customer_source_object_id,
+                "custody_responsibility": value.custody_responsibility,
+                "repair_authorization_reference": (
+                    value.repair_authorization_reference
+                ),
+                "return_conditions": value.return_conditions,
+                "created_by_user_id": value.created_by_user_id,
+                "created_at": _database_datetime(value.created_at),
+                "request_id": str(value.request_id),
+                "trace_id": value.trace_id,
+                "set_snapshot": _canonical_json(value.snapshot_payload()),
+                "snapshot_hash": value.snapshot_hash,
+            }
+        ).insert()
+
+    @staticmethod
+    def _insert_tooling_intake(value: ToolingIntake) -> object:
+        return frappe.get_doc(
+            {
+                "doctype": "NPI Tooling Intake",
+                "global_id": str(value.global_id),
+                "intake_key": None,
+                "tenant_id": value.tenant_id,
+                "project_global_id": str(value.project_global_id),
+                "tooling_master_global_id": str(value.tooling_master_global_id),
+                "tooling_set": str(value.tooling_set_global_id),
+                "tooling_set_global_id": str(value.tooling_set_global_id),
+                "intake_version": value.intake_version,
+                "predecessor_global_id": (
+                    str(value.predecessor_global_id)
+                    if value.predecessor_global_id is not None
+                    else None
+                ),
+                "predecessor_snapshot_hash": value.predecessor_snapshot_hash,
+                "transport_provider": value.transport_provider,
+                "transport_reference": value.transport_reference,
+                "arrived_at": _database_datetime(value.arrived_at),
+                "custody_handover": value.custody_handover,
+                "accessory_snapshot": _canonical_json(
+                    [item.snapshot_payload() for item in value.accessories]
+                ),
+                "inspection_snapshot": _canonical_json(
+                    [item.snapshot_payload() for item in value.inspections]
+                ),
+                "difference_snapshot": _canonical_json(
+                    [item.snapshot_payload() for item in value.differences]
+                ),
+                "created_by_user_id": value.created_by_user_id,
+                "created_at": _database_datetime(value.created_at),
+                "request_id": str(value.request_id),
+                "trace_id": value.trace_id,
+                "intake_snapshot": _canonical_json(value.snapshot_payload()),
+                "snapshot_hash": value.snapshot_hash,
+            }
+        ).insert()
+
+    @staticmethod
+    def _insert_tooling_intake_evidence(
+        value: ToolingIntakeEvidenceReference,
+    ) -> object:
+        return frappe.get_doc(
+            {
+                "doctype": "NPI Tooling Intake Evidence Reference",
+                "global_id": str(value.global_id),
+                "evidence_key_hash": value.evidence_key_hash,
+                "tenant_id": value.tenant_id,
+                "project_global_id": str(value.project_global_id),
+                "tooling_master_global_id": str(value.tooling_master_global_id),
+                "tooling_set_global_id": str(value.tooling_set_global_id),
+                "tooling_intake": str(value.tooling_intake_global_id),
+                "tooling_intake_global_id": str(value.tooling_intake_global_id),
+                "intake_snapshot_hash": value.intake_snapshot_hash,
+                "evidence_role": value.evidence_role.value,
+                "difference_global_ids": _canonical_json(
+                    [str(item) for item in value.difference_global_ids]
+                ),
+                "file_revision": str(value.file_revision_global_id),
+                "file_revision_global_id": str(value.file_revision_global_id),
+                "file_optimistic_version": value.file_optimistic_version,
+                "frappe_content_hash": value.frappe_content_hash,
+                "file_name": value.file_name,
+                "mime_type": value.mime_type,
+                "size_bytes": value.size_bytes,
+                "sha256": value.sha256,
+                "created_by_user_id": value.created_by_user_id,
+                "created_at": _database_datetime(value.created_at),
+                "request_id": str(value.request_id),
+                "trace_id": value.trace_id,
+                "evidence_snapshot": _canonical_json(value.snapshot_payload()),
+                "snapshot_hash": value.snapshot_hash,
+            }
+        ).insert()
+
     def _append_audit(
         self,
         *,
@@ -1323,6 +1992,143 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             raise RuntimeError("The Tooling Applicability snapshot integrity drifted.")
         return value
 
+    @staticmethod
+    def _tooling_set_value(row: object) -> ToolingSet:
+        value = ToolingSet(
+            global_id=UUID(str(row.global_id)),
+            tenant_id=str(row.tenant_id),
+            project_global_id=UUID(str(row.project_global_id)),
+            tooling_master_global_id=UUID(str(row.tooling_master_global_id)),
+            tooling_requirement_global_id=UUID(
+                str(row.tooling_requirement_global_id)
+            ),
+            requirement_kind=ToolingRequirementKind(str(row.requirement_kind)),
+            physical_serial=str(row.physical_serial),
+            customer_source_system=(
+                str(row.customer_source_system)
+                if row.customer_source_system
+                else None
+            ),
+            customer_source_object_id=(
+                str(row.customer_source_object_id)
+                if row.customer_source_object_id
+                else None
+            ),
+            custody_responsibility=str(row.custody_responsibility),
+            repair_authorization_reference=str(
+                row.repair_authorization_reference
+            ),
+            return_conditions=str(row.return_conditions),
+            created_by_user_id=str(row.created_by_user_id),
+            created_at=_datetime(row.created_at),
+            request_id=UUID(str(row.request_id)),
+            trace_id=str(row.trace_id),
+            snapshot_hash=str(row.snapshot_hash),
+        )
+        if _json_object(row.set_snapshot) != value.snapshot_payload():
+            raise RuntimeError("The Tooling Set snapshot integrity drifted.")
+        return value
+
+    @staticmethod
+    def _intake_value(row: object) -> ToolingIntake:
+        accessories = tuple(
+            ToolingAccessoryLine(
+                global_id=UUID(str(item["globalId"])),
+                description=str(item["description"]),
+                declared_quantity=int(item["declaredQuantity"]),
+                received_quantity=int(item["receivedQuantity"]),
+                unit=str(item["unit"]),
+            )
+            for item in _json_array(row.accessory_snapshot)
+        )
+        inspections = tuple(
+            ToolingInspectionObservation(
+                global_id=UUID(str(item["globalId"])),
+                category=ToolingInspectionCategory(str(item["category"])),
+                observation=str(item["observation"]),
+                difference_observed=item["differenceObserved"],
+            )
+            for item in _json_array(row.inspection_snapshot)
+        )
+        differences = tuple(
+            ToolingIntakeDifference(
+                global_id=UUID(str(item["globalId"])),
+                source_kind=ToolingDifferenceSourceKind(str(item["sourceKind"])),
+                source_global_id=UUID(str(item["sourceGlobalId"])),
+                description=str(item["description"]),
+                customer_confirmation_required=item[
+                    "customerConfirmationRequired"
+                ],
+            )
+            for item in _json_array(row.difference_snapshot)
+        )
+        value = ToolingIntake(
+            global_id=UUID(str(row.global_id)),
+            tenant_id=str(row.tenant_id),
+            project_global_id=UUID(str(row.project_global_id)),
+            tooling_master_global_id=UUID(str(row.tooling_master_global_id)),
+            tooling_set_global_id=UUID(str(row.tooling_set_global_id)),
+            intake_version=int(row.intake_version),
+            predecessor_global_id=(
+                UUID(str(row.predecessor_global_id))
+                if row.predecessor_global_id
+                else None
+            ),
+            predecessor_snapshot_hash=(
+                str(row.predecessor_snapshot_hash)
+                if row.predecessor_snapshot_hash
+                else None
+            ),
+            transport_provider=str(row.transport_provider),
+            transport_reference=str(row.transport_reference),
+            arrived_at=_datetime(row.arrived_at),
+            custody_handover=str(row.custody_handover),
+            accessories=accessories,
+            inspections=inspections,
+            differences=differences,
+            created_by_user_id=str(row.created_by_user_id),
+            created_at=_datetime(row.created_at),
+            request_id=UUID(str(row.request_id)),
+            trace_id=str(row.trace_id),
+            snapshot_hash=str(row.snapshot_hash),
+        )
+        if _json_object(row.intake_snapshot) != value.snapshot_payload():
+            raise RuntimeError("The Tooling Intake snapshot integrity drifted.")
+        return value
+
+    @staticmethod
+    def _evidence_value(row: object) -> ToolingIntakeEvidenceReference:
+        value = ToolingIntakeEvidenceReference(
+            global_id=UUID(str(row.global_id)),
+            tenant_id=str(row.tenant_id),
+            project_global_id=UUID(str(row.project_global_id)),
+            tooling_master_global_id=UUID(str(row.tooling_master_global_id)),
+            tooling_set_global_id=UUID(str(row.tooling_set_global_id)),
+            tooling_intake_global_id=UUID(str(row.tooling_intake_global_id)),
+            intake_snapshot_hash=str(row.intake_snapshot_hash),
+            evidence_role=ToolingIntakeEvidenceRole(str(row.evidence_role)),
+            difference_global_ids=tuple(
+                UUID(str(item))
+                for item in _json_array(row.difference_global_ids)
+            ),
+            file_revision_global_id=UUID(str(row.file_revision_global_id)),
+            file_optimistic_version=int(row.file_optimistic_version),
+            frappe_content_hash=str(row.frappe_content_hash),
+            file_name=str(row.file_name),
+            mime_type=str(row.mime_type),
+            size_bytes=int(row.size_bytes),
+            sha256=str(row.sha256),
+            created_by_user_id=str(row.created_by_user_id),
+            created_at=_datetime(row.created_at),
+            request_id=UUID(str(row.request_id)),
+            trace_id=str(row.trace_id),
+            evidence_key_hash=str(row.evidence_key_hash),
+            snapshot_hash=str(row.snapshot_hash),
+        )
+        if _json_object(row.evidence_snapshot) != value.snapshot_payload():
+            raise RuntimeError("The Tooling Intake evidence integrity drifted.")
+        return value
+
     def _bounded_documents(
         self,
         doctype: str,
@@ -1349,6 +2155,16 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             "createRequirement": create,
             "createMaster": create,
             "createApplicability": create,
+            "transitionLifecycle": False,
+        }
+
+    def _tooling_set_permissions(self) -> dict[str, bool]:
+        create = self._is_internal_system_manager()
+        return {
+            "view": True,
+            "createSet": create,
+            "createIntake": create,
+            "attachEvidence": create,
             "transitionLifecycle": False,
         }
 
@@ -1436,6 +2252,90 @@ class FrappeToolingRepository(FrappeDocumentRepository):
         }
 
     @staticmethod
+    def _tooling_set_response(value: ToolingSet) -> dict[str, object]:
+        return {
+            "globalId": str(value.global_id),
+            "projectGlobalId": str(value.project_global_id),
+            "toolingMasterGlobalId": str(value.tooling_master_global_id),
+            "toolingRequirementGlobalId": str(
+                value.tooling_requirement_global_id
+            ),
+            "requirementKind": value.requirement_kind.value,
+            "physicalSerial": value.physical_serial,
+            "customer": _external_reference(
+                value.customer_source_system,
+                value.customer_source_object_id,
+            ),
+            "custodyResponsibility": value.custody_responsibility,
+            "repairAuthorizationReference": (
+                value.repair_authorization_reference
+            ),
+            "returnConditions": value.return_conditions,
+            "sourceRevision": FrappeToolingRepository._unavailable(
+                "tooling_revision_not_delivered"
+            ),
+            "supplier": FrappeToolingRepository._unavailable(
+                "formal_supplier_unavailable"
+            ),
+            "lifecycle": FrappeToolingRepository._unavailable(
+                "lifecycle_policy_unavailable"
+            ),
+            "erpLocationAndAsset": FrappeToolingRepository._unavailable(
+                "erp_projection_unavailable"
+            ),
+            "snapshotHash": value.snapshot_hash,
+        }
+
+    @staticmethod
+    def _intake_response(value: ToolingIntake) -> dict[str, object]:
+        return {
+            "globalId": str(value.global_id),
+            "toolingSetGlobalId": str(value.tooling_set_global_id),
+            "version": value.intake_version,
+            "predecessorGlobalId": (
+                str(value.predecessor_global_id)
+                if value.predecessor_global_id is not None
+                else None
+            ),
+            "transportProvider": value.transport_provider,
+            "transportReference": value.transport_reference,
+            "arrivedAt": _utc_datetime_text(value.arrived_at),
+            "custodyHandover": value.custody_handover,
+            "accessories": [
+                item.snapshot_payload() for item in value.accessories
+            ],
+            "inspections": [
+                item.snapshot_payload() for item in value.inspections
+            ],
+            "differences": [
+                item.snapshot_payload() for item in value.differences
+            ],
+            "snapshotHash": value.snapshot_hash,
+        }
+
+    @staticmethod
+    def _evidence_response(
+        value: ToolingIntakeEvidenceReference,
+    ) -> dict[str, object]:
+        return {
+            "globalId": str(value.global_id),
+            "toolingIntakeGlobalId": str(value.tooling_intake_global_id),
+            "intakeSnapshotHash": value.intake_snapshot_hash,
+            "evidenceRole": value.evidence_role.value,
+            "differenceGlobalIds": [
+                str(item) for item in value.difference_global_ids
+            ],
+            "fileRevisionGlobalId": str(value.file_revision_global_id),
+            "fileOptimisticVersion": value.file_optimistic_version,
+            "fileContentHash": value.frappe_content_hash,
+            "fileName": value.file_name,
+            "mimeType": value.mime_type,
+            "sizeBytes": value.size_bytes,
+            "sha256": value.sha256,
+            "snapshotHash": value.snapshot_hash,
+        }
+
+    @staticmethod
     def _unavailable(reason_code: str) -> dict[str, str]:
         return {"state": "unavailable", "reasonCode": reason_code}
 
@@ -1480,6 +2380,17 @@ def _json_object(value: object) -> dict[str, Any]:
     return dict(value)
 
 
+def _json_array(value: object) -> list[Any]:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (TypeError, ValueError) as error:
+            raise RuntimeError("Persisted Tooling JSON is invalid.") from error
+    if not isinstance(value, list):
+        raise RuntimeError("Persisted Tooling JSON is not an array.")
+    return list(value)
+
+
 def _value(record: object, fieldname: str) -> object:
     return record.get(fieldname) if isinstance(record, dict) else getattr(record, fieldname, None)
 
@@ -1489,6 +2400,13 @@ def _datetime(value: object) -> datetime:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=UTC)
     return parsed.astimezone(UTC)
+
+
+def _utc_datetime_text(value: datetime) -> str:
+    return _datetime(value).isoformat(timespec="microseconds").replace(
+        "+00:00",
+        "Z",
+    )
 
 
 def _applicability_version_key(

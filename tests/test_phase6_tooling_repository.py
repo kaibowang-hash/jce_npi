@@ -88,6 +88,27 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
                 "response = self._cockpit_for(project)",
                 "self._seal_receipt(",
             ),
+            "create_tooling_set": (
+                "self._insert_receipt(",
+                "self._insert_tooling_set(",
+                "self._append_audit(",
+                "response = self._tooling_set_collection(",
+                "self._seal_receipt(",
+            ),
+            "create_tooling_intake": (
+                "self._insert_receipt(",
+                "self._insert_tooling_intake(",
+                "self._append_audit(",
+                "response = self._tooling_set_detail(",
+                "self._seal_receipt(",
+            ),
+            "create_tooling_intake_evidence_reference": (
+                "self._insert_receipt(",
+                "self._insert_tooling_intake_evidence(",
+                "self._append_audit(",
+                "response = self._tooling_set_detail(",
+                "self._seal_receipt(",
+            ),
         }
         for name, atomic_order in command_shapes.items():
             with self.subTest(name=name):
@@ -116,6 +137,34 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
             "self._applicabilities(project)",
         ):
             self.assertLess(replay, applicability.index(fragment))
+
+        set_create = function("create_tooling_set")
+        replay = set_create.index("self._command_context(")
+        for fragment in (
+            "self._master_for_project(",
+            "self._requirement_for_set(",
+            "self._require_customer_reference(",
+        ):
+            self.assertLess(replay, set_create.index(fragment))
+
+        intake = function("create_tooling_intake")
+        replay = intake.index("self._command_context(")
+        for fragment in (
+            "self._master_for_project(",
+            "self._tooling_set_for_project(",
+            "self._intakes_for_set(",
+        ):
+            self.assertLess(replay, intake.index(fragment))
+
+        evidence = function("create_tooling_intake_evidence_reference")
+        replay = evidence.index("self._command_context(")
+        for fragment in (
+            "self._master_for_project(",
+            "self._tooling_set_for_project(",
+            "self._intake_for_set(",
+            "self._file_revision_for_project(",
+        ):
+            self.assertLess(replay, evidence.index(fragment))
 
     def test_part_successor_uses_exact_version_current_predecessor_and_projection(self) -> None:
         value = function("create_part_revision")
@@ -224,6 +273,64 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         bounded = function("_bounded_documents")
         self.assertIn("limit_page_length=maximum + 1", bounded)
         self.assertIn("if len(names) > maximum", bounded)
+
+    def test_physical_set_scope_intake_successor_and_file_evidence_are_exact(
+        self,
+    ) -> None:
+        tooling_set = function("_tooling_set_for_project")
+        for fragment in (
+            "row.tenant_id",
+            "row.project_global_id",
+            "row.tooling_master_global_id",
+        ):
+            self.assertIn(fragment, tooling_set)
+        customer = function("_require_customer_reference")
+        self.assertIn('str(row.reference_type) == "customer"', customer)
+        self.assertIn("len(matches) != 1", customer)
+
+        intake = function("create_tooling_intake")
+        for fragment in (
+            "expected_version != previous.intake_version",
+            "previous.intake_version + 1",
+            "validate_intake_successor(previous, intake)",
+            "ToolingIntakeVersionConflict",
+        ):
+            self.assertIn(fragment, intake)
+        intake_collection = function("_intakes_for_set")
+        self.assertIn("maximum=_MAX_INTAKES", intake_collection)
+        self.assertIn("validate_intake_successor", intake_collection)
+
+        file_revision = function("_file_revision_for_project")
+        for fragment in (
+            "row.tenant_id",
+            "row.project_global_id",
+            'str(row.scan_state) != "clean"',
+            "has_live_private_file_identity(row)",
+        ):
+            self.assertIn(fragment, file_revision)
+        evidence = function("create_tooling_intake_evidence_reference")
+        self.assertIn("available_difference_ids", evidence)
+        self.assertIn("ToolingEvidenceConflict", evidence)
+
+    def test_set_queries_are_bounded_and_never_project_private_urls(self) -> None:
+        for name, maximum in (
+            ("_tooling_sets_for_master", "_MAX_SETS"),
+            ("_intakes_for_set", "_MAX_INTAKES"),
+            ("_evidence_for_set", "_MAX_EVIDENCE"),
+        ):
+            with self.subTest(name=name):
+                self.assertIn(f"maximum={maximum}", function(name))
+        response = function("_evidence_response")
+        self.assertNotIn("fileUrl", response)
+        self.assertNotIn("frappe_file_id", response)
+        set_response = function("_tooling_set_response")
+        for reason in (
+            "tooling_revision_not_delivered",
+            "formal_supplier_unavailable",
+            "lifecycle_policy_unavailable",
+            "erp_projection_unavailable",
+        ):
+            self.assertIn(reason, set_response)
 
 
 if __name__ == "__main__":

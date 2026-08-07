@@ -18,6 +18,7 @@ from .foundation.errors import (
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     ToolingRoutesDisabled,
+    ToolingSetRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
 from .request_security import (
@@ -29,6 +30,7 @@ from .request_security import (
     publish_request_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
+    tooling_set_routes_are_disabled,
     tooling_routes_are_disabled,
 )
 
@@ -70,6 +72,23 @@ _PROJECT_TOOLING_ROUTE = re.compile(
 _PROJECT_TOOLING_MASTER_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
     r"(?P<tooling_master_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_SETS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets$"
+)
+_PROJECT_TOOLING_SET_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_SET_INTAKES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/intakes$"
+)
+_PROJECT_TOOLING_INTAKE_EVIDENCE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/intakes/"
+    r"(?P<intake_id>[^/:]+)/evidence$"
 )
 _PROJECT_PARTS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts$"
@@ -377,10 +396,38 @@ def route_request() -> None:
             command = "npi_core.tooling_api.get_tooling_cockpit"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
+        for route, candidate in (
+            (_PROJECT_TOOLING_SETS_ROUTE, "npi_core.tooling_api.get_tooling_sets"),
+            (_PROJECT_TOOLING_SET_ROUTE, "npi_core.tooling_api.get_tooling_set"),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
         match = _PROJECT_TOOLING_MASTER_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        tooling_set_commands = (
+            (_PROJECT_TOOLING_SETS_ROUTE, "npi_core.tooling_api.create_tooling_set"),
+            (
+                _PROJECT_TOOLING_SET_INTAKES_ROUTE,
+                "npi_core.tooling_api.create_tooling_intake",
+            ),
+            (
+                _PROJECT_TOOLING_INTAKE_EVIDENCE_ROUTE,
+                "npi_core.tooling_api.create_tooling_intake_evidence_reference",
+            ),
+        )
+        for route, candidate in tooling_set_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         tooling_commands = (
             (_PROJECT_PARTS_ROUTE, "npi_core.tooling_api.create_engineering_part"),
@@ -640,6 +687,9 @@ def route_request() -> None:
     if _p6_01_routes_disabled(command):
         command = "npi_core.bff.tooling_routes_disabled"
         route_params = {}
+    if _p6_02_routes_disabled(command):
+        command = "npi_core.bff.tooling_set_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -794,6 +844,23 @@ def tooling_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_set_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-02 while retaining P6-01 Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingSetRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -843,9 +910,25 @@ def _p5_06_routes_disabled(command: str | None) -> bool:
 
 
 def _p6_01_routes_disabled(command: str | None) -> bool:
-    return tooling_routes_are_disabled() and (
-        isinstance(command, str) and command.startswith("npi_core.tooling_api.")
-    )
+    return tooling_routes_are_disabled() and command in {
+        "npi_core.tooling_api.get_tooling_cockpit",
+        "npi_core.tooling_api.get_tooling_master",
+        "npi_core.tooling_api.create_engineering_part",
+        "npi_core.tooling_api.create_engineering_part_revision",
+        "npi_core.tooling_api.create_tooling_requirement",
+        "npi_core.tooling_api.create_tooling_master",
+        "npi_core.tooling_api.create_tooling_applicability",
+    }
+
+
+def _p6_02_routes_disabled(command: str | None) -> bool:
+    return tooling_set_routes_are_disabled() and command in {
+        "npi_core.tooling_api.get_tooling_sets",
+        "npi_core.tooling_api.get_tooling_set",
+        "npi_core.tooling_api.create_tooling_set",
+        "npi_core.tooling_api.create_tooling_intake",
+        "npi_core.tooling_api.create_tooling_intake_evidence_reference",
+    }
 
 
 def _p5_01_routes_disabled(command: str | None) -> bool:
@@ -930,6 +1013,13 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_TOOLING_SETS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_SET_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_SET_INTAKES_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_INTAKE_EVIDENCE_ROUTE.fullmatch(path) is not None
     ):
         return True
     if (

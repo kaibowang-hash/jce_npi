@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from datetime import date
+from collections.abc import Mapping, Sequence
+from datetime import UTC, date, datetime
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -19,10 +19,20 @@ from npi_core.request_security import (
     reject_unexpected_request_fields,
     require_csrf_token,
     require_request_fields,
+    require_tooling_set_routes_enabled,
     require_tooling_routes_enabled,
     response_request_id,
 )
-from npi_core.tooling.domain import ToolingRequirementKind, ToolingUnavailable
+from npi_core.tooling.domain import (
+    ToolingAccessoryLine,
+    ToolingDifferenceSourceKind,
+    ToolingInspectionCategory,
+    ToolingInspectionObservation,
+    ToolingIntakeDifference,
+    ToolingIntakeEvidenceRole,
+    ToolingRequirementKind,
+    ToolingUnavailable,
+)
 from npi_core.tooling.diagnostics import (
     applicability_create_server_diagnostics,
     applicability_create_server_step,
@@ -58,6 +68,33 @@ _APPLICABILITY_REQUIRED = frozenset(
 )
 _REFERENCE_FIELDS = frozenset({"sourceSystem", "sourceObjectId"})
 _REFERENCE_SYSTEMS = frozenset({"NPI_ONE", "ERPNEXT"})
+_SET_FIELDS = frozenset(
+    {
+        "toolingRequirementGlobalId",
+        "physicalSerial",
+        "customer",
+        "custodyResponsibility",
+        "repairAuthorizationReference",
+        "returnConditions",
+    }
+)
+_SET_REQUIRED = _SET_FIELDS - {"customer"}
+_INTAKE_FIELDS = frozenset(
+    {
+        "expectedVersion",
+        "transportProvider",
+        "transportReference",
+        "arrivedAt",
+        "custodyHandover",
+        "accessories",
+        "inspections",
+        "differences",
+    }
+)
+_INTAKE_REQUIRED = _INTAKE_FIELDS - {"expectedVersion"}
+_EVIDENCE_FIELDS = frozenset(
+    {"evidenceRole", "differenceGlobalIds", "fileRevisionGlobalId"}
+)
 
 
 class _Outcome(Protocol):
@@ -96,6 +133,38 @@ class _Repository(Protocol):
     def create_applicability(
         self,
         project_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def tooling_sets(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def tooling_set_detail(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def create_tooling_set(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def create_tooling_intake(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def create_tooling_intake_evidence_reference(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        tooling_set_id: UUID,
+        intake_id: UUID,
         **values: Any,
     ) -> _Outcome | None: ...
 
@@ -316,6 +385,188 @@ def create_tooling_applicability(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_sets(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = _tooling_set_query_context(
+            request_fields
+        )
+        master_id = _opaque_route_uuid("tooling_master_id")
+        if not repository.authorize_scope(project_id, master_id):
+            raise ToolingUnavailable()
+        response = repository.tooling_sets(project_id, master_id)
+        if response is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_set(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = _tooling_set_query_context(
+            request_fields
+        )
+        master_id = _opaque_route_uuid("tooling_master_id")
+        if not repository.authorize_scope(project_id, master_id):
+            raise ToolingUnavailable()
+        response = repository.tooling_set_detail(
+            project_id,
+            master_id,
+            _opaque_route_uuid("tooling_set_id"),
+        )
+        if response is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_set(
+    toolingRequirementGlobalId: Any = None,
+    physicalSerial: Any = None,
+    customer: Any = None,
+    custodyResponsibility: Any = None,
+    repairAuthorizationReference: Any = None,
+    returnConditions: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_set_command(
+        _SET_FIELDS,
+        _SET_REQUIRED,
+        request_fields,
+        lambda: {
+            "tooling_requirement_id": _uuid(
+                toolingRequirementGlobalId,
+                "toolingRequirementGlobalId",
+            ),
+            "physical_serial": _text(physicalSerial, "physicalSerial", 80),
+            "customer": _reference(customer, "customer"),
+            "custody_responsibility": _text(
+                custodyResponsibility,
+                "custodyResponsibility",
+                500,
+            ),
+            "repair_authorization_reference": _text(
+                repairAuthorizationReference,
+                "repairAuthorizationReference",
+                500,
+            ),
+            "return_conditions": _text(
+                returnConditions,
+                "returnConditions",
+                500,
+            ),
+        },
+        lambda repository, project_id, parsed: repository.create_tooling_set(
+            project_id,
+            _opaque_route_uuid("tooling_master_id"),
+            **parsed,
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_intake(
+    expectedVersion: Any = None,
+    transportProvider: Any = None,
+    transportReference: Any = None,
+    arrivedAt: Any = None,
+    custodyHandover: Any = None,
+    accessories: Any = None,
+    inspections: Any = None,
+    differences: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_set_command(
+        _INTAKE_FIELDS,
+        _INTAKE_REQUIRED,
+        request_fields,
+        lambda: {
+            "expected_version": _optional_positive(
+                expectedVersion,
+                "expectedVersion",
+            ),
+            "transport_provider": _text(
+                transportProvider,
+                "transportProvider",
+                140,
+            ),
+            "transport_reference": _text(
+                transportReference,
+                "transportReference",
+                140,
+            ),
+            "arrived_at": _utc_timestamp(arrivedAt, "arrivedAt"),
+            "custody_handover": _text(
+                custodyHandover,
+                "custodyHandover",
+                500,
+            ),
+            "accessories": _accessories(accessories),
+            "inspections": _inspections(inspections),
+            "differences": _differences(differences),
+        },
+        lambda repository, project_id, parsed: repository.create_tooling_intake(
+            project_id,
+            _opaque_route_uuid("tooling_master_id"),
+            _opaque_route_uuid("tooling_set_id"),
+            **parsed,
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_intake_evidence_reference(
+    evidenceRole: Any = None,
+    differenceGlobalIds: Any = None,
+    fileRevisionGlobalId: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_set_command(
+        _EVIDENCE_FIELDS,
+        _EVIDENCE_FIELDS,
+        request_fields,
+        lambda: {
+            "evidence_role": _evidence_role(evidenceRole),
+            "difference_ids": _uuid_list(
+                differenceGlobalIds,
+                "differenceGlobalIds",
+                maximum=100,
+            ),
+            "file_revision_id": _uuid(
+                fileRevisionGlobalId,
+                "fileRevisionGlobalId",
+            ),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_intake_evidence_reference(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                _opaque_route_uuid("tooling_set_id"),
+                _opaque_route_uuid("intake_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
 def _query_context(
     allowed: frozenset[str],
     request_fields: dict[str, Any],
@@ -332,12 +583,56 @@ def _query_context(
     return request_id, repository, project_id
 
 
+def _tooling_set_query_context(
+    request_fields: dict[str, Any],
+) -> tuple[str, _Repository, UUID]:
+    require_tooling_set_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    if not repository.authorize_scope(project_id):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return request_id, repository, project_id
+
+
 def _command_context(
     allowed: frozenset[str],
     required: frozenset[str],
     request_fields: dict[str, Any],
 ) -> tuple[str, str, _Repository, UUID]:
     require_tooling_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "System Manager" not in principal.roles:
+        raise PermissionDenied()
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    if not repository.authorize_scope(project_id, administer=True):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(allowed, request_fields)
+    require_request_fields(required, request_fields)
+    return (
+        request_id,
+        actor_idempotency_key_hash(
+            actor,
+            frappe.get_request_header("Idempotency-Key"),
+        ),
+        repository,
+        project_id,
+    )
+
+
+def _tooling_set_command_context(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _Repository, UUID]:
+    require_tooling_set_routes_enabled()
     actor = authenticated_user()
     require_csrf_token()
     principal = authenticated_principal(actor)
@@ -412,6 +707,45 @@ def _command(
                 headers["X-Request-ID"] = request_id
                 headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
                 return _response(outcome.response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
+def _tooling_set_command(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+    values,
+    operation,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        request_id, key_hash, repository, project_id = (
+            _tooling_set_command_context(
+                allowed,
+                required,
+                request_fields,
+            )
+        )
+        parsed = values()
+        parsed["idempotency_key_hash"] = key_hash
+        outcome = operation(repository, project_id, parsed)
+        if outcome is None:
+            raise ToolingUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Tooling command replay result is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return _response(outcome.response)
 
     return frappe_domain_call(
         handle,
@@ -528,6 +862,180 @@ def _reference(value: object, path: str) -> dict[str, str] | None:
             128,
         ),
     }
+
+
+def _accessories(value: object) -> tuple[ToolingAccessoryLine, ...]:
+    items = _objects(value, "accessories", maximum=100)
+    expected = {
+        "globalId",
+        "description",
+        "declaredQuantity",
+        "receivedQuantity",
+        "unit",
+    }
+    result = []
+    for index, item in enumerate(items):
+        path = f"accessories[{index}]"
+        _exact_fields(item, expected, path)
+        result.append(
+            ToolingAccessoryLine(
+                global_id=_uuid(item.get("globalId"), f"{path}.globalId"),
+                description=_text(
+                    item.get("description"),
+                    f"{path}.description",
+                    200,
+                ),
+                declared_quantity=_non_negative(
+                    item.get("declaredQuantity"),
+                    f"{path}.declaredQuantity",
+                ),
+                received_quantity=_non_negative(
+                    item.get("receivedQuantity"),
+                    f"{path}.receivedQuantity",
+                ),
+                unit=_text(item.get("unit"), f"{path}.unit", 24),
+            )
+        )
+    return tuple(result)
+
+
+def _inspections(value: object) -> tuple[ToolingInspectionObservation, ...]:
+    items = _objects(value, "inspections", maximum=5, minimum=5)
+    expected = {"globalId", "category", "observation", "differenceObserved"}
+    result = []
+    for index, item in enumerate(items):
+        path = f"inspections[{index}]"
+        _exact_fields(item, expected, path)
+        try:
+            category = ToolingInspectionCategory(str(item.get("category")))
+        except ValueError as error:
+            raise _field(f"{path}.category", _("Select a supported value.")) from error
+        result.append(
+            ToolingInspectionObservation(
+                global_id=_uuid(item.get("globalId"), f"{path}.globalId"),
+                category=category,
+                observation=_text(
+                    item.get("observation"),
+                    f"{path}.observation",
+                    500,
+                ),
+                difference_observed=_boolean(
+                    item.get("differenceObserved"),
+                    f"{path}.differenceObserved",
+                ),
+            )
+        )
+    return tuple(result)
+
+
+def _differences(value: object) -> tuple[ToolingIntakeDifference, ...]:
+    items = _objects(value, "differences", maximum=100)
+    expected = {
+        "globalId",
+        "sourceKind",
+        "sourceGlobalId",
+        "description",
+        "customerConfirmationRequired",
+    }
+    result = []
+    for index, item in enumerate(items):
+        path = f"differences[{index}]"
+        _exact_fields(item, expected, path)
+        try:
+            source_kind = ToolingDifferenceSourceKind(str(item.get("sourceKind")))
+        except ValueError as error:
+            raise _field(f"{path}.sourceKind", _("Select a supported value.")) from error
+        result.append(
+            ToolingIntakeDifference(
+                global_id=_uuid(item.get("globalId"), f"{path}.globalId"),
+                source_kind=source_kind,
+                source_global_id=_uuid(
+                    item.get("sourceGlobalId"),
+                    f"{path}.sourceGlobalId",
+                ),
+                description=_text(
+                    item.get("description"),
+                    f"{path}.description",
+                    500,
+                ),
+                customer_confirmation_required=_boolean(
+                    item.get("customerConfirmationRequired"),
+                    f"{path}.customerConfirmationRequired",
+                ),
+            )
+        )
+    return tuple(result)
+
+
+def _objects(
+    value: object,
+    path: str,
+    *,
+    maximum: int,
+    minimum: int = 0,
+) -> tuple[Mapping[str, object], ...]:
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or len(value) < minimum
+        or len(value) > maximum
+        or any(not isinstance(item, Mapping) for item in value)
+    ):
+        raise _field(path, _("Enter a valid bounded list."))
+    return tuple(value)
+
+
+def _exact_fields(
+    value: Mapping[str, object],
+    expected: set[str],
+    path: str,
+) -> None:
+    if set(value) != expected:
+        raise _field(path, _("Select a supported value."))
+
+
+def _uuid_list(value: object, path: str, *, maximum: int) -> tuple[UUID, ...]:
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or len(value) > maximum
+    ):
+        raise _field(path, _("Enter a valid bounded list."))
+    result = tuple(_uuid(item, path) for item in value)
+    if len(set(result)) != len(result):
+        raise _field(path, _("Enter a valid bounded list."))
+    return tuple(sorted(result, key=str))
+
+
+def _evidence_role(value: object) -> ToolingIntakeEvidenceRole:
+    try:
+        return ToolingIntakeEvidenceRole(str(value))
+    except ValueError as error:
+        raise _field("evidenceRole", _("Select a supported value.")) from error
+
+
+def _utc_timestamp(value: object, path: str) -> datetime:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        raise _field(path, _("Enter a valid date and time."))
+    try:
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError as error:
+        raise _field(path, _("Enter a valid date and time.")) from error
+    if parsed.tzinfo is None or parsed.utcoffset() != UTC.utcoffset(parsed):
+        raise _field(path, _("Enter a valid date and time."))
+    return parsed.astimezone(UTC)
+
+
+def _non_negative(value: object, path: str) -> int:
+    if type(value) is not int or value < 0 or value > 2_147_483_647:
+        raise _field(path, _("Enter a non-negative whole number."))
+    return value
+
+
+def _boolean(value: object, path: str) -> bool:
+    if type(value) is not bool:
+        raise _field(path, _("Select a supported value."))
+    return value
 
 
 def _field(path: str, message: str) -> RequestValidationFailed:

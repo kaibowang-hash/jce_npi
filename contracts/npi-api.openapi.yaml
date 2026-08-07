@@ -3348,6 +3348,179 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling/{toolingMasterId}/sets:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingSets
+      description: >
+        Returns the bounded physical Set collection only after Project-first
+        authorization and exact same-tenant Master containment.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingSetCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createToolingSet
+      description: >
+        Creates exactly one independently identified physical Set from one
+        exact eligible Requirement and authorized Project customer reference.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_set.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingSet" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingSetCollectionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingSet
+      description: >
+        Returns one exact Set with its immutable intake versions and URL-free
+        evidence metadata after Project, Master and Set containment checks.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingSetDetailResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes:
+    post:
+      tags: [Tooling]
+      operationId: createToolingIntake
+      description: >
+        Appends an immutable initial or exact successor intake version without
+        overwriting an earlier arrival, inspection or difference snapshot.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_intake.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingIntake" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingSetDetailCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes/{intakeId}/evidence:
+    post:
+      tags: [Tooling]
+      operationId: createToolingIntakeEvidenceReference
+      description: >
+        Appends a URL-free reference to one exact live clean private File
+        Revision and, for customer confirmation, exact intake differences.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_intake_evidence.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: intakeId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateToolingIntakeEvidenceReference"
+      responses:
+        "201": { $ref: "#/components/responses/ToolingSetDetailCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -4206,6 +4379,72 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolingProjectCockpit" }
+    ToolingSetCollectionResult:
+      description: Authorized bounded physical Tooling Set collection
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingSetCollection" }
+    ToolingSetDetailResult:
+      description: Authorized exact physical Tooling Set intake and evidence truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingSetDetail" }
+    ToolingSetCollectionCommandResult:
+      description: Physical Tooling Set collection after one atomic create or safe replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingSetCollection" }
+    ToolingSetDetailCommandResult:
+      description: Exact physical Tooling Set detail after one atomic command or safe replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingSetDetail" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
