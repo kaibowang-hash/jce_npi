@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T17:09:06Z'
+updated_at: '2026-08-07T18:07:22Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-02
-current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
-current_task_completed_stage: P6_02_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-current_task_next_stage: P6_02_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+current_task_status: IN_PROGRESS_REPOSITORY_BFF
+current_task_completed_stage: P6_02_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
+current_task_next_stage: P6_02_REPOSITORY_BFF_CHECKPOINT
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-02
-resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+resumed_product_task_status: IN_PROGRESS_REPOSITORY_BFF
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -803,7 +803,7 @@ p6_01:
     - implementation/evidence/phase-6/p6-01-applicability-create-diagnostic.md
     - implementation/evidence/phase-6/p6-01-validation.md
 p6_02:
-  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+  status: IN_PROGRESS_REPOSITORY_BFF
   backlog_task: M5-02
   requirements: [FR-TX-003, FR-TL-004]
   delivery_boundary: CUSTOMER_OWNED_INTAKE_AND_DISTINCT_PHYSICAL_TOOLING_SETS
@@ -815,7 +815,7 @@ p6_02:
   entry_repository_job: 92938356572
   entry_visual_job: 92938356975
   entry_controlled_job: 92938357521
-  product_code_changed: false
+  product_code_changed: true
   source_revision_active: false
   formal_supplier_projection_active: false
   erp_asset_location_projection_active: false
@@ -824,12 +824,28 @@ p6_02:
     - NPI Tooling Set
     - NPI Tooling Intake
     - NPI Tooling Intake Evidence Reference
-  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-  next_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  product_checkpoint: e659d46361d32650863bedac3567008580ce4289
+  visual_baseline_checkpoint: 7b5dda19b2fc080a7dc562abf3f68a0d7a7bddff
+  initial_normal_ci: 31203653903
+  initial_repository_job: 92949376253
+  initial_visual_job: 92949376152
+  initial_visual_evidence_artifact: 9003910006
+  initial_visual_evidence_digest: sha256:4c31b017275e9a2ad24285671a39b05ba5961a7ae8de8c8b28c6649e26da3ea5
+  final_normal_ci: 31204720858
+  final_repository_job: 92952842864
+  final_visual_job: 92952842802
+  final_controlled_job: 92952843426
+  final_visual_artifact: 9004313318
+  final_visual_digest: sha256:1cd53e5d0733ac13058d381c7afdaf0fe50d18133100cfd16ab8ae910d1dba6e
+  final_gitleaks_artifact: 9004474210
+  final_gitleaks_digest: sha256:e5266c4199df7bd7afaf6bc694400fca26c457e0d0ce3e19ed2da9b6f6d28f16
+  completed_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
+  next_stage: REPOSITORY_BFF_CHECKPOINT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-01-validation.md
     - implementation/evidence/phase-6/p6-02-plan.md
+    - implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-07T17:09:06Z`
+Updated: `2026-08-07T18:07:22Z`
 
 ## Active hard blockers
 
-None. Corrective checkpoint `d0a9258` passed complete ordinary CI
-`31197968661` and diagnostics-closed controlled Gate `31198574475`. P6-01 is
-Level 2 PASS. Evidence checkpoint `49a8931` passed complete ordinary CI
-`31200277175`; the P6-02 bounded audit also passes with no user action required.
+None. P6-02 checkpoint 1 stable checkpoint `7b5dda1` passed complete ordinary
+CI `31204720858`: repository `92952842864`, visual `92952842802` at `73/73`
+and controlled runtime `92952843426` correctly skipped. No user action is
+required.
 
 ## Active recovery
 
-None. The P6-01 version-key recovery is closed `PASS`. P6-02 is
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA`, not blocked. `DR-REC-010` remains a
-scoped hold on exact lifecycle states/transitions/authorities only. P6-02 keeps
-source Revision, formal Supplier/location/Asset and external signature truth
-explicitly unavailable while implementing Set identity and intake evidence.
+None. P6-02 is `IN_PROGRESS_REPOSITORY_BFF`, not blocked. `DR-REC-010` remains
+a scoped hold on exact lifecycle states/transitions/authorities only. P6-02
+keeps source Revision, formal Supplier/location/Asset and external signature
+truth explicitly unavailable while implementing Project-first Set/intake
+repository and BFF behavior.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
@@ -943,3 +943,17 @@ must preserve that boundary.
 - Checkpoint 1 is PASS. The repository/BFF checkpoint is active. Exact
   lifecycle and all later physical/import/integration behavior remain scoped
   holds rather than global blockers.
+
+## Current authoritative blocker state — 2026-08-07T18:07:22Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P6-02 product checkpoint `e659d46` passed the complete repository lane; its
+  only initial failure was eighteen fixed P0 footer catalog fingerprints,
+  proved by artifact `9003910006` and synchronized without changing a
+  component, assertion, threshold, matrix or PASS rule.
+- Stable checkpoint `7b5dda1` passed complete ordinary CI `31204720858` with
+  repository `92952842864` and fixed-Linux visual `92952842802` at `73/73`;
+  controlled runtime `92952843426` correctly skipped.
+- P6-02 checkpoint 1 is PASS. Only the repository/BFF checkpoint is active.
+  Lifecycle, source Revision, formal Supplier, ERP location/Asset, customer
+  signature and file mutation remain scoped holds rather than global blockers.

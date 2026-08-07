@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T10:55:32Z`
+Updated: `2026-08-07T18:07:22Z`
 
 ## Authority and operating mode
 
@@ -1033,3 +1033,38 @@ repeat or rewrite it merely to restore context. See
   contract, exact ownership rows, three guarded additive DocTypes and direct
   tests/i18n coverage. No repository route, live SPA behavior, business row,
   policy, adapter, endpoint, credential or external mutation may be activated.
+
+## 2026-08-07 P6-02 domain, contract and metadata checkpoint
+
+- Product checkpoint `e659d46` adds one immutable UUID per physical Set,
+  customer ownership/custody provenance, immutable versioned intake/accessory/
+  five-category inspection/difference truth, append-only URL-free exact clean
+  private File Revision evidence, three guarded additive DocTypes, closed
+  schemas, exact ownership rows and direct English/`zh`/`zh-TW` coverage. It
+  activates no route, live UI, business fixture, lifecycle, policy, adapter,
+  ERPNext endpoint, credential or external mutation.
+- Local affected tests pass `30/30`; complete tracked Python passes
+  `1,138/1,138`; frontend generation/type/lint/coverage/build passes; i18n
+  passes at `4,127` sources with direct `100%` `zh` and `100%` `zh-TW`.
+- Initial ordinary CI `31203653903` passed repository `92949376253` and all 55
+  non-P0 visual cases. Its only failure was the exact eighteen P0 bottom-footer
+  catalog fingerprints changing from `8d880a485a7ba1af` to
+  `220fdc2cf42779bb`. Artifact `9003910006`, digest
+  `sha256:4c31b017275e9a2ad24285671a39b05ba5961a7ae8de8c8b28c6649e26da3ea5`,
+  proves no workspace component, layout or state change.
+- Baseline-only commit `7b5dda1` synchronizes those eighteen exact fixed-Linux
+  actuals byte-for-byte. It changes no assertion, matrix, threshold or PASS
+  rule and leaves every user Darwin image and unrelated dirty file untouched.
+- Final exact-SHA ordinary CI `31204720858` passes repository `92952842864`,
+  complete E2E and both secret lanes, plus fixed-Linux visual `92952842802` at
+  `73/73`; controlled runtime `92952843426` correctly skips. Visual artifact
+  `9004313318` has digest
+  `sha256:1cd53e5d0733ac13058d381c7afdaf0fe50d18133100cfd16ab8ae910d1dba6e`.
+- Checkpoint 1 is PASS, not P6-02 Level 2. Automatic transition activates only
+  checkpoint 2: Project-first bounded Set collection/detail queries and three
+  narrow commands, exact Requirement/customer/File Revision containment,
+  System Manager-only mutation, actor-bound idempotency, exact conflicts, one
+  transaction, append-only audit, an independent fail-closed route switch and
+  exact API/IDOR/rollback tests. The live SPA and controlled Site remain
+  inactive until this checkpoint passes affected checks and complete ordinary
+  CI. All scoped lifecycle/Revision/Supplier/ERP/customer/file holds remain.

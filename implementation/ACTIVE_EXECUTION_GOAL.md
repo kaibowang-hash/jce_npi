@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T17:09:06Z`
+Updated: `2026-08-07T18:07:22Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `P6-02 DOMAIN/CONTRACT/ADDITIVE METADATA FOUNDATION`
+- Mode: `P6-02 REPOSITORY/BFF CHECKPOINT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `d0a9258c03d687b24e62ed3b80c4d60c4fe2cdac` (pushed; final P6-01
-  tenant-namespaced Applicability version-key correction)
+  `7b5dda19b2fc080a7dc562abf3f68a0d7a7bddff` (pushed; P6-02 domain,
+  contract, guarded metadata and exact catalog-fingerprint baseline checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
   `49a8931d0e9ab66ea132f232f4eb144879fd4ae0` (P6-01 Level 2 evidence and
   P6-02 transition; pushed)
 - Latest complete normal CI:
-  `31200277175` (`PASS`, exact SHA `49a8931`; repository `92938356572`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92938356975`
-  passed; controlled runtime `92938357521` correctly skipped)
+  `31204720858` (`PASS`, exact SHA `7b5dda1`; repository `92952842864`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92952842802`
+  passed `73/73`; controlled runtime `92952843426` correctly skipped)
 - Latest controlled-Site run:
   `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
   `92932746371`, visual `92932746394` and controlled `92932746437` passed)
@@ -26,13 +26,13 @@ Updated: `2026-08-07T17:09:06Z`
   `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
 - Current controller task:
   `P6-02 — Customer-owned intake and physical Tooling Sets`
-  (`IN_PROGRESS — DOMAIN/CONTRACT/ADDITIVE METADATA`)
+  (`IN_PROGRESS — REPOSITORY/BFF CHECKPOINT`)
 - Current Requirement IDs:
   `FR-TX-003`, `FR-TL-004`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 1`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 2`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -169,6 +169,27 @@ formal Supplier/location/Asset and external customer authority unavailable.
 Standing authority activates only the pure domain, closed contract and three-
 DocType additive metadata foundation; no route or live product behavior is
 active yet.
+
+P6-02 checkpoint 1 passed at stable checkpoint `7b5dda1`. It provides one
+immutable UUID per physical Set, customer ownership/custody provenance,
+versioned intake/accessory/inspection/difference snapshots, URL-free exact
+clean private File Revision evidence, three guarded additive DocTypes, closed
+schemas and exact ownership truth. Complete Python regression passed
+`1,138/1,138`; final ordinary CI `31204720858` passed repository, complete E2E,
+both secret lanes and fixed-Linux visual `73/73`, while controlled runtime
+correctly stayed closed. Initial CI `31203653903` isolated only eighteen footer
+catalog fingerprints; artifact `9003910006` proved no component or layout
+change before the byte-exact Linux baseline sync.
+
+Standing automatic-transition authority now activates only P6-02 checkpoint
+2: Project-first bounded Set collection/detail queries and three narrow
+commands, exact Requirement/customer/File Revision containment, System
+Manager-only mutation, actor-bound idempotency, exact conflicts, one
+transaction, append-only audit, an independent fail-closed route switch and
+exact API/IDOR/rollback tests. The live SPA and controlled Site remain inactive
+until checkpoint 2 passes affected checks and complete ordinary CI. No held
+lifecycle, Revision, Supplier, ERP Asset/location or external-customer/file
+behavior may be added.
 
 ## Retained P5-04 recovery history
 

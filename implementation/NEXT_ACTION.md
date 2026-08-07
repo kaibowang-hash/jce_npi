@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P6-02 DOMAIN/CONTRACT/ADDITIVE METADATA`
+`IN_PROGRESS — P6-02 REPOSITORY/BFF CHECKPOINT`
 
-Recovery time: `2026-08-07T17:09:06Z`
+Recovery time: `2026-08-07T18:07:22Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`49a8931d0e9ab66ea132f232f4eb144879fd4ae0`
+`7b5dda19b2fc080a7dc562abf3f68a0d7a7bddff`
 
 ## Current authoritative action
 
@@ -19,14 +19,27 @@ controlled runtime `92938357521` correctly skipped. The P6-02 Requirement/
 domain/existing-capability audit passes in
 `implementation/evidence/phase-6/p6-02-plan.md`.
 
-The first unfinished checkpoint is P6-02 checkpoint 1 only. Implement pure
-domain invariants, closed OpenAPI schemas, exact ownership rows and three
-guarded additive DocTypes for one independently identified physical Set,
-immutable versioned customer-owned intake, and append-only exact File Revision
-evidence. Add domain/metadata/contract/security tests and direct trilingual
-coverage, but activate no repository route or live SPA behavior.
+P6-02 checkpoint 1 is PASS. Product commit `e659d46` added independent physical
+Set identity, immutable versioned intake/difference truth, append-only exact
+clean private File Revision evidence, three guarded DocTypes, closed schemas,
+ownership rows and direct trilingual coverage without activating a route. Its
+initial ordinary CI `31203653903` passed repository and 55 non-P0 visuals,
+then isolated only eighteen bottom-footer catalog fingerprints. Artifact
+`9003910006` proved no component or layout change. Baseline-only repair
+`7b5dda1` passed complete ordinary CI `31204720858`: repository
+`92952842864`, visual `92952842802` (`73/73`) and controlled runtime
+`92952843426` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md`.
 
-Keep Set lifecycle states/transitions/authorities held by `DR-REC-010`. Keep
+The first unfinished checkpoint is P6-02 checkpoint 2 only. Implement
+Project-first authorized bounded Set collection/detail queries and the three
+frozen narrow commands for one Set, one intake version and one exact evidence
+reference. Enforce exact Requirement/customer/File Revision containment,
+System Manager-only mutation, actor-bound idempotency, exact conflicts, one
+transaction, append-only audit and an independent fail-closed route switch;
+add exact API/IDOR/replay/rollback tests.
+
+Do not activate the live SPA or controlled Site yet. Keep lifecycle,
 source Tooling Revision, formal Supplier, ERP location/Asset, customer login/
 signature and all external mutations explicitly unavailable. P6-02 may only
 reference an existing live clean private File Revision; it may not upload,
