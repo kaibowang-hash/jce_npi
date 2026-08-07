@@ -303,6 +303,22 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, persistence)
 
+    def test_set_requirements_bind_the_current_part_revision(self) -> None:
+        fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]
+        set_scope = fresh.split("customer_requirement = command", 1)[1]
+        self.assertIn(
+            'revision_two_id = str(revision_two.get("globalId"))',
+            fresh,
+        )
+        self.assertEqual(
+            set_scope.count('"targetPartRevisionGlobalId": revision_two_id'),
+            2,
+        )
+        self.assertNotIn(
+            '"targetPartRevisionGlobalId": revision_one_id',
+            set_scope,
+        )
+
     def test_schema_fixture_guards_exact_additive_metadata(self) -> None:
         module = self.module
         schema = self.source.split("def verify_tooling_runtime_schema", 1)[1].split(

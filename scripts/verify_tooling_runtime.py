@@ -1273,10 +1273,12 @@ def run_fresh(
     revised_workspace = assert_workspace(revised, first_project_id)
     revised_part = exact_single(revised_workspace["parts"], "revised Part")
     revision_two = revised_part.get("currentRevision", {})
+    revision_two_id = str(revision_two.get("globalId"))
     require(
         revised_part.get("version") == 2
         and revision_two.get("revisionNumber") == 2
-        and revision_two.get("globalId") != revision_one_id,
+        and str(UUID(revision_two_id)) == revision_two_id
+        and revision_two_id != revision_one_id,
         "P6-01 Part successor projection drifted",
     )
     stale = tooling_request(
@@ -1385,7 +1387,7 @@ def run_fresh(
             "kind": "customer_owned_intake",
             "title": "Synthetic customer-owned Tooling intake",
             "reason": "Retain exact ownership and physical Set identity.",
-            "targetPartRevisionGlobalId": revision_one_id,
+            "targetPartRevisionGlobalId": revision_two_id,
             "targetDate": "2027-01-20",
         },
         CUSTOMER_INTAKE_REQUIREMENT_KEY,
@@ -1409,7 +1411,7 @@ def run_fresh(
             "kind": "copy_or_additional_set",
             "title": "Synthetic additional physical Tooling Set",
             "reason": "Prove independent physical identity without quantity collapse.",
-            "targetPartRevisionGlobalId": revision_one_id,
+            "targetPartRevisionGlobalId": revision_two_id,
             "targetDate": "2027-01-21",
         },
         COPY_SET_REQUIREMENT_KEY,
