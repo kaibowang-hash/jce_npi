@@ -911,4 +911,4 @@ def _camel(value: str) -> str:
 
 
 def _field_problem(path: str, message: str) -> RequestValidationFailed:
-    return RequestValidationFailed({path: message})
+    return RequestValidationFailed([{"path": path, "message": message}])

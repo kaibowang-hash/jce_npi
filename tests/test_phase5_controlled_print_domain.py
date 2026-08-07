@@ -262,8 +262,12 @@ class Phase5ControlledPrintDomainTest(unittest.TestCase):
             replace(event, actor_user_id="invalid user", event_hash="")
 
     def test_context_rejects_unknown_language_delivery_and_copy_semantics(self) -> None:
-        with self.assertRaises(RequestValidationFailed):
+        with self.assertRaises(RequestValidationFailed) as captured:
             self.context(language="fr")
+        self.assertEqual(
+            captured.exception.field_errors,
+            [{"path": "language", "message": "Select a supported language."}],
+        )
         with self.assertRaises(ValueError):
             PrintDeliveryMode("browser_print")
         with self.assertRaises(ValueError):
