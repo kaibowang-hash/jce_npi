@@ -1068,3 +1068,46 @@ repeat or rewrite it merely to restore context. See
   exact API/IDOR/rollback tests. The live SPA and controlled Site remain
   inactive until this checkpoint passes affected checks and complete ordinary
   CI. All scoped lifecycle/Revision/Supplier/ERP/customer/file holds remain.
+
+## 2026-08-07 P6-02 repository and BFF checkpoint
+
+- The preceding checkpoint-1 evidence commit `a78c91d` passed exact-SHA
+  ordinary CI `31205863774`: repository `92956626704`, visual `92956626544`
+  and controlled runtime `92956627373` correctly skipped.
+- Product commit `c8f2ebc` adds Project-first bounded Set collection/detail
+  projections and the three frozen narrow Set/intake/evidence commands. It
+  enforces exact Requirement/customer/clean-private-File-Revision containment,
+  System Manager-only mutation, actor-bound sealed replay, exact conflicts,
+  one transaction, append-only audit and an independent fail-closed route
+  switch. Its superseded run `31207891174` passed visual and repository
+  verification before cancellation during E2E and is not classified PASS.
+- Before any controlled Site, an exact source/metadata cross-check proved the
+  reused command-receipt DocType Select/controller whitelist lacked all three
+  P6-02 operation/target pairs. Correction `d339da5` adds only those exact
+  values, administrator-visible `zh`/`zh-TW` translations and metadata tests;
+  persisted/runtime contract values remain English. No Requirement, API,
+  permission, Schema intent, ownership, transaction, idempotency, audit or
+  PASS rule changed.
+- Corrective ordinary CI `31208510139` passed repository `92965418919`,
+  complete E2E and both secret lanes. Visual `92965418903` failed only the
+  exact eighteen P0 footer fingerprints after catalog version changed from
+  `220fdc2cf42779bb` to `957013df4ef08130`. Artifact `9005792248`, digest
+  `sha256:8f02d8093e2b2306bf8d79890a21558515c5711fa197cc00e0d74f799c1bd5d6`,
+  proves only `300/306` pixels per image and all significant deltas at
+  `y=882..891`.
+- Baseline-only checkpoint `39fe0e8` synchronizes the eighteen exact Linux
+  actuals byte-for-byte and changes no component, state, assertion, matrix,
+  threshold or PASS rule. Final ordinary CI `31209234574` passes repository
+  `92967755668`, complete E2E, both secret lanes and visual `92967755547` at
+  `73/73`; controlled runtime `92967756711` correctly skips. Visual artifact
+  `9006061034` has digest
+  `sha256:02a6db63a056cf03b4e5f3261c0a1d05ae7b16f49b7bf44d8c5d80fdee098991`;
+  Gitleaks artifact `9006216901` has digest
+  `sha256:7c2051e7809b5b17c8c0aa3691a3dec0513b1e52dffefbad50709091d7ed1397`.
+- Checkpoint 2 is PASS, not P6-02 Level 2. Automatic transition activates only
+  checkpoint 3: the strict server-backed Set/intake data source, dense live
+  Tooling workspace, exact governed File Revision picker, honest unavailable
+  states, capability-driven actions, complete three-language/accessibility
+  coverage and affected visual matrix. Controlled Site remains inactive until
+  checkpoint 3 passes affected checks and complete ordinary CI. All scoped
+  lifecycle/Revision/Supplier/ERP/customer/file holds remain.

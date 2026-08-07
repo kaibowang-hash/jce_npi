@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS — P6-02 REPOSITORY/BFF CHECKPOINT`
+`IN_PROGRESS — P6-02 LIVE WORKSPACE CHECKPOINT`
 
-Recovery time: `2026-08-07T18:07:22Z`
+Recovery time: `2026-08-07T19:05:22Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery product checkpoint:
-`7b5dda19b2fc080a7dc562abf3f68a0d7a7bddff`
+`39fe0e8445079bb7a811ca2f24910ba96624a0ac`
 
 ## Current authoritative action
 
@@ -31,19 +31,33 @@ then isolated only eighteen bottom-footer catalog fingerprints. Artifact
 `92952843426` correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md`.
 
-The first unfinished checkpoint is P6-02 checkpoint 2 only. Implement
-Project-first authorized bounded Set collection/detail queries and the three
-frozen narrow commands for one Set, one intake version and one exact evidence
-reference. Enforce exact Requirement/customer/File Revision containment,
-System Manager-only mutation, actor-bound idempotency, exact conflicts, one
-transaction, append-only audit and an independent fail-closed route switch;
-add exact API/IDOR/replay/rollback tests.
+P6-02 checkpoint 2 is PASS. Product commit `c8f2ebc` added the Project-first
+bounded Set/intake repository, five frozen closed paths, exact containment,
+System Manager mutation, actor-bound replay, conflicts, one transaction,
+append-only audit and independent fail-closed switch. Pre-Site cross-layer
+review proved the reused receipt DocType/controller lacked the three P6-02
+operation/target pairs; correction `d339da5` added only those exact whitelist
+values plus administrator-visible translations and metadata tests. Its
+ordinary CI passed repository and failed only eighteen bottom-footer catalog
+fingerprints. Artifact `9005792248` proved every significant delta remained at
+`y=882..891`. Baseline-only checkpoint `39fe0e8` then passed complete ordinary
+CI `31209234574`: repository `92967755668`, visual `92967755547` (`73/73`)
+and controlled runtime `92967756711` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-02-repository-api-checkpoint.md`.
 
-Do not activate the live SPA or controlled Site yet. Keep lifecycle,
-source Tooling Revision, formal Supplier, ERP location/Asset, customer login/
-signature and all external mutations explicitly unavailable. P6-02 may only
-reference an existing live clean private File Revision; it may not upload,
-release, overwrite, delete or expose the customer file.
+The first unfinished checkpoint is P6-02 checkpoint 3 only. Implement the
+strict server-backed Set/intake data source and dense live Tooling workspace,
+including the exact governed File Revision picker, capability-driven actions,
+complete loading/empty/error/no-permission/read-only/conflict/processing states,
+keyboard/focus/accessibility behavior and direct English/`zh`/`zh-TW` plus
+affected visual evidence.
+
+Do not dispatch the controlled Site until checkpoint 3 passes affected checks
+and complete ordinary CI. Keep lifecycle, source Tooling Revision, formal
+Supplier, ERP location/Asset, customer login/signature and all external
+mutations explicitly unavailable. P6-02 may only reference an existing live
+clean private File Revision; it may not upload, release, overwrite, delete or
+expose the customer file.
 
 ## Retained P6-01 execution history
 

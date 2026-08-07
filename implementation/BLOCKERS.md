@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-07T18:07:22Z`
+Updated: `2026-08-07T19:05:22Z`
 
 ## Active hard blockers
 
-None. P6-02 checkpoint 1 stable checkpoint `7b5dda1` passed complete ordinary
-CI `31204720858`: repository `92952842864`, visual `92952842802` at `73/73`
-and controlled runtime `92952843426` correctly skipped. No user action is
+None. P6-02 checkpoint 2 stable checkpoint `39fe0e8` passed complete ordinary
+CI `31209234574`: repository `92967755668`, visual `92967755547` at `73/73`
+and controlled runtime `92967756711` correctly skipped. No user action is
 required.
 
 ## Active recovery
 
-None. P6-02 is `IN_PROGRESS_REPOSITORY_BFF`, not blocked. `DR-REC-010` remains
+None. P6-02 is `IN_PROGRESS_LIVE_WORKSPACE`, not blocked. `DR-REC-010` remains
 a scoped hold on exact lifecycle states/transitions/authorities only. P6-02
 keeps source Revision, formal Supplier/location/Asset and external signature
-truth explicitly unavailable while implementing Project-first Set/intake
-repository and BFF behavior.
+truth explicitly unavailable while implementing the strict Set/intake data
+source and live Tooling workspace.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
@@ -955,5 +955,24 @@ must preserve that boundary.
   repository `92952842864` and fixed-Linux visual `92952842802` at `73/73`;
   controlled runtime `92952843426` correctly skipped.
 - P6-02 checkpoint 1 is PASS. Only the repository/BFF checkpoint is active.
+  Lifecycle, source Revision, formal Supplier, ERP location/Asset, customer
+  signature and file mutation remain scoped holds rather than global blockers.
+
+## Current authoritative blocker state — 2026-08-07T19:05:22Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P6-02 repository/BFF product checkpoint `c8f2ebc` passed all available local
+  checks. Before any controlled Site, source/metadata cross-check uniquely
+  proved the reused receipt Select/controller whitelist lacked the three
+  P6-02 operation/target pairs. Correction `d339da5` closed that real Frappe
+  boundary without changing API, permission, transaction or idempotency truth.
+- Ordinary CI `31208510139` passed repository `92965418919`; its only failure
+  was eighteen fixed P0 footer catalog fingerprints, proved by artifact
+  `9005792248` and synchronized without changing a component, assertion,
+  threshold, matrix or PASS rule.
+- Stable checkpoint `39fe0e8` passed complete ordinary CI `31209234574` with
+  repository `92967755668` and fixed-Linux visual `92967755547` at `73/73`;
+  controlled runtime `92967756711` correctly skipped.
+- P6-02 checkpoint 2 is PASS. Only the live workspace checkpoint is active.
   Lifecycle, source Revision, formal Supplier, ERP location/Asset, customer
   signature and file mutation remain scoped holds rather than global blockers.

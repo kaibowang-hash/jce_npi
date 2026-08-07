@@ -1,23 +1,24 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T18:07:22Z`
+Updated: `2026-08-07T19:05:22Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `P6-02 REPOSITORY/BFF CHECKPOINT`
+- Mode: `P6-02 LIVE WORKSPACE CHECKPOINT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `7b5dda19b2fc080a7dc562abf3f68a0d7a7bddff` (pushed; P6-02 domain,
-  contract, guarded metadata and exact catalog-fingerprint baseline checkpoint)
+  `39fe0e8445079bb7a811ca2f24910ba96624a0ac` (pushed; P6-02
+  Project-first Set/intake repository, closed BFF, exact receipt whitelist and
+  catalog-fingerprint baseline checkpoint)
 - Latest completed controller/evidence checkpoint before this update:
-  `49a8931d0e9ab66ea132f232f4eb144879fd4ae0` (P6-01 Level 2 evidence and
-  P6-02 transition; pushed)
+  `a78c91d2e58ed9b746d2f0d9cb8cb6b1c6b2deba` (P6-02 checkpoint-1 evidence;
+  pushed; ordinary CI `31205863774` PASS)
 - Latest complete normal CI:
-  `31204720858` (`PASS`, exact SHA `7b5dda1`; repository `92952842864`,
-  complete E2E and Gitleaks/history passed; fixed-Linux visual `92952842802`
-  passed `73/73`; controlled runtime `92952843426` correctly skipped)
+  `31209234574` (`PASS`, exact SHA `39fe0e8`; repository `92967755668`,
+  complete E2E and Gitleaks/history passed; fixed-Linux visual `92967755547`
+  passed `73/73`; controlled runtime `92967756711` correctly skipped)
 - Latest controlled-Site run:
   `31198574475` (`PASS`, exact SHA `d0a9258`, diagnostics closed; repository
   `92932746371`, visual `92932746394` and controlled `92932746437` passed)
@@ -26,13 +27,13 @@ Updated: `2026-08-07T18:07:22Z`
   `sha256:4f4fa8d5884e71fc2b3388b23c45b55509f0482ad4e937fbbd7396a615130a65`
 - Current controller task:
   `P6-02 — Customer-owned intake and physical Tooling Sets`
-  (`IN_PROGRESS — REPOSITORY/BFF CHECKPOINT`)
+  (`IN_PROGRESS — LIVE WORKSPACE CHECKPOINT`)
 - Current Requirement IDs:
   `FR-TX-003`, `FR-TL-004`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 2`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-02 CHECKPOINT 3`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -181,15 +182,27 @@ correctly stayed closed. Initial CI `31203653903` isolated only eighteen footer
 catalog fingerprints; artifact `9003910006` proved no component or layout
 change before the byte-exact Linux baseline sync.
 
-Standing automatic-transition authority now activates only P6-02 checkpoint
-2: Project-first bounded Set collection/detail queries and three narrow
+P6-02 checkpoint 2 passed at stable checkpoint `39fe0e8`. It provides
+Project-first bounded Set collection/detail projections, three closed narrow
 commands, exact Requirement/customer/File Revision containment, System
-Manager-only mutation, actor-bound idempotency, exact conflicts, one
-transaction, append-only audit, an independent fail-closed route switch and
-exact API/IDOR/rollback tests. The live SPA and controlled Site remain inactive
-until checkpoint 2 passes affected checks and complete ordinary CI. No held
-lifecycle, Revision, Supplier, ERP Asset/location or external-customer/file
-behavior may be added.
+Manager-only mutation, actor-bound sealed replay, exact conflicts, one
+transaction, append-only audit and an independent fail-closed route switch.
+The pre-Site cross-layer check also prevented a real Frappe receipt failure by
+adding only the three exact P6-02 operation/target pairs to the existing
+DocType/controller whitelist. Complete ordinary CI `31209234574` passed
+repository, complete E2E, both secret lanes and fixed-Linux visual `73/73`;
+controlled runtime correctly stayed closed. Its only preceding failure was the
+exact eighteen footer catalog fingerprints, proved by artifact `9005792248`
+before the byte-exact Linux baseline sync.
+
+Standing automatic-transition authority now activates only P6-02 checkpoint
+3: a strict server-backed Set/intake data source, dense live Tooling workspace,
+exact governed File Revision picker, honest unavailable states,
+capability-driven actions and complete English/`zh`/`zh-TW`, accessibility and
+affected visual evidence. Controlled Site remains inactive until checkpoint 3
+passes affected checks and complete ordinary CI. No held lifecycle, source
+Revision, Supplier, ERP Asset/location or external-customer/file behavior may
+be added.
 
 ## Retained P5-04 recovery history
 

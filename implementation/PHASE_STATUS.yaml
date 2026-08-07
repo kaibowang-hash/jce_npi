@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-07T18:07:22Z'
+updated_at: '2026-08-07T19:05:22Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-02
-current_task_status: IN_PROGRESS_REPOSITORY_BFF
-current_task_completed_stage: P6_02_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
-current_task_next_stage: P6_02_REPOSITORY_BFF_CHECKPOINT
+current_task_status: IN_PROGRESS_LIVE_WORKSPACE
+current_task_completed_stage: P6_02_REPOSITORY_BFF_CHECKPOINT_PASS
+current_task_next_stage: P6_02_LIVE_WORKSPACE_CHECKPOINT
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-02
-resumed_product_task_status: IN_PROGRESS_REPOSITORY_BFF
+resumed_product_task_status: IN_PROGRESS_LIVE_WORKSPACE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -803,7 +803,7 @@ p6_01:
     - implementation/evidence/phase-6/p6-01-applicability-create-diagnostic.md
     - implementation/evidence/phase-6/p6-01-validation.md
 p6_02:
-  status: IN_PROGRESS_REPOSITORY_BFF
+  status: IN_PROGRESS_LIVE_WORKSPACE
   backlog_task: M5-02
   requirements: [FR-TX-003, FR-TL-004]
   delivery_boundary: CUSTOMER_OWNED_INTAKE_AND_DISTINCT_PHYSICAL_TOOLING_SETS
@@ -839,13 +839,39 @@ p6_02:
   final_visual_digest: sha256:1cd53e5d0733ac13058d381c7afdaf0fe50d18133100cfd16ab8ae910d1dba6e
   final_gitleaks_artifact: 9004474210
   final_gitleaks_digest: sha256:e5266c4199df7bd7afaf6bc694400fca26c457e0d0ce3e19ed2da9b6f6d28f16
-  completed_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_BFF_CHECKPOINT
+  checkpoint_1_evidence_commit: a78c91d2e58ed9b746d2f0d9cb8cb6b1c6b2deba
+  checkpoint_1_evidence_ci: 31205863774
+  checkpoint_1_evidence_repository_job: 92956626704
+  checkpoint_1_evidence_visual_job: 92956626544
+  checkpoint_1_evidence_controlled_job: 92956627373
+  repository_checkpoint: c8f2ebcd7c5cb36f1a81d9436c07d19b2eabaac7
+  repository_initial_ci: 31207891174
+  repository_initial_ci_outcome: SUPERSEDED_CANCELLED_DURING_E2E
+  receipt_whitelist_repair_checkpoint: d339da58487f46a767b62a6ead6b11c99ed8431c
+  receipt_whitelist_repair_root: P602_COMMAND_RECEIPT_OPERATION_TARGET_SELECT_WHITELIST
+  receipt_whitelist_repair_ci: 31208510139
+  receipt_whitelist_repair_repository_job: 92965418919
+  receipt_whitelist_repair_visual_job: 92965418903
+  receipt_whitelist_repair_controlled_job: 92965419812
+  receipt_whitelist_visual_artifact: 9005792248
+  receipt_whitelist_visual_digest: sha256:8f02d8093e2b2306bf8d79890a21558515c5711fa197cc00e0d74f799c1bd5d6
+  repository_stable_checkpoint: 39fe0e8445079bb7a811ca2f24910ba96624a0ac
+  repository_final_ci: 31209234574
+  repository_final_repository_job: 92967755668
+  repository_final_visual_job: 92967755547
+  repository_final_controlled_job: 92967756711
+  repository_final_visual_artifact: 9006061034
+  repository_final_visual_digest: sha256:02a6db63a056cf03b4e5f3261c0a1d05ae7b16f49b7bf44d8c5d80fdee098991
+  repository_final_gitleaks_artifact: 9006216901
+  repository_final_gitleaks_digest: sha256:7c2051e7809b5b17c8c0aa3691a3dec0513b1e52dffefbad50709091d7ed1397
+  completed_stage: REPOSITORY_BFF_CHECKPOINT_PASS
+  next_stage: LIVE_WORKSPACE_CHECKPOINT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-01-validation.md
     - implementation/evidence/phase-6/p6-02-plan.md
     - implementation/evidence/phase-6/p6-02-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-6/p6-02-repository-api-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
