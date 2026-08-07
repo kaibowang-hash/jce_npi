@@ -43,6 +43,9 @@ _OPERATIONS = {
     "tooling_requirement.create": "tooling_requirement",
     "tooling_master.create": "tooling_master",
     "tooling_applicability.create": "tooling_applicability",
+    "tooling_set.create": "tooling_set",
+    "tooling_intake.create": "tooling_intake",
+    "tooling_intake_evidence.create": "tooling_intake_evidence",
 }
 
 

@@ -158,6 +158,20 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             [SYSTEM_MANAGER_ADMIN, {**API_APPEND, "write": 1}],
         )
         target_type = self.fields(receipt)["target_object_type"]
+        operation = self.fields(receipt)["operation"]
+        self.assertEqual(
+            str(operation.get("options", "")).splitlines(),
+            [
+                "part.create",
+                "part.revise",
+                "tooling_requirement.create",
+                "tooling_master.create",
+                "tooling_applicability.create",
+                "tooling_set.create",
+                "tooling_intake.create",
+                "tooling_intake_evidence.create",
+            ],
+        )
         self.assertEqual(
             str(target_type.get("options", "")).splitlines(),
             [
@@ -167,6 +181,9 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 "tooling_requirement",
                 "tooling_master",
                 "tooling_applicability",
+                "tooling_set",
+                "tooling_intake",
+                "tooling_intake_evidence",
             ],
         )
 

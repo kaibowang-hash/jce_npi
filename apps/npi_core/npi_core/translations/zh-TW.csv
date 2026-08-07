@@ -3976,10 +3976,16 @@ part.revise,修訂零件
 tooling_requirement.create,建立模具開發需求
 tooling_master.create,建立模具主檔
 tooling_applicability.create,建立模具適用關係
+tooling_set.create,建立模具套數
+tooling_intake.create,建立模具接收版本
+tooling_intake_evidence.create,新增模具接收證據
 part_revision,零件修訂
 tooling_requirement,模具開發需求
 tooling_master,模具主檔
 tooling_applicability,模具適用關係
+tooling_set,模具套數
+tooling_intake,模具接收版本
+tooling_intake_evidence,模具接收證據
 customer_owned_intake,客戶自有模具接收
 copy_or_additional_set,複製或增加模具套數
 modification,改模

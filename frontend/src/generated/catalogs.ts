@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '220fdc2cf42779bb';
+export const catalogVersion = '957013df4ef08130';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -3958,10 +3958,16 @@ export const catalogs = {
     "Tooling workspace unavailable": "模具开发工作区不可用",
     "tooling_applicability": "模具适用关系",
     "tooling_applicability.create": "创建模具适用关系",
+    "tooling_intake": "模具接收版本",
+    "tooling_intake_evidence": "模具接收证据",
+    "tooling_intake_evidence.create": "添加模具接收证据",
+    "tooling_intake.create": "创建模具接收版本",
     "tooling_master": "模具主档",
     "tooling_master.create": "创建模具主档",
     "tooling_requirement": "模具开发需求",
     "tooling_requirement.create": "创建模具开发需求",
+    "tooling_set": "模具套数",
+    "tooling_set.create": "创建模具套数",
     "Trace ID": "跟踪编号",
     "Trace ID must be a valid trace identity.": "跟踪标识符必须是有效的跟踪标识。",
     "Traditional Chinese": "繁体中文",
@@ -8087,10 +8093,16 @@ export const catalogs = {
     "Tooling workspace unavailable": "模具開發工作區不可用",
     "tooling_applicability": "模具適用關係",
     "tooling_applicability.create": "建立模具適用關係",
+    "tooling_intake": "模具接收版本",
+    "tooling_intake_evidence": "模具接收證據",
+    "tooling_intake_evidence.create": "新增模具接收證據",
+    "tooling_intake.create": "建立模具接收版本",
     "tooling_master": "模具主檔",
     "tooling_master.create": "建立模具主檔",
     "tooling_requirement": "模具開發需求",
     "tooling_requirement.create": "建立模具開發需求",
+    "tooling_set": "模具套數",
+    "tooling_set.create": "建立模具套數",
     "Trace ID": "追蹤編號",
     "Trace ID must be a valid trace identity.": "追蹤識別碼必須是有效的追蹤識別。",
     "Traditional Chinese": "繁體中文",
