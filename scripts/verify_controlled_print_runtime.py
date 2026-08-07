@@ -76,6 +76,35 @@ CONTROLLED_PRINT_DOCTYPES = (
     "NPI Controlled Print Command Idempotency",
 )
 _HASH = re.compile(r"^[a-f0-9]{64}$")
+_TRACE_PATTERN = re.compile(r"^trace-[a-f0-9]{32}$")
+_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
+_CREATE_DIAGNOSTIC_SCOPE = "p506-controlled-print-create-v1"
+_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
+_CREATE_SERVER_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P506_CREATE_COMMAND_CONTEXT",
+        "P506_CREATE_INPUT_PARSE",
+        "P506_CREATE_PROJECT_LOCK",
+        "P506_CREATE_PAYLOAD_HASH",
+        "P506_CREATE_IDEMPOTENCY_REPLAY",
+        "P506_CREATE_SOURCE_RESOLVE",
+        "P506_CREATE_MAPPING_RESOLVE",
+        "P506_CREATE_AUTHORITY",
+        "P506_CREATE_SNAPSHOT_BUILD",
+        "P506_CREATE_PDF_RENDER",
+        "P506_CREATE_TRANSACTION_SCOPE",
+        "P506_CREATE_RECEIPT_INSERT",
+        "P506_CREATE_SNAPSHOT_INSERT",
+        "P506_CREATE_FILE_SAVE",
+        "P506_CREATE_OUTPUT_INSERT",
+        "P506_CREATE_ACCESS_EVENT_INSERT",
+        "P506_CREATE_AUDIT_APPEND",
+        "P506_CREATE_RESPONSE_BUILD",
+        "P506_CREATE_RECEIPT_SEAL",
+        "P506_CREATE_API_RESPONSE",
+    }
+)
 _CAPABILITY_KEYS = {
     "available",
     "sourceKind",
@@ -436,6 +465,7 @@ def api_request(
     payload: dict[str, object] | None = None,
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
+    create_diagnostic: bool = False,
     correlation_label: str,
 ) -> HttpResult:
     headers = (
@@ -443,6 +473,12 @@ def api_request(
         if idempotency_key is not None
         else document_runtime.query_headers(correlation_label)
     )
+    if create_diagnostic:
+        if idempotency_key is None or method != "POST":
+            raise ValueError(
+                "The controlled-print create diagnostic requires one command request"
+            )
+        headers[_CREATE_DIAGNOSTIC_HEADER] = _CREATE_DIAGNOSTIC_SCOPE
     result = document_runtime.request(
         opener,
         base_url,
@@ -459,7 +495,13 @@ def api_request(
         result.headers.get("X-Request-ID") == headers["X-Request-ID"],
         "P5-06 request identity drifted",
     )
-    return result
+    return HttpResult(
+        result.status,
+        result.headers,
+        result.body,
+        request_id=headers["X-Request-ID"],
+        trace_id=headers["X-Trace-ID"],
+    )
 
 
 def download_request(
@@ -582,6 +624,65 @@ def http_failure_evidence(result: HttpResult) -> str:
     return f"HTTP {result.status}; code={code!s}; paths={','.join(paths) or '-'}"
 
 
+def sanitized_create_server_diagnostic(
+    trace_id: str | None,
+) -> tuple[str, str, str] | None:
+    """Read only one allowlisted P5-06 server record for this exact trace."""
+
+    if not isinstance(trace_id, str) or _TRACE_PATTERN.fullmatch(trace_id) is None:
+        return None
+    try:
+        bench_root = BENCH_PATH.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None
+    candidates = (
+        BENCH_PATH / "logs" / "npi_core.log",
+        BENCH_PATH / "sites" / SITE_NAME / "logs" / "npi_core.log",
+    )
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            resolved = candidate.resolve(strict=True)
+            if not resolved.is_relative_to(bench_root):
+                continue
+            with resolved.open("rb") as log_file:
+                log_file.seek(0, os.SEEK_END)
+                size = log_file.tell()
+                log_file.seek(max(0, size - _DIAGNOSTIC_LOG_TAIL_LIMIT))
+                tail = log_file.read(_DIAGNOSTIC_LOG_TAIL_LIMIT)
+        except (OSError, RuntimeError):
+            continue
+        for line in reversed(tail.decode("utf-8", errors="ignore").splitlines()):
+            if trace_id not in line:
+                continue
+            for start, character in enumerate(line):
+                if character != "{":
+                    continue
+                try:
+                    record, _end = decoder.raw_decode(line[start:])
+                except (TypeError, ValueError):
+                    continue
+                if not isinstance(record, dict) or set(record) != {
+                    "code",
+                    "exceptionType",
+                    "traceId",
+                }:
+                    continue
+                code = record.get("code")
+                exception_type = record.get("exceptionType")
+                if (
+                    record.get("traceId") == trace_id
+                    and isinstance(code, str)
+                    and code in _CREATE_SERVER_DIAGNOSTIC_CODES
+                    and isinstance(exception_type, str)
+                    and _TYPE_PATTERN.fullmatch(exception_type) is not None
+                ):
+                    return exception_type, code, trace_id
+    return None
+
+
 def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, object]:
     schema = run_bench_fixture("verify_controlled_print_schema", {})
     project_id, source_version = document_runtime.fixture_project(administrator, base_url)
@@ -630,9 +731,22 @@ def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, 
         payload=create_payload(project_id, source_version),
         csrf_token=actor_csrf,
         idempotency_key=CREATE_KEY,
+        create_diagnostic=True,
         correlation_label="p506-create",
     )
-    require(created.status == 201, f"P5-06 create returned HTTP {created.status}: {created.body}")
+    if created.status != 201:
+        diagnostic = sanitized_create_server_diagnostic(created.trace_id)
+        detail = ""
+        if diagnostic is not None:
+            exception_type, code, trace_id = diagnostic
+            detail = (
+                f" [diagnostic_code={code}; exc_type={exception_type}; "
+                f"trace_id={trace_id}]"
+            )
+        require(
+            False,
+            f"P5-06 create failed: {http_failure_evidence(created)}{detail}",
+        )
     require(
         created.headers.get("Idempotency-Replayed") == "false",
         "P5-06 create replay header drifted",

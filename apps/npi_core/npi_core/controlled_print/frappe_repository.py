@@ -33,6 +33,9 @@ from npi_core.controlled_print.domain import (
     resolve_controlled_print_mapping,
     sha256_json,
 )
+from npi_core.controlled_print.diagnostics import (
+    controlled_print_create_server_step,
+)
 from npi_core.controlled_print.frappe_validation import (
     controlled_print_command_write,
 )
@@ -159,108 +162,136 @@ class FrappeControlledPrintRepository(FrappeDocumentRepository):
         language: str,
         idempotency_key_hash: str,
     ) -> ControlledPrintCommandOutcome | None:
-        project = self._locked_view_authorized_project(project_global_id)
+        with controlled_print_create_server_step("P506_CREATE_PROJECT_LOCK"):
+            project = self._locked_view_authorized_project(project_global_id)
         if project is None:
             return None
         tenant_id = str(project.tenant_id)
         project_type_key = str(project.project_type)
-        payload_hash = controlled_print_command_payload_hash(
-            actor_user_id=self.actor,
-            tenant_id=tenant_id,
-            project_global_id=project_global_id,
-            source_object_type=source_object_type,
-            source_global_id=source_global_id,
-            source_version=expected_source_version,
-            language=language,
-        )
-        receipt_key = controlled_print_receipt_key(
-            actor_user_id=self.actor,
-            tenant_id=tenant_id,
-            project_global_id=project_global_id,
-            idempotency_key_hash=idempotency_key_hash,
-        )
-        replay = self._receipt_replay(
-            receipt_key=receipt_key,
-            payload_hash=payload_hash,
-            project=project,
-            idempotency_key_hash=idempotency_key_hash,
-        )
-        if replay is not None:
-            return ControlledPrintCommandOutcome(replay, replayed=True)
-
-        source = self._source_registry.resolve_exact(
-            project_global_id=project_global_id,
-            source_object_type=source_object_type,
-            source_global_id=source_global_id,
-            expected_source_version=expected_source_version,
-        )
-        if source.project_type_key != project_type_key:
-            raise RuntimeError(
-                "Controlled print source Project type does not match its Project."
+        with controlled_print_create_server_step("P506_CREATE_PAYLOAD_HASH"):
+            payload_hash = controlled_print_command_payload_hash(
+                actor_user_id=self.actor,
+                tenant_id=tenant_id,
+                project_global_id=project_global_id,
+                source_object_type=source_object_type,
+                source_global_id=source_global_id,
+                source_version=expected_source_version,
+                language=language,
             )
-        context = source.context(tenant_id=tenant_id, language=language)
-        now = self._now()
-        mapping = resolve_controlled_print_mapping(
-            self.published_mapping_candidates(context, at=now),
-            context,
-            at=now,
-        )
-        if not mapping.authorizes(self.actor):
-            raise ControlledPrintAuthorityUnavailable()
-        snapshot = ControlledPrintSnapshot(
-            global_id=self._new_uuid(),
-            tenant_id=tenant_id,
-            project_global_id=project_global_id,
-            project_type_key=project_type_key,
-            gate_key=source.gate_key,
-            source=source.reference,
-            registry=ControlledPrintRegistryReference.from_mapping(mapping),
-            language=language,
-            delivery_mode=context.delivery_mode,
-            copy_state=context.copy_state,
-            watermark_source=mapping.watermark_source,
-            source_snapshot=source.snapshot,
-            actor_user_id=self.actor,
-            printed_at=now,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-        )
-        rendered = render_controlled_print_pdf(
-            snapshot=snapshot,
-            mapping=mapping,
-            render_template=self._render_template,
-            convert_pdf=self._convert_pdf,
-            translate=self._translate,
-        )
-        with _controlled_print_write_scope():
-            receipt = self._insert_receipt(
+            receipt_key = controlled_print_receipt_key(
+                actor_user_id=self.actor,
+                tenant_id=tenant_id,
+                project_global_id=project_global_id,
+                idempotency_key_hash=idempotency_key_hash,
+            )
+        with controlled_print_create_server_step("P506_CREATE_IDEMPOTENCY_REPLAY"):
+            replay = self._receipt_replay(
                 receipt_key=receipt_key,
                 payload_hash=payload_hash,
                 project=project,
                 idempotency_key_hash=idempotency_key_hash,
-                now=now,
             )
-            self._insert_snapshot(snapshot)
-            file_document = self._save_private_file(snapshot, rendered)
-            output = self._insert_output(
+        if replay is not None:
+            return ControlledPrintCommandOutcome(replay, replayed=True)
+
+        with controlled_print_create_server_step("P506_CREATE_SOURCE_RESOLVE"):
+            source = self._source_registry.resolve_exact(
+                project_global_id=project_global_id,
+                source_object_type=source_object_type,
+                source_global_id=source_global_id,
+                expected_source_version=expected_source_version,
+            )
+        if source.project_type_key != project_type_key:
+            raise RuntimeError(
+                "Controlled print source Project type does not match its Project."
+            )
+        with controlled_print_create_server_step("P506_CREATE_MAPPING_RESOLVE"):
+            context = source.context(tenant_id=tenant_id, language=language)
+            now = self._now()
+            mapping = resolve_controlled_print_mapping(
+                self.published_mapping_candidates(context, at=now),
+                context,
+                at=now,
+            )
+        with controlled_print_create_server_step("P506_CREATE_AUTHORITY"):
+            if not mapping.authorizes(self.actor):
+                raise ControlledPrintAuthorityUnavailable()
+        with controlled_print_create_server_step("P506_CREATE_SNAPSHOT_BUILD"):
+            snapshot = ControlledPrintSnapshot(
+                global_id=self._new_uuid(),
+                tenant_id=tenant_id,
+                project_global_id=project_global_id,
+                project_type_key=project_type_key,
+                gate_key=source.gate_key,
+                source=source.reference,
+                registry=ControlledPrintRegistryReference.from_mapping(mapping),
+                language=language,
+                delivery_mode=context.delivery_mode,
+                copy_state=context.copy_state,
+                watermark_source=mapping.watermark_source,
+                source_snapshot=source.snapshot,
+                actor_user_id=self.actor,
+                printed_at=now,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+            )
+        with controlled_print_create_server_step("P506_CREATE_PDF_RENDER"):
+            rendered = render_controlled_print_pdf(
                 snapshot=snapshot,
-                rendered=rendered,
-                file_document=file_document,
+                mapping=mapping,
+                render_template=self._render_template,
+                convert_pdf=self._convert_pdf,
+                translate=self._translate,
             )
-            event = self._insert_access_event(
-                snapshot=snapshot,
-                output=output,
-                event_type=PrintAccessEventType.CREATED,
-                occurred_at=now,
-            )
-            self._append_audit(
-                operation="controlled_print.snapshot.create",
-                snapshot=snapshot,
-                output=output,
-                event=event,
-            )
-            response = snapshot.public_dict(output=output)
-            self._seal_receipt(receipt, snapshot=snapshot, response=response, now=now)
+        with controlled_print_create_server_step("P506_CREATE_TRANSACTION_SCOPE"):
+            with _controlled_print_write_scope():
+                with controlled_print_create_server_step(
+                    "P506_CREATE_RECEIPT_INSERT"
+                ):
+                    receipt = self._insert_receipt(
+                        receipt_key=receipt_key,
+                        payload_hash=payload_hash,
+                        project=project,
+                        idempotency_key_hash=idempotency_key_hash,
+                        now=now,
+                    )
+                with controlled_print_create_server_step(
+                    "P506_CREATE_SNAPSHOT_INSERT"
+                ):
+                    self._insert_snapshot(snapshot)
+                with controlled_print_create_server_step("P506_CREATE_FILE_SAVE"):
+                    file_document = self._save_private_file(snapshot, rendered)
+                with controlled_print_create_server_step("P506_CREATE_OUTPUT_INSERT"):
+                    output = self._insert_output(
+                        snapshot=snapshot,
+                        rendered=rendered,
+                        file_document=file_document,
+                    )
+                with controlled_print_create_server_step(
+                    "P506_CREATE_ACCESS_EVENT_INSERT"
+                ):
+                    event = self._insert_access_event(
+                        snapshot=snapshot,
+                        output=output,
+                        event_type=PrintAccessEventType.CREATED,
+                        occurred_at=now,
+                    )
+                with controlled_print_create_server_step("P506_CREATE_AUDIT_APPEND"):
+                    self._append_audit(
+                        operation="controlled_print.snapshot.create",
+                        snapshot=snapshot,
+                        output=output,
+                        event=event,
+                    )
+                with controlled_print_create_server_step("P506_CREATE_RESPONSE_BUILD"):
+                    response = snapshot.public_dict(output=output)
+                with controlled_print_create_server_step("P506_CREATE_RECEIPT_SEAL"):
+                    self._seal_receipt(
+                        receipt,
+                        snapshot=snapshot,
+                        response=response,
+                        now=now,
+                    )
         return ControlledPrintCommandOutcome(response)
 
     def snapshot_detail(

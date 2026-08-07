@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -120,6 +122,84 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
             "HTTP 422; code=VALIDATION_FAILED; paths=requestId,sourceGlobalId",
         )
         self.assertNotIn("private-message", evidence)
+
+    def test_create_request_activates_only_the_closed_diagnostic_header(self) -> None:
+        module = self.module
+        request_id = "10000000-0000-4000-8000-000000000001"
+        trace_id = "trace-" + ("d" * 32)
+        headers = {
+            "Idempotency-Key": module.CREATE_KEY,
+            "X-Request-ID": request_id,
+            "X-Trace-ID": trace_id,
+        }
+        raw = module.HttpResult(
+            500,
+            {
+                "X-Request-ID": request_id,
+                "Cache-Control": "private, no-store",
+            },
+            {"code": "INTERNAL_SERVER_ERROR"},
+        )
+        with patch.object(
+            module.document_runtime,
+            "command_headers",
+            return_value=headers,
+        ), patch.object(
+            module.document_runtime,
+            "request",
+            return_value=raw,
+        ) as request:
+            result = module.api_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/controlled-prints",
+                method="POST",
+                payload={"value": True},
+                csrf_token="csrf-" + ("a" * 48),
+                idempotency_key=module.CREATE_KEY,
+                create_diagnostic=True,
+                correlation_label="p506-create",
+            )
+
+        self.assertEqual(result.trace_id, trace_id)
+        sent = request.call_args.kwargs["request_headers"]
+        self.assertEqual(
+            sent[module._CREATE_DIAGNOSTIC_HEADER],
+            module._CREATE_DIAGNOSTIC_SCOPE,
+        )
+        self.assertEqual(
+            set(sent),
+            {
+                "Idempotency-Key",
+                "X-Request-ID",
+                "X-Trace-ID",
+                "X-NPI-Diagnostic-Scope",
+            },
+        )
+
+    def test_server_diagnostic_reader_is_exact_allowlisted_and_bounded(self) -> None:
+        module = self.module
+        trace_id = "trace-" + ("e" * 32)
+        record = {
+            "code": "P506_CREATE_PDF_RENDER",
+            "exceptionType": "OSError",
+            "traceId": trace_id,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            bench = Path(directory) / "frappe-bench"
+            log = bench / "logs" / "npi_core.log"
+            log.parent.mkdir(parents=True)
+            log.write_text(
+                "prefix " + json.dumps(record, separators=(",", ":")) + "\n",
+                encoding="utf-8",
+            )
+            with patch.object(module, "BENCH_PATH", bench):
+                diagnostic = module.sanitized_create_server_diagnostic(trace_id)
+
+        self.assertEqual(
+            diagnostic,
+            ("OSError", "P506_CREATE_PDF_RENDER", trace_id),
+        )
 
     def test_schema_and_fixture_surface_are_exactly_guarded(self) -> None:
         self.assertEqual(len(self.module.CONTROLLED_PRINT_DOCTYPES), 6)

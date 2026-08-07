@@ -14,6 +14,10 @@ from npi_core.controlled_print.domain import (
     PrintCopyState,
     PrintDeliveryMode,
 )
+from npi_core.controlled_print.diagnostics import (
+    controlled_print_create_server_diagnostics,
+    controlled_print_create_server_step,
+)
 from npi_core.controlled_print.service import ControlledPrintCapabilityService
 from npi_core.controlled_print.source_registry import (
     ControlledPrintSourceRegistry,
@@ -146,36 +150,50 @@ def create_controlled_print_snapshot(
     }
 
     def handle() -> dict[str, Any]:
-        require_controlled_print_routes_enabled()
-        actor = authenticated_user()
-        require_csrf_token()
-        principal = authenticated_principal(actor)
-        _require_role(principal)
-        request_id, repository = _new_repository(principal)
-        project_id = _opaque_project_uuid()
-        if repository.authorize_project(project_id) is None:
-            raise ControlledPrintUnavailable()
-        reject_unexpected_request_fields(_CAPABILITY_FIELDS, request_fields)
-        require_request_fields(_CAPABILITY_FIELDS, request_fields)
-        outcome = repository.create_snapshot(
-            project_id,
-            source_object_type=_key(sourceKind, "sourceKind"),
-            source_global_id=_uuid(sourceGlobalId, "sourceGlobalId"),
-            expected_source_version=_positive(sourceVersion, "sourceVersion"),
-            language=_language(language),
-            idempotency_key_hash=actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-        )
-        if outcome is None:
-            raise ControlledPrintUnavailable()
-        if type(outcome.replayed) is not bool:
-            raise RuntimeError("The controlled print replay response is invalid.")
-        response = _snapshot_response(outcome.response)
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
-        return response
+        with controlled_print_create_server_diagnostics(current_trace_id.get()):
+            with controlled_print_create_server_step(
+                "P506_CREATE_COMMAND_CONTEXT"
+            ):
+                require_controlled_print_routes_enabled()
+                actor = authenticated_user()
+                require_csrf_token()
+                principal = authenticated_principal(actor)
+                _require_role(principal)
+                request_id, repository = _new_repository(principal)
+                project_id = _opaque_project_uuid()
+                if repository.authorize_project(project_id) is None:
+                    raise ControlledPrintUnavailable()
+            with controlled_print_create_server_step("P506_CREATE_INPUT_PARSE"):
+                reject_unexpected_request_fields(
+                    _CAPABILITY_FIELDS,
+                    request_fields,
+                )
+                require_request_fields(_CAPABILITY_FIELDS, request_fields)
+                values = {
+                    "source_object_type": _key(sourceKind, "sourceKind"),
+                    "source_global_id": _uuid(sourceGlobalId, "sourceGlobalId"),
+                    "expected_source_version": _positive(
+                        sourceVersion,
+                        "sourceVersion",
+                    ),
+                    "language": _language(language),
+                    "idempotency_key_hash": actor_idempotency_key_hash(
+                        actor,
+                        frappe.get_request_header("Idempotency-Key"),
+                    ),
+                }
+            with controlled_print_create_server_step("P506_CREATE_API_RESPONSE"):
+                outcome = repository.create_snapshot(project_id, **values)
+                if outcome is None:
+                    raise ControlledPrintUnavailable()
+                if type(outcome.replayed) is not bool:
+                    raise RuntimeError(
+                        "The controlled print replay response is invalid."
+                    )
+                response = _snapshot_response(outcome.response)
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+                return response
 
     return frappe_domain_call(
         handle,
