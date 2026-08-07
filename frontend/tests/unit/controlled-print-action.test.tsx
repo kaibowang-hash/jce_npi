@@ -56,7 +56,7 @@ const commandContext = {
 };
 
 const createObjectUrl = vi.fn(() => "blob:controlled");
-const revokeObjectUrl = vi.fn((_url: string) => undefined);
+const revokeObjectUrl = vi.fn<(url: string) => void>(() => undefined);
 
 function renderAction(source = dataSource()) {
   return {

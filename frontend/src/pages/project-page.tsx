@@ -329,7 +329,7 @@ function ProjectCockpit({
           controlledPrintDataSource ? (
             <ControlledPrintAction
               dataSource={controlledPrintDataSource}
-              key={`${project.globalId}:${project.version}:${locale}`}
+              key={`${project.globalId}:${String(project.version)}:${locale}`}
               projectId={project.globalId}
               source={{
                 sourceGlobalId: project.globalId,
