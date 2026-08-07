@@ -46,6 +46,10 @@ _OPERATIONS = {
     "tooling_set.create": "tooling_set",
     "tooling_intake.create": "tooling_intake",
     "tooling_intake_evidence.create": "tooling_intake_evidence",
+    "tooling_revision.create": "tooling_revision",
+    "part_controlled_specification.create": "part_controlled_specification",
+    "tooling_process_chain_revision.create": "tooling_process_chain_revision",
+    "tooling_set_revision_binding.create": "tooling_set_revision_binding",
 }
 
 

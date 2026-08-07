@@ -10551,6 +10551,399 @@ components:
           uniqueItems: true
           items: { type: string, format: uuid }
         fileRevisionGlobalId: { type: string, format: uuid }
+    ToolingMeasurement:
+      type: object
+      additionalProperties: false
+      required: [value, unit, source]
+      properties:
+        value:
+          { type: string, minLength: 1, maxLength: 32, pattern: "^[0-9]+(?:\\.[0-9]+)?$" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        source: { type: string, minLength: 1, maxLength: 120 }
+    ToolingSpecification:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          toolingType,
+          moldBaseMaterial,
+          coreMaterial,
+          hardness,
+          surfaceTreatment,
+          cavityCount,
+          hotRunner,
+          length,
+          width,
+          height,
+          weight,
+          clampTonnage,
+          tieBarSpacingX,
+          tieBarSpacingY,
+          injectionCapacity,
+          machineType,
+          targetCycle,
+          targetLife,
+          warranty,
+          customerStandard,
+          interfaceRequirement,
+          spareParts,
+          deliveryDocuments,
+        ]
+      properties:
+        toolingType: { type: string, minLength: 1, maxLength: 80 }
+        moldBaseMaterial: { type: string, minLength: 1, maxLength: 160 }
+        coreMaterial: { type: string, minLength: 1, maxLength: 160 }
+        hardness: { $ref: "#/components/schemas/ToolingMeasurement" }
+        surfaceTreatment: { type: string, minLength: 1, maxLength: 160 }
+        cavityCount: { type: integer, minimum: 1, maximum: 200 }
+        hotRunner: { type: string, minLength: 1, maxLength: 160 }
+        length: { $ref: "#/components/schemas/ToolingMeasurement" }
+        width: { $ref: "#/components/schemas/ToolingMeasurement" }
+        height: { $ref: "#/components/schemas/ToolingMeasurement" }
+        weight: { $ref: "#/components/schemas/ToolingMeasurement" }
+        clampTonnage: { $ref: "#/components/schemas/ToolingMeasurement" }
+        tieBarSpacingX: { $ref: "#/components/schemas/ToolingMeasurement" }
+        tieBarSpacingY: { $ref: "#/components/schemas/ToolingMeasurement" }
+        injectionCapacity: { $ref: "#/components/schemas/ToolingMeasurement" }
+        machineType: { type: string, minLength: 1, maxLength: 120 }
+        targetCycle: { $ref: "#/components/schemas/ToolingMeasurement" }
+        targetLife: { $ref: "#/components/schemas/ToolingMeasurement" }
+        warranty: { type: string, minLength: 1, maxLength: 240 }
+        customerStandard: { type: string, minLength: 1, maxLength: 500 }
+        interfaceRequirement: { type: string, minLength: 1, maxLength: 500 }
+        spareParts:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 200 }
+        deliveryDocuments:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 200 }
+    ToolingCavityMapping:
+      type: object
+      additionalProperties: false
+      required: [globalId, cavityIdentifier, toolingApplicabilityGlobalId, partRevisionGlobalId, structuralState]
+      properties:
+        globalId: { type: string, format: uuid }
+        cavityIdentifier: { type: string, minLength: 1, maxLength: 64 }
+        toolingApplicabilityGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        structuralState: { type: string, enum: [enabled, sealed] }
+    CreateToolingCavityMapping:
+      type: object
+      additionalProperties: false
+      required: [cavityIdentifier, toolingApplicabilityGlobalId, partRevisionGlobalId, structuralState]
+      properties:
+        cavityIdentifier: { type: string, minLength: 1, maxLength: 64 }
+        toolingApplicabilityGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        structuralState: { type: string, enum: [enabled, sealed] }
+    ToolingInsertApplicability:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          insertCode,
+          insertVersion,
+          toolingApplicabilityGlobalId,
+          partRevisionGlobalId,
+          model,
+          changeoverDuration,
+          validationState,
+          validatedByUserId,
+          validatedAt,
+          validationReason,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        insertCode: { type: string, minLength: 1, maxLength: 80 }
+        insertVersion: { type: integer, minimum: 1 }
+        toolingApplicabilityGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        model:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingExternalReference" }
+            - { type: "null" }
+        changeoverDuration: { $ref: "#/components/schemas/ToolingMeasurement" }
+        validationState: { type: string, enum: [not_validated, validated] }
+        validatedByUserId: { type: [string, "null"], maxLength: 254 }
+        validatedAt: { type: [string, "null"], format: date-time }
+        validationReason: { type: [string, "null"], maxLength: 500 }
+    CreateToolingInsertApplicability:
+      type: object
+      additionalProperties: false
+      required:
+        [insertCode, insertVersion, toolingApplicabilityGlobalId, partRevisionGlobalId, changeoverDuration, validationState]
+      properties:
+        insertCode: { type: string, minLength: 1, maxLength: 80 }
+        insertVersion: { type: integer, minimum: 1 }
+        toolingApplicabilityGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        model: { $ref: "#/components/schemas/ToolingExternalReference" }
+        changeoverDuration: { $ref: "#/components/schemas/ToolingMeasurement" }
+        validationState: { type: string, enum: [not_validated, validated] }
+        validationReason: { type: string, minLength: 1, maxLength: 500 }
+    ToolingExternalIdentity:
+      type: object
+      additionalProperties: false
+      required: [globalId, identityType, value, rawValue, sourceSystem, sourceObjectId, effectiveFrom, effectiveTo]
+      properties:
+        globalId: { type: string, format: uuid }
+        identityType:
+          { type: string, enum: [customer, sn, kw, th, supplier_reference] }
+        value: { type: string, minLength: 1, maxLength: 160 }
+        rawValue: { type: string, minLength: 1, maxLength: 500 }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: [string, "null"], format: date }
+    CreateToolingExternalIdentity:
+      type: object
+      additionalProperties: false
+      required: [identityType, value, rawValue, sourceSystem, sourceObjectId, effectiveFrom]
+      properties:
+        identityType:
+          { type: string, enum: [customer, sn, kw, th, supplier_reference] }
+        value: { type: string, minLength: 1, maxLength: 160 }
+        rawValue: { type: string, minLength: 1, maxLength: 500 }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date }
+    ToolingDocumentRevisionReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          toolingMasterGlobalId,
+          revisionNumber,
+          revisionLabel,
+          predecessorGlobalId,
+          specification,
+          cavities,
+          inserts,
+          externalIdentities,
+          designDocumentRevisions,
+          reason,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        revisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        specification: { $ref: "#/components/schemas/ToolingSpecification" }
+        cavities:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingCavityMapping" }
+        inserts:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingInsertApplicability" }
+        externalIdentities:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingExternalIdentity" }
+        designDocumentRevisions:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ToolingDocumentRevisionReference" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    PartControlledSpecificationItem:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, normalizedValue, rawValue, sourceSystem, sourceObjectId, effectiveFrom, effectiveTo, unit]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind:
+          type: string
+          enum: [material_family, grade, trademark, color, color_masterbatch, fda_compliance, regulatory_compliance, secondary_process]
+        normalizedValue: { type: string, minLength: 1, maxLength: 240 }
+        rawValue: { type: string, minLength: 1, maxLength: 500 }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: [string, "null"], format: date }
+        unit: { type: [string, "null"], maxLength: 32 }
+    CreatePartControlledSpecificationItem:
+      type: object
+      additionalProperties: false
+      required: [kind, normalizedValue, rawValue, sourceSystem, sourceObjectId, effectiveFrom]
+      properties:
+        kind:
+          type: string
+          enum: [material_family, grade, trademark, color, color_masterbatch, fda_compliance, regulatory_compliance, secondary_process]
+        normalizedValue: { type: string, minLength: 1, maxLength: 240 }
+        rawValue: { type: string, minLength: 1, maxLength: 500 }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+    PartControlledSpecification:
+      type: object
+      additionalProperties: false
+      required: [globalId, partGlobalId, partRevisionGlobalId, partRevisionSnapshotHash, items, externalIdentities, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        partGlobalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        partRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/PartControlledSpecificationItem" }
+        externalIdentities:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingExternalIdentity" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingProcessStep:
+      type: object
+      additionalProperties: false
+      required: [globalId, stepOrder, processKind, toolingRevisionGlobalId, toolingRevisionSnapshotHash, inputPartRevisionGlobalIds, outputPartRevisionGlobalId, parentStepGlobalId, machineType, clampTonnage]
+      properties:
+        globalId: { type: string, format: uuid }
+        stepOrder: { type: integer, minimum: 1, maximum: 20 }
+        processKind: { type: string, enum: [primary_molding, second_shot, overmold] }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        inputPartRevisionGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        outputPartRevisionGlobalId: { type: string, format: uuid }
+        parentStepGlobalId: { type: [string, "null"], format: uuid }
+        machineType: { type: string, minLength: 1, maxLength: 120 }
+        clampTonnage: { $ref: "#/components/schemas/ToolingMeasurement" }
+    CreateToolingProcessStep:
+      type: object
+      additionalProperties: false
+      required: [stepOrder, processKind, toolingRevisionGlobalId, inputPartRevisionGlobalIds, outputPartRevisionGlobalId, machineType, clampTonnage]
+      properties:
+        stepOrder: { type: integer, minimum: 1, maximum: 20 }
+        processKind: { type: string, enum: [primary_molding, second_shot, overmold] }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        inputPartRevisionGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        outputPartRevisionGlobalId: { type: string, format: uuid }
+        parentStepOrder: { type: integer, minimum: 1, maximum: 19 }
+        machineType: { type: string, minLength: 1, maxLength: 120 }
+        clampTonnage: { $ref: "#/components/schemas/ToolingMeasurement" }
+    ToolingProcessChainRevision:
+      type: object
+      additionalProperties: false
+      required: [globalId, processChainGlobalId, chainVersion, predecessorGlobalId, steps, reason, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        processChainGlobalId: { type: string, format: uuid }
+        chainVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        steps:
+          type: array
+          minItems: 2
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingProcessStep" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingSetRevisionBinding:
+      type: object
+      additionalProperties: false
+      required: [globalId, toolingMasterGlobalId, toolingSetGlobalId, toolingSetSnapshotHash, toolingRevisionGlobalId, toolingRevisionSnapshotHash, reason, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CreateToolingRevision:
+      type: object
+      additionalProperties: false
+      required: [toolingMasterGlobalId, revisionLabel, specification, cavities, inserts, externalIdentities, designDocumentRevisions, reason]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        revisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        specification: { $ref: "#/components/schemas/ToolingSpecification" }
+        cavities:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items: { $ref: "#/components/schemas/CreateToolingCavityMapping" }
+        inserts:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/CreateToolingInsertApplicability" }
+        externalIdentities:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/CreateToolingExternalIdentity" }
+        designDocumentRevisions:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ToolingDocumentRevisionReference" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    CreatePartControlledSpecification:
+      type: object
+      additionalProperties: false
+      required: [partRevisionGlobalId, items, externalIdentities]
+      properties:
+        partRevisionGlobalId: { type: string, format: uuid }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/CreatePartControlledSpecificationItem" }
+        externalIdentities:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/CreateToolingExternalIdentity" }
+    CreateToolingProcessChainRevision:
+      type: object
+      additionalProperties: false
+      required: [steps, reason]
+      properties:
+        processChainGlobalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        steps:
+          type: array
+          minItems: 2
+          maxItems: 20
+          items: { $ref: "#/components/schemas/CreateToolingProcessStep" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    CreateToolingSetRevisionBinding:
+      type: object
+      additionalProperties: false
+      required: [toolingSetGlobalId, toolingRevisionGlobalId, reason]
+      properties:
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        reason: { type: string, minLength: 1, maxLength: 500 }
     CreateEngineeringPart:
       type: object
       additionalProperties: false

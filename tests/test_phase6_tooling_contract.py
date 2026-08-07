@@ -47,6 +47,27 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "CreateToolingSet",
             "CreateToolingIntake",
             "CreateToolingIntakeEvidenceReference",
+            "ToolingMeasurement",
+            "ToolingSpecification",
+            "ToolingCavityMapping",
+            "CreateToolingCavityMapping",
+            "ToolingInsertApplicability",
+            "CreateToolingInsertApplicability",
+            "ToolingExternalIdentity",
+            "CreateToolingExternalIdentity",
+            "ToolingDocumentRevisionReference",
+            "ToolingRevision",
+            "PartControlledSpecificationItem",
+            "CreatePartControlledSpecificationItem",
+            "PartControlledSpecification",
+            "ToolingProcessStep",
+            "CreateToolingProcessStep",
+            "ToolingProcessChainRevision",
+            "ToolingSetRevisionBinding",
+            "CreateToolingRevision",
+            "CreatePartControlledSpecification",
+            "CreateToolingProcessChainRevision",
+            "CreateToolingSetRevisionBinding",
         )
         for name in schema_names:
             with self.subTest(name=name):
@@ -96,6 +117,10 @@ class Phase6ToolingContractTest(unittest.TestCase):
                 "CreateToolingSet",
                 "CreateToolingIntake",
                 "CreateToolingIntakeEvidenceReference",
+                "CreateToolingRevision",
+                "CreatePartControlledSpecification",
+                "CreateToolingProcessChainRevision",
+                "CreateToolingSetRevisionBinding",
             )
         )
         for forbidden in (
@@ -166,6 +191,8 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "EngineeringPart", "EngineeringPartRevision", "ToolingRequirement",
             "ToolingMaster", "ToolingApplicability", "ToolingCommandIdempotency",
             "ToolingSet", "ToolingIntake", "ToolingIntakeEvidenceReference",
+            "ToolingRevision", "PartControlledSpecification",
+            "ToolingProcessChainRevision", "ToolingSetRevisionBinding",
         ):
             self.assertIn(f"  {object_name}:\n", OWNERSHIP)
         self.assertIn("formal_item_mapping: {owner: ERPNEXT", OWNERSHIP)
@@ -173,10 +200,41 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertIn("lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY", OWNERSHIP)
         self.assertIn("raw_idempotency_key:", OWNERSHIP)
         self.assertIn("conflict: NEVER_PERSIST", OWNERSHIP)
-        self.assertIn("exact_source_tooling_revision: {owner: FUTURE_P6_03", OWNERSHIP)
+        self.assertIn("exact_source_tooling_revision: {owner: NPI_ONE_TOOLING_REVISION_COMMAND", OWNERSHIP)
+        self.assertIn("conflict: INITIAL_BINDING_ONLY", OWNERSHIP)
         self.assertIn("formal_supplier: {owner: ERPNEXT", OWNERSHIP)
         self.assertIn("raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE", OWNERSHIP)
         self.assertIn("conflict: NEVER_EXPOSE_OR_MUTATE", OWNERSHIP)
+
+    def test_p6_03_components_are_frozen_while_routes_stay_closed(self) -> None:
+        revision = _schema("ToolingRevision")
+        part_specification = _schema("PartControlledSpecification")
+        chain = _schema("ToolingProcessChainRevision")
+        binding = _schema("ToolingSetRevisionBinding")
+        self.assertIn("specification:", revision)
+        self.assertIn("cavities:", revision)
+        self.assertIn("designDocumentRevisions:", revision)
+        self.assertIn("partRevisionSnapshotHash:", part_specification)
+        self.assertIn("processChainGlobalId:", chain)
+        self.assertIn("toolingSetSnapshotHash:", binding)
+        combined = "\n".join((revision, part_specification, chain, binding)).casefold()
+        for forbidden in ("lifecycle", "approved", "released", "assetid", "supplierid"):
+            self.assertNotIn(forbidden, combined)
+        paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
+        for path in (
+            "/tooling-revisions:",
+            "/part-controlled-specifications:",
+            "/tooling-process-chain-revisions:",
+            "/tooling-set-revision-bindings:",
+        ):
+            self.assertNotIn(path, paths)
+        for command in (
+            "tooling_api.create_tooling_revision",
+            "tooling_api.create_part_controlled_specification",
+            "tooling_api.create_tooling_process_chain_revision",
+            "tooling_api.create_tooling_set_revision_binding",
+        ):
+            self.assertNotIn(command, BFF)
 
 
 if __name__ == "__main__":

@@ -109,6 +109,41 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             "sha256", "created_by_user_id", "created_at", "request_id",
             "trace_id", "evidence_snapshot", "snapshot_hash",
         },
+        "npi_tooling_revision": {
+            "global_id", "revision_key_hash", "tenant_id",
+            "project_global_id", "tooling_master",
+            "tooling_master_global_id", "revision_number", "revision_label",
+            "predecessor_global_id", "predecessor_snapshot_hash",
+            "specification_snapshot", "cavity_snapshot", "insert_snapshot",
+            "external_identity_snapshot", "design_document_revision_snapshot",
+            "reason", "created_by_user_id", "created_at", "request_id",
+            "trace_id", "revision_snapshot", "snapshot_hash",
+        },
+        "npi_part_controlled_specification": {
+            "global_id", "specification_key_hash", "tenant_id",
+            "project_global_id", "engineering_part", "part_global_id",
+            "engineering_part_revision", "part_revision_global_id",
+            "part_revision_snapshot_hash", "item_snapshot",
+            "external_identity_snapshot", "created_by_user_id", "created_at",
+            "request_id", "trace_id", "specification_snapshot",
+            "snapshot_hash",
+        },
+        "npi_tooling_process_chain_revision": {
+            "global_id", "process_chain_global_id", "version_key_hash",
+            "tenant_id", "project_global_id", "chain_version",
+            "predecessor_global_id", "predecessor_snapshot_hash",
+            "step_snapshot", "reason", "created_by_user_id", "created_at",
+            "request_id", "trace_id", "chain_snapshot", "snapshot_hash",
+        },
+        "npi_tooling_set_revision_binding": {
+            "global_id", "binding_key_hash", "tenant_id",
+            "project_global_id", "tooling_master_global_id", "tooling_set",
+            "tooling_set_global_id", "tooling_set_snapshot_hash",
+            "tooling_revision", "tooling_revision_global_id",
+            "tooling_revision_snapshot_hash", "reason", "created_by_user_id",
+            "created_at", "request_id", "trace_id", "binding_snapshot",
+            "snapshot_hash",
+        },
     }
 
     def load(self, folder: str) -> dict[str, object]:
@@ -145,6 +180,10 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             "npi_tooling_set",
             "npi_tooling_intake",
             "npi_tooling_intake_evidence_reference",
+            "npi_tooling_revision",
+            "npi_part_controlled_specification",
+            "npi_tooling_process_chain_revision",
+            "npi_tooling_set_revision_binding",
         ):
             metadata = self.load(folder)
             self.assertEqual(metadata.get("permissions"), [SYSTEM_MANAGER_APPEND, API_APPEND])
@@ -170,6 +209,10 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 "tooling_set.create",
                 "tooling_intake.create",
                 "tooling_intake_evidence.create",
+                "tooling_revision.create",
+                "part_controlled_specification.create",
+                "tooling_process_chain_revision.create",
+                "tooling_set_revision_binding.create",
             ],
         )
         self.assertEqual(
@@ -184,6 +227,10 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 "tooling_set",
                 "tooling_intake",
                 "tooling_intake_evidence",
+                "tooling_revision",
+                "part_controlled_specification",
+                "tooling_process_chain_revision",
+                "tooling_set_revision_binding",
             ],
         )
 
@@ -259,6 +306,31 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             ],
         )
 
+    def test_revision_objects_are_exact_append_only_and_do_not_claim_lifecycle(self) -> None:
+        revision = self.fields(self.load("npi_tooling_revision"))
+        part_specification = self.fields(
+            self.load("npi_part_controlled_specification")
+        )
+        chain = self.fields(self.load("npi_tooling_process_chain_revision"))
+        binding = self.fields(self.load("npi_tooling_set_revision_binding"))
+        self.assertEqual(revision["tooling_master"].get("options"), "NPI Tooling Master")
+        self.assertEqual(
+            part_specification["engineering_part_revision"].get("options"),
+            "NPI Engineering Part Revision",
+        )
+        self.assertIn("step_snapshot", chain)
+        self.assertEqual(binding["tooling_set"].get("options"), "NPI Tooling Set")
+        self.assertEqual(
+            binding["tooling_revision"].get("options"),
+            "NPI Tooling Revision",
+        )
+        for fields in (revision, part_specification, chain, binding):
+            for forbidden in (
+                "status", "lifecycle_state", "supplier_id", "asset_id",
+                "location", "shot_count",
+            ):
+                self.assertNotIn(forbidden, fields)
+
     def test_all_controllers_require_closed_command_flag_and_deny_delete(self) -> None:
         validation = VALIDATION.read_text(encoding="utf-8")
         self.assertIn('TOOLING_COMMAND_WRITE_FLAG = "npi_tooling_command_write"', validation)
@@ -296,7 +368,11 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
 
     def test_all_visible_sources_have_symmetric_chinese_translations(self) -> None:
         sources: set[str] = set()
-        python_paths = [VALIDATION, VALIDATION.with_name("domain.py")]
+        python_paths = [
+            VALIDATION,
+            VALIDATION.with_name("domain.py"),
+            VALIDATION.with_name("revision_domain.py"),
+        ]
         for folder in self.FIELDS:
             metadata = self.load(folder)
             sources.add(str(metadata["name"]))

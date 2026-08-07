@@ -372,7 +372,7 @@ objects:
     fields:
       exact_revision_identity_predecessor_and_reason: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       immutable_snapshot_hash_and_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
-      material_color_compliance_and_process_specification: {owner: FUTURE_P6_03_PART_SPECIFICATION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      material_color_compliance_and_process_specification: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
 
   ToolingRequirement:
     owner_system: NPI_ONE
@@ -387,7 +387,8 @@ objects:
     erp_view: summary_link
     fields:
       stable_logical_identity_title_and_origin: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
-      revision_and_physical_set_truth: {owner: FUTURE_P6_02_P6_03_TOOLING_COMMANDS, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      immutable_revision_history: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      physical_set_truth: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
       formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
 
   ToolingApplicability:
@@ -404,7 +405,7 @@ objects:
     fields:
       physical_set_identity_master_requirement_and_serial: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
       customer_ownership_custody_repair_authorization_and_return_provenance: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
-      exact_source_tooling_revision: {owner: FUTURE_P6_03_TOOLING_REVISION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      exact_source_tooling_revision: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: INITIAL_BINDING_ONLY}
       formal_supplier: {owner: ERPNEXT, editable_in: [FUTURE_P6_04_ERP_PROJECTION], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
       lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
       formal_asset_id_state_location_shot_count_and_maintenance: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
@@ -425,6 +426,38 @@ objects:
       immutable_file_hash_metadata_snapshot: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
       raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_EXPOSE_OR_MUTATE}
       external_customer_signature_or_approval: {owner: FUTURE_APPROVED_CUSTOMER_AUTHORITY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_master_revision_predecessor_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      unit_bearing_specification_cavity_insert_and_external_identity_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_design_document_revision_references: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      lifecycle_state_and_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  PartControlledSpecification:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_part_revision_identity_and_snapshot_hash: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      material_color_compliance_process_and_external_identity_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_mapping: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolingProcessChainRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_chain_version_predecessor_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      ordered_part_and_tooling_revision_step_snapshot: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      combined_trial_result: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingSetRevisionBinding:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_set_and_source_revision_snapshot_hashes: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: INITIAL_BINDING_ONLY}
+      binding_identity_reason_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
 
   ToolingCommandIdempotency:
     owner_system: NPI_ONE_TOOLING_COMMAND

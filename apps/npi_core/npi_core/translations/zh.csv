@@ -4209,3 +4209,104 @@ Transport provider,运输服务方
 Transport reference,运输引用
 Water circuit,水路
 NPI One,NPI One
+A Part Revision is unavailable for this process chain.,此工艺链无法使用该零件修订。
+A Tooling Applicability is unavailable for this revision.,此修订无法使用某个模具适用关系。
+A Tooling Revision is unavailable for this process chain.,此工艺链无法使用某个模具修订。
+A design Document Revision is unavailable.,某个设计文档修订不可用。
+A primary molding step cannot have a parent step.,主成型步骤不能有父步骤。
+A process chain requires at least two ordered steps.,工艺链至少需要两个有序步骤。
+A process parent must be an earlier step.,工艺父步骤必须是更早的步骤。
+A secondary process must consume its parent output.,二次工艺必须使用父步骤输出。
+A secondary process step requires its parent step.,二次工艺步骤需要父步骤。
+A successor version requires its exact predecessor.,后续版本需要其精确前置版本。
+At least one controlled specification is required.,至少需要一项受控规格。
+At least one input Part Revision is required.,至少需要一个输入零件修订。
+Cavity Snapshot,型腔快照
+Cavity identifiers must be unique.,型腔标识必须唯一。
+Cavity rows must match the declared cavity count.,型腔行必须与声明的型腔数一致。
+Design Document Revision Snapshot,设计文档修订快照
+Engineering Part Revision,工程零件修订
+Enter a positive decimal value.,请输入正十进制数值。
+Enter a valid Tooling specification.,请输入有效的模具规格。
+Enter a valid closed object.,请输入有效的封闭对象。
+Enter a valid unit-bearing measurement.,请输入带单位的有效测量值。
+External Identity Snapshot,外部标识快照
+External Identity Snapshot does not match.,外部标识快照不匹配。
+External identities and effectivity must be unique.,外部标识及其有效期必须唯一。
+Insert Snapshot,镶件快照
+Insert versions must be unique.,镶件版本必须唯一。
+NPI Part Controlled Specification,NPI 零件受控规格
+NPI Tooling Process Chain Revision,NPI 模具工艺链修订
+NPI Tooling Revision,NPI 模具修订
+NPI Tooling Set Revision Binding,NPI 模具套修订绑定
+Only the first process step can be primary molding.,只有第一个工艺步骤可以是主成型。
+Part Controlled Specification Snapshot,零件受控规格快照
+Part Controlled Specification Snapshot Hash does not match.,零件受控规格快照哈希不匹配。
+Part Controlled Specification fields do not match the exact snapshot.,零件受控规格字段与精确快照不匹配。
+Part Revision Snapshot Hash,零件修订快照哈希
+Part Specification Item Snapshot,零件规格项快照
+Part Specification Item Snapshot does not match.,零件规格项快照不匹配。
+Part Specification Key Hash,零件规格键哈希
+Part Specification Key Hash does not match.,零件规格键哈希不匹配。
+Predecessor Process Chain Global ID,前置工艺链全局标识
+Predecessor Tooling Revision Global ID,前置模具修订全局标识
+Process Chain Global ID,工艺链全局标识
+Process Chain Revision Reason,工艺链修订原因
+Process Chain Revision Snapshot,工艺链修订快照
+Process Chain Revision Snapshot Hash does not match.,工艺链修订快照哈希不匹配。
+Process Chain Revision fields do not match the exact snapshot.,工艺链修订字段与精确快照不匹配。
+Process Chain Version,工艺链版本
+Process Chain Version Key Hash,工艺链版本键哈希
+Process Chain Version Key Hash does not match.,工艺链版本键哈希不匹配。
+Process Step Snapshot,工艺步骤快照
+Process Step Snapshot does not match.,工艺步骤快照不匹配。
+Process step order must be contiguous.,工艺步骤顺序必须连续。
+Set Revision Binding Key Hash,模具套修订绑定键哈希
+Set Revision Binding Key Hash does not match.,模具套修订绑定键哈希不匹配。
+Set Revision Binding Reason,模具套修订绑定原因
+Set Revision Binding Snapshot,模具套修订绑定快照
+Set Revision Binding Snapshot Hash does not match.,模具套修订绑定快照哈希不匹配。
+Set Revision Binding fields do not match the exact snapshot.,模具套修订绑定字段与精确快照不匹配。
+The Part specification key does not match.,零件规格键不匹配。
+The Part specification snapshot hash does not match.,零件规格快照哈希不匹配。
+The Set-source binding key does not match.,模具套来源绑定键不匹配。
+The Set-source binding snapshot hash does not match.,模具套来源绑定快照哈希不匹配。
+The Tooling Master is unavailable for this revision.,此修订无法使用该模具主档。
+The Tooling Revision does not advance its exact predecessor.,模具修订未从其精确前置修订顺序推进。
+The Tooling Revision is unavailable for this source binding.,此来源绑定无法使用该模具修订。
+The Tooling Revision key does not match.,模具修订键不匹配。
+The Tooling Revision snapshot hash does not match.,模具修订快照哈希不匹配。
+The Tooling Set is unavailable for this source binding.,此来源绑定无法使用该模具套。
+The exact Part Revision is unavailable for this specification.,此规格无法使用该精确零件修订。
+The first process step must be primary molding.,第一个工艺步骤必须是主成型。
+The first version cannot have a predecessor.,第一个版本不能有前置版本。
+The predecessor Process Chain Revision is unavailable.,前置工艺链修订不可用。
+The predecessor Tooling Revision is unavailable.,前置模具修订不可用。
+The process-chain snapshot hash does not match.,工艺链快照哈希不匹配。
+The process-chain version does not advance its exact predecessor.,工艺链版本未从其精确前置版本顺序推进。
+The process-chain version key does not match.,工艺链版本键不匹配。
+Tooling Revision,模具修订
+Tooling Revision Global ID,模具修订全局标识
+Tooling Revision Key Hash,模具修订键哈希
+Tooling Revision Key Hash does not match the exact revision.,模具修订键哈希与精确修订不匹配。
+Tooling Revision Label,模具修订标签
+Tooling Revision Number,模具修订编号
+Tooling Revision Reason,模具修订原因
+Tooling Revision Snapshot,模具修订快照
+Tooling Revision Snapshot Hash,模具修订快照哈希
+Tooling Revision Snapshot Hash does not match.,模具修订快照哈希不匹配。
+Tooling Revision fields do not match the exact snapshot.,模具修订字段与精确快照不匹配。
+Tooling Set Snapshot Hash,模具套快照哈希
+Tooling Specification Snapshot,模具规格快照
+Unvalidated inserts cannot retain validation evidence.,未验证的镶件不能保留验证证据。
+Validated insert evidence is required.,已验证镶件需要验证证据。
+Values must be unique within this list.,此列表内的值必须唯一。
+part_controlled_specification,零件受控规格
+part_controlled_specification.create,创建零件受控规格
+tooling_process_chain_revision,模具工艺链修订
+tooling_process_chain_revision.create,创建模具工艺链修订
+tooling_revision,模具修订
+tooling_revision.create,创建模具修订
+tooling_set_revision_binding,模具套修订绑定
+tooling_set_revision_binding.create,创建模具套修订绑定
+{field} does not match the exact Tooling Revision.,{field} 与精确模具修订不匹配。
