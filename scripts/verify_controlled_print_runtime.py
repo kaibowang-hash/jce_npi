@@ -731,7 +731,6 @@ def run_fresh(base_url: str, administrator, fixture_password: str) -> dict[str, 
         payload=create_payload(project_id, source_version),
         csrf_token=actor_csrf,
         idempotency_key=CREATE_KEY,
-        create_diagnostic=True,
         correlation_label="p506-create",
     )
     if created.status != 201:

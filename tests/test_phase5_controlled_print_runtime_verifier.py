@@ -177,10 +177,10 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
             },
         )
 
-    def test_fresh_runtime_activates_the_new_bounded_create_diagnostic(self) -> None:
+    def test_fresh_runtime_keeps_the_bounded_create_diagnostic_closed(self) -> None:
         fresh_source = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]
 
-        self.assertIn("create_diagnostic=True", fresh_source)
+        self.assertNotIn("create_diagnostic=True", fresh_source)
 
     def test_server_diagnostic_reader_is_exact_allowlisted_and_bounded(self) -> None:
         module = self.module

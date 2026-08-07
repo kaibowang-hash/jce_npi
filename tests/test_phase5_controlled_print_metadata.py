@@ -206,6 +206,15 @@ class Phase5ControlledPrintMetadataTest(unittest.TestCase):
             )
             self.assertIn("_IMMUTABLE_FIELDS", source)
 
+    def test_snapshot_validation_serializes_only_thawed_source_payload(self) -> None:
+        helper = VALIDATION.read_text(encoding="utf-8")
+
+        self.assertIn(
+            'value.snapshot_payload()["sourceSnapshot"]',
+            helper,
+        )
+        self.assertNotIn("canonical_json(value.source_snapshot)", helper)
+
 
 if __name__ == "__main__":
     unittest.main()

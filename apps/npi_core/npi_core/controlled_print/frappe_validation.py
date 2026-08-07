@@ -267,7 +267,9 @@ def validate_snapshot(document: Any) -> None:
     document.source_global_id = str(value.source.source_global_id)
     document.source_version = value.source.source_version
     document.source_state = value.source.source_state
-    document.source_snapshot = canonical_json(value.source_snapshot)
+    document.source_snapshot = canonical_json(
+        value.snapshot_payload()["sourceSnapshot"]
+    )
     document.source_snapshot_hash = value.source.source_snapshot_hash
     document.mapping_global_id = str(value.registry.mapping_global_id)
     document.registry_global_id = str(value.registry.registry_global_id)
