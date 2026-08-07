@@ -1,33 +1,35 @@
 # Active Execution Goal
 
-Updated: `2026-08-06T13:14:50Z`
+Updated: `2026-08-07T00:50:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P5-05 FORMAL ITEM/MBOM PUBLISH REQUEST`
+- Mode: `IN_PROGRESS_REQUIREMENT_AUDIT — P5-06 CONTROLLED PRINT FOUNDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `4f4baf97fc0db787decd6c5a5bdcca1c90c2da79` (pushed; workspace code
-  `358db2045e944d9d3bebb738245938977801028c`)
+  `7624497acf19ca280d7331c41d4fc2eedb69e12e` (pushed; P5-05 product code,
+  controlled runtime and patched dependency lock are unchanged by the active
+  evidence-only transition)
 - Latest complete normal CI:
-  `31104305011` (`PASS`, exact SHA `4f4baf9`; repository `92625383049`,
-  complete E2E, Gitleaks/history and fixed-Linux visual `92625383029` passed
-  `65/65`; controlled job `92625384089` correctly skipped)
+  `31134844746` (`PASS`, exact SHA `7624497`; repository `92731803737`,
+  complete E2E, Gitleaks/history and fixed-Linux visual `92731803668` passed
+  `65/65`; controlled job `92731804178` correctly skipped)
 - Latest controlled-Site run:
-  `31090154694` (`PASS`, exact SHA `2c0734a`, diagnostic activation closed;
-  repository `92578962756`, controlled `92578962766`, visual `92578962797`)
+  `31135330539` (`PASS`, exact SHA `7624497`, all diagnostic activation
+  closed; repository `92733288503`, controlled `92733288519`, visual
+  `92733288492`)
 - Controlled PASS artifact:
-  `8963145655`, GitHub SHA-256
-  `04bccbcb01a1028075c1472cf02d7b4bffa41362de2804ebaf2892890ae898df`
+  `8977753018`, GitHub SHA-256
+  `bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`
 - Current controller task:
-  `P5-05 — Formal publish request stub and contract`
-  (`IN_PROGRESS — CONTROLLED-SITE RUNTIME AND FINAL GATES`)
-- Current Requirement ID:
-  `FR-DS-013`
-- Completed P5-04 evidence:
-  `implementation/evidence/phase-5/p5-04-validation.md`
+  `P5-06 — Controlled print registry and immutable output snapshot foundation`
+  (`IN_PROGRESS — REQUIREMENT AND DOMAIN AUDIT`)
+- Current Requirement IDs:
+  `FR-PRN-001`, `FR-PRN-002`
+- Completed P5-05 evidence:
+  `implementation/evidence/phase-5/p5-05-validation.md`
 - Current product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`IN_PROGRESS`)
 - Latest complete product Phase:
@@ -35,30 +37,26 @@ Updated: `2026-08-06T13:14:50Z`
 
 ## Authoritative current atomic scope
 
-P5-04 passed Level 2 at exact checkpoint `2c0734a`: ordinary CI
-`31089637022` and the final unchanged controlled-Site Gate `31090154694`
-passed with all diagnostics closed. `FR-DS-011` and `FR-DS-012` are
-`TECHNICAL_VERIFIED`; their retained history is not reopened by P5-05.
+P5-05 passed Level 2 at exact checkpoint `7624497`: ordinary CI
+`31134844746` and final unchanged controlled-Site Gate `31135330539` passed
+with diagnostics closed. `FR-DS-013` is
+`TECHNICAL_VERIFIED_FOUNDATION`: NPI-owned request truth, Mock no-contact
+behavior and the disposable-Site runtime are proven, while formal ERPNext
+execution remains deferred to Phase 8.
 
-P5-05 is active only for `FR-DS-013`. Checkpoints 1 through 3 are closed at
-`4f4baf9` and ordinary CI `31104305011`. The pure domain, closed contract,
-additive guarded metadata, exact released-input/published-policy repository,
-independent requester authority, actor-bound idempotency, atomic audit/
-persistence, operation-specific BFF, dense publish workspace and exact
-trilingual browser/visual evidence pass. Mock is the only enabled Phase 5
-target and can end only at `validated` or `manual_intervention`; it cannot
-return ERP identifiers or `succeeded`.
+The reconciliation-amended Phase 5 anchor contains a further planned P0
+slice. P5-06 is therefore the first unfinished atomic task and is active only
+for `FR-PRN-001` and `FR-PRN-002`: a generic server-side Print Format registry
+and immutable controlled-output snapshot foundation with language, version,
+hash, provenance and audit truth. The exact forms, signers, copy count and
+production print policy in `FR-PRN-003` remain decision-held by `DR-REC-003`
+and `DR-REC-004`; P5-06 must not invent them or install production defaults.
 
-The active slice is now checkpoint 4: extend the existing controlled
-disposable-Site lane with exact P5-05 policy, released input, Mock create/read,
-replay/conflict, no-fake-success, route-disable/recovery and cleanup proof;
-pass ordinary CI; run one unchanged controlled Gate; then complete P5-05
-Level 2 and Phase 5 Level 3 release-gate review.
-
-Production endpoints/credentials, any network dispatch, formal Item/MBOM
-mutation, worker retry/replay, webhooks and reconciliation remain prohibited
-and deferred to Phase 8. The active evidence and full scope/test/rollback map
-are in `implementation/evidence/phase-5/p5-05-plan.md`.
+The complete final CI at `7624497` is reusable release-readiness evidence, but
+Phase 5 remains `IN_PROGRESS` until this planned P0 print foundation is
+implemented and its own Level 2 evidence passes. Production endpoints,
+credentials, ERPNext mutation/network dispatch, exact production forms and
+formal release semantics remain prohibited.
 
 ## Retained P5-04 recovery history
 

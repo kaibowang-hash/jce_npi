@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-06T13:14:50Z`
+Updated: `2026-08-07T00:50:00Z`
 
 ## Authority and operating mode
 
@@ -608,3 +608,39 @@ repeat or rewrite it merely to restore context. See
   one unchanged controlled Gate, P5-05 Level 2 and Phase 5 Level 3. No
   Requirement, API, permission, Schema, ownership, transaction, idempotency,
   audit or PASS criterion changed.
+
+## 2026-08-07 P5-05 final PASS and automatic P5-06 transition
+
+- Original controlled-runtime Hard Blocker is closed at exact product
+  checkpoint `7624497acf19ca280d7331c41d4fc2eedb69e12e`. Ordinary CI
+  `31134844746` passed repository `92731803737`, complete E2E/history secret
+  scan and fixed-Linux visual `92731803668` at `65/65`; controlled runtime
+  correctly skipped.
+- Final unchanged controlled Gate `31135330539` passed repository
+  `92733288503`, controlled disposable Site `92733288519` and visual
+  `92733288492`. Artifact `8977753018` records
+  `scope=p5-01-through-p5-05`; its GitHub SHA-256 is
+  `bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`
+  and extracted `result.txt` SHA-256 is
+  `ce1e67fa1626b730be409281b5f0421bcea6817e7043364c19456f075491f17f`.
+- GitHub Actions workflow `31115995065` failed before checkout while the
+  official Actions component was in partial outage; its `Service Unavailable`
+  action-download error was external and did not reopen product truth.
+- The next ordinary run exposed newly published high-severity advisory
+  `CVE-2026-59870` only through the transitive development path
+  `stylelint -> cosmiconfig -> js-yaml`. Commit `7624497` updates the lock from
+  compatible `js-yaml` `4.3.0` to patched `4.3.1`; both exact-SHA runs prove
+  zero npm vulnerabilities without changing product behavior or thresholds.
+- Release-gate review concludes `PASS — LEVEL 2 P5-05`.
+  `FR-DS-013` is `TECHNICAL_VERIFIED_FOUNDATION`; production Item/MBOM
+  execution remains owned by ERPNext and deferred to Phase 8. There is no
+  active technical Hard Blocker.
+- The reconciliation-amended Phase 5 requirement anchor includes planned P0
+  print foundation `M4-06`. Phase 5 therefore remains `IN_PROGRESS`, and
+  Autopilot activates P5-06 for `FR-PRN-001` and `FR-PRN-002`: only a generic
+  server-side Print Format registry and immutable controlled-output snapshot
+  foundation. The full CI at `7624497` is reusable release-readiness evidence,
+  not a premature terminal Phase Gate.
+- Exact production forms, signers, copy count and policy under `FR-PRN-003`
+  remain held for P5-07 by `DR-REC-003` and `DR-REC-004`. P5-06 may not invent
+  those business rules, install production defaults or contact ERPNext.

@@ -870,3 +870,23 @@ must preserve that boundary.
   validator and closes diagnostic activation. No product contract, permission
   or persistence shape changes. `NO_ACTIVE_HARD_BLOCKER`; affected/full
   ordinary CI and one final unchanged controlled Gate remain.
+
+## Current authoritative blocker state — 2026-08-07T00:50:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- Receipt-seal repair `5dabc02` passed complete ordinary CI `31115316755`.
+  After the official GitHub Actions major outage recovered, controlled job
+  `92727766901` in workflow `31133548117` passed the complete P5-01-through-
+  P5-05 disposable-Site runtime, proving the product hard blocker resolved.
+- That workflow's sole failure was a newly live npm advisory for transitive
+  development dependency `js-yaml@4.3.0`. Minimal lock-only repair `7624497`
+  selected compatible patched `4.3.1`; no product behavior or Gate rule
+  changed.
+- Exact-SHA ordinary CI `31134844746` and final unchanged workflow
+  `31135330539` passed repository, complete E2E, both secret lanes, `65/65`
+  visual verification and controlled runtime. Controlled artifact
+  `8977753018` records `result=PASS` and `scope=p5-01-through-p5-05`.
+- P5-05 is `PASS_LEVEL_2`. Phase 5 remains active only because the committed
+  reconciliation amendment still schedules the generic controlled-print
+  foundation for `FR-PRN-001/002`; this planned next task is not a Hard
+  Blocker. `FR-PRN-003` exact form/signature policy remains decision-held.

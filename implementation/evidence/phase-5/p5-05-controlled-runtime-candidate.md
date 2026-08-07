@@ -1,9 +1,9 @@
 # P5-05 Controlled Runtime Candidate
 
-Recorded: `2026-08-06T13:56:00Z`
+Recorded: `2026-08-07T00:50:00Z`
 
 Status:
-`UNIQUE POLICY-VERSION REPAIR READY FOR AFFECTED/FULL ORDINARY CI`
+`PASS — FINAL UNCHANGED CONTROLLED GATE`
 
 Requirement: `FR-DS-013`
 
@@ -288,3 +288,43 @@ field set and denial message. It also closes create diagnostic activation.
 There is no Requirement, API, role/permission, Schema, ownership,
 transaction, idempotency, audit or PASS-rule change. Affected and complete
 ordinary CI plus one final unchanged controlled Gate remain required.
+
+## Final convergence, security advisory repair and Gate PASS
+
+Receipt-seal repair `5dabc02` passed complete ordinary CI `31115316755`:
+repository `92663220768` passed `verify.sh`, complete E2E and both secret
+lanes; visual `92663220631` passed `65/65`; controlled runtime correctly
+skipped.
+
+Workflow `31115995065` then failed only while GitHub Actions was in an official
+major outage. Both controlled attempts stopped in `Set up job` before checkout
+with `Failed to resolve action download info` and `Service Unavailable`;
+repository and visual companions passed. No product or Gate code executed in
+those failed attempts.
+
+After GitHub Actions returned to operational/monitoring, exact-SHA workflow
+`31133548117` retained `5dabc02`. Controlled job `92727766901` passed the full
+P5-01-through-P5-05 Site runtime and visual job `92727766890` passed `65/65`.
+Repository job `92727766915` failed only because the live npm audit feed now
+reported CVE-2026-59870 against transitive development dependency
+`js-yaml@4.3.0`; every preceding repository test/build check passed.
+
+The bounded security repair `7624497` changes only the lock entry to the
+compatible patched `js-yaml@4.3.1`. Local audit reports zero vulnerabilities.
+Exact-SHA ordinary CI `31134844746` then passed repository `92731803737`,
+complete non-visual E2E/history scan and visual `92731803668` at `65/65`.
+
+The final unchanged workflow `31135330539` retained exact SHA `7624497` with
+all diagnostics closed. Repository `92733288503`, visual `92733288492` and
+controlled Site `92733288519` passed. Controlled artifact `8977753018` has
+GitHub digest
+`sha256:bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60`;
+its extracted `result.txt` SHA-256 is
+`ce1e67fa1626b730be409281b5f0421bcea6817e7043364c19456f075491f17f`
+and records exact SHA `7624497`, `result=PASS` and
+`scope=p5-01-through-p5-05`.
+
+P5-05 therefore passes Level 2. `FR-DS-013` is
+`TECHNICAL_VERIFIED_FOUNDATION`; real ERPNext execution and reconciliation
+remain Phase 8 scope. Durable validation is
+`implementation/evidence/phase-5/p5-05-validation.md`.

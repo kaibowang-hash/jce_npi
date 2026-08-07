@@ -1,46 +1,44 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — P5-05 CONTROLLED-SITE RUNTIME AND FINAL GATES`
+`IN_PROGRESS_REQUIREMENT_AUDIT — P5-06 CONTROLLED PRINT FOUNDATION`
 
-Recovery time: `2026-08-06T13:14:50Z`
+Recovery time: `2026-08-07T00:50:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery checkpoint:
-`4f4baf97fc0db787decd6c5a5bdcca1c90c2da79`
+`7624497acf19ca280d7331c41d4fc2eedb69e12e`
 
 ## Current authoritative action
 
-P5-05 checkpoints 1 through 3 are closed. Workspace product checkpoint
-`358db20`, bounded visual-governance repair `82d2359` and reviewed initial
-Linux baselines `4f4baf9` preserve exact Mock/no-contact truth, one primary
-action, direct three-language coverage and all existing visual criteria.
+P5-05 passed Level 2 at exact checkpoint `7624497`. Ordinary CI
+`31134844746` passed repository `92731803737` and visual `92731803668`; final
+unchanged controlled Gate `31135330539` passed repository `92733288503`,
+controlled runtime `92733288519` and visual `92733288492`. Evidence is
+`implementation/evidence/phase-5/p5-05-validation.md`.
 
-Complete ordinary CI `31104305011` passed repository `92625383049`, complete
-non-visual E2E, both secret lanes and fixed-Linux visual `92625383029` at
-`65/65`; controlled runtime correctly skipped. Evidence is
-`implementation/evidence/phase-5/p5-05-frontend-checkpoint.md`.
+The reconciliation amendment makes P5-06 the first unfinished atomic task.
+Its bounded first action is a Requirement/domain audit for `FR-PRN-001` and
+`FR-PRN-002`:
 
-The first unfinished atomic action is P5-05 checkpoint 4:
+1. inspect existing Frappe print hooks, formats and APIs together with current
+   contracts, ownership, immutable-file/snapshot and audit foundations;
+2. anchor both Requirement IDs and record the exact existing-code reuse/gaps;
+3. define the smallest generic server-side registry plus immutable output
+   snapshot boundary, including language, format version, content hash,
+   provenance, authorization, audit and BFF-only access;
+4. keep exact forms, signers, copy count and production policy out of scope;
+   `FR-PRN-003` remains held by `DR-REC-003` and `DR-REC-004`; and
+5. freeze changed-files to affected-tests mapping and rollback, then implement
+   one complete vertical slice after the audit passes.
 
-1. extend the existing fixed disposable-Site P5 verifier and independent
-   route switch to cover P5-05 without contacting ERPNext;
-2. provision only a visibly synthetic published requester policy and exact
-   released EBOM input through the existing guarded administrative contexts;
-3. prove Mock create, list/detail, exact replay, changed-payload conflict,
-   immutable node/mapping/result/audit truth, no Outbox/network/formal target
-   ID/`succeeded` state, route disable/recovery and bounded cleanup;
-4. update the controlled artifact scope to `p5-01-through-p5-05`, pass affected
-   verifier/runtime tests and complete ordinary CI; and
-5. dispatch one unchanged controlled Gate, then execute the P5-05 Level 2 and
-   Phase 5 Level 3 `release-gate` review with complete trace, rollback,
-   security, migration, i18n, accessibility and visual evidence.
-
-The complete scope, non-scope, risks, expected files, tests and rollback are
-frozen in `implementation/evidence/phase-5/p5-05-plan.md`. Production ERPNext
-access and Phase 8 execution/reconciliation remain inactive.
+No production ERPNext endpoint, credential, external dispatch, raw normal-user
+Desk CRUD or default production Print Format may be introduced. The complete
+full-repository CI at `7624497` is reusable readiness evidence, but the Phase 5
+terminal Level 3 Gate is not declared until the planned P0 print foundation
+completes.
 
 ## Authority
 

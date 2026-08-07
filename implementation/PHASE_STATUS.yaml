@@ -1,23 +1,23 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 5
-updated_at: '2026-08-06T10:59:30Z'
+updated_at: '2026-08-07T00:50:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P5-05
-current_task_status: IN_PROGRESS_IMPLEMENTATION
-current_task_completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-current_task_next_stage: REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
+current_task: P5-06
+current_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
+current_task_completed_stage: P5_05_LEVEL_2_PASS
+current_task_next_stage: PRINT_FOUNDATION_REQUIREMENT_DOMAIN_CONTRACT_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P5-05
-resumed_product_task_status: IN_PROGRESS_REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
+resumed_product_task: P5-06
+resumed_product_task_status: IN_PROGRESS_REQUIREMENT_AUDIT
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
   product_root_repairs_completed: 5
   environment_remediations: HISTORICAL_RETAINED_NOT_PRODUCT_ROOT_ROUNDS
   diagnostic_checkpoints: BEHAVIOR_NEUTRAL_NOT_PRODUCT_ROOT_ROUNDS
-  current_root: NONE_P5_05_FOUNDATION_CLEAN_CI
+  current_root: NONE_P5_05_LEVEL_2_PASS
   fifth_product_root_repair:
     commit: 2b067c1cbd0977d843780d386bfc882b80615b33
     proof: P503_BASELINE_WORKSPACE_REPOSITORY_RESPONSE_ATTRIBUTE_ERROR
@@ -543,7 +543,7 @@ p5_04:
     - implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md
     - implementation/evidence/phase-5/p5-04-validation.md
 p5_05:
-  status: IN_PROGRESS_IMPLEMENTATION
+  status: PASS_LEVEL_2
   requirements: [FR-DS-013]
   starting_product_checkpoint: 2c0734a4201ac5ee4b53eae913ce01172634da3f
   domain_contract_metadata_checkpoint: 258277cc018a9e8b72cccb921b94e84b3dd0cb59
@@ -551,8 +551,22 @@ p5_05:
   foundation_normal_ci: 31094889018
   foundation_repository_job: 92594388442
   foundation_visual_job: 92594388260
-  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_PERMISSION_IDEMPOTENCY_AUDIT_BFF
+  repository_api_checkpoint: f3018eb94a54fa63cd87e87fb501835510765145
+  frontend_checkpoint: 4f4baf97fc0db787decd6c5a5bdcca1c90c2da79
+  product_repair_checkpoint: 5dabc02c11832d1fcd82a89bbcc924683610ba41
+  final_checkpoint: 7624497acf19ca280d7331c41d4fc2eedb69e12e
+  final_normal_ci: 31134844746
+  final_normal_repository_job: 92731803737
+  final_normal_visual_job: 92731803668
+  final_unchanged_controlled_gate: 31135330539
+  final_repository_job: 92733288503
+  final_visual_job: 92733288492
+  final_controlled_job: 92733288519
+  controlled_artifact_id: 8977753018
+  controlled_artifact_digest: bccec9800be67c9194c18508d3627839db4f7e67d0ece154b2fbe566cdb45e60
+  controlled_result_sha256: ce1e67fa1626b730be409281b5f0421bcea6817e7043364c19456f075491f17f
+  completed_stage: LEVEL_2_TASK_GATE_PASS
+  next_stage: COMPLETE
   delivery_boundary: MOCK_DEFAULT_SANDBOX_READY_NO_PRODUCTION_OR_EXTERNAL_DISPATCH
   generic_execution_request_seed_accepted_as_completion: false
   outbox_inbox_foundation_accepted_as_completion: false
@@ -569,6 +583,25 @@ p5_05:
     - implementation/phase-5-requirement-anchor.md
     - implementation/evidence/phase-5/p5-05-plan.md
     - implementation/evidence/phase-5/p5-05-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-5/p5-05-repository-api-checkpoint.md
+    - implementation/evidence/phase-5/p5-05-frontend-checkpoint.md
+    - implementation/evidence/phase-5/p5-05-controlled-runtime-candidate.md
+    - implementation/evidence/phase-5/p5-05-validation.md
+p5_06:
+  status: IN_PROGRESS_REQUIREMENT_AUDIT
+  backlog_task: M4-06
+  requirements: [FR-PRN-001, FR-PRN-002]
+  next_stage: REQUIREMENT_DOMAIN_CONTRACT_AUDIT
+  delivery_boundary: GENERIC_CONTROLLED_PRINT_REGISTRY_AND_IMMUTABLE_SNAPSHOT_FOUNDATION
+  exact_form_policy_active: false
+  production_print_policy_active: false
+  decision_held_successor:
+    task: P5-07
+    requirement: FR-PRN-003
+    decisions: [DR-REC-003, DR-REC-004]
+  evidence:
+    - implementation/phase-5-requirement-anchor.md
+    - implementation/V1_2_RECONCILIATION_DECISIONS.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -592,7 +625,7 @@ phases:
   - {id: 2, name: Frappe Backend and Security Foundation, status: PASS, repair_round: 0, gate: implementation/phase-2-gate.md}
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
-  - {id: 5, name: Part Design Documents Baselines and EBOM, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04], current_task: P5-05}
+  - {id: 5, name: Part Design Documents Baselines and EBOM, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05], current_task: P5-06}
   - {id: 6, name: Tooling Domain, status: NOT_STARTED, repair_round: 0}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
