@@ -407,7 +407,7 @@ export class LiveControlledPrintDataSource implements ControlledPrintDataSource 
       throw requestNotReady();
     }
     throwIfCancelled(context.signal);
-    let replayed: boolean | null = null;
+    const responseMetadata: { replayed?: boolean } = {};
     try {
       const snapshot =
         await this.http.request<ControlledPrintSnapshotViewModel>(
@@ -430,14 +430,14 @@ export class LiveControlledPrintDataSource implements ControlledPrintDataSource 
               value.language === language,
             validateResponse: (response) => {
               const header = response.headers.get("Idempotency-Replayed");
-              replayed =
-                header === "true" ? true : header === "false" ? false : null;
-              return replayed !== null;
+              if (header !== "true" && header !== "false") return false;
+              responseMetadata.replayed = header === "true";
+              return true;
             },
           },
         );
-      if (replayed === null) throw requestNotReady();
-      return { replayed, snapshot };
+      if (responseMetadata.replayed === undefined) throw requestNotReady();
+      return { replayed: responseMetadata.replayed, snapshot };
     } catch (error) {
       throwIfCancelled(context.signal);
       throw error;
@@ -468,9 +468,6 @@ export class LiveControlledPrintDataSource implements ControlledPrintDataSource 
     if (!uuid(projectId) || !isControlledPrintSnapshotResponse(snapshot))
       throw requestNotReady();
     throwIfCancelled(signal);
-    let responseFileName: string | null = null;
-    let snapshotHash: string | null = null;
-    let outputHash: string | null = null;
     try {
       const blob = await this.http.request<Blob>(
         `/projects/${projectId}/controlled-prints/${snapshot.globalId}/content`,
@@ -494,22 +491,24 @@ export class LiveControlledPrintDataSource implements ControlledPrintDataSource 
               /^attachment; filename="([A-Za-z0-9._-]{1,140}[.]pdf)"$/u.exec(
                 disposition,
               );
-            responseFileName = match?.[1] ?? null;
-            snapshotHash = response.headers.get("X-NPI-Snapshot-Hash");
-            outputHash = response.headers.get("X-NPI-Output-Hash");
             return (
               response.headers.get("Content-Type")?.split(";", 1)[0]?.trim() ===
                 "application/pdf" &&
-              responseFileName === snapshot.output.fileName &&
-              snapshotHash === snapshot.snapshotHash &&
-              outputHash === snapshot.output.sha256
+              match?.[1] === snapshot.output.fileName &&
+              response.headers.get("X-NPI-Snapshot-Hash") ===
+                snapshot.snapshotHash &&
+              response.headers.get("X-NPI-Output-Hash") ===
+                snapshot.output.sha256
             );
           },
         },
       );
-      if (!responseFileName || !snapshotHash || !outputHash)
-        throw requestNotReady();
-      return { blob, fileName: responseFileName, outputHash, snapshotHash };
+      return {
+        blob,
+        fileName: snapshot.output.fileName,
+        outputHash: snapshot.output.sha256,
+        snapshotHash: snapshot.snapshotHash,
+      };
     } catch (error) {
       throwIfCancelled(signal);
       throw error;

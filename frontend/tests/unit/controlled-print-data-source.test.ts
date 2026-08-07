@@ -83,7 +83,7 @@ describe("Live controlled-print data source", () => {
       ),
     ).resolves.toEqual(response);
 
-    const [path, _init, options] = request.mock.calls[0] ?? [];
+    const [path, , options] = request.mock.calls[0] ?? [];
     expect(path).toBe(
       `/projects/${controlledPrintProjectId}/controlled-print/capability`,
     );
@@ -104,10 +104,14 @@ describe("Live controlled-print data source", () => {
     const response = controlledPrintSnapshotFixture();
     const http = new NpiHttpClient();
     const implementation = <T>(
-      _path: string,
-      _init: RequestInit = {},
+      path: string,
+      init: RequestInit = {},
       options: RequestOptions<T> = {},
     ): Promise<T> => {
+      expect(path).toBe(
+        `/projects/${controlledPrintProjectId}/controlled-prints`,
+      );
+      expect(init.method).toBe("POST");
       const headers = new Headers({ "Idempotency-Replayed": "true" });
       expect(options.validateResponse?.(new Response(null, { headers }))).toBe(
         true,
@@ -146,7 +150,9 @@ describe("Live controlled-print data source", () => {
       requireIdempotencyReplay: true,
       requirePrivateNoStore: true,
     });
-    expect(JSON.parse(String(init?.body))).toEqual({
+    expect(typeof init?.body).toBe("string");
+    if (typeof init?.body !== "string") throw new Error("Expected JSON body.");
+    expect(JSON.parse(init.body)).toEqual({
       ...controlledPrintSourceFixture(),
       language: "en",
     });
@@ -183,10 +189,14 @@ describe("Live controlled-print data source", () => {
     const blob = new Blob(["%PDF"], { type: "application/pdf" });
     const http = new NpiHttpClient();
     const implementation = <T>(
-      _path: string,
-      _init: RequestInit = {},
+      path: string,
+      init: RequestInit = {},
       options: RequestOptions<T> = {},
     ): Promise<T> => {
+      expect(path).toBe(
+        `/projects/${controlledPrintProjectId}/controlled-prints/${snapshot.globalId}/content`,
+      );
+      expect(init.method).toBeUndefined();
       const response = new Response(null, {
         headers: {
           "Content-Disposition":

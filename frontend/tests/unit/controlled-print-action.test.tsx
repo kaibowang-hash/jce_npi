@@ -55,6 +55,9 @@ const commandContext = {
   userId: "printer@example.invalid",
 };
 
+const createObjectUrl = vi.fn(() => "blob:controlled");
+const revokeObjectUrl = vi.fn((_url: string) => undefined);
+
 function renderAction(source = dataSource()) {
   return {
     source,
@@ -70,11 +73,13 @@ function renderAction(source = dataSource()) {
 }
 
 beforeEach(() => {
-  vi.spyOn(globalThis.URL, "createObjectURL").mockReturnValue(
-    "blob:controlled",
+  createObjectUrl.mockClear();
+  revokeObjectUrl.mockClear();
+  vi.spyOn(globalThis.URL, "createObjectURL").mockImplementation(
+    createObjectUrl,
   );
   vi.spyOn(globalThis.URL, "revokeObjectURL").mockImplementation(
-    () => undefined,
+    revokeObjectUrl,
   );
   vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
     () => undefined,
@@ -87,15 +92,18 @@ afterEach(() => {
 
 describe("controlled-print action truth", () => {
   it("starts without an implicit request and fails closed when no mapping is available", async () => {
+    const loadCapability = vi.fn(() =>
+      Promise.resolve(controlledPrintCapabilityFixture(false)),
+    );
+    const createSnapshot = vi.fn<ControlledPrintDataSource["createSnapshot"]>();
     const source = dataSource({
-      loadCapability: vi.fn(() =>
-        Promise.resolve(controlledPrintCapabilityFixture(false)),
-      ),
+      createSnapshot,
+      loadCapability,
     });
     const user = userEvent.setup();
     renderAction(source);
 
-    expect(source.loadCapability).not.toHaveBeenCalled();
+    expect(loadCapability).not.toHaveBeenCalled();
     expect(screen.getByText("Controlled print not checked")).toBeVisible();
     await user.click(
       screen.getByRole("button", {
@@ -110,20 +118,32 @@ describe("controlled-print action truth", () => {
         "No approved controlled print is available for this exact source, version, and language.",
       ),
     ).toBeVisible();
-    expect(source.createSnapshot).not.toHaveBeenCalled();
+    expect(createSnapshot).not.toHaveBeenCalled();
     expect(
       document.querySelectorAll('[data-visual-primary="true"]'),
     ).toHaveLength(0);
   });
 
   it("reviews one immutable create, exposes replay truth and downloads retained bytes", async () => {
-    const source = dataSource({
-      createSnapshot: vi.fn(() =>
+    const createSnapshot = vi.fn<ControlledPrintDataSource["createSnapshot"]>(
+      () =>
         Promise.resolve({
           replayed: true,
           snapshot: controlledPrintSnapshotFixture(),
         }),
-      ),
+    );
+    const download = vi.fn<ControlledPrintDataSource["download"]>(() => {
+      const snapshot = controlledPrintSnapshotFixture();
+      return Promise.resolve({
+        blob: new Blob(["%PDF"], { type: "application/pdf" }),
+        fileName: snapshot.output.fileName,
+        outputHash: snapshot.output.sha256,
+        snapshotHash: snapshot.snapshotHash,
+      });
+    });
+    const source = dataSource({
+      createSnapshot,
+      download,
     });
     const user = userEvent.setup();
     renderAction(source);
@@ -150,8 +170,8 @@ describe("controlled-print action truth", () => {
       await screen.findByText("Controlled PDF replayed from retained output"),
     ).toBeVisible();
     expect(screen.getByText("controlled-project-001.pdf")).toBeVisible();
-    expect(source.createSnapshot).toHaveBeenCalledOnce();
-    const createContext = vi.mocked(source.createSnapshot).mock.calls[0]?.[3];
+    expect(createSnapshot).toHaveBeenCalledOnce();
+    const createContext = createSnapshot.mock.calls[0]?.[3];
     expect(createContext).toMatchObject({
       csrfToken: commandContext.csrfToken,
     });
@@ -161,9 +181,9 @@ describe("controlled-print action truth", () => {
       screen.getByRole("button", { name: "Download retained PDF" }),
     );
     expect(await screen.findByText("Retained PDF downloaded")).toBeVisible();
-    expect(source.download).toHaveBeenCalledOnce();
-    expect(URL.createObjectURL).toHaveBeenCalledOnce();
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:controlled");
+    expect(download).toHaveBeenCalledOnce();
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(revokeObjectUrl).toHaveBeenCalledWith("blob:controlled");
   });
 
   it("retains the actor-bound idempotency key across a retryable create failure", async () => {
@@ -244,11 +264,14 @@ describe("controlled-print action truth", () => {
 
   it("aborts an active capability request on unmount", async () => {
     let signal: AbortSignal | undefined;
-    const source = dataSource({
-      loadCapability: vi.fn((_project, _source, _language, requestSignal) => {
+    const loadCapability = vi.fn<ControlledPrintDataSource["loadCapability"]>(
+      (_project, _source, _language, requestSignal) => {
         signal = requestSignal;
         return new Promise<ControlledPrintCapabilityViewModel>(() => undefined);
-      }),
+      },
+    );
+    const source = dataSource({
+      loadCapability,
     });
     const user = userEvent.setup();
     const rendered = renderAction(source);

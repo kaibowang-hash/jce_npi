@@ -89,19 +89,8 @@ export function ControlledPrintAction({
   }, []);
 
   useEffect(() => {
-    cancelActiveRequest();
-    idempotencyKey.current = null;
-    setState({ kind: "idle" });
     return cancelActiveRequest;
-  }, [
-    cancelActiveRequest,
-    dataSource,
-    locale,
-    projectId,
-    source.sourceGlobalId,
-    source.sourceKind,
-    source.sourceVersion,
-  ]);
+  }, [cancelActiveRequest]);
 
   const checkCapability = useCallback((): void => {
     cancelActiveRequest();

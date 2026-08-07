@@ -68,7 +68,7 @@ export function ObjectHeader({
           <SyncBadge state={source.syncState} />
         </div>
       </div>
-      {secondaryAction || primaryAction ? (
+      {secondaryAction ? (
         <div className="object-header__actions">
           {secondaryAction}
           {primaryAction ? (
@@ -82,6 +82,15 @@ export function ObjectHeader({
             </Button>
           ) : null}
         </div>
+      ) : primaryAction ? (
+        <Button
+          disabled={primaryAction.disabled}
+          id={primaryAction.id}
+          onClick={primaryAction.onClick}
+          visual="primary"
+        >
+          {primaryAction.label}
+        </Button>
       ) : null}
     </header>
   );
