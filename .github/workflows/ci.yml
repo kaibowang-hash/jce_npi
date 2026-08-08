@@ -98,6 +98,21 @@ jobs:
           NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3
         working-directory: frontend
       - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: p6-04-linux-visual-candidates
+          path: |
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/r1-06-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-01-tooling-live-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-01-tooling-live-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-02-tooling-set-live-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-02-tooling-set-live-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-04-manufacturing-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-04-manufacturing-*/**/*-diff.png
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: r1-06-linux-visual-evidence

@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -11,7 +11,7 @@ import type {
   ToolingReleasedDocumentEvidenceViewModel,
   ToolingRevisionCollectionViewModel,
 } from "../../src/api/tooling-data-source";
-import { NpiApiError } from "../../src/api/http";
+import { NpiApiError, NpiTransportError } from "../../src/api/http";
 import ToolingManufacturingWorkspace from "../../src/pages/tooling-manufacturing-workspace";
 import { renderWithLocale } from "../support/render";
 
@@ -27,6 +27,12 @@ const documentRevisionId = "99999999-9999-4999-8999-999999999999";
 const lifecycleId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const releaseEventId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const hash = (value: string) => value.repeat(64);
+
+function required<T>(value: T | undefined): T {
+  if (value === undefined)
+    throw new Error("The test fixture value is required.");
+  return value;
+}
 
 function released(): ToolingReleasedDocumentEvidenceViewModel {
   return {
@@ -267,6 +273,27 @@ describe("Tooling manufacturing workspace", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("retries an evidence-backed collection transport failure", async () => {
+    const loadPlans = vi
+      .fn<ToolingDataSource["loadManufacturingPlans"]>()
+      .mockRejectedValueOnce(
+        new NpiTransportError(
+          "network",
+          "trace-manufacturing-network",
+          "trace",
+        ),
+      )
+      .mockResolvedValueOnce(collection());
+    const user = userEvent.setup();
+    renderWorkspace(dataSource({ loadManufacturingPlans: loadPlans }));
+
+    await user.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(
+      await screen.findByRole("region", { name: "Manufacturing plan history" }),
+    ).toBeVisible();
+    expect(loadPlans).toHaveBeenCalledTimes(2);
+  });
+
   it("separates design release, manufacturing authorization and ERP truth", async () => {
     renderWorkspace(dataSource());
 
@@ -316,6 +343,212 @@ describe("Tooling manufacturing workspace", () => {
       ),
     ).toBeVisible();
     expect(createPlan).not.toHaveBeenCalled();
+  });
+
+  it("submits one complete successor plan with exact release and predecessor truth", async () => {
+    enableCommandSession();
+    const capability = required(collection().items[0]).designReleaseEvidence;
+    const createPlan = vi
+      .fn<ToolingDataSource["createManufacturingPlan"]>()
+      .mockResolvedValue({
+        designReleaseEvidence: capability,
+        plan: { ...plan(), planVersion: 2 },
+      });
+    const source = dataSource({ createManufacturingPlan: createPlan });
+    const user = userEvent.setup();
+    renderWorkspace(source);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Append plan Revision" }),
+    );
+    const editor = screen
+      .getByRole("heading", {
+        name: "Append immutable manufacturing plan Revision",
+      })
+      .closest("form");
+    if (!editor) throw new Error("The plan editor is required.");
+    const form = within(editor);
+    await user.selectOptions(
+      form.getByLabelText("Sourcing strategy"),
+      "supplier",
+    );
+    await user.clear(form.getByLabelText("Engineering estimate"));
+    await user.type(form.getByLabelText("Engineering estimate"), "121500.25");
+    await user.clear(form.getByLabelText("Budget fact"));
+    await user.type(form.getByLabelText("Budget fact"), "126000");
+    await user.clear(form.getByLabelText("Revision reason"));
+    await user.type(
+      form.getByLabelText("Revision reason"),
+      "Approved planning adjustment",
+    );
+    await user.click(
+      form.getByRole("button", { name: "Add released Document" }),
+    );
+    await user.click(
+      required(
+        form
+          .getAllByRole("button", { name: "Remove released Document" })
+          .at(-1),
+      ),
+    );
+    await user.click(form.getByRole("button", { name: "Add milestone" }));
+    await user.selectOptions(
+      required(form.getAllByLabelText("Category")[1]),
+      "delivery",
+    );
+    await user.selectOptions(
+      required(form.getAllByLabelText("Responsibility")[1]),
+      "supplier",
+    );
+    await user.click(
+      required(
+        form.getAllByRole("button", { name: "Remove milestone" }).at(-1),
+      ),
+    );
+    await user.click(
+      form.getByRole("button", { name: "Append immutable plan Revision" }),
+    );
+
+    await waitFor(() => {
+      expect(createPlan).toHaveBeenCalledOnce();
+    });
+    expect(createPlan.mock.calls[0]?.[2]).toMatchObject({
+      budget: { amount: "126000", currency: "CNY" },
+      engineeringEstimate: { amount: "121500.25", currency: "CNY" },
+      expectedVersion: 1,
+      planGlobalId: planId,
+      reason: "Approved planning adjustment",
+      sourcingStrategy: "supplier",
+      toolingRevisionGlobalId: revisionId,
+      toolingRevisionSnapshotHash: hash("f"),
+    });
+    expect(createPlan.mock.calls[0]?.[2].designReleaseEvidence).toEqual([
+      released(),
+    ]);
+  });
+
+  it("renders formal ERP truth as read only without a write action", async () => {
+    renderWorkspace(
+      dataSource({
+        loadManufacturingPlans: () =>
+          Promise.resolve(
+            collection({
+              erpProjection: {
+                editableIn: "ERPNEXT",
+                observedAt: "2026-08-08T12:00:00Z",
+                rows: [
+                  {
+                    actualCostSourceId: "ACT-001",
+                    amount: "110.00",
+                    costTypeCode: "MATERIAL",
+                    currency: "CNY",
+                    postingDate: "2026-08-08",
+                    purchaseInvoiceSourceId: "PINV-001",
+                    purchaseOrderSourceId: "PO-001",
+                    purchaseReceiptSourceId: "PREC-001",
+                    sourceRowId: "ROW-001",
+                    sourceRowVersion: "1",
+                    supplierSourceObjectId: "SUP-001",
+                    toolingMasterGlobalId: masterId,
+                  },
+                ],
+                sourceSystem: "ERPNEXT",
+                state: "available",
+                summaries: [
+                  {
+                    amount: "110.00",
+                    costTypeCode: "MATERIAL",
+                    currency: "CNY",
+                    supplierSourceObjectId: "SUP-001",
+                    toolingMasterGlobalId: masterId,
+                  },
+                ],
+                supplier: {
+                  sourceObjectId: "SUP-001",
+                  supplierCode: "SUP-001",
+                  supplierName: "Synthetic formal supplier",
+                  targetVersion: "5",
+                },
+                targetVersion: "42",
+                toolingMasterGlobalId: masterId,
+              },
+            }),
+          ),
+      }),
+    );
+
+    expect(await screen.findByText("Synthetic formal supplier")).toBeVisible();
+    expect(screen.getByText("110.00")).toBeVisible();
+    expect(screen.getAllByText("Read only").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByRole("button", { name: /ERPNext/u }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("records complete clean File evidence on an internal observation", async () => {
+    enableCommandSession();
+    const createObservation = vi
+      .fn<ToolingDataSource["createManufacturingObservation"]>()
+      .mockResolvedValue({ observation: observation(2) });
+    const source = dataSource({
+      createManufacturingObservation: createObservation,
+    });
+    const user = userEvent.setup();
+    renderWorkspace(source);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Record observation" }),
+    );
+    const editor = screen
+      .getByRole("heading", { name: "Record internal milestone observation" })
+      .closest("form");
+    if (!editor) throw new Error("The observation editor is required.");
+    const form = within(editor);
+    await user.clear(form.getByLabelText("Progress percentage"));
+    await user.type(form.getByLabelText("Progress percentage"), "65");
+    await user.type(form.getByLabelText("Actual start"), "2026-09-03");
+    await user.type(form.getByLabelText("Actual finish"), "2026-09-10");
+    await user.type(form.getByLabelText("Risk"), "Insert delivery risk");
+    await user.type(
+      form.getByLabelText("Observation note"),
+      "Internal verified update",
+    );
+    await user.selectOptions(
+      form.getByLabelText("Evidence role"),
+      "technical_evidence",
+    );
+    await user.type(
+      form.getByLabelText("File Revision identity"),
+      documentRevisionId,
+    );
+    await user.clear(form.getByLabelText("File version"));
+    await user.type(form.getByLabelText("File version"), "4");
+    await user.type(form.getByLabelText("Frappe content hash"), hash("2"));
+    await user.type(form.getByLabelText("SHA-256"), hash("3"));
+    await user.click(
+      form.getByRole("button", { name: "Record immutable observation" }),
+    );
+
+    await waitFor(() => {
+      expect(createObservation).toHaveBeenCalledOnce();
+    });
+    expect(createObservation.mock.calls[0]?.[4]).toMatchObject({
+      actualFinish: "2026-09-10",
+      actualStart: "2026-09-03",
+      evidence: [
+        {
+          fileOptimisticVersion: 4,
+          fileRevisionGlobalId: documentRevisionId,
+          frappeContentHash: hash("2"),
+          role: "technical_evidence",
+          sha256: hash("3"),
+        },
+      ],
+      expectedVersion: 1,
+      note: "Internal verified update",
+      progressPercentage: 65,
+      risk: "Insert delivery risk",
+    });
   });
 
   it("retries a conflicting observation with the same idempotency key", async () => {
