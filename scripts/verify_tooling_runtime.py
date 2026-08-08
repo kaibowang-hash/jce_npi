@@ -97,6 +97,7 @@ APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED = False
 _PART_CREATE_DIAGNOSTIC_HEADER = "X-NPI-Diagnostic-Scope"
 _PART_CREATE_DIAGNOSTIC_SCOPE = "p601-part-create-v1"
 _APPLICABILITY_CREATE_DIAGNOSTIC_SCOPE = "p601-applicability-create-v1"
+_TOOLING_REVISION_CREATE_DIAGNOSTIC_SCOPE = "p603-revision-create-v1"
 _SERVER_DIAGNOSTIC_LOG_TAIL_LIMIT = 64 * 1024
 _PART_CREATE_DIAGNOSTIC_CODES = frozenset(
     {
@@ -175,26 +176,34 @@ def tooling_request(
     query_key: str = "query",
     part_create_diagnostic: bool = False,
     applicability_create_diagnostic: bool = False,
+    tooling_revision_create_diagnostic: bool = False,
 ) -> HttpResult:
     headers = (
         document_runtime.command_headers(csrf_token, idempotency_key)
         if idempotency_key is not None
         else document_runtime.query_headers(f"p601-{query_key}")
     )
-    if part_create_diagnostic or applicability_create_diagnostic:
+    diagnostic_flags = (
+        part_create_diagnostic,
+        applicability_create_diagnostic,
+        tooling_revision_create_diagnostic,
+    )
+    if any(diagnostic_flags):
         require(
             method == "POST" and idempotency_key is not None,
-            "The P6-01 diagnostic requires one command request",
+            "The Tooling diagnostic requires one command request",
         )
         require(
-            part_create_diagnostic is not applicability_create_diagnostic,
-            "Exactly one P6-01 diagnostic scope must be active",
+            sum(diagnostic_flags) == 1,
+            "Exactly one Tooling diagnostic scope must be active",
         )
-        headers[_PART_CREATE_DIAGNOSTIC_HEADER] = (
-            _PART_CREATE_DIAGNOSTIC_SCOPE
-            if part_create_diagnostic
-            else _APPLICABILITY_CREATE_DIAGNOSTIC_SCOPE
-        )
+        if part_create_diagnostic:
+            diagnostic_scope = _PART_CREATE_DIAGNOSTIC_SCOPE
+        elif applicability_create_diagnostic:
+            diagnostic_scope = _APPLICABILITY_CREATE_DIAGNOSTIC_SCOPE
+        else:
+            diagnostic_scope = _TOOLING_REVISION_CREATE_DIAGNOSTIC_SCOPE
+        headers[_PART_CREATE_DIAGNOSTIC_HEADER] = diagnostic_scope
     result = document_runtime.request(
         opener,
         base_url,

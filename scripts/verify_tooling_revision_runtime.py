@@ -71,6 +71,23 @@ REVISION_PERMISSIONS = {
     "transitionLifecycle": False,
 }
 _UNEXPECTED_DIAGNOSTIC_CODES = frozenset({"UNEXPECTED_BFF_EXCEPTION"})
+_REVISION_CREATE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P603_REVISION_COMMAND_CONTEXT",
+        "P603_REVISION_INPUT_PARSE",
+        "P603_REVISION_PROJECT_LOCK",
+        "P603_REVISION_IDEMPOTENCY_CONTEXT",
+        "P603_REVISION_MASTER_LOAD",
+        "P603_REVISION_TIP_LOAD",
+        "P603_REVISION_DOMAIN_BUILD",
+        "P603_REVISION_RECEIPT_INSERT",
+        "P603_REVISION_INSERT",
+        "P603_REVISION_AUDIT_APPEND",
+        "P603_REVISION_RESPONSE_BUILD",
+        "P603_REVISION_RECEIPT_SEAL",
+        "P603_REVISION_API_RESPONSE",
+    }
+)
 
 
 def revision_path(project_id: str, master_id: str, suffix: str = "") -> str:
@@ -120,13 +137,19 @@ def command(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
+        tooling_revision_create_diagnostic=True,
     )
     problem_code = result.body.get("code") if isinstance(result.body, dict) else None
     if result.status != 201:
         diagnostic = predecessor._sanitized_server_diagnostic(
             result.trace_id,
-            _UNEXPECTED_DIAGNOSTIC_CODES,
+            _REVISION_CREATE_DIAGNOSTIC_CODES,
         )
+        if diagnostic is None:
+            diagnostic = predecessor._sanitized_server_diagnostic(
+                result.trace_id,
+                _UNEXPECTED_DIAGNOSTIC_CODES,
+            )
         if diagnostic is not None:
             exception_type, diagnostic_code, trace_id = diagnostic
             raise RuntimeError(

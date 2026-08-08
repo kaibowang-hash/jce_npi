@@ -156,13 +156,13 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
             body={"code": "INTERNAL_SERVER_ERROR"},
             trace_id=trace_id,
         )
-        diagnostic = (
-            "AttributeError",
-            "UNEXPECTED_BFF_EXCEPTION",
-            trace_id,
-        )
+        diagnostic = ("OperationalError", "P603_REVISION_INSERT", trace_id)
         with (
-            patch.object(module, "tooling_request", return_value=result),
+            patch.object(
+                module,
+                "tooling_request",
+                return_value=result,
+            ) as request,
             patch.object(
                 module.predecessor,
                 "_sanitized_server_diagnostic",
@@ -172,8 +172,8 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
                 RuntimeError,
                 (
                     "HTTP 500 with problem code INTERNAL_SERVER_ERROR "
-                    r"\[diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
-                    r"exception_type=AttributeError; trace_id=" + trace_id + r"\]"
+                    r"\[diagnostic_code=P603_REVISION_INSERT; "
+                    r"exception_type=OperationalError; trace_id=" + trace_id + r"\]"
                 ),
             ),
         ):
@@ -185,9 +185,10 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
                 {},
                 "revision-one",
             )
+        self.assertTrue(request.call_args.kwargs["tooling_revision_create_diagnostic"])
         read_diagnostic.assert_called_once_with(
             trace_id,
-            frozenset({"UNEXPECTED_BFF_EXCEPTION"}),
+            module._REVISION_CREATE_DIAGNOSTIC_CODES,
         )
 
     def test_applicability_selection_uses_nested_part_revision_projection(self) -> None:

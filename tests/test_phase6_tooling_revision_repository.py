@@ -53,6 +53,23 @@ class Phase6ToolingRevisionRepositoryTest(unittest.TestCase):
             },
         )
 
+    def test_revision_create_has_bounded_safe_runtime_substages(self) -> None:
+        create = function("create_tooling_revision")
+        for code in (
+            "P603_REVISION_PROJECT_LOCK",
+            "P603_REVISION_IDEMPOTENCY_CONTEXT",
+            "P603_REVISION_MASTER_LOAD",
+            "P603_REVISION_TIP_LOAD",
+            "P603_REVISION_DOMAIN_BUILD",
+            "P603_REVISION_RECEIPT_INSERT",
+            "P603_REVISION_INSERT",
+            "P603_REVISION_AUDIT_APPEND",
+            "P603_REVISION_RESPONSE_BUILD",
+            "P603_REVISION_RECEIPT_SEAL",
+        ):
+            with self.subTest(code=code):
+                self.assertIn(code, create)
+
     def test_queries_authorize_project_before_revision_part_chain_or_binding(self) -> None:
         for name, protected in (
             ("tooling_revisions", "self._master_for_project("),

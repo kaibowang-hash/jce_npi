@@ -260,6 +260,32 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertFalse(module.APPLICABILITY_CREATE_DIAGNOSTICS_ENABLED)
 
+        with patch.object(
+            module.document_runtime,
+            "command_headers",
+            side_effect=lambda *_values: dict(headers),
+        ), patch.object(
+            module.document_runtime,
+            "request",
+            return_value=raw,
+        ) as revision_diagnostic_request:
+            module.tooling_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/tooling/master/revisions",
+                method="POST",
+                payload={"revisionLabel": "R1"},
+                csrf_token=headers["X-Frappe-CSRF-Token"],
+                idempotency_key=headers["Idempotency-Key"],
+                tooling_revision_create_diagnostic=True,
+            )
+        self.assertEqual(
+            revision_diagnostic_request.call_args.kwargs[
+                "request_headers"
+            ].get("X-NPI-Diagnostic-Scope"),
+            "p603-revision-create-v1",
+        )
+
     def test_fresh_proves_reuse_replay_conflict_rollback_idor_and_history(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]
         persistence = self.source.split("def verify_persistence", 1)[1].split(

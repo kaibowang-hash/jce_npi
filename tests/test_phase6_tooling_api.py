@@ -830,6 +830,36 @@ class Phase6ToolingApiTest(unittest.TestCase):
             ["UNEXPECTED_BFF_EXCEPTION"],
         )
 
+    def test_tooling_revision_diagnostic_is_route_gated_and_sanitized(self) -> None:
+        payload = self.tooling_revision_payload()
+        self.repository.failure = RuntimeError("sensitive revision detail")
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            result = self.call(self.api.create_tooling_revision, payload)
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        self.assertEqual(
+            [call.kwargs["code"] for call in record.call_args_list],
+            ["UNEXPECTED_BFF_EXCEPTION"],
+        )
+
+        self.headers["X-NPI-Diagnostic-Scope"] = "p603-revision-create-v1"
+        with patch("npi_core.api.record_safe_diagnostic") as record:
+            diagnostic_result = self.call(
+                self.api.create_tooling_revision,
+                payload,
+            )
+        self.assertEqual(diagnostic_result, result)
+        record.assert_any_call(
+            code="P603_REVISION_API_RESPONSE",
+            title="NPI Tooling Revision create substage failed",
+            exception_type="RuntimeError",
+            trace_id=self.headers["X-Trace-ID"],
+        )
+        self.assertEqual(
+            [call.kwargs["code"] for call in record.call_args_list],
+            ["P603_REVISION_API_RESPONSE", "UNEXPECTED_BFF_EXCEPTION"],
+        )
+        self.assertNotIn("sensitive revision detail", str(record.call_args))
+
 
 if __name__ == "__main__":
     unittest.main()

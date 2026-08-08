@@ -11,6 +11,7 @@ import frappe
 from frappe import _
 
 from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.tooling.diagnostics import tooling_revision_create_server_step
 from npi_core.tooling.domain import (
     ToolingReferenceUnavailable,
     ToolingSet,
@@ -139,7 +140,8 @@ class ToolingRevisionRepositoryMixin:
         design_document_revisions: Sequence[DocumentRevisionReference],
         reason: str,
     ) -> RevisionCommandOutcome | None:
-        project = self._locked_authorized_project(project_id)
+        with tooling_revision_create_server_step("P603_REVISION_PROJECT_LOCK"):
+            project = self._locked_authorized_project(project_id)
         if project is None:
             return None
         payload = {
@@ -157,90 +159,115 @@ class ToolingRevisionRepositoryMixin:
             ],
             "reason": reason,
         }
-        context = self._command_context(
-            project,
-            operation="tooling_revision.create",
-            idempotency_key_hash=idempotency_key_hash,
-            payload=payload,
-        )
+        with tooling_revision_create_server_step(
+            "P603_REVISION_IDEMPOTENCY_CONTEXT"
+        ):
+            context = self._command_context(
+                project,
+                operation="tooling_revision.create",
+                idempotency_key_hash=idempotency_key_hash,
+                payload=payload,
+            )
         if isinstance(context, dict):
             return RevisionCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
-        if self._master_for_project(project, tooling_master_id) is None:
-            raise ToolingReferenceUnavailable()
-        current = self._tooling_revisions_for_master(project, tooling_master_id)
+        with tooling_revision_create_server_step("P603_REVISION_MASTER_LOAD"):
+            if self._master_for_project(project, tooling_master_id) is None:
+                raise ToolingReferenceUnavailable()
+        with tooling_revision_create_server_step("P603_REVISION_TIP_LOAD"):
+            current = self._tooling_revisions_for_master(project, tooling_master_id)
         if (not current and expected_version is not None) or (
             current and expected_version != current[-1].revision_number
         ):
             raise ToolingVersionConflict()
-        now = self._now()
-        predecessor = current[-1] if current else None
-        revision = ToolingRevision(
-            global_id=self._new_uuid(),
-            tenant_id=str(project.tenant_id),
-            project_global_id=project_id,
-            tooling_master_global_id=tooling_master_id,
-            revision_number=1 if predecessor is None else predecessor.revision_number + 1,
-            revision_label=revision_label,
-            predecessor_global_id=(predecessor.global_id if predecessor else None),
-            predecessor_snapshot_hash=(predecessor.snapshot_hash if predecessor else None),
-            specification=specification,
-            cavities=tuple(
-                self._cavity_value(project, tooling_master_id, value)
-                for value in cavities
-            ),
-            inserts=tuple(
-                self._insert_value(project, tooling_master_id, value, now)
-                for value in inserts
-            ),
-            external_identities=tuple(
-                self._external_identity_value(value)
-                for value in external_identities
-            ),
-            design_document_revisions=tuple(
-                self._document_revision_reference(project, value)
-                for value in design_document_revisions
-            ),
-            reason=reason,
-            created_by_user_id=self.actor,
-            created_at=now,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-        )
-        if predecessor is not None:
-            validate_tooling_revision_successor(predecessor, revision)
+        with tooling_revision_create_server_step("P603_REVISION_DOMAIN_BUILD"):
+            now = self._now()
+            predecessor = current[-1] if current else None
+            revision = ToolingRevision(
+                global_id=self._new_uuid(),
+                tenant_id=str(project.tenant_id),
+                project_global_id=project_id,
+                tooling_master_global_id=tooling_master_id,
+                revision_number=(
+                    1 if predecessor is None else predecessor.revision_number + 1
+                ),
+                revision_label=revision_label,
+                predecessor_global_id=(
+                    predecessor.global_id if predecessor else None
+                ),
+                predecessor_snapshot_hash=(
+                    predecessor.snapshot_hash if predecessor else None
+                ),
+                specification=specification,
+                cavities=tuple(
+                    self._cavity_value(project, tooling_master_id, value)
+                    for value in cavities
+                ),
+                inserts=tuple(
+                    self._insert_value(project, tooling_master_id, value, now)
+                    for value in inserts
+                ),
+                external_identities=tuple(
+                    self._external_identity_value(value)
+                    for value in external_identities
+                ),
+                design_document_revisions=tuple(
+                    self._document_revision_reference(project, value)
+                    for value in design_document_revisions
+                ),
+                reason=reason,
+                created_by_user_id=self.actor,
+                created_at=now,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+            )
+            if predecessor is not None:
+                validate_tooling_revision_successor(predecessor, revision)
         with tooling_command_write():
-            receipt = self._insert_receipt(
-                project,
-                receipt_key=receipt_key,
-                operation="tooling_revision.create",
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                now=now,
-            )
-            self._insert_tooling_revision(revision)
-            self._append_audit(
-                operation="tooling_revision.create",
-                global_id=revision.global_id,
-                object_version=revision.revision_number,
-                summary={
-                    "projectGlobalId": str(project_id),
-                    "toolingMasterGlobalId": str(tooling_master_id),
-                    "predecessorGlobalId": (
-                        str(predecessor.global_id) if predecessor else None
-                    ),
-                    "snapshotHash": revision.snapshot_hash,
-                    "requestId": self.request_id,
-                },
-            )
-            response = self._tooling_revision_detail_response(project, revision)
-            self._seal_receipt(
-                receipt,
-                target_type="tooling_revision",
-                target_id=revision.global_id,
-                response=response,
-                now=now,
-            )
+            with tooling_revision_create_server_step(
+                "P603_REVISION_RECEIPT_INSERT"
+            ):
+                receipt = self._insert_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    operation="tooling_revision.create",
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with tooling_revision_create_server_step("P603_REVISION_INSERT"):
+                self._insert_tooling_revision(revision)
+            with tooling_revision_create_server_step(
+                "P603_REVISION_AUDIT_APPEND"
+            ):
+                self._append_audit(
+                    operation="tooling_revision.create",
+                    global_id=revision.global_id,
+                    object_version=revision.revision_number,
+                    summary={
+                        "projectGlobalId": str(project_id),
+                        "toolingMasterGlobalId": str(tooling_master_id),
+                        "predecessorGlobalId": (
+                            str(predecessor.global_id) if predecessor else None
+                        ),
+                        "snapshotHash": revision.snapshot_hash,
+                        "requestId": self.request_id,
+                    },
+                )
+            with tooling_revision_create_server_step(
+                "P603_REVISION_RESPONSE_BUILD"
+            ):
+                response = self._tooling_revision_detail_response(project, revision)
+            with tooling_revision_create_server_step(
+                "P603_REVISION_RECEIPT_SEAL"
+            ):
+                self._seal_receipt(
+                    receipt,
+                    target_type="tooling_revision",
+                    target_id=revision.global_id,
+                    response=response,
+                    now=now,
+                )
         return RevisionCommandOutcome(response)
 
     def create_part_controlled_specification(

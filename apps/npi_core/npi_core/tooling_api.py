@@ -39,6 +39,8 @@ from npi_core.tooling.diagnostics import (
     applicability_create_server_step,
     part_create_server_diagnostics,
     part_create_server_step,
+    tooling_revision_create_server_diagnostics,
+    tooling_revision_create_server_step,
 )
 from npi_core.tooling.revision_domain import (
     CavityStructuralState,
@@ -807,6 +809,7 @@ def create_tooling_revision(
             _opaque_route_uuid("tooling_master_id"),
             **parsed,
         ),
+        tooling_revision_create_diagnostic=True,
     )
 
 
@@ -1134,6 +1137,8 @@ def _tooling_revision_command(
     request_fields: dict[str, Any],
     values,
     operation,
+    *,
+    tooling_revision_create_diagnostic: bool = False,
 ) -> dict[str, Any] | None:
     headers = {
         "X-Request-ID": response_request_id(),
@@ -1141,23 +1146,36 @@ def _tooling_revision_command(
     }
 
     def handle() -> dict[str, Any]:
-        request_id, key_hash, repository, project_id = (
-            _tooling_revision_command_context(
-                allowed,
-                required,
-                request_fields,
-            )
-        )
-        parsed = values()
-        parsed["idempotency_key_hash"] = key_hash
-        outcome = operation(repository, project_id, parsed)
-        if outcome is None:
-            raise ToolingUnavailable()
-        if type(outcome.replayed) is not bool:
-            raise RuntimeError("The Tooling Revision replay result is invalid.")
-        headers["X-Request-ID"] = request_id
-        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
-        return _response(outcome.response)
+        with tooling_revision_create_server_diagnostics(
+            current_trace_id.get(),
+            route_enabled=tooling_revision_create_diagnostic,
+        ):
+            with tooling_revision_create_server_step(
+                "P603_REVISION_COMMAND_CONTEXT"
+            ):
+                request_id, key_hash, repository, project_id = (
+                    _tooling_revision_command_context(
+                        allowed,
+                        required,
+                        request_fields,
+                    )
+                )
+            with tooling_revision_create_server_step("P603_REVISION_INPUT_PARSE"):
+                parsed = values()
+            parsed["idempotency_key_hash"] = key_hash
+            with tooling_revision_create_server_step(
+                "P603_REVISION_API_RESPONSE"
+            ):
+                outcome = operation(repository, project_id, parsed)
+                if outcome is None:
+                    raise ToolingUnavailable()
+                if type(outcome.replayed) is not bool:
+                    raise RuntimeError(
+                        "The Tooling Revision replay result is invalid."
+                    )
+                headers["X-Request-ID"] = request_id
+                headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+                return _response(outcome.response)
 
     return frappe_domain_call(
         handle,
