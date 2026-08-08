@@ -1359,6 +1359,117 @@ textarea::placeholder {
   border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
 }
 
+.tooling-engineering__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--npi-space-1);
+}
+
+.tooling-engineering__section {
+  display: grid;
+  gap: var(--npi-space-2);
+  margin-top: var(--npi-space-3);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-default);
+}
+
+.tooling-engineering__layout {
+  display: grid;
+  grid-template-columns: minmax(620px, 1fr) minmax(270px, 0.32fr);
+  gap: var(--npi-space-3);
+  min-width: 0;
+}
+
+.tooling-engineering__process-grid,
+.tooling-engineering__health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--npi-space-2);
+}
+
+.tooling-engineering__health-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tooling-engineering__process-grid > article,
+.tooling-engineering__health-grid > article {
+  display: grid;
+  align-content: start;
+  gap: var(--npi-space-1);
+  min-width: 0;
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-subtle);
+}
+
+.tooling-engineering__process-grid dl,
+.tooling-engineering__plain-list {
+  display: grid;
+  gap: var(--npi-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where(.tooling-engineering__process-grid dl > div),
+.tooling-engineering__plain-list > li {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) minmax(140px, 1fr);
+  gap: var(--npi-space-2);
+  padding-block: var(--npi-space-1);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.tooling-engineering__form {
+  display: grid;
+  gap: var(--npi-space-3);
+  margin-top: var(--npi-space-3);
+  padding-top: var(--npi-space-3);
+  border-top: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+}
+
+.tooling-engineering__form > label {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
+.tooling-engineering__form textarea {
+  min-height: 84px;
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-radius: var(--npi-radius-input);
+  color: var(--npi-color-text-primary);
+  background: var(--npi-color-surface-default);
+  font: inherit;
+  resize: vertical;
+}
+
+.tooling-engineering__capacity-lines {
+  display: grid;
+  gap: var(--npi-space-2);
+  margin: 0;
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.tooling-engineering__capacity-lines > legend {
+  padding-inline: var(--npi-space-1);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.tooling-engineering__capacity-line {
+  display: grid;
+  grid-template-columns:
+    minmax(160px, 1.2fr) repeat(7, minmax(105px, 0.7fr))
+    minmax(140px, 0.8fr);
+  align-items: end;
+  gap: var(--npi-space-1);
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
 .tooling-manufacturing__milestone-editor {
   display: grid;
   grid-template-columns:
@@ -1377,8 +1488,16 @@ textarea::placeholder {
   .tooling-manufacturing__capabilities,
   .tooling-manufacturing__layout,
   .tooling-manufacturing__observation,
-  .tooling-manufacturing__milestone-editor {
+  .tooling-manufacturing__milestone-editor,
+  .tooling-engineering__layout,
+  .tooling-engineering__process-grid,
+  .tooling-engineering__health-grid,
+  .tooling-engineering__capacity-line {
     grid-template-columns: 1fr;
+  }
+
+  .tooling-engineering__actions {
+    justify-content: flex-start;
   }
 
   .tooling-set__inspector {

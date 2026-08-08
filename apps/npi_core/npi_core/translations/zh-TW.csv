@@ -4793,3 +4793,109 @@ tooling_capacity_scenario.create,建立模具容量情境
 tooling_defect_revision,模具缺陷修訂
 tooling_process_profile_revision,模具製程設定修訂
 tooling_capacity_scenario_revision,模具容量情境修訂
+Engineering controls,工程控制
+Assigned,已指派
+In progress,進行中
+Ready for verification,待驗證
+Reopened,已重新開啟
+Part weight,零件重量
+Runner weight,流道重量
+Gross weight per cavity,每穴總重
+Machine tonnage,機台噸位
+Complete the required exact defect and evidence fields.,請完整填寫所需的精確缺陷與證據欄位。
+Appending immutable defect Revision,正在追加不可變缺陷修訂
+"Complete the Customer Standard value, source and reason.",請完整填寫客戶標準值、來源與原因。
+Appending Customer Standard process profile,正在追加客戶標準製程設定
+Complete every explicit capacity input and reason.,請完整填寫每項明確容量輸入與原因。
+Appending immutable Capacity Scenario Revision,正在追加不可變容量情境修訂
+Engineering controls workspace,工程控制工作區
+Loading engineering controls workspace,正在載入工程控制工作區
+Open blocking intent,存在未關閉的阻斷意圖
+No open blocking intent,無未關閉的阻斷意圖
+Current Tooling defects,目前模具缺陷
+Open blocking count,未關閉阻斷項數
+Append defect Revision,追加缺陷修訂
+Create Tooling defect,建立模具缺陷
+Append Customer Standard Revision,追加客戶標準修訂
+Create Customer Standard,建立客戶標準
+Append Capacity Scenario Revision,追加容量情境修訂
+Create Capacity Scenario,建立容量情境
+Engineering controls are read only in this session.,本工作階段中的工程控制為唯讀。
+Session verification is required before an engineering command can be submitted.,提交工程命令前必須完成工作階段驗證。
+Engineering controls are read only for this account.,此帳戶的工程控制為唯讀。
+The server controls every append capability.,每項追加能力均由伺服器控制。
+Tooling defect control,模具缺陷控制
+Severity and blocking intent are independent facts.,嚴重程度與阻斷意圖是相互獨立的事實。
+No Tooling defect has been recorded.,尚未記錄模具缺陷。
+No Gate blocker or Trial result is inferred from an empty history.,不從空白歷程推斷階段門阻斷項或試模結果。
+Blocking intent,阻斷意圖
+Location,位置
+Explicitly blocking,明確阻斷
+Not blocking,不阻斷
+Whole Tooling Revision,整個模具修訂
+Defect lineage inspector,缺陷沿襲檢查器
+Target-round intention,目標輪次意圖
+Predecessor Revision,前置修訂
+Initial Revision,初始修訂
+"The target-round label is planning intent, not a Trial identity.",目標輪次標籤是計畫意圖，不是試模身分。
+Defect actions,缺陷措施
+No action is recorded.,尚未記錄措施。
+Process fact comparison,製程事實比較
+Customer Standard,客戶標準
+No Customer Standard is recorded.,尚未記錄客戶標準。
+Trial Actual,試模實際值
+Not measured,未測量
+An exact Trial context is unavailable until Phase 7.,在第 7 階段之前無法取得精確試模上下文。
+Approved Process Baseline,已核准製程基線
+Approved Trial evidence is unavailable until Phase 7.,在第 7 階段之前無法取得已核准試模證據。
+Metric,指標
+Reference,參考值
+Actual,實際值
+Comparison state,比較狀態
+Tolerance rule,公差規則
+Within tolerance,公差範圍內
+Outside tolerance,超出公差
+No exact rule,無精確規則
+Capacity Scenario planning,容量情境計畫
+No Capacity Scenario has been recorded.,尚未記錄容量情境。
+No capacity or zero gap is inferred from an empty history.,不從空白歷程推斷容量或零缺口。
+Part lines,零件列
+Assembly units per month,每月裝配件數
+Capacity gap,容量缺口
+Capacity result inspector,容量結果檢查器
+Target monthly assembly units,目標每月裝配件數
+Scenario monthly capacity,情境月容量
+Bottleneck lines,瓶頸列
+Hours per day,每日小時數
+Working days,工作天數
+OEE,設備綜合效率
+Cycle seconds,週期秒數
+Effective Sets,有效套數
+Bottleneck,瓶頸
+Not bottleneck,非瓶頸
+ERP and IoT Tooling health,企業資源規劃與物聯網模具健康
+Shot count,模次
+Shot-count calibration,模次校準
+Maintenance projection,維護投影
+Tooling health score,模具健康評分
+"No shot count, calibration result, maintenance state, health score or recommendation is inferred.",不推斷模次、校準結果、維護狀態、健康評分或建議。
+Append immutable Tooling defect Revision,追加不可變模具缺陷修訂
+Create immutable Tooling defect,建立不可變模具缺陷
+Explicit blocking intent,明確阻斷意圖
+Responsible member Global ID,負責人全域識別
+Responsible user ID,負責使用者識別
+Responsible member version,負責人版本
+Corrective action,矯正措施
+Action due date,措施截止日期
+File optimistic version,檔案樂觀鎖版本
+Root cause,根本原因
+Append immutable defect Revision,追加不可變缺陷修訂
+Append Customer Standard process profile,追加客戶標準製程設定
+Process metric,製程指標
+Customer Standard value,客戶標準值
+Tolerance minimum,公差下限
+Tolerance maximum,公差上限
+Append immutable Capacity Scenario Revision,追加不可變容量情境修訂
+Explicit Part capacity inputs,明確零件容量輸入
+Usage per assembly,每個裝配件用量
+Selected exact Tooling Sets,已選擇的精確模具套件

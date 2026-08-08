@@ -37,9 +37,26 @@ import {
   type ToolingManufacturingPlanCommandViewModel,
   type ToolingManufacturingPlanDetailViewModel,
 } from "./tooling-manufacturing-contract";
+import {
+  isCreateToolingCapacityScenarioRevisionCommand,
+  isCreateToolingDefectRevisionCommand,
+  isCreateToolingProcessProfileRevisionCommand,
+  isToolingCapacityScenarioRevisionCommand,
+  isToolingDefectRevisionCommand,
+  isToolingEngineeringControls,
+  isToolingProcessProfileRevisionCommand,
+  type CreateToolingCapacityScenarioRevisionCommand,
+  type CreateToolingDefectRevisionCommand,
+  type CreateToolingProcessProfileRevisionCommand,
+  type ToolingCapacityScenarioRevisionCommandViewModel,
+  type ToolingDefectRevisionCommandViewModel,
+  type ToolingEngineeringControlsViewModel,
+  type ToolingProcessProfileRevisionCommandViewModel,
+} from "./tooling-engineering-controls-contract";
 
 export * from "./tooling-revision-contract";
 export * from "./tooling-manufacturing-contract";
+export * from "./tooling-engineering-controls-contract";
 
 export type ToolingRequirementKind =
   | "new_tool"
@@ -485,6 +502,29 @@ export interface ToolingDataSource {
     command: CreateToolingManufacturingObservationCommand,
     context: ToolingCommandContext,
   ): Promise<ToolingManufacturingObservationCommandViewModel>;
+  loadEngineeringControls(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingEngineeringControlsViewModel>;
+  createToolingDefectRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingDefectRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingDefectRevisionCommandViewModel>;
+  createToolingProcessProfileRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingProcessProfileRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingProcessProfileRevisionCommandViewModel>;
+  createToolingCapacityScenarioRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingCapacityScenarioRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingCapacityScenarioRevisionCommandViewModel>;
 }
 
 export class ToolingRequestCancelledError extends Error {
@@ -1744,6 +1784,103 @@ export class LiveToolingDataSource implements ToolingDataSource {
           command.milestoneSnapshotHash &&
         value.observation.observationVersion ===
           (command.expectedVersion ?? 0) + 1,
+    );
+  }
+
+  async loadEngineeringControls(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingEngineeringControlsViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/engineering-controls`,
+      signal,
+      (value): value is ToolingEngineeringControlsViewModel =>
+        isToolingEngineeringControls(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async createToolingDefectRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingDefectRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingDefectRevisionCommandViewModel> {
+    if (!isCreateToolingDefectRevisionCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/defect-revisions`,
+      command,
+      context,
+      (value): value is ToolingDefectRevisionCommandViewModel =>
+        isToolingDefectRevisionCommand(value) &&
+        value.defect.projectGlobalId === expectedProjectId &&
+        value.defect.toolingMasterGlobalId === expectedMasterId &&
+        value.defect.toolingRevisionGlobalId ===
+          command.toolingRevisionGlobalId &&
+        value.defect.toolingRevisionSnapshotHash ===
+          command.toolingRevisionSnapshotHash &&
+        value.defect.defectVersion === (command.expectedVersion ?? 0) + 1 &&
+        (command.defectGlobalId === undefined ||
+          value.defect.defectGlobalId === command.defectGlobalId),
+    );
+  }
+
+  async createToolingProcessProfileRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingProcessProfileRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingProcessProfileRevisionCommandViewModel> {
+    if (!isCreateToolingProcessProfileRevisionCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/process-profile-revisions`,
+      command,
+      context,
+      (value): value is ToolingProcessProfileRevisionCommandViewModel =>
+        isToolingProcessProfileRevisionCommand(value) &&
+        value.profile.layer === "customer_standard" &&
+        value.profile.projectGlobalId === expectedProjectId &&
+        value.profile.toolingMasterGlobalId === expectedMasterId &&
+        value.profile.toolingRevisionGlobalId ===
+          command.toolingRevisionGlobalId &&
+        value.profile.toolingRevisionSnapshotHash ===
+          command.toolingRevisionSnapshotHash &&
+        value.profile.profileVersion === (command.expectedVersion ?? 0) + 1 &&
+        (command.profileGlobalId === undefined ||
+          value.profile.profileGlobalId === command.profileGlobalId),
+    );
+  }
+
+  async createToolingCapacityScenarioRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingCapacityScenarioRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingCapacityScenarioRevisionCommandViewModel> {
+    if (!isCreateToolingCapacityScenarioRevisionCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/capacity-scenario-revisions`,
+      command,
+      context,
+      (value): value is ToolingCapacityScenarioRevisionCommandViewModel =>
+        isToolingCapacityScenarioRevisionCommand(value) &&
+        value.scenario.projectGlobalId === expectedProjectId &&
+        value.scenario.toolingMasterGlobalId === expectedMasterId &&
+        value.scenario.scenarioVersion === (command.expectedVersion ?? 0) + 1 &&
+        (command.scenarioGlobalId === undefined ||
+          value.scenario.scenarioGlobalId === command.scenarioGlobalId),
     );
   }
 

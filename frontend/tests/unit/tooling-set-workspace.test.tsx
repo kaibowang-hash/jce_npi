@@ -262,6 +262,11 @@ function dataSource(
     attachIntakeEvidence: () => Promise.resolve(detail()),
     createManufacturingObservation: () => Promise.reject(new Error("not used")),
     createManufacturingPlan: () => Promise.reject(new Error("not used")),
+    createToolingCapacityScenarioRevision: () =>
+      Promise.reject(new Error("not used")),
+    createToolingDefectRevision: () => Promise.reject(new Error("not used")),
+    createToolingProcessProfileRevision: () =>
+      Promise.reject(new Error("not used")),
     createPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     createToolingProcessChainRevision: () =>
@@ -280,6 +285,7 @@ function dataSource(
     loadMaster: () => Promise.resolve(cockpit()),
     loadManufacturingPlan: () => Promise.reject(new Error("not used")),
     loadManufacturingPlans: () => Promise.reject(new Error("not used")),
+    loadEngineeringControls: () => Promise.reject(new Error("not used")),
     loadPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     loadSet: () => Promise.resolve(detail()),

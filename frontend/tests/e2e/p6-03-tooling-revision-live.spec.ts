@@ -4,6 +4,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import type {
   PartControlledSpecificationContextViewModel,
   ToolingCockpitViewModel,
+  ToolingEngineeringControlsViewModel,
   ToolingMeasurementViewModel,
   ToolingManufacturingMilestoneObservationViewModel,
   ToolingManufacturingPlanCollectionViewModel,
@@ -49,6 +50,15 @@ const manufacturingObservationId = "57924681-5792-4792-8792-468135794681";
 const designDocumentRevisionId = "68135792-6813-4813-8813-579246816813";
 const designLifecycleId = "79246813-7924-4924-8924-681357927924";
 const designReleaseEventId = "81357924-8135-4135-8135-792468138135";
+const defectId = "90111111-1111-4111-8111-111111111111";
+const defectRevisionId = "90222222-2222-4222-8222-222222222222";
+const defectActionId = "90333333-3333-4333-8333-333333333333";
+const processProfileId = "90444444-4444-4444-8444-444444444444";
+const processProfileRevisionId = "90555555-5555-4555-8555-555555555555";
+const processMetricId = "90666666-6666-4666-8666-666666666666";
+const capacityScenarioId = "90777777-7777-4777-8777-777777777777";
+const capacityScenarioRevisionId = "90888888-8888-4888-8888-888888888888";
+const capacityLineId = "90999999-9999-4999-8999-999999999999";
 const csrfToken = "p6-03-tooling-revision-browser-csrf";
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -538,6 +548,260 @@ function manufacturingDetail() {
   };
 }
 
+function engineeringControls(): ToolingEngineeringControlsViewModel {
+  return {
+    capacityScenarioRevisions: [
+      {
+        createdAt: "2026-08-08T12:10:00Z",
+        createdByUserId: "tooling.engineer@example.invalid",
+        effectiveFrom: "2026-08-08",
+        formulaVersion: "capacity.v1",
+        globalId: capacityScenarioRevisionId,
+        lines: [
+          {
+            applicabilityGlobalId: applicabilityId,
+            applicabilitySnapshotHash: "f".repeat(64),
+            availableHoursPerDay: "20",
+            cavityCount: 1,
+            cavityProvenance: {
+              globalId: toolingRevisionId,
+              kind: "tooling_revision",
+              snapshotHash: revision().snapshotHash,
+            },
+            cycleProvenance: {
+              globalId: processProfileRevisionId,
+              kind: "customer_standard",
+              snapshotHash: "c".repeat(64),
+            },
+            cycleSeconds: "35",
+            effectiveSetCount: 1,
+            globalId: capacityLineId,
+            oeeRatio: "0.8",
+            partRevisionGlobalId: partRevisionId,
+            partRevisionSnapshotHash: "b".repeat(64),
+            selectedToolingSetGlobalIds: [setId],
+            setProvenance: {
+              globalId: setId,
+              kind: "tooling_set_selection",
+              snapshotHash: "3".repeat(64),
+            },
+            usagePerAssembly: "1",
+            usageProvenance: {
+              globalId: applicabilityId,
+              kind: "tooling_applicability",
+              snapshotHash: "f".repeat(64),
+            },
+            workingDaysPerMonth: 26,
+            yieldRatio: "0.95",
+          },
+        ],
+        predecessorGlobalId: null,
+        predecessorSnapshotHash: null,
+        projectGlobalId: projectId,
+        reason: "Initial controlled capacity scenario",
+        requestId: capacityScenarioRevisionId,
+        result: {
+          bottleneckLineGlobalIds: [capacityLineId],
+          formulaVersion: "capacity.v1",
+          gap: "100.000000",
+          lineResults: [
+            {
+              assemblyUnitsPerDay: "1954.285714",
+              assemblyUnitsPerMonth: "50811.428571",
+              globalId: capacityLineId,
+              partsPerDay: "1954.285714",
+              partsPerMonth: "50811.428571",
+            },
+          ],
+          roundingRule: "decimal-6-half-even",
+          scenarioAssemblyUnitsPerMonth: "50811.428571",
+        },
+        roundingRule: "decimal-6-half-even",
+        scenarioGlobalId: capacityScenarioId,
+        scenarioVersion: 1,
+        schemaVersion: 1,
+        snapshotHash: "8".repeat(64),
+        targetMonthlyAssemblyUnits: "50911.428571",
+        tenantId: "tenant.synthetic",
+        title: "Nominal monthly capacity",
+        toolingMasterGlobalId: masterId,
+        traceId: "trace-p6-05-engineering-controls",
+        versionKeyHash: "7".repeat(64),
+      },
+    ],
+    defectRevisions: [
+      {
+        actions: [
+          {
+            actionType: "corrective",
+            detail: "Correct ejector alignment",
+            dueDate: "2026-08-20",
+            evidence: [],
+            globalId: defectActionId,
+            responsibleMember: {
+              globalId: manufacturingMemberId,
+              optimisticVersion: 3,
+              userId: "tooling.engineer@example.invalid",
+            },
+            state: "completed",
+          },
+        ],
+        blocking: true,
+        businessCode: "DEF-001",
+        categoryKey: "fit_and_function",
+        cavityGlobalId: cavityId,
+        cavityIdentifier: "C01",
+        createdAt: "2026-08-08T12:00:00Z",
+        createdByUserId: "tooling.engineer@example.invalid",
+        defectGlobalId: defectId,
+        defectVersion: 1,
+        description: "Ejector alignment is outside specification.",
+        detectionContext: {
+          globalId: toolingRevisionId,
+          kind: "tooling_revision",
+          snapshotHash: revision().snapshotHash,
+        },
+        evidence: [],
+        globalId: defectRevisionId,
+        predecessorGlobalId: null,
+        predecessorSnapshotHash: null,
+        projectGlobalId: projectId,
+        reason: "Initial controlled finding",
+        requestId: defectRevisionId,
+        responsibleMember: {
+          globalId: manufacturingMemberId,
+          optimisticVersion: 3,
+          userId: "tooling.engineer@example.invalid",
+        },
+        rootCause: "Machining alignment drift",
+        rootCauseState: "recorded",
+        schemaVersion: 1,
+        severity: "high",
+        snapshotHash: "2".repeat(64),
+        state: "ready_for_verification",
+        targetRoundLabel: "T1 intention",
+        tenantId: "tenant.synthetic",
+        title: "Ejector alignment",
+        toolingMasterGlobalId: masterId,
+        toolingRevisionGlobalId: toolingRevisionId,
+        toolingRevisionSnapshotHash: revision().snapshotHash,
+        traceId: "trace-p6-05-engineering-controls",
+        trialReference: {
+          reasonCode: "trial_context_unavailable",
+          state: "unavailable",
+        },
+        versionKeyHash: "3".repeat(64),
+      },
+    ],
+    health: {
+      calibration: {
+        reasonCode: "shot_count_calibration_policy_unavailable",
+        state: "unavailable",
+      },
+      editableIn: "ERPNEXT",
+      healthScore: {
+        reasonCode: "tooling_health_policy_unavailable",
+        state: "unavailable",
+      },
+      maintenance: {
+        reasonCode: "erp_maintenance_projection_unavailable",
+        state: "unavailable",
+      },
+      shotCount: {
+        reasonCode: "erp_shot_count_unavailable",
+        state: "unavailable",
+      },
+      sourceSystem: "ERPNEXT",
+      state: "unavailable",
+    },
+    permissions: {
+      approveProcessBaseline: false,
+      createCapacityScenario: true,
+      createCustomerStandard: true,
+      createTrialActual: false,
+      editHealth: false,
+      reviseDefect: true,
+      transitionGate: false,
+      transitionToolingLifecycle: false,
+      view: true,
+    },
+    process: {
+      approvedBaseline: {
+        reasonCode: "approved_trial_evidence_unavailable",
+        state: "unavailable",
+      },
+      comparisons: [
+        {
+          actualValue: null,
+          delta: null,
+          metricCode: "cycle_time",
+          percentDelta: null,
+          referenceLayer: "customer_standard",
+          referenceValue: "35",
+          ruleGlobalId: null,
+          ruleSnapshotHash: null,
+          ruleVersion: null,
+          state: "not_measured",
+          unit: "s",
+          visualSemantics: {
+            reasonCode: "variance_exception_color_policy_unavailable",
+            state: "unavailable",
+          },
+        },
+      ],
+      customerStandardRevisions: [
+        {
+          context: {
+            approvalEventGlobalId: null,
+            approvalEventHash: null,
+            globalId: toolingRevisionId,
+            kind: "tooling_revision_specification",
+            releasedDocument: null,
+            snapshotHash: revision().snapshotHash,
+          },
+          createdAt: "2026-08-08T12:05:00Z",
+          createdByUserId: "tooling.engineer@example.invalid",
+          effectiveFrom: "2026-08-08",
+          globalId: processProfileRevisionId,
+          layer: "customer_standard",
+          metrics: [
+            {
+              code: "cycle_time",
+              comparisonRule: null,
+              globalId: processMetricId,
+              numericValue: "35",
+              textValue: null,
+              unit: "s",
+              valueKind: "numeric",
+            },
+          ],
+          predecessorGlobalId: null,
+          predecessorSnapshotHash: null,
+          profileGlobalId: processProfileId,
+          profileVersion: 1,
+          projectGlobalId: projectId,
+          reason: "Customer cycle requirement",
+          requestId: processProfileRevisionId,
+          schemaVersion: 1,
+          snapshotHash: "c".repeat(64),
+          tenantId: "tenant.synthetic",
+          toolingMasterGlobalId: masterId,
+          toolingRevisionGlobalId: toolingRevisionId,
+          toolingRevisionSnapshotHash: revision().snapshotHash,
+          traceId: "trace-p6-05-engineering-controls",
+          versionKeyHash: "4".repeat(64),
+        },
+      ],
+      trialActual: {
+        reasonCode: "trial_context_unavailable",
+        state: "not_measured",
+      },
+    },
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
+  };
+}
+
 function requestIdentity(route: Route): string {
   const requestId = route.request().headers()["x-request-id"] ?? "";
   expect(requestId).toMatch(requestIdPattern);
@@ -605,6 +869,68 @@ async function installApi(
     }
     if (path.endsWith(`/tooling/${masterId}/sets`)) {
       await fulfillJson(route, setCollection());
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/defect-revisions`)) {
+      const current = engineeringControls().defectRevisions[0];
+      if (!current) throw new Error("The defect fixture is required.");
+      await fulfillJson(
+        route,
+        {
+          defect: {
+            ...current,
+            defectVersion: 2,
+            predecessorGlobalId: current.globalId,
+            predecessorSnapshotHash: current.snapshotHash,
+            snapshotHash: "4".repeat(64),
+            versionKeyHash: "5".repeat(64),
+          },
+        },
+        201,
+      );
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/process-profile-revisions`)) {
+      const current =
+        engineeringControls().process.customerStandardRevisions[0];
+      if (!current) throw new Error("The process profile fixture is required.");
+      await fulfillJson(
+        route,
+        {
+          profile: {
+            ...current,
+            predecessorGlobalId: current.globalId,
+            predecessorSnapshotHash: current.snapshotHash,
+            profileVersion: 2,
+            snapshotHash: "6".repeat(64),
+            versionKeyHash: "7".repeat(64),
+          },
+        },
+        201,
+      );
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/capacity-scenario-revisions`)) {
+      const current = engineeringControls().capacityScenarioRevisions[0];
+      if (!current) throw new Error("The capacity fixture is required.");
+      await fulfillJson(
+        route,
+        {
+          scenario: {
+            ...current,
+            predecessorGlobalId: current.globalId,
+            predecessorSnapshotHash: current.snapshotHash,
+            scenarioVersion: 2,
+            snapshotHash: "9".repeat(64),
+            versionKeyHash: "a".repeat(64),
+          },
+        },
+        201,
+      );
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/engineering-controls`)) {
+      await fulfillJson(route, engineeringControls());
       return;
     }
     if (
@@ -707,7 +1033,9 @@ test.describe("P6-03 live immutable Tooling Revision workspace", () => {
       await installApi(page);
       await openWorkspace(page, locale);
 
-      await expect(page.getByText("C01")).toBeVisible();
+      await expect(
+        page.locator("#tooling-revision-workspace").getByText("C01"),
+      ).toBeVisible();
       await expect(page.getByText(processChainId)).toBeVisible();
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
@@ -960,6 +1288,164 @@ test.describe("P6-04 live manufacturing and supplier workspace", () => {
   });
 });
 
+test.describe("P6-05 live engineering-controls workspace", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`renders separated defect, process, capacity and ERP health truth in ${locale}`, async ({
+      page,
+    }) => {
+      await installSession(page, locale);
+      await installApi(page);
+      await openWorkspace(page, locale);
+      const workspace = page.locator("#tooling-engineering-controls-workspace");
+      await workspace.scrollIntoViewIfNeeded();
+
+      await expect(workspace).toBeVisible();
+      await expect(workspace.getByText("DEF-001")).toBeVisible();
+      await expect(
+        workspace.getByText("Nominal monthly capacity"),
+      ).toBeVisible();
+      await expect(
+        workspace.getByText("erp_shot_count_unavailable"),
+      ).toBeVisible();
+      await expect(
+        workspace.getByRole("button", { name: /Trial/u }),
+      ).toHaveCount(0);
+      await expect(
+        workspace.getByRole("button", { name: /Gate/u }),
+      ).toHaveCount(0);
+      await expectNoMixedLanguage(page, locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+    });
+  }
+
+  test("appends a defect Revision without mutating Trial or Gate truth", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-engineering-controls-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace
+      .getByRole("button", { name: "Append defect Revision" })
+      .click();
+    await workspace
+      .getByLabel("Tooling Defect Revision Reason")
+      .fill("Verification preparation");
+    await workspace
+      .getByRole("button", { name: "Append immutable defect Revision" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(`/tooling/${masterId}/defect-revisions`),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find((request) =>
+      request.path.endsWith(`/tooling/${masterId}/defect-revisions`),
+    );
+    expect(command?.payload).toMatchObject({
+      defectGlobalId: defectId,
+      expectedVersion: 1,
+      reason: "Verification preparation",
+      toolingRevisionGlobalId: toolingRevisionId,
+      toolingRevisionSnapshotHash: revision().snapshotHash,
+    });
+    expect(command?.payload).not.toHaveProperty("trialActual");
+    expect(command?.payload).not.toHaveProperty("transitionGate");
+  });
+
+  test("appends only a Customer Standard process profile", async ({ page }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-engineering-controls-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace
+      .getByRole("button", { name: "Append Customer Standard Revision" })
+      .click();
+    await workspace
+      .getByLabel("Process Profile Revision Reason")
+      .fill("Controlled standard refresh");
+    await workspace
+      .getByRole("button", { name: "Append Customer Standard Revision" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(
+                `/tooling/${masterId}/process-profile-revisions`,
+              ),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find((request) =>
+      request.path.endsWith(`/tooling/${masterId}/process-profile-revisions`),
+    );
+    expect(command?.payload).toMatchObject({
+      expectedVersion: 1,
+      profileGlobalId: processProfileId,
+      reason: "Controlled standard refresh",
+      toolingRevisionGlobalId: toolingRevisionId,
+    });
+    expect(command?.payload).not.toHaveProperty("approvedBaseline");
+    expect(command?.payload).not.toHaveProperty("trialActual");
+  });
+
+  test("appends explicit Capacity inputs without caller-derived results", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-engineering-controls-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace
+      .getByRole("button", { name: "Append Capacity Scenario Revision" })
+      .click();
+    await workspace
+      .getByLabel("Capacity Scenario Revision Reason")
+      .fill("Explicit demand adjustment");
+    await workspace
+      .getByRole("button", { name: "Append Capacity Scenario Revision" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(
+                `/tooling/${masterId}/capacity-scenario-revisions`,
+              ),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find((request) =>
+      request.path.endsWith(`/tooling/${masterId}/capacity-scenario-revisions`),
+    );
+    expect(command?.payload).toMatchObject({
+      expectedVersion: 1,
+      reason: "Explicit demand adjustment",
+      scenarioGlobalId: capacityScenarioId,
+      targetMonthlyAssemblyUnits: "50911.428571",
+    });
+    expect(command?.payload).not.toHaveProperty("result");
+  });
+});
+
 const visualCases = [
   {
     height: 768,
@@ -1053,6 +1539,50 @@ test.describe("@visual P6-04 manufacturing and supplier evidence", () => {
         await page.evaluate(async () => document.fonts.ready);
         await expect(page).toHaveScreenshot(
           `${visual.name.replace("p6-03-tooling-revision", "p6-04-manufacturing")}.png`,
+          { fullPage: false },
+        );
+      },
+    );
+  }
+});
+
+test.describe("@visual P6-05 engineering-controls evidence", () => {
+  for (const visual of visualCases) {
+    test(
+      visual.name.replace(
+        "p6-03-tooling-revision",
+        "p6-05-engineering-controls",
+      ),
+      async ({ page }) => {
+        await installSession(page, visual.locale);
+        await installApi(page);
+        await page.setViewportSize(
+          effectiveViewport(
+            { height: visual.height, width: visual.width },
+            visual.zoom,
+          ),
+        );
+        await page.emulateMedia({
+          colorScheme: "light",
+          reducedMotion: "reduce",
+        });
+        await openWorkspace(page, visual.locale);
+        await page
+          .locator("#tooling-engineering-controls-workspace")
+          .evaluate((element) => {
+            element.scrollIntoView({ block: "start" });
+          });
+        await expectNoMixedLanguage(page, visual.locale);
+        await expectNoDocumentOverflow(page);
+        await expectIndustrialComputedStyles(page);
+        await expectAxeClean(page);
+        await page.addStyleTag({
+          content:
+            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+        });
+        await page.evaluate(async () => document.fonts.ready);
+        await expect(page).toHaveScreenshot(
+          `${visual.name.replace("p6-03-tooling-revision", "p6-05-engineering-controls")}.png`,
           { fullPage: false },
         );
       },
