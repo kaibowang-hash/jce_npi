@@ -35,8 +35,8 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-BR-002", "P1", "8", "PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET"),
-    ("FR-TX-019", "P0", "6", "ANCHORED_P6_05"),
-    ("FR-TX-020", "P0", "6", "DECISION_REQUIRED_DR_REC_002"),
+    ("FR-TX-019", "P0", "6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    ("FR-TX-020", "P0", "6", "TECHNICAL_VERIFIED_FOUNDATION"),
 )
 UX_REMEDIATION_ALLOCATION = {
     "UX-003": ("9", "PLANNED_FULL_PRODUCT_UAT"),
@@ -62,9 +62,9 @@ P6_TOOLING_ALLOCATION = {
     "FR-TX-006": "TECHNICAL_VERIFIED",
     "FR-TX-007": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-008": "TECHNICAL_VERIFIED_FOUNDATION",
-    "FR-TX-009": "ANCHORED_P6_05",
-    "FR-TX-010": "ANCHORED_P6_05",
-    "FR-TX-011": "ANCHORED_P6_05",
+    "FR-TX-009": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-010": "TECHNICAL_VERIFIED",
+    "FR-TX-011": "TECHNICAL_VERIFIED",
     "FR-TX-012": "ANCHORED_P6_07",
     "FR-TX-013": "ANCHORED_P6_07",
     "FR-TX-014": "ANCHORED_P6_07",
@@ -392,6 +392,66 @@ P6_03_COMPLETED_EVIDENCE = {
         "controlled material color compliance and process facts bind to exact Part Revision while automatic impact action remains Phase 9",
     ),
 }
+P6_05_COMPLETED_EVIDENCE = {
+    "FR-TX-009": (
+        "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+        "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+        "tests/test_phase6_tooling_engineering_controls_domain.py",
+        "scripts/verify_tooling_engineering_controls_runtime.py",
+        "implementation/evidence/phase-6/p6-05-validation.md",
+        "versioned Customer Standard process truth is live while Trial Actual and Approved Baseline creation remain Phase 7",
+    ),
+    "FR-TX-010": (
+        "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+        "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+        "tests/test_phase6_tooling_engineering_controls_domain.py",
+        "tests/test_phase6_tooling_engineering_controls_repository.py",
+        "scripts/verify_tooling_engineering_controls_runtime.py",
+        "implementation/evidence/phase-6/p6-05-validation.md",
+        "complete explicit capacity inputs formula version provenance successors and deterministic recomputation are runtime proven without hidden business constants",
+    ),
+    "FR-TX-011": (
+        "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+        "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+        "tests/test_phase6_tooling_engineering_controls_domain.py",
+        "tests/test_phase6_tooling_engineering_controls_repository.py",
+        "scripts/verify_tooling_engineering_controls_runtime.py",
+        "implementation/evidence/phase-6/p6-05-validation.md",
+        "part day month assembly bottleneck and gap outputs are server-derived versioned and runtime proven after changed inputs",
+    ),
+}
+P6_05_ADDENDUM_EVIDENCE = {
+    "FR-TX-019": (
+        "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+        "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+        "contracts/npi-api.openapi.yaml",
+        "contracts/data-ownership.yaml",
+        "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+        "tests/test_phase6_tooling_engineering_controls_domain.py",
+        "scripts/verify_tooling_engineering_controls_runtime.py",
+        "implementation/evidence/phase-6/p6-05-validation.md",
+        "Customer Standard Trial Actual and Approved Baseline are disjoint typed layers while Phase 7 retains actual and approval creation",
+    ),
+    "FR-TX-020": (
+        "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+        "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+        "tests/test_phase6_tooling_engineering_controls_domain.py",
+        "scripts/verify_tooling_engineering_controls_runtime.py",
+        "implementation/evidence/phase-6/p6-05-validation.md",
+        "exact rule-versioned comparison and four textual states are live while production red semantics remain held by DR-REC-002",
+    ),
+}
 P6_UX_ANCHOR_EVIDENCE["UX-004"] = (
     "frontend/src/api/tooling-data-source.ts",
     "frontend/src/pages/live-tooling-page.tsx",
@@ -509,6 +569,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_02_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_03_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_03_COMPLETED_EVIDENCE[requirement_id])
+        elif requirement_id in P6_05_COMPLETED_EVIDENCE:
+            evidence = "; ".join(P6_05_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_TOOLING_ALLOCATION:
             evidence = "; ".join(
                 (
@@ -563,7 +625,9 @@ def _expanded_rows(
             evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
         if requirement_id in P5_06_PLAN_EVIDENCE:
             evidence = "; ".join(P5_06_PLAN_EVIDENCE[requirement_id])
-        if requirement_id in {"FR-TX-019", "FR-TX-020"}:
+        if requirement_id in P6_05_ADDENDUM_EVIDENCE:
+            evidence = "; ".join(P6_05_ADDENDUM_EVIDENCE[requirement_id])
+        elif requirement_id in {"FR-TX-019", "FR-TX-020"}:
             evidence = "; ".join(P6_ANCHOR_EVIDENCE)
         normalized_row = {
             "requirement_id": requirement_id,

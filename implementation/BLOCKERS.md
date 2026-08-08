@@ -1,29 +1,26 @@
 # Blockers
 
-Updated: `2026-08-08T20:19:57Z`
+Updated: `2026-08-08T22:05:48Z`
 
 ## Active hard blockers
 
-None. P6-05 checkpoint 3 passes at exact stable checkpoint `1340f9b`.
-Ordinary CI `31276200829` passes repository `93150013305`, visual
-`93150013277` at `85/85`, complete E2E and both secret lanes; controlled job
-`93150013750` correctly skips before checkpoint 4 activates it. No user action
-is required.
+None. P6-05 passes Level 2 at exact checkpoint `4e04eb4`. Ordinary CI
+`31280290398` passes before dispatch, and final workflow `31280296684` passes
+repository `93160709198`, visual `93160709195` at `85/85` and controlled Site
+`93160709186`. Runtime artifact `9028284028` records cumulative scope
+`p5-01-through-p6-05`. No user action is required.
 
 ## Active recovery
 
-None. The P6-05 repository/BFF/API and live-workspace checkpoints pass; its
-controlled-runtime checkpoint is active. `DR-REC-010` remains a scoped hold
-on exact Tooling lifecycle states, transitions and manufacturing authority
-only. `DR-REC-002`
-holds production exception-color semantics only. Neither blocks immutable
-defect truth, separated process facts, textual comparison states or versioned
-capacity scenarios.
+None. P6-05 is sealed at Level 2 and the bounded P6-06 Requirement/domain/
+existing-capability audit is active. `DR-REC-010` remains a scoped hold on
+exact Tooling lifecycle states, transitions and manufacturing authority only.
+`DR-REC-002` retains production exception-color semantics only.
 
-Missing Trial, production ERPNext/IoT endpoint/credential, calibration and
-health-score policy does not block the bounded workspace. Those dependencies
-must remain explicitly `not_measured` or `unavailable`; production ERPNext and
-IoT must not be contacted.
+Missing Trial, production ERPNext/IoT endpoint/credential, calibration,
+health-score policy and formal ERP asset facts do not block the bounded audit.
+They must remain explicitly unavailable; production ERPNext and IoT must not
+be contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

@@ -662,6 +662,169 @@ EXPECTED_P6_04_TRACE = {
         },
     ),
 }
+EXPECTED_P6_05_TRACE = {
+    "FR-TL-009": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-009",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "tests/test_phase6_tooling_engineering_controls_repository.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "immutable defect action responsibility target-round intention and verification truth are live while final Trial and G5 G6 policy integration remains Phase 7",
+        },
+    ),
+    "FR-TL-010": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-010",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "future Trial context target-round references and separated comparison slots are live while Trial rounds and comparisons remain Phase 7",
+        },
+    ),
+    "FR-TL-017": (
+        "P2",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-017",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_contract.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "closed unavailable ERP IoT shot-count source and calibration projection is live while source observations remain Phase 8",
+        },
+    ),
+    "FR-TL-018": (
+        "P2",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-018",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_contract.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "closed unavailable health and maintenance-policy projection is live while scoring thresholds and advice remain Phase 8",
+        },
+    ),
+    "FR-TX-009": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "versioned Customer Standard process truth is live while Trial Actual and Approved Baseline creation remain Phase 7",
+        },
+    ),
+    "FR-TX-010": (
+        "P0",
+        "TECHNICAL_VERIFIED",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "tests/test_phase6_tooling_engineering_controls_repository.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "complete explicit capacity inputs formula version provenance successors and deterministic recomputation are runtime proven without hidden business constants",
+        },
+    ),
+    "FR-TX-011": (
+        "P0",
+        "TECHNICAL_VERIFIED",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "tests/test_phase6_tooling_engineering_controls_repository.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "part day month assembly bottleneck and gap outputs are server-derived versioned and runtime proven after changed inputs",
+        },
+    ),
+    "FR-TX-019": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "ADDENDUM_DIRECT",
+        "FR-TX-019",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "contracts/data-ownership.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "Customer Standard Trial Actual and Approved Baseline are disjoint typed layers while Phase 7 retains actual and approval creation",
+        },
+    ),
+    "FR-TX-020": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "ADDENDUM_DIRECT",
+        "FR-TX-020",
+        {
+            "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+            "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-engineering-controls-workspace.tsx",
+            "tests/test_phase6_tooling_engineering_controls_domain.py",
+            "scripts/verify_tooling_engineering_controls_runtime.py",
+            "implementation/evidence/phase-6/p6-05-validation.md",
+            "exact rule-versioned comparison and four textual states are live while production red semantics remain held by DR-REC-002",
+        },
+    ),
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -1356,6 +1519,50 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} references missing P6-04 evidence files: "
                 f"{missing_evidence}"
             )
+    for requirement_id, (
+        expected_priority,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_05_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            "6",
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-05 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-05 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-05 evidence files: "
+                f"{missing_evidence}"
+            )
     canonical_ids = {
         requirement_id
         for requirement_id, row in by_id.items()
@@ -1409,9 +1616,9 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "expected 34 non-product ARCH/COD governance links"
         )
-    if len(tooling_ids) != 10:
+    if len(tooling_ids) != 7:
         raise ReconciliationVerificationError(
-            "expected 10 remaining anchored Phase 6 Tooling requirements"
+            "expected 7 remaining anchored Phase 6 Tooling requirements"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(

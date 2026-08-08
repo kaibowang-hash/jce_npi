@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CONTROLLED_RUNTIME — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+`IN_PROGRESS_AUDIT — P6-06 ACCEPTANCE AND ASSET REQUEST`
 
-Recovery time: `2026-08-08T20:19:57Z`
+Recovery time: `2026-08-08T22:05:48Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`1340f9b3f7167174277580c7aaedc9f9dcc97326`
+`4e04eb47b1c5f77b9a442b3bef139df61cb83782`
 
 ## Current authoritative action
 
@@ -61,24 +61,29 @@ lanes) and visual `93150013277` at `85/85`; controlled job `93150013750`
 correctly skips. Evidence is
 `implementation/evidence/phase-6/p6-05-live-workspace-checkpoint.md`.
 
-The current atomic task is checkpoint 4 only: extend the cumulative disposable-
-Site verifier and controlled workflow for defect succession/actions/evidence/
-blocking, Customer Standard separation with absent actual/baseline, capacity
-successor recomputation/bottleneck/gap, actor-bound replay, stale conflict,
-rollback, IDOR and independent P6-05 route disable/recovery. Run affected
-checks and complete ordinary CI before the controlled Site; on PASS record the
-exact artifact and complete the P6-05 Level 2 Task Gate.
+P6-05 passes Level 2 at exact task checkpoint `4e04eb4`. Ordinary CI
+`31280290398` passes before dispatch, and final workflow `31280296684` passes
+repository `93160709198` (`1,251` tracked Python, `768` frontend unit,
+`332` non-visual E2E, `4,901` complete direct trilingual sources, statements
+`80.35%`, zero vulnerabilities and Gitleaks), visual `93160709195` at `85/85`
+and controlled Site `93160709186`. Runtime artifact `9028284028`, digest
+`sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`,
+records cumulative scope `p5-01-through-p6-05`. Complete evidence is
+`implementation/evidence/phase-6/p6-05-validation.md`.
 
-P6-05 exposes no Trial Actual or Approved Baseline command because the
-repository has no Trial/approval aggregate. Those facts remain respectively
-`not_measured` and `unavailable` until Phase 7. Severity never implies Gate
-blocking; no Domain Work Item or G5/G6 mutation is created. ERP/IoT shot count,
-calibration, maintenance and health score remain explicitly unavailable.
+The current atomic task is the bounded P6-06 Requirement/domain/existing-
+capability audit only for `FR-TL-011..016`. It must determine the minimum
+immutable acceptance checklist/evidence model and the exact Mock/sandbox-ready
+ERP asset request/projection boundary, while preserving one-to-one formal asset
+mapping and ERPNext ownership. The audit must map existing controlled evidence,
+Tooling identities, Execution Request/Outbox/Inbox foundations and all held
+production facts before proposing a vertical slice.
 
-`DR-REC-002` still holds only production exception-color semantics and
-`DR-REC-010` still holds only Requirement/Revision/Set lifecycle and
-manufacturing authority. They do not block checkpoint 2. There is no active
-technical Hard Blocker.
+No product code, DocType, route, adapter, credential or business row is active
+for P6-06 yet. Real asset creation/update, mapping confirmation, location,
+movement, maintenance, repair, spares, inventory and cost execution remain
+Phase 8. Production ERPNext must not be contacted. There is no active technical
+Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
 `31266800163` and final workflow `31267181068` pass; runtime artifact

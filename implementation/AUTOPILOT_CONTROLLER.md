@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T20:19:57Z`
+Updated: `2026-08-08T22:05:48Z`
 
 ## Authority and operating mode
 
@@ -1609,3 +1609,40 @@ repeat or rewrite it merely to restore context. See
   independent P6-05 route disable/recovery, followed by complete ordinary CI
   and the P6-05 Level 2 Task Gate. Trial/Gate/lifecycle/ERP/IoT writes and
   P6-06 remain inactive.
+
+## 2026-08-08 P6-05 Level 2 PASS and P6-06 transition
+
+- Runtime checkpoint `137d306` added the cumulative P6-05 disposable-Site
+  verifier and independent route switch. Four serial controlled failures
+  uniquely proved verifier/fixture boundaries rather than product permission,
+  contract or transaction defects: literal-Administrator safety validation,
+  Project-scoped applicability selection, a non-privileged IDOR actor and the
+  intended System Manager-before-object command authorization order.
+- Repairs `7f91a7c`, `42c4a0b`, `ffaf4e7` and `4e04eb4` changed only those
+  exact verifier predicates/fixtures and added behavioral regressions. Local
+  cumulative verifier checks passed `145/145`; no Requirement, route,
+  permission, ownership, Schema, transaction, idempotency, audit, visual
+  threshold or PASS criterion was weakened.
+- Exact final checkpoint `4e04eb4` passes ordinary CI `31280290398`. Final
+  workflow `31280296684` retains the same SHA and passes repository
+  `93160709198` (`1,251` tracked Python, `768` frontend unit, `332` non-visual
+  E2E, `4,901` direct trilingual sources, statements `80.35%`, zero
+  vulnerabilities and Gitleaks), visual `93160709195` at `85/85` and
+  controlled Site `93160709186`.
+- Runtime artifact `9028284028`, digest
+  `sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`,
+  records `result=PASS`, pinned Frappe, two migrations and cumulative scope
+  `p5-01-through-p6-05`. Visual artifact `9028277547` and Gitleaks artifact
+  `9028341579` retain the exact final evidence.
+- Controlled truth contains two immutable defect revisions, two Customer
+  Standard profile revisions, two Capacity Scenario revisions, exact action/
+  evidence/blocking truth, absent Trial Actual/Approved Baseline, deterministic
+  successor recomputation, bottleneck/gap, replay, conflict, rollback, IDOR
+  and independent P6-05 route recovery. Complete evidence is
+  `implementation/evidence/phase-6/p6-05-validation.md`.
+- Standing transition authority activates only the bounded P6-06 Requirement/
+  domain/existing-capability audit for `FR-TL-011..016`: immutable acceptance
+  evidence and Mock/sandbox-ready asset request/projection conditions. Real
+  ERPNext asset creation/update, unique target mapping confirmation, location/
+  movement, maintenance, repair, spares, inventory and cost remain Phase 8;
+  production ERPNext must not be contacted.
