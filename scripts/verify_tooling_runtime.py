@@ -1900,9 +1900,9 @@ def route_disable_probe(
     workspace = assert_workspace(tooling, project_id)
     require(
         len(workspace["masters"]) == 1
-        and len(workspace["parts"]) == 1
-        and len(workspace["applicability"]) == 2,
-        "P6-01 recovered route truth drifted",
+        and len(workspace["parts"]) == 2
+        and len(workspace["applicability"]) == 3,
+        "P6-01 cumulative recovered route truth drifted",
     )
     recovered_sets = assert_tooling_set_collection(
         tooling_sets,

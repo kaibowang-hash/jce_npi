@@ -327,7 +327,18 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
             "delete_resource(",
         ):
             with self.subTest(fragment=fragment):
-                self.assertIn(fragment, persistence)
+                    self.assertIn(fragment, persistence)
+
+    def test_recovery_probe_requires_exact_cumulative_p603_truth(self) -> None:
+        probe = self.source.split("def route_disable_probe", 1)[1].split(
+            "\ndef ",
+            1,
+        )[0]
+        self.assertIn('len(workspace["masters"]) == 1', probe)
+        self.assertIn('len(workspace["parts"]) == 2', probe)
+        self.assertIn('len(workspace["applicability"]) == 3', probe)
+        self.assertNotIn('len(workspace["parts"]) >=', probe)
+        self.assertNotIn('len(workspace["applicability"]) >=', probe)
 
     def test_set_requirements_bind_the_current_part_revision(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]
