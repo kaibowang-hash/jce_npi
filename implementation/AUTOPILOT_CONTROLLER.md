@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T11:44:33Z`
+Updated: `2026-08-08T13:23:38Z`
 
 ## Authority and operating mode
 
@@ -1378,3 +1378,30 @@ repeat or rewrite it merely to restore context. See
   boundary, an independent fail-closed switch and API/IDOR/no-write tests.
   Live SPA activation, supplier portal, production lifecycle rules, ERP
   mutation/endpoint/credential/adapter and controlled Site remain inactive.
+
+## 2026-08-08 P6-04 checkpoint 2 PASS and live-workspace transition
+
+- Product checkpoint `5a92569` activates exactly four independently fail-
+  closed Project-first routes: bounded plan-history and exact-plan reads plus
+  immutable plan and milestone-observation append commands. Exact Tooling
+  Revision/member/document/lifecycle/event/File dependencies are re-resolved;
+  System Manager is management transport only; idempotency is actor-bound; and
+  persistence, audit and receipt share one transaction.
+- The dependency-injected ERP procurement/cost reader is strictly read-only
+  and absent from production. The outward default remains explicitly
+  unavailable; there is no ERP endpoint, credential, write, dispatch, retry,
+  replay, target fixture, successful target row, supplier portal or external
+  principal.
+- Ordinary CI `31259073916` passes exact SHA `5a92569`: repository
+  `93106930476` (`1,208` tracked Python, `744` frontend unit, `321` non-visual
+  E2E, `4,528` sources at complete direct `zh`/`zh-TW`, statements `80.07%`,
+  zero vulnerabilities and no leaks) and visual `93106930464` at `79/79`;
+  controlled job `93106930717` correctly skips. Evidence is
+  `implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md`.
+- Standing transition authority activates only checkpoint 3: the strict data
+  source and dense live selected-Master manufacturing workspace with separate
+  plan, milestone, evidence, design-release, manufacturing-authorization and
+  ERP sections; complete trilingual/accessibility/state handling; and affected
+  visual evidence. Supplier actions, production Tooling lifecycle rules, ERP
+  mutation/connection/success claims and controlled-Site runtime remain
+  inactive. `DR-REC-010` continues to hold manufacturing authority.

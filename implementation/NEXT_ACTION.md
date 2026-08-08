@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPOSITORY_BFF — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+`IN_PROGRESS_LIVE_WORKSPACE — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 
-Recovery time: `2026-08-08T12:41:00Z`
+Recovery time: `2026-08-08T13:23:38Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`00956b45e5bc7408d856b9e2a416d6f0f6d4b88e`
+`5a925693ffef317b0cb8adde7924eeee78b88e2d`
 
 ## Current authoritative action
 
@@ -47,15 +47,31 @@ vulnerabilities or leaks) and visual `93102812149` at `79/79`; controlled job
 `93102812647` correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md`.
 
-Automatic transition activates only P6-04 checkpoint 2: Project-first bounded
-plan/observation reads and narrow append commands, exact Master/Revision/
-member/document/lifecycle/event/File containment, System Manager-only
-mutation, actor-bound idempotency, one transaction, append-only audit, a
-strict injected read-only ERP projection boundary, an independent fail-closed
-route switch and API/IDOR/no-ERP-write tests. No live SPA command, supplier
-portal, production lifecycle rule, ERP mutation, endpoint, credential,
-production adapter or successful target result may activate. `DR-REC-010`
-continues to hold Tooling lifecycle and manufacturing authority.
+P6-04 checkpoint 2 passes at exact product checkpoint `5a92569`. It activates
+only four independently fail-closed Project-first routes: bounded plan-history
+and exact-plan reads plus immutable plan and observation append commands.
+Every write re-resolves exact Tooling Revision/member/document/release/File
+dependencies, requires System Manager management transport, actor-bound
+idempotency and one audit/receipt transaction. The injected ERP reader is
+strictly read-only and absent in production, so procurement/cost remains
+explicitly unavailable. Ordinary CI `31259073916` passes repository
+`93106930476` (`1,208` tracked Python, `744` frontend unit, `321` non-visual
+E2E, `4,528` sources, statements `80.07%`, no vulnerabilities or leaks) and
+visual `93106930464` at `79/79`; controlled job `93106930717` correctly
+skips. Evidence is
+`implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md`.
+
+Automatic transition activates only P6-04 checkpoint 3: a strict Tooling
+manufacturing data source and dense selected-Master workspace showing plan,
+milestone, evidence, design-release, manufacturing-authorization and ERP
+truth as separate sections. It must provide explicit loading, empty, error,
+no-permission, read-only, unavailable, validation, conflict, processing and
+retry states; direct English/`zh`/`zh-TW`; keyboard/accessibility checks; and
+affected visual evidence. It may expose commands only from server-returned
+capabilities. Deterministic prototype values, supplier portal/actions,
+production Tooling lifecycle rules, ERP mutation/endpoint/credential/adapter,
+successful target rows and controlled-Site runtime remain inactive.
+`DR-REC-010` continues to hold Tooling lifecycle and manufacturing authority.
 
 ## Retained P6-01 execution history
 

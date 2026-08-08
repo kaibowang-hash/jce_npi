@@ -1,19 +1,19 @@
 # Blockers
 
-Updated: `2026-08-08T12:41:00Z`
+Updated: `2026-08-08T13:23:38Z`
 
 ## Active hard blockers
 
-None. P6-03 remains Level 2 PASS, and P6-04 checkpoint 1 passes at exact
-stable checkpoint `00956b4`. Ordinary CI `31257408124` passes repository
-`93102812133`, visual `93102812149` at `79/79` and both secret lanes; the
+None. P6-03 remains Level 2 PASS, and P6-04 checkpoint 2 passes at exact
+product checkpoint `5a92569`. Ordinary CI `31259073916` passes repository
+`93106930476`, visual `93106930464` at `79/79` and both secret lanes; the
 controlled job correctly skips before the runtime checkpoint. No user action
 is required.
 
 ## Active recovery
 
-None. The P6-04 bounded audit and checkpoint 1 are `PASS`; checkpoint 2 is
-`IN_PROGRESS_REPOSITORY_BFF`, not blocked.
+None. The P6-04 bounded audit and checkpoints 1-2 are `PASS`; checkpoint 3 is
+`IN_PROGRESS_LIVE_WORKSPACE`, not blocked.
 `DR-REC-010` remains a scoped hold on exact Tooling lifecycle states,
 transitions and manufacturing authority only. Missing production ERPNext
 endpoint/credential does not block pure contracts, additive metadata or an

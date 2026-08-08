@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T12:41:00Z'
+updated_at: '2026-08-08T13:23:38Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-04
-current_task_status: IN_PROGRESS_REPOSITORY_BFF
-current_task_completed_stage: P6_04_DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-current_task_next_stage: P6_04_REPOSITORY_BFF
+current_task_status: IN_PROGRESS_LIVE_WORKSPACE
+current_task_completed_stage: P6_04_REPOSITORY_BFF_PASS
+current_task_next_stage: P6_04_LIVE_WORKSPACE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-04
-resumed_product_task_status: IN_PROGRESS_REPOSITORY_BFF
+resumed_product_task_status: IN_PROGRESS_LIVE_WORKSPACE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1058,7 +1058,7 @@ p6_03:
     - implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-03-validation.md
 p6_04:
-  status: IN_PROGRESS_REPOSITORY_BFF
+  status: IN_PROGRESS_LIVE_WORKSPACE
   backlog_task: M5-04
   requirements: [FR-TL-005, FR-TL-006, FR-TL-007, FR-TL-008]
   delivery_boundary: MANUFACTURING_SUPPLIER_AND_ERP_COST_PROJECTION
@@ -1092,13 +1092,27 @@ p6_04:
   foundation_gitleaks_artifact: 9021878830
   foundation_gitleaks_digest: sha256:a9ff059a0afabedafc6cccc24acaa550fde109ae333e6b1b1187acd597da76af
   foundation_decision: PASS
-  routes_active: false
-  current_stage: REPOSITORY_BFF
+  repository_api_product_checkpoint: 5a925693ffef317b0cb8adde7924eeee78b88e2d
+  repository_api_ci: 31259073916
+  repository_api_repository_job: 93106930476
+  repository_api_visual_job: 93106930464
+  repository_api_controlled_job: 93106930717
+  repository_api_visual_artifact: 9022271760
+  repository_api_visual_digest: sha256:4e8b32fcd50445b6e53b17b1613c44be6885f446ece8cc73f09d35aad1f87ec4
+  repository_api_gitleaks_artifact: 9022334863
+  repository_api_gitleaks_digest: sha256:b9e0d4fea85e95d21b1391259039a419fdb3767c75bd39342fcb20b42711e5ea
+  repository_api_decision: PASS
+  routes_active: true
+  routes_fail_closed: true
+  production_erp_reader_active: false
+  live_workspace_active: false
+  current_stage: LIVE_WORKSPACE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-03-validation.md
     - implementation/evidence/phase-6/p6-04-plan.md
     - implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
