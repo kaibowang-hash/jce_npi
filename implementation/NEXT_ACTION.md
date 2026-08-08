@@ -1,45 +1,49 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+`IN_PROGRESS_DOMAIN_METADATA — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 
-Recovery time: `2026-08-08T16:40:58Z`
+Recovery time: `2026-08-08T16:55:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`5ca13abdbbbe08493ee54e9627849cfb0afdec01`
+`e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae`
 
 ## Current authoritative action
 
-P6-04 passes Level 2 at exact task checkpoint `5ca13ab`. Ordinary CI
-`31266800163` passes repository `93126150493` (`1,214` tracked Python,
-`756` frontend unit, `326` non-visual E2E, `4,641` direct trilingual sources,
-statements `80.03%`, zero vulnerabilities and both secret lanes) and visual
-`93126150510` at `82/82`; controlled job `93126150893` correctly skips.
+The bounded P6-05 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-05-plan.md`. It freezes one truthful slice:
+append-only Tooling-defect/action/verification revisions, disjoint Customer
+Standard/Trial Actual/Approved Baseline process facts, exact textual comparison
+states and a fully explicit versioned `capacity.v1` scenario. The current
+atomic task is checkpoint 1 only: pure domains, closed OpenAPI/ownership truth,
+three guarded additive DocTypes, receipt values and direct tests. Repository
+routes, live SPA and controlled Site remain inactive.
 
-Final workflow `31267181068` retains exact SHA `5ca13ab` and passes repository
-`93127118034`, visual `93127118025` at `82/82` and controlled Site
-`93127118037`. Runtime artifact `9024542728`, digest
-`sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`,
-records cumulative scope `p5-01-through-p6-04`. It proves two immutable plan
-revisions, two milestone observations, exact released/unreleased design
-dependency handling, explicit unavailable ERP/manufacturing authorization,
-replay, conflict, rollback, IDOR and independent route disable/recovery.
+Starting controller checkpoint `e38da24` passes exact-SHA ordinary CI
+`31267848021`: repository `93128792398`, fixed-Linux visual `93128792366` at
+`82/82`, both secret lanes, with controlled job `93128792624` correctly
+skipped.
 
-Automatic transition activates only the bounded P6-05 Requirement/domain/
-existing-capability audit for `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`,
-`FR-TL-009`, the `FR-TL-010` foundation and `FR-TL-017..018`. Determine the
-smallest truthful vertical slice for defect/action truth, strict separation of
-Standard, Trial Actual and Approved Baseline process values, and versioned
-capacity scenarios. Exact Tooling lifecycle commands and production red
-semantics remain held. Do not activate Trial execution, ERP mutation, an
-unapproved capacity formula, lifecycle state machine or convenience defaults.
+P6-05 exposes no Trial Actual or Approved Baseline command because the
+repository has no Trial/approval aggregate. Those facts remain respectively
+`not_measured` and `unavailable` until Phase 7. Severity never implies Gate
+blocking; no Domain Work Item or G5/G6 mutation is created. ERP/IoT shot count,
+calibration, maintenance and health score remain explicitly unavailable.
 
-Complete evidence is
-`implementation/evidence/phase-6/p6-04-validation.md`. There is no active
+`DR-REC-002` still holds only production exception-color semantics and
+`DR-REC-010` still holds only Requirement/Revision/Set lifecycle and
+manufacturing authority. They do not block checkpoint 1. There is no active
 technical Hard Blocker.
+
+P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
+`31266800163` and final workflow `31267181068` pass; runtime artifact
+`9024542728`, digest
+`sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`,
+records cumulative scope `p5-01-through-p6-04`. Complete evidence is
+`implementation/evidence/phase-6/p6-04-validation.md`.
 
 P6-03 passes Level 2 at exact diagnostics-closed task checkpoint `4ab4782`.
 Ordinary CI `31254281586` passes repository `93095213074` (`1,177` Python,

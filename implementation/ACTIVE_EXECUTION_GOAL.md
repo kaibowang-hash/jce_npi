@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T16:46:37Z`
+Updated: `2026-08-08T16:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+- Mode: `IN_PROGRESS_DOMAIN_METADATA — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,13 +12,12 @@ Updated: `2026-08-08T16:46:37Z`
   `5ca13abdbbbe08493ee54e9627849cfb0afdec01` (pushed; P6-04 Level 2 Task
   Gate PASS with diagnostics closed)
 - Latest completed controller/evidence checkpoint before this update:
-  `0d6ac74a47bed7f041ff66b75d2353324ac7f88b` (P6-04 checkpoint 3
-  controller/evidence synchronization; Level 2 synchronization is the
-  current bounded documentation update)
+  `e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae` (P6-04 Level 2
+  controller/evidence synchronization and P6-05 audit entry checkpoint)
 - Latest complete normal CI:
-  `31266800163` (`PASS`, exact SHA `5ca13ab`; repository `93126150493` and
-  fixed-Linux visual `93126150510` at `82/82` passed; controlled runtime
-  `93126150893` correctly skipped)
+  `31267848021` (`PASS`, exact SHA `e38da24`; repository `93128792398` and
+  fixed-Linux visual `93128792366` at `82/82` passed; controlled runtime
+  `93128792624` correctly skipped)
 - Latest controlled-Site run:
   `31267181068` (`PASS`, exact SHA `5ca13ab`, diagnostics closed; repository
   `93127118034`, visual `93127118025` and controlled `93127118037` passed)
@@ -27,14 +26,14 @@ Updated: `2026-08-08T16:46:37Z`
   `sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`
 - Current controller task:
   `P6-05 — Defect, process and capacity controls`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — DOMAIN/CONTRACT/ADDITIVE-METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`, `FR-TL-009`,
   `FR-TL-010` foundation and `FR-TL-017..018`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -54,16 +53,23 @@ explicit unavailable ERP/manufacturing authorization, replay, conflict,
 rollback, IDOR and independent route disable/recovery. Complete evidence is
 `implementation/evidence/phase-6/p6-04-validation.md`.
 
-Standing automatic-transition authority activates only the bounded P6-05
-Requirement/domain/existing-capability audit for `FR-TX-009..011`,
-`FR-TX-019`, `FR-TX-020`, `FR-TL-009`, the `FR-TL-010` foundation and
-`FR-TL-017..018`. The audit must determine the smallest truthful vertical
-slice for defect/action truth, strict separation of Standard, Trial Actual and
-Approved Baseline process values, and versioned capacity scenarios. It may not
-activate Trial execution, ERP mutation, an unapproved capacity formula,
-lifecycle state machine, production red semantics or convenience defaults.
-Exact Tooling lifecycle and manufacturing authority remain held by
-`DR-REC-010`. There is no active technical Hard Blocker.
+The bounded P6-05 audit passes in
+`implementation/evidence/phase-6/p6-05-plan.md`. It freezes append-only
+Tooling-defect/action/verification truth; disjoint Customer Standard, Trial
+Actual and Approved Baseline facts; exact textual comparison states; explicit
+unavailable Trial/ERP/IoT/health dependencies; and a published, fully input-
+versioned `capacity.v1` formula. Trial Actual remains `not_measured`, Approved
+Baseline and health remain `unavailable`, severity never implicitly blocks a
+Gate and no Domain Work Item or G5/G6 mutation is created.
+
+Standing transition authority activates only P6-05 checkpoint 1: pure defect,
+process/comparison, capacity and unavailable-health domains; closed OpenAPI and
+ownership truth; three guarded additive DocTypes; receipt values and direct
+tests. Routes, repository commands, live SPA, controlled Site, Trial/Gate/
+ERP/IoT behavior and P6-06 remain inactive. `DR-REC-002` continues to hold
+production exception-color semantics and `DR-REC-010` continues to hold exact
+Requirement/Revision/Set lifecycle and manufacturing authority. There is no
+active technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

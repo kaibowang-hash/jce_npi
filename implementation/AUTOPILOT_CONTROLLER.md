@@ -1474,3 +1474,40 @@ repeat or rewrite it merely to restore context. See
   capacity scenarios. Exact Tooling lifecycle commands and production red
   semantics remain held; no Trial/ERP execution, lifecycle policy or
   unapproved capacity formula may be invented.
+
+## 2026-08-08 P6-05 bounded audit PASS and checkpoint 1 activation
+
+- Starting controller checkpoint `e38da24` passes exact-SHA ordinary CI
+  `31267848021`: repository `93128792398`, fixed-Linux visual `93128792366`
+  at `82/82` and both secret lanes pass; controlled job `93128792624`
+  correctly skips. Visual artifact `9024722370` has digest
+  `sha256:6f4b372d7dca70261e79d903c0bd7b4342cb2e2b8c3bf40aab5ee233a67f7bdb`.
+- The audit in `implementation/evidence/phase-6/p6-05-plan.md` confirms that
+  no live Tooling-defect, process-profile, capacity-scenario, Trial or health
+  aggregate exists. Project Work retains governed issue/action identity but
+  cannot store cavity, root-cause, target-round or verification truth;
+  deterministic Tooling/Trial pages remain prototypes.
+- P6-05 may add an append-only Tooling-defect revision aggregate using the Pack
+  `open -> assigned -> in_progress -> ready_for_verification -> closed` and
+  `closed -> reopened -> assigned` sequence. Severity and explicit blocking
+  intent remain separate; no Domain Work Item, Gate or Tooling lifecycle
+  mutation is authorized.
+- Customer Standard, Trial Actual and Approved Process Baseline remain disjoint
+  immutable fact layers. Only Customer Standard receives a P6-05 live command.
+  Trial Actual is `not_measured` and Approved Baseline is `unavailable` until
+  Phase 7 supplies exact Trial/approval evidence; a caller flag cannot change
+  either truth.
+- The Capacity Scenario uses published `capacity.v1`: every hours/days/OEE/
+  yield/cycle/cavity/usage/set/demand input and every part/assembly/bottleneck/
+  gap output is versioned. `3600` is the visible hour-to-second conversion and
+  `decimal-6-half-even` is the visible result rule; no business default or
+  caller-supplied result is accepted.
+- `DR-REC-002` still holds production exception-color semantics only. Textual
+  `not_measured`, `within_tolerance`, `outside_tolerance` and `unavailable`
+  truth can proceed with non-color-only presentation. `DR-REC-010` continues
+  to hold Requirement/Revision/Set lifecycle and manufacturing authority.
+- Standing transition authority activates only checkpoint 1: pure defect/
+  process/comparison/capacity/unavailable-health domain, closed OpenAPI and
+  ownership truth, three guarded additive DocTypes, receipt values and direct
+  tests. Routes, repository commands, live SPA, controlled Site, Trial/Gate/
+  ERP/IoT behavior and P6-06 remain inactive.

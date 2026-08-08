@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T16:40:58Z'
+updated_at: '2026-08-08T16:55:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-05
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P6_04_LEVEL_2_TASK_GATE_PASS
-current_task_next_stage: P6_05_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_METADATA
+current_task_completed_stage: P6_05_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+current_task_next_stage: P6_05_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-05
-resumed_product_task_status: IN_PROGRESS_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_METADATA
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1157,6 +1157,38 @@ p6_04:
     - implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md
     - implementation/evidence/phase-6/p6-04-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-04-validation.md
+p6_05:
+  task: P6-05
+  controller_task: P6-05_DEFECT_PROCESS_CAPACITY_CONTROLS
+  status: IN_PROGRESS
+  requirements: [FR-TX-009, FR-TX-010, FR-TX-011, FR-TX-019, FR-TX-020, FR-TL-009, FR-TL-010, FR-TL-017, FR-TL-018]
+  starting_product_checkpoint: 5ca13abdbbbe08493ee54e9627849cfb0afdec01
+  starting_controller_checkpoint: e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae
+  audit_ci: 31267848021
+  audit_repository_job: 93128792398
+  audit_visual_job: 93128792366
+  audit_controlled_job: 93128792624
+  audit_visual_artifact: 9024722370
+  audit_visual_digest: sha256:6f4b372d7dca70261e79d903c0bd7b4342cb2e2b8c3bf40aab5ee233a67f7bdb
+  audit_gitleaks_artifact: 9024789982
+  audit_gitleaks_digest: sha256:c99217cb51c366085374dc713d39d310e8bc2e3aac50f674cf5f52ee445b1e2f
+  audit_decision: PASS
+  scoped_decisions: [DR-REC-002, DR-REC-010]
+  trial_actual_active: false
+  approved_process_baseline_active: false
+  production_exception_color_active: false
+  tooling_lifecycle_commands_active: false
+  production_erp_iot_active: false
+  routes_active: false
+  live_workspace_active: false
+  controlled_runtime_active: false
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+  next_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - implementation/evidence/phase-6/p6-04-validation.md
+    - implementation/evidence/phase-6/p6-05-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-08T16:40:58Z`
+Updated: `2026-08-08T16:55:00Z`
 
 ## Active hard blockers
 
@@ -13,11 +13,17 @@ passes repository `93127118034`, visual `93127118025` and controlled Site
 
 ## Active recovery
 
-None. P6-05 is `IN_PROGRESS_AUDIT`, not blocked. `DR-REC-010` remains a
-scoped hold on exact Tooling lifecycle states, transitions and manufacturing
-authority only. Missing production ERPNext endpoint/credential does not block
-the bounded P6-05 defect/process/capacity audit or NPI-owned implementation;
-production ERPNext must not be contacted.
+None. The P6-05 bounded audit passes and its domain/contract/additive-metadata
+foundation is active. `DR-REC-010` remains a scoped hold on exact Tooling
+lifecycle states, transitions and manufacturing authority only. `DR-REC-002`
+holds production exception-color semantics only. Neither blocks immutable
+defect truth, separated process facts, textual comparison states or versioned
+capacity scenarios.
+
+Missing Trial, production ERPNext/IoT endpoint/credential, calibration and
+health-score policy does not block the bounded foundation. Those dependencies
+must remain explicitly `not_measured` or `unavailable`; production ERPNext and
+IoT must not be contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
