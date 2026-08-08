@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T22:23:25Z`
+Updated: `2026-08-08T23:33:09Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P6-06 ACCEPTANCE AND ASSET FOUNDATION`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P6-06 PROJECT-FIRST REPOSITORY/BFF/SECURITY`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -14,9 +14,12 @@ Updated: `2026-08-08T22:23:25Z`
 - Latest completed controller/evidence checkpoint before this update:
   `943d1ea6863ab348afb5bb2f6e0781459d636577` (P6-05 Level 2 evidence and
   P6-06 audit activation)
+- Latest stable product checkpoint:
+  `7ab28bf27ec223d3a0e024e77bd628fed2c0fa9e` (P6-06 checkpoint 1 domain,
+  contract and guarded metadata PASS)
 - Latest complete normal CI:
-  `31281224456` (`PASS`, exact SHA `943d1ea`; repository `93162778363` and
-  visual `93162778393` passed; controlled runtime correctly skipped)
+  `31283811647` (`PASS`, exact SHA `7ab28bf`; repository `93169231333` and
+  visual `93169231300` at `85/85` passed; controlled runtime correctly skipped)
 - Latest controlled-Site run:
   `31280296684` (`PASS`, exact SHA `4e04eb4`, diagnostics closed; repository
   `93160709198`, visual `93160709195` and controlled `93160709186` passed)
@@ -25,12 +28,12 @@ Updated: `2026-08-08T22:23:25Z`
   `sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`
 - Current controller task:
   `P6-06 — Acceptance and asset execution request`
-  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/METADATA FOUNDATION`)
+  (`IN_PROGRESS — CHECKPOINT 2 PROJECT-FIRST REPOSITORY/BFF/SECURITY`)
 - Current Requirement IDs: `FR-TL-011..016`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 1`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 2`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -64,12 +67,33 @@ business approval unavailable and dispatch prohibited; zero-or-one formal
 Asset mapping per physical Set; and an explicit unavailable ERP projection.
 No evidence coverage becomes approval, lifecycle or ERP success.
 
-Standing transition authority activates only checkpoint 1: pure acceptance/
-request/projection domains, closed OpenAPI/ownership/future-event schemas,
-guarded additive metadata, receipt values and direct tests. Repository routes,
-business rows, live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior and
-all production/sandbox network access remain inactive. There is no active
-technical Hard Blocker.
+P6-06 checkpoint 1 passes at exact stable checkpoint `7ab28bf`. Product commit
+`43e187f` added pure acceptance/request/projection domains, closed OpenAPI,
+ownership and future-event schemas, three guarded additive DocTypes, receipt
+values and direct trilingual coverage without activating a route or business
+row. The serial ordinary-CI repairs aligned only cumulative metadata gates,
+generated catalogs and mixed-language translations. Repository job
+`93168103152` then passed exact SHA `34bfb17`; its visual job isolated only the
+eighteen durable bottom-footer catalog fingerprints. Artifact `9029108774`
+proved every RGB delta was confined to `y=882..891` before isolated baseline
+repair `7ab28bf`.
+
+Final exact-SHA ordinary CI `31283811647` passes repository `93169231333`
+(`1,271` tracked Python, `768` frontend unit, `332` non-visual E2E, `5,012`
+complete direct trilingual sources, statements `80.35%`, zero vulnerabilities
+and both secret lanes) and visual `93169231300` at `85/85`; controlled job
+`93169231539` correctly skips. Evidence is
+`implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md`.
+
+Standing transition authority activates only checkpoint 2: Project-first
+bounded acceptance/request reads; immutable acceptance append and Mock request
+preparation; exact Project/Master/Set/binding/Revision/member/File/evidence
+containment; System Manager management transport; actor-bound idempotency; one
+transaction; append-only audit; strict unavailable ERP projections; an
+independent fail-closed route switch; and API/permission/IDOR/replay/conflict/
+rollback/no-Outbox/no-network/no-target-ID tests. Live SPA, controlled Site,
+Trial/Gate/lifecycle/ERP behavior and all production/sandbox network access
+remain inactive. There is no active technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

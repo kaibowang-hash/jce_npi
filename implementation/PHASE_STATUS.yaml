@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T22:23:25Z'
+updated_at: '2026-08-08T23:33:09Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-06
-current_task_status: IN_PROGRESS_CHECKPOINT_1
-current_task_completed_stage: P6_06_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-current_task_next_stage: P6_06_DOMAIN_CONTRACT_METADATA_FOUNDATION
+current_task_status: IN_PROGRESS_CHECKPOINT_2
+current_task_completed_stage: P6_06_DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+current_task_next_stage: P6_06_PROJECT_FIRST_REPOSITORY_BFF_SECURITY
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-06
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_2
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1251,21 +1251,39 @@ p6_05:
 p6_06:
   task: P6-06
   controller_task: P6-06_ACCEPTANCE_AND_ASSET_EXECUTION_REQUEST
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_2
   requirements: [FR-TL-011, FR-TL-012, FR-TL-013, FR-TL-014, FR-TL-015, FR-TL-016]
   starting_product_checkpoint: 4e04eb47b1c5f77b9a442b3bef139df61cb83782
-  audit_decision: PENDING
+  audit_controller_checkpoint: 943d1ea6863ab348afb5bb2f6e0781459d636577
+  audit_ordinary_ci: 31281224456
+  audit_decision: PASS
+  domain_metadata_checkpoint: 7ab28bf27ec223d3a0e024e77bd628fed2c0fa9e
+  domain_metadata_ordinary_ci: 31283811647
+  domain_metadata_repository_job: 93169231333
+  domain_metadata_visual_job: 93169231300
+  domain_metadata_controlled_job: 93169231539
+  domain_metadata_visual_artifact: 9029232932
+  domain_metadata_visual_digest: sha256:4755a3e8be2a8517a80a2fb3d49f78c7a02ce780784a3f9e32c9ae6eab206d60
+  domain_metadata_gitleaks_artifact: 9029295848
+  domain_metadata_gitleaks_digest: sha256:12d9a502d37fa9a8cfb81f7ae163355d07be70aaf1e6a01c68d99586665fcada
+  domain_metadata_decision: PASS
+  acceptance_evidence_foundation_active: true
+  tool_asset_request_foundation_active: true
+  routes_active: false
+  business_rows_active: false
   production_erp_contact_authorized: false
   real_asset_creation_active: false
   formal_asset_mapping_confirmation_active: false
   asset_location_movement_active: false
   maintenance_repair_spares_inventory_cost_active: false
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  completed_stage: NOT_STARTED
-  next_stage: AUDIT_DECISION
+  current_stage: PROJECT_FIRST_REPOSITORY_BFF_SECURITY
+  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+  next_stage: PROJECT_FIRST_REPOSITORY_BFF_SECURITY
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-05-validation.md
+    - implementation/evidence/phase-6/p6-06-plan.md
+    - implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

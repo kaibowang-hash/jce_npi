@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P6-06 ACCEPTANCE AND ASSET FOUNDATION`
+`IN_PROGRESS_CHECKPOINT_2 — P6-06 PROJECT-FIRST REPOSITORY/BFF/SECURITY`
 
-Recovery time: `2026-08-08T22:23:25Z`
+Recovery time: `2026-08-08T23:33:09Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`943d1ea6863ab348afb5bb2f6e0781459d636577`
+`7ab28bf27ec223d3a0e024e77bd628fed2c0fa9e`
 
 ## Current authoritative action
 
@@ -77,19 +77,42 @@ controller checkpoint `943d1ea` passes ordinary CI `31281224456`: repository
 `93162778363` and fixed-Linux visual `93162778393` pass, while controlled
 runtime correctly skips.
 
-The current atomic task is checkpoint 1 only: add pure immutable acceptance-
-evidence, Asset-adjacent evidence, operation-specific draft Asset request and
-read-only/unavailable ERP projection domains; close OpenAPI, ownership and
-future event shapes; add guarded additive acceptance/request/receipt metadata;
-and run direct affected tests. No route or business row may activate.
+P6-06 checkpoint 1 passes at exact stable checkpoint `7ab28bf`. Product commit
+`43e187f` added the pure immutable acceptance/Asset-adjacent evidence,
+operation-specific draft Tool Asset request and unavailable/future ERP
+projection domains; closed OpenAPI, ownership and future-event schemas; three
+guarded DocTypes; receipt values; and complete direct trilingual coverage.
+It activated no route, business row, Outbox, endpoint, adapter or UI.
 
-Evidence coverage must remain distinct from business approval. The only live
-future request operation is fixed `create_or_update_tool_asset`; Mock input may
-be technically validated, but the formal request remains `draft`, business
-approval stays `unavailable`, dispatch is `prohibited` and the target result is
-`not_requested`. Formal Asset ID/mapping, location/movement, maintenance,
-repair, spares, inventory and cost execution remain Phase 8. Production
-ERPNext must not be contacted. There is no active technical Hard Blocker.
+The serial repair commits aligned only cumulative receipt assertions, removed
+one obsolete generated source, completed direct Chinese translations and
+updated the eighteen reviewed Linux catalog fingerprints. Exact RGB comparison
+of artifact `9029108774` confined every visual delta to the bottom catalog text
+at `y=882..891`; no component, layout, state, assertion, threshold or PASS
+criterion changed.
+
+Final ordinary CI `31283811647` passes exact SHA `7ab28bf`: repository
+`93169231333` (`1,271` tracked Python, `768` frontend unit, `332` non-visual
+E2E, `5,012` direct trilingual sources, statements `80.35%`, zero
+vulnerabilities and both secret lanes), visual `93169231300` at `85/85`, and
+controlled runtime correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md`.
+
+The current atomic task is checkpoint 2 only: implement Project-first bounded
+acceptance/request reads, immutable acceptance append and Mock request
+preparation; re-resolve exact Project/Master/physical Set/binding/Revision/
+member/private-clean-File/evidence containment; require System Manager
+management transport, actor-bound idempotency, one transaction and append-only
+audit; return strict unavailable ERP projections; keep routes independently
+fail closed; and prove authentication, CSRF, permission, IDOR, replay,
+conflict, rollback, no-Outbox, no-network and no-target-ID behavior.
+
+Evidence coverage remains distinct from business approval. The request stays
+`draft`, input `validated_mock`, approval `unavailable`, dispatch `prohibited`
+and target result `not_requested`. Live SPA, controlled Site, formal Asset
+mapping, location/movement, maintenance, repair, spares, inventory and cost
+execution remain inactive. Production and sandbox ERPNext must not be
+contacted. There is no active technical Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
 `31266800163` and final workflow `31267181068` pass; runtime artifact

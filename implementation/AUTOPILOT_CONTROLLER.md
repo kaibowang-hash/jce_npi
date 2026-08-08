@@ -1678,3 +1678,44 @@ repeat or rewrite it merely to restore context. See
   guarded additive metadata, receipt values and direct affected tests. Routes,
   business rows, live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior
   and production/sandbox network access remain inactive.
+
+## 2026-08-08 P6-06 checkpoint 1 PASS and checkpoint 2 activation
+
+- Product commit `43e187f` added the pure immutable acceptance/Asset-adjacent
+  evidence, operation-specific draft Tool Asset request and unavailable/future
+  ERP projection domains; closed OpenAPI, ownership and future-event schemas;
+  three guarded DocTypes; receipt values; and complete direct trilingual
+  coverage. It activated no route, business row, Outbox, adapter, endpoint,
+  credential or UI.
+- Serial repairs `a3cd864`, `a491b83` and `34bfb17` changed only cumulative
+  receipt/target expectations, one obsolete generated translation source and
+  direct Simplified/Traditional Chinese coverage. They introduced no domain,
+  route, permission, ownership, lifecycle or target-success change.
+- At exact SHA `34bfb17`, ordinary CI `31283358898` passed repository
+  `93168103152` and failed only the eighteen durable P0 footer catalog
+  fingerprints. Artifact `9029108774`, digest
+  `sha256:1ef926b2b3147ee692adda7b99a67abe5fc878756d1ffa3f3d74e1973a6d8c2f`,
+  proved all RGB deltas confined to the bottom `y=882..891` catalog text and
+  no business-region component, layout, copy or state change.
+- Isolated repair `7ab28bf` copied only those eighteen reviewed CI actuals
+  byte-for-byte to their exact Linux targets and changed no assertion, visual
+  matrix, tolerance, threshold or PASS criterion. Exact-SHA ordinary CI
+  `31283811647` passes repository `93169231333` (`1,271` Python, `768`
+  frontend unit, `332` non-visual E2E, `5,012` direct trilingual sources,
+  statements `80.35%`, zero vulnerabilities and both secret lanes) and visual
+  `93169231300` at `85/85`; controlled job `93169231539` correctly skips.
+- Visual artifact `9029232932` has digest
+  `sha256:4755a3e8be2a8517a80a2fb3d49f78c7a02ce780784a3f9e32c9ae6eab206d60`;
+  Gitleaks artifact `9029295848` has digest
+  `sha256:12d9a502d37fa9a8cfb81f7ae163355d07be70aaf1e6a01c68d99586665fcada`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md`.
+- Standing transition authority activates only checkpoint 2: Project-first
+  bounded acceptance/request reads; immutable acceptance append and Mock
+  request preparation; exact Project/Master/physical Set/binding/Revision/
+  member/private-clean-File/evidence containment; System Manager management
+  transport; actor-bound idempotency; one transaction; append-only audit;
+  strict unavailable ERP projections; an independent fail-closed route switch;
+  and API/permission/IDOR/replay/conflict/rollback/no-Outbox/no-network/no-
+  target-ID tests. Live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior
+  and production/sandbox network access remain inactive.
