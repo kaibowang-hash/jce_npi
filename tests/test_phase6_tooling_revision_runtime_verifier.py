@@ -89,16 +89,21 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
     def test_payloads_preserve_exact_revision_specification_and_chain_truth(self) -> None:
         module = self.module
         applicability_id = "10000000-0000-4000-8000-000000000001"
-        revision_one = module.revision_payload(applicability_id, 1)
-        revision_two = module.revision_payload(applicability_id, 2)
+        model_reference = {
+            "sourceSystem": "ERPNEXT",
+            "sourceObjectId": "SYNTHETIC-CURRENT-PROJECT",
+        }
+        revision_one = module.revision_payload(applicability_id, 1, model_reference)
+        revision_two = module.revision_payload(applicability_id, 2, model_reference)
         self.assertNotIn("expectedVersion", revision_one)
         self.assertEqual(revision_two["expectedVersion"], 1)
         self.assertEqual(revision_one["cavities"][0]["structuralState"], "enabled")
         self.assertEqual(revision_one["inserts"][0]["validationState"], "validated")
         self.assertEqual(
             revision_one["inserts"][0]["model"],
-            {"sourceSystem": "ERPNEXT", "sourceObjectId": "RUNTIME-CUSTOMER"},
+            model_reference,
         )
+        self.assertNotIn("RUNTIME-CUSTOMER", self.source)
         self.assertEqual(len(module.part_specification_payload()["items"]), 4)
         chain = module.process_chain_payload(
             "20000000-0000-4000-8000-000000000002",

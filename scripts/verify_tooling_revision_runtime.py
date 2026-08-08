@@ -120,7 +120,14 @@ def command(
         csrf_token=csrf_token,
         idempotency_key=key,
     )
-    require(result.status == 201, f"P6-03 command {key} did not return HTTP 201")
+    problem_code = result.body.get("code") if isinstance(result.body, dict) else None
+    require(
+        result.status == 201,
+        (
+            f"P6-03 command {key} returned HTTP {result.status}"
+            f" with problem code {problem_code or 'UNAVAILABLE'}"
+        ),
+    )
     require(
         result.headers.get("Idempotency-Replayed") in {"true", "false"},
         "P6-03 replay header is invalid",
@@ -178,6 +185,7 @@ def external_identity(identity_type: str, value: str, source_id: str) -> dict[st
 def revision_payload(
     applicability_id: str,
     revision_number: int,
+    model_reference: dict[str, str],
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         "revisionLabel": f"R{revision_number}",
@@ -194,10 +202,7 @@ def revision_payload(
                 "insertCode": "INS-CORE-01",
                 "insertVersion": revision_number,
                 "toolingApplicabilityGlobalId": applicability_id,
-                "model": {
-                    "sourceSystem": "ERPNEXT",
-                    "sourceObjectId": "RUNTIME-CUSTOMER",
-                },
+                "model": dict(model_reference),
                 "changeoverDuration": measurement("30", "min", "Validated plan"),
                 "validationState": "validated",
                 "validationReason": "Synthetic model reference validated for runtime proof.",
@@ -518,8 +523,44 @@ def assert_set_binding(
     return result.body
 
 
-def project_context(administrator, base_url: str) -> tuple[str, str, str, tuple[str, str], str]:
+def project_context(
+    administrator,
+    base_url: str,
+) -> tuple[str, str, str, tuple[str, str], str, dict[str, str]]:
     project_id, _version = document_runtime.fixture_project(administrator, base_url)
+    cockpit = tooling_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}",
+        query_key="project-reference",
+    )
+    references = cockpit.body.get("references")
+    require(
+        cockpit.status == 200 and isinstance(references, list),
+        "P6-03 retained Project references are unavailable",
+    )
+    model_reference = predecessor.exact_single(
+        [
+            value
+            for value in references
+            if isinstance(value, dict) and value.get("type") == "customer"
+        ],
+        "P6-03 Project customer reference",
+    )
+    require(
+        set(model_reference) in (
+            {"type", "sourceSystem", "sourceObjectId"},
+            {"type", "sourceSystem", "sourceObjectId", "globalId"},
+        )
+        and model_reference.get("sourceSystem") in {"NPI_ONE", "ERPNEXT"}
+        and isinstance(model_reference.get("sourceObjectId"), str)
+        and bool(model_reference["sourceObjectId"]),
+        "P6-03 Project customer reference drifted",
+    )
+    insert_model_reference = {
+        "sourceSystem": str(model_reference["sourceSystem"]),
+        "sourceObjectId": str(model_reference["sourceObjectId"]),
+    }
     workspace = tooling_request(
         administrator,
         base_url,
@@ -575,6 +616,7 @@ def project_context(administrator, base_url: str) -> tuple[str, str, str, tuple[
         str(retained_part["globalId"]),
         (retained_revision_ids[0], retained_revision_ids[1]),
         require_uuid(tooling_set.get("globalId"), "P6-03 physical Set"),
+        insert_model_reference,
     )
 
 
@@ -816,9 +858,10 @@ def verify_conflict_rollback(
     revision_two_id: str,
     chain_id: str,
     set_id: str,
+    model_reference: dict[str, str],
 ) -> None:
     before = persisted_counts(administrator, base_url, project_id)
-    different_revision = revision_payload(applicability_id, 1)
+    different_revision = revision_payload(applicability_id, 1, model_reference)
     different_revision["revisionLabel"] = "DIFFERENT"
     conflicts = (
         (
@@ -829,7 +872,10 @@ def verify_conflict_rollback(
         ),
         (
             revision_path(project_id, master_id),
-            {**revision_payload(applicability_id, 2), "revisionLabel": "R3"},
+            {
+                **revision_payload(applicability_id, 2, model_reference),
+                "revisionLabel": "R3",
+            },
             REVISION_STALE_KEY,
             "TOOLING_VERSION_CONFLICT",
         ),
@@ -876,10 +922,14 @@ def verify_conflict_rollback(
 
 
 def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: str) -> dict[str, object]:
-    project_id, master_id, _retained_part_id, retained_revision_ids, set_id = project_context(
-        administrator,
-        base_url,
-    )
+    (
+        project_id,
+        master_id,
+        _retained_part_id,
+        retained_revision_ids,
+        set_id,
+        model_reference,
+    ) = project_context(administrator, base_url)
     schema = run_bench_fixture(
         "verify_tooling_revision_runtime_schema",
         {"fixture_run_id": FIXTURE_RUN_ID},
@@ -946,7 +996,7 @@ def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: s
         base_url,
         csrf_token,
         revision_path(project_id, master_id),
-        revision_payload(applicability_id, 1),
+        revision_payload(applicability_id, 1, model_reference),
         REVISION_ONE_KEY,
     )
     revision_one_value = assert_revision_item(
@@ -960,7 +1010,7 @@ def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: s
         base_url,
         csrf_token,
         revision_path(project_id, master_id),
-        revision_payload(applicability_id, 2),
+        revision_payload(applicability_id, 2, model_reference),
         REVISION_TWO_KEY,
     )
     revision_two_value = assert_revision_item(
@@ -1156,6 +1206,7 @@ def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: s
         revision_two_id=revision_two_id,
         chain_id=chain_id,
         set_id=set_id,
+        model_reference=model_reference,
     )
     return {
         "bindingGlobalId": binding_id,
@@ -1169,10 +1220,14 @@ def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: s
 
 
 def replay_inputs(administrator, base_url: str):
-    project_id, master_id, _retained_part_id, retained_revision_ids, set_id = project_context(
-        administrator,
-        base_url,
-    )
+    (
+        project_id,
+        master_id,
+        _retained_part_id,
+        retained_revision_ids,
+        set_id,
+        model_reference,
+    ) = project_context(administrator, base_url)
     part_id, part_revision_id, applicability_id = dedicated_part_context(
         administrator,
         base_url,
@@ -1229,6 +1284,7 @@ def replay_inputs(administrator, base_url: str):
         part_id,
         part_revision_id,
         applicability_id,
+        model_reference,
         retained_revision_ids,
         set_id,
         revisions,
@@ -1246,6 +1302,7 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         part_id,
         part_revision_id,
         applicability_id,
+        model_reference,
         retained_revision_ids,
         set_id,
         revisions,
@@ -1257,13 +1314,13 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
     commands = (
         (
             revision_path(project_id, master_id),
-            revision_payload(applicability_id, 1),
+            revision_payload(applicability_id, 1, model_reference),
             REVISION_ONE_KEY,
             revision_details[0],
         ),
         (
             revision_path(project_id, master_id),
-            revision_payload(applicability_id, 2),
+            revision_payload(applicability_id, 2, model_reference),
             REVISION_TWO_KEY,
             revision_details[1],
         ),
@@ -1317,10 +1374,14 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
 
 
 def route_disable_probe(administrator, base_url: str, expected_mode: str) -> None:
-    project_id, master_id, _part_id, _retained_revisions, set_id = project_context(
-        administrator,
-        base_url,
-    )
+    (
+        project_id,
+        master_id,
+        _part_id,
+        _retained_revisions,
+        set_id,
+        _model_reference,
+    ) = project_context(administrator, base_url)
     revisions = tooling_request(
         administrator,
         base_url,
