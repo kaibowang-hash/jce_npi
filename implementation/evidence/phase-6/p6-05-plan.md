@@ -180,15 +180,14 @@ contains:
   direct predecessor identity/hash and exact Project/Master/Tooling Revision
   scope;
 - optional exact cavity UUID/identifier resolved from that Tooling Revision;
-- bounded business code/title/description, a closed category key, shared
+- bounded business code/title/description/category key, shared
   `low/medium/high/critical` severity, and an explicit independent `blocking`
   boolean. Severity never changes the blocking flag implicitly;
 - detection context as a closed union. P6-05 activates only exact Tooling
-  Revision, manufacturing-plan/milestone observation, Set-intake/difference
+  Revision, manufacturing milestone observation and Set intake
   and `unavailable_trial_context` branches. Phase 7 owns the exact Trial branch;
 - root-cause state (`pending` or `recorded`) plus bounded causal text only when
-  recorded, one responsible Project-member snapshot and an optional external
-  responsibility label clearly marked as unverified planning data;
+  recorded and one optional exact responsible Project-member snapshot;
 - an ordered, UUID-addressed action snapshot. Each action has type
   `containment`, `corrective` or `preventive`, bounded detail, exact responsible
   Project member, due date, explicit `planned`/`completed`/`verified` state and
@@ -294,8 +293,8 @@ gap = maximum(target_monthly_assembly_units
 
 `3600` is the published hours-to-seconds unit conversion, not a business
 assumption. Calculation uses decimal arithmetic and a contract-visible
-`decimal-6-half-even` output rule; raw inputs and unrounded intermediate
-canonical strings remain in the immutable snapshot. The deterministic
+`decimal-6-half-even` output rule; raw inputs and six-decimal outputs remain
+in the immutable snapshot. The deterministic
 bottleneck is every line tied at the minimum, ordered by stable line UUID.
 Changing a set count, cycle, OEE, yield or any other input appends a complete
 successor scenario; earlier results are never overwritten.

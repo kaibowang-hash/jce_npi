@@ -52,6 +52,9 @@ _OPERATIONS = {
     "tooling_set_revision_binding.create": "tooling_set_revision_binding",
     "tooling_manufacturing_plan.create": "tooling_manufacturing_plan_revision",
     "tooling_manufacturing_milestone.observe": "tooling_manufacturing_milestone_observation",
+    "tooling_defect.revise": "tooling_defect_revision",
+    "tooling_process_profile.create": "tooling_process_profile_revision",
+    "tooling_capacity_scenario.create": "tooling_capacity_scenario_revision",
 }
 
 

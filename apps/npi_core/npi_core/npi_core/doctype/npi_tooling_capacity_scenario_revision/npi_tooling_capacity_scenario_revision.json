@@ -1,0 +1,40 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Tooling Capacity Scenario Revision",
+  "module": "NPI Core",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:global_id",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "scenario_global_id", "fieldtype": "Data", "label": "Capacity Scenario Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "version_key_hash", "fieldtype": "Data", "label": "Capacity Scenario Version Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tooling_master", "fieldtype": "Link", "label": "Tooling Master", "options": "NPI Tooling Master", "reqd": 1, "read_only": 1},
+    {"fieldname": "tooling_master_global_id", "fieldtype": "Data", "label": "Tooling Master Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "scenario_version", "fieldtype": "Int", "label": "Capacity Scenario Version", "reqd": 1, "read_only": 1},
+    {"fieldname": "predecessor_global_id", "fieldtype": "Data", "label": "Predecessor Capacity Scenario Global ID", "read_only": 1},
+    {"fieldname": "predecessor_snapshot_hash", "fieldtype": "Data", "label": "Predecessor Snapshot Hash", "read_only": 1},
+    {"fieldname": "title", "fieldtype": "Data", "label": "Capacity Scenario Title", "reqd": 1, "read_only": 1},
+    {"fieldname": "effective_from", "fieldtype": "Date", "label": "Effective From", "reqd": 1, "read_only": 1},
+    {"fieldname": "target_monthly_assembly_units", "fieldtype": "Data", "label": "Target Monthly Assembly Units", "reqd": 1, "read_only": 1},
+    {"fieldname": "formula_version", "fieldtype": "Select", "label": "Capacity Formula Version", "options": "capacity.v1", "reqd": 1, "read_only": 1},
+    {"fieldname": "rounding_rule", "fieldtype": "Select", "label": "Capacity Rounding Rule", "options": "decimal-6-half-even", "reqd": 1, "read_only": 1},
+    {"fieldname": "input_snapshot", "fieldtype": "JSON", "label": "Capacity Input Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "result_snapshot", "fieldtype": "JSON", "label": "Capacity Result Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Small Text", "label": "Capacity Scenario Revision Reason", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_by_user_id", "fieldtype": "Data", "label": "Created By User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_id", "fieldtype": "Data", "label": "Request ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "trace_id", "fieldtype": "Data", "label": "Trace ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "scenario_snapshot", "fieldtype": "JSON", "label": "Tooling Capacity Scenario Revision Snapshot", "reqd": 1, "read_only": 1},
+    {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

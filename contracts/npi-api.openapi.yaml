@@ -12070,6 +12070,331 @@ components:
       required: [observation]
       properties:
         observation: { $ref: "#/components/schemas/ToolingManufacturingMilestoneObservation" }
+    ToolingDefectDetectionContext:
+      type: object
+      additionalProperties: false
+      required: [kind, globalId, snapshotHash]
+      properties:
+        kind:
+          type: string
+          enum: [tooling_revision, manufacturing_milestone_observation, tooling_intake, unavailable_trial_context]
+        globalId: { type: [string, "null"], format: uuid }
+        snapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+    ToolingDefectFileEvidence:
+      type: object
+      additionalProperties: false
+      required: [globalId, role, fileRevisionGlobalId, fileOptimisticVersion, frappeContentHash, fileName, mimeType, sizeBytes, sha256]
+      properties:
+        globalId: { type: string, format: uuid }
+        role: { type: string, enum: [detection, analysis, action, verification] }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingDefectAction:
+      type: object
+      additionalProperties: false
+      required: [globalId, actionType, state, detail, responsibleMember, dueDate, evidence]
+      properties:
+        globalId: { type: string, format: uuid }
+        actionType: { type: string, enum: [containment, corrective, preventive] }
+        state: { type: string, enum: [planned, completed, verified] }
+        detail: { type: string, minLength: 1, maxLength: 2000 }
+        responsibleMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        dueDate: { type: string, format: date }
+        evidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingDefectFileEvidence" }
+    ToolingDefectTrialUnavailable:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: trial_context_unavailable }
+    ToolingDefectRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, defectGlobalId, tenantId, projectGlobalId, toolingMasterGlobalId, toolingRevisionGlobalId, toolingRevisionSnapshotHash, cavityGlobalId, cavityIdentifier, defectVersion, predecessorGlobalId, predecessorSnapshotHash, businessCode, title, description, categoryKey, severity, blocking, state, detectionContext, rootCauseState, rootCause, responsibleMember, targetRoundLabel, trialReference, actions, evidence, reason, createdByUserId, createdAt, requestId, traceId, versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        defectGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cavityGlobalId: { type: [string, "null"], format: uuid }
+        cavityIdentifier: { type: [string, "null"], maxLength: 128 }
+        defectVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        businessCode: { type: string, minLength: 1, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, minLength: 1, maxLength: 4000 }
+        categoryKey: { type: string, minLength: 1, maxLength: 128 }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        blocking:
+          type: boolean
+          description: Explicit intent only; severity never sets it and this object does not mutate a Gate.
+        state: { type: string, enum: [open, assigned, in_progress, ready_for_verification, closed, reopened] }
+        detectionContext: { $ref: "#/components/schemas/ToolingDefectDetectionContext" }
+        rootCauseState: { type: string, enum: [pending, recorded] }
+        rootCause: { type: [string, "null"], maxLength: 4000 }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        targetRoundLabel:
+          type: [string, "null"]
+          maxLength: 64
+          description: Planning label only; it is never a Trial identity.
+        trialReference: { $ref: "#/components/schemas/ToolingDefectTrialUnavailable" }
+        actions:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingDefectAction" }
+        evidence:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingDefectFileEvidence" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    ToolingProcessContextEvidence:
+      type: object
+      additionalProperties: false
+      required: [kind, globalId, snapshotHash, releasedDocument, approvalEventGlobalId, approvalEventHash]
+      properties:
+        kind: { type: string, enum: [released_document, tooling_revision_specification, trial_measurement, approved_trial] }
+        globalId: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        releasedDocument:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingReleasedDocumentEvidence" }
+            - { type: "null" }
+        approvalEventGlobalId: { type: [string, "null"], format: uuid }
+        approvalEventHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+    ToolingProcessComparisonRule:
+      type: object
+      additionalProperties: false
+      required: [globalId, ruleVersion, unit, minimum, maximum, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        ruleVersion: { type: integer, minimum: 1 }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        minimum: { type: string, pattern: "^-?[0-9]+(?:[.][0-9]+)?$" }
+        maximum: { type: string, pattern: "^-?[0-9]+(?:[.][0-9]+)?$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingProcessMetric:
+      type: object
+      additionalProperties: false
+      required: [globalId, code, valueKind, numericValue, textValue, unit, comparisonRule]
+      properties:
+        globalId: { type: string, format: uuid }
+        code: { type: string, enum: [cycle_time, part_weight, runner_weight, gross_weight_per_cavity, machine_tonnage, machine_type] }
+        valueKind: { type: string, enum: [numeric, text] }
+        numericValue: { type: [string, "null"], pattern: "^-?[0-9]+(?:[.][0-9]+)?$" }
+        textValue: { type: [string, "null"], maxLength: 255 }
+        unit: { type: [string, "null"], maxLength: 32 }
+        comparisonRule:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProcessComparisonRule" }
+            - { type: "null" }
+    ToolingProcessProfileRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, profileGlobalId, tenantId, projectGlobalId, toolingMasterGlobalId, toolingRevisionGlobalId, toolingRevisionSnapshotHash, layer, profileVersion, predecessorGlobalId, predecessorSnapshotHash, context, effectiveFrom, metrics, reason, createdByUserId, createdAt, requestId, traceId, versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        profileGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        layer: { type: string, enum: [customer_standard, trial_actual, approved_baseline] }
+        profileVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        context: { $ref: "#/components/schemas/ToolingProcessContextEvidence" }
+        effectiveFrom: { type: string, format: date }
+        metrics:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items: { $ref: "#/components/schemas/ToolingProcessMetric" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    ToolingProcessComparison:
+      type: object
+      additionalProperties: false
+      required: [state, referenceLayer, metricCode, unit, referenceValue, actualValue, delta, percentDelta, ruleGlobalId, ruleVersion, ruleSnapshotHash, visualSemantics]
+      properties:
+        state: { type: string, enum: [not_measured, within_tolerance, outside_tolerance, unavailable] }
+        referenceLayer: { type: string, enum: [customer_standard, approved_baseline] }
+        metricCode: { type: string, enum: [cycle_time, part_weight, runner_weight, gross_weight_per_cavity, machine_tonnage, machine_type] }
+        unit: { type: [string, "null"], maxLength: 32 }
+        referenceValue: { type: [string, "null"] }
+        actualValue: { type: [string, "null"] }
+        delta: { type: [string, "null"] }
+        percentDelta: { type: [string, "null"] }
+        ruleGlobalId: { type: [string, "null"], format: uuid }
+        ruleVersion: { type: [integer, "null"], minimum: 1 }
+        ruleSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        visualSemantics:
+          type: object
+          additionalProperties: false
+          required: [state, reasonCode]
+          properties:
+            state: { type: string, const: unavailable }
+            reasonCode: { type: string, const: variance_exception_color_policy_unavailable }
+    ToolingCapacityInputProvenance:
+      type: object
+      additionalProperties: false
+      required: [kind, globalId, snapshotHash]
+      properties:
+        kind: { type: string, enum: [customer_standard, tooling_revision, tooling_applicability, tooling_set_selection, scenario_assumption] }
+        globalId: { type: [string, "null"], format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingCapacityLineInput:
+      type: object
+      additionalProperties: false
+      required: [globalId, partRevisionGlobalId, partRevisionSnapshotHash, applicabilityGlobalId, applicabilitySnapshotHash, availableHoursPerDay, workingDaysPerMonth, oeeRatio, yieldRatio, cycleSeconds, cavityCount, usagePerAssembly, effectiveSetCount, selectedToolingSetGlobalIds, cycleProvenance, cavityProvenance, usageProvenance, setProvenance]
+      properties:
+        globalId: { type: string, format: uuid }
+        partRevisionGlobalId: { type: string, format: uuid }
+        partRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        applicabilityGlobalId: { type: string, format: uuid }
+        applicabilitySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        availableHoursPerDay: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        workingDaysPerMonth: { type: integer, minimum: 1, maximum: 31 }
+        oeeRatio: { type: string, pattern: "^(?:0(?:[.][0-9]+)?|1(?:[.]0+)?)$" }
+        yieldRatio: { type: string, pattern: "^(?:0(?:[.][0-9]+)?|1(?:[.]0+)?)$" }
+        cycleSeconds: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        cavityCount: { type: integer, minimum: 1 }
+        usagePerAssembly: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        effectiveSetCount: { type: integer, minimum: 0 }
+        selectedToolingSetGlobalIds:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        cycleProvenance: { $ref: "#/components/schemas/ToolingCapacityInputProvenance" }
+        cavityProvenance: { $ref: "#/components/schemas/ToolingCapacityInputProvenance" }
+        usageProvenance: { $ref: "#/components/schemas/ToolingCapacityInputProvenance" }
+        setProvenance: { $ref: "#/components/schemas/ToolingCapacityInputProvenance" }
+    ToolingCapacityLineResult:
+      type: object
+      additionalProperties: false
+      required: [globalId, partsPerDay, partsPerMonth, assemblyUnitsPerDay, assemblyUnitsPerMonth]
+      properties:
+        globalId: { type: string, format: uuid }
+        partsPerDay: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+        partsPerMonth: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+        assemblyUnitsPerDay: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+        assemblyUnitsPerMonth: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+    ToolingCapacityScenarioResult:
+      type: object
+      additionalProperties: false
+      description: >
+        capacity.v1 computes parts_per_day as available_hours_per_day times
+        3600 divided by cycle_seconds times oee_ratio times yield_ratio times
+        cavity_count times effective_set_count; parts_per_month multiplies by
+        working_days_per_month; assembly_units_per_day and
+        assembly_units_per_month divide the matching part result by
+        usage_per_assembly; scenario capacity is the minimum line assembly
+        units per month and gap is the maximum of target minus scenario
+        capacity and zero. Every output uses decimal-6-half-even.
+      required: [formulaVersion, roundingRule, lineResults, scenarioAssemblyUnitsPerMonth, bottleneckLineGlobalIds, gap]
+      properties:
+        formulaVersion: { type: string, const: capacity.v1 }
+        roundingRule: { type: string, const: decimal-6-half-even }
+        lineResults:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingCapacityLineResult" }
+        scenarioAssemblyUnitsPerMonth: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+        bottleneckLineGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        gap: { type: string, pattern: "^[0-9]+[.][0-9]{6}$" }
+    ToolingCapacityScenarioRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, scenarioGlobalId, tenantId, projectGlobalId, toolingMasterGlobalId, scenarioVersion, predecessorGlobalId, predecessorSnapshotHash, title, effectiveFrom, targetMonthlyAssemblyUnits, formulaVersion, roundingRule, lines, result, reason, createdByUserId, createdAt, requestId, traceId, versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        scenarioGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        scenarioVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        title: { type: string, minLength: 1, maxLength: 255 }
+        effectiveFrom: { type: string, format: date }
+        targetMonthlyAssemblyUnits: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        formulaVersion: { type: string, const: capacity.v1 }
+        roundingRule: { type: string, const: decimal-6-half-even }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingCapacityLineInput" }
+        result:
+          allOf:
+            - { $ref: "#/components/schemas/ToolingCapacityScenarioResult" }
+          readOnly: true
+          description: Deterministically derived by the server from the exact immutable inputs.
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    ToolingEngineeringUnavailableField:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode:
+          type: string
+          enum: [erp_shot_count_unavailable, shot_count_calibration_policy_unavailable, erp_maintenance_projection_unavailable, tooling_health_policy_unavailable]
+    ToolingHealthUnavailable:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, state, shotCount, calibration, maintenance, healthScore]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: unavailable }
+        shotCount: { $ref: "#/components/schemas/ToolingEngineeringUnavailableField" }
+        calibration: { $ref: "#/components/schemas/ToolingEngineeringUnavailableField" }
+        maintenance: { $ref: "#/components/schemas/ToolingEngineeringUnavailableField" }
+        healthScore: { $ref: "#/components/schemas/ToolingEngineeringUnavailableField" }
     CommandResult:
       type: object
       required: [globalId, version, status]

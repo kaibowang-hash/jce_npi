@@ -488,6 +488,44 @@ objects:
       exact_master_supplier_raw_cost_type_aggregation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ROWS_WIN}
       production_projection_connection_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
 
+  ToolingDefectRevision:
+    owner_system: NPI_ONE
+    erp_view: optional_ncr_request_only
+    fields:
+      exact_defect_version_predecessor_project_master_revision_and_cavity: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      severity_blocking_intent_root_cause_responsibility_and_target_round_intention: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      action_state_and_clean_private_verification_evidence: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      exact_trial_round_and_official_quality_result: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      project_work_item_and_gate_blocking_application: {owner: FUTURE_PHASE_7_GATE_INTEGRATION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingProcessProfileRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: none
+    fields:
+      customer_standard_or_provided_specification: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      trial_actual_measurement: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NOT_MEASURED}
+      approved_process_baseline: {owner: FUTURE_PHASE_7_TRIAL_APPROVAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      exact_metric_unit_source_context_effectivity_and_snapshot: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      comparison_rule_and_textual_state: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_RULE_VERSION}
+      production_exception_color_semantics: {owner: FUTURE_APPROVED_VARIANCE_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingCapacityScenarioRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_scenario_version_predecessor_project_master_and_effectivity: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      explicit_hours_days_oee_yield_cycle_cavity_usage_set_and_demand_inputs: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formula_version_rounding_part_assembly_bottleneck_and_gap_results: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: INPUT_SNAPSHOT_WINS}
+      physical_set_operational_or_asset_state: {owner: ERPNEXT_AND_FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+
+  ToolingHealthProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      formal_shot_count_maintenance_repair_downtime_and_asset_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      source_kind_and_calibration_version: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+      health_score_threshold_and_preventive_recommendation: {owner: FUTURE_APPROVED_TOOLING_HEALTH_POLICY, editable_in: [], direction: DERIVED_READ_ONLY, conflict: UNAVAILABLE}
+
   ToolingCommandIdempotency:
     owner_system: NPI_ONE_TOOLING_COMMAND
     erp_view: none

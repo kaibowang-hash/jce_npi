@@ -4639,3 +4639,157 @@ File Revision identity,文件修訂識別碼
 File version,文件版本
 Frappe content hash,Frappe 內容雜湊
 Record immutable observation,記錄不可變觀察
+A Part Revision is unavailable for this Capacity Scenario.,此容量情境的零件修訂不可用。
+A Tooling Applicability is unavailable for this Capacity Scenario.,此容量情境的模具適用性不可用。
+A Tooling defect successor cannot change stable identity.,模具缺陷的後續修訂不能變更穩定識別碼。
+A Tooling defect successor cannot remove actions.,模具缺陷的後續修訂不能移除措施。
+A clean private File Revision is unavailable for this defect.,此缺陷所需的潔淨私人文件修訂不可用。
+A responsible Project member is unavailable for this defect.,此缺陷的負責專案成員不可用。
+A selected Tooling Set is unavailable for this Capacity Scenario.,此容量情境中選定的模具套組不可用。
+Approved Trial context requires an exact approval event.,已核准試模上下文需要精確的核准事件。
+Assigned defect states require a responsible Project member.,已指派的缺陷狀態需要負責專案成員。
+Blocking must be a checkbox value.,阻斷標誌必須是核取方塊值。
+Capacity Formula Version,容量公式版本
+Capacity Input Snapshot,容量輸入快照
+Capacity Input Snapshot does not match.,容量輸入快照不相符。
+Capacity Result Snapshot,容量結果快照
+Capacity Result Snapshot does not match.,容量結果快照不相符。
+Capacity Rounding Rule,容量捨入規則
+Capacity Scenario Global ID,容量情境全域識別碼
+Capacity Scenario Revision Reason,容量情境修訂原因
+Capacity Scenario Title,容量情境標題
+Capacity Scenario Version,容量情境版本
+Capacity Scenario Version Key Hash,容量情境版本鍵雜湊
+Capacity Scenario Version Key Hash does not match.,容量情境版本鍵雜湊不相符。
+Capacity Scenario result does not match its exact inputs.,容量情境結果與其精確輸入不相符。
+Cavity Global ID,模穴全域識別碼
+Cavity Identifier,模穴識別碼
+Cavity identity and identifier must be provided together.,必須同時提供模穴識別資訊和識別碼。
+Closed defects require completed or verified actions.,已關閉缺陷需要已完成或已驗證的措施。
+Closed defects require exact verification evidence.,已關閉缺陷需要精確的驗證證據。
+Comparison Rule Snapshot Hash does not match.,比較規則快照雜湊不相符。
+Comparison rule unit must match the metric unit.,比較規則單位必須與指標單位一致。
+Customer Standard requires a released source.,客戶標準需要已發布的來源。
+Defect Action Snapshot,缺陷措施快照
+Defect Detection Context Snapshot,缺陷發現上下文快照
+Defect Evidence Snapshot,缺陷證據快照
+Defect detection context does not match the Tooling Revision.,缺陷發現上下文與模具修訂不相符。
+Enter a decimal value within the allowed range.,請輸入允許範圍內的小數值。
+Enter a non-negative decimal amount.,請輸入非負小數值。
+Enter a positive decimal amount.,請輸入正小數值。
+Enter a valid comparison rule.,請輸入有效的比較規則。
+Enter a valid detection context.,請輸入有效的發現上下文。
+Enter a valid unavailable Tooling health projection.,請輸入有效的模具健康不可用投影。
+Enter at least one capacity line.,請至少輸入一筆容量明細。
+Enter at least one process metric.,請至少輸入一個製程指標。
+Enter valid Tooling defect revisions.,請輸入有效的模具缺陷修訂。
+Enter valid capacity input provenance.,請輸入有效的容量輸入來源。
+Enter valid process source context.,請輸入有效的製程來源上下文。
+Exact capacity input provenance is unavailable.,精確的容量輸入來源不可用。
+Existing Tooling defect evidence must be retained.,必須保留現有模具缺陷證據。
+Existing defect action evidence must be retained.,必須保留現有缺陷措施證據。
+Existing defect action identity and history must be retained.,必須保留現有缺陷措施識別碼和歷程。
+Gate Blocking Intent,階段門阻斷意圖
+Machine type must be a text process metric.,機器類型必須是文字製程指標。
+Maximum tolerance cannot be lower than minimum tolerance.,最大公差不能小於最小公差。
+NPI Tooling Capacity Scenario Revision,NPI 模具容量情境修訂
+NPI Tooling Defect Revision,NPI 模具缺陷修訂
+NPI Tooling Process Profile Revision,NPI 模具製程設定修訂
+Numeric process metrics require one value and unit.,數值製程指標需要一個數值和單位。
+Only Customer Standard metrics can own comparison rules.,只有客戶標準指標可以擁有比較規則。
+Only a scenario assumption can omit its exact source identity.,只有情境假設可以省略精確來源識別碼。
+Only approved Trial context can contain an approval event.,只有已核准試模上下文可以包含核准事件。
+Only released Document context can contain Document release evidence.,只有已發布文件上下文可以包含文件發布證據。
+Predecessor Capacity Scenario Global ID,前序容量情境全域識別碼
+Predecessor Process Profile Global ID,前序製程設定全域識別碼
+Predecessor Tooling Defect Global ID,前序模具缺陷全域識別碼
+Process Fact Layer,製程事實層
+Process Metric Snapshot,製程指標快照
+Process Metric Snapshot does not match.,製程指標快照不相符。
+Process Profile Global ID,製程設定全域識別碼
+Process Profile Revision Reason,製程設定修訂原因
+Process Profile Version,製程設定版本
+Process Profile Version Key Hash,製程設定版本鍵雜湊
+Process Profile Version Key Hash does not match.,製程設定版本鍵雜湊不相符。
+Process Source Context Snapshot,製程來源上下文快照
+Process Source Context Snapshot does not match.,製程來源上下文快照不相符。
+Process source context does not match its fact layer.,製程來源上下文與其事實層不相符。
+Process source context does not match the Tooling Revision.,製程來源上下文與模具修訂不相符。
+Ready for verification requires a corrective action.,待驗證狀態需要矯正措施。
+Recorded root cause state requires exact root cause text.,已記錄的根因狀態需要精確的根因文字。
+Released Document context requires exact release evidence.,已發布文件上下文需要精確的發布證據。
+Reopening a defect requires a new reason.,重新開啟缺陷需要新的原因。
+Root Cause,根因
+Root Cause State,根因狀態
+Select a supported comparison reference layer.,請選擇支援的比較參考層。
+Select a supported process fact layer.,請選擇支援的製程事實層。
+Select a supported process metric.,請選擇支援的製程指標。
+Select a supported value kind.,請選擇支援的值類型。
+Select the exact current Capacity Scenario revision.,請選擇精確的目前容量情境修訂。
+Select the exact current Tooling defect revision.,請選擇精確的目前模具缺陷修訂。
+Select the exact current process profile revision.,請選擇精確的目前製程設定修訂。
+Select the next supported Tooling defect state.,請選擇下一個支援的模具缺陷狀態。
+Select the supported capacity formula version.,請選擇支援的容量公式版本。
+Selected Tooling Sets must match the effective set assumption.,選定的模具套組必須與有效套數假設一致。
+Target Monthly Assembly Units,目標每月組裝數量
+Target Trial Round Intention,目標試模輪次意向
+Text process metrics require one text value without a unit.,文字製程指標需要一個不含單位的文字值。
+The Tooling Master is unavailable for this Capacity Scenario.,此容量情境的模具主物件不可用。
+The Tooling Master is unavailable for this defect.,此缺陷的模具主物件不可用。
+The Tooling Master is unavailable for this process profile.,此製程設定的模具主物件不可用。
+The Tooling Revision is unavailable for this defect.,此缺陷的模具修訂不可用。
+The Tooling Revision is unavailable for this process profile.,此製程設定的模具修訂不可用。
+The exact Trial process evidence is unavailable.,精確的試模製程證據不可用。
+The exact cavity is unavailable for this defect.,此缺陷的精確模穴不可用。
+The exact defect detection context is unavailable.,精確的缺陷發現上下文不可用。
+The first Tooling defect revision must be open.,第一個模具缺陷修訂必須為開啟狀態。
+The predecessor Capacity Scenario Revision is unavailable.,前序容量情境修訂不可用。
+The predecessor Process Profile Revision is unavailable.,前序製程設定修訂不可用。
+The predecessor Tooling Defect Revision is unavailable.,前序模具缺陷修訂不可用。
+The process source Document Revision is unavailable.,製程來源文件修訂不可用。
+The process source Document is not currently released.,製程來源文件目前未發布。
+The process source Document release event is unavailable.,製程來源文件發布事件不可用。
+This process metric must be numeric.,此製程指標必須為數值類型。
+Tooling Capacity Scenario Revision Snapshot,模具容量情境修訂快照
+Tooling Capacity Scenario Revision Snapshot Hash does not match.,模具容量情境修訂快照雜湊不相符。
+Tooling Capacity Scenario Revision fields do not match the exact snapshot.,模具容量情境修訂欄位與精確快照不相符。
+Tooling Defect Category Key,模具缺陷類別鍵
+Tooling Defect Code,模具缺陷代碼
+Tooling Defect Description,模具缺陷說明
+Tooling Defect Global ID,模具缺陷全域識別碼
+Tooling Defect Revision Reason,模具缺陷修訂原因
+Tooling Defect Revision Snapshot,模具缺陷修訂快照
+Tooling Defect Revision Snapshot Hash does not match.,模具缺陷修訂快照雜湊不相符。
+Tooling Defect Revision fields do not match the exact snapshot.,模具缺陷修訂欄位與精確快照不相符。
+Tooling Defect Severity,模具缺陷嚴重度
+Tooling Defect State,模具缺陷狀態
+Tooling Defect Title,模具缺陷標題
+Tooling Defect Version,模具缺陷版本
+Tooling Defect Version Key Hash,模具缺陷版本鍵雜湊
+Tooling Defect Version Key Hash does not match.,模具缺陷版本鍵雜湊不相符。
+Tooling Process Profile Revision Snapshot,模具製程設定修訂快照
+Tooling Process Profile Revision Snapshot Hash does not match.,模具製程設定修訂快照雜湊不相符。
+Tooling Process Profile Revision fields do not match the exact snapshot.,模具製程設定修訂欄位與精確快照不相符。
+Trial context must remain unavailable in this phase.,試模上下文在此階段必須保持不可用。
+Trial process evidence is unavailable in this phase.,試模製程證據在此階段不可用。
+Unavailable Trial context cannot contain an object reference.,不可用的試模上下文不能包含物件參照。
+Verified defect actions require exact evidence.,已驗證的缺陷措施需要精確證據。
+Working days per month cannot exceed 31.,每月工作天數不能超過 31。
+approved_baseline,已核准基線
+assigned,已指派
+capacity.v1,容量公式版本 1
+closed,已關閉
+customer_standard,客戶標準
+decimal-6-half-even,六位小數四捨六入五成雙
+in_progress,進行中
+open,開啟
+ready_for_verification,待驗證
+recorded,已記錄
+trial_actual,試模實際值
+{field} does not match the exact Tooling defect.,{field} 與精確模具缺陷不相符。
+tooling_defect.revise,修訂模具缺陷
+tooling_process_profile.create,建立模具製程設定
+tooling_capacity_scenario.create,建立模具容量情境
+tooling_defect_revision,模具缺陷修訂
+tooling_process_profile_revision,模具製程設定修訂
+tooling_capacity_scenario_revision,模具容量情境修訂
