@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-08T11:23:47Z`
+Updated: `2026-08-08T11:44:33Z`
 
 ## Active hard blockers
 
@@ -11,11 +11,13 @@ cumulative disposable-Site runtime. No user action is required.
 
 ## Active recovery
 
-None. P6-04 is `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked.
-`DR-REC-010` remains a scoped hold on exact lifecycle states/transitions/
-release authority only. Missing production ERPNext endpoint/credential does
-not block the bounded audit, Mock contracts or an explicit unavailable/read-
-only projection; production ERPNext must not be contacted.
+None. The P6-04 bounded audit is `PASS`; checkpoint 1 is
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION`, not blocked.
+`DR-REC-010` remains a scoped hold on exact Tooling lifecycle states,
+transitions and manufacturing authority only. Missing production ERPNext
+endpoint/credential does not block pure contracts, additive metadata or an
+explicit unavailable/read-only projection; production ERPNext must not be
+contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

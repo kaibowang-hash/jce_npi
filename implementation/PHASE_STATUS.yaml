@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T11:23:47Z'
+updated_at: '2026-08-08T11:44:33Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-04
-current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
-current_task_completed_stage: P6_03_LEVEL_2_TASK_GATE_PASS
-current_task_next_stage: P6_04_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
+current_task_completed_stage: P6_04_REQUIREMENT_DOMAIN_AUDIT_PASS
+current_task_next_stage: P6_04_DOMAIN_CONTRACT_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-04
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1058,7 +1058,7 @@ p6_03:
     - implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-03-validation.md
 p6_04:
-  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
   backlog_task: M5-04
   requirements: [FR-TL-005, FR-TL-006, FR-TL-007, FR-TL-008]
   delivery_boundary: MANUFACTURING_SUPPLIER_AND_ERP_COST_PROJECTION
@@ -1069,10 +1069,19 @@ p6_04:
   erp_procurement_cost_projection_active: false
   erp_mutation_active: false
   starting_checkpoint: 4ab478259724a8507891f24b33f858ffe9a117a0
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  starting_synchronized_checkpoint: ae4bda0dce52e7f26f51c1a36d452bae10c53754
+  audit_entry_ci: 31255185225
+  audit_entry_repository_job: 93097413900
+  audit_entry_visual_job: 93097413875
+  audit_entry_controlled_job: 93097414162
+  audit_decision: PASS
+  planned_additive_doctypes: 2
+  routes_active: false
+  current_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-03-validation.md
+    - implementation/evidence/phase-6/p6-04-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

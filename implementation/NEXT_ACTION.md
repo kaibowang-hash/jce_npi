@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 
-Recovery time: `2026-08-08T11:23:47Z`
+Recovery time: `2026-08-08T11:44:33Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`4ab478259724a8507891f24b33f858ffe9a117a0`
+`ae4bda0dce52e7f26f51c1a36d452bae10c53754`
 
 ## Current authoritative action
 
@@ -30,12 +30,21 @@ external identities, one controlled Part specification, two ordered process-
 chain revisions, one initial Set-source binding, replay, conflict, rollback,
 IDOR and independent route disable/recovery with diagnostics closed.
 
-Evidence is `implementation/evidence/phase-6/p6-03-validation.md`. Automatic
-transition activates only the bounded P6-04 Requirement/domain/existing-
-capability audit for `FR-TL-005..008`: internal make/buy, Supplier/milestone,
-design-release dependency and explicit unavailable/read-only ERP procurement/
-cost projection. Do not activate a supplier portal, production lifecycle
-rule, ERP mutation, endpoint, credential or successful target result.
+Evidence is `implementation/evidence/phase-6/p6-03-validation.md`. The bounded
+P6-04 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-04-plan.md`. Its entry ordinary CI
+`31255185225` passes exact controller SHA `ae4bda0`: repository
+`93097413900`, visual `93097413875` at `79/79`, with controlled job
+`93097414162` correctly skipped.
+
+Automatic transition activates only P6-04 checkpoint 1: pure immutable
+manufacturing-plan/milestone/observation and release-evidence/ERP read-only
+projection invariants, two guarded additive DocTypes, ownership rows, receipt
+values, closed OpenAPI schemas and direct domain/metadata/contract/security
+tests. No repository/BFF route, live SPA command, supplier portal, production
+lifecycle rule, ERP mutation, endpoint, credential, production projection or
+successful target result may activate. `DR-REC-010` continues to hold Tooling
+lifecycle and manufacturing authority.
 
 ## Retained P6-01 execution history
 

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T11:23:47Z`
+Updated: `2026-08-08T11:44:33Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,8 +12,8 @@ Updated: `2026-08-08T11:23:47Z`
   `4ab478259724a8507891f24b33f858ffe9a117a0` (pushed; P6-03 Level 2,
   diagnostics closed and exact cumulative runtime PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `83cf968080e5b5e217f67b8671f6cf3054838a82` (P6-03 checkpoint 3;
-  pushed; ordinary CI `31248104245` PASS)
+  `ae4bda0dce52e7f26f51c1a36d452bae10c53754` (P6-03 Level 2 controller;
+  pushed; ordinary CI `31255185225` PASS)
 - Latest complete normal CI:
   `31254281586` (`PASS`, exact SHA `4ab4782`; repository `93095213074` and
   fixed-Linux visual `93095213086` at `79/79` passed; controlled runtime
@@ -26,13 +26,13 @@ Updated: `2026-08-08T11:23:47Z`
   `sha256:aa0b3c80f38ae7ac6acbe16245e5baf6e176c470c15bf7a435dae231afee52bc`
 - Current controller task:
   `P6-04 — Manufacturing, supplier and ERP cost projection`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — DOMAIN/CONTRACT/METADATA FOUNDATION`)
 - Current Requirement IDs:
   `FR-TL-005..008`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-04 REQUIREMENT/DOMAIN AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-04 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -50,14 +50,22 @@ binding, replay, conflicts, rollback, IDOR and independent P6-03 route
 disable/recovery with diagnostics closed. Complete evidence is
 `implementation/evidence/phase-6/p6-03-validation.md`.
 
-Standing transition authority activates only the bounded P6-04 Requirement/
-domain/existing-capability audit for `FR-TL-005..008`. The audit must separate
-NPI-owned internal make/buy, formal Supplier/milestone and design-release
-dependency from ERPNext-owned PO/receipt/invoice/actual-cost truth, and must
-define an explicit unavailable or read-only projection where production
-connectivity is absent. It may not activate a supplier portal, production
-lifecycle rule, ERP mutation, endpoint, credential or successful target
-result. `DR-REC-010` remains the lifecycle authority hold.
+The bounded P6-04 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-04-plan.md`. Exact controller SHA
+`ae4bda0` passes ordinary CI `31255185225`: repository `93097413900`, visual
+`93097413875` at `79/79`, while controlled runtime `93097414162` correctly
+skips. The audit freezes NPI-owned immutable internal sourcing/budget plans,
+milestone schedules and internal observations; exact controlled-document
+release evidence; unavailable Tooling manufacturing authority; and a closed
+unavailable/read-only ERPNext-owned Supplier/procurement/cost projection.
+
+Standing transition authority activates only P6-04 checkpoint 1: pure domain
+invariants, two guarded additive DocTypes, ownership rows, receipt values,
+closed OpenAPI schemas and direct tests. It may not activate repository/BFF
+routes, live SPA commands, a supplier portal, production lifecycle rules, ERP
+mutation, endpoints, credentials, production projections or successful target
+results. `DR-REC-010` remains the Tooling lifecycle/manufacturing-authority
+hold.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

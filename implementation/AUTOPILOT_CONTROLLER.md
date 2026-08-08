@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-07T22:10:17Z`
+Updated: `2026-08-08T11:44:33Z`
 
 ## Authority and operating mode
 
@@ -1321,3 +1321,26 @@ repeat or rewrite it merely to restore context. See
   ERPNext-owned PO/receipt/invoice/actual-cost truth. No supplier portal,
   production lifecycle rule, ERP mutation, endpoint, credential or successful
   target result may be invented.
+
+## 2026-08-08 P6-04 bounded audit and plan
+
+- P6-03 controller/evidence checkpoint `ae4bda0` passes complete ordinary CI
+  `31255185225`: repository `93097413900`, visual `93097413875` at `79/79`,
+  while controlled runtime `93097414162` correctly skips.
+- The bounded P6-04 Requirement/domain/existing-capability audit passes in
+  `implementation/evidence/phase-6/p6-04-plan.md`. It freezes an immutable
+  NPI-owned internal sourcing/estimate/budget/responsibility plan, ordered
+  supplier-capable milestone schedules and internal-user observations with
+  exact evidence, without claiming supplier-portal participation.
+- Controlled-document release observation proves only exact referenced
+  evidence. Tooling manufacturing authority remains explicitly unavailable
+  while `DR-REC-010` holds lifecycle states, transitions and authorities.
+- Formal Supplier, PO, receipt, invoice and actual cost remain ERPNext-owned,
+  strictly read-only when target-confirmed and explicitly unavailable by
+  default. No external object, projection row, connection, credential, target
+  result or mutation may be invented.
+- Standing transition authority activates only checkpoint 1: pure immutable
+  domain invariants, two guarded additive DocTypes, ownership rows, receipt
+  values, closed OpenAPI schemas and direct domain/metadata/contract/security
+  tests. Repository/BFF routes, live SPA activation and controlled Site remain
+  inactive until their preceding checkpoints pass.
