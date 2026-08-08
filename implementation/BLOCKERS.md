@@ -1,30 +1,22 @@
 # Blockers
 
-Updated: `2026-08-07T22:10:17Z`
+Updated: `2026-08-08T04:53:01Z`
 
 ## Active hard blockers
 
-None. P6-02 passes Level 2 at exact task checkpoint `b80aae5`. Complete
-ordinary CI `31220440401` passed repository `93003610445`, visual
-`93003610420` at `76/76` and both secret lanes; controlled job `93003611017`
-correctly skipped. Final diagnostics-closed workflow `31221016483` passed
-repository `93005400488`, visual `93005400579` and cumulative controlled
-runtime `93005400541`. Runtime artifact `9010425982` has digest
-`sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
-No user action is required.
-
-P6-02 evidence checkpoint `36e2b9b` also passed complete ordinary CI
-`31222318731`: repository `93009313398`, visual `93009313360`, and controlled
-runtime `93009313685` correctly skipped.
+None. P6-03 checkpoint 1 passes at exact stable checkpoint `96f201c` and
+complete ordinary CI `31239993150`: repository `93059251734`, visual
+`93059251780` at `76/76`, both secret lanes, and controlled job `93059252121`
+correctly skipped. No user action is required.
 
 ## Active recovery
 
-None. The P6-03 audit passes and checkpoint 1 is
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION`, not blocked. `DR-REC-010`
-remains a scoped hold on exact lifecycle states/transitions/release authority
-only. The frozen plan uses append-only Revision/specification/cavity/insert/
-process-chain truth and a one-time Set-source binding; it does not rewrite a
-P6-02 Set or activate routes.
+None. P6-03 checkpoint 1 is PASS and checkpoint 2 is
+`IN_PROGRESS_REPOSITORY_BFF_API`, not blocked. `DR-REC-010` remains a scoped
+hold on exact lifecycle states/transitions/release authority only. The active
+checkpoint adds bounded Project-first repository/BFF behavior and an
+independent fail-closed route switch; the live workspace and controlled Site
+remain inactive.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

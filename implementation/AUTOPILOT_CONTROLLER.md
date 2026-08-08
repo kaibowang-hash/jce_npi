@@ -1194,3 +1194,31 @@ repeat or rewrite it merely to restore context. See
   authority. Formal Supplier, ERP Asset/location, combined Trial, automatic
   impact action, production workbook mapping, endpoint, credential and every
   external mutation remain unavailable.
+
+## 2026-08-08 P6-03 domain, contract and metadata checkpoint
+
+- Product checkpoint `35229fa` adds the frozen pure immutable Tooling
+  Revision/specification/cavity/insert/external-identity/process-chain/Set-
+  binding domain foundation, four guarded additive DocTypes, exact ownership
+  rows, four closed receipt operation/target pairs, closed OpenAPI schemas and
+  direct tests. It activates no repository, BFF route, frontend command or
+  controlled Site.
+- Its first ordinary CI failed only the eighteen durable P0 screenshots.
+  Downloaded artifact review proved every pixel delta was confined to the
+  translated catalog fingerprint in the bottom status bar. Isolated repair
+  `96f201c` synchronized only the eighteen exact fixed-Linux baselines; no
+  component, state, assertion, matrix, threshold or PASS rule changed.
+- Final ordinary CI `31239993150` passes exact SHA `96f201c`: repository
+  `93059251734` (`1,154` Python, `738` frontend unit, `315` non-visual E2E,
+  `4,312` sources at complete direct `zh`/`zh-TW`, zero vulnerabilities and
+  no leaks), visual `93059251780` at `76/76`; controlled job `93059252121`
+  correctly skipped. Exact artifact IDs and digests are recorded in
+  `implementation/evidence/phase-6/p6-03-domain-metadata-checkpoint.md`.
+- Checkpoint 1 is PASS, not P6-03 Level 2. Standing transition authority now
+  activates only checkpoint 2: Project-first bounded repository/BFF reads and
+  narrow commands, exact containment/effectivity/current-tip checks, System
+  Manager-only mutation, actor-bound idempotency, transaction, append-only
+  audit, independent fail-closed route switch and exact API/IDOR tests.
+- The live workspace and controlled Site remain inactive. `DR-REC-010` and
+  every Supplier/ERP/Trial/impact/import/external-execution hold remain
+  unchanged.

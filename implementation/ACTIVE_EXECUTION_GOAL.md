@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-07T22:10:17Z`
+Updated: `2026-08-08T04:53:01Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-03 TOOLING REVISION`
+- Mode: `IN_PROGRESS_REPOSITORY_BFF_API — P6-03 TOOLING REVISION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `b80aae5efb88ad91a26857e65ff0fd6bf75cd950` (pushed; P6-02 cumulative
-  controlled-runtime repair and audited transitive security lock checkpoint)
+  `96f201cc933ad1544acc62cfc4006445688aebdb` (pushed; P6-03 checkpoint 1
+  product plus isolated exact Linux fingerprint-baseline repair)
 - Latest completed controller/evidence checkpoint before this update:
-  `36e2b9b16f4168f2d04e84f98dd370bd2f39c635` (P6-02 Level 2 evidence;
-  pushed; ordinary CI `31222318731` PASS)
+  `96f201cc933ad1544acc62cfc4006445688aebdb` (P6-03 checkpoint 1; pushed;
+  ordinary CI `31239993150` PASS)
 - Latest complete normal CI:
-  `31222318731` (`PASS`, exact SHA `36e2b9b`; repository `93009313398` and
-  fixed-Linux visual `93009313360` passed; controlled runtime `93009313685`
+  `31239993150` (`PASS`, exact SHA `96f201c`; repository `93059251734` and
+  fixed-Linux visual `93059251780` passed; controlled runtime `93059252121`
   correctly skipped)
 - Latest controlled-Site run:
   `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
@@ -26,13 +26,13 @@ Updated: `2026-08-07T22:10:17Z`
   `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
 - Current controller task:
   `P6-03 — Revision, specification, cavities, inserts and process chain`
-  (`IN_PROGRESS — DOMAIN/CONTRACT/METADATA FOUNDATION`)
+  (`IN_PROGRESS — REPOSITORY/BFF/API`)
 - Current Requirement IDs:
   `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 DOMAIN FOUNDATION`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 REPOSITORY/BFF/API`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -244,6 +244,19 @@ receipt values and guarded additive metadata with no active route. Exact
 lifecycle states/transitions/authorities remain held by `DR-REC-010`; formal
 Supplier, ERP Asset/location, production workbook mapping, external execution,
 endpoint and credential remain unavailable.
+
+P6-03 checkpoint 1 passes at exact stable checkpoint `96f201c` and complete
+ordinary CI `31239993150`. The additive foundation provides pure immutable
+Revision/specification/cavity/insert/external-identity/process-chain/Set-
+binding invariants, four guarded DocTypes, closed ownership/receipt/OpenAPI
+contracts and direct trilingual coverage with no active P6-03 route. Evidence
+is `implementation/evidence/phase-6/p6-03-domain-metadata-checkpoint.md`.
+
+Standing authority now activates checkpoint 2 only: Project-first bounded
+repository/BFF reads and narrow commands, containment/effectivity/current-tip
+checks, System Manager-only mutation, actor-bound idempotency, one transaction,
+append-only audit, an independent fail-closed route switch and exact API/IDOR
+tests. The live workspace and controlled Site remain inactive.
 
 ## Retained P5-04 recovery history
 

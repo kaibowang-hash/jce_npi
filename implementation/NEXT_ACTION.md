@@ -1,66 +1,45 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-03 TOOLING REVISION`
+`IN_PROGRESS_REPOSITORY_BFF_API — P6-03 TOOLING REVISION`
 
-Recovery time: `2026-08-07T22:10:17Z`
+Recovery time: `2026-08-08T04:53:01Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`36e2b9b16f4168f2d04e84f98dd370bd2f39c635`
+`96f201cc933ad1544acc62cfc4006445688aebdb`
 
 ## Current authoritative action
 
-P6-02 passes Level 2 at exact task checkpoint `b80aae5`. Final ordinary CI
-`31220440401` passes repository `93003610445`, `1,140/1,140` clean-tree Python,
-`738/738` frontend unit, `315/315` non-visual E2E, zero-vulnerability audit,
-both secret lanes and fixed-Linux visual `93003610420` at `76/76`; controlled
-job `93003611017` correctly skipped.
+P6-03 checkpoint 1 passes at exact stable checkpoint `96f201c`. Complete
+ordinary CI `31239993150` passes repository `93059251734` (`1,154/1,154`
+Python, `738/738` frontend unit, `315/315` non-visual E2E, `4,312` sources at
+100% direct `zh`/`zh-TW`, zero vulnerabilities and no secret leaks), visual
+`93059251780` at `76/76`; controlled job `93059252121` correctly skipped.
+Visual artifact `9016729205` has digest
+`sha256:72300de78862d7e79a10694d0d7518e82b65e21fafa0992f64c8d3a54d144abc`;
+Gitleaks artifact `9016791693` has digest
+`sha256:f178ae11312410a8e97594c39518242b79d04457238054dfbac6a7d702345433`.
 
-The one final diagnostics-closed controlled workflow `31221016483` retains
-the exact SHA and passes repository `93005400488`, visual `93005400579` and
-controlled runtime `93005400541`. Runtime artifact `9010425982` has GitHub
-digest
-`sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`.
-It records cumulative scope `p5-01-through-p6-02` and proves two independent
-physical Sets, two immutable intakes, two evidence references, sixteen
-append-only audits, cross-process replay, rollback, IDOR and both Tooling route
-disable/recovery boundaries.
+The isolated repair changed only eighteen fixed-Linux status-bar catalog
+fingerprint baselines after the product checkpoint added complete direct
+translations. Every reviewed delta was confined to the footer fingerprint;
+no product layout, assertion, matrix, threshold or PASS rule changed.
 
-The controlled recovery changed only a stale synthetic Requirement reference
-from obsolete Part Revision A to current Revision B, then updated transitive
-development lock `nanoid 3.3.16` to compatible `3.3.18` after GitHub's current
-audit database exposed a new high-severity advisory. No product contract,
-permission, Schema intent, ownership, transaction, idempotency, audit,
-baseline, threshold or PASS rule changed. Evidence is
-`implementation/evidence/phase-6/p6-02-validation.md`.
+The first unfinished checkpoint is P6-03 checkpoint 2 only. Implement
+Project-first bounded Revision, controlled-Part-specification, process-chain
+and Set-binding reads/commands; exact containment/effectivity/current-tip
+checks; System Manager-only mutation; actor-bound idempotency; one transaction;
+append-only audit; an independent fail-closed P6-03 route switch; and exact
+API/IDOR/replay/conflict/rollback tests.
 
-P6-02 Level 2 evidence checkpoint `36e2b9b` passes complete ordinary CI
-`31222318731`: repository `93009313398`, visual `93009313360`, and controlled
-runtime `93009313685` correctly skipped. Visual artifact `9010879069` has
-digest
-`sha256:61b68e9f5055cbe02161ece8511886d910c2356ea1c69d24513bcd275cd02bdc`;
-Gitleaks artifact `9010971627` has digest
-`sha256:6ee0736518ab9758ddfcbe6e8eef93850adb2fa445db1bbb6be2aa2f1811f333`.
-
-The P6-03 Requirement/domain/existing-capability audit passes. The frozen plan
-is `implementation/evidence/phase-6/p6-03-plan.md`.
-
-The first unfinished checkpoint is P6-03 checkpoint 1 only. Add pure immutable
-Tooling Revision/specification/cavity/insert/external-identity/process-chain/
-Set-binding domain invariants, four guarded additive DocTypes, exact ownership
-rows, four closed receipt operation/target values, closed OpenAPI schemas and
-direct domain/metadata/contract/security tests. Do not activate a repository,
-BFF route, frontend command or controlled Site in checkpoint 1.
-
-Preserve existing P6-01/P6-02 immutable snapshots. A Set-source Revision uses
-an append-only initial binding rather than rewriting `NPI Tooling Set`.
-`DR-REC-010` continues to hold lifecycle states/transitions/release authority;
-formal Supplier, ERP Asset/location, combined Trial, automatic impact action,
-production workbook mapping, external execution, endpoint and credential
-remain unavailable.
+Preserve P6-01/P6-02 immutable snapshots and keep the live SPA and controlled
+Site inactive. `DR-REC-010` continues to hold lifecycle states/transitions/
+release authority; formal Supplier, ERP Asset/location, combined Trial,
+automatic impact action, production workbook mapping, external execution,
+endpoint and credential remain unavailable.
 
 ## Retained P6-01 execution history
 
