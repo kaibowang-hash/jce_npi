@@ -1222,3 +1222,30 @@ repeat or rewrite it merely to restore context. See
 - The live workspace and controlled Site remain inactive. `DR-REC-010` and
   every Supplier/ERP/Trial/impact/import/external-execution hold remain
   unchanged.
+
+## 2026-08-08 P6-03 repository, BFF and API checkpoint
+
+- Product checkpoint `8cc04a9` adds Project-first bounded Revision,
+  controlled-Part-specification, process-chain and Set-binding reads/commands,
+  exact containment/effectivity/current-tip checks, System Manager-only
+  mutation, actor-bound sealed replay, one transaction, append-only audit,
+  frozen closed BFF paths and an independent fail-closed P6-03 route switch.
+- Ordinary CI `31242202985` passed repository `93064940926` and isolated only
+  the eighteen durable P0 footer fingerprints. Artifact `9017410069` proved
+  all eighteen business workspaces unchanged; repair `07ae986` synchronized
+  only the exact reviewed fixed-Linux actuals without changing components,
+  assertions, matrix, thresholds or PASS rules.
+- Final ordinary CI `31242679688` passes exact SHA `07ae986`: repository
+  `93066134884` (`1,170` Python, `738` frontend unit, `315` non-visual E2E,
+  `4,316` sources at complete direct `zh`/`zh-TW`, zero vulnerabilities and no
+  leaks), visual `93066134855` at `76/76`; controlled job `93066135083`
+  correctly skipped. Exact artifact IDs/digests and changed-files evidence are
+  recorded in
+  `implementation/evidence/phase-6/p6-03-repository-api-checkpoint.md`.
+- Checkpoint 2 is PASS, not P6-03 Level 2. Standing transition authority now
+  activates only checkpoint 3: strict live data source, dense Project/Master-
+  scoped Revision/specification/cavity/insert/process-chain workspace, exact
+  initial Set-source binding, complete operational states, accessibility,
+  direct trilingual coverage and affected visual tests.
+- The controlled Site remains inactive. `DR-REC-010` and every Supplier/ERP/
+  Trial/impact/import/external-execution hold remain unchanged.

@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T04:53:01Z`
+Updated: `2026-08-08T06:03:05Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REPOSITORY_BFF_API — P6-03 TOOLING REVISION`
+- Mode: `IN_PROGRESS_LIVE_WORKSPACE — P6-03 TOOLING REVISION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `96f201cc933ad1544acc62cfc4006445688aebdb` (pushed; P6-03 checkpoint 1
+  `07ae9860e9be37f991f9995b52d8e790e3fe901d` (pushed; P6-03 checkpoint 2
   product plus isolated exact Linux fingerprint-baseline repair)
 - Latest completed controller/evidence checkpoint before this update:
-  `96f201cc933ad1544acc62cfc4006445688aebdb` (P6-03 checkpoint 1; pushed;
-  ordinary CI `31239993150` PASS)
+  `07ae9860e9be37f991f9995b52d8e790e3fe901d` (P6-03 checkpoint 2; pushed;
+  ordinary CI `31242679688` PASS)
 - Latest complete normal CI:
-  `31239993150` (`PASS`, exact SHA `96f201c`; repository `93059251734` and
-  fixed-Linux visual `93059251780` passed; controlled runtime `93059252121`
+  `31242679688` (`PASS`, exact SHA `07ae986`; repository `93066134884` and
+  fixed-Linux visual `93066134855` passed; controlled runtime `93066135083`
   correctly skipped)
 - Latest controlled-Site run:
   `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
@@ -26,13 +26,13 @@ Updated: `2026-08-08T04:53:01Z`
   `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
 - Current controller task:
   `P6-03 — Revision, specification, cavities, inserts and process chain`
-  (`IN_PROGRESS — REPOSITORY/BFF/API`)
+  (`IN_PROGRESS — LIVE WORKSPACE`)
 - Current Requirement IDs:
   `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 REPOSITORY/BFF/API`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 LIVE WORKSPACE`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -257,6 +257,20 @@ repository/BFF reads and narrow commands, containment/effectivity/current-tip
 checks, System Manager-only mutation, actor-bound idempotency, one transaction,
 append-only audit, an independent fail-closed route switch and exact API/IDOR
 tests. The live workspace and controlled Site remain inactive.
+
+P6-03 checkpoint 2 passes at exact stable checkpoint `07ae986` and complete
+ordinary CI `31242679688`. It provides the Project-first bounded Revision,
+controlled-Part-specification, process-chain and Set-binding repository/BFF,
+exact protected-reference/current-tip/effectivity validation, System Manager-
+only mutation, actor-bound sealed replay, one transaction, append-only audit
+and independent fail-closed route switch. Evidence is
+`implementation/evidence/phase-6/p6-03-repository-api-checkpoint.md`.
+
+Standing authority now activates checkpoint 3 only: a strict live data source,
+dense Project/Master-scoped Revision/specification/cavity/insert/process-chain
+workspace, exact initial Set-source binding, complete operational states,
+accessibility, direct trilingual coverage and affected visual tests. The
+controlled Site remains inactive.
 
 ## Retained P5-04 recovery history
 

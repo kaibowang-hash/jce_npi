@@ -1,45 +1,48 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPOSITORY_BFF_API — P6-03 TOOLING REVISION`
+`IN_PROGRESS_LIVE_WORKSPACE — P6-03 TOOLING REVISION`
 
-Recovery time: `2026-08-08T04:53:01Z`
+Recovery time: `2026-08-08T06:03:05Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`96f201cc933ad1544acc62cfc4006445688aebdb`
+`07ae9860e9be37f991f9995b52d8e790e3fe901d`
 
 ## Current authoritative action
 
-P6-03 checkpoint 1 passes at exact stable checkpoint `96f201c`. Complete
-ordinary CI `31239993150` passes repository `93059251734` (`1,154/1,154`
-Python, `738/738` frontend unit, `315/315` non-visual E2E, `4,312` sources at
-100% direct `zh`/`zh-TW`, zero vulnerabilities and no secret leaks), visual
-`93059251780` at `76/76`; controlled job `93059252121` correctly skipped.
-Visual artifact `9016729205` has digest
-`sha256:72300de78862d7e79a10694d0d7518e82b65e21fafa0992f64c8d3a54d144abc`;
-Gitleaks artifact `9016791693` has digest
-`sha256:f178ae11312410a8e97594c39518242b79d04457238054dfbac6a7d702345433`.
+P6-03 checkpoint 2 passes at exact stable checkpoint `07ae986`. Complete
+ordinary CI `31242679688` passes repository `93066134884` (`1,170/1,170`
+Python, `738/738` frontend unit, `315/315` non-visual E2E, `4,316` sources at
+complete direct `zh`/`zh-TW`, zero vulnerabilities and no secret leaks),
+visual `93066134855` at `76/76`; controlled job `93066135083` correctly
+skipped. Visual artifact `9017540844` has digest
+`sha256:2d054f405b72316eb815afd4a3759365e153ccd586aa748e89352dd0bcb96fe6`;
+Gitleaks artifact `9017596549` has digest
+`sha256:9449cd6e23e09e429b4c2e3fe778de8e110404d36b11611969c08f48e948daea`.
 
-The isolated repair changed only eighteen fixed-Linux status-bar catalog
-fingerprint baselines after the product checkpoint added complete direct
-translations. Every reviewed delta was confined to the footer fingerprint;
-no product layout, assertion, matrix, threshold or PASS rule changed.
+Product commit `8cc04a9` delivered the Project-first repository, frozen BFF
+paths, narrow commands, exact containment/effectivity/current-tip checks,
+System Manager-only mutation, actor-bound sealed replay, one transaction,
+append-only audit and an independent fail-closed P6-03 switch. Its isolated
+repair changed only eighteen artifact-proved fixed-Linux footer fingerprint
+baselines; no business workspace, assertion, matrix, threshold or PASS rule
+changed.
 
-The first unfinished checkpoint is P6-03 checkpoint 2 only. Implement
-Project-first bounded Revision, controlled-Part-specification, process-chain
-and Set-binding reads/commands; exact containment/effectivity/current-tip
-checks; System Manager-only mutation; actor-bound idempotency; one transaction;
-append-only audit; an independent fail-closed P6-03 route switch; and exact
-API/IDOR/replay/conflict/rollback tests.
+The first unfinished checkpoint is P6-03 checkpoint 3 only. Implement a strict
+live data source and dense Project/Master-scoped Revision/specification/
+cavity/insert/process-chain workspace, exact initial Set-source binding,
+complete loading/empty/no-permission/read-only/unavailable/validation/
+predecessor-or-effectivity-conflict/processing/retry states, accessibility,
+direct trilingual coverage and the affected visual matrix.
 
-Preserve P6-01/P6-02 immutable snapshots and keep the live SPA and controlled
-Site inactive. `DR-REC-010` continues to hold lifecycle states/transitions/
-release authority; formal Supplier, ERP Asset/location, combined Trial,
-automatic impact action, production workbook mapping, external execution,
-endpoint and credential remain unavailable.
+Preserve P6-01/P6-02 immutable snapshots and keep the controlled Site
+inactive. `DR-REC-010` continues to hold lifecycle states/transitions/release
+authority; formal Supplier, ERP Asset/location, combined Trial, automatic
+impact action, production workbook mapping, external execution, endpoint and
+credential remain unavailable.
 
 ## Retained P6-01 execution history
 
