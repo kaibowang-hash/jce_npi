@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -1101,6 +1101,8 @@ def _input_payload(value: Mapping[str, object]) -> dict[str, object]:
             result[key] = item.value
         elif isinstance(item, UUID):
             result[key] = str(item)
+        elif isinstance(item, date):
+            result[key] = item.isoformat()
         elif isinstance(item, tuple):
             result[key] = [str(entry) if isinstance(entry, UUID) else entry for entry in item]
         elif isinstance(item, Mapping):

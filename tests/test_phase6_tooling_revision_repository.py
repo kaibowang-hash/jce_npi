@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import ast
 import unittest
+from collections.abc import Mapping
+from datetime import date
 from pathlib import Path
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +30,29 @@ def function(name: str) -> str:
 
 
 class Phase6ToolingRevisionRepositoryTest(unittest.TestCase):
+    def test_command_payload_normalization_serializes_effectivity_dates(self) -> None:
+        namespace = {
+            "Mapping": Mapping,
+            "UUID": UUID,
+            "date": date,
+        }
+        exec(function("_input_payload"), namespace)
+
+        normalized = namespace["_input_payload"](
+            {
+                "effective_from": date(2026, 8, 1),
+                "effective_to": date(2027, 8, 1),
+            }
+        )
+
+        self.assertEqual(
+            normalized,
+            {
+                "effective_from": "2026-08-01",
+                "effective_to": "2027-08-01",
+            },
+        )
+
     def test_queries_authorize_project_before_revision_part_chain_or_binding(self) -> None:
         for name, protected in (
             ("tooling_revisions", "self._master_for_project("),
