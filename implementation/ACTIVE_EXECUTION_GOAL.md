@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T22:05:48Z`
+Updated: `2026-08-08T22:23:25Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P6-06 ACCEPTANCE AND ASSET REQUEST`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P6-06 ACCEPTANCE AND ASSET FOUNDATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,11 +12,11 @@ Updated: `2026-08-08T22:05:48Z`
   `4e04eb47b1c5f77b9a442b3bef139df61cb83782` (pushed; P6-05 Level 2
   controlled-runtime Task Gate PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `9d94df6cd9b64ea6e2d215e34e159d860e3eb873` (P6-05 checkpoint 3
-  controller/evidence synchronization)
+  `943d1ea6863ab348afb5bb2f6e0781459d636577` (P6-05 Level 2 evidence and
+  P6-06 audit activation)
 - Latest complete normal CI:
-  `31280290398` (`PASS`, exact SHA `4e04eb4`; complete repository and visual
-  jobs passed; controlled runtime correctly skipped)
+  `31281224456` (`PASS`, exact SHA `943d1ea`; repository `93162778363` and
+  visual `93162778393` passed; controlled runtime correctly skipped)
 - Latest controlled-Site run:
   `31280296684` (`PASS`, exact SHA `4e04eb4`, diagnostics closed; repository
   `93160709198`, visual `93160709195` and controlled `93160709186` passed)
@@ -25,12 +25,12 @@ Updated: `2026-08-08T22:05:48Z`
   `sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`
 - Current controller task:
   `P6-06 — Acceptance and asset execution request`
-  (`IN_PROGRESS — BOUNDED REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/METADATA FOUNDATION`)
 - Current Requirement IDs: `FR-TL-011..016`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -51,13 +51,25 @@ health, deterministic successor recomputation, bottleneck/gap, replay,
 conflict, rollback, IDOR and independent P6-05 route recovery. Complete
 evidence is `implementation/evidence/phase-6/p6-05-validation.md`.
 
-Standing transition authority activates only the bounded P6-06 Requirement/
-domain/existing-capability audit for `FR-TL-011..016`: immutable Tooling
-acceptance evidence and Mock/sandbox-ready ERP asset request/projection
-conditions. Real ERPNext asset creation/update, unique target mapping
-confirmation, location/movement, maintenance, repair, spares, inventory and
-cost execution remain Phase 8. Production ERPNext must not be contacted.
-There is no active technical Hard Blocker.
+The bounded P6-06 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-06-plan.md`. Exact controller checkpoint
+`943d1ea` passes ordinary CI `31281224456` with repository `93162778363` and
+fixed-Linux visual `93162778393`; controlled runtime correctly skips.
+
+The plan freezes one append-only acceptance-evidence revision per exact
+Project/Master/physical Set/bound Revision; evidence-only checklist outcomes;
+NPI-owned movement/spare/repair evidence; one operation-specific
+`create_or_update_tool_asset` Mock request that remains formal `draft` with
+business approval unavailable and dispatch prohibited; zero-or-one formal
+Asset mapping per physical Set; and an explicit unavailable ERP projection.
+No evidence coverage becomes approval, lifecycle or ERP success.
+
+Standing transition authority activates only checkpoint 1: pure acceptance/
+request/projection domains, closed OpenAPI/ownership/future-event schemas,
+guarded additive metadata, receipt values and direct tests. Repository routes,
+business rows, live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior and
+all production/sandbox network access remain inactive. There is no active
+technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

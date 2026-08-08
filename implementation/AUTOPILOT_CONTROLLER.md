@@ -1646,3 +1646,35 @@ repeat or rewrite it merely to restore context. See
   ERPNext asset creation/update, unique target mapping confirmation, location/
   movement, maintenance, repair, spares, inventory and cost remain Phase 8;
   production ERPNext must not be contacted.
+
+## 2026-08-08 P6-06 bounded audit PASS and checkpoint 1 activation
+
+- Exact starting controller checkpoint `943d1ea` passes ordinary CI
+  `31281224456`: repository `93162778363` and fixed-Linux visual
+  `93162778393` pass; controlled runtime correctly skips.
+- The audit in `implementation/evidence/phase-6/p6-06-plan.md` confirms that
+  P6-01 through P6-05 provide exact Tooling identities and immutable evidence,
+  but no approved acceptance policy, live Trial/official quality, Asset
+  request, target mapping, result, reconciliation reader or ERP adapter exists.
+- Acceptance evidence remains distinct from business approval. Checklist
+  items retain only evidence-presence dispositions; category coverage cannot
+  mutate a Tooling lifecycle, Gate or business approval, which remains
+  explicitly unavailable under `DR-REC-010`.
+- NPI One may retain immutable Project evidence for move/loan/return/archive/
+  scrap intentions, spare/wear recommendations and repair authorization/quote/
+  responsibility/downtime/verification. It cannot claim the related ERP
+  movement, inventory, supplier, repair transaction or cost result.
+- The only Asset request operation is fixed
+  `create_or_update_tool_asset`. Phase 6 Mock preparation keeps the formal
+  request `draft`, input `validated_mock`, business approval `unavailable`,
+  dispatch `prohibited` and target result `not_requested`; it creates no
+  Outbox message, network request, target ID or formal mapping.
+- One physical Tooling Set is the formal mapping subject. Cardinality is
+  zero-or-one per Set; copied molds are separate Sets. Mapping and read-only
+  Asset/location/life/maintenance/movement/repair/spares projection require
+  future authenticated ERPNext confirmation and remain unavailable now.
+- Standing transition authority activates only checkpoint 1: pure acceptance/
+  request/projection domains, closed OpenAPI/ownership/future-event schemas,
+  guarded additive metadata, receipt values and direct affected tests. Routes,
+  business rows, live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior
+  and production/sandbox network access remain inactive.

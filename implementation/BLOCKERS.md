@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-08T22:05:48Z`
+Updated: `2026-08-08T22:23:25Z`
 
 ## Active hard blockers
 
@@ -12,15 +12,15 @@ repository `93160709198`, visual `93160709195` at `85/85` and controlled Site
 
 ## Active recovery
 
-None. P6-05 is sealed at Level 2 and the bounded P6-06 Requirement/domain/
-existing-capability audit is active. `DR-REC-010` remains a scoped hold on
-exact Tooling lifecycle states, transitions and manufacturing authority only.
-`DR-REC-002` retains production exception-color semantics only.
+None. The bounded P6-06 audit passes and checkpoint 1 is active. `DR-REC-010`
+remains a scoped hold on exact Tooling lifecycle states, transitions,
+acceptance authority and manufacturing authority. `DR-REC-002` retains
+production exception-color semantics only.
 
-Missing Trial, production ERPNext/IoT endpoint/credential, calibration,
-health-score policy and formal ERP asset facts do not block the bounded audit.
-They must remain explicitly unavailable; production ERPNext and IoT must not
-be contacted.
+Missing Trial/official quality, production ERPNext/IoT endpoint/credential,
+Asset customization/mapping, calibration, maintenance and health policy do not
+block the pure checkpoint-1 foundation. They must remain explicitly
+unavailable; production ERPNext and IoT must not be contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

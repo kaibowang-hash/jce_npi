@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P6-06 ACCEPTANCE AND ASSET REQUEST`
+`IN_PROGRESS_CHECKPOINT_1 — P6-06 ACCEPTANCE AND ASSET FOUNDATION`
 
-Recovery time: `2026-08-08T22:05:48Z`
+Recovery time: `2026-08-08T22:23:25Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`4e04eb47b1c5f77b9a442b3bef139df61cb83782`
+`943d1ea6863ab348afb5bb2f6e0781459d636577`
 
 ## Current authoritative action
 
@@ -71,19 +71,25 @@ and controlled Site `93160709186`. Runtime artifact `9028284028`, digest
 records cumulative scope `p5-01-through-p6-05`. Complete evidence is
 `implementation/evidence/phase-6/p6-05-validation.md`.
 
-The current atomic task is the bounded P6-06 Requirement/domain/existing-
-capability audit only for `FR-TL-011..016`. It must determine the minimum
-immutable acceptance checklist/evidence model and the exact Mock/sandbox-ready
-ERP asset request/projection boundary, while preserving one-to-one formal asset
-mapping and ERPNext ownership. The audit must map existing controlled evidence,
-Tooling identities, Execution Request/Outbox/Inbox foundations and all held
-production facts before proposing a vertical slice.
+The bounded P6-06 Requirement/domain/existing-capability audit passes. Its
+frozen plan is `implementation/evidence/phase-6/p6-06-plan.md`. Exact starting
+controller checkpoint `943d1ea` passes ordinary CI `31281224456`: repository
+`93162778363` and fixed-Linux visual `93162778393` pass, while controlled
+runtime correctly skips.
 
-No product code, DocType, route, adapter, credential or business row is active
-for P6-06 yet. Real asset creation/update, mapping confirmation, location,
-movement, maintenance, repair, spares, inventory and cost execution remain
-Phase 8. Production ERPNext must not be contacted. There is no active technical
-Hard Blocker.
+The current atomic task is checkpoint 1 only: add pure immutable acceptance-
+evidence, Asset-adjacent evidence, operation-specific draft Asset request and
+read-only/unavailable ERP projection domains; close OpenAPI, ownership and
+future event shapes; add guarded additive acceptance/request/receipt metadata;
+and run direct affected tests. No route or business row may activate.
+
+Evidence coverage must remain distinct from business approval. The only live
+future request operation is fixed `create_or_update_tool_asset`; Mock input may
+be technically validated, but the formal request remains `draft`, business
+approval stays `unavailable`, dispatch is `prohibited` and the target result is
+`not_requested`. Formal Asset ID/mapping, location/movement, maintenance,
+repair, spares, inventory and cost execution remain Phase 8. Production
+ERPNext must not be contacted. There is no active technical Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
 `31266800163` and final workflow `31267181068` pass; runtime artifact

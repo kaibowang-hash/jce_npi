@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T22:05:48Z'
+updated_at: '2026-08-08T22:23:25Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-06
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P6_05_LEVEL_2_TASK_GATE_PASS
-current_task_next_stage: P6_06_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P6_06_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
+current_task_next_stage: P6_06_DOMAIN_CONTRACT_METADATA_FOUNDATION
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-06
-resumed_product_task_status: IN_PROGRESS_AUDIT
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
