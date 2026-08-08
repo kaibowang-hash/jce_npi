@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T11:44:33Z'
+updated_at: '2026-08-08T12:41:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-04
-current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
-current_task_completed_stage: P6_04_REQUIREMENT_DOMAIN_AUDIT_PASS
-current_task_next_stage: P6_04_DOMAIN_CONTRACT_METADATA_FOUNDATION
+current_task_status: IN_PROGRESS_REPOSITORY_BFF
+current_task_completed_stage: P6_04_DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
+current_task_next_stage: P6_04_REPOSITORY_BFF
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-04
-resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
+resumed_product_task_status: IN_PROGRESS_REPOSITORY_BFF
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1058,7 +1058,7 @@ p6_03:
     - implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-03-validation.md
 p6_04:
-  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION
+  status: IN_PROGRESS_REPOSITORY_BFF
   backlog_task: M5-04
   requirements: [FR-TL-005, FR-TL-006, FR-TL-007, FR-TL-008]
   delivery_boundary: MANUFACTURING_SUPPLIER_AND_ERP_COST_PROJECTION
@@ -1076,12 +1076,29 @@ p6_04:
   audit_entry_controlled_job: 93097414162
   audit_decision: PASS
   planned_additive_doctypes: 2
+  foundation_product_checkpoint: 7aa26a4f27d3e02a47ecdd385b61aa037845a476
+  foundation_checkpoint: 00956b45e5bc7408d856b9e2a416d6f0f6d4b88e
+  foundation_initial_ci: 31256971673
+  foundation_initial_repository_job: 93101716038
+  foundation_initial_visual_job: 93101716079
+  foundation_initial_visual_artifact: 9021697529
+  foundation_initial_visual_digest: sha256:3483707a0096f197d13123e7088d849d157642f09ca70c17863e62c94f923da9
+  foundation_final_ci: 31257408124
+  foundation_final_repository_job: 93102812133
+  foundation_final_visual_job: 93102812149
+  foundation_final_controlled_job: 93102812647
+  foundation_visual_artifact: 9021818155
+  foundation_visual_digest: sha256:206a46f4564b9d4345d22645aaf57fb9f22bf09c9214547ed650993d43769fd1
+  foundation_gitleaks_artifact: 9021878830
+  foundation_gitleaks_digest: sha256:a9ff059a0afabedafc6cccc24acaa550fde109ae333e6b1b1187acd597da76af
+  foundation_decision: PASS
   routes_active: false
-  current_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION
+  current_stage: REPOSITORY_BFF
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-03-validation.md
     - implementation/evidence/phase-6/p6-04-plan.md
+    - implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

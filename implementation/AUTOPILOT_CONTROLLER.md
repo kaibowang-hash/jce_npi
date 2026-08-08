@@ -1344,3 +1344,37 @@ repeat or rewrite it merely to restore context. See
   values, closed OpenAPI schemas and direct domain/metadata/contract/security
   tests. Repository/BFF routes, live SPA activation and controlled Site remain
   inactive until their preceding checkpoints pass.
+
+## 2026-08-08 P6-04 checkpoint 1 PASS and repository/BFF transition
+
+- Product commit `7aa26a4` adds the immutable internal manufacturing-plan,
+  milestone, observation, exact released-document evidence and closed ERPNext
+  projection domains; two guarded additive DocTypes; ownership and receipt
+  values; closed component schemas; and complete direct trilingual coverage.
+  It activates no P6-04 route, adapter, endpoint, credential or business row.
+- Initial ordinary CI `31256971673` passes repository `93101716038` and fails
+  only the eighteen durable P0 footer catalog fingerprints. Artifact
+  `9021697529`, digest
+  `sha256:3483707a0096f197d13123e7088d849d157642f09ca70c17863e62c94f923da9`,
+  proves all product workspaces unchanged: English deltas are confined to
+  half-open box `x=560..677, y=882..892`; Chinese deltas to
+  `x=496..613, y=882..892`.
+- Baseline-only checkpoint `00956b4` copies exactly those reviewed Linux
+  actuals byte-for-byte. Final ordinary CI `31257408124` passes repository
+  `93102812133` (`1,198` tracked Python, `744` frontend unit, `321`
+  non-visual E2E, `4,528` sources at complete direct `zh`/`zh-TW`, statements
+  `80.07%`, zero vulnerabilities and no leaks) and visual `93102812149` at
+  `79/79`; controlled job `93102812647` correctly skips.
+- Checkpoint evidence is
+  `implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md`.
+  Released controlled-document evidence does not release the Tooling
+  Revision or authorize manufacturing; `DR-REC-010` remains active. Formal
+  Supplier and procurement/cost truth remains ERPNext-owned, read-only and
+  unavailable by default.
+- Standing transition authority activates only checkpoint 2: Project-first
+  bounded plan/observation reads and narrow append commands, exact dependency
+  containment, System Manager-only mutation, actor-bound idempotency, one
+  transaction, append-only audit, a strict injected read-only ERP projection
+  boundary, an independent fail-closed switch and API/IDOR/no-write tests.
+  Live SPA activation, supplier portal, production lifecycle rules, ERP
+  mutation/endpoint/credential/adapter and controlled Site remain inactive.

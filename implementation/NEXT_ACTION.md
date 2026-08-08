@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA_FOUNDATION — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+`IN_PROGRESS_REPOSITORY_BFF — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 
-Recovery time: `2026-08-08T11:44:33Z`
+Recovery time: `2026-08-08T12:41:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`ae4bda0dce52e7f26f51c1a36d452bae10c53754`
+`00956b45e5bc7408d856b9e2a416d6f0f6d4b88e`
 
 ## Current authoritative action
 
@@ -31,20 +31,31 @@ chain revisions, one initial Set-source binding, replay, conflict, rollback,
 IDOR and independent route disable/recovery with diagnostics closed.
 
 Evidence is `implementation/evidence/phase-6/p6-03-validation.md`. The bounded
-P6-04 Requirement/domain/existing-capability audit passes in
-`implementation/evidence/phase-6/p6-04-plan.md`. Its entry ordinary CI
-`31255185225` passes exact controller SHA `ae4bda0`: repository
-`93097413900`, visual `93097413875` at `79/79`, with controlled job
-`93097414162` correctly skipped.
+P6-04 audit remains PASS in `implementation/evidence/phase-6/p6-04-plan.md`.
 
-Automatic transition activates only P6-04 checkpoint 1: pure immutable
-manufacturing-plan/milestone/observation and release-evidence/ERP read-only
-projection invariants, two guarded additive DocTypes, ownership rows, receipt
-values, closed OpenAPI schemas and direct domain/metadata/contract/security
-tests. No repository/BFF route, live SPA command, supplier portal, production
-lifecycle rule, ERP mutation, endpoint, credential, production projection or
-successful target result may activate. `DR-REC-010` continues to hold Tooling
-lifecycle and manufacturing authority.
+P6-04 checkpoint 1 passes at exact stable checkpoint `00956b4`. Product commit
+`7aa26a4` added the immutable manufacturing-plan/milestone/observation,
+released-document evidence and closed ERPNext projection domains; two guarded
+DocTypes; ownership rows; receipt values; closed schemas; and complete direct
+trilingual coverage without activating a route. Initial CI `31256971673`
+passed repository `93101716038` and failed only the eighteen durable P0 footer
+catalog fingerprints. Artifact `9021697529` proved all product workspaces
+unchanged. Baseline-only repair `00956b4` then passed complete ordinary CI
+`31257408124`: repository `93102812133` (`1,198` tracked Python, `744`
+frontend unit, `321` non-visual E2E, `4,528` sources, statements `80.07%`, no
+vulnerabilities or leaks) and visual `93102812149` at `79/79`; controlled job
+`93102812647` correctly skipped. Evidence is
+`implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md`.
+
+Automatic transition activates only P6-04 checkpoint 2: Project-first bounded
+plan/observation reads and narrow append commands, exact Master/Revision/
+member/document/lifecycle/event/File containment, System Manager-only
+mutation, actor-bound idempotency, one transaction, append-only audit, a
+strict injected read-only ERP projection boundary, an independent fail-closed
+route switch and API/IDOR/no-ERP-write tests. No live SPA command, supplier
+portal, production lifecycle rule, ERP mutation, endpoint, credential,
+production adapter or successful target result may activate. `DR-REC-010`
+continues to hold Tooling lifecycle and manufacturing authority.
 
 ## Retained P6-01 execution history
 
