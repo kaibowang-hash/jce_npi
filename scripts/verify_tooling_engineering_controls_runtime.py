@@ -750,8 +750,8 @@ def verify_idor(
             idempotency_key=command_key,
             query_key="idor-command-absent",
         )
-        validate_problem(denied_command, 404, "TOOLING_UNAVAILABLE")
-        validate_problem(absent_command, 404, "TOOLING_UNAVAILABLE")
+        validate_problem(denied_command, 403, "PERMISSION_DENIED")
+        validate_problem(absent_command, 403, "PERMISSION_DENIED")
         require(
             {key: denied_command.body.get(key) for key in fields}
             == {key: absent_command.body.get(key) for key in fields},

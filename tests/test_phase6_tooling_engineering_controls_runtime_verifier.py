@@ -271,6 +271,18 @@ class Phase6ToolingEngineeringControlsRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("document_runtime.create_internal_fixture_user(", idor_source)
         self.assertNotIn("create_resource(", idor_source)
         self.assertNotIn('"System Manager"', idor_source)
+        self.assertEqual(
+            idor_source.count(
+                'validate_problem(denied_command, 403, "PERMISSION_DENIED")'
+            ),
+            1,
+        )
+        self.assertEqual(
+            idor_source.count(
+                'validate_problem(absent_command, 403, "PERMISSION_DENIED")'
+            ),
+            1,
+        )
 
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
