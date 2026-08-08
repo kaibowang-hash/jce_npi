@@ -4910,9 +4910,9 @@ A successor acceptance revision must reference the exact current revision.,后�
 A successor revision requires the exact predecessor.,后续修订需要精确的前序修订。
 Acceptance Checklist Snapshot,验收清单快照
 Acceptance Evidence Revision,验收证据修订
-Acceptance Evidence Revision Global ID,验收证据修订全局 ID
+Acceptance Evidence Revision Global ID,验收证据修订全局标识
 Acceptance Evidence Version,验收证据版本
-Acceptance Global ID,验收全局 ID
+Acceptance Global ID,验收全局标识
 Acceptance Version Key Hash,验收版本键哈希
 Acceptance Version Key Hash does not match.,验收版本键哈希不匹配。
 Acceptance checklist requirement keys must be unique.,验收清单要求键必须唯一。
@@ -4922,8 +4922,8 @@ Asset action evidence requires at least one exact File Revision.,资产动作证
 Business Approval State,业务批准状态
 Customer-owned Tooling repairs require exact customer authorization evidence.,客户所有模具的维修需要精确的客户授权证据。
 Dispatch State,派发状态
-ERP Asset action execution must remain unavailable.,ERP 资产动作执行必须保持不可用。
-ERP repair result must remain unavailable.,ERP 维修结果必须保持不可用。
+ERP Asset action execution must remain unavailable.,企业资源计划资产动作执行必须保持不可用。
+ERP repair result must remain unavailable.,企业资源计划维修结果必须保持不可用。
 Enter a bounded list of valid records.,请输入有界的有效记录列表。
 Enter a bounded list.,请输入有界列表。
 Enter a closed object with the required fields.,请输入包含必需字段的封闭对象。
@@ -4957,7 +4957,7 @@ Select a supported spare kind.,请选择支持的备件类型。
 Select the operation-specific Tool Asset command.,请选择操作专用的模具资产命令。
 Select the supported Tooling schema version.,请选择支持的模具架构版本。
 Set Revision Binding,套件修订绑定
-Set Revision Binding Global ID,套件修订绑定全局 ID
+Set Revision Binding Global ID,套件修订绑定全局标识
 Set Revision Binding Snapshot Hash,套件修订绑定快照哈希
 Spare Recommendation Snapshot,备件建议快照
 Supplier source and object identity must be supplied together.,供应商来源和对象身份必须同时提供。
@@ -4981,10 +4981,10 @@ The first revision cannot contain a predecessor.,首个修订不能包含前序�
 The predecessor Tooling Acceptance Evidence Revision is unavailable.,前序模具验收证据修订不可用。
 The sealed Tool Asset request is unavailable.,已封存的模具资产请求不可用。
 The sealed response does not match its exact Tool Asset request.,已封存响应与其精确模具资产请求不匹配。
-The unavailable ERP Asset projection is invalid.,不可用的 ERP 资产投影无效。
+The unavailable ERP Asset projection is invalid.,不可用的企业资源计划资产投影无效。
 Tool Asset API Version,模具资产 API 版本
 Tool Asset Operation,模具资产操作
-Tool Asset Request Global ID,模具资产请求全局 ID
+Tool Asset Request Global ID,模具资产请求全局标识
 Tool Asset Request Input Hash,模具资产请求输入哈希
 Tool Asset Request Input Snapshot,模具资产请求输入快照
 Tool Asset Request Input Snapshot does not match.,模具资产请求输入快照不匹配。
