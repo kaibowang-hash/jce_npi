@@ -11,6 +11,7 @@ import type {
   ToolingCockpitViewModel,
   ToolingDataSource,
   ToolingRequirementSummaryViewModel,
+  ToolingRevisionCollectionViewModel,
   ToolingSetCollectionViewModel,
   ToolingSetDetailViewModel,
 } from "../../src/api/tooling-data-source";
@@ -27,6 +28,7 @@ const differenceId = "66666666-6666-4666-8666-666666666666";
 const documentId = "77777777-7777-4777-8777-777777777777";
 const documentRevisionId = "88888888-8888-4888-8888-888888888888";
 const fileRevisionId = "99999999-9999-4999-8999-999999999999";
+const toolingRevisionId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const inspectionIds = [
   "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
   "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
@@ -161,6 +163,64 @@ function detail(): ToolingSetDetailViewModel {
   };
 }
 
+function boundDetail(): ToolingSetDetailViewModel {
+  const value = detail();
+  return {
+    ...value,
+    toolingSet: {
+      ...value.toolingSet,
+      sourceRevision: {
+        globalId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        reason: "Approved exact source",
+        snapshotHash: "d".repeat(64),
+        toolingMasterGlobalId: masterId,
+        toolingRevisionGlobalId: toolingRevisionId,
+        toolingRevisionSnapshotHash: "e".repeat(64),
+        toolingSetGlobalId: setId,
+        toolingSetSnapshotHash: value.toolingSet.snapshotHash,
+      },
+    },
+  };
+}
+
+function revisions(): ToolingRevisionCollectionViewModel {
+  return {
+    combinedTrial: {
+      reasonCode: "combined_trial_not_delivered",
+      state: "unavailable",
+    },
+    erpLocationAndAsset: {
+      reasonCode: "erp_projection_unavailable",
+      state: "unavailable",
+    },
+    items: [
+      {
+        globalId: toolingRevisionId,
+        revisionLabel: "R1",
+        revisionNumber: 1,
+      } as ToolingRevisionCollectionViewModel["items"][number],
+    ],
+    lifecycle: {
+      reasonCode: "lifecycle_policy_unavailable",
+      state: "unavailable",
+    },
+    permissions: {
+      bindSetSource: true,
+      createPartSpecification: true,
+      createProcessChain: true,
+      createRevision: true,
+      transitionLifecycle: false,
+      view: true,
+    },
+    projectGlobalId: projectId,
+    supplier: {
+      reasonCode: "formal_supplier_unavailable",
+      state: "unavailable",
+    },
+    toolingMasterGlobalId: masterId,
+  };
+}
+
 function cockpit(): ToolingCockpitViewModel {
   return {
     applicability: [],
@@ -200,6 +260,13 @@ function dataSource(
 ): ToolingDataSource {
   return {
     attachIntakeEvidence: () => Promise.resolve(detail()),
+    createPartControlledSpecification: () =>
+      Promise.reject(new Error("not used")),
+    createToolingProcessChainRevision: () =>
+      Promise.reject(new Error("not used")),
+    createToolingRevision: () => Promise.reject(new Error("not used")),
+    createToolingSetRevisionBinding: () =>
+      Promise.reject(new Error("not used")),
     createApplicability: () => Promise.resolve(cockpit()),
     createIntake: () => Promise.resolve(detail()),
     createMaster: () => Promise.resolve(cockpit()),
@@ -209,8 +276,14 @@ function dataSource(
     createSet: () => Promise.resolve(collection()),
     loadCockpit: () => Promise.resolve(cockpit()),
     loadMaster: () => Promise.resolve(cockpit()),
+    loadPartControlledSpecification: () =>
+      Promise.reject(new Error("not used")),
     loadSet: () => Promise.resolve(detail()),
     loadSets: () => Promise.resolve(collection()),
+    loadToolingProcessChain: () => Promise.reject(new Error("not used")),
+    loadToolingProcessChains: () => Promise.reject(new Error("not used")),
+    loadToolingRevision: () => Promise.reject(new Error("not used")),
+    loadToolingRevisions: () => Promise.reject(new Error("not used")),
     ...overrides,
   };
 }
@@ -310,6 +383,7 @@ function enableCommandSession(): void {
 function renderWorkspace(
   source: ToolingDataSource,
   documentSource?: Pick<DocumentDataSource, "loadDocuments" | "loadDocument">,
+  revisionCapabilityAvailable = false,
 ): void {
   renderWithLocale(
     <ToolingSetWorkspace
@@ -318,6 +392,7 @@ function renderWorkspace(
       masterId={masterId}
       projectId={projectId}
       requirements={[requirement]}
+      revisionCapabilityAvailable={revisionCapabilityAvailable}
     />,
     "en",
     `/projects/${projectId}/tooling/${masterId}`,
@@ -509,6 +584,55 @@ describe("physical Tooling Set workspace", () => {
         fileRevisionGlobalId: fileRevisionId,
       },
     ]);
+  });
+
+  it("binds one immutable Tooling Revision to one exact unbound Set", async () => {
+    enableCommandSession();
+    const createToolingSetRevisionBinding = vi.fn<
+      ToolingDataSource["createToolingSetRevisionBinding"]
+    >(() => Promise.resolve(boundDetail()));
+    renderWorkspace(
+      dataSource({
+        createToolingSetRevisionBinding,
+        loadToolingRevisions: () => Promise.resolve(revisions()),
+      }),
+      undefined,
+      true,
+    );
+    const user = userEvent.setup();
+
+    const open = await screen.findByRole("button", {
+      name: "Bind source Tooling Revision",
+    });
+    await waitFor(() => {
+      expect(open).toBeEnabled();
+    });
+    await user.click(open);
+    await user.selectOptions(
+      screen.getByLabelText("Source Tooling Revision"),
+      toolingRevisionId,
+    );
+    await user.type(
+      screen.getByLabelText("Binding reason"),
+      "Approved exact source",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Bind exact source Revision" }),
+    );
+
+    await waitFor(() => {
+      expect(createToolingSetRevisionBinding).toHaveBeenCalledOnce();
+    });
+    expect(createToolingSetRevisionBinding.mock.calls[0]?.slice(0, 4)).toEqual([
+      projectId,
+      masterId,
+      setId,
+      {
+        reason: "Approved exact source",
+        toolingRevisionGlobalId: toolingRevisionId,
+      },
+    ]);
+    expect(await screen.findByText("Approved exact source")).toBeVisible();
   });
 
   it("shows a retry only for evidence-backed retryable collection failures", async () => {

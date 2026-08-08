@@ -13,6 +13,7 @@ import type {
   ToolingIntakeInspectionCategory,
   ToolingIntakeSummaryViewModel,
   ToolingRequirementSummaryViewModel,
+  ToolingRevisionCollectionViewModel,
   ToolingSetCollectionViewModel,
   ToolingSetDetailViewModel,
 } from "../api/tooling-data-source";
@@ -33,7 +34,7 @@ type ResourceState<T> =
   | { kind: "idle" | "loading" }
   | { kind: "loaded"; value: T }
   | { kind: "failed"; failure: RequestFailure };
-type EditorKind = "set" | "intake" | "evidence";
+type EditorKind = "set" | "intake" | "evidence" | "binding";
 type CommandState =
   | { kind: "idle" }
   | { kind: "processing"; label: string }
@@ -85,7 +86,17 @@ interface EvidenceEditorState {
   fileRevisionGlobalId: string;
 }
 
-type EditorState = SetEditorState | IntakeEditorState | EvidenceEditorState;
+interface BindingEditorState {
+  kind: "binding";
+  toolingRevisionGlobalId: string;
+  reason: string;
+}
+
+type EditorState =
+  | SetEditorState
+  | IntakeEditorState
+  | EvidenceEditorState
+  | BindingEditorState;
 
 const inspectionCategoryOrder = [
   "appearance",
@@ -104,6 +115,7 @@ function newEditor(
   kind: EditorKind,
   requirements: readonly ToolingRequirementSummaryViewModel[],
   latestIntake: ToolingIntakeSummaryViewModel | null,
+  revisions: ToolingRevisionCollectionViewModel | null,
 ): EditorState {
   if (kind === "set") {
     return {
@@ -132,6 +144,13 @@ function newEditor(
         globalId: globalThis.crypto.randomUUID(),
         observation: "",
       })),
+    };
+  }
+  if (kind === "binding") {
+    return {
+      kind,
+      reason: "",
+      toolingRevisionGlobalId: revisions?.items.at(-1)?.globalId ?? "",
     };
   }
   return {
@@ -209,6 +228,7 @@ export default function ToolingSetWorkspace({
   documentDataSource,
   masterId,
   projectId,
+  revisionCapabilityAvailable = false,
   reportWorkspaceDirty,
   requirements,
 }: {
@@ -218,6 +238,7 @@ export default function ToolingSetWorkspace({
     | undefined;
   masterId: string;
   projectId: string;
+  revisionCapabilityAvailable?: boolean | undefined;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
   requirements: readonly ToolingRequirementSummaryViewModel[];
 }): React.JSX.Element {
@@ -239,6 +260,9 @@ export default function ToolingSetWorkspace({
   const [detail, setDetail] = useState<
     ResourceState<ToolingSetDetailViewModel>
   >({ kind: "idle" });
+  const [revisionCollection, setRevisionCollection] = useState<
+    ResourceState<ToolingRevisionCollectionViewModel>
+  >(revisionCapabilityAvailable ? { kind: "loading" } : { kind: "idle" });
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [command, setCommand] = useState<CommandState>({ kind: "idle" });
@@ -289,6 +313,30 @@ export default function ToolingSetWorkspace({
       controller.abort();
     };
   }, [attempt, dataSource, masterId, projectId]);
+
+  useEffect(() => {
+    if (!revisionCapabilityAvailable) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadToolingRevisions(projectId, masterId, controller.signal)
+      .then((value) => {
+        if (!controller.signal.aborted)
+          setRevisionCollection({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (
+          !controller.signal.aborted &&
+          !(error instanceof ToolingRequestCancelledError)
+        )
+          setRevisionCollection({
+            kind: "failed",
+            failure: toRequestFailure(error),
+          });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, masterId, projectId, revisionCapabilityAvailable]);
 
   useEffect(() => {
     if (!selectedSetId) return undefined;
@@ -380,7 +428,14 @@ export default function ToolingSetWorkspace({
 
   const openEditor = (kind: EditorKind, trigger: HTMLElement): void => {
     editorTrigger.current = trigger;
-    setEditor(newEditor(kind, eligibleRequirements, latestIntake));
+    setEditor(
+      newEditor(
+        kind,
+        eligibleRequirements,
+        latestIntake,
+        revisionCollection.kind === "loaded" ? revisionCollection.value : null,
+      ),
+    );
     setFormError(null);
     setCommand({ kind: "idle" });
     setDocuments(
@@ -568,6 +623,55 @@ export default function ToolingSetWorkspace({
       );
       return;
     }
+    if (editor.kind === "binding") {
+      if (
+        !selectedSet ||
+        !editor.toolingRevisionGlobalId ||
+        !editor.reason.trim()
+      ) {
+        setFormError(
+          t("Select one exact Tooling Revision and enter a reason."),
+        );
+        return;
+      }
+      const context = commandContext(
+        "tooling-set-revision-binding",
+        sessionCommandContext,
+      );
+      runCommand(
+        t("Binding exact source Tooling Revision"),
+        (signal) =>
+          dataSource.createToolingSetRevisionBinding(
+            projectId,
+            masterId,
+            selectedSet.globalId,
+            {
+              reason: editor.reason.trim(),
+              toolingRevisionGlobalId: editor.toolingRevisionGlobalId,
+            },
+            context(signal),
+          ),
+        (value) => {
+          setDetail({ kind: "loaded", value });
+          setCollection((current) =>
+            current.kind === "loaded"
+              ? {
+                  kind: "loaded",
+                  value: {
+                    ...current.value,
+                    items: current.value.items.map((item) =>
+                      item.globalId === value.toolingSet.globalId
+                        ? value.toolingSet
+                        : item,
+                    ),
+                  },
+                }
+              : current,
+          );
+        },
+      );
+      return;
+    }
     const fileOptions =
       documentDetail.kind === "loaded"
         ? documentDetail.value.revisions.flatMap((revision) =>
@@ -657,6 +761,15 @@ export default function ToolingSetWorkspace({
     collection.value.permissions.attachEvidence &&
     documentDataSource !== undefined &&
     sessionCommandContext !== null;
+  const canBindSourceRevision =
+    Boolean(selectedSet) &&
+    Boolean(
+      loadedDetail && "state" in loadedDetail.toolingSet.sourceRevision,
+    ) &&
+    revisionCollection.kind === "loaded" &&
+    revisionCollection.value.permissions.bindSetSource &&
+    revisionCollection.value.items.length > 0 &&
+    sessionCommandContext !== null;
   const fileOptions =
     documentDetail.kind === "loaded"
       ? documentDetail.value.revisions.flatMap((revision) =>
@@ -710,8 +823,19 @@ export default function ToolingSetWorkspace({
           >
             {t("Attach evidence")}
           </Button>
+          <Button
+            disabled={!canBindSourceRevision || processing}
+            onClick={(event) => {
+              openEditor("binding", event.currentTarget);
+            }}
+          >
+            {t("Bind source Tooling Revision")}
+          </Button>
         </div>
       </div>
+      {revisionCollection.kind === "failed" ? (
+        <RequestFailurePanel failure={revisionCollection.failure} />
+      ) : null}
       {!sessionCommandContext &&
       (collection.value.permissions.createSet ||
         collection.value.permissions.createIntake ||
@@ -946,8 +1070,35 @@ export default function ToolingSetWorkspace({
                 },
               ]}
             />
+            {"state" in loadedDetail.toolingSet.sourceRevision ? (
+              <div className="tooling-live__downstream-row">
+                <SemanticStatus label={t("Unavailable")} tone="warning" />
+                <span>
+                  {unavailableLabel(
+                    t,
+                    loadedDetail.toolingSet.sourceRevision.reasonCode,
+                  )}
+                </span>
+              </div>
+            ) : (
+              <DefinitionList
+                rows={[
+                  {
+                    label: t("Source Tooling Revision"),
+                    value:
+                      loadedDetail.toolingSet.sourceRevision
+                        .toolingRevisionGlobalId,
+                    exempt: "identifier",
+                  },
+                  {
+                    label: t("Binding reason"),
+                    value: loadedDetail.toolingSet.sourceRevision.reason,
+                    exempt: "business-data",
+                  },
+                ]}
+              />
+            )}
             {[
-              loadedDetail.toolingSet.sourceRevision,
               loadedDetail.toolingSet.supplier,
               loadedDetail.toolingSet.lifecycle,
               loadedDetail.toolingSet.erpLocationAndAsset,
@@ -970,7 +1121,9 @@ export default function ToolingSetWorkspace({
               ? t("Create physical Tooling Set")
               : editor.kind === "intake"
                 ? t("Record arrival intake")
-                : t("Attach governed intake evidence")
+                : editor.kind === "evidence"
+                  ? t("Attach governed intake evidence")
+                  : t("Bind source Tooling Revision")
           }
         >
           <form
@@ -1507,6 +1660,46 @@ export default function ToolingSetWorkspace({
                 ) : null}
               </>
             ) : null}
+            {editor.kind === "binding" ? (
+              <>
+                <label>
+                  <span>{t("Source Tooling Revision")}</span>
+                  <Select
+                    disabled={processing}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        toolingRevisionGlobalId: event.currentTarget.value,
+                      });
+                    }}
+                    value={editor.toolingRevisionGlobalId}
+                  >
+                    {revisionCollection.kind === "loaded"
+                      ? revisionCollection.value.items.map((item) => (
+                          <option key={item.globalId} value={item.globalId}>
+                            {item.revisionLabel} · {item.revisionNumber}
+                          </option>
+                        ))
+                      : null}
+                  </Select>
+                </label>
+                <label className="ebom-form__wide">
+                  <span>{t("Binding reason")}</span>
+                  <TextInput
+                    disabled={processing}
+                    maxLength={500}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        reason: event.currentTarget.value,
+                      });
+                    }}
+                    required
+                    value={editor.reason}
+                  />
+                </label>
+              </>
+            ) : null}
             {formError ? (
               <p className="ebom-form__wide form-error" role="alert">
                 {formError}
@@ -1522,7 +1715,9 @@ export default function ToolingSetWorkspace({
                   ? t("Create physical Set")
                   : editor.kind === "intake"
                     ? t("Record intake")
-                    : t("Attach evidence")}
+                    : editor.kind === "evidence"
+                      ? t("Attach evidence")
+                      : t("Bind exact source Revision")}
               </Button>
               <Button disabled={processing} onClick={closeEditor} type="button">
                 {t("Cancel")}

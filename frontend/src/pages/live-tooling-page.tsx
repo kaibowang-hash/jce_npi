@@ -25,6 +25,7 @@ import {
 import { formatDate, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import ToolingRevisionWorkspace from "./tooling-revision-workspace";
 import ToolingSetWorkspace from "./tooling-set-workspace";
 
 type ResourceState =
@@ -840,7 +841,6 @@ export default function LiveToolingPage({
             {(
               [
                 ["lifecycle", cockpit.downstream.lifecycle],
-                ["revision", cockpit.downstream.revision],
                 ["trial", cockpit.downstream.trial],
                 ["erp", cockpit.downstream.erp],
               ] as const
@@ -850,6 +850,25 @@ export default function LiveToolingPage({
                 <span>{downstreamLabel(t, capability.reasonCode)}</span>
               </div>
             ))}
+            <div className="tooling-live__downstream-row">
+              <SemanticStatus
+                label={
+                  cockpit.downstream.revision.state === "available"
+                    ? t("Available")
+                    : t("Unavailable")
+                }
+                tone={
+                  cockpit.downstream.revision.state === "available"
+                    ? "success"
+                    : "warning"
+                }
+              />
+              <span>
+                {cockpit.downstream.revision.state === "available"
+                  ? t("Tooling Revision workspace is available.")
+                  : downstreamLabel(t, cockpit.downstream.revision.reasonCode)}
+              </span>
+            </div>
           </div>
           <small>
             {t(
@@ -858,6 +877,17 @@ export default function LiveToolingPage({
           </small>
         </DockedInspector>
       </div>
+      {selectedMaster && cockpit.downstream.revision.state === "available" ? (
+        <ToolingRevisionWorkspace
+          applicability={selectedApplicability}
+          dataSource={dataSource}
+          key={`revision-${selectedMaster.globalId}`}
+          masterId={selectedMaster.globalId}
+          parts={cockpit.parts}
+          projectId={projectId}
+          reportWorkspaceDirty={reportWorkspaceDirty}
+        />
+      ) : null}
       {selectedMaster ? (
         <ToolingSetWorkspace
           dataSource={dataSource}
@@ -865,6 +895,9 @@ export default function LiveToolingPage({
           key={selectedMaster.globalId}
           masterId={selectedMaster.globalId}
           projectId={projectId}
+          revisionCapabilityAvailable={
+            cockpit.downstream.revision.state === "available"
+          }
           reportWorkspaceDirty={reportWorkspaceDirty}
           requirements={cockpit.requirements}
         />

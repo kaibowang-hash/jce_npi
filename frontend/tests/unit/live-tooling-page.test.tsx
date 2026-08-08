@@ -3,8 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type {
+  PartControlledSpecificationContextViewModel,
   ToolingCockpitViewModel,
   ToolingDataSource,
+  ToolingProcessChainCollectionViewModel,
+  ToolingRevisionCollectionViewModel,
+  ToolingRevisionDetailViewModel,
+  ToolingRevisionViewModel,
 } from "../../src/api/tooling-data-source";
 import { NpiTransportError } from "../../src/api/http";
 import LiveToolingPage from "../../src/pages/live-tooling-page";
@@ -114,6 +119,13 @@ function dataSource(
   const value = cockpit();
   return {
     attachIntakeEvidence: () => Promise.reject(new Error("not used")),
+    createPartControlledSpecification: () =>
+      Promise.reject(new Error("not used")),
+    createToolingProcessChainRevision: () =>
+      Promise.reject(new Error("not used")),
+    createToolingRevision: () => Promise.reject(new Error("not used")),
+    createToolingSetRevisionBinding: () =>
+      Promise.reject(new Error("not used")),
     createApplicability: () => Promise.resolve(value),
     createIntake: () => Promise.reject(new Error("not used")),
     createMaster: () => Promise.resolve(value),
@@ -123,6 +135,8 @@ function dataSource(
     createSet: () => Promise.reject(new Error("not used")),
     loadCockpit: () => Promise.resolve(value),
     loadMaster: () => Promise.resolve(value),
+    loadPartControlledSpecification: () =>
+      Promise.reject(new Error("not used")),
     loadSet: () => Promise.reject(new Error("not used")),
     loadSets: () =>
       Promise.resolve({
@@ -136,7 +150,139 @@ function dataSource(
         },
         toolingMasterGlobalId: masterId,
       }),
+    loadToolingProcessChain: () => Promise.reject(new Error("not used")),
+    loadToolingProcessChains: () => Promise.reject(new Error("not used")),
+    loadToolingRevision: () => Promise.reject(new Error("not used")),
+    loadToolingRevisions: () => Promise.reject(new Error("not used")),
     ...overrides,
+  };
+}
+
+function revisionResources(): {
+  chains: ToolingProcessChainCollectionViewModel;
+  collection: ToolingRevisionCollectionViewModel;
+  detail: ToolingRevisionDetailViewModel;
+  part: PartControlledSpecificationContextViewModel;
+} {
+  const permissions = {
+    bindSetSource: true,
+    createPartSpecification: true,
+    createProcessChain: true,
+    createRevision: true,
+    transitionLifecycle: false as const,
+    view: true,
+  };
+  const unavailable = {
+    combinedTrial: {
+      reasonCode: "combined_trial_not_delivered" as const,
+      state: "unavailable" as const,
+    },
+    erpLocationAndAsset: {
+      reasonCode: "erp_projection_unavailable" as const,
+      state: "unavailable" as const,
+    },
+    lifecycle: {
+      reasonCode: "lifecycle_policy_unavailable" as const,
+      state: "unavailable" as const,
+    },
+    supplier: {
+      reasonCode: "formal_supplier_unavailable" as const,
+      state: "unavailable" as const,
+    },
+  };
+  const toolingRevisionId = "88888888-8888-4888-8888-888888888888";
+  const revision = {
+    cavities: [
+      {
+        cavityIdentifier: "C01",
+        globalId: "99999999-9999-4999-8999-999999999999",
+        partRevisionGlobalId: revisionId,
+        structuralState: "enabled",
+        toolingApplicabilityGlobalId: "66666666-6666-4666-8666-666666666666",
+      },
+    ],
+    designDocumentRevisions: [],
+    externalIdentities: [],
+    globalId: toolingRevisionId,
+    inserts: [],
+    predecessorGlobalId: null,
+    reason: "Initial controlled Revision",
+    revisionLabel: "R1",
+    revisionNumber: 1,
+    snapshotHash: "a".repeat(64),
+    specification: {
+      machineType: "Injection molding",
+      toolingType: "Two-plate mold",
+    },
+    toolingMasterGlobalId: masterId,
+  } as unknown as ToolingRevisionViewModel;
+  return {
+    chains: {
+      combinedTrial: unavailable.combinedTrial,
+      items: [
+        {
+          chainVersion: 1,
+          globalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          predecessorGlobalId: null,
+          processChainGlobalId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          reason: "Initial ordered route",
+          snapshotHash: "b".repeat(64),
+          steps: [{}, {}],
+        } as unknown as ToolingProcessChainCollectionViewModel["items"][number],
+      ],
+      permissions,
+      projectGlobalId: projectId,
+    },
+    collection: {
+      ...unavailable,
+      items: [revision],
+      permissions,
+      projectGlobalId: projectId,
+      toolingMasterGlobalId: masterId,
+    },
+    detail: {
+      ...unavailable,
+      permissions,
+      projectGlobalId: projectId,
+      revision,
+    },
+    part: {
+      automaticImpact: {
+        reasonCode: "automatic_impact_not_delivered",
+        state: "unavailable",
+      },
+      controlledSpecification: {
+        externalIdentities: [],
+        globalId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        items: [
+          {
+            effectiveFrom: "2026-08-08",
+            effectiveTo: null,
+            globalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+            kind: "material_family",
+            normalizedValue: "PA66",
+            rawValue: "PA66-GF30",
+            sourceObjectId: "PART-SPEC-001",
+            sourceSystem: "NPI_ONE",
+            unit: null,
+          },
+        ],
+        partGlobalId: partId,
+        partRevisionGlobalId: revisionId,
+        partRevisionSnapshotHash: "c".repeat(64),
+        snapshotHash: "d".repeat(64),
+      },
+      partGlobalId: partId,
+      partRevision: cockpit().parts[0]?.currentRevision ?? {
+        globalId: revisionId,
+        partGlobalId: partId,
+        revisionLabel: "A",
+        revisionNumber: 1,
+        snapshotHash: "c".repeat(64),
+      },
+      permissions,
+      projectGlobalId: projectId,
+    },
   };
 }
 
@@ -305,5 +451,85 @@ describe("live Tooling cockpit", () => {
       screen.getByRole("button", { name: "Add Tooling record" }),
     ).toBeDisabled();
     expect(screen.getAllByText("Unavailable")).toHaveLength(4);
+  });
+
+  it("activates the Revision workspace only from the server capability", async () => {
+    const available = cockpit({
+      downstream: {
+        ...cockpit().downstream,
+        revision: {
+          reasonCode: "tooling_revision_available",
+          revisionCount: 0,
+          state: "available",
+        },
+      },
+    });
+    const unavailable = new NpiTransportError(
+      "network",
+      "trace-tooling-revision",
+      "trace",
+    );
+    renderPage(
+      dataSource({
+        loadCockpit: () => Promise.resolve(available),
+        loadToolingProcessChains: () => Promise.reject(unavailable),
+        loadToolingRevisions: () => Promise.reject(unavailable),
+      }),
+    );
+
+    expect(
+      await screen.findByText("Tooling Revision workspace is available."),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("heading", { name: "Tooling Revision workspace" }),
+    ).toBeVisible();
+    expect(
+      screen.getAllByRole("button", { name: "Retry" }).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("renders exact Revision resources and registers an unsaved editor", async () => {
+    enableCommandSession();
+    const resources = revisionResources();
+    const available = cockpit({
+      downstream: {
+        ...cockpit().downstream,
+        revision: {
+          reasonCode: "tooling_revision_available",
+          revisionCount: 1,
+          state: "available",
+        },
+      },
+    });
+    const reportWorkspaceDirty = vi.fn();
+    renderPage(
+      dataSource({
+        loadCockpit: () => Promise.resolve(available),
+        loadPartControlledSpecification: () => Promise.resolve(resources.part),
+        loadToolingProcessChains: () => Promise.resolve(resources.chains),
+        loadToolingRevision: () => Promise.resolve(resources.detail),
+        loadToolingRevisions: () => Promise.resolve(resources.collection),
+      }),
+      reportWorkspaceDirty,
+    );
+    const user = userEvent.setup();
+
+    expect(await screen.findByText("R1 · 1")).toBeVisible();
+    expect(screen.getByText("PA66")).toBeVisible();
+    expect(screen.getByText("Initial ordered route")).toBeVisible();
+    const open = screen.getByRole("button", {
+      name: "Create Tooling Revision",
+    });
+    await waitFor(() => {
+      expect(open).toBeEnabled();
+    });
+    await user.click(open);
+    expect(screen.getByLabelText("Mold base material")).toBeVisible();
+    expect(reportWorkspaceDirty).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        objectIdentity: `${masterId}:tooling-revision`,
+        version: "unsaved-tooling-revision-context",
+      }),
+    );
   });
 });

@@ -4314,3 +4314,106 @@ Enter a valid Document Revision reference.,請輸入有效的文件修訂引用�
 The process parent must be an earlier step.,製程父步驟必須是較早的步驟。
 The Tooling Revision workspace is temporarily unavailable.,模具修訂工作區暫時無法使用。
 Validation evidence must match the selected validation state.,驗證證據必須與所選驗證狀態相符。
+Tooling Revision workspace is available.,模具修訂工作區可用。
+Combined Trial truth is not delivered yet.,聯合試模事實尚未交付。
+Automatic impact analysis is not delivered yet.,自動影響分析尚未交付。
+Controlled Part specification is not recorded.,尚未記錄零件受控規格。
+Material family,材料族
+Material grade,材料牌號
+Trademark,商標
+Color,顏色
+Color masterbatch,色母
+FDA compliance,食品藥品法規合規性
+Regulatory compliance,法規合規性
+Secondary process,二次製程
+Complete the exact Revision specification and cavity.,請完整填寫精確修訂規格和模穴。
+Validated insert evidence requires a reason.,已驗證的鑲件證據需要原因。
+Complete all fields for the optional insert.,請完整填寫選填鑲件的所有欄位。
+Complete all fields for the optional external identity.,請完整填寫選填外部識別的所有欄位。
+Complete both fields for the optional Design Document Revision.,請完整填寫選填設計文件修訂的兩個欄位。
+Creating immutable Tooling Revision,正在建立不可變模具修訂
+Complete the controlled Part specification item.,請完整填寫零件受控規格項目。
+Recording controlled Part specification,正在記錄零件受控規格
+Complete both exact ordered process steps.,請完整填寫兩個精確有序製程步驟。
+Select a valid process chain lineage.,請選擇有效的製程鏈譜系。
+Creating ordered Tooling process chain,正在建立有序模具製程鏈
+Tooling Revision workspace,模具修訂工作區
+Loading Tooling Revision workspace,正在載入模具修訂工作區
+Immutable Revisions,不可變修訂
+Create Tooling Revision,建立模具修訂
+Tooling Revision history,模具修訂歷史
+Inserts,鑲件
+No Tooling Revision has been recorded.,尚未記錄模具修訂。
+Tooling Revision inspector,模具修訂檢查器
+Loading exact Tooling Revision,正在載入精確模具修訂
+Machine type,機台類型
+Tooling type,模具類型
+Cavity,模穴
+Structure,結構
+Insert,鑲件
+Validation,驗證
+Validated,已驗證
+Select one immutable Revision to inspect it.,請選擇一個不可變修訂進行檢查。
+Controlled Part specification,零件受控規格
+Part for controlled specification,受控規格對應零件
+Record controlled Part specification,記錄零件受控規格
+Loading controlled Part specification,正在載入零件受控規格
+Normalized value,正規化值
+Raw source value,原始來源值
+Tooling process chains,模具製程鏈
+Create process chain Revision,建立製程鏈修訂
+Chain,製程鏈
+Steps,步驟
+No Tooling process chain has been recorded.,尚未記錄模具製程鏈。
+Loading Tooling process chains,正在載入模具製程鏈
+Mold base material,模架材料
+Core material,模芯材料
+Hardness (HRC),洛氏硬度
+Surface treatment,表面處理
+Cavity count,模穴數
+Length (mm),長度（mm）
+Width (mm),寬度（mm）
+Height (mm),高度（mm）
+Weight (kg),重量（kg）
+Clamp tonnage (t),鎖模噸位（公噸）
+Tie-bar spacing X (mm),拉桿間距 X（mm）
+Tie-bar spacing Y (mm),拉桿間距 Y（mm）
+Injection capacity (g),射出容量（g）
+Target cycle (s),目標週期（s）
+Target life (cycles),目標壽命（次數）
+Warranty,保固
+Customer standard,客戶標準
+Interface requirement,介面要求
+"Spare parts, comma separated",備件（逗號分隔）
+"Delivery documents, comma separated",交付文件（逗號分隔）
+Cavity identifier,模穴識別
+Optional insert code,選填鑲件編碼
+Insert version,鑲件版本
+Changeover duration (min),切換時長（min）
+Validation reason,驗證原因
+Optional external identity,選填外部識別
+Raw external identity,外部識別原始值
+External identity source object,外部識別來源物件
+Design Document Revision,設計文件修訂
+Document snapshot hash,文件快照雜湊
+Tooling applicability,模具適用關係
+Cavity structural state,模穴結構狀態
+Insert validation state,鑲件驗證狀態
+Create immutable Revision,建立不可變修訂
+Controlled specification kind,受控規格類型
+Record immutable specification,記錄不可變規格
+Process chain lineage,製程鏈譜系
+New process chain,新建製程鏈
+Process step,製程步驟
+First step Tooling Revision,第一步模具修訂
+Second step Tooling Revision,第二步模具修訂
+Input Part Revision,輸入零件修訂
+Intermediate Part Revision,中間零件修訂
+Output Part Revision,輸出零件修訂
+Create immutable process chain,建立不可變製程鏈
+Select one exact Tooling Revision and enter a reason.,請選擇一個精確模具修訂並輸入原因。
+Binding exact source Tooling Revision,正在繫結精確來源模具修訂
+Bind source Tooling Revision,繫結來源模具修訂
+Source Tooling Revision,來源模具修訂
+Binding reason,繫結原因
+Bind exact source Revision,繫結精確來源修訂

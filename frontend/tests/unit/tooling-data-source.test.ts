@@ -30,6 +30,8 @@ const inspectionIds = [
 const differenceId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const evidenceId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const fileRevisionId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const toolingRevisionId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+const bindingId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 const source = {
   editableIn: "NPI_ONE" as const,
   sourceSystem: "NPI_ONE" as const,
@@ -234,6 +236,26 @@ function setDetail(): ToolingSetDetailViewModel {
     ],
     permissions: setCollection().permissions,
     toolingSet,
+  };
+}
+
+function boundSetDetail(): ToolingSetDetailViewModel {
+  const detail = setDetail();
+  return {
+    ...detail,
+    toolingSet: {
+      ...detail.toolingSet,
+      sourceRevision: {
+        globalId: bindingId,
+        reason: "Exact source Revision selected",
+        snapshotHash: "6".repeat(64),
+        toolingMasterGlobalId: masterId,
+        toolingRevisionGlobalId: toolingRevisionId,
+        toolingRevisionSnapshotHash: "7".repeat(64),
+        toolingSetGlobalId: setId,
+        toolingSetSnapshotHash: detail.toolingSet.snapshotHash,
+      },
+    },
   };
 }
 
@@ -463,6 +485,20 @@ describe("live Tooling data source", () => {
         ],
       }),
     ).toBe(false);
+    expect(isToolingSetDetailResponse(boundSetDetail())).toBe(true);
+    const bound = boundSetDetail();
+    expect(
+      isToolingSetDetailResponse({
+        ...bound,
+        toolingSet: {
+          ...bound.toolingSet,
+          sourceRevision: {
+            ...bound.toolingSet.sourceRevision,
+            toolingSetSnapshotHash: "0".repeat(64),
+          },
+        },
+      }),
+    ).toBe(false);
   });
 
   it("uses only the closed Set, intake and evidence routes", async () => {
@@ -475,7 +511,11 @@ describe("live Tooling data source", () => {
             : request.url;
       return Promise.resolve(
         governedResponse(
-          url.endsWith("/sets") ? setCollection() : setDetail(),
+          url.endsWith("/sets")
+            ? setCollection()
+            : url.endsWith("/revision-binding")
+              ? boundSetDetail()
+              : setDetail(),
           init,
         ),
       );
@@ -540,6 +580,16 @@ describe("live Tooling data source", () => {
       },
       context("evidence"),
     );
+    await dataSource.createToolingSetRevisionBinding(
+      projectId,
+      masterId,
+      setId,
+      {
+        reason: "Exact source Revision selected",
+        toolingRevisionGlobalId: toolingRevisionId,
+      },
+      context("binding"),
+    );
 
     expect(
       fetch.mock.calls.map(([url]) =>
@@ -551,6 +601,7 @@ describe("live Tooling data source", () => {
       `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets`,
       `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/intakes`,
       `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/intakes/${intakeId}/evidence`,
+      `/api/npi/v1/projects/${projectId}/tooling/${masterId}/sets/${setId}/revision-binding`,
     ]);
     expect(
       fetch.mock.calls.slice(2).every(([, init]) => init?.method === "POST"),

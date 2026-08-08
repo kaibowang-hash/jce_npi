@@ -4314,3 +4314,106 @@ Enter a valid Document Revision reference.,请输入有效的文档修订引用�
 The process parent must be an earlier step.,工艺父步骤必须是更早的步骤。
 The Tooling Revision workspace is temporarily unavailable.,模具修订工作区暂时不可用。
 Validation evidence must match the selected validation state.,验证证据必须与所选验证状态匹配。
+Tooling Revision workspace is available.,模具修订工作区可用。
+Combined Trial truth is not delivered yet.,联合试模事实尚未交付。
+Automatic impact analysis is not delivered yet.,自动影响分析尚未交付。
+Controlled Part specification is not recorded.,尚未记录零件受控规格。
+Material family,材料族
+Material grade,材料牌号
+Trademark,商标
+Color,颜色
+Color masterbatch,色母
+FDA compliance,食品药品法规合规性
+Regulatory compliance,法规合规性
+Secondary process,二次工艺
+Complete the exact Revision specification and cavity.,请完整填写精确修订规格和型腔。
+Validated insert evidence requires a reason.,已验证的镶件证据需要原因。
+Complete all fields for the optional insert.,请完整填写可选镶件的所有字段。
+Complete all fields for the optional external identity.,请完整填写可选外部标识的所有字段。
+Complete both fields for the optional Design Document Revision.,请完整填写可选设计文档修订的两个字段。
+Creating immutable Tooling Revision,正在创建不可变模具修订
+Complete the controlled Part specification item.,请完整填写零件受控规格项。
+Recording controlled Part specification,正在记录零件受控规格
+Complete both exact ordered process steps.,请完整填写两个精确有序工艺步骤。
+Select a valid process chain lineage.,请选择有效的工艺链谱系。
+Creating ordered Tooling process chain,正在创建有序模具工艺链
+Tooling Revision workspace,模具修订工作区
+Loading Tooling Revision workspace,正在加载模具修订工作区
+Immutable Revisions,不可变修订
+Create Tooling Revision,创建模具修订
+Tooling Revision history,模具修订历史
+Inserts,镶件
+No Tooling Revision has been recorded.,尚未记录模具修订。
+Tooling Revision inspector,模具修订检查器
+Loading exact Tooling Revision,正在加载精确模具修订
+Machine type,机台类型
+Tooling type,模具类型
+Cavity,型腔
+Structure,结构
+Insert,镶件
+Validation,验证
+Validated,已验证
+Select one immutable Revision to inspect it.,请选择一个不可变修订进行检查。
+Controlled Part specification,零件受控规格
+Part for controlled specification,受控规格对应零件
+Record controlled Part specification,记录零件受控规格
+Loading controlled Part specification,正在加载零件受控规格
+Normalized value,规范化值
+Raw source value,原始来源值
+Tooling process chains,模具工艺链
+Create process chain Revision,创建工艺链修订
+Chain,工艺链
+Steps,步骤
+No Tooling process chain has been recorded.,尚未记录模具工艺链。
+Loading Tooling process chains,正在加载模具工艺链
+Mold base material,模架材料
+Core material,模芯材料
+Hardness (HRC),洛氏硬度
+Surface treatment,表面处理
+Cavity count,型腔数
+Length (mm),长度（mm）
+Width (mm),宽度（mm）
+Height (mm),高度（mm）
+Weight (kg),重量（kg）
+Clamp tonnage (t),锁模吨位（吨）
+Tie-bar spacing X (mm),拉杆间距 X（mm）
+Tie-bar spacing Y (mm),拉杆间距 Y（mm）
+Injection capacity (g),注射容量（g）
+Target cycle (s),目标周期（s）
+Target life (cycles),目标寿命（次数）
+Warranty,保修
+Customer standard,客户标准
+Interface requirement,接口要求
+"Spare parts, comma separated",备件（逗号分隔）
+"Delivery documents, comma separated",交付文档（逗号分隔）
+Cavity identifier,型腔标识
+Optional insert code,可选镶件编码
+Insert version,镶件版本
+Changeover duration (min),切换时长（min）
+Validation reason,验证原因
+Optional external identity,可选外部标识
+Raw external identity,外部标识原始值
+External identity source object,外部标识来源对象
+Design Document Revision,设计文档修订
+Document snapshot hash,文档快照哈希
+Tooling applicability,模具适用关系
+Cavity structural state,型腔结构状态
+Insert validation state,镶件验证状态
+Create immutable Revision,创建不可变修订
+Controlled specification kind,受控规格类型
+Record immutable specification,记录不可变规格
+Process chain lineage,工艺链谱系
+New process chain,新建工艺链
+Process step,工艺步骤
+First step Tooling Revision,第一步模具修订
+Second step Tooling Revision,第二步模具修订
+Input Part Revision,输入零件修订
+Intermediate Part Revision,中间零件修订
+Output Part Revision,输出零件修订
+Create immutable process chain,创建不可变工艺链
+Select one exact Tooling Revision and enter a reason.,请选择一个精确模具修订并输入原因。
+Binding exact source Tooling Revision,正在绑定精确来源模具修订
+Bind source Tooling Revision,绑定来源模具修订
+Source Tooling Revision,来源模具修订
+Binding reason,绑定原因
+Bind exact source Revision,绑定精确来源修订

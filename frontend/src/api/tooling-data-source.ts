@@ -1,4 +1,30 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import {
+  isCreatePartControlledSpecificationCommand,
+  isCreateToolingProcessChainRevisionCommand,
+  isCreateToolingRevisionCommand,
+  isCreateToolingSetRevisionBindingCommand,
+  isPartControlledSpecificationContext,
+  isToolingProcessChainCollection,
+  isToolingProcessChainRevision,
+  isToolingRevisionCapability,
+  isToolingRevisionCollection,
+  isToolingRevisionDetail,
+  isToolingSetSourceRevision,
+  type CreatePartControlledSpecificationCommand,
+  type CreateToolingProcessChainRevisionCommand,
+  type CreateToolingRevisionCommand,
+  type CreateToolingSetRevisionBindingCommand,
+  type PartControlledSpecificationContextViewModel,
+  type ToolingProcessChainCollectionViewModel,
+  type ToolingProcessChainRevisionViewModel,
+  type ToolingRevisionCapabilityViewModel,
+  type ToolingRevisionCollectionViewModel,
+  type ToolingRevisionDetailViewModel,
+  type ToolingSetSourceRevisionViewModel,
+} from "./tooling-revision-contract";
+
+export * from "./tooling-revision-contract";
 
 export type ToolingRequirementKind =
   | "new_tool"
@@ -106,7 +132,7 @@ export interface ToolingCockpitViewModel {
   applicability: readonly ToolingApplicabilitySummaryViewModel[];
   downstream: Readonly<{
     lifecycle: ToolingDownstreamCapabilityViewModel;
-    revision: ToolingDownstreamCapabilityViewModel;
+    revision: ToolingRevisionCapabilityViewModel;
     physicalSet: ToolingDownstreamCapabilityViewModel;
     trial: ToolingDownstreamCapabilityViewModel;
     erp: ToolingDownstreamCapabilityViewModel;
@@ -200,7 +226,7 @@ export interface ToolingSetSummaryViewModel {
   custodyResponsibility: string;
   repairAuthorizationReference: string;
   returnConditions: string;
-  sourceRevision: ToolingSetUnavailableFieldViewModel;
+  sourceRevision: ToolingSetSourceRevisionViewModel;
   supplier: ToolingSetUnavailableFieldViewModel;
   lifecycle: ToolingSetUnavailableFieldViewModel;
   erpLocationAndAsset: ToolingSetUnavailableFieldViewModel;
@@ -366,6 +392,57 @@ export interface ToolingDataSource {
     setId: string,
     intakeId: string,
     command: CreateToolingIntakeEvidenceCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel>;
+  loadToolingRevisions(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingRevisionCollectionViewModel>;
+  loadToolingRevision(
+    projectId: string,
+    masterId: string,
+    revisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingRevisionDetailViewModel>;
+  createToolingRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingRevisionDetailViewModel>;
+  loadPartControlledSpecification(
+    projectId: string,
+    partId: string,
+    partRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<PartControlledSpecificationContextViewModel>;
+  createPartControlledSpecification(
+    projectId: string,
+    partId: string,
+    partRevisionId: string,
+    command: CreatePartControlledSpecificationCommand,
+    context: ToolingCommandContext,
+  ): Promise<PartControlledSpecificationContextViewModel>;
+  loadToolingProcessChains(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingProcessChainCollectionViewModel>;
+  loadToolingProcessChain(
+    projectId: string,
+    processChainRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingProcessChainRevisionViewModel>;
+  createToolingProcessChainRevision(
+    projectId: string,
+    command: CreateToolingProcessChainRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingProcessChainRevisionViewModel>;
+  createToolingSetRevisionBinding(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolingSetRevisionBindingCommand,
     context: ToolingCommandContext,
   ): Promise<ToolingSetDetailViewModel>;
 }
@@ -654,8 +731,7 @@ function isDownstream(
     ]) &&
     isDownstreamCapability(value.lifecycle) &&
     value.lifecycle.reasonCode === "lifecycle_policy_unavailable" &&
-    isDownstreamCapability(value.revision) &&
-    value.revision.reasonCode === "tooling_revision_not_delivered" &&
+    isToolingRevisionCapability(value.revision) &&
     isDownstreamCapability(value.physicalSet) &&
     value.physicalSet.reasonCode === "physical_set_not_delivered" &&
     isDownstreamCapability(value.trial) &&
@@ -801,9 +877,9 @@ function isToolingSetPermissions(
 function isToolingSetSummary(
   value: unknown,
 ): value is ToolingSetSummaryViewModel {
-  return (
-    isRecord(value) &&
-    hasExactKeys(value, [
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
       "globalId",
       "projectGlobalId",
       "toolingMasterGlobalId",
@@ -819,31 +895,37 @@ function isToolingSetSummary(
       "lifecycle",
       "erpLocationAndAsset",
       "snapshotHash",
-    ]) &&
-    isUuid(value.globalId) &&
-    isUuid(value.projectGlobalId) &&
-    isUuid(value.toolingMasterGlobalId) &&
-    isUuid(value.toolingRequirementGlobalId) &&
-    typeof value.requirementKind === "string" &&
-    toolingSetRequirementKinds.has(
+    ]) ||
+    !isUuid(value.globalId) ||
+    !isUuid(value.projectGlobalId) ||
+    !isUuid(value.toolingMasterGlobalId) ||
+    !isUuid(value.toolingRequirementGlobalId) ||
+    typeof value.requirementKind !== "string" ||
+    !toolingSetRequirementKinds.has(
       value.requirementKind as ToolingSetRequirementKind,
-    ) &&
-    isString(value.physicalSerial, 80) &&
-    isNullableReference(value.customer) &&
-    isString(value.custodyResponsibility, 500) &&
-    isString(value.repairAuthorizationReference, 500) &&
-    isString(value.returnConditions, 500) &&
-    isUnavailableField(
-      value.sourceRevision,
-      "tooling_revision_not_delivered",
-    ) &&
-    isUnavailableField(value.supplier, "formal_supplier_unavailable") &&
-    isUnavailableField(value.lifecycle, "lifecycle_policy_unavailable") &&
-    isUnavailableField(
+    ) ||
+    !isString(value.physicalSerial, 80) ||
+    !isNullableReference(value.customer) ||
+    !isString(value.custodyResponsibility, 500) ||
+    !isString(value.repairAuthorizationReference, 500) ||
+    !isString(value.returnConditions, 500) ||
+    !isToolingSetSourceRevision(value.sourceRevision) ||
+    !isUnavailableField(value.supplier, "formal_supplier_unavailable") ||
+    !isUnavailableField(value.lifecycle, "lifecycle_policy_unavailable") ||
+    !isUnavailableField(
       value.erpLocationAndAsset,
       "erp_projection_unavailable",
-    ) &&
-    isHash(value.snapshotHash)
+    ) ||
+    !isHash(value.snapshotHash)
+  ) {
+    return false;
+  }
+  return (
+    "state" in value.sourceRevision ||
+    (value.sourceRevision.toolingMasterGlobalId ===
+      value.toolingMasterGlobalId &&
+      value.sourceRevision.toolingSetGlobalId === value.globalId &&
+      value.sourceRevision.toolingSetSnapshotHash === value.snapshotHash)
   );
 }
 
@@ -1341,6 +1423,192 @@ export class LiveToolingDataSource implements ToolingDataSource {
         value.toolingSet.projectGlobalId === expectedProjectId &&
         value.toolingSet.toolingMasterGlobalId === expectedMasterId &&
         value.intakes.some((item) => item.globalId === expectedIntakeId),
+    );
+  }
+
+  async loadToolingRevisions(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingRevisionCollectionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/revisions`,
+      signal,
+      (value): value is ToolingRevisionCollectionViewModel =>
+        isToolingRevisionCollection(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId &&
+        value.items.every(
+          (item) => item.toolingMasterGlobalId === expectedMasterId,
+        ),
+    );
+  }
+
+  async loadToolingRevision(
+    projectId: string,
+    masterId: string,
+    revisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingRevisionDetailViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedRevisionId = requireUuid(revisionId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/revisions/${expectedRevisionId}`,
+      signal,
+      (value): value is ToolingRevisionDetailViewModel =>
+        isToolingRevisionDetail(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.revision.globalId === expectedRevisionId &&
+        value.revision.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async createToolingRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingRevisionDetailViewModel> {
+    if (!isCreateToolingRevisionCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/revisions`,
+      command,
+      context,
+      (value): value is ToolingRevisionDetailViewModel =>
+        isToolingRevisionDetail(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.revision.toolingMasterGlobalId === expectedMasterId &&
+        value.revision.revisionNumber === (command.expectedVersion ?? 0) + 1,
+    );
+  }
+
+  async loadPartControlledSpecification(
+    projectId: string,
+    partId: string,
+    partRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<PartControlledSpecificationContextViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedPartId = requireUuid(partId);
+    const expectedRevisionId = requireUuid(partRevisionId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/parts/${expectedPartId}/revisions/${expectedRevisionId}/controlled-specification`,
+      signal,
+      (value): value is PartControlledSpecificationContextViewModel =>
+        isPartControlledSpecificationContext(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.partGlobalId === expectedPartId &&
+        value.partRevision.globalId === expectedRevisionId,
+    );
+  }
+
+  async createPartControlledSpecification(
+    projectId: string,
+    partId: string,
+    partRevisionId: string,
+    command: CreatePartControlledSpecificationCommand,
+    context: ToolingCommandContext,
+  ): Promise<PartControlledSpecificationContextViewModel> {
+    if (!isCreatePartControlledSpecificationCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedPartId = requireUuid(partId);
+    const expectedRevisionId = requireUuid(partRevisionId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/parts/${expectedPartId}/revisions/${expectedRevisionId}/controlled-specification`,
+      command,
+      context,
+      (value): value is PartControlledSpecificationContextViewModel =>
+        isPartControlledSpecificationContext(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.partGlobalId === expectedPartId &&
+        value.partRevision.globalId === expectedRevisionId &&
+        !("state" in value.controlledSpecification) &&
+        value.controlledSpecification.partGlobalId === expectedPartId &&
+        value.controlledSpecification.partRevisionGlobalId ===
+          expectedRevisionId,
+    );
+  }
+
+  async loadToolingProcessChains(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingProcessChainCollectionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling-process-chains`,
+      signal,
+      (value): value is ToolingProcessChainCollectionViewModel =>
+        isToolingProcessChainCollection(value) &&
+        value.projectGlobalId === expectedProjectId,
+    );
+  }
+
+  async loadToolingProcessChain(
+    projectId: string,
+    processChainRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingProcessChainRevisionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRevisionId = requireUuid(processChainRevisionId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling-process-chains/${expectedRevisionId}`,
+      signal,
+      (value): value is ToolingProcessChainRevisionViewModel =>
+        isToolingProcessChainRevision(value) &&
+        value.globalId === expectedRevisionId,
+    );
+  }
+
+  async createToolingProcessChainRevision(
+    projectId: string,
+    command: CreateToolingProcessChainRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingProcessChainRevisionViewModel> {
+    if (!isCreateToolingProcessChainRevisionCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling-process-chains`,
+      command,
+      context,
+      (value): value is ToolingProcessChainRevisionViewModel =>
+        isToolingProcessChainRevision(value) &&
+        value.chainVersion === (command.expectedVersion ?? 0) + 1 &&
+        (command.processChainGlobalId === undefined ||
+          value.processChainGlobalId === command.processChainGlobalId),
+    );
+  }
+
+  async createToolingSetRevisionBinding(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolingSetRevisionBindingCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingSetDetailViewModel> {
+    if (!isCreateToolingSetRevisionBindingCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedSetId = requireUuid(setId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets/${expectedSetId}/revision-binding`,
+      command,
+      context,
+      (value): value is ToolingSetDetailViewModel =>
+        isToolingSetDetailResponse(value) &&
+        value.toolingSet.globalId === expectedSetId &&
+        value.toolingSet.projectGlobalId === expectedProjectId &&
+        value.toolingSet.toolingMasterGlobalId === expectedMasterId &&
+        !("state" in value.toolingSet.sourceRevision) &&
+        value.toolingSet.sourceRevision.toolingRevisionGlobalId ===
+          command.toolingRevisionGlobalId,
     );
   }
 
