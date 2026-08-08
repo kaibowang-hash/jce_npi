@@ -459,6 +459,35 @@ objects:
       exact_set_and_source_revision_snapshot_hashes: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: INITIAL_BINDING_ONLY}
       binding_identity_reason_and_provenance: {owner: NPI_ONE_TOOLING_REVISION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
 
+  ToolingManufacturingPlanRevision:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      exact_plan_version_predecessor_project_master_and_tooling_revision: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      internal_sourcing_engineering_estimate_budget_and_responsibility: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      exact_released_planning_and_design_document_evidence: {owner: NPI_ONE_DOCUMENT_RELEASE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      ordered_milestone_schedule_and_internal_or_supplier_responsibility_kind: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      approved_funding_and_formal_purchase_order_state: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      tooling_lifecycle_and_manufacturing_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingManufacturingMilestoneObservation:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_plan_milestone_version_predecessor_and_progress: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actual_dates_risk_note_and_internal_reporter: {owner: NPI_ONE_TOOLING_MANUFACTURING_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      clean_private_file_revision_evidence: {owner: NPI_ONE_FILE_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      external_supplier_submission_identity: {owner: FUTURE_APPROVED_SUPPLIER_PORTAL, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingProcurementCostProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      formal_supplier_purchase_order_receipt_invoice_and_actual_cost: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      source_object_versions_currency_amount_and_raw_cost_type_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      exact_master_supplier_raw_cost_type_aggregation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ROWS_WIN}
+      production_projection_connection_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
+
   ToolingCommandIdempotency:
     owner_system: NPI_ONE_TOOLING_COMMAND
     erp_view: none

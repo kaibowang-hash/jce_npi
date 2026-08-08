@@ -11420,6 +11420,345 @@ components:
         effectiveFrom: { type: string, format: date }
         effectiveTo: { type: string, format: date }
         reason: { type: string, minLength: 1, maxLength: 500 }
+    ToolingProjectMemberResponsibility:
+      type: object
+      additionalProperties: false
+      required: [globalId, userId, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        userId: { type: string, minLength: 1, maxLength: 254 }
+        optimisticVersion: { type: integer, minimum: 1 }
+    ToolingPlanningMoney:
+      type: object
+      additionalProperties: false
+      required: [amount, currency]
+      properties:
+        amount:
+          { type: string, pattern: "^[0-9]+(?:\\.[0-9]+)?$", maxLength: 32 }
+        currency: { type: string, pattern: "^[A-Z]{3}$" }
+    ToolingReleasedDocumentEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          revisionGlobalId,
+          revisionSnapshotHash,
+          lifecycleGlobalId,
+          lifecycleVersion,
+          releaseEventGlobalId,
+          releaseEventHash,
+          releaseSnapshotHash,
+        ]
+      properties:
+        revisionGlobalId: { type: string, format: uuid }
+        revisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        lifecycleGlobalId: { type: string, format: uuid }
+        lifecycleVersion: { type: integer, minimum: 1 }
+        releaseEventGlobalId: { type: string, format: uuid }
+        releaseEventHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        releaseSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingManufacturingPlanEvidence:
+      type: object
+      additionalProperties: false
+      required: [role, document]
+      properties:
+        role:
+          type: string
+          enum: [dfm, tooling_proposal, quotation, budget]
+        document: { $ref: "#/components/schemas/ToolingReleasedDocumentEvidence" }
+    ToolingManufacturingMilestone:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          sequence,
+          category,
+          plannedStart,
+          plannedFinish,
+          responsibilityKind,
+          responsibleMember,
+          predecessorGlobalIds,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        sequence: { type: integer, minimum: 1, maximum: 100 }
+        category:
+          type: string
+          enum:
+            [
+              design,
+              material_preparation,
+              heat_treatment,
+              machining,
+              assembly,
+              trial_preparation,
+              delivery,
+            ]
+        plannedStart: { type: string, format: date }
+        plannedFinish: { type: string, format: date }
+        responsibilityKind: { type: string, enum: [internal, supplier] }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        predecessorGlobalIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingManufacturingPlanRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          planGlobalId,
+          toolingMasterGlobalId,
+          toolingRevisionGlobalId,
+          toolingRevisionSnapshotHash,
+          planVersion,
+          predecessorGlobalId,
+          predecessorSnapshotHash,
+          sourcingStrategy,
+          responsibleMember,
+          engineeringEstimate,
+          budget,
+          evidence,
+          designReleaseEvidence,
+          milestones,
+          reason,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        planGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        planVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash:
+          { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        sourcingStrategy: { type: string, enum: [internal, supplier, hybrid] }
+        responsibleMember:
+          { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        engineeringEstimate:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingPlanningMoney" }
+            - { type: "null" }
+        budget:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingPlanningMoney" }
+            - { type: "null" }
+        evidence:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/ToolingManufacturingPlanEvidence" }
+        designReleaseEvidence:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ToolingReleasedDocumentEvidence" }
+        milestones:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingManufacturingMilestone" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingMilestoneFileEvidence:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          role,
+          fileRevisionGlobalId,
+          fileOptimisticVersion,
+          frappeContentHash,
+          fileName,
+          mimeType,
+          sizeBytes,
+          sha256,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        role:
+          { type: string, enum: [progress_evidence, technical_evidence, delivery_evidence] }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash:
+          { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 127 }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingManufacturingMilestoneObservation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          globalId,
+          planRevisionGlobalId,
+          planRevisionSnapshotHash,
+          milestoneGlobalId,
+          milestoneSnapshotHash,
+          observationVersion,
+          predecessorGlobalId,
+          predecessorSnapshotHash,
+          progressPercentage,
+          actualStart,
+          actualFinish,
+          risk,
+          note,
+          evidence,
+          reportedByMember,
+          snapshotHash,
+        ]
+      properties:
+        globalId: { type: string, format: uuid }
+        planRevisionGlobalId: { type: string, format: uuid }
+        planRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        milestoneGlobalId: { type: string, format: uuid }
+        milestoneSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observationVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash:
+          { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        progressPercentage: { type: integer, minimum: 0, maximum: 100 }
+        actualStart: { type: [string, "null"], format: date }
+        actualFinish: { type: [string, "null"], format: date }
+        risk: { type: [string, "null"], maxLength: 240 }
+        note: { type: [string, "null"], maxLength: 1000 }
+        evidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingMilestoneFileEvidence" }
+        reportedByMember:
+          { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingDesignReleaseEvidenceCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode, items]
+      properties:
+        state: { type: string, enum: [satisfied, blocked] }
+        reasonCode:
+          type: [string, "null"]
+          enum: [no_design_documents, release_evidence_incomplete, null]
+        items:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ToolingReleasedDocumentEvidence" }
+    ToolingManufacturingAuthorizationUnavailable:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: tooling_lifecycle_policy_unavailable }
+    ToolingFormalSupplierReference:
+      type: object
+      additionalProperties: false
+      required: [sourceObjectId, targetVersion, supplierCode, supplierName]
+      properties:
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        targetVersion: { type: string, minLength: 1, maxLength: 128 }
+        supplierCode: { type: string, minLength: 1, maxLength: 128 }
+        supplierName: { type: string, minLength: 1, maxLength: 200 }
+    ToolingErpActualCostRow:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          toolingMasterGlobalId,
+          sourceRowId,
+          sourceRowVersion,
+          supplierSourceObjectId,
+          purchaseOrderSourceId,
+          purchaseReceiptSourceId,
+          purchaseInvoiceSourceId,
+          actualCostSourceId,
+          costTypeCode,
+          postingDate,
+          currency,
+          amount,
+        ]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        sourceRowId: { type: string, minLength: 1, maxLength: 128 }
+        sourceRowVersion: { type: string, minLength: 1, maxLength: 128 }
+        supplierSourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        purchaseOrderSourceId: { type: string, minLength: 1, maxLength: 128 }
+        purchaseReceiptSourceId: { type: string, minLength: 1, maxLength: 128 }
+        purchaseInvoiceSourceId: { type: string, minLength: 1, maxLength: 128 }
+        actualCostSourceId: { type: string, minLength: 1, maxLength: 128 }
+        costTypeCode: { type: string, minLength: 1, maxLength: 128 }
+        postingDate: { type: string, format: date }
+        currency: { type: string, pattern: "^[A-Z]{3}$" }
+        amount:
+          { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$", maxLength: 32 }
+    ToolingErpActualCostSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [toolingMasterGlobalId, supplierSourceObjectId, costTypeCode, currency, amount]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        supplierSourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+        costTypeCode: { type: string, minLength: 1, maxLength: 128 }
+        currency: { type: string, pattern: "^[A-Z]{3}$" }
+        amount:
+          { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$", maxLength: 32 }
+    ToolingProcurementCostUnavailable:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, state, reasonCode]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: erp_projection_unavailable }
+    ToolingProcurementCostAvailable:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          sourceSystem,
+          editableIn,
+          state,
+          toolingMasterGlobalId,
+          observedAt,
+          targetVersion,
+          supplier,
+          rows,
+          summaries,
+        ]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: available }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        observedAt: { type: string, format: date-time }
+        targetVersion: { type: string, minLength: 1, maxLength: 128 }
+        supplier: { $ref: "#/components/schemas/ToolingFormalSupplierReference" }
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ToolingErpActualCostRow" }
+        summaries:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ToolingErpActualCostSummary" }
+    ToolingProcurementCostProjection:
+      oneOf:
+        - { $ref: "#/components/schemas/ToolingProcurementCostUnavailable" }
+        - { $ref: "#/components/schemas/ToolingProcurementCostAvailable" }
     CommandResult:
       type: object
       required: [globalId, version, status]

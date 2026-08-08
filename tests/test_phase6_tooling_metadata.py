@@ -213,6 +213,8 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 "part_controlled_specification.create",
                 "tooling_process_chain_revision.create",
                 "tooling_set_revision_binding.create",
+                "tooling_manufacturing_plan.create",
+                "tooling_manufacturing_milestone.observe",
             ],
         )
         self.assertEqual(
@@ -231,6 +233,8 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
                 "part_controlled_specification",
                 "tooling_process_chain_revision",
                 "tooling_set_revision_binding",
+                "tooling_manufacturing_plan_revision",
+                "tooling_manufacturing_milestone_observation",
             ],
         )
 

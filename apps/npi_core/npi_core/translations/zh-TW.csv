@@ -4417,3 +4417,112 @@ Bind source Tooling Revision,繫結來源模具修訂
 Source Tooling Revision,來源模具修訂
 Binding reason,繫結原因
 Bind exact source Revision,繫結精確來源修訂
+A clean private File Revision is unavailable for this observation.,無法為此觀察取得乾淨的私有檔案修訂。
+A confirmed ERP projection requires source rows.,已確認的企業資源規劃投影必須包含來源列。
+A released Document Revision is unavailable for this manufacturing plan.,無法為此製造計畫取得已發布的文件修訂。
+A responsible Project member is unavailable for this manufacturing plan.,無法為此製造計畫取得責任專案成員。
+A supplier milestone cannot claim an internal responsible member.,供應商里程碑不能宣告內部責任成員。
+Actual Finish,實際完成日期
+Actual finish cannot be earlier than actual start.,實際完成日期不能早於實際開始日期。
+Actual finish requires actual start.,填寫實際完成日期前必須填寫實際開始日期。
+Design Document revisions must be unique.,設計文件修訂必須唯一。
+Design Release Evidence Snapshot,設計發布證據快照
+ERP actual-cost rows must use one currency.,企業資源規劃實際成本列必須使用同一種貨幣。
+ERP actual-cost summaries do not match the exact source rows.,企業資源規劃實際成本彙總與精確來源列不相符。
+ERP source row versions must be unique.,企業資源規劃來源列版本必須唯一。
+ERP source rows do not match the exact Tooling Master and Supplier.,企業資源規劃來源列與精確模具主記錄和供應商不相符。
+Engineering Estimate and Budget Snapshot,工程估算與預算快照
+Enter a three-letter uppercase currency code.,請輸入三個大寫字母的貨幣代碼。
+Enter a valid content hash.,請輸入有效的內容雜湊。
+Enter a valid decimal amount.,請輸入有效的十進位金額。
+Enter a valid formal Supplier reference.,請輸入有效的正式供應商參照。
+Enter a valid planning amount.,請輸入有效的計畫金額。
+Enter a valid read-only ERP projection.,請輸入有效的唯讀企業資源規劃投影。
+Enter a valid unavailable ERP projection.,請輸入有效的不可用企業資源規劃投影。
+Enter at least one manufacturing milestone.,請至少輸入一個製造里程碑。
+Enter valid released Document evidence.,請輸入有效的已發布文件證據。
+Evidence roles must be unique.,證據角色必須唯一。
+Evidence size must be positive.,證據大小必須為正數。
+Exact released design Document evidence is required.,必須提供精確的已發布設計文件證據。
+Internal Reporter Snapshot,內部報告人快照
+Internal Reporter Snapshot does not match the exact observation.,內部報告人快照與精確觀察不相符。
+Manufacturing Milestone Global ID,製造里程碑全域識別
+Manufacturing Milestone Snapshot,製造里程碑快照
+Manufacturing Milestone Snapshot Hash,製造里程碑快照雜湊
+Manufacturing Plan Global ID,製造計畫全域識別
+Manufacturing Plan Revision,製造計畫修訂
+Manufacturing Plan Revision Global ID,製造計畫修訂全域識別
+Manufacturing Plan Revision Reason,製造計畫修訂原因
+Manufacturing Plan Revision Snapshot,製造計畫修訂快照
+Manufacturing Plan Revision Snapshot Hash,製造計畫修訂快照雜湊
+Manufacturing Plan Revision Snapshot Hash does not match.,製造計畫修訂快照雜湊不相符。
+Manufacturing Plan Revision fields do not match the exact snapshot.,製造計畫修訂欄位與精確快照不相符。
+Manufacturing Plan Version,製造計畫版本
+Manufacturing Plan Version Key Hash,製造計畫版本鍵雜湊
+Manufacturing Plan Version Key Hash does not match.,製造計畫版本鍵雜湊不相符。
+Milestone Evidence Snapshot,里程碑證據快照
+Milestone Evidence Snapshot does not match the exact observation.,里程碑證據快照與精確觀察不相符。
+Milestone Observation Key Hash,里程碑觀察鍵雜湊
+Milestone Observation Key Hash does not match.,里程碑觀察鍵雜湊不相符。
+Milestone Observation Note,里程碑觀察備註
+Milestone Observation Snapshot,里程碑觀察快照
+Milestone Observation Snapshot Hash does not match.,里程碑觀察快照雜湊不相符。
+Milestone Observation Version,里程碑觀察版本
+Milestone Observation fields do not match the exact snapshot.,里程碑觀察欄位與精確快照不相符。
+Milestone Risk,里程碑風險
+Milestone Snapshot Hash does not match.,里程碑快照雜湊不相符。
+Milestone dependencies must reference earlier milestones in this plan.,里程碑相依必須參照此計畫中較早的里程碑。
+Milestone evidence must be unique.,里程碑證據必須唯一。
+Milestone global IDs must be unique.,里程碑全域識別必須唯一。
+Milestones must use contiguous dependency order.,里程碑必須使用連續的相依順序。
+NPI Tooling Manufacturing Milestone Observation,NPI 模具製造里程碑觀察
+NPI Tooling Manufacturing Plan Revision,NPI 模具製造計畫修訂
+Planned finish cannot be earlier than planned start.,計畫完成日期不能早於計畫開始日期。
+Planning amounts must use one currency.,計畫金額必須使用同一種貨幣。
+Predecessor Manufacturing Plan Global ID,前序製造計畫全域識別
+Predecessor Milestone Observation Global ID,前序里程碑觀察全域識別
+Progress Percentage,進度百分比
+Progress percentage must be between zero and one hundred.,進度百分比必須介於零和一百之間。
+Released Document revisions must be unique.,已發布文件修訂必須唯一。
+Released Planning Document Evidence Snapshot,已發布計畫文件證據快照
+Reported By Project Member,報告專案成員
+Reported By Project Member Global ID,報告專案成員全域識別
+Responsibility Snapshot,責任快照
+Responsible Project Member,責任專案成員
+Responsible Project Member Global ID,責任專案成員全域識別
+Select a supported evidence role.,請選擇受支援的證據角色。
+Select a supported milestone category.,請選擇受支援的里程碑類別。
+Select a supported milestone evidence role.,請選擇受支援的里程碑證據角色。
+Select a supported responsibility kind.,請選擇受支援的責任類型。
+Select a supported sourcing strategy.,請選擇受支援的採購策略。
+Select an exact Project member for an internal milestone.,請為內部里程碑選擇精確的專案成員。
+Select an exact responsible Project member.,請選擇精確的責任專案成員。
+Select the exact internal Project member reporting this observation.,請選擇報告此觀察的精確內部專案成員。
+Sourcing Strategy,採購策略
+The Manufacturing Plan Revision is unavailable for this observation.,無法為此觀察取得製造計畫修訂。
+The Tooling Master is unavailable for this manufacturing plan.,無法為此製造計畫取得模具主記錄。
+The Tooling Revision is unavailable for this manufacturing plan.,無法為此製造計畫取得模具修訂。
+The exact Document release event is unavailable for this manufacturing plan.,無法為此製造計畫取得精確的文件發布事件。
+The exact manufacturing milestone is unavailable for this observation.,無法為此觀察取得精確的製造里程碑。
+The exact released Document lifecycle is unavailable for this manufacturing plan.,無法為此製造計畫取得精確的已發布文件生命週期。
+The internal reporting Project member is unavailable.,無法取得內部報告專案成員。
+The manufacturing plan does not advance its exact predecessor.,製造計畫未從其精確前序版本推進。
+The manufacturing plan version key does not match.,製造計畫版本鍵不相符。
+The milestone observation does not advance its exact predecessor.,里程碑觀察未從其精確前序版本推進。
+The milestone observation key does not match.,里程碑觀察鍵不相符。
+The predecessor Manufacturing Plan Revision is unavailable.,無法取得前序製造計畫修訂。
+The predecessor Milestone Observation is unavailable.,無法取得前序里程碑觀察。
+hybrid,混合
+internal,內部
+supplier,供應商
+{field} does not match the exact manufacturing plan.,{field} 與精確製造計畫不相符。
+tooling_manufacturing_plan.create,建立模具製造計畫
+tooling_manufacturing_milestone.observe,記錄模具製造里程碑觀察
+tooling_manufacturing_plan_revision,模具製造計畫修訂
+tooling_manufacturing_milestone_observation,模具製造里程碑觀察
+An available ERP projection must remain target-confirmed and read-only.,可用的企業資源規劃投影必須保持目標確認且唯讀。
+Design release evidence capability has an invalid shape.,設計發布證據能力的結構無效。
+Manufacturing authorization must remain unavailable.,製造授權必須保持不可用。
+Released Document evidence must be consistent across roles.,已發布文件證據在各角色之間必須一致。
+The default ERP projection must remain unavailable and read-only.,預設企業資源規劃投影必須保持不可用且唯讀。
+Design release evidence does not match the exact Tooling Revision.,設計發布證據與精確模具修訂不相符。
