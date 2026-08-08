@@ -2044,7 +2044,7 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
             "site=npi.localhost",
             "database=npi_one_runtime",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
-            "scope=p5-01-through-p6-03",
+            "scope=p5-01-through-p6-04",
             "predecessor_scope=p5-01-through-p5-06",
             "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             f'frappe_commit={toolchain["FRAPPE_COMMIT"]}',
