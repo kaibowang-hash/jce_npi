@@ -10,6 +10,9 @@ OPENAPI = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
 OWNERSHIP = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
 BFF = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
 API = (ROOT / "apps/npi_core/npi_core/tooling_api.py").read_text(encoding="utf-8")
+SECURITY = (ROOT / "apps/npi_core/npi_core/request_security.py").read_text(
+    encoding="utf-8"
+)
 
 
 def _schema(name: str) -> str:
@@ -37,9 +40,24 @@ class Phase6ToolingEngineeringControlsContractTest(unittest.TestCase):
         "ToolingCapacityScenarioRevision",
         "ToolingEngineeringUnavailableField",
         "ToolingHealthUnavailable",
+        "ToolingDefectFileEvidenceInput",
+        "ToolingDefectActionInput",
+        "CreateToolingDefectRevision",
+        "ToolingProcessContextInput",
+        "ToolingProcessComparisonRuleInput",
+        "ToolingProcessMetricInput",
+        "CreateToolingProcessProfileRevision",
+        "ToolingCapacityLineInputRequest",
+        "CreateToolingCapacityScenarioRevision",
+        "ToolingEngineeringControlsPermissions",
+        "ToolingEngineeringProcessContext",
+        "ToolingEngineeringControlsContext",
+        "ToolingDefectRevisionCommand",
+        "ToolingProcessProfileRevisionCommand",
+        "ToolingCapacityScenarioRevisionCommand",
     )
 
-    def test_foundation_schemas_are_closed_but_routes_are_not_active(self) -> None:
+    def test_schemas_and_four_project_first_routes_are_closed_and_active(self) -> None:
         for name in self.OBJECT_SCHEMAS:
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", _schema(name))
@@ -54,7 +72,7 @@ class Phase6ToolingEngineeringControlsContractTest(unittest.TestCase):
             "createToolingProcessProfileRevision",
             "createToolingCapacityScenarioRevision",
         ):
-            self.assertNotIn(marker, paths)
+            self.assertIn(marker, paths)
         combined = BFF + API
         for command in (
             "get_tooling_engineering_controls",
@@ -62,7 +80,27 @@ class Phase6ToolingEngineeringControlsContractTest(unittest.TestCase):
             "create_tooling_process_profile_revision",
             "create_tooling_capacity_scenario_revision",
         ):
-            self.assertNotIn(command, combined)
+            self.assertIn(command, BFF)
+            self.assertIn(command, API)
+        self.assertIn("npi_p6_05_routes_disabled", SECURITY)
+        self.assertIn("return value is not False", SECURITY)
+        self.assertIn("_p6_05_routes_disabled(command)", BFF)
+
+    def test_command_inputs_exclude_server_owned_and_future_authority(self) -> None:
+        defect = _schema("CreateToolingDefectRevision")
+        process = _schema("CreateToolingProcessProfileRevision")
+        metric = _schema("ToolingProcessMetricInput")
+        capacity = _schema("CreateToolingCapacityScenarioRevision")
+        line = _schema("ToolingCapacityLineInputRequest")
+        self.assertIn("Explicit caller intent only", defect)
+        self.assertNotIn("trialReference:", defect)
+        self.assertNotIn("layer:", process)
+        self.assertNotIn("trial_measurement", _schema("ToolingProcessContextInput"))
+        self.assertNotIn("globalId:", metric)
+        self.assertNotIn("result:", capacity)
+        self.assertNotIn("formulaVersion:", capacity)
+        self.assertNotIn("roundingRule:", capacity)
+        self.assertNotIn("globalId:", line)
 
     def test_defect_contract_is_sequential_explicit_and_does_not_mutate_gates(self) -> None:
         defect = _schema("ToolingDefectRevision")

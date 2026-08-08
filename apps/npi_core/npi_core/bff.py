@@ -17,6 +17,7 @@ from .foundation.errors import (
     MalformedRequest,
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
+    ToolingEngineeringControlsRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -32,6 +33,7 @@ from .request_security import (
     publish_request_routes_are_disabled,
     project_collaboration_routes_are_disabled,
     response_request_id,
+    tooling_engineering_controls_routes_are_disabled,
     tooling_set_routes_are_disabled,
     tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
@@ -116,6 +118,22 @@ _PROJECT_TOOLING_MANUFACTURING_OBSERVATIONS_ROUTE = re.compile(
     r"(?P<tooling_master_id>[^/:]+)/manufacturing-plans/"
     r"(?P<manufacturing_plan_revision_id>[^/:]+)/milestones/"
     r"(?P<milestone_id>[^/:]+)/observations$"
+)
+_PROJECT_TOOLING_ENGINEERING_CONTROLS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/engineering-controls$"
+)
+_PROJECT_TOOLING_DEFECT_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/defect-revisions$"
+)
+_PROJECT_TOOLING_PROCESS_PROFILE_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/process-profile-revisions$"
+)
+_PROJECT_TOOLING_CAPACITY_SCENARIO_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/capacity-scenario-revisions$"
 )
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
@@ -440,6 +458,11 @@ def route_request() -> None:
             command = "npi_core.tooling_api.get_tooling_cockpit"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
+        match = _PROJECT_TOOLING_ENGINEERING_CONTROLS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.tooling_api.get_tooling_engineering_controls"
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
         manufacturing_queries = (
             (
                 _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE,
@@ -500,6 +523,27 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        engineering_control_commands = (
+            (
+                _PROJECT_TOOLING_DEFECT_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_defect_revision",
+            ),
+            (
+                _PROJECT_TOOLING_PROCESS_PROFILE_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_process_profile_revision",
+            ),
+            (
+                _PROJECT_TOOLING_CAPACITY_SCENARIO_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_capacity_scenario_revision",
+            ),
+        )
+        for route, candidate in engineering_control_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         manufacturing_commands = (
             (
@@ -828,6 +872,9 @@ def route_request() -> None:
     if _p6_04_routes_disabled(command):
         command = "npi_core.bff.tooling_manufacturing_routes_disabled"
         route_params = {}
+    if _p6_05_routes_disabled(command):
+        command = "npi_core.bff.tooling_engineering_controls_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1033,6 +1080,23 @@ def tooling_manufacturing_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_engineering_controls_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-05 while retaining earlier Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingEngineeringControlsRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1123,6 +1187,15 @@ def _p6_04_routes_disabled(command: str | None) -> bool:
         "npi_core.tooling_api.get_tooling_manufacturing_plan",
         "npi_core.tooling_api.create_tooling_manufacturing_plan",
         "npi_core.tooling_api.create_tooling_manufacturing_milestone_observation",
+    }
+
+
+def _p6_05_routes_disabled(command: str | None) -> bool:
+    return tooling_engineering_controls_routes_are_disabled() and command in {
+        "npi_core.tooling_api.get_tooling_engineering_controls",
+        "npi_core.tooling_api.create_tooling_defect_revision",
+        "npi_core.tooling_api.create_tooling_process_profile_revision",
+        "npi_core.tooling_api.create_tooling_capacity_scenario_revision",
     }
 
 

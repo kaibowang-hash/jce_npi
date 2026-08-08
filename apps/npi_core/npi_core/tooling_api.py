@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
+from decimal import Decimal, InvalidOperation
 import re
 from typing import Any, Protocol
 from uuid import UUID
@@ -21,6 +22,7 @@ from npi_core.request_security import (
     require_csrf_token,
     require_request_fields,
     require_tooling_set_routes_enabled,
+    require_tooling_engineering_controls_routes_enabled,
     require_tooling_manufacturing_routes_enabled,
     require_tooling_revision_routes_enabled,
     require_tooling_routes_enabled,
@@ -67,6 +69,19 @@ from npi_core.tooling.manufacturing_domain import (
     ToolingPlanEvidence,
     ToolingPlanEvidenceRole,
     ToolingSourcingStrategy,
+)
+from npi_core.tooling.engineering_controls_domain import (
+    CapacityProvenanceKind,
+    ToolingDefectActionState,
+    ToolingDefectActionType,
+    ToolingDefectContextKind,
+    ToolingDefectEvidenceRole,
+    ToolingDefectRootCauseState,
+    ToolingDefectSeverity,
+    ToolingDefectState,
+    ToolingProcessContextKind,
+    ToolingProcessMetricCode,
+    ToolingProcessValueKind,
 )
 
 
@@ -184,6 +199,69 @@ _MILESTONE_OBSERVATION_REQUIRED = _MILESTONE_OBSERVATION_FIELDS - {
     "actualFinish",
     "risk",
     "note",
+}
+_DEFECT_REVISION_FIELDS = frozenset(
+    {
+        "defectGlobalId",
+        "expectedVersion",
+        "toolingRevisionGlobalId",
+        "toolingRevisionSnapshotHash",
+        "cavityGlobalId",
+        "businessCode",
+        "title",
+        "description",
+        "categoryKey",
+        "severity",
+        "blocking",
+        "state",
+        "detectionContext",
+        "rootCauseState",
+        "rootCause",
+        "responsibleMember",
+        "targetRoundLabel",
+        "actions",
+        "evidence",
+        "reason",
+    }
+)
+_DEFECT_REVISION_REQUIRED = _DEFECT_REVISION_FIELDS - {
+    "defectGlobalId",
+    "expectedVersion",
+    "cavityGlobalId",
+    "rootCause",
+    "responsibleMember",
+    "targetRoundLabel",
+}
+_PROCESS_PROFILE_REVISION_FIELDS = frozenset(
+    {
+        "profileGlobalId",
+        "expectedVersion",
+        "toolingRevisionGlobalId",
+        "toolingRevisionSnapshotHash",
+        "context",
+        "effectiveFrom",
+        "metrics",
+        "reason",
+    }
+)
+_PROCESS_PROFILE_REVISION_REQUIRED = _PROCESS_PROFILE_REVISION_FIELDS - {
+    "profileGlobalId",
+    "expectedVersion",
+}
+_CAPACITY_SCENARIO_REVISION_FIELDS = frozenset(
+    {
+        "scenarioGlobalId",
+        "expectedVersion",
+        "title",
+        "effectiveFrom",
+        "targetMonthlyAssemblyUnits",
+        "lines",
+        "reason",
+    }
+)
+_CAPACITY_SCENARIO_REVISION_REQUIRED = _CAPACITY_SCENARIO_REVISION_FIELDS - {
+    "scenarioGlobalId",
+    "expectedVersion",
 }
 
 
@@ -328,6 +406,29 @@ class _Repository(Protocol):
         tooling_master_id: UUID,
         plan_revision_id: UUID,
         milestone_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def tooling_engineering_controls(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def create_tooling_defect_revision(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def create_tooling_process_profile_revision(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def create_tooling_capacity_scenario_revision(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
         **values: Any,
     ) -> _Outcome | None: ...
 
@@ -1154,6 +1255,190 @@ def create_tooling_manufacturing_milestone_observation(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_engineering_controls(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = (
+            _tooling_engineering_controls_query_context(request_fields)
+        )
+        master_id = _opaque_route_uuid("tooling_master_id")
+        if not repository.authorize_scope(project_id, master_id):
+            raise ToolingUnavailable()
+        response = repository.tooling_engineering_controls(project_id, master_id)
+        if response is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_defect_revision(
+    defectGlobalId: Any = None,
+    expectedVersion: Any = None,
+    toolingRevisionGlobalId: Any = None,
+    toolingRevisionSnapshotHash: Any = None,
+    cavityGlobalId: Any = None,
+    businessCode: Any = None,
+    title: Any = None,
+    description: Any = None,
+    categoryKey: Any = None,
+    severity: Any = None,
+    blocking: Any = None,
+    state: Any = None,
+    detectionContext: Any = None,
+    rootCauseState: Any = None,
+    rootCause: Any = None,
+    responsibleMember: Any = None,
+    targetRoundLabel: Any = None,
+    actions: Any = None,
+    evidence: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_engineering_controls_command(
+        _DEFECT_REVISION_FIELDS,
+        _DEFECT_REVISION_REQUIRED,
+        request_fields,
+        lambda: {
+            "defect_id": _optional_uuid(defectGlobalId, "defectGlobalId"),
+            "expected_version": _optional_positive(expectedVersion, "expectedVersion"),
+            "tooling_revision_id": _uuid(
+                toolingRevisionGlobalId,
+                "toolingRevisionGlobalId",
+            ),
+            "tooling_revision_snapshot_hash": _sha256(
+                toolingRevisionSnapshotHash,
+                "toolingRevisionSnapshotHash",
+            ),
+            "cavity_id": _optional_uuid(cavityGlobalId, "cavityGlobalId"),
+            "business_code": _text(businessCode, "businessCode", 64),
+            "title": _text(title, "title", 255),
+            "description": _text(description, "description", 4000),
+            "category_key": _text(categoryKey, "categoryKey", 128),
+            "severity": _enum_value(severity, ToolingDefectSeverity, "severity"),
+            "blocking": _boolean(blocking, "blocking"),
+            "state": _enum_value(state, ToolingDefectState, "state"),
+            "detection_context": _defect_detection_context(detectionContext),
+            "root_cause_state": _enum_value(
+                rootCauseState,
+                ToolingDefectRootCauseState,
+                "rootCauseState",
+            ),
+            "root_cause": _optional_text(rootCause, "rootCause", 4000),
+            "responsible_member": (
+                _manufacturing_member(responsibleMember, "responsibleMember")
+                if responsibleMember is not None
+                else None
+            ),
+            "target_round_label": _optional_text(
+                targetRoundLabel,
+                "targetRoundLabel",
+                64,
+            ),
+            "actions": _defect_actions(actions),
+            "evidence": _defect_evidence_inputs(evidence, "evidence"),
+            "reason": _text(reason, "reason", 1000),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_defect_revision(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_process_profile_revision(
+    profileGlobalId: Any = None,
+    expectedVersion: Any = None,
+    toolingRevisionGlobalId: Any = None,
+    toolingRevisionSnapshotHash: Any = None,
+    context: Any = None,
+    effectiveFrom: Any = None,
+    metrics: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_engineering_controls_command(
+        _PROCESS_PROFILE_REVISION_FIELDS,
+        _PROCESS_PROFILE_REVISION_REQUIRED,
+        request_fields,
+        lambda: {
+            "profile_id": _optional_uuid(profileGlobalId, "profileGlobalId"),
+            "expected_version": _optional_positive(expectedVersion, "expectedVersion"),
+            "tooling_revision_id": _uuid(
+                toolingRevisionGlobalId,
+                "toolingRevisionGlobalId",
+            ),
+            "tooling_revision_snapshot_hash": _sha256(
+                toolingRevisionSnapshotHash,
+                "toolingRevisionSnapshotHash",
+            ),
+            "context": _process_context_input(context),
+            "effective_from": _date(effectiveFrom, "effectiveFrom"),
+            "metrics": _process_metric_inputs(metrics),
+            "reason": _text(reason, "reason", 1000),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_process_profile_revision(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_capacity_scenario_revision(
+    scenarioGlobalId: Any = None,
+    expectedVersion: Any = None,
+    title: Any = None,
+    effectiveFrom: Any = None,
+    targetMonthlyAssemblyUnits: Any = None,
+    lines: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_engineering_controls_command(
+        _CAPACITY_SCENARIO_REVISION_FIELDS,
+        _CAPACITY_SCENARIO_REVISION_REQUIRED,
+        request_fields,
+        lambda: {
+            "scenario_id": _optional_uuid(scenarioGlobalId, "scenarioGlobalId"),
+            "expected_version": _optional_positive(expectedVersion, "expectedVersion"),
+            "title": _text(title, "title", 255),
+            "effective_from": _date(effectiveFrom, "effectiveFrom"),
+            "target_monthly_assembly_units": _decimal_string(
+                targetMonthlyAssemblyUnits,
+                "targetMonthlyAssemblyUnits",
+                nonnegative=True,
+            ),
+            "lines": _capacity_line_inputs(lines),
+            "reason": _text(reason, "reason", 1000),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_capacity_scenario_revision(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
 def _query_context(
     allowed: frozenset[str],
     request_fields: dict[str, Any],
@@ -1204,6 +1489,21 @@ def _tooling_manufacturing_query_context(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository, UUID]:
     require_tooling_manufacturing_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    if not repository.authorize_scope(project_id):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return request_id, repository, project_id
+
+
+def _tooling_engineering_controls_query_context(
+    request_fields: dict[str, Any],
+) -> tuple[str, _Repository, UUID]:
+    require_tooling_engineering_controls_routes_enabled()
     actor = authenticated_user()
     principal = authenticated_principal(actor)
     request_id = _request_id()
@@ -1322,6 +1622,36 @@ def _tooling_manufacturing_command_context(
         master_id,
         administer=True,
     ):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(allowed, request_fields)
+    require_request_fields(required, request_fields)
+    return (
+        request_id,
+        actor_idempotency_key_hash(
+            actor,
+            frappe.get_request_header("Idempotency-Key"),
+        ),
+        repository,
+        project_id,
+    )
+
+
+def _tooling_engineering_controls_command_context(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _Repository, UUID]:
+    require_tooling_engineering_controls_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "System Manager" not in principal.roles:
+        raise PermissionDenied()
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    master_id = _opaque_route_uuid("tooling_master_id")
+    if not repository.authorize_scope(project_id, master_id, administer=True):
         raise ToolingUnavailable()
     reject_unexpected_request_fields(allowed, request_fields)
     require_request_fields(required, request_fields)
@@ -1504,6 +1834,45 @@ def _tooling_manufacturing_command(
     def handle() -> dict[str, Any]:
         request_id, key_hash, repository, project_id = (
             _tooling_manufacturing_command_context(
+                allowed,
+                required,
+                request_fields,
+            )
+        )
+        parsed = values()
+        parsed["idempotency_key_hash"] = key_hash
+        outcome = operation(repository, project_id, parsed)
+        if outcome is None:
+            raise ToolingUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Tooling command replay result is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return _response(outcome.response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
+def _tooling_engineering_controls_command(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+    values,
+    operation,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        request_id, key_hash, repository, project_id = (
+            _tooling_engineering_controls_command_context(
                 allowed,
                 required,
                 request_fields,
@@ -2373,6 +2742,373 @@ def _content_hash(value: object, path: str) -> str:
     if not isinstance(value, str) or re.fullmatch(r"[a-f0-9]{32,128}", value) is None:
         raise _field(path, _("Enter a valid content hash."))
     return value
+
+
+def _defect_detection_context(value: object) -> dict[str, object]:
+    path = "detectionContext"
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _closed_fields(
+        value,
+        {"kind", "globalId", "snapshotHash"},
+        {"kind", "globalId", "snapshotHash"},
+        path,
+    )
+    kind = _enum_value(value.get("kind"), ToolingDefectContextKind, f"{path}.kind")
+    global_id = _optional_uuid(value.get("globalId"), f"{path}.globalId")
+    snapshot = value.get("snapshotHash")
+    snapshot_hash = (
+        None if snapshot in (None, "") else _sha256(snapshot, f"{path}.snapshotHash")
+    )
+    if kind is ToolingDefectContextKind.UNAVAILABLE_TRIAL_CONTEXT:
+        if global_id is not None or snapshot_hash is not None:
+            raise _field(path, _("Select a supported value."))
+    elif global_id is None or snapshot_hash is None:
+        raise _field(path, _("Select a supported value."))
+    return {
+        "kind": kind,
+        "global_id": global_id,
+        "snapshot_hash": snapshot_hash,
+    }
+
+
+def _defect_evidence_inputs(
+    value: object,
+    path: str,
+    *,
+    maximum: int = 100,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, path, maximum=maximum)
+    result = []
+    expected = {
+        "role",
+        "fileRevisionGlobalId",
+        "fileOptimisticVersion",
+        "frappeContentHash",
+        "sha256",
+    }
+    for index, item in enumerate(rows):
+        item_path = f"{path}[{index}]"
+        _exact_fields(item, expected, item_path)
+        result.append(
+            {
+                "role": _enum_value(
+                    item.get("role"),
+                    ToolingDefectEvidenceRole,
+                    f"{item_path}.role",
+                ),
+                "file_revision_id": _uuid(
+                    item.get("fileRevisionGlobalId"),
+                    f"{item_path}.fileRevisionGlobalId",
+                ),
+                "file_optimistic_version": _positive(
+                    item.get("fileOptimisticVersion"),
+                    f"{item_path}.fileOptimisticVersion",
+                ),
+                "frappe_content_hash": _content_hash(
+                    item.get("frappeContentHash"),
+                    f"{item_path}.frappeContentHash",
+                ),
+                "sha256": _sha256(
+                    item.get("sha256"),
+                    f"{item_path}.sha256",
+                ),
+            }
+        )
+    return tuple(result)
+
+
+def _defect_actions(value: object) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "actions", maximum=100)
+    result = []
+    allowed = {
+        "globalId",
+        "actionType",
+        "state",
+        "detail",
+        "responsibleMember",
+        "dueDate",
+        "evidence",
+    }
+    required = allowed - {"globalId"}
+    for index, item in enumerate(rows):
+        path = f"actions[{index}]"
+        _closed_fields(item, allowed, required, path)
+        result.append(
+            {
+                "global_id": _optional_uuid(item.get("globalId"), f"{path}.globalId"),
+                "action_type": _enum_value(
+                    item.get("actionType"),
+                    ToolingDefectActionType,
+                    f"{path}.actionType",
+                ),
+                "state": _enum_value(
+                    item.get("state"),
+                    ToolingDefectActionState,
+                    f"{path}.state",
+                ),
+                "detail": _text(item.get("detail"), f"{path}.detail", 2000),
+                "responsible_member": _manufacturing_member(
+                    item.get("responsibleMember"),
+                    f"{path}.responsibleMember",
+                ),
+                "due_date": _date(item.get("dueDate"), f"{path}.dueDate"),
+                "evidence": _defect_evidence_inputs(
+                    item.get("evidence"),
+                    f"{path}.evidence",
+                    maximum=20,
+                ),
+            }
+        )
+    return tuple(result)
+
+
+def _process_context_input(value: object) -> dict[str, object]:
+    path = "context"
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _exact_fields(value, {"kind", "globalId", "snapshotHash"}, path)
+    kind = _enum_value(value.get("kind"), ToolingProcessContextKind, f"{path}.kind")
+    if kind not in {
+        ToolingProcessContextKind.RELEASED_DOCUMENT,
+        ToolingProcessContextKind.TOOLING_REVISION_SPECIFICATION,
+    }:
+        raise _field(f"{path}.kind", _("Select a supported value."))
+    return {
+        "kind": kind,
+        "global_id": _uuid(value.get("globalId"), f"{path}.globalId"),
+        "snapshot_hash": _sha256(
+            value.get("snapshotHash"),
+            f"{path}.snapshotHash",
+        ),
+    }
+
+
+def _process_metric_inputs(value: object) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "metrics", minimum=1, maximum=32)
+    result = []
+    fields = {
+        "code",
+        "valueKind",
+        "numericValue",
+        "textValue",
+        "unit",
+        "comparisonRule",
+    }
+    for index, item in enumerate(rows):
+        path = f"metrics[{index}]"
+        _exact_fields(item, fields, path)
+        kind = _enum_value(
+            item.get("valueKind"),
+            ToolingProcessValueKind,
+            f"{path}.valueKind",
+        )
+        numeric_value = item.get("numericValue")
+        text_value = item.get("textValue")
+        unit = item.get("unit")
+        if kind is ToolingProcessValueKind.NUMERIC:
+            numeric = _decimal_string(numeric_value, f"{path}.numericValue")
+            text = None if text_value in (None, "") else _text(text_value, f"{path}.textValue", 255)
+            exact_unit = _text(unit, f"{path}.unit", 32)
+            if text is not None:
+                raise _field(path, _("Select a supported value."))
+        else:
+            numeric = None
+            text = _text(text_value, f"{path}.textValue", 255)
+            exact_unit = None
+            if numeric_value not in (None, "") or unit not in (None, ""):
+                raise _field(path, _("Select a supported value."))
+        rule_value = item.get("comparisonRule")
+        rule = None
+        if rule_value is not None:
+            if not isinstance(rule_value, Mapping):
+                raise _field(f"{path}.comparisonRule", _("Select a supported value."))
+            rule_path = f"{path}.comparisonRule"
+            _exact_fields(rule_value, {"unit", "minimum", "maximum"}, rule_path)
+            rule = {
+                "unit": _text(rule_value.get("unit"), f"{rule_path}.unit", 32),
+                "minimum": _decimal_string(
+                    rule_value.get("minimum"),
+                    f"{rule_path}.minimum",
+                ),
+                "maximum": _decimal_string(
+                    rule_value.get("maximum"),
+                    f"{rule_path}.maximum",
+                ),
+            }
+            if kind is not ToolingProcessValueKind.NUMERIC or rule["unit"] != exact_unit:
+                raise _field(rule_path, _("Select a supported value."))
+        result.append(
+            {
+                "code": _enum_value(
+                    item.get("code"),
+                    ToolingProcessMetricCode,
+                    f"{path}.code",
+                ),
+                "value_kind": kind,
+                "numeric_value": numeric,
+                "text_value": text,
+                "unit": exact_unit,
+                "comparison_rule": rule,
+            }
+        )
+    if len({item["code"] for item in result}) != len(result):
+        raise _field("metrics", _("Enter a valid bounded list."))
+    return tuple(result)
+
+
+def _capacity_line_inputs(value: object) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "lines", minimum=1, maximum=100)
+    result = []
+    fields = {
+        "partRevisionGlobalId",
+        "partRevisionSnapshotHash",
+        "applicabilityGlobalId",
+        "applicabilitySnapshotHash",
+        "availableHoursPerDay",
+        "workingDaysPerMonth",
+        "oeeRatio",
+        "yieldRatio",
+        "cycleSeconds",
+        "cavityCount",
+        "usagePerAssembly",
+        "effectiveSetCount",
+        "selectedToolingSetGlobalIds",
+        "cycleProvenance",
+        "cavityProvenance",
+        "usageProvenance",
+        "setProvenance",
+    }
+    for index, item in enumerate(rows):
+        path = f"lines[{index}]"
+        _exact_fields(item, fields, path)
+        days = _positive(item.get("workingDaysPerMonth"), f"{path}.workingDaysPerMonth")
+        if days > 31:
+            raise _field(f"{path}.workingDaysPerMonth", _("Select a supported value."))
+        result.append(
+            {
+                "part_revision_id": _uuid(
+                    item.get("partRevisionGlobalId"),
+                    f"{path}.partRevisionGlobalId",
+                ),
+                "part_revision_snapshot_hash": _sha256(
+                    item.get("partRevisionSnapshotHash"),
+                    f"{path}.partRevisionSnapshotHash",
+                ),
+                "applicability_id": _uuid(
+                    item.get("applicabilityGlobalId"),
+                    f"{path}.applicabilityGlobalId",
+                ),
+                "applicability_snapshot_hash": _sha256(
+                    item.get("applicabilitySnapshotHash"),
+                    f"{path}.applicabilitySnapshotHash",
+                ),
+                "available_hours_per_day": _decimal_string(
+                    item.get("availableHoursPerDay"),
+                    f"{path}.availableHoursPerDay",
+                    nonnegative=True,
+                    maximum=Decimal("24"),
+                ),
+                "working_days_per_month": days,
+                "oee_ratio": _decimal_string(
+                    item.get("oeeRatio"),
+                    f"{path}.oeeRatio",
+                    nonnegative=True,
+                    maximum=Decimal("1"),
+                ),
+                "yield_ratio": _decimal_string(
+                    item.get("yieldRatio"),
+                    f"{path}.yieldRatio",
+                    nonnegative=True,
+                    maximum=Decimal("1"),
+                ),
+                "cycle_seconds": _decimal_string(
+                    item.get("cycleSeconds"),
+                    f"{path}.cycleSeconds",
+                    positive=True,
+                ),
+                "cavity_count": _positive(
+                    item.get("cavityCount"),
+                    f"{path}.cavityCount",
+                ),
+                "usage_per_assembly": _decimal_string(
+                    item.get("usagePerAssembly"),
+                    f"{path}.usagePerAssembly",
+                    positive=True,
+                ),
+                "effective_set_count": _non_negative(
+                    item.get("effectiveSetCount"),
+                    f"{path}.effectiveSetCount",
+                ),
+                "selected_tooling_set_ids": _uuid_list(
+                    item.get("selectedToolingSetGlobalIds"),
+                    f"{path}.selectedToolingSetGlobalIds",
+                    maximum=100,
+                ),
+                "cycle_provenance": _capacity_provenance_input(
+                    item.get("cycleProvenance"),
+                    f"{path}.cycleProvenance",
+                ),
+                "cavity_provenance": _capacity_provenance_input(
+                    item.get("cavityProvenance"),
+                    f"{path}.cavityProvenance",
+                ),
+                "usage_provenance": _capacity_provenance_input(
+                    item.get("usageProvenance"),
+                    f"{path}.usageProvenance",
+                ),
+                "set_provenance": _capacity_provenance_input(
+                    item.get("setProvenance"),
+                    f"{path}.setProvenance",
+                ),
+            }
+        )
+    if len({item["applicability_id"] for item in result}) != len(result):
+        raise _field("lines", _("Enter a valid bounded list."))
+    return tuple(result)
+
+
+def _capacity_provenance_input(value: object, path: str) -> dict[str, object]:
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _exact_fields(value, {"kind", "globalId", "snapshotHash"}, path)
+    kind = _enum_value(value.get("kind"), CapacityProvenanceKind, f"{path}.kind")
+    global_id = _optional_uuid(value.get("globalId"), f"{path}.globalId")
+    if (kind is CapacityProvenanceKind.SCENARIO_ASSUMPTION) != (global_id is None):
+        raise _field(f"{path}.globalId", _("Select a supported value."))
+    return {
+        "kind": kind,
+        "global_id": global_id,
+        "snapshot_hash": _sha256(value.get("snapshotHash"), f"{path}.snapshotHash"),
+    }
+
+
+def _decimal_string(
+    value: object,
+    path: str,
+    *,
+    nonnegative: bool = False,
+    positive: bool = False,
+    maximum: Decimal | None = None,
+) -> str:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise _field(path, _("Enter a valid decimal amount."))
+    try:
+        parsed = Decimal(value)
+    except InvalidOperation as error:
+        raise _field(path, _("Enter a valid decimal amount.")) from error
+    if (
+        not parsed.is_finite()
+        or len(value) > 32
+        or parsed.adjusted() > 24
+        or parsed.adjusted() < -24
+        or (positive and parsed <= 0)
+        or (nonnegative and parsed < 0)
+        or (maximum is not None and parsed > maximum)
+    ):
+        raise _field(path, _("Enter a valid decimal amount."))
+    normalized = "0" if parsed == 0 else format(parsed.normalize(), "f")
+    return normalized if "." in normalized else f"{normalized}.0"
 
 
 def _field(path: str, message: str) -> RequestValidationFailed:

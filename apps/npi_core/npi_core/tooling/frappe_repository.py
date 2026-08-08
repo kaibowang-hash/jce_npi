@@ -44,6 +44,9 @@ from npi_core.tooling.domain import (
     validate_intake_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
+from npi_core.tooling.engineering_controls_repository import (
+    ToolingEngineeringControlsRepositoryMixin,
+)
 from npi_core.tooling.manufacturing_repository import ToolingManufacturingRepositoryMixin
 from npi_core.tooling.revision_repository import ToolingRevisionRepositoryMixin
 from npi_core.tooling.diagnostics import (
@@ -68,6 +71,7 @@ class ToolingCommandOutcome:
 
 
 class FrappeToolingRepository(
+    ToolingEngineeringControlsRepositoryMixin,
     ToolingManufacturingRepositoryMixin,
     ToolingRevisionRepositoryMixin,
     FrappeDocumentRepository,

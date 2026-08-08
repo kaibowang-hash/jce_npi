@@ -476,6 +476,10 @@ class Phase6ToolingEngineeringControlsDomainTest(unittest.TestCase):
 
     def test_capacity_successor_and_input_boundaries_fail_closed(self) -> None:
         first = scenario()
+        self.assertEqual(
+            replace(first.lines[0], available_hours_per_day="-0").available_hours_per_day,
+            "0.0",
+        )
         changed_line = replace(first.lines[0], oee_ratio="0.9")
         second = scenario(
             global_id=UUID("70000000-0000-4000-8000-000000000004"),

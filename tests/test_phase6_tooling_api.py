@@ -30,6 +30,9 @@ PROCESS_CHAIN_REVISION_ID = "78181c5b-c8bb-46dd-bfe5-4fe267ddfb48"
 MANUFACTURING_PLAN_REVISION_ID = "b70e572f-ff60-4cb0-b5fb-d54bce461ab0"
 MANUFACTURING_PLAN_ID = "25eec22c-5f86-45a0-89c6-f28f411b7d6c"
 MILESTONE_ID = "d350d48d-df84-460d-9b43-62be312c73be"
+DEFECT_ID = "a3c23d61-b459-401c-aafd-82781557207a"
+PROCESS_PROFILE_ID = "895104df-75da-40c1-b8ae-5d5fe1dc622d"
+CAPACITY_SCENARIO_ID = "214af23e-535b-46bd-b580-13a80fa87f4f"
 MEMBER_ID = "2c1937bc-d384-49c4-80ab-90501180e4f8"
 LIFECYCLE_ID = "0c8b108d-2031-4059-8a71-6cc777409a7e"
 RELEASE_EVENT_ID = "875abf5a-ec5e-4654-9fef-3e9c2f72c1c7"
@@ -166,6 +169,26 @@ class MockRepository:
     ):
         return self._command("manufacturing_observation_create", args, kwargs)
 
+    def tooling_engineering_controls(self, *args: object, **kwargs: Any):
+        return self._query("engineering_controls", args, kwargs)
+
+    def create_tooling_defect_revision(self, *args: object, **kwargs: Any):
+        return self._command("defect_revision_create", args, kwargs)
+
+    def create_tooling_process_profile_revision(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("process_profile_create", args, kwargs)
+
+    def create_tooling_capacity_scenario_revision(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("capacity_scenario_create", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         if self.failure is not None:
@@ -224,6 +247,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             npi_p6_02_routes_disabled=False,
             npi_p6_03_routes_disabled=False,
             npi_p6_04_routes_disabled=False,
+            npi_p6_05_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -438,6 +462,140 @@ class Phase6ToolingApiTest(unittest.TestCase):
                     "sha256": SHA256_C,
                 }
             ],
+        }
+
+    @staticmethod
+    def defect_revision_payload() -> dict[str, object]:
+        member = {
+            "globalId": MEMBER_ID,
+            "userId": "admin@example.invalid",
+            "optimisticVersion": 1,
+        }
+        evidence = {
+            "role": "detection",
+            "fileRevisionGlobalId": FILE_REVISION_ID,
+            "fileOptimisticVersion": 2,
+            "frappeContentHash": "d" * 32,
+            "sha256": SHA256_C,
+        }
+        return {
+            "defectGlobalId": DEFECT_ID,
+            "expectedVersion": 1,
+            "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+            "toolingRevisionSnapshotHash": SHA256_A,
+            "cavityGlobalId": None,
+            "businessCode": "DEF-001",
+            "title": "Gate flash at parting line",
+            "description": "Controlled defect observation",
+            "categoryKey": "appearance.flash",
+            "severity": "high",
+            "blocking": True,
+            "state": "assigned",
+            "detectionContext": {
+                "kind": "tooling_revision",
+                "globalId": TOOLING_REVISION_ID,
+                "snapshotHash": SHA256_A,
+            },
+            "rootCauseState": "pending",
+            "rootCause": None,
+            "responsibleMember": member,
+            "targetRoundLabel": "T1",
+            "actions": [
+                {
+                    "actionType": "containment",
+                    "state": "planned",
+                    "detail": "Inspect all produced parts",
+                    "responsibleMember": member,
+                    "dueDate": "2026-08-20",
+                    "evidence": [],
+                }
+            ],
+            "evidence": [evidence],
+            "reason": "Record exact engineering defect revision",
+        }
+
+    @staticmethod
+    def process_profile_payload() -> dict[str, object]:
+        return {
+            "profileGlobalId": PROCESS_PROFILE_ID,
+            "expectedVersion": 1,
+            "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+            "toolingRevisionSnapshotHash": SHA256_A,
+            "context": {
+                "kind": "tooling_revision_specification",
+                "globalId": TOOLING_REVISION_ID,
+                "snapshotHash": SHA256_A,
+            },
+            "effectiveFrom": "2026-08-20",
+            "metrics": [
+                {
+                    "code": "cycle_time",
+                    "valueKind": "numeric",
+                    "numericValue": "42.0",
+                    "textValue": None,
+                    "unit": "s",
+                    "comparisonRule": {
+                        "unit": "s",
+                        "minimum": "40.0",
+                        "maximum": "44.0",
+                    },
+                }
+            ],
+            "reason": "Append customer process standard revision",
+        }
+
+    @staticmethod
+    def capacity_scenario_payload() -> dict[str, object]:
+        def provenance(kind: str, global_id: str | None, snapshot: str):
+            return {
+                "kind": kind,
+                "globalId": global_id,
+                "snapshotHash": snapshot,
+            }
+        return {
+            "scenarioGlobalId": CAPACITY_SCENARIO_ID,
+            "expectedVersion": 1,
+            "title": "Nominal monthly capacity",
+            "effectiveFrom": "2026-08-20",
+            "targetMonthlyAssemblyUnits": "100000.0",
+            "lines": [
+                {
+                    "partRevisionGlobalId": REVISION_ID,
+                    "partRevisionSnapshotHash": SHA256_A,
+                    "applicabilityGlobalId": RELATIONSHIP_ID,
+                    "applicabilitySnapshotHash": SHA256_B,
+                    "availableHoursPerDay": "20.0",
+                    "workingDaysPerMonth": 26,
+                    "oeeRatio": "0.85",
+                    "yieldRatio": "0.98",
+                    "cycleSeconds": "42.0",
+                    "cavityCount": 1,
+                    "usagePerAssembly": "1.0",
+                    "effectiveSetCount": 1,
+                    "selectedToolingSetGlobalIds": [SET_ID],
+                    "cycleProvenance": provenance(
+                        "customer_standard",
+                        PROCESS_PROFILE_ID,
+                        SHA256_A,
+                    ),
+                    "cavityProvenance": provenance(
+                        "tooling_revision",
+                        TOOLING_REVISION_ID,
+                        SHA256_A,
+                    ),
+                    "usageProvenance": provenance(
+                        "tooling_applicability",
+                        RELATIONSHIP_ID,
+                        SHA256_B,
+                    ),
+                    "setProvenance": provenance(
+                        "scenario_assumption",
+                        None,
+                        SHA256_C,
+                    ),
+                }
+            ],
+            "reason": "Append exact capacity scenario revision",
         }
 
     def test_queries_authorize_project_before_protected_master(self) -> None:
@@ -938,6 +1096,143 @@ class Phase6ToolingApiTest(unittest.TestCase):
         )
         self.router.route_request()
         self.assertTrue(self.frappe.local.form_dict.cmd.endswith("get_tooling_revisions"))
+
+    def test_engineering_controls_are_project_first_and_commands_are_closed(self) -> None:
+        self.assertEqual(
+            self.call(self.api.get_tooling_engineering_controls),
+            self.response,
+        )
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "engineering_controls"],
+        )
+
+        command_cases = (
+            (
+                self.api.create_tooling_defect_revision,
+                self.defect_revision_payload(),
+                "defect_revision_create",
+            ),
+            (
+                self.api.create_tooling_process_profile_revision,
+                self.process_profile_payload(),
+                "process_profile_create",
+            ),
+            (
+                self.api.create_tooling_capacity_scenario_revision,
+                self.capacity_scenario_payload(),
+                "capacity_scenario_create",
+            ),
+        )
+        for function, payload, expected in command_cases:
+            with self.subTest(command=expected):
+                self.repository.calls.clear()
+                self.call(function, payload)
+                name, args, values = self.repository.calls[-1]
+                self.assertEqual(name, expected)
+                self.assertEqual(str(args[1]), MASTER_ID)
+                self.assertNotIn("tenant_id", values)
+                self.assertEqual(self.frappe.local.response.http_status_code, 201)
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_defect_revision,
+            self.defect_revision_payload(),
+        )
+        _name, _args, parsed_defect = self.repository.calls[-1]
+        self.assertEqual(parsed_defect["severity"].value, "high")
+        self.assertEqual(parsed_defect["actions"][0]["action_type"].value, "containment")
+        self.assertEqual(parsed_defect["evidence"][0]["role"].value, "detection")
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_process_profile_revision,
+            self.process_profile_payload(),
+        )
+        _name, _args, parsed_profile = self.repository.calls[-1]
+        self.assertEqual(parsed_profile["metrics"][0]["numeric_value"], "42.0")
+        self.assertEqual(parsed_profile["metrics"][0]["code"].value, "cycle_time")
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_capacity_scenario_revision,
+            self.capacity_scenario_payload(),
+        )
+        _name, _args, parsed_scenario = self.repository.calls[-1]
+        self.assertEqual(parsed_scenario["target_monthly_assembly_units"], "100000.0")
+        self.assertEqual(parsed_scenario["lines"][0]["oee_ratio"], "0.85")
+
+        negative_zero = self.capacity_scenario_payload()
+        negative_zero["lines"][0]["availableHoursPerDay"] = "-0"
+        self.repository.calls.clear()
+        self.call(self.api.create_tooling_capacity_scenario_revision, negative_zero)
+        self.assertEqual(
+            self.repository.calls[-1][2]["lines"][0]["available_hours_per_day"],
+            "0.0",
+        )
+
+    def test_engineering_controls_switch_is_independent_and_fail_closed(self) -> None:
+        self.repository.scope = False
+        result = self.call(
+            self.api.create_tooling_defect_revision,
+            {"doctype": "Secret"},
+        )
+        self.assertEqual(result["code"], "TOOLING_UNAVAILABLE")
+        self.assertEqual(self.repository.calls[0][0], "authorize")
+
+        self.repository.scope = True
+        self.frappe.conf.npi_p6_05_routes_disabled = True
+        result = self.call(self.api.get_tooling_engineering_controls)
+        self.assertEqual(
+            result["code"],
+            "TOOLING_ENGINEERING_CONTROLS_ROUTES_DISABLED",
+        )
+        self.assertEqual(self.frappe.local.response.http_status_code, 503)
+
+        self.frappe.conf.npi_p6_05_routes_disabled = False
+        self.assertEqual(self.call(self.api.get_tooling_manufacturing_plans), self.response)
+
+    def test_router_maps_engineering_controls_with_fail_closed_switch(self) -> None:
+        base = f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}"
+        cases = {
+            ("GET", f"{base}/engineering-controls"): "get_tooling_engineering_controls",
+            ("POST", f"{base}/defect-revisions"): "create_tooling_defect_revision",
+            (
+                "POST",
+                f"{base}/process-profile-revisions",
+            ): "create_tooling_process_profile_revision",
+            (
+                "POST",
+                f"{base}/capacity-scenario-revisions",
+            ): "create_tooling_capacity_scenario_revision",
+        }
+        for (method, path), suffix in cases.items():
+            with self.subTest(path=path):
+                self.frappe.local.request = types.SimpleNamespace(
+                    path=path,
+                    method=method,
+                )
+                self.router.route_request()
+                self.assertTrue(self.frappe.local.form_dict.cmd.endswith(suffix))
+
+        del self.frappe.conf["npi_p6_05_routes_disabled"]
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"{base}/engineering-controls",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.tooling_engineering_controls_routes_disabled",
+        )
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"{base}/manufacturing-plans",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertTrue(
+            self.frappe.local.form_dict.cmd.endswith("get_tooling_manufacturing_plans")
+        )
 
     def test_direct_route_switch_and_command_failure_roll_back_fail_closed(self) -> None:
         self.frappe.conf.npi_p6_01_routes_disabled = True

@@ -1624,6 +1624,8 @@ def _bounded_decimal(value: object, path: str, *, minimum: Decimal, maximum: Dec
 
 
 def _decimal_text(value: Decimal) -> str:
+    if value == 0:
+        return "0.0"
     normalized = format(value.normalize(), "f")
     return normalized if "." in normalized else f"{normalized}.0"
 
