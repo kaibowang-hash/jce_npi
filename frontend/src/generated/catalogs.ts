@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'c334810b2e460c93';
+export const catalogVersion = '110ee300401f97c6';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -1158,6 +1158,7 @@ export const catalogs = {
     "Enter a valid document baseline policy version.": "请输入有效的文件基线策略版本。",
     "Enter a valid document policy version.": "请输入有效的文档策略版本。",
     "Enter a valid document release policy version.": "请输入有效的文件发布策略版本。",
+    "Enter a valid Document Revision reference.": "请输入有效的文档修订引用。",
     "Enter a valid EBOM line.": "输入有效的 EBOM 行。",
     "Enter a valid EBOM policy version.": "请输入有效的 EBOM 策略版本。",
     "Enter a valid effectivity date.": "请输入有效的生效日期。",
@@ -3836,6 +3837,7 @@ export const catalogs = {
     "The prior Project Control Policy version reference does not match the published predecessor.": "前序项目管控策略版本引用与已发布的前一版本不匹配。",
     "The prior Project Control Policy version reference is required.": "需要前序项目管控策略版本引用。",
     "The prior review cycle identifier is not canonical.": "先前评审周期标识符不是规范格式。",
+    "The process parent must be an earlier step.": "工艺父步骤必须是更早的步骤。",
     "The process-chain snapshot hash does not match.": "工艺链快照哈希不匹配。",
     "The process-chain version does not advance its exact predecessor.": "工艺链版本未从其精确前置版本顺序推进。",
     "The process-chain version key does not match.": "工艺链版本键不匹配。",
@@ -3985,6 +3987,7 @@ export const catalogs = {
     "The Tooling Revision is unavailable for this source binding.": "此来源绑定无法使用该模具修订。",
     "The Tooling Revision key does not match.": "模具修订键不匹配。",
     "The Tooling Revision snapshot hash does not match.": "模具修订快照哈希不匹配。",
+    "The Tooling Revision workspace is temporarily unavailable.": "模具修订工作区暂时不可用。",
     "The Tooling Set does not match its Project and tenant.": "实体模具套与其项目和租户不匹配。",
     "The Tooling Set is unavailable for this intake.": "此接收记录对应的实体模具套不可用。",
     "The Tooling Set is unavailable for this source binding.": "此来源绑定无法使用该模具套。",
@@ -4224,6 +4227,7 @@ export const catalogs = {
     "Validated means the frozen NPI request passed local checks. It was not queued, sent or completed in ERPNext.": "“已验证”表示冻结的 NPI 请求通过本地检查。请求未排队、未发送，也未在 ERPNext 中完成。",
     "Validating the exact released EBOM in Mock mode": "正在模拟模式下验证精确的已发布 EBOM",
     "Validation error": "验证错误",
+    "Validation evidence must match the selected validation state.": "验证证据必须与所选验证状态匹配。",
     "Values must be unique within this list.": "此列表内的值必须唯一。",
     "Values must be unique.": "值必须唯一。",
     "Verification Payload": "验证载荷",
@@ -5472,6 +5476,7 @@ export const catalogs = {
     "Enter a valid document baseline policy version.": "請輸入有效的文件基線策略版本。",
     "Enter a valid document policy version.": "請輸入有效的文件策略版本。",
     "Enter a valid document release policy version.": "請輸入有效的文件發布策略版本。",
+    "Enter a valid Document Revision reference.": "請輸入有效的文件修訂引用。",
     "Enter a valid EBOM line.": "輸入有效的 EBOM 列。",
     "Enter a valid EBOM policy version.": "請輸入有效的 EBOM 策略版本。",
     "Enter a valid effectivity date.": "請輸入有效的生效日期。",
@@ -8150,6 +8155,7 @@ export const catalogs = {
     "The prior Project Control Policy version reference does not match the published predecessor.": "先前專案管控策略版本參照與已發布的前一版本不相符。",
     "The prior Project Control Policy version reference is required.": "需要先前專案管控策略版本參照。",
     "The prior review cycle identifier is not canonical.": "先前評審週期識別碼不符合標準格式。",
+    "The process parent must be an earlier step.": "製程父步驟必須是較早的步驟。",
     "The process-chain snapshot hash does not match.": "製程鏈快照雜湊不相符。",
     "The process-chain version does not advance its exact predecessor.": "製程鏈版本未從其精確前置版本依序推進。",
     "The process-chain version key does not match.": "製程鏈版本鍵不相符。",
@@ -8299,6 +8305,7 @@ export const catalogs = {
     "The Tooling Revision is unavailable for this source binding.": "此來源繫結無法使用該模具修訂。",
     "The Tooling Revision key does not match.": "模具修訂鍵不相符。",
     "The Tooling Revision snapshot hash does not match.": "模具修訂快照雜湊不相符。",
+    "The Tooling Revision workspace is temporarily unavailable.": "模具修訂工作區暫時無法使用。",
     "The Tooling Set does not match its Project and tenant.": "實體模具套與其專案和租戶不相符。",
     "The Tooling Set is unavailable for this intake.": "此接收記錄對應的實體模具套不可用。",
     "The Tooling Set is unavailable for this source binding.": "此來源繫結無法使用該模具套。",
@@ -8538,6 +8545,7 @@ export const catalogs = {
     "Validated means the frozen NPI request passed local checks. It was not queued, sent or completed in ERPNext.": "「已驗證」表示凍結的 NPI 請求通過本機檢查。請求未排入佇列、未傳送，也未在 ERPNext 中完成。",
     "Validating the exact released EBOM in Mock mode": "正在模擬模式下驗證精確的已發佈 EBOM",
     "Validation error": "驗證錯誤",
+    "Validation evidence must match the selected validation state.": "驗證證據必須與所選驗證狀態相符。",
     "Values must be unique within this list.": "此清單內的值必須唯一。",
     "Values must be unique.": "值必須唯一。",
     "Verification Payload": "驗證承載資料",

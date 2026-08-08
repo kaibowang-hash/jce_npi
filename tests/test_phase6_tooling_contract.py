@@ -68,6 +68,14 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "CreatePartControlledSpecification",
             "CreateToolingProcessChainRevision",
             "CreateToolingSetRevisionBinding",
+            "ToolingRevisionAvailableCapability",
+            "ToolingRevisionNotDeliveredCapability",
+            "ToolingRevisionUnavailableField",
+            "ToolingRevisionPermissions",
+            "ToolingRevisionCollection",
+            "ToolingRevisionDetail",
+            "PartControlledSpecificationContext",
+            "ToolingProcessChainCollection",
         )
         for name in schema_names:
             with self.subTest(name=name):
@@ -85,6 +93,12 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}:",
             "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes:",
             "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/intakes/{intakeId}/evidence:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/revisions:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/revisions/{toolingRevisionId}:",
+            "/projects/{projectId}/parts/{partId}/revisions/{partRevisionId}/controlled-specification:",
+            "/projects/{projectId}/tooling-process-chains:",
+            "/projects/{projectId}/tooling-process-chains/{processChainRevisionId}:",
+            "/projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/revision-binding:",
         ):
             self.assertIn(path, paths)
         for command in (
@@ -100,10 +114,20 @@ class Phase6ToolingContractTest(unittest.TestCase):
             "tooling_api.create_tooling_set",
             "tooling_api.create_tooling_intake",
             "tooling_api.create_tooling_intake_evidence_reference",
+            "tooling_api.get_tooling_revisions",
+            "tooling_api.get_tooling_revision",
+            "tooling_api.create_tooling_revision",
+            "tooling_api.get_part_controlled_specification",
+            "tooling_api.create_part_controlled_specification",
+            "tooling_api.get_tooling_process_chains",
+            "tooling_api.get_tooling_process_chain",
+            "tooling_api.create_tooling_process_chain_revision",
+            "tooling_api.create_tooling_set_revision_binding",
         ):
             self.assertIn(command, BFF)
         self.assertIn("_p6_01_routes_disabled", BFF)
         self.assertIn("_p6_02_routes_disabled", BFF)
+        self.assertIn("_p6_03_routes_disabled", BFF)
 
     def test_browser_requests_cannot_supply_server_owned_truth(self) -> None:
         requests = "\n".join(
@@ -147,10 +171,24 @@ class Phase6ToolingContractTest(unittest.TestCase):
 
     def test_later_capabilities_are_explicitly_unavailable(self) -> None:
         capability = _schema("ToolingDownstreamCapability")
+        revision_capability = _schema("ToolingRevisionNotDeliveredCapability")
         permissions = _schema("ToolingPermissions")
         self.assertIn("const: unavailable", capability)
         self.assertIn("lifecycle_policy_unavailable", capability)
+        self.assertIn("const: unavailable", revision_capability)
+        self.assertIn(
+            "const: tooling_revision_not_delivered",
+            revision_capability,
+        )
         self.assertIn("transitionLifecycle: { type: boolean, const: false }", permissions)
+
+    def test_tooling_revision_insert_response_preserves_frozen_model_provenance(
+        self,
+    ) -> None:
+        insert = _schema("ToolingInsertApplicability")
+        self.assertIn("modelSourceSystem:", insert)
+        self.assertIn("modelSourceObjectId:", insert)
+        self.assertNotIn("\n        model:", insert)
 
     def test_physical_set_intake_contract_is_distinct_url_free_and_active(self) -> None:
         tooling_set = _schema("ToolingSetSummary")
@@ -206,7 +244,7 @@ class Phase6ToolingContractTest(unittest.TestCase):
         self.assertIn("raw_private_url_and_file_content: {owner: NPI_ONE_FILE_SERVICE", OWNERSHIP)
         self.assertIn("conflict: NEVER_EXPOSE_OR_MUTATE", OWNERSHIP)
 
-    def test_p6_03_components_are_frozen_while_routes_stay_closed(self) -> None:
+    def test_p6_03_components_and_exact_routes_are_active_fail_closed(self) -> None:
         revision = _schema("ToolingRevision")
         part_specification = _schema("PartControlledSpecification")
         chain = _schema("ToolingProcessChainRevision")
@@ -221,20 +259,21 @@ class Phase6ToolingContractTest(unittest.TestCase):
         for forbidden in ("lifecycle", "approved", "released", "assetid", "supplierid"):
             self.assertNotIn(forbidden, combined)
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        for path in (
-            "/tooling-revisions:",
-            "/part-controlled-specifications:",
-            "/tooling-process-chain-revisions:",
-            "/tooling-set-revision-bindings:",
+        for marker in (
+            "x-audit-operation: tooling_revision.create",
+            "x-audit-operation: part_controlled_specification.create",
+            "x-audit-operation: tooling_process_chain_revision.create",
+            "x-audit-operation: tooling_set_revision_binding.create",
         ):
-            self.assertNotIn(path, paths)
+            self.assertIn(marker, paths)
         for command in (
             "tooling_api.create_tooling_revision",
             "tooling_api.create_part_controlled_specification",
             "tooling_api.create_tooling_process_chain_revision",
             "tooling_api.create_tooling_set_revision_binding",
         ):
-            self.assertNotIn(command, BFF)
+            self.assertIn(command, BFF)
+        self.assertIn("tooling_revision_routes_are_disabled", BFF)
 
 
 if __name__ == "__main__":

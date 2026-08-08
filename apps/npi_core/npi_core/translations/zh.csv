@@ -4310,3 +4310,7 @@ tooling_revision.create,创建模具修订
 tooling_set_revision_binding,模具套修订绑定
 tooling_set_revision_binding.create,创建模具套修订绑定
 {field} does not match the exact Tooling Revision.,{field} 与精确模具修订不匹配。
+Enter a valid Document Revision reference.,请输入有效的文档修订引用。
+The process parent must be an earlier step.,工艺父步骤必须是更早的步骤。
+The Tooling Revision workspace is temporarily unavailable.,模具修订工作区暂时不可用。
+Validation evidence must match the selected validation state.,验证证据必须与所选验证状态匹配。

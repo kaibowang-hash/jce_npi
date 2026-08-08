@@ -252,3 +252,14 @@ class ToolingSetRoutesDisabled(NpiProblem):
             _("The routes are disabled while a reviewed forward fix is applied."),
             retryable=True,
         )
+
+
+class ToolingRevisionRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "TOOLING_REVISION_ROUTES_DISABLED",
+            _("The Tooling Revision workspace is temporarily unavailable."),
+            _("The routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )

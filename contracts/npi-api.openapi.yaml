@@ -3521,6 +3521,259 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling/{toolingMasterId}/revisions:
+    get:
+      tags: [Tooling]
+      operationId: getToolingRevisions
+      description: Bounded immutable Tooling Revision lineage after Project-first authorization and exact Master containment.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingRevisionCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createToolingRevision
+      description: Appends one exact immutable Tooling Revision; it does not approve, release or authorize manufacturing.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_revision.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingRevisionDetailCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/revisions/{toolingRevisionId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolingRevision
+      description: Returns one exact immutable same-Project and same-Master Tooling Revision.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingRevisionDetailResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/parts/{partId}/revisions/{partRevisionId}/controlled-specification:
+    get:
+      tags: [Tooling]
+      operationId: getPartControlledSpecification
+      description: Returns the exact current Part Revision and its immutable controlled specification or an explicit unavailable projection.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: partId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: partRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/PartControlledSpecificationResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createPartControlledSpecification
+      description: Creates the one immutable controlled material, color and compliance specification for an exact current Part Revision.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: part_controlled_specification.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: partId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: partRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePartControlledSpecification" }
+      responses:
+        "201": { $ref: "#/components/responses/PartControlledSpecificationCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-process-chains:
+    get:
+      tags: [Tooling]
+      operationId: getToolingProcessChains
+      description: Returns bounded immutable Project process-chain revisions with combined Trial explicitly unavailable.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingProcessChainCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createToolingProcessChainRevision
+      description: Appends one exact ordered parent, second-shot or overmold chain revision without claiming Trial success.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_process_chain_revision.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingProcessChainRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingProcessChainCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-process-chains/{processChainRevisionId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolingProcessChainRevision
+      description: Returns one exact same-Project immutable process-chain revision.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: processChainRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingProcessChainResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/revision-binding:
+    post:
+      tags: [Tooling]
+      operationId: createToolingSetRevisionBinding
+      description: Appends the initial exact source Revision binding without changing the physical Set snapshot.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_set_revision_binding.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingSetRevisionBinding" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingSetDetailCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -4445,6 +4698,81 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolingSetDetail" }
+    ToolingRevisionCollectionResult:
+      description: Authorized bounded immutable Tooling Revision collection
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingRevisionCollection" }
+    ToolingRevisionDetailResult:
+      description: Authorized exact immutable Tooling Revision detail
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingRevisionDetail" }
+    ToolingRevisionDetailCommandResult:
+      description: Exact immutable Tooling Revision after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingRevisionDetail" }
+    PartControlledSpecificationResult:
+      description: Authorized exact Part controlled-specification context
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/PartControlledSpecificationContext" }
+    PartControlledSpecificationCommandResult:
+      description: Exact Part controlled-specification context after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/PartControlledSpecificationContext" }
+    ToolingProcessChainCollectionResult:
+      description: Authorized bounded immutable Tooling process-chain collection
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingProcessChainCollection" }
+    ToolingProcessChainResult:
+      description: Authorized exact immutable Tooling process-chain revision
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingProcessChainRevision" }
+    ToolingProcessChainCommandResult:
+      description: Exact immutable Tooling process-chain revision after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingProcessChainRevision" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -10227,6 +10555,25 @@ components:
               trial_not_delivered,
               erp_projection_unavailable,
             ]
+    ToolingRevisionAvailableCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode, revisionCount]
+      properties:
+        state: { type: string, const: available }
+        reasonCode: { type: string, const: tooling_revision_available }
+        revisionCount: { type: integer, minimum: 0, maximum: 200 }
+    ToolingRevisionNotDeliveredCapability:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: tooling_revision_not_delivered }
+    ToolingRevisionCapability:
+      oneOf:
+        - { $ref: "#/components/schemas/ToolingRevisionNotDeliveredCapability" }
+        - { $ref: "#/components/schemas/ToolingRevisionAvailableCapability" }
     ToolingProjectReference:
       type: object
       additionalProperties: false
@@ -10264,7 +10611,7 @@ components:
           required: [lifecycle, revision, physicalSet, trial, erp]
           properties:
             lifecycle: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
-            revision: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
+            revision: { $ref: "#/components/schemas/ToolingRevisionCapability" }
             physicalSet: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
             trial: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
             erp: { $ref: "#/components/schemas/ToolingDownstreamCapability" }
@@ -10330,7 +10677,7 @@ components:
         custodyResponsibility: { type: string, minLength: 1, maxLength: 500 }
         repairAuthorizationReference: { type: string, minLength: 1, maxLength: 500 }
         returnConditions: { type: string, minLength: 1, maxLength: 500 }
-        sourceRevision: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
+        sourceRevision: { $ref: "#/components/schemas/ToolingSetSourceRevision" }
         supplier: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
         lifecycle: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
         erpLocationAndAsset: { $ref: "#/components/schemas/ToolingSetUnavailableField" }
@@ -10650,7 +10997,8 @@ components:
           insertVersion,
           toolingApplicabilityGlobalId,
           partRevisionGlobalId,
-          model,
+          modelSourceSystem,
+          modelSourceObjectId,
           changeoverDuration,
           validationState,
           validatedByUserId,
@@ -10663,10 +11011,8 @@ components:
         insertVersion: { type: integer, minimum: 1 }
         toolingApplicabilityGlobalId: { type: string, format: uuid }
         partRevisionGlobalId: { type: string, format: uuid }
-        model:
-          oneOf:
-            - { $ref: "#/components/schemas/ToolingExternalReference" }
-            - { type: "null" }
+        modelSourceSystem: { type: [string, "null"], enum: [npi_one, plm, null] }
+        modelSourceObjectId: { type: [string, "null"], maxLength: 200 }
         changeoverDuration: { $ref: "#/components/schemas/ToolingMeasurement" }
         validationState: { type: string, enum: [not_validated, validated] }
         validatedByUserId: { type: [string, "null"], maxLength: 254 }
@@ -10881,12 +11227,97 @@ components:
         toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         reason: { type: string, minLength: 1, maxLength: 500 }
         snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingSetSourceRevision:
+      oneOf:
+        - { $ref: "#/components/schemas/ToolingRevisionNotDeliveredCapability" }
+        - { $ref: "#/components/schemas/ToolingSetRevisionBinding" }
+    ToolingRevisionUnavailableField:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode:
+          type: string
+          enum:
+            [
+              lifecycle_policy_unavailable,
+              formal_supplier_unavailable,
+              erp_projection_unavailable,
+              combined_trial_not_delivered,
+              automatic_impact_not_delivered,
+              controlled_part_specification_not_recorded,
+            ]
+    ToolingRevisionPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, createRevision, createPartSpecification, createProcessChain, bindSetSource, transitionLifecycle]
+      properties:
+        view: { type: boolean }
+        createRevision: { type: boolean }
+        createPartSpecification: { type: boolean }
+        createProcessChain: { type: boolean }
+        bindSetSource: { type: boolean }
+        transitionLifecycle: { type: boolean, const: false }
+    ToolingRevisionCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, permissions, lifecycle, supplier, erpLocationAndAsset, combinedTrial, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingRevisionPermissions" }
+        lifecycle: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        supplier: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        erpLocationAndAsset: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        combinedTrial: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingRevision" }
+    ToolingRevisionDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, lifecycle, supplier, erpLocationAndAsset, combinedTrial, revision]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingRevisionPermissions" }
+        lifecycle: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        supplier: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        erpLocationAndAsset: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        combinedTrial: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        revision: { $ref: "#/components/schemas/ToolingRevision" }
+    PartControlledSpecificationContext:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, partGlobalId, partRevision, permissions, automaticImpact, controlledSpecification]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        partGlobalId: { type: string, format: uuid }
+        partRevision: { $ref: "#/components/schemas/EngineeringPartRevisionReference" }
+        permissions: { $ref: "#/components/schemas/ToolingRevisionPermissions" }
+        automaticImpact: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        controlledSpecification:
+          oneOf:
+            - { $ref: "#/components/schemas/PartControlledSpecification" }
+            - { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+    ToolingProcessChainCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, combinedTrial, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingRevisionPermissions" }
+        combinedTrial: { $ref: "#/components/schemas/ToolingRevisionUnavailableField" }
+        items:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolingProcessChainRevision" }
     CreateToolingRevision:
       type: object
       additionalProperties: false
-      required: [toolingMasterGlobalId, revisionLabel, specification, cavities, inserts, externalIdentities, designDocumentRevisions, reason]
+      required: [revisionLabel, specification, cavities, inserts, externalIdentities, designDocumentRevisions, reason]
       properties:
-        toolingMasterGlobalId: { type: string, format: uuid }
         expectedVersion: { type: integer, minimum: 1 }
         revisionLabel: { type: string, minLength: 1, maxLength: 40 }
         specification: { $ref: "#/components/schemas/ToolingSpecification" }
@@ -10911,9 +11342,8 @@ components:
     CreatePartControlledSpecification:
       type: object
       additionalProperties: false
-      required: [partRevisionGlobalId, items, externalIdentities]
+      required: [items, externalIdentities]
       properties:
-        partRevisionGlobalId: { type: string, format: uuid }
         items:
           type: array
           minItems: 1
@@ -10939,9 +11369,8 @@ components:
     CreateToolingSetRevisionBinding:
       type: object
       additionalProperties: false
-      required: [toolingSetGlobalId, toolingRevisionGlobalId, reason]
+      required: [toolingRevisionGlobalId, reason]
       properties:
-        toolingSetGlobalId: { type: string, format: uuid }
         toolingRevisionGlobalId: { type: string, format: uuid }
         reason: { type: string, minLength: 1, maxLength: 500 }
     CreateEngineeringPart:

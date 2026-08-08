@@ -4310,3 +4310,7 @@ tooling_revision.create,建立模具修訂
 tooling_set_revision_binding,模具套修訂繫結
 tooling_set_revision_binding.create,建立模具套修訂繫結
 {field} does not match the exact Tooling Revision.,{field} 與精確模具修訂不相符。
+Enter a valid Document Revision reference.,請輸入有效的文件修訂引用。
+The process parent must be an earlier step.,製程父步驟必須是較早的步驟。
+The Tooling Revision workspace is temporarily unavailable.,模具修訂工作區暫時無法使用。
+Validation evidence must match the selected validation state.,驗證證據必須與所選驗證狀態相符。

@@ -251,11 +251,11 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
             self.assertIn(fragment, value)
         self.assertNotIn("frappe.session.user", value)
 
-    def test_public_projection_is_bounded_and_keeps_downstream_unavailable(self) -> None:
+    def test_public_projection_is_bounded_and_keeps_later_truth_unavailable(self) -> None:
         cockpit = function("_cockpit_response")
         for fragment in (
             '"lifecycle": self._unavailable("lifecycle_policy_unavailable")',
-            '"revision": self._unavailable("tooling_revision_not_delivered")',
+            '"revision": self._tooling_revision_capability(project)',
             '"physicalSet": self._unavailable("physical_set_not_delivered")',
             '"trial": self._unavailable("trial_not_delivered")',
             '"erp": self._unavailable("erp_projection_unavailable")',
@@ -325,12 +325,12 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         self.assertNotIn("frappe_file_id", response)
         set_response = function("_tooling_set_response")
         for reason in (
-            "tooling_revision_not_delivered",
             "formal_supplier_unavailable",
             "lifecycle_policy_unavailable",
             "erp_projection_unavailable",
         ):
             self.assertIn(reason, set_response)
+        self.assertIn("self._tooling_set_source_revision_response(value)", set_response)
 
 
 if __name__ == "__main__":

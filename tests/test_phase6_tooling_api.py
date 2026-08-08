@@ -25,6 +25,8 @@ SET_ID = "5dc0ef7b-8563-46ad-9f40-76dd474566ea"
 INTAKE_ID = "45af7c0e-d4c0-4f25-9bdf-3912a4671e1e"
 REQUIREMENT_ID = "d78d72bf-014f-49db-a733-0c76ce4fc3cb"
 FILE_REVISION_ID = "c32eb45b-e4df-4c7e-b879-bd8e1685d1ae"
+TOOLING_REVISION_ID = "60272696-371b-465b-a3ec-2324543857a1"
+PROCESS_CHAIN_REVISION_ID = "78181c5b-c8bb-46dd-bfe5-4fe267ddfb48"
 
 
 class AttrDict(dict):
@@ -104,6 +106,33 @@ class MockRepository:
     ):
         return self._command("evidence_create", args, kwargs)
 
+    def tooling_revisions(self, *args: object, **kwargs: Any):
+        return self._query("tooling_revisions", args, kwargs)
+
+    def tooling_revision_detail(self, *args: object, **kwargs: Any):
+        return self._query("tooling_revision_detail", args, kwargs)
+
+    def part_controlled_specification(self, *args: object, **kwargs: Any):
+        return self._query("part_specification", args, kwargs)
+
+    def tooling_process_chains(self, *args: object, **kwargs: Any):
+        return self._query("process_chains", args, kwargs)
+
+    def tooling_process_chain_detail(self, *args: object, **kwargs: Any):
+        return self._query("process_chain_detail", args, kwargs)
+
+    def create_tooling_revision(self, *args: object, **kwargs: Any):
+        return self._command("tooling_revision_create", args, kwargs)
+
+    def create_part_controlled_specification(self, *args: object, **kwargs: Any):
+        return self._command("part_specification_create", args, kwargs)
+
+    def create_tooling_process_chain_revision(self, *args: object, **kwargs: Any):
+        return self._command("process_chain_create", args, kwargs)
+
+    def create_tooling_set_revision_binding(self, *args: object, **kwargs: Any):
+        return self._command("set_binding_create", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         if self.failure is not None:
@@ -160,6 +189,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             npi_p5_06_routes_disabled=False,
             npi_p6_01_routes_disabled=False,
             npi_p6_02_routes_disabled=False,
+            npi_p6_03_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -169,6 +199,9 @@ class Phase6ToolingApiTest(unittest.TestCase):
                 "part_id": PART_ID,
                 "tooling_set_id": SET_ID,
                 "intake_id": INTAKE_ID,
+                "part_revision_id": REVISION_ID,
+                "tooling_revision_id": TOOLING_REVISION_ID,
+                "process_chain_revision_id": PROCESS_CHAIN_REVISION_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -264,6 +297,50 @@ class Phase6ToolingApiTest(unittest.TestCase):
                     "customerConfirmationRequired": True,
                 }
             ],
+        }
+
+    @staticmethod
+    def tooling_revision_payload() -> dict[str, object]:
+        measurement = {"value": "1", "unit": "mm", "source": "Controlled input"}
+        specification = {
+            "toolingType": "Injection mold",
+            "moldBaseMaterial": "P20",
+            "coreMaterial": "H13",
+            "hardness": {"value": "52", "unit": "HRC", "source": "Drawing"},
+            "surfaceTreatment": "Nitrided",
+            "cavityCount": 1,
+            "hotRunner": "Valve gate",
+            "length": measurement,
+            "width": measurement,
+            "height": measurement,
+            "weight": {"value": "1200", "unit": "kg", "source": "Drawing"},
+            "clampTonnage": {"value": "450", "unit": "t", "source": "Calculation"},
+            "tieBarSpacingX": measurement,
+            "tieBarSpacingY": measurement,
+            "injectionCapacity": {"value": "1200", "unit": "g", "source": "Calculation"},
+            "machineType": "Injection molding machine",
+            "targetCycle": {"value": "42", "unit": "s", "source": "Target"},
+            "targetLife": {"value": "1000000", "unit": "shots", "source": "Contract"},
+            "warranty": "Twelve months",
+            "customerStandard": "Customer standard CS-01",
+            "interfaceRequirement": "Standard interface",
+            "spareParts": [],
+            "deliveryDocuments": [],
+        }
+        return {
+            "revisionLabel": "R1",
+            "specification": specification,
+            "cavities": [
+                {
+                    "cavityIdentifier": "C1",
+                    "toolingApplicabilityGlobalId": RELATIONSHIP_ID,
+                    "structuralState": "enabled",
+                }
+            ],
+            "inserts": [],
+            "externalIdentities": [],
+            "designDocumentRevisions": [],
+            "reason": "Initial controlled Tooling Revision",
         }
 
     def test_queries_authorize_project_before_protected_master(self) -> None:
@@ -527,6 +604,138 @@ class Phase6ToolingApiTest(unittest.TestCase):
         self.assertEqual(result["code"], "TOOLING_EVIDENCE_CONFLICT")
         self.assertEqual(self.frappe.local.response.http_status_code, 409)
         self.assertEqual(self.frappe.db.rollback_count, 3)
+
+    def test_revision_queries_and_commands_are_project_first_and_closed(self) -> None:
+        self.assertEqual(self.call(self.api.get_tooling_revisions), self.response)
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "tooling_revisions"],
+        )
+        self.repository.calls.clear()
+        self.call(self.api.create_tooling_revision, self.tooling_revision_payload())
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "tooling_revision_create")
+        self.assertEqual(str(args[1]), MASTER_ID)
+        self.assertEqual(values["revision_label"], "R1")
+        self.assertEqual(len(values["cavities"]), 1)
+        self.assertNotIn("tenant_id", values)
+        self.assertEqual(self.frappe.local.response.http_status_code, 201)
+
+        invalid = self.tooling_revision_payload()
+        invalid["doctype"] = "Secret"
+        result = self.call(self.api.create_tooling_revision, invalid)
+        self.assertEqual(result["code"], "VALIDATION_FAILED")
+
+    def test_part_specification_chain_and_binding_parse_exact_inputs(self) -> None:
+        part_payload = {
+            "items": [
+                {
+                    "kind": "material_family",
+                    "normalizedValue": "PA66",
+                    "rawValue": "PA 66",
+                    "sourceSystem": "NPI_ONE",
+                    "sourceObjectId": "SPEC-001",
+                    "effectiveFrom": "2026-08-08",
+                }
+            ],
+            "externalIdentities": [],
+        }
+        self.call(self.api.create_part_controlled_specification, part_payload)
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "part_specification_create")
+        self.assertEqual(str(args[1]), PART_ID)
+        self.assertEqual(str(args[2]), REVISION_ID)
+        self.assertEqual(values["items"][0]["kind"].value, "material_family")
+
+        chain_payload = {
+            "steps": [
+                {
+                    "stepOrder": 1,
+                    "processKind": "primary_molding",
+                    "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+                    "inputPartRevisionGlobalIds": [REVISION_ID],
+                    "outputPartRevisionGlobalId": REVISION_ID,
+                    "machineType": "Machine A",
+                    "clampTonnage": {
+                        "value": "450",
+                        "unit": "t",
+                        "source": "Calculation",
+                    },
+                },
+                {
+                    "stepOrder": 2,
+                    "processKind": "overmold",
+                    "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+                    "inputPartRevisionGlobalIds": [REVISION_ID],
+                    "outputPartRevisionGlobalId": REVISION_ID,
+                    "parentStepOrder": 1,
+                    "machineType": "Machine B",
+                    "clampTonnage": {
+                        "value": "300",
+                        "unit": "t",
+                        "source": "Calculation",
+                    },
+                },
+            ],
+            "reason": "Controlled overmold chain",
+        }
+        self.call(self.api.create_tooling_process_chain_revision, chain_payload)
+        name, _args, values = self.repository.calls[-1]
+        self.assertEqual(name, "process_chain_create")
+        self.assertEqual(values["steps"][1]["parent_step_order"], 1)
+
+        self.call(
+            self.api.create_tooling_set_revision_binding,
+            {
+                "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+                "reason": "Initial exact source binding",
+            },
+        )
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "set_binding_create")
+        self.assertEqual(str(args[2]), SET_ID)
+        self.assertEqual(str(values["tooling_revision_id"]), TOOLING_REVISION_ID)
+
+    def test_router_maps_revision_paths_and_switch_is_independently_fail_closed(self) -> None:
+        cases = {
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/revisions"): "get_tooling_revisions",
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/revisions/{TOOLING_REVISION_ID}"): "get_tooling_revision",
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/revisions"): "create_tooling_revision",
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/parts/{PART_ID}/revisions/{REVISION_ID}/controlled-specification"): "get_part_controlled_specification",
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/parts/{PART_ID}/revisions/{REVISION_ID}/controlled-specification"): "create_part_controlled_specification",
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-process-chains"): "get_tooling_process_chains",
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-process-chains"): "create_tooling_process_chain_revision",
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-process-chains/{PROCESS_CHAIN_REVISION_ID}"): "get_tooling_process_chain",
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets/{SET_ID}/revision-binding"): "create_tooling_set_revision_binding",
+        }
+        for (method, path), suffix in cases.items():
+            with self.subTest(path=path):
+                self.frappe.local.request = types.SimpleNamespace(path=path, method=method)
+                self.router.route_request()
+                self.assertTrue(self.frappe.local.form_dict.cmd.endswith(suffix))
+
+        del self.frappe.conf["npi_p6_03_routes_disabled"]
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/revisions",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.tooling_revision_routes_disabled",
+        )
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/sets",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertTrue(self.frappe.local.form_dict.cmd.endswith("get_tooling_sets"))
+
+    def test_revision_route_switch_is_directly_fail_closed(self) -> None:
+        self.frappe.conf.npi_p6_03_routes_disabled = True
+        result = self.call(self.api.get_tooling_revisions)
+        self.assertEqual(result["code"], "TOOLING_REVISION_ROUTES_DISABLED")
+        self.assertEqual(self.frappe.local.response.http_status_code, 503)
 
     def test_direct_route_switch_and_command_failure_roll_back_fail_closed(self) -> None:
         self.frappe.conf.npi_p6_01_routes_disabled = True

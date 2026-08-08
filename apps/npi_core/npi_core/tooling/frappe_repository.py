@@ -44,6 +44,7 @@ from npi_core.tooling.domain import (
     validate_intake_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
+from npi_core.tooling.revision_repository import ToolingRevisionRepositoryMixin
 from npi_core.tooling.diagnostics import (
     applicability_create_server_step,
     part_create_server_step,
@@ -65,7 +66,7 @@ class ToolingCommandOutcome:
     replayed: bool = False
 
 
-class FrappeToolingRepository(FrappeDocumentRepository):
+class FrappeToolingRepository(ToolingRevisionRepositoryMixin, FrappeDocumentRepository):
     """Project-first persistence adapter for the bounded P6-01 slice."""
 
     def __init__(self, *, clock=None, uuid_factory=uuid4, **values: object) -> None:
@@ -1085,7 +1086,7 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             ],
             "downstream": {
                 "lifecycle": self._unavailable("lifecycle_policy_unavailable"),
-                "revision": self._unavailable("tooling_revision_not_delivered"),
+                "revision": self._tooling_revision_capability(project),
                 "physicalSet": self._unavailable("physical_set_not_delivered"),
                 "trial": self._unavailable("trial_not_delivered"),
                 "erp": self._unavailable("erp_projection_unavailable"),
@@ -2251,8 +2252,7 @@ class FrappeToolingRepository(FrappeDocumentRepository):
             "snapshotHash": value.snapshot_hash,
         }
 
-    @staticmethod
-    def _tooling_set_response(value: ToolingSet) -> dict[str, object]:
+    def _tooling_set_response(self, value: ToolingSet) -> dict[str, object]:
         return {
             "globalId": str(value.global_id),
             "projectGlobalId": str(value.project_global_id),
@@ -2271,9 +2271,7 @@ class FrappeToolingRepository(FrappeDocumentRepository):
                 value.repair_authorization_reference
             ),
             "returnConditions": value.return_conditions,
-            "sourceRevision": FrappeToolingRepository._unavailable(
-                "tooling_revision_not_delivered"
-            ),
+            "sourceRevision": self._tooling_set_source_revision_response(value),
             "supplier": FrappeToolingRepository._unavailable(
                 "formal_supplier_unavailable"
             ),

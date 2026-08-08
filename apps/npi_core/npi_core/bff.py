@@ -18,6 +18,7 @@ from .foundation.errors import (
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     ToolingRoutesDisabled,
+    ToolingRevisionRoutesDisabled,
     ToolingSetRoutesDisabled,
 )
 from .foundation.tracing import resolve_trace_id
@@ -31,6 +32,7 @@ from .request_security import (
     project_collaboration_routes_are_disabled,
     response_request_id,
     tooling_set_routes_are_disabled,
+    tooling_revision_routes_are_disabled,
     tooling_routes_are_disabled,
 )
 
@@ -89,6 +91,31 @@ _PROJECT_TOOLING_INTAKE_EVIDENCE_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
     r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/intakes/"
     r"(?P<intake_id>[^/:]+)/evidence$"
+)
+_PROJECT_TOOLING_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/revisions$"
+)
+_PROJECT_TOOLING_REVISION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/revisions/(?P<tooling_revision_id>[^/:]+)$"
+)
+_PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
+    r"(?P<part_id>[^/:]+)/revisions/(?P<part_revision_id>[^/:]+)/"
+    r"controlled-specification$"
+)
+_PROJECT_TOOLING_PROCESS_CHAINS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-process-chains$"
+)
+_PROJECT_TOOLING_PROCESS_CHAIN_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-process-chains/"
+    r"(?P<process_chain_revision_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_SET_REVISION_BINDING_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"revision-binding$"
 )
 _PROJECT_PARTS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts$"
@@ -396,6 +423,35 @@ def route_request() -> None:
             command = "npi_core.tooling_api.get_tooling_cockpit"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
+        revision_queries = (
+            (
+                _PROJECT_TOOLING_REVISIONS_ROUTE,
+                "npi_core.tooling_api.get_tooling_revisions",
+            ),
+            (
+                _PROJECT_TOOLING_REVISION_ROUTE,
+                "npi_core.tooling_api.get_tooling_revision",
+            ),
+            (
+                _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE,
+                "npi_core.tooling_api.get_part_controlled_specification",
+            ),
+            (
+                _PROJECT_TOOLING_PROCESS_CHAINS_ROUTE,
+                "npi_core.tooling_api.get_tooling_process_chains",
+            ),
+            (
+                _PROJECT_TOOLING_PROCESS_CHAIN_ROUTE,
+                "npi_core.tooling_api.get_tooling_process_chain",
+            ),
+        )
+        for route, candidate in revision_queries:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
         for route, candidate in (
             (_PROJECT_TOOLING_SETS_ROUTE, "npi_core.tooling_api.get_tooling_sets"),
             (_PROJECT_TOOLING_SET_ROUTE, "npi_core.tooling_api.get_tooling_set"),
@@ -410,6 +466,31 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        revision_commands = (
+            (
+                _PROJECT_TOOLING_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_revision",
+            ),
+            (
+                _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE,
+                "npi_core.tooling_api.create_part_controlled_specification",
+            ),
+            (
+                _PROJECT_TOOLING_PROCESS_CHAINS_ROUTE,
+                "npi_core.tooling_api.create_tooling_process_chain_revision",
+            ),
+            (
+                _PROJECT_TOOLING_SET_REVISION_BINDING_ROUTE,
+                "npi_core.tooling_api.create_tooling_set_revision_binding",
+            ),
+        )
+        for route, candidate in revision_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         tooling_set_commands = (
             (_PROJECT_TOOLING_SETS_ROUTE, "npi_core.tooling_api.create_tooling_set"),
@@ -690,6 +771,9 @@ def route_request() -> None:
     if _p6_02_routes_disabled(command):
         command = "npi_core.bff.tooling_set_routes_disabled"
         route_params = {}
+    if _p6_03_routes_disabled(command):
+        command = "npi_core.bff.tooling_revision_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -861,6 +945,23 @@ def tooling_set_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_revision_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-03 while retaining P6-01/P6-02 routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingRevisionRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -928,6 +1029,20 @@ def _p6_02_routes_disabled(command: str | None) -> bool:
         "npi_core.tooling_api.create_tooling_set",
         "npi_core.tooling_api.create_tooling_intake",
         "npi_core.tooling_api.create_tooling_intake_evidence_reference",
+    }
+
+
+def _p6_03_routes_disabled(command: str | None) -> bool:
+    return tooling_revision_routes_are_disabled() and command in {
+        "npi_core.tooling_api.get_tooling_revisions",
+        "npi_core.tooling_api.get_tooling_revision",
+        "npi_core.tooling_api.create_tooling_revision",
+        "npi_core.tooling_api.get_part_controlled_specification",
+        "npi_core.tooling_api.create_part_controlled_specification",
+        "npi_core.tooling_api.get_tooling_process_chains",
+        "npi_core.tooling_api.get_tooling_process_chain",
+        "npi_core.tooling_api.create_tooling_process_chain_revision",
+        "npi_core.tooling_api.create_tooling_set_revision_binding",
     }
 
 
@@ -1020,6 +1135,12 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TOOLING_SET_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_SET_INTAKES_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_INTAKE_EVIDENCE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_REVISION_ROUTE.fullmatch(path) is not None
+        or _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_PROCESS_CHAINS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_PROCESS_CHAIN_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_SET_REVISION_BINDING_ROUTE.fullmatch(path) is not None
     ):
         return True
     if (
