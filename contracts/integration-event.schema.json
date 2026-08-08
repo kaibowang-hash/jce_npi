@@ -84,6 +84,74 @@
           "actor"
         ]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "npi.tooling_asset_request.ready"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "NPI_ONE"
+          },
+          "target_system": {
+            "const": "ERPNEXT"
+          },
+          "object_type": {
+            "const": "ToolAssetRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/tooling_asset_request_ready_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "actor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "erpnext.tooling_asset_result.observed"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_system": {
+            "const": "ERPNEXT"
+          },
+          "target_system": {
+            "const": "NPI_ONE"
+          },
+          "object_type": {
+            "const": "ToolAssetRequest"
+          },
+          "payload": {
+            "$ref": "#/$defs/tooling_asset_result_observed_v1"
+          }
+        },
+        "required": [
+          "target_system",
+          "payload_hash",
+          "correlation_id",
+          "causation_id",
+          "actor"
+        ]
+      }
     }
   ],
   "properties": {
@@ -410,6 +478,191 @@
               }
             }
           }
+        }
+      }
+    },
+    "tooling_asset_request_ready_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "tool_asset_request_global_id",
+        "request_payload_hash",
+        "project_global_id",
+        "tooling_master_global_id",
+        "tooling_set_global_id",
+        "tooling_set_snapshot_hash",
+        "tooling_revision_global_id",
+        "tooling_revision_snapshot_hash",
+        "acceptance_revision_global_id",
+        "acceptance_snapshot_hash",
+        "business_approval_evidence_id",
+        "target_mode",
+        "owned_fields"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.tooling-asset.v1"
+        },
+        "operation": {
+          "const": "create_or_update_tool_asset"
+        },
+        "tool_asset_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "project_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_master_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_set_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_set_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tooling_revision_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tooling_revision_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "acceptance_revision_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "acceptance_snapshot_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "business_approval_evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_mode": {
+          "const": "sandbox"
+        },
+        "owned_fields": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "tooling_master_title",
+              "physical_set_serial",
+              "tooling_requirement_kind",
+              "source_tooling_revision",
+              "acceptance_evidence_reference"
+            ]
+          }
+        }
+      }
+    },
+    "tooling_asset_result_observed_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "api_version",
+        "operation",
+        "tool_asset_request_global_id",
+        "request_payload_hash",
+        "tooling_set_global_id",
+        "attempt_id",
+        "state",
+        "formal_asset_id",
+        "mapping_version",
+        "target_version",
+        "fault_kind"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "api_version": {
+          "const": "npi.tooling-asset.v1"
+        },
+        "operation": {
+          "const": "create_or_update_tool_asset"
+        },
+        "tool_asset_request_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tooling_set_global_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "uncertain_after_timeout",
+            "target_unavailable"
+          ]
+        },
+        "formal_asset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 140
+        },
+        "mapping_version": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "target_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 140
+        },
+        "fault_kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "timeout_after_possible_commit",
+            "rate_limited",
+            "target_server_error",
+            "business_validation",
+            "mapping_conflict",
+            "target_unavailable",
+            null
+          ]
         }
       }
     }

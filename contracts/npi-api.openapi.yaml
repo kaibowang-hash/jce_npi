@@ -3877,6 +3877,161 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling/{toolingMasterId}/acceptance-assets:
+    get:
+      tags: [Tooling]
+      operationId: getToolingAcceptanceAssets
+      description: >
+        Returns immutable acceptance-evidence revisions, local draft Asset
+        requests and an explicit read-only ERP Asset projection after
+        Project-first authorization and exact Master containment. Evidence
+        coverage is not business approval or Tooling lifecycle authority.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingAcceptanceAssetContextResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/acceptance-revisions:
+    post:
+      tags: [Tooling]
+      operationId: createToolingAcceptanceEvidenceRevision
+      description: >
+        Appends one immutable evidence-presence revision for an exact physical
+        Set and bound Tooling Revision. This command never approves Tooling,
+        mutates a Gate or contacts ERPNext.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-acceptance-evidence
+      x-audit-operation: tooling_acceptance_evidence.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingAcceptanceEvidenceRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingAcceptanceEvidenceCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/asset-requests:
+    get:
+      tags: [Tooling]
+      operationId: getToolAssetRequests
+      description: Returns bounded local draft Tool Asset requests without target execution or mapping truth.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolAssetRequestCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/sets/{toolingSetId}/asset-requests:
+    post:
+      tags: [Tooling]
+      operationId: createToolAssetRequest
+      description: >
+        Prepares one operation-specific Mock request from exact server-resolved
+        Tooling and acceptance evidence. The formal request remains draft,
+        approval unavailable, dispatch prohibited and target result absent.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: tooling-asset-request-input-audit-receipt
+      x-audit-operation: tooling_asset_request.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: toolingSetId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolAssetRequest" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolAssetRequestCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/asset-requests/{assetRequestId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolAssetRequest
+      description: Returns one exact immutable local draft Tool Asset request.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: assetRequestId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolAssetRequestResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/parts/{partId}/revisions/{partRevisionId}/controlled-specification:
     get:
       tags: [Tooling]
@@ -5077,6 +5232,53 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolingCapacityScenarioRevisionCommand" }
+    ToolingAcceptanceAssetContextResult:
+      description: Authorized immutable acceptance evidence, draft requests and read-only ERP Asset projection
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingAcceptanceAssetContext" }
+    ToolingAcceptanceEvidenceCommandResult:
+      description: Immutable acceptance-evidence revision after atomic append or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingAcceptanceEvidenceCommand" }
+    ToolAssetRequestCollectionResult:
+      description: Authorized bounded local draft Tool Asset request collection
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetRequestCollection" }
+    ToolAssetRequestResult:
+      description: Authorized exact local draft Tool Asset request
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetRequest" }
+    ToolAssetRequestCommandResult:
+      description: Local draft Tool Asset request after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolAssetRequest" }
     PartControlledSpecificationResult:
       description: Authorized exact Part controlled-specification context
       headers:
@@ -12814,6 +13016,512 @@ components:
       required: [scenario]
       properties:
         scenario: { $ref: "#/components/schemas/ToolingCapacityScenarioRevision" }
+    ToolingAcceptanceFileEvidenceInput:
+      type: object
+      additionalProperties: false
+      required: [role, fileRevisionGlobalId, fileOptimisticVersion, frappeContentHash, sha256]
+      properties:
+        role:
+          type: string
+          enum: [checklist, action, approval_reference, customer_authorization, quote, repair_verification]
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingAcceptanceChecklistItemInput:
+      type: object
+      additionalProperties: false
+      required: [category, requirementKey, requirementStatement, disposition, responsibleMember, evidence, note]
+      properties:
+        category:
+          type: string
+          enum: [technical, quality, cycle_capacity, spares_maintenance, documents, warranty_responsibility, cost, safety_interface, asset_location]
+        requirementKey: { type: string, minLength: 1, maxLength: 128 }
+        requirementStatement: { type: string, minLength: 1, maxLength: 1000 }
+        disposition: { type: string, enum: [evidence_recorded, evidence_missing, not_applicable_asserted] }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        evidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidenceInput" }
+        note: { type: [string, "null"], maxLength: 2000 }
+    ToolingAssetActionEvidenceInput:
+      type: object
+      additionalProperties: false
+      required: [actionKind, reason, approvalReference, proposedEffectiveDate, evidence]
+      properties:
+        actionKind: { type: string, enum: [move, loan, return, archive, scrap] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        approvalReference: { type: string, minLength: 1, maxLength: 500 }
+        proposedEffectiveDate: { type: [string, "null"], format: date }
+        evidence:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidenceInput" }
+    ToolingSpareRecommendationInput:
+      type: object
+      additionalProperties: false
+      required: [recommendationKey, kind, description, recommendedMinimumQuantity, unit, supplierSourceSystem, supplierSourceObjectId]
+      properties:
+        recommendationKey: { type: string, minLength: 1, maxLength: 128 }
+        kind: { type: string, enum: [critical_spare, wear_part] }
+        description: { type: string, minLength: 1, maxLength: 1000 }
+        recommendedMinimumQuantity: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        supplierSourceSystem: { type: [string, "null"], enum: [ERPNEXT, null] }
+        supplierSourceObjectId: { type: [string, "null"], maxLength: 128 }
+    ToolingRepairEvidenceInput:
+      type: object
+      additionalProperties: false
+      required: [authorizationReference, quoteReference, quoteCurrency, quoteAmount, responsibleMember, downtimeImpactHours, detail, customerAuthorizationEvidence, verificationEvidence]
+      properties:
+        authorizationReference: { type: string, minLength: 1, maxLength: 500 }
+        quoteReference: { type: [string, "null"], maxLength: 500 }
+        quoteCurrency: { type: [string, "null"], pattern: "^[A-Z]{3}$" }
+        quoteAmount: { type: [string, "null"], pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        responsibleMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        downtimeImpactHours: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        detail: { type: string, minLength: 1, maxLength: 4000 }
+        customerAuthorizationEvidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidenceInput" }
+        verificationEvidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidenceInput" }
+    CreateToolingAcceptanceEvidenceRevision:
+      type: object
+      additionalProperties: false
+      required: [toolingSetGlobalId, toolingSetSnapshotHash, setRevisionBindingGlobalId, setRevisionBindingSnapshotHash, toolingRevisionGlobalId, toolingRevisionNumber, toolingRevisionSnapshotHash, checklist, assetActions, spareRecommendations, repairs, reason]
+      properties:
+        acceptanceGlobalId:
+          type: string
+          format: uuid
+          description: Existing stable evidence aggregate identity when appending a successor.
+        expectedVersion: { type: integer, minimum: 1 }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        setRevisionBindingGlobalId: { type: string, format: uuid }
+        setRevisionBindingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionNumber: { type: integer, minimum: 1 }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        checklist:
+          type: array
+          minItems: 9
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingAcceptanceChecklistItemInput" }
+        assetActions:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingAssetActionEvidenceInput" }
+        spareRecommendations:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingSpareRecommendationInput" }
+        repairs:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingRepairEvidenceInput" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateToolAssetRequest:
+      type: object
+      additionalProperties: false
+      required: [targetMode, acceptanceRevisionGlobalId, acceptanceVersion, acceptanceSnapshotHash, expectedToolingMasterSnapshotHash, expectedToolingSetSnapshotHash, expectedBindingSnapshotHash, expectedToolingRevisionNumber, expectedToolingRevisionSnapshotHash, acknowledgement]
+      properties:
+        targetMode: { type: string, const: mock }
+        acceptanceRevisionGlobalId: { type: string, format: uuid }
+        acceptanceVersion: { type: integer, minimum: 1 }
+        acceptanceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedToolingMasterSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedToolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedBindingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedToolingRevisionNumber: { type: integer, minimum: 1 }
+        expectedToolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acknowledgement:
+          type: string
+          const: I confirm this only validates a local Mock draft. It does not approve Tooling, contact ERPNext or create an Asset.
+    ToolingAcceptanceFileEvidence:
+      type: object
+      additionalProperties: false
+      required: [globalId, role, fileRevisionGlobalId, fileOptimisticVersion, frappeContentHash, fileName, mimeType, sizeBytes, sha256]
+      properties:
+        globalId: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [checklist, action, approval_reference, customer_authorization, quote, repair_verification]
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingAcceptanceChecklistItem:
+      type: object
+      additionalProperties: false
+      required: [globalId, category, requirementKey, requirementStatement, disposition, responsibleMember, evidence, note]
+      properties:
+        globalId: { type: string, format: uuid }
+        category:
+          type: string
+          enum: [technical, quality, cycle_capacity, spares_maintenance, documents, warranty_responsibility, cost, safety_interface, asset_location]
+        requirementKey: { type: string, minLength: 1, maxLength: 128 }
+        requirementStatement: { type: string, minLength: 1, maxLength: 1000 }
+        disposition: { type: string, enum: [evidence_recorded, evidence_missing, not_applicable_asserted] }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        evidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidence" }
+        note: { type: [string, "null"], maxLength: 2000 }
+    ToolingUnavailableState:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, minLength: 1, maxLength: 128 }
+    ToolingAssetActionEvidence:
+      type: object
+      additionalProperties: false
+      required: [globalId, actionKind, reason, approvalReference, proposedEffectiveDate, erpExecution, evidence]
+      properties:
+        globalId: { type: string, format: uuid }
+        actionKind: { type: string, enum: [move, loan, return, archive, scrap] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        approvalReference: { type: string, minLength: 1, maxLength: 500 }
+        proposedEffectiveDate: { type: [string, "null"], format: date }
+        erpExecution: { $ref: "#/components/schemas/ToolingUnavailableState" }
+        evidence:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidence" }
+    ToolingSpareRecommendation:
+      type: object
+      additionalProperties: false
+      required: [globalId, recommendationKey, kind, description, recommendedMinimumQuantity, unit, supplierReference, formalItemAndInventory]
+      properties:
+        globalId: { type: string, format: uuid }
+        recommendationKey: { type: string, minLength: 1, maxLength: 128 }
+        kind: { type: string, enum: [critical_spare, wear_part] }
+        description: { type: string, minLength: 1, maxLength: 1000 }
+        recommendedMinimumQuantity: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        supplierReference:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingSpareSupplierReference" }
+            - { $ref: "#/components/schemas/ToolingUnavailableState" }
+        formalItemAndInventory: { $ref: "#/components/schemas/ToolingUnavailableState" }
+    ToolingSpareSupplierReference:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, sourceObjectId]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+    ToolingRepairEvidence:
+      type: object
+      additionalProperties: false
+      required: [globalId, authorizationReference, quoteReference, quote, responsibleMember, downtimeImpactHours, detail, customerAuthorizationEvidence, verificationEvidence, erpRepairResult]
+      properties:
+        globalId: { type: string, format: uuid }
+        authorizationReference: { type: string, minLength: 1, maxLength: 500 }
+        quoteReference: { type: [string, "null"], maxLength: 500 }
+        quote:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [currency, amount]
+              properties:
+                currency: { type: string, pattern: "^[A-Z]{3}$" }
+                amount: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+            - { type: "null" }
+        responsibleMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        downtimeImpactHours: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        detail: { type: string, minLength: 1, maxLength: 4000 }
+        customerAuthorizationEvidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidence" }
+        verificationEvidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ToolingAcceptanceFileEvidence" }
+        erpRepairResult: { $ref: "#/components/schemas/ToolingUnavailableState" }
+    ToolingAcceptanceCategoryCoverage:
+      type: object
+      additionalProperties: false
+      required: [category, itemCount, recordedCount, missingCount, notApplicableCount]
+      properties:
+        category:
+          type: string
+          enum: [technical, quality, cycle_capacity, spares_maintenance, documents, warranty_responsibility, cost, safety_interface, asset_location]
+        itemCount: { type: integer, minimum: 1 }
+        recordedCount: { type: integer, minimum: 0 }
+        missingCount: { type: integer, minimum: 0 }
+        notApplicableCount: { type: integer, minimum: 0 }
+    ToolingAcceptanceEvidenceRevision:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, acceptanceGlobalId, tenantId, projectGlobalId, toolingMasterGlobalId, toolingMasterSnapshotHash, toolingSetGlobalId, toolingSetSnapshotHash, toolingRequirementKind, setRevisionBindingGlobalId, setRevisionBindingSnapshotHash, toolingRevisionGlobalId, toolingRevisionNumber, toolingRevisionSnapshotHash, acceptanceVersion, predecessorGlobalId, predecessorSnapshotHash, checklist, assetActions, spareRecommendations, repairs, reason, createdByUserId, createdAt, requestId, traceId, versionKeyHash, snapshotHash, categoryCoverage, businessApproval]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        acceptanceGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingMasterSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRequirementKind: { type: string, enum: [new_tool, customer_owned_intake, copy_or_additional_set, modification, repair, capacity_need] }
+        setRevisionBindingGlobalId: { type: string, format: uuid }
+        setRevisionBindingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionNumber: { type: integer, minimum: 1 }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acceptanceVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        checklist:
+          type: array
+          minItems: 9
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingAcceptanceChecklistItem" }
+        assetActions:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingAssetActionEvidence" }
+        spareRecommendations:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingSpareRecommendation" }
+        repairs:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingRepairEvidence" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+        categoryCoverage:
+          type: array
+          minItems: 9
+          maxItems: 9
+          items: { $ref: "#/components/schemas/ToolingAcceptanceCategoryCoverage" }
+        businessApproval: { $ref: "#/components/schemas/ToolingUnavailableState" }
+    ToolAssetProjectionUnavailable:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, state, reasonCode, mappingCardinality]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: erp_asset_projection_unavailable }
+        mappingCardinality: { type: string, const: zero_or_one_per_physical_set }
+    ToolAssetMovementObservation:
+      type: object
+      additionalProperties: false
+      required: [globalId, actionKind, fromLocation, toLocation, occurredAt, sourceObjectId]
+      properties:
+        globalId: { type: string, format: uuid }
+        actionKind: { type: string, enum: [move, loan, return, archive, scrap] }
+        fromLocation: { type: [string, "null"], maxLength: 255 }
+        toLocation: { type: [string, "null"], maxLength: 255 }
+        occurredAt: { type: string, format: date-time }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+    ToolAssetRepairObservation:
+      type: object
+      additionalProperties: false
+      required: [globalId, summary, downtimeHours, completedAt, sourceObjectId]
+      properties:
+        globalId: { type: string, format: uuid }
+        summary: { type: string, minLength: 1, maxLength: 2000 }
+        downtimeHours: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        completedAt: { type: string, format: date-time }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 128 }
+    ToolAssetSpareInventoryObservation:
+      type: object
+      additionalProperties: false
+      required: [formalItemId, description, stockOnHand, minimumStock, unit, supplierId]
+      properties:
+        formalItemId: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string, minLength: 1, maxLength: 1000 }
+        stockOnHand: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        minimumStock: { type: string, pattern: "^[0-9]+(?:[.][0-9]+)?$" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        supplierId: { type: [string, "null"], maxLength: 128 }
+    ToolAssetProjectionAvailable:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, state, mappingCardinality, toolingSetGlobalId, mappingVersion, formalAssetId, targetVersion, assetState, currentLocation, shotCount, expectedLifeShots, maintenanceDue, movements, repairs, spares, observationGlobalId, observationHash, observedAt]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: available }
+        mappingCardinality: { type: string, const: zero_or_one_per_physical_set }
+        toolingSetGlobalId: { type: string, format: uuid }
+        mappingVersion: { type: integer, minimum: 1 }
+        formalAssetId: { type: string, minLength: 1, maxLength: 128 }
+        targetVersion: { type: string, minLength: 1, maxLength: 128 }
+        assetState: { type: string, minLength: 1, maxLength: 128 }
+        currentLocation: { type: string, minLength: 1, maxLength: 255 }
+        shotCount: { type: integer, minimum: 0 }
+        expectedLifeShots: { type: [integer, "null"], minimum: 1 }
+        maintenanceDue: { type: [string, "null"], format: date }
+        movements:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolAssetMovementObservation" }
+        repairs:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolAssetRepairObservation" }
+        spares:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolAssetSpareInventoryObservation" }
+        observationGlobalId: { type: string, format: uuid }
+        observationHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        observedAt: { type: string, format: date-time }
+    ToolAssetProjection:
+      oneOf:
+        - { $ref: "#/components/schemas/ToolAssetProjectionUnavailable" }
+        - { $ref: "#/components/schemas/ToolAssetProjectionAvailable" }
+    ToolAssetRequestInput:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, projectGlobalId, toolingMasterGlobalId, toolingMasterTitle, toolingMasterSnapshotHash, toolingSetGlobalId, toolingSetPhysicalSerial, toolingSetSnapshotHash, toolingRequirementKind, setRevisionBindingGlobalId, setRevisionBindingSnapshotHash, toolingRevisionGlobalId, toolingRevisionNumber, toolingRevisionLabel, toolingRevisionSnapshotHash, acceptanceRevisionGlobalId, acceptanceVersion, acceptanceSnapshotHash, ownedFieldsManifest]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingMasterTitle: { type: string, minLength: 1, maxLength: 140 }
+        toolingMasterSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetPhysicalSerial: { type: string, minLength: 1, maxLength: 80 }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRequirementKind: { type: string, enum: [new_tool, customer_owned_intake, copy_or_additional_set, modification, repair, capacity_need] }
+        setRevisionBindingGlobalId: { type: string, format: uuid }
+        setRevisionBindingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionNumber: { type: integer, minimum: 1 }
+        toolingRevisionLabel: { type: string, minLength: 1, maxLength: 40 }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        acceptanceRevisionGlobalId: { type: string, format: uuid }
+        acceptanceVersion: { type: integer, minimum: 1 }
+        acceptanceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        ownedFieldsManifest:
+          type: array
+          minItems: 5
+          maxItems: 5
+          uniqueItems: true
+          items:
+            type: string
+            enum: [tooling_master_title, physical_set_serial, tooling_requirement_kind, source_tooling_revision, acceptance_evidence_reference]
+    ToolAssetFormalMappingUnavailable:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, editableIn, state, reasonCode, mappingCardinality]
+      properties:
+        sourceSystem: { type: string, const: ERPNEXT }
+        editableIn: { type: string, const: ERPNEXT }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: erp_asset_mapping_unavailable }
+        mappingCardinality: { type: string, const: zero_or_one_per_physical_set }
+    ToolAssetTargetNotRequested:
+      type: object
+      additionalProperties: false
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: not_requested }
+        reasonCode: { type: string, const: phase_6_dispatch_prohibited }
+    ToolAssetRequest:
+      type: object
+      additionalProperties: false
+      required: [globalId, tenantId, apiVersion, operation, targetMode, requestState, inputValidationState, businessApprovalState, dispatchState, targetResultState, requestInput, requestInputHash, payloadHash, actorUserId, requestId, traceId, idempotencyKeyHash, createdAt, formalAssetMapping, targetResult, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        apiVersion: { type: string, const: npi.tooling-asset.v1 }
+        operation: { type: string, const: create_or_update_tool_asset }
+        targetMode: { type: string, const: mock }
+        requestState: { type: string, const: draft }
+        inputValidationState: { type: string, const: validated_mock }
+        businessApprovalState: { type: string, const: unavailable }
+        dispatchState: { type: string, const: prohibited }
+        targetResultState: { type: string, const: not_requested }
+        requestInput: { $ref: "#/components/schemas/ToolAssetRequestInput" }
+        requestInputHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        idempotencyKeyHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        createdAt: { type: string, format: date-time }
+        formalAssetMapping: { $ref: "#/components/schemas/ToolAssetFormalMappingUnavailable" }
+        targetResult: { $ref: "#/components/schemas/ToolAssetTargetNotRequested" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    ToolAssetRequestCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        items:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolAssetRequest" }
+    ToolingAcceptanceAssetPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, recordEvidence, prepareMockAssetRequest, approveAcceptance, dispatchAssetRequest, editErpProjection]
+      properties:
+        view: { type: boolean, const: true }
+        recordEvidence: { type: boolean }
+        prepareMockAssetRequest: { type: boolean }
+        approveAcceptance: { type: boolean, const: false }
+        dispatchAssetRequest: { type: boolean, const: false }
+        editErpProjection: { type: boolean, const: false }
+    ToolingAcceptanceAssetContext:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, permissions, businessApproval, acceptanceRevisions, assetRequests, assetProjection]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingAcceptanceAssetPermissions" }
+        businessApproval: { $ref: "#/components/schemas/ToolingUnavailableState" }
+        acceptanceRevisions:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolingAcceptanceEvidenceRevision" }
+        assetRequests:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolAssetRequest" }
+        assetProjection: { $ref: "#/components/schemas/ToolAssetProjection" }
+    ToolingAcceptanceEvidenceCommand:
+      type: object
+      additionalProperties: false
+      required: [acceptanceEvidence]
+      properties:
+        acceptanceEvidence: { $ref: "#/components/schemas/ToolingAcceptanceEvidenceRevision" }
     CommandResult:
       type: object
       required: [globalId, version, status]

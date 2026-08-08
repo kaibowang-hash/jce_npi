@@ -4899,3 +4899,110 @@ Append immutable Capacity Scenario Revision,追加不可變容量情境修訂
 Explicit Part capacity inputs,明確零件容量輸入
 Usage per assembly,每個裝配件用量
 Selected exact Tooling Sets,已選擇的精確模具套件
+A clean private File Revision is unavailable for this acceptance evidence.,此驗收證據所需的乾淨私有檔案修訂不可用。
+A not-applicable assertion requires an exact reason.,不適用聲明需要明確原因。
+A responsible Project member is unavailable for this acceptance evidence.,此驗收證據所需的專案責任成員不可用。
+A sealed Tool Asset command receipt cannot be changed.,已封存的模具資產命令回執不可變更。
+A sealed Tool Asset command receipt requires its exact response.,封存模具資產命令回執需要其精確回應。
+A successor acceptance revision cannot change its stable Tooling context.,後續驗收證據修訂不能變更其穩定的模具上下文。
+A successor acceptance revision must increment the version by one.,後續驗收證據修訂必須將版本遞增一。
+A successor acceptance revision must reference the exact current revision.,後續驗收證據修訂必須引用精確的目前修訂。
+A successor revision requires the exact predecessor.,後續修訂需要精確的前序修訂。
+Acceptance Checklist Snapshot,驗收清單快照
+Acceptance Evidence Revision,驗收證據修訂
+Acceptance Evidence Revision Global ID,驗收證據修訂全域 ID
+Acceptance Evidence Version,驗收證據版本
+Acceptance Global ID,驗收全域 ID
+Acceptance Version Key Hash,驗收版本鍵雜湊
+Acceptance Version Key Hash does not match.,驗收版本鍵雜湊不相符。
+Acceptance checklist requirement keys must be unique.,驗收清單要求鍵必須唯一。
+An unsealed Tool Asset command receipt cannot contain a response.,未封存的模具資產命令回執不能包含回應。
+Asset Action Evidence Snapshot,資產動作證據快照
+Asset action evidence requires at least one exact File Revision.,資產動作證據至少需要一個精確的檔案修訂。
+Business Approval State,業務核准狀態
+Customer-owned Tooling repairs require exact customer authorization evidence.,客戶所有模具的維修需要精確的客戶授權證據。
+Dispatch State,派發狀態
+ERP Asset action execution must remain unavailable.,ERP 資產動作執行必須保持不可用。
+ERP repair result must remain unavailable.,ERP 維修結果必須保持不可用。
+Enter a bounded list of valid records.,請輸入有界的有效記錄清單。
+Enter a bounded list.,請輸入有界清單。
+Enter a closed object with the required fields.,請輸入包含必要欄位的封閉物件。
+Enter a three-letter currency code.,請輸入三字母幣別代碼。
+Enter a timezone-aware datetime.,請輸入帶時區的日期時間。
+Enter a valid Tool Asset request input.,請輸入有效的模具資產請求輸入。
+Enter a valid actor identity.,請輸入有效的操作者身分。
+Enter a valid decimal value.,請輸入有效的小數值。
+Enter a valid lowercase content hash.,請輸入有效的小寫內容雜湊。
+Enter a valid stable key.,請輸入有效的穩定鍵。
+Enter valid Tooling acceptance evidence revisions.,請輸入有效的模具驗收證據修訂。
+Every required acceptance category must contain at least one checklist item.,每個必要的驗收類別必須至少包含一個清單項目。
+Formal Supplier references must use the ERPNext source.,正式供應商引用必須使用 ERPNext 來源。
+Formal spare Item and inventory must remain unavailable.,正式備件物料和庫存必須保持不可用。
+Input Validation State,輸入驗證狀態
+Missing checklist evidence cannot contain a File Revision.,缺少的清單證據不能包含檔案修訂。
+NPI Tool Asset Command Idempotency,NPI 模具資產命令冪等回執
+NPI Tool Asset Request,NPI 模具資產請求
+NPI Tooling Acceptance Evidence Revision,NPI 模具驗收證據修訂
+Phase 6 Tool Asset request truth is invalid.,第 6 階段模具資產請求真值無效。
+Predecessor Acceptance Evidence Revision,前序驗收證據修訂
+Record identities must be unique.,記錄身分必須唯一。
+Recorded checklist evidence requires at least one exact File Revision.,已記錄的清單證據至少需要一個精確的檔案修訂。
+Repair Evidence Snapshot,維修證據快照
+Repair quote currency and amount must be supplied together.,維修報價幣別和金額必須同時提供。
+Select a supported Asset action.,請選擇支援的資產動作。
+Select a supported Tooling Requirement kind.,請選擇支援的模具要求類型。
+Select a supported acceptance category.,請選擇支援的驗收類別。
+Select a supported evidence disposition.,請選擇支援的證據處置。
+Select a supported spare kind.,請選擇支援的備件類型。
+Select the operation-specific Tool Asset command.,請選擇操作專用的模具資產命令。
+Select the supported Tooling schema version.,請選擇支援的模具架構版本。
+Set Revision Binding,套件修訂綁定
+Set Revision Binding Global ID,套件修訂綁定全域 ID
+Set Revision Binding Snapshot Hash,套件修訂綁定快照雜湊
+Set Revision Binding Version,套件修訂綁定版本
+Spare Recommendation Snapshot,備件建議快照
+Supplier source and object identity must be supplied together.,供應商來源和物件身分必須同時提供。
+Target Result State,目標結果狀態
+The Tool Asset command receipt identity cannot be changed.,模具資產命令回執身分不可變更。
+The Tool Asset request input contract is invalid.,模具資產請求輸入合約無效。
+The Tool Asset request operation is invalid.,模具資產請求操作無效。
+The Tool Asset request payload hash does not match.,模具資產請求承載內容雜湊不相符。
+The Tool Asset target result truth is invalid.,模具資產目標結果真值無效。
+The acceptance version key hash does not match.,驗收版本鍵雜湊不相符。
+The exact Tooling Acceptance Evidence Revision is unavailable for this Asset request.,此資產請求所需的精確模具驗收證據修訂不可用。
+The exact Tooling Master is unavailable for this Asset request.,此資產請求所需的精確模具主檔不可用。
+The exact Tooling Master is unavailable for this acceptance evidence.,此驗收證據所需的精確模具主檔不可用。
+The exact Tooling Revision is unavailable for this Asset request.,此資產請求所需的精確模具修訂不可用。
+The exact Tooling Revision is unavailable for this acceptance evidence.,此驗收證據所需的精確模具修訂不可用。
+The exact Tooling Set Revision Binding is unavailable for this Asset request.,此資產請求所需的精確模具套件修訂綁定不可用。
+The exact Tooling Set Revision Binding is unavailable.,精確的模具套件修訂綁定不可用。
+The exact physical Tooling Set is unavailable for this Asset request.,此資產請求所需的精確實體模具套件不可用。
+The exact physical Tooling Set is unavailable for this acceptance evidence.,此驗收證據所需的精確實體模具套件不可用。
+The first revision cannot contain a predecessor.,首個修訂不能包含前序修訂。
+The predecessor Tooling Acceptance Evidence Revision is unavailable.,前序模具驗收證據修訂不可用。
+The sealed Tool Asset request is unavailable.,已封存的模具資產請求不可用。
+The sealed response does not match its exact Tool Asset request.,已封存回應與其精確模具資產請求不相符。
+The unavailable ERP Asset projection is invalid.,不可用的 ERP 資產投影無效。
+Tool Asset API Version,模具資產 API 版本
+Tool Asset Operation,模具資產操作
+Tool Asset Request Global ID,模具資產請求全域 ID
+Tool Asset Request Input Hash,模具資產請求輸入雜湊
+Tool Asset Request Input Snapshot,模具資產請求輸入快照
+Tool Asset Request Input Snapshot does not match.,模具資產請求輸入快照不相符。
+Tool Asset Request Payload Hash,模具資產請求承載內容雜湊
+Tool Asset Request Snapshot,模具資產請求快照
+Tool Asset Request State,模具資產請求狀態
+Tool Asset Request fields do not match the exact snapshot.,模具資產請求欄位與精確快照不相符。
+Tool Asset request history cannot be changed.,模具資產請求歷史不可變更。
+Tool Asset request history cannot be deleted.,模具資產請求歷史不可刪除。
+Tool Asset requests can only be changed through an authorized NPI command.,模具資產請求只能透過已授權的 NPI 命令變更。
+Tooling Acceptance Evidence Revision Snapshot,模具驗收證據修訂快照
+Tooling Acceptance Evidence Revision fields do not match the exact snapshot.,模具驗收證據修訂欄位與精確快照不相符。
+Tooling Acceptance Evidence Snapshot Hash does not match.,模具驗收證據快照雜湊不相符。
+Tooling Master Snapshot Hash,模具主檔快照雜湊
+{field} does not match the exact acceptance evidence.,{field} 與精確驗收證據不相符。
+{field} does not match.,{field} 不相符。
+Asset action evidence must use an action or approval-reference role.,資產動作證據必須使用動作或核准引用角色。
+Checklist evidence must use the checklist evidence role.,清單證據必須使用清單證據角色。
+Customer authorization evidence must use the customer-authorization role.,客戶授權證據必須使用客戶授權角色。
+Repair verification evidence must use the repair-verification role.,維修驗證證據必須使用維修驗證角色。

@@ -114,8 +114,9 @@ The aggregate is named `ToolingAcceptanceEvidenceRevision`, not an accepted
 Tooling lifecycle state. It is append-only and binds:
 
 - exact Project, Tooling Master and physical Tooling Set identities;
-- exact current Set version and exact Set-to-Tooling-Revision binding;
-- exact Tooling Revision identity, revision code, version and snapshot hash;
+- exact immutable Set snapshot hash and exact Set-to-Tooling-Revision binding;
+- exact Tooling Revision identity, revision label, revision number and snapshot
+  hash;
 - predecessor revision, evidence revision number and canonical snapshot hash;
 - recorder, recorded time, request and trace identities; and
 - complete typed evidence sections.
@@ -170,7 +171,8 @@ No action evidence changes Set lifecycle, location or custody automatically.
 The browser command selects only:
 
 - the exact acceptance-evidence revision;
-- exact optimistic Master/Set/binding/Revision/evidence versions and hashes;
+- exact Master/Set/binding/Revision snapshots and optimistic File/evidence
+  versions and hashes;
 - `targetMode: mock`; and
 - the fixed acknowledgement that business approval and ERP execution are not
   being claimed.
@@ -245,10 +247,10 @@ credential, ERP fact or production default.
 
 ## 5. Integration contract boundary
 
-The event schema may add closed future identities for:
+The event schema may add closed future event types for:
 
-- `npi.tooling-asset.command.v1`; and
-- `erpnext.tooling-asset.result.v1`.
+- `npi.tooling_asset_request.ready`; and
+- `erpnext.tooling_asset_result.observed`.
 
 The command payload fixes `operation: create_or_update_tool_asset`, exact
 request/Tooling/Set/Revision/evidence identity and hashes, and NPI-owned
@@ -269,9 +271,10 @@ projection persistence.
 - Every command requires authentication, CSRF, System Manager management
   transport, actor-bound idempotency and the independent P6-06 route switch.
   System Manager transport does not become Tooling acceptance authority.
-- Exact Master containment, Set containment/version, current Set-to-Revision
-  binding, Revision snapshot, Project member, private clean File Revision and
-  source-reference invariants are re-resolved on every command.
+- Exact Master identity/snapshot, Project-contained Set snapshot, immutable
+  Set-to-Revision binding, Revision snapshot, Project member, private clean
+  File Revision and source-reference invariants are re-resolved on every
+  command.
 - File evidence exposes stable File Revision identity, hash, name and scan
   state only; it never returns a raw private URL.
 - Acceptance revision, Asset request, audit and receipt persistence share one

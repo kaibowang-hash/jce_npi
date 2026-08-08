@@ -518,6 +518,43 @@ objects:
       formula_version_rounding_part_assembly_bottleneck_and_gap_results: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: INPUT_SNAPSHOT_WINS}
       physical_set_operational_or_asset_state: {owner: ERPNEXT_AND_FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
 
+  ToolingAcceptanceEvidenceRevision:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: reference_only
+    fields:
+      exact_evidence_version_predecessor_project_master_physical_set_binding_and_revision: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      checklist_evidence_presence_and_clean_private_file_references: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      project_asset_action_spare_recommendation_and_repair_evidence: {owner: NPI_ONE_TOOLING_ACCEPTANCE_EVIDENCE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      acceptance_approval_and_tooling_lifecycle_result: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      official_trial_quality_and_approved_process_baseline: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      actual_asset_movement_repair_inventory_and_cost_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolAssetRequest:
+    owner_system: NPI_ONE_INTEGRATION
+    erp_view: execution_intent_only
+    fields:
+      exact_draft_request_actor_project_physical_set_and_input_hash: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      mock_input_validation: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: LOCAL_VALIDATION_ONLY}
+      business_approval_dispatch_and_target_result: {owner: FUTURE_APPROVED_TOOLING_POLICY_AND_PHASE_8_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      formal_asset_id_mapping_and_target_version: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ToolAssetCommandIdempotency:
+    owner_system: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOL_ASSET_REQUEST_COMMAND, editable_in: [NPI_ONE_TOOL_ASSET_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
+  ToolAssetProjection:
+    owner_system: ERPNEXT
+    npi_view: read_only
+    fields:
+      zero_or_one_mapping_per_physical_set: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      formal_asset_id_state_location_shot_life_and_maintenance_due: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      movement_repair_spare_inventory_supplier_and_cost_history: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      source_observation_mapping_version_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
+
   ToolingHealthProjection:
     owner_system: ERPNEXT
     npi_view: read_only

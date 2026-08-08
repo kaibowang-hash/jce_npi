@@ -55,6 +55,7 @@ _OPERATIONS = {
     "tooling_defect.revise": "tooling_defect_revision",
     "tooling_process_profile.create": "tooling_process_profile_revision",
     "tooling_capacity_scenario.create": "tooling_capacity_scenario_revision",
+    "tooling_acceptance_evidence.create": "tooling_acceptance_evidence_revision",
 }
 
 

@@ -129,7 +129,7 @@ class Phase6ToolingEngineeringControlsMetadataTest(unittest.TestCase):
         operations = str(fields["operation"].get("options", "")).splitlines()
         targets = str(fields["target_object_type"].get("options", "")).splitlines()
         self.assertEqual(
-            operations[-3:],
+            operations[-4:-1],
             [
                 "tooling_defect.revise",
                 "tooling_process_profile.create",
@@ -137,7 +137,7 @@ class Phase6ToolingEngineeringControlsMetadataTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            targets[-3:],
+            targets[-4:-1],
             [
                 "tooling_defect_revision",
                 "tooling_process_profile_revision",
@@ -149,7 +149,7 @@ class Phase6ToolingEngineeringControlsMetadataTest(unittest.TestCase):
             / "npi_tooling_command_idempotency"
             / "npi_tooling_command_idempotency.py"
         ).read_text(encoding="utf-8")
-        for operation, target in zip(operations[-3:], targets[-3:], strict=True):
+        for operation, target in zip(operations[-4:-1], targets[-4:-1], strict=True):
             self.assertIn(f'"{operation}": "{target}"', source)
 
     def test_controllers_require_closed_write_and_exact_dependencies(self) -> None:
