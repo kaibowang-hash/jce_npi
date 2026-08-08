@@ -27,6 +27,15 @@ REQUIREMENT_ID = "d78d72bf-014f-49db-a733-0c76ce4fc3cb"
 FILE_REVISION_ID = "c32eb45b-e4df-4c7e-b879-bd8e1685d1ae"
 TOOLING_REVISION_ID = "60272696-371b-465b-a3ec-2324543857a1"
 PROCESS_CHAIN_REVISION_ID = "78181c5b-c8bb-46dd-bfe5-4fe267ddfb48"
+MANUFACTURING_PLAN_REVISION_ID = "b70e572f-ff60-4cb0-b5fb-d54bce461ab0"
+MANUFACTURING_PLAN_ID = "25eec22c-5f86-45a0-89c6-f28f411b7d6c"
+MILESTONE_ID = "d350d48d-df84-460d-9b43-62be312c73be"
+MEMBER_ID = "2c1937bc-d384-49c4-80ab-90501180e4f8"
+LIFECYCLE_ID = "0c8b108d-2031-4059-8a71-6cc777409a7e"
+RELEASE_EVENT_ID = "875abf5a-ec5e-4654-9fef-3e9c2f72c1c7"
+SHA256_A = "a" * 64
+SHA256_B = "b" * 64
+SHA256_C = "c" * 64
 
 
 class AttrDict(dict):
@@ -133,6 +142,30 @@ class MockRepository:
     def create_tooling_set_revision_binding(self, *args: object, **kwargs: Any):
         return self._command("set_binding_create", args, kwargs)
 
+    def tooling_manufacturing_plans(self, *args: object, **kwargs: Any):
+        return self._query("manufacturing_plans", args, kwargs)
+
+    def tooling_manufacturing_plan_detail(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._query("manufacturing_plan_detail", args, kwargs)
+
+    def create_tooling_manufacturing_plan(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("manufacturing_plan_create", args, kwargs)
+
+    def create_tooling_manufacturing_milestone_observation(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("manufacturing_observation_create", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         if self.failure is not None:
@@ -190,6 +223,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             npi_p6_01_routes_disabled=False,
             npi_p6_02_routes_disabled=False,
             npi_p6_03_routes_disabled=False,
+            npi_p6_04_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -202,6 +236,8 @@ class Phase6ToolingApiTest(unittest.TestCase):
                 "part_revision_id": REVISION_ID,
                 "tooling_revision_id": TOOLING_REVISION_ID,
                 "process_chain_revision_id": PROCESS_CHAIN_REVISION_ID,
+                "manufacturing_plan_revision_id": MANUFACTURING_PLAN_REVISION_ID,
+                "milestone_id": MILESTONE_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -341,6 +377,67 @@ class Phase6ToolingApiTest(unittest.TestCase):
             "externalIdentities": [],
             "designDocumentRevisions": [],
             "reason": "Initial controlled Tooling Revision",
+        }
+
+    @staticmethod
+    def manufacturing_plan_payload() -> dict[str, object]:
+        member = {
+            "globalId": MEMBER_ID,
+            "userId": "admin@example.invalid",
+            "optimisticVersion": 1,
+        }
+        released = {
+            "revisionGlobalId": REVISION_ID,
+            "revisionSnapshotHash": SHA256_A,
+            "lifecycleGlobalId": LIFECYCLE_ID,
+            "lifecycleVersion": 3,
+            "releaseEventGlobalId": RELEASE_EVENT_ID,
+            "releaseEventHash": SHA256_B,
+            "releaseSnapshotHash": SHA256_C,
+        }
+        return {
+            "planGlobalId": MANUFACTURING_PLAN_ID,
+            "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+            "toolingRevisionSnapshotHash": SHA256_A,
+            "sourcingStrategy": "internal",
+            "responsibleMember": member,
+            "engineeringEstimate": {"amount": "120000.00", "currency": "CNY"},
+            "budget": {"amount": "130000.00", "currency": "CNY"},
+            "evidence": [],
+            "designReleaseEvidence": [released],
+            "milestones": [
+                {
+                    "globalId": MILESTONE_ID,
+                    "sequence": 1,
+                    "category": "design",
+                    "plannedStart": "2026-08-10",
+                    "plannedFinish": "2026-08-20",
+                    "responsibilityKind": "internal",
+                    "responsibleMember": member,
+                    "predecessorGlobalIds": [],
+                }
+            ],
+            "reason": "Initial controlled manufacturing plan",
+        }
+
+    @staticmethod
+    def manufacturing_observation_payload() -> dict[str, object]:
+        return {
+            "planRevisionSnapshotHash": SHA256_A,
+            "milestoneSnapshotHash": SHA256_B,
+            "progressPercentage": 35,
+            "actualStart": "2026-08-10",
+            "risk": "Material lead time is being monitored",
+            "note": "Internal engineering observation",
+            "evidence": [
+                {
+                    "role": "progress_evidence",
+                    "fileRevisionGlobalId": FILE_REVISION_ID,
+                    "fileOptimisticVersion": 2,
+                    "frappeContentHash": "d" * 32,
+                    "sha256": SHA256_C,
+                }
+            ],
         }
 
     def test_queries_authorize_project_before_protected_master(self) -> None:
@@ -736,6 +833,111 @@ class Phase6ToolingApiTest(unittest.TestCase):
         result = self.call(self.api.get_tooling_revisions)
         self.assertEqual(result["code"], "TOOLING_REVISION_ROUTES_DISABLED")
         self.assertEqual(self.frappe.local.response.http_status_code, 503)
+
+    def test_manufacturing_queries_and_commands_are_project_first_and_closed(self) -> None:
+        self.assertEqual(
+            self.call(self.api.get_tooling_manufacturing_plans),
+            self.response,
+        )
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "manufacturing_plans"],
+        )
+        self.repository.calls.clear()
+        self.assertEqual(
+            self.call(self.api.get_tooling_manufacturing_plan),
+            self.response,
+        )
+        self.assertEqual(
+            [value[0] for value in self.repository.calls[:3]],
+            ["authorize", "authorize", "manufacturing_plan_detail"],
+        )
+        self.assertEqual(
+            str(self.repository.calls[-1][1][2]),
+            MANUFACTURING_PLAN_REVISION_ID,
+        )
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_manufacturing_plan,
+            self.manufacturing_plan_payload(),
+        )
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "manufacturing_plan_create")
+        self.assertEqual(str(args[1]), MASTER_ID)
+        self.assertEqual(str(values["plan_id"]), MANUFACTURING_PLAN_ID)
+        self.assertEqual(values["sourcing_strategy"].value, "internal")
+        self.assertEqual(values["engineering_estimate"].currency, "CNY")
+        self.assertEqual(len(values["design_release_evidence"]), 1)
+        self.assertEqual(len(values["milestones"]), 1)
+        self.assertNotIn("tenant_id", values)
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_manufacturing_milestone_observation,
+            self.manufacturing_observation_payload(),
+        )
+        name, args, values = self.repository.calls[-1]
+        self.assertEqual(name, "manufacturing_observation_create")
+        self.assertEqual(str(args[2]), MANUFACTURING_PLAN_REVISION_ID)
+        self.assertEqual(str(args[3]), MILESTONE_ID)
+        self.assertEqual(values["progress_percentage"], 35)
+        self.assertEqual(values["evidence"][0]["role"].value, "progress_evidence")
+        self.assertEqual(self.frappe.local.response.http_status_code, 201)
+
+    def test_manufacturing_authorization_precedes_body_and_switch_is_independent(self) -> None:
+        self.repository.scope = False
+        result = self.call(
+            self.api.create_tooling_manufacturing_plan,
+            {"doctype": "Secret"},
+        )
+        self.assertEqual(result["code"], "TOOLING_UNAVAILABLE")
+        self.assertEqual(self.repository.calls[0][0], "authorize")
+
+        self.repository.scope = True
+        self.frappe.conf.npi_p6_04_routes_disabled = True
+        result = self.call(self.api.get_tooling_manufacturing_plans)
+        self.assertEqual(result["code"], "TOOLING_MANUFACTURING_ROUTES_DISABLED")
+        self.assertEqual(self.frappe.local.response.http_status_code, 503)
+        self.frappe.conf.npi_p6_04_routes_disabled = False
+        self.assertEqual(self.call(self.api.get_tooling_revisions), self.response)
+
+    def test_router_maps_manufacturing_paths_with_fail_closed_switch(self) -> None:
+        base = f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/manufacturing-plans"
+        cases = {
+            ("GET", base): "get_tooling_manufacturing_plans",
+            ("POST", base): "create_tooling_manufacturing_plan",
+            (
+                "GET",
+                f"{base}/{MANUFACTURING_PLAN_REVISION_ID}",
+            ): "get_tooling_manufacturing_plan",
+            (
+                "POST",
+                f"{base}/{MANUFACTURING_PLAN_REVISION_ID}/milestones/{MILESTONE_ID}/observations",
+            ): "create_tooling_manufacturing_milestone_observation",
+        }
+        for (method, path), suffix in cases.items():
+            with self.subTest(path=path):
+                self.frappe.local.request = types.SimpleNamespace(
+                    path=path,
+                    method=method,
+                )
+                self.router.route_request()
+                self.assertTrue(self.frappe.local.form_dict.cmd.endswith(suffix))
+
+        del self.frappe.conf["npi_p6_04_routes_disabled"]
+        self.frappe.local.request = types.SimpleNamespace(path=base, method="GET")
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.bff.tooling_manufacturing_routes_disabled",
+        )
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/tooling/{MASTER_ID}/revisions",
+            method="GET",
+        )
+        self.router.route_request()
+        self.assertTrue(self.frappe.local.form_dict.cmd.endswith("get_tooling_revisions"))
 
     def test_direct_route_switch_and_command_failure_roll_back_fail_closed(self) -> None:
         self.frappe.conf.npi_p6_01_routes_disabled = True

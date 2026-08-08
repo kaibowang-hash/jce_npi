@@ -18,6 +18,7 @@ from .foundation.errors import (
     RequestValidationFailed,
     TenantScopeUnavailable,
     ToolingRoutesDisabled,
+    ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
     ToolingSetRoutesDisabled,
 )
@@ -88,6 +89,27 @@ def require_tooling_revision_routes_enabled() -> None:
 
     if tooling_revision_routes_are_disabled():
         raise ToolingRevisionRoutesDisabled()
+
+
+def tooling_manufacturing_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P6-04 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_04_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_manufacturing_routes_enabled() -> None:
+    """Keep only P6-04 manufacturing handlers closed unless explicitly enabled."""
+
+    if tooling_manufacturing_routes_are_disabled():
+        raise ToolingManufacturingRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

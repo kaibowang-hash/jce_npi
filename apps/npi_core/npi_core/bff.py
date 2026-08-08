@@ -18,6 +18,7 @@ from .foundation.errors import (
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     ToolingRoutesDisabled,
+    ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
     ToolingSetRoutesDisabled,
 )
@@ -32,6 +33,7 @@ from .request_security import (
     project_collaboration_routes_are_disabled,
     response_request_id,
     tooling_set_routes_are_disabled,
+    tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
     tooling_routes_are_disabled,
 )
@@ -99,6 +101,21 @@ _PROJECT_TOOLING_REVISIONS_ROUTE = re.compile(
 _PROJECT_TOOLING_REVISION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
     r"(?P<tooling_master_id>[^/:]+)/revisions/(?P<tooling_revision_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/manufacturing-plans$"
+)
+_PROJECT_TOOLING_MANUFACTURING_PLAN_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/manufacturing-plans/"
+    r"(?P<manufacturing_plan_revision_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_MANUFACTURING_OBSERVATIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/manufacturing-plans/"
+    r"(?P<manufacturing_plan_revision_id>[^/:]+)/milestones/"
+    r"(?P<milestone_id>[^/:]+)/observations$"
 )
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
@@ -423,6 +440,23 @@ def route_request() -> None:
             command = "npi_core.tooling_api.get_tooling_cockpit"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
+        manufacturing_queries = (
+            (
+                _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE,
+                "npi_core.tooling_api.get_tooling_manufacturing_plans",
+            ),
+            (
+                _PROJECT_TOOLING_MANUFACTURING_PLAN_ROUTE,
+                "npi_core.tooling_api.get_tooling_manufacturing_plan",
+            ),
+        )
+        for route, candidate in manufacturing_queries:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
         revision_queries = (
             (
                 _PROJECT_TOOLING_REVISIONS_ROUTE,
@@ -466,6 +500,23 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        manufacturing_commands = (
+            (
+                _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE,
+                "npi_core.tooling_api.create_tooling_manufacturing_plan",
+            ),
+            (
+                _PROJECT_TOOLING_MANUFACTURING_OBSERVATIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_manufacturing_milestone_observation",
+            ),
+        )
+        for route, candidate in manufacturing_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         revision_commands = (
             (
@@ -774,6 +825,9 @@ def route_request() -> None:
     if _p6_03_routes_disabled(command):
         command = "npi_core.bff.tooling_revision_routes_disabled"
         route_params = {}
+    if _p6_04_routes_disabled(command):
+        command = "npi_core.bff.tooling_manufacturing_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -962,6 +1016,23 @@ def tooling_revision_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_manufacturing_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-04 while retaining earlier Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingManufacturingRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1043,6 +1114,15 @@ def _p6_03_routes_disabled(command: str | None) -> bool:
         "npi_core.tooling_api.get_tooling_process_chain",
         "npi_core.tooling_api.create_tooling_process_chain_revision",
         "npi_core.tooling_api.create_tooling_set_revision_binding",
+    }
+
+
+def _p6_04_routes_disabled(command: str | None) -> bool:
+    return tooling_manufacturing_routes_are_disabled() and command in {
+        "npi_core.tooling_api.get_tooling_manufacturing_plans",
+        "npi_core.tooling_api.get_tooling_manufacturing_plan",
+        "npi_core.tooling_api.create_tooling_manufacturing_plan",
+        "npi_core.tooling_api.create_tooling_manufacturing_milestone_observation",
     }
 
 
@@ -1141,6 +1221,9 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TOOLING_PROCESS_CHAINS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_PROCESS_CHAIN_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_SET_REVISION_BINDING_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_MANUFACTURING_PLAN_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_MANUFACTURING_OBSERVATIONS_ROUTE.fullmatch(path) is not None
     ):
         return True
     if (

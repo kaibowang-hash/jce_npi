@@ -44,6 +44,7 @@ from npi_core.tooling.domain import (
     validate_intake_successor,
 )
 from npi_core.tooling.frappe_validation import tooling_command_write
+from npi_core.tooling.manufacturing_repository import ToolingManufacturingRepositoryMixin
 from npi_core.tooling.revision_repository import ToolingRevisionRepositoryMixin
 from npi_core.tooling.diagnostics import (
     applicability_create_server_step,
@@ -66,13 +67,25 @@ class ToolingCommandOutcome:
     replayed: bool = False
 
 
-class FrappeToolingRepository(ToolingRevisionRepositoryMixin, FrappeDocumentRepository):
+class FrappeToolingRepository(
+    ToolingManufacturingRepositoryMixin,
+    ToolingRevisionRepositoryMixin,
+    FrappeDocumentRepository,
+):
     """Project-first persistence adapter for the bounded P6-01 slice."""
 
-    def __init__(self, *, clock=None, uuid_factory=uuid4, **values: object) -> None:
+    def __init__(
+        self,
+        *,
+        clock=None,
+        uuid_factory=uuid4,
+        procurement_cost_reader=None,
+        **values: object,
+    ) -> None:
         super().__init__(**values)
         self._clock = clock or (lambda: datetime.now(UTC))
         self._uuid_factory = uuid_factory
+        self._procurement_cost_reader = procurement_cost_reader
 
     def authorize_scope(
         self,

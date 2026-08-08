@@ -3603,6 +3603,141 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling/{toolingMasterId}/manufacturing-plans:
+    get:
+      tags: [Tooling]
+      operationId: getToolingManufacturingPlans
+      description: >
+        Returns bounded immutable internal manufacturing plans and observations
+        after Project-first authorization and exact Master containment. Formal
+        Supplier, purchasing, receipt, invoice and actual-cost truth remains a
+        read-only ERPNext projection and is unavailable without an injected reader.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingManufacturingPlanCollectionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createToolingManufacturingPlan
+      description: >
+        Appends one immutable internal sourcing, estimate, budget, responsibility,
+        exact released-document evidence and milestone plan. This command neither
+        approves Tooling nor writes ERPNext.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_manufacturing_plan.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingManufacturingPlan" }
+      responses:
+        "201": { $ref: "#/components/responses/ToolingManufacturingPlanCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/manufacturing-plans/{manufacturingPlanRevisionId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolingManufacturingPlan
+      description: Returns one exact immutable manufacturing-plan revision with its bounded observation history and current release capability.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: manufacturingPlanRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ToolingManufacturingPlanDetailResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling/{toolingMasterId}/manufacturing-plans/{manufacturingPlanRevisionId}/milestones/{milestoneId}/observations:
+    post:
+      tags: [Tooling]
+      operationId: createToolingManufacturingMilestoneObservation
+      description: >
+        Appends one immutable internal Project-member observation against the
+        exact plan and milestone snapshot, with only exact clean private File
+        Revision evidence. Supplier portal submission is not supported.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-root
+      x-audit-operation: tooling_manufacturing_milestone.observe
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: toolingMasterId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: manufacturingPlanRevisionId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: milestoneId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateToolingManufacturingMilestoneObservation"
+      responses:
+        "201": { $ref: "#/components/responses/ToolingManufacturingObservationCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/parts/{partId}/revisions/{partRevisionId}/controlled-specification:
     get:
       tags: [Tooling]
@@ -4726,6 +4861,44 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolingRevisionDetail" }
+    ToolingManufacturingPlanCollectionResult:
+      description: Authorized bounded immutable manufacturing-plan collection
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingManufacturingPlanCollection" }
+    ToolingManufacturingPlanDetailResult:
+      description: Authorized exact immutable manufacturing-plan detail
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingManufacturingPlanDetail" }
+    ToolingManufacturingPlanCommandResult:
+      description: Immutable manufacturing plan after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingManufacturingPlanCommand" }
+    ToolingManufacturingObservationCommandResult:
+      description: Immutable milestone observation after atomic create or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ToolingManufacturingObservationCommand" }
     PartControlledSpecificationResult:
       description: Authorized exact Part controlled-specification context
       headers:
@@ -11420,6 +11593,85 @@ components:
         effectiveFrom: { type: string, format: date }
         effectiveTo: { type: string, format: date }
         reason: { type: string, minLength: 1, maxLength: 500 }
+    CreateToolingManufacturingMilestone:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, sequence, category, plannedStart, plannedFinish, responsibilityKind, responsibleMember, predecessorGlobalIds]
+      properties:
+        globalId: { type: string, format: uuid }
+        sequence: { type: integer, minimum: 1, maximum: 100 }
+        category:
+          type: string
+          enum: [design, material_preparation, heat_treatment, machining, assembly, trial_preparation, delivery]
+        plannedStart: { type: string, format: date }
+        plannedFinish: { type: string, format: date }
+        responsibilityKind: { type: string, enum: [internal, supplier] }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        predecessorGlobalIds:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    CreateToolingManufacturingPlan:
+      type: object
+      additionalProperties: false
+      required:
+        [toolingRevisionGlobalId, toolingRevisionSnapshotHash, sourcingStrategy, responsibleMember, evidence, designReleaseEvidence, milestones, reason]
+      properties:
+        planGlobalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sourcingStrategy: { type: string, enum: [internal, supplier, hybrid] }
+        responsibleMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        engineeringEstimate: { $ref: "#/components/schemas/ToolingPlanningMoney" }
+        budget: { $ref: "#/components/schemas/ToolingPlanningMoney" }
+        evidence:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/ToolingManufacturingPlanEvidence" }
+        designReleaseEvidence:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/ToolingReleasedDocumentEvidence" }
+        milestones:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/CreateToolingManufacturingMilestone" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    CreateToolingMilestoneFileEvidence:
+      type: object
+      additionalProperties: false
+      required: [role, fileRevisionGlobalId, fileOptimisticVersion, frappeContentHash, sha256]
+      properties:
+        role: { type: string, enum: [progress_evidence, technical_evidence, delivery_evidence] }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CreateToolingManufacturingMilestoneObservation:
+      type: object
+      additionalProperties: false
+      required: [planRevisionSnapshotHash, milestoneSnapshotHash, progressPercentage, evidence]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        planRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        milestoneSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        progressPercentage: { type: integer, minimum: 0, maximum: 100 }
+        actualStart: { type: string, format: date }
+        actualFinish: { type: string, format: date }
+        risk: { type: string, minLength: 1, maxLength: 240 }
+        note: { type: string, minLength: 1, maxLength: 1000 }
+        evidence:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/CreateToolingMilestoneFileEvidence" }
     ToolingProjectMemberResponsibility:
       type: object
       additionalProperties: false
@@ -11759,6 +12011,65 @@ components:
       oneOf:
         - { $ref: "#/components/schemas/ToolingProcurementCostUnavailable" }
         - { $ref: "#/components/schemas/ToolingProcurementCostAvailable" }
+    ToolingManufacturingPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, createPlan, observeMilestone, transitionLifecycle, editErpProjection]
+      properties:
+        view: { type: boolean }
+        createPlan: { type: boolean }
+        observeMilestone: { type: boolean }
+        transitionLifecycle: { type: boolean, const: false }
+        editErpProjection: { type: boolean, const: false }
+    ToolingManufacturingPlanItem:
+      type: object
+      additionalProperties: false
+      required: [plan, observations, designReleaseEvidence]
+      properties:
+        plan: { $ref: "#/components/schemas/ToolingManufacturingPlanRevision" }
+        observations:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ToolingManufacturingMilestoneObservation" }
+        designReleaseEvidence: { $ref: "#/components/schemas/ToolingDesignReleaseEvidenceCapability" }
+    ToolingManufacturingPlanCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, permissions, manufacturingAuthorization, erpProjection, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingManufacturingPermissions" }
+        manufacturingAuthorization: { $ref: "#/components/schemas/ToolingManufacturingAuthorizationUnavailable" }
+        erpProjection: { $ref: "#/components/schemas/ToolingProcurementCostProjection" }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingManufacturingPlanItem" }
+    ToolingManufacturingPlanDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, toolingMasterGlobalId, permissions, manufacturingAuthorization, erpProjection, item]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingManufacturingPermissions" }
+        manufacturingAuthorization: { $ref: "#/components/schemas/ToolingManufacturingAuthorizationUnavailable" }
+        erpProjection: { $ref: "#/components/schemas/ToolingProcurementCostProjection" }
+        item: { $ref: "#/components/schemas/ToolingManufacturingPlanItem" }
+    ToolingManufacturingPlanCommand:
+      type: object
+      additionalProperties: false
+      required: [plan, designReleaseEvidence]
+      properties:
+        plan: { $ref: "#/components/schemas/ToolingManufacturingPlanRevision" }
+        designReleaseEvidence: { $ref: "#/components/schemas/ToolingDesignReleaseEvidenceCapability" }
+    ToolingManufacturingObservationCommand:
+      type: object
+      additionalProperties: false
+      required: [observation]
+      properties:
+        observation: { $ref: "#/components/schemas/ToolingManufacturingMilestoneObservation" }
     CommandResult:
       type: object
       required: [globalId, version, status]

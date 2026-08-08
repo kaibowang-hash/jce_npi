@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
+import re
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -20,6 +21,7 @@ from npi_core.request_security import (
     require_csrf_token,
     require_request_fields,
     require_tooling_set_routes_enabled,
+    require_tooling_manufacturing_routes_enabled,
     require_tooling_revision_routes_enabled,
     require_tooling_routes_enabled,
     response_request_id,
@@ -53,6 +55,18 @@ from npi_core.tooling.revision_domain import (
     document_revision_reference_from_dict,
     measurement_from_dict,
     tooling_specification_from_dict,
+)
+from npi_core.tooling.manufacturing_domain import (
+    PlanningMoney,
+    ProjectMemberResponsibility,
+    ReleasedDocumentEvidence,
+    ToolingManufacturingMilestone,
+    ToolingMilestoneCategory,
+    ToolingMilestoneEvidenceRole,
+    ToolingMilestoneResponsibilityKind,
+    ToolingPlanEvidence,
+    ToolingPlanEvidenceRole,
+    ToolingSourcingStrategy,
 )
 
 
@@ -129,6 +143,48 @@ _PROCESS_CHAIN_FIELDS = frozenset(
 )
 _PROCESS_CHAIN_REQUIRED = frozenset({"steps", "reason"})
 _SET_BINDING_FIELDS = frozenset({"toolingRevisionGlobalId", "reason"})
+_MANUFACTURING_PLAN_FIELDS = frozenset(
+    {
+        "planGlobalId",
+        "expectedVersion",
+        "toolingRevisionGlobalId",
+        "toolingRevisionSnapshotHash",
+        "sourcingStrategy",
+        "responsibleMember",
+        "engineeringEstimate",
+        "budget",
+        "evidence",
+        "designReleaseEvidence",
+        "milestones",
+        "reason",
+    }
+)
+_MANUFACTURING_PLAN_REQUIRED = _MANUFACTURING_PLAN_FIELDS - {
+    "planGlobalId",
+    "expectedVersion",
+    "engineeringEstimate",
+    "budget",
+}
+_MILESTONE_OBSERVATION_FIELDS = frozenset(
+    {
+        "expectedVersion",
+        "planRevisionSnapshotHash",
+        "milestoneSnapshotHash",
+        "progressPercentage",
+        "actualStart",
+        "actualFinish",
+        "risk",
+        "note",
+        "evidence",
+    }
+)
+_MILESTONE_OBSERVATION_REQUIRED = _MILESTONE_OBSERVATION_FIELDS - {
+    "expectedVersion",
+    "actualStart",
+    "actualFinish",
+    "risk",
+    "note",
+}
 
 
 class _Outcome(Protocol):
@@ -247,6 +303,31 @@ class _Repository(Protocol):
         project_id: UUID,
         tooling_master_id: UUID,
         tooling_set_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def tooling_manufacturing_plans(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def tooling_manufacturing_plan_detail(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        plan_revision_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def create_tooling_manufacturing_plan(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def create_tooling_manufacturing_milestone_observation(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        plan_revision_id: UUID,
+        milestone_id: UUID,
         **values: Any,
     ) -> _Outcome | None: ...
 
@@ -899,6 +980,180 @@ def create_tooling_set_revision_binding(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_manufacturing_plans(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = _tooling_manufacturing_query_context(
+            request_fields
+        )
+        master_id = _opaque_route_uuid("tooling_master_id")
+        if not repository.authorize_scope(project_id, master_id):
+            raise ToolingUnavailable()
+        response = repository.tooling_manufacturing_plans(project_id, master_id)
+        if response is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_manufacturing_plan(
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository, project_id = _tooling_manufacturing_query_context(
+            request_fields
+        )
+        master_id = _opaque_route_uuid("tooling_master_id")
+        if not repository.authorize_scope(project_id, master_id):
+            raise ToolingUnavailable()
+        response = repository.tooling_manufacturing_plan_detail(
+            project_id,
+            master_id,
+            _opaque_route_uuid("manufacturing_plan_revision_id"),
+        )
+        if response is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        return _response(response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_manufacturing_plan(
+    planGlobalId: Any = None,
+    expectedVersion: Any = None,
+    toolingRevisionGlobalId: Any = None,
+    toolingRevisionSnapshotHash: Any = None,
+    sourcingStrategy: Any = None,
+    responsibleMember: Any = None,
+    engineeringEstimate: Any = None,
+    budget: Any = None,
+    evidence: Any = None,
+    designReleaseEvidence: Any = None,
+    milestones: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_manufacturing_command(
+        _MANUFACTURING_PLAN_FIELDS,
+        _MANUFACTURING_PLAN_REQUIRED,
+        request_fields,
+        lambda: {
+            "plan_id": _optional_uuid(planGlobalId, "planGlobalId"),
+            "expected_version": _optional_positive(
+                expectedVersion,
+                "expectedVersion",
+            ),
+            "tooling_revision_id": _uuid(
+                toolingRevisionGlobalId,
+                "toolingRevisionGlobalId",
+            ),
+            "tooling_revision_snapshot_hash": _sha256(
+                toolingRevisionSnapshotHash,
+                "toolingRevisionSnapshotHash",
+            ),
+            "sourcing_strategy": _enum_value(
+                sourcingStrategy,
+                ToolingSourcingStrategy,
+                "sourcingStrategy",
+            ),
+            "responsible_member": _manufacturing_member(
+                responsibleMember,
+                "responsibleMember",
+            ),
+            "engineering_estimate": _planning_money(
+                engineeringEstimate,
+                "engineeringEstimate",
+            ),
+            "budget": _planning_money(budget, "budget"),
+            "evidence": _manufacturing_plan_evidence(evidence),
+            "design_release_evidence": _released_document_evidence_list(
+                designReleaseEvidence,
+                "designReleaseEvidence",
+            ),
+            "milestones": _manufacturing_milestones(milestones),
+            "reason": _text(reason, "reason", 500),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_manufacturing_plan(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_manufacturing_milestone_observation(
+    expectedVersion: Any = None,
+    planRevisionSnapshotHash: Any = None,
+    milestoneSnapshotHash: Any = None,
+    progressPercentage: Any = None,
+    actualStart: Any = None,
+    actualFinish: Any = None,
+    risk: Any = None,
+    note: Any = None,
+    evidence: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_manufacturing_command(
+        _MILESTONE_OBSERVATION_FIELDS,
+        _MILESTONE_OBSERVATION_REQUIRED,
+        request_fields,
+        lambda: {
+            "expected_version": _optional_positive(
+                expectedVersion,
+                "expectedVersion",
+            ),
+            "plan_revision_snapshot_hash": _sha256(
+                planRevisionSnapshotHash,
+                "planRevisionSnapshotHash",
+            ),
+            "milestone_snapshot_hash": _sha256(
+                milestoneSnapshotHash,
+                "milestoneSnapshotHash",
+            ),
+            "progress_percentage": _percentage(
+                progressPercentage,
+                "progressPercentage",
+            ),
+            "actual_start": _optional_date(actualStart, "actualStart"),
+            "actual_finish": _optional_date(actualFinish, "actualFinish"),
+            "risk": _optional_text(risk, "risk", 240),
+            "note": _optional_text(note, "note", 1000),
+            "evidence": _milestone_evidence_inputs(evidence),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_manufacturing_milestone_observation(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                _opaque_route_uuid("manufacturing_plan_revision_id"),
+                _opaque_route_uuid("milestone_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
 def _query_context(
     allowed: frozenset[str],
     request_fields: dict[str, Any],
@@ -934,6 +1189,21 @@ def _tooling_revision_query_context(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository, UUID]:
     require_tooling_revision_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    if not repository.authorize_scope(project_id):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return request_id, repository, project_id
+
+
+def _tooling_manufacturing_query_context(
+    request_fields: dict[str, Any],
+) -> tuple[str, _Repository, UUID]:
+    require_tooling_manufacturing_routes_enabled()
     actor = authenticated_user()
     principal = authenticated_principal(actor)
     request_id = _request_id()
@@ -1018,6 +1288,40 @@ def _tooling_revision_command_context(
     repository = _new_repository(principal, request_id)
     project_id = _opaque_route_uuid("project_id")
     if not repository.authorize_scope(project_id, administer=True):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(allowed, request_fields)
+    require_request_fields(required, request_fields)
+    return (
+        request_id,
+        actor_idempotency_key_hash(
+            actor,
+            frappe.get_request_header("Idempotency-Key"),
+        ),
+        repository,
+        project_id,
+    )
+
+
+def _tooling_manufacturing_command_context(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _Repository, UUID]:
+    require_tooling_manufacturing_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "System Manager" not in principal.roles:
+        raise PermissionDenied()
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    master_id = _opaque_route_uuid("tooling_master_id")
+    if not repository.authorize_scope(
+        project_id,
+        master_id,
+        administer=True,
+    ):
         raise ToolingUnavailable()
     reject_unexpected_request_fields(allowed, request_fields)
     require_request_fields(required, request_fields)
@@ -1176,6 +1480,45 @@ def _tooling_revision_command(
                 headers["X-Request-ID"] = request_id
                 headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
                 return _response(outcome.response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
+def _tooling_manufacturing_command(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+    values,
+    operation,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        request_id, key_hash, repository, project_id = (
+            _tooling_manufacturing_command_context(
+                allowed,
+                required,
+                request_fields,
+            )
+        )
+        parsed = values()
+        parsed["idempotency_key_hash"] = key_hash
+        outcome = operation(repository, project_id, parsed)
+        if outcome is None:
+            raise ToolingUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Tooling command replay result is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return _response(outcome.response)
 
     return frappe_domain_call(
         handle,
@@ -1616,6 +1959,226 @@ def _document_revision_references(
     return tuple(result)
 
 
+def _manufacturing_member(
+    value: object,
+    path: str,
+) -> ProjectMemberResponsibility:
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _exact_fields(value, {"globalId", "userId", "optimisticVersion"}, path)
+    return ProjectMemberResponsibility(
+        global_id=_uuid(value.get("globalId"), f"{path}.globalId"),
+        user_id=_text(value.get("userId"), f"{path}.userId", 254),
+        optimistic_version=_positive(
+            value.get("optimisticVersion"),
+            f"{path}.optimisticVersion",
+        ),
+    )
+
+
+def _planning_money(value: object, path: str) -> PlanningMoney | None:
+    if value in (None, ""):
+        return None
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _exact_fields(value, {"amount", "currency"}, path)
+    return PlanningMoney(
+        amount=_text(value.get("amount"), f"{path}.amount", 64),
+        currency=_text(value.get("currency"), f"{path}.currency", 3),
+    )
+
+
+def _released_document_evidence(
+    value: object,
+    path: str,
+) -> ReleasedDocumentEvidence:
+    if not isinstance(value, Mapping):
+        raise _field(path, _("Select a supported value."))
+    _exact_fields(
+        value,
+        {
+            "revisionGlobalId",
+            "revisionSnapshotHash",
+            "lifecycleGlobalId",
+            "lifecycleVersion",
+            "releaseEventGlobalId",
+            "releaseEventHash",
+            "releaseSnapshotHash",
+        },
+        path,
+    )
+    return ReleasedDocumentEvidence(
+        revision_global_id=_uuid(
+            value.get("revisionGlobalId"),
+            f"{path}.revisionGlobalId",
+        ),
+        revision_snapshot_hash=_sha256(
+            value.get("revisionSnapshotHash"),
+            f"{path}.revisionSnapshotHash",
+        ),
+        lifecycle_global_id=_uuid(
+            value.get("lifecycleGlobalId"),
+            f"{path}.lifecycleGlobalId",
+        ),
+        lifecycle_version=_positive(
+            value.get("lifecycleVersion"),
+            f"{path}.lifecycleVersion",
+        ),
+        release_event_global_id=_uuid(
+            value.get("releaseEventGlobalId"),
+            f"{path}.releaseEventGlobalId",
+        ),
+        release_event_hash=_sha256(
+            value.get("releaseEventHash"),
+            f"{path}.releaseEventHash",
+        ),
+        release_snapshot_hash=_sha256(
+            value.get("releaseSnapshotHash"),
+            f"{path}.releaseSnapshotHash",
+        ),
+    )
+
+
+def _released_document_evidence_list(
+    value: object,
+    path: str,
+) -> tuple[ReleasedDocumentEvidence, ...]:
+    rows = _objects(value, path, minimum=1, maximum=50)
+    result = tuple(
+        _released_document_evidence(item, f"{path}[{index}]")
+        for index, item in enumerate(rows)
+    )
+    if len({item.revision_global_id for item in result}) != len(result):
+        raise _field(path, _("Enter a valid bounded list."))
+    return result
+
+
+def _manufacturing_plan_evidence(
+    value: object,
+) -> tuple[ToolingPlanEvidence, ...]:
+    rows = _objects(value, "evidence", maximum=4)
+    result = []
+    for index, item in enumerate(rows):
+        path = f"evidence[{index}]"
+        _exact_fields(item, {"role", "document"}, path)
+        result.append(
+            ToolingPlanEvidence(
+                role=_enum_value(
+                    item.get("role"),
+                    ToolingPlanEvidenceRole,
+                    f"{path}.role",
+                ),
+                document=_released_document_evidence(
+                    item.get("document"),
+                    f"{path}.document",
+                ),
+            )
+        )
+    return tuple(result)
+
+
+def _manufacturing_milestones(
+    value: object,
+) -> tuple[ToolingManufacturingMilestone, ...]:
+    rows = _objects(value, "milestones", minimum=1, maximum=100)
+    result = []
+    expected = {
+        "globalId",
+        "sequence",
+        "category",
+        "plannedStart",
+        "plannedFinish",
+        "responsibilityKind",
+        "responsibleMember",
+        "predecessorGlobalIds",
+    }
+    for index, item in enumerate(rows):
+        path = f"milestones[{index}]"
+        _exact_fields(item, expected, path)
+        member_value = item.get("responsibleMember")
+        result.append(
+            ToolingManufacturingMilestone(
+                global_id=_uuid(item.get("globalId"), f"{path}.globalId"),
+                sequence=_positive(item.get("sequence"), f"{path}.sequence"),
+                category=_enum_value(
+                    item.get("category"),
+                    ToolingMilestoneCategory,
+                    f"{path}.category",
+                ),
+                planned_start=_date(
+                    item.get("plannedStart"),
+                    f"{path}.plannedStart",
+                ),
+                planned_finish=_date(
+                    item.get("plannedFinish"),
+                    f"{path}.plannedFinish",
+                ),
+                responsibility_kind=_enum_value(
+                    item.get("responsibilityKind"),
+                    ToolingMilestoneResponsibilityKind,
+                    f"{path}.responsibilityKind",
+                ),
+                responsible_member=(
+                    _manufacturing_member(
+                        member_value,
+                        f"{path}.responsibleMember",
+                    )
+                    if member_value is not None
+                    else None
+                ),
+                predecessor_global_ids=_uuid_list(
+                    item.get("predecessorGlobalIds"),
+                    f"{path}.predecessorGlobalIds",
+                    maximum=20,
+                ),
+            )
+        )
+    return tuple(result)
+
+
+def _milestone_evidence_inputs(
+    value: object,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "evidence", maximum=20)
+    result = []
+    expected = {
+        "role",
+        "fileRevisionGlobalId",
+        "fileOptimisticVersion",
+        "frappeContentHash",
+        "sha256",
+    }
+    for index, item in enumerate(rows):
+        path = f"evidence[{index}]"
+        _exact_fields(item, expected, path)
+        result.append(
+            {
+                "role": _enum_value(
+                    item.get("role"),
+                    ToolingMilestoneEvidenceRole,
+                    f"{path}.role",
+                ),
+                "file_revision_id": _uuid(
+                    item.get("fileRevisionGlobalId"),
+                    f"{path}.fileRevisionGlobalId",
+                ),
+                "file_optimistic_version": _positive(
+                    item.get("fileOptimisticVersion"),
+                    f"{path}.fileOptimisticVersion",
+                ),
+                "frappe_content_hash": _content_hash(
+                    item.get("frappeContentHash"),
+                    f"{path}.frappeContentHash",
+                ),
+                "sha256": _sha256(
+                    item.get("sha256"),
+                    f"{path}.sha256",
+                ),
+            }
+        )
+    return tuple(result)
+
+
 def _part_specification_items(value: object) -> tuple[dict[str, object], ...]:
     rows = _objects(value, "items", minimum=1, maximum=100)
     allowed = {
@@ -1787,6 +2350,28 @@ def _non_negative(value: object, path: str) -> int:
 def _boolean(value: object, path: str) -> bool:
     if type(value) is not bool:
         raise _field(path, _("Select a supported value."))
+    return value
+
+
+def _percentage(value: object, path: str) -> int:
+    if type(value) is not int or not 0 <= value <= 100:
+        raise _field(path, _("Progress percentage must be between zero and one hundred."))
+    return value
+
+
+def _optional_text(value: object, path: str, maximum: int) -> str | None:
+    return None if value in (None, "") else _text(value, path, maximum)
+
+
+def _sha256(value: object, path: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[a-f0-9]{64}", value) is None:
+        raise _field(path, _("Enter a valid SHA-256 value."))
+    return value
+
+
+def _content_hash(value: object, path: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[a-f0-9]{32,128}", value) is None:
+        raise _field(path, _("Enter a valid content hash."))
     return value
 
 
