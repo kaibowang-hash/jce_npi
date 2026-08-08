@@ -247,6 +247,54 @@ def prepare_manufacturing_actor(
         projects,
         "P6-04 manufacturing actor Project",
     )
+    retained_roles = predecessor.predecessor.rows(
+        administrator,
+        base_url,
+        "NPI Project Role Assignment",
+        [["project_global_id", "=", project_id]],
+        [
+            "global_id",
+            "member_global_id",
+            "role_key",
+            "effective_from",
+            "effective_to",
+        ],
+    )
+    retained_role = predecessor.predecessor.exact_single(
+        retained_roles,
+        "P6-04 retained Project role assignment",
+    )
+    retained_raci_rows = predecessor.predecessor.rows(
+        administrator,
+        base_url,
+        "NPI Project RACI Assignment",
+        [["project_global_id", "=", project_id]],
+        [
+            "global_id",
+            "context_type",
+            "context_global_id",
+            "responsibility_key",
+            "role_assignment_global_id",
+            "responsibility",
+        ],
+    )
+    retained_raci = predecessor.predecessor.exact_single(
+        retained_raci_rows,
+        "P6-04 retained Project RACI assignment",
+    )
+    require(
+        retained_raci.get("role_assignment_global_id")
+        == retained_role.get("global_id"),
+        "P6-04 retained Project authority linkage drifted",
+    )
+    retained_role_payload = {
+        "globalId": retained_role["global_id"],
+        "memberId": retained_role["member_global_id"],
+        "roleKey": retained_role["role_key"],
+        "effectiveFrom": str(retained_role["effective_from"]),
+    }
+    if retained_role.get("effective_to") not in {None, ""}:
+        retained_role_payload["effectiveTo"] = str(retained_role["effective_to"])
     configured = document_runtime.npi_request(
         administrator,
         base_url,
@@ -266,9 +314,20 @@ def prepare_manufacturing_actor(
                     "effectiveFrom": "2026-08-01",
                 }
             ],
-            "roleAssignments": [],
+            "roleAssignments": [retained_role_payload],
             "substitutions": [],
-            "raciAssignments": [],
+            "raciAssignments": [
+                {
+                    "globalId": retained_raci["global_id"],
+                    "contextType": retained_raci["context_type"],
+                    "contextId": retained_raci["context_global_id"],
+                    "responsibilityKey": retained_raci["responsibility_key"],
+                    "roleAssignmentId": retained_raci[
+                        "role_assignment_global_id"
+                    ],
+                    "raci": retained_raci["responsibility"],
+                }
+            ],
         },
         csrf_token=csrf_token,
         idempotency_key=PROJECT_TEAM_KEY,

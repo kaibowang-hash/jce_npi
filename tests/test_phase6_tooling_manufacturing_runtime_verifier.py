@@ -79,6 +79,16 @@ class Phase6ToolingManufacturingRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("supplier command", self.source)
         self.assertNotIn("lifecycle transition", self.source)
         self.assertNotIn("editErpProjection\": True", self.source)
+        self.assertIn(
+            '"roleAssignments": [retained_role_payload]',
+            self.source,
+        )
+        self.assertIn(
+            '"raciAssignments": [',
+            self.source,
+        )
+        self.assertNotIn('"roleAssignments": []', self.source)
+        self.assertNotIn('"raciAssignments": []', self.source)
 
     def test_payloads_bind_release_milestone_dependency_and_file_evidence(self) -> None:
         module = self.module
