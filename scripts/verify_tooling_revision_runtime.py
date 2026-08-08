@@ -531,7 +531,7 @@ def project_context(
     cockpit = tooling_request(
         administrator,
         base_url,
-        f"/api/npi/v1/projects/{project_id}",
+        f"/api/npi/v1/projects/{project_id}/cockpit",
         query_key="project-reference",
     )
     references = cockpit.body.get("references")

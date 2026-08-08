@@ -104,6 +104,10 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
             model_reference,
         )
         self.assertNotIn("RUNTIME-CUSTOMER", self.source)
+        self.assertIn(
+            'f"/api/npi/v1/projects/{project_id}/cockpit"',
+            self.source,
+        )
         self.assertEqual(len(module.part_specification_payload()["items"]), 4)
         chain = module.process_chain_payload(
             "20000000-0000-4000-8000-000000000002",
