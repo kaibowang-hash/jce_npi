@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REPOSITORY_API — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+`IN_PROGRESS_LIVE_WORKSPACE — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 
-Recovery time: `2026-08-08T18:03:44Z`
+Recovery time: `2026-08-08T18:42:56Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`4f5270b444c343c88cdab7a45aaf33c5c164d759`
+`6207072f643dc422cbb3be0cd07217183c824610`
 
 ## Current authoritative action
 
@@ -30,13 +30,26 @@ Linux visual `93135659034` at `82/82`; controlled job `93135659341` correctly
 skips. Complete checkpoint evidence is
 `implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md`.
 
-The current atomic task is checkpoint 2 only: one Project-first bounded
-engineering-controls read and three narrow append commands; exact Master/
-Revision/member/context/File/Part/Applicability/Set containment; System
-Manager-only management transport; actor-bound idempotency; one transaction;
-append-only audit; explicit unavailable Trial/health readers; an independent
-fail-closed route switch; and API/permission/IDOR/no-fake-actual/no-ERP-write
-tests. Live SPA and controlled Site remain inactive.
+P6-05 checkpoint 2 passes at exact product checkpoint `6207072`. Its bounded
+Project-first read and three append commands enforce exact Master/Revision/
+member/context/File/Part/Applicability/Set containment, System Manager-only
+management transport, actor-bound idempotency, one transaction, append-only
+audit, explicit unavailable Trial/health truth and an independent fail-closed
+route switch. Ordinary CI `31272151598` passes repository `93139826646`
+(`1,243` tracked Python, `756` frontend unit, `326` non-visual E2E, `4,795`
+sources, statements `80.03%`, zero vulnerabilities and no leaks) and visual
+`93139826601` at `82/82`; controlled job `93139826885` correctly skips.
+Complete evidence is
+`implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md`.
+
+The current atomic task is checkpoint 3 only: add the strict engineering-
+controls data source and dense selected-Master live workspace. It must expose
+defect/action/verification lineage, three fixed Customer Standard / Trial
+Actual / Approved Baseline columns, input-versioned capacity scenarios and a
+separate unavailable health section; cover loading, empty, no-permission,
+read-only, unavailable, not-measured, validation, conflict, processing and
+retry states; and pass direct English/`zh`/`zh-TW`, keyboard, accessibility and
+affected visual checks. Controlled Site remains inactive.
 
 P6-05 exposes no Trial Actual or Approved Baseline command because the
 repository has no Trial/approval aggregate. Those facts remain respectively

@@ -1540,3 +1540,34 @@ repeat or rewrite it merely to restore context. See
   fail-closed switch; and API/permission/IDOR/no-fake-actual/no-ERP-write
   tests. Live SPA, controlled Site, Trial/Gate/ERP/IoT writes and P6-06 remain
   inactive.
+
+## 2026-08-08 P6-05 checkpoint 2 PASS and live-workspace transition
+
+- Product checkpoint `6207072` activates exactly four independently fail-
+  closed Project-first routes: one bounded engineering-controls read and
+  immutable defect, Customer Standard process-profile and capacity-scenario
+  append commands. Exact Master/Revision/member/context/File/Part/
+  Applicability/Set dependencies are re-resolved; System Manager is management
+  transport only; idempotency is actor-bound; and persistence, audit and
+  receipt share one transaction.
+- Trial Actual remains exactly `not_measured`; Approved Process Baseline and
+  health remain exactly `unavailable`. Capacity outputs are derived only by
+  the server under published `capacity.v1`. There is no Trial/Gate/lifecycle/
+  ERP/IoT write, production endpoint, credential, adapter or target fixture.
+- Ordinary CI `31272151598` passes exact SHA `6207072`: repository
+  `93139826646` (`1,243` tracked Python, `756` frontend unit, `326` non-visual
+  E2E, `4,795` sources at complete direct `zh`/`zh-TW`, statements `80.03%`,
+  zero vulnerabilities and both secret lanes) and visual `93139826601` at
+  `82/82`; controlled job `93139826885` correctly skips.
+- Visual artifact `9025961533` has digest
+  `sha256:d2c0c38d3f75b7df1572aac67701e60d54a00c18d3d0b97838bfb4f1420a0952`;
+  Gitleaks artifact `9026031821` has digest
+  `sha256:709646e7b609d9573420d23252b682671cd826b0a7024a91ee71409c667f8713`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md`.
+- Standing transition authority activates only checkpoint 3: the strict
+  engineering-controls data source and dense selected-Master defect, process,
+  capacity and unavailable-health workspace; complete operational states,
+  direct English/`zh`/`zh-TW`, keyboard/accessibility and affected visual
+  evidence. Controlled Site, Trial/Gate/lifecycle/ERP/IoT writes and P6-06
+  remain inactive.

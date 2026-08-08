@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T18:03:44Z'
+updated_at: '2026-08-08T18:42:56Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-05
-current_task_status: IN_PROGRESS_REPOSITORY_API
-current_task_completed_stage: P6_05_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
-current_task_next_stage: P6_05_REPOSITORY_BFF_CHECKPOINT
+current_task_status: IN_PROGRESS_LIVE_WORKSPACE
+current_task_completed_stage: P6_05_REPOSITORY_BFF_CHECKPOINT_PASS
+current_task_next_stage: P6_05_LIVE_WORKSPACE_CHECKPOINT
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-05
-resumed_product_task_status: IN_PROGRESS_REPOSITORY_API
+resumed_product_task_status: IN_PROGRESS_LIVE_WORKSPACE
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1188,23 +1188,35 @@ p6_05:
   domain_metadata_visual_digest: sha256:d3837e6067d9c1d75b8801997dc2351434e00b54684e02b501783a8a44c097b7
   domain_metadata_gitleaks_artifact: 9025565511
   domain_metadata_gitleaks_digest: sha256:51ed2b4b149212cc5599f65b9ce81a643b4b35c9e1064d7fa0f61c0d4f9841d5
+  repository_product_checkpoint: 6207072f643dc422cbb3be0cd07217183c824610
+  repository_api_ci: 31272151598
+  repository_api_repository_job: 93139826646
+  repository_api_visual_job: 93139826601
+  repository_api_controlled_job: 93139826885
+  repository_api_visual_artifact: 9025961533
+  repository_api_visual_digest: sha256:d2c0c38d3f75b7df1572aac67701e60d54a00c18d3d0b97838bfb4f1420a0952
+  repository_api_gitleaks_artifact: 9026031821
+  repository_api_gitleaks_digest: sha256:709646e7b609d9573420d23252b682671cd826b0a7024a91ee71409c667f8713
+  repository_api_decision: PASS
   scoped_decisions: [DR-REC-002, DR-REC-010]
   trial_actual_active: false
   approved_process_baseline_active: false
   production_exception_color_active: false
   tooling_lifecycle_commands_active: false
   production_erp_iot_active: false
-  routes_active: false
+  routes_active: true
+  routes_fail_closed: true
   live_workspace_active: false
   controlled_runtime_active: false
-  current_stage: REPOSITORY_BFF_CHECKPOINT
-  completed_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
-  next_stage: REPOSITORY_BFF_CHECKPOINT
+  current_stage: LIVE_WORKSPACE_CHECKPOINT
+  completed_stage: REPOSITORY_BFF_CHECKPOINT_PASS
+  next_stage: LIVE_WORKSPACE_CHECKPOINT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-04-validation.md
     - implementation/evidence/phase-6/p6-05-plan.md
     - implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
