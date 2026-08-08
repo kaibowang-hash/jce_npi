@@ -99,6 +99,10 @@ class Phase6ToolingEngineeringControlsRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(module.TENANT_ID, "runtime-tenant")
         self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertTrue(module.UNRELATED_USER.endswith("@example.invalid"))
+        self.assertIn(
+            'validate_local_fixture_inputs(\n        arguments.base_url,\n        "Administrator",',
+            self.source,
+        )
         self.assertEqual(
             module.ENGINEERING_CONTROL_DOCTYPES,
             (
