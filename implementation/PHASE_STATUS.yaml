@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T15:26:12Z'
+updated_at: '2026-08-08T16:40:58Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P6-04
-current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
-current_task_completed_stage: P6_04_LIVE_WORKSPACE_PASS
-current_task_next_stage: P6_04_CONTROLLED_RUNTIME_LEVEL_2
+current_task: P6-05
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P6_04_LEVEL_2_TASK_GATE_PASS
+current_task_next_stage: P6_05_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P6-04
-resumed_product_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
+resumed_product_task: P6-05
+resumed_product_task_status: IN_PROGRESS_AUDIT
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1058,7 +1058,7 @@ p6_03:
     - implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-03-validation.md
 p6_04:
-  status: IN_PROGRESS_CONTROLLED_RUNTIME
+  status: PASS
   backlog_task: M5-04
   requirements: [FR-TL-005, FR-TL-006, FR-TL-007, FR-TL-008]
   delivery_boundary: MANUFACTURING_SUPPLIER_AND_ERP_COST_PROJECTION
@@ -1119,11 +1119,36 @@ p6_04:
   live_workspace_gitleaks_artifact: 9023685070
   live_workspace_gitleaks_digest: sha256:cf4c19c0074eb36814d1c8b88c43d001bfd5ef1943a14727aa7b4d4c451dbc42
   live_workspace_decision: PASS
+  controlled_runtime_initial_checkpoint: 353ff1a15ea9bab2bcf374104224a962e90c43ea
+  controlled_runtime_actor_checkpoint: f1c260b3b848481f921f4c60973369d436d9c769
+  final_checkpoint: 5ca13abdbbbe08493ee54e9627849cfb0afdec01
+  final_ordinary_ci: 31266800163
+  final_ordinary_repository_job: 93126150493
+  final_ordinary_visual_job: 93126150510
+  final_ordinary_controlled_job: 93126150893
+  final_ordinary_visual_artifact: 9024424604
+  final_ordinary_visual_digest: sha256:81ed21fd6853a1833bdd1fabc14928840921025cbaf7bf19e4bb8ed12245c73a
+  final_ordinary_gitleaks_artifact: 9024492810
+  final_ordinary_gitleaks_digest: sha256:3f91748f7ec8ecb9667b1ea53afc12991a0f1e94342a26f8ba2feefbbc7c599e
+  final_controlled_gate: 31267181068
+  final_controlled_repository_job: 93127118034
+  final_controlled_visual_job: 93127118025
+  final_controlled_runtime_job: 93127118037
+  final_controlled_runtime_artifact: 9024542728
+  final_controlled_runtime_digest: sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2
+  final_controlled_visual_artifact: 9024528394
+  final_controlled_visual_digest: sha256:4be921ad1381e67783a4390b62c5cb15141df443ab550d8ab6e45274970b43db
+  final_controlled_gitleaks_artifact: 9024598560
+  final_controlled_gitleaks_digest: sha256:27f86de63a4473a66141afd89aef4b763481fced5efc1dbf0f8beb8516984ae1
+  diagnostics_closed: true
+  level_2_decision: PASS
   routes_active: true
   routes_fail_closed: true
   production_erp_reader_active: false
   live_workspace_active: true
-  current_stage: CONTROLLED_RUNTIME_LEVEL_2
+  current_stage: LEVEL_2_TASK_GATE_PASS
+  completed_stage: LEVEL_2_TASK_GATE_PASS
+  next_stage: P6_05_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-03-validation.md
@@ -1131,6 +1156,7 @@ p6_04:
     - implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md
     - implementation/evidence/phase-6/p6-04-live-workspace-checkpoint.md
+    - implementation/evidence/phase-6/p6-04-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1155,7 +1181,7 @@ phases:
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
-  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03], current_task: P6-04}
+  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04], current_task: P6-05}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

@@ -1,91 +1,69 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T13:23:38Z`
+Updated: `2026-08-08T16:46:37Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_LIVE_WORKSPACE — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+- Mode: `IN_PROGRESS_AUDIT — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `5a925693ffef317b0cb8adde7924eeee78b88e2d` (pushed; P6-04 checkpoint 2
-  repository/BFF/closed read-only ERP boundary PASS)
+  `5ca13abdbbbe08493ee54e9627849cfb0afdec01` (pushed; P6-04 Level 2 Task
+  Gate PASS with diagnostics closed)
 - Latest completed controller/evidence checkpoint before this update:
-  `34235f3478c9a2eeaca4f12ca9812cda5c6b7296` (P6-04 checkpoint 1
-  controller/evidence synchronization; checkpoint 2 synchronization is the
+  `0d6ac74a47bed7f041ff66b75d2353324ac7f88b` (P6-04 checkpoint 3
+  controller/evidence synchronization; Level 2 synchronization is the
   current bounded documentation update)
 - Latest complete normal CI:
-  `31259073916` (`PASS`, exact SHA `5a92569`; repository `93106930476` and
-  fixed-Linux visual `93106930464` at `79/79` passed; controlled runtime
-  `93106930717` correctly skipped)
+  `31266800163` (`PASS`, exact SHA `5ca13ab`; repository `93126150493` and
+  fixed-Linux visual `93126150510` at `82/82` passed; controlled runtime
+  `93126150893` correctly skipped)
 - Latest controlled-Site run:
-  `31254642262` (`PASS`, exact SHA `4ab4782`, diagnostics closed; repository
-  `93096129318`, visual `93096129329` and controlled `93096129310` passed)
+  `31267181068` (`PASS`, exact SHA `5ca13ab`, diagnostics closed; repository
+  `93127118034`, visual `93127118025` and controlled `93127118037` passed)
 - Controlled PASS artifact:
-  `9021059611`, GitHub digest
-  `sha256:aa0b3c80f38ae7ac6acbe16245e5baf6e176c470c15bf7a435dae231afee52bc`
+  `9024542728`, GitHub digest
+  `sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`
 - Current controller task:
-  `P6-04 — Manufacturing, supplier and ERP cost projection`
-  (`IN_PROGRESS — LIVE WORKSPACE`)
+  `P6-05 — Defect, process and capacity controls`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
 - Current Requirement IDs:
-  `FR-TL-005..008`
+  `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`, `FR-TL-009`,
+  `FR-TL-010` foundation and `FR-TL-017..018`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-04 CHECKPOINT 3`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P6-03 passes Level 2 at exact diagnostics-closed task checkpoint `4ab4782`.
-Ordinary CI `31254281586` passes repository `93095213074`, visual
-`93095213086` at `79/79`, complete E2E and both secret lanes. Final unchanged
-workflow `31254642262` retains the same SHA and passes repository
-`93096129318`, visual `93096129329` and controlled Site `93096129310`.
-Runtime artifact `9021059611` proves two immutable Tooling Revision tips,
-exact cavity/insert/external-identity truth, one controlled Part
-specification, two ordered process-chain revisions, one initial Set-source
-binding, replay, conflicts, rollback, IDOR and independent P6-03 route
-disable/recovery with diagnostics closed. Complete evidence is
-`implementation/evidence/phase-6/p6-03-validation.md`.
+P6-04 passes Level 2 at exact diagnostics-closed task checkpoint `5ca13ab`.
+Ordinary CI `31266800163` passes repository `93126150493` with `1,214` tracked
+Python tests, `756` frontend unit tests, `326` non-visual E2E cases, complete
+direct `zh`/`zh-TW` coverage for `4,641` sources, statements `80.03%`, zero
+vulnerabilities and both secret lanes; visual `93126150510` passes `82/82` and
+the controlled job correctly skips. Final workflow `31267181068` retains the
+same SHA and passes repository `93127118034`, visual `93127118025` at `82/82`
+and controlled Site `93127118037`. Runtime artifact `9024542728` proves the
+cumulative `p5-01-through-p6-04` scope, two immutable internal plan revisions,
+two milestone observations, exact released/unreleased design dependency truth,
+explicit unavailable ERP/manufacturing authorization, replay, conflict,
+rollback, IDOR and independent route disable/recovery. Complete evidence is
+`implementation/evidence/phase-6/p6-04-validation.md`.
 
-The bounded P6-04 Requirement/domain/existing-capability audit passes in
-`implementation/evidence/phase-6/p6-04-plan.md`. Checkpoint 1 passes at exact
-stable checkpoint `00956b4`. It adds immutable internal plan/milestone/
-observation, exact release-evidence and closed ERPNext projection domain
-truth; two guarded DocTypes; ownership and receipt values; closed schemas; and
-complete direct trilingual coverage without an active route. Initial CI
-`31256971673` isolated only eighteen footer catalog fingerprints; artifact
-`9021697529` proved no product-workspace change. The reviewed baseline-only
-repair passed final CI `31257408124`: repository `93102812133`, visual
-`93102812149` at `79/79`, with controlled job `93102812647` correctly skipped.
-Evidence is
-`implementation/evidence/phase-6/p6-04-domain-metadata-checkpoint.md`.
-
-Checkpoint 2 passes at exact product checkpoint `5a92569`. The four active
-routes are Project-first, independently fail-closed and limited to bounded
-plan/observation reads and immutable append commands. Exact Tooling Revision,
-member, controlled-document lifecycle/event/hash and File evidence are re-
-resolved; System Manager is management transport only; idempotency is actor-
-bound; persistence, audit and receipt share one transaction. The injected ERP
-reader is strictly read-only and absent in production, so the exact outward
-truth remains unavailable. Ordinary CI `31259073916` passes repository
-`93106930476`, visual `93106930464` at `79/79`, complete E2E and both secret
-lanes; controlled job `93106930717` correctly skips. Evidence is
-`implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md`.
-
-Standing transition authority activates only P6-04 checkpoint 3: strict data
-source parsing/transport and the dense live manufacturing workspace with
-separate plan, milestone, evidence, release, manufacturing-authorization and
-ERP states; complete loading/empty/error/no-permission/read-only/unavailable/
-validation/conflict/processing/retry handling; direct trilingual coverage;
-keyboard/accessibility checks; and affected visual evidence. It may not
-activate a supplier portal/action, production Tooling lifecycle rule, ERP
-mutation/endpoint/credential/adapter, successful target result or controlled-
-Site runtime. `DR-REC-010` remains the Tooling lifecycle/manufacturing-
-authority hold.
+Standing automatic-transition authority activates only the bounded P6-05
+Requirement/domain/existing-capability audit for `FR-TX-009..011`,
+`FR-TX-019`, `FR-TX-020`, `FR-TL-009`, the `FR-TL-010` foundation and
+`FR-TL-017..018`. The audit must determine the smallest truthful vertical
+slice for defect/action truth, strict separation of Standard, Trial Actual and
+Approved Baseline process values, and versioned capacity scenarios. It may not
+activate Trial execution, ERP mutation, an unapproved capacity formula,
+lifecycle state machine, production red semantics or convenience defaults.
+Exact Tooling lifecycle and manufacturing authority remain held by
+`DR-REC-010`. There is no active technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

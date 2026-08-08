@@ -1,24 +1,23 @@
 # Blockers
 
-Updated: `2026-08-08T15:26:12Z`
+Updated: `2026-08-08T16:40:58Z`
 
 ## Active hard blockers
 
-None. P6-03 remains Level 2 PASS, and P6-04 checkpoint 3 passes at exact
-stable checkpoint `039b7f1`. Ordinary CI `31263974510` passes repository
-`93119021722`, visual `93119021805` at `82/82` and both secret lanes; the
-controlled job correctly skips before checkpoint 4 activates it. No user
-action is required.
+None. P6-04 passes Level 2 at exact checkpoint `5ca13ab`. Ordinary CI
+`31266800163` passes repository `93126150493`, visual `93126150510` at
+`82/82`, complete E2E and both secret lanes. Final workflow `31267181068`
+passes repository `93127118034`, visual `93127118025` and controlled Site
+`93127118037`; runtime artifact `9024542728` records `result=PASS` and scope
+`p5-01-through-p6-04`. No user action is required.
 
 ## Active recovery
 
-None. The P6-04 bounded audit and checkpoints 1-3 are `PASS`; checkpoint 4 is
-`IN_PROGRESS_CONTROLLED_RUNTIME`, not blocked.
-`DR-REC-010` remains a scoped hold on exact Tooling lifecycle states,
-transitions and manufacturing authority only. Missing production ERPNext
-endpoint/credential does not block pure contracts, additive metadata or an
-explicit unavailable/read-only projection; production ERPNext must not be
-contacted.
+None. P6-05 is `IN_PROGRESS_AUDIT`, not blocked. `DR-REC-010` remains a
+scoped hold on exact Tooling lifecycle states, transitions and manufacturing
+authority only. Missing production ERPNext endpoint/credential does not block
+the bounded P6-05 defect/process/capacity audit or NPI-owned implementation;
+production ERPNext must not be contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

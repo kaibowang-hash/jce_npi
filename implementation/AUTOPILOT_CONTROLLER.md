@@ -1438,3 +1438,39 @@ repeat or rewrite it merely to restore context. See
   P6-04 route disable/recovery, then complete ordinary CI and the P6-04 Level
   2 Task Gate. Production ERPNext, supplier portal, Tooling lifecycle policy
   and manufacturing authority remain inactive.
+
+## 2026-08-08 P6-04 Level 2 PASS and P6-05 transition
+
+- Runtime checkpoint `353ff1a` added the cumulative P6-04 verifier and
+  independent route switch. The first Site proved that `Administrator` was
+  not a real active Project member for the responsible-member precondition;
+  repair `f1c260b` created a namespaced disposable System User and used the
+  formal Project team command without relaxing product permissions.
+- Site `31266455642` then uniquely proved the remaining fixture violated the
+  existing `configure-team` minimum-cardinality contract by submitting empty
+  role/RACI arrays. Final repair `5ca13ab` reads and resubmits the exact
+  retained role/RACI unchanged while appending only the disposable member.
+  Affected `73/73` and complete local tracked/product checks passed; no public
+  API, permission, ownership, transaction or authority assignment changed.
+- Exact final checkpoint `5ca13ab` passes ordinary CI `31266800163`:
+  repository `93126150493` (`1,214` tracked Python, `756` frontend unit,
+  `326` non-visual E2E, `4,641` sources at complete direct `zh`/`zh-TW`,
+  statements `80.03%`, zero vulnerabilities and both secret lanes) and visual
+  `93126150510` at `82/82`; controlled job `93126150893` correctly skips.
+- Final workflow `31267181068` retains exact SHA `5ca13ab` and passes
+  repository `93127118034`, visual `93127118025` at `82/82` and controlled
+  Site `93127118037`. Runtime artifact `9024542728`, digest
+  `sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`,
+  records `result=PASS`, pinned Frappe, two migrations and cumulative scope
+  `p5-01-through-p6-04`.
+- Controlled truth contains two immutable plan revisions, two milestone
+  observations, exact released/unreleased dependency handling, explicit
+  unavailable ERP/manufacturing authorization, actor-bound replay, conflict,
+  rollback, IDOR and independent P6-04 disable/recovery. Complete evidence is
+  `implementation/evidence/phase-6/p6-04-validation.md`.
+- Standing transition authority activates only the bounded P6-05 Requirement/
+  domain/existing-capability audit for defect/action truth, separated
+  Standard/Trial Actual/Approved Baseline process values and versioned
+  capacity scenarios. Exact Tooling lifecycle commands and production red
+  semantics remain held; no Trial/ERP execution, lifecycle policy or
+  unapproved capacity formula may be invented.

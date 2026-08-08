@@ -500,13 +500,18 @@ EXPECTED_P6_03_TRACE = {
         {
             "apps/npi_core/npi_core/tooling/revision_domain.py",
             "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "apps/npi_core/npi_core/tooling/manufacturing_domain.py",
+            "apps/npi_core/npi_core/tooling/manufacturing_repository.py",
             "apps/npi_core/npi_core/tooling_api.py",
             "contracts/npi-api.openapi.yaml",
             "frontend/src/pages/tooling-revision-workspace.tsx",
+            "frontend/src/pages/tooling-manufacturing-workspace.tsx",
             "tests/test_phase6_tooling_revision_repository.py",
             "scripts/verify_tooling_revision_runtime.py",
+            "scripts/verify_tooling_manufacturing_runtime.py",
             "implementation/evidence/phase-6/p6-03-validation.md",
-            "immutable Tooling Revision lineage and controlled design provenance are live while approval and release remain held by DR-REC-010",
+            "implementation/evidence/phase-6/p6-04-validation.md",
+            "immutable Tooling Revision lineage and released design evidence are live while Tooling approval release and manufacturing authority remain held by DR-REC-010",
         },
     ),
     "FR-TX-004": (
@@ -594,6 +599,66 @@ EXPECTED_P6_03_TRACE = {
             "scripts/verify_tooling_revision_runtime.py",
             "implementation/evidence/phase-6/p6-03-validation.md",
             "controlled material color compliance and process facts bind to exact Part Revision while automatic impact action remains Phase 9",
+        },
+    ),
+}
+EXPECTED_P6_04_TRACE = {
+    "FR-TL-005": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-005",
+        {
+            "apps/npi_core/npi_core/tooling/manufacturing_domain.py",
+            "apps/npi_core/npi_core/tooling/manufacturing_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-manufacturing-workspace.tsx",
+            "tests/test_phase6_tooling_manufacturing_domain.py",
+            "tests/test_phase6_tooling_manufacturing_repository.py",
+            "scripts/verify_tooling_manufacturing_runtime.py",
+            "implementation/evidence/phase-6/p6-04-validation.md",
+            "internal sourcing estimate budget and released proposal evidence are live while formal funding PO and G3 readiness remain unavailable",
+        },
+    ),
+    "FR-TL-007": (
+        "P1",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-007",
+        {
+            "apps/npi_core/npi_core/tooling/manufacturing_domain.py",
+            "apps/npi_core/npi_core/tooling/manufacturing_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-manufacturing-workspace.tsx",
+            "tests/test_phase6_tooling_manufacturing_domain.py",
+            "tests/test_phase6_tooling_manufacturing_repository.py",
+            "scripts/verify_tooling_manufacturing_runtime.py",
+            "implementation/evidence/phase-6/p6-04-validation.md",
+            "ordered milestones and append-only internal observations are live while supplier login portal and supplier-authored updates remain unavailable",
+        },
+    ),
+    "FR-TL-008": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-008",
+        {
+            "apps/npi_core/npi_core/tooling/manufacturing_domain.py",
+            "apps/npi_core/npi_core/tooling/manufacturing_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/data-ownership.yaml",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-manufacturing-workspace.tsx",
+            "tests/test_phase6_tooling_manufacturing_contract.py",
+            "tests/test_phase6_tooling_manufacturing_repository.py",
+            "scripts/verify_tooling_manufacturing_runtime.py",
+            "implementation/evidence/phase-6/p6-04-validation.md",
+            "closed read-only ERP projection and unavailable default are live while adapter observations procurement execution and actual cost remain Phase 8",
         },
     ),
 }
@@ -1245,6 +1310,50 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing P6-03 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_priority,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_04_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            "6",
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-04 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-04 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-04 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

@@ -1,17 +1,45 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CONTROLLED_RUNTIME — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+`IN_PROGRESS_AUDIT — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 
-Recovery time: `2026-08-08T15:26:12Z`
+Recovery time: `2026-08-08T16:40:58Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`039b7f19d5614352dd7bace45bc297cb8f3128d6`
+`5ca13abdbbbe08493ee54e9627849cfb0afdec01`
 
 ## Current authoritative action
+
+P6-04 passes Level 2 at exact task checkpoint `5ca13ab`. Ordinary CI
+`31266800163` passes repository `93126150493` (`1,214` tracked Python,
+`756` frontend unit, `326` non-visual E2E, `4,641` direct trilingual sources,
+statements `80.03%`, zero vulnerabilities and both secret lanes) and visual
+`93126150510` at `82/82`; controlled job `93126150893` correctly skips.
+
+Final workflow `31267181068` retains exact SHA `5ca13ab` and passes repository
+`93127118034`, visual `93127118025` at `82/82` and controlled Site
+`93127118037`. Runtime artifact `9024542728`, digest
+`sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`,
+records cumulative scope `p5-01-through-p6-04`. It proves two immutable plan
+revisions, two milestone observations, exact released/unreleased design
+dependency handling, explicit unavailable ERP/manufacturing authorization,
+replay, conflict, rollback, IDOR and independent route disable/recovery.
+
+Automatic transition activates only the bounded P6-05 Requirement/domain/
+existing-capability audit for `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`,
+`FR-TL-009`, the `FR-TL-010` foundation and `FR-TL-017..018`. Determine the
+smallest truthful vertical slice for defect/action truth, strict separation of
+Standard, Trial Actual and Approved Baseline process values, and versioned
+capacity scenarios. Exact Tooling lifecycle commands and production red
+semantics remain held. Do not activate Trial execution, ERP mutation, an
+unapproved capacity formula, lifecycle state machine or convenience defaults.
+
+Complete evidence is
+`implementation/evidence/phase-6/p6-04-validation.md`. There is no active
+technical Hard Blocker.
 
 P6-03 passes Level 2 at exact diagnostics-closed task checkpoint `4ab4782`.
 Ordinary CI `31254281586` passes repository `93095213074` (`1,177` Python,
@@ -75,17 +103,10 @@ and visual `93119021805` at `82/82`; controlled job `93119022181` correctly
 skips. Evidence is
 `implementation/evidence/phase-6/p6-04-live-workspace-checkpoint.md`.
 
-Automatic transition activates only P6-04 checkpoint 4: extend the cumulative
-disposable-Site verifier and controlled workflow for additive migration,
-immutable plan successors, milestone dependency/observation/evidence, exact
-released/unreleased design dependency, explicit ERP unavailability,
-actor-bound replay, stale conflict, rollback, IDOR and independent P6-04 route
-disable/recovery. Run affected checks and complete ordinary CI before the
-controlled Site; on PASS record its exact artifact and run the P6-04 Level 2
-Task Gate. Deterministic prototype values, supplier portal/actions, production
-Tooling lifecycle rules, ERP mutation/endpoint/credential/adapter and
-successful target rows remain inactive. `DR-REC-010` continues to hold
-Tooling lifecycle and manufacturing authority.
+P6-04 checkpoint 4 and the Level 2 Task Gate are complete at `5ca13ab`; their
+exact ordinary/controlled evidence is recorded above and in the validation
+report. The failed precursor Sites are retained only as recovery evidence and
+must not be used as PASS evidence.
 
 ## Retained P6-01 execution history
 
