@@ -299,6 +299,19 @@ def require_uuid(value: object, label: str) -> str:
     return value
 
 
+def exact_applicability(values: object, revision_id: str) -> dict[str, Any]:
+    require(isinstance(values, list), "P6-03 applicability projection is invalid")
+    return predecessor.exact_single(
+        [
+            item
+            for item in values
+            if isinstance(item, dict)
+            and item.get("part", {}).get("globalId") == revision_id
+        ],
+        "P6-03 current applicability",
+    )
+
+
 def unavailable(value: object, reason_code: str, label: str) -> None:
     require(
         isinstance(value, dict)
@@ -919,13 +932,9 @@ def run_fresh(administrator, base_url: str, csrf_token: str, fixture_password: s
         ),
         APPLICABILITY_KEY,
     )
-    applicability = predecessor.exact_single(
-        [
-            item
-            for item in applicability_result.body.get("applicability", [])
-            if item.get("partRevisionGlobalId") == part_revision_id
-        ],
-        "P6-03 current applicability",
+    applicability = exact_applicability(
+        applicability_result.body.get("applicability", []),
+        part_revision_id,
     )
     applicability_id = require_uuid(
         applicability.get("globalId"),

@@ -138,6 +138,28 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(request.call_args.kwargs["query_key"], "p603-revision-list")
         self.assertNotIn("X-NPI-Diagnostic-Scope", self.source)
 
+    def test_applicability_selection_uses_nested_part_revision_projection(self) -> None:
+        revision_id = "10000000-0000-4000-8000-000000000001"
+        selected = self.module.exact_applicability(
+            [
+                {
+                    "globalId": "20000000-0000-4000-8000-000000000002",
+                    "part": {"globalId": revision_id},
+                },
+                {
+                    "globalId": "30000000-0000-4000-8000-000000000003",
+                    "part": {
+                        "globalId": "40000000-0000-4000-8000-000000000004"
+                    },
+                },
+            ],
+            revision_id,
+        )
+        self.assertEqual(
+            selected["globalId"],
+            "20000000-0000-4000-8000-000000000002",
+        )
+
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
             "tooling_revision_route_switch_state",
