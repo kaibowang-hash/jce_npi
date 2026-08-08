@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T13:23:38Z`
+Updated: `2026-08-08T15:26:12Z`
 
 ## Authority and operating mode
 
@@ -1405,3 +1405,36 @@ repeat or rewrite it merely to restore context. See
   visual evidence. Supplier actions, production Tooling lifecycle rules, ERP
   mutation/connection/success claims and controlled-Site runtime remain
   inactive. `DR-REC-010` continues to hold manufacturing authority.
+
+## 2026-08-08 P6-04 checkpoint 3 PASS and controlled-runtime transition
+
+- Product checkpoint `9346f1b` adds the strict four-route manufacturing data
+  source and the dense live selected-Master plan, milestone, evidence,
+  design-release, manufacturing-authorization and ERP workspace. Commands are
+  exposed only from server capabilities; supplier-responsible progress is
+  explicitly internal-user-reported; formal ERP truth remains read-only and
+  unavailable by default.
+- The first exact product run did not pass: statement coverage was `79.59%`
+  against the unchanged `80%` threshold and the visual job isolated `29`
+  legitimate missing/changed Linux baselines. Repair `a88f717` added only
+  missing tests, candidate checkpoint `30dc020` corrected only the temporary
+  artifact path, and all `29` actual images were inspected and accepted
+  without lowering zero-tolerance comparison or removing any case.
+- Stable checkpoint `039b7f1` passes complete ordinary CI `31263974510`:
+  repository `93119021722` (`1,208` Python, `756` frontend unit, `326`
+  non-visual E2E, `4,641` sources at complete direct `zh`/`zh-TW`, statements
+  `80.03%`, zero vulnerabilities and no leaks) and visual `93119021805` at
+  `82/82`; controlled job `93119022181` correctly skips.
+- Visual artifact `9023617316` has digest
+  `sha256:1e47a7454bff0f3566ade380c06ec898dcf347c3c0fe3a57b2a6b75e5084975f`;
+  Gitleaks artifact `9023685070` has digest
+  `sha256:cf4c19c0074eb36814d1c8b88c43d001bfd5ef1943a14727aa7b4d4c451dbc42`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-04-live-workspace-checkpoint.md`.
+- Standing transition authority activates only checkpoint 4: cumulative
+  disposable-Site proof for immutable plan successors, milestone dependency
+  and observation evidence, exact released/unreleased design dependency,
+  explicit ERP unavailability, replay/conflict/rollback/IDOR and independent
+  P6-04 route disable/recovery, then complete ordinary CI and the P6-04 Level
+  2 Task Gate. Production ERPNext, supplier portal, Tooling lifecycle policy
+  and manufacturing authority remain inactive.

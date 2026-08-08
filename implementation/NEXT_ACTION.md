@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_LIVE_WORKSPACE — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 
-Recovery time: `2026-08-08T13:23:38Z`
+Recovery time: `2026-08-08T15:26:12Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`5a925693ffef317b0cb8adde7924eeee78b88e2d`
+`039b7f19d5614352dd7bace45bc297cb8f3128d6`
 
 ## Current authoritative action
 
@@ -61,17 +61,31 @@ visual `93106930464` at `79/79`; controlled job `93106930717` correctly
 skips. Evidence is
 `implementation/evidence/phase-6/p6-04-repository-api-checkpoint.md`.
 
-Automatic transition activates only P6-04 checkpoint 3: a strict Tooling
-manufacturing data source and dense selected-Master workspace showing plan,
-milestone, evidence, design-release, manufacturing-authorization and ERP
-truth as separate sections. It must provide explicit loading, empty, error,
-no-permission, read-only, unavailable, validation, conflict, processing and
-retry states; direct English/`zh`/`zh-TW`; keyboard/accessibility checks; and
-affected visual evidence. It may expose commands only from server-returned
-capabilities. Deterministic prototype values, supplier portal/actions,
-production Tooling lifecycle rules, ERP mutation/endpoint/credential/adapter,
-successful target rows and controlled-Site runtime remain inactive.
-`DR-REC-010` continues to hold Tooling lifecycle and manufacturing authority.
+P6-04 checkpoint 3 passes at exact stable checkpoint `039b7f1`. Product commit
+`9346f1b` added the strict manufacturing data source and dense selected-Master
+plan, milestone, evidence, design-release, manufacturing-authorization and
+ERP workspace. Coverage repair `a88f717` restored the unchanged statement
+threshold through tests only; candidate checkpoint `30dc020` captured all
+Linux visual differences; and the final baseline checkpoint accepted only the
+`29` inspected artifact-proved candidates. No visual tolerance or case was
+removed. Ordinary CI `31263974510` passes repository `93119021722` (`1,208`
+Python, `756` frontend unit, `326` non-visual E2E, `4,641` sources at complete
+direct `zh`/`zh-TW`, statements `80.03%`, zero vulnerabilities and no leaks)
+and visual `93119021805` at `82/82`; controlled job `93119022181` correctly
+skips. Evidence is
+`implementation/evidence/phase-6/p6-04-live-workspace-checkpoint.md`.
+
+Automatic transition activates only P6-04 checkpoint 4: extend the cumulative
+disposable-Site verifier and controlled workflow for additive migration,
+immutable plan successors, milestone dependency/observation/evidence, exact
+released/unreleased design dependency, explicit ERP unavailability,
+actor-bound replay, stale conflict, rollback, IDOR and independent P6-04 route
+disable/recovery. Run affected checks and complete ordinary CI before the
+controlled Site; on PASS record its exact artifact and run the P6-04 Level 2
+Task Gate. Deterministic prototype values, supplier portal/actions, production
+Tooling lifecycle rules, ERP mutation/endpoint/credential/adapter and
+successful target rows remain inactive. `DR-REC-010` continues to hold
+Tooling lifecycle and manufacturing authority.
 
 ## Retained P6-01 execution history
 
