@@ -119,14 +119,14 @@ class Phase6ToolingManufacturingMetadataTest(unittest.TestCase):
         operations = str(fields["operation"].get("options", "")).splitlines()
         targets = str(fields["target_object_type"].get("options", "")).splitlines()
         self.assertEqual(
-            operations[-5:-3],
+            operations[-6:-4],
             [
                 "tooling_manufacturing_plan.create",
                 "tooling_manufacturing_milestone.observe",
             ],
         )
         self.assertEqual(
-            targets[-5:-3],
+            targets[-6:-4],
             [
                 "tooling_manufacturing_plan_revision",
                 "tooling_manufacturing_milestone_observation",

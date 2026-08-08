@@ -5006,3 +5006,8 @@ Asset action evidence must use an action or approval-reference role.,資產動�
 Checklist evidence must use the checklist evidence role.,清單證據必須使用清單證據角色。
 Customer authorization evidence must use the customer-authorization role.,客戶授權證據必須使用客戶授權角色。
 Repair verification evidence must use the repair-verification role.,維修驗證證據必須使用維修驗證角色。
+tooling_acceptance_evidence.create,建立模具驗收證據
+tooling_acceptance_evidence_revision,模具驗收證據修訂
+validated_mock,已通過模擬驗證
+prohibited,已禁止
+not_requested,未請求
