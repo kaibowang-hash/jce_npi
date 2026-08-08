@@ -128,6 +128,10 @@ class DevcontainerVerifierTest(unittest.TestCase):
                 "ac890c08e7cfa7c428d1a487805527239f0659f5:"
                 "implementation/PHASE_STATUS.yaml:generic-api-key:554"
             ),
+            (
+                "67824bc5742bf4ad031b69aab476f4188a901b27:"
+                "implementation/PHASE_STATUS.yaml:generic-api-key:1095"
+            ),
         )
         safe = "\n".join(reviewed) + "\n"
         validate_gitleaks_ignore(safe)
