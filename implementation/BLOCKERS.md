@@ -1,20 +1,19 @@
 # Blockers
 
-Updated: `2026-08-08T16:55:00Z`
+Updated: `2026-08-08T18:03:44Z`
 
 ## Active hard blockers
 
-None. P6-04 passes Level 2 at exact checkpoint `5ca13ab`. Ordinary CI
-`31266800163` passes repository `93126150493`, visual `93126150510` at
-`82/82`, complete E2E and both secret lanes. Final workflow `31267181068`
-passes repository `93127118034`, visual `93127118025` and controlled Site
-`93127118037`; runtime artifact `9024542728` records `result=PASS` and scope
-`p5-01-through-p6-04`. No user action is required.
+None. P6-05 checkpoint 1 passes at exact stable checkpoint `4f5270b`.
+Ordinary CI `31270566049` passes repository `93135659056`, visual
+`93135659034` at `82/82`, complete E2E and both secret lanes; controlled job
+`93135659341` correctly skips because P6-05 runtime is not active. No user
+action is required.
 
 ## Active recovery
 
-None. The P6-05 bounded audit passes and its domain/contract/additive-metadata
-foundation is active. `DR-REC-010` remains a scoped hold on exact Tooling
+None. The P6-05 domain/contract/additive-metadata foundation passes and its
+repository/BFF checkpoint is active. `DR-REC-010` remains a scoped hold on exact Tooling
 lifecycle states, transitions and manufacturing authority only. `DR-REC-002`
 holds production exception-color semantics only. Neither blocks immutable
 defect truth, separated process facts, textual comparison states or versioned

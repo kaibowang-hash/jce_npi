@@ -1,31 +1,42 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DOMAIN_METADATA — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+`IN_PROGRESS_REPOSITORY_API — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 
-Recovery time: `2026-08-08T16:55:00Z`
+Recovery time: `2026-08-08T18:03:44Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae`
+`4f5270b444c343c88cdab7a45aaf33c5c164d759`
 
 ## Current authoritative action
 
-The bounded P6-05 Requirement/domain/existing-capability audit passes in
-`implementation/evidence/phase-6/p6-05-plan.md`. It freezes one truthful slice:
-append-only Tooling-defect/action/verification revisions, disjoint Customer
-Standard/Trial Actual/Approved Baseline process facts, exact textual comparison
-states and a fully explicit versioned `capacity.v1` scenario. The current
-atomic task is checkpoint 1 only: pure domains, closed OpenAPI/ownership truth,
-three guarded additive DocTypes, receipt values and direct tests. Repository
-routes, live SPA and controlled Site remain inactive.
+P6-05 checkpoint 1 passes at exact stable checkpoint `4f5270b`. Product commit
+`ae501c3` added pure defect/process/comparison/capacity/unavailable-health
+domains, closed OpenAPI/ownership truth, three guarded append-only DocTypes,
+receipt pairs and direct trilingual coverage without activating a route or
+business row. Initial CI `31269767038` passed repository and failed only the
+eighteen durable P0 footer catalog fingerprints. Artifact `9025279088` proved
+no business-region change; isolated baseline repair `4f5270b` copied only the
+reviewed Linux actuals and changed no assertion, matrix, threshold or PASS
+criterion.
 
-Starting controller checkpoint `e38da24` passes exact-SHA ordinary CI
-`31267848021`: repository `93128792398`, fixed-Linux visual `93128792366` at
-`82/82`, both secret lanes, with controlled job `93128792624` correctly
-skipped.
+Final exact-SHA ordinary CI `31270566049` passes repository `93135659056`
+(`1,233` tracked Python, `756` frontend unit, `326` non-visual E2E, `4,795`
+sources, statements `80.03%`, zero vulnerabilities and no leaks) and fixed-
+Linux visual `93135659034` at `82/82`; controlled job `93135659341` correctly
+skips. Complete checkpoint evidence is
+`implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md`.
+
+The current atomic task is checkpoint 2 only: one Project-first bounded
+engineering-controls read and three narrow append commands; exact Master/
+Revision/member/context/File/Part/Applicability/Set containment; System
+Manager-only management transport; actor-bound idempotency; one transaction;
+append-only audit; explicit unavailable Trial/health readers; an independent
+fail-closed route switch; and API/permission/IDOR/no-fake-actual/no-ERP-write
+tests. Live SPA and controlled Site remain inactive.
 
 P6-05 exposes no Trial Actual or Approved Baseline command because the
 repository has no Trial/approval aggregate. Those facts remain respectively
@@ -35,7 +46,7 @@ calibration, maintenance and health score remain explicitly unavailable.
 
 `DR-REC-002` still holds only production exception-color semantics and
 `DR-REC-010` still holds only Requirement/Revision/Set lifecycle and
-manufacturing authority. They do not block checkpoint 1. There is no active
+manufacturing authority. They do not block checkpoint 2. There is no active
 technical Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI

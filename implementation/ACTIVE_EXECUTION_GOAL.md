@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T16:55:00Z`
+Updated: `2026-08-08T18:03:44Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DOMAIN_METADATA — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+- Mode: `IN_PROGRESS_REPOSITORY_API — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `5ca13abdbbbe08493ee54e9627849cfb0afdec01` (pushed; P6-04 Level 2 Task
-  Gate PASS with diagnostics closed)
+  `4f5270b444c343c88cdab7a45aaf33c5c164d759` (pushed; P6-05 checkpoint 1
+  domain/contract/additive-metadata foundation PASS)
 - Latest completed controller/evidence checkpoint before this update:
   `e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae` (P6-04 Level 2
   controller/evidence synchronization and P6-05 audit entry checkpoint)
 - Latest complete normal CI:
-  `31267848021` (`PASS`, exact SHA `e38da24`; repository `93128792398` and
-  fixed-Linux visual `93128792366` at `82/82` passed; controlled runtime
-  `93128792624` correctly skipped)
+  `31270566049` (`PASS`, exact SHA `4f5270b`; repository `93135659056` and
+  fixed-Linux visual `93135659034` at `82/82` passed; controlled runtime
+  `93135659341` correctly skipped)
 - Latest controlled-Site run:
   `31267181068` (`PASS`, exact SHA `5ca13ab`, diagnostics closed; repository
   `93127118034`, visual `93127118025` and controlled `93127118037` passed)
@@ -26,14 +26,14 @@ Updated: `2026-08-08T16:55:00Z`
   `sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`
 - Current controller task:
   `P6-05 — Defect, process and capacity controls`
-  (`IN_PROGRESS — DOMAIN/CONTRACT/ADDITIVE-METADATA FOUNDATION`)
+  (`IN_PROGRESS — REPOSITORY/BFF CHECKPOINT`)
 - Current Requirement IDs:
   `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`, `FR-TL-009`,
   `FR-TL-010` foundation and `FR-TL-017..018`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 CHECKPOINT 1`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 CHECKPOINT 2`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -62,13 +62,27 @@ versioned `capacity.v1` formula. Trial Actual remains `not_measured`, Approved
 Baseline and health remain `unavailable`, severity never implicitly blocks a
 Gate and no Domain Work Item or G5/G6 mutation is created.
 
-Standing transition authority activates only P6-05 checkpoint 1: pure defect,
-process/comparison, capacity and unavailable-health domains; closed OpenAPI and
-ownership truth; three guarded additive DocTypes; receipt values and direct
-tests. Routes, repository commands, live SPA, controlled Site, Trial/Gate/
-ERP/IoT behavior and P6-06 remain inactive. `DR-REC-002` continues to hold
-production exception-color semantics and `DR-REC-010` continues to hold exact
-Requirement/Revision/Set lifecycle and manufacturing authority. There is no
+P6-05 checkpoint 1 passes at exact stable checkpoint `4f5270b`. Product commit
+`ae501c3` added the pure domain, closed schemas/ownership, three guarded
+append-only DocTypes, receipt pairs and complete direct trilingual coverage
+without activating a route or row. Initial CI `31269767038` passed repository
+and isolated only eighteen durable footer catalog fingerprints; reviewed
+artifact `9025279088` proved no business-region change. Baseline-only repair
+`4f5270b` then passed complete ordinary CI `31270566049`: repository
+`93135659056` (`1,233` tracked Python, `756` frontend unit, `326` non-visual
+E2E, `4,795` sources, statements `80.03%`, no vulnerabilities or leaks) and
+visual `93135659034` at `82/82`; controlled job `93135659341` correctly
+skipped. Evidence is
+`implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md`.
+
+Standing transition authority activates only P6-05 checkpoint 2: one Project-
+first bounded engineering-controls read and three narrow append commands;
+exact Master/Revision/member/context/File/Part/Applicability/Set containment;
+System Manager-only mutation; actor-bound idempotency; one transaction;
+append-only audit; explicit unavailable Trial/health readers; an independent
+fail-closed switch; and exact API/permission/IDOR/no-fake-actual/no-ERP-write
+tests. Live SPA, controlled Site, Trial/Gate/ERP/IoT writes and P6-06 remain
+inactive. `DR-REC-002` and `DR-REC-010` retain their scoped holds. There is no
 active technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint

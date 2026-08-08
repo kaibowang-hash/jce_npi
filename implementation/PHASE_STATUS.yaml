@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T16:55:00Z'
+updated_at: '2026-08-08T18:03:44Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-05
-current_task_status: IN_PROGRESS_DOMAIN_METADATA
-current_task_completed_stage: P6_05_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-current_task_next_stage: P6_05_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+current_task_status: IN_PROGRESS_REPOSITORY_API
+current_task_completed_stage: P6_05_DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
+current_task_next_stage: P6_05_REPOSITORY_BFF_CHECKPOINT
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-05
-resumed_product_task_status: IN_PROGRESS_DOMAIN_METADATA
+resumed_product_task_status: IN_PROGRESS_REPOSITORY_API
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1173,6 +1173,21 @@ p6_05:
   audit_gitleaks_artifact: 9024789982
   audit_gitleaks_digest: sha256:c99217cb51c366085374dc713d39d310e8bc2e3aac50f674cf5f52ee445b1e2f
   audit_decision: PASS
+  domain_metadata_product_checkpoint: ae501c3523b2346c57a12c6c5964bd64edfb102e
+  domain_metadata_stable_checkpoint: 4f5270b444c343c88cdab7a45aaf33c5c164d759
+  domain_metadata_initial_ci: 31269767038
+  domain_metadata_initial_repository_job: 93133640483
+  domain_metadata_initial_visual_job: 93133640517
+  domain_metadata_failed_visual_artifact: 9025279088
+  domain_metadata_failed_visual_digest: sha256:1f72a3497c08c9b8ec344630e43c54c508f811f72076c96993a89e08e637ea66
+  domain_metadata_final_ci: 31270566049
+  domain_metadata_repository_job: 93135659056
+  domain_metadata_visual_job: 93135659034
+  domain_metadata_controlled_job: 93135659341
+  domain_metadata_visual_artifact: 9025498587
+  domain_metadata_visual_digest: sha256:d3837e6067d9c1d75b8801997dc2351434e00b54684e02b501783a8a44c097b7
+  domain_metadata_gitleaks_artifact: 9025565511
+  domain_metadata_gitleaks_digest: sha256:51ed2b4b149212cc5599f65b9ce81a643b4b35c9e1064d7fa0f61c0d4f9841d5
   scoped_decisions: [DR-REC-002, DR-REC-010]
   trial_actual_active: false
   approved_process_baseline_active: false
@@ -1182,13 +1197,14 @@ p6_05:
   routes_active: false
   live_workspace_active: false
   controlled_runtime_active: false
-  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
-  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-  next_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION
+  current_stage: REPOSITORY_BFF_CHECKPOINT
+  completed_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA_FOUNDATION_PASS
+  next_stage: REPOSITORY_BFF_CHECKPOINT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-04-validation.md
     - implementation/evidence/phase-6/p6-05-plan.md
+    - implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

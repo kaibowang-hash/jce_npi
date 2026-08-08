@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T15:26:12Z`
+Updated: `2026-08-08T18:03:44Z`
 
 ## Authority and operating mode
 
@@ -1511,3 +1511,32 @@ repeat or rewrite it merely to restore context. See
   ownership truth, three guarded additive DocTypes, receipt values and direct
   tests. Routes, repository commands, live SPA, controlled Site, Trial/Gate/
   ERP/IoT behavior and P6-06 remain inactive.
+
+## 2026-08-08 P6-05 checkpoint 1 PASS and checkpoint 2 activation
+
+- Product commit `ae501c3` added the pure engineering-controls domain, closed
+  schemas/ownership, three guarded append-only DocTypes, receipt pairs and
+  complete direct trilingual coverage without activating any route or row.
+  Local affected Tooling checks passed `152/152`; complete local discovery
+  passed `1,239/1,239`, including six user-owned untracked prerequisite tests.
+- Initial ordinary CI `31269767038` passed repository `93133640483` and failed
+  only the eighteen durable P0 footer catalog fingerprints. Artifact
+  `9025279088`, digest
+  `sha256:1f72a3497c08c9b8ec344630e43c54c508f811f72076c96993a89e08e637ea66`,
+  proved no business-region component, layout, copy or state change.
+- Isolated baseline repair `4f5270b` copied only the eighteen reviewed CI
+  actuals byte-for-byte to their Linux targets and changed no component,
+  assertion, matrix, threshold or PASS criterion. Exact-SHA ordinary CI
+  `31270566049` then passed repository `93135659056` (`1,233` tracked Python,
+  `756` frontend unit, `326` non-visual E2E, `4,795` sources, statements
+  `80.03%`, zero vulnerabilities and no leaks) and visual `93135659034` at
+  `82/82`; controlled job `93135659341` correctly skipped. Evidence is
+  `implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md`.
+- Checkpoint 2 is now the only active scope: one Project-first bounded
+  engineering-controls read and three narrow append commands; exact Master/
+  Revision/member/context/File/Part/Applicability/Set containment; System
+  Manager-only management transport; actor-bound idempotency; one transaction;
+  append-only audit; explicit unavailable Trial/health truth; an independent
+  fail-closed switch; and API/permission/IDOR/no-fake-actual/no-ERP-write
+  tests. Live SPA, controlled Site, Trial/Gate/ERP/IoT writes and P6-06 remain
+  inactive.
