@@ -65,6 +65,8 @@ class Phase6ToolingManufacturingRuntimeVerifierTest(unittest.TestCase):
         module = self.module
         self.assertEqual(module.FIXTURE_RUN_ID, FIXTURE_RUN_ID)
         self.assertEqual(module.TENANT_ID, "runtime-tenant")
+        self.assertEqual(module.ADMINISTRATOR_USER, "Administrator")
+        self.assertTrue(module.ACTOR_USER.endswith("@example.invalid"))
         self.assertTrue(module.UNRELATED_USER.endswith("@example.invalid"))
         self.assertEqual(
             module.MANUFACTURING_DOCTYPES,
@@ -208,6 +210,8 @@ class Phase6ToolingManufacturingRuntimeVerifierTest(unittest.TestCase):
             "TOOLING_VERSION_CONFLICT",
             "TOOLING_REFERENCE_UNAVAILABLE",
             "TOOLING_MANUFACTURING_ROUTES_DISABLED",
+            "P6-04 unreleased Document selection drifted",
+            "UNRELEASED_REFERENCE_KEY",
             "unauthorized and absent Projects are distinguishable",
             "cross-Project and absent Plans are distinguishable",
             "accepted generic mutation",

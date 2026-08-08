@@ -21,6 +21,7 @@ from verify_frappe_runtime import (
 )
 from verify_project_runtime import (
     bootstrap_csrf,
+    create_resource,
     delete_resource,
     get_resource,
     update_resource,
@@ -33,7 +34,10 @@ SITE_NAME = document_runtime.SITE_NAME
 RUNTIME_MARKER = document_runtime.RUNTIME_MARKER
 FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
-ACTOR_USER = "Administrator"
+ADMINISTRATOR_USER = "Administrator"
+ACTOR_USER = (
+    f"npi-tooling-manufacturing-{FIXTURE_RUN_ID[:12]}-manager@example.invalid"
+)
 UNRELATED_USER = (
     f"npi-tooling-manufacturing-{FIXTURE_RUN_ID[:12]}-unrelated@example.invalid"
 )
@@ -50,8 +54,18 @@ OBSERVATION_STALE_KEY = f"p6-04-runtime-r1-{FIXTURE_RUN_ID}-observation-stale"
 OBSERVATION_REFERENCE_KEY = (
     f"p6-04-runtime-r1-{FIXTURE_RUN_ID}-observation-reference"
 )
+UNRELEASED_REFERENCE_KEY = (
+    f"p6-04-runtime-r1-{FIXTURE_RUN_ID}-unreleased-design-reference"
+)
+PROJECT_TEAM_KEY = f"p6-04-runtime-r1-{FIXTURE_RUN_ID}-project-member"
+ACTOR_MEMBER_ID = document_runtime.fixture_request_id(
+    f"p6-04-{FIXTURE_RUN_ID}-manufacturing-actor-member"
+)
 PLAN_GLOBAL_ID = document_runtime.fixture_request_id(
     f"p6-04-{FIXTURE_RUN_ID}-manufacturing-plan"
+)
+UNRELEASED_PLAN_GLOBAL_ID = document_runtime.fixture_request_id(
+    f"p6-04-{FIXTURE_RUN_ID}-unreleased-design-plan"
 )
 INTERNAL_MILESTONE_ID = document_runtime.fixture_request_id(
     f"p6-04-{FIXTURE_RUN_ID}-internal-design-milestone"
@@ -167,6 +181,110 @@ def project_context(
     return project_id, master_id, applicability_id, model_reference
 
 
+def prepare_manufacturing_actor(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    fixture_password: str,
+):
+    created = create_resource(
+        administrator,
+        base_url,
+        "User",
+        {
+            "email": ACTOR_USER,
+            "enabled": 1,
+            "first_name": "NPI Tooling Manufacturing",
+            "language": "en",
+            "last_name": "Runtime Manager",
+            "new_password": fixture_password,
+            "roles": [
+                {"role": "Desk User"},
+                {"role": "NPI API User"},
+                {"role": "System Manager"},
+            ],
+            "send_welcome_email": 0,
+            "user_type": "System User",
+        },
+        csrf_token,
+    )
+    require(
+        created.status in {200, 201},
+        "P6-04 manufacturing actor fixture could not be created",
+    )
+    retained = get_resource(administrator, base_url, "User", ACTOR_USER)
+    data = retained.body.get("data", {})
+    roles = {
+        str(value.get("role"))
+        for value in data.get("roles", [])
+        if isinstance(value, dict)
+    }
+    require(
+        retained.status == 200
+        and data.get("enabled") == 1
+        and data.get("user_type") == "System User"
+        and {"NPI API User", "System Manager"} <= roles,
+        "P6-04 manufacturing actor transport authority drifted",
+    )
+    project_id, _project_version = document_runtime.fixture_project(
+        administrator,
+        base_url,
+    )
+    projects = predecessor.predecessor.rows(
+        administrator,
+        base_url,
+        "NPI Engineering Project",
+        [["global_id", "=", project_id]],
+        [
+            "global_id",
+            "optimistic_version",
+            "work_policy_global_id",
+            "work_policy_version",
+            "work_policy_snapshot_hash",
+        ],
+    )
+    project = predecessor.predecessor.exact_single(
+        projects,
+        "P6-04 manufacturing actor Project",
+    )
+    configured = document_runtime.npi_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}:configure-team",
+        method="POST",
+        payload={
+            "expectedProjectVersion": int(project["optimistic_version"]),
+            "workPolicyRef": {
+                "globalId": project["work_policy_global_id"],
+                "version": int(project["work_policy_version"]),
+                "snapshotHash": project["work_policy_snapshot_hash"],
+            },
+            "members": [
+                {
+                    "globalId": ACTOR_MEMBER_ID,
+                    "userId": ACTOR_USER,
+                    "effectiveFrom": "2026-08-01",
+                }
+            ],
+            "roleAssignments": [],
+            "substitutions": [],
+            "raciAssignments": [],
+        },
+        csrf_token=csrf_token,
+        idempotency_key=PROJECT_TEAM_KEY,
+    )
+    require(
+        configured.status == 200
+        and configured.headers.get("Idempotency-Replayed") == "false"
+        and configured.body.get("projectVersion")
+        == int(project["optimistic_version"]) + 1,
+        "P6-04 manufacturing actor membership drifted",
+    )
+    actor = login(base_url, ACTOR_USER, fixture_password)
+    actor_csrf = bootstrap_csrf(actor, base_url, ACTOR_USER)
+    return actor, actor_csrf
+
+
 def active_member(administrator, base_url: str, project_id: str) -> dict[str, object]:
     matches = predecessor.predecessor.rows(
         administrator,
@@ -275,6 +393,70 @@ def released_document(
             lifecycle.get("release_snapshot_hash"),
             "P6-04 release snapshot",
         ),
+    }
+
+
+def unreleased_document(
+    administrator,
+    base_url: str,
+    project_id: str,
+    released: dict[str, object],
+) -> dict[str, object]:
+    revisions = predecessor.predecessor.rows(
+        administrator,
+        base_url,
+        "NPI Document Revision",
+        [["project_global_id", "=", project_id]],
+        ["global_id", "snapshot_hash"],
+    )
+    candidates = sorted(
+        (
+            value
+            for value in revisions
+            if value.get("global_id") != released["revisionGlobalId"]
+        ),
+        key=lambda value: str(value.get("global_id")),
+    )
+    require(bool(candidates), "P6-04 unreleased Document Revision is unavailable")
+    revision = candidates[0]
+    revision_id = require_uuid(
+        revision.get("global_id"),
+        "P6-04 unreleased Document Revision",
+    )
+    lifecycles = predecessor.predecessor.rows(
+        administrator,
+        base_url,
+        "NPI Document Revision Lifecycle",
+        [["revision_global_id", "=", revision_id]],
+        ["global_id", "current_state", "lifecycle_version"],
+    )
+    require(
+        all(value.get("current_state") != "released" for value in lifecycles),
+        "P6-04 unreleased Document selection drifted",
+    )
+    lifecycle = lifecycles[0] if lifecycles else None
+    return {
+        "revisionGlobalId": revision_id,
+        "revisionSnapshotHash": require_hash(
+            revision.get("snapshot_hash"),
+            "P6-04 unreleased Document Revision",
+        ),
+        "lifecycleGlobalId": (
+            require_uuid(
+                lifecycle.get("global_id"),
+                "P6-04 unreleased Document lifecycle",
+            )
+            if lifecycle is not None
+            else ABSENT_OBJECT_ID
+        ),
+        "lifecycleVersion": (
+            int(lifecycle.get("lifecycle_version") or 1)
+            if lifecycle is not None
+            else 1
+        ),
+        "releaseEventGlobalId": ABSENT_PROJECT_ID,
+        "releaseEventHash": "0" * 64,
+        "releaseSnapshotHash": "0" * 64,
     }
 
 
@@ -871,6 +1053,7 @@ def verify_conflict_rollback(
     revision_snapshot_hash: str,
     member: dict[str, object],
     released: dict[str, object],
+    unreleased: dict[str, object],
     plan_one: dict[str, object],
     file_evidence: dict[str, object],
 ) -> None:
@@ -886,6 +1069,14 @@ def verify_conflict_rollback(
     stale_observation = observation_payload(plan_one, file_evidence, version=2)
     reference_observation = observation_payload(plan_one, file_evidence, version=1)
     reference_observation["planRevisionSnapshotHash"] = "0" * 64
+    unreleased_plan = plan_payload(
+        revision_id,
+        revision_snapshot_hash,
+        member,
+        unreleased,
+        version=1,
+    )
+    unreleased_plan["planGlobalId"] = UNRELEASED_PLAN_GLOBAL_ID
     conflicts = (
         (
             manufacturing_path(project_id, master_id),
@@ -918,6 +1109,13 @@ def verify_conflict_rollback(
             )
             | {"planGlobalId": ABSENT_OBJECT_ID},
             PLAN_REFERENCE_KEY,
+            404,
+            "TOOLING_REFERENCE_UNAVAILABLE",
+        ),
+        (
+            manufacturing_path(project_id, master_id),
+            unreleased_plan,
+            UNRELEASED_REFERENCE_KEY,
             404,
             "TOOLING_REFERENCE_UNAVAILABLE",
         ),
@@ -995,6 +1193,12 @@ def run_fresh(
     )
     member = active_member(administrator, base_url, project_id)
     released = released_document(administrator, base_url, project_id)
+    unreleased = unreleased_document(
+        administrator,
+        base_url,
+        project_id,
+        released,
+    )
     file_evidence = milestone_file_evidence(administrator, base_url, project_id)
     empty = assert_context(
         tooling_request(
@@ -1221,6 +1425,7 @@ def run_fresh(
         revision_snapshot_hash=revision_snapshot_hash,
         member=member,
         released=released,
+        unreleased=unreleased,
         plan_one=plan_one,
         file_evidence=file_evidence,
     )
@@ -1607,27 +1812,47 @@ def main() -> None:
     fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
     base_url = validate_local_fixture_inputs(
         arguments.base_url,
-        ACTOR_USER,
+        ADMINISTRATOR_USER,
         UNRELATED_USER,
     )
     require(
-        FIXTURE_RUN_ID != "0" * 32 and UNRELATED_USER.endswith("@example.invalid"),
+        FIXTURE_RUN_ID != "0" * 32
+        and ACTOR_USER.endswith("@example.invalid")
+        and UNRELATED_USER.endswith("@example.invalid"),
         "P6-04 fixture identity drifted",
     )
-    administrator = login(base_url, ACTOR_USER, administrator_password)
-    csrf_token = bootstrap_csrf(administrator, base_url, ACTOR_USER)
     require(
         int(arguments.route_disable_probe is not None)
         + int(arguments.replay_only)
         <= 1,
         "P6-04 runtime modes are mutually exclusive",
     )
+    if arguments.route_disable_probe is None and not arguments.replay_only:
+        administrator = login(
+            base_url,
+            ADMINISTRATOR_USER,
+            administrator_password,
+        )
+        administrator_csrf = bootstrap_csrf(
+            administrator,
+            base_url,
+            ADMINISTRATOR_USER,
+        )
+        actor, csrf_token = prepare_manufacturing_actor(
+            administrator,
+            base_url,
+            administrator_csrf,
+            fixture_password,
+        )
+    else:
+        actor = login(base_url, ACTOR_USER, fixture_password)
+        csrf_token = bootstrap_csrf(actor, base_url, ACTOR_USER)
     if arguments.route_disable_probe is not None:
-        route_disable_probe(administrator, base_url, arguments.route_disable_probe)
+        route_disable_probe(actor, base_url, arguments.route_disable_probe)
         print(json.dumps({"routeMode": arguments.route_disable_probe}, sort_keys=True))
         return
     if arguments.replay_only:
-        run_replay(administrator, base_url, csrf_token)
+        run_replay(actor, base_url, csrf_token)
         print(
             json.dumps(
                 {"crossProcessReplay": True, "fixtureRunId": FIXTURE_RUN_ID},
@@ -1637,7 +1862,7 @@ def main() -> None:
         print("local Frappe Tooling manufacturing runtime replay verification passed")
         return
     evidence = run_fresh(
-        administrator,
+        actor,
         base_url,
         csrf_token,
         fixture_password,
