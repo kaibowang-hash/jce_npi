@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_object,
     lowercase_sha256,
     require_exact_parent,
@@ -100,7 +101,7 @@ class NPIToolingSetRevisionBinding(Document):
         self.binding_key_hash = value.binding_key_hash
         self.reason = value.reason
         self.created_by_user_id = value.created_by_user_id
-        self.created_at = value.snapshot_payload()["createdAt"]
+        self.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
         self.binding_snapshot = canonical_json(value.snapshot_payload())
         self.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
 

@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_array,
     json_object,
     lowercase_sha256,
@@ -184,7 +185,7 @@ class NPIToolingRevision(Document):
         self.revision_key_hash = value.revision_key_hash
         self.reason = value.reason
         self.created_by_user_id = value.created_by_user_id
-        self.created_at = value.snapshot_payload()["createdAt"]
+        self.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
         self.specification_snapshot = canonical_json(value.specification.snapshot_payload())
         self.cavity_snapshot = canonical_json([item.snapshot_payload() for item in value.cavities])
         self.insert_snapshot = canonical_json([item.snapshot_payload() for item in value.inserts])

@@ -348,6 +348,26 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             self.assertIn("optional_date_text", source)
             self.assertNotIn("date.fromisoformat(str(self.", source)
 
+    def test_revision_history_uses_frappe_database_datetime_format(self) -> None:
+        for folder in (
+            "npi_tooling_revision",
+            "npi_part_controlled_specification",
+            "npi_tooling_process_chain_revision",
+            "npi_tooling_set_revision_binding",
+        ):
+            with self.subTest(folder=folder):
+                source = (
+                    DOCTYPE_ROOT / folder / f"{folder}.py"
+                ).read_text(encoding="utf-8")
+                self.assertIn(
+                    'self.created_at = frappe_utc_datetime_text(',
+                    source,
+                )
+                self.assertNotIn(
+                    'self.created_at = value.snapshot_payload()["createdAt"]',
+                    source,
+                )
+
     def test_part_projection_allows_revision_title_and_versions_pointer_once(self) -> None:
         source = (
             DOCTYPE_ROOT

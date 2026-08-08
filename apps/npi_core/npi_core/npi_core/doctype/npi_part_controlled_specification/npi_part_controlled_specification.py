@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_array,
     json_object,
     lowercase_sha256,
@@ -103,7 +104,7 @@ class NPIPartControlledSpecification(Document):
         self.engineering_part_revision = str(value.part_revision_global_id)
         self.specification_key_hash = value.specification_key_hash
         self.created_by_user_id = value.created_by_user_id
-        self.created_at = value.snapshot_payload()["createdAt"]
+        self.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
         self.item_snapshot = canonical_json([item.snapshot_payload() for item in value.items])
         self.external_identity_snapshot = canonical_json(
             [item.snapshot_payload() for item in value.external_identities]
