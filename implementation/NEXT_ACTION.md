@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_LIVE_WORKSPACE — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 
-Recovery time: `2026-08-08T18:42:56Z`
+Recovery time: `2026-08-08T20:19:57Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`6207072f643dc422cbb3be0cd07217183c824610`
+`1340f9b3f7167174277580c7aaedc9f9dcc97326`
 
 ## Current authoritative action
 
@@ -42,14 +42,32 @@ sources, statements `80.03%`, zero vulnerabilities and no leaks) and visual
 Complete evidence is
 `implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md`.
 
-The current atomic task is checkpoint 3 only: add the strict engineering-
-controls data source and dense selected-Master live workspace. It must expose
-defect/action/verification lineage, three fixed Customer Standard / Trial
-Actual / Approved Baseline columns, input-versioned capacity scenarios and a
-separate unavailable health section; cover loading, empty, no-permission,
-read-only, unavailable, not-measured, validation, conflict, processing and
-retry states; and pass direct English/`zh`/`zh-TW`, keyboard, accessibility and
-affected visual checks. Controlled Site remains inactive.
+P6-05 checkpoint 3 passes at exact stable checkpoint `1340f9b`. Product commit
+`aeb00bb` added the strict engineering-controls data source and dense selected-
+Master live workspace for immutable defect/action/verification lineage, the
+three fixed Customer Standard / Trial Actual / Approved Baseline columns,
+input-versioned capacity scenarios and separate unavailable health truth.
+Initial CI `31275192910` isolated one obsolete P6-01 bounded-read assertion and
+`29` legitimate missing/changed Linux baselines. Artifact `9026822983`, digest
+`sha256:e948c50fd65c40d8565255f7bc0a653a570c7a8c011fb0c032d0101f2243dcee`,
+retained the exact report/candidates. Repair `1340f9b` kept the assertion
+closed to bounded collection/exact-Master GETs and copied only the reviewed CI
+actuals without changing a component, threshold, tolerance or test case.
+
+Final ordinary CI `31276200829` passes repository `93150013305` (`1,243`
+Python, `768` frontend unit, `332` non-visual E2E, `4,901` complete direct
+trilingual sources, statements `80.35%`, zero vulnerabilities and both secret
+lanes) and visual `93150013277` at `85/85`; controlled job `93150013750`
+correctly skips. Evidence is
+`implementation/evidence/phase-6/p6-05-live-workspace-checkpoint.md`.
+
+The current atomic task is checkpoint 4 only: extend the cumulative disposable-
+Site verifier and controlled workflow for defect succession/actions/evidence/
+blocking, Customer Standard separation with absent actual/baseline, capacity
+successor recomputation/bottleneck/gap, actor-bound replay, stale conflict,
+rollback, IDOR and independent P6-05 route disable/recovery. Run affected
+checks and complete ordinary CI before the controlled Site; on PASS record the
+exact artifact and complete the P6-05 Level 2 Task Gate.
 
 P6-05 exposes no Trial Actual or Approved Baseline command because the
 repository has no Trial/approval aggregate. Those facts remain respectively

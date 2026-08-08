@@ -1,20 +1,21 @@
 # Blockers
 
-Updated: `2026-08-08T18:42:56Z`
+Updated: `2026-08-08T20:19:57Z`
 
 ## Active hard blockers
 
-None. P6-05 checkpoint 2 passes at exact product checkpoint `6207072`.
-Ordinary CI `31272151598` passes repository `93139826646`, visual
-`93139826601` at `82/82`, complete E2E and both secret lanes; controlled job
-`93139826885` correctly skips because P6-05 runtime is not active. No user
-action is required.
+None. P6-05 checkpoint 3 passes at exact stable checkpoint `1340f9b`.
+Ordinary CI `31276200829` passes repository `93150013305`, visual
+`93150013277` at `85/85`, complete E2E and both secret lanes; controlled job
+`93150013750` correctly skips before checkpoint 4 activates it. No user action
+is required.
 
 ## Active recovery
 
-None. The P6-05 repository/BFF/API checkpoint passes and its live workspace
-checkpoint is active. `DR-REC-010` remains a scoped hold on exact Tooling
-lifecycle states, transitions and manufacturing authority only. `DR-REC-002`
+None. The P6-05 repository/BFF/API and live-workspace checkpoints pass; its
+controlled-runtime checkpoint is active. `DR-REC-010` remains a scoped hold
+on exact Tooling lifecycle states, transitions and manufacturing authority
+only. `DR-REC-002`
 holds production exception-color semantics only. Neither blocks immutable
 defect truth, separated process facts, textual comparison states or versioned
 capacity scenarios.

@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T18:42:56Z'
+updated_at: '2026-08-08T20:19:57Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-05
-current_task_status: IN_PROGRESS_LIVE_WORKSPACE
-current_task_completed_stage: P6_05_REPOSITORY_BFF_CHECKPOINT_PASS
-current_task_next_stage: P6_05_LIVE_WORKSPACE_CHECKPOINT
+current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
+current_task_completed_stage: P6_05_LIVE_WORKSPACE_CHECKPOINT_PASS
+current_task_next_stage: P6_05_CONTROLLED_RUNTIME_LEVEL_2
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-05
-resumed_product_task_status: IN_PROGRESS_LIVE_WORKSPACE
+resumed_product_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1160,7 +1160,7 @@ p6_04:
 p6_05:
   task: P6-05
   controller_task: P6-05_DEFECT_PROCESS_CAPACITY_CONTROLS
-  status: IN_PROGRESS
+  status: IN_PROGRESS_CONTROLLED_RUNTIME
   requirements: [FR-TX-009, FR-TX-010, FR-TX-011, FR-TX-019, FR-TX-020, FR-TL-009, FR-TL-010, FR-TL-017, FR-TL-018]
   starting_product_checkpoint: 5ca13abdbbbe08493ee54e9627849cfb0afdec01
   starting_controller_checkpoint: e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae
@@ -1198,6 +1198,22 @@ p6_05:
   repository_api_gitleaks_artifact: 9026031821
   repository_api_gitleaks_digest: sha256:709646e7b609d9573420d23252b682671cd826b0a7024a91ee71409c667f8713
   repository_api_decision: PASS
+  live_workspace_product_checkpoint: aeb00bb91a099c9aa33bb9a0b39ebd4f54a3b88e
+  live_workspace_checkpoint: 1340f9b3f7167174277580c7aaedc9f9dcc97326
+  live_workspace_initial_ci: 31275192910
+  live_workspace_initial_repository_job: 93147515562
+  live_workspace_initial_visual_job: 93147515520
+  live_workspace_failed_visual_artifact: 9026822983
+  live_workspace_failed_visual_digest: sha256:e948c50fd65c40d8565255f7bc0a653a570c7a8c011fb0c032d0101f2243dcee
+  live_workspace_final_ci: 31276200829
+  live_workspace_repository_job: 93150013305
+  live_workspace_visual_job: 93150013277
+  live_workspace_controlled_job: 93150013750
+  live_workspace_visual_artifact: 9027099115
+  live_workspace_visual_digest: sha256:323537fcfddf051542bc055a13ff7b0af151fd41ca60cd28530f7c1046191ec8
+  live_workspace_gitleaks_artifact: 9027167708
+  live_workspace_gitleaks_digest: sha256:9d36b28461a12777c8a78e833d9a79354577fc55e183d686876f1e3b191d3d29
+  live_workspace_decision: PASS
   scoped_decisions: [DR-REC-002, DR-REC-010]
   trial_actual_active: false
   approved_process_baseline_active: false
@@ -1206,17 +1222,18 @@ p6_05:
   production_erp_iot_active: false
   routes_active: true
   routes_fail_closed: true
-  live_workspace_active: false
+  live_workspace_active: true
   controlled_runtime_active: false
-  current_stage: LIVE_WORKSPACE_CHECKPOINT
-  completed_stage: REPOSITORY_BFF_CHECKPOINT_PASS
-  next_stage: LIVE_WORKSPACE_CHECKPOINT
+  current_stage: CONTROLLED_RUNTIME_LEVEL_2
+  completed_stage: LIVE_WORKSPACE_CHECKPOINT_PASS
+  next_stage: CONTROLLED_RUNTIME_LEVEL_2
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-04-validation.md
     - implementation/evidence/phase-6/p6-05-plan.md
     - implementation/evidence/phase-6/p6-05-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md
+    - implementation/evidence/phase-6/p6-05-live-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

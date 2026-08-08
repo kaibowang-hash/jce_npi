@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T18:03:44Z`
+Updated: `2026-08-08T20:19:57Z`
 
 ## Authority and operating mode
 
@@ -1571,3 +1571,41 @@ repeat or rewrite it merely to restore context. See
   direct English/`zh`/`zh-TW`, keyboard/accessibility and affected visual
   evidence. Controlled Site, Trial/Gate/lifecycle/ERP/IoT writes and P6-06
   remain inactive.
+
+## 2026-08-08 P6-05 checkpoint 3 PASS and controlled-runtime transition
+
+- Product checkpoint `aeb00bb` adds the strict engineering-controls data
+  source and dense selected-Master defect/action/verification, three-column
+  process truth, capacity-scenario and unavailable-health workspace. The only
+  commands are the three capabilities returned by the P6-05 repository;
+  Trial Actual remains `not_measured`, Approved Baseline and health remain
+  `unavailable`, and no Gate/lifecycle/ERP/IoT action is present.
+- Initial exact product CI `31275192910` passed complete repository
+  verification and isolated two evidence-only roots: the older P6-01 locale
+  assertion did not admit the new exact selected-Master read, and `29`
+  legitimate Linux baselines were missing or changed. Artifact `9026822983`
+  retained the report, all `26` changed actual/diff pairs and the three new
+  P6-05 actuals in the report data.
+- Repair `1340f9b` keeps the request assertion closed to only bounded GETs for
+  the Project collection and exact selected Master, copies only the reviewed
+  CI actuals to their Linux targets, and adds the P6-05 baseline artifact path.
+  No production component, contract, threshold, visual tolerance, language or
+  governed test case was removed or weakened.
+- Exact stable checkpoint `1340f9b` passes complete ordinary CI
+  `31276200829`: repository `93150013305` (`1,243` Python, `768` frontend
+  unit, `332` non-visual E2E, `4,901` sources at complete direct `zh`/`zh-TW`,
+  statements `80.35%`, zero vulnerabilities and both secret lanes) and visual
+  `93150013277` at `85/85`; controlled job `93150013750` correctly skips.
+- Visual artifact `9027099115` has digest
+  `sha256:323537fcfddf051542bc055a13ff7b0af151fd41ca60cd28530f7c1046191ec8`;
+  Gitleaks artifact `9027167708` has digest
+  `sha256:9d36b28461a12777c8a78e833d9a79354577fc55e183d686876f1e3b191d3d29`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-05-live-workspace-checkpoint.md`.
+- Standing transition authority activates only checkpoint 4: cumulative
+  disposable-Site proof for defect succession/actions/evidence/blocking,
+  Customer Standard separation with absent actual/baseline, capacity
+  successor recomputation/bottleneck/gap, replay/conflict/rollback/IDOR and
+  independent P6-05 route disable/recovery, followed by complete ordinary CI
+  and the P6-05 Level 2 Task Gate. Trial/Gate/lifecycle/ERP/IoT writes and
+  P6-06 remain inactive.

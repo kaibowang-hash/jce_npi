@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T18:42:56Z`
+Updated: `2026-08-08T20:19:57Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_LIVE_WORKSPACE — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
+- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-05 DEFECT/PROCESS/CAPACITY CONTROLS`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `6207072f643dc422cbb3be0cd07217183c824610` (pushed; P6-05 checkpoint 2
-  repository/BFF/API boundary PASS)
+  `1340f9b3f7167174277580c7aaedc9f9dcc97326` (pushed; P6-05 checkpoint 3
+  live workspace/i18n/accessibility/visual boundary PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `e38da24bc75eeadd5bdb6f1f2f0b6d34b42d45ae` (P6-04 Level 2
-  controller/evidence synchronization and P6-05 audit entry checkpoint)
+  `57a7ada11144d4fbf2d539ecc97a50b057728e5d` (P6-05 checkpoint 2
+  controller/evidence synchronization)
 - Latest complete normal CI:
-  `31272151598` (`PASS`, exact SHA `6207072`; repository `93139826646` and
-  fixed-Linux visual `93139826601` at `82/82` passed; controlled runtime
-  `93139826885` correctly skipped)
+  `31276200829` (`PASS`, exact SHA `1340f9b`; repository `93150013305` and
+  fixed-Linux visual `93150013277` at `85/85` passed; controlled runtime
+  `93150013750` correctly skipped)
 - Latest controlled-Site run:
   `31267181068` (`PASS`, exact SHA `5ca13ab`, diagnostics closed; repository
   `93127118034`, visual `93127118025` and controlled `93127118037` passed)
@@ -26,14 +26,14 @@ Updated: `2026-08-08T18:42:56Z`
   `sha256:c6214438b19d025b1e32b0c308913b1b393bba62e3eba742d4b67282554130c2`
 - Current controller task:
   `P6-05 — Defect, process and capacity controls`
-  (`IN_PROGRESS — LIVE WORKSPACE CHECKPOINT`)
+  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 CHECKPOINT`)
 - Current Requirement IDs:
   `FR-TX-009..011`, `FR-TX-019`, `FR-TX-020`, `FR-TL-009`,
   `FR-TL-010` foundation and `FR-TL-017..018`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 CHECKPOINT 3`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-05 CHECKPOINT 4`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -87,11 +87,26 @@ sources, statements `80.03%`, zero vulnerabilities and no leaks) and visual
 Evidence is
 `implementation/evidence/phase-6/p6-05-repository-api-checkpoint.md`.
 
-Standing transition authority activates only P6-05 checkpoint 3: the strict
-engineering-controls data source and dense selected-Master defect, process,
-capacity and unavailable-health workspace; complete operational states,
-trilingual/accessibility coverage and affected visual evidence. Controlled
-Site, Trial/Gate/lifecycle/ERP/IoT writes and P6-06 remain inactive.
+P6-05 checkpoint 3 passes at exact stable checkpoint `1340f9b`. Product commit
+`aeb00bb` added the strict engineering-controls data source and dense selected-
+Master defect/action/verification, three-column process truth, versioned
+capacity and unavailable-health workspace. Initial CI `31275192910` isolated
+only one obsolete P6-01 bounded-read assertion and `29` expected Linux visual
+differences. Artifact `9026822983` retained the exact candidates; all were
+reviewed before repair `1340f9b` copied only CI actuals and kept zero visual
+tolerance. Final ordinary CI `31276200829` passes repository `93150013305`
+(`1,243` Python, `768` frontend unit, `332` non-visual E2E, `4,901` complete
+trilingual sources, statements `80.35%`, zero vulnerabilities and both secret
+lanes) and visual `93150013277` at `85/85`; controlled job `93150013750`
+correctly skips. Evidence is
+`implementation/evidence/phase-6/p6-05-live-workspace-checkpoint.md`.
+
+Standing transition authority activates only P6-05 checkpoint 4: cumulative
+disposable-Site proof for immutable defect succession/actions/evidence/
+blocking, separated Customer Standard with absent actual/baseline, capacity
+successor recomputation/bottleneck/gap, replay/conflict/rollback/IDOR and the
+independent route switch, then the P6-05 Level 2 Task Gate. Trial/Gate/
+lifecycle/ERP/IoT writes and P6-06 remain inactive.
 `DR-REC-002` and `DR-REC-010` retain their scoped holds. There is no active
 technical Hard Blocker.
 
