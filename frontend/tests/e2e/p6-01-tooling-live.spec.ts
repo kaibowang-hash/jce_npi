@@ -339,15 +339,28 @@ test.describe("P6-01 live Tooling cockpit", () => {
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);
       await expectAxeClean(page);
-      expect(observed.length).toBeGreaterThanOrEqual(1);
-      expect(observed.length).toBeLessThanOrEqual(2);
+      const collectionRequests = observed.filter(
+        (request) =>
+          request.path === `/api/npi/v1/projects/${projectId}/tooling`,
+      );
+      const selectedMasterRequests = observed.filter(
+        (request) =>
+          request.path ===
+          `/api/npi/v1/projects/${projectId}/tooling/${masterId}`,
+      );
+      expect(collectionRequests.length).toBeGreaterThanOrEqual(1);
+      expect(collectionRequests.length).toBeLessThanOrEqual(2);
+      expect(selectedMasterRequests.length).toBeGreaterThanOrEqual(1);
+      expect(selectedMasterRequests.length).toBeLessThanOrEqual(2);
       expect(
         observed.every(
           (request) =>
             request.csrfToken === undefined &&
             request.idempotencyKey === undefined &&
             request.method === "GET" &&
-            request.path === `/api/npi/v1/projects/${projectId}/tooling`,
+            (request.path === `/api/npi/v1/projects/${projectId}/tooling` ||
+              request.path ===
+                `/api/npi/v1/projects/${projectId}/tooling/${masterId}`),
         ),
       ).toBe(true);
     });
