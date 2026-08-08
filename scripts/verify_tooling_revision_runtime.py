@@ -70,6 +70,7 @@ REVISION_PERMISSIONS = {
     "bindSetSource": True,
     "transitionLifecycle": False,
 }
+_UNEXPECTED_DIAGNOSTIC_CODES = frozenset({"UNEXPECTED_BFF_EXCEPTION"})
 
 
 def revision_path(project_id: str, master_id: str, suffix: str = "") -> str:
@@ -121,6 +122,19 @@ def command(
         idempotency_key=key,
     )
     problem_code = result.body.get("code") if isinstance(result.body, dict) else None
+    if result.status != 201:
+        diagnostic = predecessor._sanitized_server_diagnostic(
+            result.trace_id,
+            _UNEXPECTED_DIAGNOSTIC_CODES,
+        )
+        if diagnostic is not None:
+            exception_type, diagnostic_code, trace_id = diagnostic
+            raise RuntimeError(
+                f"P6-03 command {key} returned HTTP {result.status}"
+                f" with problem code {problem_code or 'UNAVAILABLE'}"
+                f" [diagnostic_code={diagnostic_code}; "
+                f"exception_type={exception_type}; trace_id={trace_id}]"
+            )
     require(
         result.status == 201,
         (

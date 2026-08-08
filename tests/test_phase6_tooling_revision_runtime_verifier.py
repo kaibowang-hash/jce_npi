@@ -147,6 +147,49 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(request.call_args.kwargs["query_key"], "p603-revision-list")
         self.assertNotIn("X-NPI-Diagnostic-Scope", self.source)
 
+    def test_failed_command_reports_only_allowlisted_safe_server_diagnostic(self) -> None:
+        module = self.module
+        trace_id = "12345678-1234-4234-8234-123456789abc"
+        result = SimpleNamespace(
+            status=500,
+            headers={"X-Request-ID": "request"},
+            body={"code": "INTERNAL_SERVER_ERROR"},
+            trace_id=trace_id,
+        )
+        diagnostic = (
+            "AttributeError",
+            "UNEXPECTED_BFF_EXCEPTION",
+            trace_id,
+        )
+        with (
+            patch.object(module, "tooling_request", return_value=result),
+            patch.object(
+                module.predecessor,
+                "_sanitized_server_diagnostic",
+                return_value=diagnostic,
+            ) as read_diagnostic,
+            self.assertRaisesRegex(
+                RuntimeError,
+                (
+                    "HTTP 500 with problem code INTERNAL_SERVER_ERROR "
+                    r"\[diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
+                    r"exception_type=AttributeError; trace_id=" + trace_id + r"\]"
+                ),
+            ),
+        ):
+            module.command(
+                object(),
+                "http://127.0.0.1:8003",
+                "csrf",
+                "/api/npi/v1/projects/project/tooling/master/revisions",
+                {},
+                "revision-one",
+            )
+        read_diagnostic.assert_called_once_with(
+            trace_id,
+            frozenset({"UNEXPECTED_BFF_EXCEPTION"}),
+        )
+
     def test_applicability_selection_uses_nested_part_revision_projection(self) -> None:
         revision_id = "10000000-0000-4000-8000-000000000001"
         selected = self.module.exact_applicability(
