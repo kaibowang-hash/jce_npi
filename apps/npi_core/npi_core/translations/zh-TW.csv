@@ -4526,3 +4526,116 @@ Manufacturing authorization must remain unavailable.,製造授權必須保持不
 Released Document evidence must be consistent across roles.,已發布文件證據在各角色之間必須一致。
 The default ERP projection must remain unavailable and read-only.,預設企業資源規劃投影必須保持不可用且唯讀。
 Design release evidence does not match the exact Tooling Revision.,設計發布證據與精確模具修訂不相符。
+Manufacturing and supplier,製造與供應商
+Internal manufacturing,內部製造
+Supplier manufacturing,供應商製造
+Hybrid manufacturing,混合製造
+Material preparation,材料準備
+Heat treatment,熱處理
+Machining,機械加工
+Assembly,組裝
+Trial preparation,試模準備
+Delivery,交付
+DFM evidence,DFM 證據
+Tooling proposal,模具方案
+Quotation,報價
+Budget evidence,預算證據
+Progress evidence,進度證據
+Technical evidence,技術證據
+Delivery evidence,交付證據
+No manufacturing plan is selected.,未選取製造計畫。
+Every exact Design Document Revision is released.,每個精確設計文件修訂均已發布。
+No Design Document Revision is linked to the Tooling Revision.,模具修訂未連結設計文件修訂。
+Exact Design Document release evidence is incomplete.,精確設計文件發布證據不完整。
+"Complete the exact Revision, member, release evidence and milestone schedule.",請補全精確修訂、成員、發布證據和里程碑計畫。
+Enter planning amounts with one three-letter currency.,請使用同一種三字母貨幣代碼輸入計畫金額。
+Appending manufacturing plan Revision,正在附加製造計畫修訂
+Creating manufacturing plan,正在建立製造計畫
+"Enter valid progress, actual dates and complete optional File evidence.",請輸入有效進度和實際日期，並補全選用的文件證據。
+Recording internal milestone observation,正在記錄內部里程碑觀察
+Manufacturing and supplier workspace,製造與供應商工作區
+Loading manufacturing plan workspace,正在載入製造計畫工作區
+Immutable plan Revisions,不可變計畫修訂
+Append plan Revision,附加計畫修訂
+Create manufacturing plan,建立製造計畫
+Manufacturing data is read only in this session.,此工作階段中的製造資料為唯讀。
+Session verification is required before a command can be submitted.,提交命令前必須驗證工作階段。
+Manufacturing history is read only for this account.,此帳戶只能讀取製造歷程。
+The server controls plan and observation capabilities.,計畫和觀察能力由伺服器控制。
+The immutable command is processing.,不可變命令正在處理。
+Design release evidence,設計發布證據
+Manufacturing authorization,製造授權
+Tooling lifecycle policy is not approved.,模具生命週期策略尚未核准。
+ERPNext procurement and actual cost,ERPNext 採購與實際成本
+Formal Supplier and actual cost are observed from ERPNext.,正式供應商和實際成本取自 ERPNext。
+ERPNext procurement and actual-cost projection is unavailable.,ERPNext 採購與實際成本投影不可用。
+No manufacturing plan has been recorded.,尚未記錄製造計畫。
+"Create an internal immutable plan without inferring funding, PO or manufacturing approval.",建立內部不可變計畫，但不推斷資金、PO 或製造核准。
+Manufacturing plan history,製造計畫歷程
+Plan Revision,計畫修訂
+Sourcing,尋源方式
+Milestones,里程碑
+Observations,觀察
+Manufacturing plan inspector,製造計畫檢查器
+Loading exact plan Revision,正在載入精確計畫修訂
+Plan identity,計畫識別碼
+Plan version,計畫版本
+Responsible member,負責成員
+Plan progress never authorizes manufacturing or changes ERPNext truth.,計畫進度絕不授權製造，也不變更 ERPNext 事實。
+Internal NPI observations,內部 NPI 觀察
+Record observation,記錄觀察
+Category,類別
+Planned dates,計畫日期
+Latest progress,最新進度
+"Supplier-responsible, internally reported",供應商負責，由內部回報
+Internal Project member,內部專案成員
+No observation,無觀察
+Latest internal observation,最新內部觀察
+No risk recorded,未記錄風險
+No note recorded,未記錄備註
+Formal Supplier and ERPNext actual cost,正式供應商與 ERPNext 實際成本
+ERPNext source truth is unavailable.,ERPNext 來源事實不可用。
+"No Supplier, PO, receipt, invoice or actual cost is inferred as zero.",不會把供應商、PO、收貨、發票或實際成本推斷為零。
+Formal Supplier,正式供應商
+Target version,目標版本
+Actual-cost rows,實際成本列
+Cost type code,成本類型代碼
+Currency,貨幣
+Append immutable manufacturing plan Revision,附加不可變製造計畫修訂
+Create immutable manufacturing plan,建立不可變製造計畫
+Exact Tooling Revision,精確模具修訂
+Sourcing strategy,尋源策略
+Responsible member identity,負責成員識別碼
+Responsible user,負責使用者
+Member version,成員版本
+Engineering estimate,工程估算
+Budget fact,預算事實
+Exact released Design Documents,精確已發布設計文件
+Document Revision identity,文件修訂識別碼
+Document Revision snapshot hash,文件修訂快照雜湊
+Document lifecycle identity,文件生命週期識別碼
+Document lifecycle version,文件生命週期版本
+Release event identity,發布事件識別碼
+Release event hash,發布事件雜湊
+Release snapshot hash,發布快照雜湊
+Remove released Document,移除已發布文件
+Add released Document,新增已發布文件
+Manufacturing milestone schedule,製造里程碑計畫
+Internal,內部
+Remove milestone,移除里程碑
+Add milestone,新增里程碑
+Optional released planning evidence,選用的已發布計畫證據
+Remove planning evidence,移除計畫證據
+Add planning evidence,新增計畫證據
+Append immutable plan Revision,附加不可變計畫修訂
+Create immutable plan,建立不可變計畫
+Record internal milestone observation,記錄內部里程碑觀察
+This supplier-responsible milestone is still reported by an internal NPI user.,此供應商負責的里程碑仍由內部 NPI 使用者回報。
+The authenticated internal NPI user reports this observation.,此觀察由已驗證的內部 NPI 使用者回報。
+Progress percentage,進度百分比
+Observation note,觀察備註
+Optional clean private File evidence,選用的潔淨私人文件證據
+File Revision identity,文件修訂識別碼
+File version,文件版本
+Frappe content hash,Frappe 內容雜湊
+Record immutable observation,記錄不可變觀察

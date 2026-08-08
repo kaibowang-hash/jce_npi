@@ -23,8 +23,23 @@ import {
   type ToolingRevisionDetailViewModel,
   type ToolingSetSourceRevisionViewModel,
 } from "./tooling-revision-contract";
+import {
+  isCreateToolingManufacturingObservationCommand,
+  isCreateToolingManufacturingPlanCommand,
+  isToolingManufacturingObservationCommand,
+  isToolingManufacturingPlanCollection,
+  isToolingManufacturingPlanCommand,
+  isToolingManufacturingPlanDetail,
+  type CreateToolingManufacturingObservationCommand,
+  type CreateToolingManufacturingPlanCommand,
+  type ToolingManufacturingObservationCommandViewModel,
+  type ToolingManufacturingPlanCollectionViewModel,
+  type ToolingManufacturingPlanCommandViewModel,
+  type ToolingManufacturingPlanDetailViewModel,
+} from "./tooling-manufacturing-contract";
 
 export * from "./tooling-revision-contract";
+export * from "./tooling-manufacturing-contract";
 
 export type ToolingRequirementKind =
   | "new_tool"
@@ -445,6 +460,31 @@ export interface ToolingDataSource {
     command: CreateToolingSetRevisionBindingCommand,
     context: ToolingCommandContext,
   ): Promise<ToolingSetDetailViewModel>;
+  loadManufacturingPlans(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingManufacturingPlanCollectionViewModel>;
+  loadManufacturingPlan(
+    projectId: string,
+    masterId: string,
+    planRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingManufacturingPlanDetailViewModel>;
+  createManufacturingPlan(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingManufacturingPlanCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingManufacturingPlanCommandViewModel>;
+  createManufacturingObservation(
+    projectId: string,
+    masterId: string,
+    planRevisionId: string,
+    milestoneId: string,
+    command: CreateToolingManufacturingObservationCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingManufacturingObservationCommandViewModel>;
 }
 
 export class ToolingRequestCancelledError extends Error {
@@ -1609,6 +1649,101 @@ export class LiveToolingDataSource implements ToolingDataSource {
         !("state" in value.toolingSet.sourceRevision) &&
         value.toolingSet.sourceRevision.toolingRevisionGlobalId ===
           command.toolingRevisionGlobalId,
+    );
+  }
+
+  async loadManufacturingPlans(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingManufacturingPlanCollectionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/manufacturing-plans`,
+      signal,
+      (value): value is ToolingManufacturingPlanCollectionViewModel =>
+        isToolingManufacturingPlanCollection(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async loadManufacturingPlan(
+    projectId: string,
+    masterId: string,
+    planRevisionId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingManufacturingPlanDetailViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedPlanRevisionId = requireUuid(planRevisionId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/manufacturing-plans/${expectedPlanRevisionId}`,
+      signal,
+      (value): value is ToolingManufacturingPlanDetailViewModel =>
+        isToolingManufacturingPlanDetail(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId &&
+        value.item.plan.globalId === expectedPlanRevisionId,
+    );
+  }
+
+  async createManufacturingPlan(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingManufacturingPlanCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingManufacturingPlanCommandViewModel> {
+    if (!isCreateToolingManufacturingPlanCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/manufacturing-plans`,
+      command,
+      context,
+      (value): value is ToolingManufacturingPlanCommandViewModel =>
+        isToolingManufacturingPlanCommand(value) &&
+        value.plan.toolingMasterGlobalId === expectedMasterId &&
+        value.plan.toolingRevisionGlobalId ===
+          command.toolingRevisionGlobalId &&
+        value.plan.toolingRevisionSnapshotHash ===
+          command.toolingRevisionSnapshotHash &&
+        value.plan.planVersion === (command.expectedVersion ?? 0) + 1 &&
+        (command.planGlobalId === undefined ||
+          value.plan.planGlobalId === command.planGlobalId),
+    );
+  }
+
+  async createManufacturingObservation(
+    projectId: string,
+    masterId: string,
+    planRevisionId: string,
+    milestoneId: string,
+    command: CreateToolingManufacturingObservationCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingManufacturingObservationCommandViewModel> {
+    if (!isCreateToolingManufacturingObservationCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedPlanRevisionId = requireUuid(planRevisionId);
+    const expectedMilestoneId = requireUuid(milestoneId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/manufacturing-plans/${expectedPlanRevisionId}/milestones/${expectedMilestoneId}/observations`,
+      command,
+      context,
+      (value): value is ToolingManufacturingObservationCommandViewModel =>
+        isToolingManufacturingObservationCommand(value) &&
+        value.observation.planRevisionGlobalId === expectedPlanRevisionId &&
+        value.observation.milestoneGlobalId === expectedMilestoneId &&
+        value.observation.planRevisionSnapshotHash ===
+          command.planRevisionSnapshotHash &&
+        value.observation.milestoneSnapshotHash ===
+          command.milestoneSnapshotHash &&
+        value.observation.observationVersion ===
+          (command.expectedVersion ?? 0) + 1,
     );
   }
 

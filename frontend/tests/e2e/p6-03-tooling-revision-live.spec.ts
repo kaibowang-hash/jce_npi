@@ -5,7 +5,11 @@ import type {
   PartControlledSpecificationContextViewModel,
   ToolingCockpitViewModel,
   ToolingMeasurementViewModel,
+  ToolingManufacturingMilestoneObservationViewModel,
+  ToolingManufacturingPlanCollectionViewModel,
+  ToolingManufacturingPlanRevisionViewModel,
   ToolingProcessChainCollectionViewModel,
+  ToolingReleasedDocumentEvidenceViewModel,
   ToolingProcessChainRevisionViewModel,
   ToolingRevisionCollectionViewModel,
   ToolingRevisionDetailViewModel,
@@ -37,6 +41,14 @@ const firstStepId = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const secondStepId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const setId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 const bindingId = "12345678-1234-4234-8234-123456789abc";
+const manufacturingPlanId = "13572468-1357-4357-8357-246813572468";
+const manufacturingPlanRevisionId = "24681357-2468-4468-8468-135724681357";
+const manufacturingMemberId = "35792468-3579-4579-8579-246813579246";
+const manufacturingMilestoneId = "46813579-4681-4681-8681-357924683579";
+const manufacturingObservationId = "57924681-5792-4792-8792-468135794681";
+const designDocumentRevisionId = "68135792-6813-4813-8813-579246816813";
+const designLifecycleId = "79246813-7924-4924-8924-681357927924";
+const designReleaseEventId = "81357924-8135-4135-8135-792468138135";
 const csrfToken = "p6-03-tooling-revision-browser-csrf";
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -402,6 +414,130 @@ function setDetail(bound = false): ToolingSetDetailViewModel {
   };
 }
 
+function releasedDesignEvidence(): ToolingReleasedDocumentEvidenceViewModel {
+  return {
+    lifecycleGlobalId: designLifecycleId,
+    lifecycleVersion: 2,
+    releaseEventGlobalId: designReleaseEventId,
+    releaseEventHash: "5".repeat(64),
+    releaseSnapshotHash: "6".repeat(64),
+    revisionGlobalId: designDocumentRevisionId,
+    revisionSnapshotHash: "7".repeat(64),
+  };
+}
+
+function manufacturingPlan(): ToolingManufacturingPlanRevisionViewModel {
+  return {
+    budget: { amount: "125000.00", currency: "CNY" },
+    designReleaseEvidence: [releasedDesignEvidence()],
+    engineeringEstimate: { amount: "120000", currency: "CNY" },
+    evidence: [{ document: releasedDesignEvidence(), role: "dfm" }],
+    globalId: manufacturingPlanRevisionId,
+    milestones: [
+      {
+        category: "machining",
+        globalId: manufacturingMilestoneId,
+        plannedFinish: "2026-09-20",
+        plannedStart: "2026-09-01",
+        predecessorGlobalIds: [],
+        responsibleMember: null,
+        responsibilityKind: "supplier",
+        sequence: 1,
+        snapshotHash: "8".repeat(64),
+      },
+    ],
+    planGlobalId: manufacturingPlanId,
+    planVersion: 1,
+    predecessorGlobalId: null,
+    predecessorSnapshotHash: null,
+    reason: "Initial controlled manufacturing plan",
+    responsibleMember: {
+      globalId: manufacturingMemberId,
+      optimisticVersion: 3,
+      userId: "tooling.engineer@example.invalid",
+    },
+    snapshotHash: "9".repeat(64),
+    sourcingStrategy: "hybrid",
+    toolingMasterGlobalId: masterId,
+    toolingRevisionGlobalId: toolingRevisionId,
+    toolingRevisionSnapshotHash: revision().snapshotHash,
+  };
+}
+
+function manufacturingObservation(): ToolingManufacturingMilestoneObservationViewModel {
+  return {
+    actualFinish: null,
+    actualStart: "2026-09-02",
+    evidence: [],
+    globalId: manufacturingObservationId,
+    milestoneGlobalId: manufacturingMilestoneId,
+    milestoneSnapshotHash: "8".repeat(64),
+    note: "Machining fixture completed",
+    observationVersion: 1,
+    planRevisionGlobalId: manufacturingPlanRevisionId,
+    planRevisionSnapshotHash: "9".repeat(64),
+    predecessorGlobalId: null,
+    predecessorSnapshotHash: null,
+    progressPercentage: 40,
+    reportedByMember: {
+      globalId: manufacturingMemberId,
+      optimisticVersion: 3,
+      userId: "tooling.engineer@example.invalid",
+    },
+    risk: "Cooling insert lead time",
+    snapshotHash: "a".repeat(64),
+  };
+}
+
+function manufacturingCollection(): ToolingManufacturingPlanCollectionViewModel {
+  return {
+    erpProjection: {
+      editableIn: "ERPNEXT",
+      reasonCode: "erp_projection_unavailable",
+      sourceSystem: "ERPNEXT",
+      state: "unavailable",
+    },
+    items: [
+      {
+        designReleaseEvidence: {
+          items: [releasedDesignEvidence()],
+          reasonCode: null,
+          state: "satisfied",
+        },
+        observations: [manufacturingObservation()],
+        plan: manufacturingPlan(),
+      },
+    ],
+    manufacturingAuthorization: {
+      reasonCode: "tooling_lifecycle_policy_unavailable",
+      state: "unavailable",
+    },
+    permissions: {
+      createPlan: true,
+      editErpProjection: false,
+      observeMilestone: true,
+      transitionLifecycle: false,
+      view: true,
+    },
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
+  };
+}
+
+function manufacturingDetail() {
+  const value = manufacturingCollection();
+  const item = value.items[0];
+  if (!item) throw new Error("The manufacturing fixture is required.");
+  return {
+    erpProjection: value.erpProjection,
+    item,
+    manufacturingAuthorization: value.manufacturingAuthorization,
+    permissions: value.permissions,
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
+  };
+}
+
 function requestIdentity(route: Route): string {
   const requestId = route.request().headers()["x-request-id"] ?? "";
   expect(requestId).toMatch(requestIdPattern);
@@ -469,6 +605,36 @@ async function installApi(
     }
     if (path.endsWith(`/tooling/${masterId}/sets`)) {
       await fulfillJson(route, setCollection());
+      return;
+    }
+    if (
+      path.endsWith(
+        `/manufacturing-plans/${manufacturingPlanRevisionId}/milestones/${manufacturingMilestoneId}/observations`,
+      )
+    ) {
+      await fulfillJson(
+        route,
+        { observation: manufacturingObservation() },
+        201,
+      );
+      return;
+    }
+    if (path.endsWith(`/manufacturing-plans/${manufacturingPlanRevisionId}`)) {
+      await fulfillJson(route, manufacturingDetail());
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/manufacturing-plans`)) {
+      await fulfillJson(
+        route,
+        request.method() === "POST"
+          ? {
+              designReleaseEvidence:
+                manufacturingCollection().items[0]?.designReleaseEvidence,
+              plan: manufacturingPlan(),
+            }
+          : manufacturingCollection(),
+        request.method() === "POST" ? 201 : 200,
+      );
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/revisions/${toolingRevisionId}`)) {
@@ -677,6 +843,123 @@ test.describe("P6-03 live immutable Tooling Revision workspace", () => {
   });
 });
 
+test.describe("P6-04 live manufacturing and supplier workspace", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`renders exact plan, internal observation and explicit ERP truth in ${locale}`, async ({
+      page,
+    }) => {
+      await installSession(page, locale);
+      await installApi(page);
+      await openWorkspace(page, locale);
+      const workspace = page.locator("#tooling-manufacturing-workspace");
+      await workspace.scrollIntoViewIfNeeded();
+
+      await expect(workspace).toBeVisible();
+      await expect(
+        workspace.getByText(
+          locale === "en"
+            ? "Supplier-responsible, internally reported"
+            : locale === "zh"
+              ? "供应商负责，由内部报告"
+              : "供應商負責，由內部回報",
+        ),
+      ).toBeVisible();
+      await expect(
+        workspace.getByText(
+          locale === "en"
+            ? "ERPNext source truth is unavailable."
+            : locale === "zh"
+              ? "ERPNext 源事实不可用。"
+              : "ERPNext 來源事實不可用。",
+        ),
+      ).toBeVisible();
+      await expectNoMixedLanguage(page, locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+    });
+  }
+
+  test("appends only an internal immutable plan Revision", async ({ page }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-manufacturing-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace
+      .getByRole("button", { name: "Append plan Revision" })
+      .click();
+    await workspace.getByLabel("Reason").fill("Approved planning adjustment");
+    await workspace
+      .getByRole("button", { name: "Append immutable plan Revision" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(`/tooling/${masterId}/manufacturing-plans`),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find(
+      (request) =>
+        request.method === "POST" &&
+        request.path.endsWith(`/tooling/${masterId}/manufacturing-plans`),
+    );
+    expect(command?.payload).toMatchObject({
+      expectedVersion: 1,
+      planGlobalId: manufacturingPlanId,
+      reason: "Approved planning adjustment",
+      toolingRevisionGlobalId: toolingRevisionId,
+      toolingRevisionSnapshotHash: revision().snapshotHash,
+    });
+    expect(command?.payload).not.toHaveProperty("manufacturingApproved");
+    expect(command?.payload).not.toHaveProperty("formalSupplier");
+  });
+
+  test("records supplier progress only as an internal observation", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page);
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-manufacturing-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace.getByRole("button", { name: "Record observation" }).click();
+    await workspace.getByLabel("Progress percentage").fill("65");
+    await workspace
+      .getByLabel("Observation note")
+      .fill("Supplier update recorded by internal NPI engineer");
+    await workspace
+      .getByRole("button", { name: "Record immutable observation" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith("/observations"),
+          ).length,
+      )
+      .toBe(1);
+    expect(
+      observed.find((request) => request.path.endsWith("/observations")),
+    ).toMatchObject({
+      payload: {
+        expectedVersion: 1,
+        evidence: [],
+        note: "Supplier update recorded by internal NPI engineer",
+        progressPercentage: 65,
+      },
+    });
+  });
+});
+
 const visualCases = [
   {
     height: 768,
@@ -733,5 +1016,46 @@ test.describe("@visual P6-03 immutable Tooling Revision evidence", () => {
         fullPage: false,
       });
     });
+  }
+});
+
+test.describe("@visual P6-04 manufacturing and supplier evidence", () => {
+  for (const visual of visualCases) {
+    test(
+      visual.name.replace("p6-03-tooling-revision", "p6-04-manufacturing"),
+      async ({ page }) => {
+        await installSession(page, visual.locale);
+        await installApi(page);
+        await page.setViewportSize(
+          effectiveViewport(
+            { height: visual.height, width: visual.width },
+            visual.zoom,
+          ),
+        );
+        await page.emulateMedia({
+          colorScheme: "light",
+          reducedMotion: "reduce",
+        });
+        await openWorkspace(page, visual.locale);
+        await page
+          .locator("#tooling-manufacturing-workspace")
+          .evaluate((element) => {
+            element.scrollIntoView({ block: "start" });
+          });
+        await expectNoMixedLanguage(page, visual.locale);
+        await expectNoDocumentOverflow(page);
+        await expectIndustrialComputedStyles(page);
+        await expectAxeClean(page);
+        await page.addStyleTag({
+          content:
+            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+        });
+        await page.evaluate(async () => document.fonts.ready);
+        await expect(page).toHaveScreenshot(
+          `${visual.name.replace("p6-03-tooling-revision", "p6-04-manufacturing")}.png`,
+          { fullPage: false },
+        );
+      },
+    );
   }
 });

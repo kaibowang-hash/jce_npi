@@ -119,6 +119,8 @@ function dataSource(
   const value = cockpit();
   return {
     attachIntakeEvidence: () => Promise.reject(new Error("not used")),
+    createManufacturingObservation: () => Promise.reject(new Error("not used")),
+    createManufacturingPlan: () => Promise.reject(new Error("not used")),
     createPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     createToolingProcessChainRevision: () =>
@@ -135,6 +137,8 @@ function dataSource(
     createSet: () => Promise.reject(new Error("not used")),
     loadCockpit: () => Promise.resolve(value),
     loadMaster: () => Promise.resolve(value),
+    loadManufacturingPlan: () => Promise.reject(new Error("not used")),
+    loadManufacturingPlans: () => Promise.reject(new Error("not used")),
     loadPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     loadSet: () => Promise.reject(new Error("not used")),

@@ -110,6 +110,7 @@ jobs:
             frontend/tests/e2e/p6-01-tooling-live.spec.ts-snapshots/p6-01-*-linux.png
             frontend/tests/e2e/p6-02-tooling-set-live.spec.ts-snapshots/p6-02-*-linux.png
             frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-03-*-linux.png
+            frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-04-*-linux.png
             frontend/tests/e2e/gate-evidence-live.spec.ts-snapshots/p5-03-*-linux.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json
@@ -125,6 +126,8 @@ jobs:
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-02-tooling-set-live-*/**/*-diff.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-03-tooling-revision-live-*/**/*-actual.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-03-tooling-revision-live-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-04-manufacturing-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p6-04-manufacturing-*/**/*-diff.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/gate-evidence-live--visual-*/**/*-actual.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/gate-evidence-live--visual-*/**/*-diff.png
           if-no-files-found: error

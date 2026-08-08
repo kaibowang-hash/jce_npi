@@ -25,6 +25,7 @@ import {
 import { formatDate, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
+import ToolingManufacturingWorkspace from "./tooling-manufacturing-workspace";
 import ToolingRevisionWorkspace from "./tooling-revision-workspace";
 import ToolingSetWorkspace from "./tooling-set-workspace";
 
@@ -547,6 +548,10 @@ export default function LiveToolingPage({
             id: "tooling-live-sets",
             label: t("Physical Tooling Sets and intake"),
           },
+          {
+            id: "tooling-manufacturing-workspace",
+            label: t("Manufacturing and supplier"),
+          },
           { id: "tooling-live-inspector", label: t("Tooling truth inspector") },
         ]}
       />
@@ -884,6 +889,15 @@ export default function LiveToolingPage({
           key={`revision-${selectedMaster.globalId}`}
           masterId={selectedMaster.globalId}
           parts={cockpit.parts}
+          projectId={projectId}
+          reportWorkspaceDirty={reportWorkspaceDirty}
+        />
+      ) : null}
+      {selectedMaster ? (
+        <ToolingManufacturingWorkspace
+          dataSource={dataSource}
+          key={`manufacturing-${selectedMaster.globalId}`}
+          masterId={selectedMaster.globalId}
           projectId={projectId}
           reportWorkspaceDirty={reportWorkspaceDirty}
         />

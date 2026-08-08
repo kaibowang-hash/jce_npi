@@ -1294,10 +1294,90 @@ textarea::placeholder {
   gap: var(--npi-space-1);
 }
 
+.tooling-manufacturing__capabilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--npi-space-2);
+  margin-block: var(--npi-space-3);
+}
+
+.tooling-manufacturing__capabilities > section,
+.tooling-manufacturing__milestones,
+.tooling-manufacturing__erp,
+.tooling-manufacturing__field-array {
+  display: grid;
+  align-content: start;
+  gap: var(--npi-space-2);
+  min-width: 0;
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  background: var(--npi-color-surface-default);
+}
+
+.tooling-manufacturing__layout {
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) minmax(280px, 0.34fr);
+  gap: var(--npi-space-3);
+  min-width: 0;
+  margin-block: var(--npi-space-3);
+}
+
+.tooling-manufacturing__milestones,
+.tooling-manufacturing__erp {
+  margin-top: var(--npi-space-3);
+}
+
+.tooling-manufacturing__observation {
+  display: grid;
+  grid-template-columns: auto auto minmax(160px, 1fr) minmax(160px, 1fr);
+  align-items: center;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+  border-left: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+  background: var(--npi-color-surface-subtle);
+}
+
+.tooling-manufacturing__form {
+  display: grid;
+  gap: var(--npi-space-3);
+  margin-top: var(--npi-space-3);
+  padding-top: var(--npi-space-3);
+  border-top: var(--npi-border-selected) solid var(--npi-color-brand-primary);
+}
+
+.tooling-manufacturing__field-array {
+  margin: 0;
+}
+
+.tooling-manufacturing__field-array > legend {
+  padding-inline: var(--npi-space-1);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.tooling-manufacturing__field-array > .form-grid {
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.tooling-manufacturing__milestone-editor {
+  display: grid;
+  grid-template-columns:
+    auto minmax(180px, 1fr) minmax(145px, 0.7fr)
+    minmax(145px, 0.7fr) minmax(210px, 1fr) auto;
+  align-items: end;
+  gap: var(--npi-space-2);
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
 @media (width <= 1100px) {
   .tooling-set__detail-grid,
   .tooling-set__inspection-row,
-  .tooling-set__accessory-row {
+  .tooling-set__accessory-row,
+  .tooling-manufacturing__capabilities,
+  .tooling-manufacturing__layout,
+  .tooling-manufacturing__observation,
+  .tooling-manufacturing__milestone-editor {
     grid-template-columns: 1fr;
   }
 

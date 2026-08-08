@@ -260,6 +260,8 @@ function dataSource(
 ): ToolingDataSource {
   return {
     attachIntakeEvidence: () => Promise.resolve(detail()),
+    createManufacturingObservation: () => Promise.reject(new Error("not used")),
+    createManufacturingPlan: () => Promise.reject(new Error("not used")),
     createPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     createToolingProcessChainRevision: () =>
@@ -276,6 +278,8 @@ function dataSource(
     createSet: () => Promise.resolve(collection()),
     loadCockpit: () => Promise.resolve(cockpit()),
     loadMaster: () => Promise.resolve(cockpit()),
+    loadManufacturingPlan: () => Promise.reject(new Error("not used")),
+    loadManufacturingPlans: () => Promise.reject(new Error("not used")),
     loadPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     loadSet: () => Promise.resolve(detail()),
