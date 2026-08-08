@@ -188,6 +188,7 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
         base_url,
         "NPI Tooling Applicability",
         [
+            ["project_global_id", "=", project_id],
             ["tooling_master_global_id", "=", master_id],
             ["effective_to", "is", "not set"],
         ],

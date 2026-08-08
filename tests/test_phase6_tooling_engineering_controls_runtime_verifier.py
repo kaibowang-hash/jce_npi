@@ -186,6 +186,83 @@ class Phase6ToolingEngineeringControlsRuntimeVerifierTest(unittest.TestCase):
         self.assertIs(result, raw)
         self.assertEqual(request.call_args.kwargs["query_key"], "p605-controls")
 
+    def test_project_context_scopes_shared_master_applicability_to_project(self) -> None:
+        module = self.module
+        context = self.context()
+        replay = (
+            context["projectId"],
+            context["masterId"],
+            context["applicability"][0]["globalId"],
+            {},
+            context["member"],
+            {},
+            context["fileEvidence"],
+            {
+                "globalId": context["revisionId"],
+                "snapshotHash": context["revisionSnapshotHash"],
+            },
+            {},
+            {},
+        )
+        predecessor_context = (
+            context["projectId"],
+            context["masterId"],
+            "90000000-0000-4000-8000-000000000009",
+            (),
+            context["toolingSetId"],
+            {},
+        )
+
+        def fixture_rows(_administrator, _base_url, doctype, filters, fields=None):
+            if doctype == "NPI Tooling Set":
+                return [
+                    {
+                        "global_id": context["toolingSetId"],
+                        "snapshot_hash": context["toolingSetSnapshotHash"],
+                    }
+                ]
+            if doctype == "NPI Tooling Applicability":
+                self.assertIn(
+                    ["project_global_id", "=", context["projectId"]],
+                    filters,
+                )
+                return [
+                    {
+                        "global_id": context["applicability"][0]["globalId"],
+                        "part_revision_global_id": context["applicability"][0][
+                            "partRevisionGlobalId"
+                        ],
+                        "snapshot_hash": context["applicability"][0]["snapshotHash"],
+                        "effective_to": None,
+                    }
+                ]
+            if doctype == "NPI Engineering Part Revision":
+                return [
+                    {
+                        "global_id": context["applicability"][0][
+                            "partRevisionGlobalId"
+                        ],
+                        "snapshot_hash": context["applicability"][0][
+                            "partRevisionSnapshotHash"
+                        ],
+                    }
+                ]
+            raise AssertionError(f"Unexpected fixture doctype: {doctype}")
+
+        with (
+            patch.object(module.predecessor, "replay_context", return_value=replay),
+            patch.object(
+                module.predecessor.predecessor,
+                "project_context",
+                return_value=predecessor_context,
+            ),
+            patch.object(module, "rows", side_effect=fixture_rows),
+        ):
+            resolved = module.project_context(object(), "http://127.0.0.1:8003")
+
+        self.assertEqual(resolved["projectId"], context["projectId"])
+        self.assertEqual(resolved["applicability"], context["applicability"])
+
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
             "tooling_engineering_controls_route_switch_state",
