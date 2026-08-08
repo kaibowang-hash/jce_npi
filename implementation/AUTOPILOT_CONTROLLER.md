@@ -1281,3 +1281,43 @@ repeat or rewrite it merely to restore context. See
   pass before controlled dispatch.
 - `DR-REC-010` and every Supplier/ERP/Trial/impact/import/external-execution
   hold remain unchanged. Production ERPNext must not be contacted.
+
+## 2026-08-08 P6-03 Level 2 PASS and P6-04 transition
+
+- Runtime checkpoint `a0c0802` and its serial verifier repairs established the
+  exact P6-03 cumulative disposable-Site boundary. One generic and one closed
+  revision-create response-neutral diagnostic narrowed the opaque database
+  failure to `P603_REVISION_INSERT / OperationalError` without exposing input
+  or changing the public response.
+- Repair `05a27b8` converts all four P6-03 audit timestamps through the
+  existing validated Frappe UTC DateTime boundary. Controlled run
+  `31253676998` then passed fresh P6-03 persistence and isolated only the
+  inherited P6-01 recovery probe's pre-P6-03 count expectation. Repair
+  `ff32f0b` asserts the exact cumulative totals and does not weaken them to an
+  inequality.
+- Complete ordinary CI `31253903494` and controlled workflow `31253914746`
+  proved every repair and the complete cumulative path. Because the temporary
+  P6-03 diagnostic request header was still enabled, that controlled PASS is
+  retained as repair evidence rather than accepted as the final Task Gate.
+- Checkpoint `4ab4782` closes P6-03 diagnostic activation. Final ordinary CI
+  `31254281586` passes repository `93095213074` (`1,177` Python, `744`
+  frontend unit, `321` non-visual E2E, statements `80.07%`, `4,419` direct
+  trilingual sources, zero vulnerabilities and no leaks), visual
+  `93095213086` at `79/79`; controlled job `93095213506` correctly skipped.
+- Final unchanged workflow `31254642262` retains exact SHA `4ab4782` and
+  passes repository `93096129318`, visual `93096129329` at `79/79` and
+  controlled runtime `93096129310`. Artifact `9021059611`, digest
+  `sha256:aa0b3c80f38ae7ac6acbe16245e5baf6e176c470c15bf7a435dae231afee52bc`,
+  records `p5-01-through-p6-03`; diagnostics are closed.
+- P6-03 passes Level 2 in
+  `implementation/evidence/phase-6/p6-03-validation.md`. Exact cavity/Part,
+  insert, external-identity, controlled Part specification, immutable Tooling
+  Revision/process-chain and initial Set-source binding truth is live. Trial,
+  automatic impact and lifecycle approval/release dependencies remain
+  explicit foundations rather than false completion claims.
+- Standing transition authority activates only the bounded P6-04 Requirement/
+  domain/existing-capability audit for `FR-TL-005..008`. It must separate
+  internal make/buy, Supplier/milestone and design-release dependency from
+  ERPNext-owned PO/receipt/invoice/actual-cost truth. No supplier portal,
+  production lifecycle rule, ERP mutation, endpoint, credential or successful
+  target result may be invented.

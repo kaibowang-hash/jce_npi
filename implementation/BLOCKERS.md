@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-08T08:11:34Z`
+Updated: `2026-08-08T11:23:47Z`
 
 ## Active hard blockers
 
-None. P6-03 checkpoint 3 passes at exact stable checkpoint `c4e29a5` and
-complete ordinary CI `31247444413`: repository `93078248192`, visual
-`93078248193` at `79/79`, both secret lanes, and controlled job `93078248620`
-correctly skipped. No user action is required.
+None. P6-03 passes Level 2 at exact diagnostics-closed checkpoint `4ab4782`.
+Ordinary CI `31254281586` and final unchanged controlled workflow
+`31254642262` pass repository, `79/79` visual, both secret lanes and the
+cumulative disposable-Site runtime. No user action is required.
 
 ## Active recovery
 
-None. P6-03 checkpoint 3 is PASS and checkpoint 4 is
-`IN_PROGRESS_CONTROLLED_RUNTIME`, not blocked. `DR-REC-010` remains a scoped
-hold on exact lifecycle states/transitions/release authority only. The active
-checkpoint adds the disposable-Site verifier/workflow and Level 2 evidence;
-the controlled Site may be dispatched only after complete ordinary CI.
+None. P6-04 is `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT`, not blocked.
+`DR-REC-010` remains a scoped hold on exact lifecycle states/transitions/
+release authority only. Missing production ERPNext endpoint/credential does
+not block the bounded audit, Mock contracts or an explicit unavailable/read-
+only projection; production ERPNext must not be contacted.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain

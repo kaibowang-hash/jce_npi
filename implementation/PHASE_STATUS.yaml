@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T08:11:34Z'
+updated_at: '2026-08-08T11:23:47Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P6-03
-current_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
-current_task_completed_stage: P6_03_LIVE_WORKSPACE_PASS
-current_task_next_stage: P6_03_CONTROLLED_RUNTIME_LEVEL_2
+current_task: P6-04
+current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+current_task_completed_stage: P6_03_LEVEL_2_TASK_GATE_PASS
+current_task_next_stage: P6_04_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P6-03
-resumed_product_task_status: IN_PROGRESS_CONTROLLED_RUNTIME
+resumed_product_task: P6-04
+resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -939,7 +939,7 @@ p6_02:
     - implementation/evidence/phase-6/p6-02-live-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-02-validation.md
 p6_03:
-  status: IN_PROGRESS_CONTROLLED_RUNTIME
+  status: PASS_LEVEL_2
   backlog_task: M5-03
   requirements: [FR-TX-004, FR-TX-005, FR-TX-006, FR-TX-007, FR-TX-008, FR-TL-002, FR-TL-003, FR-TL-006]
   delivery_boundary: TOOLING_REVISION_SPECIFICATION_CAVITIES_INSERTS_AND_PROCESS_CHAIN
@@ -996,11 +996,59 @@ p6_03:
   formal_supplier_projection_active: false
   erp_asset_location_projection_active: false
   external_execution_active: false
-  current_stage: CONTROLLED_RUNTIME_LEVEL_2
+  current_stage: LEVEL_2_TASK_GATE_PASS
   planned_additive_doctypes: 4
   routes_active: true
   repository_routes_delivered: true
   controlled_site_active: false
+  runtime_checkpoint: a0c080261677218418e310a8b2a34b894f18d84a
+  applicability_projection_repair: ab0007ff4efe298661babc93a77a53037560603d
+  insert_model_project_repair: 4ab45347c4b6336e529f8bfd7a997db36ce46d13
+  governed_cockpit_path_repair: def4be4ceed22660b9edc89aaa077c695e80737f
+  effectivity_date_repair: 0ba6863c3a2f2a3f29b3b9871f4eeb2bf94dc289
+  generic_diagnostic_checkpoint: a3cffaecc67e9a8994b41a8e0e59f995c178addf
+  generic_diagnostic_gate: 31252501964
+  generic_diagnostic_result: UNEXPECTED_BFF_EXCEPTION_OPERATIONAL_ERROR
+  revision_diagnostic_checkpoint: 224c30b6ce4d37438e448c25f6229e2b72798903
+  revision_diagnostic_gate: 31253212792
+  revision_diagnostic_result: P603_REVISION_INSERT_OPERATIONAL_ERROR
+  datetime_repair_checkpoint: 05a27b85bca71e78261b4ce911b863eabd581f85
+  datetime_repair_root: ISO_Z_TEXT_PASSED_DIRECTLY_TO_MARIADB_DATETIME
+  cumulative_route_truth_checkpoint: ff32f0bbc08fa5ea5ac3b5a6ae2c4fdaa5ec104b
+  cumulative_route_truth_root: RECOVERED_P601_PROBE_EXPECTED_PRE_P603_COUNTS
+  repaired_ordinary_ci: 31253903494
+  repaired_ordinary_repository_job: 93094297360
+  repaired_ordinary_visual_job: 93094297319
+  repaired_ordinary_controlled_job: 93094297744
+  repaired_controlled_gate: 31253914746
+  repaired_controlled_repository_job: 93094504623
+  repaired_controlled_visual_job: 93094504644
+  repaired_controlled_runtime_job: 93094504638
+  repaired_controlled_outcome: PASS_DIAGNOSTIC_HEADER_STILL_ENABLED
+  diagnostic_closure_checkpoint: 4ab478259724a8507891f24b33f858ffe9a117a0
+  final_checkpoint: 4ab478259724a8507891f24b33f858ffe9a117a0
+  final_ordinary_ci: 31254281586
+  final_ordinary_repository_job: 93095213074
+  final_ordinary_visual_job: 93095213086
+  final_ordinary_controlled_job: 93095213506
+  final_ordinary_visual_artifact: 9020948710
+  final_ordinary_visual_digest: sha256:d14aeacd78aa14af22745eb246b5bf15fb7506b7158cc0f6deceb9f944d0c4ee
+  final_ordinary_gitleaks_artifact: 9021018709
+  final_ordinary_gitleaks_digest: sha256:709b68e0f39820ddf2e225b0d05f0c7c87557e3c9f83e57d1076efbb37b80291
+  final_controlled_gate: 31254642262
+  final_controlled_repository_job: 93096129318
+  final_controlled_visual_job: 93096129329
+  final_controlled_runtime_job: 93096129310
+  final_controlled_runtime_artifact: 9021059611
+  final_controlled_runtime_digest: sha256:aa0b3c80f38ae7ac6acbe16245e5baf6e176c470c15bf7a435dae231afee52bc
+  final_controlled_visual_artifact: 9021054263
+  final_controlled_visual_digest: sha256:5eb17241fa267ce39c37ab709d0865702560b526bf83851970255bb46b91b1d6
+  final_controlled_gitleaks_artifact: 9021114730
+  final_controlled_gitleaks_digest: sha256:bfe7dc41bd8e49e7aacc4fe8ac3313536199de526c3b38ea0573b812483b57d9
+  diagnostics_closed: true
+  level_2_decision: PASS
+  completed_stage: LEVEL_2_TASK_GATE_PASS
+  next_stage: P6_04_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-02-validation.md
@@ -1008,6 +1056,23 @@ p6_03:
     - implementation/evidence/phase-6/p6-03-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-03-repository-api-checkpoint.md
     - implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md
+    - implementation/evidence/phase-6/p6-03-validation.md
+p6_04:
+  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  backlog_task: M5-04
+  requirements: [FR-TL-005, FR-TL-006, FR-TL-007, FR-TL-008]
+  delivery_boundary: MANUFACTURING_SUPPLIER_AND_ERP_COST_PROJECTION
+  exact_lifecycle_commands_active: false
+  production_lifecycle_policy_active: false
+  formal_supplier_projection_active: false
+  supplier_portal_active: false
+  erp_procurement_cost_projection_active: false
+  erp_mutation_active: false
+  starting_checkpoint: 4ab478259724a8507891f24b33f858ffe9a117a0
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - implementation/evidence/phase-6/p6-03-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1032,7 +1097,7 @@ phases:
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
-  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02], current_task: P6-03}
+  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03], current_task: P6-04}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

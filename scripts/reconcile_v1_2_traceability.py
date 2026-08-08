@@ -57,11 +57,11 @@ P6_TOOLING_ALLOCATION = {
     "FR-TX-001": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-002": "TECHNICAL_VERIFIED",
     "FR-TX-003": "TECHNICAL_VERIFIED_FOUNDATION",
-    "FR-TX-004": "ANCHORED_P6_03",
-    "FR-TX-005": "ANCHORED_P6_03",
-    "FR-TX-006": "ANCHORED_P6_03",
-    "FR-TX-007": "ANCHORED_P6_03",
-    "FR-TX-008": "ANCHORED_P6_03",
+    "FR-TX-004": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-005": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-006": "TECHNICAL_VERIFIED",
+    "FR-TX-007": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-008": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-009": "ANCHORED_P6_05",
     "FR-TX-010": "ANCHORED_P6_05",
     "FR-TX-011": "ANCHORED_P6_05",
@@ -338,6 +338,60 @@ P6_02_COMPLETED_EVIDENCE = {
         "one immutable record per physical Set and no quantity collapse are proven while source Revision Supplier lifecycle ERP location Asset and later execution remain P6-03 P6-04 P6-06 and Phase 8",
     ),
 }
+P6_03_COMPLETED_EVIDENCE = {
+    "FR-TX-004": (
+        "apps/npi_core/npi_core/tooling/revision_domain.py",
+        "apps/npi_core/npi_core/tooling/revision_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "contracts/npi-api.openapi.yaml",
+        "frontend/src/pages/tooling-revision-workspace.tsx",
+        "tests/test_phase6_tooling_revision_domain.py",
+        "tests/test_phase6_tooling_revision_repository.py",
+        "scripts/verify_tooling_revision_runtime.py",
+        "implementation/evidence/phase-6/p6-03-validation.md",
+        "exact cavity identity status and Part mapping are proven while cavity Trial defect and capacity results remain Phase 7 and P6-05",
+    ),
+    "FR-TX-005": (
+        "apps/npi_core/npi_core/tooling/revision_domain.py",
+        "apps/npi_core/npi_core/tooling/revision_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "frontend/src/pages/tooling-revision-workspace.tsx",
+        "tests/test_phase6_tooling_revision_domain.py",
+        "tests/test_phase6_tooling_revision_repository.py",
+        "scripts/verify_tooling_revision_runtime.py",
+        "implementation/evidence/phase-6/p6-03-validation.md",
+        "ordered primary second-shot and overmold structure is proven while combined Trial remains Phase 7",
+    ),
+    "FR-TX-006": (
+        "apps/npi_core/npi_core/tooling/revision_domain.py",
+        "apps/npi_core/npi_core/tooling/revision_repository.py",
+        "frontend/src/pages/tooling-revision-workspace.tsx",
+        "tests/test_phase6_tooling_revision_domain.py",
+        "tests/test_phase6_tooling_revision_repository.py",
+        "scripts/verify_tooling_revision_runtime.py",
+        "implementation/evidence/phase-6/p6-03-validation.md",
+        "insert model version changeover duration and evidence-bound validation state are structured queryable and runtime proven",
+    ),
+    "FR-TX-007": (
+        "apps/npi_core/npi_core/tooling/revision_domain.py",
+        "apps/npi_core/npi_core/tooling/revision_repository.py",
+        "frontend/src/pages/tooling-revision-workspace.tsx",
+        "tests/test_phase6_tooling_revision_domain.py",
+        "scripts/verify_tooling_revision_runtime.py",
+        "implementation/evidence/phase-6/p6-03-validation.md",
+        "one-to-many Part and Tooling external identities retain raw source and effectivity while production workbook splitting remains P6-07",
+    ),
+    "FR-TX-008": (
+        "apps/npi_core/npi_core/tooling/revision_domain.py",
+        "apps/npi_core/npi_core/tooling/revision_repository.py",
+        "apps/npi_core/npi_core/tooling_api.py",
+        "frontend/src/pages/tooling-revision-workspace.tsx",
+        "tests/test_phase6_tooling_revision_domain.py",
+        "scripts/verify_tooling_revision_runtime.py",
+        "implementation/evidence/phase-6/p6-03-validation.md",
+        "controlled material color compliance and process facts bind to exact Part Revision while automatic impact action remains Phase 9",
+    ),
+}
 P6_UX_ANCHOR_EVIDENCE["UX-004"] = (
     "frontend/src/api/tooling-data-source.ts",
     "frontend/src/pages/live-tooling-page.tsx",
@@ -453,6 +507,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_01_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_02_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_02_COMPLETED_EVIDENCE[requirement_id])
+        elif requirement_id in P6_03_COMPLETED_EVIDENCE:
+            evidence = "; ".join(P6_03_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_TOOLING_ALLOCATION:
             evidence = "; ".join(
                 (

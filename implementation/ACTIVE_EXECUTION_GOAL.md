@@ -1,62 +1,63 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T08:11:34Z`
+Updated: `2026-08-08T11:23:47Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-03 TOOLING REVISION`
+- Mode: `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P6-04 MANUFACTURING/SUPPLIER/ERP PROJECTION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `c4e29a5f5a95220005441baef1ecc3e5100d836e` (pushed; P6-03 checkpoint 3
-  product, governed `79`-case matrix and exact Linux baselines)
+  `4ab478259724a8507891f24b33f858ffe9a117a0` (pushed; P6-03 Level 2,
+  diagnostics closed and exact cumulative runtime PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `0d801942730dd79c227f29c568d6afb89e609c23` (P6-03 checkpoint 2;
-  pushed; ordinary CI `31243275997` PASS)
+  `83cf968080e5b5e217f67b8671f6cf3054838a82` (P6-03 checkpoint 3;
+  pushed; ordinary CI `31248104245` PASS)
 - Latest complete normal CI:
-  `31247444413` (`PASS`, exact SHA `c4e29a5`; repository `93078248192` and
-  fixed-Linux visual `93078248193` at `79/79` passed; controlled runtime
-  `93078248620` correctly skipped)
+  `31254281586` (`PASS`, exact SHA `4ab4782`; repository `93095213074` and
+  fixed-Linux visual `93095213086` at `79/79` passed; controlled runtime
+  `93095213506` correctly skipped)
 - Latest controlled-Site run:
-  `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
-  `93005400488`, visual `93005400579` and controlled `93005400541` passed)
+  `31254642262` (`PASS`, exact SHA `4ab4782`, diagnostics closed; repository
+  `93096129318`, visual `93096129329` and controlled `93096129310` passed)
 - Controlled PASS artifact:
-  `9010425982`, GitHub digest
-  `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
+  `9021059611`, GitHub digest
+  `sha256:aa0b3c80f38ae7ac6acbe16245e5baf6e176c470c15bf7a435dae231afee52bc`
 - Current controller task:
-  `P6-03 — Revision, specification, cavities, inserts and process chain`
-  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
+  `P6-04 — Manufacturing, supplier and ERP cost projection`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
 - Current Requirement IDs:
-  `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
+  `FR-TL-005..008`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 CONTROLLED RUNTIME`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-04 REQUIREMENT/DOMAIN AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P6-03 checkpoint 3 passes at exact stable checkpoint `c4e29a5`. Product commit
-`ce68265` delivers the strict same-origin data source, dense Project/Master-
-scoped Revision/specification/cavity/insert/process-chain workspace and exact
-initial Set-source binding. Artifact-proved commits `a50a39b` and `c4e29a5`
-extend the governed visual job and add only reviewed Linux baselines. Final
-ordinary CI `31247444413` passes repository `93078248192` (`1,165` Python,
-`744` frontend unit, `321` non-visual E2E, `4,419` direct trilingual sources,
-zero vulnerabilities and no leaks) and visual `93078248193` at `79/79`; the
-controlled job correctly skipped.
+P6-03 passes Level 2 at exact diagnostics-closed task checkpoint `4ab4782`.
+Ordinary CI `31254281586` passes repository `93095213074`, visual
+`93095213086` at `79/79`, complete E2E and both secret lanes. Final unchanged
+workflow `31254642262` retains the same SHA and passes repository
+`93096129318`, visual `93096129329` and controlled Site `93096129310`.
+Runtime artifact `9021059611` proves two immutable Tooling Revision tips,
+exact cavity/insert/external-identity truth, one controlled Part
+specification, two ordered process-chain revisions, one initial Set-source
+binding, replay, conflicts, rollback, IDOR and independent P6-03 route
+disable/recovery with diagnostics closed. Complete evidence is
+`implementation/evidence/phase-6/p6-03-validation.md`.
 
-Standing transition authority activates only P6-03 checkpoint 4: implement
-the cumulative disposable-Site verifier and workflow proof for immutable
-Revision/specification/cavity/insert/external-identity/process-chain/Set-
-binding persistence, exact replay/conflicts/rollback/IDOR and independent
-P6-03 route disable/recovery. The verifier/workflow checkpoint must pass
-affected checks and complete ordinary CI before one controlled dispatch.
-`DR-REC-010`, Supplier, ERPNext Asset/location/execution, combined Trial,
-automatic impact action, production workbook mapping, endpoints and
-credentials remain unavailable.
+Standing transition authority activates only the bounded P6-04 Requirement/
+domain/existing-capability audit for `FR-TL-005..008`. The audit must separate
+NPI-owned internal make/buy, formal Supplier/milestone and design-release
+dependency from ERPNext-owned PO/receipt/invoice/actual-cost truth, and must
+define an explicit unavailable or read-only projection where production
+connectivity is absent. It may not activate a supplier portal, production
+lifecycle rule, ERP mutation, endpoint, credential or successful target
+result. `DR-REC-010` remains the lifecycle authority hold.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

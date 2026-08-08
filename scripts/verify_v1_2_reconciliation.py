@@ -453,6 +453,150 @@ EXPECTED_P6_02_TRACE = {
         },
     ),
 }
+EXPECTED_P6_03_TRACE = {
+    "FR-TL-002": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-002",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "closed core unit-bearing Tooling specification is live while unapproved mold-type extensions remain unavailable",
+        },
+    ),
+    "FR-TL-003": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-003",
+        {
+            "apps/npi_core/npi_core/tooling/domain.py",
+            "apps/npi_core/npi_core/tooling/frappe_repository.py",
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "frontend/src/pages/live-tooling-page.tsx",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "scripts/verify_tooling_runtime.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-01-validation.md",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "multi-Project Part Master Applicability and exact cavity mapping are live while Trial and quality results remain Phase 7",
+        },
+    ),
+    "FR-TL-006": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-006",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_repository.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "immutable Tooling Revision lineage and controlled design provenance are live while approval and release remain held by DR-REC-010",
+        },
+    ),
+    "FR-TX-004": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "FR-TL-003; FR-TL-010",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "tests/test_phase6_tooling_revision_repository.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "exact cavity identity status and Part mapping are proven while cavity Trial defect and capacity results remain Phase 7 and P6-05",
+        },
+    ),
+    "FR-TX-005": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "tests/test_phase6_tooling_revision_repository.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "ordered primary second-shot and overmold structure is proven while combined Trial remains Phase 7",
+        },
+    ),
+    "FR-TX-006": (
+        "P0",
+        "TECHNICAL_VERIFIED",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "tests/test_phase6_tooling_revision_repository.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "insert model version changeover duration and evidence-bound validation state are structured queryable and runtime proven",
+        },
+    ),
+    "FR-TX-007": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "one-to-many Part and Tooling external identities retain raw source and effectivity while production workbook splitting remains P6-07",
+        },
+    ),
+    "FR-TX-008": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        {
+            "apps/npi_core/npi_core/tooling/revision_domain.py",
+            "apps/npi_core/npi_core/tooling/revision_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "frontend/src/pages/tooling-revision-workspace.tsx",
+            "tests/test_phase6_tooling_revision_domain.py",
+            "scripts/verify_tooling_revision_runtime.py",
+            "implementation/evidence/phase-6/p6-03-validation.md",
+            "controlled material color compliance and process facts bind to exact Part Revision while automatic impact action remains Phase 9",
+        },
+    ),
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -1059,6 +1203,50 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} references missing P6-02 evidence files: "
                 f"{missing_evidence}"
             )
+    for requirement_id, (
+        expected_priority,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_03_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            "6",
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-03 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-03 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-03 evidence files: "
+                f"{missing_evidence}"
+            )
     canonical_ids = {
         requirement_id
         for requirement_id, row in by_id.items()
@@ -1112,9 +1300,9 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "expected 34 non-product ARCH/COD governance links"
         )
-    if len(tooling_ids) != 15:
+    if len(tooling_ids) != 10:
         raise ReconciliationVerificationError(
-            "expected 15 remaining anchored Phase 6 Tooling requirements"
+            "expected 10 remaining anchored Phase 6 Tooling requirements"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(
