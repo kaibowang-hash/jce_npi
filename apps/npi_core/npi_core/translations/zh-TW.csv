@@ -4959,7 +4959,6 @@ Select the supported Tooling schema version.,請選擇支援的模具架構版�
 Set Revision Binding,套件修訂綁定
 Set Revision Binding Global ID,套件修訂綁定全域 ID
 Set Revision Binding Snapshot Hash,套件修訂綁定快照雜湊
-Set Revision Binding Version,套件修訂綁定版本
 Spare Recommendation Snapshot,備件建議快照
 Supplier source and object identity must be supplied together.,供應商來源和物件身分必須同時提供。
 Target Result State,目標結果狀態
