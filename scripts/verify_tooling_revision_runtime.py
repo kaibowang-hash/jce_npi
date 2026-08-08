@@ -71,6 +71,7 @@ REVISION_PERMISSIONS = {
     "transitionLifecycle": False,
 }
 _UNEXPECTED_DIAGNOSTIC_CODES = frozenset({"UNEXPECTED_BFF_EXCEPTION"})
+TOOLING_REVISION_CREATE_DIAGNOSTICS_ENABLED = False
 _REVISION_CREATE_DIAGNOSTIC_CODES = frozenset(
     {
         "P603_REVISION_COMMAND_CONTEXT",
@@ -137,7 +138,9 @@ def command(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
-        tooling_revision_create_diagnostic=True,
+        tooling_revision_create_diagnostic=(
+            TOOLING_REVISION_CREATE_DIAGNOSTICS_ENABLED
+        ),
     )
     problem_code = result.body.get("code") if isinstance(result.body, dict) else None
     if result.status != 201:

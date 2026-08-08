@@ -185,7 +185,8 @@ class Phase6ToolingRevisionRuntimeVerifierTest(unittest.TestCase):
                 {},
                 "revision-one",
             )
-        self.assertTrue(request.call_args.kwargs["tooling_revision_create_diagnostic"])
+        self.assertFalse(request.call_args.kwargs["tooling_revision_create_diagnostic"])
+        self.assertFalse(module.TOOLING_REVISION_CREATE_DIAGNOSTICS_ENABLED)
         read_diagnostic.assert_called_once_with(
             trace_id,
             module._REVISION_CREATE_DIAGNOSTIC_CODES,
