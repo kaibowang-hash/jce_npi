@@ -1249,3 +1249,35 @@ repeat or rewrite it merely to restore context. See
   direct trilingual coverage and affected visual tests.
 - The controlled Site remains inactive. `DR-REC-010` and every Supplier/ERP/
   Trial/impact/import/external-execution hold remain unchanged.
+
+## 2026-08-08 P6-03 live Revision workspace checkpoint
+
+- Product checkpoint `ce68265` delivers the strict same-origin data source,
+  dense Project/Master-scoped Revision/specification/cavity/insert/process-
+  chain workspace and exact initial physical-Set source binding. Lifecycle,
+  Supplier, ERP Asset/location, Trial, automatic impact and production import
+  capabilities remain explicitly unavailable.
+- Initial ordinary CI `31246274859` passed repository and isolated `25`
+  inherited Tooling/catalog Linux deltas. Artifact `9018622549` proved the
+  intended capability transition and footer fingerprint changes. Governance
+  checkpoint `a50a39b` copies only those reviewed actuals and adds the P6-03
+  spec/artifact paths to the governed visual job.
+- Ordinary CI `31246925746` then passed every prior `76` visual and failed only
+  the three newly governed P6-03 cases because their Linux baselines did not
+  exist. Artifact `9018808318` supplied exactly the reviewed English,
+  Simplified-Chinese and Traditional-Chinese actuals. Baseline checkpoint
+  `c4e29a5` adds only those three images.
+- Final ordinary CI `31247444413` passes exact SHA `c4e29a5`: repository
+  `93078248192` (`1,165` Python, `744` frontend unit, `321` non-visual E2E,
+  `4,419` direct trilingual sources, statements `80.07%`, zero vulnerabilities
+  and no leaks), visual `93078248193` at `79/79`; controlled job `93078248620`
+  correctly skipped. Exact artifact IDs/digests are recorded in
+  `implementation/evidence/phase-6/p6-03-live-workspace-checkpoint.md`.
+- Checkpoint 3 is PASS, not P6-03 Level 2. Standing transition authority now
+  activates only checkpoint 4: cumulative disposable-Site migration and
+  immutable Revision/specification/cavity/insert/external-identity/process-
+  chain/Set-binding persistence, replay, conflict, rollback, IDOR and
+  independent P6-03 route-disable/recovery proof. Complete ordinary CI must
+  pass before controlled dispatch.
+- `DR-REC-010` and every Supplier/ERP/Trial/impact/import/external-execution
+  hold remain unchanged. Production ERPNext must not be contacted.

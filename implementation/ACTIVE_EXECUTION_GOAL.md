@@ -1,23 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-08T06:03:05Z`
+Updated: `2026-08-08T08:11:34Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_LIVE_WORKSPACE — P6-03 TOOLING REVISION`
+- Mode: `IN_PROGRESS_CONTROLLED_RUNTIME — P6-03 TOOLING REVISION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `07ae9860e9be37f991f9995b52d8e790e3fe901d` (pushed; P6-03 checkpoint 2
-  product plus isolated exact Linux fingerprint-baseline repair)
+  `c4e29a5f5a95220005441baef1ecc3e5100d836e` (pushed; P6-03 checkpoint 3
+  product, governed `79`-case matrix and exact Linux baselines)
 - Latest completed controller/evidence checkpoint before this update:
-  `07ae9860e9be37f991f9995b52d8e790e3fe901d` (P6-03 checkpoint 2; pushed;
-  ordinary CI `31242679688` PASS)
+  `0d801942730dd79c227f29c568d6afb89e609c23` (P6-03 checkpoint 2;
+  pushed; ordinary CI `31243275997` PASS)
 - Latest complete normal CI:
-  `31242679688` (`PASS`, exact SHA `07ae986`; repository `93066134884` and
-  fixed-Linux visual `93066134855` passed; controlled runtime `93066135083`
-  correctly skipped)
+  `31247444413` (`PASS`, exact SHA `c4e29a5`; repository `93078248192` and
+  fixed-Linux visual `93078248193` at `79/79` passed; controlled runtime
+  `93078248620` correctly skipped)
 - Latest controlled-Site run:
   `31221016483` (`PASS`, exact SHA `b80aae5`, diagnostics closed; repository
   `93005400488`, visual `93005400579` and controlled `93005400541` passed)
@@ -26,17 +26,37 @@ Updated: `2026-08-08T06:03:05Z`
   `sha256:3b2ec3b719094e2835c8cb6161031dfcd99baba5e32c2deef3dec846cf3a050a`
 - Current controller task:
   `P6-03 — Revision, specification, cavities, inserts and process chain`
-  (`IN_PROGRESS — LIVE WORKSPACE`)
+  (`IN_PROGRESS — CONTROLLED RUNTIME AND LEVEL 2 TASK GATE`)
 - Current Requirement IDs:
   `FR-TX-004..008`, `FR-TL-002`, `FR-TL-003`, `FR-TL-006`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 LIVE WORKSPACE`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-03 CONTROLLED RUNTIME`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
+
+P6-03 checkpoint 3 passes at exact stable checkpoint `c4e29a5`. Product commit
+`ce68265` delivers the strict same-origin data source, dense Project/Master-
+scoped Revision/specification/cavity/insert/process-chain workspace and exact
+initial Set-source binding. Artifact-proved commits `a50a39b` and `c4e29a5`
+extend the governed visual job and add only reviewed Linux baselines. Final
+ordinary CI `31247444413` passes repository `93078248192` (`1,165` Python,
+`744` frontend unit, `321` non-visual E2E, `4,419` direct trilingual sources,
+zero vulnerabilities and no leaks) and visual `93078248193` at `79/79`; the
+controlled job correctly skipped.
+
+Standing transition authority activates only P6-03 checkpoint 4: implement
+the cumulative disposable-Site verifier and workflow proof for immutable
+Revision/specification/cavity/insert/external-identity/process-chain/Set-
+binding persistence, exact replay/conflicts/rollback/IDOR and independent
+P6-03 route disable/recovery. The verifier/workflow checkpoint must pass
+affected checks and complete ordinary CI before one controlled dispatch.
+`DR-REC-010`, Supplier, ERPNext Asset/location/execution, combined Trial,
+automatic impact action, production workbook mapping, endpoints and
+credentials remain unavailable.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

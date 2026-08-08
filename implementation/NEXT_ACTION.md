@@ -1,48 +1,47 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_LIVE_WORKSPACE — P6-03 TOOLING REVISION`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P6-03 TOOLING REVISION`
 
-Recovery time: `2026-08-08T06:03:05Z`
+Recovery time: `2026-08-08T08:11:34Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`07ae9860e9be37f991f9995b52d8e790e3fe901d`
+`c4e29a5f5a95220005441baef1ecc3e5100d836e`
 
 ## Current authoritative action
 
-P6-03 checkpoint 2 passes at exact stable checkpoint `07ae986`. Complete
-ordinary CI `31242679688` passes repository `93066134884` (`1,170/1,170`
-Python, `738/738` frontend unit, `315/315` non-visual E2E, `4,316` sources at
-complete direct `zh`/`zh-TW`, zero vulnerabilities and no secret leaks),
-visual `93066134855` at `76/76`; controlled job `93066135083` correctly
-skipped. Visual artifact `9017540844` has digest
-`sha256:2d054f405b72316eb815afd4a3759365e153ccd586aa748e89352dd0bcb96fe6`;
-Gitleaks artifact `9017596549` has digest
-`sha256:9449cd6e23e09e429b4c2e3fe778de8e110404d36b11611969c08f48e948daea`.
+P6-03 checkpoint 3 passes at exact stable checkpoint `c4e29a5`. Product commit
+`ce68265` delivers the strict browser data source, dense Revision/
+specification/cavity/insert/process-chain workspace and exact initial Set-
+source binding. Governance commit `a50a39b` synchronizes only `25` reviewed
+inherited Linux deltas and adds P6-03 to the visual job; `c4e29a5` adds only
+the three reviewed new Linux baselines.
 
-Product commit `8cc04a9` delivered the Project-first repository, frozen BFF
-paths, narrow commands, exact containment/effectivity/current-tip checks,
-System Manager-only mutation, actor-bound sealed replay, one transaction,
-append-only audit and an independent fail-closed P6-03 switch. Its isolated
-repair changed only eighteen artifact-proved fixed-Linux footer fingerprint
-baselines; no business workspace, assertion, matrix, threshold or PASS rule
-changed.
+Final ordinary CI `31247444413` passes repository `93078248192` (`1,165`
+Python, `744` frontend unit, `321` non-visual E2E, `4,419` sources at complete
+direct `zh`/`zh-TW`, coverage statements `80.07%`, zero vulnerabilities and no
+secret leaks) and visual `93078248193` at `79/79`; controlled job
+`93078248620` correctly skipped. Visual artifact `9018949772` has digest
+`sha256:09346f71a0bc49d460a1a06339d7ca60c7771f2c24a64ca9679605882969b47d`;
+Gitleaks artifact `9019008682` has digest
+`sha256:00730d961cd10d4a879a0b81567462da2ba4ae84a35ec447d98f61bcf05f0ec3`.
 
-The first unfinished checkpoint is P6-03 checkpoint 3 only. Implement a strict
-live data source and dense Project/Master-scoped Revision/specification/
-cavity/insert/process-chain workspace, exact initial Set-source binding,
-complete loading/empty/no-permission/read-only/unavailable/validation/
-predecessor-or-effectivity-conflict/processing/retry states, accessibility,
-direct trilingual coverage and the affected visual matrix.
+The first unfinished checkpoint is P6-03 checkpoint 4 only. Implement the
+cumulative disposable-Site verifier and controlled workflow for two immutable
+Tooling Revision tips, exact cavity/insert/external-ID truth, one current-Part
+controlled specification, ordered process-chain successors, initial Set-
+source binding, retained P6-01/P6-02 predecessors, replay, conflicts,
+rollback, IDOR and independent P6-03 route disable/recovery.
 
-Preserve P6-01/P6-02 immutable snapshots and keep the controlled Site
-inactive. `DR-REC-010` continues to hold lifecycle states/transitions/release
-authority; formal Supplier, ERP Asset/location, combined Trial, automatic
-impact action, production workbook mapping, external execution, endpoint and
-credential remain unavailable.
+Run affected checks and complete ordinary CI before dispatching the controlled
+workflow. Keep diagnostics closed unless one opaque exact-SHA Site failure
+activates the controller's governed response-neutral diagnostic cycle.
+`DR-REC-010`, formal Supplier, ERP Asset/location/execution, combined Trial,
+automatic impact action, production workbook mapping, endpoint and credential
+remain unavailable.
 
 ## Retained P6-01 execution history
 

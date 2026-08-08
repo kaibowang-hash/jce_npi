@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-08T06:03:05Z`
+Updated: `2026-08-08T08:11:34Z`
 
 ## Active hard blockers
 
-None. P6-03 checkpoint 2 passes at exact stable checkpoint `07ae986` and
-complete ordinary CI `31242679688`: repository `93066134884`, visual
-`93066134855` at `76/76`, both secret lanes, and controlled job `93066135083`
+None. P6-03 checkpoint 3 passes at exact stable checkpoint `c4e29a5` and
+complete ordinary CI `31247444413`: repository `93078248192`, visual
+`93078248193` at `79/79`, both secret lanes, and controlled job `93078248620`
 correctly skipped. No user action is required.
 
 ## Active recovery
 
-None. P6-03 checkpoint 2 is PASS and checkpoint 3 is
-`IN_PROGRESS_LIVE_WORKSPACE`, not blocked. `DR-REC-010` remains a scoped hold
-on exact lifecycle states/transitions/release authority only. The active
-checkpoint adds the strict live data source, dense Revision workspace and
-exact initial Set-source binding; the controlled Site remains inactive.
+None. P6-03 checkpoint 3 is PASS and checkpoint 4 is
+`IN_PROGRESS_CONTROLLED_RUNTIME`, not blocked. `DR-REC-010` remains a scoped
+hold on exact lifecycle states/transitions/release authority only. The active
+checkpoint adds the disposable-Site verifier/workflow and Level 2 evidence;
+the controlled Site may be dispatched only after complete ordinary CI.
 
 Production ERPNext access, exact lifecycle policy, production Tooling-list
 mapping, destructive downstream rollback and exception-color semantics remain
