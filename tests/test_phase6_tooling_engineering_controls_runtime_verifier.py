@@ -263,6 +263,15 @@ class Phase6ToolingEngineeringControlsRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(resolved["projectId"], context["projectId"])
         self.assertEqual(resolved["applicability"], context["applicability"])
 
+    def test_idor_fixture_has_transport_access_without_system_manager_bypass(self) -> None:
+        idor_source = self.source.split("def verify_idor(", 1)[1].split(
+            "def verify_conflict_rollback(",
+            1,
+        )[0]
+        self.assertIn("document_runtime.create_internal_fixture_user(", idor_source)
+        self.assertNotIn("create_resource(", idor_source)
+        self.assertNotIn('"System Manager"', idor_source)
+
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
         required = (
             "tooling_engineering_controls_route_switch_state",

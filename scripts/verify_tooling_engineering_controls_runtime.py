@@ -22,7 +22,6 @@ from verify_frappe_runtime import (
 )
 from verify_project_runtime import (
     bootstrap_csrf,
-    create_resource,
     delete_resource,
     get_resource,
     update_resource,
@@ -688,30 +687,12 @@ def verify_idor(
     *,
     context: dict[str, object],
 ) -> None:
-    created = create_resource(
+    document_runtime.create_internal_fixture_user(
         administrator,
         base_url,
-        "User",
-        {
-            "email": UNRELATED_USER,
-            "enabled": 1,
-            "first_name": "NPI Tooling Controls",
-            "language": "en",
-            "last_name": "Unrelated Runtime Manager",
-            "new_password": fixture_password,
-            "roles": [
-                {"role": "Desk User"},
-                {"role": "NPI API User"},
-                {"role": "System Manager"},
-            ],
-            "send_welcome_email": 0,
-            "user_type": "System User",
-        },
+        UNRELATED_USER,
+        fixture_password,
         csrf_token,
-    )
-    require(
-        created.status in {200, 201},
-        "P6-05 unrelated System Manager fixture could not be created",
     )
     try:
         unrelated = login(base_url, UNRELATED_USER, fixture_password)
