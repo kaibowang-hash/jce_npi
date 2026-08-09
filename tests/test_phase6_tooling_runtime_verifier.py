@@ -409,7 +409,7 @@ class Phase6ToolingRuntimeVerifierTest(unittest.TestCase):
         for fragment in (
             "P6 Tooling",
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
-            "scope=p5-01-through-p6-05",
+            "scope=p5-01-through-p6-06",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
             "p6-tooling-runtime-${{ github.run_id }}",
             "docker compose down --volumes",

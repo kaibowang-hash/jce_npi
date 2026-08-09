@@ -298,9 +298,9 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
     def test_manual_lane_records_cumulative_p506_scope_without_secrets(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         for fragment in (
-            "P5 controlled document runtime and P6 Tooling through engineering controls",
+            "P5 controlled document runtime and P6 Tooling through acceptance",
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
-            "scope=p5-01-through-p6-05",
+            "scope=p5-01-through-p6-06",
             "predecessor_scope=p5-01-through-p5-06",
             "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             "runtime_marker=npi-one-local-runtime-disposable-v1",
