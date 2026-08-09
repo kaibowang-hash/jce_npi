@@ -182,7 +182,8 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
     project_id = str(context["projectId"])
     master_id = str(context["masterId"])
     tooling_set_id = str(context["toolingSetId"])
-    revision_id = str(context["revisionId"])
+    engineering_revision_id = str(context["revisionId"])
+    engineering_revision_snapshot_hash = str(context["revisionSnapshotHash"])
     master = exact_single(
         rows(
             administrator,
@@ -219,12 +220,6 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
             [
                 ["project_global_id", "=", project_id],
                 ["tooling_set_global_id", "=", tooling_set_id],
-                ["tooling_revision_global_id", "=", revision_id],
-                [
-                    "tooling_revision_snapshot_hash",
-                    "=",
-                    context["revisionSnapshotHash"],
-                ],
             ],
             [
                 "global_id",
@@ -234,6 +229,14 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
             ],
         ),
         "P6-06 Set-to-Revision binding",
+    )
+    revision_id = require_uuid(
+        binding.get("tooling_revision_global_id"),
+        "P6-06 bound Tooling Revision",
+    )
+    revision_snapshot_hash = require_hash(
+        binding.get("tooling_revision_snapshot_hash"),
+        "P6-06 bound Tooling Revision",
     )
     revision = exact_single(
         rows(
@@ -256,12 +259,14 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
     require(
         binding.get("tooling_revision_global_id") == revision_id
         and binding.get("tooling_revision_snapshot_hash")
-        == context["revisionSnapshotHash"]
-        and revision.get("snapshot_hash") == context["revisionSnapshotHash"],
+        == revision_snapshot_hash
+        and revision.get("snapshot_hash") == revision_snapshot_hash,
         "P6-06 exact Set binding truth drifted",
     )
     context.update(
         {
+            "engineeringRevisionId": engineering_revision_id,
+            "engineeringRevisionSnapshotHash": engineering_revision_snapshot_hash,
             "masterSnapshotHash": require_hash(
                 master.get("snapshot_hash"),
                 "P6-06 Tooling Master",
@@ -276,11 +281,20 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
                 binding.get("snapshot_hash"),
                 "P6-06 Set binding",
             ),
+            "revisionId": revision_id,
             "revisionNumber": int(revision["revision_number"]),
             "revisionLabel": str(revision["revision_label"]),
+            "revisionSnapshotHash": revision_snapshot_hash,
         }
     )
     return context
+
+
+def predecessor_context(context: dict[str, object]) -> dict[str, object]:
+    value = dict(context)
+    value["revisionId"] = context["engineeringRevisionId"]
+    value["revisionSnapshotHash"] = context["engineeringRevisionSnapshotHash"]
+    return value
 
 
 def file_evidence(context: dict[str, object], role: str) -> dict[str, object]:
@@ -1331,7 +1345,7 @@ def route_disable_probe(administrator, base_url: str, expected_mode: str) -> Non
     )
     retained_engineering = predecessor.assert_engineering_context(
         engineering,
-        context=context,
+        context=predecessor_context(context),
         expected_count=2,
     )
     predecessor.assert_successors(retained_engineering)

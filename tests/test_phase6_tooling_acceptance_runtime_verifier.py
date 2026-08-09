@@ -188,6 +188,10 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
                 "toolingSetSnapshotHash",
             )
         }
+        predecessor_context["revisionId"] = (
+            "51000000-0000-4000-8000-000000000005"
+        )
+        predecessor_context["revisionSnapshotHash"] = "9" * 64
 
         def fixture_rows(_administrator, _base_url, doctype, filters, fields=None):
             if doctype == "NPI Tooling Master":
@@ -208,17 +212,12 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
                     }
                 ]
             if doctype == "NPI Tooling Set Revision Binding":
-                self.assertIn(
-                    ["tooling_revision_global_id", "=", context["revisionId"]],
+                self.assertEqual(
                     filters,
-                )
-                self.assertIn(
                     [
-                        "tooling_revision_snapshot_hash",
-                        "=",
-                        context["revisionSnapshotHash"],
+                        ["project_global_id", "=", context["projectId"]],
+                        ["tooling_set_global_id", "=", context["toolingSetId"]],
                     ],
-                    filters,
                 )
                 return [
                     {
@@ -252,6 +251,15 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
             resolved = module.project_context(object(), "http://127.0.0.1:8003")
         self.assertEqual(resolved["requirementKind"], "customer_owned_intake")
         self.assertEqual(resolved["bindingId"], context["bindingId"])
+        self.assertEqual(resolved["revisionId"], context["revisionId"])
+        self.assertEqual(
+            resolved["engineeringRevisionId"],
+            predecessor_context["revisionId"],
+        )
+        self.assertEqual(
+            module.predecessor_context(resolved)["revisionId"],
+            predecessor_context["revisionId"],
+        )
 
     def test_verifier_covers_required_runtime_truth_and_failure_boundaries(self) -> None:
         required = (
