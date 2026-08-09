@@ -94,6 +94,12 @@ _CORRECTION_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_RESPONSE_BUILD",
         "P607_CORRECTION_AUDIT_APPEND",
         "P607_CORRECTION_RECEIPT_SEAL",
+        "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
     }
 )
 _FIXTURE_SOURCES = {
@@ -573,10 +579,19 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
         )
         if isinstance(context, dict):
             file_document = frappe.get_doc("File", str(artifact.frappe_file_id))
-            return self._verified_artifact_content(artifact, file_document, replayed=True)
+            return self._verified_artifact_content(
+                artifact,
+                file_document,
+                trace_id=self.trace_id,
+                replayed=True,
+            )
         receipt_key, payload_hash = context
         file_document = frappe.get_doc("File", str(artifact.frappe_file_id))
-        outcome = self._verified_artifact_content(artifact, file_document)
+        outcome = self._verified_artifact_content(
+            artifact,
+            file_document,
+            trace_id=self.trace_id,
+        )
         now = self._now()
         response = {
             "artifactGlobalId": str(artifact_id),
@@ -1375,19 +1390,41 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
         artifact: object,
         file_document: object,
         *,
+        trace_id: str,
         replayed: bool = False,
     ) -> ToolingImportBinaryOutcome:
         content = file_document.get_content()
-        if not isinstance(content, bytes) or any(
+        checks = (
+            ("P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE", not isinstance(content, bytes)),
             (
+                "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
                 int(file_document.is_private or 0) != 1,
+            ),
+            (
+                "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
                 str(file_document.name) != str(artifact.frappe_file_id),
+            ),
+            (
+                "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
                 str(file_document.file_name) != str(artifact.file_name),
-                len(content) != int(artifact.size_bytes),
-                hashlib.sha256(content).hexdigest() != str(artifact.sha256),
-            )
+            ),
+        )
+        for code, failed in checks:
+            with _correction_server_step(code, trace_id):
+                if failed:
+                    raise ToolingReferenceUnavailable()
+        with _correction_server_step(
+            "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
+            trace_id,
         ):
-            raise ToolingReferenceUnavailable()
+            if len(content) != int(artifact.size_bytes):
+                raise ToolingReferenceUnavailable()
+        with _correction_server_step(
+            "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
+            trace_id,
+        ):
+            if hashlib.sha256(content).hexdigest() != str(artifact.sha256):
+                raise ToolingReferenceUnavailable()
         return ToolingImportBinaryOutcome(
             content=content,
             file_name=str(artifact.file_name),
@@ -2313,7 +2350,11 @@ def _repository_job_corrections(
     ):
         raise ToolingReferenceUnavailable()
     file_document = frappe.get_doc("File", str(artifact.frappe_file_id))
-    content = self._verified_artifact_content(artifact, file_document).content
+    content = self._verified_artifact_content(
+        artifact,
+        file_document,
+        trace_id=self.trace_id,
+    ).content
     reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")))
     expected = ["worksheet_name", "source_row", "source_header", "corrected_value"]
     if reader.fieldnames != expected:

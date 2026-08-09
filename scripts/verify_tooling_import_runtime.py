@@ -68,6 +68,16 @@ CORRECTION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_ARTIFACT_FILE_VALIDATE",
     }
 )
+CORRECTION_DOWNLOAD_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
+    }
+)
 
 FIXTURES = (
     {
@@ -623,11 +633,26 @@ def correction_download_diagnostic(
         and candidate_code.upper() == candidate_code
         else "UNAVAILABLE"
     )
-    return {
+    result = {
         **checks,
         "httpStatus": status if isinstance(status, int) and 100 <= status <= 599 else 0,
         "problemCode": problem_code,
     }
+    trace_id = problem.get("traceId") if isinstance(problem, dict) else None
+    server_diagnostic = tooling_runtime._sanitized_server_diagnostic(
+        trace_id,
+        CORRECTION_DOWNLOAD_DIAGNOSTIC_CODES,
+    )
+    if server_diagnostic is not None:
+        exception_type, diagnostic_code, exact_trace_id = server_diagnostic
+        result.update(
+            {
+                "diagnosticCode": diagnostic_code,
+                "exceptionType": exception_type,
+                "traceId": exact_trace_id,
+            }
+        )
+    return result
 
 
 def current_job(opener, base_url: str, project_id: str, batch_id: str, job_id: str):

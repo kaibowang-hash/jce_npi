@@ -175,6 +175,12 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
             "int(file_document.is_private or 0) != 1",
             "len(content) != int(artifact.size_bytes)",
             "hashlib.sha256(content).hexdigest() != str(artifact.sha256)",
+            "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
         ):
             self.assertIn(marker, verify)
 

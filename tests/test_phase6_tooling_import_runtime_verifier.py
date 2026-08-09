@@ -170,6 +170,7 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             'key.endswith("-correction")',
             "CORRECTION_DIAGNOSTIC_CODES",
             "CORRECTION_VALIDATION_DIAGNOSTIC_CODES",
+            "CORRECTION_DOWNLOAD_DIAGNOSTIC_CODES",
             '"productionMappingActive": False',
             '"integrationTrafficCreated": False',
         )
