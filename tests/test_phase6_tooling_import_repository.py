@@ -142,6 +142,41 @@ class Phase6ToolingImportRepositoryTests(unittest.TestCase):
         self.assertIn("sha256_json(response)", replay)
         self.assertIn("for_update=True", replay)
 
+    def test_confirmation_replay_precedes_mutated_latest_version_check(self) -> None:
+        statements = [
+            ast.unparse(item)
+            for item in _method("create_tooling_import_confirmation").body
+        ]
+        authorization = next(
+            index
+            for index, statement in enumerate(statements)
+            if "_locked_authorized_project(" in statement
+        )
+        source = next(
+            index
+            for index, statement in enumerate(statements)
+            if "_source_for_project(" in statement
+        )
+        receipt = next(
+            index
+            for index, statement in enumerate(statements)
+            if "_import_command_context(" in statement
+        )
+        predecessor = next(
+            index
+            for index, statement in enumerate(statements)
+            if "_latest_preview_for_project(" in statement
+        )
+        version = next(
+            index
+            for index, statement in enumerate(statements)
+            if "predecessor.preview_version != expected_version" in statement
+        )
+        self.assertLess(authorization, source)
+        self.assertLess(source, receipt)
+        self.assertLess(receipt, predecessor)
+        self.assertLess(predecessor, version)
+
     def test_audits_are_hash_count_summaries_without_raw_workbook_data(self) -> None:
         forbidden_keys = {
             "fileName",

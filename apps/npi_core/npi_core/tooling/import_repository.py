@@ -479,14 +479,6 @@ class FrappeToolingImportRepository(FrappeToolingRepository):
         source = self._source_for_project(project, batch_id)
         if source is None:
             return None
-        predecessor = self._latest_preview_for_project(project, source, preview_id)
-        if predecessor is None:
-            return None
-        if (
-            predecessor.preview_version != expected_version
-            or predecessor.snapshot_hash != expected_snapshot_hash
-        ):
-            raise ToolingVersionConflict()
         payload = {
             "batchGlobalId": str(batch_id),
             "previewGlobalId": str(preview_id),
@@ -503,6 +495,14 @@ class FrappeToolingImportRepository(FrappeToolingRepository):
         if isinstance(context, dict):
             return ToolingImportCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
+        predecessor = self._latest_preview_for_project(project, source, preview_id)
+        if predecessor is None:
+            return None
+        if (
+            predecessor.preview_version != expected_version
+            or predecessor.snapshot_hash != expected_snapshot_hash
+        ):
+            raise ToolingVersionConflict()
         now = self._now()
         exact = tuple(
             self._confirmation_value(project, predecessor, item, now)
