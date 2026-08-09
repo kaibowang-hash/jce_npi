@@ -608,6 +608,28 @@ def correction_download_checks(
     }
 
 
+def correction_download_diagnostic(
+    downloaded: object,
+    checks: dict[str, bool],
+) -> dict[str, object]:
+    status = getattr(downloaded, "status", None)
+    problem = getattr(downloaded, "problem", None)
+    candidate_code = problem.get("code") if isinstance(problem, dict) else None
+    problem_code = (
+        candidate_code
+        if isinstance(candidate_code, str)
+        and len(candidate_code) <= 64
+        and candidate_code.replace("_", "").isalnum()
+        and candidate_code.upper() == candidate_code
+        else "UNAVAILABLE"
+    )
+    return {
+        **checks,
+        "httpStatus": status if isinstance(status, int) and 100 <= status <= 599 else 0,
+        "problemCode": problem_code,
+    }
+
+
 def current_job(opener, base_url: str, project_id: str, batch_id: str, job_id: str):
     result = tooling_request(
         opener,
@@ -869,7 +891,11 @@ def run_scenario(
     require(
         all(download_checks.values()),
         "P6-07 authorized correction download drifted: "
-        + json.dumps(download_checks, separators=(",", ":"), sort_keys=True),
+        + json.dumps(
+            correction_download_diagnostic(downloaded, download_checks),
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
     )
 
     retry_result = command(

@@ -231,7 +231,6 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
                 ("total daily output", "2001"),
             },
         )
-
     def test_correction_download_diagnostic_is_closed_and_exact(self) -> None:
         content = (
             b"\xef\xbb\xbfworksheet_name,source_row,source_header,corrected_value\n"
@@ -261,6 +260,19 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
                 "freshReceipt",
             },
         )
+        diagnostic = self.module.correction_download_diagnostic(
+            SimpleNamespace(
+                status=404,
+                problem={"code": "TOOLING_REFERENCE_UNAVAILABLE"},
+            ),
+            {key: False for key in checks},
+        )
+        self.assertEqual(diagnostic["httpStatus"], 404)
+        self.assertEqual(
+            diagnostic["problemCode"],
+            "TOOLING_REFERENCE_UNAVAILABLE",
+        )
+        self.assertNotIn("problem", diagnostic)
 
     def test_failure_boundaries_are_fail_closed_and_cardinality_checked(self) -> None:
         required = (
