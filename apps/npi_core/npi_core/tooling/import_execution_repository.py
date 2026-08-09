@@ -1393,9 +1393,18 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
         trace_id: str,
         replayed: bool = False,
     ) -> ToolingImportBinaryOutcome:
-        content = file_document.get_content()
+        raw_content = file_document.get_content()
+        with _correction_server_step(
+            "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
+            trace_id,
+        ):
+            if isinstance(raw_content, bytes):
+                content = raw_content
+            elif isinstance(raw_content, str):
+                content = raw_content.encode("utf-8")
+            else:
+                raise ToolingReferenceUnavailable()
         checks = (
-            ("P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE", not isinstance(content, bytes)),
             (
                 "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
                 int(file_document.is_private or 0) != 1,
