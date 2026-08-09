@@ -76,14 +76,22 @@ class FixtureMappingActivation:
     trace_id: str
 
     def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "project_global_id",
+            _uuid(self.project_global_id, "projectGlobalId"),
+        )
         for field_name in (
             "global_id",
-            "project_global_id",
             "batch_global_id",
             "mapping_revision_global_id",
             "request_id",
         ):
-            object.__setattr__(self, field_name, _uuid(getattr(self, field_name), field_name))
+            object.__setattr__(
+                self,
+                field_name,
+                _uuid4(getattr(self, field_name), field_name),
+            )
         object.__setattr__(self, "tenant_id", _text(self.tenant_id, "tenantId", 128))
         object.__setattr__(self, "source_snapshot_hash", _hash(self.source_snapshot_hash, "sourceSnapshotHash"))
         object.__setattr__(self, "source_sha256", _hash(self.source_sha256, "sourceSha256"))
@@ -190,9 +198,9 @@ class ReconciliationItem:
     state: ReconciliationState
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "row_result_global_id", _uuid(self.row_result_global_id, "rowResultGlobalId"))
+        object.__setattr__(self, "row_result_global_id", _uuid4(self.row_result_global_id, "rowResultGlobalId"))
         object.__setattr__(self, "target_object_type", _code_value(self.target_object_type, "targetObjectType"))
-        object.__setattr__(self, "target_global_id", _uuid(self.target_global_id, "targetGlobalId"))
+        object.__setattr__(self, "target_global_id", _uuid4(self.target_global_id, "targetGlobalId"))
         object.__setattr__(self, "expected_snapshot_hash", _hash(self.expected_snapshot_hash, "expectedSnapshotHash"))
         if self.observed_snapshot_hash is not None:
             object.__setattr__(self, "observed_snapshot_hash", _hash(self.observed_snapshot_hash, "observedSnapshotHash"))
@@ -227,7 +235,7 @@ class ReconciliationSnapshot:
 
     def __post_init__(self) -> None:
         for field_name in ("global_id", "job_global_id", "request_id"):
-            object.__setattr__(self, field_name, _uuid(getattr(self, field_name), field_name))
+            object.__setattr__(self, field_name, _uuid4(getattr(self, field_name), field_name))
         object.__setattr__(self, "job_snapshot_hash", _hash(self.job_snapshot_hash, "jobSnapshotHash"))
         if self.kind not in {"reconciliation", "rollback_eligibility", "rollback_result"}:
             raise _problem("kind", _("Select a supported import verification kind."))
@@ -279,6 +287,11 @@ def _uuid(value: object, path: str) -> UUID:
         parsed = value if isinstance(value, UUID) else UUID(str(value))
     except (TypeError, ValueError, AttributeError) as error:
         raise _problem(path, _("Select a valid identifier.")) from error
+    return parsed
+
+
+def _uuid4(value: object, path: str) -> UUID:
+    parsed = _uuid(value, path)
     if parsed.version != 4:
         raise _problem(path, _("Select a UUIDv4 identifier."))
     return parsed

@@ -4,7 +4,7 @@ import unittest
 import sys
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from uuid import UUID
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 sys.path.insert(0, "apps/npi_core")
 
@@ -101,6 +101,16 @@ class Phase6ToolingImportExecutionDomainTests(unittest.TestCase):
         )
         self.assertEqual(activation.snapshot_payload()["state"], "approved_fixture")
         self.assertEqual(len(activation.snapshot_hash), 64)
+
+        stable_project_id = uuid5(NAMESPACE_URL, "npi-one:project:synthetic")
+        self.assertEqual(
+            replace(activation, project_global_id=stable_project_id).project_global_id,
+            stable_project_id,
+        )
+        with self.assertRaises(RequestValidationFailed):
+            replace(activation, global_id=stable_project_id)
+        with self.assertRaises(RequestValidationFailed):
+            replace(activation, request_id=stable_project_id)
 
         with self.assertRaises(RequestValidationFailed):
             replace(
