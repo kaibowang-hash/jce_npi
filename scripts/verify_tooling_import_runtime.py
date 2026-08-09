@@ -526,6 +526,26 @@ def preview_confirmations(
     return confirmations
 
 
+def replay_confirmation_inputs(value: object) -> list[dict[str, object]]:
+    require(isinstance(value, list), "P6-07 persisted confirmations are invalid")
+    fields = (
+        "kind",
+        "worksheetName",
+        "sourceRow",
+        "anchorKey",
+        "selectedTargetObject",
+        "selectedTargetGlobalId",
+        "selectedTargetSnapshotHash",
+        "reason",
+    )
+    result = []
+    for item in value:
+        require(isinstance(item, dict), "P6-07 persisted confirmation is invalid")
+        result.append({field: item[field] for field in fields})
+    require(bool(result), "P6-07 persisted confirmations are unexpectedly empty")
+    return result
+
+
 def assert_job(
     value: object,
     *,
@@ -1674,7 +1694,9 @@ def run_replay(actor, base_url: str, csrf_token: str) -> dict[str, object]:
                 "confirmationPayload": {
                     "expectedVersion": initial_preview["previewVersion"],
                     "expectedSnapshotHash": initial_preview["snapshotHash"],
-                    "confirmations": confirmed_preview["confirmations"],
+                    "confirmations": replay_confirmation_inputs(
+                        confirmed_preview["confirmations"]
+                    ),
                 },
                 "confirmedPreview": confirmed_preview,
                 "executePayload": {

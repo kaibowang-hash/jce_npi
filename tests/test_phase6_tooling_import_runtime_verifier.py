@@ -173,6 +173,39 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             self.source,
         )
 
+    def test_replay_confirmation_projects_only_command_input_fields(self) -> None:
+        persisted = {
+            "kind": "relationship",
+            "worksheetName": "Synthetic Tooling List",
+            "sourceRow": 3,
+            "anchorKey": None,
+            "selectedTargetObject": "tooling_master",
+            "selectedTargetGlobalId": "10000000-0000-4000-8000-000000000001",
+            "selectedTargetSnapshotHash": "a" * 64,
+            "reason": "Controlled relationship confirmation.",
+            "confirmedByUserId": "fixture@example.invalid",
+            "confirmedAt": "2026-08-10T00:00:00Z",
+        }
+        self.assertEqual(
+            self.module.replay_confirmation_inputs([persisted]),
+            [
+                {
+                    key: value
+                    for key, value in persisted.items()
+                    if key not in {"confirmedByUserId", "confirmedAt"}
+                }
+            ],
+        )
+        replay = self.source.split("def run_replay(", 1)[1].split(
+            "def route_disable_probe(",
+            1,
+        )[0]
+        self.assertIn("replay_confirmation_inputs(", replay)
+        self.assertNotIn(
+            '"confirmations": confirmed_preview["confirmations"]',
+            replay,
+        )
+
     def test_verifier_covers_complete_controlled_import_lifecycle(self) -> None:
         required = (
             "build_sanitized_tooling_workbook",
