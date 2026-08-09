@@ -74,7 +74,8 @@ IMPORT_DOCTYPES = (
 
 
 def deterministic_uuid(label: str) -> str:
-    return str(uuid5(NAMESPACE_URL, f"npi-one:p6-07:{FIXTURE_RUN_ID}:{label}"))
+    seeded = uuid5(NAMESPACE_URL, f"npi-one:p6-07:{FIXTURE_RUN_ID}:{label}")
+    return str(UUID(int=seeded.int, version=4))
 
 
 def imports_path(project_id: str) -> str:

@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+from uuid import UUID
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -85,6 +86,13 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(
             [(item["headerRow"], item["rollbackMode"]) for item in module.FIXTURES],
             [(2, "allowed"), (4, "denied")],
+        )
+        fixture_id = module.deterministic_uuid("controlled-fixture")
+        self.assertEqual(UUID(fixture_id).version, 4)
+        self.assertEqual(fixture_id, module.deterministic_uuid("controlled-fixture"))
+        self.assertNotEqual(
+            fixture_id,
+            module.deterministic_uuid("different-controlled-fixture"),
         )
         self.assertIn(
             'validate_local_fixture_inputs(\n        arguments.base_url,\n        "Administrator",',
