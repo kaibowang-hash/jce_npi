@@ -7,6 +7,7 @@ import types
 import unittest
 from typing import Any
 from unittest.mock import patch
+from uuid import UUID
 
 sys.path.insert(0, "apps/npi_core")
 
@@ -33,6 +34,8 @@ MILESTONE_ID = "d350d48d-df84-460d-9b43-62be312c73be"
 DEFECT_ID = "a3c23d61-b459-401c-aafd-82781557207a"
 PROCESS_PROFILE_ID = "895104df-75da-40c1-b8ae-5d5fe1dc622d"
 CAPACITY_SCENARIO_ID = "214af23e-535b-46bd-b580-13a80fa87f4f"
+ACCEPTANCE_ID = "b9252172-4174-4a82-bbbf-0c32c8d02657"
+BINDING_ID = "c6d733c6-18c1-4f4f-a8aa-f4bd3cfe1021"
 MEMBER_ID = "2c1937bc-d384-49c4-80ab-90501180e4f8"
 LIFECYCLE_ID = "0c8b108d-2031-4059-8a71-6cc777409a7e"
 RELEASE_EVENT_ID = "875abf5a-ec5e-4654-9fef-3e9c2f72c1c7"
@@ -189,6 +192,13 @@ class MockRepository:
     ):
         return self._command("capacity_scenario_create", args, kwargs)
 
+    def create_tooling_acceptance_evidence_revision(
+        self,
+        *args: object,
+        **kwargs: Any,
+    ):
+        return self._command("acceptance_revision_create", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         if self.failure is not None:
@@ -248,6 +258,7 @@ class Phase6ToolingApiTest(unittest.TestCase):
             npi_p6_03_routes_disabled=False,
             npi_p6_04_routes_disabled=False,
             npi_p6_05_routes_disabled=False,
+            npi_p6_06_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -314,6 +325,47 @@ class Phase6ToolingApiTest(unittest.TestCase):
     def call(self, function, payload: dict[str, object] | None = None):
         self.frappe.local.form_dict = AttrDict(payload or {})
         return function(**(payload or {}))
+
+    @staticmethod
+    def acceptance_payload() -> dict[str, object]:
+        categories = (
+            "technical",
+            "quality",
+            "cycle_capacity",
+            "spares_maintenance",
+            "documents",
+            "warranty_responsibility",
+            "cost",
+            "safety_interface",
+            "asset_location",
+        )
+        return {
+            "acceptanceGlobalId": ACCEPTANCE_ID,
+            "expectedVersion": 1,
+            "toolingSetGlobalId": SET_ID,
+            "toolingSetSnapshotHash": SHA256_A,
+            "setRevisionBindingGlobalId": BINDING_ID,
+            "setRevisionBindingSnapshotHash": SHA256_B,
+            "toolingRevisionGlobalId": TOOLING_REVISION_ID,
+            "toolingRevisionNumber": 2,
+            "toolingRevisionSnapshotHash": SHA256_C,
+            "checklist": [
+                {
+                    "category": category,
+                    "requirementKey": f"acceptance-{index}",
+                    "requirementStatement": "Record exact evidence coverage.",
+                    "disposition": "evidence_missing",
+                    "responsibleMember": None,
+                    "evidence": [],
+                    "note": None,
+                }
+                for index, category in enumerate(categories, start=1)
+            ],
+            "assetActions": [],
+            "spareRecommendations": [],
+            "repairs": [],
+            "reason": "Append immutable acceptance evidence coverage.",
+        }
 
     @staticmethod
     def intake_payload() -> dict[str, object]:
@@ -1283,6 +1335,66 @@ class Phase6ToolingApiTest(unittest.TestCase):
             ["P601_PART_CREATE_API_RESPONSE", "UNEXPECTED_BFF_EXCEPTION"],
         )
         self.assertNotIn("sensitive synthetic detail", str(record.call_args))
+
+    def test_acceptance_append_is_closed_project_first_and_independently_fail_closed(
+        self,
+    ) -> None:
+        payload = self.acceptance_payload()
+        result = self.call(
+            self.api.create_tooling_acceptance_evidence_revision,
+            payload,
+        )
+        self.assertEqual(result, self.response)
+        authorize, create = self.repository.calls
+        self.assertEqual(authorize[0], "authorize")
+        self.assertEqual(
+            [str(value) for value in authorize[1]],
+            [PROJECT_ID, MASTER_ID],
+        )
+        self.assertEqual(authorize[2], {"administer": True})
+        self.assertEqual(create[0], "acceptance_revision_create")
+        self.assertEqual(
+            [str(value) for value in create[1]],
+            [PROJECT_ID, MASTER_ID],
+        )
+        self.assertEqual(create[2]["acceptance_id"], UUID(ACCEPTANCE_ID))
+        self.assertEqual(create[2]["expected_version"], 1)
+        self.assertEqual(len(create[2]["checklist"]), 9)
+        self.assertEqual(create[2]["asset_actions"], ())
+        self.assertEqual(len(create[2]["idempotency_key_hash"]), 64)
+
+        self.repository.calls.clear()
+        invalid = self.acceptance_payload()
+        invalid["approved"] = True
+        result = self.call(
+            self.api.create_tooling_acceptance_evidence_revision,
+            invalid,
+        )
+        self.assertEqual(result["code"], "VALIDATION_FAILED")
+        self.assertEqual([call[0] for call in self.repository.calls], ["authorize"])
+
+        self.repository.calls.clear()
+        self.repository.failure = RuntimeError("synthetic acceptance persistence failure")
+        result = self.call(
+            self.api.create_tooling_acceptance_evidence_revision,
+            payload,
+        )
+        self.assertEqual(result["code"], "INTERNAL_SERVER_ERROR")
+        self.assertEqual(self.frappe.local.response.http_status_code, 500)
+        self.assertEqual(self.frappe.db.rollback_count, 2)
+        self.repository.failure = None
+
+        self.frappe.conf.npi_p6_06_routes_disabled = True
+        self.repository.calls.clear()
+        result = self.call(
+            self.api.create_tooling_acceptance_evidence_revision,
+            payload,
+        )
+        self.assertEqual(
+            result["code"],
+            "TOOLING_ACCEPTANCE_ASSETS_ROUTES_DISABLED",
+        )
+        self.assertFalse(self.repository.calls)
 
     def test_applicability_diagnostic_is_route_gated_and_response_neutral(
         self,

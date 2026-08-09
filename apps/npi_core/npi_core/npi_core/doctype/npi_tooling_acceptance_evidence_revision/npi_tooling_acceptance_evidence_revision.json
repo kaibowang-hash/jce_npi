@@ -34,7 +34,7 @@
     {"fieldname": "asset_action_snapshot", "fieldtype": "JSON", "label": "Asset Action Evidence Snapshot", "reqd": 1, "read_only": 1},
     {"fieldname": "spare_recommendation_snapshot", "fieldtype": "JSON", "label": "Spare Recommendation Snapshot", "reqd": 1, "read_only": 1},
     {"fieldname": "repair_snapshot", "fieldtype": "JSON", "label": "Repair Evidence Snapshot", "reqd": 1, "read_only": 1},
-    {"fieldname": "version_key_hash", "fieldtype": "Data", "label": "Acceptance Version Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "version_key_hash", "fieldtype": "Data", "label": "Acceptance Version Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "acceptance_snapshot", "fieldtype": "JSON", "label": "Tooling Acceptance Evidence Revision Snapshot", "reqd": 1, "read_only": 1},
     {"fieldname": "snapshot_hash", "fieldtype": "Data", "label": "Snapshot Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "reason", "fieldtype": "Small Text", "label": "Revision Reason", "reqd": 1, "read_only": 1},

@@ -1,0 +1,155 @@
+from __future__ import annotations
+
+import ast
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CORE_PATH = ROOT / "apps/npi_core/npi_core/tooling/acceptance_repository.py"
+ASSET_PATH = (
+    ROOT
+    / "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py"
+)
+CORE = CORE_PATH.read_text(encoding="utf-8")
+ASSET = ASSET_PATH.read_text(encoding="utf-8")
+CORE_TREE = ast.parse(CORE)
+ASSET_TREE = ast.parse(ASSET)
+
+
+def method(source: str, tree: ast.AST, name: str) -> str:
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
+            return ast.get_source_segment(source, node) or ""
+    raise AssertionError(f"missing method: {name}")
+
+
+class Phase6ToolingAcceptanceRepositoryTest(unittest.TestCase):
+    def test_queries_are_project_first_master_bounded_and_non_leaking(self) -> None:
+        for source, tree, name in (
+            (CORE, CORE_TREE, "tooling_acceptance_context"),
+            (ASSET, ASSET_TREE, "list_asset_requests"),
+            (ASSET, ASSET_TREE, "asset_request_detail"),
+        ):
+            with self.subTest(name=name):
+                body = method(source, tree, name)
+                project = body.index("self._authorized_project(project_id)")
+                master = body.index(
+                    "self._master_for_project(project, tooling_master_id)"
+                )
+                self.assertLess(project, master)
+                self.assertIn("return None", body)
+        self.assertIn("_MAX_ACCEPTANCE_REVISIONS = 500", CORE)
+        self.assertIn("_MAX_REQUESTS = 500", ASSET)
+        self.assertIn("self._bounded_documents(", method(CORE, CORE_TREE, "_acceptance_revisions"))
+        self.assertIn("self._bounded_documents(", method(ASSET, ASSET_TREE, "_asset_requests"))
+
+    def test_acceptance_append_revalidates_every_exact_containment_edge(self) -> None:
+        body = method(
+            CORE,
+            CORE_TREE,
+            "create_tooling_acceptance_evidence_revision",
+        )
+        lock = body.index("self._locked_authorized_project(project_id)")
+        receipt_context = body.index("self._command_context(")
+        master = body.index("self._master_for_project(project, tooling_master_id)")
+        tooling_set = body.index("self._tooling_set_for_project(")
+        binding = body.index("self._binding_for_set(project, tooling_set)")
+        revision = body.index("self._tooling_revision_for_project(")
+        predecessor = body.index("self._acceptance_predecessor(")
+        self.assertLess(lock, receipt_context)
+        self.assertLess(receipt_context, master)
+        self.assertLess(master, tooling_set)
+        self.assertLess(tooling_set, binding)
+        self.assertLess(binding, revision)
+        self.assertLess(revision, predecessor)
+        for marker in (
+            "binding.global_id != binding_id",
+            "binding.snapshot_hash != binding_snapshot_hash",
+            "binding.tooling_revision_global_id != tooling_revision_id",
+            "tooling_revision.revision_number != tooling_revision_number",
+            "tooling_revision.snapshot_hash != tooling_revision_snapshot_hash",
+            "self._exact_engineering_member(",
+            "self._file_revision_for_project(",
+            "validate_acceptance_successor",
+        ):
+            self.assertIn(marker, CORE)
+
+    def test_acceptance_append_is_one_audited_sealed_transaction(self) -> None:
+        body = method(
+            CORE,
+            CORE_TREE,
+            "create_tooling_acceptance_evidence_revision",
+        )
+        transaction = body.index("with tooling_command_write():")
+        receipt = body.index("self._insert_receipt(", transaction)
+        insert = body.index("self._insert_acceptance_revision(value)", receipt)
+        audit = body.index("self._append_audit(", insert)
+        seal = body.index("self._seal_receipt(", audit)
+        self.assertLess(receipt, insert)
+        self.assertLess(insert, audit)
+        self.assertLess(audit, seal)
+        self.assertIn('target_type="tooling_acceptance_evidence_revision"', body[seal:])
+        self.assertNotIn(".commit(", body)
+        self.assertNotIn(".rollback(", body)
+
+    def test_mock_request_resolves_server_input_and_seals_request_audit_receipt(self) -> None:
+        body = method(ASSET, ASSET_TREE, "create_asset_request")
+        ordered = (
+            "self._locked_authorized_project(project_id)",
+            "self._master_for_project(project, tooling_master_id)",
+            "self._tooling_set_for_project(",
+            "self._binding_for_set(project, tooling_set)",
+            "self._tooling_revision_for_project(",
+            "self._acceptance_revision_for_project(",
+            "ToolAssetRequestInput(",
+            "self._asset_receipt_replay(",
+            "create_mock_tool_asset_request(",
+            "with tool_asset_request_write():",
+            "self._insert_asset_receipt(",
+            "self._insert_asset_request(value)",
+            "self._append_audit(",
+            "self._seal_asset_receipt(",
+        )
+        positions = [body.index(marker) for marker in ordered]
+        self.assertEqual(positions, sorted(positions))
+        for exact_marker in (
+            "acceptance.tooling_set_global_id != tooling_set.global_id",
+            "acceptance.set_revision_binding_global_id != binding.global_id",
+            "acceptance.tooling_revision_global_id != tooling_revision.global_id",
+            '"actorUserId": self.actor.casefold()',
+            '"operation": TOOL_ASSET_OPERATION',
+            '"targetMode": "mock"',
+            '"dispatchState": "prohibited"',
+            '"targetResultState": "not_requested"',
+        ):
+            self.assertIn(exact_marker, body)
+
+    def test_runtime_slice_has_no_erp_dispatch_outbox_or_formal_target_identity(self) -> None:
+        combined = CORE + ASSET
+        for forbidden in (
+            "requests.",
+            "httpx.",
+            "urllib.",
+            "urlopen(",
+            '"doctype": "NPI Outbox',
+            '"doctype": "NPI Integration Outbox',
+            '"formal_asset_id"',
+            '"endpoint"',
+            '"credential"',
+            ".commit(",
+            ".rollback(",
+        ):
+            self.assertNotIn(forbidden, combined)
+        for truth in (
+            '"state": "unavailable"',
+            '"reasonCode": "erp_asset_projection_unavailable"',
+            '"mappingCardinality": "zero_or_one_per_physical_set"',
+            '"dispatchState": "prohibited"',
+            '"targetResultState": "not_requested"',
+        ):
+            self.assertIn(truth, combined)
+
+
+if __name__ == "__main__":
+    unittest.main()

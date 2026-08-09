@@ -18,6 +18,7 @@ from .foundation.errors import (
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
     ToolingEngineeringControlsRoutesDisabled,
+    ToolingAcceptanceAssetsRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -34,6 +35,7 @@ from .request_security import (
     project_collaboration_routes_are_disabled,
     response_request_id,
     tooling_engineering_controls_routes_are_disabled,
+    tooling_acceptance_assets_routes_are_disabled,
     tooling_set_routes_are_disabled,
     tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
@@ -134,6 +136,28 @@ _PROJECT_TOOLING_PROCESS_PROFILE_REVISIONS_ROUTE = re.compile(
 _PROJECT_TOOLING_CAPACITY_SCENARIO_REVISIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
     r"(?P<tooling_master_id>[^/:]+)/capacity-scenario-revisions$"
+)
+_PROJECT_TOOLING_ACCEPTANCE_ASSETS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/acceptance-assets$"
+)
+_PROJECT_TOOLING_ACCEPTANCE_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/acceptance-revisions$"
+)
+_PROJECT_TOOLING_ASSET_REQUESTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/asset-requests$"
+)
+_PROJECT_TOOLING_SET_ASSET_REQUESTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/sets/(?P<tooling_set_id>[^/:]+)/"
+    r"asset-requests$"
+)
+_PROJECT_TOOLING_ASSET_REQUEST_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
+    r"(?P<tooling_master_id>[^/:]+)/asset-requests/"
+    r"(?P<asset_request_id>[^/:]+)$"
 )
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
@@ -463,6 +487,27 @@ def route_request() -> None:
             command = "npi_core.tooling_api.get_tooling_engineering_controls"
             route_params = match.groupdict()
     if command is None and request.method == "GET":
+        acceptance_asset_queries = (
+            (
+                _PROJECT_TOOLING_ACCEPTANCE_ASSETS_ROUTE,
+                "npi_integration.tool_asset_request_api.get_tooling_acceptance_assets",
+            ),
+            (
+                _PROJECT_TOOLING_ASSET_REQUESTS_ROUTE,
+                "npi_integration.tool_asset_request_api.get_tool_asset_requests",
+            ),
+            (
+                _PROJECT_TOOLING_ASSET_REQUEST_ROUTE,
+                "npi_integration.tool_asset_request_api.get_tool_asset_request",
+            ),
+        )
+        for route, candidate in acceptance_asset_queries:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
         manufacturing_queries = (
             (
                 _PROJECT_TOOLING_MANUFACTURING_PLANS_ROUTE,
@@ -523,6 +568,23 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        acceptance_asset_commands = (
+            (
+                _PROJECT_TOOLING_ACCEPTANCE_REVISIONS_ROUTE,
+                "npi_core.tooling_api.create_tooling_acceptance_evidence_revision",
+            ),
+            (
+                _PROJECT_TOOLING_SET_ASSET_REQUESTS_ROUTE,
+                "npi_integration.tool_asset_request_api.create_tool_asset_request",
+            ),
+        )
+        for route, candidate in acceptance_asset_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         engineering_control_commands = (
             (
@@ -875,6 +937,9 @@ def route_request() -> None:
     if _p6_05_routes_disabled(command):
         command = "npi_core.bff.tooling_engineering_controls_routes_disabled"
         route_params = {}
+    if _p6_06_routes_disabled(command):
+        command = "npi_core.bff.tooling_acceptance_assets_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1097,6 +1162,23 @@ def tooling_engineering_controls_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_acceptance_assets_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-06 while retaining earlier Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingAcceptanceAssetsRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1196,6 +1278,16 @@ def _p6_05_routes_disabled(command: str | None) -> bool:
         "npi_core.tooling_api.create_tooling_defect_revision",
         "npi_core.tooling_api.create_tooling_process_profile_revision",
         "npi_core.tooling_api.create_tooling_capacity_scenario_revision",
+    }
+
+
+def _p6_06_routes_disabled(command: str | None) -> bool:
+    return tooling_acceptance_assets_routes_are_disabled() and command in {
+        "npi_core.tooling_api.create_tooling_acceptance_evidence_revision",
+        "npi_integration.tool_asset_request_api.get_tooling_acceptance_assets",
+        "npi_integration.tool_asset_request_api.get_tool_asset_requests",
+        "npi_integration.tool_asset_request_api.get_tool_asset_request",
+        "npi_integration.tool_asset_request_api.create_tool_asset_request",
     }
 
 

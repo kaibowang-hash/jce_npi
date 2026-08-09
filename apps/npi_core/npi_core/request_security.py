@@ -18,6 +18,7 @@ from .foundation.errors import (
     RequestValidationFailed,
     TenantScopeUnavailable,
     ToolingEngineeringControlsRoutesDisabled,
+    ToolingAcceptanceAssetsRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -132,6 +133,27 @@ def require_tooling_engineering_controls_routes_enabled() -> None:
 
     if tooling_engineering_controls_routes_are_disabled():
         raise ToolingEngineeringControlsRoutesDisabled()
+
+
+def tooling_acceptance_assets_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P6-06 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_06_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_acceptance_assets_routes_enabled() -> None:
+    """Keep P6-06 evidence and Mock-request handlers explicitly enabled."""
+
+    if tooling_acceptance_assets_routes_are_disabled():
+        raise ToolingAcceptanceAssetsRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

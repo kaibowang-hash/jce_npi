@@ -12,6 +12,12 @@ OWNERSHIP = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
 EVENT = json.loads((ROOT / "contracts/integration-event.schema.json").read_text(encoding="utf-8"))
 BFF = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
 API = (ROOT / "apps/npi_core/npi_core/tooling_api.py").read_text(encoding="utf-8")
+INTEGRATION_API = (
+    ROOT / "apps/npi_integration/npi_integration/tool_asset_request_api.py"
+).read_text(encoding="utf-8")
+SECURITY = (ROOT / "apps/npi_core/npi_core/request_security.py").read_text(
+    encoding="utf-8"
+)
 
 
 def schema(name: str) -> str:
@@ -51,7 +57,7 @@ class Phase6ToolingAcceptanceContractTest(unittest.TestCase):
         "ToolingAcceptanceEvidenceCommand",
     )
 
-    def test_checkpoint_one_contract_is_closed_but_runtime_routes_are_not_active(self) -> None:
+    def test_contract_is_closed_and_five_project_first_routes_are_active(self) -> None:
         for name in self.CLOSED_SCHEMAS:
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", schema(name))
@@ -66,8 +72,19 @@ class Phase6ToolingAcceptanceContractTest(unittest.TestCase):
             "getToolAssetRequest",
         ):
             self.assertIn(marker, paths)
-        self.assertNotIn("create_tooling_acceptance_evidence_revision", BFF + API)
-        self.assertNotIn("create_tool_asset_request", BFF + API)
+        combined = BFF + API + INTEGRATION_API
+        for command in (
+            "get_tooling_acceptance_assets",
+            "create_tooling_acceptance_evidence_revision",
+            "get_tool_asset_requests",
+            "create_tool_asset_request",
+            "get_tool_asset_request",
+        ):
+            self.assertIn(command, BFF)
+            self.assertIn(command, combined)
+        self.assertIn("npi_p6_06_routes_disabled", SECURITY)
+        self.assertIn("return value is not False", SECURITY)
+        self.assertIn("_p6_06_routes_disabled(command)", BFF)
 
     def test_checklist_has_every_required_category_without_approval_input(self) -> None:
         item = schema("ToolingAcceptanceChecklistItemInput")

@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '96523b220981b4ec';
+export const catalogVersion = 'e8354f1b16118b4e';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -752,6 +752,7 @@ export const catalogs = {
     "Confirm release of the exact EBOM revision.": "请确认发布精确的 EBOM 修订版。",
     "Confirm the exact document review or release action.": "请确认精确的文件评审或发布操作。",
     "Confirm the exact EBOM revision before release.": "发布前请确认精确 EBOM 修订版。",
+    "Confirm the exact local Mock-only boundary.": "请确认仅限本地模拟的精确边界。",
     "Confirm the hot runner interface drawing": "确认热流道接口图纸",
     "Confirm tooling correction revision B": "确认模具开发纠正修订版 B",
     "Confirm validation of the exact released EBOM.": "请确认验证精确的已发布 EBOM。",
@@ -5766,6 +5767,7 @@ export const catalogs = {
     "Confirm release of the exact EBOM revision.": "請確認發布精確的 EBOM 修訂版。",
     "Confirm the exact document review or release action.": "請確認精確的文件評審或發布操作。",
     "Confirm the exact EBOM revision before release.": "發佈前請確認精確 EBOM 修訂版。",
+    "Confirm the exact local Mock-only boundary.": "請確認僅限本機模擬的精確邊界。",
     "Confirm the hot runner interface drawing": "確認熱流道介面圖紙",
     "Confirm tooling correction revision B": "確認模具開發矯正修訂版 B",
     "Confirm validation of the exact released EBOM.": "請確認驗證精確的已發佈 EBOM。",

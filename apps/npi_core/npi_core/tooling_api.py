@@ -22,6 +22,7 @@ from npi_core.request_security import (
     require_csrf_token,
     require_request_fields,
     require_tooling_set_routes_enabled,
+    require_tooling_acceptance_assets_routes_enabled,
     require_tooling_engineering_controls_routes_enabled,
     require_tooling_manufacturing_routes_enabled,
     require_tooling_revision_routes_enabled,
@@ -82,6 +83,13 @@ from npi_core.tooling.engineering_controls_domain import (
     ToolingProcessContextKind,
     ToolingProcessMetricCode,
     ToolingProcessValueKind,
+)
+from npi_core.tooling.acceptance_domain import (
+    ToolingAcceptanceCategory,
+    ToolingAcceptanceEvidenceRole,
+    ToolingAssetActionKind,
+    ToolingEvidenceDisposition,
+    ToolingSpareKind,
 )
 
 
@@ -263,6 +271,28 @@ _CAPACITY_SCENARIO_REVISION_REQUIRED = _CAPACITY_SCENARIO_REVISION_FIELDS - {
     "scenarioGlobalId",
     "expectedVersion",
 }
+_ACCEPTANCE_REVISION_FIELDS = frozenset(
+    {
+        "acceptanceGlobalId",
+        "expectedVersion",
+        "toolingSetGlobalId",
+        "toolingSetSnapshotHash",
+        "setRevisionBindingGlobalId",
+        "setRevisionBindingSnapshotHash",
+        "toolingRevisionGlobalId",
+        "toolingRevisionNumber",
+        "toolingRevisionSnapshotHash",
+        "checklist",
+        "assetActions",
+        "spareRecommendations",
+        "repairs",
+        "reason",
+    }
+)
+_ACCEPTANCE_REVISION_REQUIRED = _ACCEPTANCE_REVISION_FIELDS - {
+    "acceptanceGlobalId",
+    "expectedVersion",
+}
 
 
 class _Outcome(Protocol):
@@ -426,6 +456,17 @@ class _Repository(Protocol):
         **values: Any,
     ) -> _Outcome | None: ...
     def create_tooling_capacity_scenario_revision(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+        **values: Any,
+    ) -> _Outcome | None: ...
+    def tooling_acceptance_context(
+        self,
+        project_id: UUID,
+        tooling_master_id: UUID,
+    ) -> dict[str, Any] | None: ...
+    def create_tooling_acceptance_evidence_revision(
         self,
         project_id: UUID,
         tooling_master_id: UUID,
@@ -1439,6 +1480,80 @@ def create_tooling_capacity_scenario_revision(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_acceptance_evidence_revision(
+    acceptanceGlobalId: Any = None,
+    expectedVersion: Any = None,
+    toolingSetGlobalId: Any = None,
+    toolingSetSnapshotHash: Any = None,
+    setRevisionBindingGlobalId: Any = None,
+    setRevisionBindingSnapshotHash: Any = None,
+    toolingRevisionGlobalId: Any = None,
+    toolingRevisionNumber: Any = None,
+    toolingRevisionSnapshotHash: Any = None,
+    checklist: Any = None,
+    assetActions: Any = None,
+    spareRecommendations: Any = None,
+    repairs: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _tooling_acceptance_command(
+        _ACCEPTANCE_REVISION_FIELDS,
+        _ACCEPTANCE_REVISION_REQUIRED,
+        request_fields,
+        lambda: {
+            "acceptance_id": _optional_uuid(
+                acceptanceGlobalId,
+                "acceptanceGlobalId",
+            ),
+            "expected_version": _optional_positive(
+                expectedVersion,
+                "expectedVersion",
+            ),
+            "tooling_set_id": _uuid(toolingSetGlobalId, "toolingSetGlobalId"),
+            "tooling_set_snapshot_hash": _sha256(
+                toolingSetSnapshotHash,
+                "toolingSetSnapshotHash",
+            ),
+            "binding_id": _uuid(
+                setRevisionBindingGlobalId,
+                "setRevisionBindingGlobalId",
+            ),
+            "binding_snapshot_hash": _sha256(
+                setRevisionBindingSnapshotHash,
+                "setRevisionBindingSnapshotHash",
+            ),
+            "tooling_revision_id": _uuid(
+                toolingRevisionGlobalId,
+                "toolingRevisionGlobalId",
+            ),
+            "tooling_revision_number": _positive(
+                toolingRevisionNumber,
+                "toolingRevisionNumber",
+            ),
+            "tooling_revision_snapshot_hash": _sha256(
+                toolingRevisionSnapshotHash,
+                "toolingRevisionSnapshotHash",
+            ),
+            "checklist": _acceptance_checklist_inputs(checklist),
+            "asset_actions": _acceptance_asset_action_inputs(assetActions),
+            "spare_recommendations": _acceptance_spare_inputs(
+                spareRecommendations
+            ),
+            "repairs": _acceptance_repair_inputs(repairs),
+            "reason": _text(reason, "reason", 1000),
+        },
+        lambda repository, project_id, parsed: (
+            repository.create_tooling_acceptance_evidence_revision(
+                project_id,
+                _opaque_route_uuid("tooling_master_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
 def _query_context(
     allowed: frozenset[str],
     request_fields: dict[str, Any],
@@ -1642,6 +1757,36 @@ def _tooling_engineering_controls_command_context(
     request_fields: dict[str, Any],
 ) -> tuple[str, str, _Repository, UUID]:
     require_tooling_engineering_controls_routes_enabled()
+    actor = authenticated_user()
+    require_csrf_token()
+    principal = authenticated_principal(actor)
+    if principal.is_external or "System Manager" not in principal.roles:
+        raise PermissionDenied()
+    request_id = _request_id()
+    repository = _new_repository(principal, request_id)
+    project_id = _opaque_route_uuid("project_id")
+    master_id = _opaque_route_uuid("tooling_master_id")
+    if not repository.authorize_scope(project_id, master_id, administer=True):
+        raise ToolingUnavailable()
+    reject_unexpected_request_fields(allowed, request_fields)
+    require_request_fields(required, request_fields)
+    return (
+        request_id,
+        actor_idempotency_key_hash(
+            actor,
+            frappe.get_request_header("Idempotency-Key"),
+        ),
+        repository,
+        project_id,
+    )
+
+
+def _tooling_acceptance_command_context(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+) -> tuple[str, str, _Repository, UUID]:
+    require_tooling_acceptance_assets_routes_enabled()
     actor = authenticated_user()
     require_csrf_token()
     principal = authenticated_principal(actor)
@@ -1873,6 +2018,45 @@ def _tooling_engineering_controls_command(
     def handle() -> dict[str, Any]:
         request_id, key_hash, repository, project_id = (
             _tooling_engineering_controls_command_context(
+                allowed,
+                required,
+                request_fields,
+            )
+        )
+        parsed = values()
+        parsed["idempotency_key_hash"] = key_hash
+        outcome = operation(repository, project_id, parsed)
+        if outcome is None:
+            raise ToolingUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Tooling command replay result is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return _response(outcome.response)
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
+def _tooling_acceptance_command(
+    allowed: frozenset[str],
+    required: frozenset[str],
+    request_fields: dict[str, Any],
+    values,
+    operation,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        request_id, key_hash, repository, project_id = (
+            _tooling_acceptance_command_context(
                 allowed,
                 required,
                 request_fields,
@@ -3081,6 +3265,269 @@ def _capacity_provenance_input(value: object, path: str) -> dict[str, object]:
         "global_id": global_id,
         "snapshot_hash": _sha256(value.get("snapshotHash"), f"{path}.snapshotHash"),
     }
+
+
+def _acceptance_file_inputs(
+    value: object,
+    path: str,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, path, maximum=20)
+    expected = {
+        "role",
+        "fileRevisionGlobalId",
+        "fileOptimisticVersion",
+        "frappeContentHash",
+        "sha256",
+    }
+    result = []
+    for index, item in enumerate(rows):
+        item_path = f"{path}[{index}]"
+        _exact_fields(item, expected, item_path)
+        result.append(
+            {
+                "role": _enum_value(
+                    item.get("role"),
+                    ToolingAcceptanceEvidenceRole,
+                    f"{item_path}.role",
+                ),
+                "file_revision_id": _uuid(
+                    item.get("fileRevisionGlobalId"),
+                    f"{item_path}.fileRevisionGlobalId",
+                ),
+                "file_optimistic_version": _positive(
+                    item.get("fileOptimisticVersion"),
+                    f"{item_path}.fileOptimisticVersion",
+                ),
+                "frappe_content_hash": _content_hash(
+                    item.get("frappeContentHash"),
+                    f"{item_path}.frappeContentHash",
+                ),
+                "sha256": _sha256(item.get("sha256"), f"{item_path}.sha256"),
+            }
+        )
+    return tuple(result)
+
+
+def _acceptance_checklist_inputs(
+    value: object,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "checklist", minimum=9, maximum=200)
+    expected = {
+        "category",
+        "requirementKey",
+        "requirementStatement",
+        "disposition",
+        "responsibleMember",
+        "evidence",
+        "note",
+    }
+    result = []
+    for index, item in enumerate(rows):
+        path = f"checklist[{index}]"
+        _exact_fields(item, expected, path)
+        member = item.get("responsibleMember")
+        result.append(
+            {
+                "category": _enum_value(
+                    item.get("category"),
+                    ToolingAcceptanceCategory,
+                    f"{path}.category",
+                ),
+                "requirement_key": _text(
+                    item.get("requirementKey"),
+                    f"{path}.requirementKey",
+                    128,
+                ),
+                "requirement_statement": _text(
+                    item.get("requirementStatement"),
+                    f"{path}.requirementStatement",
+                    1000,
+                ),
+                "disposition": _enum_value(
+                    item.get("disposition"),
+                    ToolingEvidenceDisposition,
+                    f"{path}.disposition",
+                ),
+                "responsible_member": (
+                    None
+                    if member is None
+                    else _manufacturing_member(member, f"{path}.responsibleMember")
+                ),
+                "evidence": _acceptance_file_inputs(
+                    item.get("evidence"),
+                    f"{path}.evidence",
+                ),
+                "note": _optional_text(item.get("note"), f"{path}.note", 2000),
+            }
+        )
+    return tuple(result)
+
+
+def _acceptance_asset_action_inputs(
+    value: object,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "assetActions", maximum=100)
+    expected = {
+        "actionKind",
+        "reason",
+        "approvalReference",
+        "proposedEffectiveDate",
+        "evidence",
+    }
+    result = []
+    for index, item in enumerate(rows):
+        path = f"assetActions[{index}]"
+        _exact_fields(item, expected, path)
+        evidence = _acceptance_file_inputs(item.get("evidence"), f"{path}.evidence")
+        if not evidence:
+            raise _field(f"{path}.evidence", _("Enter a valid bounded list."))
+        result.append(
+            {
+                "action_kind": _enum_value(
+                    item.get("actionKind"),
+                    ToolingAssetActionKind,
+                    f"{path}.actionKind",
+                ),
+                "reason": _text(item.get("reason"), f"{path}.reason", 2000),
+                "approval_reference": _text(
+                    item.get("approvalReference"),
+                    f"{path}.approvalReference",
+                    500,
+                ),
+                "proposed_effective_date": _optional_date(
+                    item.get("proposedEffectiveDate"),
+                    f"{path}.proposedEffectiveDate",
+                ),
+                "evidence": evidence,
+            }
+        )
+    return tuple(result)
+
+
+def _acceptance_spare_inputs(
+    value: object,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "spareRecommendations", maximum=200)
+    expected = {
+        "recommendationKey",
+        "kind",
+        "description",
+        "recommendedMinimumQuantity",
+        "unit",
+        "supplierSourceSystem",
+        "supplierSourceObjectId",
+    }
+    result = []
+    for index, item in enumerate(rows):
+        path = f"spareRecommendations[{index}]"
+        _exact_fields(item, expected, path)
+        supplier_system = item.get("supplierSourceSystem")
+        supplier_id = item.get("supplierSourceObjectId")
+        if supplier_system not in (None, "ERPNEXT"):
+            raise _field(f"{path}.supplierSourceSystem", _("Select a supported value."))
+        if (supplier_system is None) != (supplier_id is None):
+            raise _field(path, _("Select a supported value."))
+        result.append(
+            {
+                "recommendation_key": _text(
+                    item.get("recommendationKey"),
+                    f"{path}.recommendationKey",
+                    128,
+                ),
+                "kind": _enum_value(
+                    item.get("kind"),
+                    ToolingSpareKind,
+                    f"{path}.kind",
+                ),
+                "description": _text(
+                    item.get("description"),
+                    f"{path}.description",
+                    1000,
+                ),
+                "recommended_minimum_quantity": _decimal_string(
+                    item.get("recommendedMinimumQuantity"),
+                    f"{path}.recommendedMinimumQuantity",
+                    positive=True,
+                ),
+                "unit": _text(item.get("unit"), f"{path}.unit", 32),
+                "supplier_source_system": supplier_system,
+                "supplier_source_object_id": (
+                    None
+                    if supplier_id is None
+                    else _text(supplier_id, f"{path}.supplierSourceObjectId", 128)
+                ),
+            }
+        )
+    return tuple(result)
+
+
+def _acceptance_repair_inputs(
+    value: object,
+) -> tuple[dict[str, object], ...]:
+    rows = _objects(value, "repairs", maximum=100)
+    expected = {
+        "authorizationReference",
+        "quoteReference",
+        "quoteCurrency",
+        "quoteAmount",
+        "responsibleMember",
+        "downtimeImpactHours",
+        "detail",
+        "customerAuthorizationEvidence",
+        "verificationEvidence",
+    }
+    result = []
+    for index, item in enumerate(rows):
+        path = f"repairs[{index}]"
+        _exact_fields(item, expected, path)
+        currency = item.get("quoteCurrency")
+        amount = item.get("quoteAmount")
+        if (currency is None) != (amount is None):
+            raise _field(path, _("Select a supported value."))
+        if currency is not None and (
+            not isinstance(currency, str)
+            or re.fullmatch(r"[A-Z]{3}", currency) is None
+        ):
+            raise _field(f"{path}.quoteCurrency", _("Select a supported value."))
+        result.append(
+            {
+                "authorization_reference": _text(
+                    item.get("authorizationReference"),
+                    f"{path}.authorizationReference",
+                    500,
+                ),
+                "quote_reference": _optional_text(
+                    item.get("quoteReference"),
+                    f"{path}.quoteReference",
+                    500,
+                ),
+                "quote_currency": currency,
+                "quote_amount": (
+                    None
+                    if amount is None
+                    else _decimal_string(amount, f"{path}.quoteAmount", nonnegative=True)
+                ),
+                "responsible_member": _manufacturing_member(
+                    item.get("responsibleMember"),
+                    f"{path}.responsibleMember",
+                ),
+                "downtime_impact_hours": _decimal_string(
+                    item.get("downtimeImpactHours"),
+                    f"{path}.downtimeImpactHours",
+                    nonnegative=True,
+                ),
+                "detail": _text(item.get("detail"), f"{path}.detail", 4000),
+                "customer_authorization_evidence": _acceptance_file_inputs(
+                    item.get("customerAuthorizationEvidence"),
+                    f"{path}.customerAuthorizationEvidence",
+                ),
+                "verification_evidence": _acceptance_file_inputs(
+                    item.get("verificationEvidence"),
+                    f"{path}.verificationEvidence",
+                ),
+            }
+        )
+    return tuple(result)
 
 
 def _decimal_string(

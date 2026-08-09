@@ -5003,6 +5003,7 @@ Tooling Master Snapshot Hash,模具主檔快照雜湊
 {field} does not match.,{field} 不相符。
 Asset action evidence must use an action or approval-reference role.,資產動作證據必須使用動作或核准引用角色。
 Checklist evidence must use the checklist evidence role.,清單證據必須使用清單證據角色。
+Confirm the exact local Mock-only boundary.,請確認僅限本機模擬的精確邊界。
 Customer authorization evidence must use the customer-authorization role.,客戶授權證據必須使用客戶授權角色。
 Repair verification evidence must use the repair-verification role.,維修驗證證據必須使用維修驗證角色。
 tooling_acceptance_evidence.create,建立模具驗收證據

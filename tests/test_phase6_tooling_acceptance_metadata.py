@@ -75,6 +75,12 @@ class Phase6ToolingAcceptanceMetadataTest(unittest.TestCase):
         core = self.fields(self.load(CORE_DOCTYPE, "npi_tooling_command_idempotency"))
         self.assertEqual(str(core["operation"].get("options", "")).splitlines()[-1], "tooling_acceptance_evidence.create")
         self.assertEqual(str(core["target_object_type"].get("options", "")).splitlines()[-1], "tooling_acceptance_evidence_revision")
+        acceptance = self.load(
+            CORE_DOCTYPE,
+            "npi_tooling_acceptance_evidence_revision",
+        )
+        acceptance_fields = self.fields(acceptance)
+        self.assertEqual(acceptance_fields["version_key_hash"].get("unique"), 1)
         source = (CORE_DOCTYPE / "npi_tooling_command_idempotency" / "npi_tooling_command_idempotency.py").read_text(encoding="utf-8")
         self.assertIn('"tooling_acceptance_evidence.create": "tooling_acceptance_evidence_revision"', source)
         asset = self.fields(self.load(INTEGRATION_DOCTYPE, "npi_tool_asset_command_idempotency"))
