@@ -103,6 +103,16 @@ _CORRECTION_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
     }
 )
+_RECONCILIATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_RECONCILIATION_SNAPSHOT_BUILD",
+        "P607_RECONCILIATION_RESPONSE_BUILD",
+        "P607_RECONCILIATION_RECEIPT_INSERT",
+        "P607_RECONCILIATION_REVISION_INSERT",
+        "P607_RECONCILIATION_AUDIT_APPEND",
+        "P607_RECONCILIATION_RECEIPT_SEAL",
+    }
+)
 _FIXTURE_SOURCES = {
     "p6-07-synthetic-title-row-deleted.xlsx": (
         "b807aca4ef6776a0ad6e8eada1c8291b3a13dbe32724828d33661d67bc8e684f"
@@ -1495,40 +1505,66 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
             return ToolingImportCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
         now = self._now()
-        snapshot = self._build_reconciliation(project, source, job, kind, now)
+        with _reconciliation_server_step(
+            "P607_RECONCILIATION_SNAPSHOT_BUILD",
+            self.trace_id,
+        ):
+            snapshot = self._build_reconciliation(project, source, job, kind, now)
         response_key = "rollbackEligibility" if kind == "rollback_eligibility" else "reconciliation"
-        response = {response_key: _public_reconciliation(snapshot)}
+        with _reconciliation_server_step(
+            "P607_RECONCILIATION_RESPONSE_BUILD",
+            self.trace_id,
+        ):
+            response = {response_key: _public_reconciliation(snapshot)}
         with tooling_import_write():
-            receipt = self._insert_import_receipt(
-                project,
-                receipt_key=receipt_key,
-                operation=operation,
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                now=now,
-            )
-            self._insert_reconciliation(project, source, snapshot)
-            self._append_audit(
-                operation=operation,
-                global_id=snapshot.global_id,
-                object_version=1,
-                summary={
-                    "jobGlobalId": str(job_id),
-                    "jobSnapshotHash": str(job.snapshot_hash),
-                    "kind": kind,
-                    "targetCount": len(snapshot.items),
-                    "discrepancyCount": sum(
-                        1 for item in snapshot.items if item.state is not ReconciliationState.MATCHED
-                    ),
-                },
-            )
-            self._seal_import_receipt(
-                receipt,
-                target_type="tooling_import_reconciliation_revision",
-                target_id=snapshot.global_id,
-                response=response,
-                now=now,
-            )
+            with _reconciliation_server_step(
+                "P607_RECONCILIATION_RECEIPT_INSERT",
+                self.trace_id,
+            ):
+                receipt = self._insert_import_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    operation=operation,
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with _reconciliation_server_step(
+                "P607_RECONCILIATION_REVISION_INSERT",
+                self.trace_id,
+            ):
+                self._insert_reconciliation(project, source, snapshot)
+            with _reconciliation_server_step(
+                "P607_RECONCILIATION_AUDIT_APPEND",
+                self.trace_id,
+            ):
+                self._append_audit(
+                    operation=operation,
+                    global_id=snapshot.global_id,
+                    object_version=1,
+                    summary={
+                        "jobGlobalId": str(job_id),
+                        "jobSnapshotHash": str(job.snapshot_hash),
+                        "kind": kind,
+                        "targetCount": len(snapshot.items),
+                        "discrepancyCount": sum(
+                            1
+                            for item in snapshot.items
+                            if item.state is not ReconciliationState.MATCHED
+                        ),
+                    },
+                )
+            with _reconciliation_server_step(
+                "P607_RECONCILIATION_RECEIPT_SEAL",
+                self.trace_id,
+            ):
+                self._seal_import_receipt(
+                    receipt,
+                    target_type="tooling_import_reconciliation_revision",
+                    target_id=snapshot.global_id,
+                    response=response,
+                    now=now,
+                )
         return ToolingImportCommandOutcome(response)
 
     def _build_reconciliation(
@@ -2328,6 +2364,34 @@ def _correction_server_step(code: str, trace_id: str) -> Iterator[None]:
                 )
         except Exception:
             # Diagnostics cannot change correction or transaction semantics.
+            pass
+        raise
+
+
+@contextmanager
+def _reconciliation_server_step(code: str, trace_id: str) -> Iterator[None]:
+    """Record only a closed reconciliation stage, exception type and trace ID."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                code in _RECONCILIATION_DIAGNOSTIC_CODES
+                and len(exception_type) <= 128
+                and exception_type.isidentifier()
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI Tooling import reconciliation substage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            # Diagnostics cannot change reconciliation or transaction semantics.
             pass
         raise
 

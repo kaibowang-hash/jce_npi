@@ -74,8 +74,27 @@ CORRECTION_DOWNLOAD_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_SIZE_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
+    }
+)
+RECONCILIATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_RECONCILIATION_SNAPSHOT_BUILD",
+        "P607_RECONCILIATION_RESPONSE_BUILD",
+        "P607_RECONCILIATION_RECEIPT_INSERT",
+        "P607_RECONCILIATION_REVISION_INSERT",
+        "P607_RECONCILIATION_AUDIT_APPEND",
+        "P607_RECONCILIATION_RECEIPT_SEAL",
+    }
+)
+RECONCILIATION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_RECONCILIATION_SNAPSHOT_VALIDATE",
+        "P607_RECONCILIATION_PROJECTION_VALIDATE",
+        "P607_RECONCILIATION_ITEMS_VALIDATE",
+        "P607_RECONCILIATION_JOB_VALIDATE",
     }
 )
 
@@ -215,6 +234,22 @@ def command(
             diagnostic = tooling_runtime._sanitized_server_diagnostic(
                 result.trace_id,
                 CORRECTION_DIAGNOSTIC_CODES,
+            )
+        if diagnostic is not None:
+            exception_type, code, trace_id = diagnostic
+            raise RuntimeError(
+                f"[diagnostic_code={code}; exception_type={exception_type}; "
+                f"trace_id={trace_id}]"
+            )
+    if result.status != 201 and key.endswith("-reconcile"):
+        diagnostic = tooling_runtime._sanitized_server_diagnostic(
+            result.trace_id,
+            RECONCILIATION_VALIDATION_DIAGNOSTIC_CODES,
+        )
+        if diagnostic is None:
+            diagnostic = tooling_runtime._sanitized_server_diagnostic(
+                result.trace_id,
+                RECONCILIATION_DIAGNOSTIC_CODES,
             )
         if diagnostic is not None:
             exception_type, code, trace_id = diagnostic

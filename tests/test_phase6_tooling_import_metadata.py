@@ -194,6 +194,24 @@ class Phase6ToolingImportMetadataTests(unittest.TestCase):
         self.assertIn("exception_type.isidentifier()", controller)
         self.assertNotIn("str(error)", controller)
 
+    def test_reconciliation_validation_diagnostics_are_closed(self) -> None:
+        controller = (
+            DOCTYPE_ROOT
+            / "npi_tooling_import_reconciliation_revision"
+            / "npi_tooling_import_reconciliation_revision.py"
+        ).read_text(encoding="utf-8")
+        for code in (
+            "P607_RECONCILIATION_SNAPSHOT_VALIDATE",
+            "P607_RECONCILIATION_PROJECTION_VALIDATE",
+            "P607_RECONCILIATION_ITEMS_VALIDATE",
+            "P607_RECONCILIATION_JOB_VALIDATE",
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(controller.count(code), 2)
+        self.assertIn("code in _VALIDATION_DIAGNOSTIC_CODES", controller)
+        self.assertIn("exception_type.isidentifier()", controller)
+        self.assertNotIn("str(error)", controller)
+
     def test_all_visible_sources_have_direct_symmetric_translations(self) -> None:
         sources: set[str] = set()
         python_paths = [

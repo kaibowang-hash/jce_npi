@@ -224,6 +224,23 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
         self.assertIn("exception_type.isidentifier()", diagnostic)
         self.assertNotIn("str(error)", diagnostic)
 
+    def test_reconciliation_diagnostics_are_closed_and_stage_specific(self) -> None:
+        create = _source("_create_reconciliation_command")
+        for code in (
+            "P607_RECONCILIATION_SNAPSHOT_BUILD",
+            "P607_RECONCILIATION_RESPONSE_BUILD",
+            "P607_RECONCILIATION_RECEIPT_INSERT",
+            "P607_RECONCILIATION_REVISION_INSERT",
+            "P607_RECONCILIATION_AUDIT_APPEND",
+            "P607_RECONCILIATION_RECEIPT_SEAL",
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(create.count(code), 1)
+        diagnostic = _source("_reconciliation_server_step")
+        self.assertIn("code in _RECONCILIATION_DIAGNOSTIC_CODES", diagnostic)
+        self.assertIn("exception_type.isidentifier()", diagnostic)
+        self.assertNotIn("str(error)", diagnostic)
+
     def test_public_job_messages_are_localized_without_rewriting_snapshot_truth(
         self,
     ) -> None:
