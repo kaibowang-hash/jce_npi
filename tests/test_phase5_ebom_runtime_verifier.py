@@ -461,10 +461,10 @@ class Phase5EngineeringBomRuntimeVerifierTest(unittest.TestCase):
     def test_manual_lane_records_cumulative_p505_scope_without_secrets(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         required_fragments = (
-            "P5 controlled document runtime and P6 Tooling through import",
+            "P5 controlled document runtime and P6 Tooling through export",
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
-            "scope=p5-01-through-p6-07",
-            "predecessor_scope=p5-01-through-p5-06",
+            "scope=p5-01-through-p6-08",
+            "predecessor_scope=p5-01-through-p6-07",
             "predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only",
             "p6-tooling-runtime-${{ github.run_id }}",
             "docker compose down --volumes",

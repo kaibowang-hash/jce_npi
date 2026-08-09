@@ -333,11 +333,11 @@ class Phase6ToolingEngineeringControlsRuntimeVerifierTest(unittest.TestCase):
 
     def test_manual_controlled_workflow_records_exact_cumulative_scope(self) -> None:
         self.assertIn(
-            "name: P5 controlled document runtime and P6 Tooling through import",
+            "name: P5 controlled document runtime and P6 Tooling through export",
             self.workflow,
         )
-        self.assertIn("Verify cumulative P5 and P6-07 controlled runtime", self.workflow)
-        self.assertIn("scope=p5-01-through-p6-07", self.workflow)
+        self.assertIn("Verify cumulative P5 and P6-08 controlled runtime", self.workflow)
+        self.assertIn("scope=p5-01-through-p6-08", self.workflow)
         self.assertIn(
             "bash scripts/verify-frappe-runtime.sh --tooling-only",
             self.workflow,
