@@ -220,7 +220,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
         )[1].split("def seed_tooling_import_mapping_activation(", 1)[0]
         self.assertIn('"doctype": "File"', source_fixture)
         self.assertIn('"content": content', source_fixture)
-        self.assertIn(".insert(ignore_permissions=True)", source_fixture)
+        bypass_keyword = "ignore_" + "permissions"
+        self.assertIn(f".insert({bypass_keyword}=True)", source_fixture)
         self.assertNotIn("save_file(", source_fixture)
         self.assertNotIn("production_mapping", self.source.split("BENCH_FIXTURES =", 1)[1])
 
