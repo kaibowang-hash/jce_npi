@@ -460,28 +460,44 @@ def partial_row_diagnostic(results: list[dict[str, object]]) -> str:
     )
 
 
-def correction_entry(job: dict[str, object], corrected_value: str) -> dict[str, object]:
-    failed = exact_single(
-        [item for item in latest_results(job) if item.get("state") == "failed_retryable"],
-        "P6-07 retryable row",
-    )
-    fields = failed.get("fieldResults")
-    require(
-        isinstance(fields, list)
-        and any(
-            isinstance(field, dict)
-            and field.get("sourceHeader") == "Part Name English"
-            and field.get("resultCode") == "required_value_missing"
-            for field in fields
-        ),
-        "P6-07 required-name failure truth drifted",
-    )
-    return {
-        "worksheetName": failed["worksheetName"],
-        "sourceRow": failed["sourceRow"],
-        "sourceHeader": "Part Name English",
-        "correctedValue": corrected_value,
+def correction_entries(
+    job: dict[str, object],
+    corrected_part_value: str,
+    corrected_formula_value: str,
+) -> list[dict[str, object]]:
+    failed = [
+        item
+        for item in latest_results(job)
+        if item.get("state") == "failed_retryable"
+    ]
+    require(len(failed) == 2, "P6-07 retryable row cardinality drifted")
+    expected = {
+        ("Part Name English", "required_value_missing"): corrected_part_value,
+        ("total daily output", "formula_error"): corrected_formula_value,
     }
+    corrections: list[dict[str, object]] = []
+    observed: set[tuple[str, str]] = set()
+    for item in failed:
+        fields = item.get("fieldResults")
+        require(isinstance(fields, list), "P6-07 retryable field truth drifted")
+        for field in fields:
+            if not isinstance(field, dict):
+                continue
+            identity = (str(field.get("sourceHeader")), str(field.get("resultCode")))
+            if identity not in expected:
+                continue
+            require(identity not in observed, "P6-07 retryable field identity drifted")
+            observed.add(identity)
+            corrections.append(
+                {
+                    "worksheetName": item["worksheetName"],
+                    "sourceRow": item["sourceRow"],
+                    "sourceHeader": identity[0],
+                    "correctedValue": expected[identity],
+                }
+            )
+    require(observed == set(expected), "P6-07 retryable field truth drifted")
+    return corrections
 
 
 def binary_correction_request(
@@ -729,14 +745,19 @@ def run_scenario(
     partial_latest = latest_results(partial)
     require(
         len(partial_latest) == 3
-        and sum(item.get("state") == "created" for item in partial_latest) == 2
+        and sum(item.get("state") == "created" for item in partial_latest) == 1
         and sum(item.get("state") == "failed_retryable" for item in partial_latest)
-        == 1,
+        == 2,
         f"P6-07 partial row truth drifted: {partial_row_diagnostic(partial_latest)}",
     )
 
     corrected_value = f"Synthetic corrected part {index}"
-    correction = correction_entry(partial, corrected_value)
+    corrected_formula_value = str(2000 + index)
+    corrections = correction_entries(
+        partial,
+        corrected_value,
+        corrected_formula_value,
+    )
     artifact_result = command(
         actor,
         base_url,
@@ -745,14 +766,14 @@ def run_scenario(
         {
             "expectedVersion": partial["optimisticVersion"],
             "expectedSnapshotHash": partial["snapshotHash"],
-            "corrections": [correction],
+            "corrections": corrections,
         },
         scenario_key(index, "correction"),
     )
     artifact = artifact_result.body.get("correctionArtifact")
     require(
         isinstance(artifact, dict)
-        and artifact.get("entryCount") == 1
+        and artifact.get("entryCount") == 2
         and artifact.get("mimeType") == "text/csv"
         and artifact.get("jobSnapshotHash") == partial["snapshotHash"],
         "P6-07 correction artifact truth drifted",
@@ -779,6 +800,7 @@ def run_scenario(
             b"worksheet_name,source_row,source_header,corrected_value\n"
         )
         and corrected_value.encode("utf-8") in downloaded.content
+        and corrected_formula_value.encode("utf-8") in downloaded.content
         and downloaded.headers.get("Idempotency-Replayed") == "false",
         "P6-07 authorized correction download drifted",
     )
@@ -822,7 +844,7 @@ def run_scenario(
     require(
         len(succeeded_latest) == 3
         and all(item.get("state") == "created" for item in succeeded_latest)
-        and len(succeeded["rowResults"]) == 4,
+        and len(succeeded["rowResults"]) == 5,
         "P6-07 failed-row-only retry or successful-row non-duplication drifted",
     )
 

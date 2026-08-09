@@ -151,6 +151,10 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             'len(preview_rows) == 3',
             'expected_state="partially_succeeded"',
             'item.get("state") == "failed_retryable"',
+            'sum(item.get("state") == "created" for item in partial_latest) == 1',
+            '("total daily output", "formula_error")',
+            'artifact.get("entryCount") == 2',
+            'len(succeeded["rowResults"]) == 5',
             'expected_attempt=2',
             "failed-row-only retry or successful-row non-duplication drifted",
             'item.get("state") == "matched"',
@@ -166,6 +170,61 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
         for value in required:
             with self.subTest(value=value):
                 self.assertIn(value, self.source)
+
+    def test_correction_entries_cover_both_fixture_validation_failures(self) -> None:
+        job = {
+            "rowResults": [
+                {
+                    "worksheetName": "Synthetic Tooling List",
+                    "sourceRow": 3,
+                    "attempt": 1,
+                    "state": "failed_retryable",
+                    "fieldResults": [
+                        {
+                            "sourceHeader": "total daily output",
+                            "resultCode": "formula_error",
+                        }
+                    ],
+                },
+                {
+                    "worksheetName": "Synthetic Tooling List",
+                    "sourceRow": 4,
+                    "attempt": 1,
+                    "state": "failed_retryable",
+                    "fieldResults": [
+                        {
+                            "sourceHeader": "Part Name English",
+                            "resultCode": "required_value_missing",
+                        }
+                    ],
+                },
+                {
+                    "worksheetName": "Synthetic Tooling List",
+                    "sourceRow": 6,
+                    "attempt": 1,
+                    "state": "created",
+                    "fieldResults": [],
+                },
+            ]
+        }
+
+        corrections = self.module.correction_entries(
+            job,
+            "Synthetic corrected part",
+            "2001",
+        )
+
+        self.assertEqual(len(corrections), 2)
+        self.assertEqual(
+            {
+                (item["sourceHeader"], item["correctedValue"])
+                for item in corrections
+            },
+            {
+                ("Part Name English", "Synthetic corrected part"),
+                ("total daily output", "2001"),
+            },
+        )
 
     def test_failure_boundaries_are_fail_closed_and_cardinality_checked(self) -> None:
         required = (
