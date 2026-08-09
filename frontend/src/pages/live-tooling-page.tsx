@@ -9,6 +9,7 @@ import type {
   ToolingRequirementKind,
 } from "../api/tooling-data-source";
 import { ToolingRequestCancelledError } from "../api/tooling-data-source";
+import type { ToolingListDataSource } from "../api/tooling-list-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import {
@@ -17,6 +18,7 @@ import {
   SectionAnchors,
 } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
+import { ToolingListWorkspace } from "../components/tooling-list-workspace";
 import {
   DefinitionList,
   Panel,
@@ -172,6 +174,7 @@ export default function LiveToolingPage({
   masterId,
   navigate,
   reportWorkspaceDirty,
+  toolingListDataSource,
 }: {
   dataSource: ToolingDataSource;
   documentDataSource?: DocumentDataSource | undefined;
@@ -179,6 +182,7 @@ export default function LiveToolingPage({
   masterId: string | null;
   navigate: (target: string) => void;
   reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  toolingListDataSource?: ToolingListDataSource | undefined;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
   const [attempt, setAttempt] = useState(0);
@@ -551,6 +555,9 @@ export default function LiveToolingPage({
       />
       <SectionAnchors
         sections={[
+          ...(toolingListDataSource
+            ? [{ id: "tooling-list-workspace", label: t("Tooling List") }]
+            : []),
           { id: "tooling-live-objects", label: t("Tooling objects") },
           {
             id: "tooling-live-applicability",
@@ -637,6 +644,15 @@ export default function LiveToolingPage({
             </Button>
           ) : null}
         </div>
+      ) : null}
+      {toolingListDataSource ? (
+        <ToolingListWorkspace
+          dataSource={toolingListDataSource}
+          key={projectId}
+          navigate={navigate}
+          projectId={projectId}
+          selectedMasterId={selectedMaster?.globalId ?? masterId}
+        />
       ) : null}
       <div className="engineering-layout tooling-live__layout">
         <Panel id="tooling-live-objects" title={t("Tooling objects")}>

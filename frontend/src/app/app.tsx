@@ -27,6 +27,7 @@ import { LiveEngineeringBomPublishRequestDataSource } from "../api/publish-reque
 import { LiveControlledPrintDataSource } from "../api/controlled-print-data-source";
 import { LiveToolingDataSource } from "../api/tooling-data-source";
 import { LiveToolingImportDataSource } from "../api/tooling-import-data-source";
+import { LiveToolingListDataSource } from "../api/tooling-list-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -59,6 +60,7 @@ const liveGateReviewDataSource = new LiveGateReviewDataSource();
 const liveMyWorkDataSource = new LiveMyWorkDataSource();
 const liveToolingDataSource = new LiveToolingDataSource();
 const liveToolingImportDataSource = new LiveToolingImportDataSource();
+const liveToolingListDataSource = new LiveToolingListDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -207,6 +209,7 @@ export function App(): React.JSX.Element {
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}
         reportWorkspaceDirty={reportWorkspaceDirty}
+        toolingListDataSource={liveToolingListDataSource}
       />
     ) : route.screen === "tooling" ? (
       <ToolingPage navigate={guardedNavigate} scenario={route.scenario} />

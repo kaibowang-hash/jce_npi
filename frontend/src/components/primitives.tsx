@@ -27,6 +27,7 @@ import { DisplayBrandPlatformIcon } from "../ui-adapters/display-brand";
 export function Panel({
   title,
   actions,
+  bodyClassName = "",
   children,
   className = "",
   id,
@@ -34,6 +35,7 @@ export function Panel({
 }: PropsWithChildren<{
   title: string;
   actions?: ReactNode;
+  bodyClassName?: string;
   className?: string;
   id?: string;
   scrollableBody?: boolean;
@@ -50,7 +52,7 @@ export function Panel({
       </header>
       <div
         aria-label={scrollableBody ? title : undefined}
-        className="panel__body"
+        className={`panel__body ${bodyClassName}`.trim()}
         tabIndex={scrollableBody ? 0 : undefined}
       >
         {children}

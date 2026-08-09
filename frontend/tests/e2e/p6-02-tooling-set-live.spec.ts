@@ -13,6 +13,10 @@ import {
   fileRevisionId,
 } from "../support/document-fixture";
 import {
+  toolingListPage,
+  toolingListPreference,
+} from "../support/tooling-list-fixture";
+import {
   effectiveViewport,
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,
@@ -279,6 +283,14 @@ async function installApi(page: Page): Promise<ObservedRequest[]> {
     if (request.method() === "POST") {
       expect(request.headers()["x-frappe-csrf-token"]).toBe(csrfToken);
       expect(request.headers()["idempotency-key"]).toMatch(/^tooling-/u);
+    }
+    if (path.includes("/tooling-list/preferences/")) {
+      await fulfillJson(route, toolingListPreference());
+      return;
+    }
+    if (path.endsWith("/tooling-list")) {
+      await fulfillJson(route, toolingListPage());
+      return;
     }
     if (path.endsWith(`/tooling/${masterId}`)) {
       await fulfillJson(route, cockpit());

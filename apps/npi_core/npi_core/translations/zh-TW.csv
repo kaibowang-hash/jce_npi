@@ -5645,3 +5645,109 @@ The filtered Tooling List is stale.,篩選後的模具清單已過期。
 The Tooling List export workspace is temporarily unavailable.,模具清單匯出工作區暫時無法使用。
 The Tooling object package could not be rendered safely.,無法安全產生模具物件包。
 The Tooling object package has expired.,模具物件包已過期。
+All Tooling Masters,全部模具主檔
+Missing applicability,缺少適用關係
+Single Part Revision,單一零件修訂
+Shared across Part Revisions,跨零件修訂共用
+Missing physical Set,缺少實體模具套
+Single physical Set,單套實體模具
+Multiple physical Sets,多套實體模具
+Missing design Revision,缺少設計修訂
+Has design Revision,已有設計修訂
+Customer-owned Set,客戶所有模具套
+Physical Set count,實體模具套數量
+Latest Revision number,最新修訂序號
+Ascending,遞增
+Descending,遞減
+Applicability scope,適用範圍
+Physical Set presence,實體模具套存在情況
+Design Revision presence,設計修訂存在情況
+Selection,選擇
+Applicability,適用關係
+Part Revisions,零件修訂
+Physical Sets,實體模具套
+Design Revisions,設計修訂
+Origin,來源專案
+No applicability,無適用關係
+Shared Part Revision scope,共用零件修訂範圍
+Single Part Revision scope,單一零件修訂範圍
+No physical Set,無實體模具套
+Physical Set recorded,已記錄實體模具套
+No design Revision,無設計修訂
+Design Revision recorded,已記錄設計修訂
+Select all objects on this page,選擇本頁所有物件
+Select {{title}},選擇 {{title}}
+Shared Master,共用主檔
+This Project,本專案
+Manual record,手動記錄
+Open {{title}},開啟 {{title}}
+Export object package,匯出物件包
+Tooling List,模具清單
+Common view,常用檢視
+Search Tooling,搜尋模具
+Sort by,排序依據
+Direction,方向
+Apply view,套用檢視
+Saving view,正在儲存檢視
+Save view,儲存檢視
+"Selection and Tooling identity stay fixed. Selection, Tooling and Action columns cannot be hidden.",選擇欄和模具識別欄保持固定。選擇、模具和操作欄不可隱藏。
+Export mode,匯出模式
+Exact selected objects,精確選擇的物件
+Complete filtered result,完整篩選結果
+Selected objects: {{count}},已選擇物件：{{count}} 個
+View changes not saved,檢視變更尚未儲存
+Saved personal view,已儲存的個人檢視
+Default view,預設檢視
+Tooling List commands are read only in this session.,此工作階段中的模具清單命令為唯讀。
+Session verification is required to save a view or export a package.,儲存檢視或匯出物件包前需要驗證工作階段。
+Tooling List export is unavailable.,模具清單匯出無法使用。
+Separate export authority is required.,需要獨立的匯出權限。
+The current filtered result cannot be exported.,目前篩選結果無法匯出。
+Narrow the view to between one and one hundred Tooling Masters.,請將檢視縮小至一到一百個模具主檔。
+Loading saved Tooling List view,正在載入已儲存的模具清單檢視
+Retry saved view,重試已儲存檢視
+The saved view changed in another session. Reload it before saving again.,已儲存檢視在另一個工作階段中發生變更。再次儲存前請重新載入。
+Reload saved view,重新載入已儲存檢視
+Personal Tooling List view saved.,個人模具清單檢視已儲存。
+Retry Tooling List,重試模具清單
+Project Tooling List,專案模具清單
+No Tooling Masters match this view.,沒有符合此檢視的模具主檔。
+Change the common view or narrow search controls.,變更常用檢視或調整搜尋條件。
+Resize {{column}},調整 {{column}} 欄寬
+Use Left and Right Arrow to resize. Press Enter to fit the column.,使用向左鍵和向右鍵調整大小。按回車鍵配合欄寬。
+Showing {{shown}} of {{total}} Tooling Masters,顯示 {{shown}} 個模具主檔，共 {{total}} 個
+Loading Tooling List page,正在載入模具清單頁面
+Creating immutable Tooling object package,正在建立不可變模具物件包
+Keep this workspace open while exact snapshots are revalidated.,重新驗證精確快照時請保持此工作區開啟。
+The reviewed Tooling List changed. Reload the list and review the export again.,已審查的模具清單發生變更。請重新載入清單並再次審查匯出內容。
+The export request is outside the supported one-to-one-hundred object boundary.,匯出請求超出一到一百個物件的支援範圍。
+Retry exact export,重試精確匯出
+Reload current view,重新載入目前檢視
+Export package result,匯出物件包結果
+Replayed exact package,已重播精確物件包
+Package created,物件包已建立
+Object count,物件數量
+Download valid until,下載有效期至
+Package SHA-256,物件包 SHA-256
+"The package contains fixed manifest, localized CSV and readme members. Private files, raw workbook values, external identifiers, cost, repair, custody, evidence and ERP or lifecycle truth are omitted.",物件包包含固定清單、本地化資料表和說明檔案。私有檔案、活頁簿原始值、外部識別碼、成本、維修、保管、證據以及企業資源規劃或生命週期事實均已排除。
+This package has expired. Create a new package to download current exact bytes.,此物件包已過期。請建立新物件包以下載目前精確位元組。
+Download object package,下載物件包
+Dismiss package result,關閉物件包結果
+The secure package download failed. No raw private URL was exposed.,安全物件包下載失敗。未公開任何原始私有連結位址。
+Retry exact download,重試精確下載
+The exact package download was replayed safely.,已安全重播精確物件包下載。
+The exact package download started.,精確物件包下載已開始。
+The immutable package remains private and audit retained.,不可變物件包保持私有，並保留稽核記錄。
+Create object package,建立物件包
+Download validity,下載有效期
+One hour,一小時
+Redactions,刪減內容
+Confidential and external execution fields are omitted.,機密欄位和外部執行欄位已省略。
+Creation and every download retain actor-bound hash and count evidence.,建立和每次下載都會保留與操作者綁定的雜湊和計數證據。
+"Stale, inaccessible or oversized results fail without creating a package.",過期、無權存取或過大的結果會失敗，且不會建立物件包。
+Create one immutable private three-member object package from the reviewed exact versions.,根據已審查的精確版本建立一個包含三個成員的不可變私有物件包。
+Package history is immutable; download expires after one hour.,物件包歷程不可變；下載權限一小時後過期。
+Separate export authority and current Project visibility are required.,需要獨立的匯出權限和目前專案的檢視權限。
+Exact object snapshots,精確物件快照
+Exact filtered query snapshot,精確篩選查詢快照
+Review Tooling object package export,審查模具物件包匯出

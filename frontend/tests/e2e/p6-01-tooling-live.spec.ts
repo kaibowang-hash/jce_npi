@@ -3,6 +3,10 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { ToolingCockpitViewModel } from "../../src/api/tooling-data-source";
 import {
+  toolingListPage,
+  toolingListPreference,
+} from "../support/tooling-list-fixture";
+import {
   effectiveViewport,
   expectIndustrialComputedStyles,
   expectNoDocumentOverflow,
@@ -22,6 +26,8 @@ const toolingEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/(?:tooling(?:\/[^/?]+)?|parts(?:\/[^/?]+\/revisions)?|tooling-requirements|tooling-masters|tooling-applicabilities)$/u;
 const toolingSetEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/tooling\/[^/?]+\/sets$/u;
+const toolingListEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/tooling-list(?:\/preferences\/[^/?]+)?(?:\?.*)?$/u;
 
 type FixtureState = "normal" | "empty" | "read_only";
 
@@ -246,6 +252,29 @@ async function installToolingApi(
       toolingMasterGlobalId: masterId,
     });
   });
+  await page.route(toolingListEndpoint, async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.includes("/preferences/")) {
+      await fulfillJson(route, toolingListPreference());
+      return;
+    }
+    await fulfillJson(
+      route,
+      toolingListPage(
+        options.state === "empty"
+          ? { items: [], totalCount: 0 }
+          : options.state === "read_only"
+            ? {
+                permissions: {
+                  canExport: false,
+                  exportUnavailableReason: "separate_export_authority_required",
+                  view: true,
+                },
+              }
+            : {},
+      ),
+    );
+  });
   await page.route(toolingEndpoint, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -391,7 +420,9 @@ test.describe("P6-01 live Tooling cockpit", () => {
     await page
       .getByRole("combobox", { name: "Command" })
       .selectOption("master");
-    await page.getByLabel("Title").fill("Second logical tool");
+    await page
+      .getByRole("textbox", { name: "Title" })
+      .fill("Second logical tool");
     await page
       .getByRole("button", { name: "Create logical Tooling Master" })
       .click();
@@ -426,7 +457,7 @@ test.describe("P6-01 live Tooling cockpit", () => {
     await openTooling(page, "en");
     await page.getByRole("button", { name: "Add Tooling record" }).click();
     await page.getByLabel("Revision label").fill("B");
-    await page.getByLabel("Title").fill("Second part");
+    await page.getByRole("textbox", { name: "Title" }).fill("Second part");
     await page.getByLabel("Reason").fill("Exact revision conflict proof");
     await page
       .getByRole("button", { name: "Create Part and initial Revision" })
@@ -481,7 +512,7 @@ test.describe("P6-01 live Tooling cockpit", () => {
     await openTooling(page, "en");
     await page.getByRole("button", { name: "Add Tooling record" }).click();
     await page.getByLabel("Revision label").fill("A2");
-    await page.getByLabel("Title").fill("Rejected part");
+    await page.getByRole("textbox", { name: "Title" }).fill("Rejected part");
     await page.getByLabel("Reason").fill("Validation proof");
     await page
       .getByRole("button", { name: "Create Part and initial Revision" })
