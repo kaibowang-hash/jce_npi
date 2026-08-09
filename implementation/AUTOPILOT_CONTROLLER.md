@@ -2068,3 +2068,46 @@ repeat or rewrite it merely to restore context. See
   checkpoints, affected tests and rollback and its controller checkpoint
   passes ordinary CI. An arbitrary database dump, raw private File URL export,
   cross-Project access or invented Tooling/ERP authority is prohibited.
+
+## 2026-08-09 P6-08 bounded audit PASS and checkpoint 1 activation
+
+- Exact predecessor/controller checkpoint
+  `d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0` passes ordinary CI
+  `31331504738`: repository `93290380976` and fixed-Linux visual
+  `93290380955` at `91/91` pass, while the controlled job correctly skips.
+- The audit reconciles `UX-007`, canonical `FR-UX-007`/`FR-UX-025`/
+  `FR-UX-030`, the Phase 6 anchor, `docs/TOOLING_AND_TRIAL.md`, R1-04 evidence,
+  live Tooling repository/workspace and P6-07 private artifact/download path.
+- Existing DenseGrid resize/fix/hide/keyboard behavior, strict authenticated
+  preference pattern, Project-first Tooling authorization, immutable audit/
+  receipt primitives, safe binary responses and Frappe trilingual chain are
+  reusable mechanisms. The accepted My Work preference remains fixed and is
+  not broadened into a generic settings/export API.
+- No current Tooling-list server query, ten-view preference, separate export
+  capability, selection/filter package command, localized safe CSV/ZIP
+  renderer, immutable export artifact/download or live action exists. Frappe
+  Desk export and P6-07 correction CSV are explicitly not completion evidence.
+- `implementation/evidence/phase-6/p6-08-plan.md` freezes ten exact presence/
+  count views, closed search/sort/group, stable page/query snapshots,
+  per-actor/Project/view/schema preferences, mutually exclusive exact selection
+  or complete filtered export, a maximum of 100 Masters and
+  `tooling-object-package-v1`.
+- The package is a private ZIP containing only fixed `manifest.json`, localized
+  allowlisted `tooling-objects.csv` and localized `README.txt`; formula prefixes
+  are neutralized. Private File URLs/content, raw workbook values, external
+  customer/supplier identifiers, repair/custody/return text, cost, evidence and
+  ERP/lifecycle truth are omitted and declared in the manifest.
+- Project visibility alone cannot export. The conservative initial live
+  capability additionally requires an authenticated internal `System Manager`,
+  while retaining no publication, lifecycle or business-approval meaning.
+  Creation/download are actor-bound, idempotent, audited, exact-hash verified
+  and download-valid for 60 minutes without deleting immutable history.
+- The plan has four checkpoints: domain/contract/additive metadata;
+  repository/BFF/private artifact; dense trilingual Tooling List; then
+  cumulative controlled Site, P6-08 Level 2 and Phase 6 Level 3 release Gate.
+- Standing transition authority activates only checkpoint 1. It may add pure
+  domains, closed OpenAPI/ownership, guarded additive DocTypes, receipt values
+  and direct deterministic tests. Routes, business rows, private Files and SPA
+  actions remain inactive. Arbitrary query/field export, raw File URLs, cross-
+  Project data, production ERP contact and invented lifecycle truth remain
+  prohibited.

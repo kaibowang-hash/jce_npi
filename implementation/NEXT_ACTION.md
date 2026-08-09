@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+`IN_PROGRESS_CHECKPOINT_1 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 
-Recovery time: `2026-08-09T19:14:27Z`
+Recovery time: `2026-08-09T19:26:44Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`d8e4897ed7a47ef61e5112ce628115d3bb051ef7`
+`d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0`
 
 ## Current authoritative action
 
@@ -24,19 +24,30 @@ cumulative scope `p5-01-through-p6-07`. Runtime artifact `9042876293` has
 digest
 `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`.
 Complete evidence is `implementation/evidence/phase-6/p6-07-validation.md`.
+P6-07 evidence/trace closure checkpoint `d5d6064` also passes ordinary CI
+`31331504738`, including repository `93290380976` and visual `93290380955` at
+`91/91`; the controlled job correctly skips because product/runtime truth is
+unchanged.
 
-The current atomic action is the bounded P6-08 Requirement/domain/existing-
-capability audit only. Read the exact P6-08 task/Phase 6 anchors, trace rows and
-relevant export/selection/security foundations; freeze scope, non-scope,
-authority/privacy rules, changed-files-to-tests mapping, checkpoints and
-rollback in `implementation/evidence/phase-6/p6-08-plan.md`; reconcile the
-controller; then require ordinary CI before implementation starts.
+The bounded audit passes in
+`implementation/evidence/phase-6/p6-08-plan.md`. It confirms that the shared
+DenseGrid, fixed My Work preference pattern, Tooling Project-first repository
+and P6-07 private binary artifact/download path are reusable, but no Tooling
+list query, ten-view preference, export authority, object-package renderer,
+immutable artifact/download or live action exists.
 
-P6-08 may design only an authorized controlled selection/filter and object-
-package export. It may not expose an arbitrary database dump, raw private File
-URLs, cross-Project data or production Tooling/ERP authority. `DR-REC-007`
-retains production mapping approval and `DR-REC-008` retains downstream
-rollback denial. There is no active technical Hard Blocker.
+The current atomic action is checkpoint 1 only: implement pure domains for the
+ten exact code-owned Tooling views, closed search/sort/group and stable query
+snapshot, per-Project/per-view preference, selection-versus-filtered export,
+localized allowlisted CSV plus deterministic ZIP manifest/readme, formula
+neutralization, redaction, one-hour validity and immutable package/receipt
+truth. Add closed OpenAPI/ownership and guarded additive metadata with direct
+tests. Do not activate a route, business row, private File or SPA action.
+
+P6-08 cannot expose an arbitrary database dump, raw private File URLs,
+cross-Project data or production Tooling/ERP authority. `DR-REC-007` retains
+production mapping approval and `DR-REC-008` retains downstream rollback
+denial. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution history
 

@@ -1,19 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T19:14:27Z`
+Updated: `2026-08-09T19:26:44Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact task/product checkpoint:
   `d8e4897ed7a47ef61e5112ce628115d3bb051ef7` (pushed; P6-07 complete
   controlled runtime and Level 2 Task Gate PASS)
+- Latest completed controller/evidence checkpoint:
+  `d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0` (pushed; P6-07 evidence/
+  trace closure and P6-08 bounded audit activation)
 - Latest complete normal CI:
-  `31330677928` (`PASS`, exact SHA `d8e4897`; repository `93288333713` and
-  fixed-Linux visual `93288333688` at `91/91` passed)
+  `31331504738` (`PASS`, exact SHA `d5d6064`; repository `93290380976` and
+  fixed-Linux visual `93290380955` at `91/91` passed; controlled job skipped)
 - Latest controlled-Site run:
   `31330684809` (`PASS`, unchanged exact SHA `d8e4897`; repository
   `93288346191`, visual `93288346156` at `91/91` and controlled Site
@@ -23,13 +26,12 @@ Updated: `2026-08-09T19:14:27Z`
   `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`
 - Current controller task:
   `P6-08 — Controlled selection/filter and object-package export`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Current Requirement ID: `UX-007` (exact canonical/domain allocation must be
-  confirmed by the audit before implementation)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
+- Current Requirement ID: `UX-007`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -42,16 +44,21 @@ runtime. Artifact `9042876293` records `result=PASS`, exact SHA and scope
 `p5-01-through-p6-07`. Complete evidence is
 `implementation/evidence/phase-6/p6-07-validation.md`.
 
-The current atomic task is the bounded P6-08 Requirement/domain/existing-
-capability audit only. It must resolve the exact accepted requirement anchors,
-current selection/filter/export foundations, authority and privacy boundaries,
-test impact, checkpoint sequence and rollback plan before any product code is
-changed. The intended capability is a controlled export of an authorized,
-explicitly selected and filtered object package; it is not an arbitrary
-database dump and must not expose private File URLs or bypass Project/object
-authorization. Production Tooling-list mapping, ERPNext contact and destructive
-downstream rollback remain unavailable. There is no active technical Hard
-Blocker.
+The bounded P6-08 audit passes in
+`implementation/evidence/phase-6/p6-08-plan.md`. It freezes a four-checkpoint
+delivery: pure list/query/preference/export/package domains with closed
+contracts and additive metadata; Project-first repository/BFF/private artifact
+and download; dense trilingual Tooling List workspace; then cumulative
+controlled Site, Level 2 and Phase 6 Level 3.
+
+The current atomic task is checkpoint 1 only: add pure ten-view list/query,
+per-view preference, exact selection/filter, safe localized CSV/ZIP package,
+redaction/expiry and immutable artifact/receipt domains; closed OpenAPI and
+ownership truth; guarded additive DocTypes; and direct deterministic tests.
+Routes, business rows, private Files and SPA actions remain inactive. The
+package is never an arbitrary database dump and cannot expose private File
+URLs, cross-Project truth or production Tooling/ERP authority. There is no
+active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

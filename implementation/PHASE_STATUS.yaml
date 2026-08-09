@@ -1436,6 +1436,34 @@ p6_07:
     - implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md
     - implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md
     - implementation/evidence/phase-6/p6-07-validation.md
+p6_08:
+  task: P6-08
+  controller_task: P6-08_CONTROLLED_SELECTION_FILTER_OBJECT_PACKAGE_EXPORT
+  status: IN_PROGRESS_CHECKPOINT_1
+  requirements: [UX-007]
+  starting_checkpoint: d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0
+  audit_predecessor_ordinary_ci: 31331504738
+  audit_predecessor_repository_job: 93290380976
+  audit_predecessor_visual_job: 93290380955
+  audit_predecessor_visual_result: 91_OF_91_PASS
+  audit_decision: PASS_BOUNDED_FOUR_CHECKPOINT_PLAN
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage: CHECKPOINT_1_LEVEL_2
+  arbitrary_database_export_active: false
+  raw_private_file_url_export_active: false
+  production_erp_contact_authorized: false
+  tooling_export_routes_active: false
+  tooling_export_business_rows_active: false
+  tooling_export_private_files_active: false
+  live_tooling_list_export_active: false
+  separate_export_authority: INTERNAL_SYSTEM_MANAGER_AND_PROJECT_VIEW
+  package_schema: tooling-object-package-v1
+  maximum_exported_tooling_masters: 100
+  package_download_validity_minutes: 60
+  evidence:
+    - implementation/phase-6-requirement-anchor.md
+    - docs/TOOLING_AND_TRIAL.md
+    - implementation/evidence/phase-6/p6-08-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
