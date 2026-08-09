@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-09T11:26:35Z'
+updated_at: '2026-08-09T12:53:36Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-07
-current_task_status: IN_PROGRESS_CHECKPOINT_4
-current_task_completed_stage: P6_07_CHECKPOINT_3_PASS
-current_task_next_stage: P6_07_LIVE_INDUSTRIAL_IMPORT_WORKSPACE
+current_task_status: IN_PROGRESS_CHECKPOINT_5
+current_task_completed_stage: P6_07_CHECKPOINT_4_PASS
+current_task_next_stage: P6_07_CONTROLLED_SITE_AND_LEVEL_2_GATE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-07
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_4
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_5
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1328,7 +1328,7 @@ p6_06:
 p6_07:
   task: P6-07
   controller_task: P6-07_SPECIALIZED_TOOLING_LIST_CONTROLLED_IMPORT
-  status: IN_PROGRESS_CHECKPOINT_4
+  status: IN_PROGRESS_CHECKPOINT_5
   requirements: [FR-TX-012, FR-TX-013, FR-TX-014, FR-TX-015, FR-TX-016, FR-TX-017, FR-TX-018, UX-016]
   starting_product_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
   audit_controller_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
@@ -1381,14 +1381,31 @@ p6_07:
   checkpoint_3_gitleaks_artifact: 9037284616
   checkpoint_3_gitleaks_digest: sha256:7b747ed2a35fe510d19951b7b6c94c3fb7ea28ce8c60886a258900c8bf8d7c52
   checkpoint_3_decision: PASS
+  checkpoint_4_product_commit: 13bd67b7cf588f1f31ca3d0375d50b28c571c7c5
+  checkpoint_4_stable_checkpoint: f42ba61d6b32eacd8dc32d47250a3871a569e682
+  checkpoint_4_initial_ci: 31313236719
+  checkpoint_4_initial_repository_job: 93244249404
+  checkpoint_4_initial_visual_job: 93244249415
+  checkpoint_4_initial_visual_artifact: 9038021540
+  checkpoint_4_initial_visual_digest: sha256:0be137f4cde5114e50f72f4b8c211ebd330997971a6f075465e87f1a5af7fade
+  checkpoint_4_ordinary_ci: 31313899335
+  checkpoint_4_repository_job: 93245913680
+  checkpoint_4_visual_job: 93245913727
+  checkpoint_4_controlled_job: 93245914101
+  checkpoint_4_visual_result: 91_OF_91_PASS
+  checkpoint_4_visual_artifact: 9038197971
+  checkpoint_4_visual_digest: sha256:3a0f10ea721b12c24d51f1d849d1c6ea28f5613ac1b1434d314303ae0671023
+  checkpoint_4_gitleaks_artifact: 9038273601
+  checkpoint_4_gitleaks_digest: sha256:0169b501df654cad3c0d451094240132b6f7ca281e05218087e529799e5cc2a8
+  checkpoint_4_decision: PASS
   inspect_map_preview_routes_active: true
   checkpoint_2_business_history_active: true
   worker_execution_active: true
-  live_workspace_active: false
+  live_workspace_active: true
   controlled_runtime_active: false
-  current_stage: LIVE_INDUSTRIAL_IMPORT_WORKSPACE
-  completed_stage: CHECKPOINT_3_PASS
-  next_stage: CHECKPOINT_4_IMPLEMENTATION_AND_EXACT_SHA_GATE
+  current_stage: CONTROLLED_SITE_AND_LEVEL_2_TASK_GATE
+  completed_stage: CHECKPOINT_4_PASS
+  next_stage: CHECKPOINT_5_CONTROLLED_RUNTIME_AND_LEVEL_2_GATE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-06-validation.md
@@ -1396,6 +1413,7 @@ p6_07:
     - implementation/evidence/phase-6/p6-07-domain-inspection-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-07-repository-bff-checkpoint.md
     - implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md
+    - implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

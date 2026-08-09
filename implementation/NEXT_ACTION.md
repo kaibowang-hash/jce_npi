@@ -1,54 +1,50 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P6-07 CONTROLLED TOOLING LIST IMPORT`
+`IN_PROGRESS_CHECKPOINT_5 — P6-07 CONTROLLED TOOLING LIST IMPORT`
 
-Recovery time: `2026-08-09T11:26:35Z`
+Recovery time: `2026-08-09T12:53:36Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`abd32261d9588def3063e8e4a2094fb743ff5fb2`
+`f42ba61d6b32eacd8dc32d47250a3871a569e682`
 
 ## Current authoritative action
 
-P6-07 checkpoint 3 passes at exact stable checkpoint `abd32261`. Primary
-product commit `7233c88` adds after-commit scheduling, a resumable bounded
-worker, immutable row/field results, exact synthetic fixture mapping authority,
-durable jobs, allowlisted correction artifacts, failed-row-only retry,
-reconciliation and strict rollback evaluation/execution. Worker authority is
-rechecked server-side; successful rows are never repeated; rollback is allowed
-only for unchanged exact batch-created unused Part/Revision targets and records
-durable denial for changed or downstream-used truth. Production mapping,
-ERPNext, network and Outbox remain unavailable.
+P6-07 checkpoint 4 passes at exact stable checkpoint `f42ba61`. Primary
+product commit `13bd67b` adds the strict import data source, lazy selected-
+Project route and dense eight-step industrial workspace with complete
+operational, correction, retry, reconciliation and rollback-denial states.
+The browser remains closed to the Project-first P6-07 BFF; production mapping,
+customer workbooks, ERPNext, network and Outbox remain unavailable.
 
-Initial ordinary CI `31309906513` passed repository `93235984139` and isolated
-only eighteen bottom catalog fingerprints in visual `93235984148`. Artifact
-`9037091907`, digest
-`sha256:6b445895d32f37b26b134fa65463b9c2944de8d421e2d48cd1923e575c3a1265`,
-proved zero changed business-region pixels. Isolated repair `abd32261` copied
-only the reviewed Linux actuals. Final exact-SHA CI `31310360136` passes
-repository `93237139821` (`1,341` tracked Python, `777` frontend unit, `337`
-non-visual E2E, `5,379` complete direct trilingual sources, statements
-`80.20%`, zero vulnerabilities and both secret lanes) and visual
-`93237139805` at `88/88`; controlled runtime `93237140181` correctly skips.
+Initial ordinary CI `31313236719` passed repository `93244249404` and isolated
+exactly three new P6-07 baselines, five reviewed P6-01 Tooling cockpit deltas
+and eighteen bottom catalog fingerprints in visual `93244249415`. Artifact
+`9038021540`, digest
+`sha256:0be137f4cde5114e50f72f4b8c211ebd330997971a6f075465e87f1a5af7fade`,
+retains those candidates. Isolated repair `f42ba61` copied only the twenty-six
+reviewed Linux actuals. Final exact-SHA CI `31313899335` passes repository
+`93245913680` (`1,341` Python, `796` frontend unit, `343` non-visual E2E,
+`5,553` complete direct trilingual sources, statements `80.00%`, zero
+vulnerabilities, clean production build and both secret lanes) and visual
+`93245913727` at `91/91`; controlled job `93245914101` correctly skips.
 Complete evidence is
-`implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md`.
+`implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md`.
 
-The current atomic task is checkpoint 4 only: implement the dense eight-step
-selected-Project import workspace with stable step rail, table/tree work area,
-inspector, progress/result strip and one primary action per context. It must
-show mapping-unavailable, confirmation-required, loading, empty, no-permission,
-read-only, conflict, queued/processing/partial/success/retryable/final and
-rollback states; expose authorized correction download, retry and rollback-
-denial details; and pass direct English/`zh`/`zh-TW`, mixed-language, keyboard,
-focus, component, browser and fixed-Linux visual checks.
+The current atomic task is checkpoint 5 only: extend the cumulative
+disposable-Site verifier/workflow through P6-07; generate and inspect the exact
+sanitized synthetic fixture; seed only its synthetic mapping; exercise detect,
+map, preview, confirm, execute, partial result, correction, failed-row retry,
+reconciliation and rollback allowed/denied truth across fresh processes; and
+prove migrations, independent route disable/recovery, permission/IDOR, raw-log
+redaction, no production mapping/ERP network and cleanup. Then reconcile the
+Requirements and complete the P6-07 Level 2 Task Gate before P6-08.
 
-Controlled Site, production mapping, customer workbook and ERPNext contact
-remain inactive. `DR-REC-007` retains production semantic approval and
-`DR-REC-008` retains downstream rollback denial. There is no active technical
-Hard Blocker.
+`DR-REC-007` retains production semantic approval and `DR-REC-008` retains
+downstream rollback denial. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution history
 

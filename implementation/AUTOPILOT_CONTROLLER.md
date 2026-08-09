@@ -1978,3 +1978,46 @@ repeat or rewrite it merely to restore context. See
   English/`zh`/`zh-TW`, accessibility, browser and fixed-Linux visual proof.
   Controlled Site, production mapping, customer workbook and ERPNext contact
   remain inactive.
+
+## 2026-08-09 P6-07 checkpoint 4 PASS and checkpoint 5 activation
+
+- Product commit `13bd67b` adds the strict import data source, lazy selected-
+  Project route and dense eight-step live workspace with stable step rail,
+  table/tree work area, inspector/result strip, one primary action per context
+  and complete unavailable/confirmation/loading/empty/permission/read-only/
+  conflict/progress/partial/retry/final/rollback states.
+- The browser remains closed to the Project-first P6-07 BFF. Correction,
+  failed-row retry, reconciliation and rollback evaluation preserve the exact
+  server decisions; no mapping, target, customer, rollback or ERP authority is
+  invented by the UI.
+- Initial product CI `31313236719` passed repository `93244249404` and failed
+  only visual `93244249415` at three new P6-07 baselines, five P6-01 Tooling
+  cockpit baselines affected by the reviewed secondary action and eighteen P0
+  catalog-footer fingerprints. Artifact `9038021540`, digest
+  `sha256:0be137f4cde5114e50f72f4b8c211ebd330997971a6f075465e87f1a5af7fade`,
+  retains the reviewed candidates.
+- Isolated repair `f42ba61` copied only those twenty-six CI actuals byte-for-
+  byte to the exact tracked Linux targets. It changed no component, assertion,
+  visual case, matrix, tolerance, threshold or PASS rule and staged no user-
+  owned or Darwin file.
+- Final exact-SHA ordinary CI `31313899335` passes repository `93245913680`
+  (`1,341` tracked Python, `796` frontend unit, `343` non-visual E2E, `5,553`
+  direct trilingual sources, statements `80.00%`, clean production build, zero
+  vulnerabilities and both secret lanes) and visual `93245913727` at `91/91`;
+  controlled job `93245914101` correctly skips.
+- Visual artifact `9038197971` has digest
+  `sha256:3a0f10ea721b12c24d51f1d849d1c6ea28f5613ac1b1434d314303ae0671023`;
+  Gitleaks artifact `9038273601` has digest
+  `sha256:0169b501df654cad3c0d451094240132b6f7ca281e05218087e529799e5cc2a8`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md`.
+- Checkpoint 4 is PASS, not P6-07 Level 2. Standing transition authority now
+  activates only checkpoint 5: extend the cumulative disposable-Site verifier
+  and workflow through P6-07; generate/inspect the exact sanitized synthetic
+  fixture; seed only its synthetic mapping; exercise the complete cross-
+  process inspect/map/preview/confirm/execute/partial/correction/retry/
+  reconcile/rollback allowed-and-denied path; prove migration, independent
+  route disable/recovery, permission/IDOR, raw-log redaction, no production
+  mapping/ERP network and cleanup; reconcile Requirements; and run the P6-07
+  Level 2 Task Gate before P6-08. Production mapping, customer workbooks and
+  ERPNext contact remain inactive.
