@@ -820,6 +820,10 @@ def run_scenario(
         artifact.get("snapshotHash"),
         "P6-07 correction artifact",
     )
+    artifact_content_hash = require_hash(
+        artifact.get("sha256"),
+        "P6-07 correction artifact content",
+    )
     downloaded = binary_correction_request(
         actor,
         base_url,
@@ -831,8 +835,9 @@ def run_scenario(
     require(
         downloaded.status == 200
         and downloaded.content.startswith(
-            b"worksheet_name,source_row,source_header,corrected_value\n"
+            b"\xef\xbb\xbfworksheet_name,source_row,source_header,corrected_value\n"
         )
+        and hashlib.sha256(downloaded.content).hexdigest() == artifact_content_hash
         and corrected_value.encode("utf-8") in downloaded.content
         and corrected_formula_value.encode("utf-8") in downloaded.content
         and downloaded.headers.get("Idempotency-Replayed") == "false",

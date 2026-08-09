@@ -154,6 +154,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             'sum(item.get("state") == "created" for item in partial_latest) == 1',
             '("total daily output", "formula_error")',
             'artifact.get("entryCount") == 2',
+            'b"\\xef\\xbb\\xbfworksheet_name,source_row,source_header,corrected_value\\n"',
+            "hashlib.sha256(downloaded.content).hexdigest() == artifact_content_hash",
             'len(succeeded["rowResults"]) == 5',
             'expected_attempt=2',
             "failed-row-only retry or successful-row non-duplication drifted",
