@@ -208,6 +208,18 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
                     }
                 ]
             if doctype == "NPI Tooling Set Revision Binding":
+                self.assertIn(
+                    ["tooling_revision_global_id", "=", context["revisionId"]],
+                    filters,
+                )
+                self.assertIn(
+                    [
+                        "tooling_revision_snapshot_hash",
+                        "=",
+                        context["revisionSnapshotHash"],
+                    ],
+                    filters,
+                )
                 return [
                     {
                         "global_id": context["bindingId"],

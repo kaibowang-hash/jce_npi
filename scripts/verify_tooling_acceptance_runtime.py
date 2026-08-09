@@ -219,6 +219,12 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
             [
                 ["project_global_id", "=", project_id],
                 ["tooling_set_global_id", "=", tooling_set_id],
+                ["tooling_revision_global_id", "=", revision_id],
+                [
+                    "tooling_revision_snapshot_hash",
+                    "=",
+                    context["revisionSnapshotHash"],
+                ],
             ],
             [
                 "global_id",
