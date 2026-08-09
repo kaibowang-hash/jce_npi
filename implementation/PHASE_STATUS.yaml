@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-08T23:33:09Z'
+updated_at: '2026-08-09T00:28:41Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-06
-current_task_status: IN_PROGRESS_CHECKPOINT_2
-current_task_completed_stage: P6_06_DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-current_task_next_stage: P6_06_PROJECT_FIRST_REPOSITORY_BFF_SECURITY
+current_task_status: IN_PROGRESS_CHECKPOINT_3
+current_task_completed_stage: P6_06_PROJECT_FIRST_REPOSITORY_BFF_SECURITY_PASS
+current_task_next_stage: P6_06_LIVE_ACCEPTANCE_ASSET_WORKSPACE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-06
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_2
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_3
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1251,7 +1251,7 @@ p6_05:
 p6_06:
   task: P6-06
   controller_task: P6-06_ACCEPTANCE_AND_ASSET_EXECUTION_REQUEST
-  status: IN_PROGRESS_CHECKPOINT_2
+  status: IN_PROGRESS_CHECKPOINT_3
   requirements: [FR-TL-011, FR-TL-012, FR-TL-013, FR-TL-014, FR-TL-015, FR-TL-016]
   starting_product_checkpoint: 4e04eb47b1c5f77b9a442b3bef139df61cb83782
   audit_controller_checkpoint: 943d1ea6863ab348afb5bb2f6e0781459d636577
@@ -1267,23 +1267,38 @@ p6_06:
   domain_metadata_gitleaks_artifact: 9029295848
   domain_metadata_gitleaks_digest: sha256:12d9a502d37fa9a8cfb81f7ae163355d07be70aaf1e6a01c68d99586665fcada
   domain_metadata_decision: PASS
+  repository_bff_checkpoint: 257ab50b70d2b47816989991d466fd3f99e1f231
+  repository_bff_primary_product_commit: 24bf114cb87ac4da42bfddf6c731ca0ebc188551
+  repository_bff_ordinary_ci: 31285929039
+  repository_bff_repository_job: 93174630031
+  repository_bff_visual_job: 93174629999
+  repository_bff_controlled_job: 93174630243
+  repository_bff_visual_artifact: 9029830642
+  repository_bff_visual_digest: sha256:5e6145bd753d28784713888694fcd696ee600154a8d3ebad83f4075961334226
+  repository_bff_gitleaks_artifact: 9029883853
+  repository_bff_gitleaks_digest: sha256:162115cf98f74a06bc75f1e5f51a32e787e12b88fa776b31a65d1b9817ee7f2e
+  repository_bff_decision: PASS
   acceptance_evidence_foundation_active: true
   tool_asset_request_foundation_active: true
-  routes_active: false
-  business_rows_active: false
+  routes_active: true
+  routes_fail_closed: true
+  business_rows_active: true
+  live_workspace_active: false
+  controlled_runtime_active: false
   production_erp_contact_authorized: false
   real_asset_creation_active: false
   formal_asset_mapping_confirmation_active: false
   asset_location_movement_active: false
   maintenance_repair_spares_inventory_cost_active: false
-  current_stage: PROJECT_FIRST_REPOSITORY_BFF_SECURITY
-  completed_stage: DOMAIN_CONTRACT_METADATA_FOUNDATION_PASS
-  next_stage: PROJECT_FIRST_REPOSITORY_BFF_SECURITY
+  current_stage: LIVE_ACCEPTANCE_ASSET_WORKSPACE
+  completed_stage: PROJECT_FIRST_REPOSITORY_BFF_SECURITY_PASS
+  next_stage: LIVE_ACCEPTANCE_ASSET_WORKSPACE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-05-validation.md
     - implementation/evidence/phase-6/p6-06-plan.md
     - implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-6/p6-06-repository-bff-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

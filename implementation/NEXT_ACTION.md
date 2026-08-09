@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P6-06 PROJECT-FIRST REPOSITORY/BFF/SECURITY`
+`IN_PROGRESS_CHECKPOINT_3 — P6-06 LIVE ACCEPTANCE/ASSET WORKSPACE`
 
-Recovery time: `2026-08-08T23:33:09Z`
+Recovery time: `2026-08-09T00:28:41Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`7ab28bf27ec223d3a0e024e77bd628fed2c0fa9e`
+`257ab50b70d2b47816989991d466fd3f99e1f231`
 
 ## Current authoritative action
 
@@ -98,20 +98,37 @@ vulnerabilities and both secret lanes), visual `93169231300` at `85/85`, and
 controlled runtime correctly skipped. Evidence is
 `implementation/evidence/phase-6/p6-06-domain-metadata-checkpoint.md`.
 
-The current atomic task is checkpoint 2 only: implement Project-first bounded
-acceptance/request reads, immutable acceptance append and Mock request
-preparation; re-resolve exact Project/Master/physical Set/binding/Revision/
-member/private-clean-File/evidence containment; require System Manager
-management transport, actor-bound idempotency, one transaction and append-only
-audit; return strict unavailable ERP projections; keep routes independently
-fail closed; and prove authentication, CSRF, permission, IDOR, replay,
-conflict, rollback, no-Outbox, no-network and no-target-ID behavior.
+P6-06 checkpoint 2 passes at exact stable product checkpoint `257ab50`.
+Product commit `24bf114` activated exactly five Project-first routes,
+immutable acceptance append, operation-specific Mock Tool Asset preparation,
+actor-bound sealed replay, one transaction, append-only audit, strict
+unavailable ERP projection and the independent default-closed P6-06 switch.
+Formal request truth remains `draft`, input `validated_mock`, approval
+`unavailable`, dispatch `prohibited` and target result `not_requested`; there
+is no network, Outbox, target ID or formal Asset mapping.
 
-Evidence coverage remains distinct from business approval. The request stays
-`draft`, input `validated_mock`, approval `unavailable`, dispatch `prohibited`
-and target result `not_requested`. Live SPA, controlled Site, formal Asset
-mapping, location/movement, maintenance, repair, spares, inventory and cost
-execution remain inactive. Production and sandbox ERPNext must not be
+Initial CI `31285554375` passed repository and isolated only the eighteen
+bottom catalog digests. Artifact `9029709948` retained the reviewed actuals;
+repair `257ab50` changed only those Linux baselines and no source component,
+assertion, matrix, threshold or PASS rule. Final exact-SHA ordinary CI
+`31285929039` passes repository `93174630031` (`1,282` tracked Python, `768`
+frontend unit, `332` non-visual E2E, `5,013` direct trilingual sources,
+statements `80.35%`, zero vulnerabilities and both secret lanes), visual
+`93174629999` at `85/85`, while controlled runtime correctly skips. Evidence
+is `implementation/evidence/phase-6/p6-06-repository-bff-checkpoint.md`.
+
+The current atomic task is checkpoint 3 only: implement the strict
+acceptance/Asset data-source contract and dense selected-Master live workspace;
+render immutable acceptance lineage, category coverage, NPI action/spare/
+repair evidence, Mock-only request axes and a separate unavailable ERP
+projection; expose only server capabilities and exact Set/binding/Revision
+truth; and prove loading, empty, denied, read-only, validation, conflict,
+processing, unavailable, failure/retry, keyboard/accessibility, direct
+English/`zh`/`zh-TW`, operational E2E and fixed-Linux visual behavior.
+
+Controlled Site, formal acceptance approval, lifecycle, Trial/Gate, formal
+Asset mapping, location/movement, maintenance, repair, spares, inventory and
+cost execution remain inactive. Production and sandbox ERPNext must not be
 contacted. There is no active technical Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI

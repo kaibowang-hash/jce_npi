@@ -1719,3 +1719,44 @@ repeat or rewrite it merely to restore context. See
   and API/permission/IDOR/replay/conflict/rollback/no-Outbox/no-network/no-
   target-ID tests. Live SPA, controlled Site, Trial/Gate/lifecycle/ERP behavior
   and production/sandbox network access remain inactive.
+
+## 2026-08-09 P6-06 checkpoint 2 PASS and live-workspace transition
+
+- Product commit `24bf114` activated exactly five independently guarded
+  P6-06 routes: combined acceptance/Asset context, immutable evidence append,
+  bounded Tool Asset request list/detail and physical-Set-scoped Mock request
+  preparation. It re-resolves exact Project/Master/Set/binding/Revision/member/
+  private-clean-File containment, requires internal System Manager management
+  transport plus CSRF, binds idempotency to the actor and persists row, audit
+  and sealed receipt in one transaction.
+- Formal request truth is fixed at `draft` / `validated_mock` / `unavailable`
+  / `prohibited` / `not_requested`. The ERP projection remains read-only
+  unavailable with zero-or-one mapping per physical Set. No network, Outbox,
+  endpoint, credential, target identifier, Asset mapping, lifecycle, Trial or
+  Gate mutation is reachable.
+- Initial exact product CI `31285554375` passed repository `93173561115` and
+  failed only visual `93173561067`. Artifact `9029709948`, digest
+  `sha256:682d1a610eff601bb93775114d57c4793372a988af5792cd73a51f19fa8da361`,
+  retained eighteen actual/diff pairs whose only change was the durable bottom
+  catalog digest (`271` English pixels, `242` Chinese pixels).
+- Isolated repair `257ab50` copied only those reviewed Linux actuals and
+  changed no component, source copy, assertion, matrix, tolerance, threshold
+  or PASS rule. The user's untracked Darwin screenshots and other local files
+  were not staged.
+- Final exact-SHA ordinary CI `31285929039` passes repository `93174630031`
+  (`1,282` tracked Python, `768` frontend unit, `332` non-visual E2E, `5,013`
+  direct trilingual sources, statements `80.35%`, zero vulnerabilities and
+  both secret lanes) and visual `93174629999` at `85/85`; controlled job
+  `93174630243` correctly skips.
+- Visual artifact `9029830642` has digest
+  `sha256:5e6145bd753d28784713888694fcd696ee600154a8d3ebad83f4075961334226`;
+  Gitleaks artifact `9029883853` has digest
+  `sha256:162115cf98f74a06bc75f1e5f51a32e787e12b88fa776b31a65d1b9817ee7f2e`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-06-repository-bff-checkpoint.md`.
+- Checkpoint 2 is PASS, not P6-06 Level 2. Standing transition authority now
+  activates only checkpoint 3: the strict acceptance/Asset data source and
+  dense selected-Master live workspace; complete operational states, direct
+  English/`zh`/`zh-TW`, accessibility, browser and fixed-Linux visual proof.
+  Controlled Site, formal approval, Trial/Gate/lifecycle and all real
+  ERPNext/Asset execution remain inactive.
