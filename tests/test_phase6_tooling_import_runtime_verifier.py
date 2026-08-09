@@ -171,6 +171,10 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "CORRECTION_DIAGNOSTIC_CODES",
             "CORRECTION_VALIDATION_DIAGNOSTIC_CODES",
             "CORRECTION_DOWNLOAD_DIAGNOSTIC_CODES",
+            'key.endswith("-reconcile")',
+            "RECONCILIATION_DIAGNOSTIC_CODES",
+            "RECONCILIATION_VALIDATION_DIAGNOSTIC_CODES",
+            "RECONCILIATION_DOMAIN_PATHS",
             '"productionMappingActive": False',
             '"integrationTrafficCreated": False',
         )
@@ -274,6 +278,39 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "TOOLING_REFERENCE_UNAVAILABLE",
         )
         self.assertNotIn("problem", diagnostic)
+
+    def test_reconciliation_domain_diagnostic_only_accepts_one_allowlisted_path(
+        self,
+    ) -> None:
+        self.assertEqual(
+            self.module.reconciliation_domain_path(
+                {
+                    "fieldErrors": [
+                        {
+                            "path": "rowResultGlobalId",
+                            "message": "must not be copied",
+                            "value": "must not be copied",
+                        }
+                    ]
+                }
+            ),
+            "rowResultGlobalId",
+        )
+        self.assertIsNone(
+            self.module.reconciliation_domain_path(
+                {"fieldErrors": [{"path": "secretValue", "message": "secret"}]}
+            )
+        )
+        self.assertIsNone(
+            self.module.reconciliation_domain_path(
+                {
+                    "fieldErrors": [
+                        {"path": "state"},
+                        {"path": "targetGlobalId"},
+                    ]
+                }
+            )
+        )
 
     def test_failure_boundaries_are_fail_closed_and_cardinality_checked(self) -> None:
         required = (

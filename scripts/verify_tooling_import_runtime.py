@@ -97,6 +97,26 @@ RECONCILIATION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
         "P607_RECONCILIATION_JOB_VALIDATE",
     }
 )
+RECONCILIATION_DOMAIN_PATHS = frozenset(
+    {
+        "rowResultGlobalId",
+        "targetObjectType",
+        "targetGlobalId",
+        "expectedSnapshotHash",
+        "observedSnapshotHash",
+        "downstreamReferenceCount",
+        "state",
+        "global_id",
+        "job_global_id",
+        "request_id",
+        "jobSnapshotHash",
+        "kind",
+        "items",
+        "createdByUserId",
+        "createdAt",
+        "traceId",
+    }
+)
 
 FIXTURES = (
     {
@@ -242,6 +262,11 @@ def command(
                 f"trace_id={trace_id}]"
             )
     if result.status != 201 and key.endswith("-reconcile"):
+        field_path = reconciliation_domain_path(result.body)
+        if field_path is not None:
+            raise RuntimeError(
+                f"[diagnostic_field={field_path}; trace_id={result.trace_id}]"
+            )
         diagnostic = tooling_runtime._sanitized_server_diagnostic(
             result.trace_id,
             RECONCILIATION_VALIDATION_DIAGNOSTIC_CODES,
@@ -269,6 +294,19 @@ def command(
         "P6-07 replay header is invalid",
     )
     return result
+
+
+def reconciliation_domain_path(problem: object) -> str | None:
+    if not isinstance(problem, dict):
+        return None
+    field_errors = problem.get("fieldErrors")
+    if not isinstance(field_errors, list) or len(field_errors) != 1:
+        return None
+    field_error = field_errors[0]
+    if not isinstance(field_error, dict):
+        return None
+    path = field_error.get("path")
+    return path if isinstance(path, str) and path in RECONCILIATION_DOMAIN_PATHS else None
 
 
 def rows(administrator, base_url: str, doctype: str, filters, fields=None):
