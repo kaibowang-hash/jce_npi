@@ -174,6 +174,7 @@ def tooling_request(
     csrf_token: str | None = None,
     idempotency_key: str | None = None,
     query_key: str = "query",
+    request_id: str | None = None,
     part_create_diagnostic: bool = False,
     applicability_create_diagnostic: bool = False,
     tooling_revision_create_diagnostic: bool = False,
@@ -183,6 +184,8 @@ def tooling_request(
         if idempotency_key is not None
         else document_runtime.query_headers(f"p601-{query_key}")
     )
+    if request_id is not None:
+        headers["X-Request-ID"] = request_id
     diagnostic_flags = (
         part_create_diagnostic,
         applicability_create_diagnostic,

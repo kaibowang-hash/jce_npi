@@ -145,6 +145,34 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
         self.assertIs(result, raw)
         self.assertEqual(request.call_args.kwargs["query_key"], "p607-imports")
 
+    def test_command_request_identity_is_stable_uuid4(self) -> None:
+        raw = SimpleNamespace(status=201, headers={}, body={})
+        with patch.object(
+            self.module.predecessor,
+            "tooling_request",
+            return_value=raw,
+        ) as request:
+            result = self.module.tooling_request(
+                object(),
+                "http://127.0.0.1:8003",
+                "/api/npi/v1/projects/project/tooling-imports",
+                method="POST",
+                payload={},
+                csrf_token="csrf",
+                idempotency_key="p6-07-command",
+            )
+        self.assertIs(result, raw)
+        request_id = request.call_args.kwargs["request_id"]
+        self.assertEqual(UUID(request_id).version, 4)
+        self.assertEqual(
+            request_id,
+            self.module.deterministic_uuid("request:p6-07-command"),
+        )
+        self.assertIn(
+            'headers["X-Request-ID"] = deterministic_uuid(f"request:{idempotency_key}")',
+            self.source,
+        )
+
     def test_verifier_covers_complete_controlled_import_lifecycle(self) -> None:
         required = (
             "build_sanitized_tooling_workbook",

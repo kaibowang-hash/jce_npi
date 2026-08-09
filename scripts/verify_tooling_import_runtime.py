@@ -221,6 +221,9 @@ def rollback_path(project_id: str, batch_id: str, job_id: str) -> str:
 
 
 def tooling_request(*args, query_key: str = "query", **kwargs):
+    idempotency_key = kwargs.get("idempotency_key")
+    if isinstance(idempotency_key, str):
+        kwargs["request_id"] = deterministic_uuid(f"request:{idempotency_key}")
     return predecessor.tooling_request(
         *args,
         query_key=f"p607-{query_key}",
@@ -632,6 +635,7 @@ def binary_correction_request(
         sort_keys=True,
     ).encode("utf-8")
     headers = document_runtime.command_headers(csrf_token, idempotency_key)
+    headers["X-Request-ID"] = deterministic_uuid(f"request:{idempotency_key}")
     headers["Content-Type"] = "application/json"
     request = urllib.request.Request(
         f"{base_url}{path}",
