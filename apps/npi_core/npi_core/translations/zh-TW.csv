@@ -5085,3 +5085,162 @@ Evidence disposition,證據處置
 Exact not-applicable reason,精確的不適用原因
 Append evidence Revision,追加證據修訂版
 Record evidence Revision,記錄證據修訂版
+A complete Tooling List header could not be detected.,無法偵測到完整的模具清單表頭。
+A mapping proposal cannot authorize import execution.,映射提案不能授權執行匯入。
+An import command response can only be sealed once.,匯入命令回應只能封存一次。
+An import command response must be sealed after success.,匯入命令回應必須在成功後封存。
+Confirm clamp tonnage and machine type separately.,請分別確認鎖模噸位和機台類型。
+Confirm how the unmapped source column should be handled.,請確認如何處理未映射的來源欄。
+Confirm the proposed Tooling relationship.,請確認建議的模具關係。
+Confirm the state separated from the Tooling number.,請確認從模具編號中分離出的狀態。
+Confirmation state must be true or false.,確認狀態必須為是或否。
+Correct the workbook formula error.,請修正活頁簿公式錯誤。
+Customer Scope ID,客戶範圍識別碼
+Detected Column Snapshot,偵測欄快照
+Detected Header Row,偵測到的表頭列
+Detected Region Snapshot,偵測區域快照
+Detected source columns must be unique.,偵測到的來源欄必須唯一。
+Detected source headers must be unique.,偵測到的來源表頭必須唯一。
+Detection Policy Version,偵測策略版本
+Enter a Tooling number or confirm a supported relationship.,請輸入模具編號或確認受支援的關係。
+Enter one supported value and unit.,請輸入一個受支援的數值和單位。
+Enter the required source value.,請輸入必填來源值。
+Execution Eligible,可執行
+Formula Error Snapshot,公式錯誤快照
+Image Anchor Snapshot,圖片錨點快照
+Import preview requires at least one source row.,匯入預覽至少需要一個來源資料列。
+Inspection Policy Version,檢查策略版本
+Inspection Snapshot Hash,檢查快照雜湊
+Inspection Version,檢查版本
+Legacy Grade is retained without inferred meaning.,保留舊版等級且不推斷其含義。
+Mapping Entry Snapshot,映射項目快照
+Mapping Revision Reason,映射修訂原因
+Mapping Template Key,映射範本鍵
+Mapping Version Key Hash,映射版本鍵雜湊
+Mapping Version Key Hash does not match.,映射版本鍵雜湊不相符。
+Mapping does not match the detected source columns.,映射與偵測到的來源欄不相符。
+Mapping entries must cover unique source columns.,映射項目必須涵蓋唯一來源欄。
+NPI Tooling Import Batch,NPI 模具匯入批次
+NPI Tooling Import Command Idempotency,NPI 模具匯入命令冪等記錄
+NPI Tooling Import Inspection Revision,NPI 模具匯入檢查修訂
+NPI Tooling Import Mapping Revision,NPI 模具匯入映射修訂
+NPI Tooling Import Preview Revision,NPI 模具匯入預覽修訂
+Passive Inspection Report Hash,被動檢查報告雜湊
+Preview Row Snapshot,預覽列快照
+Production mapping approval is unavailable.,生產映射核准不可用。
+Provide a list value.,請提供清單值。
+Provide a lowercase SHA-256 value.,請提供小寫 SHA-256 值。
+Provide a positive whole number.,請提供正整數。
+Provide a timezone-aware UTC date and time.,請提供含時區的世界協調時間日期和時間。
+Provide a valid UUID.,請提供有效的 UUID。
+Provide a valid bounded text value.,請提供有效且長度受限的文字值。
+Provide a valid stable code.,請提供有效的穩定代碼。
+Provide an object value.,請提供物件值。
+Receipt Key does not match the actor-bound import command scope.,回執鍵與綁定操作人的匯入命令範圍不相符。
+Region end cannot be before region start.,區域結束位置不能早於開始位置。
+Select a supported Tooling import command operation.,請選擇受支援的模具匯入命令操作。
+Select a supported XLSX media type.,請選擇受支援的活頁簿媒體類型。
+Select a supported mapping revision state.,請選擇受支援的映射修訂狀態。
+Select a supported workbook region.,請選擇受支援的活頁簿區域。
+Select a valid import actor.,請選擇有效的匯入操作人。
+Select a valid mapping actor.,請選擇有效的映射操作人。
+Select a workbook with exactly one Tooling List worksheet.,請選擇只包含一個模具清單工作表的活頁簿。
+Select an XLSX workbook.,請選擇活頁簿。
+Select an exact import source.,請選擇精確的匯入來源。
+Source Column Signature,來源欄簽章
+Source File Name,來源檔名
+Source Media Type,來源媒體類型
+Source SHA-256,來源 SHA-256
+Source Size in Bytes,來源檔案位元組數
+The Tooling import command receipt does not match its Project.,模具匯入命令回執與其專案不相符。
+The exact Project is unavailable for this Tooling import.,此模具匯入所需的精確專案不可用。
+The exact Tooling Import Batch is unavailable.,精確的模具匯入批次不可用。
+The exact Tooling Import Inspection Revision is unavailable.,精確的模具匯入檢查修訂不可用。
+The exact Tooling Import Mapping Revision is unavailable.,精確的模具匯入映射修訂不可用。
+The exact clean private XLSX File Revision is unavailable.,精確、乾淨且私有的活頁簿檔案修訂不可用。
+Tooling Import Batch,模具匯入批次
+Tooling Import Inspection Revision,模具匯入檢查修訂
+Tooling Import Inspection Snapshot,模具匯入檢查快照
+Tooling Import Mapping Revision,模具匯入映射修訂
+Tooling Import Mapping Snapshot,模具匯入映射快照
+Tooling Import Preview Snapshot,模具匯入預覽快照
+Tooling Import Source Snapshot,模具匯入來源快照
+Tooling import fields do not match the exact snapshot.,模具匯入欄位與精確快照不相符。
+Tooling import history can only be written by the controlled import command.,模具匯入歷史只能由受控匯入命令寫入。
+Tooling import history cannot be deleted.,不能刪除模具匯入歷史。
+Tooling import history is immutable.,模具匯入歷史不可變。
+Tooling import snapshot hash does not match.,模具匯入快照雜湊不相符。
+Transformation Policy Version,轉換策略版本
+Workbook hash does not match the exact File Revision.,活頁簿雜湊與精確檔案修訂不相符。
+Workbook inspection requires a data region.,活頁簿檢查需要資料區域。
+Workbook inspection requires a primary data region.,活頁簿檢查需要主要資料區域。
+Workbook inspection requires detected source columns.,活頁簿檢查需要偵測到的來源欄。
+Worksheet Name,工作表名稱
+A non-mutating import row cannot claim target truth.,未發生變更的匯入列不能宣告目標真值。
+A queued import job cannot contain row results.,已排程的匯入工作不能包含列結果。
+A rollback result requires retained import row truth.,回復結果需要保留匯入列真值。
+A successful import row requires exact target truth.,成功的匯入列需要精確目標真值。
+Import job state does not match its row results.,匯入工作狀態與其列結果不相符。
+Job update time cannot be earlier than queue time.,工作更新時間不能早於排程時間。
+Select a supported Tooling import job state.,請選擇受支援的模具匯入工作狀態。
+Select a supported import row result state.,請選擇受支援的匯入列結果狀態。
+A row requiring confirmation must remain blocked.,需要確認的列必須保持阻斷狀態。
+An ambiguous image anchor requires human confirmation.,不明確的圖片錨點需要人工確認。
+An unmapped source column cannot claim a target field.,未映射的來源欄不能宣告目標欄位。
+Detected columns must use the controlled column shape.,偵測欄必須使用受控欄結構。
+Detected images must use the controlled anchor shape.,偵測圖片必須使用受控錨點結構。
+Detected regions must use the controlled region shape.,偵測區域必須使用受控區域結構。
+Import preview rows must use the controlled preview shape.,匯入預覽列必須使用受控預覽結構。
+Import preview source rows must be unique.,匯入預覽來源資料列必須唯一。
+Mapping entries must use the controlled mapping shape.,映射項目必須使用受控映射結構。
+Preview row reason codes must be unique.,預覽列原因代碼必須唯一。
+Preview row source fields must be unique.,預覽列來源欄位必須唯一。
+Preview rows require controlled field outcomes.,預覽列需要受控欄位結果。
+Provide a bounded raw workbook value.,請提供長度受限的原始活頁簿值。
+Provide a valid formula error reference.,請提供有效的公式錯誤參照。
+Provide a valid lowercase content hash.,請提供有效的小寫內容雜湊。
+Provide a valid worksheet cell reference.,請提供有效的工作表儲存格參照。
+Provide bounded normalized candidates.,請提供長度受限的標準化候選值。
+Provide controlled field findings.,請提供受控欄位發現。
+Select a supported image-anchor confidence.,請選擇受支援的圖片錨點信賴度。
+Select a supported import finding severity.,請選擇受支援的匯入發現嚴重程度。
+Select a supported mapping disposition.,請選擇受支援的映射處置。
+Select a supported preview action.,請選擇受支援的預覽動作。
+Select a supported semantic classification.,請選擇受支援的語意分類。
+Select a supported separated state candidate.,請選擇受支援的分離狀態候選值。
+Validation rule keys must be unique.,驗證規則鍵必須唯一。
+tooling_import_batch.create,建立模具匯入批次
+tooling_import_inspection.create,建立模具匯入檢查
+tooling_import_mapping.create,建立模具匯入映射
+tooling_import_preview.create,建立模具匯入預覽
+tooling_import_confirmation.create,建立模具匯入確認
+tooling_import_execution.start,啟動模具匯入執行
+tooling_import_execution.retry,重試模具匯入執行
+tooling_import_correction.export,匯出模具匯入修正檔案
+tooling_import_rollback.evaluate,評估模具匯入回復
+tooling_import_rollback.execute,執行模具匯入回復
+tooling_import_batch,模具匯入批次
+tooling_import_inspection_revision,模具匯入檢查修訂
+tooling_import_mapping_revision,模具匯入映射修訂
+tooling_import_preview_revision,模具匯入預覽修訂
+tooling_import_job,模具匯入工作
+tooling_import_correction_artifact,模具匯入修正產物
+tooling_import_rollback_result,模具匯入回復結果
+proposal,提案
+approved_fixture,已核准的合成測試資料
+Downstream reference count cannot be negative.,下游參照數量不能為負數。
+Import field results must cover unique source columns.,匯入欄位結果必須涵蓋唯一的來源欄。
+Import field results must use the controlled field shape.,匯入欄位結果必須使用受控欄位結構。
+Import job row results must be unique.,匯入工作列結果必須唯一。
+Import job rows must use the controlled result shape.,匯入工作列必須使用受控結果結構。
+Import mapping does not match the exact inspection revision.,匯入映射與精確的檢查修訂不相符。
+Import mapping does not match the exact source snapshot.,匯入映射與精確的來源快照不相符。
+Import preview does not match the exact source snapshot.,匯入預覽與精確的來源快照不相符。
+Mapping customer scope does not match the import source.,映射客戶範圍與匯入來源不相符。
+Reviewed mapping contains an unknown source column.,已複核的映射包含未知來源欄。
+Reviewed mapping source columns must be unique.,已複核的映射來源欄必須唯一。
+Rollback action must be create or update.,回復動作必須是建立或更新。
+Rollback evidence states must be true or false.,回復證據狀態必須為真或假。
+Select a supported rollback decision.,請選擇受支援的回復決定。
+Workbook metadata does not match the exact File Revision.,活頁簿中繼資料與精確的檔案修訂不相符。
+Workbook size exceeds the import limit.,活頁簿大小超過匯入限制。

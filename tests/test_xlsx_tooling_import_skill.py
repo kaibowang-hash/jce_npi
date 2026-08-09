@@ -182,6 +182,19 @@ class XlsxToolingImportInspectorTests(unittest.TestCase):
             ):
                 self.inspector.inspect(workbook, 100, 1_000_000)
 
+    def test_rejects_case_colliding_archive_members(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workbook = Path(directory) / "tooling.xlsx"
+            _write_minimal_xlsx(workbook)
+            with zipfile.ZipFile(workbook, "a") as archive:
+                archive.writestr("XL/workbook.xml", "<collision/>")
+
+            with self.assertRaisesRegex(
+                self.inspector.WorkbookRejected,
+                "duplicate or canonically colliding",
+            ):
+                self.inspector.inspect(workbook, 100, 1_000_000)
+
     def test_rejects_unbounded_drawing_anchor_as_controlled_error(self) -> None:
         with self.assertRaisesRegex(
             self.inspector.WorkbookRejected,

@@ -529,6 +529,39 @@ objects:
       official_trial_quality_and_approved_process_baseline: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
       actual_asset_movement_repair_inventory_and_cost_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
 
+  ToolingImportBatch:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_project_customer_private_file_revision_and_hash: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      source_file_bytes_and_raw_workbook_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: CONFIDENTIAL_EXACT_SOURCE}
+      production_customer_mapping_activation: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingImportInspectionRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      passive_archive_xml_and_formula_safety_report: {owner: NPI_ONE_TOOLING_IMPORT_INSPECTOR, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_POLICY_VERSION}
+      position_independent_columns_regions_and_image_anchor_candidates: {owner: NPI_ONE_TOOLING_IMPORT_DETECTOR, editable_in: [], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      raw_cell_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: AUTHORIZED_DETAIL_ONLY}
+
+  ToolingImportMappingRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      complete_source_columns_candidate_targets_and_transform_versions: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      ambiguous_numeric_classification_and_legacy_grade_meaning: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      fixture_mapping_activation: {owner: CONTROLLED_TEST_FIXTURE_ONLY, editable_in: [], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+
+  ToolingImportPreviewRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_source_inspection_mapping_and_transform_snapshots: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      create_update_skip_blocked_candidates_and_field_findings: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_INPUT_SNAPSHOT}
+      ambiguous_relationship_and_image_confirmation: {owner: AUTHORIZED_PROJECT_MEMBER, editable_in: [NPI_ONE_TOOLING_IMPORT_CONFIRMATION_COMMAND], direction: NONE, conflict: HUMAN_CONFIRMATION_REQUIRED}
+      target_mutation: {owner: FUTURE_P6_07_EXECUTION_WORKER, editable_in: [], direction: NONE, conflict: NOT_EXECUTED_BY_PREVIEW}
+
   ToolAssetRequest:
     owner_system: NPI_ONE_INTEGRATION
     erp_view: execution_intent_only

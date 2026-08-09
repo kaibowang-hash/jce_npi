@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import frappe
+from frappe import _
+
+from npi_core.documents.frappe_validation import (
+    assert_immutable_fields,
+    canonical_json,
+    canonical_uuid,
+    json_object,
+    lowercase_sha256,
+)
+from npi_core.tooling.domain import sha256_json
+
+
+def require_tooling_import_write() -> None:
+    if not getattr(frappe.flags, "npi_tooling_import_write", False):
+        frappe.throw(
+            _("Tooling import history can only be written by the controlled import command."),
+            frappe.PermissionError,
+        )
+
+
+def deny_tooling_import_update() -> None:
+    frappe.throw(
+        _("Tooling import history is immutable."),
+        frappe.PermissionError,
+    )
+
+
+def deny_tooling_import_delete(_document: object) -> None:
+    frappe.throw(
+        _("Tooling import history cannot be deleted."),
+        frappe.PermissionError,
+    )
+
+
+def canonical_import_uuid(document: object, fieldname: str, label: str) -> None:
+    setattr(document, fieldname, canonical_uuid(getattr(document, fieldname), label))
+
+
+def validate_immutable_snapshot(
+    document: object,
+    *,
+    snapshot_field: str,
+    snapshot_label: str,
+    snapshot_hash_field: str,
+    immutable_fields: tuple[str, ...],
+) -> dict[str, object]:
+    previous = document.get_doc_before_save()
+    if previous is not None:
+        assert_immutable_fields(document, previous, immutable_fields)
+        deny_tooling_import_update()
+    snapshot = json_object(getattr(document, snapshot_field), snapshot_label)
+    expected_hash = sha256_json(snapshot)
+    current_hash = getattr(document, snapshot_hash_field)
+    if current_hash not in (None, "", expected_hash):
+        frappe.throw(
+            _("Tooling import snapshot hash does not match."),
+            frappe.ValidationError,
+        )
+    setattr(document, snapshot_field, canonical_json(snapshot))
+    setattr(
+        document,
+        snapshot_hash_field,
+        lowercase_sha256(expected_hash, _("Snapshot Hash")),
+    )
+    return snapshot
+
+
+def require_snapshot_projection(
+    document: object,
+    snapshot: dict[str, object],
+    projection: tuple[tuple[str, str], ...],
+) -> None:
+    for fieldname, snapshot_key in projection:
+        actual = getattr(document, fieldname)
+        expected = snapshot.get(snapshot_key)
+        if str(actual) != str(expected):
+            frappe.throw(
+                _("Tooling import fields do not match the exact snapshot."),
+                frappe.ValidationError,
+            )
