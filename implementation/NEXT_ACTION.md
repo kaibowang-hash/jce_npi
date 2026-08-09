@@ -1,52 +1,54 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P6-07 CONTROLLED TOOLING LIST IMPORT`
+`IN_PROGRESS_CHECKPOINT_4 — P6-07 CONTROLLED TOOLING LIST IMPORT`
 
-Recovery time: `2026-08-09T09:38:02Z`
+Recovery time: `2026-08-09T11:26:35Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`40e142d5f8a38c3ecd2c5da9f5a3326030d37c20`
+`abd32261d9588def3063e8e4a2094fb743ff5fb2`
 
 ## Current authoritative action
 
-P6-07 checkpoint 2 passes at exact stable checkpoint `40e142d`. Primary
-product commit `0cad7eb` activates exactly seven independently default-closed,
-Project-first source registration, detail, inspect, mapping-proposal, preview
-and preview-confirmation routes. Exact clean private File bytes, customer and
-Project scope are reauthorized server-side; production mapping stays
-unavailable; commands append immutable history, audit and actor-bound sealed
-receipts in one transaction; and no target aggregate, ERPNext path or network
-side effect is active.
+P6-07 checkpoint 3 passes at exact stable checkpoint `abd32261`. Primary
+product commit `7233c88` adds after-commit scheduling, a resumable bounded
+worker, immutable row/field results, exact synthetic fixture mapping authority,
+durable jobs, allowlisted correction artifacts, failed-row-only retry,
+reconciliation and strict rollback evaluation/execution. Worker authority is
+rechecked server-side; successful rows are never repeated; rollback is allowed
+only for unchanged exact batch-created unused Part/Revision targets and records
+durable denial for changed or downstream-used truth. Production mapping,
+ERPNext, network and Outbox remain unavailable.
 
-Initial ordinary CI `31305468446` passed repository `93225017234` and isolated
-only eighteen bottom catalog-version fingerprints in visual `93225017259`.
-Artifact `9035832831`, digest
-`sha256:ad8a0d66c9a37d7209ccc2a2d69d54c26c0459ee0ae9141e9bd0d2de5223ac6c`,
-proved zero business-region pixel changes. Isolated repair `40e142d` copied
-only the reviewed Linux actuals. Final exact-SHA CI `31305920914` passes
-repository `93226181482` (`1,324` tracked Python, `777` frontend unit, `337`
-non-visual E2E, `5,274` complete direct trilingual sources, zero
-vulnerabilities and both secret lanes) and visual `93226181475` at `88/88`;
-controlled runtime `93226181903` correctly skips. Complete evidence is
-`implementation/evidence/phase-6/p6-07-repository-bff-checkpoint.md`.
+Initial ordinary CI `31309906513` passed repository `93235984139` and isolated
+only eighteen bottom catalog fingerprints in visual `93235984148`. Artifact
+`9037091907`, digest
+`sha256:6b445895d32f37b26b134fa65463b9c2944de8d421e2d48cd1923e575c3a1265`,
+proved zero changed business-region pixels. Isolated repair `abd32261` copied
+only the reviewed Linux actuals. Final exact-SHA CI `31310360136` passes
+repository `93237139821` (`1,341` tracked Python, `777` frontend unit, `337`
+non-visual E2E, `5,379` complete direct trilingual sources, statements
+`80.20%`, zero vulnerabilities and both secret lanes) and visual
+`93237139805` at `88/88`; controlled runtime `93237140181` correctly skips.
+Complete evidence is
+`implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md`.
 
-The current atomic task is checkpoint 3 only: after-commit enqueue, resumable
-bounded worker, immutable row/field results, exact active synthetic mapping
-authority outside migrations, durable status/detail, allowlisted correction
-artifact, failed-row-only retry, reconciliation and strict eligibility/
-rollback commands. It must prove partial truth, no duplicate successful
-mutation, retryable/final failure, worker reauthorization, rollback only for
-unchanged batch-created unused objects, durable denial for changed or
-downstream-used objects and no ERP contact.
+The current atomic task is checkpoint 4 only: implement the dense eight-step
+selected-Project import workspace with stable step rail, table/tree work area,
+inspector, progress/result strip and one primary action per context. It must
+show mapping-unavailable, confirmation-required, loading, empty, no-permission,
+read-only, conflict, queued/processing/partial/success/retryable/final and
+rollback states; expose authorized correction download, retry and rollback-
+denial details; and pass direct English/`zh`/`zh-TW`, mixed-language, keyboard,
+focus, component, browser and fixed-Linux visual checks.
 
-The live SPA, controlled Site, production mapping, customer workbook, ERPNext
-contact and destructive downstream rollback remain inactive. `DR-REC-007`
-retains production semantic approval and `DR-REC-008` retains downstream
-rollback denial. There is no active technical Hard Blocker.
+Controlled Site, production mapping, customer workbook and ERPNext contact
+remain inactive. `DR-REC-007` retains production semantic approval and
+`DR-REC-008` retains downstream rollback denial. There is no active technical
+Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution history
 

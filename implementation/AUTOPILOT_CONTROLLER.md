@@ -1936,3 +1936,45 @@ repeat or rewrite it merely to restore context. See
   reauthorization, rollback only for unchanged batch-created unused objects,
   durable denial for changed/downstream-used objects and no ERP contact. Live
   SPA and controlled Site remain inactive.
+
+## 2026-08-09 P6-07 checkpoint 3 PASS and checkpoint 4 activation
+
+- Product commit `7233c88` adds after-commit scheduling, the resumable bounded
+  worker, immutable row/field results and target bindings, exact synthetic
+  fixture mapping activation, durable job/status/detail truth, allowlisted
+  correction artifacts, failed-row-only retry, immutable reconciliation and
+  strict rollback evaluation/execution routes.
+- The worker reauthorizes the preserved actor, Project/customer, clean private
+  File Revision/hash, preview/hash, mapping activation and correction artifact
+  before each bounded run. Successful rows are never repeated. Rollback is
+  all-or-nothing and limited to unchanged exact batch-created unused Part/
+  Revision targets; changed, updated or downstream-used truth records durable
+  denial. No ERPNext, network, Outbox or production mapping is reachable.
+- Initial exact product CI `31309906513` passed repository `93235984139` and
+  failed only visual `93235984148` at the eighteen durable bottom catalog
+  fingerprints. Artifact `9037091907`, digest
+  `sha256:6b445895d32f37b26b134fa65463b9c2944de8d421e2d48cd1923e575c3a1265`,
+  proved zero changed pixels above `y=860`; all changes were confined to
+  `y=882..891` catalog text.
+- Isolated repair `abd32261` copied only those eighteen reviewed CI actuals
+  byte-for-byte to their exact Linux targets and changed no component,
+  assertion, visual case, matrix, tolerance, threshold or PASS rule. User-
+  owned Darwin snapshots and other dirty files were not staged.
+- Final exact-SHA ordinary CI `31310360136` passes repository `93237139821`
+  (`1,341` tracked Python, `777` frontend unit, `337` non-visual E2E, `5,379`
+  direct trilingual sources, statements `80.20%`, zero vulnerabilities and
+  both secret lanes) and visual `93237139805` at `88/88`; controlled job
+  `93237140181` correctly skips.
+- Visual artifact `9037230235` has digest
+  `sha256:d00d71b8df1b592879e800cf82d12e1879622efdef61d9b4495e0662009052a6`;
+  Gitleaks artifact `9037284616` has digest
+  `sha256:7b747ed2a35fe510d19951b7b6c94c3fb7ea28ce8c60886a258900c8bf8d7c52`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md`.
+- Checkpoint 3 is PASS, not P6-07 Level 2. Standing transition authority now
+  activates only checkpoint 4: the dense eight-step selected-Project import
+  workspace, stable step rail/table-tree/inspector/progress layout, complete
+  operational states, correction/retry/rollback-denial surfaces and direct
+  English/`zh`/`zh-TW`, accessibility, browser and fixed-Linux visual proof.
+  Controlled Site, production mapping, customer workbook and ERPNext contact
+  remain inactive.
