@@ -1553,7 +1553,6 @@ def seed_tooling_import_fixture(
 ) -> dict[str, object]:
     import frappe
     from frappe.utils import now_datetime
-    from frappe.utils.file_manager import save_file
 
     from npi_core.controlled_evidence_validation import (
         FILE_REVISION_COMMAND_FLAG,
@@ -1619,7 +1618,18 @@ def seed_tooling_import_fixture(
         },
         "P6-07 generated fixture manifest drifted",
     )
-    file_document = save_file(file_name, content, "", "", is_private=1)
+    file_document = frappe.get_doc(
+        {
+            "doctype": "File",
+            "file_name": file_name,
+            "is_private": 1,
+            "content": content,
+        }
+    ).insert(ignore_permissions=True)
+    require(
+        str(file_document.file_name) == file_name,
+        "P6-07 synthetic private File name drifted",
+    )
     previous_command = getattr(frappe.flags, FILE_REVISION_COMMAND_FLAG, None)
     setattr(frappe.flags, FILE_REVISION_COMMAND_FLAG, True)
     try:

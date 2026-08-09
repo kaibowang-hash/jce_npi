@@ -214,6 +214,14 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
         for value in required:
             with self.subTest(value=value):
                 self.assertIn(value, self.source)
+        source_fixture = self.source.split(
+            "def seed_tooling_import_fixture(",
+            1,
+        )[1].split("def seed_tooling_import_mapping_activation(", 1)[0]
+        self.assertIn('"doctype": "File"', source_fixture)
+        self.assertIn('"content": content', source_fixture)
+        self.assertIn(".insert(ignore_permissions=True)", source_fixture)
+        self.assertNotIn("save_file(", source_fixture)
         self.assertNotIn("production_mapping", self.source.split("BENCH_FIXTURES =", 1)[1])
 
     def test_shell_orchestrates_independent_fail_closed_switch_and_cleanup(self) -> None:
