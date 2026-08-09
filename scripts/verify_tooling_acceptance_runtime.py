@@ -998,8 +998,8 @@ def verify_conflict_rollback(
             ),
             no_customer_authorization,
             ACCEPTANCE_AUTHORIZATION_KEY,
-            400,
-            "REQUEST_VALIDATION_FAILED",
+            422,
+            "VALIDATION_FAILED",
         ),
         (
             asset_request_command_path(

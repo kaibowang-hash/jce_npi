@@ -266,7 +266,7 @@ class Phase6ToolingAcceptanceRuntimeVerifierTest(unittest.TestCase):
             "TOOLING_IDEMPOTENCY_CONFLICT",
             "TOOLING_VERSION_CONFLICT",
             "TOOLING_REFERENCE_UNAVAILABLE",
-            "REQUEST_VALIDATION_FAILED",
+            "VALIDATION_FAILED",
             "TOOLING_ACCEPTANCE_ASSETS_ROUTES_DISABLED",
             "customer-owned repair authorization truth drifted",
             "local Mock preparation created integration traffic",
