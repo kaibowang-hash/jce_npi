@@ -2155,12 +2155,13 @@ class FrappeToolingRepository(
         *,
         filters: Mapping[str, object],
         maximum: int,
+        order_by: str = "global_id asc",
     ) -> tuple[object, ...]:
         names = frappe.get_all(
             doctype,
             filters=dict(filters),
             pluck="name",
-            order_by="global_id asc",
+            order_by=order_by,
             limit_page_length=maximum + 1,
         )
         if len(names) > maximum:

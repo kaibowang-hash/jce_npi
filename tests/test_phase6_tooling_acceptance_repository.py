@@ -42,7 +42,9 @@ class Phase6ToolingAcceptanceRepositoryTest(unittest.TestCase):
         self.assertIn("_MAX_ACCEPTANCE_REVISIONS = 500", CORE)
         self.assertIn("_MAX_REQUESTS = 500", ASSET)
         self.assertIn("self._bounded_documents(", method(CORE, CORE_TREE, "_acceptance_revisions"))
-        self.assertIn("self._bounded_documents(", method(ASSET, ASSET_TREE, "_asset_requests"))
+        asset_requests = method(ASSET, ASSET_TREE, "_asset_requests")
+        self.assertIn("self._bounded_documents(", asset_requests)
+        self.assertIn('order_by="created_at desc, global_id asc"', asset_requests)
 
     def test_acceptance_append_revalidates_every_exact_containment_edge(self) -> None:
         body = method(

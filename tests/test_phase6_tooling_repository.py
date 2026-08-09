@@ -273,6 +273,8 @@ class Phase6ToolingRepositoryTest(unittest.TestCase):
         bounded = function("_bounded_documents")
         self.assertIn("limit_page_length=maximum + 1", bounded)
         self.assertIn("if len(names) > maximum", bounded)
+        self.assertIn('order_by: str = "global_id asc"', bounded)
+        self.assertIn("order_by=order_by", bounded)
 
     def test_physical_set_scope_intake_successor_and_file_evidence_are_exact(
         self,
