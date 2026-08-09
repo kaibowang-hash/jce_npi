@@ -4870,6 +4870,11 @@ textarea::placeholder {
   border-block: var(--npi-border-default) solid var(--npi-color-border-default);
 }
 
+.tooling-list__grid .empty-state {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
 .tooling-list__pager {
   margin: 0;
 }
