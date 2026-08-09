@@ -5377,3 +5377,177 @@ The source field was retained as import provenance.,來源欄位已保留為匯�
 The row could not be imported. Retry with the trace identifier.,無法匯入此列。請使用追蹤識別碼重試。
 "The import worker lost its exact actor, Project, source, preview, or mapping authority.",匯入工作程序失去了精確的執行人、專案、來源、預覽或映射權限。
 The preview row is not eligible for execution.,預覽列不符合執行條件。
+Open Tooling List import,開啟模具清單匯入
+Upload,上傳
+Detect,偵測
+Map,映射
+Transform,轉換
+Validate,驗證
+Execute,執行
+Audit,稽核
+Rolled back,已回復
+Rollback denied,回復遭拒
+Skipped,已略過
+See the trace identifier for the exact failure.,請查看追蹤識別碼以瞭解確切失敗原因。
+Matched,相符
+Changed,已變更
+Used downstream,已供下游使用
+Loading Tooling List import workspace,正在載入模具清單匯入工作區
+Enter every required registered workbook reference.,請輸入所有必填的已登記活頁簿參照。
+Registering the controlled workbook,正在登記受控活頁簿
+Inspecting workbook structure,正在檢查活頁簿結構
+Enter a reason for the mapping proposal.,請輸入映射提案原因。
+Creating a mapping proposal,正在建立映射提案
+Transforming and validating workbook rows,正在轉換並驗證活頁簿資料列
+Enter every required confirmation value.,請輸入所有必填的確認值。
+Confirming the immutable preview,正在確認不可變預覽
+Queuing the exact preview for import,正在將精確預覽加入匯入佇列
+Enter the exact failed field and its corrected value.,請輸入精確的失敗欄位及其修正值。
+Creating a controlled correction file,正在建立受控修正檔案
+Downloading the controlled correction file,正在下載受控修正檔案
+Retrying exact failed rows,正在重試精確的失敗資料列
+Reconciling imported targets,正在核對已匯入目標
+Evaluating rollback eligibility,正在評估回復資格
+Rolling back eligible imported targets,正在回復符合條件的已匯入目標
+Tooling List import unavailable,模具清單匯入不可用
+Return to Tooling cockpit,返回模具駕駛艙
+Tooling List import,模具清單匯入
+Selected Project,所選專案
+Batch,批次
+Controlled workbook worker workspace,受控活頁簿工作程序工作區
+Project-first import boundary,專案優先匯入邊界
+Production mapping is unavailable.,生產映射不可用。
+Only approved synthetic fixture mappings can reach execution in this checkpoint.,此檢查點僅允許已核准的合成測試夾具映射進入執行。
+Approved synthetic fixture mapping is active.,已核准的合成測試夾具映射已啟用。
+Production mapping activation remains disabled.,生產映射啟用仍處於停用狀態。
+Tooling List import is read only in this session.,此工作階段中的模具清單匯入為唯讀。
+The exact command is processing. Keep this workspace open.,精確命令正在處理。請保持此工作區開啟。
+Registered batches,已登記批次
+Preview rows,預覽資料列
+Retryable failures,可重試失敗
+Tooling import steps,模具匯入步驟
+1. Register controlled workbook,1. 登記受控活頁簿
+Register an existing private Frappe File revision. The browser does not upload or parse the workbook.,登記現有的私有 Frappe 檔案修訂。瀏覽器不會上傳或解析活頁簿。
+Customer scope,客戶範圍
+SHA-256 digest,SHA-256 摘要
+Register controlled workbook,登記受控活頁簿
+Workbook,活頁簿
+Registered at,登記時間
+No Tooling List import batch is registered.,尚未登記模具清單匯入批次。
+Register one controlled workbook revision to begin.,請登記一個受控活頁簿修訂以開始。
+2. Detect workbook structure,2. 偵測活頁簿結構
+Worksheet,工作表
+Header row,標題列
+Detected columns,已偵測欄
+Detected regions,已偵測區域
+Formula errors,公式錯誤
+Image anchors,影像錨點
+Header cell,標題儲存格
+Source column,來源欄
+Ordinal,序號
+Workbook structure has not been detected.,尚未偵測活頁簿結構。
+Detection is passive and creates an immutable report.,偵測為被動操作並會建立不可變報告。
+Select a registered batch before detection.,請先選擇已登記批次再進行偵測。
+Detect workbook structure,偵測活頁簿結構
+3. Propose field mapping,3. 提出欄位映射
+Complete workbook detection before proposing a mapping.,請先完成活頁簿偵測再提出映射。
+Mapping template,映射範本
+Proposal reason,提案原因
+Disposition,處置方式
+Candidate object,候選物件
+Candidate field,候選欄位
+Transformation,轉換規則
+Candidate,候選
+Not proposed,未提出
+Create mapping proposal,建立映射提案
+4. Transform rows,4. 轉換資料列
+Mapping state,映射狀態
+Approved fixture,已核准測試夾具
+Proposal,提案
+Source signature,來源簽章
+Mapping snapshot,映射快照
+"Transformation preserves raw values, normalized candidates and validation findings in one immutable preview.",轉換會在一個不可變預覽中保留原始值、標準化候選值和驗證發現。
+Transform and validate,轉換並驗證
+Create a mapping proposal before transforming rows.,請先建立映射提案再轉換資料列。
+5. Validate findings,5. 驗證發現
+Row,資料列
+Finding,發現
+Warning,警告
+No validation finding blocks this preview.,沒有驗證發現阻止此預覽。
+Review the immutable row preview before execution.,執行前請審查不可變資料列預覽。
+Transform rows before reviewing validation findings.,請先轉換資料列再審查驗證發現。
+Review immutable preview,審查不可變預覽
+6. Review immutable preview,6. 審查不可變預覽
+Raw value,原始值
+Normalized candidate,標準化候選值
+Eligibility,資格
+Create,建立
+Update,更新
+Skip,略過
+Eligible,符合條件
+Required confirmation,必要確認
+Confirmation kind,確認類型
+Image anchor,影像錨點
+Source row,來源資料列
+Anchor key,錨點鍵
+Selected target object,所選目標物件
+Target snapshot hash,目標快照雜湊
+Confirm preview relationship,確認預覽關係
+I reviewed the exact immutable preview and execution eligibility.,我已審查精確的不可變預覽和執行資格。
+Continue to execution,繼續執行
+No immutable preview is available.,沒有可用的不可變預覽。
+7. Execute and recover,7. 執行與復原
+The reviewed preview is eligible for execution.,已審查預覽符合執行條件。
+The preview is not eligible for execution.,預覽不符合執行條件。
+Execute exact preview,執行精確預覽
+Attempt,嘗試
+Not available,不可用
+Final failures,最終失敗
+The worker result is polled from the exact job resource.,系統從精確工作資源輪詢工作程序結果。
+Target,目標
+Not created,未建立
+Correct and retry failed rows,修正並重試失敗資料列
+Corrected value,修正值
+Correction file,修正檔案
+Entries,項目數
+Download correction file,下載修正檔案
+Retry exact failed rows,重試精確的失敗資料列
+Create controlled correction file,建立受控修正檔案
+Review audit and reconciliation,審查稽核與核對
+Complete an immutable preview before execution.,執行前請完成不可變預覽。
+"8. Audit, reconcile and rollback",8. 稽核、核對與回復
+Job identity,工作識別碼
+Job state,工作狀態
+Queued at,排入佇列時間
+Updated at,更新時間
+Reconciliation kind,核對類型
+Downstream references,下游參照
+Observed snapshot,觀測快照
+Rollback eligibility,回復資格
+Rollback result,回復結果
+No reconciliation revision is recorded.,尚未記錄核對修訂。
+Run reconciliation to compare imported targets with immutable execution truth.,執行核對以比較已匯入目標與不可變執行事實。
+Rollback is denied by current target usage or changes.,目前目標使用情況或變更導致回復遭拒。
+Rollback is eligible for imported unused targets.,未使用的已匯入目標符合回復條件。
+The eligibility revision is immutable and bound to this job snapshot.,資格修訂不可變並繫結至此工作快照。
+Reconcile imported targets,核對已匯入目標
+Evaluate rollback eligibility,評估回復資格
+Rollback imported unused objects,回復已匯入且未使用的物件
+No execution job is available for audit.,沒有可供稽核的執行工作。
+Import truth inspector,匯入事實檢查器
+Batch identity,批次識別碼
+Source snapshot,來源快照
+Inspection revisions,檢查修訂
+Mapping revisions,映射修訂
+Preview revisions,預覽修訂
+Worker jobs,工作程序工作
+Select or register a batch to inspect immutable import truth.,請選擇或登記批次以檢查不可變匯入事實。
+Latest worker job,最新工作程序工作
+Eligibility revision,資格修訂
+Eligible targets,符合條件的目標
+Only imported targets that are unchanged and unused downstream will be removed.,僅會移除未變更且未供下游使用的已匯入目標。
+Tooling import rollback permission is required.,需要模具匯入回復權限。
+The rollback creates an immutable result and cannot restore downstream edits.,回復會建立不可變結果且無法還原下游編輯。
+Denied or conflicted targets remain unchanged and are reported with a trace identifier.,遭拒或衝突的目標保持不變並透過追蹤識別碼報告。
+The job and rollback result remain in the immutable import audit history.,工作和回復結果會保留在不可變匯入稽核歷史中。
+Confirm Tooling import rollback,確認模具匯入回復

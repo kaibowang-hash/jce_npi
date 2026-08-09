@@ -60,6 +60,7 @@ export interface AppRoute {
   gateMode: "live" | "demo" | null;
   toolingMasterGlobalId: string | null;
   toolingMode: "live" | "demo" | null;
+  toolingWorkspace: "cockpit" | "import";
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -186,6 +187,12 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
     projectMode,
     toolingMasterGlobalId: liveToolingMasterMatch?.[2] ?? null,
     toolingMode,
+    toolingWorkspace:
+      toolingMode === "live" &&
+      liveToolingMatch &&
+      parameters.get("workspace") === "import"
+        ? "import"
+        : "cockpit",
     workMode,
   };
 }

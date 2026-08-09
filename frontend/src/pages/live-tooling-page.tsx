@@ -531,6 +531,16 @@ export default function LiveToolingPage({
               }
             : undefined
         }
+        secondaryAction={
+          <Button
+            icon="upload"
+            onClick={() => {
+              navigate(`/projects/${projectId}/tooling?workspace=import`);
+            }}
+          >
+            {t("Open Tooling List import")}
+          </Button>
+        }
         source={source}
         status={
           <SemanticStatus

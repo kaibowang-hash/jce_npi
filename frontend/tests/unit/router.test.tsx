@@ -110,7 +110,26 @@ describe("application routing", () => {
       projectGlobalId: null,
       toolingMasterGlobalId: null,
       toolingMode: "demo",
+      toolingWorkspace: "cockpit",
     });
+    expect(
+      parseRoute(
+        locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/tooling?workspace=import",
+        ),
+      ),
+    ).toMatchObject({
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      toolingMode: "live",
+      toolingWorkspace: "import",
+    });
+    expect(
+      parseRoute(
+        locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/tooling/22222222-2222-4222-8222-222222222222?workspace=import",
+        ),
+      ).toolingWorkspace,
+    ).toBe("cockpit");
     expect(
       parseRoute(
         locationFor(

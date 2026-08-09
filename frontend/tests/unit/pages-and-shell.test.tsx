@@ -42,6 +42,7 @@ function route(
     projectMode: screen === "project" ? (demo ? "demo" : "live") : null,
     toolingMasterGlobalId: liveTooling ? (pathParts[4] ?? null) : null,
     toolingMode: screen === "tooling" ? (liveTooling ? "live" : "demo") : null,
+    toolingWorkspace: "cockpit",
     workMode: screen === "work" ? (demo ? "demo" : "live") : null,
   };
 }

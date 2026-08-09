@@ -5377,3 +5377,177 @@ The source field was retained as import provenance.,源字段已保留为导入�
 The row could not be imported. Retry with the trace identifier.,无法导入此行。请使用追踪标识重试。
 "The import worker lost its exact actor, Project, source, preview, or mapping authority.",导入工作进程失去了精确的执行人、项目、来源、预览或映射权限。
 The preview row is not eligible for execution.,预览行不符合执行条件。
+Open Tooling List import,打开模具清单导入
+Upload,上传
+Detect,检测
+Map,映射
+Transform,转换
+Validate,验证
+Execute,执行
+Audit,审计
+Rolled back,已回滚
+Rollback denied,回滚被拒绝
+Skipped,已跳过
+See the trace identifier for the exact failure.,请查看追踪标识以了解确切失败原因。
+Matched,匹配
+Changed,已更改
+Used downstream,已被下游使用
+Loading Tooling List import workspace,正在加载模具清单导入工作区
+Enter every required registered workbook reference.,请输入所有必填的已登记工作簿引用。
+Registering the controlled workbook,正在登记受控工作簿
+Inspecting workbook structure,正在检查工作簿结构
+Enter a reason for the mapping proposal.,请输入映射提案原因。
+Creating a mapping proposal,正在创建映射提案
+Transforming and validating workbook rows,正在转换并验证工作簿数据行
+Enter every required confirmation value.,请输入所有必填的确认值。
+Confirming the immutable preview,正在确认不可变预览
+Queuing the exact preview for import,正在将精确预览加入导入队列
+Enter the exact failed field and its corrected value.,请输入精确的失败字段及其修正值。
+Creating a controlled correction file,正在创建受控修正文件
+Downloading the controlled correction file,正在下载受控修正文件
+Retrying exact failed rows,正在重试精确的失败数据行
+Reconciling imported targets,正在对账已导入目标
+Evaluating rollback eligibility,正在评估回滚资格
+Rolling back eligible imported targets,正在回滚符合条件的已导入目标
+Tooling List import unavailable,模具清单导入不可用
+Return to Tooling cockpit,返回模具驾驶舱
+Tooling List import,模具清单导入
+Selected Project,所选项目
+Batch,批次
+Controlled workbook worker workspace,受控工作簿工作进程工作区
+Project-first import boundary,项目优先导入边界
+Production mapping is unavailable.,生产映射不可用。
+Only approved synthetic fixture mappings can reach execution in this checkpoint.,此检查点仅允许已批准的合成测试夹具映射进入执行。
+Approved synthetic fixture mapping is active.,已批准的合成测试夹具映射已启用。
+Production mapping activation remains disabled.,生产映射激活仍处于禁用状态。
+Tooling List import is read only in this session.,此会话中的模具清单导入为只读。
+The exact command is processing. Keep this workspace open.,精确命令正在处理。请保持此工作区打开。
+Registered batches,已登记批次
+Preview rows,预览数据行
+Retryable failures,可重试失败
+Tooling import steps,模具导入步骤
+1. Register controlled workbook,1. 登记受控工作簿
+Register an existing private Frappe File revision. The browser does not upload or parse the workbook.,登记现有的私有 Frappe 文件修订。浏览器不会上传或解析工作簿。
+Customer scope,客户范围
+SHA-256 digest,SHA-256 摘要
+Register controlled workbook,登记受控工作簿
+Workbook,工作簿
+Registered at,登记时间
+No Tooling List import batch is registered.,尚未登记模具清单导入批次。
+Register one controlled workbook revision to begin.,请登记一个受控工作簿修订以开始。
+2. Detect workbook structure,2. 检测工作簿结构
+Worksheet,工作表
+Header row,表头行
+Detected columns,已检测列
+Detected regions,已检测区域
+Formula errors,公式错误
+Image anchors,图像锚点
+Header cell,表头单元格
+Source column,源列
+Ordinal,序号
+Workbook structure has not been detected.,尚未检测工作簿结构。
+Detection is passive and creates an immutable report.,检测为被动操作并会创建不可变报告。
+Select a registered batch before detection.,请先选择已登记批次再进行检测。
+Detect workbook structure,检测工作簿结构
+3. Propose field mapping,3. 提出字段映射
+Complete workbook detection before proposing a mapping.,请先完成工作簿检测再提出映射。
+Mapping template,映射模板
+Proposal reason,提案原因
+Disposition,处置方式
+Candidate object,候选对象
+Candidate field,候选字段
+Transformation,转换规则
+Candidate,候选
+Not proposed,未提出
+Create mapping proposal,创建映射提案
+4. Transform rows,4. 转换数据行
+Mapping state,映射状态
+Approved fixture,已批准测试夹具
+Proposal,提案
+Source signature,源签名
+Mapping snapshot,映射快照
+"Transformation preserves raw values, normalized candidates and validation findings in one immutable preview.",转换会在一个不可变预览中保留原始值、规范化候选值和验证发现。
+Transform and validate,转换并验证
+Create a mapping proposal before transforming rows.,请先创建映射提案再转换数据行。
+5. Validate findings,5. 验证发现
+Row,数据行
+Finding,发现
+Warning,警告
+No validation finding blocks this preview.,没有验证发现阻止此预览。
+Review the immutable row preview before execution.,执行前请审查不可变数据行预览。
+Transform rows before reviewing validation findings.,请先转换数据行再审查验证发现。
+Review immutable preview,审查不可变预览
+6. Review immutable preview,6. 审查不可变预览
+Raw value,原始值
+Normalized candidate,规范化候选值
+Eligibility,资格
+Create,创建
+Update,更新
+Skip,跳过
+Eligible,符合条件
+Required confirmation,必需确认
+Confirmation kind,确认类型
+Image anchor,图像锚点
+Source row,源数据行
+Anchor key,锚点键
+Selected target object,所选目标对象
+Target snapshot hash,目标快照哈希
+Confirm preview relationship,确认预览关系
+I reviewed the exact immutable preview and execution eligibility.,我已审查精确的不可变预览和执行资格。
+Continue to execution,继续执行
+No immutable preview is available.,没有可用的不可变预览。
+7. Execute and recover,7. 执行与恢复
+The reviewed preview is eligible for execution.,已审查预览符合执行条件。
+The preview is not eligible for execution.,预览不符合执行条件。
+Execute exact preview,执行精确预览
+Attempt,尝试
+Not available,不可用
+Final failures,最终失败
+The worker result is polled from the exact job resource.,系统从精确任务资源轮询工作进程结果。
+Target,目标
+Not created,未创建
+Correct and retry failed rows,修正并重试失败数据行
+Corrected value,修正值
+Correction file,修正文件
+Entries,条目数
+Download correction file,下载修正文件
+Retry exact failed rows,重试精确的失败数据行
+Create controlled correction file,创建受控修正文件
+Review audit and reconciliation,审查审计与对账
+Complete an immutable preview before execution.,执行前请完成不可变预览。
+"8. Audit, reconcile and rollback",8. 审计、对账与回滚
+Job identity,任务标识
+Job state,任务状态
+Queued at,排队时间
+Updated at,更新时间
+Reconciliation kind,对账类型
+Downstream references,下游引用
+Observed snapshot,观测快照
+Rollback eligibility,回滚资格
+Rollback result,回滚结果
+No reconciliation revision is recorded.,尚未记录对账修订。
+Run reconciliation to compare imported targets with immutable execution truth.,运行对账以比较已导入目标与不可变执行事实。
+Rollback is denied by current target usage or changes.,当前目标使用情况或变更导致回滚被拒绝。
+Rollback is eligible for imported unused targets.,未使用的已导入目标符合回滚条件。
+The eligibility revision is immutable and bound to this job snapshot.,资格修订不可变并绑定到此任务快照。
+Reconcile imported targets,对账已导入目标
+Evaluate rollback eligibility,评估回滚资格
+Rollback imported unused objects,回滚已导入且未使用的对象
+No execution job is available for audit.,没有可供审计的执行任务。
+Import truth inspector,导入事实检查器
+Batch identity,批次标识
+Source snapshot,源快照
+Inspection revisions,检查修订
+Mapping revisions,映射修订
+Preview revisions,预览修订
+Worker jobs,工作进程任务
+Select or register a batch to inspect immutable import truth.,请选择或登记批次以检查不可变导入事实。
+Latest worker job,最新工作进程任务
+Eligibility revision,资格修订
+Eligible targets,符合条件的目标
+Only imported targets that are unchanged and unused downstream will be removed.,仅会移除未更改且未被下游使用的已导入目标。
+Tooling import rollback permission is required.,需要模具导入回滚权限。
+The rollback creates an immutable result and cannot restore downstream edits.,回滚会创建不可变结果且无法恢复下游编辑。
+Denied or conflicted targets remain unchanged and are reported with a trace identifier.,被拒绝或冲突的目标保持不变并通过追踪标识报告。
+The job and rollback result remain in the immutable import audit history.,任务和回滚结果会保留在不可变导入审计历史中。
+Confirm Tooling import rollback,确认模具导入回滚
