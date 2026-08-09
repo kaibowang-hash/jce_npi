@@ -186,6 +186,7 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             'b"\\xef\\xbb\\xbfworksheet_name,source_row,source_header,corrected_value\\n"',
             "hashlib.sha256(content).hexdigest() == artifact_content_hash",
             'len(succeeded["rowResults"]) == 5',
+            'counts["NPI Tooling Import Row Result"] == 10',
             'expected_attempt=2',
             "failed-row-only retry or successful-row non-duplication drifted",
             'item.get("state") == "matched"',

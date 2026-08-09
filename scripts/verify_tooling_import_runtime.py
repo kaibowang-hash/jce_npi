@@ -1203,7 +1203,7 @@ def verify_persistence(
         and counts["NPI Tooling Import Mapping Activation"] == 2
         and counts["NPI Tooling Import Preview Revision"] == 4
         and counts["NPI Tooling Import Job"] == 2
-        and counts["NPI Tooling Import Row Result"] == 8
+        and counts["NPI Tooling Import Row Result"] == 10
         and counts["NPI Tooling Import Target Binding"] == 6
         and counts["NPI Tooling Import Correction Artifact"] == 2
         and counts["NPI Tooling Import Reconciliation Revision"] == 6,
