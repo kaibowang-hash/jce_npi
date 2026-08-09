@@ -1362,11 +1362,17 @@ def verify_conflict_rollback(
     *,
     context: dict[str, object],
     scenario: dict[str, object],
+    conflicting_scenario: dict[str, object],
 ) -> None:
     project_id = str(context["projectId"])
     before = persisted_counts(actor, base_url, project_id)
-    different = dict(scenario["createPayload"])
-    different["customerScopeId"] = "synthetic-conflicting-scope"
+    different = dict(conflicting_scenario["createPayload"])
+    require(
+        different != scenario["createPayload"]
+        and different.get("customerScopeId")
+        == scenario["createPayload"].get("customerScopeId"),
+        "P6-07 conflicting source fixture is not a valid alternate reference",
+    )
     conflict = tooling_request(
         actor,
         base_url,
@@ -1546,6 +1552,7 @@ def run_fresh(
         csrf_token,
         context=context,
         scenario=scenarios[0],
+        conflicting_scenario=scenarios[1],
     )
     verify_persistence(
         actor,

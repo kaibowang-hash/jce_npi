@@ -348,6 +348,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "unauthorized and absent import scopes are distinguishable",
             "unauthorized and absent command scopes are distinguishable",
             "failed commands changed business, receipt, audit, or integration truth",
+            'conflicting_scenario=scenarios[1]',
+            "conflicting source fixture is not a valid alternate reference",
             "cross-process replay changed immutable or integration cardinality",
             "controlled import created ERP integration traffic",
             "production mapping state was persisted",
