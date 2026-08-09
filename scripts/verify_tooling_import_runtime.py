@@ -580,6 +580,34 @@ def binary_correction_request(
     return result
 
 
+def correction_download_checks(
+    downloaded: object,
+    *,
+    corrected_value: str,
+    corrected_formula_value: str,
+    artifact_content_hash: str,
+) -> dict[str, bool]:
+    content = getattr(downloaded, "content", b"")
+    headers = getattr(downloaded, "headers", {})
+    return {
+        "statusOk": getattr(downloaded, "status", None) == 200,
+        "csvPreambleOk": isinstance(content, bytes)
+        and content.startswith(
+            b"\xef\xbb\xbfworksheet_name,source_row,source_header,corrected_value\n"
+        ),
+        "digestOk": isinstance(content, bytes)
+        and hashlib.sha256(content).hexdigest() == artifact_content_hash,
+        "partCorrectionPresent": isinstance(content, bytes)
+        and corrected_value.encode("utf-8") in content,
+        "formulaCorrectionPresent": isinstance(content, bytes)
+        and corrected_formula_value.encode("utf-8") in content,
+        "freshReceipt": getattr(headers, "get", lambda *_: None)(
+            "Idempotency-Replayed"
+        )
+        == "false",
+    }
+
+
 def current_job(opener, base_url: str, project_id: str, batch_id: str, job_id: str):
     result = tooling_request(
         opener,
@@ -832,16 +860,16 @@ def run_scenario(
         idempotency_key=scenario_key(index, "correction-download"),
         expected_snapshot_hash=artifact_hash,
     )
+    download_checks = correction_download_checks(
+        downloaded,
+        corrected_value=corrected_value,
+        corrected_formula_value=corrected_formula_value,
+        artifact_content_hash=artifact_content_hash,
+    )
     require(
-        downloaded.status == 200
-        and downloaded.content.startswith(
-            b"\xef\xbb\xbfworksheet_name,source_row,source_header,corrected_value\n"
-        )
-        and hashlib.sha256(downloaded.content).hexdigest() == artifact_content_hash
-        and corrected_value.encode("utf-8") in downloaded.content
-        and corrected_formula_value.encode("utf-8") in downloaded.content
-        and downloaded.headers.get("Idempotency-Replayed") == "false",
-        "P6-07 authorized correction download drifted",
+        all(download_checks.values()),
+        "P6-07 authorized correction download drifted: "
+        + json.dumps(download_checks, separators=(",", ":"), sort_keys=True),
     )
 
     retry_result = command(

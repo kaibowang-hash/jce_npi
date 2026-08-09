@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import os
 import sys
 import unittest
@@ -155,7 +156,7 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             '("total daily output", "formula_error")',
             'artifact.get("entryCount") == 2',
             'b"\\xef\\xbb\\xbfworksheet_name,source_row,source_header,corrected_value\\n"',
-            "hashlib.sha256(downloaded.content).hexdigest() == artifact_content_hash",
+            "hashlib.sha256(content).hexdigest() == artifact_content_hash",
             'len(succeeded["rowResults"]) == 5',
             'expected_attempt=2',
             "failed-row-only retry or successful-row non-duplication drifted",
@@ -228,6 +229,36 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             {
                 ("Part Name English", "Synthetic corrected part"),
                 ("total daily output", "2001"),
+            },
+        )
+
+    def test_correction_download_diagnostic_is_closed_and_exact(self) -> None:
+        content = (
+            b"\xef\xbb\xbfworksheet_name,source_row,source_header,corrected_value\n"
+            b"Synthetic Tooling List,4,Part Name English,Synthetic corrected part\n"
+            b"Synthetic Tooling List,3,total daily output,2001\n"
+        )
+        checks = self.module.correction_download_checks(
+            SimpleNamespace(
+                status=200,
+                content=content,
+                headers={"Idempotency-Replayed": "false"},
+            ),
+            corrected_value="Synthetic corrected part",
+            corrected_formula_value="2001",
+            artifact_content_hash=hashlib.sha256(content).hexdigest(),
+        )
+
+        self.assertTrue(all(checks.values()))
+        self.assertEqual(
+            set(checks),
+            {
+                "statusOk",
+                "csvPreambleOk",
+                "digestOk",
+                "partCorrectionPresent",
+                "formulaCorrectionPresent",
+                "freshReceipt",
             },
         )
 
