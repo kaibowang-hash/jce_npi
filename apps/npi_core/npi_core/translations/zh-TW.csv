@@ -5551,3 +5551,72 @@ The rollback creates an immutable result and cannot restore downstream edits.,�
 Denied or conflicted targets remain unchanged and are reported with a trace identifier.,遭拒或衝突的目標保持不變並透過追蹤識別碼報告。
 The job and rollback result remain in the immutable import audit history.,工作和回復結果會保留在不可變匯入稽核歷史中。
 Confirm Tooling import rollback,確認模具匯入回復
+A Tooling Master can only be selected once.,每個模具主資料只能選擇一次。
+A Tooling export receipt can only advance once to a complete sealed response.,模具匯出回執只能一次性推進為完整的已封存回應。
+A new Tooling List preference must start at version one.,新的模具清單偏好必須從版本一開始。
+A new Tooling export receipt must be unsealed.,新的模具匯出回執必須處於未封存狀態。
+A selection export cannot include a filtered query snapshot.,選擇匯出不能包含篩選查詢快照。
+Applicability count,適用關係數
+Confidentiality Class,機密級別
+Confidentiality: Internal project use,機密級別：專案內部使用
+Controlled XLSX import,受控 XLSX 匯入
+Distinct Part Revision count,不同零件修訂數
+Enter a valid Tooling List search.,請輸入有效的模具清單搜尋條件。
+Enter valid Tooling List column widths.,請輸入有效的模具清單欄寬。
+Enter valid Tooling List rows.,請輸入有效的模具清單列。
+Export Mode,匯出模式
+Generated At,產生時間
+Generated at,產生時間
+Generated from an immutable Tooling List snapshot.,由不可變模具清單快照產生。
+Manifest SHA-256,清單 SHA-256
+Manual,手動建立
+Media Type,媒體類型
+NPI Tooling Export Command Idempotency,NPI 模具匯出命令冪等回執
+NPI Tooling Export Package,NPI 模具匯出包
+NPI Tooling List Preference,NPI 模具清單偏好
+Object Count,物件數量
+Originating Project ID,來源專案識別碼
+Physical set count,實體模具套數
+Private File ID,私有檔案識別碼
+Project code,專案編碼
+Query Snapshot Hash,查詢快照雜湊
+Receipt Key Hash,回執鍵雜湊
+Required Tooling List columns cannot be hidden.,不能隱藏必要的模具清單欄。
+Rows: {row_count},列數：{row_count}
+Sealed At,封存時間
+Select a supported Tooling export operation.,請選擇支援的模具匯出操作。
+Select between one and one hundred Tooling Masters.,請選擇一至一百個模具主資料。
+Select supported Tooling List columns.,請選擇支援的模具清單欄。
+Select the Tooling object package media type.,請選擇模具物件包媒體類型。
+Select the internal Project confidentiality class.,請選擇專案內部機密級別。
+Select the supported Tooling List grid.,請選擇支援的模具清單網格。
+Target Type,目標類型
+The Tooling List filter must match the saved view.,模具清單篩選條件必須與儲存的檢視一致。
+The Tooling List preference key does not match.,模具清單偏好鍵不相符。
+The Tooling List preference version is stale.,模具清單偏好版本已過期。
+The Tooling List search is too long.,模具清單搜尋條件過長。
+The Tooling List selection is stale.,模具清單選擇已過期。
+The Tooling List table schema is unsupported.,不支援此模具清單表格架構。
+The Tooling object package must expire after one hour.,模具物件包必須在一小時後過期。
+The exact Project is unavailable for this Tooling List preference.,此模具清單偏好對應的精確專案無法使用。
+The exact Project is unavailable for this Tooling export package.,此模具匯出包對應的精確專案無法使用。
+The filtered Tooling List contains more than one hundred objects.,篩選後的模具清單包含超過一百個物件。
+Tooling Export Package Snapshot,模具匯出包快照
+Tooling List Preference Snapshot,模具清單偏好快照
+Tooling Master ID,模具主資料識別碼
+Tooling Object References,模具物件參照
+Tooling export fields do not match the exact snapshot.,模具匯出欄位與精確快照不相符。
+Tooling export history is immutable.,模具匯出歷史不可變。
+Tooling export receipts are immutable after sealing.,模具匯出回執封存後不可變。
+Tooling export records can only be written by the controlled export command.,模具匯出記錄只能由受控匯出命令寫入。
+Tooling export records cannot be deleted.,不能刪除模具匯出記錄。
+Tooling export response hash does not match.,模具匯出回應雜湊不相符。
+Tooling export snapshot hash does not match.,模具匯出快照雜湊不相符。
+Tooling object package,模具物件包
+Tooling snapshot hash,模具快照雜湊
+Tooling title,模具標題
+Use each supported Tooling List column exactly once.,每個支援的模具清單欄必須且只能使用一次。
+View ID,檢視識別碼
+The Tooling export receipt key does not match.,模具匯出回執鍵不相符。
+The Tooling export receipt target is unsupported.,不支援此模具匯出回執目標。
+Tooling List rows must be unique.,模具清單列必須唯一。

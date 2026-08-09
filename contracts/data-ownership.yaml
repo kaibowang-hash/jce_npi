@@ -644,6 +644,31 @@ objects:
       source_kind_and_calibration_version: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
       health_score_threshold_and_preventive_recommendation: {owner: FUTURE_APPROVED_TOOLING_HEALTH_POLICY, editable_in: [], direction: DERIVED_READ_ONLY, conflict: UNAVAILABLE}
 
+  ToolingListPreference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_view_grid_and_table_schema_identity: {owner: NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      versioned_filter_sort_group_and_column_layout_snapshot: {owner: NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND, editable_in: [NPI_ONE_TOOLING_LIST_PREFERENCE_COMMAND], direction: NONE, conflict: VERSION_CONFLICT}
+      business_object_state_or_shared_default: {owner: NPI_ONE_TOOLING_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_IN_PREFERENCE}
+
+  ToolingExportPackage:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_mode_query_or_selection_and_object_snapshot_hashes: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      private_one_hour_package_file_hash_manifest_and_localized_allowlisted_rows: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      raw_file_url_workbook_external_party_cost_evidence_and_lifecycle_truth: {owner: SOURCE_SYSTEM, editable_in: [], direction: NONE, conflict: NEVER_INCLUDE_IN_PACKAGE}
+      approval_publisher_or_lifecycle_authority: {owner: FUTURE_APPROVED_TOOLING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingExportCommandIdempotency:
+    owner_system: NPI_ONE_TOOLING_EXPORT_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_payload_identity: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      response_and_seal: {owner: NPI_ONE_TOOLING_EXPORT_COMMAND, editable_in: [NPI_ONE_TOOLING_EXPORT_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
+      raw_idempotency_key: {owner: REQUEST_ONLY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+
   ToolingCommandIdempotency:
     owner_system: NPI_ONE_TOOLING_COMMAND
     erp_view: none

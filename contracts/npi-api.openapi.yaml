@@ -14698,6 +14698,191 @@ components:
         reasonCode:
           type: string
           enum: [unused_batch_created_object, pre_existing_object_requires_forward_correction, object_not_created_by_batch, imported_object_changed, downstream_reference_present]
+    ToolingListViewId:
+      type: string
+      enum:
+        - all
+        - missing_applicability
+        - single_part
+        - shared_parts
+        - missing_physical_set
+        - single_physical_set
+        - multiple_physical_sets
+        - missing_design_revision
+        - has_design_revision
+        - customer_owned_set
+    ToolingListSortKey:
+      type: string
+      enum: [title, applicability_count, physical_set_count, latest_revision_number]
+    ToolingListSortDirection:
+      type: string
+      enum: [asc, desc]
+    ToolingListGroupKey:
+      type: string
+      enum: [none, applicability_scope, physical_set_presence, design_revision_presence]
+    ToolingListFilterSnapshot:
+      type: object
+      additionalProperties: false
+      required: [viewId, search, sortKey, sortDirection, groupKey]
+      properties:
+        viewId: { $ref: "#/components/schemas/ToolingListViewId" }
+        search: { type: string, maxLength: 120 }
+        sortKey: { $ref: "#/components/schemas/ToolingListSortKey" }
+        sortDirection: { $ref: "#/components/schemas/ToolingListSortDirection" }
+        groupKey: { $ref: "#/components/schemas/ToolingListGroupKey" }
+    ToolingListRow:
+      type: object
+      additionalProperties: false
+      required:
+        [toolingMasterGlobalId, toolingMasterSnapshotHash, title, projectGlobalId,
+         projectCode, originatingProjectGlobalId, applicabilityCount,
+         distinctPartRevisionCount, physicalSetCount, designRevisionCount,
+         latestRevisionNumber, customerOwnedSet, source]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingMasterSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        projectGlobalId: { type: string, format: uuid }
+        projectCode: { type: string, minLength: 1, maxLength: 64 }
+        originatingProjectGlobalId: { type: string, format: uuid }
+        applicabilityCount: { type: integer, minimum: 0 }
+        distinctPartRevisionCount: { type: integer, minimum: 0 }
+        physicalSetCount: { type: integer, minimum: 0 }
+        designRevisionCount: { type: integer, minimum: 0 }
+        latestRevisionNumber:
+          oneOf:
+            - { type: integer, minimum: 1 }
+            - { type: "null" }
+        customerOwnedSet: { type: boolean }
+        source: { type: string, enum: [manual, controlled_xlsx_import] }
+    ToolingListColumnId:
+      type: string
+      enum:
+        [selection, tooling, applicability, part_revisions, physical_sets,
+         design_revisions, origin, source, action]
+    ToolingListColumnWidth:
+      type: object
+      additionalProperties: false
+      required: [columnId, width]
+      properties:
+        columnId: { $ref: "#/components/schemas/ToolingListColumnId" }
+        width: { type: integer, minimum: 56, maximum: 480 }
+    ToolingListPreferenceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        [gridId, tableSchemaVersion, viewId, filter, columnOrder, hiddenColumns,
+         columnWidths]
+      properties:
+        gridId: { type: string, const: tooling-list }
+        tableSchemaVersion: { type: string, const: tooling-list-grid-v1 }
+        viewId: { $ref: "#/components/schemas/ToolingListViewId" }
+        filter: { $ref: "#/components/schemas/ToolingListFilterSnapshot" }
+        columnOrder:
+          type: array
+          minItems: 9
+          maxItems: 9
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ToolingListColumnId" }
+        hiddenColumns:
+          type: array
+          maxItems: 6
+          uniqueItems: true
+          description: selection, tooling, and action are required and cannot be hidden
+          items:
+            type: string
+            enum: [applicability, part_revisions, physical_sets, design_revisions, origin, source]
+        columnWidths:
+          type: array
+          maxItems: 9
+          items: { $ref: "#/components/schemas/ToolingListColumnWidth" }
+    ToolingListPreference:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, projectGlobalId, actorUserId, optimisticVersion, preference,
+         snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        preference: { $ref: "#/components/schemas/ToolingListPreferenceSnapshot" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingListSelectionReference:
+      type: object
+      additionalProperties: false
+      required: [toolingMasterGlobalId, snapshotHash]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingExportSelectionRequest:
+      type: object
+      additionalProperties: false
+      required: [mode, selection]
+      properties:
+        mode: { type: string, const: selection }
+        selection:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ToolingListSelectionReference" }
+    ToolingExportFilteredRequest:
+      type: object
+      additionalProperties: false
+      required: [mode, filter, querySnapshotHash]
+      properties:
+        mode: { type: string, const: filtered }
+        filter: { $ref: "#/components/schemas/ToolingListFilterSnapshot" }
+        querySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingExportRequest:
+      oneOf:
+        - { $ref: "#/components/schemas/ToolingExportSelectionRequest" }
+        - { $ref: "#/components/schemas/ToolingExportFilteredRequest" }
+      discriminator:
+        propertyName: mode
+        mapping:
+          selection: "#/components/schemas/ToolingExportSelectionRequest"
+          filtered: "#/components/schemas/ToolingExportFilteredRequest"
+    ToolingExportPackage:
+      type: object
+      additionalProperties: false
+      description: URL-free immutable metadata for one private tooling-object-package-v1 ZIP
+      required:
+        [globalId, projectGlobalId, createdByUserId, mode, language,
+         confidentialityClass, objectCount, querySnapshotHash, objectRefs,
+         generatedAt, expiresAt, fileName, mimeType, sizeBytes, sha256,
+         manifestSha256, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        mode: { type: string, enum: [selection, filtered] }
+        language: { type: string, enum: [en, zh, zh-TW] }
+        confidentialityClass: { type: string, const: internal_project }
+        objectCount: { type: integer, minimum: 1, maximum: 100 }
+        querySnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+        objectRefs:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ToolingListSelectionReference" }
+        generatedAt: { type: string, format: date-time }
+        expiresAt:
+          type: string
+          format: date-time
+          description: Exactly one hour after generatedAt; record remains immutable after expiry
+        fileName: { type: string, minLength: 5, maxLength: 140, pattern: "^[^/\\]+[.]zip$" }
+        mimeType: { type: string, const: application/zip }
+        sizeBytes: { type: integer, minimum: 1, maximum: 1000000 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        manifestSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
     CommandResult:
       type: object
       required: [globalId, version, status]
