@@ -413,6 +413,23 @@ def _source_bytes(workbook: Path, max_input_bytes: int) -> tuple[bytes, str]:
     return payload, hashlib.sha256(payload).hexdigest()
 
 
+def _validated_source_payload(
+    payload: bytes,
+    *,
+    file_name: str,
+    max_input_bytes: int,
+) -> tuple[bytes, str]:
+    """Validate an exact File payload without introducing a path/TOCTOU hop."""
+
+    if not isinstance(payload, bytes):
+        raise WorkbookRejected("workbook content must be exact bytes")
+    if not isinstance(file_name, str) or not file_name.lower().endswith(".xlsx"):
+        raise WorkbookRejected("only .xlsx workbooks are accepted")
+    if len(payload) > max_input_bytes:
+        raise WorkbookRejected("input file size limit exceeded")
+    return payload, hashlib.sha256(payload).hexdigest()
+
+
 def _validate_archive(
     archive: zipfile.ZipFile,
     max_entries: int,
@@ -638,6 +655,48 @@ def read_validated_workbook(
             archive,
             file_name=workbook.name,
             input_bytes=len(payload),
+            digest=digest,
+            infos=infos,
+        )
+        return {
+            "inspection": report,
+            "worksheets": _read_validated_cells(
+                archive, sheet_parts, shared_strings
+            ),
+        }
+
+
+def read_validated_workbook_bytes(
+    payload: bytes,
+    *,
+    file_name: str,
+    max_entries: int,
+    max_uncompressed_bytes: int,
+    max_input_bytes: int = MAX_INPUT_BYTES,
+) -> dict[str, object]:
+    """Read a server-authorized File revision from exact in-memory bytes.
+
+    The return value contains confidential workbook cells. Callers must keep it
+    out of normal logs, traces and audit summaries.
+    """
+
+    exact_payload, digest = _validated_source_payload(
+        payload,
+        file_name=file_name,
+        max_input_bytes=max_input_bytes,
+    )
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(exact_payload))
+    except zipfile.BadZipFile as error:
+        raise WorkbookRejected("input is not a valid ZIP-based XLSX file") from error
+    with archive:
+        infos, _names = _validate_archive(
+            archive, max_entries, max_uncompressed_bytes
+        )
+        report, sheet_parts, shared_strings = _inspect_validated_archive(
+            archive,
+            file_name=file_name,
+            input_bytes=len(exact_payload),
             digest=digest,
             infos=infos,
         )

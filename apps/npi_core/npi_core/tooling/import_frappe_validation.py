@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from typing import Iterator
+
 import frappe
 from frappe import _
 
@@ -13,12 +16,24 @@ from npi_core.documents.frappe_validation import (
 from npi_core.tooling.domain import sha256_json
 
 
+TOOLING_IMPORT_WRITE_FLAG = "npi_tooling_import_write"
+AUDIT_APPEND_FLAG = "npi_audit_append"
+
+
 def require_tooling_import_write() -> None:
-    if not getattr(frappe.flags, "npi_tooling_import_write", False):
+    if not getattr(frappe.flags, TOOLING_IMPORT_WRITE_FLAG, False):
         frappe.throw(
             _("Tooling import history can only be written by the controlled import command."),
             frappe.PermissionError,
         )
+
+
+@contextmanager
+def tooling_import_write() -> Iterator[None]:
+    """Open the narrow import-metadata and audit append scope."""
+
+    with _flag_scope(TOOLING_IMPORT_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
+        yield
 
 
 def deny_tooling_import_update() -> None:
@@ -81,3 +96,20 @@ def require_snapshot_projection(
                 _("Tooling import fields do not match the exact snapshot."),
                 frappe.ValidationError,
             )
+
+
+@contextmanager
+def _flag_scope(flag_name: str) -> Iterator[None]:
+    missing = object()
+    previous = getattr(frappe.flags, flag_name, missing)
+    setattr(frappe.flags, flag_name, True)
+    try:
+        yield
+    finally:
+        if previous is missing:
+            try:
+                delattr(frappe.flags, flag_name)
+            except AttributeError:
+                pass
+        else:
+            setattr(frappe.flags, flag_name, previous)

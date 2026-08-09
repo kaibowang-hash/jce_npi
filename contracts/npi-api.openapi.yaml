@@ -4032,6 +4032,247 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling-imports:
+    get:
+      tags: [Tooling]
+      operationId: getToolingImportBatches
+      description: Lists authorized immutable Tooling import sources; production mapping remains unavailable by default.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized Tooling import source collection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportBatchCollection" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Tooling]
+      operationId: createToolingImportBatch
+      description: Registers one exact authorized clean private XLSX File Revision without inspecting or mutating Tooling targets.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-import-history
+      x-audit-operation: tooling_import_batch.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingImportBatch" }
+      responses:
+        "201":
+          description: Immutable source batch registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportBatchCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-imports/{batchId}:
+    get:
+      tags: [Tooling]
+      operationId: getToolingImportBatch
+      description: Returns authorized immutable inspection, mapping-proposal and preview history, including confidential raw cells only to this exact Project scope.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: batchId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized Tooling import batch detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportBatchDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-imports/{batchId}/inspections:
+    post:
+      tags: [Tooling]
+      operationId: createToolingImportInspection
+      description: Passively inspects the exact current File bytes under bounded archive and XML policies.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-import-history
+      x-audit-operation: tooling_import_inspection.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: batchId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              maxProperties: 0
+      responses:
+        "201":
+          description: Immutable inspection revision created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportInspectionCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-imports/{batchId}/mapping-proposals:
+    post:
+      tags: [Tooling]
+      operationId: createToolingImportMappingProposal
+      description: Creates an immutable reviewed candidate mapping; the browser cannot approve or activate production semantics.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-import-history
+      x-audit-operation: tooling_import_mapping.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: batchId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingImportMappingProposal" }
+      responses:
+        "201":
+          description: Immutable mapping proposal created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportMappingCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-imports/{batchId}/previews:
+    post:
+      tags: [Tooling]
+      operationId: createToolingImportPreview
+      description: Revalidates the exact source and creates an immutable non-mutating row/field preview.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-import-history
+      x-audit-operation: tooling_import_preview.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: batchId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingImportPreview" }
+      responses:
+        "201":
+          description: Immutable preview revision created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportPreviewCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-imports/{batchId}/previews/{previewId}/confirmations:
+    post:
+      tags: [Tooling]
+      operationId: createToolingImportPreviewConfirmation
+      description: Records exact Project-contained image or relationship decisions in a successor preview revision.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-tooling-import-history
+      x-audit-operation: tooling_import_confirmation.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: batchId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: previewId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateToolingImportConfirmation" }
+      responses:
+        "201":
+          description: Immutable successor preview created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingImportPreviewCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/parts/{partId}/revisions/{partRevisionId}/controlled-specification:
     get:
       tags: [Tooling]
@@ -13522,6 +13763,81 @@ components:
       required: [acceptanceEvidence]
       properties:
         acceptanceEvidence: { $ref: "#/components/schemas/ToolingAcceptanceEvidenceRevision" }
+    ToolingImportPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, registerSource, inspect, createMappingProposal, createPreview, confirmPreview, activateProductionMapping, execute]
+      properties:
+        view: { type: boolean, const: true }
+        registerSource: { type: boolean }
+        inspect: { type: boolean }
+        createMappingProposal: { type: boolean }
+        createPreview: { type: boolean }
+        confirmPreview: { type: boolean }
+        activateProductionMapping: { type: boolean, const: false }
+        execute: { type: boolean, const: false }
+    ToolingImportMappingAuthority:
+      type: object
+      additionalProperties: false
+      description: Default production posture until DR-REC-007 is resolved.
+      required: [state, reasonCode]
+      properties:
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: production_mapping_unavailable }
+    CreateToolingImportBatch:
+      type: object
+      additionalProperties: false
+      required: [customerScopeId, fileRevisionGlobalId, fileOptimisticVersion, frappeContentHash, sha256]
+      properties:
+        customerScopeId: { type: string, minLength: 1, maxLength: 128 }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileOptimisticVersion: { type: integer, minimum: 1 }
+        frappeContentHash: { type: string, pattern: "^[a-f0-9]{32,128}$" }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CreateToolingImportMappingProposal:
+      type: object
+      additionalProperties: false
+      required: [inspectionGlobalId, inspectionSnapshotHash, templateKey, reason]
+      properties:
+        inspectionGlobalId: { type: string, format: uuid }
+        inspectionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        templateKey: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,127}$" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateToolingImportPreview:
+      type: object
+      additionalProperties: false
+      required: [inspectionGlobalId, inspectionSnapshotHash, mappingGlobalId, mappingSnapshotHash]
+      properties:
+        inspectionGlobalId: { type: string, format: uuid }
+        inspectionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        mappingGlobalId: { type: string, format: uuid }
+        mappingSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingImportConfirmationInput:
+      type: object
+      additionalProperties: false
+      required: [kind, worksheetName, sourceRow, selectedTargetObject, selectedTargetGlobalId, selectedTargetSnapshotHash, reason]
+      properties:
+        kind: { type: string, enum: [image_anchor, relationship] }
+        worksheetName: { type: string, minLength: 1, maxLength: 255 }
+        sourceRow: { type: integer, minimum: 1, maximum: 1048576 }
+        anchorKey: { type: string, pattern: "^[a-z][a-z0-9_.-]{0,127}$" }
+        selectedTargetObject: { type: string, enum: [part_revision, tooling_master] }
+        selectedTargetGlobalId: { type: string, format: uuid }
+        selectedTargetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateToolingImportConfirmation:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, expectedSnapshotHash, confirmations]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        confirmations:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ToolingImportConfirmationInput" }
     ToolingImportSource:
       type: object
       additionalProperties: false
@@ -13713,11 +14029,15 @@ components:
     ToolingImportPreviewRevision:
       type: object
       additionalProperties: false
-      required: [schemaVersion, transformationPolicyVersion, globalId, batchGlobalId, sourceSnapshotHash, inspectionGlobalId, inspectionSnapshotHash, mappingGlobalId, mappingSnapshotHash, mappingState, executionEligible, rows, createdAt, snapshotHash]
+      required: [schemaVersion, transformationPolicyVersion, globalId, previewGlobalId, previewVersion, predecessorGlobalId, predecessorSnapshotHash, batchGlobalId, sourceSnapshotHash, inspectionGlobalId, inspectionSnapshotHash, mappingGlobalId, mappingSnapshotHash, mappingState, executionEligible, rows, confirmations, createdAt, snapshotHash]
       properties:
         schemaVersion: { type: string, const: tooling-import.v1 }
         transformationPolicyVersion: { type: string, const: tooling-list-transform.v1 }
         globalId: { type: string, format: uuid }
+        previewGlobalId: { type: string, format: uuid }
+        previewVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
         batchGlobalId: { type: string, format: uuid }
         sourceSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
         inspectionGlobalId: { type: string, format: uuid }
@@ -13731,8 +14051,88 @@ components:
           minItems: 1
           maxItems: 100000
           items: { $ref: "#/components/schemas/ToolingImportPreviewRow" }
+        confirmations:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ToolingImportConfirmation" }
         createdAt: { type: string, format: date-time }
         snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$", readOnly: true }
+    ToolingImportConfirmation:
+      type: object
+      additionalProperties: false
+      required: [kind, worksheetName, sourceRow, anchorKey, selectedTargetObject, selectedTargetGlobalId, selectedTargetSnapshotHash, reason, confirmedByUserId, confirmedAt]
+      properties:
+        kind: { type: string, enum: [image_anchor, relationship] }
+        worksheetName: { type: string, minLength: 1, maxLength: 255 }
+        sourceRow: { type: integer, minimum: 1, maximum: 1048576 }
+        anchorKey: { type: [string, "null"], pattern: "^[a-z][a-z0-9_.-]{0,127}$" }
+        selectedTargetObject: { type: string, enum: [part_revision, tooling_master] }
+        selectedTargetGlobalId: { type: string, format: uuid }
+        selectedTargetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        confirmedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        confirmedAt: { type: string, format: date-time }
+    ToolingImportBatchCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, mappingAuthority, batches]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingImportPermissions" }
+        mappingAuthority: { $ref: "#/components/schemas/ToolingImportMappingAuthority" }
+        batches:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolingImportSource" }
+    ToolingImportBatchDetail:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, mappingAuthority, batch, inspections, mappingProposals, previews]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ToolingImportPermissions" }
+        mappingAuthority: { $ref: "#/components/schemas/ToolingImportMappingAuthority" }
+        batch: { $ref: "#/components/schemas/ToolingImportSource" }
+        inspections:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolingImportInspectionRevision" }
+        mappingProposals:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolingImportMappingRevision" }
+        previews:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolingImportPreviewRevision" }
+    ToolingImportBatchCommand:
+      type: object
+      additionalProperties: false
+      required: [batch, mappingAuthority]
+      properties:
+        batch: { $ref: "#/components/schemas/ToolingImportSource" }
+        mappingAuthority: { $ref: "#/components/schemas/ToolingImportMappingAuthority" }
+    ToolingImportInspectionCommand:
+      type: object
+      additionalProperties: false
+      required: [inspection]
+      properties:
+        inspection: { $ref: "#/components/schemas/ToolingImportInspectionRevision" }
+    ToolingImportMappingCommand:
+      type: object
+      additionalProperties: false
+      required: [mappingProposal, mappingAuthority]
+      properties:
+        mappingProposal: { $ref: "#/components/schemas/ToolingImportMappingRevision" }
+        mappingAuthority: { $ref: "#/components/schemas/ToolingImportMappingAuthority" }
+    ToolingImportPreviewCommand:
+      type: object
+      additionalProperties: false
+      required: [preview, mappingAuthority]
+      properties:
+        preview: { $ref: "#/components/schemas/ToolingImportPreviewRevision" }
+        mappingAuthority: { $ref: "#/components/schemas/ToolingImportMappingAuthority" }
     ToolingImportFieldResult:
       type: object
       additionalProperties: false

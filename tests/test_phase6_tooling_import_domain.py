@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -19,6 +19,8 @@ from npi_core.tooling.import_domain import (
     ImportRowResultState,
     MappingRevisionState,
     PreviewAction,
+    PreviewConfirmation,
+    PreviewConfirmationKind,
     RollbackDecisionState,
     RollbackObservation,
     ToolingImportMappingRevision,
@@ -27,18 +29,25 @@ from npi_core.tooling.import_domain import (
     WorkbookRegionKind,
     build_mapping_proposal,
     build_preview,
+    confirm_preview,
     derive_job_state,
     detect_tooling_workbook,
     evaluate_rollback,
+    inspection_from_snapshot,
+    mapping_from_snapshot,
+    preview_from_snapshot,
+    source_from_snapshot,
 )
 from npi_core.tooling.xlsx_fixture import (
     SYNTHETIC_HEADERS,
     build_fixture_set,
     build_sanitized_tooling_workbook,
 )
+from npi_core.tooling.import_mapping_catalog import reviewed_mapping_rows
 from npi_core.tooling.xlsx_inspector import (
     inspect,
     read_validated_workbook,
+    read_validated_workbook_bytes,
 )
 from npi_core.foundation.errors import RequestValidationFailed
 
@@ -93,6 +102,16 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
         )
         self.assertEqual(len(SYNTHETIC_HEADERS), 43)
         self.assertEqual(
+            list(reviewed_mapping_rows()),
+            [
+                {
+                    key: row[key]
+                    for key in ("source_column", "target_object", "suggested_field")
+                }
+                for row in _mapping_rows()
+            ],
+        )
+        self.assertEqual(
             [item["titleRowCount"] for item in first["fixtures"]],
             [1, 3],
         )
@@ -104,6 +123,12 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
             input_bytes = workbook.stat().st_size
             passive = inspect(workbook, 1_000, 10_000_000)
             validated = read_validated_workbook(workbook, 1_000, 10_000_000)
+            validated_bytes = read_validated_workbook_bytes(
+                workbook.read_bytes(),
+                file_name=workbook.name,
+                max_entries=1_000,
+                max_uncompressed_bytes=10_000_000,
+            )
 
         self.assertNotIn("SYN-MOLD-001", str(passive))
         self.assertIn("SYN-MOLD-001", str(validated["worksheets"]))
@@ -111,6 +136,7 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
         self.assertEqual(passive["input_bytes"], input_bytes)
         self.assertEqual(passive["formula_errors"][0]["error"], "#REF!")
         self.assertEqual(len(passive["floating_image_anchors"]), 2)
+        self.assertEqual(validated_bytes, validated)
 
     def test_detection_is_position_independent_and_separates_regions_images(self) -> None:
         detected: list[tuple[int, list[str], list[bool]]] = []
@@ -256,6 +282,110 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
         self.assertIn("formula_error", preview.rows[0].reason_codes)
         self.assertIn("required_value_missing", preview.rows[1].reason_codes)
         self.assertIn("relationship_confirmation_required", preview.rows[0].reason_codes)
+
+    def test_snapshot_hydration_and_confirmation_create_an_immutable_chain(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workbook = Path(directory) / "synthetic.xlsx"
+            manifest = build_sanitized_tooling_workbook(workbook, title_row_count=1)
+            source = _source(
+                str(manifest["sha256"]), workbook.stat().st_size, workbook.name
+            )
+            inspection, data_rows = detect_tooling_workbook(
+                global_id=UUID("91000000-0000-4000-8000-000000000051"),
+                source=source,
+                validated_workbook=read_validated_workbook_bytes(
+                    workbook.read_bytes(),
+                    file_name=workbook.name,
+                    max_entries=1_000,
+                    max_uncompressed_bytes=10_000_000,
+                ),
+                expected_headers=SYNTHETIC_HEADERS,
+                created_at=NOW,
+            )
+            mapping = build_mapping_proposal(
+                global_id=UUID("91000000-0000-4000-8000-000000000052"),
+                mapping_global_id=UUID("91000000-0000-4000-8000-000000000053"),
+                inspection=inspection,
+                reviewed_rows=_mapping_rows(),
+                customer_scope_id=source.customer_scope_id,
+                template_key="synthetic-tooling-list.v1",
+                reason="Create an immutable synthetic preview chain.",
+                actor=source.created_by_user_id,
+                created_at=NOW,
+            )
+            predecessor = build_preview(
+                global_id=UUID("91000000-0000-4000-8000-000000000054"),
+                source=source,
+                inspection=inspection,
+                mapping=mapping,
+                data_rows=data_rows,
+                created_at=NOW,
+            )
+
+        before_payload = predecessor.snapshot_payload()
+        before_hash = predecessor.snapshot_hash
+        row = next(item for item in predecessor.rows if item.requires_confirmation)
+        confirmations = (
+            PreviewConfirmation(
+                kind=PreviewConfirmationKind.IMAGE_ANCHOR,
+                worksheet_name=row.worksheet_name,
+                source_row=row.source_row,
+                anchor_key="synthetic.image-0001",
+                selected_target_object="tooling_master",
+                selected_target_global_id=UUID(
+                    "91000000-0000-4000-8000-000000000055"
+                ),
+                selected_target_snapshot_hash="c" * 64,
+                reason="Confirm the exact synthetic image anchor.",
+                confirmed_by_user_id=source.created_by_user_id,
+                confirmed_at=NOW + timedelta(minutes=1),
+            ),
+            PreviewConfirmation(
+                kind=PreviewConfirmationKind.RELATIONSHIP,
+                worksheet_name=row.worksheet_name,
+                source_row=row.source_row,
+                anchor_key=None,
+                selected_target_object="tooling_master",
+                selected_target_global_id=UUID(
+                    "91000000-0000-4000-8000-000000000055"
+                ),
+                selected_target_snapshot_hash="c" * 64,
+                reason="Confirm the exact synthetic Tooling relationship.",
+                confirmed_by_user_id=source.created_by_user_id,
+                confirmed_at=NOW + timedelta(minutes=1),
+            ),
+        )
+        successor = confirm_preview(
+            global_id=UUID("91000000-0000-4000-8000-000000000056"),
+            predecessor=predecessor,
+            confirmations=confirmations,
+            created_at=NOW + timedelta(minutes=1),
+        )
+
+        self.assertEqual(predecessor.snapshot_payload(), before_payload)
+        self.assertEqual(predecessor.snapshot_hash, before_hash)
+        self.assertEqual(predecessor.preview_version, 1)
+        self.assertFalse(predecessor.confirmations)
+        self.assertEqual(successor.preview_global_id, predecessor.preview_global_id)
+        self.assertEqual(successor.preview_version, 2)
+        self.assertEqual(successor.predecessor_global_id, predecessor.global_id)
+        self.assertEqual(successor.predecessor_snapshot_hash, predecessor.snapshot_hash)
+        self.assertEqual(successor.confirmations, confirmations)
+        self.assertEqual(source_from_snapshot(source.snapshot_payload()), source)
+        self.assertEqual(
+            inspection_from_snapshot(source, inspection.snapshot_payload()), inspection
+        )
+        self.assertEqual(mapping_from_snapshot(source, mapping.snapshot_payload()), mapping)
+        self.assertEqual(
+            preview_from_snapshot(source, predecessor.snapshot_payload()), predecessor
+        )
+        self.assertEqual(
+            preview_from_snapshot(source, successor.snapshot_payload()), successor
+        )
+        tampered = dict(successor.snapshot_payload())
+        tampered["sourceSnapshotHash"] = "d" * 64
+        with self.assertRaises(RequestValidationFailed):
+            preview_from_snapshot(source, tampered)
 
     def test_production_mapping_state_is_not_constructible(self) -> None:
         with self.assertRaises(RequestValidationFailed):

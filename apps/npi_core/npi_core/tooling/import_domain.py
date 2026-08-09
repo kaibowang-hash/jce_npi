@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Iterable, Mapping, Sequence
@@ -94,6 +94,11 @@ class PreviewAction(StrEnum):
     UPDATE = "update"
     SKIP = "skip"
     BLOCKED = "blocked"
+
+
+class PreviewConfirmationKind(StrEnum):
+    IMAGE_ANCHOR = "image_anchor"
+    RELATIONSHIP = "relationship"
 
 
 class ImportJobState(StrEnum):
@@ -579,8 +584,60 @@ class PreviewRow:
 
 
 @dataclass(frozen=True, slots=True)
+class PreviewConfirmation:
+    kind: PreviewConfirmationKind
+    worksheet_name: str
+    source_row: int
+    anchor_key: str | None
+    selected_target_object: str
+    selected_target_global_id: UUID
+    selected_target_snapshot_hash: str
+    reason: str
+    confirmed_by_user_id: str
+    confirmed_at: datetime
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, PreviewConfirmationKind):
+            raise _problem("confirmation.kind", _("Select a supported confirmation kind."))
+        object.__setattr__(self, "worksheet_name", _text(self.worksheet_name, "confirmation.worksheetName", 255))
+        object.__setattr__(self, "source_row", _positive(self.source_row, "confirmation.sourceRow"))
+        if self.anchor_key is not None:
+            object.__setattr__(self, "anchor_key", _code(self.anchor_key, "confirmation.anchorKey"))
+        if self.kind is PreviewConfirmationKind.IMAGE_ANCHOR and self.anchor_key is None:
+            raise _problem("confirmation.anchorKey", _("Select the exact image anchor."))
+        if self.kind is PreviewConfirmationKind.RELATIONSHIP and self.anchor_key is not None:
+            raise _problem("confirmation.anchorKey", _("A relationship confirmation cannot claim an image anchor."))
+        if self.selected_target_object not in {"part_revision", "tooling_master"}:
+            raise _problem("confirmation.selectedTargetObject", _("Select a supported confirmation target."))
+        object.__setattr__(self, "selected_target_global_id", _uuid(self.selected_target_global_id, "confirmation.selectedTargetGlobalId"))
+        object.__setattr__(self, "selected_target_snapshot_hash", _sha256(self.selected_target_snapshot_hash, "confirmation.selectedTargetSnapshotHash"))
+        object.__setattr__(self, "reason", _text(self.reason, "confirmation.reason", 1_000))
+        if not _ACTOR.fullmatch(self.confirmed_by_user_id):
+            raise _problem("confirmation.confirmedByUserId", _("Select a valid confirmation actor."))
+        object.__setattr__(self, "confirmed_at", _utc(self.confirmed_at, "confirmation.confirmedAt"))
+
+    def snapshot_payload(self) -> dict[str, object]:
+        return {
+            "kind": self.kind.value,
+            "worksheetName": self.worksheet_name,
+            "sourceRow": self.source_row,
+            "anchorKey": self.anchor_key,
+            "selectedTargetObject": self.selected_target_object,
+            "selectedTargetGlobalId": str(self.selected_target_global_id),
+            "selectedTargetSnapshotHash": self.selected_target_snapshot_hash,
+            "reason": self.reason,
+            "confirmedByUserId": self.confirmed_by_user_id,
+            "confirmedAt": self.confirmed_at.isoformat().replace("+00:00", "Z"),
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class ToolingImportPreviewRevision:
     global_id: UUID
+    preview_global_id: UUID
+    preview_version: int
+    predecessor_global_id: UUID | None
+    predecessor_snapshot_hash: str | None
     source: ToolingImportSource
     inspection_global_id: UUID
     inspection_snapshot_hash: str
@@ -588,10 +645,23 @@ class ToolingImportPreviewRevision:
     mapping_snapshot_hash: str
     mapping_state: MappingRevisionState
     rows: tuple[PreviewRow, ...]
+    confirmations: tuple[PreviewConfirmation, ...]
     created_at: datetime
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "global_id", _uuid(self.global_id, "globalId"))
+        object.__setattr__(self, "preview_global_id", _uuid(self.preview_global_id, "previewGlobalId"))
+        object.__setattr__(self, "preview_version", _positive(self.preview_version, "previewVersion"))
+        if self.predecessor_global_id is not None:
+            object.__setattr__(self, "predecessor_global_id", _uuid(self.predecessor_global_id, "predecessorGlobalId"))
+        if self.predecessor_snapshot_hash is not None:
+            object.__setattr__(self, "predecessor_snapshot_hash", _sha256(self.predecessor_snapshot_hash, "predecessorSnapshotHash"))
+        if (self.predecessor_global_id is None) != (self.predecessor_snapshot_hash is None):
+            raise _problem("predecessor", _("Preview predecessor identity and hash must be provided together."))
+        if self.preview_version == 1 and self.predecessor_global_id is not None:
+            raise _problem("predecessor", _("The first preview revision cannot have a predecessor."))
+        if self.preview_version > 1 and self.predecessor_global_id is None:
+            raise _problem("predecessor", _("A successor preview requires an exact predecessor."))
         if not isinstance(self.source, ToolingImportSource):
             raise _problem("source", _("Select an exact import source."))
         object.__setattr__(self, "inspection_global_id", _uuid(self.inspection_global_id, "inspectionGlobalId"))
@@ -603,6 +673,7 @@ class ToolingImportPreviewRevision:
         if self.mapping_state is MappingRevisionState.APPROVED_PRODUCTION:
             raise _problem("mappingState", _("Production mapping approval is unavailable."))
         object.__setattr__(self, "rows", tuple(self.rows))
+        object.__setattr__(self, "confirmations", tuple(self.confirmations))
         object.__setattr__(self, "created_at", _utc(self.created_at, "createdAt"))
         if not self.rows:
             raise _problem("rows", _("Import preview requires at least one source row."))
@@ -610,6 +681,14 @@ class ToolingImportPreviewRevision:
             raise _problem("rows", _("Import preview rows must use the controlled preview shape."))
         if len({(item.worksheet_name, item.source_row) for item in self.rows}) != len(self.rows):
             raise _problem("rows", _("Import preview source rows must be unique."))
+        if any(not isinstance(item, PreviewConfirmation) for item in self.confirmations):
+            raise _problem("confirmations", _("Preview confirmations must use the controlled confirmation shape."))
+        identities = {
+            (item.kind, item.worksheet_name, item.source_row, item.anchor_key)
+            for item in self.confirmations
+        }
+        if len(identities) != len(self.confirmations):
+            raise _problem("confirmations", _("Preview confirmations must be unique."))
 
     @property
     def execution_eligible(self) -> bool:
@@ -623,6 +702,10 @@ class ToolingImportPreviewRevision:
             "schemaVersion": IMPORT_SCHEMA_VERSION,
             "transformationPolicyVersion": TRANSFORMATION_POLICY_VERSION,
             "globalId": str(self.global_id),
+            "previewGlobalId": str(self.preview_global_id),
+            "previewVersion": self.preview_version,
+            "predecessorGlobalId": str(self.predecessor_global_id) if self.predecessor_global_id else None,
+            "predecessorSnapshotHash": self.predecessor_snapshot_hash,
             "batchGlobalId": str(self.source.batch_global_id),
             "sourceSnapshotHash": self.source.snapshot_hash,
             "inspectionGlobalId": str(self.inspection_global_id),
@@ -632,6 +715,7 @@ class ToolingImportPreviewRevision:
             "mappingState": self.mapping_state.value,
             "executionEligible": self.execution_eligible,
             "rows": [item.snapshot_payload() for item in self.rows],
+            "confirmations": [item.snapshot_payload() for item in self.confirmations],
             "createdAt": self.created_at.isoformat().replace("+00:00", "Z"),
         }
 
@@ -839,6 +923,258 @@ class RollbackDecision:
         )
 
 
+def source_from_snapshot(snapshot: Mapping[str, object]) -> ToolingImportSource:
+    value = _mapping(snapshot, "sourceSnapshot")
+    _require_schema(value)
+    return ToolingImportSource(
+        batch_global_id=_uuid(value.get("batchGlobalId"), "batchGlobalId"),
+        tenant_id=str(value.get("tenantId", "")),
+        project_global_id=_uuid(value.get("projectGlobalId"), "projectGlobalId"),
+        customer_scope_id=str(value.get("customerScopeId", "")),
+        file_revision_global_id=_uuid(value.get("fileRevisionGlobalId"), "fileRevisionGlobalId"),
+        file_optimistic_version=value.get("fileOptimisticVersion"),
+        frappe_content_hash=str(value.get("frappeContentHash", "")),
+        file_name=str(value.get("fileName", "")),
+        mime_type=str(value.get("mimeType", "")),
+        size_bytes=value.get("sizeBytes"),
+        sha256=str(value.get("sha256", "")),
+        created_by_user_id=str(value.get("createdByUserId", "")),
+        created_at=_payload_datetime(value.get("createdAt"), "createdAt"),
+        request_id=_uuid(value.get("requestId"), "requestId"),
+        trace_id=str(value.get("traceId", "")),
+    )
+
+
+def inspection_from_snapshot(
+    source: ToolingImportSource,
+    snapshot: Mapping[str, object],
+) -> ToolingImportInspectionRevision:
+    value = _mapping(snapshot, "inspectionSnapshot")
+    _require_schema(value)
+    columns = tuple(
+        DetectedColumn(
+            ordinal=item.get("ordinal"),
+            source_header=str(item.get("sourceHeader", "")),
+            header_cell=str(item.get("headerCell", "")),
+        )
+        for item in (
+            _mapping(candidate, "columns")
+            for candidate in _sequence(value.get("columns"), "columns")
+        )
+    )
+    regions = tuple(
+        DetectedRegion(
+            kind=WorkbookRegionKind(str(item.get("kind", ""))),
+            first_row=item.get("firstRow"),
+            last_row=item.get("lastRow"),
+            evidence=str(item.get("evidence", "")),
+            requires_confirmation=item.get("requiresConfirmation"),
+        )
+        for item in (
+            _mapping(candidate, "regions")
+            for candidate in _sequence(value.get("regions"), "regions")
+        )
+    )
+    errors = tuple(
+        (str(item.get("cell", "")), str(item.get("errorCode", "")))
+        for item in (
+            _mapping(candidate, "formulaErrors")
+            for candidate in _sequence(value.get("formulaErrors"), "formulaErrors")
+        )
+    )
+    anchors = tuple(
+        DetectedImageAnchor(
+            anchor_key=str(item.get("anchorKey", "")),
+            row=item.get("row"),
+            column=item.get("column"),
+            confidence=str(item.get("confidence", "")),
+            candidate_source_row=item.get("candidateSourceRow"),
+            requires_confirmation=item.get("requiresConfirmation"),
+        )
+        for item in (
+            _mapping(candidate, "imageAnchors")
+            for candidate in _sequence(value.get("imageAnchors"), "imageAnchors")
+        )
+    )
+    result = ToolingImportInspectionRevision(
+        global_id=_uuid(value.get("globalId"), "globalId"),
+        source=source,
+        inspection_version=value.get("inspectionVersion"),
+        worksheet_name=str(value.get("worksheetName", "")),
+        header_row=value.get("headerRow"),
+        columns=columns,
+        regions=regions,
+        formula_errors=errors,
+        image_anchors=anchors,
+        passive_report_hash=str(value.get("passiveReportHash", "")),
+        created_at=_payload_datetime(value.get("createdAt"), "createdAt"),
+    )
+    if result.snapshot_payload() != dict(value):
+        raise _problem("inspectionSnapshot", _("Inspection snapshot integrity check failed."))
+    return result
+
+
+def mapping_from_snapshot(
+    source: ToolingImportSource,
+    snapshot: Mapping[str, object],
+) -> ToolingImportMappingRevision:
+    value = _mapping(snapshot, "mappingSnapshot")
+    _require_schema(value)
+    entries = tuple(
+        MappingEntry(
+            source_ordinal=item.get("sourceOrdinal"),
+            source_header=str(item.get("sourceHeader", "")),
+            disposition=MappingDisposition(str(item.get("disposition", ""))),
+            target_object_candidate=(
+                str(item.get("targetObjectCandidate"))
+                if item.get("targetObjectCandidate") is not None
+                else None
+            ),
+            target_field_candidate=(
+                str(item.get("targetFieldCandidate"))
+                if item.get("targetFieldCandidate") is not None
+                else None
+            ),
+            semantic_classification=SemanticClassification(
+                str(item.get("semanticClassification", ""))
+            ),
+            transformation_key=str(item.get("transformationKey", "")),
+            validation_rule_keys=tuple(
+                str(candidate)
+                for candidate in _sequence(
+                    item.get("validationRuleKeys"), "validationRuleKeys"
+                )
+            ),
+        )
+        for item in (
+            _mapping(candidate, "entries")
+            for candidate in _sequence(value.get("entries"), "entries")
+        )
+    )
+    result = ToolingImportMappingRevision(
+        global_id=_uuid(value.get("globalId"), "globalId"),
+        mapping_global_id=_uuid(value.get("mappingGlobalId"), "mappingGlobalId"),
+        source=source,
+        inspection_global_id=_uuid(value.get("inspectionGlobalId"), "inspectionGlobalId"),
+        inspection_snapshot_hash=str(value.get("inspectionSnapshotHash", "")),
+        mapping_version=value.get("mappingVersion"),
+        state=MappingRevisionState(str(value.get("state", ""))),
+        customer_scope_id=str(value.get("customerScopeId", "")),
+        template_key=str(value.get("templateKey", "")),
+        source_signature=str(value.get("sourceSignature", "")),
+        entries=entries,
+        reason=str(value.get("reason", "")),
+        created_by_user_id=str(value.get("createdByUserId", "")),
+        created_at=_payload_datetime(value.get("createdAt"), "createdAt"),
+    )
+    if result.snapshot_payload() != dict(value):
+        raise _problem("mappingSnapshot", _("Mapping snapshot integrity check failed."))
+    return result
+
+
+def preview_from_snapshot(
+    source: ToolingImportSource,
+    snapshot: Mapping[str, object],
+) -> ToolingImportPreviewRevision:
+    value = _mapping(snapshot, "previewSnapshot")
+    _require_schema(value)
+    rows = tuple(_preview_row_from_payload(item) for item in _sequence(value.get("rows"), "rows"))
+    confirmations = tuple(
+        PreviewConfirmation(
+            kind=PreviewConfirmationKind(str(item.get("kind", ""))),
+            worksheet_name=str(item.get("worksheetName", "")),
+            source_row=item.get("sourceRow"),
+            anchor_key=(str(item.get("anchorKey")) if item.get("anchorKey") is not None else None),
+            selected_target_object=str(item.get("selectedTargetObject", "")),
+            selected_target_global_id=_uuid(item.get("selectedTargetGlobalId"), "selectedTargetGlobalId"),
+            selected_target_snapshot_hash=str(item.get("selectedTargetSnapshotHash", "")),
+            reason=str(item.get("reason", "")),
+            confirmed_by_user_id=str(item.get("confirmedByUserId", "")),
+            confirmed_at=_payload_datetime(item.get("confirmedAt"), "confirmedAt"),
+        )
+        for item in (
+            _mapping(candidate, "confirmations")
+            for candidate in _sequence(value.get("confirmations"), "confirmations")
+        )
+    )
+    result = ToolingImportPreviewRevision(
+        global_id=_uuid(value.get("globalId"), "globalId"),
+        preview_global_id=_uuid(value.get("previewGlobalId"), "previewGlobalId"),
+        preview_version=value.get("previewVersion"),
+        predecessor_global_id=(
+            _uuid(value.get("predecessorGlobalId"), "predecessorGlobalId")
+            if value.get("predecessorGlobalId") is not None
+            else None
+        ),
+        predecessor_snapshot_hash=(
+            str(value.get("predecessorSnapshotHash"))
+            if value.get("predecessorSnapshotHash") is not None
+            else None
+        ),
+        source=source,
+        inspection_global_id=_uuid(value.get("inspectionGlobalId"), "inspectionGlobalId"),
+        inspection_snapshot_hash=str(value.get("inspectionSnapshotHash", "")),
+        mapping_global_id=_uuid(value.get("mappingGlobalId"), "mappingGlobalId"),
+        mapping_snapshot_hash=str(value.get("mappingSnapshotHash", "")),
+        mapping_state=MappingRevisionState(str(value.get("mappingState", ""))),
+        rows=rows,
+        confirmations=confirmations,
+        created_at=_payload_datetime(value.get("createdAt"), "createdAt"),
+    )
+    if result.snapshot_payload() != dict(value):
+        raise _problem("previewSnapshot", _("Preview snapshot integrity check failed."))
+    return result
+
+
+def _preview_row_from_payload(candidate: object) -> PreviewRow:
+    item = _mapping(candidate, "rows")
+    fields = tuple(
+        TransformedField(
+            source_ordinal=field.get("sourceOrdinal"),
+            source_header=str(field.get("sourceHeader", "")),
+            raw_value=str(field.get("rawValue", "")),
+            raw_value_hash=str(field.get("rawValueHash", "")),
+            normalized_candidates=tuple(
+                str(value)
+                for value in _sequence(
+                    field.get("normalizedCandidates"), "normalizedCandidates"
+                )
+            ),
+            state_candidate=(
+                str(field.get("stateCandidate"))
+                if field.get("stateCandidate") is not None
+                else None
+            ),
+            transformation_key=str(field.get("transformationKey", "")),
+            findings=tuple(
+                FieldFinding(
+                    code=str(finding.get("code", "")),
+                    severity=FindingSeverity(str(finding.get("severity", ""))),
+                    message=str(finding.get("message", "")),
+                )
+                for finding in (
+                    _mapping(value, "findings")
+                    for value in _sequence(field.get("findings"), "findings")
+                )
+            ),
+        )
+        for field in (
+            _mapping(value, "fields")
+            for value in _sequence(item.get("fields"), "fields")
+        )
+    )
+    return PreviewRow(
+        worksheet_name=str(item.get("worksheetName", "")),
+        source_row=item.get("sourceRow"),
+        action=PreviewAction(str(item.get("action", ""))),
+        fields=fields,
+        reason_codes=tuple(
+            str(value) for value in _sequence(item.get("reasonCodes"), "reasonCodes")
+        ),
+        requires_confirmation=item.get("requiresConfirmation"),
+    )
+
+
 def detect_tooling_workbook(
     *,
     global_id: UUID,
@@ -1028,6 +1364,8 @@ def build_preview(
         fields: list[TransformedField] = []
         reasons: set[str] = set()
         requires_confirmation = source_row in image_rows
+        if requires_confirmation:
+            reasons.add("image_confirmation_required")
         for cell in _row_cells(row):
             ordinal = int(cell["column"])
             entry = entry_by_ordinal.get(ordinal)
@@ -1069,6 +1407,10 @@ def build_preview(
         )
     return ToolingImportPreviewRevision(
         global_id=global_id,
+        preview_global_id=global_id,
+        preview_version=1,
+        predecessor_global_id=None,
+        predecessor_snapshot_hash=None,
         source=source,
         inspection_global_id=inspection.global_id,
         inspection_snapshot_hash=inspection.snapshot_hash,
@@ -1076,6 +1418,112 @@ def build_preview(
         mapping_snapshot_hash=mapping.snapshot_hash,
         mapping_state=mapping.state,
         rows=tuple(preview_rows),
+        confirmations=(),
+        created_at=created_at,
+    )
+
+
+def confirm_preview(
+    *,
+    global_id: UUID,
+    predecessor: ToolingImportPreviewRevision,
+    confirmations: Sequence[PreviewConfirmation],
+    created_at: datetime,
+) -> ToolingImportPreviewRevision:
+    """Create an immutable successor with exact human confirmation evidence."""
+
+    additions = tuple(confirmations)
+    if not additions:
+        raise _problem("confirmations", _("Enter at least one preview confirmation."))
+    existing = {
+        (item.kind, item.worksheet_name, item.source_row, item.anchor_key)
+        for item in predecessor.confirmations
+    }
+    if any(
+        (item.kind, item.worksheet_name, item.source_row, item.anchor_key) in existing
+        for item in additions
+    ):
+        raise _problem("confirmations", _("A preview confirmation cannot replace earlier evidence."))
+    rows_by_identity = {
+        (row.worksheet_name, row.source_row): row for row in predecessor.rows
+    }
+    for item in additions:
+        row = rows_by_identity.get((item.worksheet_name, item.source_row))
+        if row is None or not row.requires_confirmation:
+            raise _problem("confirmations", _("Select a row that still requires confirmation."))
+
+    all_confirmations = predecessor.confirmations + additions
+    successor_rows: list[PreviewRow] = []
+    for row in predecessor.rows:
+        required: set[PreviewConfirmationKind] = set()
+        if "image_confirmation_required" in row.reason_codes:
+            required.add(PreviewConfirmationKind.IMAGE_ANCHOR)
+        if any(
+            finding.severity is FindingSeverity.CONFIRMATION_REQUIRED
+            for field in row.fields
+            for finding in field.findings
+        ):
+            required.add(PreviewConfirmationKind.RELATIONSHIP)
+        provided = {
+            item.kind
+            for item in all_confirmations
+            if item.worksheet_name == row.worksheet_name
+            and item.source_row == row.source_row
+        }
+        resolved = bool(required) and required.issubset(provided)
+        if not resolved:
+            successor_rows.append(row)
+            continue
+        fields = tuple(
+            replace(
+                field,
+                findings=tuple(
+                    finding
+                    for finding in field.findings
+                    if finding.severity is not FindingSeverity.CONFIRMATION_REQUIRED
+                ),
+            )
+            for field in row.fields
+        )
+        reasons = tuple(
+            code
+            for code in row.reason_codes
+            if code not in {
+                "image_confirmation_required",
+                "relationship_confirmation_required",
+                "unmapped_source_column",
+            }
+        )
+        has_error = any(
+            finding.severity is FindingSeverity.ERROR
+            for field in fields
+            for finding in field.findings
+        )
+        blocked = has_error or predecessor.mapping_state is MappingRevisionState.PROPOSAL
+        successor_rows.append(
+            PreviewRow(
+                worksheet_name=row.worksheet_name,
+                source_row=row.source_row,
+                action=PreviewAction.BLOCKED if blocked else PreviewAction.CREATE,
+                fields=fields,
+                reason_codes=reasons,
+                requires_confirmation=False,
+            )
+        )
+    return ToolingImportPreviewRevision(
+        global_id=global_id,
+        preview_global_id=predecessor.preview_global_id,
+        preview_version=predecessor.preview_version + 1,
+        predecessor_global_id=predecessor.global_id,
+        predecessor_snapshot_hash=predecessor.snapshot_hash,
+        source=predecessor.source,
+        inspection_global_id=predecessor.inspection_global_id,
+        inspection_snapshot_hash=predecessor.inspection_snapshot_hash,
+        mapping_global_id=predecessor.mapping_global_id,
+        mapping_snapshot_hash=predecessor.mapping_snapshot_hash,
+        mapping_state=predecessor.mapping_state,
+        rows=tuple(successor_rows),
+        confirmations=all_confirmations,
         created_at=created_at,
     )
 
@@ -1369,6 +1817,21 @@ def _utc(value: object, path: str) -> datetime:
         raise _problem(path, _("Provide a timezone-aware UTC date and time."))
     normalized = value.astimezone(UTC)
     return normalized
+
+
+def _payload_datetime(value: object, path: str) -> datetime:
+    if not isinstance(value, str):
+        raise _problem(path, _("Provide a timezone-aware UTC date and time."))
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise _problem(path, _("Provide a timezone-aware UTC date and time.")) from error
+    return _utc(parsed, path)
+
+
+def _require_schema(value: Mapping[str, object]) -> None:
+    if value.get("schemaVersion") != IMPORT_SCHEMA_VERSION:
+        raise _problem("schemaVersion", _("Select a supported Tooling import snapshot."))
 
 
 def _problem(path: str, message: str) -> RequestValidationFailed:

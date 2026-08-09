@@ -19,6 +19,7 @@ from .foundation.errors import (
     TenantScopeUnavailable,
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
+    ToolingImportRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -154,6 +155,27 @@ def require_tooling_acceptance_assets_routes_enabled() -> None:
 
     if tooling_acceptance_assets_routes_are_disabled():
         raise ToolingAcceptanceAssetsRoutesDisabled()
+
+
+def tooling_import_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P6-07 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_07_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_import_routes_enabled() -> None:
+    """Keep P6-07 import metadata handlers closed unless explicitly enabled."""
+
+    if tooling_import_routes_are_disabled():
+        raise ToolingImportRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

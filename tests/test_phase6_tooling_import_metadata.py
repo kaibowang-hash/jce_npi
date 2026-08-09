@@ -71,7 +71,7 @@ class Phase6ToolingImportMetadataTests(unittest.TestCase):
         self.assertEqual(operations[-1], "tooling_import_rollback.execute")
         self.assertNotIn("tooling_import", str(_fields(_load("npi_tooling_command_idempotency"))["operation"]["options"]))
 
-    def test_contracts_close_import_truth_without_activating_a_route(self) -> None:
+    def test_contracts_activate_only_the_checkpoint_2_fail_closed_routes(self) -> None:
         openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
         ownership = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
         bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
@@ -83,8 +83,27 @@ class Phase6ToolingImportMetadataTests(unittest.TestCase):
         ):
             self.assertIn(f"    {schema}:\n", openapi)
         self.assertIn("Production approval is intentionally absent until DR-REC-007 is resolved.", openapi)
-        self.assertNotIn("/tooling-import", bff)
-        self.assertNotIn("TOOLING_IMPORT_ROUTES", bff)
+        self.assertEqual(openapi.count("x-transaction-boundary: project-tooling-import-history"), 5)
+        for operation in (
+            "tooling_import_batch.create",
+            "tooling_import_inspection.create",
+            "tooling_import_mapping.create",
+            "tooling_import_preview.create",
+            "tooling_import_confirmation.create",
+        ):
+            self.assertIn(f"x-audit-operation: {operation}", openapi)
+        for route in (
+            "/tooling-imports$",
+            "/tooling-imports/",
+            "/inspections$",
+            "/mapping-proposals$",
+            "/previews$",
+            "/confirmations$",
+        ):
+            self.assertIn(route, bff)
+        self.assertIn("ToolingImportRoutesDisabled", bff)
+        self.assertIn("TOOLING_IMPORT_ROUTES_DISABLED", (ROOT / "apps/npi_core/npi_core/foundation/errors.py").read_text(encoding="utf-8"))
+        self.assertIn("npi_p6_07_routes_disabled", (ROOT / "apps/npi_core/npi_core/request_security.py").read_text(encoding="utf-8"))
         for object_name in (
             "ToolingImportBatch", "ToolingImportInspectionRevision",
             "ToolingImportMappingRevision", "ToolingImportPreviewRevision",
@@ -98,6 +117,8 @@ class Phase6ToolingImportMetadataTests(unittest.TestCase):
         python_paths = [
             ROOT / "apps/npi_core/npi_core/tooling/import_domain.py",
             ROOT / "apps/npi_core/npi_core/tooling/import_frappe_validation.py",
+            ROOT / "apps/npi_core/npi_core/tooling/import_repository.py",
+            ROOT / "apps/npi_core/npi_core/tooling_import_api.py",
         ]
         for folder in OBJECTS:
             metadata = _load(folder)

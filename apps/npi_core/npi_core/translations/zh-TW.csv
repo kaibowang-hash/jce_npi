@@ -5244,3 +5244,31 @@ Rollback evidence states must be true or false.,回復證據狀態必須為真�
 Select a supported rollback decision.,請選擇受支援的回復決定。
 Workbook metadata does not match the exact File Revision.,活頁簿中繼資料與精確的檔案修訂不相符。
 Workbook size exceeds the import limit.,活頁簿大小超過匯入限制。
+A preview confirmation cannot replace earlier evidence.,預覽確認不能取代先前的證據。
+A relationship confirmation cannot claim an image anchor.,關係確認不能宣告影像錨點。
+A successor preview requires an exact predecessor.,後續預覽需要精確的前序版本。
+Enter at least one preview confirmation.,請至少輸入一項預覽確認。
+Inspection snapshot integrity check failed.,檢查快照完整性驗證失敗。
+Mapping snapshot integrity check failed.,映射快照完整性驗證失敗。
+Preview confirmations must be unique.,預覽確認必須唯一。
+Preview confirmations must use the controlled confirmation shape.,預覽確認必須使用受控確認結構。
+Preview predecessor identity and hash must be provided together.,必須同時提供預覽前序識別與雜湊。
+Preview snapshot integrity check failed.,預覽快照完整性驗證失敗。
+Select a row that still requires confirmation.,請選擇仍需確認的資料列。
+Select a supported Tooling import snapshot.,請選擇受支援的模具匯入快照。
+Select a supported confirmation kind.,請選擇受支援的確認類型。
+Select a supported confirmation target.,請選擇受支援的確認目標。
+Select a valid confirmation actor.,請選擇有效的確認執行人。
+Select the exact image anchor.,請選擇精確的影像錨點。
+The first preview revision cannot have a predecessor.,第一個預覽修訂不能有前序版本。
+Predecessor Preview Revision,前序預覽修訂
+Preview Confirmation Snapshot,預覽確認快照
+Preview Global ID,預覽全域識別碼
+Preview Version,預覽版本
+Preview Version Key Hash,預覽版本鍵雜湊
+Preview Version Key Hash does not match.,預覽版本鍵雜湊不相符。
+The exact predecessor Preview Revision is unavailable.,精確的前序預覽修訂不可用。
+The Tooling import workspace is temporarily unavailable.,模具匯入工作區暫時不可用。
+The XLSX workbook failed passive safety inspection.,試算表活頁簿未通過被動安全檢查。
+Enter a valid stable code.,請輸入有效的穩定代碼。
+Enter a valid lowercase hash.,請輸入有效的小寫雜湊。

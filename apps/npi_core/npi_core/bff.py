@@ -19,6 +19,7 @@ from .foundation.errors import (
     ProjectCollaborationRoutesDisabled,
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
+    ToolingImportRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -36,6 +37,7 @@ from .request_security import (
     response_request_id,
     tooling_engineering_controls_routes_are_disabled,
     tooling_acceptance_assets_routes_are_disabled,
+    tooling_import_routes_are_disabled,
     tooling_set_routes_are_disabled,
     tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
@@ -158,6 +160,29 @@ _PROJECT_TOOLING_ASSET_REQUEST_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling/"
     r"(?P<tooling_master_id>[^/:]+)/asset-requests/"
     r"(?P<asset_request_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_IMPORTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports$"
+)
+_PROJECT_TOOLING_IMPORT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_IMPORT_INSPECTIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/inspections$"
+)
+_PROJECT_TOOLING_IMPORT_MAPPINGS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/mapping-proposals$"
+)
+_PROJECT_TOOLING_IMPORT_PREVIEWS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/previews$"
+)
+_PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/previews/(?P<preview_id>[^/:]+)/confirmations$"
 )
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
@@ -472,6 +497,22 @@ def route_request() -> None:
     command = _ROUTES.get((request.method, path))
     route_params: dict[str, str] = {}
     if command is None and request.method == "GET":
+        for route, candidate in (
+            (
+                _PROJECT_TOOLING_IMPORTS_ROUTE,
+                "npi_core.tooling_import_api.get_tooling_import_batches",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_ROUTE,
+                "npi_core.tooling_import_api.get_tooling_import_batch",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "GET":
         match = _PROJECT_COCKPIT_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_core.project_api.get_project_cockpit"
@@ -568,6 +609,35 @@ def route_request() -> None:
         if match is not None:
             command = "npi_core.tooling_api.get_tooling_master"
             route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        import_commands = (
+            (
+                _PROJECT_TOOLING_IMPORTS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_batch",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_INSPECTIONS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_inspection",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_MAPPINGS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_mapping_proposal",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_PREVIEWS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_preview",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_confirmation",
+            ),
+        )
+        for route, candidate in import_commands:
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "POST":
         acceptance_asset_commands = (
             (
@@ -940,6 +1010,9 @@ def route_request() -> None:
     if _p6_06_routes_disabled(command):
         command = "npi_core.bff.tooling_acceptance_assets_routes_disabled"
         route_params = {}
+    if _p6_07_routes_disabled(command):
+        command = "npi_core.bff.tooling_import_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1179,6 +1252,23 @@ def tooling_acceptance_assets_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def tooling_import_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-07 while retaining prior Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingImportRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1291,6 +1381,13 @@ def _p6_06_routes_disabled(command: str | None) -> bool:
     }
 
 
+def _p6_07_routes_disabled(command: str | None) -> bool:
+    return tooling_import_routes_are_disabled() and (
+        isinstance(command, str)
+        and command.startswith("npi_core.tooling_import_api.")
+    )
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1373,6 +1470,15 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_TOOLING_IMPORTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_INSPECTIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_MAPPINGS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_PREVIEWS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (
