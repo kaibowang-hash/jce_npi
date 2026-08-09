@@ -200,6 +200,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "document_runtime._validated_runtime_site()",
             "P6-07 fresh synthetic File Revision already exists",
             "containsCustomerData",
+            "temporary_directory / file_name",
+            '"fileName": file_name',
             "approved_fixture",
             "run_tooling_import_job(job_id, expected_snapshot_hash)",
             "with tooling_command_write():",

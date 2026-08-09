@@ -1586,13 +1586,26 @@ def seed_tooling_import_fixture(
         not frappe.db.exists("NPI File Revision", revision_id),
         "P6-07 fresh synthetic File Revision already exists",
     )
-    temporary = Path(frappe.get_site_path("private", "files")) / f".{file_name}.source"
-    manifest = build_sanitized_tooling_workbook(
-        temporary,
-        title_row_count=int(fixture["titleRowCount"]),
+    temporary_directory = (
+        Path(frappe.get_site_path("private", "files"))
+        / f".p6-07-runtime-{fixture_run_id}"
     )
-    content = temporary.read_bytes()
-    temporary.unlink()
+    require(
+        not temporary_directory.exists(),
+        "P6-07 synthetic source staging directory already exists",
+    )
+    temporary_directory.mkdir(mode=0o700)
+    temporary = temporary_directory / file_name
+    try:
+        manifest = build_sanitized_tooling_workbook(
+            temporary,
+            title_row_count=int(fixture["titleRowCount"]),
+        )
+        content = temporary.read_bytes()
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+        temporary_directory.rmdir()
     require(
         manifest == {
             "fixtureVersion": "p6-07.synthetic-tooling-list.v1",
