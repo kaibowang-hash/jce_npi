@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import ast
 import csv
+import importlib
 import json
+import sys
+import types
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -82,10 +86,79 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
             "TOOLING_OBJECT_PACKAGE_MIME_TYPE",
             "validate_immutable_snapshot",
             "validate_package_expiry",
+            "require_datetime_snapshot_projection",
         ):
             self.assertIn(marker, controller)
 
-    def test_checkpoint_one_adds_schemas_but_no_live_routes(self) -> None:
+    def test_package_datetime_projection_compares_the_same_utc_instant(self) -> None:
+        module_names = (
+            "frappe",
+            "frappe.utils",
+            "npi_core.documents.frappe_validation",
+            "npi_core.tooling.export_frappe_validation",
+        )
+        saved = {name: sys.modules.get(name) for name in module_names}
+        for name in module_names:
+            sys.modules.pop(name, None)
+
+        class ValidationError(Exception):
+            pass
+
+        frappe = types.ModuleType("frappe")
+        frappe._ = lambda source: source
+        frappe.flags = types.SimpleNamespace()
+        frappe.PermissionError = PermissionError
+        frappe.ValidationError = ValidationError
+        frappe.parse_json = json.loads
+
+        def throw(message: str, error_type: type[Exception]) -> None:
+            raise error_type(message)
+
+        frappe.throw = throw
+        utils = types.ModuleType("frappe.utils")
+
+        def get_datetime(value: object) -> datetime:
+            if isinstance(value, datetime):
+                return value
+            text = str(value)
+            return datetime.fromisoformat(
+                text[:-1] + "+00:00" if text.endswith("Z") else text
+            )
+
+        utils.get_datetime = get_datetime
+        sys.modules["frappe"] = frappe
+        sys.modules["frappe.utils"] = utils
+        try:
+            validation = importlib.import_module(
+                "npi_core.tooling.export_frappe_validation"
+            )
+            document = types.SimpleNamespace(
+                generated_at="2026-08-10 04:05:06.000000",
+                expires_at=datetime(2026, 8, 10, 5, 5, 6, tzinfo=UTC),
+            )
+            snapshot = {
+                "generatedAt": "2026-08-10T04:05:06Z",
+                "expiresAt": "2026-08-10T05:05:06Z",
+            }
+            validation.require_datetime_snapshot_projection(
+                document,
+                snapshot,
+                (("generated_at", "generatedAt"), ("expires_at", "expiresAt")),
+            )
+            snapshot["expiresAt"] = "2026-08-10T05:05:07Z"
+            with self.assertRaises(ValidationError):
+                validation.require_datetime_snapshot_projection(
+                    document,
+                    snapshot,
+                    (("generated_at", "generatedAt"), ("expires_at", "expiresAt")),
+                )
+        finally:
+            for name in module_names:
+                sys.modules.pop(name, None)
+                if saved[name] is not None:
+                    sys.modules[name] = saved[name]
+
+    def test_checkpoint_two_exposes_only_the_four_fixed_live_routes(self) -> None:
         openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
         ownership = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
         bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
@@ -94,9 +167,23 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
             "ToolingListPreferenceSnapshot", "ToolingExportRequest", "ToolingExportPackage",
         ):
             self.assertIn(f"    {schema}:\n", openapi)
-        self.assertNotIn("  /projects/{projectGlobalId}/tooling-exports", openapi)
-        self.assertNotIn("tooling-exports", bff)
-        self.assertNotIn("tooling-list-preference", bff)
+        for path in (
+            "/projects/{projectId}/tooling-list:",
+            "/projects/{projectId}/tooling-list/preferences/{viewId}:",
+            "/projects/{projectId}/tooling-exports:",
+            "/projects/{projectId}/tooling-exports/{packageId}:content:",
+        ):
+            self.assertEqual(openapi.count(f"  {path}\n"), 1)
+        for command in (
+            "npi_core.tooling_export_api.get_tooling_list",
+            "npi_core.tooling_export_api.get_tooling_list_preference",
+            "npi_core.tooling_export_api.set_tooling_list_preference",
+            "npi_core.tooling_export_api.create_tooling_export_package",
+            "npi_core.tooling_export_api.download_tooling_export_package",
+        ):
+            self.assertIn(command, bff)
+        self.assertIn("tooling_export_routes_are_disabled", bff)
+        self.assertNotIn("/tooling-exports/{packageId}/content", openapi)
         for object_name in (
             "ToolingListPreference",
             "ToolingExportPackage",
@@ -112,6 +199,8 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
             ROOT / "apps/npi_core/npi_core/tooling/export_domain.py",
             ROOT / "apps/npi_core/npi_core/tooling/export_rendering.py",
             ROOT / "apps/npi_core/npi_core/tooling/export_frappe_validation.py",
+            ROOT / "apps/npi_core/npi_core/tooling/export_repository.py",
+            ROOT / "apps/npi_core/npi_core/tooling_export_api.py",
         ]
         for folder in OBJECTS:
             metadata = _load(folder)

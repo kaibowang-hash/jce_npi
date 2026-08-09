@@ -27,6 +27,7 @@ from npi_core.tooling.export_domain import (
     ToolingListViewId,
     ToolingSource,
     filtered_query_snapshot_hash,
+    query_tooling_list_rows,
     resolve_exact_selection,
     select_filtered_rows,
     tooling_list_preference_key_hash,
@@ -130,6 +131,7 @@ class Phase6ToolingExportDomainTests(unittest.TestCase):
 
     def test_filtered_export_rejects_truncation_beyond_one_hundred(self) -> None:
         rows = tuple(_row(index) for index in range(1, MAX_TOOLING_EXPORT_OBJECTS + 2))
+        self.assertEqual(len(query_tooling_list_rows(rows, ToolingListFilter())), 101)
         with self.assertRaises(RequestValidationFailed):
             select_filtered_rows(rows, ToolingListFilter())
 
@@ -156,6 +158,13 @@ class Phase6ToolingExportDomainTests(unittest.TestCase):
             column_widths=(("tooling", 260), ("source", 120)),
         )
         self.assertEqual(preference.snapshot_payload()["viewId"], "shared_parts")
+        self.assertEqual(
+            preference.snapshot_payload()["columnWidths"],
+            [
+                {"columnId": "source", "width": 120},
+                {"columnId": "tooling", "width": 260},
+            ],
+        )
         self.assertEqual(preference.snapshot_hash, preference.snapshot_hash)
         first_key = tooling_list_preference_key_hash(
             tenant_id="tenant-980",

@@ -15,6 +15,7 @@ from npi_core.tooling.export_frappe_validation import (
     canonical_export_uuid,
     deny_tooling_export_delete,
     deny_tooling_export_update,
+    require_datetime_snapshot_projection,
     require_json_projection,
     require_snapshot_projection,
     require_tooling_export_write,
@@ -105,8 +106,6 @@ class NPIToolingExportPackage(Document):
                 ("confidentiality_class", "confidentialityClass"),
                 ("object_count", "objectCount"),
                 ("query_snapshot_hash", "querySnapshotHash"),
-                ("generated_at", "generatedAt"),
-                ("expires_at", "expiresAt"),
                 ("frappe_file_id", "frappeFileId"),
                 ("file_name", "fileName"),
                 ("mime_type", "mimeType"),
@@ -115,6 +114,14 @@ class NPIToolingExportPackage(Document):
                 ("manifest_sha256", "manifestSha256"),
                 ("request_id", "requestId"),
                 ("trace_id", "traceId"),
+            ),
+        )
+        require_datetime_snapshot_projection(
+            self,
+            snapshot,
+            (
+                ("generated_at", "generatedAt"),
+                ("expires_at", "expiresAt"),
             ),
         )
         require_json_projection(self, "object_refs", snapshot, "objectRefs")

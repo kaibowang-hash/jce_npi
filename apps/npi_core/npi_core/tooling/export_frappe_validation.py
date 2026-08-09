@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from datetime import timedelta
+from datetime import UTC, timedelta
 from typing import Iterator
 
 import frappe
@@ -108,6 +108,25 @@ def require_snapshot_projection(
 ) -> None:
     for fieldname, snapshot_key in projection:
         if str(getattr(document, fieldname)) != str(snapshot.get(snapshot_key)):
+            frappe.throw(
+                _("Tooling export fields do not match the exact snapshot."),
+                frappe.ValidationError,
+            )
+
+
+def require_datetime_snapshot_projection(
+    document: object,
+    snapshot: dict[str, object],
+    projection: tuple[tuple[str, str], ...],
+) -> None:
+    for fieldname, snapshot_key in projection:
+        actual = get_datetime(getattr(document, fieldname))
+        expected = get_datetime(snapshot.get(snapshot_key))
+        if actual.tzinfo is not None:
+            actual = actual.astimezone(UTC).replace(tzinfo=None)
+        if expected.tzinfo is not None:
+            expected = expected.astimezone(UTC).replace(tzinfo=None)
+        if actual != expected:
             frappe.throw(
                 _("Tooling export fields do not match the exact snapshot."),
                 frappe.ValidationError,

@@ -4032,6 +4032,211 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/tooling-list:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingList
+      description: >
+        Returns one stable, bounded page from the complete Project-relative
+        Tooling List after Project-first authorization. Shared Masters expose
+        only exact aggregates belonging to the selected Project; the caller
+        cannot provide DocTypes, fields or arbitrary filter expressions.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: query
+          name: viewId
+          schema: { $ref: "#/components/schemas/ToolingListViewId" }
+        - in: query
+          name: search
+          schema: { type: string, maxLength: 120 }
+        - in: query
+          name: sortKey
+          schema: { $ref: "#/components/schemas/ToolingListSortKey" }
+        - in: query
+          name: sortDirection
+          schema: { $ref: "#/components/schemas/ToolingListSortDirection" }
+        - in: query
+          name: groupKey
+          schema: { $ref: "#/components/schemas/ToolingListGroupKey" }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+        - in: query
+          name: cursor
+          schema: { type: string, minLength: 1, maxLength: 500 }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Authorized Project-relative Tooling List page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingListPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-list/preferences/{viewId}:
+    get:
+      tags: [Tooling]
+      operationId: getProjectToolingListPreference
+      description: Returns the authenticated actor's exact Project and closed-view preference.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: viewId
+          required: true
+          schema: { $ref: "#/components/schemas/ToolingListViewId" }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200":
+          description: Stored preference or deterministic unstored default
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingListPreference" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    put:
+      tags: [Tooling]
+      operationId: setProjectToolingListPreference
+      description: >
+        Replaces one actor-, Project- and view-bound preference under exact
+        optimistic version and snapshot preconditions.
+      x-transaction-boundary: tooling-list-preference
+      x-audit-operation: tooling_list_preference.save
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: viewId
+          required: true
+          schema: { $ref: "#/components/schemas/ToolingListViewId" }
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetToolingListPreference" }
+      responses:
+        "200":
+          description: Persisted server-confirmed preference
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingListPreference" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-exports:
+    post:
+      tags: [Tooling]
+      operationId: createProjectToolingExportPackage
+      description: >
+        Creates one immutable private tooling-object-package-v1 archive from
+        exact selected row snapshots or the complete reviewed filtered result.
+        Requires an authenticated internal System Manager with Project
+        administration authority and never returns a raw File URL.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: tooling-export-package
+      x-audit-operation: tooling_export_package.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ToolingExportRequest" }
+      responses:
+        "201":
+          description: Immutable private package metadata without a raw File URL
+          headers:
+            Idempotency-Replayed:
+              schema: { type: string, enum: ["true", "false"] }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ToolingExportPackageCommand" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/tooling-exports/{packageId}:content:
+    post:
+      tags: [Tooling]
+      operationId: downloadProjectToolingExportPackage
+      description: >
+        Streams the exact creator-bound, unexpired, hash-verified private ZIP
+        after current Project and export authorization. It never returns or
+        redirects to a raw private Frappe File URL.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: tooling-export-download-receipt
+      x-audit-operation: tooling_export_package.download
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: packageId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DownloadToolingExportPackage" }
+      responses:
+        "200":
+          description: Exact retained private Tooling object package bytes
+          headers:
+            Idempotency-Replayed:
+              schema: { type: string, enum: ["true", "false"] }
+            Content-Disposition:
+              schema: { type: string, pattern: '^attachment; filename="[^/\\]+[.]zip"$' }
+            X-Content-Type-Options:
+              schema: { type: string, const: nosniff }
+            Content-Security-Policy:
+              schema: { type: string, const: "sandbox; default-src 'none'" }
+            Referrer-Policy:
+              schema: { type: string, const: no-referrer }
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "410": { $ref: "#/components/responses/ProjectError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/tooling-imports:
     get:
       tags: [Tooling]
@@ -14767,6 +14972,38 @@ components:
       properties:
         columnId: { $ref: "#/components/schemas/ToolingListColumnId" }
         width: { type: integer, minimum: 56, maximum: 480 }
+    ToolingListPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, canExport, exportUnavailableReason]
+      properties:
+        view: { type: boolean, const: true }
+        canExport: { type: boolean }
+        exportUnavailableReason:
+          oneOf:
+            - { type: string, const: separate_export_authority_required }
+            - { type: "null" }
+    ToolingListPage:
+      type: object
+      additionalProperties: false
+      required:
+        [projectGlobalId, filter, querySnapshotHash, totalCount, pageSize,
+         nextCursor, items, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        filter: { $ref: "#/components/schemas/ToolingListFilterSnapshot" }
+        querySnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        totalCount: { type: integer, minimum: 0 }
+        pageSize: { type: integer, minimum: 1, maximum: 100 }
+        nextCursor:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 500 }
+            - { type: "null" }
+        items:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ToolingListRow" }
+        permissions: { $ref: "#/components/schemas/ToolingListPermissions" }
     ToolingListPreferenceSnapshot:
       type: object
       additionalProperties: false
@@ -14799,16 +15036,30 @@ components:
     ToolingListPreference:
       type: object
       additionalProperties: false
-      required:
-        [globalId, projectGlobalId, actorUserId, optimisticVersion, preference,
-         snapshotHash]
+      required: [stored, globalId, optimisticVersion, snapshotHash, preference]
       properties:
-        globalId: { type: string, format: uuid }
-        projectGlobalId: { type: string, format: uuid }
-        actorUserId: { type: string, minLength: 1, maxLength: 254 }
-        optimisticVersion: { type: integer, minimum: 1 }
+        stored: { type: boolean }
+        globalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        optimisticVersion: { type: integer, minimum: 0 }
         preference: { $ref: "#/components/schemas/ToolingListPreferenceSnapshot" }
-        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+    SetToolingListPreference:
+      type: object
+      additionalProperties: false
+      required: [expectedVersion, expectedSnapshotHash, preference]
+      properties:
+        expectedVersion: { type: integer, minimum: 0 }
+        expectedSnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+        preference: { $ref: "#/components/schemas/ToolingListPreferenceSnapshot" }
     ToolingListSelectionReference:
       type: object
       additionalProperties: false
@@ -14883,6 +15134,18 @@ components:
         sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
         manifestSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
         snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    ToolingExportPackageCommand:
+      type: object
+      additionalProperties: false
+      required: [package]
+      properties:
+        package: { $ref: "#/components/schemas/ToolingExportPackage" }
+    DownloadToolingExportPackage:
+      type: object
+      additionalProperties: false
+      required: [expectedSnapshotHash]
+      properties:
+        expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
     CommandResult:
       type: object
       required: [globalId, version, status]

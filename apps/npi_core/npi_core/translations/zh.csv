@@ -5636,3 +5636,12 @@ multiple_physical_sets,多套实体模具
 missing_design_revision,缺少设计修订
 has_design_revision,已有设计修订
 customer_owned_set,客户所有模具套
+Choose either an exact selection or the current filtered result.,请选择精确选择项或当前筛选结果，两者不可同时选择。
+Enter a valid object.,请输入有效对象。
+Enter a whole number within the supported range.,请输入受支持范围内的整数。
+Enter a whole number.,请输入整数。
+Narrow the Tooling List filter to between one and one hundred objects.,请将模具清单筛选结果缩小至一到一百个对象。
+The filtered Tooling List is stale.,筛选后的模具清单已过期。
+The Tooling List export workspace is temporarily unavailable.,模具清单导出工作区暂时不可用。
+The Tooling object package could not be rendered safely.,无法安全生成模具对象包。
+The Tooling object package has expired.,模具对象包已过期。

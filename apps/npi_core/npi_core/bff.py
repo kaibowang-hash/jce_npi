@@ -20,6 +20,7 @@ from .foundation.errors import (
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
     ToolingImportRoutesDisabled,
+    ToolingExportRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -38,6 +39,7 @@ from .request_security import (
     tooling_engineering_controls_routes_are_disabled,
     tooling_acceptance_assets_routes_are_disabled,
     tooling_import_routes_are_disabled,
+    tooling_export_routes_are_disabled,
     tooling_set_routes_are_disabled,
     tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
@@ -220,6 +222,20 @@ _PROJECT_TOOLING_IMPORT_ROLLBACK_ELIGIBILITY_ROUTE = re.compile(
 _PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
     r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+):rollback$"
+)
+_PROJECT_TOOLING_LIST_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-list$"
+)
+_PROJECT_TOOLING_LIST_PREFERENCE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-list/preferences/"
+    r"(?P<view_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_EXPORTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-exports$"
+)
+_PROJECT_TOOLING_EXPORT_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-exports/"
+    r"(?P<package_id>[^/:]+):content$"
 )
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
@@ -533,6 +549,40 @@ def route_request() -> None:
 
     command = _ROUTES.get((request.method, path))
     route_params: dict[str, str] = {}
+    if command is None and request.method == "GET":
+        for route, candidate in (
+            (_PROJECT_TOOLING_LIST_ROUTE, "npi_core.tooling_export_api.get_tooling_list"),
+            (
+                _PROJECT_TOOLING_LIST_PREFERENCE_ROUTE,
+                "npi_core.tooling_export_api.get_tooling_list_preference",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "PUT":
+        match = _PROJECT_TOOLING_LIST_PREFERENCE_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.tooling_export_api.set_tooling_list_preference"
+            route_params = match.groupdict()
+    if command is None and request.method == "POST":
+        for route, candidate in (
+            (
+                _PROJECT_TOOLING_EXPORTS_ROUTE,
+                "npi_core.tooling_export_api.create_tooling_export_package",
+            ),
+            (
+                _PROJECT_TOOLING_EXPORT_CONTENT_ROUTE,
+                "npi_core.tooling_export_api.download_tooling_export_package",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "GET":
         for route, candidate in (
             (
@@ -1086,6 +1136,9 @@ def route_request() -> None:
     if _p6_07_routes_disabled(command):
         command = "npi_core.bff.tooling_import_routes_disabled"
         route_params = {}
+    if _p6_08_routes_disabled(command):
+        command = "npi_core.bff.tooling_export_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1342,6 +1395,23 @@ def tooling_import_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "PUT", "POST"],
+)
+def tooling_export_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P6-08 while retaining prior Tooling routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise ToolingExportRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1461,6 +1531,13 @@ def _p6_07_routes_disabled(command: str | None) -> bool:
     )
 
 
+def _p6_08_routes_disabled(command: str | None) -> bool:
+    return tooling_export_routes_are_disabled() and (
+        isinstance(command, str)
+        and command.startswith("npi_core.tooling_export_api.")
+    )
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1561,6 +1638,13 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TOOLING_IMPORT_RECONCILE_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_IMPORT_ROLLBACK_ELIGIBILITY_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "PUT", "POST"} and (
+        _PROJECT_TOOLING_LIST_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_LIST_PREFERENCE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_EXPORTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_EXPORT_CONTENT_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (

@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Iterable, TypeVar
 from uuid import UUID
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 from npi_core.tooling.domain import sha256_json
 
 try:
@@ -97,6 +97,15 @@ class ToolingSource(StrEnum):
 class ToolingExportOperation(StrEnum):
     CREATE = "tooling_export_package.create"
     DOWNLOAD = "tooling_export_package.download"
+
+
+class ToolingExportExpired(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            410,
+            "TOOLING_EXPORT_EXPIRED",
+            _("The Tooling object package has expired."),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -325,9 +334,10 @@ class ToolingListPreferenceSnapshot:
             "filter": self.filter_spec.snapshot_payload(),
             "columnOrder": list(self.column_order),
             "hiddenColumns": list(self.hidden_columns),
-            "columnWidths": {
-                column_id: width for column_id, width in self.column_widths
-            },
+            "columnWidths": [
+                {"columnId": column_id, "width": width}
+                for column_id, width in self.column_widths
+            ],
         }
 
 
@@ -419,6 +429,19 @@ def select_filtered_rows(
     rows: Iterable[ToolingListRow],
     filter_spec: ToolingListFilter,
 ) -> tuple[ToolingListRow, ...]:
+    selected = query_tooling_list_rows(rows, filter_spec)
+    if len(selected) > MAX_TOOLING_EXPORT_OBJECTS:
+        raise _problem(
+            "filter",
+            _("The filtered Tooling List contains more than one hundred objects."),
+        )
+    return selected
+
+
+def query_tooling_list_rows(
+    rows: Iterable[ToolingListRow],
+    filter_spec: ToolingListFilter,
+) -> tuple[ToolingListRow, ...]:
     normalized = tuple(rows)
     if not all(isinstance(item, ToolingListRow) for item in normalized):
         raise _problem("rows", _("Enter valid Tooling List rows."))
@@ -437,11 +460,6 @@ def select_filtered_rows(
     identities = [row.tooling_master_global_id for row in selected]
     if len(identities) != len(set(identities)):
         raise _problem("rows", _("Tooling List rows must be unique."))
-    if len(selected) > MAX_TOOLING_EXPORT_OBJECTS:
-        raise _problem(
-            "filter",
-            _("The filtered Tooling List contains more than one hundred objects."),
-        )
     reverse = filter_spec.sort_direction is ToolingListSortDirection.DESCENDING
     selected.sort(key=lambda row: str(row.tooling_master_global_id))
     selected.sort(key=lambda row: _sort_value(row, filter_spec.sort_key), reverse=reverse)
@@ -450,17 +468,25 @@ def select_filtered_rows(
     return tuple(selected)
 
 
-def filtered_query_snapshot_hash(
+def tooling_list_query_snapshot_hash(
     filter_spec: ToolingListFilter,
     rows: Iterable[ToolingListRow],
 ) -> str:
-    selected = select_filtered_rows(rows, filter_spec)
+    selected = query_tooling_list_rows(rows, filter_spec)
     return sha256_json(
         {
             "filter": filter_spec.snapshot_payload(),
             "objectRefs": [row.reference().snapshot_payload() for row in selected],
         }
     )
+
+
+def filtered_query_snapshot_hash(
+    filter_spec: ToolingListFilter,
+    rows: Iterable[ToolingListRow],
+) -> str:
+    selected = select_filtered_rows(rows, filter_spec)
+    return tooling_list_query_snapshot_hash(filter_spec, selected)
 
 
 def tooling_list_preference_key_hash(

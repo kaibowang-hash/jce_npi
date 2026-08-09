@@ -17,6 +17,7 @@ from npi_core.tooling.export_domain import (
     TOOLING_OBJECT_PACKAGE_CONFIDENTIALITY,
     TOOLING_OBJECT_PACKAGE_MIME_TYPE,
     TOOLING_OBJECT_PACKAGE_SCHEMA_VERSION,
+    TOOLING_OBJECT_PACKAGE_VALIDITY,
     ToolingExportLanguage,
     ToolingExportMode,
     ToolingListRow,
@@ -109,12 +110,15 @@ class RenderedToolingObjectPackage:
 def render_tooling_object_package(
     *,
     rows: Iterable[ToolingListRow],
+    package_global_id: UUID,
     project_global_id: UUID,
     project_code: str,
+    actor_user_id: str,
     mode: ToolingExportMode,
     language: ToolingExportLanguage,
     query_snapshot_hash: str | None,
     generated_at: datetime,
+    expires_at: datetime,
     translate: Callable[[str], str],
 ) -> RenderedToolingObjectPackage:
     normalized_rows = tuple(rows)
@@ -122,6 +126,7 @@ def render_tooling_object_package(
         raise ValueError("A Tooling object package requires between one and one hundred rows.")
     if not all(isinstance(row, ToolingListRow) for row in normalized_rows):
         raise TypeError("Tooling object package rows must be validated Tooling List rows.")
+    package_global_id = _uuid(package_global_id)
     project_global_id = _uuid(project_global_id)
     if any(row.project_global_id != project_global_id for row in normalized_rows):
         raise ValueError("Tooling object package rows must belong to the exact Project.")
@@ -135,6 +140,11 @@ def render_tooling_object_package(
     mode = ToolingExportMode(mode)
     language = ToolingExportLanguage(language)
     generated_at = _aware_utc(generated_at)
+    expires_at = _aware_utc(expires_at)
+    if expires_at != generated_at + TOOLING_OBJECT_PACKAGE_VALIDITY:
+        raise ValueError("The Tooling object package must expire after one hour.")
+    if not isinstance(actor_user_id, str) or not actor_user_id.strip():
+        raise ValueError("Enter a valid package creator.")
     if mode is ToolingExportMode.FILTERED:
         query_snapshot_hash = _sha256(query_snapshot_hash)
     elif query_snapshot_hash not in (None, ""):
@@ -150,13 +160,16 @@ def render_tooling_object_package(
     )
     manifest = {
         "schemaVersion": TOOLING_OBJECT_PACKAGE_SCHEMA_VERSION,
+        "packageGlobalId": str(package_global_id),
         "confidentialityClass": TOOLING_OBJECT_PACKAGE_CONFIDENTIALITY,
         "projectGlobalId": str(project_global_id),
         "projectCode": project_code,
+        "createdByUserId": actor_user_id,
         "mode": mode.value,
         "language": language.value,
         "querySnapshotHash": query_snapshot_hash,
         "generatedAt": _utc_text(generated_at),
+        "expiresAt": _utc_text(expires_at),
         "rowCount": len(normalized_rows),
         "omittedFieldClasses": list(OMITTED_FIELD_CLASSES),
         "objectRefs": [row.reference().snapshot_payload() for row in normalized_rows],

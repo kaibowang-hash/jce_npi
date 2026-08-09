@@ -20,6 +20,7 @@ from .foundation.errors import (
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
     ToolingImportRoutesDisabled,
+    ToolingExportRoutesDisabled,
     ToolingRoutesDisabled,
     ToolingManufacturingRoutesDisabled,
     ToolingRevisionRoutesDisabled,
@@ -176,6 +177,27 @@ def require_tooling_import_routes_enabled() -> None:
 
     if tooling_import_routes_are_disabled():
         raise ToolingImportRoutesDisabled()
+
+
+def tooling_export_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P6-08 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p6_08_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_tooling_export_routes_enabled() -> None:
+    """Keep P6-08 Tooling List/export handlers closed unless explicitly enabled."""
+
+    if tooling_export_routes_are_disabled():
+        raise ToolingExportRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

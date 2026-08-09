@@ -7,7 +7,7 @@ import json
 import sys
 import unittest
 import zipfile
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -30,7 +30,10 @@ from npi_core.tooling.export_rendering import (
 
 
 PROJECT_ID = UUID("99000000-0000-4000-8000-000000000001")
+PACKAGE_ID = UUID("99000000-0000-4000-8000-000000000004")
+ACTOR_USER_ID = "engineer@example.invalid"
 NOW = datetime(2026, 8, 10, 4, 5, 6, tzinfo=UTC)
+EXPIRES_AT = NOW + timedelta(hours=1)
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -79,12 +82,15 @@ class Phase6ToolingExportRenderingTests(unittest.TestCase):
     def _render(self, title: str = "Tooling A"):
         return render_tooling_object_package(
             rows=(_row(title),),
+            package_global_id=PACKAGE_ID,
             project_global_id=PROJECT_ID,
             project_code="NPI-990",
+            actor_user_id=ACTOR_USER_ID,
             mode=ToolingExportMode.SELECTION,
             language=ToolingExportLanguage.SIMPLIFIED_CHINESE,
             query_snapshot_hash=None,
             generated_at=NOW,
+            expires_at=EXPIRES_AT,
             translate=_translate,
         )
 
@@ -102,7 +108,10 @@ class Phase6ToolingExportRenderingTests(unittest.TestCase):
             manifest = json.loads(manifest_bytes)
             self.assertEqual(first.manifest_sha256, hashlib.sha256(manifest_bytes).hexdigest())
             self.assertEqual(manifest["schemaVersion"], "tooling-object-package-v1")
+            self.assertEqual(manifest["packageGlobalId"], str(PACKAGE_ID))
             self.assertEqual(manifest["confidentialityClass"], "internal_project")
+            self.assertEqual(manifest["createdByUserId"], ACTOR_USER_ID)
+            self.assertEqual(manifest["expiresAt"], "2026-08-10T05:05:06Z")
             self.assertIsNone(manifest["querySnapshotHash"])
             self.assertEqual(manifest["rowCount"], 1)
             self.assertEqual(tuple(manifest["omittedFieldClasses"]), OMITTED_FIELD_CLASSES)
@@ -136,12 +145,15 @@ class Phase6ToolingExportRenderingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_tooling_object_package(
                 rows=(_row(),),
+                package_global_id=PACKAGE_ID,
                 project_global_id=PROJECT_ID,
                 project_code="NPI-990",
+                actor_user_id=ACTOR_USER_ID,
                 mode=ToolingExportMode.FILTERED,
                 language=ToolingExportLanguage.ENGLISH,
                 query_snapshot_hash=None,
                 generated_at=NOW,
+                expires_at=EXPIRES_AT,
                 translate=lambda source: source,
             )
 
@@ -161,12 +173,15 @@ class Phase6ToolingExportRenderingTests(unittest.TestCase):
                 translate = lambda source, catalog=catalog: catalog[source]
             rendered = render_tooling_object_package(
                 rows=(_row(),),
+                package_global_id=PACKAGE_ID,
                 project_global_id=PROJECT_ID,
                 project_code="NPI-990",
+                actor_user_id=ACTOR_USER_ID,
                 mode=ToolingExportMode.SELECTION,
                 language=language,
                 query_snapshot_hash=None,
                 generated_at=NOW,
+                expires_at=EXPIRES_AT,
                 translate=translate,
             )
             with zipfile.ZipFile(io.BytesIO(rendered.content)) as archive:
