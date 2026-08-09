@@ -1428,16 +1428,16 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
                 if failed:
                     raise ToolingReferenceUnavailable()
         with _correction_server_step(
-            "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
-            trace_id,
-        ):
-            if len(content) != int(artifact.size_bytes):
-                raise ToolingReferenceUnavailable()
-        with _correction_server_step(
             "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
             trace_id,
         ):
             if hashlib.sha256(content).hexdigest() != str(artifact.sha256):
+                raise ToolingReferenceUnavailable()
+        with _correction_server_step(
+            "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
+            trace_id,
+        ):
+            if len(content) != int(artifact.size_bytes):
                 raise ToolingReferenceUnavailable()
         return ToolingImportBinaryOutcome(
             content=content,
