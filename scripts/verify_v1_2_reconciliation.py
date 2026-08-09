@@ -64,7 +64,7 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
-    "UX-016": ("8", "ANCHORED_P6_07_PHASE_8_ASYNC_JOB_TRUTH"),
+    "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
@@ -942,6 +942,119 @@ EXPECTED_P6_06_TRACE = {
         },
     ),
 }
+P6_07_COMMON_EVIDENCE = {
+    "apps/npi_core/npi_core/tooling/xlsx_inspector.py",
+    "apps/npi_core/npi_core/tooling/import_domain.py",
+    "apps/npi_core/npi_core/tooling/import_execution_domain.py",
+    "apps/npi_core/npi_core/tooling/import_repository.py",
+    "apps/npi_core/npi_core/tooling/import_execution_repository.py",
+    "apps/npi_core/npi_core/tooling_import_api.py",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/tooling-import-data-source.ts",
+    "frontend/src/pages/tooling-import-workspace.tsx",
+    "tests/test_phase6_tooling_import_execution_repository.py",
+    "scripts/verify_tooling_import_runtime.py",
+    "implementation/evidence/phase-6/p6-07-validation.md",
+}
+EXPECTED_P6_07_TRACE = {
+    "FR-TX-012": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "passive position independent Tooling List inspection and immutable source provenance are live for exact sanitized XLSX bytes"
+        },
+    ),
+    "FR-TX-013": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "all 43 reviewed columns raw values formulas states grades and image anchors retain immutable provenance without executing formulas"
+        },
+    ),
+    "FR-TX-014": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "immutable mapping proposal preview and explicit ambiguous relationship and image confirmation are live while production mapping remains unavailable"
+        },
+    ),
+    "FR-TX-015": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "bounded asynchronous execution persists immutable per row and per field partial success failure and target binding truth"
+        },
+    ),
+    "FR-TX-016": (
+        "P1",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "allowlisted correction artifacts failed row only retry and successful row non duplication are live and runtime proven"
+        },
+    ),
+    "FR-TX-017": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "immutable reconciliation and strict rollback eligibility allow unchanged batch created unused targets and durably deny downstream used targets"
+        },
+    ),
+    "FR-TX-018": (
+        "P0",
+        "6",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "Project first authorization actor bound sealed replay route recovery redacted logs and no ERP integration traffic are runtime proven"
+        },
+    ),
+    "UX-016": (
+        "P0",
+        "8",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "implementation/V1_2_DOCX_REQUIREMENTS.csv",
+        "DOCX_RECONCILED",
+        "FR-UX-012",
+        P6_07_COMMON_EVIDENCE
+        | {
+            "durable row field job progress retry reconciliation and rollback truth are live while the shared Phase 8 execution job center remains held"
+        },
+    ),
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -1724,6 +1837,51 @@ def verify_trace_sets() -> None:
                 f"{requirement_id} references missing P6-06 evidence files: "
                 f"{missing_evidence}"
             )
+    for requirement_id, (
+        expected_priority,
+        expected_phase,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_07_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            expected_phase,
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-07 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-07 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-07 evidence files: "
+                f"{missing_evidence}"
+            )
     canonical_ids = {
         requirement_id
         for requirement_id, row in by_id.items()
@@ -1777,9 +1935,9 @@ def verify_trace_sets() -> None:
         raise ReconciliationVerificationError(
             "expected 34 non-product ARCH/COD governance links"
         )
-    if len(tooling_ids) != 7:
+    if tooling_ids:
         raise ReconciliationVerificationError(
-            "expected 7 remaining anchored Phase 6 Tooling requirements"
+            "completed Phase 6 Tooling requirements must not remain anchored"
         )
     canonical_id_payload = "\n".join(sorted(canonical_ids)) + "\n"
     canonical_id_digest = hashlib.sha256(

@@ -43,7 +43,7 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-004": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-007": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
-    "UX-016": ("8", "ANCHORED_P6_07_PHASE_8_ASYNC_JOB_TRUTH"),
+    "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
@@ -65,13 +65,13 @@ P6_TOOLING_ALLOCATION = {
     "FR-TX-009": "TECHNICAL_VERIFIED_FOUNDATION",
     "FR-TX-010": "TECHNICAL_VERIFIED",
     "FR-TX-011": "TECHNICAL_VERIFIED",
-    "FR-TX-012": "ANCHORED_P6_07",
-    "FR-TX-013": "ANCHORED_P6_07",
-    "FR-TX-014": "ANCHORED_P6_07",
-    "FR-TX-015": "ANCHORED_P6_07",
-    "FR-TX-016": "ANCHORED_P6_07",
-    "FR-TX-017": "ANCHORED_P6_07",
-    "FR-TX-018": "ANCHORED_P6_07",
+    "FR-TX-012": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-013": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-014": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-015": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-016": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-017": "TECHNICAL_VERIFIED_FOUNDATION",
+    "FR-TX-018": "TECHNICAL_VERIFIED_FOUNDATION",
 }
 R1_03_EVIDENCE = {
     "FR-UX-039": (
@@ -460,6 +460,55 @@ P6_UX_ANCHOR_EVIDENCE["UX-004"] = (
     "implementation/evidence/phase-6/p6-01-validation.md",
     "live dense identity and Applicability cockpit is proven while later Tooling sections remain honestly unavailable",
 )
+P6_07_COMMON_EVIDENCE = (
+    "apps/npi_core/npi_core/tooling/xlsx_inspector.py",
+    "apps/npi_core/npi_core/tooling/import_domain.py",
+    "apps/npi_core/npi_core/tooling/import_execution_domain.py",
+    "apps/npi_core/npi_core/tooling/import_repository.py",
+    "apps/npi_core/npi_core/tooling/import_execution_repository.py",
+    "apps/npi_core/npi_core/tooling_import_api.py",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/tooling-import-data-source.ts",
+    "frontend/src/pages/tooling-import-workspace.tsx",
+    "tests/test_phase6_tooling_import_execution_repository.py",
+    "scripts/verify_tooling_import_runtime.py",
+    "implementation/evidence/phase-6/p6-07-validation.md",
+)
+P6_07_COMPLETED_EVIDENCE = {
+    "FR-TX-012": P6_07_COMMON_EVIDENCE
+    + (
+        "passive position independent Tooling List inspection and immutable source provenance are live for exact sanitized XLSX bytes",
+    ),
+    "FR-TX-013": P6_07_COMMON_EVIDENCE
+    + (
+        "all 43 reviewed columns raw values formulas states grades and image anchors retain immutable provenance without executing formulas",
+    ),
+    "FR-TX-014": P6_07_COMMON_EVIDENCE
+    + (
+        "immutable mapping proposal preview and explicit ambiguous relationship and image confirmation are live while production mapping remains unavailable",
+    ),
+    "FR-TX-015": P6_07_COMMON_EVIDENCE
+    + (
+        "bounded asynchronous execution persists immutable per row and per field partial success failure and target binding truth",
+    ),
+    "FR-TX-016": P6_07_COMMON_EVIDENCE
+    + (
+        "allowlisted correction artifacts failed row only retry and successful row non duplication are live and runtime proven",
+    ),
+    "FR-TX-017": P6_07_COMMON_EVIDENCE
+    + (
+        "immutable reconciliation and strict rollback eligibility allow unchanged batch created unused targets and durably deny downstream used targets",
+    ),
+    "FR-TX-018": P6_07_COMMON_EVIDENCE
+    + (
+        "Project first authorization actor bound sealed replay route recovery redacted logs and no ERP integration traffic are runtime proven",
+    ),
+    "UX-016": P6_07_COMMON_EVIDENCE
+    + (
+        "durable row field job progress retry reconciliation and rollback truth are live while the shared Phase 8 execution job center remains held",
+    ),
+}
 
 
 class TraceError(RuntimeError):
@@ -571,6 +620,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_03_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_05_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_05_COMPLETED_EVIDENCE[requirement_id])
+        elif requirement_id in P6_07_COMPLETED_EVIDENCE:
+            evidence = "; ".join(P6_07_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_TOOLING_ALLOCATION:
             evidence = "; ".join(
                 (

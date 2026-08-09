@@ -1328,7 +1328,7 @@ p6_06:
 p6_07:
   task: P6-07
   controller_task: P6-07_SPECIALIZED_TOOLING_LIST_CONTROLLED_IMPORT
-  status: IN_PROGRESS_CHECKPOINT_5
+  status: PASS_LEVEL_2
   requirements: [FR-TX-012, FR-TX-013, FR-TX-014, FR-TX-015, FR-TX-016, FR-TX-017, FR-TX-018, UX-016]
   starting_product_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
   audit_controller_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
@@ -1398,14 +1398,35 @@ p6_07:
   checkpoint_4_gitleaks_artifact: 9038273601
   checkpoint_4_gitleaks_digest: sha256:0169b501df654cad3c0d451094240132b6f7ca281e05218087e529799e5cc2a8
   checkpoint_4_decision: PASS
+  checkpoint_5_product_commit: e8cc7fb
+  checkpoint_5_stable_checkpoint: d8e4897ed7a47ef61e5112ce628115d3bb051ef7
+  checkpoint_5_ordinary_ci: 31330677928
+  checkpoint_5_ordinary_repository_job: 93288333713
+  checkpoint_5_ordinary_visual_job: 93288333688
+  checkpoint_5_ordinary_visual_result: 91_OF_91_PASS
+  checkpoint_5_ordinary_visual_artifact: 9042864675
+  checkpoint_5_ordinary_visual_digest: sha256:33d0032670a98d32fd14c7f2f318ad7f27cfd24df5ec53571c2e10b36518bd41
+  checkpoint_5_ordinary_gitleaks_artifact: 9042931934
+  checkpoint_5_ordinary_gitleaks_digest: sha256:943ba30a4dc86d584a173d819563163696e36dc27d44fc7ec582468401ca08e6
+  checkpoint_5_final_ci: 31330684809
+  checkpoint_5_final_repository_job: 93288346191
+  checkpoint_5_final_visual_job: 93288346156
+  checkpoint_5_controlled_job: 93288346195
+  checkpoint_5_runtime_artifact: 9042876293
+  checkpoint_5_runtime_digest: sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f
+  checkpoint_5_final_visual_artifact: 9042865852
+  checkpoint_5_final_visual_digest: sha256:122261b42be4f552de310d1a0b9b57b79c2af486acdcd60a4c2b7d4384b969a9
+  checkpoint_5_final_gitleaks_artifact: 9042940761
+  checkpoint_5_final_gitleaks_digest: sha256:4fa443c07e296b60f19f658cf56b7fbddd1632343895a7416c846399052236bb
+  checkpoint_5_decision: PASS
   inspect_map_preview_routes_active: true
   checkpoint_2_business_history_active: true
   worker_execution_active: true
   live_workspace_active: true
-  controlled_runtime_active: false
-  current_stage: CONTROLLED_SITE_AND_LEVEL_2_TASK_GATE
-  completed_stage: CHECKPOINT_4_PASS
-  next_stage: CHECKPOINT_5_CONTROLLED_RUNTIME_AND_LEVEL_2_GATE
+  controlled_runtime_active: true
+  current_stage: LEVEL_2_TASK_GATE_PASS
+  completed_stage: LEVEL_2_TASK_GATE_PASS
+  next_stage: P6_08_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-06-validation.md
@@ -1414,6 +1435,7 @@ p6_07:
     - implementation/evidence/phase-6/p6-07-repository-bff-checkpoint.md
     - implementation/evidence/phase-6/p6-07-worker-partial-retry-rollback-checkpoint.md
     - implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md
+    - implementation/evidence/phase-6/p6-07-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1438,7 +1460,7 @@ phases:
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
-  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06], current_task: P6-07}
+  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07], current_task: P6-08}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

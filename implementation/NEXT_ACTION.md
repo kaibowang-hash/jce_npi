@@ -1,50 +1,42 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_5 — P6-07 CONTROLLED TOOLING LIST IMPORT`
+`IN_PROGRESS_AUDIT — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 
-Recovery time: `2026-08-09T12:53:36Z`
+Recovery time: `2026-08-09T19:14:27Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`f42ba61d6b32eacd8dc32d47250a3871a569e682`
+`d8e4897ed7a47ef61e5112ce628115d3bb051ef7`
 
 ## Current authoritative action
 
-P6-07 checkpoint 4 passes at exact stable checkpoint `f42ba61`. Primary
-product commit `13bd67b` adds the strict import data source, lazy selected-
-Project route and dense eight-step industrial workspace with complete
-operational, correction, retry, reconciliation and rollback-denial states.
-The browser remains closed to the Project-first P6-07 BFF; production mapping,
-customer workbooks, ERPNext, network and Outbox remain unavailable.
+P6-07 passes Level 2 at exact stable checkpoint `d8e4897`. Ordinary CI
+`31330677928` passes repository `93288333713` (`1,363` Python, `796`
+frontend unit in `50` files, `343` non-visual E2E, `5,553` direct trilingual
+sources at complete `zh`/`zh-TW` coverage, statements `80.00%`, zero
+vulnerabilities and both secret lanes) and visual `93288333688` at `91/91`.
+Unchanged final workflow `31330684809` passes repository `93288346191`,
+visual `93288346156` at `91/91` and controlled Site `93288346195` through
+cumulative scope `p5-01-through-p6-07`. Runtime artifact `9042876293` has
+digest
+`sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`.
+Complete evidence is `implementation/evidence/phase-6/p6-07-validation.md`.
 
-Initial ordinary CI `31313236719` passed repository `93244249404` and isolated
-exactly three new P6-07 baselines, five reviewed P6-01 Tooling cockpit deltas
-and eighteen bottom catalog fingerprints in visual `93244249415`. Artifact
-`9038021540`, digest
-`sha256:0be137f4cde5114e50f72f4b8c211ebd330997971a6f075465e87f1a5af7fade`,
-retains those candidates. Isolated repair `f42ba61` copied only the twenty-six
-reviewed Linux actuals. Final exact-SHA CI `31313899335` passes repository
-`93245913680` (`1,341` Python, `796` frontend unit, `343` non-visual E2E,
-`5,553` complete direct trilingual sources, statements `80.00%`, zero
-vulnerabilities, clean production build and both secret lanes) and visual
-`93245913727` at `91/91`; controlled job `93245914101` correctly skips.
-Complete evidence is
-`implementation/evidence/phase-6/p6-07-live-import-workspace-checkpoint.md`.
+The current atomic action is the bounded P6-08 Requirement/domain/existing-
+capability audit only. Read the exact P6-08 task/Phase 6 anchors, trace rows and
+relevant export/selection/security foundations; freeze scope, non-scope,
+authority/privacy rules, changed-files-to-tests mapping, checkpoints and
+rollback in `implementation/evidence/phase-6/p6-08-plan.md`; reconcile the
+controller; then require ordinary CI before implementation starts.
 
-The current atomic task is checkpoint 5 only: extend the cumulative
-disposable-Site verifier/workflow through P6-07; generate and inspect the exact
-sanitized synthetic fixture; seed only its synthetic mapping; exercise detect,
-map, preview, confirm, execute, partial result, correction, failed-row retry,
-reconciliation and rollback allowed/denied truth across fresh processes; and
-prove migrations, independent route disable/recovery, permission/IDOR, raw-log
-redaction, no production mapping/ERP network and cleanup. Then reconcile the
-Requirements and complete the P6-07 Level 2 Task Gate before P6-08.
-
-`DR-REC-007` retains production semantic approval and `DR-REC-008` retains
-downstream rollback denial. There is no active technical Hard Blocker.
+P6-08 may design only an authorized controlled selection/filter and object-
+package export. It may not expose an arbitrary database dump, raw private File
+URLs, cross-Project data or production Tooling/ERP authority. `DR-REC-007`
+retains production mapping approval and `DR-REC-008` retains downstream
+rollback denial. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution history
 

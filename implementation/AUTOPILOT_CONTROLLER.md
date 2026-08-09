@@ -2021,3 +2021,50 @@ repeat or rewrite it merely to restore context. See
   mapping/ERP network and cleanup; reconcile Requirements; and run the P6-07
   Level 2 Task Gate before P6-08. Production mapping, customer workbooks and
   ERPNext contact remain inactive.
+
+## 2026-08-09 P6-07 checkpoint 5 and Level 2 PASS; P6-08 audit activation
+
+- Checkpoint 5 begins with runtime verifier/workflow commit `e8cc7fb` and ends
+  at exact stable SHA `d8e4897ed7a47ef61e5112ce628115d3bb051ef7` after serial,
+  evidence-proved controlled-runtime repairs. The repair chain preserved every
+  Requirement, public route, role/permission, ownership, Schema, transaction,
+  idempotency, audit, visual matrix, threshold and PASS rule.
+- Exact-SHA ordinary CI `31330677928` passes repository `93288333713` with
+  `1,363/1,363` tracked Python tests, `796/796` frontend unit tests in `50`
+  files, `343/343` non-visual E2E, `5,553` literal English sources at direct
+  `100%` `zh` and `zh-TW` coverage, statements `80.00%`, clean production
+  build, zero-vulnerability audits and both Gitleaks lanes. Fixed-Linux visual
+  job `93288333688` passes `91/91`.
+- Final unchanged workflow `31330684809` retains the same exact SHA and passes
+  repository `93288346191`, visual `93288346156` at `91/91`, and controlled
+  Site `93288346195`. Runtime artifact `9042876293`, digest
+  `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`,
+  records `result=PASS`, Site `npi.localhost`, database `npi_one_runtime`,
+  marker `npi-one-local-runtime-disposable-v1`, pinned Frappe commit
+  `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` and cumulative scope
+  `p5-01-through-p6-07`.
+- The controlled Site proves generated sanitized 43-column fixtures with two
+  title-row positions through inspect/map/preview/confirm/execute, durable
+  partial truth, authorized correction download, failed-row-only retry,
+  reconciliation, rollback allowed and downstream-use denial, same- and cross-
+  process replay, stale/conflict/permission/IDOR/generic-write denials,
+  independent route recovery, raw-log redaction, zero production mapping or
+  ERP traffic, two migrations and cleanup.
+- Ordinary visual artifact `9042864675` has digest
+  `sha256:33d0032670a98d32fd14c7f2f318ad7f27cfd24df5ec53571c2e10b36518bd41`;
+  final visual artifact `9042865852` has digest
+  `sha256:122261b42be4f552de310d1a0b9b57b79c2af486acdcd60a4c2b7d4384b969a9`.
+  Ordinary and final Gitleaks artifacts are `9042931934` and `9042940761`.
+  Complete evidence is
+  `implementation/evidence/phase-6/p6-07-validation.md`.
+- `FR-TX-012..018` and `UX-016` advance only to their evidence-backed
+  `TECHNICAL_VERIFIED_FOUNDATION` states. Production customer mapping,
+  ERPNext execution, shared Phase 8 job-center truth and destructive rollback
+  after downstream use remain unavailable.
+- Standing transition authority activates only the bounded P6-08 Requirement/
+  domain/existing-capability audit for controlled selection/filter and
+  authorized object-package export. No P6-08 product implementation starts
+  until the audit freezes exact anchors, authority/privacy boundaries,
+  checkpoints, affected tests and rollback and its controller checkpoint
+  passes ordinary CI. An arbitrary database dump, raw private File URL export,
+  cross-Project access or invented Tooling/ERP authority is prohibited.

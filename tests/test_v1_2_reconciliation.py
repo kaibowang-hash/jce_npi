@@ -139,6 +139,22 @@ class V12ReconciliationTests(unittest.TestCase):
                 expected[5],
             )
 
+    def test_p6_07_trace_is_verified_with_controlled_runtime_evidence(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for requirement_id, expected in self.verifier.EXPECTED_P6_07_TRACE.items():
+            row = by_id[requirement_id]
+            self.assertEqual(row["phase"], expected[1])
+            self.assertEqual(row["status"], expected[2])
+            self.assertEqual(
+                {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                },
+                expected[6],
+            )
+
     def test_r1_03_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         by_id = {row["requirement_id"]: row for row in rows}

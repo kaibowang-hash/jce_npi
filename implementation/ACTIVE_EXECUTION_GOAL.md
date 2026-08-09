@@ -1,66 +1,57 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T03:50:21Z`
+Updated: `2026-08-09T19:14:27Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P6-07 CONTROLLED TOOLING LIST IMPORT`
+- Mode: `IN_PROGRESS_AUDIT — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact task checkpoint:
-  `25db3ae4b97ce47ca74424d6560691ee9a746b74` (pushed; P6-06 Level 2
-  evidence/trace closure PASS)
-- Latest completed controller/evidence checkpoint before this update:
-  `25db3ae4b97ce47ca74424d6560691ee9a746b74` (P6-06 Level 2 evidence,
-  trace reconciliation and P6-07 audit activation)
-- Latest stable product checkpoint:
-  `de7bef7a1cd8894ee350567e2b157dd4b1e52ccb` (P6-06 controlled runtime
-  and Level 2 PASS)
+- Latest exact task/product checkpoint:
+  `d8e4897ed7a47ef61e5112ce628115d3bb051ef7` (pushed; P6-07 complete
+  controlled runtime and Level 2 Task Gate PASS)
 - Latest complete normal CI:
-  `31292919974` (`PASS`, exact SHA `25db3ae`; repository `93193123207` and
-  visual `93193123198` at `88/88` passed)
+  `31330677928` (`PASS`, exact SHA `d8e4897`; repository `93288333713` and
+  fixed-Linux visual `93288333688` at `91/91` passed)
 - Latest controlled-Site run:
-  `31292306716` (`PASS`, exact SHA `de7bef7`; repository `93191451402`,
-  visual `93191451404` and controlled `93191451432` passed)
+  `31330684809` (`PASS`, unchanged exact SHA `d8e4897`; repository
+  `93288346191`, visual `93288346156` at `91/91` and controlled Site
+  `93288346195` passed)
 - Controlled PASS artifact:
-  `9031822151`, GitHub digest
-  `sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`
+  `9042876293`, GitHub digest
+  `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`
 - Current controller task:
-  `P6-07 — Specialized Tooling List controlled import`
-  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/INSPECTION/METADATA FOUNDATION`)
-- Current Requirement IDs: `FR-TX-012..018`, `UX-016`
+  `P6-08 — Controlled selection/filter and object-package export`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Current Requirement ID: `UX-007` (exact canonical/domain allocation must be
+  confirmed by the audit before implementation)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-07 CHECKPOINT 1`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P6-06 passes Level 2 at exact checkpoint `de7bef7`. Ordinary CI
-`31291977009` and final workflow `31292306716` pass the complete repository,
-`88/88` fixed-Linux visual matrix and cumulative disposable-Site runtime.
-Artifact `9031822151` records `result=PASS` and scope
-`p5-01-through-p6-06`. Complete evidence is
-`implementation/evidence/phase-6/p6-06-validation.md`.
+P6-07 passes Level 2 at exact checkpoint `d8e4897`. Ordinary CI
+`31330677928` and unchanged final workflow `31330684809` pass the complete
+repository, `91/91` fixed-Linux visual matrix and cumulative disposable-Site
+runtime. Artifact `9042876293` records `result=PASS`, exact SHA and scope
+`p5-01-through-p6-07`. Complete evidence is
+`implementation/evidence/phase-6/p6-07-validation.md`.
 
-The bounded P6-07 Requirement/domain/existing-capability audit passes in
-`implementation/evidence/phase-6/p6-07-plan.md`. It freezes a five-checkpoint
-delivery: product-owned passive inspection and immutable domain/metadata;
-Project-first inspect/map/preview BFF; bounded asynchronous execution with
-partial truth, correction/retry/reconciliation and rollback eligibility; a
-dense trilingual live workspace; then cumulative disposable-Site Level 2.
-
-The current atomic task is checkpoint 1 only: reuse the reviewed passive XLSX
-safety behavior inside the App; add pure import/provenance/mapping/preview/job
-domains, closed contracts, guarded additive metadata and a deterministic
-visibly synthetic fixture; prove position-independent regions, all 43 columns,
-raw retention, formula/state/grade/image handling and immutability. No route,
-business row, worker, UI, production mapping, customer workbook, ERPNext
-contact or destructive rollback is active. `DR-REC-007/008` remain closed and
-there is no active technical Hard Blocker.
+The current atomic task is the bounded P6-08 Requirement/domain/existing-
+capability audit only. It must resolve the exact accepted requirement anchors,
+current selection/filter/export foundations, authority and privacy boundaries,
+test impact, checkpoint sequence and rollback plan before any product code is
+changed. The intended capability is a controlled export of an authorized,
+explicitly selected and filtered object package; it is not an arbitrary
+database dump and must not expose private File URLs or bypass Project/object
+authorization. Production Tooling-list mapping, ERPNext contact and destructive
+downstream rollback remain unavailable. There is no active technical Hard
+Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

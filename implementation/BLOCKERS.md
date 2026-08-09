@@ -1,31 +1,24 @@
 # Blockers
 
-Updated: `2026-08-09T03:50:21Z`
+Updated: `2026-08-09T19:14:27Z`
 
 ## Active hard blockers
 
-None. P6-06 passes Level 2 at exact checkpoint `de7bef7`. Ordinary CI
-`31291977009` passes before dispatch, and final workflow `31292306716` passes
-repository `93191451402`, visual `93191451404` at `88/88` and controlled Site
-`93191451432`. Runtime artifact `9031822151` records cumulative scope
-`p5-01-through-p6-06`. No user action is required.
+None. P6-07 passes Level 2 at exact checkpoint `d8e4897`. Ordinary CI
+`31330677928` and unchanged final workflow `31330684809` pass repository,
+`91/91` fixed-Linux visuals and cumulative controlled Site through scope
+`p5-01-through-p6-07`. Runtime artifact `9042876293` records `result=PASS`
+and the exact SHA. No user action is required.
 
 ## Active recovery
 
-None. P6-06 is sealed at Level 2 and the bounded P6-07 audit passes in
-`implementation/evidence/phase-6/p6-07-plan.md`. Checkpoint 1 domain/passive-
-inspection/metadata work is active. `DR-REC-007` keeps the reviewed 43-column
-mapping as a proposal rather than production semantic authority. `DR-REC-008`
-denies destructive rollback after downstream use.
+None. P6-07 is sealed at Level 2. The bounded P6-08 Requirement/domain/
+existing-capability audit is active; no P6-08 product implementation is active
+until that plan is frozen and its controller checkpoint passes ordinary CI.
 
-Missing customer production mapping approval or a sanitized production
-workbook does not block passive archive inspection, immutable provenance,
-versioned mapping mechanics, preview, partial-result truth, correction/retry
-and rollback-denial design. Production ERPNext must not be contacted.
-
-Production ERPNext access, exact lifecycle policy, production Tooling-list
-mapping, destructive downstream rollback and exception-color semantics remain
-scoped holds for their dependent behavior, not global Hard Blockers.
+Production ERPNext access, production Tooling-list mapping, destructive
+downstream rollback, raw private File URL export and arbitrary database export
+remain scoped holds or explicit non-scope, not global Hard Blockers.
 
 ## Historical recovery
 
