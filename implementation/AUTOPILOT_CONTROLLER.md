@@ -1899,3 +1899,40 @@ repeat or rewrite it merely to restore context. See
   bound idempotency; explicit unavailable production mapping; and permission,
   IDOR, replay, conflict, rollback, raw-log-redaction and no-target-mutation
   tests. Worker execution, live SPA and controlled Site remain inactive.
+
+## 2026-08-09 P6-07 checkpoint 2 PASS and checkpoint 3 activation
+
+- Product commit `0cad7eb` activates exactly seven independently default-
+  closed Project-first source registration, batch/detail, inspect, mapping-
+  proposal and immutable preview/confirmation routes. It reauthorizes the
+  exact clean private File bytes, customer and Project scope, retains
+  production mapping as unavailable, and appends immutable history, audit and
+  actor-bound sealed receipts in one transaction without mutating a target.
+- Initial ordinary CI `31305468446` passed repository `93225017234` and
+  isolated exactly eighteen durable P0 catalog-version fingerprints in visual
+  `93225017259` (`70/88`). Artifact `9035832831`, digest
+  `sha256:ad8a0d66c9a37d7209ccc2a2d69d54c26c0459ee0ae9141e9bd0d2de5223ac6c`,
+  proved zero changed business-region pixels and no layout, copy, state,
+  assertion, matrix or threshold change.
+- Isolated repair `40e142d` copied only the eighteen reviewed CI actuals to
+  their exact tracked Linux targets. Final exact-SHA ordinary CI `31305920914`
+  passes repository `93226181482` (`1,324` tracked Python, `777` frontend
+  unit, `337` non-visual E2E, `5,274` direct trilingual sources, zero
+  vulnerabilities and both secret lanes) and visual `93226181475` at `88/88`;
+  controlled runtime `93226181903` correctly skips. Visual artifact
+  `9035963363` has digest
+  `sha256:d13497b5645fa4a52c90177738d9b9d30191f285f03db17d7be11872db15158f`.
+- Complete checkpoint evidence is
+  `implementation/evidence/phase-6/p6-07-repository-bff-checkpoint.md`.
+  Production mapping remains unavailable under `DR-REC-007`; customer
+  workbooks, ERPNext contact and destructive downstream rollback under
+  `DR-REC-008` remain inactive.
+- Standing transition authority activates checkpoint 3 only: after-commit
+  enqueue; resumable bounded worker; immutable row/field results; exact active
+  synthetic mapping authority outside migrations; durable status/detail;
+  allowlisted correction artifact; failed-row-only retry; reconciliation; and
+  strict eligibility/rollback commands. It must prove partial truth, no
+  duplicate successful mutation, retryable/final failure, worker
+  reauthorization, rollback only for unchanged batch-created unused objects,
+  durable denial for changed/downstream-used objects and no ERP contact. Live
+  SPA and controlled Site remain inactive.

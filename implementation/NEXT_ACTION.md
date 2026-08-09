@@ -1,43 +1,52 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P6-07 CONTROLLED TOOLING LIST IMPORT`
+`IN_PROGRESS_CHECKPOINT_3 — P6-07 CONTROLLED TOOLING LIST IMPORT`
 
-Recovery time: `2026-08-09T03:50:21Z`
+Recovery time: `2026-08-09T09:38:02Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`25db3ae4b97ce47ca74424d6560691ee9a746b74`
+`40e142d5f8a38c3ecd2c5da9f5a3326030d37c20`
 
 ## Current authoritative action
 
-P6-06 passes Level 2 at exact checkpoint `de7bef7`. Ordinary CI
-`31291977009` passes repository `93190608487` and visual `93190608492` at
-`88/88`. Final unchanged workflow `31292306716` retains the same SHA and
-passes repository `93191451402`, visual `93191451404` and controlled Site
-`93191451432`. Runtime artifact `9031822151`, digest
-`sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`,
-records cumulative scope `p5-01-through-p6-06`. Complete evidence is
-`implementation/evidence/phase-6/p6-06-validation.md`.
+P6-07 checkpoint 2 passes at exact stable checkpoint `40e142d`. Primary
+product commit `0cad7eb` activates exactly seven independently default-closed,
+Project-first source registration, detail, inspect, mapping-proposal, preview
+and preview-confirmation routes. Exact clean private File bytes, customer and
+Project scope are reauthorized server-side; production mapping stays
+unavailable; commands append immutable history, audit and actor-bound sealed
+receipts in one transaction; and no target aggregate, ERPNext path or network
+side effect is active.
 
-The bounded P6-07 Requirement/domain/existing-capability audit passes. Its
-frozen five-checkpoint plan is
-`implementation/evidence/phase-6/p6-07-plan.md`; exact starting controller
-checkpoint `25db3ae` passes ordinary CI `31292919974`, repository
-`93193123207` and fixed-Linux visual `93193123198` at `88/88`.
+Initial ordinary CI `31305468446` passed repository `93225017234` and isolated
+only eighteen bottom catalog-version fingerprints in visual `93225017259`.
+Artifact `9035832831`, digest
+`sha256:ad8a0d66c9a37d7209ccc2a2d69d54c26c0459ee0ae9141e9bd0d2de5223ac6c`,
+proved zero business-region pixel changes. Isolated repair `40e142d` copied
+only the reviewed Linux actuals. Final exact-SHA CI `31305920914` passes
+repository `93226181482` (`1,324` tracked Python, `777` frontend unit, `337`
+non-visual E2E, `5,274` complete direct trilingual sources, zero
+vulnerabilities and both secret lanes) and visual `93226181475` at `88/88`;
+controlled runtime `93226181903` correctly skips. Complete evidence is
+`implementation/evidence/phase-6/p6-07-repository-bff-checkpoint.md`.
 
-The current atomic task is checkpoint 1 only: product-owned passive XLSX
-inspection, pure immutable source/inspection/mapping/transformation/preview/
-job/result/rollback domains, deterministic sanitized synthetic fixture,
-closed OpenAPI/ownership schemas, guarded additive DocTypes, receipt values,
-direct English/`zh`/`zh-TW` coverage and direct safety/domain/metadata tests.
+The current atomic task is checkpoint 3 only: after-commit enqueue, resumable
+bounded worker, immutable row/field results, exact active synthetic mapping
+authority outside migrations, durable status/detail, allowlisted correction
+artifact, failed-row-only retry, reconciliation and strict eligibility/
+rollback commands. It must prove partial truth, no duplicate successful
+mutation, retryable/final failure, worker reauthorization, rollback only for
+unchanged batch-created unused objects, durable denial for changed or
+downstream-used objects and no ERP contact.
 
-No route, business row, worker, live UI, production mapping, customer workbook,
-ERPNext contact or destructive rollback is active. `DR-REC-007` retains
-production semantic approval and `DR-REC-008` retains downstream rollback
-denial. There is no active technical Hard Blocker.
+The live SPA, controlled Site, production mapping, customer workbook, ERPNext
+contact and destructive downstream rollback remain inactive. `DR-REC-007`
+retains production semantic approval and `DR-REC-008` retains downstream
+rollback denial. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution history
 
