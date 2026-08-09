@@ -5,9 +5,10 @@ import hashlib
 import io
 import json
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Iterator
 from uuid import UUID
 
 import frappe
@@ -76,6 +77,15 @@ _MAX_RESULTS = 100_000
 _MAX_ARTIFACTS = 100
 _MAX_RECONCILIATIONS = 500
 _MAX_ROWS_PER_RUN = 25
+_IMPORT_TARGET_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_IMPORT_TARGET_ROOT_INSERT",
+        "P607_IMPORT_TARGET_REVISION_INSERT",
+        "P607_IMPORT_TARGET_ROOT_ADVANCE",
+        "P607_IMPORT_TARGET_ROW_RESULT_INSERT",
+        "P607_IMPORT_TARGET_BINDING_INSERT",
+    }
+)
 _FIXTURE_SOURCES = {
     "p6-07-synthetic-title-row-deleted.xlsx": (
         "b807aca4ef6776a0ad6e8eada1c8291b3a13dbe32724828d33661d67bc8e684f"
@@ -2107,51 +2117,99 @@ def _repository_create_part_target(
         "provenanceHash": provenance_hash,
     }
     with tooling_command_write(), tooling_import_write():
-        root = frappe.get_doc(
-            {
-                "doctype": "NPI Engineering Part",
-                "global_id": str(part_id),
-                "tenant_id": str(project.tenant_id),
-                "originating_project_global_id": str(project.global_id),
-                "title": title,
-                "current_revision_global_id": None,
-                "current_revision_number": None,
-                "current_revision_snapshot_hash": None,
-                "optimistic_version": 1,
-            }
-        ).insert()
-        self._insert_part_revision(revision)
+        with _import_target_server_step(
+            "P607_IMPORT_TARGET_ROOT_INSERT",
+            self.trace_id,
+        ):
+            root = frappe.get_doc(
+                {
+                    "doctype": "NPI Engineering Part",
+                    "global_id": str(part_id),
+                    "tenant_id": str(project.tenant_id),
+                    "originating_project_global_id": str(project.global_id),
+                    "title": title,
+                    "current_revision_global_id": None,
+                    "current_revision_number": None,
+                    "current_revision_snapshot_hash": None,
+                    "optimistic_version": 1,
+                }
+            ).insert()
+        with _import_target_server_step(
+            "P607_IMPORT_TARGET_REVISION_INSERT",
+            self.trace_id,
+        ):
+            self._insert_part_revision(revision)
         root.current_revision_global_id = str(revision.global_id)
         root.current_revision_number = 1
         root.current_revision_snapshot_hash = revision.snapshot_hash
-        root.save()
-        self._insert_row_result(project, source, job, result, now)
-        frappe.get_doc(
-            {
-                "doctype": "NPI Tooling Import Target Binding",
-                "global_id": str(binding_id),
-                "row_result_global_id": str(result.global_id),
-                "tenant_id": str(project.tenant_id),
-                "project_global_id": str(project.global_id),
-                "batch_global_id": str(source.batch_global_id),
-                "job_global_id": str(job.global_id),
-                "action": "create",
-                "target_object_type": "engineering_part_revision",
-                "target_root_global_id": str(part_id),
-                "target_global_id": str(revision.global_id),
-                "target_version": 1,
-                "target_snapshot_hash": revision.snapshot_hash,
-                "mapping_revision_global_id": str(mapping.global_id),
-                "mapping_snapshot_hash": mapping.snapshot_hash,
-                "provenance_hash": provenance_hash,
-                "binding_snapshot": _canonical_json(binding_snapshot),
-                "snapshot_hash": sha256_json(binding_snapshot),
-                "created_at": _database_datetime(now),
-                "request_id": self.request_id,
-                "trace_id": self.trace_id,
-            }
-        ).insert()
+        with _import_target_server_step(
+            "P607_IMPORT_TARGET_ROOT_ADVANCE",
+            self.trace_id,
+        ):
+            root.save()
+        with _import_target_server_step(
+            "P607_IMPORT_TARGET_ROW_RESULT_INSERT",
+            self.trace_id,
+        ):
+            self._insert_row_result(project, source, job, result, now)
+        with _import_target_server_step(
+            "P607_IMPORT_TARGET_BINDING_INSERT",
+            self.trace_id,
+        ):
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Tooling Import Target Binding",
+                    "global_id": str(binding_id),
+                    "row_result_global_id": str(result.global_id),
+                    "tenant_id": str(project.tenant_id),
+                    "project_global_id": str(project.global_id),
+                    "batch_global_id": str(source.batch_global_id),
+                    "job_global_id": str(job.global_id),
+                    "action": "create",
+                    "target_object_type": "engineering_part_revision",
+                    "target_root_global_id": str(part_id),
+                    "target_global_id": str(revision.global_id),
+                    "target_version": 1,
+                    "target_snapshot_hash": revision.snapshot_hash,
+                    "mapping_revision_global_id": str(mapping.global_id),
+                    "mapping_snapshot_hash": mapping.snapshot_hash,
+                    "provenance_hash": provenance_hash,
+                    "binding_snapshot": _canonical_json(binding_snapshot),
+                    "snapshot_hash": sha256_json(binding_snapshot),
+                    "created_at": _database_datetime(now),
+                    "request_id": self.request_id,
+                    "trace_id": self.trace_id,
+                }
+            ).insert()
     return result
+
+
+@contextmanager
+def _import_target_server_step(code: str, trace_id: str) -> Iterator[None]:
+    """Record only a closed target-write stage, exception type and trace ID."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                code in _IMPORT_TARGET_DIAGNOSTIC_CODES
+                and len(exception_type) <= 128
+                and exception_type.isidentifier()
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI Tooling import target substage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            # Diagnostics cannot change row-result or transaction semantics.
+            pass
+        raise
 
 
 def _repository_job_corrections(

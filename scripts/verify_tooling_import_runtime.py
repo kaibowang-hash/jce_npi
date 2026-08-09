@@ -14,6 +14,7 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 
 import verify_document_runtime as document_runtime
 import verify_tooling_acceptance_runtime as predecessor
+import verify_tooling_runtime as tooling_runtime
 from verify_frappe_runtime import (
     delete_disposable_user,
     login,
@@ -40,6 +41,15 @@ ACTOR_USER = predecessor.ACTOR_USER
 UNRELATED_USER = f"npi-tooling-import-{FIXTURE_RUN_ID[:12]}-unrelated@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000031"
 ABSENT_BATCH_ID = "00000000-0000-4000-8000-000000000032"
+IMPORT_TARGET_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_IMPORT_TARGET_ROOT_INSERT",
+        "P607_IMPORT_TARGET_REVISION_INSERT",
+        "P607_IMPORT_TARGET_ROOT_ADVANCE",
+        "P607_IMPORT_TARGET_ROW_RESULT_INSERT",
+        "P607_IMPORT_TARGET_BINDING_INSERT",
+    }
+)
 
 FIXTURES = (
     {
@@ -415,6 +425,41 @@ def latest_results(job: dict[str, object]) -> list[dict[str, object]]:
     return list(latest.values())
 
 
+def partial_row_diagnostic(results: list[dict[str, object]]) -> str:
+    """Return only closed states/codes and one allowlisted server diagnostic."""
+
+    structure = []
+    diagnostic = None
+    for item in results:
+        fields = item.get("fieldResults")
+        codes = (
+            sorted(
+                str(field.get("resultCode"))
+                for field in fields
+                if isinstance(field, dict)
+                and isinstance(field.get("resultCode"), str)
+            )
+            if isinstance(fields, list)
+            else []
+        )
+        structure.append({"state": item.get("state"), "resultCodes": codes})
+        trace_id = item.get("traceId")
+        candidate = tooling_runtime._sanitized_server_diagnostic(
+            str(trace_id) if isinstance(trace_id, str) else None,
+            IMPORT_TARGET_DIAGNOSTIC_CODES,
+        )
+        if diagnostic is None and candidate is not None:
+            diagnostic = candidate
+    suffix = json.dumps(structure, separators=(",", ":"), sort_keys=True)
+    if diagnostic is None:
+        return suffix
+    exception_type, code, trace_id = diagnostic
+    return (
+        f"{suffix} [diagnostic_code={code}; exc_type={exception_type}; "
+        f"trace_id={trace_id}]"
+    )
+
+
 def correction_entry(job: dict[str, object], corrected_value: str) -> dict[str, object]:
     failed = exact_single(
         [item for item in latest_results(job) if item.get("state") == "failed_retryable"],
@@ -687,7 +732,7 @@ def run_scenario(
         and sum(item.get("state") == "created" for item in partial_latest) == 2
         and sum(item.get("state") == "failed_retryable" for item in partial_latest)
         == 1,
-        "P6-07 partial row truth drifted",
+        f"P6-07 partial row truth drifted: {partial_row_diagnostic(partial_latest)}",
     )
 
     corrected_value = f"Synthetic corrected part {index}"

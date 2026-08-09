@@ -114,6 +114,22 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
         self.assertIn("row_results=history", progress)
         self.assertIn("int(job.optimistic_version) + 1", progress)
 
+    def test_target_creation_diagnostics_are_closed_and_stage_specific(self) -> None:
+        create = _source("_repository_create_part_target")
+        for code in (
+            "P607_IMPORT_TARGET_ROOT_INSERT",
+            "P607_IMPORT_TARGET_REVISION_INSERT",
+            "P607_IMPORT_TARGET_ROOT_ADVANCE",
+            "P607_IMPORT_TARGET_ROW_RESULT_INSERT",
+            "P607_IMPORT_TARGET_BINDING_INSERT",
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(create.count(code), 1)
+        diagnostic = _source("_import_target_server_step")
+        self.assertIn("code in _IMPORT_TARGET_DIAGNOSTIC_CODES", diagnostic)
+        self.assertIn("exception_type.isidentifier()", diagnostic)
+        self.assertNotIn("str(error)", diagnostic)
+
     def test_retry_selects_only_latest_retryable_rows_and_keeps_success_history(self) -> None:
         retry = _source("retry_tooling_import_job")
         selection = _source("_rows_for_attempt")

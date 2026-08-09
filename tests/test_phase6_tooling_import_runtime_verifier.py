@@ -158,6 +158,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             'else "rollback_denied"',
             "seed_tooling_import_downstream_reference",
             "p6-07.synthetic-execution-mapping.v1",
+            "partial_row_diagnostic(partial_latest)",
+            "IMPORT_TARGET_DIAGNOSTIC_CODES",
             '"productionMappingActive": False',
             '"integrationTrafficCreated": False',
         )
