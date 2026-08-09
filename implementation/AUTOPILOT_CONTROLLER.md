@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-09T03:35:57Z`
+Updated: `2026-08-09T03:50:21Z`
 
 ## Authority and operating mode
 
@@ -1837,3 +1837,34 @@ repeat or rewrite it merely to restore context. See
   follow the repository `xlsx-tooling-import` Skill. The reviewed 43-column
   mapping remains a proposal under `DR-REC-007`; production mapping,
   ERPNext contact and destructive downstream rollback remain inactive.
+
+## 2026-08-09 P6-07 bounded audit PASS and checkpoint 1 activation
+
+- P6-06 evidence/trace closure commit `25db3ae` passes exact-SHA ordinary CI
+  `31292919974`: repository `93193123207`, including complete non-visual E2E
+  and both secret lanes, and fixed-Linux visual `93193123198` at `88/88`
+  pass; controlled runtime correctly skips.
+- The bounded P6-07 audit passes under the repository
+  `xlsx-tooling-import` Skill. Its frozen five-checkpoint plan is
+  `implementation/evidence/phase-6/p6-07-plan.md`.
+- Repository truth provides a safe 531-line passive XLSX archive/XML inspector,
+  exact clean private File Revision and distinct Tooling identities, but no
+  business-value reader, position-independent region detector, mapping
+  activation, preview, batch/job/result, correction or rollback command. The
+  43-column CSV remains a reviewed proposal, not production authority.
+- P6-07 will retain immutable source/row/field/raw/transformation provenance;
+  require explicit confirmation for ambiguous relationships/images; expose
+  durable per-row/per-field partial truth; permit retry only for failed
+  eligible rows; and permit rollback only for unchanged objects created solely
+  by the exact batch with zero downstream references.
+- Production has no installed mapping activation. Controlled Site proof may
+  seed one visibly synthetic mapping bound only to the generated sanitized
+  fixture and synthetic Project/customer; it is not a migration default and
+  cannot authorize another scope.
+- Standing transition authority activates checkpoint 1 only: product-owned
+  passive inspection, pure immutable import domains, deterministic sanitized
+  synthetic fixture/manifest, closed OpenAPI/ownership schemas, guarded
+  additive DocTypes, receipt values, complete direct English/`zh`/`zh-TW` and
+  affected safety/domain/metadata tests. Routes, business rows, worker, live
+  SPA, production mapping, customer workbook, ERPNext contact and destructive
+  rollback remain inactive.

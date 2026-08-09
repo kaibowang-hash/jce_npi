@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-09T03:35:57Z`
+Updated: `2026-08-09T03:50:21Z`
 
 ## Active hard blockers
 
@@ -12,8 +12,9 @@ repository `93191451402`, visual `93191451404` at `88/88` and controlled Site
 
 ## Active recovery
 
-None. P6-06 is sealed at Level 2 and the bounded P6-07 Requirement/domain/
-existing-capability audit is active. `DR-REC-007` keeps the reviewed 43-column
+None. P6-06 is sealed at Level 2 and the bounded P6-07 audit passes in
+`implementation/evidence/phase-6/p6-07-plan.md`. Checkpoint 1 domain/passive-
+inspection/metadata work is active. `DR-REC-007` keeps the reviewed 43-column
 mapping as a proposal rather than production semantic authority. `DR-REC-008`
 denies destructive rollback after downstream use.
 

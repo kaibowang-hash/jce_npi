@@ -1,25 +1,25 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T03:35:57Z`
+Updated: `2026-08-09T03:50:21Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P6-07 CONTROLLED TOOLING LIST IMPORT`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P6-07 CONTROLLED TOOLING LIST IMPORT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact task checkpoint:
-  `de7bef7a1cd8894ee350567e2b157dd4b1e52ccb` (pushed; P6-06 Level 2
-  controlled-runtime Task Gate PASS)
+  `25db3ae4b97ce47ca74424d6560691ee9a746b74` (pushed; P6-06 Level 2
+  evidence/trace closure PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `18fd75a0ca8b600eaece86355068af50c21b494a` (P6-06 checkpoint 3 evidence
-  and controlled-runtime activation)
+  `25db3ae4b97ce47ca74424d6560691ee9a746b74` (P6-06 Level 2 evidence,
+  trace reconciliation and P6-07 audit activation)
 - Latest stable product checkpoint:
   `de7bef7a1cd8894ee350567e2b157dd4b1e52ccb` (P6-06 controlled runtime
   and Level 2 PASS)
 - Latest complete normal CI:
-  `31291977009` (`PASS`, exact SHA `de7bef7`; repository `93190608487` and
-  visual `93190608492` at `88/88` passed)
+  `31292919974` (`PASS`, exact SHA `25db3ae`; repository `93193123207` and
+  visual `93193123198` at `88/88` passed)
 - Latest controlled-Site run:
   `31292306716` (`PASS`, exact SHA `de7bef7`; repository `93191451402`,
   visual `93191451404` and controlled `93191451432` passed)
@@ -28,12 +28,12 @@ Updated: `2026-08-09T03:35:57Z`
   `sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`
 - Current controller task:
   `P6-07 — Specialized Tooling List controlled import`
-  (`IN_PROGRESS — BOUNDED REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/INSPECTION/METADATA FOUNDATION`)
 - Current Requirement IDs: `FR-TX-012..018`, `UX-016`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-07 AUDIT`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-07 CHECKPOINT 1`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -46,17 +46,21 @@ Artifact `9031822151` records `result=PASS` and scope
 `p5-01-through-p6-06`. Complete evidence is
 `implementation/evidence/phase-6/p6-06-validation.md`.
 
-The current atomic task is the bounded P6-07 Requirement/domain/existing-
-capability audit for `FR-TX-012..018` and `UX-016`. It must follow the
-repository `xlsx-tooling-import` Skill and reconcile the passive 531-line XLSX
-inspector, reviewed 43-column proposal, existing immutable File Revision and
-Tooling identities against the eight-step upload/detect/map/transform/
-validate/preview/execute/audit boundary.
+The bounded P6-07 Requirement/domain/existing-capability audit passes in
+`implementation/evidence/phase-6/p6-07-plan.md`. It freezes a five-checkpoint
+delivery: product-owned passive inspection and immutable domain/metadata;
+Project-first inspect/map/preview BFF; bounded asynchronous execution with
+partial truth, correction/retry/reconciliation and rollback eligibility; a
+dense trilingual live workspace; then cumulative disposable-Site Level 2.
 
-No production mapping, import route, batch/job row, customer workbook,
-ERPNext contact or destructive rollback is active. `DR-REC-007` retains
-production semantic approval and `DR-REC-008` retains downstream rollback
-denial. There is no active technical Hard Blocker.
+The current atomic task is checkpoint 1 only: reuse the reviewed passive XLSX
+safety behavior inside the App; add pure import/provenance/mapping/preview/job
+domains, closed contracts, guarded additive metadata and a deterministic
+visibly synthetic fixture; prove position-independent regions, all 43 columns,
+raw retention, formula/state/grade/image handling and immutability. No route,
+business row, worker, UI, production mapping, customer workbook, ERPNext
+contact or destructive rollback is active. `DR-REC-007/008` remain closed and
+there is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

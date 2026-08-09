@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P6-07 CONTROLLED TOOLING LIST IMPORT`
+`IN_PROGRESS_CHECKPOINT_1 — P6-07 CONTROLLED TOOLING LIST IMPORT`
 
-Recovery time: `2026-08-09T03:35:57Z`
+Recovery time: `2026-08-09T03:50:21Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`de7bef7a1cd8894ee350567e2b157dd4b1e52ccb`
+`25db3ae4b97ce47ca74424d6560691ee9a746b74`
 
 ## Current authoritative action
 
@@ -22,15 +22,19 @@ passes repository `93191451402`, visual `93191451404` and controlled Site
 records cumulative scope `p5-01-through-p6-06`. Complete evidence is
 `implementation/evidence/phase-6/p6-06-validation.md`.
 
-The current atomic task is the bounded P6-07 Requirement/domain/existing-
-capability audit only for `FR-TX-012..018` and `UX-016`. Follow the repository
-`xlsx-tooling-import` Skill. Audit the passive XLSX inspector, 43-column
-proposal, immutable File Revision and current Tooling identities against the
-eight-step upload/detect/map/transform/validate/preview/execute/audit flow,
-including provenance, partial-result truth, correction/retry, reconciliation
-and rollback denial.
+The bounded P6-07 Requirement/domain/existing-capability audit passes. Its
+frozen five-checkpoint plan is
+`implementation/evidence/phase-6/p6-07-plan.md`; exact starting controller
+checkpoint `25db3ae` passes ordinary CI `31292919974`, repository
+`93193123207` and fixed-Linux visual `93193123198` at `88/88`.
 
-No production mapping, import route, batch/job row, customer workbook,
+The current atomic task is checkpoint 1 only: product-owned passive XLSX
+inspection, pure immutable source/inspection/mapping/transformation/preview/
+job/result/rollback domains, deterministic sanitized synthetic fixture,
+closed OpenAPI/ownership schemas, guarded additive DocTypes, receipt values,
+direct English/`zh`/`zh-TW` coverage and direct safety/domain/metadata tests.
+
+No route, business row, worker, live UI, production mapping, customer workbook,
 ERPNext contact or destructive rollback is active. `DR-REC-007` retains
 production semantic approval and `DR-REC-008` retains downstream rollback
 denial. There is no active technical Hard Blocker.
