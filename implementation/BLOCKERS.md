@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-09T21:35:59Z`
+Updated: `2026-08-09T23:24:00Z`
 
 ## Active hard blockers
 
-None. P6-08 checkpoint 2 passes at exact checkpoint `ac0a29c`. Ordinary CI
-`31336841275` passes repository `93303992048` and fixed-Linux visual
-`93303992034` at `91/91`; controlled runtime correctly skips at this boundary.
+None. P6-08 checkpoint 3 passes at exact checkpoint `82ebcaf`. Ordinary CI
+`31341354013` passes repository `93315593607` and fixed-Linux visual
+`93315593576` at `94/94`; controlled runtime correctly skips at this boundary.
 No user action is required.
 
 ## Active recovery
 
-None. P6-08 checkpoint 2 Project-first list/preference/export/download BFF and
-private artifact boundary is sealed in
-`implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
-Checkpoint 3 dense trilingual Tooling List workspace is active; the controlled
-Site remains inactive until checkpoint 4.
+None. P6-08 checkpoint 3 dense trilingual Tooling List/export workspace is
+sealed in
+`implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
+Checkpoint 4 cumulative controlled Site, P6-08 Level 2 and Phase 6 Level 3
+Gate are active.
 
 Production ERPNext access, production Tooling-list mapping, destructive
 downstream rollback, raw private File URL export and arbitrary database export

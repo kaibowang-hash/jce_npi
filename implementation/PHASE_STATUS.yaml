@@ -1439,7 +1439,7 @@ p6_07:
 p6_08:
   task: P6-08
   controller_task: P6-08_CONTROLLED_SELECTION_FILTER_OBJECT_PACKAGE_EXPORT
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: IN_PROGRESS_CHECKPOINT_4
   requirements: [UX-007]
   starting_checkpoint: d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0
   audit_predecessor_ordinary_ci: 31331504738
@@ -1447,8 +1447,8 @@ p6_08:
   audit_predecessor_visual_job: 93290380955
   audit_predecessor_visual_result: 91_OF_91_PASS
   audit_decision: PASS_BOUNDED_FOUR_CHECKPOINT_PLAN
-  current_stage: DENSE_TRILINGUAL_TOOLING_LIST_WORKSPACE
-  next_stage: CHECKPOINT_3_LEVEL_2
+  current_stage: CUMULATIVE_CONTROLLED_RUNTIME_LEVEL_2_PHASE_6_GATE
+  next_stage: CHECKPOINT_4_LEVEL_2_AND_PHASE_6_LEVEL_3
   checkpoint_1_product_sha: 5b1560921eda850380d298d7b50375943d7a69e2
   checkpoint_1_ordinary_ci: 31334024291
   checkpoint_1_repository_job: 93296765481
@@ -1459,13 +1459,24 @@ p6_08:
   checkpoint_2_repository_job: 93303992048
   checkpoint_2_visual_job: 93303992034
   checkpoint_2_visual_result: 91_OF_91_PASS
+  checkpoint_3_primary_product_commit: 70802d676c55ee5c1961b71011466593962f1a00
+  checkpoint_3_product_sha: 82ebcaf712f78e48f6718d7cb0ac675712f9e689
+  checkpoint_3_ordinary_ci: 31341354013
+  checkpoint_3_repository_job: 93315593607
+  checkpoint_3_visual_job: 93315593576
+  checkpoint_3_visual_result: 94_OF_94_PASS
+  checkpoint_3_visual_artifact: 9045957771
+  checkpoint_3_visual_digest: sha256:4538ab66dade6fb00f4b8a32f50691fd3258b9a2b4031afb1078f86d48cfbc6a
+  checkpoint_3_gitleaks_artifact: 9046041149
+  checkpoint_3_gitleaks_digest: sha256:f8833cbabc3b15c2cd2735c6f7ce464b5561a01a5151c445ee8bde9048673fd0
   arbitrary_database_export_active: false
   raw_private_file_url_export_active: false
   production_erp_contact_authorized: false
   tooling_export_routes_active: true
   tooling_export_business_rows_active: true
   tooling_export_private_files_active: true
-  live_tooling_list_export_active: false
+  live_tooling_list_export_active: true
+  controlled_runtime_active: false
   separate_export_authority: INTERNAL_SYSTEM_MANAGER_AND_PROJECT_VIEW
   package_schema: tooling-object-package-v1
   maximum_exported_tooling_masters: 100
@@ -1476,6 +1487,7 @@ p6_08:
     - implementation/evidence/phase-6/p6-08-plan.md
     - implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md
+    - implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

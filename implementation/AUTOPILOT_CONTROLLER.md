@@ -2181,3 +2181,45 @@ repeat or rewrite it merely to restore context. See
   download-failure and replay truth plus the affected accessibility/i18n/
   fixed-Linux visual matrix are mandatory. Controlled Site, production
   ERPNext and Tooling/lifecycle authority remain inactive.
+
+## 2026-08-10 P6-08 checkpoint 3 PASS and checkpoint 4 activation
+
+- Primary product commit `70802d6` adds the strict P6-08 data source and dense
+  trilingual Tooling List workspace with all ten fixed views, closed query and
+  layout preferences, stable paging, accessible across-page selection,
+  preserved Master navigation and the reviewed selection/filter package
+  create/download flow.
+- Initial CI `31340097667` passed the repository and retained `37` visual
+  candidates in artifact `9045601634`. Review accepted twenty-five affected/
+  new Linux images and identified one empty-state spacing defect plus missing
+  P6-08 visual workflow coverage and a truncated P6-03 result-artifact glob.
+  The bounded source/workflow repair changed no authority or Gate criterion.
+- Second run `31340946452` retained sixteen candidates in artifact
+  `9045839098`; its repository job was superseded by the repair push and is
+  not PASS evidence. Original-resolution review accepted only the corrected
+  and affected Linux candidates. Baseline repairs changed no production
+  component, assertion, matrix, threshold, tolerance or PASS rule.
+- Exact stable checkpoint `82ebcaf712f78e48f6718d7cb0ac675712f9e689`
+  passes ordinary CI `31341354013`: repository `93315593607` proves
+  `1,405/1,405` tracked Python, `809/809` frontend unit and `352/352`
+  non-visual E2E tests, statements `80.07%`, `5,753` direct sources at
+  complete `zh`/`zh-TW` coverage, zero vulnerabilities, install-script/brand
+  gates, full verification and both secret lanes; visual `93315593576` passes
+  `94/94`; controlled job `93315593910` correctly skips. Visual artifact
+  `9045957771` has digest
+  `sha256:4538ab66dade6fb00f4b8a32f50691fd3258b9a2b4031afb1078f86d48cfbc6a`.
+- Complete evidence is
+  `implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
+  Selection and complete-filter modes remain mutually exclusive, stale truth
+  fails closed, raw File URLs remain absent, replay/expiry/download failure
+  are honest, and production ERPNext/Tooling lifecycle authority remains
+  inactive.
+- Standing transition authority activates only checkpoint 4: extend the
+  cumulative disposable-Site verifier and controlled workflow through P6-08;
+  seed bounded Tooling truth; prove all views, selection/filtered packages,
+  localized members, formula neutralization, hashes, one-hour expiry,
+  cross-process replay, actor/Project/IDOR/expiry/stale denials, independent
+  route disable/recovery, two migrations, raw-log redaction, zero ERP/network/
+  Outbox activity and cleanup. Then complete the P6-08 Level 2 Task Gate,
+  reconcile `UX-007`, and run the Phase 6 Level 3 release gate. Production-
+  scale performance evidence remains external.

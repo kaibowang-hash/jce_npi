@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+`IN_PROGRESS_CHECKPOINT_4 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 
-Recovery time: `2026-08-09T21:35:59Z`
+Recovery time: `2026-08-09T23:24:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized product checkpoint:
-`ac0a29cc6cd38e87a0e1922abac1e73ea1d969ff`
+`82ebcaf712f78e48f6718d7cb0ac675712f9e689`
 
 ## Current authoritative action
 
@@ -56,18 +56,24 @@ lanes) and visual `93303992034` at `91/91`; controlled job `93303992327`
 correctly skips. Complete evidence is
 `implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
 
-The current atomic action is checkpoint 3 only: add the strict P6-08 data
-source and a dense trilingual Tooling List section to the selected Project
-Tooling workspace using shared DenseGrid. Deliver ten views, restored per-view
-query/layout state, closed search/sort/group, stable server paging, accessible
-selection/count/status and preserved selected-object navigation. Add one
-secondary Export action and review/download flow showing exact selection or
-complete-filter mode, count, one-hour validity, redactions and immutable-
-version policy. Expose loading, empty, read-only/no-export, validation,
-stale/conflict, processing, success, expired, download-failure and replay
-truth in `en`/`zh`/`zh-TW`; prove keyboard/focus, 1366/1440/1920,
-100/125/150, no page overflow and the affected fixed-Linux visual matrix. Do
-not activate controlled runtime yet.
+Checkpoint 3 passes at exact stable checkpoint `82ebcaf`. Primary product
+commit `70802d6` added the strict P6-08 data source and dense trilingual ten-
+view Tooling List/export workspace. Ordinary CI `31341354013` passes
+repository `93315593607` (`1,405` tracked Python, `809` frontend unit in `52`
+files, `352` non-visual E2E, `5,753` complete direct trilingual sources,
+statements `80.07%`, zero vulnerabilities, install-script/brand/full verify
+and both secret lanes) and visual `93315593576` at `94/94`; controlled job
+`93315593910` correctly skips. Complete evidence is
+`implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
+
+The current atomic action is checkpoint 4 only: extend the cumulative
+disposable-Site verifier and controlled workflow through P6-08. Seed bounded
+Tooling truth and prove all ten views, exact selection and complete-filter
+packages, localized fixed members, formula neutralization, immutable hashes,
+one-hour expiry, cross-process replay, actor/Project/IDOR/expiry/stale denials,
+independent route disable/recovery, two migrations, raw-log redaction, no ERP/
+network/Outbox and cleanup. Then run the P6-08 Level 2 Task Gate, reconcile
+`UX-007`, and run the Phase 6 Level 3 release gate.
 
 P6-08 cannot expose an arbitrary database dump, raw private File URLs,
 cross-Project data or production Tooling/ERP authority. `DR-REC-007` retains
