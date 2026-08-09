@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T00:28:41Z`
+Updated: `2026-08-09T01:46:02Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P6-06 LIVE ACCEPTANCE/ASSET WORKSPACE`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P6-06 CONTROLLED RUNTIME AND LEVEL 2`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,14 +12,14 @@ Updated: `2026-08-09T00:28:41Z`
   `4e04eb47b1c5f77b9a442b3bef139df61cb83782` (pushed; P6-05 Level 2
   controlled-runtime Task Gate PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `ef1fd3caccfc4b456854186881f117ee3c3a9ca8` (P6-06 checkpoint 1 evidence
-  and checkpoint 2 activation)
+  `b6c2ae4e528c84653798c00bed57af9277c12321` (P6-06 checkpoint 2 evidence
+  and checkpoint 3 activation)
 - Latest stable product checkpoint:
-  `257ab50b70d2b47816989991d466fd3f99e1f231` (P6-06 checkpoint 2
-  Project-first repository/BFF/security PASS)
+  `4e2021e6d2ce3d25075bca57b80e8dbbcf79f532` (P6-06 checkpoint 3 live
+  acceptance/Asset workspace PASS)
 - Latest complete normal CI:
-  `31285929039` (`PASS`, exact SHA `257ab50`; repository `93174630031` and
-  visual `93174629999` at `85/85` passed; controlled runtime correctly skipped)
+  `31288565243` (`PASS`, exact SHA `4e2021e`; repository `93181709786` and
+  visual `93181709805` at `88/88` passed; controlled runtime correctly skipped)
 - Latest controlled-Site run:
   `31280296684` (`PASS`, exact SHA `4e04eb4`, diagnostics closed; repository
   `93160709198`, visual `93160709195` and controlled `93160709186` passed)
@@ -28,12 +28,12 @@ Updated: `2026-08-09T00:28:41Z`
   `sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`
 - Current controller task:
   `P6-06 — Acceptance and asset execution request`
-  (`IN_PROGRESS — CHECKPOINT 3 LIVE ACCEPTANCE/ASSET WORKSPACE`)
+  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
 - Current Requirement IDs: `FR-TL-011..016`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 3`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 4`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -104,13 +104,27 @@ secret lanes) and visual `93174629999` at `85/85`; controlled job
 `93174630243` correctly skips. Evidence is
 `implementation/evidence/phase-6/p6-06-repository-bff-checkpoint.md`.
 
-Standing transition authority activates only checkpoint 3: the strict
-acceptance/Asset data source and dense selected-Master live workspace;
-loading/empty/denied/read-only/validation/conflict/processing/unavailable/
-failure-retry states; direct English/`zh`/`zh-TW`; accessibility, operational
-E2E and fixed-Linux visual proof. Controlled Site, acceptance approval,
-Trial/Gate/lifecycle and all real ERPNext/Asset execution remain inactive.
-There is no active technical Hard Blocker.
+P6-06 checkpoint 3 passes at exact stable checkpoint `4e2021e`. Product commit
+`cf453a2` added the strict acceptance/Asset data source and dense selected-
+Master live workspace for immutable nine-category evidence, Mock-only request
+axes, related Project evidence and a separate unavailable ERP projection.
+Initial CI `31288008973` passed repository and isolated only three missing
+P6-06 Linux baselines plus eighteen P0 catalog-footer digest changes. Artifact
+`9030496973` retained the reviewed candidates; repair `4e2021e` copied only
+those twenty-one Linux images and changed no source, assertion or threshold.
+
+Final exact-SHA CI `31288565243` passes repository `93181709786` (`1,282`
+tracked Python, `777` frontend unit, `337` non-visual E2E, `5,087` complete
+direct trilingual sources, zero vulnerabilities and both secret lanes) and
+visual `93181709805` at `88/88`; controlled job `93181710008` correctly skips.
+Evidence is
+`implementation/evidence/phase-6/p6-06-live-workspace-checkpoint.md`.
+
+Standing transition authority activates only checkpoint 4: cumulative
+disposable-Site proof through P6-06, complete ordinary CI, Requirement trace
+reconciliation and the Level 2 Task Gate. Acceptance approval, Trial/Gate/
+lifecycle and all real ERPNext/Asset execution remain inactive. There is no
+active technical Hard Blocker.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate

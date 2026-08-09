@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P6-06 LIVE ACCEPTANCE/ASSET WORKSPACE`
+`IN_PROGRESS_CHECKPOINT_4 — P6-06 CONTROLLED RUNTIME AND LEVEL 2`
 
-Recovery time: `2026-08-09T00:28:41Z`
+Recovery time: `2026-08-09T01:46:02Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`257ab50b70d2b47816989991d466fd3f99e1f231`
+`4e2021e6d2ce3d25075bca57b80e8dbbcf79f532`
 
 ## Current authoritative action
 
@@ -117,19 +117,35 @@ statements `80.35%`, zero vulnerabilities and both secret lanes), visual
 `93174629999` at `85/85`, while controlled runtime correctly skips. Evidence
 is `implementation/evidence/phase-6/p6-06-repository-bff-checkpoint.md`.
 
-The current atomic task is checkpoint 3 only: implement the strict
-acceptance/Asset data-source contract and dense selected-Master live workspace;
-render immutable acceptance lineage, category coverage, NPI action/spare/
-repair evidence, Mock-only request axes and a separate unavailable ERP
-projection; expose only server capabilities and exact Set/binding/Revision
-truth; and prove loading, empty, denied, read-only, validation, conflict,
-processing, unavailable, failure/retry, keyboard/accessibility, direct
-English/`zh`/`zh-TW`, operational E2E and fixed-Linux visual behavior.
+P6-06 checkpoint 3 passes at exact stable checkpoint `4e2021e`. Product commit
+`cf453a2` added the strict acceptance/Asset data source and dense selected-
+Master workspace for immutable nine-category evidence, Mock-only request axes,
+related NPI evidence and a separate unavailable ERP projection. Initial CI
+`31288008973` passed repository and failed only three missing P6-06 Linux
+baselines plus eighteen bottom catalog digests. Artifact `9030496973`, digest
+`sha256:726fed5c0d9b2adf455b0aab167f470f10cfb95ba861eefce48298f95da083f0`,
+retained the candidates. Repair `4e2021e` promoted only the twenty-one reviewed
+Linux images and changed no source, assertion, threshold or PASS rule.
 
-Controlled Site, formal acceptance approval, lifecycle, Trial/Gate, formal
-Asset mapping, location/movement, maintenance, repair, spares, inventory and
-cost execution remain inactive. Production and sandbox ERPNext must not be
-contacted. There is no active technical Hard Blocker.
+Final exact-SHA ordinary CI `31288565243` passes repository `93181709786`
+(`1,282` tracked Python, `777` frontend unit, `337` non-visual E2E, `5,087`
+direct trilingual sources, zero vulnerabilities and both secret lanes) and
+visual `93181709805` at `88/88`; controlled job `93181710008` correctly skips.
+Complete evidence is
+`implementation/evidence/phase-6/p6-06-live-workspace-checkpoint.md`.
+
+The current atomic task is checkpoint 4 only: extend the cumulative
+disposable-Site verifier and controlled workflow through P6-06, prove two
+migrations, immutable acceptance succession, customer-owned repair
+authorization, Mock request preparation, cross-process replay, stale conflict,
+rollback, IDOR, generic-mutation denial, no network/Outbox/target truth and
+independent P6-06 route disable/recovery; then run complete ordinary CI,
+Requirement trace reconciliation and the P6-06 Level 2 Task Gate.
+
+Formal acceptance approval, lifecycle, Trial/Gate, formal Asset mapping,
+location/movement, maintenance, repair, spares, inventory and cost execution
+remain inactive. Production and sandbox ERPNext must not be contacted. There
+is no active technical Hard Blocker.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
 `31266800163` and final workflow `31267181068` pass; runtime artifact
