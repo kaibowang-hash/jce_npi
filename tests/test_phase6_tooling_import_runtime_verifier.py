@@ -360,6 +360,19 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, self.source)
 
+    def test_route_probe_uses_stable_project_and_master_not_single_part_context(
+        self,
+    ) -> None:
+        route_probe = self.source.split("def route_disable_probe(", 1)[1].split(
+            "def verify_tooling_import_runtime_schema(",
+            1,
+        )[0]
+        self.assertNotIn("project_context(", route_probe)
+        self.assertIn('"NPI Engineering Project"', route_probe)
+        self.assertIn('document_runtime.BUSINESS_CODE', route_probe)
+        self.assertIn('"NPI Tooling Master"', route_probe)
+        self.assertIn('"originating_project_global_id"', route_probe)
+
     def test_idor_fixture_has_transport_access_without_system_manager_bypass(self) -> None:
         idor_source = self.source.split("def verify_idor(", 1)[1].split(
             "def verify_conflict_rollback(",

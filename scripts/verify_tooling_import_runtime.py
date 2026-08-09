@@ -1687,8 +1687,28 @@ def run_replay(actor, base_url: str, csrf_token: str) -> dict[str, object]:
 
 
 def route_disable_probe(actor, base_url: str, expected_mode: str) -> None:
-    context = project_context(actor, base_url)
-    project_id = str(context["projectId"])
+    project = exact_single(
+        rows(
+            actor,
+            base_url,
+            "NPI Engineering Project",
+            [["business_code", "=", document_runtime.BUSINESS_CODE]],
+            ["global_id"],
+        ),
+        "P6-07 route probe Project",
+    )
+    project_id = str(project["global_id"])
+    master = exact_single(
+        rows(
+            actor,
+            base_url,
+            "NPI Tooling Master",
+            [["originating_project_global_id", "=", project_id]],
+            ["global_id"],
+        ),
+        "P6-07 route probe Tooling Master",
+    )
+    master_id = str(master["global_id"])
     imports = tooling_request(
         actor,
         base_url,
@@ -1698,7 +1718,7 @@ def route_disable_probe(actor, base_url: str, expected_mode: str) -> None:
     acceptance = predecessor.tooling_request(
         actor,
         base_url,
-        predecessor.acceptance_path(project_id, str(context["masterId"])),
+        predecessor.acceptance_path(project_id, master_id),
         query_key=f"p607-predecessor-{expected_mode}",
     )
     require(
