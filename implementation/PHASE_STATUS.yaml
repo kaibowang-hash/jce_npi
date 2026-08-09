@@ -1439,7 +1439,7 @@ p6_07:
 p6_08:
   task: P6-08
   controller_task: P6-08_CONTROLLED_SELECTION_FILTER_OBJECT_PACKAGE_EXPORT
-  status: IN_PROGRESS_CHECKPOINT_1
+  status: IN_PROGRESS_CHECKPOINT_2
   requirements: [UX-007]
   starting_checkpoint: d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0
   audit_predecessor_ordinary_ci: 31331504738
@@ -1447,8 +1447,13 @@ p6_08:
   audit_predecessor_visual_job: 93290380955
   audit_predecessor_visual_result: 91_OF_91_PASS
   audit_decision: PASS_BOUNDED_FOUR_CHECKPOINT_PLAN
-  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
-  next_stage: CHECKPOINT_1_LEVEL_2
+  current_stage: REPOSITORY_BFF_PRIVATE_ARTIFACT_DOWNLOAD
+  next_stage: CHECKPOINT_2_LEVEL_2
+  checkpoint_1_product_sha: 5b1560921eda850380d298d7b50375943d7a69e2
+  checkpoint_1_ordinary_ci: 31334024291
+  checkpoint_1_repository_job: 93296765481
+  checkpoint_1_visual_job: 93296765409
+  checkpoint_1_visual_result: 91_OF_91_PASS
   arbitrary_database_export_active: false
   raw_private_file_url_export_active: false
   production_erp_contact_authorized: false
@@ -1464,6 +1469,7 @@ p6_08:
     - implementation/phase-6-requirement-anchor.md
     - docs/TOOLING_AND_TRIAL.md
     - implementation/evidence/phase-6/p6-08-plan.md
+    - implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

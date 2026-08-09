@@ -2111,3 +2111,38 @@ repeat or rewrite it merely to restore context. See
   actions remain inactive. Arbitrary query/field export, raw File URLs, cross-
   Project data, production ERP contact and invented lifecycle truth remain
   prohibited.
+
+## 2026-08-10 P6-08 checkpoint 1 PASS and checkpoint 2 activation
+
+- Product commit `cf86cad` adds only the pure ten-view/query/preference/
+  selection-versus-filtered export/package domains, deterministic safe
+  localized ZIP/CSV renderer, closed OpenAPI/ownership truth, three guarded
+  additive DocTypes, receipt values and direct tests. It creates no business
+  row or File and activates no route.
+- Serial ordinary CI isolated missing static catalog sources, one retained
+  mixed-language workbook-format label and eighteen durable P0 catalog-footer
+  fingerprints. Repairs `0b42ac0`, `a76c8b3` and `5b15609` changed no
+  Requirement, authority, route, component, test case, matrix, threshold,
+  tolerance or PASS criterion. Artifact `9043672316` pixel evidence records
+  zero changes above `y=860` before the baseline-only repair.
+- Final exact checkpoint `5b1560921eda850380d298d7b50375943d7a69e2`
+  passes ordinary CI `31334024291`: repository `93296765481` proves
+  `1,381/1,381` tracked Python, `796/796` frontend unit and `343/343`
+  non-visual E2E tests, `5,638` direct sources at complete `zh`/`zh-TW`
+  coverage, zero dependency vulnerabilities and both secret lanes; visual
+  `93296765409` passes `91/91`. Visual artifact `9043803661` has digest
+  `sha256:bfd63a8c9b79be26aee8e650d11dbaabba48732246de4e9eb5286a4efa85086e`;
+  controlled job `93296765721` correctly skips.
+- Complete evidence is
+  `implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
+  The exact ten views, closed query vocabulary, `1..100` bound, fixed package
+  members, formula neutralization, omission vocabulary, one-hour validity and
+  actor-bound receipt rules are now frozen checkpoint invariants.
+- Standing transition authority activates only checkpoint 2: independently
+  default-closed Project-first list/preference/export-create/download BFF,
+  stable server paging/query snapshots, exact shared-Master containment,
+  conservative `System Manager` plus Project `VIEW` export authorization,
+  single-transaction private artifact/package/audit/receipt persistence and
+  creator-bound hash-verified unexpired POST download. Live SPA, controlled
+  Site, production ERPNext contact and Tooling/lifecycle authority remain
+  inactive.

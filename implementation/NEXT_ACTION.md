@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+`IN_PROGRESS_CHECKPOINT_2 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 
-Recovery time: `2026-08-09T19:26:44Z`
+Recovery time: `2026-08-09T20:32:10Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery synchronized checkpoint:
-`d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0`
+Recovery synchronized product checkpoint:
+`5b1560921eda850380d298d7b50375943d7a69e2`
 
 ## Current authoritative action
 
@@ -36,13 +36,27 @@ and P6-07 private binary artifact/download path are reusable, but no Tooling
 list query, ten-view preference, export authority, object-package renderer,
 immutable artifact/download or live action exists.
 
-The current atomic action is checkpoint 1 only: implement pure domains for the
-ten exact code-owned Tooling views, closed search/sort/group and stable query
-snapshot, per-Project/per-view preference, selection-versus-filtered export,
-localized allowlisted CSV plus deterministic ZIP manifest/readme, formula
-neutralization, redaction, one-hour validity and immutable package/receipt
-truth. Add closed OpenAPI/ownership and guarded additive metadata with direct
-tests. Do not activate a route, business row, private File or SPA action.
+Checkpoint 1 passes at exact stable product checkpoint `5b15609`. Product
+commit `cf86cad` added the ten-view/query/preference/export/package domains,
+safe localized deterministic ZIP/CSV renderer, closed contracts, three
+guarded DocTypes and direct tests. Serial repairs completed static translation
+sources, removed the mixed-language workbook-format label and promoted only
+eighteen pixel-audited Linux footer fingerprints. Final CI `31334024291`
+passes repository `93296765481` (`1,381` Python, `796` frontend unit,
+`343` non-visual E2E, `5,638` complete direct trilingual sources, zero
+vulnerabilities and both secret lanes) and visual `93296765409` at `91/91`;
+controlled job `93296765721` correctly skips. Complete evidence is
+`implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
+
+The current atomic action is checkpoint 2 only: implement independently
+default-closed Project-first Tooling list, preference, export-create and
+download BFF routes; server-authoritative stable paging/query snapshots;
+exact shared-Master Project containment; conservative `System Manager` plus
+Project `VIEW` export authority; single-transaction immutable private File,
+package, audit and actor-bound receipt persistence; and creator-bound,
+hash-verified, one-hour CSRF POST download. Add permission, IDOR, replay,
+stale, expiration, formula/redaction and exact-hash tests. Do not activate a
+live SPA or controlled runtime yet.
 
 P6-08 cannot expose an arbitrary database dump, raw private File URLs,
 cross-Project data or production Tooling/ERP authority. `DR-REC-007` retains

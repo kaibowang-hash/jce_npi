@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-09T19:26:44Z`
+Updated: `2026-08-09T20:32:10Z`
 
 ## Active hard blockers
 
@@ -12,10 +12,11 @@ and the exact SHA. No user action is required.
 
 ## Active recovery
 
-None. P6-07 is sealed at Level 2. The bounded P6-08 audit passes in
-`implementation/evidence/phase-6/p6-08-plan.md`; checkpoint 1 pure domain,
-contract and additive metadata work is active. Routes, business rows, private
-Files and SPA actions remain inactive until later checkpoints.
+None. P6-07 is sealed at Level 2. The bounded P6-08 audit and checkpoint 1
+pass in `implementation/evidence/phase-6/p6-08-plan.md` and
+`implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
+Checkpoint 2 repository/BFF, private artifact and download work is active;
+the live SPA and controlled runtime remain inactive until later checkpoints.
 
 Production ERPNext access, production Tooling-list mapping, destructive
 downstream rollback, raw private File URL export and arbitrary database export
