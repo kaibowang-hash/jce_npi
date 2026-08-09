@@ -26,6 +26,7 @@ import { formatDate, formatNumber } from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
 import ToolingManufacturingWorkspace from "./tooling-manufacturing-workspace";
+import ToolingAcceptanceAssetWorkspace from "./tooling-acceptance-asset-workspace";
 import ToolingEngineeringControlsWorkspace from "./tooling-engineering-controls-workspace";
 import ToolingRevisionWorkspace from "./tooling-revision-workspace";
 import ToolingSetWorkspace from "./tooling-set-workspace";
@@ -928,6 +929,15 @@ export default function LiveToolingPage({
           }
           reportWorkspaceDirty={reportWorkspaceDirty}
           requirements={cockpit.requirements}
+        />
+      ) : null}
+      {selectedMaster ? (
+        <ToolingAcceptanceAssetWorkspace
+          dataSource={dataSource}
+          key={`acceptance-assets-${selectedMaster.globalId}`}
+          master={selectedMaster}
+          projectId={projectId}
+          reportWorkspaceDirty={reportWorkspaceDirty}
         />
       ) : null}
       {editor ? (

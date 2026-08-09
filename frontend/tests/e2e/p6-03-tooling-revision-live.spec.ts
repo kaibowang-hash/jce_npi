@@ -5,6 +5,10 @@ import type {
   PartControlledSpecificationContextViewModel,
   ToolingCockpitViewModel,
   ToolingEngineeringControlsViewModel,
+  ToolAssetRequestCollectionViewModel,
+  ToolAssetRequestViewModel,
+  ToolingAcceptanceAssetContextViewModel,
+  ToolingAcceptanceEvidenceRevisionViewModel,
   ToolingMeasurementViewModel,
   ToolingManufacturingMilestoneObservationViewModel,
   ToolingManufacturingPlanCollectionViewModel,
@@ -18,6 +22,11 @@ import type {
   ToolingSetCollectionViewModel,
   ToolingSetDetailViewModel,
 } from "../../src/api/tooling-data-source";
+import {
+  acceptanceContext as baseAcceptanceContext,
+  acceptanceRevision as baseAcceptanceRevision,
+  assetRequest as baseAssetRequest,
+} from "../support/tooling-acceptance-fixture";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,
@@ -59,6 +68,10 @@ const processMetricId = "90666666-6666-4666-8666-666666666666";
 const capacityScenarioId = "90777777-7777-4777-8777-777777777777";
 const capacityScenarioRevisionId = "90888888-8888-4888-8888-888888888888";
 const capacityLineId = "90999999-9999-4999-8999-999999999999";
+const acceptanceId = "91011111-1111-4111-8111-111111111111";
+const acceptanceRevisionId = "92022222-2222-4222-8222-222222222222";
+const acceptanceSuccessorRevisionId = "92555555-5555-4555-8555-555555555555";
+const assetRequestId = "93033333-3333-4333-8333-333333333333";
 const csrfToken = "p6-03-tooling-revision-browser-csrf";
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
@@ -421,6 +434,80 @@ function setDetail(bound = false): ToolingSetDetailViewModel {
           },
         }
       : toolingSet,
+  };
+}
+
+function acceptanceEvidence(
+  successor = false,
+): ToolingAcceptanceEvidenceRevisionViewModel {
+  const base = baseAcceptanceRevision();
+  return {
+    ...base,
+    acceptanceGlobalId: acceptanceId,
+    acceptanceVersion: successor ? 2 : 1,
+    globalId: successor ? acceptanceSuccessorRevisionId : acceptanceRevisionId,
+    predecessorGlobalId: successor ? acceptanceRevisionId : null,
+    predecessorSnapshotHash: successor ? base.snapshotHash : null,
+    projectGlobalId: projectId,
+    setRevisionBindingGlobalId: bindingId,
+    setRevisionBindingSnapshotHash: "4".repeat(64),
+    snapshotHash: successor ? "7".repeat(64) : "6".repeat(64),
+    toolingMasterGlobalId: masterId,
+    toolingMasterSnapshotHash: "1".repeat(64),
+    toolingRequirementKind: "customer_owned_intake",
+    toolingRevisionGlobalId: toolingRevisionId,
+    toolingRevisionNumber: revision().revisionNumber,
+    toolingRevisionSnapshotHash: revision().snapshotHash,
+    toolingSetGlobalId: setId,
+    toolingSetSnapshotHash: "3".repeat(64),
+  };
+}
+
+function acceptanceAssetContext(): ToolingAcceptanceAssetContextViewModel {
+  return {
+    ...baseAcceptanceContext(),
+    acceptanceRevisions: [acceptanceEvidence()],
+    assetRequests: [],
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
+  };
+}
+
+function toolAssetRequest(): ToolAssetRequestViewModel {
+  const base = baseAssetRequest();
+  const acceptance = acceptanceEvidence();
+  return {
+    ...base,
+    globalId: assetRequestId,
+    requestId: assetRequestId,
+    requestInput: {
+      ...base.requestInput,
+      acceptanceRevisionGlobalId: acceptance.globalId,
+      acceptanceSnapshotHash: acceptance.snapshotHash,
+      acceptanceVersion: acceptance.acceptanceVersion,
+      projectGlobalId: projectId,
+      setRevisionBindingGlobalId: bindingId,
+      setRevisionBindingSnapshotHash: "4".repeat(64),
+      toolingMasterGlobalId: masterId,
+      toolingMasterSnapshotHash: "1".repeat(64),
+      toolingMasterTitle: "Synthetic revision-controlled mold",
+      toolingRequirementKind: "customer_owned_intake",
+      toolingRevisionGlobalId: toolingRevisionId,
+      toolingRevisionLabel: revision().revisionLabel,
+      toolingRevisionNumber: revision().revisionNumber,
+      toolingRevisionSnapshotHash: revision().snapshotHash,
+      toolingSetGlobalId: setId,
+      toolingSetPhysicalSerial: "SET-REV-001",
+      toolingSetSnapshotHash: "3".repeat(64),
+    },
+  };
+}
+
+function toolAssetRequestCollection(): ToolAssetRequestCollectionViewModel {
+  return {
+    items: [toolAssetRequest()],
+    projectGlobalId: projectId,
+    toolingMasterGlobalId: masterId,
   };
 }
 
@@ -843,7 +930,7 @@ async function installSession(page: Page, locale: TestLocale): Promise<void> {
 
 async function installApi(
   page: Page,
-  options: { partRecorded?: boolean } = {},
+  options: { acceptanceReady?: boolean; partRecorded?: boolean } = {},
 ): Promise<ObservedRequest[]> {
   const observed: ObservedRequest[] = [];
   await page.route(projectEndpoint, async (route) => {
@@ -859,6 +946,32 @@ async function installApi(
       expect(request.headers()["x-frappe-csrf-token"]).toBe(csrfToken);
       expect(request.headers()["idempotency-key"]).toMatch(/^tooling-/u);
     }
+    if (path.endsWith(`/tooling/${masterId}/acceptance-assets`)) {
+      await fulfillJson(route, acceptanceAssetContext());
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/acceptance-revisions`)) {
+      await fulfillJson(
+        route,
+        { acceptanceEvidence: acceptanceEvidence(true) },
+        201,
+      );
+      return;
+    }
+    if (
+      path.endsWith(`/tooling/${masterId}/asset-requests/${assetRequestId}`)
+    ) {
+      await fulfillJson(route, toolAssetRequest());
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/sets/${setId}/asset-requests`)) {
+      await fulfillJson(route, toolAssetRequest(), 201);
+      return;
+    }
+    if (path.endsWith(`/tooling/${masterId}/asset-requests`)) {
+      await fulfillJson(route, toolAssetRequestCollection());
+      return;
+    }
     if (path.endsWith(`/tooling/${masterId}/sets/${setId}/revision-binding`)) {
       await fulfillJson(route, setDetail(true), 201);
       return;
@@ -868,7 +981,13 @@ async function installApi(
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/sets`)) {
-      await fulfillJson(route, setCollection());
+      const collection = setCollection();
+      await fulfillJson(
+        route,
+        options.acceptanceReady
+          ? { ...collection, items: [setDetail(true).toolingSet] }
+          : collection,
+      );
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/defect-revisions`)) {
@@ -1446,6 +1565,125 @@ test.describe("P6-05 live engineering-controls workspace", () => {
   });
 });
 
+test.describe("P6-06 live acceptance and Asset preparation workspace", () => {
+  for (const locale of ["en", "zh", "zh-TW"] as const) {
+    test(`renders immutable acceptance, Mock axes and unavailable ERP Asset truth in ${locale}`, async ({
+      page,
+    }) => {
+      await installSession(page, locale);
+      await installApi(page, { acceptanceReady: true });
+      await openWorkspace(page, locale);
+      const workspace = page.locator("#tooling-acceptance-asset-workspace");
+      await workspace.scrollIntoViewIfNeeded();
+
+      await expect(workspace).toBeVisible();
+      await expect(
+        workspace.getByText(
+          locale === "en"
+            ? "Acceptance evidence and Asset preparation"
+            : locale === "zh"
+              ? "验收证据与资产准备"
+              : "驗收證據與資產準備",
+        ),
+      ).toBeVisible();
+      await expect(workspace.getByText("SET-REV-001").first()).toBeVisible();
+      await expect(
+        workspace.getByRole("button", { name: /approv/u }),
+      ).toHaveCount(0);
+      await expect(
+        workspace.getByRole("button", { name: /dispatch/u }),
+      ).toHaveCount(0);
+      await expectNoMixedLanguage(page, locale);
+      await expectNoDocumentOverflow(page);
+      await expectIndustrialComputedStyles(page);
+      await expectAxeClean(page);
+    });
+  }
+
+  test("appends nine exact acceptance categories without approval or ERP payload", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page, { acceptanceReady: true });
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-acceptance-asset-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace.getByRole("button", { name: "Append Revision" }).click();
+    await workspace
+      .getByLabel("Append reason")
+      .fill("Refresh controlled acceptance evidence");
+    await workspace
+      .getByRole("button", { name: "Append evidence Revision" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(
+                `/tooling/${masterId}/acceptance-revisions`,
+              ),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find((request) =>
+      request.path.endsWith(`/tooling/${masterId}/acceptance-revisions`),
+    );
+    expect(command?.payload).toMatchObject({
+      acceptanceGlobalId: acceptanceId,
+      expectedVersion: 1,
+      reason: "Refresh controlled acceptance evidence",
+      setRevisionBindingGlobalId: bindingId,
+      toolingRevisionGlobalId: toolingRevisionId,
+      toolingSetGlobalId: setId,
+    });
+    expect(
+      (command?.payload as { checklist?: readonly unknown[] }).checklist,
+    ).toHaveLength(9);
+    expect(command?.payload).not.toHaveProperty("approvalState");
+    expect(command?.payload).not.toHaveProperty("targetPayload");
+  });
+
+  test("prepares only one acknowledged local Mock Asset request", async ({
+    page,
+  }) => {
+    await installSession(page, "en");
+    const observed = await installApi(page, { acceptanceReady: true });
+    await openWorkspace(page, "en");
+    const workspace = page.locator("#tooling-acceptance-asset-workspace");
+    await workspace.scrollIntoViewIfNeeded();
+    await workspace
+      .getByRole("checkbox", { name: /only validates a local Mock draft/u })
+      .check();
+    await workspace
+      .getByRole("button", { name: "Prepare Mock Asset request" })
+      .click();
+
+    await expect
+      .poll(
+        () =>
+          observed.filter(
+            (request) =>
+              request.method === "POST" &&
+              request.path.endsWith(`/sets/${setId}/asset-requests`),
+          ).length,
+      )
+      .toBe(1);
+    const command = observed.find((request) =>
+      request.path.endsWith(`/sets/${setId}/asset-requests`),
+    );
+    expect(command?.payload).toMatchObject({
+      acceptanceRevisionGlobalId: acceptanceRevisionId,
+      targetMode: "mock",
+    });
+    expect(command?.payload).not.toHaveProperty("approvalState");
+    expect(command?.payload).not.toHaveProperty("dispatch");
+    expect(command?.payload).not.toHaveProperty("targetPayload");
+  });
+});
+
 const visualCases = [
   {
     height: 768,
@@ -1583,6 +1821,49 @@ test.describe("@visual P6-05 engineering-controls evidence", () => {
         await page.evaluate(async () => document.fonts.ready);
         await expect(page).toHaveScreenshot(
           `${visual.name.replace("p6-03-tooling-revision", "p6-05-engineering-controls")}.png`,
+          { fullPage: false },
+        );
+      },
+    );
+  }
+});
+
+test.describe("@visual P6-06 acceptance and Asset evidence", () => {
+  for (const visual of visualCases) {
+    test(
+      visual.name.replace("p6-03-tooling-revision", "p6-06-acceptance-assets"),
+      async ({ page }) => {
+        await installSession(page, visual.locale);
+        await installApi(page, { acceptanceReady: true });
+        await page.setViewportSize(
+          effectiveViewport(
+            { height: visual.height, width: visual.width },
+            visual.zoom,
+          ),
+        );
+        await page.emulateMedia({
+          colorScheme: "light",
+          reducedMotion: "reduce",
+        });
+        await openWorkspace(page, visual.locale);
+        await page
+          .locator(
+            "#tooling-acceptance-asset-workspace .tooling-acceptance__asset-grid",
+          )
+          .evaluate((element) => {
+            element.scrollIntoView({ block: "start" });
+          });
+        await expectNoMixedLanguage(page, visual.locale);
+        await expectNoDocumentOverflow(page);
+        await expectIndustrialComputedStyles(page);
+        await expectAxeClean(page);
+        await page.addStyleTag({
+          content:
+            "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",
+        });
+        await page.evaluate(async () => document.fonts.ready);
+        await expect(page).toHaveScreenshot(
+          `${visual.name.replace("p6-03-tooling-revision", "p6-06-acceptance-assets")}.png`,
           { fullPage: false },
         );
       },

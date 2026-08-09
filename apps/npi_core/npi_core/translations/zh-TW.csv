@@ -5011,3 +5011,77 @@ tooling_acceptance_evidence_revision,模具驗收證據修訂
 validated_mock,已通過模擬驗證
 prohibited,已禁止
 not_requested,未請求
+Technical requirements,技術要求
+Quality requirements,品質要求
+Cycle and capacity requirements,週期與產能要求
+Spares and maintenance requirements,備件與維護要求
+Controlled document requirements,受控文件要求
+Warranty and responsibility requirements,保固與責任要求
+Cost requirements,成本要求
+Safety and interface requirements,安全與介面要求
+Asset and location requirements,資產與位置要求
+Evidence recorded,已記錄證據
+Evidence missing,缺少證據
+Not applicable with reason,不適用並說明原因
+Select a physical Tooling Set with an exact Tooling Revision binding.,請選擇已精確繫結模具修訂版的實體模具套。
+Complete the exact acceptance evidence fields and append reason.,請填寫精確的驗收證據欄位和追加原因。
+Appending immutable acceptance evidence Revision,正在追加不可變的驗收證據修訂版
+Confirm the Mock-only acknowledgement before preparing the request.,準備請求前請確認僅限模擬的聲明。
+The selected acceptance evidence no longer has an exact Set binding.,所選驗收證據已不再具有精確的模具套繫結。
+Preparing local Mock Asset request,正在準備本機模擬資產請求
+Loading acceptance and Asset workspace,正在載入驗收與資產工作區
+Retry acceptance and Asset workspace,重試驗收與資產工作區
+Acceptance evidence and Asset preparation,驗收證據與資產準備
+Tooling assurance,模具保證
+"Record immutable evidence by physical Set, then validate a local Mock request without inferring approval or ERPNext execution.",按實體模具套記錄不可變證據，然後驗證本機模擬請求，不推斷核准或 ERPNext 執行。
+Approval unavailable,核准不可用
+Dispatch prohibited,禁止分發
+Acceptance and Asset commands are read only in this session.,本工作階段中的驗收與資產命令為唯讀。
+Acceptance and Asset evidence is read only for this user.,此使用者對驗收與資產證據僅有唯讀權限。
+The server controls evidence and Mock-request permissions.,證據與模擬請求權限由伺服器控制。
+Acceptance evidence lineage,驗收證據沿革
+Physical Set,實體模具套
+Evidence Revision,證據修訂版
+Missing,缺少
+Revision {{version}},修訂版 {{version}}
+Inspect,檢查
+Append Revision,追加修訂版
+No acceptance evidence Revision has been recorded.,尚未記錄驗收證據修訂版。
+Start with a physical Set that has an exact Tooling Revision binding.,請從已精確繫結模具修訂版的實體模具套開始。
+Record evidence for {{serial}},為 {{serial}} 記錄證據
+No physical Set has an exact Tooling Revision binding yet.,尚無實體模具套精確繫結模具修訂版。
+Acceptance truth inspector,驗收事實檢查器
+Stable acceptance identity,穩定驗收識別
+Recorded at,記錄時間
+{{recorded}} recorded · {{missing}} missing · {{notApplicable}} not applicable,{{recorded}} 項已記錄 · {{missing}} 項缺少 · {{notApplicable}} 項不適用
+Asset actions: {{count}},資產動作：{{count}}
+Spare recommendations: {{count}},備件建議：{{count}}
+Repair records: {{count}},維修記錄：{{count}}
+Select an acceptance evidence Revision to inspect exact provenance.,請選擇驗收證據修訂版以檢查精確來源。
+Mock Asset request preparation,模擬資產請求準備
+Mock,模擬
+Request state,請求狀態
+Input validation,輸入驗證
+Validated Mock,已通過模擬驗證
+Business approval,業務核准
+Prohibited,已禁止
+Target result,目標結果
+Not requested,未請求
+Acceptance evidence Revision,驗收證據修訂版
+"I confirm this only validates a local Mock draft. It does not approve Tooling, contact ERPNext or create an Asset.",我確認此操作僅驗證本機模擬草稿，不會核准模具、聯絡 ERPNext 或建立資產。
+Prepare Mock Asset request,準備模擬資產請求
+"This command cannot approve Tooling, dispatch a request, contact ERPNext or create a formal Asset.",此命令不能核准模具、分發請求、聯絡 ERPNext 或建立正式資產。
+ERPNext Asset projection,ERPNext 資產投影
+Formal Asset mapping has not been observed from ERPNext.,尚未從 ERPNext 觀察到正式資產對應。
+Mapping cardinality is zero or one formal Asset per physical Set.,對應基數為每個實體模具套零個或一個正式資產。
+ERPNext remains the only editable system for Asset and location truth.,ERPNext 仍是資產與位置事實的唯一可編輯系統。
+Prepared Mock request audit,已準備的模擬請求稽核
+No local Mock Asset request has been prepared.,尚未準備本機模擬資產請求。
+Append acceptance evidence Revision,追加驗收證據修訂版
+Record acceptance evidence,記錄驗收證據
+Physical Tooling Set,實體模具套
+Append reason,追加原因
+Evidence disposition,證據處置
+Exact not-applicable reason,精確的不適用原因
+Append evidence Revision,追加證據修訂版
+Record evidence Revision,記錄證據修訂版

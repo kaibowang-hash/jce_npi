@@ -53,10 +53,25 @@ import {
   type ToolingEngineeringControlsViewModel,
   type ToolingProcessProfileRevisionCommandViewModel,
 } from "./tooling-engineering-controls-contract";
+import {
+  isCreateToolAssetRequestCommand,
+  isCreateToolingAcceptanceEvidenceRevisionCommand,
+  isToolAssetRequest,
+  isToolAssetRequestCollection,
+  isToolingAcceptanceAssetContext,
+  isToolingAcceptanceEvidenceCommand,
+  type CreateToolAssetRequestCommand,
+  type CreateToolingAcceptanceEvidenceRevisionCommand,
+  type ToolAssetRequestCollectionViewModel,
+  type ToolAssetRequestViewModel,
+  type ToolingAcceptanceAssetContextViewModel,
+  type ToolingAcceptanceEvidenceRevisionViewModel,
+} from "./tooling-acceptance-asset-contract";
 
 export * from "./tooling-revision-contract";
 export * from "./tooling-manufacturing-contract";
 export * from "./tooling-engineering-controls-contract";
+export * from "./tooling-acceptance-asset-contract";
 
 export type ToolingRequirementKind =
   | "new_tool"
@@ -525,6 +540,35 @@ export interface ToolingDataSource {
     command: CreateToolingCapacityScenarioRevisionCommand,
     context: ToolingCommandContext,
   ): Promise<ToolingCapacityScenarioRevisionCommandViewModel>;
+  loadAcceptanceAssets(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingAcceptanceAssetContextViewModel>;
+  createToolingAcceptanceRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingAcceptanceEvidenceRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingAcceptanceEvidenceRevisionViewModel>;
+  loadToolAssetRequests(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolAssetRequestCollectionViewModel>;
+  loadToolAssetRequest(
+    projectId: string,
+    masterId: string,
+    requestId: string,
+    signal: AbortSignal,
+  ): Promise<ToolAssetRequestViewModel>;
+  createToolAssetRequest(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolAssetRequestCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolAssetRequestViewModel>;
 }
 
 export class ToolingRequestCancelledError extends Error {
@@ -1884,6 +1928,117 @@ export class LiveToolingDataSource implements ToolingDataSource {
     );
   }
 
+  async loadAcceptanceAssets(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolingAcceptanceAssetContextViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/acceptance-assets`,
+      signal,
+      (value): value is ToolingAcceptanceAssetContextViewModel =>
+        isToolingAcceptanceAssetContext(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async createToolingAcceptanceRevision(
+    projectId: string,
+    masterId: string,
+    command: CreateToolingAcceptanceEvidenceRevisionCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolingAcceptanceEvidenceRevisionViewModel> {
+    if (!isCreateToolingAcceptanceEvidenceRevisionCommand(command))
+      throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/acceptance-revisions`,
+      command,
+      context,
+      (
+        value,
+      ): value is {
+        acceptanceEvidence: ToolingAcceptanceEvidenceRevisionViewModel;
+      } =>
+        isToolingAcceptanceEvidenceCommand(value) &&
+        value.acceptanceEvidence.projectGlobalId === expectedProjectId &&
+        value.acceptanceEvidence.toolingMasterGlobalId === expectedMasterId &&
+        value.acceptanceEvidence.toolingSetGlobalId ===
+          command.toolingSetGlobalId &&
+        value.acceptanceEvidence.acceptanceVersion ===
+          (command.expectedVersion ?? 0) + 1,
+      (value) => value.acceptanceEvidence,
+    );
+  }
+
+  async loadToolAssetRequests(
+    projectId: string,
+    masterId: string,
+    signal: AbortSignal,
+  ): Promise<ToolAssetRequestCollectionViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/asset-requests`,
+      signal,
+      (value): value is ToolAssetRequestCollectionViewModel =>
+        isToolAssetRequestCollection(value) &&
+        value.projectGlobalId === expectedProjectId &&
+        value.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async loadToolAssetRequest(
+    projectId: string,
+    masterId: string,
+    requestId: string,
+    signal: AbortSignal,
+  ): Promise<ToolAssetRequestViewModel> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedRequestId = requireUuid(requestId);
+    return await this.queryValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/asset-requests/${expectedRequestId}`,
+      signal,
+      (value): value is ToolAssetRequestViewModel =>
+        isToolAssetRequest(value) &&
+        value.globalId === expectedRequestId &&
+        value.requestInput.projectGlobalId === expectedProjectId &&
+        value.requestInput.toolingMasterGlobalId === expectedMasterId,
+    );
+  }
+
+  async createToolAssetRequest(
+    projectId: string,
+    masterId: string,
+    setId: string,
+    command: CreateToolAssetRequestCommand,
+    context: ToolingCommandContext,
+  ): Promise<ToolAssetRequestViewModel> {
+    if (!isCreateToolAssetRequestCommand(command)) throw requestNotReady();
+    const expectedProjectId = requireUuid(projectId);
+    const expectedMasterId = requireUuid(masterId);
+    const expectedSetId = requireUuid(setId);
+    return await this.commandValidated(
+      `/projects/${expectedProjectId}/tooling/${expectedMasterId}/sets/${expectedSetId}/asset-requests`,
+      command,
+      context,
+      (value): value is ToolAssetRequestViewModel =>
+        isToolAssetRequest(value) &&
+        value.requestInput.projectGlobalId === expectedProjectId &&
+        value.requestInput.toolingMasterGlobalId === expectedMasterId &&
+        value.requestInput.toolingSetGlobalId === expectedSetId &&
+        value.requestInput.acceptanceRevisionGlobalId ===
+          command.acceptanceRevisionGlobalId &&
+        value.requestInput.acceptanceSnapshotHash ===
+          command.acceptanceSnapshotHash,
+    );
+  }
+
   private async query(
     path: string,
     signal: AbortSignal,
@@ -1960,16 +2115,17 @@ export class LiveToolingDataSource implements ToolingDataSource {
     }
   }
 
-  private async commandValidated<T>(
+  private async commandValidated<T, R = T>(
     path: string,
     body: object,
     context: ToolingCommandContext,
     validate: (value: unknown) => value is T,
-  ): Promise<T> {
+    transform?: (value: T) => R,
+  ): Promise<R> {
     if (!isCommandContext(context)) throw requestNotReady();
     throwIfCancelled(context.signal);
     try {
-      return await this.http.request<T>(
+      const result = await this.http.request<T>(
         path,
         {
           body: JSON.stringify(body),
@@ -1986,6 +2142,7 @@ export class LiveToolingDataSource implements ToolingDataSource {
           validate,
         },
       );
+      return transform ? transform(result) : (result as unknown as R);
     } catch (error) {
       throwIfCancelled(context.signal);
       throw error;

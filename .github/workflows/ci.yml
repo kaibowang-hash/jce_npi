@@ -112,6 +112,7 @@ jobs:
             frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-03-*-linux.png
             frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-04-*-linux.png
             frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-05-*-linux.png
+            frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts-snapshots/p6-06-*-linux.png
             frontend/tests/e2e/gate-evidence-live.spec.ts-snapshots/p5-03-*-linux.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json

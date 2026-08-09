@@ -145,6 +145,12 @@ function dataSource(
     loadManufacturingPlan: () => Promise.reject(new Error("not used")),
     loadManufacturingPlans: () => Promise.reject(new Error("not used")),
     loadEngineeringControls: () => Promise.reject(new Error("not used")),
+    loadAcceptanceAssets: () => Promise.reject(new Error("not used")),
+    createToolingAcceptanceRevision: () =>
+      Promise.reject(new Error("not used")),
+    loadToolAssetRequests: () => Promise.reject(new Error("not used")),
+    loadToolAssetRequest: () => Promise.reject(new Error("not used")),
+    createToolAssetRequest: () => Promise.reject(new Error("not used")),
     loadPartControlledSpecification: () =>
       Promise.reject(new Error("not used")),
     loadSet: () => Promise.reject(new Error("not used")),
