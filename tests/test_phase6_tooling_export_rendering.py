@@ -71,7 +71,7 @@ def _translate(source: str) -> str:
         "Rows: {row_count}": "行数：{row_count}",
         "Unavailable": "不可用",
         "Manual": "手工创建",
-        "Controlled XLSX import": "受控 XLSX 导入",
+        "Controlled XLSX import": "受控电子表格导入",
     }[source]
 
 
@@ -118,7 +118,7 @@ class Phase6ToolingExportRenderingTests(unittest.TestCase):
             self.assertEqual(rows[0], [_translate(item) for item in CSV_SOURCE_STRINGS])
             self.assertTrue(rows[1][2].startswith("'="))
             self.assertEqual(rows[1][8], "不可用")
-            self.assertEqual(rows[1][9], "受控 XLSX 导入")
+            self.assertEqual(rows[1][9], "受控电子表格导入")
             self.assertEqual(len(rows[0]), 11)
 
     def test_readme_is_localized_and_render_snapshot_contains_only_hash_metadata(self) -> None:

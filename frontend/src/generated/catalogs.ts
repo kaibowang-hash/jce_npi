@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'caff832aae5f7b14';
+export const catalogVersion = 'd37c905dd74e93e4';
 export const catalogs = {
   "zh": {
     "{{complete}} of {{total}} complete": "已完成 {{complete}} 项，共 {{total}} 项",
@@ -907,7 +907,7 @@ export const catalogs = {
     "Controlled specification kind": "受控规格类型",
     "Controlled undo review prototype": "受控撤销审查原型",
     "Controlled workbook worker workspace": "受控工作簿工作进程工作区",
-    "Controlled XLSX import": "受控 XLSX 导入",
+    "Controlled XLSX import": "受控电子表格导入",
     "controlled_pdf": "受控文档",
     "Controls": "管控",
     "Cooling time": "冷却时间",
@@ -6547,7 +6547,7 @@ export const catalogs = {
     "Controlled specification kind": "受控規格類型",
     "Controlled undo review prototype": "受控復原審查原型",
     "Controlled workbook worker workspace": "受控活頁簿工作程序工作區",
-    "Controlled XLSX import": "受控 XLSX 匯入",
+    "Controlled XLSX import": "受控試算表匯入",
     "controlled_pdf": "受控文件",
     "Controls": "管控",
     "Cooling time": "冷卻時間",
