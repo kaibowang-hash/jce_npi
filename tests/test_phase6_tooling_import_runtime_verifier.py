@@ -360,16 +360,27 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, self.source)
 
-    def test_route_probe_uses_stable_project_and_master_not_single_part_context(
+    def test_replay_and_route_probe_do_not_reload_single_part_context(
         self,
     ) -> None:
+        retained_project = self.source.split("def retained_project_id(", 1)[1].split(
+            "def scenario_key(",
+            1,
+        )[0]
+        replay = self.source.split("def run_replay(", 1)[1].split(
+            "def route_disable_probe(",
+            1,
+        )[0]
         route_probe = self.source.split("def route_disable_probe(", 1)[1].split(
             "def verify_tooling_import_runtime_schema(",
             1,
         )[0]
+        self.assertNotIn("project_context(", replay)
         self.assertNotIn("project_context(", route_probe)
-        self.assertIn('"NPI Engineering Project"', route_probe)
-        self.assertIn('document_runtime.BUSINESS_CODE', route_probe)
+        self.assertIn("retained_project_id(actor, base_url)", replay)
+        self.assertIn("retained_project_id(actor, base_url)", route_probe)
+        self.assertIn('"NPI Engineering Project"', retained_project)
+        self.assertIn('document_runtime.BUSINESS_CODE', retained_project)
         self.assertIn('"NPI Tooling Master"', route_probe)
         self.assertIn('"originating_project_global_id"', route_probe)
 

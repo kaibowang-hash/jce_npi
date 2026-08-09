@@ -369,6 +369,20 @@ def project_context(administrator, base_url: str) -> dict[str, object]:
     return context
 
 
+def retained_project_id(administrator, base_url: str) -> str:
+    project = exact_single(
+        rows(
+            administrator,
+            base_url,
+            "NPI Engineering Project",
+            [["business_code", "=", document_runtime.BUSINESS_CODE]],
+            ["global_id"],
+        ),
+        "P6-07 retained Project",
+    )
+    return str(project["global_id"])
+
+
 def scenario_key(index: int, operation: str) -> str:
     return f"p6-07-runtime-r{index}-{FIXTURE_RUN_ID}-{operation}"
 
@@ -1577,8 +1591,8 @@ def run_fresh(
 
 
 def run_replay(actor, base_url: str, csrf_token: str) -> dict[str, object]:
-    context = project_context(actor, base_url)
-    project_id = str(context["projectId"])
+    project_id = retained_project_id(actor, base_url)
+    context = {"projectId": project_id}
     collection = tooling_request(
         actor,
         base_url,
@@ -1687,17 +1701,7 @@ def run_replay(actor, base_url: str, csrf_token: str) -> dict[str, object]:
 
 
 def route_disable_probe(actor, base_url: str, expected_mode: str) -> None:
-    project = exact_single(
-        rows(
-            actor,
-            base_url,
-            "NPI Engineering Project",
-            [["business_code", "=", document_runtime.BUSINESS_CODE]],
-            ["global_id"],
-        ),
-        "P6-07 route probe Project",
-    )
-    project_id = str(project["global_id"])
+    project_id = retained_project_id(actor, base_url)
     master = exact_single(
         rows(
             actor,
