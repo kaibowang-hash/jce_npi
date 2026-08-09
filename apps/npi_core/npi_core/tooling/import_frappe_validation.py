@@ -124,6 +124,28 @@ def require_snapshot_projection(
             )
 
 
+def correction_file_content(file_document: object) -> tuple[bytes, int]:
+    """Return correction bytes plus the pinned Frappe File size representation.
+
+    The legacy ``save_file`` path re-reads plain-text files during ``File``
+    insertion. Pinned Frappe decodes that content to ``str`` and consequently
+    stores ``file_size`` as a character count. The correction contract still
+    exposes an actual byte count, so callers must keep the two measurements
+    distinct while verifying both.
+    """
+
+    raw_content = file_document.get_content()
+    if isinstance(raw_content, bytes):
+        return raw_content, len(raw_content)
+    if isinstance(raw_content, str):
+        return raw_content.encode("utf-8"), len(raw_content)
+    frappe.throw(
+        _("The exact private correction file is unavailable."),
+        frappe.ValidationError,
+    )
+    raise AssertionError("unreachable")
+
+
 @contextmanager
 def _flag_scope(flag_name: str) -> Iterator[None]:
     missing = object()

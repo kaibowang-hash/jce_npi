@@ -12,6 +12,10 @@ REPOSITORY_PATH = (
 )
 SOURCE = REPOSITORY_PATH.read_text(encoding="utf-8")
 TREE = ast.parse(SOURCE)
+IMPORT_VALIDATION_SOURCE = (
+    ROOT / "apps/npi_core/npi_core/tooling/import_frappe_validation.py"
+).read_text(encoding="utf-8")
+IMPORT_VALIDATION_TREE = ast.parse(IMPORT_VALIDATION_SOURCE)
 DOCTYPE_ROOT = ROOT / "apps/npi_core/npi_core/npi_core/doctype"
 
 
@@ -24,6 +28,13 @@ def _function(name: str) -> ast.FunctionDef:
 
 def _source(name: str) -> str:
     return ast.unparse(_function(name))
+
+
+def _validation_source(name: str) -> str:
+    for node in ast.walk(IMPORT_VALIDATION_TREE):
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return ast.unparse(node)
+    raise AssertionError(f"missing validation function {name}")
 
 
 class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
@@ -159,7 +170,8 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
         )
         self.assertIn("correctionHashes", create)
         self.assertIn("'fileName': str(file_document.file_name)", create)
-        self.assertIn("'sizeBytes': int(file_document.file_size)", create)
+        self.assertIn("'sizeBytes': len(content)", create)
+        self.assertNotIn("'sizeBytes': int(file_document.file_size)", create)
         self.assertNotIn('"correctedValue": item.corrected_value', create)
         corrections = _source("_repository_job_corrections")
         self.assertIn("job.correction_artifact_snapshot_hash", corrections)
@@ -172,20 +184,28 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
         ):
             self.assertIn(marker, download)
         for marker in (
-            "isinstance(raw_content, str)",
-            "raw_content.startswith('\\ufeff')",
-            "normalized_text.encode('utf-8')",
+            "correction_file_content(file_document)",
             "int(file_document.is_private or 0) != 1",
+            "int(file_document.file_size or 0) != frappe_file_size",
             "len(content) != int(artifact.size_bytes)",
             "hashlib.sha256(content).hexdigest() != str(artifact.sha256)",
             "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
             "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
             "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
             "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+            "P607_CORRECTION_DOWNLOAD_FILE_SIZE_VALIDATE",
             "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
             "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
         ):
             self.assertIn(marker, verify)
+
+    def test_correction_file_keeps_storage_character_count_separate_from_bytes(
+        self,
+    ) -> None:
+        normalize = _validation_source("correction_file_content")
+        self.assertIn("return (raw_content, len(raw_content))", normalize)
+        self.assertIn("(raw_content.encode('utf-8'), len(raw_content))", normalize)
+        self.assertNotIn("'\\ufeff' + raw_content", normalize)
 
     def test_correction_diagnostics_are_closed_and_stage_specific(self) -> None:
         create = _source("create_correction_artifact")

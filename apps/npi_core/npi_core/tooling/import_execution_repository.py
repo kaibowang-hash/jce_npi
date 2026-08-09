@@ -98,6 +98,7 @@ _CORRECTION_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_FILE_ID_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
+        "P607_CORRECTION_DOWNLOAD_FILE_SIZE_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_SIZE_VALIDATE",
         "P607_CORRECTION_DOWNLOAD_DIGEST_VALIDATE",
     }
@@ -494,7 +495,6 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
                 {
                     "frappeFileId": str(file_document.name),
                     "fileName": str(file_document.file_name),
-                    "sizeBytes": int(file_document.file_size),
                 }
             )
             with _correction_server_step(
@@ -1393,22 +1393,15 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
         trace_id: str,
         replayed: bool = False,
     ) -> ToolingImportBinaryOutcome:
-        raw_content = file_document.get_content()
         with _correction_server_step(
             "P607_CORRECTION_DOWNLOAD_CONTENT_VALIDATE",
             trace_id,
         ):
-            if isinstance(raw_content, bytes):
-                content = raw_content
-            elif isinstance(raw_content, str):
-                normalized_text = (
-                    raw_content
-                    if raw_content.startswith("\ufeff")
-                    else "\ufeff" + raw_content
-                )
-                content = normalized_text.encode("utf-8")
-            else:
-                raise ToolingReferenceUnavailable()
+            from npi_core.tooling.import_frappe_validation import (
+                correction_file_content,
+            )
+
+            content, frappe_file_size = correction_file_content(file_document)
         checks = (
             (
                 "P607_CORRECTION_DOWNLOAD_PRIVACY_VALIDATE",
@@ -1421,6 +1414,10 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
             (
                 "P607_CORRECTION_DOWNLOAD_FILE_NAME_VALIDATE",
                 str(file_document.file_name) != str(artifact.file_name),
+            ),
+            (
+                "P607_CORRECTION_DOWNLOAD_FILE_SIZE_VALIDATE",
+                int(file_document.file_size or 0) != frappe_file_size,
             ),
         )
         for code, failed in checks:

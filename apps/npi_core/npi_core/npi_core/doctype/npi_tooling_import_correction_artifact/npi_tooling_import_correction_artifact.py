@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+import frappe
 from frappe import _
 from frappe.model.document import Document
 from npi_core.documents.frappe_validation import require_exact_parent
-from npi_core.tooling.import_frappe_validation import canonical_import_uuid, deny_tooling_import_delete, deny_tooling_import_update, require_snapshot_projection, require_tooling_import_write, validate_immutable_snapshot
+from npi_core.tooling.import_frappe_validation import canonical_import_uuid, correction_file_content, deny_tooling_import_delete, deny_tooling_import_update, require_snapshot_projection, require_tooling_import_write, validate_immutable_snapshot
 
 _IMMUTABLE_FIELDS = ("global_id", "tenant_id", "project_global_id", "batch_global_id", "job_global_id", "job_snapshot_hash", "frappe_file_id", "file_name", "mime_type", "size_bytes", "sha256", "entry_count", "artifact_snapshot", "snapshot_hash", "created_by_user_id", "created_at", "request_id", "trace_id")
 _VALIDATION_DIAGNOSTIC_CODES = frozenset(
@@ -46,7 +48,27 @@ class NPIToolingImportCorrectionArtifact(Document):
             "P607_CORRECTION_ARTIFACT_FILE_VALIDATE",
             self.trace_id,
         ):
-            require_exact_parent("File", self.frappe_file_id, {"name": self.frappe_file_id, "file_name": self.file_name, "file_size": self.size_bytes, "is_private": 1}, _("The exact private correction file is unavailable."))
+            message = _("The exact private correction file is unavailable.")
+            file_row = require_exact_parent(
+                "File",
+                self.frappe_file_id,
+                {
+                    "name": self.frappe_file_id,
+                    "file_name": self.file_name,
+                    "is_private": 1,
+                },
+                message,
+                extra_fields=("file_size",),
+            )
+            content, frappe_file_size = correction_file_content(
+                frappe.get_doc("File", self.frappe_file_id)
+            )
+            if (
+                int(file_row["file_size"] or 0) != frappe_file_size
+                or len(content) != int(self.size_bytes)
+                or hashlib.sha256(content).hexdigest() != str(self.sha256)
+            ):
+                frappe.throw(message, frappe.ValidationError)
     def on_trash(self) -> None: deny_tooling_import_delete(self)
 
 
