@@ -1401,7 +1401,12 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
             if isinstance(raw_content, bytes):
                 content = raw_content
             elif isinstance(raw_content, str):
-                content = raw_content.encode("utf-8")
+                normalized_text = (
+                    raw_content
+                    if raw_content.startswith("\ufeff")
+                    else "\ufeff" + raw_content
+                )
+                content = normalized_text.encode("utf-8")
             else:
                 raise ToolingReferenceUnavailable()
         checks = (

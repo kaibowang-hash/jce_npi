@@ -173,7 +173,8 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
             self.assertIn(marker, download)
         for marker in (
             "isinstance(raw_content, str)",
-            "raw_content.encode('utf-8')",
+            "raw_content.startswith('\\ufeff')",
+            "normalized_text.encode('utf-8')",
             "int(file_document.is_private or 0) != 1",
             "len(content) != int(artifact.size_bytes)",
             "hashlib.sha256(content).hexdigest() != str(artifact.sha256)",
