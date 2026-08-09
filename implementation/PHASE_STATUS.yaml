@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 6
-updated_at: '2026-08-09T03:50:21Z'
+updated_at: '2026-08-09T05:07:40Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P6-07
-current_task_status: IN_PROGRESS_CHECKPOINT_1
-current_task_completed_stage: P6_07_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-current_task_next_stage: P6_07_DOMAIN_INSPECTION_METADATA_FOUNDATION
+current_task_status: IN_PROGRESS_CHECKPOINT_2
+current_task_completed_stage: P6_07_CHECKPOINT_1_PASS
+current_task_next_stage: P6_07_REPOSITORY_INSPECT_MAP_PREVIEW_BFF
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P6-07
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_1
+resumed_product_task_status: IN_PROGRESS_CHECKPOINT_2
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1328,10 +1328,11 @@ p6_06:
 p6_07:
   task: P6-07
   controller_task: P6-07_SPECIALIZED_TOOLING_LIST_CONTROLLED_IMPORT
-  status: IN_PROGRESS_CHECKPOINT_1
+  status: IN_PROGRESS_CHECKPOINT_2
   requirements: [FR-TX-012, FR-TX-013, FR-TX-014, FR-TX-015, FR-TX-016, FR-TX-017, FR-TX-018, UX-016]
   starting_product_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
   audit_controller_checkpoint: 25db3ae4b97ce47ca74424d6560691ee9a746b74
+  plan_controller_checkpoint: 51ca8df9ca2d6b7503d0aeb6c32d6d4b50eb1d8f
   audit_ordinary_ci: 31292919974
   audit_repository_job: 93193123207
   audit_visual_job: 93193123198
@@ -1339,13 +1340,21 @@ p6_07:
   production_mapping_active: false
   production_erp_contact_authorized: false
   destructive_rollback_active: false
-  current_stage: DOMAIN_INSPECTION_METADATA_FOUNDATION
-  completed_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT_PASS
-  next_stage: CHECKPOINT_1_EXACT_SHA_GATE
+  checkpoint_1_product_commit: 3643b6bf076aa35bd055523d9102e91bd7d3139f
+  checkpoint_1_stable_checkpoint: 00bead7dcb4013a122acd7f41fc5aa1d42ec8856
+  checkpoint_1_ordinary_ci: 31295649693
+  checkpoint_1_repository_job: 93200203795
+  checkpoint_1_visual_job: 93200203763
+  checkpoint_1_visual_result: 88_OF_88_PASS
+  checkpoint_1_decision: PASS
+  current_stage: REPOSITORY_INSPECT_MAP_PREVIEW_BFF
+  completed_stage: CHECKPOINT_1_PASS
+  next_stage: CHECKPOINT_2_EXACT_SHA_GATE
   evidence:
     - implementation/phase-6-requirement-anchor.md
     - implementation/evidence/phase-6/p6-06-validation.md
     - implementation/evidence/phase-6/p6-07-plan.md
+    - implementation/evidence/phase-6/p6-07-domain-inspection-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

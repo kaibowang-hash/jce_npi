@@ -1868,3 +1868,34 @@ repeat or rewrite it merely to restore context. See
   affected safety/domain/metadata tests. Routes, business rows, worker, live
   SPA, production mapping, customer workbook, ERPNext contact and destructive
   rollback remain inactive.
+
+## 2026-08-09 P6-07 checkpoint 1 PASS and checkpoint 2 activation
+
+- Product commit `3643b6b` adds the product-owned passive inspector, immutable
+  import domains, deterministic synthetic 43-column fixture/manifest, closed
+  OpenAPI/ownership schemas, five guarded DocTypes, receipt values and complete
+  direct trilingual messages. It activates no route, business row, mapping,
+  worker, SPA or external connection.
+- Ordinary CI `31295089150` passed repository job `93198776956` and isolated
+  only the expected eighteen durable P0 catalog-footer fingerprints in visual
+  job `93198776937` (`70/88`). Artifact `9032713648`, digest
+  `sha256:f7ba8e1a6bab641b1dd7eb906365abaf4d8f1ddf1c804f6c3bf52a8ffd39cfd4`,
+  proved no business-region, layout, copy, state, matrix or threshold change.
+- Isolated repair `00bead7` copied only the eighteen reviewed CI actuals to
+  their exact tracked Linux targets. Final exact-SHA ordinary CI `31295649693`
+  passes repository `93200203795` (`1,306` tracked Python, `777` frontend
+  unit, `337` non-visual E2E, `5,246` direct trilingual sources, zero
+  vulnerabilities and both secret lanes) and visual `93200203763` at `88/88`;
+  controlled runtime `93200204062` correctly skips.
+- Complete checkpoint evidence is
+  `implementation/evidence/phase-6/p6-07-domain-inspection-metadata-checkpoint.md`.
+  Production mapping remains unavailable under `DR-REC-007`; customer
+  workbooks, ERPNext contact and destructive downstream rollback under
+  `DR-REC-008` remain inactive.
+- Standing transition authority activates checkpoint 2 only: independently
+  default-closed Project-first source registration, batch/detail, inspect,
+  mapping-proposal and immutable preview/confirmation BFF routes; exact File/
+  customer/Project authorization; one-transaction append, audit and actor-
+  bound idempotency; explicit unavailable production mapping; and permission,
+  IDOR, replay, conflict, rollback, raw-log-redaction and no-target-mutation
+  tests. Worker execution, live SPA and controlled Site remain inactive.
