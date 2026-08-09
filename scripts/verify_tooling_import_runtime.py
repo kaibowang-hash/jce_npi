@@ -1837,7 +1837,13 @@ def run_bench_fixture(method: str, kwargs: dict[str, object]) -> dict[str, Any]:
         capture_output=True,
         text=True,
     )
-    require(completed.returncode == 0, f"P6-07 Bench fixture failed: {method}")
+    require(
+        completed.returncode == 0,
+        (
+            f"P6-07 Bench fixture failed: {method}: "
+            f"{completed.stderr[-2000:]}"
+        ),
+    )
     lines = [line for line in completed.stdout.splitlines() if line.strip()]
     require(bool(lines), f"P6-07 Bench fixture was silent: {method}")
     result = json.loads(lines[-1])

@@ -207,6 +207,7 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "with tooling_command_write():",
             "FrappeToolingRepository._insert_requirement(value)",
             "BENCH_PATH.resolve() == BENCH_PATH",
+            "completed.stderr[-2000:]",
         )
         for value in required:
             with self.subTest(value=value):
