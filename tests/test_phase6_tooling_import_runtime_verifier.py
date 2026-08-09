@@ -208,6 +208,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "FrappeToolingRepository._insert_requirement(value)",
             "BENCH_PATH.resolve() == BENCH_PATH",
             "completed.stderr[-2000:]",
+            '"live-private-file": has_live_private_file_identity(revision)',
+            '"P6-07 synthetic live private File identity drifted: "',
         )
         for value in required:
             with self.subTest(value=value):

@@ -1654,16 +1654,23 @@ def seed_tooling_import_fixture(
         else:
             setattr(frappe.flags, FILE_SCAN_RESULT_FLAG, previous_scan)
     frappe.db.commit()
+    identity_checks = {
+        "global-id": str(revision.global_id) == revision_id,
+        "file-name": str(revision.file_name) == file_name,
+        "mime-type": str(revision.mime_type)
+        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "sha256": str(revision.sha256) == fixture["sha256"],
+        "scan-state": str(revision.scan_state) == "clean",
+        "optimistic-version": int(revision.optimistic_version) == 2,
+        "live-private-file": has_live_private_file_identity(revision),
+    }
+    failed_identity_checks = sorted(
+        name for name, accepted in identity_checks.items() if not accepted
+    )
     require(
-        str(revision.global_id) == revision_id
-        and str(revision.file_name) == file_name
-        and str(revision.mime_type)
-        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        and str(revision.sha256) == fixture["sha256"]
-        and str(revision.scan_state) == "clean"
-        and int(revision.optimistic_version) == 2
-        and has_live_private_file_identity(revision),
-        "P6-07 synthetic live private File identity drifted",
+        not failed_identity_checks,
+        "P6-07 synthetic live private File identity drifted: "
+        + ",".join(failed_identity_checks),
     )
     return {
         "fileRevisionGlobalId": revision_id,
