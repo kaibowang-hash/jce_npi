@@ -12,6 +12,7 @@ from uuid import UUID
 
 sys.path.insert(0, "apps/npi_core")
 
+from npi_core.tooling.domain import sha256_json
 from npi_core.tooling.import_domain import (
     ImportJobState,
     ImportFieldResult,
@@ -461,6 +462,10 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
             target_snapshot_hash="a" * 64,
             field_results=(ImportFieldResult(1, "Item", "created", "The field was imported."),),
             trace_id="trace-created",
+        )
+        self.assertEqual(
+            created.snapshot_hash,
+            sha256_json(created.snapshot_payload()),
         )
         failed = ImportRowResult(
             global_id=UUID("91000000-0000-4000-8000-000000000043"),

@@ -813,6 +813,10 @@ class ImportRowResult:
             "traceId": self.trace_id,
         }
 
+    @property
+    def snapshot_hash(self) -> str:
+        return sha256_json(self.snapshot_payload())
+
 
 @dataclass(frozen=True, slots=True)
 class ToolingImportJobSnapshot:
