@@ -164,6 +164,8 @@ class Phase6ToolingImportRuntimeVerifierTest(unittest.TestCase):
             "p6-07.synthetic-execution-mapping.v1",
             "partial_row_diagnostic(partial_latest)",
             "IMPORT_TARGET_DIAGNOSTIC_CODES",
+            'key.endswith("-correction")',
+            "CORRECTION_DIAGNOSTIC_CODES",
             '"productionMappingActive": False',
             '"integrationTrafficCreated": False',
         )

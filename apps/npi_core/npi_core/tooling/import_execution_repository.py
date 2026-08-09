@@ -86,6 +86,16 @@ _IMPORT_TARGET_DIAGNOSTIC_CODES = frozenset(
         "P607_IMPORT_TARGET_BINDING_INSERT",
     }
 )
+_CORRECTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_CORRECTION_RECEIPT_INSERT",
+        "P607_CORRECTION_FILE_SAVE",
+        "P607_CORRECTION_ARTIFACT_INSERT",
+        "P607_CORRECTION_RESPONSE_BUILD",
+        "P607_CORRECTION_AUDIT_APPEND",
+        "P607_CORRECTION_RECEIPT_SEAL",
+    }
+)
 _FIXTURE_SOURCES = {
     "p6-07-synthetic-title-row-deleted.xlsx": (
         "b807aca4ef6776a0ad6e8eada1c8291b3a13dbe32724828d33661d67bc8e684f"
@@ -453,44 +463,72 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
             "traceId": self.trace_id,
         }
         with tooling_import_write():
-            receipt = self._insert_import_receipt(
-                project,
-                receipt_key=receipt_key,
-                operation="tooling_import_correction.export",
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                now=now,
-            )
-            file_document = self._save_correction_file(job_id, file_name, content)
+            with _correction_server_step(
+                "P607_CORRECTION_RECEIPT_INSERT",
+                self.trace_id,
+            ):
+                receipt = self._insert_import_receipt(
+                    project,
+                    receipt_key=receipt_key,
+                    operation="tooling_import_correction.export",
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    now=now,
+                )
+            with _correction_server_step(
+                "P607_CORRECTION_FILE_SAVE",
+                self.trace_id,
+            ):
+                file_document = self._save_correction_file(
+                    job_id,
+                    file_name,
+                    content,
+                )
             snapshot["frappeFileId"] = str(file_document.name)
-            artifact = self._insert_correction_artifact(
-                project,
-                source,
-                job,
-                artifact_id,
-                file_document,
-                snapshot,
-                now,
-            )
-            response = {"correctionArtifact": self._public_artifact(artifact)}
-            self._append_audit(
-                operation="tooling_import_correction.export",
-                global_id=artifact_id,
-                object_version=1,
-                summary={
-                    "jobGlobalId": str(job_id),
-                    "jobSnapshotHash": str(job.snapshot_hash),
-                    "entryCount": len(values),
-                    "artifactSha256": digest,
-                },
-            )
-            self._seal_import_receipt(
-                receipt,
-                target_type="tooling_import_correction_artifact",
-                target_id=artifact_id,
-                response=response,
-                now=now,
-            )
+            with _correction_server_step(
+                "P607_CORRECTION_ARTIFACT_INSERT",
+                self.trace_id,
+            ):
+                artifact = self._insert_correction_artifact(
+                    project,
+                    source,
+                    job,
+                    artifact_id,
+                    file_document,
+                    snapshot,
+                    now,
+                )
+            with _correction_server_step(
+                "P607_CORRECTION_RESPONSE_BUILD",
+                self.trace_id,
+            ):
+                response = {"correctionArtifact": self._public_artifact(artifact)}
+            with _correction_server_step(
+                "P607_CORRECTION_AUDIT_APPEND",
+                self.trace_id,
+            ):
+                self._append_audit(
+                    operation="tooling_import_correction.export",
+                    global_id=artifact_id,
+                    object_version=1,
+                    summary={
+                        "jobGlobalId": str(job_id),
+                        "jobSnapshotHash": str(job.snapshot_hash),
+                        "entryCount": len(values),
+                        "artifactSha256": digest,
+                    },
+                )
+            with _correction_server_step(
+                "P607_CORRECTION_RECEIPT_SEAL",
+                self.trace_id,
+            ):
+                self._seal_import_receipt(
+                    receipt,
+                    target_type="tooling_import_correction_artifact",
+                    target_id=artifact_id,
+                    response=response,
+                    now=now,
+                )
         return ToolingImportCommandOutcome(response)
 
     def correction_artifact_content(
@@ -2208,6 +2246,34 @@ def _import_target_server_step(code: str, trace_id: str) -> Iterator[None]:
                 )
         except Exception:
             # Diagnostics cannot change row-result or transaction semantics.
+            pass
+        raise
+
+
+@contextmanager
+def _correction_server_step(code: str, trace_id: str) -> Iterator[None]:
+    """Record only a closed correction stage, exception type and trace ID."""
+
+    try:
+        yield
+    except Exception as error:
+        try:
+            exception_type = type(error).__name__
+            if (
+                code in _CORRECTION_DIAGNOSTIC_CODES
+                and len(exception_type) <= 128
+                and exception_type.isidentifier()
+            ):
+                from npi_core.api import record_safe_diagnostic
+
+                record_safe_diagnostic(
+                    code=code,
+                    title="NPI Tooling import correction substage failed",
+                    exception_type=exception_type,
+                    trace_id=trace_id,
+                )
+        except Exception:
+            # Diagnostics cannot change correction or transaction semantics.
             pass
         raise
 

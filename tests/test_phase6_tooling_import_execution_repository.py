@@ -176,6 +176,23 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
         ):
             self.assertIn(marker, verify)
 
+    def test_correction_diagnostics_are_closed_and_stage_specific(self) -> None:
+        create = _source("create_correction_artifact")
+        for code in (
+            "P607_CORRECTION_RECEIPT_INSERT",
+            "P607_CORRECTION_FILE_SAVE",
+            "P607_CORRECTION_ARTIFACT_INSERT",
+            "P607_CORRECTION_RESPONSE_BUILD",
+            "P607_CORRECTION_AUDIT_APPEND",
+            "P607_CORRECTION_RECEIPT_SEAL",
+        ):
+            with self.subTest(code=code):
+                self.assertEqual(create.count(code), 1)
+        diagnostic = _source("_correction_server_step")
+        self.assertIn("code in _CORRECTION_DIAGNOSTIC_CODES", diagnostic)
+        self.assertIn("exception_type.isidentifier()", diagnostic)
+        self.assertNotIn("str(error)", diagnostic)
+
     def test_public_job_messages_are_localized_without_rewriting_snapshot_truth(
         self,
     ) -> None:

@@ -50,6 +50,16 @@ IMPORT_TARGET_DIAGNOSTIC_CODES = frozenset(
         "P607_IMPORT_TARGET_BINDING_INSERT",
     }
 )
+CORRECTION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_CORRECTION_RECEIPT_INSERT",
+        "P607_CORRECTION_FILE_SAVE",
+        "P607_CORRECTION_ARTIFACT_INSERT",
+        "P607_CORRECTION_RESPONSE_BUILD",
+        "P607_CORRECTION_AUDIT_APPEND",
+        "P607_CORRECTION_RECEIPT_SEAL",
+    }
+)
 
 FIXTURES = (
     {
@@ -178,6 +188,17 @@ def command(
         csrf_token=csrf_token,
         idempotency_key=key,
     )
+    if result.status != 201 and key.endswith("-correction"):
+        diagnostic = tooling_runtime._sanitized_server_diagnostic(
+            result.trace_id,
+            CORRECTION_DIAGNOSTIC_CODES,
+        )
+        if diagnostic is not None:
+            exception_type, code, trace_id = diagnostic
+            raise RuntimeError(
+                f"[diagnostic_code={code}; exception_type={exception_type}; "
+                f"trace_id={trace_id}]"
+            )
     require(
         result.status == 201,
         (
