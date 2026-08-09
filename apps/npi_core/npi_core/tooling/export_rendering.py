@@ -23,6 +23,15 @@ from npi_core.tooling.export_domain import (
     ToolingSource,
 )
 
+try:
+    from frappe import _
+except ImportError:  # Keeps static source inventory available outside Frappe.
+
+    def _identity_translation(source: str) -> str:
+        return source
+
+    _ = _identity_translation
+
 
 PACKAGE_MEMBER_NAMES = ("manifest.json", "tooling-objects.csv", "README.txt")
 OMITTED_FIELD_CLASSES = (
@@ -59,6 +68,31 @@ README_SOURCE_STRINGS = (
 )
 LOCALIZATION_SOURCE_STRINGS = CSV_SOURCE_STRINGS + README_SOURCE_STRINGS
 _SAFE_FILE_PART = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def frappe_localization_source_inventory() -> tuple[str, ...]:
+    """Expose literal sources to the Frappe extractor without translating payload keys."""
+
+    return (
+        _("Project code"),
+        _("Tooling Master ID"),
+        _("Tooling title"),
+        _("Tooling snapshot hash"),
+        _("Originating Project ID"),
+        _("Applicability count"),
+        _("Distinct Part Revision count"),
+        _("Physical set count"),
+        _("Latest revision"),
+        _("Source"),
+        _("Generated at"),
+        _("Tooling object package"),
+        _("Confidentiality: Internal project use"),
+        _("Generated from an immutable Tooling List snapshot."),
+        _("Rows: {row_count}"),
+        _("Unavailable"),
+        _("Manual"),
+        _("Controlled XLSX import"),
+    )
 
 
 @dataclass(frozen=True, slots=True)

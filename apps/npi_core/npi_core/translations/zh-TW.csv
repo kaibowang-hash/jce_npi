@@ -5620,3 +5620,19 @@ View ID,檢視識別碼
 The Tooling export receipt key does not match.,模具匯出回執鍵不相符。
 The Tooling export receipt target is unsupported.,不支援此模具匯出回執目標。
 Tooling List rows must be unique.,模具清單列必須唯一。
+tooling_export_package.create,建立模具匯出包
+tooling_export_package.download,下載模具匯出包
+selection,選擇項目
+filtered,篩選結果
+internal_project,專案內部
+tooling-list,模具清單
+all,全部
+missing_applicability,缺少適用關係
+single_part,單一零件
+shared_parts,共用零件
+missing_physical_set,缺少實體模具套
+single_physical_set,單套實體模具
+multiple_physical_sets,多套實體模具
+missing_design_revision,缺少設計修訂
+has_design_revision,已有設計修訂
+customer_owned_set,客戶所有模具套

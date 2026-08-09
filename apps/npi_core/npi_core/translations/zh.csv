@@ -5620,3 +5620,19 @@ View ID,视图标识
 The Tooling export receipt key does not match.,模具导出回执键不匹配。
 The Tooling export receipt target is unsupported.,不支持此模具导出回执目标。
 Tooling List rows must be unique.,模具清单行必须唯一。
+tooling_export_package.create,创建模具导出包
+tooling_export_package.download,下载模具导出包
+selection,选择项
+filtered,筛选结果
+internal_project,项目内部
+tooling-list,模具清单
+all,全部
+missing_applicability,缺少适用关系
+single_part,单个零件
+shared_parts,共享零件
+missing_physical_set,缺少实体模具套
+single_physical_set,单套实体模具
+multiple_physical_sets,多套实体模具
+missing_design_revision,缺少设计修订
+has_design_revision,已有设计修订
+customer_owned_set,客户所有模具套

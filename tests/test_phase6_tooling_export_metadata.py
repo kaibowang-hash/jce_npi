@@ -117,6 +117,13 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
             metadata = _load(folder)
             sources.add(str(metadata["name"]))
             sources.update(str(item["label"]) for item in metadata["fields"])  # type: ignore[index]
+            sources.update(
+                option
+                for item in metadata["fields"]  # type: ignore[index]
+                if item.get("fieldtype") == "Select"
+                for option in str(item.get("options", "")).splitlines()
+                if option
+            )
             python_paths.append(DOCTYPE_ROOT / folder / f"{folder}.py")
         for path in python_paths:
             tree = ast.parse(path.read_text(encoding="utf-8"))
