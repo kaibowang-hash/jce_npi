@@ -1,17 +1,41 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P6-06 CONTROLLED RUNTIME AND LEVEL 2`
+`IN_PROGRESS_AUDIT — P6-07 CONTROLLED TOOLING LIST IMPORT`
 
-Recovery time: `2026-08-09T01:46:02Z`
+Recovery time: `2026-08-09T03:35:57Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized checkpoint:
-`4e2021e6d2ce3d25075bca57b80e8dbbcf79f532`
+`de7bef7a1cd8894ee350567e2b157dd4b1e52ccb`
 
 ## Current authoritative action
+
+P6-06 passes Level 2 at exact checkpoint `de7bef7`. Ordinary CI
+`31291977009` passes repository `93190608487` and visual `93190608492` at
+`88/88`. Final unchanged workflow `31292306716` retains the same SHA and
+passes repository `93191451402`, visual `93191451404` and controlled Site
+`93191451432`. Runtime artifact `9031822151`, digest
+`sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`,
+records cumulative scope `p5-01-through-p6-06`. Complete evidence is
+`implementation/evidence/phase-6/p6-06-validation.md`.
+
+The current atomic task is the bounded P6-07 Requirement/domain/existing-
+capability audit only for `FR-TX-012..018` and `UX-016`. Follow the repository
+`xlsx-tooling-import` Skill. Audit the passive XLSX inspector, 43-column
+proposal, immutable File Revision and current Tooling identities against the
+eight-step upload/detect/map/transform/validate/preview/execute/audit flow,
+including provenance, partial-result truth, correction/retry, reconciliation
+and rollback denial.
+
+No production mapping, import route, batch/job row, customer workbook,
+ERPNext contact or destructive rollback is active. `DR-REC-007` retains
+production semantic approval and `DR-REC-008` retains downstream rollback
+denial. There is no active technical Hard Blocker.
+
+## Retained P6-05 and P6-06 execution history
 
 P6-05 checkpoint 1 passes at exact stable checkpoint `4f5270b`. Product commit
 `ae501c3` added pure defect/process/comparison/capacity/unavailable-health
@@ -134,18 +158,10 @@ visual `93181709805` at `88/88`; controlled job `93181710008` correctly skips.
 Complete evidence is
 `implementation/evidence/phase-6/p6-06-live-workspace-checkpoint.md`.
 
-The current atomic task is checkpoint 4 only: extend the cumulative
-disposable-Site verifier and controlled workflow through P6-06, prove two
-migrations, immutable acceptance succession, customer-owned repair
-authorization, Mock request preparation, cross-process replay, stale conflict,
-rollback, IDOR, generic-mutation denial, no network/Outbox/target truth and
-independent P6-06 route disable/recovery; then run complete ordinary CI,
-Requirement trace reconciliation and the P6-06 Level 2 Task Gate.
-
-Formal acceptance approval, lifecycle, Trial/Gate, formal Asset mapping,
-location/movement, maintenance, repair, spares, inventory and cost execution
-remain inactive. Production and sandbox ERPNext must not be contacted. There
-is no active technical Hard Blocker.
+P6-06 checkpoint 4 and its Level 2 Task Gate are complete at `de7bef7`; exact
+ordinary/controlled evidence is recorded above and in the validation report.
+Failed precursor Sites remain recovery evidence only and must not be used as
+PASS evidence.
 
 P6-04 remains Level 2 PASS at exact task checkpoint `5ca13ab`. Ordinary CI
 `31266800163` and final workflow `31267181068` pass; runtime artifact

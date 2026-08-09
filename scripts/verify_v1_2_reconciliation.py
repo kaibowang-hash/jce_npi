@@ -825,6 +825,123 @@ EXPECTED_P6_05_TRACE = {
         },
     ),
 }
+EXPECTED_P6_06_TRACE = {
+    "FR-TL-011": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-011",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tooling_acceptance_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "immutable nine-category acceptance evidence and Mock request input are live while business approval official quality and real Asset execution remain Phase 7 and Phase 8",
+        },
+    ),
+    "FR-TL-012": (
+        "P0",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-012",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_integration/npi_integration/tool_asset_request/domain.py",
+            "apps/npi_integration/npi_integration/tool_asset_request/frappe_repository.py",
+            "contracts/data-ownership.yaml",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tool_asset_request_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "one physical Tooling Set is the sole zero-or-one mapping subject while formal Asset ID confirmation and reconciliation remain Phase 8",
+        },
+    ),
+    "FR-TL-013": (
+        "P1",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-013",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+            "contracts/data-ownership.yaml",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tooling_acceptance_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "closed read-only unavailable Asset projection is live while authenticated location life maintenance movement and repair observations remain Phase 8",
+        },
+    ),
+    "FR-TL-014": (
+        "P1",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-014",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tooling_acceptance_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "immutable move loan return archive and scrap Project evidence is live while actual Asset movement and approval execution remain Phase 8",
+        },
+    ),
+    "FR-TL-015": (
+        "P1",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-015",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+            "contracts/data-ownership.yaml",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tooling_acceptance_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "immutable critical and wear spare recommendations are live while formal Item supplier mapping and inventory remain ERPNext Phase 8 truth",
+        },
+    ),
+    "FR-TL-016": (
+        "P1",
+        "TECHNICAL_VERIFIED_FOUNDATION",
+        "docs/DETAILED_REQUIREMENTS.md",
+        "PACK_CANONICAL",
+        "FR-TL-016",
+        {
+            "apps/npi_core/npi_core/tooling/acceptance_domain.py",
+            "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+            "apps/npi_core/npi_core/tooling_api.py",
+            "contracts/npi-api.openapi.yaml",
+            "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+            "tests/test_phase6_tooling_acceptance_domain.py",
+            "tests/test_phase6_tooling_acceptance_repository.py",
+            "scripts/verify_tooling_acceptance_runtime.py",
+            "implementation/evidence/phase-6/p6-06-validation.md",
+            "immutable repair authorization quote responsibility downtime and verification evidence is live with customer-owned authorization enforced while formal repair cost and history remain Phase 8",
+        },
+    ),
+}
 EXPECTED_P5_01_PRIORITIES = {
     "FR-DS-001": "P0",
     "FR-DS-003": "P0",
@@ -1561,6 +1678,50 @@ def verify_trace_sets() -> None:
         if missing_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} references missing P6-05 evidence files: "
+                f"{missing_evidence}"
+            )
+    for requirement_id, (
+        expected_priority,
+        expected_status,
+        expected_source,
+        expected_trace_kind,
+        expected_canonical_ids,
+        expected_evidence,
+    ) in EXPECTED_P6_06_TRACE.items():
+        row = by_id[requirement_id]
+        actual_evidence = {
+            value.strip() for value in row["evidence"].split(";") if value.strip()
+        }
+        if (
+            row["priority"],
+            row["phase"],
+            row["status"],
+            row["source"],
+            row["trace_kind"],
+            row["canonical_ids"],
+        ) != (
+            expected_priority,
+            "6",
+            expected_status,
+            expected_source,
+            expected_trace_kind,
+            expected_canonical_ids,
+        ):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain the completed P6-06 trace truth"
+            )
+        if actual_evidence != expected_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its complete P6-06 evidence set"
+            )
+        missing_evidence = sorted(
+            path
+            for path in expected_evidence
+            if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing P6-06 evidence files: "
                 f"{missing_evidence}"
             )
     canonical_ids = {

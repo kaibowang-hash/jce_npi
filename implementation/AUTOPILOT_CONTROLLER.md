@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-08T22:05:48Z`
+Updated: `2026-08-09T03:35:57Z`
 
 ## Authority and operating mode
 
@@ -1802,3 +1802,38 @@ repeat or rewrite it merely to restore context. See
   P6-06, complete ordinary CI, Requirement trace reconciliation and the Level
   2 Task Gate. Formal acceptance, Trial/Gate/lifecycle and all real ERPNext/
   Asset execution remain inactive.
+
+## 2026-08-09 P6-06 Level 2 PASS and P6-07 transition
+
+- Runtime checkpoint `e5e163f` extended the cumulative disposable-Site
+  verifier and controlled workflow through P6-06. Four serial controlled
+  failures proved exact verifier/fixture and bounded repository-interface
+  roots: selection of engineering Revision instead of the physical Set's
+  frozen binding, conflation of the distinct engineering/bound revisions, a
+  missing bounded-helper ordering parameter and a stale `400` expectation for
+  the frozen `422 VALIDATION_FAILED` contract.
+- Repairs through exact checkpoint `de7bef7` changed only those exact binding,
+  helper and verifier boundaries and added regressions. No Requirement,
+  public route, permission, ownership, Schema, transaction, idempotency,
+  audit, visual threshold or PASS criterion was weakened.
+- Exact ordinary CI `31291977009` passes checkpoint `de7bef7`: repository
+  `93190608487` (`1,291` tracked Python, `777` frontend unit, `337`
+  non-visual E2E, `5,087` direct trilingual sources, zero vulnerabilities and
+  both secret lanes) and visual `93190608492` at `88/88`.
+- Final workflow `31292306716` retains the same SHA and passes repository
+  `93191451402`, visual `93191451404` at `88/88` and controlled Site
+  `93191451432`. Runtime artifact `9031822151`, digest
+  `sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`,
+  records `result=PASS`, pinned Frappe, two migrations and cumulative scope
+  `p5-01-through-p6-06`.
+- Controlled truth includes two immutable acceptance revisions, exact frozen
+  Set/Revision binding, customer-owned repair authorization, Mock request
+  preparation, cross-process replay, conflict, rollback, IDOR, generic-
+  mutation denial, no network/Outbox/target truth and independent P6-06 route
+  recovery. Complete evidence is
+  `implementation/evidence/phase-6/p6-06-validation.md`.
+- Standing transition authority activates only the bounded P6-07 Requirement/
+  domain/existing-capability audit for `FR-TX-012..018` and `UX-016`. It must
+  follow the repository `xlsx-tooling-import` Skill. The reviewed 43-column
+  mapping remains a proposal under `DR-REC-007`; production mapping,
+  ERPNext contact and destructive downstream rollback remain inactive.

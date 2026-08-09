@@ -1,43 +1,64 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T01:46:02Z`
+Updated: `2026-08-09T03:35:57Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P6-06 CONTROLLED RUNTIME AND LEVEL 2`
+- Mode: `IN_PROGRESS_AUDIT — P6-07 CONTROLLED TOOLING LIST IMPORT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact task checkpoint:
-  `4e04eb47b1c5f77b9a442b3bef139df61cb83782` (pushed; P6-05 Level 2
+  `de7bef7a1cd8894ee350567e2b157dd4b1e52ccb` (pushed; P6-06 Level 2
   controlled-runtime Task Gate PASS)
 - Latest completed controller/evidence checkpoint before this update:
-  `b6c2ae4e528c84653798c00bed57af9277c12321` (P6-06 checkpoint 2 evidence
-  and checkpoint 3 activation)
+  `18fd75a0ca8b600eaece86355068af50c21b494a` (P6-06 checkpoint 3 evidence
+  and controlled-runtime activation)
 - Latest stable product checkpoint:
-  `4e2021e6d2ce3d25075bca57b80e8dbbcf79f532` (P6-06 checkpoint 3 live
-  acceptance/Asset workspace PASS)
+  `de7bef7a1cd8894ee350567e2b157dd4b1e52ccb` (P6-06 controlled runtime
+  and Level 2 PASS)
 - Latest complete normal CI:
-  `31288565243` (`PASS`, exact SHA `4e2021e`; repository `93181709786` and
-  visual `93181709805` at `88/88` passed; controlled runtime correctly skipped)
+  `31291977009` (`PASS`, exact SHA `de7bef7`; repository `93190608487` and
+  visual `93190608492` at `88/88` passed)
 - Latest controlled-Site run:
-  `31280296684` (`PASS`, exact SHA `4e04eb4`, diagnostics closed; repository
-  `93160709198`, visual `93160709195` and controlled `93160709186` passed)
+  `31292306716` (`PASS`, exact SHA `de7bef7`; repository `93191451402`,
+  visual `93191451404` and controlled `93191451432` passed)
 - Controlled PASS artifact:
-  `9028284028`, GitHub digest
-  `sha256:7efde76303c3cdee8a83e8ba3d28614213a62e1fb988cb7475e8507c196e978a`
+  `9031822151`, GitHub digest
+  `sha256:a55daeaac0dbc29eeab853fd6ca76d74d2b0fd2df60b4722ba134d82af5e2b8b`
 - Current controller task:
-  `P6-06 — Acceptance and asset execution request`
-  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
-- Current Requirement IDs: `FR-TL-011..016`
+  `P6-07 — Specialized Tooling List controlled import`
+  (`IN_PROGRESS — BOUNDED REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Current Requirement IDs: `FR-TX-012..018`, `UX-016`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-06 CHECKPOINT 4`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-07 AUDIT`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
+
+P6-06 passes Level 2 at exact checkpoint `de7bef7`. Ordinary CI
+`31291977009` and final workflow `31292306716` pass the complete repository,
+`88/88` fixed-Linux visual matrix and cumulative disposable-Site runtime.
+Artifact `9031822151` records `result=PASS` and scope
+`p5-01-through-p6-06`. Complete evidence is
+`implementation/evidence/phase-6/p6-06-validation.md`.
+
+The current atomic task is the bounded P6-07 Requirement/domain/existing-
+capability audit for `FR-TX-012..018` and `UX-016`. It must follow the
+repository `xlsx-tooling-import` Skill and reconcile the passive 531-line XLSX
+inspector, reviewed 43-column proposal, existing immutable File Revision and
+Tooling identities against the eight-step upload/detect/map/transform/
+validate/preview/execute/audit boundary.
+
+No production mapping, import route, batch/job row, customer workbook,
+ERPNext contact or destructive rollback is active. `DR-REC-007` retains
+production semantic approval and `DR-REC-008` retains downstream rollback
+denial. There is no active technical Hard Blocker.
+
+## Retained P6-05 and P6-06 execution evidence
 
 P6-05 passes Level 2 at exact diagnostics-closed task checkpoint `4e04eb4`.
 Ordinary CI `31280290398` passes that SHA before the final Site dispatch. Final
@@ -120,11 +141,10 @@ visual `93181709805` at `88/88`; controlled job `93181710008` correctly skips.
 Evidence is
 `implementation/evidence/phase-6/p6-06-live-workspace-checkpoint.md`.
 
-Standing transition authority activates only checkpoint 4: cumulative
-disposable-Site proof through P6-06, complete ordinary CI, Requirement trace
-reconciliation and the Level 2 Task Gate. Acceptance approval, Trial/Gate/
-lifecycle and all real ERPNext/Asset execution remain inactive. There is no
-active technical Hard Blocker.
+P6-06 checkpoint 4 and its Level 2 Task Gate are complete at `de7bef7`; exact
+ordinary/controlled evidence is recorded above and in the validation report.
+Failed precursor Sites remain recovery evidence only and must not be used as
+PASS evidence.
 
 P5-06 and the Phase 5 Level 3 Gate passed at exact product checkpoint
 `6ba2763`. Ordinary CI `31163598955` and final unchanged controlled-Site Gate
