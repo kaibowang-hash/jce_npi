@@ -694,7 +694,8 @@ class ToolingImportPreviewRevision:
     def execution_eligible(self) -> bool:
         return (
             self.mapping_state is MappingRevisionState.APPROVED_FIXTURE
-            and all(row.action is not PreviewAction.BLOCKED and not row.requires_confirmation for row in self.rows)
+            and all(not row.requires_confirmation for row in self.rows)
+            and any(row.action is not PreviewAction.BLOCKED for row in self.rows)
         )
 
     def snapshot_payload(self) -> dict[str, object]:
@@ -824,6 +825,11 @@ class ToolingImportJobSnapshot:
     row_results: tuple[ImportRowResult, ...]
     queued_at: datetime
     updated_at: datetime
+    correction_artifact_global_id: UUID | None = None
+    correction_artifact_snapshot_hash: str | None = None
+    failure_code: str | None = None
+    failure_message: str | None = None
+    failure_trace_id: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "global_id", _uuid(self.global_id, "job.globalId"))
@@ -852,17 +858,84 @@ class ToolingImportJobSnapshot:
         object.__setattr__(self, "updated_at", _utc(self.updated_at, "job.updatedAt"))
         if self.updated_at < self.queued_at:
             raise _problem("job.updatedAt", _("Job update time cannot be earlier than queue time."))
+        if (self.correction_artifact_global_id is None) != (
+            self.correction_artifact_snapshot_hash is None
+        ):
+            raise _problem(
+                "job.correctionArtifact",
+                _("Correction artifact identity and hash must be supplied together."),
+            )
+        if self.correction_artifact_global_id is not None:
+            object.__setattr__(
+                self,
+                "correction_artifact_global_id",
+                _uuid(
+                    self.correction_artifact_global_id,
+                    "job.correctionArtifactGlobalId",
+                ),
+            )
+            object.__setattr__(
+                self,
+                "correction_artifact_snapshot_hash",
+                _sha256(
+                    self.correction_artifact_snapshot_hash,
+                    "job.correctionArtifactSnapshotHash",
+                ),
+            )
+            if self.attempt == 1:
+                raise _problem(
+                    "job.correctionArtifact",
+                    _("The first import attempt cannot use a correction artifact."),
+                )
+        elif self.attempt > 1:
+            raise _problem(
+                "job.correctionArtifact",
+                _("A retry attempt requires an exact correction artifact."),
+            )
+        failure_values = (
+            self.failure_code,
+            self.failure_message,
+            self.failure_trace_id,
+        )
+        if any(value is not None for value in failure_values):
+            if any(value is None for value in failure_values):
+                raise _problem(
+                    "job.failure",
+                    _("Import job failure code, message and trace must be supplied together."),
+                )
+            if self.state is not ImportJobState.FAILED_FINAL:
+                raise _problem(
+                    "job.failure",
+                    _("Only a final failed import job can record a job-level failure."),
+                )
+            object.__setattr__(self, "failure_code", _code(self.failure_code, "job.failure.code"))
+            object.__setattr__(self, "failure_message", _text(self.failure_message, "job.failure.message", 1_000))
+            object.__setattr__(self, "failure_trace_id", _text(self.failure_trace_id, "job.failure.traceId", 128))
+        latest = latest_import_row_results(row_results)
         if self.state in {ImportJobState.QUEUED, ImportJobState.PROCESSING}:
-            if self.state is ImportJobState.QUEUED and self.row_results:
-                raise _problem("job.rowResults", _("A queued import job cannot contain row results."))
+            if self.state is ImportJobState.QUEUED and any(
+                item.attempt == self.attempt for item in row_results
+            ):
+                raise _problem(
+                    "job.rowResults",
+                    _("A queued import attempt cannot already contain results."),
+                )
         elif self.state in {ImportJobState.ROLLED_BACK, ImportJobState.ROLLBACK_DENIED}:
-            if not self.row_results:
+            if not latest:
                 raise _problem("job.rowResults", _("A rollback result requires retained import row truth."))
-        elif self.state is not derive_job_state(tuple(item.state for item in self.row_results)):
+        elif self.state is ImportJobState.FAILED_FINAL and self.failure_code is not None:
+            # A worker may fail closed before or between bounded runs when its
+            # preserved actor or exact source authority is revoked.
+            pass
+        elif self.state is not derive_job_state(tuple(item.state for item in latest)):
             raise _problem("job.state", _("Import job state does not match its row results."))
 
     def snapshot_payload(self) -> dict[str, object]:
-        counts = {state.value: sum(1 for item in self.row_results if item.state is state) for state in ImportRowResultState}
+        latest = latest_import_row_results(self.row_results)
+        counts = {
+            state.value: sum(1 for item in latest if item.state is state)
+            for state in ImportRowResultState
+        }
         return {
             "schemaVersion": IMPORT_SCHEMA_VERSION,
             "globalId": str(self.global_id),
@@ -875,6 +948,21 @@ class ToolingImportJobSnapshot:
             "rowResults": [item.snapshot_payload() for item in self.row_results],
             "queuedAt": self.queued_at.isoformat().replace("+00:00", "Z"),
             "updatedAt": self.updated_at.isoformat().replace("+00:00", "Z"),
+            "correctionArtifactGlobalId": (
+                str(self.correction_artifact_global_id)
+                if self.correction_artifact_global_id is not None
+                else None
+            ),
+            "correctionArtifactSnapshotHash": self.correction_artifact_snapshot_hash,
+            "failure": (
+                {
+                    "code": self.failure_code,
+                    "message": self.failure_message,
+                    "traceId": self.failure_trace_id,
+                }
+                if self.failure_code is not None
+                else None
+            ),
         }
 
     @property
@@ -1590,6 +1678,20 @@ def derive_job_state(results: Sequence[ImportRowResultState]) -> ImportJobState:
     if ImportRowResultState.FAILED_RETRYABLE in states:
         return ImportJobState.PARTIALLY_SUCCEEDED if states - {ImportRowResultState.FAILED_RETRYABLE} else ImportJobState.FAILED_RETRYABLE
     return ImportJobState.SUCCEEDED
+
+
+def latest_import_row_results(
+    results: Sequence[ImportRowResult],
+) -> tuple[ImportRowResult, ...]:
+    """Return the latest immutable attempt for each exact workbook row."""
+
+    latest: dict[tuple[str, int], ImportRowResult] = {}
+    for result in results:
+        key = (result.worksheet_name, result.source_row)
+        previous = latest.get(key)
+        if previous is None or result.attempt > previous.attempt:
+            latest[key] = result
+    return tuple(latest[key] for key in sorted(latest))
 
 
 def evaluate_rollback(observation: RollbackObservation) -> RollbackDecision:

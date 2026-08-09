@@ -283,6 +283,34 @@ class Phase6ToolingImportDomainTests(unittest.TestCase):
         self.assertIn("required_value_missing", preview.rows[1].reason_codes)
         self.assertIn("relationship_confirmation_required", preview.rows[0].reason_codes)
 
+        controlled_rows = tuple(
+            replace(
+                row,
+                action=(PreviewAction.CREATE if index == 0 else PreviewAction.BLOCKED),
+                requires_confirmation=False,
+            )
+            for index, row in enumerate(preview.rows)
+        )
+        controlled_preview = replace(
+            preview,
+            mapping_state=MappingRevisionState.APPROVED_FIXTURE,
+            rows=controlled_rows,
+        )
+        self.assertTrue(controlled_preview.execution_eligible)
+        self.assertFalse(
+            replace(
+                controlled_preview,
+                rows=(
+                    replace(
+                        controlled_rows[0],
+                        action=PreviewAction.BLOCKED,
+                        requires_confirmation=True,
+                    ),
+                    *controlled_rows[1:],
+                ),
+            ).execution_eligible
+        )
+
     def test_snapshot_hydration_and_confirmation_create_an_immutable_chain(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workbook = Path(directory) / "synthetic.xlsx"

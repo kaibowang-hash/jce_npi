@@ -5177,7 +5177,6 @@ Workbook inspection requires a primary data region.,工作簿检查需要主数�
 Workbook inspection requires detected source columns.,工作簿检查需要检测到的源列。
 Worksheet Name,工作表名称
 A non-mutating import row cannot claim target truth.,未发生变更的导入行不能声明目标真值。
-A queued import job cannot contain row results.,已排队的导入任务不能包含行结果。
 A rollback result requires retained import row truth.,回滚结果需要保留导入行真值。
 A successful import row requires exact target truth.,成功的导入行需要精确目标真值。
 Import job state does not match its row results.,导入任务状态与其行结果不匹配。
@@ -5225,7 +5224,6 @@ tooling_import_mapping_revision,模具导入映射修订
 tooling_import_preview_revision,模具导入预览修订
 tooling_import_job,模具导入任务
 tooling_import_correction_artifact,模具导入修正产物
-tooling_import_rollback_result,模具导入回滚结果
 proposal,提案
 approved_fixture,已批准的合成夹具
 Downstream reference count cannot be negative.,下游引用数量不能为负数。
@@ -5272,3 +5270,110 @@ The Tooling import workspace is temporarily unavailable.,模具导入工作区�
 The XLSX workbook failed passive safety inspection.,电子表格工作簿未通过被动安全检查。
 Enter a valid stable code.,请输入有效的稳定代码。
 Enter a valid lowercase hash.,请输入有效的小写哈希。
+tooling_import_correction.download,下载模具导入修正文件
+tooling_import_reconciliation.create,创建模具导入对账
+tooling_import_reconciliation_revision,模具导入对账修订
+A new Tooling import job must start as queued attempt one.,新的模具导入任务必须从排队中的第一次尝试开始。
+A queued import attempt cannot already contain results.,排队中的导入尝试不能已经包含结果。
+Correction Artifact Global ID,修正产物全局标识
+Correction Entry Count,修正条目数量
+Correction File Name,修正文件名
+Correction Media Type,修正媒体类型
+Correction SHA-256,修正文件 SHA-256
+Correction Size in Bytes,修正文件字节数
+Correction fields must be unique.,修正字段必须唯一。
+Correction values cannot start with a spreadsheet formula marker.,修正值不能以电子表格公式标记开头。
+Corrections may only target failed retryable fields.,修正只能针对失败且可重试的字段。
+Corrections must use the controlled shape.,修正必须使用受控结构。
+Enter a bounded correction value.,请输入长度受限的修正值。
+Enter a bounded value.,请输入长度受限的值。
+Enter a timezone-aware timestamp.,请输入带时区的时间戳。
+"Enter between one and 5,000 corrections.",请输入 1 到 5000 项修正。
+Execution Field Binding Snapshot,执行字段绑定快照
+Fixture Mapping Version,合成测试数据映射版本
+Fixture execution may only create the controlled synthetic Part target.,合成测试执行只能创建受控的合成零件目标。
+Fixture mapping bindings must use the controlled shape.,合成测试映射绑定必须使用受控结构。
+Fixture mapping source headers must be unique.,合成测试映射源表头必须唯一。
+Import Attempt,导入尝试
+Import Field Result Snapshot,导入字段结果快照
+Import Job State,导入任务状态
+Import Provenance Hash,导入来源证明哈希
+Import Reconciliation Item Snapshot,导入对账条目快照
+Import Row Result Key Hash,导入行结果键哈希
+Import Row Result Key Hash does not match.,导入行结果键哈希不匹配。
+Import Row Result State,导入行结果状态
+Import Target Action,导入目标动作
+Import Verification Kind,导入验证类型
+Job Snapshot Hash,任务快照哈希
+NPI Tooling Import Correction Artifact,NPI 模具导入修正产物
+NPI Tooling Import Job,NPI 模具导入任务
+NPI Tooling Import Mapping Activation,NPI 模具导入映射激活
+NPI Tooling Import Reconciliation Revision,NPI 模具导入对账修订
+NPI Tooling Import Row Result,NPI 模具导入行结果
+NPI Tooling Import Target Binding,NPI 模具导入目标绑定
+Preview Snapshot Hash,预览快照哈希
+Queued At,排队时间
+Reconciliation items must use the controlled shape.,对账条目必须使用受控结构。
+Reconciliation target results must be unique.,对账目标结果必须唯一。
+Select a UUIDv4 identifier.,请选择 UUID 第 4 版标识。
+Select a supported controlled code.,请选择受支持的受控代码。
+Select a supported import verification kind.,请选择受支持的导入验证类型。
+Select a supported reconciliation state.,请选择受支持的对账状态。
+Select a valid identifier.,请选择有效标识。
+Select a valid source row.,请选择有效的源数据行。
+Select the controlled synthetic fixture mapping version.,请选择受控的合成测试数据映射版本。
+Source Row,源数据行
+Target Root Global ID,目标根全局标识
+The Tooling import attempt does not match the state transition.,模具导入尝试与状态转换不匹配。
+The Tooling import job state transition is not allowed.,不允许此模具导入任务状态转换。
+The Tooling import job version must advance exactly once.,模具导入任务版本必须恰好递增一次。
+The exact Tooling Import Job is unavailable.,精确的模具导入任务不可用。
+The exact approved fixture mapping is unavailable.,精确的已批准合成测试映射不可用。
+The exact executable Tooling import preview is unavailable.,精确的可执行模具导入预览不可用。
+The exact fixture mapping activation is unavailable.,精确的合成测试映射激活不可用。
+The exact private correction file is unavailable.,精确的私有修正文件不可用。
+The exact successful import row result is unavailable.,精确的成功导入行结果不可用。
+The import job has no failed retryable rows.,导入任务没有失败且可重试的行。
+Tooling Import Correction Artifact Snapshot,模具导入修正产物快照
+Tooling Import Job,模具导入任务
+Tooling Import Job Snapshot,模具导入任务快照
+Tooling Import Mapping Activation,模具导入映射激活
+Tooling Import Mapping Activation Snapshot,模具导入映射激活快照
+Tooling Import Preview Revision,模具导入预览修订
+Tooling Import Reconciliation Snapshot,模具导入对账快照
+Tooling Import Row Result,模具导入行结果
+Tooling Import Row Result Snapshot,模具导入行结果快照
+Tooling Import Target Binding Snapshot,模具导入目标绑定快照
+"Import job failure code, message and trace must be supplied together.",必须同时提供导入任务失败代码、消息和追踪标识。
+Only a final failed import job can record a job-level failure.,只有最终失败的导入任务才能记录任务级失败。
+The Tooling import job state does not allow this command.,当前模具导入任务状态不允许执行此命令。
+Select exact unique Tooling import rollback targets.,请选择精确且唯一的模具导入回滚目标。
+queued,排队中
+partially_succeeded,部分成功
+rolled_back,已回滚
+rollback_denied,回滚被拒绝
+reconciliation,对账
+rollback_eligibility,回滚资格
+rollback_result,回滚结果
+updated,已更新
+skipped,已跳过
+confirmation_required,需要确认
+create,创建
+update,更新
+Execution field bindings do not match the activation snapshot.,执行字段绑定与激活快照不匹配。
+Import field results do not match the row result snapshot.,导入字段结果与行结果快照不匹配。
+Import reconciliation items do not match the exact snapshot.,导入对账条目与精确快照不匹配。
+Only the controlled created Part Revision target can be bound.,只能绑定受控创建的零件修订目标。
+The exact imported Part Revision is unavailable.,精确的已导入零件修订不可用。
+The exact imported Part is unavailable.,精确的已导入零件不可用。
+A retry attempt requires an exact correction artifact.,重试尝试需要精确的修正产物。
+Correction Artifact Snapshot Hash,修正产物快照哈希
+Correction artifact identity and hash must be supplied together.,必须同时提供修正产物标识和哈希。
+The correction artifact can only change when a retry is queued.,只有在重试排队时才能更改修正产物。
+The exact correction artifact is unavailable.,精确的修正产物不可用。
+The first import attempt cannot use a correction artifact.,首次导入尝试不能使用修正产物。
+The field was imported.,字段已导入。
+The source field was retained as import provenance.,源字段已保留为导入来源记录。
+The row could not be imported. Retry with the trace identifier.,无法导入此行。请使用追踪标识重试。
+"The import worker lost its exact actor, Project, source, preview, or mapping authority.",导入工作进程失去了精确的执行人、项目、来源、预览或映射权限。
+The preview row is not eligible for execution.,预览行不符合执行条件。

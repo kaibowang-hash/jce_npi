@@ -17,6 +17,7 @@ from npi_core.documents.frappe_validation import (
 from npi_core.tooling.frappe_validation import (
     deny_tooling_history_delete,
     require_tooling_command_write,
+    tooling_import_rollback_delete_allowed,
 )
 
 
@@ -125,4 +126,5 @@ class NPIEngineeringPart(Document):
                 )
 
     def on_trash(self) -> None:
-        deny_tooling_history_delete(self)
+        if not tooling_import_rollback_delete_allowed(self):
+            deny_tooling_history_delete(self)

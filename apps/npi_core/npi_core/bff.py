@@ -184,6 +184,43 @@ _PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
     r"(?P<batch_id>[^/:]+)/previews/(?P<preview_id>[^/:]+)/confirmations$"
 )
+_PROJECT_TOOLING_IMPORT_EXECUTE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/previews/(?P<preview_id>[^/:]+):execute$"
+)
+_PROJECT_TOOLING_IMPORT_JOBS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs$"
+)
+_PROJECT_TOOLING_IMPORT_JOB_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+)$"
+)
+_PROJECT_TOOLING_IMPORT_JOB_RETRY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+):retry$"
+)
+_PROJECT_TOOLING_IMPORT_CORRECTIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+)/correction-artifacts$"
+)
+_PROJECT_TOOLING_IMPORT_CORRECTION_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+)/correction-artifacts/"
+    r"(?P<artifact_id>[^/:]+):content$"
+)
+_PROJECT_TOOLING_IMPORT_RECONCILE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+):reconcile$"
+)
+_PROJECT_TOOLING_IMPORT_ROLLBACK_ELIGIBILITY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+):evaluate-rollback$"
+)
+_PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling-imports/"
+    r"(?P<batch_id>[^/:]+)/jobs/(?P<job_id>[^/:]+):rollback$"
+)
 _PROJECT_PART_CONTROLLED_SPECIFICATION_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/parts/"
     r"(?P<part_id>[^/:]+)/revisions/(?P<part_revision_id>[^/:]+)/"
@@ -506,6 +543,14 @@ def route_request() -> None:
                 _PROJECT_TOOLING_IMPORT_ROUTE,
                 "npi_core.tooling_import_api.get_tooling_import_batch",
             ),
+            (
+                _PROJECT_TOOLING_IMPORT_JOBS_ROUTE,
+                "npi_core.tooling_import_api.get_tooling_import_jobs",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_JOB_ROUTE,
+                "npi_core.tooling_import_api.get_tooling_import_job",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -630,6 +675,34 @@ def route_request() -> None:
             (
                 _PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE,
                 "npi_core.tooling_import_api.create_tooling_import_confirmation",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_EXECUTE_ROUTE,
+                "npi_core.tooling_import_api.execute_tooling_import_preview",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_JOB_RETRY_ROUTE,
+                "npi_core.tooling_import_api.retry_tooling_import_job",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_CORRECTIONS_ROUTE,
+                "npi_core.tooling_import_api.create_tooling_import_correction_artifact",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_CORRECTION_CONTENT_ROUTE,
+                "npi_core.tooling_import_api.download_tooling_import_correction_artifact",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_RECONCILE_ROUTE,
+                "npi_core.tooling_import_api.reconcile_tooling_import_job",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_ROLLBACK_ELIGIBILITY_ROUTE,
+                "npi_core.tooling_import_api.evaluate_tooling_import_rollback",
+            ),
+            (
+                _PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE,
+                "npi_core.tooling_import_api.rollback_tooling_import_job",
             ),
         )
         for route, candidate in import_commands:
@@ -1479,6 +1552,15 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TOOLING_IMPORT_MAPPINGS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_IMPORT_PREVIEWS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TOOLING_IMPORT_CONFIRMATIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_EXECUTE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_JOBS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_JOB_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_JOB_RETRY_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_CORRECTIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_CORRECTION_CONTENT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_RECONCILE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_ROLLBACK_ELIGIBILITY_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (

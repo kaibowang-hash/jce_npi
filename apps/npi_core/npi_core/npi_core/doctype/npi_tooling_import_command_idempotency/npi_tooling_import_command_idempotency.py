@@ -40,8 +40,10 @@ _OPERATIONS = {
     "tooling_import_execution.start": "tooling_import_job",
     "tooling_import_execution.retry": "tooling_import_job",
     "tooling_import_correction.export": "tooling_import_correction_artifact",
-    "tooling_import_rollback.evaluate": "tooling_import_rollback_result",
-    "tooling_import_rollback.execute": "tooling_import_rollback_result",
+    "tooling_import_correction.download": "tooling_import_correction_artifact",
+    "tooling_import_reconciliation.create": "tooling_import_reconciliation_revision",
+    "tooling_import_rollback.evaluate": "tooling_import_reconciliation_revision",
+    "tooling_import_rollback.execute": "tooling_import_reconciliation_revision",
 }
 
 

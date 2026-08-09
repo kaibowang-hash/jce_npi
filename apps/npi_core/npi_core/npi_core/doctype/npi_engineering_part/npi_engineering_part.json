@@ -17,6 +17,6 @@
     {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "default": "1", "read_only": 1}
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 0, "export": 0, "print": 0, "email": 0}
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "export": 0, "print": 0, "email": 0}
   ]
 }

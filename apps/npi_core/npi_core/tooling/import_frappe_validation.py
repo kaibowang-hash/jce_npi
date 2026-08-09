@@ -83,6 +83,32 @@ def validate_immutable_snapshot(
     return snapshot
 
 
+def validate_hashed_snapshot(
+    document: object,
+    *,
+    snapshot_field: str,
+    snapshot_label: str,
+    snapshot_hash_field: str,
+) -> dict[str, object]:
+    """Canonicalize a guarded mutable projection without weakening its hash."""
+
+    snapshot = json_object(getattr(document, snapshot_field), snapshot_label)
+    expected_hash = sha256_json(snapshot)
+    current_hash = getattr(document, snapshot_hash_field)
+    if current_hash not in (None, "", expected_hash):
+        frappe.throw(
+            _("Tooling import snapshot hash does not match."),
+            frappe.ValidationError,
+        )
+    setattr(document, snapshot_field, canonical_json(snapshot))
+    setattr(
+        document,
+        snapshot_hash_field,
+        lowercase_sha256(expected_hash, _("Snapshot Hash")),
+    )
+    return snapshot
+
+
 def require_snapshot_projection(
     document: object,
     snapshot: dict[str, object],

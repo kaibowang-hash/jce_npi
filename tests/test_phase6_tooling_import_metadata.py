@@ -16,6 +16,12 @@ OBJECTS = (
     "npi_tooling_import_mapping_revision",
     "npi_tooling_import_preview_revision",
     "npi_tooling_import_command_idempotency",
+    "npi_tooling_import_mapping_activation",
+    "npi_tooling_import_job",
+    "npi_tooling_import_row_result",
+    "npi_tooling_import_target_binding",
+    "npi_tooling_import_correction_artifact",
+    "npi_tooling_import_reconciliation_revision",
 )
 
 
@@ -112,10 +118,70 @@ class Phase6ToolingImportMetadataTests(unittest.TestCase):
         self.assertIn("conflict: UNAVAILABLE", ownership)
         self.assertIn("conflict: HUMAN_CONFIRMATION_REQUIRED", ownership)
 
+    def test_checkpoint_3_contracts_cover_execution_retry_reconciliation_and_rollback(self) -> None:
+        openapi = (ROOT / "contracts/npi-api.openapi.yaml").read_text(encoding="utf-8")
+        ownership = (ROOT / "contracts/data-ownership.yaml").read_text(encoding="utf-8")
+        bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
+        for operation in (
+            "executeToolingImportPreview",
+            "getToolingImportJobs",
+            "getToolingImportJob",
+            "retryToolingImportJob",
+            "createToolingImportCorrectionArtifact",
+            "downloadToolingImportCorrectionArtifact",
+            "reconcileToolingImportJob",
+            "evaluateToolingImportRollback",
+            "rollbackToolingImportJob",
+        ):
+            self.assertIn(f"operationId: {operation}", openapi)
+        for schema in (
+            "ToolingImportJobVersionCommand",
+            "ToolingImportJobCollection",
+            "ToolingImportCorrectionArtifact",
+            "ToolingImportReconciliationRevision",
+            "ToolingImportRollbackCommand",
+        ):
+            self.assertIn(f"    {schema}:\n", openapi)
+        for audit in (
+            "tooling_import_execution.start",
+            "tooling_import_execution.retry",
+            "tooling_import_correction.export",
+            "tooling_import_correction.download",
+            "tooling_import_reconciliation.create",
+            "tooling_import_rollback.evaluate",
+            "tooling_import_rollback.execute",
+        ):
+            self.assertIn(f"x-audit-operation: {audit}", openapi)
+        for route_marker in (
+            "_PROJECT_TOOLING_IMPORT_EXECUTE_ROUTE",
+            "_PROJECT_TOOLING_IMPORT_JOBS_ROUTE",
+            "_PROJECT_TOOLING_IMPORT_JOB_RETRY_ROUTE",
+            "_PROJECT_TOOLING_IMPORT_CORRECTION_CONTENT_ROUTE",
+            "_PROJECT_TOOLING_IMPORT_RECONCILE_ROUTE",
+            "_PROJECT_TOOLING_IMPORT_ROLLBACK_ROUTE",
+        ):
+            self.assertIn(route_marker, bff)
+        for object_name in (
+            "ToolingImportMappingActivation",
+            "ToolingImportJob",
+            "ToolingImportRowResult",
+            "ToolingImportTargetBinding",
+            "ToolingImportCorrectionArtifact",
+            "ToolingImportReconciliationRevision",
+        ):
+            self.assertIn(f"  {object_name}:\n", ownership)
+        self.assertIn("conflict: EXACT_FIXTURE_SCOPE", ownership)
+        self.assertIn(
+            "conflict: ALL_TARGETS_MUST_REMAIN_EXACT_AND_UNUSED",
+            ownership,
+        )
+
     def test_all_visible_sources_have_direct_symmetric_translations(self) -> None:
         sources: set[str] = set()
         python_paths = [
             ROOT / "apps/npi_core/npi_core/tooling/import_domain.py",
+            ROOT / "apps/npi_core/npi_core/tooling/import_execution_domain.py",
+            ROOT / "apps/npi_core/npi_core/tooling/import_execution_repository.py",
             ROOT / "apps/npi_core/npi_core/tooling/import_frappe_validation.py",
             ROOT / "apps/npi_core/npi_core/tooling/import_repository.py",
             ROOT / "apps/npi_core/npi_core/tooling_import_api.py",

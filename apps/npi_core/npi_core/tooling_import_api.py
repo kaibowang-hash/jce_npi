@@ -8,7 +8,7 @@ from uuid import UUID
 import frappe
 from frappe import _
 
-from npi_core.api import frappe_domain_call
+from npi_core.api import BinaryPayload, frappe_binary_call, frappe_domain_call
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
 from npi_core.foundation.tracing import current_trace_id
@@ -23,7 +23,10 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_core.tooling.domain import ToolingUnavailable
-from npi_core.tooling.import_repository import FrappeToolingImportRepository
+from npi_core.tooling.import_execution_domain import CorrectionEntry
+from npi_core.tooling.import_execution_repository import (
+    FrappeToolingImportExecutionRepository,
+)
 
 
 _HASH = re.compile(r"^[a-f0-9]{64}$")
@@ -63,6 +66,30 @@ _CONFIRMATION_ITEM_FIELDS = frozenset(
         "reason",
     }
 )
+_JOB_VERSION_FIELDS = frozenset({"expectedVersion", "expectedSnapshotHash"})
+_RETRY_FIELDS = frozenset(
+    {
+        "expectedVersion",
+        "expectedSnapshotHash",
+        "correctionArtifactGlobalId",
+        "correctionArtifactSnapshotHash",
+    }
+)
+_CORRECTION_FIELDS = frozenset(
+    {"expectedVersion", "expectedSnapshotHash", "corrections"}
+)
+_CORRECTION_ITEM_FIELDS = frozenset(
+    {"worksheetName", "sourceRow", "sourceHeader", "correctedValue"}
+)
+_ROLLBACK_FIELDS = frozenset(
+    {
+        "expectedVersion",
+        "expectedSnapshotHash",
+        "eligibilityGlobalId",
+        "eligibilitySnapshotHash",
+    }
+)
+_ARTIFACT_CONTENT_FIELDS = frozenset({"expectedSnapshotHash"})
 
 
 class _Outcome(Protocol):
@@ -103,8 +130,45 @@ class _Repository(Protocol):
         self, project_id: UUID, batch_id: UUID, preview_id: UUID, **values: Any
     ) -> _Outcome | None: ...
 
+    def tooling_import_jobs(
+        self, project_id: UUID, batch_id: UUID
+    ) -> dict[str, object] | None: ...
 
-_repository_factory = FrappeToolingImportRepository
+    def tooling_import_job_detail(
+        self, project_id: UUID, batch_id: UUID, job_id: UUID
+    ) -> dict[str, object] | None: ...
+
+    def execute_tooling_import_preview(
+        self, project_id: UUID, batch_id: UUID, preview_id: UUID, **values: Any
+    ) -> _Outcome | None: ...
+
+    def retry_tooling_import_job(
+        self, project_id: UUID, batch_id: UUID, job_id: UUID, **values: Any
+    ) -> _Outcome | None: ...
+
+    def create_correction_artifact(
+        self, project_id: UUID, batch_id: UUID, job_id: UUID, **values: Any
+    ) -> _Outcome | None: ...
+
+    def reconcile_tooling_import_job(
+        self, project_id: UUID, batch_id: UUID, job_id: UUID, **values: Any
+    ) -> _Outcome | None: ...
+
+    def rollback_tooling_import_job(
+        self, project_id: UUID, batch_id: UUID, job_id: UUID, **values: Any
+    ) -> _Outcome | None: ...
+
+    def correction_artifact_content(
+        self,
+        project_id: UUID,
+        batch_id: UUID,
+        job_id: UUID,
+        artifact_id: UUID,
+        **values: Any,
+    ) -> Any: ...
+
+
+_repository_factory = FrappeToolingImportExecutionRepository
 
 
 @frappe.whitelist(allow_guest=True, methods=["GET"])
@@ -122,6 +186,29 @@ def get_tooling_import_batch(**request_fields: Any) -> dict[str, Any] | None:
         lambda repository, project_id: repository.tooling_import_batch_detail(
             project_id,
             _opaque_route_uuid("batch_id"),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_import_jobs(**request_fields: Any) -> dict[str, Any] | None:
+    return _query(
+        request_fields,
+        lambda repository, project_id: repository.tooling_import_jobs(
+            project_id,
+            _opaque_route_uuid("batch_id"),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_tooling_import_job(**request_fields: Any) -> dict[str, Any] | None:
+    return _query(
+        request_fields,
+        lambda repository, project_id: repository.tooling_import_job_detail(
+            project_id,
+            _opaque_route_uuid("batch_id"),
+            _opaque_route_uuid("job_id"),
         ),
     )
 
@@ -266,6 +353,221 @@ def create_tooling_import_confirmation(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def execute_tooling_import_preview(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_JOB_VERSION_FIELDS,
+        required=_JOB_VERSION_FIELDS,
+        request_fields=request_fields,
+        values=lambda: _job_version_values(expectedVersion, expectedSnapshotHash),
+        operation=lambda repository, project_id, parsed: (
+            repository.execute_tooling_import_preview(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("preview_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def retry_tooling_import_job(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    correctionArtifactGlobalId: Any = None,
+    correctionArtifactSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_RETRY_FIELDS,
+        required=_RETRY_FIELDS,
+        request_fields=request_fields,
+        values=lambda: {
+            **_job_version_values(expectedVersion, expectedSnapshotHash),
+            "correction_artifact_id": _uuid(
+                correctionArtifactGlobalId, "correctionArtifactGlobalId"
+            ),
+            "correction_artifact_snapshot_hash": _hash(
+                correctionArtifactSnapshotHash,
+                "correctionArtifactSnapshotHash",
+                _HASH,
+            ),
+        },
+        operation=lambda repository, project_id, parsed: (
+            repository.retry_tooling_import_job(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("job_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_tooling_import_correction_artifact(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    corrections: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_CORRECTION_FIELDS,
+        required=_CORRECTION_FIELDS,
+        request_fields=request_fields,
+        values=lambda: {
+            **_job_version_values(expectedVersion, expectedSnapshotHash),
+            "corrections": _corrections(corrections),
+        },
+        operation=lambda repository, project_id, parsed: (
+            repository.create_correction_artifact(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("job_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def reconcile_tooling_import_job(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_JOB_VERSION_FIELDS,
+        required=_JOB_VERSION_FIELDS,
+        request_fields=request_fields,
+        values=lambda: _job_version_values(expectedVersion, expectedSnapshotHash),
+        operation=lambda repository, project_id, parsed: (
+            repository.reconcile_tooling_import_job(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("job_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def evaluate_tooling_import_rollback(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_JOB_VERSION_FIELDS,
+        required=_JOB_VERSION_FIELDS,
+        request_fields=request_fields,
+        values=lambda: {
+            **_job_version_values(expectedVersion, expectedSnapshotHash),
+            "kind": "rollback_eligibility",
+        },
+        operation=lambda repository, project_id, parsed: (
+            repository.reconcile_tooling_import_job(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("job_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def rollback_tooling_import_job(
+    expectedVersion: Any = None,
+    expectedSnapshotHash: Any = None,
+    eligibilityGlobalId: Any = None,
+    eligibilitySnapshotHash: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _command(
+        allowed=_ROLLBACK_FIELDS,
+        required=_ROLLBACK_FIELDS,
+        request_fields=request_fields,
+        values=lambda: {
+            **_job_version_values(expectedVersion, expectedSnapshotHash),
+            "eligibility_id": _uuid(eligibilityGlobalId, "eligibilityGlobalId"),
+            "eligibility_snapshot_hash": _hash(
+                eligibilitySnapshotHash, "eligibilitySnapshotHash", _HASH
+            ),
+        },
+        operation=lambda repository, project_id, parsed: (
+            repository.rollback_tooling_import_job(
+                project_id,
+                _opaque_route_uuid("batch_id"),
+                _opaque_route_uuid("job_id"),
+                **parsed,
+            )
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def download_tooling_import_correction_artifact(
+    expectedSnapshotHash: Any = None,
+    **request_fields: Any,
+) -> None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> BinaryPayload:
+        require_tooling_import_routes_enabled()
+        actor = authenticated_user()
+        require_csrf_token()
+        principal = authenticated_principal(actor)
+        if principal.is_external or "System Manager" not in principal.roles:
+            raise PermissionDenied()
+        request_id = _request_id()
+        repository = _new_repository(principal, request_id)
+        project_id = _opaque_route_uuid("project_id")
+        if not repository.authorize_scope(project_id, administer=True):
+            raise ToolingUnavailable()
+        reject_unexpected_request_fields(_ARTIFACT_CONTENT_FIELDS, request_fields)
+        require_request_fields(_ARTIFACT_CONTENT_FIELDS, request_fields)
+        outcome = repository.correction_artifact_content(
+            project_id,
+            _opaque_route_uuid("batch_id"),
+            _opaque_route_uuid("job_id"),
+            _opaque_route_uuid("artifact_id"),
+            idempotency_key_hash=actor_idempotency_key_hash(
+                actor, frappe.get_request_header("Idempotency-Key")
+            ),
+            expected_snapshot_hash=_hash(
+                expectedSnapshotHash, "expectedSnapshotHash", _HASH
+            ),
+        )
+        if outcome is None:
+            raise ToolingUnavailable()
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return BinaryPayload(
+            content=outcome.content,
+            file_name=outcome.file_name,
+            mime_type=outcome.mime_type,
+            disposition="attachment",
+            headers={
+                "Content-Disposition": f'attachment; filename="{outcome.file_name}"',
+                "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "sandbox; default-src 'none'",
+                "Referrer-Policy": "no-referrer",
+            },
+        )
+
+    frappe_binary_call(handle, response_headers=headers)
+
+
 def _query(request_fields: dict[str, Any], operation) -> dict[str, Any] | None:
     headers = {"X-Request-ID": response_request_id()}
 
@@ -408,6 +710,54 @@ def _hash(value: object, path: str, pattern: re.Pattern[str]) -> str:
     if not isinstance(value, str) or pattern.fullmatch(value) is None:
         raise _field(path, _("Enter a valid lowercase hash."))
     return value
+
+
+def _job_version_values(
+    expected_version: object,
+    expected_snapshot_hash: object,
+) -> dict[str, object]:
+    return {
+        "expected_version": _positive(expected_version, "expectedVersion"),
+        "expected_snapshot_hash": _hash(
+            expected_snapshot_hash,
+            "expectedSnapshotHash",
+            _HASH,
+        ),
+    }
+
+
+def _corrections(value: object) -> tuple[CorrectionEntry, ...]:
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not 1 <= len(value) <= 5_000
+        or any(not isinstance(item, Mapping) for item in value)
+    ):
+        raise _field("corrections", _("Enter a valid bounded list."))
+    result: list[CorrectionEntry] = []
+    for index, item in enumerate(value):
+        path = f"corrections[{index}]"
+        if set(item) != set(_CORRECTION_ITEM_FIELDS):
+            raise _field(path, _("Select a supported value."))
+        corrected_value = item.get("correctedValue")
+        if not isinstance(corrected_value, str) or len(corrected_value) > 32_767:
+            raise _field(
+                f"{path}.correctedValue",
+                _("Enter a bounded correction value."),
+            )
+        result.append(
+            CorrectionEntry(
+                worksheet_name=_text(
+                    item.get("worksheetName"), f"{path}.worksheetName", 255
+                ),
+                source_row=_positive(item.get("sourceRow"), f"{path}.sourceRow"),
+                source_header=_text(
+                    item.get("sourceHeader"), f"{path}.sourceHeader", 500
+                ),
+                corrected_value=corrected_value,
+            )
+        )
+    return tuple(result)
 
 
 def _confirmations(value: object) -> tuple[dict[str, object], ...]:

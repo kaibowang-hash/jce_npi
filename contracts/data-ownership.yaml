@@ -562,6 +562,54 @@ objects:
       ambiguous_relationship_and_image_confirmation: {owner: AUTHORIZED_PROJECT_MEMBER, editable_in: [NPI_ONE_TOOLING_IMPORT_CONFIRMATION_COMMAND], direction: NONE, conflict: HUMAN_CONFIRMATION_REQUIRED}
       target_mutation: {owner: FUTURE_P6_07_EXECUTION_WORKER, editable_in: [], direction: NONE, conflict: NOT_EXECUTED_BY_PREVIEW}
 
+  ToolingImportMappingActivation:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_source_customer_mapping_and_fixture_version: {owner: CONTROLLED_TEST_FIXTURE_ONLY, editable_in: [], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+      production_customer_mapping_activation: {owner: FUTURE_APPROVED_TOOLING_IMPORT_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      execution_field_bindings: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+
+  ToolingImportJob:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_actor_project_source_preview_and_mapping_activation: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      durable_attempt_state_counts_and_version: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [NPI_ONE_TOOLING_IMPORT_WORKER], direction: NONE, conflict: VERSION_CONFLICT}
+      erpnext_execution_or_formal_manufacturing_result: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  ToolingImportRowResult:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_attempt_source_row_state_and_target_snapshot: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      per_field_result_codes_messages_and_trace: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      raw_source_values: {owner: NPI_ONE_PRIVATE_FILE_SERVICE, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_IN_RESULT}
+
+  ToolingImportTargetBinding:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_batch_row_mapping_target_version_and_hash: {owner: NPI_ONE_TOOLING_IMPORT_WORKER, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      source_field_and_raw_value_provenance_hashes: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      target_mutation_authority: {owner: EXACT_ACTIVE_FIXTURE_MAPPING, editable_in: [NPI_ONE_TOOLING_IMPORT_WORKER], direction: NONE, conflict: EXACT_FIXTURE_SCOPE}
+
+  ToolingImportCorrectionArtifact:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_snapshot_private_file_hash_and_allowlisted_columns: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      correction_values: {owner: AUTHORIZED_PROJECT_MEMBER, editable_in: [NPI_ONE_TOOLING_IMPORT_CORRECTION_COMMAND], direction: NONE, conflict: AUTHORIZED_PRIVATE_ARTIFACT_ONLY}
+      download_authority_and_audit: {owner: NPI_ONE_TOOLING_IMPORT_COMMAND, editable_in: [], direction: NONE, conflict: PER_DOWNLOAD_AUTHORIZATION}
+
+  ToolingImportReconciliationRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_job_target_expected_and_observed_snapshot: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      downstream_reference_count_and_rollback_eligibility: {owner: NPI_ONE_TOOLING_IMPORT_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: FAIL_CLOSED}
+      destructive_rollback: {owner: NPI_ONE_TOOLING_IMPORT_ROLLBACK_COMMAND, editable_in: [], direction: NONE, conflict: ALL_TARGETS_MUST_REMAIN_EXACT_AND_UNUSED}
+
   ToolAssetRequest:
     owner_system: NPI_ONE_INTEGRATION
     erp_view: execution_intent_only

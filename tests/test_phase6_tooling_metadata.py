@@ -23,6 +23,11 @@ SYSTEM_MANAGER_ADMIN = {
     "email": 0,
 }
 SYSTEM_MANAGER_APPEND = {**SYSTEM_MANAGER_ADMIN, "write": 0}
+SYSTEM_MANAGER_CONTROLLED_DELETE = {**SYSTEM_MANAGER_ADMIN, "delete": 1}
+SYSTEM_MANAGER_APPEND_CONTROLLED_DELETE = {
+    **SYSTEM_MANAGER_APPEND,
+    "delete": 1,
+}
 API_APPEND = {
     "role": "NPI API User",
     "read": 0,
@@ -170,10 +175,21 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
     def test_history_objects_are_append_only_and_generic_export_is_denied(self) -> None:
         self.assertEqual(
             self.load("npi_engineering_part").get("permissions"),
-            [SYSTEM_MANAGER_ADMIN],
+            [SYSTEM_MANAGER_CONTROLLED_DELETE],
+        )
+        revision_metadata = self.load("npi_engineering_part_revision")
+        self.assertEqual(
+            revision_metadata.get("permissions"),
+            [SYSTEM_MANAGER_APPEND_CONTROLLED_DELETE, API_APPEND],
+        )
+        self.assertEqual(revision_metadata.get("read_only"), 1)
+        self.assertTrue(
+            all(
+                field.get("read_only") == 1
+                for field in self.fields(revision_metadata).values()
+            )
         )
         for folder in (
-            "npi_engineering_part_revision",
             "npi_tooling_requirement",
             "npi_tooling_master",
             "npi_tooling_applicability",
@@ -191,6 +207,15 @@ class Phase6ToolingMetadataTest(unittest.TestCase):
             self.assertTrue(
                 all(field.get("read_only") == 1 for field in self.fields(metadata).values())
             )
+        for folder in (
+            "npi_engineering_part",
+            "npi_engineering_part_revision",
+        ):
+            controller = (
+                DOCTYPE_ROOT / folder / f"{folder}.py"
+            ).read_text(encoding="utf-8")
+            self.assertIn("tooling_import_rollback_delete_allowed(self)", controller)
+            self.assertIn("deny_tooling_history_delete(self)", controller)
         receipt = self.load("npi_tooling_command_idempotency")
         self.assertEqual(
             receipt.get("permissions"),

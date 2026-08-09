@@ -17,6 +17,9 @@ INSPECTION_ID = "89953948-4178-46dc-b7ca-8b94f2ac4e36"
 MAPPING_ID = "eb233de2-5d4d-4556-ad16-9476d8f0776f"
 FILE_REVISION_ID = "a6bfd0bf-8ab3-4a92-b49e-818735db4f55"
 TARGET_ID = "1e1f1939-adcf-4c04-8b70-a776f6681523"
+JOB_ID = "92128cca-f41e-4ee2-a74f-303a8ee839a4"
+ARTIFACT_ID = "98fd22a2-3895-4021-b12d-92c0e2e1ae4a"
+ELIGIBILITY_ID = "7e5158e5-8e09-4179-9094-b49a98913bea"
 REQUEST_ID = "5b82874f-cdf0-48eb-a393-458186511edb"
 HASH = "a" * 64
 
@@ -80,6 +83,38 @@ class MockRepository:
     def create_tooling_import_confirmation(self, *args: object, **kwargs: Any):
         return self._command("confirmation", args, kwargs)
 
+    def tooling_import_jobs(self, *args: object, **kwargs: Any):
+        return self._query("jobs", args, kwargs)
+
+    def tooling_import_job_detail(self, *args: object, **kwargs: Any):
+        return self._query("job_detail", args, kwargs)
+
+    def execute_tooling_import_preview(self, *args: object, **kwargs: Any):
+        return self._command("execute", args, kwargs)
+
+    def retry_tooling_import_job(self, *args: object, **kwargs: Any):
+        return self._command("retry", args, kwargs)
+
+    def create_correction_artifact(self, *args: object, **kwargs: Any):
+        return self._command("correction", args, kwargs)
+
+    def reconcile_tooling_import_job(self, *args: object, **kwargs: Any):
+        return self._command("reconcile", args, kwargs)
+
+    def rollback_tooling_import_job(self, *args: object, **kwargs: Any):
+        return self._command("rollback", args, kwargs)
+
+    def correction_artifact_content(self, *args: object, **kwargs: Any):
+        self.calls.append(("correction_content", args, kwargs))
+        if not self.scope:
+            return None
+        return types.SimpleNamespace(
+            content=b"worksheet_name,source_row,source_header,corrected_value\n",
+            file_name=f"tooling-import-corrections-{ARTIFACT_ID}.csv",
+            mime_type="text/csv",
+            replayed=self.replayed,
+        )
+
     def _query(self, name: str, args, kwargs):
         self.calls.append((name, args, kwargs))
         if not self.scope:
@@ -101,6 +136,7 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
         "npi_core.api",
         "npi_core.request_security",
         "npi_core.tooling.import_repository",
+        "npi_core.tooling.import_execution_repository",
         "npi_core.tooling_import_api",
         "npi_core.bff",
     )
@@ -144,6 +180,8 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
                 "project_id": PROJECT_ID,
                 "batch_id": BATCH_ID,
                 "preview_id": PREVIEW_ID,
+                "job_id": JOB_ID,
+                "artifact_id": ARTIFACT_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -177,6 +215,13 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
         repository_module = types.ModuleType("npi_core.tooling.import_repository")
         repository_module.FrappeToolingImportRepository = object
         sys.modules["npi_core.tooling.import_repository"] = repository_module
+        execution_repository_module = types.ModuleType(
+            "npi_core.tooling.import_execution_repository"
+        )
+        execution_repository_module.FrappeToolingImportExecutionRepository = object
+        sys.modules["npi_core.tooling.import_execution_repository"] = (
+            execution_repository_module
+        )
 
         self.api = importlib.import_module("npi_core.tooling_import_api")
         self.router = importlib.import_module("npi_core.bff")
@@ -246,6 +291,43 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
                     "reason": "Confirmed against the exact controlled target.",
                 }
             ],
+        }
+
+    @staticmethod
+    def job_version_payload() -> dict[str, object]:
+        return {
+            "expectedVersion": 3,
+            "expectedSnapshotHash": HASH,
+        }
+
+    @staticmethod
+    def retry_payload() -> dict[str, object]:
+        return {
+            **Phase6ToolingImportApiTest.job_version_payload(),
+            "correctionArtifactGlobalId": ARTIFACT_ID,
+            "correctionArtifactSnapshotHash": HASH,
+        }
+
+    @staticmethod
+    def correction_payload() -> dict[str, object]:
+        return {
+            **Phase6ToolingImportApiTest.job_version_payload(),
+            "corrections": [
+                {
+                    "worksheetName": "Tooling List",
+                    "sourceRow": 7,
+                    "sourceHeader": "Part Name English",
+                    "correctedValue": "Synthetic corrected part",
+                }
+            ],
+        }
+
+    @staticmethod
+    def rollback_payload() -> dict[str, object]:
+        return {
+            **Phase6ToolingImportApiTest.job_version_payload(),
+            "eligibilityGlobalId": ELIGIBILITY_ID,
+            "eligibilitySnapshotHash": HASH,
         }
 
     def test_routes_default_closed_before_authentication_or_repository_access(self) -> None:
@@ -386,6 +468,135 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
                 result = self.call(self.api.create_tooling_import_confirmation, payload)
                 self.assertEqual(result["code"], "VALIDATION_FAILED")
 
+    def test_checkpoint_3_commands_bind_exact_versions_artifacts_and_rows(self) -> None:
+        cases = (
+            (
+                self.api.execute_tooling_import_preview,
+                self.job_version_payload(),
+                "execute",
+                PREVIEW_ID,
+            ),
+            (self.api.retry_tooling_import_job, self.retry_payload(), "retry", JOB_ID),
+            (
+                self.api.create_tooling_import_correction_artifact,
+                self.correction_payload(),
+                "correction",
+                JOB_ID,
+            ),
+            (
+                self.api.reconcile_tooling_import_job,
+                self.job_version_payload(),
+                "reconcile",
+                JOB_ID,
+            ),
+            (
+                self.api.evaluate_tooling_import_rollback,
+                self.job_version_payload(),
+                "reconcile",
+                JOB_ID,
+            ),
+            (
+                self.api.rollback_tooling_import_job,
+                self.rollback_payload(),
+                "rollback",
+                JOB_ID,
+            ),
+        )
+        for function, payload, expected, route_id in cases:
+            with self.subTest(expected=expected, function=function.__name__):
+                self.repository.calls.clear()
+                self.call(function, payload)
+                command = self.repository.calls[-1]
+                self.assertEqual(command[0], expected)
+                self.assertEqual(str(command[1][0]), PROJECT_ID)
+                self.assertEqual(str(command[1][1]), BATCH_ID)
+                self.assertEqual(str(command[1][2]), route_id)
+                self.assertEqual(command[2]["expected_version"], 3)
+                self.assertEqual(command[2]["expected_snapshot_hash"], HASH)
+                self.assertEqual(len(command[2]["idempotency_key_hash"]), 64)
+        self.repository.calls.clear()
+        self.call(
+            self.api.create_tooling_import_correction_artifact,
+            self.correction_payload(),
+        )
+        entry = self.repository.calls[-1][2]["corrections"][0]
+        self.assertEqual(entry.worksheet_name, "Tooling List")
+        self.assertEqual(entry.source_row, 7)
+        self.assertEqual(entry.source_header, "Part Name English")
+        self.assertEqual(entry.corrected_value, "Synthetic corrected part")
+
+        self.repository.calls.clear()
+        self.call(
+            self.api.evaluate_tooling_import_rollback,
+            self.job_version_payload(),
+        )
+        self.assertEqual(self.repository.calls[-1][2]["kind"], "rollback_eligibility")
+
+    def test_checkpoint_3_correction_input_is_strict_and_formula_safe(self) -> None:
+        invalid = (
+            {**self.correction_payload(), "corrections": []},
+            {
+                **self.correction_payload(),
+                "corrections": [
+                    {
+                        "worksheetName": "Tooling List",
+                        "sourceRow": 7,
+                        "sourceHeader": "Part Name English",
+                        "correctedValue": "=HYPERLINK(\"https://example.invalid\")",
+                    }
+                ],
+            },
+            {
+                **self.correction_payload(),
+                "corrections": [
+                    {
+                        **self.correction_payload()["corrections"][0],
+                        "unexpected": "blocked",
+                    }
+                ],
+            },
+        )
+        for payload in invalid:
+            with self.subTest(payload=payload):
+                result = self.call(
+                    self.api.create_tooling_import_correction_artifact,
+                    payload,
+                )
+                self.assertEqual(result["code"], "VALIDATION_FAILED")
+
+    def test_correction_download_is_authorized_hashed_and_staged_as_private_binary(
+        self,
+    ) -> None:
+        captured: dict[str, object] = {}
+
+        def capture_binary(handler, *, response_headers):
+            captured["payload"] = handler()
+            captured["headers"] = dict(response_headers)
+
+        self.api.frappe_binary_call = capture_binary
+        result = self.call(
+            self.api.download_tooling_import_correction_artifact,
+            {"expectedSnapshotHash": HASH},
+        )
+        self.assertIsNone(result)
+        self.assertEqual(
+            [call[0] for call in self.repository.calls],
+            ["authorize", "correction_content"],
+        )
+        command = self.repository.calls[-1]
+        self.assertEqual(str(command[1][0]), PROJECT_ID)
+        self.assertEqual(str(command[1][1]), BATCH_ID)
+        self.assertEqual(str(command[1][2]), JOB_ID)
+        self.assertEqual(str(command[1][3]), ARTIFACT_ID)
+        self.assertEqual(command[2]["expected_snapshot_hash"], HASH)
+        self.assertEqual(len(command[2]["idempotency_key_hash"]), 64)
+        payload = captured["payload"]
+        self.assertEqual(payload.content.splitlines()[0], b"worksheet_name,source_row,source_header,corrected_value")
+        self.assertEqual(payload.mime_type, "text/csv")
+        self.assertEqual(payload.disposition, "attachment")
+        self.assertEqual(payload.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(captured["headers"]["Idempotency-Replayed"], "false")
+
     def test_bff_maps_exact_routes_and_p6_07_switch_is_independent(self) -> None:
         cases = (
             ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports", "get_tooling_import_batches"),
@@ -395,6 +606,15 @@ class Phase6ToolingImportApiTest(unittest.TestCase):
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/mapping-proposals", "create_tooling_import_mapping_proposal"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/previews", "create_tooling_import_preview"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/previews/{PREVIEW_ID}/confirmations", "create_tooling_import_confirmation"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/previews/{PREVIEW_ID}:execute", "execute_tooling_import_preview"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs", "get_tooling_import_jobs"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}", "get_tooling_import_job"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}:retry", "retry_tooling_import_job"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}/correction-artifacts", "create_tooling_import_correction_artifact"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}/correction-artifacts/{ARTIFACT_ID}:content", "download_tooling_import_correction_artifact"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}:reconcile", "reconcile_tooling_import_job"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}:evaluate-rollback", "evaluate_tooling_import_rollback"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/tooling-imports/{BATCH_ID}/jobs/{JOB_ID}:rollback", "rollback_tooling_import_job"),
         )
         for method, path, suffix in cases:
             with self.subTest(path=path):
