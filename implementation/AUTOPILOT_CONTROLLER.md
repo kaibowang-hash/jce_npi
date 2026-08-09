@@ -2146,3 +2146,38 @@ repeat or rewrite it merely to restore context. See
   creator-bound hash-verified unexpired POST download. Live SPA, controlled
   Site, production ERPNext contact and Tooling/lifecycle authority remain
   inactive.
+
+## 2026-08-10 P6-08 checkpoint 2 PASS and checkpoint 3 activation
+
+- Product commit `759b448` activates only the independently default-closed
+  Project-first Tooling list/preference/export-create/download BFF, exact
+  shared-Master containment, stable paging/query snapshots, conservative
+  export authority, immutable private File/package/audit/receipt transaction
+  and creator-bound one-hour hash-verified POST download.
+- Ordinary CI `31336374959` passed repository job `93302794940` and isolated
+  only eighteen durable P0 status-bar catalog fingerprints. Artifact
+  `9044488283` and exact pixel audit proved no business-region change;
+  baseline-only repair `ac0a29c` copied exactly those reviewed Linux actuals
+  and changed no source, assertion, matrix, tolerance or PASS rule.
+- Exact stable checkpoint `ac0a29cc6cd38e87a0e1922abac1e73ea1d969ff`
+  passes ordinary CI `31336841275`: repository `93303992048` proves
+  `1,405/1,405` tracked Python, `796/796` frontend unit and `343/343`
+  non-visual E2E tests, statements `80.00%`, `5,647` direct sources at
+  complete `zh`/`zh-TW` coverage, zero vulnerabilities and both secret lanes;
+  visual `93303992034` passes `91/91`; controlled job `93303992327` correctly
+  skips. Visual artifact `9044624626` has digest
+  `sha256:33faa7faccab9ca0d541b0a882e6b69fbca9506a84926a1ce466c05fc95a094f`.
+- Complete evidence is
+  `implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
+  Arbitrary query/field export, raw File URLs, Project-only export authority,
+  cross-Project shared truth, stale membership, non-creator/expired download,
+  production ERPNext contact and lifecycle claims remain fail closed.
+- Standing transition authority activates only checkpoint 3: add the fixed
+  P6-08 data source and a dense trilingual Tooling List section to the selected
+  Project workspace using shared DenseGrid; expose ten views, saved query/
+  layout, stable paging, accessible selection/count/status, preserved selected-
+  Master navigation and one secondary reviewed Export/download flow. Loading,
+  empty, no-export, validation, stale/conflict, processing, success, expired,
+  download-failure and replay truth plus the affected accessibility/i18n/
+  fixed-Linux visual matrix are mandatory. Controlled Site, production
+  ERPNext and Tooling/lifecycle authority remain inactive.

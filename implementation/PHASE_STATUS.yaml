@@ -1439,7 +1439,7 @@ p6_07:
 p6_08:
   task: P6-08
   controller_task: P6-08_CONTROLLED_SELECTION_FILTER_OBJECT_PACKAGE_EXPORT
-  status: IN_PROGRESS_CHECKPOINT_2
+  status: IN_PROGRESS_CHECKPOINT_3
   requirements: [UX-007]
   starting_checkpoint: d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0
   audit_predecessor_ordinary_ci: 31331504738
@@ -1447,19 +1447,24 @@ p6_08:
   audit_predecessor_visual_job: 93290380955
   audit_predecessor_visual_result: 91_OF_91_PASS
   audit_decision: PASS_BOUNDED_FOUR_CHECKPOINT_PLAN
-  current_stage: REPOSITORY_BFF_PRIVATE_ARTIFACT_DOWNLOAD
-  next_stage: CHECKPOINT_2_LEVEL_2
+  current_stage: DENSE_TRILINGUAL_TOOLING_LIST_WORKSPACE
+  next_stage: CHECKPOINT_3_LEVEL_2
   checkpoint_1_product_sha: 5b1560921eda850380d298d7b50375943d7a69e2
   checkpoint_1_ordinary_ci: 31334024291
   checkpoint_1_repository_job: 93296765481
   checkpoint_1_visual_job: 93296765409
   checkpoint_1_visual_result: 91_OF_91_PASS
+  checkpoint_2_product_sha: ac0a29cc6cd38e87a0e1922abac1e73ea1d969ff
+  checkpoint_2_ordinary_ci: 31336841275
+  checkpoint_2_repository_job: 93303992048
+  checkpoint_2_visual_job: 93303992034
+  checkpoint_2_visual_result: 91_OF_91_PASS
   arbitrary_database_export_active: false
   raw_private_file_url_export_active: false
   production_erp_contact_authorized: false
-  tooling_export_routes_active: false
-  tooling_export_business_rows_active: false
-  tooling_export_private_files_active: false
+  tooling_export_routes_active: true
+  tooling_export_business_rows_active: true
+  tooling_export_private_files_active: true
   live_tooling_list_export_active: false
   separate_export_authority: INTERNAL_SYSTEM_MANAGER_AND_PROJECT_VIEW
   package_schema: tooling-object-package-v1
@@ -1470,6 +1475,7 @@ p6_08:
     - docs/TOOLING_AND_TRIAL.md
     - implementation/evidence/phase-6/p6-08-plan.md
     - implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+`IN_PROGRESS_CHECKPOINT_3 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 
-Recovery time: `2026-08-09T20:32:10Z`
+Recovery time: `2026-08-09T21:35:59Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized product checkpoint:
-`5b1560921eda850380d298d7b50375943d7a69e2`
+`ac0a29cc6cd38e87a0e1922abac1e73ea1d969ff`
 
 ## Current authoritative action
 
@@ -36,27 +36,38 @@ and P6-07 private binary artifact/download path are reusable, but no Tooling
 list query, ten-view preference, export authority, object-package renderer,
 immutable artifact/download or live action exists.
 
-Checkpoint 1 passes at exact stable product checkpoint `5b15609`. Product
-commit `cf86cad` added the ten-view/query/preference/export/package domains,
-safe localized deterministic ZIP/CSV renderer, closed contracts, three
-guarded DocTypes and direct tests. Serial repairs completed static translation
-sources, removed the mixed-language workbook-format label and promoted only
-eighteen pixel-audited Linux footer fingerprints. Final CI `31334024291`
-passes repository `93296765481` (`1,381` Python, `796` frontend unit,
-`343` non-visual E2E, `5,638` complete direct trilingual sources, zero
-vulnerabilities and both secret lanes) and visual `93296765409` at `91/91`;
-controlled job `93296765721` correctly skips. Complete evidence is
+Checkpoint 1 passes at exact stable product checkpoint `5b15609`; complete
+evidence is
 `implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
 
-The current atomic action is checkpoint 2 only: implement independently
-default-closed Project-first Tooling list, preference, export-create and
-download BFF routes; server-authoritative stable paging/query snapshots;
-exact shared-Master Project containment; conservative `System Manager` plus
-Project `VIEW` export authority; single-transaction immutable private File,
-package, audit and actor-bound receipt persistence; and creator-bound,
-hash-verified, one-hour CSRF POST download. Add permission, IDOR, replay,
-stale, expiration, formula/redaction and exact-hash tests. Do not activate a
-live SPA or controlled runtime yet.
+Checkpoint 2 passes at exact stable product checkpoint `ac0a29c`. Product
+commit `759b448` activated only the independently default-closed Project-first
+Tooling list/preference/export-create/download BFF, stable paging/query
+snapshots, exact shared-Master containment, conservative `System Manager` plus
+Project `VIEW` export authority, immutable private File/package/audit/receipt
+transaction and creator-bound one-hour hash-verified POST download. Initial CI
+passed the repository and isolated only eighteen footer catalog fingerprints;
+artifact `9044488283` proved no business-region change, and baseline-only
+repair `ac0a29c` copied exactly the reviewed Linux actuals. Final CI
+`31336841275` passes repository `93303992048` (`1,405` tracked Python, `796`
+frontend unit in `50` files, `343` non-visual E2E, `5,647` complete direct
+trilingual sources, statements `80.00%`, zero vulnerabilities and both secret
+lanes) and visual `93303992034` at `91/91`; controlled job `93303992327`
+correctly skips. Complete evidence is
+`implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
+
+The current atomic action is checkpoint 3 only: add the strict P6-08 data
+source and a dense trilingual Tooling List section to the selected Project
+Tooling workspace using shared DenseGrid. Deliver ten views, restored per-view
+query/layout state, closed search/sort/group, stable server paging, accessible
+selection/count/status and preserved selected-object navigation. Add one
+secondary Export action and review/download flow showing exact selection or
+complete-filter mode, count, one-hour validity, redactions and immutable-
+version policy. Expose loading, empty, read-only/no-export, validation,
+stale/conflict, processing, success, expired, download-failure and replay
+truth in `en`/`zh`/`zh-TW`; prove keyboard/focus, 1366/1440/1920,
+100/125/150, no page overflow and the affected fixed-Linux visual matrix. Do
+not activate controlled runtime yet.
 
 P6-08 cannot expose an arbitrary database dump, raw private File URLs,
 cross-Project data or production Tooling/ERP authority. `DR-REC-007` retains

@@ -1,22 +1,23 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T20:32:10Z`
+Updated: `2026-08-09T21:35:59Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+- Mode: `IN_PROGRESS_CHECKPOINT_3 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact task/product checkpoint:
-  `5b1560921eda850380d298d7b50375943d7a69e2` (pushed; P6-08 checkpoint 1
-  domain/contract/additive metadata PASS)
+  `ac0a29cc6cd38e87a0e1922abac1e73ea1d969ff` (pushed; P6-08 checkpoint 2
+  Project-first repository/BFF/private artifact/download PASS)
 - Latest completed controller/evidence checkpoint:
   `d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0` (pushed; P6-07 evidence/
   trace closure and P6-08 bounded audit activation)
 - Latest complete normal CI:
-  `31334024291` (`PASS`, exact SHA `5b15609`; repository `93296765481` and
-  fixed-Linux visual `93296765409` at `91/91` passed; controlled job skipped)
+  `31336841275` (`PASS`, exact SHA `ac0a29c`; repository `93303992048` and
+  fixed-Linux visual `93303992034` at `91/91` passed; controlled job
+  `93303992327` skipped)
 - Latest controlled-Site run:
   `31330684809` (`PASS`, unchanged exact SHA `d8e4897`; repository
   `93288346191`, visual `93288346156` at `91/91` and controlled Site
@@ -26,12 +27,12 @@ Updated: `2026-08-09T20:32:10Z`
   `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`
 - Current controller task:
   `P6-08 — Controlled selection/filter and object-package export`
-  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/PRIVATE ARTIFACT/DOWNLOAD`)
+  (`IN_PROGRESS — CHECKPOINT 3 DENSE TRILINGUAL TOOLING LIST WORKSPACE`)
 - Current Requirement ID: `UX-007`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 CHECKPOINT 2`)
+  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 CHECKPOINT 3`)
 - Latest complete product Phase:
   `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
 
@@ -51,19 +52,32 @@ contracts and additive metadata; Project-first repository/BFF/private artifact
 and download; dense trilingual Tooling List workspace; then cumulative
 controlled Site, Level 2 and Phase 6 Level 3.
 
-Checkpoint 1 passes at exact stable checkpoint `5b15609`. Final ordinary CI
-`31334024291` passes `1,381` tracked Python tests, `796` frontend unit tests,
-`343` non-visual E2E, complete `5,638`-source direct trilingual coverage,
-both secret lanes and `91/91` fixed-Linux visuals. Evidence is
+Checkpoint 1 passes at exact stable checkpoint `5b15609`; its complete
+evidence is
 `implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
 
-The current atomic task is checkpoint 2 only: add independently default-
-closed Project-first list/preference/export-create/download routes, stable
-server paging/query snapshots, exact shared-Master containment, conservative
-export authorization, single-transaction private artifact/package/audit/
-receipt persistence and creator-bound one-hour hash-verified POST download.
-Permission, IDOR, replay, stale, expiry, formula/redaction and hash tests are
-mandatory. The live SPA, controlled Site, production ERPNext and Tooling/
+Checkpoint 2 passes at exact stable checkpoint `ac0a29c`. Product commit
+`759b448` added the default-closed Project-first list/preference/create/
+download routes, stable paging/query snapshots, exact shared-Master
+containment, conservative export authorization and single-transaction private
+File/package/audit/receipt persistence with creator-bound hash-verified
+one-hour POST download. Initial CI passed the repository and isolated only
+eighteen footer catalog fingerprints; exact artifact review and baseline-only
+repair changed no source component or Gate rule. Final ordinary CI
+`31336841275` passes `1,405` tracked Python, `796` frontend unit, `343`
+non-visual E2E, complete `5,647`-source direct trilingual coverage, statements
+`80.00%`, both secret lanes and `91/91` fixed-Linux visuals. Evidence is
+`implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
+
+The current atomic task is checkpoint 3 only: add the fixed P6-08 data source
+and a dense trilingual Tooling List section to the selected Project workspace
+using shared DenseGrid. Deliver ten views, saved query/layout state, stable
+paging, accessible selection/count/status, preserved selected-Master
+navigation and one secondary reviewed Export/download flow. Prove loading,
+empty, no-export, validation, stale/conflict, processing, success, expired,
+download-failure and replay truth in English, Simplified Chinese and
+Traditional Chinese, plus keyboard/focus and affected responsive/scaled
+fixed-Linux visuals. The controlled Site, production ERPNext and Tooling/
 lifecycle authority remain inactive. There is no active technical Hard
 Blocker.
 
