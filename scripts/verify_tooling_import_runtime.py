@@ -60,6 +60,14 @@ CORRECTION_DIAGNOSTIC_CODES = frozenset(
         "P607_CORRECTION_RECEIPT_SEAL",
     }
 )
+CORRECTION_VALIDATION_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P607_CORRECTION_ARTIFACT_SNAPSHOT_VALIDATE",
+        "P607_CORRECTION_ARTIFACT_PROJECTION_VALIDATE",
+        "P607_CORRECTION_ARTIFACT_JOB_VALIDATE",
+        "P607_CORRECTION_ARTIFACT_FILE_VALIDATE",
+    }
+)
 
 FIXTURES = (
     {
@@ -191,8 +199,13 @@ def command(
     if result.status != 201 and key.endswith("-correction"):
         diagnostic = tooling_runtime._sanitized_server_diagnostic(
             result.trace_id,
-            CORRECTION_DIAGNOSTIC_CODES,
+            CORRECTION_VALIDATION_DIAGNOSTIC_CODES,
         )
+        if diagnostic is None:
+            diagnostic = tooling_runtime._sanitized_server_diagnostic(
+                result.trace_id,
+                CORRECTION_DIAGNOSTIC_CODES,
+            )
         if diagnostic is not None:
             exception_type, code, trace_id = diagnostic
             raise RuntimeError(

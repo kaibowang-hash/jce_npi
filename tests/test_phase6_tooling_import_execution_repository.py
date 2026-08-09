@@ -158,6 +158,8 @@ class Phase6ToolingImportExecutionRepositoryTests(unittest.TestCase):
             csv_builder,
         )
         self.assertIn("correctionHashes", create)
+        self.assertIn("'fileName': str(file_document.file_name)", create)
+        self.assertIn("'sizeBytes': int(file_document.file_size)", create)
         self.assertNotIn('"correctedValue": item.corrected_value', create)
         corrections = _source("_repository_job_corrections")
         self.assertIn("job.correction_artifact_snapshot_hash", corrections)

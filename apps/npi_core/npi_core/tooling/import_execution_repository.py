@@ -484,7 +484,13 @@ class FrappeToolingImportExecutionRepository(FrappeToolingImportRepository):
                     file_name,
                     content,
                 )
-            snapshot["frappeFileId"] = str(file_document.name)
+            snapshot.update(
+                {
+                    "frappeFileId": str(file_document.name),
+                    "fileName": str(file_document.file_name),
+                    "sizeBytes": int(file_document.file_size),
+                }
+            )
             with _correction_server_step(
                 "P607_CORRECTION_ARTIFACT_INSERT",
                 self.trace_id,
