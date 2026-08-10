@@ -2475,3 +2475,24 @@ repeat or rewrite it merely to restore context. See
   readiness/release authority and external projection remain unavailable.
 - After affected checks and the task-scope guard pass, ordinary CI on the exact
   checkpoint must pass before checkpoint 2 can activate.
+
+## 2026-08-10 P7-02 checkpoint 1 PASS; checkpoint 2 active
+
+- Product commit `f407550df9f21e9015dd18881a7a536fb9b9bbc8` delivers only
+  pure immutable input-lock, manual Trial Actual, Sample Batch and exact
+  clean-private evidence-reference domains, closed future contracts, exact
+  ownership, four guarded additive DocTypes and focused tests/translations.
+- Stable checkpoint `37a4d9d49c3842813bdd3b54574893c0d403144d` synchronizes only
+  the generated catalog and four direct Chinese translations. Exact-SHA
+  ordinary CI `31399227239` passes repository `93489719835`, frontend/E2E
+  `93489719816`, secret scan `93489719819` and the unchanged `97/97` visual
+  matrix in `93489719881`. Controlled runtime correctly skips.
+- Checkpoint 1 activates no handler, business row, File write, lifecycle or UI.
+  Accepted evidence is
+  `implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md`.
+- Activate only checkpoint 2: Project-first repository/BFF/private-file
+  behavior, exact `planned -> prepared -> running`, manual Actual/Sample
+  revision commands, pending upload/clean evidence access, actor-bound replay,
+  one transaction, append-only audit/cleanup and the independent default-
+  closed P7-02 switch. UI, runtime fixture, automatic import, ERPNext quality,
+  conclusion/Gate/approval/release and Tooling lifecycle remain inactive.

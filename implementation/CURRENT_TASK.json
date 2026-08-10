@@ -3,7 +3,7 @@
   "task_id": "P7-02",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_CHECKPOINT_1",
+  "status": "IN_PROGRESS_CHECKPOINT_2",
   "completion_gate": "LEVEL_2",
   "authorized_next_task": "P7-03",
   "base_checkpoint": "fbac85b49b020a356554ab0e5540b8028ce5862f",
@@ -119,7 +119,7 @@
     "phase_status_resumed_product_task": "P7-02",
     "active_goal_marker": "P7-02",
     "next_action_marker": "P7-02",
-    "controller_marker": "P7-02 audit PASS; checkpoint 1 active"
+    "controller_marker": "P7-02 checkpoint 1 PASS; checkpoint 2 active"
   },
   "rollback": {
     "before_product_resume": "Before retained P7-02 rows, restore the starting checkpoint and migrate only a disposable Site fresh.",

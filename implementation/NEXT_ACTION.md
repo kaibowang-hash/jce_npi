@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-02`
+`IN_PROGRESS_CHECKPOINT_2 — P7-02`
 
-Recovery time: `2026-08-10T13:49:23Z`
+Recovery time: `2026-08-10T14:48:18Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -40,19 +40,28 @@ passes ordinary PR CI `31388734891` and complete Level 3 `31392474781`; the
 evidence-only SHA `fbac85b` passes CI `31393689222`. The ordered hold is
 removed without changing product, Gate or test truth.
 
-The P7-02 audit passes. Execute only checkpoint 1 from
-`implementation/evidence/phase-7/p7-02-plan.md`, enforced by
-`implementation/CURRENT_TASK.json`: add pure immutable domains, closed
-contracts, exact ownership, guarded additive DocTypes, direct translations and
-focused tests for exact locked Round inputs, versioned Trial Actuals, sample
-batches/cavities and private evidence references. Activate no live route,
-business row, file, fixture or UI. Manual acquisition is the only truthful
-source; automatic machine import, formal ERPNext quality, Gate/conclusion/
-approval/release truth remain unavailable.
+P7-02 checkpoint 1 passes at exact stable checkpoint `37a4d9d`. Product commit
+`f407550` added only the pure immutable domains, closed contracts, ownership,
+four guarded additive DocTypes, translations and focused tests; catalog commit
+`37a4d9d` synchronized generated trilingual artifacts. Ordinary CI
+`31399227239` passes repository `93489719835` (`1,510` tracked Python), frontend
+`93489719816` (`822/822` unit and `359/359` non-visual E2E), secret scan
+`93489719819` and visual `93489719881` at `97/97`. Complete evidence is
+`implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md`.
 
-After checkpoint 1 affected checks and task-scope validation pass, commit and
-run ordinary CI. Only that PASS activates checkpoint 2 repository/BFF/private
-file/lifecycle work.
+Execute only checkpoint 2 from `implementation/evidence/phase-7/p7-02-plan.md`,
+enforced by `implementation/CURRENT_TASK.json`: add Project-first execution
+workspace reads and the exact prepare/start/actual/sample/private-upload/
+evidence/content commands; activate only `planned -> prepared -> running`;
+reuse the controlled private File Revision mechanics; enforce exact
+containment, CSRF, actor-bound idempotency, one transaction, append-only audit,
+cleanup and the independent fail-closed P7-02 route switch. Activate no UI,
+runtime fixture, automatic machine import, formal ERPNext quality, conclusion,
+Gate, approval, release, Tooling lifecycle or reservation authority.
+
+After checkpoint 2 affected repository/API/security tests and task-scope
+validation pass, commit and run ordinary CI. Only that PASS activates the live
+trilingual Trial execution workspace.
 
 ## Retained P6-05 and P6-06 execution history
 

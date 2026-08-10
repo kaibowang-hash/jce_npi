@@ -1,18 +1,19 @@
 # Blockers
 
-Updated: `2026-08-10T13:49:23Z`
+Updated: `2026-08-10T14:48:18Z`
 
 ## Active hard blockers
 
 None. Delivery Pipeline Optimization passes ordinary CI `31388734891` and
 complete Level 3 `31392474781` at exact implementation SHA `22cb24d`; its
 evidence-only checkpoint `fbac85b` passes CI `31393689222`. P7-02 checkpoint 1
-is active and no user action is required.
+passes CI `31399227239` at `37a4d9d`; checkpoint 2 is active and no user action
+is required.
 
 ## Active recovery
 
-None. The ordered delivery hold is removed. The bounded P7-02 audit passes and
-checkpoint 1 is active under the frozen plan and machine-readable path guard.
+None. The ordered delivery hold is removed. P7-02 checkpoint 1 is proven and
+checkpoint 2 is active under the frozen plan and machine-readable path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal quality/approval authority, Trial conclusion/Gate/readiness/
