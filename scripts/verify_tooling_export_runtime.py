@@ -488,6 +488,7 @@ def preference_save_diagnostic(
         f"versionOne={result.body.get('optimisticVersion') == 1}; "
         f"snapshotHashValid={isinstance(result.body.get('snapshotHash'), str) and len(result.body['snapshotHash']) == 64}; "
         f"preferenceMatches={result.body.get('preference') == expected_preference}"
+        f"{document_runtime.sanitized_http_failure(result)}"
     )
 
 

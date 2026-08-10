@@ -139,12 +139,27 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             {},
             {"code": "INTERNAL_ERROR", "message": "must not be emitted"},
         )
-        diagnostic = self.module.preference_save_diagnostic(result, {"viewId": "all"})
+        with patch.object(
+            self.module.document_runtime,
+            "sanitized_http_failure",
+            return_value=(
+                " [diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
+                "exc_type=ValidationError; "
+                "trace_id=trace-0123456789abcdef0123456789abcdef]"
+            ),
+        ):
+            diagnostic = self.module.preference_save_diagnostic(
+                result,
+                {"viewId": "all"},
+            )
         self.assertEqual(
             diagnostic,
             "P6-08 saved preference truth drifted: HTTP 500; "
             "code=INTERNAL_ERROR; storedTrue=False; versionOne=False; "
-            "snapshotHashValid=False; preferenceMatches=False",
+            "snapshotHashValid=False; preferenceMatches=False "
+            "[diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
+            "exc_type=ValidationError; "
+            "trace_id=trace-0123456789abcdef0123456789abcdef]",
         )
         self.assertNotIn("message", diagnostic)
         self.assertNotIn("must not be emitted", diagnostic)
