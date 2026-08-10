@@ -2380,3 +2380,22 @@ repeat or rewrite it merely to restore context. See
   independent route recovery, two migrations, raw-log redaction, zero ERP/
   network/Outbox and cleanup. Then complete P7-01 Level 2 and reconcile
   `FR-TR-001` without claiming resource reservation.
+
+## 2026-08-10 user transition directive — pipeline optimization before P7-02
+
+- Finish the active P7-01 checkpoint 4 and Level 2 Task Gate without changing
+  its frozen scope, validation or truthful resource-reservation hold.
+- After P7-01 Level 2 PASS, pause P7-02 and every later Phase 7 product task.
+  Do not mark Phase 7 blocked or complete and do not execute P7-02 work in
+  parallel.
+- Activate one independent `Delivery Pipeline Optimization` task. It begins
+  with a bounded repository/runtime/CI evidence audit and must freeze its
+  scope, non-scope, changed-files-to-tests map, rollback and PASS criteria
+  before implementation. It may optimize delivery mechanics only; it grants
+  no product, architecture, permission, ownership, translation, visual,
+  security, production or external-system authority and may not skip, weaken
+  or relabel any existing Gate.
+- The inserted task must pass a complete Level 3 Gate. Only that exact PASS
+  resumes P7-02. This ordered delivery hold supersedes the earlier automatic
+  P7-01-to-P7-02 transition sentence while leaving all other continuous-
+  delivery authority and Hard Blocker rules unchanged.

@@ -58,13 +58,22 @@ Project/actor/IDOR denials, independent Trial route disable/recovery, two
 migrations, raw-log redaction, zero ERP/network/Outbox activity and cleanup.
 After complete ordinary CI, run one unchanged controlled-Site Gate, reconcile
 `FR-TR-001` only to the truthful resource-reservation-held foundation, perform
-the Level 2 Task Diff Review and activate P7-02.
+the Level 2 Task Diff Review and close P7-01. Do not activate P7-02 directly.
+The user's 2026-08-10 transition directive inserts one independent Delivery
+Pipeline Optimization task after P7-01. That task must begin with a bounded
+repository/CI evidence audit, preserve every product and Gate invariant, and
+pass its own Level 3 Gate before P7-02 may resume.
 
 Confirmed reservation, Round input locking, samples/cavities, defects/actions,
 conclusions, readiness, handover, Released Trial Summary, mobile field
 actions, production ERPNext, official quality authority, Gate mutation,
 external event/projection and production print policy remain scoped holds,
 not global Hard Blockers.
+
+P7-02 and every later Phase 7 product task are explicitly paused after P7-01
+until Delivery Pipeline Optimization reaches Level 3 PASS. This is an ordered
+delivery hold, not a product Hard Blocker and not authorization to weaken,
+skip or parallelize the P7-01 controlled runtime Gate.
 
 ## Retained P6-05 and P6-06 execution history
 

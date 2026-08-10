@@ -1576,6 +1576,16 @@ p7_01:
     - implementation/evidence/phase-7/p7-01-domain-metadata-checkpoint.md
     - implementation/evidence/phase-7/p7-01-repository-bff-checkpoint.md
     - implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md
+delivery_pipeline_optimization:
+  task: DELIVERY_PIPELINE_OPTIMIZATION
+  status: NOT_STARTED_WAITING_P7_01_LEVEL_2
+  insertion_authority: USER_2026_08_10
+  predecessor_task: P7-01
+  required_gate: LEVEL_3
+  product_phase_7_pause_after: P7-01
+  resume_task_after_pass: P7-02
+  current_stage: WAITING_FOR_P7_01_LEVEL_2
+  product_scope_changed: false
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
