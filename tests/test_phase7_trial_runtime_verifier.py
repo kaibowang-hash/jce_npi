@@ -152,9 +152,14 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             'validate_problem(duplicate_label, 409, "TRIAL_LABEL_CONFLICT")',
             'validate_problem(denied, 404, "TRIAL_UNAVAILABLE")',
             'validate_problem(cross_project, 404, "TRIAL_UNAVAILABLE")',
-            '"P7-01 cross-process replay changed immutable cardinality or integration truth"',
+            '"P7-02 cross-process replay changed immutable cardinality or integration truth"',
             '"P7-01 same-process action replay changed sealed response truth"',
             '"rollbackVerified": True',
+            'validate_problem(stale_prepare, 409, "TRIAL_EXECUTION_CONFLICT")',
+            'validate_problem(stale_actual, 409, "TRIAL_EXECUTION_CONFLICT")',
+            '"P7-02 same-process evidence replay changed sealed response truth"',
+            '"P7-02 cross-process execution command was not replayed"',
+            '"TRIAL_EXECUTION_UNAVAILABLE"',
         )
         for marker in required:
             with self.subTest(marker=marker):
@@ -171,6 +176,11 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             '"NPI Inbox Message"',
             '"P7-01 controlled Trial planning created ERP integration traffic"',
             '"integrationTrafficCreated": False',
+            '"NPI Trial Input Lock Revision"',
+            '"NPI Trial Actual Revision"',
+            '"NPI Trial Sample Batch Revision"',
+            '"NPI Trial Evidence Reference"',
+            '"trial_evidence.content.read"',
         )
         for marker in required:
             with self.subTest(marker=marker):
@@ -181,15 +191,23 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             "--trial-only",
             "trial_route_switch_state",
             "npi_p7_01_routes_disabled",
+            "trial_execution_route_switch_state",
+            "npi_p7_02_routes_disabled",
             "set_trial_route_switch false false",
             "set_trial_route_switch true true",
+            "set_trial_execution_route_switch false false",
+            "set_trial_execution_route_switch true true",
             "run_trial_runtime_verifier fresh",
-            "run_trial_route_probe disabled",
-            "run_trial_route_probe recovered",
+            "run_trial_route_probe planning-disabled",
+            "run_trial_route_probe planning-recovered",
+            "run_trial_route_probe execution-disabled",
+            "run_trial_route_probe execution-recovered",
             "run_trial_runtime_verifier replay-only",
             "verify_trial_runtime_log_redaction",
             "restore_trial_route_switch",
+            "restore_trial_execution_route_switch",
             "Failed to restore the P7-01 route-disable switch to absent.",
+            "Failed to restore the P7-02 route-disable switch to absent.",
         )
         for marker in required:
             with self.subTest(marker=marker):
@@ -199,11 +217,11 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             self.shell.index("run_trial_runtime_verifier fresh"),
         )
         self.assertLess(
-            self.shell.index("run_trial_route_probe disabled"),
-            self.shell.index("run_trial_route_probe recovered"),
+            self.shell.index("run_trial_route_probe planning-disabled"),
+            self.shell.index("run_trial_route_probe planning-recovered"),
         )
         self.assertLess(
-            self.shell.index("run_trial_route_probe recovered"),
+            self.shell.index("run_trial_route_probe execution-recovered"),
             self.shell.index("run_trial_runtime_verifier replay-only"),
         )
 
@@ -217,11 +235,12 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
     def test_workflow_records_exact_cumulative_scope(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         required = (
-            "P7-01 Trial planning",
-            "Verify cumulative P5 and P6-08 controlled runtime and P7-01 Trial planning",
+            "P7-02 Trial execution",
+            "Verify cumulative P5 and P6-08 controlled runtime plus P7-01 planning and P7-02 execution",
             "bash scripts/verify-frappe-runtime.sh --trial-only",
-            "scope=p5-01-through-p7-01",
-            "predecessor_scope=p5-01-through-p6-08",
+            "scope=p5-01-through-p7-02",
+            "predecessor_scope=p5-01-through-p7-01",
+            "p6_scope=p5-01-through-p6-08",
             "p7-trial-runtime-${{ github.run_id }}",
             "site=npi.localhost",
             "database=npi_one_runtime",
@@ -241,10 +260,38 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             "Synthetic successor Trial planning objective",
             "SYN-MATERIAL-",
             "Verify synthetic dimensional evidence",
-            "P7-01 raw Trial planning value leaked into the runtime log.",
+            "Controlled PA66 material observation",
+            "P702-MATERIAL-",
+            "Controlled dimensional laboratory",
+            "p7-02-controlled-parameters.csv",
+            "melt_temperature,287,degC",
+            "P7-02 raw Trial execution value leaked into the runtime log.",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.shell)
+
+    def test_runtime_proves_exact_execution_sample_and_private_evidence(self) -> None:
+        required = (
+            "prepare_execution_payload",
+            "actual_context_payload",
+            "sample_payload",
+            'state="prepared"',
+            'state="running"',
+            'actual_successor.get("actualVersion") == 2',
+            'sample_successor.get("sampleVersion") == 2',
+            '"TRIAL_EXECUTION_REFERENCE_UNAVAILABLE"',
+            "observe_trial_file_scan",
+            'pending_file.get("scanState") == "pending"',
+            'clean_body["pendingFiles"][0].get("scanState") == "clean"',
+            "binary_evidence_request",
+            '"machineImport": "unavailable"',
+            '"erpQuality": "unavailable"',
+            '"gateEffect": "unavailable"',
+            '"approvedBaseline": "unavailable"',
+        )
+        for marker in required:
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.source)
 
 
 if __name__ == "__main__":

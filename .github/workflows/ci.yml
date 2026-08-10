@@ -212,7 +212,7 @@ jobs:
           retention-days: 30
 
   document_runtime:
-    name: P5 controlled document runtime and P6 Tooling through export and P7-01 Trial planning
+    name: P5 controlled document runtime and P6 Tooling through export plus P7-02 Trial execution
     needs: controlled_preflight
     if: >-
       always() &&
@@ -242,7 +242,7 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 and P6-08 controlled runtime and P7-01 Trial planning
+      - name: Verify cumulative P5 and P6-08 controlled runtime plus P7-01 planning and P7-02 execution
         run: bash scripts/verify-frappe-runtime.sh --trial-only
       - name: Record controlled runtime result
         run: |
@@ -255,8 +255,9 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p7-01\n'
-            printf 'predecessor_scope=p5-01-through-p6-08\n'
+            printf 'scope=p5-01-through-p7-02\n'
+            printf 'predecessor_scope=p5-01-through-p7-01\n'
+            printf 'p6_scope=p5-01-through-p6-08\n'
             printf 'p6_predecessor_scope=p5-01-through-p6-07\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
             printf 'command=bash scripts/verify-frappe-runtime.sh --trial-only\n'
