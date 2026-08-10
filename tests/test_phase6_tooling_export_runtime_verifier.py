@@ -128,6 +128,8 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             'observed_sources <= {"manual", "controlled_xlsx_import"}',
             'f"P6-08 Tooling List returned HTTP {result.status} "',
             "problem_code if isinstance(problem_code, str) else 'unavailable'",
+            'if query_key == "preference-save":',
+            'headers["X-NPI-P6-08-Diagnostic"] = "p608-preference-validation-v1"',
         )
         for marker in required:
             with self.subTest(marker=marker):

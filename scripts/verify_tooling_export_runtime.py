@@ -140,6 +140,8 @@ def json_request(
     )
     if csrf_token is not None:
         headers["X-Frappe-CSRF-Token"] = csrf_token
+    if query_key == "preference-save":
+        headers["X-NPI-P6-08-Diagnostic"] = "p608-preference-validation-v1"
     result = document_runtime.request(
         opener,
         base_url,
