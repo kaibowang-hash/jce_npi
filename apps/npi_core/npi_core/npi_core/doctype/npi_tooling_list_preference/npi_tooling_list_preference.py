@@ -14,6 +14,7 @@ from npi_core.tooling.export_domain import (
 from npi_core.tooling.export_frappe_validation import (
     canonical_export_uuid,
     deny_tooling_export_delete,
+    require_datetime_snapshot_projection,
     require_snapshot_projection,
     require_tooling_export_write,
     validate_hashed_snapshot,
@@ -92,10 +93,14 @@ class NPIToolingListPreference(Document):
                 ("view_id", "viewId"),
                 ("optimistic_version", "optimisticVersion"),
                 ("last_changed_by", "lastChangedBy"),
-                ("last_changed_at", "lastChangedAt"),
                 ("request_id", "requestId"),
                 ("trace_id", "traceId"),
             ),
+        )
+        require_datetime_snapshot_projection(
+            self,
+            snapshot,
+            (("last_changed_at", "lastChangedAt"),),
         )
         require_exact_parent(
             "NPI Engineering Project",

@@ -90,6 +90,32 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
         ):
             self.assertIn(marker, controller)
 
+    def test_preference_datetime_projection_compares_the_same_utc_instant(self) -> None:
+        controller = (
+            DOCTYPE_ROOT
+            / "npi_tooling_list_preference"
+            / "npi_tooling_list_preference.py"
+        ).read_text(encoding="utf-8")
+        tree = ast.parse(controller)
+        calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id
+            in {"require_snapshot_projection", "require_datetime_snapshot_projection"}
+        ]
+        projections = {
+            call.func.id: ast.unparse(call.args[2])
+            for call in calls
+            if len(call.args) == 3 and isinstance(call.func, ast.Name)
+        }
+        self.assertIn(
+            "('last_changed_at', 'lastChangedAt')",
+            projections["require_datetime_snapshot_projection"],
+        )
+        self.assertNotIn("last_changed_at", projections["require_snapshot_projection"])
+
     def test_package_datetime_projection_compares_the_same_utc_instant(self) -> None:
         module_names = (
             "frappe",
