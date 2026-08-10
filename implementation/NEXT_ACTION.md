@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P7-01 CHECKPOINT 1`
+`IN_PROGRESS_CONTROLLED_RUNTIME — P7-01 CHECKPOINT 4`
 
-Recovery time: `2026-08-10T05:26:23Z`
+Recovery time: `2026-08-10T10:02:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -33,20 +33,38 @@ job correctly skipped. The anchor allocates every primary Trial/NPI requirement
 and preserves the earlier truth for the controlled-print and Phase 8 external-
 projection foundations.
 
-The bounded P7-01 audit passes in
-`implementation/evidence/phase-7/p7-01-plan.md`. The current atomic action is
-checkpoint 1 only: add pure immutable Trial Plan Revision, planned Trial Round,
-lifecycle-event, Trial-to-Domain-Work link and command-receipt domains; replace
-the unimplemented non-Project-first Trial OpenAPI placeholders with closed
-P7-01 schemas; add exact data ownership; add five guarded additive DocTypes;
-and prove hash/version/non-collapse/parent/immutability/generic-CRUD security.
-No handler, live route, business row, fixture or SPA is activated.
+The bounded P7-01 audit and checkpoints 1 through 3 pass. Checkpoint 1 is
+recorded at stable SHA `87c2ab0`; checkpoint 2 at `256ea97`; and the live
+workspace checkpoint at exact stable SHA
+`583c879c85831c1c31de237960e0521f7c599a5b`. Final ordinary CI
+`31375548428` passes repository `93413841285` (`1,475` tracked Python,
+`822/822` frontend unit, `359/359` non-visual E2E, `6,001` direct trilingual
+sources, statements `80.10%`, zero vulnerabilities and both secret lanes) and
+fixed-Linux visual `93413841113` at `97/97`. The controlled job correctly
+skips because checkpoint 4 is not yet present.
 
-Repository/BFF, live Trial workspace, confirmed reservation, Round input
-locking, samples/cavities, defects/actions, conclusions, readiness,
-handover, Released Trial Summary, mobile field actions, production ERPNext,
-official quality authority, Gate mutation, external event/projection and
-production print policy remain scoped holds, not global Hard Blockers.
+Complete checkpoint evidence is:
+
+- `implementation/evidence/phase-7/p7-01-domain-metadata-checkpoint.md`;
+- `implementation/evidence/phase-7/p7-01-repository-bff-checkpoint.md`; and
+- `implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md`.
+
+The current atomic action is checkpoint 4 only: extend the cumulative
+disposable-Site verifier and controlled workflow through P7-01; seed bounded
+synthetic Project/Tooling/member/document truth; prove initial and successor
+Plan revisions, a distinct planned Round, governed Domain Work Items and Trial
+links, same- and cross-process replay/conflict, transaction rollback,
+Project/actor/IDOR denials, independent Trial route disable/recovery, two
+migrations, raw-log redaction, zero ERP/network/Outbox activity and cleanup.
+After complete ordinary CI, run one unchanged controlled-Site Gate, reconcile
+`FR-TR-001` only to the truthful resource-reservation-held foundation, perform
+the Level 2 Task Diff Review and activate P7-02.
+
+Confirmed reservation, Round input locking, samples/cavities, defects/actions,
+conclusions, readiness, handover, Released Trial Summary, mobile field
+actions, production ERPNext, official quality authority, Gate mutation,
+external event/projection and production print policy remain scoped holds,
+not global Hard Blockers.
 
 ## Retained P6-05 and P6-06 execution history
 

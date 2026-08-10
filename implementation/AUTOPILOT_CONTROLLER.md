@@ -2326,3 +2326,57 @@ repeat or rewrite it merely to restore context. See
   DocTypes and direct metadata/security tests. No live route, business row,
   policy, fixture, SPA, external call, lifecycle beyond planned-state rules,
   confirmed reservation, quality/Gate effect or later P7 behavior is active.
+
+## 2026-08-10 P7-01 checkpoints 1 and 2 PASS; live workspace activation
+
+- Checkpoint 1 product commit `3d3f510` adds the pure immutable Trial Plan
+  Revision, planned Round, lifecycle-event, Work-link and command-receipt
+  domains; corrected closed Project-first OpenAPI; exact ownership; five
+  guarded DocTypes and direct tests. Reviewed catalog-only Linux evidence
+  checkpoint `87c2ab0` passes ordinary CI `31361586261`: repository
+  `93371344429`, visual `93371344404` at `94/94`, with controlled runtime
+  correctly skipped.
+- Checkpoint 2 product commit `bcdc167` activates only the independently
+  default-closed Project-first Trial reads and create-Plan, append-revision,
+  create-Round and generate-actions commands with exact containment,
+  actor-bound idempotency, one transaction, immutable audit and governed
+  Domain Work Item links. Reviewed catalog evidence checkpoint `256ea97`
+  passes ordinary CI `31365127408` attempt 2: repository `93383559559` and
+  visual `93383558605` at `94/94`; controlled runtime correctly skips.
+- Evidence checkpoint `620b388` records both PASS boundaries. Resource
+  proposals remain booking `unavailable`; no reservation, ERPNext, quality,
+  Gate or later Phase 7 authority is activated.
+- Standing authority activates only checkpoint 3: strict data source, dense
+  trilingual live Trial planning workspace, honest state/accessibility
+  behavior and affected governed visuals. Controlled Site remains checkpoint
+  4.
+
+## 2026-08-10 P7-01 checkpoint 3 PASS; controlled runtime activation
+
+- Product commit `b36b5f6` adds the strict Trial data source, live Project
+  Trial workspace, Shell/router composition, complete direct translations,
+  unit/support/E2E coverage and the three governed P7-01 visual cases.
+- Serial repairs aligned the obsolete Shell command assertion, added only the
+  reviewed Linux candidates and stabilized the native inspector range layout.
+  Final baseline commit `583c879` contains only artifact-reviewed Linux
+  actuals. No test, locale, viewport, threshold, tolerance, permission or PASS
+  criterion was removed or weakened; user-owned Darwin and local report files
+  remain untracked.
+- Exact stable SHA `583c879c85831c1c31de237960e0521f7c599a5b` passes
+  ordinary CI `31375548428`: repository `93413841285` passes `1,475` tracked
+  Python tests, `822/822` frontend unit, `359/359` non-visual E2E, `6,001`
+  direct trilingual sources, statements `80.10%`, zero vulnerabilities and
+  both secret lanes; fixed-Linux visual `93413841113` passes `97/97`.
+  Controlled job `93413841564` correctly skips.
+- Visual artifact `9057843671` has digest
+  `sha256:1a1c754cf4f7a125e0557b55049232874131c7a2aaa98d3017b7e7c5da3ad86f`;
+  Gitleaks artifact `9057989926` has digest
+  `sha256:93cb2b76c15f4efd9195446dbb689c2c6760efc5b04d3d3cf224149c86fa9009`.
+  Complete evidence is
+  `implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md`.
+- Standing authority activates only checkpoint 4: extend the cumulative
+  disposable-Site verifier/workflow through P7-01; prove Plan successor,
+  distinct Round, governed actions/links, replay/conflict/rollback/IDOR,
+  independent route recovery, two migrations, raw-log redaction, zero ERP/
+  network/Outbox and cleanup. Then complete P7-01 Level 2 and reconcile
+  `FR-TR-001` without claiming resource reservation.

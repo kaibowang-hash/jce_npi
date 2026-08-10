@@ -1536,7 +1536,7 @@ p7_00:
 p7_01:
   task: P7-01
   controller_task: P7_01_TRIAL_PLAN_ROUND_IDENTITY_LIFECYCLE
-  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+  status: IN_PROGRESS_CONTROLLED_RUNTIME
   phase: 7
   compatibility_milestone: M6-01
   requirement_ids:
@@ -1549,9 +1549,21 @@ p7_01:
   audit_repository_job: 93361224683
   audit_visual_job: 93361224744
   audit_visual_result: 94_OF_94_PASS
-  current_stage: CHECKPOINT_1_DOMAIN_CONTRACT_ADDITIVE_METADATA
-  next_stage: CHECKPOINT_1_TASK_GATE
-  product_code_changed: false
+  current_stage: CHECKPOINT_4_CONTROLLED_RUNTIME_LEVEL_2
+  next_stage: CHECKPOINT_4_TASK_GATE
+  product_code_changed: true
+  checkpoint_1_status: PASS
+  checkpoint_1_stable_sha: 87c2ab011d3699af20cb64dbf097c02cfec1ca57
+  checkpoint_1_ordinary_ci: 31361586261
+  checkpoint_2_status: PASS
+  checkpoint_2_stable_sha: 256ea97339b31a9a5fa2d4d6dd0eb92983be11eb
+  checkpoint_2_ordinary_ci: 31365127408
+  checkpoint_3_status: PASS
+  checkpoint_3_stable_sha: 583c879c85831c1c31de237960e0521f7c599a5b
+  checkpoint_3_ordinary_ci: 31375548428
+  checkpoint_3_repository_job: 93413841285
+  checkpoint_3_visual_job: 93413841113
+  checkpoint_3_visual_result: 97_OF_97_PASS
   scoped_holds:
     - TRIAL_INPUT_LOCKING_AND_EVIDENCE
     - SAMPLE_CAVITY_DEFECT_ACTION_AND_CONCLUSION
@@ -1561,6 +1573,9 @@ p7_01:
     - implementation/phase-7-requirement-anchor.md
     - implementation/evidence/phase-7/p7-00-validation.md
     - implementation/evidence/phase-7/p7-01-plan.md
+    - implementation/evidence/phase-7/p7-01-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-7/p7-01-repository-bff-checkpoint.md
+    - implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
