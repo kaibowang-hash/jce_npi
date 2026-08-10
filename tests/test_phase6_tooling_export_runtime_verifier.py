@@ -126,6 +126,8 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             '"columnId": "tooling", "width": 272',
             '"manual" in observed_sources',
             'observed_sources <= {"manual", "controlled_xlsx_import"}',
+            'f"P6-08 Tooling List returned HTTP {result.status} "',
+            "problem_code if isinstance(problem_code, str) else 'unavailable'",
         )
         for marker in required:
             with self.subTest(marker=marker):

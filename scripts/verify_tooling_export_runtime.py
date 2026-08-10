@@ -272,7 +272,14 @@ def query_list(
 
 
 def assert_list(result: HttpResult, project_id: str) -> dict[str, Any]:
-    require(result.status == 200, "P6-08 Tooling List is unavailable")
+    problem_code = result.body.get("code")
+    require(
+        result.status == 200,
+        (
+            f"P6-08 Tooling List returned HTTP {result.status} "
+            f"with code {problem_code if isinstance(problem_code, str) else 'unavailable'}"
+        ),
+    )
     value = result.body
     items = value.get("items")
     permissions = value.get("permissions")
