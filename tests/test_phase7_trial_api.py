@@ -18,6 +18,9 @@ REVISION_ID = "29e933a3-3954-4a96-9400-2be1987ae370"
 ROUND_ID = "89953948-4178-46dc-b7ca-8b94f2ac4e36"
 SAMPLE_ID = "6dd227c4-2c74-4f2f-a3ce-347497758118"
 EVIDENCE_ID = "99d03125-7947-4a72-a94f-47930cfcb7bb"
+CAVITY_ID = "a8ab6f87-227f-42f9-a7cb-d695e8d34bca"
+CAVITY_RESULT_ID = "166236d9-2d86-4034-b7e1-4cab3f405da7"
+DEFECT_ID = "427230fd-fc1f-4738-ac31-3fd098d91561"
 FILE_REVISION_ID = "97adf8ba-827c-4e31-a62c-370248685ab8"
 MASTER_ID = "eb233de2-5d4d-4556-ad16-9476d8f0776f"
 MEMBER_ID = "a6bfd0bf-8ab3-4a92-b49e-818735db4f55"
@@ -98,6 +101,24 @@ class MockRepository:
     def bind_evidence(self, *args: object, **kwargs: Any):
         return self._command("bind_evidence", args, kwargs)
 
+    def quality_workspace(self, *args: object, **kwargs: Any):
+        return self._query("quality_workspace", args, kwargs)
+
+    def create_cavity_result(self, *args: object, **kwargs: Any):
+        return self._command("create_cavity_result", args, kwargs)
+
+    def revise_cavity_result(self, *args: object, **kwargs: Any):
+        return self._command("revise_cavity_result", args, kwargs)
+
+    def create_defect(self, *args: object, **kwargs: Any):
+        return self._command("create_defect", args, kwargs)
+
+    def revise_defect(self, *args: object, **kwargs: Any):
+        return self._command("revise_defect", args, kwargs)
+
+    def verify_defect(self, *args: object, **kwargs: Any):
+        return self._command("verify_defect", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         return copy.deepcopy(self.owner.response) if self.available else None
@@ -146,6 +167,7 @@ class Phase7TrialApiTest(unittest.TestCase):
             npi_tenant_id="TENANT-A",
             npi_p7_01_routes_disabled=False,
             npi_p7_02_routes_disabled=False,
+            npi_p7_03_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -155,6 +177,8 @@ class Phase7TrialApiTest(unittest.TestCase):
                 "trial_round_id": ROUND_ID,
                 "sample_batch_id": SAMPLE_ID,
                 "evidence_id": EVIDENCE_ID,
+                "cavity_result_id": CAVITY_RESULT_ID,
+                "defect_id": DEFECT_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -191,6 +215,7 @@ class Phase7TrialApiTest(unittest.TestCase):
         self.repository = MockRepository(self)
         self.api._repository_factory = lambda **_values: self.repository
         self.api._execution_repository_factory = lambda **_values: self.repository
+        self.api._quality_repository_factory = lambda **_values: self.repository
         self.response = {
             "projectGlobalId": PROJECT_ID,
             "plans": [],
@@ -321,6 +346,12 @@ class Phase7TrialApiTest(unittest.TestCase):
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/files", "upload_trial_evidence_file"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/evidence", "bind_trial_evidence"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/evidence/{EVIDENCE_ID}:content", "read_trial_evidence_content"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/quality", "get_trial_quality_workspace"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/cavity-results", "create_trial_cavity_result"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/cavity-results/{CAVITY_RESULT_ID}/revisions", "revise_trial_cavity_result"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects", "create_trial_defect"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects/{DEFECT_ID}/revisions", "revise_trial_defect"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects/{DEFECT_ID}/verifications", "verify_trial_defect"),
         )
         for method, path, command in cases:
             with self.subTest(method=method, path=path):
@@ -368,6 +399,25 @@ class Phase7TrialApiTest(unittest.TestCase):
             self.frappe.local.form_dict.cmd,
             "npi_core.trial_api.get_trial_round_execution",
         )
+        self.frappe.conf.npi_p7_01_routes_disabled = False
+        self.frappe.conf.pop("npi_p7_03_routes_disabled")
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/quality",
+            method="GET",
+        )
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.trial_quality_routes_disabled",
+        )
+        self.frappe.conf.npi_p7_03_routes_disabled = False
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.get_trial_quality_workspace",
+        )
 
     def test_workspace_query_uses_opaque_project_identity(self) -> None:
         response = self.call(self.api.get_trial_planning_workspace)
@@ -382,6 +432,54 @@ class Phase7TrialApiTest(unittest.TestCase):
         name, args, _kwargs = self.repository.calls[-1]
         self.assertEqual(name, "execution_workspace")
         self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+
+    def test_quality_query_uses_project_and_round_identity(self) -> None:
+        response = self.call(self.api.get_trial_quality_workspace)
+        self.assertEqual(response, self.response)
+        name, args, _kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "quality_workspace")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+
+    def test_cavity_result_command_parses_exact_closed_context(self) -> None:
+        payload = {
+            "expectedRoundOptimisticVersion": 3,
+            "expectedRoundSnapshotHash": SHA256_A,
+            "expectedInputLockRevisionGlobalId": REVISION_ID,
+            "expectedInputLockRevisionSnapshotHash": SHA256_A,
+            "sampleBatchRevisionGlobalId": SAMPLE_ID,
+            "expectedSampleBatchRevisionSnapshotHash": SHA256_A,
+            "cavityGlobalId": CAVITY_ID,
+            "measurements": [
+                {
+                    "characteristicKey": "width",
+                    "label": "Width",
+                    "unit": "mm",
+                    "nominalValue": "10",
+                    "lowerLimit": "9.9",
+                    "upperLimit": "10.1",
+                    "required": True,
+                    "state": "measured",
+                    "value": "10.01",
+                    "source": "manual",
+                    "observedAt": "2026-08-11T08:00:00Z",
+                }
+            ],
+            "evidence": [{"globalId": EVIDENCE_ID, "snapshotHash": SHA256_A}],
+            "reason": "Record the exact cavity result.",
+        }
+        response = self.call(self.api.create_trial_cavity_result, payload)
+        self.assertEqual(response, self.response)
+        name, args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "create_cavity_result")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+        self.assertEqual(kwargs["cavity_id"], UUID(CAVITY_ID))
+        self.assertEqual(kwargs["measurements"][0]["state"].value, "measured")
+
+        forged = copy.deepcopy(payload)
+        forged["measurements"][0]["comparisonState"] = "within_spec"
+        rejected = self.call(self.api.create_trial_cavity_result, forged)
+        self.assertEqual(rejected["code"], "VALIDATION_FAILED")
+        self.assertEqual(rejected["fieldErrors"][0]["path"], "measurements[0]")
 
     def test_prepare_parses_exact_references_and_rejects_forged_hash(self) -> None:
         payload = self.prepare_payload()

@@ -17,7 +17,7 @@ def schema(name: str) -> str:
 
 
 class Phase7TrialQualityContractTest(unittest.TestCase):
-    def test_checkpoint_one_adds_closed_read_models_without_live_paths(self) -> None:
+    def test_checkpoint_two_exposes_only_the_six_closed_quality_paths(self) -> None:
         for name in (
             "TrialQualityEvidenceReference",
             "TrialCavityMeasurement",
@@ -26,16 +26,60 @@ class Phase7TrialQualityContractTest(unittest.TestCase):
             "TrialDefectExternalEffects",
             "TrialDefectRevision",
             "TrialDefectVerificationRevision",
+            "TrialCavityMeasurementInput",
+            "TrialDefectActionInput",
+            "CreateTrialCavityResult",
+            "ReviseTrialCavityResult",
+            "CreateTrialDefect",
+            "ReviseTrialDefect",
+            "CreateTrialDefectVerification",
+            "TrialQualityWorkspace",
         ):
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", schema(name))
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn(
+        for marker in (
             "/projects/{projectId}/trial-rounds/{trialRoundId}/quality:",
-            paths,
-        )
-        self.assertNotIn("createTrialCavityResult", paths)
-        self.assertNotIn("createTrialDefectVerification", paths)
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/cavity-results:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/cavity-results/{cavityResultId}/revisions:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/defects:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/defects/{defectId}/revisions:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/defects/{defectId}/verifications:",
+            "operationId: createTrialCavityResult",
+            "operationId: createTrialDefectVerification",
+            "x-audit-operation: trial_defect.verify",
+        ):
+            self.assertIn(marker, paths)
+        for forbidden in (
+            "createTrialNcr",
+            "createTrialQualityInspection",
+            "decideTrialGate",
+            "transitionTrialToolingLifecycle",
+            "approveTrialConclusion",
+        ):
+            self.assertNotIn(forbidden, paths)
+
+    def test_command_contracts_require_exact_round_hashes_and_actor_replay(self) -> None:
+        cavity = schema("CreateTrialCavityResult")
+        defect = schema("ReviseTrialDefect")
+        verification = schema("CreateTrialDefectVerification")
+        for marker in (
+            "expectedRoundOptimisticVersion:",
+            "expectedRoundSnapshotHash:",
+            "expectedInputLockRevisionGlobalId:",
+            "expectedInputLockRevisionSnapshotHash:",
+        ):
+            self.assertIn(marker, cavity)
+            self.assertIn(marker, defect)
+        for marker in (
+            "expectedDefectRevisionSnapshotHash:",
+            "expectedTargetRoundSnapshotHash:",
+            "expectedCavityResultRevisionSnapshotHash:",
+            "verifierMember:",
+        ):
+            self.assertIn(marker, verification)
+        self.assertIn("TrialQualityCommandResult:", OPENAPI)
+        self.assertIn("Idempotency-Replayed:", OPENAPI)
 
     def test_cavity_result_uses_exact_sample_cavity_and_explicit_missing_state(self) -> None:
         measurement = schema("TrialCavityMeasurement")

@@ -6423,3 +6423,18 @@ Verifier Project Member,验证项目成员
 Trial Defect Verification Result,试模缺陷验证结果
 fail,失败
 Trial Defect Verification Finding,试模缺陷验证发现
+A measured characteristic requires one value; a missing measurement must stay empty.,已测量特性必须填写一个数值；未测量特性必须保持为空。
+"Select one complete current NPI defect predecessor, or create a new defect.",请选择完整的当前 NPI 缺陷前序，或创建新缺陷。
+"Select one complete verification attempt predecessor, or start a new verification.",请选择完整的验证尝试前序，或开始新的验证。
+The Trial quality record was changed by another user.,试模质量记录已被其他用户更改。
+The Trial quality workspace is temporarily unavailable.,试模质量工作区暂时不可用。
+The Trial quality workspace is unavailable.,试模质量工作区不可用。
+The quality routes are disabled while a reviewed forward fix is applied.,应用已评审的前向修复期间，质量路由已禁用。
+The selected Trial quality reference is unavailable.,所选试模质量引用不可用。
+trial_cavity_result.create,创建试模型腔结果
+trial_cavity_result.revise,修订试模型腔结果
+trial_cavity_result_revision,试模型腔结果修订
+trial_defect.create,创建试模缺陷
+trial_defect.revise,修订试模缺陷
+trial_defect.verify,验证试模缺陷
+trial_defect_verification_revision,试模缺陷验证修订

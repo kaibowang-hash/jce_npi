@@ -47,6 +47,22 @@ from npi_core.trial.execution_validation import (
     revise_sample_values,
     start_values,
 )
+from npi_core.trial.quality_domain import (
+    TrialQualityRoutesDisabled,
+    TrialQualityUnavailable,
+)
+from npi_core.trial.quality_validation import (
+    CREATE_CAVITY_RESULT_FIELDS,
+    CREATE_DEFECT_FIELDS,
+    REVISE_CAVITY_RESULT_FIELDS,
+    REVISE_DEFECT_FIELDS,
+    VERIFY_DEFECT_FIELDS,
+    create_cavity_result_values,
+    create_defect_values,
+    revise_cavity_result_values,
+    revise_defect_values,
+    verification_values,
+)
 
 
 _PLAN_FIELDS = frozenset(
@@ -174,6 +190,33 @@ class _ExecutionRepository(Protocol):
     ): ...
 
 
+class _QualityRepository(Protocol):
+    def quality_workspace(self, project_id: UUID, round_id: UUID): ...
+    def create_cavity_result(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def revise_cavity_result(
+        self,
+        project_id: UUID,
+        round_id: UUID,
+        cavity_result_id: UUID,
+        **values: Any,
+    ): ...
+    def create_defect(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def revise_defect(
+        self,
+        project_id: UUID,
+        round_id: UUID,
+        defect_id: UUID,
+        **values: Any,
+    ): ...
+    def verify_defect(
+        self,
+        project_id: UUID,
+        round_id: UUID,
+        defect_id: UUID,
+        **values: Any,
+    ): ...
+
+
 def _repository_factory(
     *,
     principal: Principal,
@@ -198,6 +241,21 @@ def _execution_repository_factory(
     from npi_core.trial.execution_repository import FrappeTrialExecutionRepository
 
     return FrappeTrialExecutionRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _quality_repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _QualityRepository:
+    from npi_core.trial.quality_repository import FrappeTrialQualityRepository
+
+    return FrappeTrialQualityRepository(
         principal=principal,
         request_id=request_id,
         trace_id=trace_id,
@@ -670,6 +728,232 @@ def bind_trial_evidence(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_trial_quality_workspace(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository = _quality_query_repository(request_fields)
+        response = repository.quality_workspace(
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+        )
+        if response is None:
+            raise TrialQualityUnavailable()
+        headers["X-Request-ID"] = request_id
+        return response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_trial_cavity_result(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    expectedInputLockRevisionSnapshotHash: Any = None,
+    sampleBatchRevisionGlobalId: Any = None,
+    expectedSampleBatchRevisionSnapshotHash: Any = None,
+    cavityGlobalId: Any = None,
+    measurements: Any = None,
+    evidence: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _quality_command(
+        allowed_fields=CREATE_CAVITY_RESULT_FIELDS,
+        required_fields=CREATE_CAVITY_RESULT_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.create_cavity_result(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **create_cavity_result_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def revise_trial_cavity_result(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    expectedInputLockRevisionSnapshotHash: Any = None,
+    expectedRevisionGlobalId: Any = None,
+    expectedRevisionSnapshotHash: Any = None,
+    expectedResultVersion: Any = None,
+    measurements: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _quality_command(
+        allowed_fields=REVISE_CAVITY_RESULT_FIELDS,
+        required_fields=REVISE_CAVITY_RESULT_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.revise_cavity_result(
+            project_id,
+            round_id,
+            _opaque_route_uuid("cavity_result_id"),
+            idempotency_key_hash=key_hash,
+            **revise_cavity_result_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_trial_defect(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    expectedInputLockRevisionSnapshotHash: Any = None,
+    defectGlobalId: Any = None,
+    expectedPredecessorKind: Any = None,
+    expectedPredecessorGlobalId: Any = None,
+    expectedPredecessorSnapshotHash: Any = None,
+    expectedDefectVersion: Any = None,
+    sampleBatchRevisionGlobalId: Any = None,
+    expectedSampleBatchRevisionSnapshotHash: Any = None,
+    cavityGlobalId: Any = None,
+    businessCode: Any = None,
+    title: Any = None,
+    description: Any = None,
+    categoryKey: Any = None,
+    location: Any = None,
+    severity: Any = None,
+    blocking: Any = None,
+    state: Any = None,
+    rootCauseState: Any = None,
+    rootCause: Any = None,
+    responsibleMember: Any = None,
+    occurrenceCount: Any = None,
+    actions: Any = None,
+    evidence: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    required = CREATE_DEFECT_FIELDS - frozenset(
+        {
+            "defectGlobalId",
+            "expectedPredecessorKind",
+            "expectedPredecessorGlobalId",
+            "expectedPredecessorSnapshotHash",
+            "expectedDefectVersion",
+            "sampleBatchRevisionGlobalId",
+            "expectedSampleBatchRevisionSnapshotHash",
+            "rootCause",
+            "responsibleMember",
+        }
+    )
+    return _quality_command(
+        allowed_fields=CREATE_DEFECT_FIELDS,
+        required_fields=required,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.create_defect(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **create_defect_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def revise_trial_defect(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    expectedInputLockRevisionSnapshotHash: Any = None,
+    expectedPredecessorKind: Any = None,
+    expectedPredecessorGlobalId: Any = None,
+    expectedPredecessorSnapshotHash: Any = None,
+    expectedDefectVersion: Any = None,
+    sampleBatchRevisionGlobalId: Any = None,
+    expectedSampleBatchRevisionSnapshotHash: Any = None,
+    cavityGlobalId: Any = None,
+    businessCode: Any = None,
+    title: Any = None,
+    description: Any = None,
+    categoryKey: Any = None,
+    location: Any = None,
+    severity: Any = None,
+    blocking: Any = None,
+    state: Any = None,
+    rootCauseState: Any = None,
+    rootCause: Any = None,
+    responsibleMember: Any = None,
+    occurrenceCount: Any = None,
+    actions: Any = None,
+    evidence: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    required = REVISE_DEFECT_FIELDS - frozenset(
+        {
+            "sampleBatchRevisionGlobalId",
+            "expectedSampleBatchRevisionSnapshotHash",
+            "rootCause",
+            "responsibleMember",
+        }
+    )
+    return _quality_command(
+        allowed_fields=REVISE_DEFECT_FIELDS,
+        required_fields=required,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.revise_defect(
+            project_id,
+            round_id,
+            _opaque_route_uuid("defect_id"),
+            idempotency_key_hash=key_hash,
+            **revise_defect_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def verify_trial_defect(
+    expectedDefectRevisionGlobalId: Any = None,
+    expectedDefectRevisionSnapshotHash: Any = None,
+    actionGlobalId: Any = None,
+    verificationGlobalId: Any = None,
+    expectedAttemptSequence: Any = None,
+    targetRoundGlobalId: Any = None,
+    expectedTargetRoundOptimisticVersion: Any = None,
+    expectedTargetRoundSnapshotHash: Any = None,
+    cavityResultRevisionGlobalId: Any = None,
+    expectedCavityResultRevisionSnapshotHash: Any = None,
+    verifierMember: Any = None,
+    result: Any = None,
+    finding: Any = None,
+    observedAt: Any = None,
+    evidence: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    required = VERIFY_DEFECT_FIELDS - frozenset(
+        {"verificationGlobalId", "expectedAttemptSequence"}
+    )
+    return _quality_command(
+        allowed_fields=VERIFY_DEFECT_FIELDS,
+        required_fields=required,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.verify_defect(
+            project_id,
+            round_id,
+            _opaque_route_uuid("defect_id"),
+            idempotency_key_hash=key_hash,
+            **verification_values(values),
+        ),
+    )
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def read_trial_evidence_content(**request_fields: Any) -> None:
     headers = {"X-Request-ID": response_request_id()}
@@ -718,6 +1002,18 @@ def trial_execution_routes_disabled(**_request_fields: Any) -> dict[str, Any] | 
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
+def trial_quality_routes_disabled(**_request_fields: Any) -> dict[str, Any] | None:
+    def handle() -> dict[str, Any]:
+        raise TrialQualityRoutesDisabled()
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _query_repository(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository]:
@@ -738,6 +1034,17 @@ def _execution_query_repository(
     _require_role(principal)
     reject_unexpected_request_fields(frozenset(), request_fields)
     return _new_execution_repository(principal)
+
+
+def _quality_query_repository(
+    request_fields: dict[str, Any],
+) -> tuple[str, _QualityRepository]:
+    _require_trial_quality_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    _require_role(principal)
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return _new_quality_repository(principal)
 
 
 def _command(
@@ -832,6 +1139,52 @@ def _execution_command(
     )
 
 
+def _quality_command(
+    *,
+    allowed_fields: frozenset[str],
+    required_fields: frozenset[str],
+    request_fields: dict[str, Any],
+    invoke,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        _require_trial_quality_routes_enabled()
+        actor = authenticated_user()
+        require_csrf_token()
+        principal = authenticated_principal(actor)
+        _require_role(principal)
+        request_id, repository = _new_quality_repository(principal)
+        reject_unexpected_request_fields(allowed_fields, request_fields)
+        require_request_fields(required_fields, request_fields)
+        outcome = invoke(
+            repository,
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+            actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            ),
+        )
+        if outcome is None:
+            raise TrialQualityUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Trial quality replay response is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return outcome.response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
 def _new_repository(principal: Principal) -> tuple[str, _Repository]:
     request_id = str(_canonical_uuid(frappe.get_request_header("X-Request-ID"), "requestId"))
     trace_id = current_trace_id.get()
@@ -863,6 +1216,25 @@ def _new_execution_repository(
     )
 
 
+def _new_quality_repository(
+    principal: Principal,
+) -> tuple[str, _QualityRepository]:
+    request_id = str(
+        _canonical_uuid(
+            frappe.get_request_header("X-Request-ID"),
+            "requestId",
+        )
+    )
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The Trial quality request has no active trace identity.")
+    return request_id, _quality_repository_factory(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
 def _trial_execution_routes_are_disabled() -> bool:
     configuration = getattr(frappe, "conf", None)
     value = (
@@ -876,6 +1248,21 @@ def _trial_execution_routes_are_disabled() -> bool:
 def _require_trial_execution_routes_enabled() -> None:
     if _trial_execution_routes_are_disabled():
         raise TrialExecutionRoutesDisabled()
+
+
+def _trial_quality_routes_are_disabled() -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_03_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def _require_trial_quality_routes_enabled() -> None:
+    if _trial_quality_routes_are_disabled():
+        raise TrialQualityRoutesDisabled()
 
 
 def _require_role(principal: Principal) -> None:

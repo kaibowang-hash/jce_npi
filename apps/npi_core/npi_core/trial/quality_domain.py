@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Sequence
 from uuid import UUID
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 from npi_core.tooling.engineering_controls_domain import (
     ToolingDefectActionState,
     ToolingDefectActionType,
@@ -52,6 +52,44 @@ class TrialDefectPredecessorKind(StrEnum):
 class TrialDefectVerificationResult(StrEnum):
     PASS = "pass"
     FAIL = "fail"
+
+
+class TrialQualityUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_QUALITY_UNAVAILABLE",
+            _("The Trial quality workspace is unavailable."),
+        )
+
+
+class TrialQualityReferenceUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_QUALITY_REFERENCE_UNAVAILABLE",
+            _("The selected Trial quality reference is unavailable."),
+        )
+
+
+class TrialQualityConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TRIAL_QUALITY_CONFLICT",
+            _("The Trial quality record was changed by another user."),
+        )
+
+
+class TrialQualityRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "TRIAL_QUALITY_ROUTES_DISABLED",
+            _("The Trial quality workspace is temporarily unavailable."),
+            _("The quality routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )
 
 
 @dataclass(frozen=True, slots=True)

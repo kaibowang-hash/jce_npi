@@ -100,6 +100,14 @@ class Phase6ToolingEngineeringControlsRepositoryTest(unittest.TestCase):
         ):
             self.assertIn("self._bounded_documents(", _method(method_name))
 
+    def test_p6_defect_append_stops_after_the_shared_identity_enters_p7(self) -> None:
+        source = _method("_defect_predecessor")
+        self.assertIn('"NPI Trial Defect Revision"', source)
+        self.assertIn('"defect_global_id": str(defect_id)', source)
+        self.assertIn("limit_page_length=1", source)
+        self.assertIn("if trial_successors:", source)
+        self.assertIn("raise ToolingVersionConflict()", source)
+
     def test_trial_gate_lifecycle_and_erp_truth_are_not_written(self) -> None:
         for forbidden in (
             '"doctype": "NPI Trial',

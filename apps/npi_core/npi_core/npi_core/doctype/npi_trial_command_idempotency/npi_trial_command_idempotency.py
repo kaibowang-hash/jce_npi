@@ -50,6 +50,11 @@ _OPERATIONS = {
     "trial_sample.revise": "trial_sample_batch_revision",
     "trial_file.upload": "trial_pending_file_revision",
     "trial_evidence.bind": "trial_evidence_reference",
+    "trial_cavity_result.create": "trial_cavity_result_revision",
+    "trial_cavity_result.revise": "trial_cavity_result_revision",
+    "trial_defect.create": "trial_defect_revision",
+    "trial_defect.revise": "trial_defect_revision",
+    "trial_defect.verify": "trial_defect_verification_revision",
 }
 
 

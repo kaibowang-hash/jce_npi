@@ -614,6 +614,22 @@ class ToolingEngineeringControlsRepositoryMixin:
             if expected_version is not None:
                 raise ToolingVersionConflict()
             return self._new_uuid(), None
+        trial_successors = frappe.get_all(
+            "NPI Trial Defect Revision",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "defect_global_id": str(defect_id),
+            },
+            pluck="name",
+            order_by="defect_version desc, global_id desc",
+            limit_page_length=1,
+        )
+        if trial_successors:
+            # The Project row is already locked by the command boundary. Once the
+            # shared defect has entered its Trial stream, P6 must never append a
+            # parallel Tooling tip.
+            raise ToolingVersionConflict()
         chain = self._engineering_defects(
             project,
             tooling_master_id,

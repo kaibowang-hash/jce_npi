@@ -136,6 +136,31 @@ _PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
     r"(?P<trial_round_id>[^/:]+)/evidence/(?P<evidence_id>[^/:]+):content$"
 )
+_PROJECT_TRIAL_QUALITY_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/quality$"
+)
+_PROJECT_TRIAL_CAVITY_RESULTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/cavity-results$"
+)
+_PROJECT_TRIAL_CAVITY_RESULT_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/cavity-results/"
+    r"(?P<cavity_result_id>[^/:]+)/revisions$"
+)
+_PROJECT_TRIAL_DEFECTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/defects$"
+)
+_PROJECT_TRIAL_DEFECT_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/defects/(?P<defect_id>[^/:]+)/revisions$"
+)
+_PROJECT_TRIAL_DEFECT_VERIFICATIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/defects/(?P<defect_id>[^/:]+)/verifications$"
+)
 _PROJECT_TOOLING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
 )
@@ -618,6 +643,10 @@ def route_request() -> None:
                 _PROJECT_TRIAL_EXECUTION_ROUTE,
                 "npi_core.trial_api.get_trial_round_execution",
             ),
+            (
+                _PROJECT_TRIAL_QUALITY_ROUTE,
+                "npi_core.trial_api.get_trial_quality_workspace",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -670,6 +699,26 @@ def route_request() -> None:
             (
                 _PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE,
                 "npi_core.trial_api.read_trial_evidence_content",
+            ),
+            (
+                _PROJECT_TRIAL_CAVITY_RESULTS_ROUTE,
+                "npi_core.trial_api.create_trial_cavity_result",
+            ),
+            (
+                _PROJECT_TRIAL_CAVITY_RESULT_REVISIONS_ROUTE,
+                "npi_core.trial_api.revise_trial_cavity_result",
+            ),
+            (
+                _PROJECT_TRIAL_DEFECTS_ROUTE,
+                "npi_core.trial_api.create_trial_defect",
+            ),
+            (
+                _PROJECT_TRIAL_DEFECT_REVISIONS_ROUTE,
+                "npi_core.trial_api.revise_trial_defect",
+            ),
+            (
+                _PROJECT_TRIAL_DEFECT_VERIFICATIONS_ROUTE,
+                "npi_core.trial_api.verify_trial_defect",
             ),
         ):
             match = route.fullmatch(path)
@@ -1273,6 +1322,9 @@ def route_request() -> None:
     if _p7_02_routes_disabled(command):
         command = "npi_core.trial_api.trial_execution_routes_disabled"
         route_params = {}
+    if _p7_03_routes_disabled(command):
+        command = "npi_core.trial_api.trial_quality_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1720,6 +1772,23 @@ def _p7_02_routes_disabled(command: str | None) -> bool:
     }
 
 
+def _p7_03_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_03_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and command in {
+        "npi_core.trial_api.get_trial_quality_workspace",
+        "npi_core.trial_api.create_trial_cavity_result",
+        "npi_core.trial_api.revise_trial_cavity_result",
+        "npi_core.trial_api.create_trial_defect",
+        "npi_core.trial_api.revise_trial_defect",
+        "npi_core.trial_api.verify_trial_defect",
+    }
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1819,6 +1888,12 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TRIAL_FILES_ROUTE.fullmatch(path) is not None
         or _PROJECT_TRIAL_EVIDENCE_ROUTE.fullmatch(path) is not None
         or _PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_QUALITY_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_CAVITY_RESULTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_CAVITY_RESULT_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_DEFECTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_DEFECT_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_DEFECT_VERIFICATIONS_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (
