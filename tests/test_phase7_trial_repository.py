@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 import types
 import unittest
@@ -45,6 +46,14 @@ class FakeDocument(AttrDict):
         bucket = self._owner.documents.setdefault(self.doctype, {})
         if self.name in bucket:
             raise self._owner.frappe.DuplicateEntryError()
+        for fieldname in ("plan_snapshot", "round_snapshot", "link_snapshot"):
+            if isinstance(self.get(fieldname), dict):
+                self[fieldname] = json.dumps(
+                    self[fieldname],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    sort_keys=True,
+                )
         bucket[self.name] = self
         return self
 

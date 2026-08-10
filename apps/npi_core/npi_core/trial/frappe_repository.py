@@ -496,7 +496,9 @@ class FrappeTrialRepository:
             )
             if trial_round is None:
                 return None
-            closed_round = trial_round_from_snapshot(trial_round.round_snapshot)
+            closed_round = trial_round_from_snapshot(
+                _json_object(trial_round.round_snapshot)
+            )
             if closed_round.trial_plan_revision_global_id != plan.global_id:
                 raise TrialReferenceUnavailable()
         prepared_actions = self._prepare_actions(project, actions)
@@ -839,7 +841,7 @@ class FrappeTrialRepository:
 
     @staticmethod
     def _closed_plan(document, project) -> TrialPlanRevision:
-        value = trial_plan_from_snapshot(document.plan_snapshot)
+        value = trial_plan_from_snapshot(_json_object(document.plan_snapshot))
         if (
             str(value.global_id) != str(document.global_id)
             or str(value.tenant_id) != str(project.tenant_id)
@@ -919,7 +921,7 @@ class FrappeTrialRepository:
         plan_id: UUID,
     ) -> TrialRound:
         document = frappe.get_doc("NPI Trial Round", str(name))
-        value = trial_round_from_snapshot(document.round_snapshot)
+        value = trial_round_from_snapshot(_json_object(document.round_snapshot))
         if (
             str(value.global_id) != str(document.global_id)
             or str(value.tenant_id) != str(project.tenant_id)
@@ -937,7 +939,7 @@ class FrappeTrialRepository:
         plan_id: UUID,
     ) -> TrialPlanWorkLink:
         document = frappe.get_doc("NPI Trial Plan Work Link", str(name))
-        value = trial_work_link_from_snapshot(document.link_snapshot)
+        value = trial_work_link_from_snapshot(_json_object(document.link_snapshot))
         if (
             str(value.global_id) != str(document.global_id)
             or str(value.tenant_id) != str(project.tenant_id)
@@ -952,7 +954,7 @@ class FrappeTrialRepository:
         document = _optional_doc("NPI Trial Round", str(round_id))
         if document is None:
             return None
-        value = trial_round_from_snapshot(document.round_snapshot)
+        value = trial_round_from_snapshot(_json_object(document.round_snapshot))
         if (
             value.global_id != round_id
             or value.trial_plan_global_id != plan_id
