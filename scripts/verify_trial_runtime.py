@@ -81,6 +81,10 @@ EXPECTED_PERMISSIONS = {
     "canCreateRound": True,
     "canGenerateActions": True,
 }
+_PROBLEM_CODE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
+_FIELD_PATH = re.compile(
+    r"^[A-Za-z][A-Za-z0-9]*(?:(?:\.[A-Za-z][A-Za-z0-9]*)|(?:\[[0-9]{1,3}\]))*$"
+)
 
 
 def trial_path(project_id: str, suffix: str = "") -> str:
@@ -149,12 +153,41 @@ def command(
         csrf_token=csrf_token,
         idempotency_key=key,
     )
-    require(result.status == 201, f"P7-01 command returned HTTP {result.status}")
+    require(
+        result.status == 201,
+        (
+            f"P7-01 command returned HTTP {result.status}"
+            f"{sanitized_trial_failure(result)}"
+        ),
+    )
     require(
         result.headers.get("Idempotency-Replayed") in {"true", "false"},
         "P7-01 replay response header drifted",
     )
     return result
+
+
+def sanitized_trial_failure(result: HttpResult) -> str:
+    """Expose only bounded problem codes and field paths from synthetic requests."""
+
+    details: list[str] = []
+    code = result.body.get("code")
+    if isinstance(code, str) and _PROBLEM_CODE.fullmatch(code) is not None:
+        details.append(f"problem_code={code}")
+    field_errors = result.body.get("fieldErrors")
+    paths: list[str] = []
+    if isinstance(field_errors, list):
+        for item in field_errors[:5]:
+            path = item.get("path") if isinstance(item, dict) else None
+            if (
+                isinstance(path, str)
+                and _FIELD_PATH.fullmatch(path) is not None
+                and path not in paths
+            ):
+                paths.append(path)
+    if paths:
+        details.append(f"field_paths={','.join(paths)}")
+    return f" [{'; '.join(details)}]" if details else ""
 
 
 def exact_single(values: object, label: str) -> dict[str, Any]:

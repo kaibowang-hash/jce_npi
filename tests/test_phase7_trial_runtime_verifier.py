@@ -1,21 +1,86 @@
 from __future__ import annotations
 
+import importlib.util
+import os
+import sys
 import unittest
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 VERIFIER = ROOT / "scripts" / "verify_trial_runtime.py"
 SHELL = ROOT / "scripts" / "verify-frappe-runtime.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+FIXTURE_RUN_ID = "0123456789abcdef0123456789abcdef"
+
+
+def load_verifier():
+    scripts = str(ROOT / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    saved = {
+        name: sys.modules.pop(name, None)
+        for name in ("verify_document_runtime", "verify_trial_runtime_contract")
+    }
+    spec = importlib.util.spec_from_file_location(
+        "verify_trial_runtime_contract",
+        VERIFIER,
+    )
+    if spec is None or spec.loader is None:
+        raise AssertionError("Trial runtime verifier cannot be imported")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        with patch.dict(
+            os.environ,
+            {"NPI_DOCUMENT_RUNTIME_RUN_ID": FIXTURE_RUN_ID},
+            clear=False,
+        ):
+            spec.loader.exec_module(module)
+    finally:
+        for name in tuple(saved):
+            sys.modules.pop(name, None)
+        for name, value in saved.items():
+            if value is not None:
+                sys.modules[name] = value
+    return module
 
 
 class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        cls.module = load_verifier()
         cls.source = VERIFIER.read_text(encoding="utf-8")
         cls.shell = SHELL.read_text(encoding="utf-8")
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    def test_failure_diagnostic_exposes_only_bounded_contract_keys(self) -> None:
+        result = self.module.HttpResult(
+            status=422,
+            headers=Mock(),
+            body={
+                "code": "VALIDATION_FAILED",
+                "fieldErrors": [
+                    {
+                        "path": "resources[0].sourceObjectId",
+                        "message": "Synthetic raw value must never reach the log.",
+                    },
+                    {"path": "invalid path", "message": "ignored"},
+                ],
+                "request": {"objective": "Synthetic secret objective"},
+            },
+        )
+        detail = self.module.sanitized_trial_failure(result)
+        self.assertEqual(
+            detail,
+            (
+                " [problem_code=VALIDATION_FAILED; "
+                "field_paths=resources[0].sourceObjectId]"
+            ),
+        )
+        self.assertNotIn("raw value", detail)
+        self.assertNotIn("secret objective", detail)
 
     def test_verifier_uses_only_the_fixed_disposable_runtime(self) -> None:
         required = (
