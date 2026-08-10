@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -7,6 +7,7 @@ import { NpiTransportError } from "../../src/api/http";
 import LiveTrialPage from "../../src/pages/live-trial-page";
 import { renderWithLocale } from "../support/render";
 import {
+  trialExecutionIds,
   trialExecutionWorkspace,
   trialInputLock,
 } from "../support/trial-execution-fixture";
@@ -99,6 +100,21 @@ async function confirmCommand(
     name: "Review immutable Trial command",
   });
   await user.type(within(dialog).getByLabelText("Reason"), reason);
+  await user.click(within(dialog).getByRole("button", { name: commandName }));
+}
+
+async function confirmExecutionCommand(
+  user: ReturnType<typeof userEvent.setup>,
+  commandName: string,
+  reason: string,
+): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Review command" }));
+  const dialog = await screen.findByRole("dialog", {
+    name: "Review immutable Trial execution command",
+  });
+  fireEvent.change(within(dialog).getByLabelText("Reason"), {
+    target: { value: reason },
+  });
   await user.click(within(dialog).getByRole("button", { name: commandName }));
 }
 
@@ -555,16 +571,10 @@ describe("live Trial planning page", () => {
       "measured",
     );
     await user.type(screen.getByLabelText("cooling.time observed value"), "20");
-    await user.click(screen.getByRole("button", { name: "Review command" }));
-    const dialog = await screen.findByRole("dialog", {
-      name: "Review immutable Trial execution command",
-    });
-    await user.type(
-      within(dialog).getByLabelText("Reason"),
+    await confirmExecutionCommand(
+      user,
+      "Start Trial Round",
       "Begin controlled T0 execution",
-    );
-    await user.click(
-      within(dialog).getByRole("button", { name: "Start Trial Round" }),
     );
 
     await waitFor(() => {
@@ -580,6 +590,276 @@ describe("live Trial planning page", () => {
         { definitionKey: "cooling.time", state: "measured", value: "20" },
       ],
     });
+  });
+
+  it("prepares one planned Round from exact released references and observed material", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const lock = trialInputLock();
+    const prepared = trialExecutionWorkspace({
+      actualRevisions: [],
+      evidence: [],
+      inputLocks: [lock],
+      pendingFiles: [],
+      permissions: {
+        canManageEvidence: false,
+        canManageSamples: false,
+        canPrepare: false,
+        canRecordActual: false,
+        canStart: true,
+      },
+      round: {
+        ...trialExecutionWorkspace().round,
+        currentState: "prepared",
+        optimisticVersion: 2,
+      },
+      sampleBatchRevisions: [],
+    });
+    const prepareRound = vi
+      .fn<TrialDataSource["prepareRound"]>()
+      .mockResolvedValue({ replayed: false, workspace: prepared });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({ prepareRound })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const prepare = await screen.findByRole("button", {
+      name: "Prepare Trial Round",
+    });
+    await waitFor(() => {
+      expect(prepare).toBeEnabled();
+    });
+    await user.click(prepare);
+    const referenceLabels = [
+      "Design baseline",
+      "Part revision",
+      "Tooling revision",
+      "Tooling Set",
+      "Tooling Set binding",
+      "Cavity",
+      "Process chain",
+      "Inspection document",
+    ] as const;
+    for (const [index, reference] of lock.references.entries()) {
+      const referenceLabel = referenceLabels[index];
+      if (!referenceLabel) throw new Error("A reference label is required.");
+      fireEvent.change(screen.getByLabelText(`${referenceLabel} stable ID`), {
+        target: { value: reference.globalId },
+      });
+    }
+    fireEvent.change(screen.getByLabelText("Lot or batch code"), {
+      target: { value: "LOT-T0-01" },
+    });
+    fireEvent.change(screen.getByLabelText("Parameter 1 key"), {
+      target: { value: "hold.time" },
+    });
+    fireEvent.change(screen.getByLabelText("Parameter 1 category"), {
+      target: { value: "Holding" },
+    });
+    fireEvent.change(screen.getByLabelText("Parameter 1 unit"), {
+      target: { value: "s" },
+    });
+    await confirmExecutionCommand(
+      user,
+      "Prepare Trial Round",
+      "Freeze exact released inputs",
+    );
+
+    await waitFor(() => {
+      expect(prepareRound).toHaveBeenCalledOnce();
+    });
+    expect(prepareRound.mock.calls[0]?.[2]).toMatchObject({
+      expectedRoundOptimisticVersion: 1,
+      material: {
+        label: "PA66-GF30 natural",
+        lotBatchCode: "LOT-T0-01",
+        sourceObjectId: "MAT-PA66-GF30",
+      },
+      parameterDefinitions: [
+        expect.objectContaining({
+          category: "Holding",
+          key: "hold.time",
+          required: true,
+          unit: "s",
+        }),
+      ],
+      references: lock.references.map((reference) => ({
+        expectedOptimisticVersion: 1,
+        globalId: reference.globalId,
+        kind: reference.kind,
+      })),
+    });
+  });
+
+  it("appends exact actual and Sample Batch successor revisions", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const running = trialExecutionWorkspace();
+    const appendActualRevision = vi
+      .fn<TrialDataSource["appendActualRevision"]>()
+      .mockResolvedValue({ replayed: false, workspace: running });
+    const appendSampleBatchRevision = vi
+      .fn<TrialDataSource["appendSampleBatchRevision"]>()
+      .mockResolvedValue({ replayed: true, workspace: running });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          appendActualRevision,
+          appendSampleBatchRevision,
+          loadRoundExecution: () => Promise.resolve(running),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const appendActual = await screen.findByRole("button", {
+      name: "Append actual revision",
+    });
+    await waitFor(() => {
+      expect(appendActual).toBeEnabled();
+    });
+    await user.click(appendActual);
+    fireEvent.change(screen.getByLabelText("Environment value"), {
+      target: { value: "25" },
+    });
+    await confirmExecutionCommand(
+      user,
+      "Append actual revision",
+      "Record the controlled follow-up observation",
+    );
+    await waitFor(() => {
+      expect(appendActualRevision).toHaveBeenCalledOnce();
+    });
+    expect(appendActualRevision.mock.calls[0]?.[2]).toMatchObject({
+      expectedActualRevisionGlobalId: trialExecutionIds.actualRevision,
+      expectedActualVersion: 1,
+      expectedRoundOptimisticVersion: running.round.optimisticVersion,
+      environment: [expect.objectContaining({ value: "25" })],
+    });
+
+    const sampleRow = screen.getByRole("row", { name: /T0-SAMPLE-01/u });
+    await user.click(
+      within(sampleRow).getByRole("button", { name: "Append revision" }),
+    );
+    fireEvent.change(screen.getByLabelText("Destination"), {
+      target: { value: "Customer lab" },
+    });
+    fireEvent.change(screen.getByLabelText("Feedback source"), {
+      target: { value: "Customer quality" },
+    });
+    fireEvent.change(screen.getByLabelText("Feedback observation"), {
+      target: { value: "Dimensional review accepted" },
+    });
+    fireEvent.change(screen.getByLabelText("Feedback observed at (UTC)"), {
+      target: { value: "2026-08-10T10:30" },
+    });
+    await confirmExecutionCommand(
+      user,
+      "Append Sample Batch revision",
+      "Record controlled sample feedback",
+    );
+    await waitFor(() => {
+      expect(appendSampleBatchRevision).toHaveBeenCalledOnce();
+    });
+    expect(appendSampleBatchRevision.mock.calls[0]?.[2]).toBe(
+      trialExecutionIds.sampleBatch,
+    );
+    expect(appendSampleBatchRevision.mock.calls[0]?.[3]).toMatchObject({
+      expectedRevisionGlobalId: trialExecutionIds.sampleRevision,
+      expectedSampleVersion: 1,
+      sample: {
+        destination: "Customer lab",
+        feedbackSource: "Customer quality",
+        feedbackText: "Dimensional review accepted",
+        label: "T0-SAMPLE-01",
+      },
+    });
+    expect(
+      await screen.findByText(
+        "The exact prior execution command response was replayed safely.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("uploads a private pending file and downloads clean evidence as audited bytes", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const running = trialExecutionWorkspace();
+    const uploadEvidenceFile = vi
+      .fn<TrialDataSource["uploadEvidenceFile"]>()
+      .mockResolvedValue({ replayed: false, workspace: running });
+    const downloadEvidence = vi
+      .fn<TrialDataSource["downloadEvidence"]>()
+      .mockResolvedValue({
+        blob: new Blob(["clean evidence"], { type: "image/png" }),
+        fileName: "t0-photo.png",
+      });
+    const createObjectURL = vi.fn(() => "blob:npi-trial-evidence");
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal(
+      "URL",
+      class extends URL {
+        static createObjectURL = createObjectURL;
+        static revokeObjectURL = revokeObjectURL;
+      },
+    );
+    const anchorClick = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => undefined);
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          downloadEvidence,
+          loadRoundExecution: () => Promise.resolve(running),
+          uploadEvidenceFile,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const upload = await screen.findByRole("button", {
+      name: "Upload private evidence file",
+    });
+    await waitFor(() => {
+      expect(upload).toBeEnabled();
+    });
+    await user.click(upload);
+    const file = new File(["curve"], "curve.csv", { type: "text/csv" });
+    await user.upload(screen.getByLabelText("Evidence file"), file);
+    await user.click(
+      screen.getByRole("button", { name: "Upload pending file" }),
+    );
+    await waitFor(() => {
+      expect(uploadEvidenceFile).toHaveBeenCalledOnce();
+    });
+    expect(uploadEvidenceFile.mock.calls[0]?.[2]).toMatchObject({
+      expectedRoundOptimisticVersion: running.round.optimisticVersion,
+      file,
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Download audited bytes" }),
+    );
+    await waitFor(() => {
+      expect(downloadEvidence).toHaveBeenCalledOnce();
+      expect(anchorClick).toHaveBeenCalledOnce();
+    });
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:npi-trial-evidence");
+    expect(
+      await screen.findByText("Private Trial evidence downloaded"),
+    ).toBeVisible();
   });
 
   it("binds only a clean pending File Revision with its exact version", async () => {

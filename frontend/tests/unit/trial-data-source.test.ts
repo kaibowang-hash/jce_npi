@@ -430,6 +430,36 @@ describe("Trial planning data source", () => {
       },
       context("start"),
     );
+    await source.appendActualRevision(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        environment: actual.environment,
+        executionStartedAt: actual.executionStartedAt,
+        expectedActualRevisionGlobalId: actual.globalId,
+        expectedActualVersion: actual.actualVersion,
+        expectedRoundOptimisticVersion: 3,
+        material: {
+          additive: actual.material.additive,
+          color: actual.material.color,
+          label: actual.material.label,
+          lotBatchCode: actual.material.lotBatchCode,
+          observedAt: actual.material.observedAt,
+          sourceObjectId: actual.material.sourceObjectId,
+          sourceSystem: actual.material.sourceSystem,
+        },
+        operatorUserId: actual.operatorUserId,
+        parameters: actual.parameters,
+        reason: "Append exact manual Trial context",
+        resources: actual.resources.map((resource) => ({
+          kind: resource.kind,
+          label: resource.label,
+          sourceObjectId: resource.sourceObjectId,
+          sourceSystem: resource.sourceSystem,
+        })),
+      },
+      context("actual-revision"),
+    );
     await source.createSampleBatch(
       trialPlanningIds.project,
       trialPlanningIds.round,
@@ -450,6 +480,29 @@ describe("Trial planning data source", () => {
         },
       },
       context("sample"),
+    );
+    await source.appendSampleBatchRevision(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      sample.sampleBatchGlobalId,
+      {
+        expectedRevisionGlobalId: sample.globalId,
+        expectedRoundOptimisticVersion: 3,
+        expectedSampleVersion: sample.sampleVersion,
+        reason: "Append exact Sample Batch feedback",
+        sample: {
+          cavityGlobalIds: sample.cavityGlobalIds,
+          destination: "Customer quality laboratory",
+          feedbackObservedAt: "2026-08-10T10:30:00Z",
+          feedbackSource: "Customer quality",
+          feedbackText: "Dimensional review accepted",
+          label: sample.label,
+          packaging: sample.packaging,
+          quantity: sample.quantity,
+          unit: sample.unit,
+        },
+      },
+      context("sample-revision"),
     );
     await source.uploadEvidenceFile(
       trialPlanningIds.project,
@@ -474,7 +527,7 @@ describe("Trial planning data source", () => {
       context("bind"),
     );
 
-    expect(fetch).toHaveBeenCalledTimes(6);
+    expect(fetch).toHaveBeenCalledTimes(8);
     expect(requestUrl(fetch.mock.calls[0]?.[0])).toContain(
       `/trial-rounds/${trialPlanningIds.round}/execution`,
     );
@@ -484,16 +537,90 @@ describe("Trial planning data source", () => {
     expect(requestUrl(fetch.mock.calls[2]?.[0])).toContain(
       `/trial-rounds/${trialPlanningIds.round}:start`,
     );
-    expect(requestUrl(fetch.mock.calls[3]?.[0])).toContain("/sample-batches");
-    expect(fetch.mock.calls[4]?.[1]?.body).toBeInstanceOf(FormData);
+    expect(requestUrl(fetch.mock.calls[3]?.[0])).toContain("/actual-revisions");
+    expect(requestUrl(fetch.mock.calls[4]?.[0])).toContain("/sample-batches");
+    expect(requestUrl(fetch.mock.calls[5]?.[0])).toContain(
+      `/sample-batches/${sample.sampleBatchGlobalId}/revisions`,
+    );
+    expect(fetch.mock.calls[6]?.[1]?.body).toBeInstanceOf(FormData);
     expect(
-      (fetch.mock.calls[4]?.[1]?.body as FormData).get(
+      (fetch.mock.calls[6]?.[1]?.body as FormData).get(
         "expectedRoundOptimisticVersion",
       ),
     ).toBe("3");
-    expect(bodyValue(fetch.mock.calls[5]?.[1]?.body)).toMatchObject({
+    expect(bodyValue(fetch.mock.calls[7]?.[1]?.body)).toMatchObject({
       expectedFileOptimisticVersion: 2,
       role: "parameter_curve",
     });
+  });
+
+  it("downloads only exact clean private evidence with hardened response headers and hash", async () => {
+    const sourceEvidence = trialExecutionWorkspace().evidence[0];
+    if (!sourceEvidence)
+      throw new Error("The Trial download test requires one evidence record.");
+    const evidence = {
+      ...sourceEvidence,
+      fileMimeType: "image/png",
+      fileSha256:
+        "736b88fa9eefc18bd6598e09ca6ac60111d8797e3a7e9ad5ba06bd3697577689",
+      fileSizeBytes: 14,
+    };
+    const responseBody = await new Response("clean evidence", {
+      headers: { "Content-Type": "image/png" },
+    }).blob();
+    vi.stubGlobal("Blob", responseBody.constructor);
+    const fetch = vi.fn<typeof globalThis.fetch>((_request, init) => {
+      const requestId = new Headers(init?.headers).get("X-Request-ID") ?? "";
+      return Promise.resolve(
+        new Response(responseBody, {
+          headers: {
+            "Cache-Control": "private, no-store",
+            "Content-Disposition": "attachment; filename*=UTF-8''t0-photo.png",
+            "Content-Security-Policy": "sandbox; default-src 'none'",
+            "Content-Type": "image/png",
+            "Referrer-Policy": "no-referrer",
+            "X-Content-Type-Options": "nosniff",
+            "X-Request-ID": requestId,
+            "X-Trace-ID": "trace-trial-evidence-download",
+          },
+          status: 200,
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+
+    const result = await source.downloadEvidence(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      evidence,
+      {
+        csrfToken: "c".repeat(32),
+        signal: new AbortController().signal,
+      },
+    );
+
+    expect(result.fileName).toBe("t0-photo.png");
+    expect(result.blob.size).toBe(14);
+    expect(requestUrl(fetch.mock.calls[0]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}/evidence/${evidence.globalId}:content`,
+    );
+    expect(fetch.mock.calls[0]?.[1]?.method).toBe("POST");
+    expect(new Headers(fetch.mock.calls[0]?.[1]?.headers).get("Accept")).toBe(
+      "image/png",
+    );
+
+    await expect(
+      source.downloadEvidence(
+        trialPlanningIds.project,
+        trialPlanningIds.round,
+        { ...evidence, fileSha256: "0".repeat(64) },
+        {
+          csrfToken: "c".repeat(32),
+          signal: new AbortController().signal,
+        },
+      ),
+    ).rejects.toBeInstanceOf(NpiTransportError);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
