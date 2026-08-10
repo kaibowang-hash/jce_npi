@@ -438,8 +438,8 @@ test.describe("R1-03 application Shell behavior", () => {
       commandButton(dialog, translate("en", "Open Project Tooling")),
     ).toHaveAttribute("aria-disabled", "false");
     await expect(
-      commandButton(dialog, translate("en", "Open Trial prototype")),
-    ).toHaveAttribute("aria-disabled", "true");
+      commandButton(dialog, translate("en", "Open Project Trial planning")),
+    ).toHaveAttribute("aria-disabled", "false");
 
     const commandButtons = dialog.getByRole("button");
     await expect(commandButtons).toHaveCount(6);
