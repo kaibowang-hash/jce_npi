@@ -5848,6 +5848,13 @@ other,其他
 planned,已規劃
 running,執行中
 tooling_change_verification,模具變更驗證
+trial_actual.append,追加試模實際值
+trial_actual_revision,試模實際值版本
+trial_evidence.bind,綁定試模證據
+trial_evidence_reference,試模證據引用
+trial_file.upload,上傳試模檔案
+trial_input_lock_revision,試模輸入鎖版本
+trial_pending_file_revision,待處理試模檔案版本
 trial_plan.create,建立試模計畫
 trial_plan.generate_actions,產生試模計畫行動項目
 trial_plan.revise,修訂試模計畫
@@ -5856,6 +5863,11 @@ trial_plan_work_link_set,試模計畫工作關聯集
 trial_round,試模輪次
 trial_round.cancel,取消試模輪次
 trial_round.create,建立試模輪次
+trial_round.prepare,準備試模輪次
+trial_round.start,啟動試模輪次
+trial_sample.create,建立試模樣品
+trial_sample.revise,修訂試模樣品
+trial_sample_batch_revision,試模樣品批次版本
 Add between 1 and 50 valid resources.,請新增 1 至 50 項有效資源。
 Select a machine and material for the Trial Plan.,請為試模計畫選取機台和材料。
 The exact current Trial lifecycle event is unavailable.,精確的目前試模生命週期事件無法使用。

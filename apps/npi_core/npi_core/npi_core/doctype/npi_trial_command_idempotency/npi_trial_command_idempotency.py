@@ -43,6 +43,13 @@ _OPERATIONS = {
     "trial_round.create": "trial_round",
     "trial_round.cancel": "trial_round",
     "trial_plan.generate_actions": "trial_plan_work_link_set",
+    "trial_round.prepare": "trial_input_lock_revision",
+    "trial_round.start": "trial_actual_revision",
+    "trial_actual.append": "trial_actual_revision",
+    "trial_sample.create": "trial_sample_batch_revision",
+    "trial_sample.revise": "trial_sample_batch_revision",
+    "trial_file.upload": "trial_pending_file_revision",
+    "trial_evidence.bind": "trial_evidence_reference",
 }
 
 

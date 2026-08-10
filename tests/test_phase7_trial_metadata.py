@@ -309,25 +309,44 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             [SYSTEM_MANAGER_ADMIN, {**API_APPEND, "write": 1}],
         )
         fields = self.fields(receipt)
+        expected_operations = {
+            "trial_plan.create": "trial_plan_revision",
+            "trial_plan.revise": "trial_plan_revision",
+            "trial_round.create": "trial_round",
+            "trial_round.cancel": "trial_round",
+            "trial_plan.generate_actions": "trial_plan_work_link_set",
+            "trial_round.prepare": "trial_input_lock_revision",
+            "trial_round.start": "trial_actual_revision",
+            "trial_actual.append": "trial_actual_revision",
+            "trial_sample.create": "trial_sample_batch_revision",
+            "trial_sample.revise": "trial_sample_batch_revision",
+            "trial_file.upload": "trial_pending_file_revision",
+            "trial_evidence.bind": "trial_evidence_reference",
+        }
         self.assertEqual(
             str(fields["operation"].get("options", "")).splitlines(),
-            [
-                "trial_plan.create",
-                "trial_plan.revise",
-                "trial_round.create",
-                "trial_round.cancel",
-                "trial_plan.generate_actions",
-            ],
+            list(expected_operations),
         )
         self.assertEqual(
             str(fields["target_object_type"].get("options", "")).splitlines(),
-            ["", "trial_plan_revision", "trial_round", "trial_plan_work_link_set"],
+            ["", *dict.fromkeys(expected_operations.values())],
         )
         source = (
             DOCTYPE_ROOT
             / "npi_trial_command_idempotency"
             / "npi_trial_command_idempotency.py"
         ).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        controller_operations = next(
+            ast.literal_eval(node.value)
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == "_OPERATIONS"
+                for target in node.targets
+            )
+        )
+        self.assertEqual(controller_operations, expected_operations)
         self.assertIn("assert_immutable_fields(self, previous, _IDENTITY_FIELDS)", source)
         self.assertIn("A Trial command response can only be sealed once.", source)
         self.assertIn('"actorUserId": self.actor_user_id.casefold()', source)
