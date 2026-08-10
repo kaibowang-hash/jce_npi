@@ -51,12 +51,7 @@ from npi_core.tooling.export_domain import (
     tooling_list_preference_key_hash,
     tooling_list_query_snapshot_hash,
 )
-from npi_core.tooling.export_frappe_validation import (
-    PREFERENCE_VALIDATION_DIAGNOSTIC_HEADER,
-    record_tooling_preference_validation_fallback,
-    tooling_export_write,
-    tooling_preference_validation_diagnostics,
-)
+from npi_core.tooling.export_frappe_validation import tooling_export_write
 from npi_core.tooling.export_rendering import (
     RenderedToolingObjectPackage,
     render_tooling_object_package,
@@ -252,24 +247,13 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
         with tooling_export_write():
             if row is None:
                 try:
-                    with tooling_preference_validation_diagnostics(
-                        self.trace_id,
-                        enabled=frappe.get_request_header(
-                            "X-NPI-P6-08-Diagnostic"
-                        )
-                        == PREFERENCE_VALIDATION_DIAGNOSTIC_HEADER,
-                    ):
-                        try:
-                            row = frappe.get_doc(
-                                {
-                                    "doctype": "NPI Tooling List Preference",
-                                    "global_id": str(global_id),
-                                    **values,
-                                }
-                            ).insert()
-                        except Exception as error:
-                            record_tooling_preference_validation_fallback(error)
-                            raise
+                    row = frappe.get_doc(
+                        {
+                            "doctype": "NPI Tooling List Preference",
+                            "global_id": str(global_id),
+                            **values,
+                        }
+                    ).insert()
                 except (frappe.DuplicateEntryError, frappe.UniqueValidationError) as error:
                     raise ToolingVersionConflict() from error
             else:
@@ -1056,7 +1040,7 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
         value = self._export_clock()
         if not isinstance(value, datetime) or value.tzinfo is None:
             raise RuntimeError("The Tooling export clock must be timezone-aware.")
-        return value.astimezone(UTC)
+        return value.astimezone(UTC).replace(microsecond=0)
 
     def _new_export_uuid(self) -> UUID:
         value = self._export_uuid_factory()

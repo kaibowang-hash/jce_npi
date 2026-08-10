@@ -116,36 +116,6 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
         )
         self.assertNotIn("last_changed_at", projections["require_snapshot_projection"])
 
-    def test_preference_validation_diagnostic_stages_are_closed(self) -> None:
-        validation = (
-            ROOT / "apps/npi_core/npi_core/tooling/export_frappe_validation.py"
-        ).read_text(encoding="utf-8")
-        controller = (
-            DOCTYPE_ROOT
-            / "npi_tooling_list_preference"
-            / "npi_tooling_list_preference.py"
-        ).read_text(encoding="utf-8")
-        expected = {
-            "P608_PREFERENCE_COMMAND_GUARD",
-            "P608_PREFERENCE_NORMALIZE_IDENTITIES",
-            "P608_PREFERENCE_VERSION",
-            "P608_PREFERENCE_KEY",
-            "P608_PREFERENCE_SCHEMA",
-            "P608_PREFERENCE_HASH",
-            "P608_PREFERENCE_PROJECTION",
-            "P608_PREFERENCE_TIME_PROJECTION",
-            "P608_PREFERENCE_PARENT",
-            "P608_PREFERENCE_STANDARD_VALIDATION",
-            "P608_PREFERENCE_SAVE_LIFECYCLE",
-        }
-        for code in expected - {"P608_PREFERENCE_SAVE_LIFECYCLE"}:
-            with self.subTest(code=code):
-                self.assertIn(code, controller)
-        for code in expected:
-            self.assertIn(code, validation)
-        self.assertIn("record_safe_diagnostic(", validation)
-        self.assertNotIn("str(error)", validation)
-
     def test_package_datetime_projection_compares_the_same_utc_instant(self) -> None:
         module_names = (
             "frappe",

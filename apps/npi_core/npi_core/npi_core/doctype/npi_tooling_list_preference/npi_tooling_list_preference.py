@@ -14,7 +14,6 @@ from npi_core.tooling.export_domain import (
 from npi_core.tooling.export_frappe_validation import (
     canonical_export_uuid,
     deny_tooling_export_delete,
-    mark_tooling_preference_validation_substage,
     require_datetime_snapshot_projection,
     require_snapshot_projection,
     require_tooling_export_write,
@@ -41,17 +40,12 @@ class NPIToolingListPreference(Document):
         self.name = self.global_id
 
     def before_insert(self) -> None:
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_COMMAND_GUARD")
         require_tooling_export_write()
 
     def before_save(self) -> None:
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_COMMAND_GUARD")
         require_tooling_export_write()
 
     def before_validate(self) -> None:
-        mark_tooling_preference_validation_substage(
-            "P608_PREFERENCE_NORMALIZE_IDENTITIES"
-        )
         for fieldname, label in (
             ("global_id", _("Global ID")),
             ("project_global_id", _("Project Global ID")),
@@ -60,9 +54,7 @@ class NPIToolingListPreference(Document):
             canonical_export_uuid(self, fieldname, label)
 
     def validate(self) -> None:
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_VERSION")
         validate_preference_version(self, _IMMUTABLE_FIELDS)
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_KEY")
         expected_key = tooling_list_preference_key_hash(
             tenant_id=self.tenant_id,
             project_global_id=self.project_global_id,
@@ -77,19 +69,16 @@ class NPIToolingListPreference(Document):
                 frappe.ValidationError,
             )
         if self.grid_id != TOOLING_LIST_GRID_ID or self.table_schema_version != TOOLING_LIST_TABLE_SCHEMA_VERSION:
-            mark_tooling_preference_validation_substage("P608_PREFERENCE_SCHEMA")
             frappe.throw(
                 _("The Tooling List table schema is unsupported."),
                 frappe.ValidationError,
             )
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_HASH")
         snapshot = validate_hashed_snapshot(
             self,
             snapshot_field="preference_snapshot",
             snapshot_label=_("Tooling List Preference Snapshot"),
             snapshot_hash_field="snapshot_hash",
         )
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_PROJECTION")
         require_snapshot_projection(
             self,
             snapshot,
@@ -108,23 +97,16 @@ class NPIToolingListPreference(Document):
                 ("trace_id", "traceId"),
             ),
         )
-        mark_tooling_preference_validation_substage(
-            "P608_PREFERENCE_TIME_PROJECTION"
-        )
         require_datetime_snapshot_projection(
             self,
             snapshot,
             (("last_changed_at", "lastChangedAt"),),
         )
-        mark_tooling_preference_validation_substage("P608_PREFERENCE_PARENT")
         require_exact_parent(
             "NPI Engineering Project",
             self.project_global_id,
             {"global_id": self.project_global_id, "tenant_id": self.tenant_id},
             _("The exact Project is unavailable for this Tooling List preference."),
-        )
-        mark_tooling_preference_validation_substage(
-            "P608_PREFERENCE_STANDARD_VALIDATION"
         )
 
     def on_trash(self) -> None:

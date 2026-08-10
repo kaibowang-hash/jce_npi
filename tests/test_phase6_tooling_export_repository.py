@@ -122,15 +122,16 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
         )
         self.assertIn("frappe.DuplicateEntryError", save)
         self.assertIn("ToolingVersionConflict", save)
-        self.assertIn("tooling_preference_validation_diagnostics", save)
-        self.assertIn("record_tooling_preference_validation_fallback", save)
-        self.assertIn("X-NPI-P6-08-Diagnostic", save)
         validate = ast.unparse(_method("_validated_preference_snapshot"))
         self.assertIn("_preference_from_stored_payload", validate)
         self.assertIn("preference.snapshot_payload() != snapshot['preference']", validate)
         stored = ast.unparse(_method("_preference_from_stored_payload"))
         self.assertIn("ToolingListPreferenceSnapshot", stored)
         self.assertIn("set(payload) != expected_fields", stored)
+
+    def test_export_clock_uses_the_canonical_snapshot_precision(self) -> None:
+        clock = ast.unparse(_method("_now_export"))
+        self.assertIn("astimezone(UTC).replace(microsecond=0)", clock)
 
     def test_create_orders_receipt_file_package_audit_and_seal_in_one_guard(self) -> None:
         method = _method("create_tooling_export_package")

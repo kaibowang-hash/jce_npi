@@ -157,21 +157,6 @@ _REVISION_STAGE_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_REVISION_RECEIPT_SEAL",
     }
 )
-_P608_PREFERENCE_VALIDATION_DIAGNOSTIC_CODES = frozenset(
-    {
-        "P608_PREFERENCE_COMMAND_GUARD",
-        "P608_PREFERENCE_NORMALIZE_IDENTITIES",
-        "P608_PREFERENCE_VERSION",
-        "P608_PREFERENCE_KEY",
-        "P608_PREFERENCE_SCHEMA",
-        "P608_PREFERENCE_HASH",
-        "P608_PREFERENCE_PROJECTION",
-        "P608_PREFERENCE_TIME_PROJECTION",
-        "P608_PREFERENCE_PARENT",
-        "P608_PREFERENCE_STANDARD_VALIDATION",
-        "P608_PREFERENCE_SAVE_LIFECYCLE",
-    }
-)
 _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES = frozenset(
     {
         "P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
@@ -660,12 +645,6 @@ def _sanitized_bff_log_diagnostic(
                         isinstance(diagnostic_code, str)
                         and diagnostic_code
                         in _GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES
-                    ):
-                        return diagnostic_type, diagnostic_code, trace_id
-                    if (
-                        isinstance(diagnostic_code, str)
-                        and diagnostic_code
-                        in _P608_PREFERENCE_VALIDATION_DIAGNOSTIC_CODES
                     ):
                         return diagnostic_type, diagnostic_code, trace_id
                     if (
