@@ -653,7 +653,7 @@ class Phase7TrialRepositoryTest(unittest.TestCase):
             round_id,
             idempotency_key_hash="8" * 64,
             expected_round_optimistic_version=round_response["optimisticVersion"],
-            references=references,
+            references=tuple(reversed(references)),
             material=self.execution_material(),
             parameter_definitions=(
                 {

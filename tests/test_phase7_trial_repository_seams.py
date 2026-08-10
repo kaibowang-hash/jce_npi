@@ -224,6 +224,27 @@ class Phase7TrialRepositorySeamTest(unittest.TestCase):
                 self.assertLess(write[0].lineno, audit[0].lineno)
                 self.assertLess(audit[0].lineno, seal[0].lineno)
 
+    def test_upload_validates_controlled_bytes_not_frappe_storage_filename(self) -> None:
+        method = self.execution.method("upload_evidence_file")
+        source = ast.get_source_segment(
+            EXECUTION_PATH.read_text(encoding="utf-8"),
+            method,
+        )
+        self.assertIsNotNone(source)
+        assert source is not None
+        for marker in (
+            'snapshot["mimeType"] != observation.mime_type',
+            'snapshot["sizeBytes"] != observation.size_bytes',
+            'snapshot["sha256"] != observation.sha256',
+            'snapshot["fileContentHash"] != observation.frappe_content_hash',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, source)
+        self.assertNotIn(
+            'snapshot["fileName"] != observation.file_name',
+            source,
+        )
+
     def test_execution_commands_do_not_commit_rollback_or_swallow_failures(self) -> None:
         for method_name in (
             "prepare_round",

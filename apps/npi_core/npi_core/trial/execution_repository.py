@@ -153,7 +153,10 @@ class FrappeTrialExecutionRepository(FrappeTrialRepository):
             "projectId": project_id,
             "trialRoundId": round_id,
             "expectedRoundOptimisticVersion": expected_round_optimistic_version,
-            "references": references,
+            "references": sorted(
+                references,
+                key=lambda value: (str(value["kind"]), str(value["globalId"])),
+            ),
             "material": material,
             "parameterDefinitions": parameter_definitions,
             "reason": reason,
@@ -782,8 +785,7 @@ class FrappeTrialExecutionRepository(FrappeTrialRepository):
             ).insert()
             snapshot = _file_revision_source_snapshot(file_revision)
             if (
-                snapshot["fileName"] != observation.file_name
-                or snapshot["mimeType"] != observation.mime_type
+                snapshot["mimeType"] != observation.mime_type
                 or snapshot["sizeBytes"] != observation.size_bytes
                 or snapshot["sha256"] != observation.sha256
                 or snapshot["fileContentHash"] != observation.frappe_content_hash

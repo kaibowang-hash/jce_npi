@@ -1258,6 +1258,7 @@ def run_execution_fresh(
         pending_file.get("globalId"),
         "P7-02 pending File Revision",
     )
+    storage_file_name = pending_file.get("fileName")
     require(
         pending_file.get("scanState") == "pending"
         and pending_file.get("privacy") == "private"
@@ -1265,6 +1266,14 @@ def run_execution_fresh(
         and pending_file.get("sha256")
         == hashlib.sha256(EVIDENCE_CONTENT).hexdigest(),
         "P7-02 pending private upload truth drifted",
+    )
+    require(
+        isinstance(storage_file_name, str)
+        and 1 <= len(storage_file_name) <= 255
+        and storage_file_name.endswith(".csv")
+        and "/" not in storage_file_name
+        and "\\" not in storage_file_name,
+        "P7-02 Frappe storage filename boundary drifted",
     )
     upload_replay = multipart_trial_upload(
         administrator,
@@ -1401,7 +1410,8 @@ def run_execution_fresh(
         and headers.get("X-Content-Type-Options") == "nosniff"
         and headers.get("Content-Security-Policy") == "sandbox; default-src 'none'"
         and headers.get("Referrer-Policy") == "no-referrer"
-        and EVIDENCE_FILE_NAME in headers.get("Content-Disposition", ""),
+        and f'filename="{storage_file_name}"'
+        in headers.get("Content-Disposition", ""),
         "P7-02 audited private evidence content boundary drifted",
     )
     return {

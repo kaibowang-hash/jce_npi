@@ -287,6 +287,8 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             '"TRIAL_EXECUTION_REFERENCE_UNAVAILABLE"',
             "observe_trial_file_scan",
             'pending_file.get("scanState") == "pending"',
+            'storage_file_name = pending_file.get("fileName")',
+            'f\'filename="{storage_file_name}"\'',
             'clean_body["pendingFiles"][0].get("scanState") == "clean"',
             "binary_evidence_request",
             '"machineImport": "unavailable"',
