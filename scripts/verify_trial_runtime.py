@@ -676,7 +676,7 @@ def actual_context_payload(*, successor: bool) -> dict[str, object]:
 
 def sample_payload(cavity_ids: list[str], *, successor: bool) -> dict[str, object]:
     return {
-        "label": "P7-02 controlled sample batch",
+        "label": f"P702-SAMPLE-{FIXTURE_RUN_ID[:12]}",
         "cavityGlobalIds": cavity_ids,
         "quantity": 80,
         "unit": "piece",

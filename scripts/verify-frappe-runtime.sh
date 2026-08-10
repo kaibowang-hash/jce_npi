@@ -2202,6 +2202,7 @@ verify_trial_runtime_log_redaction() {
     "Verify synthetic dimensional evidence" \
     "Controlled PA66 material observation" \
     "P702-MATERIAL-" \
+    "P702-SAMPLE-" \
     "Controlled dimensional laboratory" \
     "p7-02-controlled-parameters.csv" \
     "melt_temperature,287,degC"; do

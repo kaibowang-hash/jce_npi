@@ -262,6 +262,7 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             "Verify synthetic dimensional evidence",
             "Controlled PA66 material observation",
             "P702-MATERIAL-",
+            "P702-SAMPLE-",
             "Controlled dimensional laboratory",
             "p7-02-controlled-parameters.csv",
             "melt_temperature,287,degC",
@@ -271,6 +272,10 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
                 self.assertIn(marker, self.shell)
 
     def test_runtime_proves_exact_execution_sample_and_private_evidence(self) -> None:
+        self.assertEqual(
+            self.module.sample_payload([], successor=False)["label"],
+            f"P702-SAMPLE-{FIXTURE_RUN_ID[:12]}",
+        )
         required = (
             "prepare_execution_payload",
             "actual_context_payload",
