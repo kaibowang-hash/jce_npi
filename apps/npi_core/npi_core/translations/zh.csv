@@ -6007,19 +6007,19 @@ Actual Trial resources must be unique.,试模实际资源必须唯一。
 An input lock successor requires its exact predecessor.,输入锁后续修订需要其精确的前序修订。
 Automatic machine import is unavailable.,自动机台导入不可用。
 Confirmed By User ID,确认人用户标识
-ERP material verification is unavailable.,ERP 物料验证不可用。
-ERP resource verification is unavailable.,ERP 资源验证不可用。
+ERP material verification is unavailable.,企业资源计划物料验证不可用。
+ERP resource verification is unavailable.,企业资源计划资源验证不可用。
 Enter a valid material observation.,请输入有效的物料观察。
 Enter a valid numeric value.,请输入有效数值。
 "Enter both parameter limits, or leave both empty.",请同时输入参数上下限，或全部留空。
 Enter the complete Sample Batch feedback observation.,请输入完整的样品批次反馈观察。
-Enter true or false.,请输入 true 或 false。
+Enter true or false.,请输入真或假。
 Enter valid Trial environment observations.,请输入有效的试模环境观察。
 Enter valid Trial parameter definitions.,请输入有效的试模参数定义。
 Enter valid Trial parameter observations.,请输入有效的试模参数观察。
 Enter valid actual Trial resources.,请输入有效的试模实际资源。
 Enter valid locked Trial references.,请输入有效的已锁定试模引用。
-File MIME Type,文件 MIME 类型
+File MIME Type,文件媒体类型
 File SHA-256,文件 SHA-256
 File Size in Bytes,文件大小（字节）
 Lock every required Trial input before preparation.,准备前请锁定所有必需的试模输入。
