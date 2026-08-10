@@ -17,6 +17,7 @@ from .foundation.errors import (
     MalformedRequest,
     PublishRequestRoutesDisabled,
     ProjectCollaborationRoutesDisabled,
+    TrialRoutesDisabled,
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
     ToolingImportRoutesDisabled,
@@ -44,6 +45,7 @@ from .request_security import (
     tooling_manufacturing_routes_are_disabled,
     tooling_revision_routes_are_disabled,
     tooling_routes_are_disabled,
+    trial_routes_are_disabled,
 )
 
 _ROUTES = {
@@ -77,6 +79,25 @@ _ROUTES = {
 
 _PROJECT_COCKPIT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/cockpit$"
+)
+_PROJECT_TRIALS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trials$"
+)
+_PROJECT_TRIAL_PLAN_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
+    r"(?P<trial_plan_id>[^/:]+)$"
+)
+_PROJECT_TRIAL_PLAN_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
+    r"(?P<trial_plan_id>[^/:]+)/revisions$"
+)
+_PROJECT_TRIAL_PLAN_ROUNDS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
+    r"(?P<trial_plan_id>[^/:]+)/rounds$"
+)
+_PROJECT_TRIAL_PLAN_ACTIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
+    r"(?P<trial_plan_id>[^/:]+)/actions:generate$"
 )
 _PROJECT_TOOLING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
@@ -549,6 +570,40 @@ def route_request() -> None:
 
     command = _ROUTES.get((request.method, path))
     route_params: dict[str, str] = {}
+    if command is None and request.method == "GET":
+        for route, candidate in (
+            (
+                _PROJECT_TRIALS_ROUTE,
+                "npi_core.trial_api.get_trial_planning_workspace",
+            ),
+            (_PROJECT_TRIAL_PLAN_ROUTE, "npi_core.trial_api.get_trial_plan"),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
+    if command is None and request.method == "POST":
+        for route, candidate in (
+            (_PROJECT_TRIALS_ROUTE, "npi_core.trial_api.create_trial_plan"),
+            (
+                _PROJECT_TRIAL_PLAN_REVISIONS_ROUTE,
+                "npi_core.trial_api.create_trial_plan_revision",
+            ),
+            (
+                _PROJECT_TRIAL_PLAN_ROUNDS_ROUTE,
+                "npi_core.trial_api.create_planned_trial_round",
+            ),
+            (
+                _PROJECT_TRIAL_PLAN_ACTIONS_ROUTE,
+                "npi_core.trial_api.generate_trial_plan_actions",
+            ),
+        ):
+            match = route.fullmatch(path)
+            if match is not None:
+                command = candidate
+                route_params = match.groupdict()
+                break
     if command is None and request.method == "GET":
         for route, candidate in (
             (_PROJECT_TOOLING_LIST_ROUTE, "npi_core.tooling_export_api.get_tooling_list"),
@@ -1139,6 +1194,9 @@ def route_request() -> None:
     if _p6_08_routes_disabled(command):
         command = "npi_core.bff.tooling_export_routes_disabled"
         route_params = {}
+    if _p7_01_routes_disabled(command):
+        command = "npi_core.bff.trial_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1412,6 +1470,23 @@ def tooling_export_routes_disabled() -> dict[str, object] | None:
     )
 
 
+@frappe.whitelist(
+    allow_guest=True,
+    methods=["GET", "POST"],
+)
+def trial_routes_disabled() -> dict[str, object] | None:
+    """Fail closed only for P7-01 while retaining all earlier routes."""
+
+    def raise_disabled() -> dict[str, object]:
+        raise TrialRoutesDisabled()
+
+    return frappe_domain_call(
+        raise_disabled,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _p4_05_routes_disabled(command: str | None) -> bool:
     return project_collaboration_routes_are_disabled() and (
         command == "npi_core.my_work_api.get_my_work"
@@ -1538,6 +1613,12 @@ def _p6_08_routes_disabled(command: str | None) -> bool:
     )
 
 
+def _p7_01_routes_disabled(command: str | None) -> bool:
+    return trial_routes_are_disabled() and (
+        isinstance(command, str) and command.startswith("npi_core.trial_api.")
+    )
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1620,6 +1701,14 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         return True
     if method in {"GET", "POST"} and (
         _PROJECT_DOMAIN_WORK_ITEMS_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_TRIALS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_PLAN_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_PLAN_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_PLAN_ROUNDS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_PLAN_ACTIONS_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (

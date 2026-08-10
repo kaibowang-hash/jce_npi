@@ -5859,3 +5859,12 @@ Add between 1 and 50 valid resources.,请添加 1 至 50 项有效资源。
 Select a machine and material for the Trial Plan.,请为试模计划选择机台和材料。
 The exact current Trial lifecycle event is unavailable.,精确的当前试模生命周期事件不可用。
 This Trial Round state is not active in this task.,此试模轮次状态在本任务中未启用。
+Action keys must be unique.,行动项键必须唯一。
+Add between 1 and 50 valid actions.,请添加 1 至 50 个有效行动项。
+The Trial Plan was changed by another user.,试模计划已被其他用户更改。
+The Trial Round label is already used in this Plan.,该试模轮次标签已在此计划中使用。
+The Trial planning object is unavailable.,试模规划对象不可用。
+The idempotency key was already used for a different Trial request.,该幂等键已用于其他试模请求。
+The related Trial planning reference is unavailable.,相关试模规划引用不可用。
+The Trial planning workspace is temporarily unavailable.,试模规划工作区暂时不可用。
+Configure a published Project Work Policy before creating actions.,创建行动项前请配置已发布的项目工作策略。

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, date, datetime
 from typing import Any
 
 import frappe
@@ -124,18 +125,10 @@ def validate_plan_document(document: Any) -> None:
     ):
         frappe.throw(_("The Tooling Master is unavailable for this Project."), frappe.ValidationError)
     for member in value.responsible_members:
-        require_exact_parent(
-            "NPI Project Member",
-            str(member.global_id),
-            {
-                "global_id": str(member.global_id),
-                "tenant_id": value.tenant_id,
-                "project_global_id": str(value.project_global_id),
-                "user_id": member.user_id,
-                "optimistic_version": member.optimistic_version,
-                "effective_to": None,
-            },
-            _("A responsible Project member is unavailable for this Trial Plan."),
+        require_current_project_member(
+            member,
+            tenant_id=value.tenant_id,
+            project_global_id=str(value.project_global_id),
         )
     measurement = value.measurement_plan
     if measurement.document_revision_global_id is not None:
@@ -176,6 +169,61 @@ def validate_plan_document(document: Any) -> None:
     document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
     document.plan_snapshot = canonical_json(value.snapshot_payload())
     document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+
+
+def require_current_project_member(
+    member: Any,
+    *,
+    tenant_id: str,
+    project_global_id: str,
+) -> None:
+    message = _("A responsible Project member is unavailable for this Trial Plan.")
+    try:
+        document = frappe.get_doc("NPI Project Member", str(member.global_id))
+    except frappe.DoesNotExistError:
+        frappe.throw(message, frappe.ValidationError)
+    today = datetime.now(UTC).date()
+    if (
+        str(document.global_id) != str(member.global_id)
+        or str(document.tenant_id) != tenant_id
+        or str(document.project_global_id) != project_global_id
+        or str(document.user_id) != member.user_id
+        or int(document.optimistic_version) != member.optimistic_version
+        or not _member_effective(document, today)
+    ):
+        frappe.throw(message, frappe.ValidationError)
+    user = frappe.db.get_value(
+        "User",
+        member.user_id,
+        ["enabled", "user_type"],
+        as_dict=True,
+    )
+    if (
+        not user
+        or int(_record_value(user, "enabled") or 0) != 1
+        or str(_record_value(user, "user_type")) != "System User"
+    ):
+        frappe.throw(message, frappe.ValidationError)
+
+
+def _member_effective(member: Any, today: date) -> bool:
+    starts = _date_value(member.effective_from)
+    ends = _date_value(member.effective_to) if member.effective_to else None
+    return starts <= today and (ends is None or today <= ends)
+
+
+def _date_value(value: Any) -> date:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value))
+
+
+def _record_value(record: Any, fieldname: str) -> Any:
+    if isinstance(record, dict):
+        return record.get(fieldname)
+    return getattr(record, fieldname, None)
 
 
 def normalize_round_identity(document: Any) -> None:

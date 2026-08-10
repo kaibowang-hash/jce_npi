@@ -17,6 +17,7 @@ from .foundation.errors import (
     ProjectCollaborationRoutesDisabled,
     RequestValidationFailed,
     TenantScopeUnavailable,
+    TrialRoutesDisabled,
     ToolingEngineeringControlsRoutesDisabled,
     ToolingAcceptanceAssetsRoutesDisabled,
     ToolingImportRoutesDisabled,
@@ -198,6 +199,27 @@ def require_tooling_export_routes_enabled() -> None:
 
     if tooling_export_routes_are_disabled():
         raise ToolingExportRoutesDisabled()
+
+
+def trial_routes_are_disabled() -> bool:
+    """Read the independent Site-scoped P7-01 fail-closed route switch."""
+
+    import frappe
+
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_01_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def require_trial_routes_enabled() -> None:
+    """Keep P7-01 Trial planning handlers closed unless explicitly enabled."""
+
+    if trial_routes_are_disabled():
+        raise TrialRoutesDisabled()
 
 
 def controlled_print_routes_are_disabled() -> bool:

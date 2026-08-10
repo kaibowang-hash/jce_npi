@@ -44,7 +44,21 @@ class Phase7TrialContractTest(unittest.TestCase):
             "x-audit-operation: trial_plan.generate_actions",
         ):
             self.assertIn(marker, paths)
-        self.assertNotIn("trial_api.", BFF)
+        for command in (
+            "npi_core.trial_api.get_trial_planning_workspace",
+            "npi_core.trial_api.get_trial_plan",
+            "npi_core.trial_api.create_trial_plan",
+            "npi_core.trial_api.create_trial_plan_revision",
+            "npi_core.trial_api.create_planned_trial_round",
+            "npi_core.trial_api.generate_trial_plan_actions",
+        ):
+            self.assertIn(command, BFF)
+        create_path = paths.split("/projects/{projectId}/trial-plans/{trialPlanId}:", 1)[0]
+        self.assertIn(
+            '"201": { $ref: "#/components/responses/TrialPlanDetailCommandResult" }',
+            create_path,
+        )
+        self.assertNotIn("TrialCommandResult:", OPENAPI)
 
     def test_trial_schemas_are_closed_and_plan_round_remain_distinct(self) -> None:
         schema_names = (
@@ -125,12 +139,21 @@ class Phase7TrialContractTest(unittest.TestCase):
     def test_generated_actions_reference_domain_work_without_copying_task_state(self) -> None:
         link = _schema("TrialPlanWorkLink")
         generate = _schema("GenerateTrialPlanActions")
+        action = _schema("TrialPlanActionInput")
         self.assertIn("domainWorkItemGlobalId:", link)
         self.assertIn("trialPlanRevisionSnapshotHash:", link)
         for duplicate in ("status:", "state:", "owner:", "completedAt:"):
             self.assertNotIn(duplicate, link)
         self.assertIn("actions:", generate)
         self.assertNotIn("workItemState:", generate)
+        self.assertIn("dueAt: { type: string, format: date-time }", action)
+        self.assertIn("severity: { type: string, enum: [low, medium, high, critical] }", action)
+        self.assertIn("blocking: { type: boolean }", action)
+        self.assertNotIn("priority:", action)
+        create_round = _schema("CreatePlannedTrialRound")
+        required = create_round.split("properties:", 1)[0]
+        self.assertNotIn("displayLabel", required)
+        self.assertIn('type: [string, "null"]', create_round)
 
     def test_exact_ownership_rows_preserve_trial_erp_and_work_boundaries(self) -> None:
         for object_name in (

@@ -59,6 +59,9 @@ from npi_core.project_work.domain import (
 
 
 _KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
+_PARENT_ACTION_KEY_PATTERN = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+)
 _BUSINESS_CODE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$")
 _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
@@ -639,48 +642,7 @@ class FrappeProjectWorkRepository:
             )
             if isinstance(idempotency, dict):
                 return WorkCommandOutcome(idempotency, replayed=True)
-            item = frappe.get_doc(
-                {
-                    "doctype": "NPI Domain Work Item",
-                    "global_id": str(item_id),
-                    "tenant_id": str(project.tenant_id),
-                    "project_global_id": str(project_id),
-                    "stage_global_id": (
-                        str(domain_item.stage_global_id)
-                        if domain_item.stage_global_id is not None
-                        else None
-                    ),
-                    "wbs_item_global_id": (
-                        str(domain_item.wbs_item_global_id)
-                        if domain_item.wbs_item_global_id is not None
-                        else None
-                    ),
-                    "kind": domain_item.kind.value,
-                    "title": domain_item.title,
-                    "detail": domain_item.detail,
-                    "owner_user_id": domain_item.owner_user_id,
-                    "due_at": _database_datetime(domain_item.due_at),
-                    "severity": domain_item.severity.value,
-                    "blocking": domain_item.blocking,
-                    "state_key": domain_item.state_key,
-                    "state_label_source": domain_item.state_label_source,
-                    "state_terminal": domain_item.state_terminal,
-                    "work_policy_global_id": str(
-                        domain_item.work_policy_global_id
-                    ),
-                    "work_policy_version": domain_item.work_policy_version,
-                    "work_policy_snapshot_hash": (
-                        domain_item.work_policy_snapshot_hash
-                    ),
-                    "relations": [
-                        str(value)
-                        for value in domain_item.related_work_item_ids
-                    ],
-                    "evidence_references": [],
-                    "source_system": "NPI_ONE",
-                    "optimistic_version": domain_item.version,
-                }
-            ).insert()
+            item = self._insert_domain_work_item_document(project, domain_item)
             self._advance_project(project, policy["ref"])
             self._append_audit(
                 operation="project.domain_work_item.create",
@@ -701,6 +663,138 @@ class FrappeProjectWorkRepository:
             response = self._domain_work_item_response(item)
             self._seal_idempotency(idempotency, response)
         return WorkCommandOutcome(response)
+
+    def create_domain_work_items_in_parent_command(
+        self,
+        project,
+        *,
+        items: Sequence[Mapping[str, Any]],
+    ) -> list[dict[str, Any]] | None:
+        """Create governed actions inside another domain's atomic command.
+
+        The parent owns command idempotency and transaction rollback. Project
+        Work still owns validation, lifecycle state, policy binding, Project
+        version advancement and per-item audit truth.
+        """
+
+        project_id = UUID(str(project.global_id))
+        authorized = self._authorize_project_document(
+            project,
+            project_id,
+            ProjectAccess.ADMINISTER,
+        )
+        if authorized is None:
+            return None
+        if not items or len(items) > 50:
+            raise _field_problem(
+                "actions",
+                _("Add between 1 and 50 valid actions."),
+            )
+        require_mutable_project(project)
+        policy_ref = _project_policy_ref(project)
+        if policy_ref is None:
+            raise _field_problem(
+                "actions",
+                _("Configure a published Project Work Policy before creating actions."),
+            )
+        policy = self._load_policy(policy_ref)
+        self._require_current_policy(project, policy["ref"])
+        existing_count = frappe.db.count(
+            "NPI Domain Work Item",
+            filters={
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project_id),
+            },
+        )
+        if existing_count + len(items) > 10000:
+            raise _field_problem(
+                "actions",
+                _(
+                    "This Project already contains the maximum number of Domain Work Items."
+                ),
+            )
+
+        prepared: list[tuple[str, DomainWorkItem]] = []
+        action_keys: set[str] = set()
+        for index, value in enumerate(items):
+            path = f"actions[{index}]"
+            action_key = _text_value(
+                _record_value(value, "action_key", "actionKey"),
+                f"{path}.actionKey",
+                64,
+            )
+            if _PARENT_ACTION_KEY_PATTERN.fullmatch(action_key) is None:
+                raise _field_problem(
+                    f"{path}.actionKey",
+                    _("Enter a valid value."),
+                )
+            if action_key in action_keys:
+                raise _field_problem(
+                    f"{path}.actionKey",
+                    _("Action keys must be unique."),
+                )
+            action_keys.add(action_key)
+            prepared.append(
+                (
+                    action_key,
+                    self._prepare_domain_work_item(
+                        project,
+                        policy,
+                        item_id=uuid4(),
+                        kind="action",
+                        title=_record_value(value, "title"),
+                        detail=_record_value(
+                            value,
+                            "detail",
+                            "description",
+                            default=None,
+                        ),
+                        context={},
+                        owner_user_id=_record_value(
+                            value,
+                            "owner_user_id",
+                            "ownerUserId",
+                        ),
+                        due_at=_record_value(value, "due_at", "dueAt"),
+                        severity=_record_value(value, "severity"),
+                        blocking=_record_value(value, "blocking"),
+                        related_work_item_ids=(),
+                    ),
+                )
+            )
+
+        created: list[dict[str, Any]] = []
+        with _controlled_work_write_scope():
+            for action_key, domain_item in prepared:
+                document = self._insert_domain_work_item_document(
+                    project,
+                    domain_item,
+                )
+                created.append(
+                    {
+                        "actionKey": action_key,
+                        "document": document,
+                        "response": self._domain_work_item_response(document),
+                    }
+                )
+            self._advance_project(project, policy["ref"])
+            for action_key, domain_item in prepared:
+                self._append_audit(
+                    operation="project.domain_work_item.create",
+                    global_id=domain_item.global_id,
+                    object_version=domain_item.version,
+                    result="created",
+                    summary={
+                        "actionKey": action_key,
+                        "blocking": domain_item.blocking,
+                        "kind": domain_item.kind.value,
+                        "parentOperation": "trial_plan.generate_actions",
+                        "projectId": str(project_id),
+                        "requestId": self.request_id,
+                        "severity": domain_item.severity.value,
+                    },
+                )
+        return created
 
     def _load_policy(self, reference: object) -> dict[str, Any]:
         policy_global_id = _uuid_value(
@@ -1813,6 +1907,48 @@ class FrappeProjectWorkRepository:
             known_stage_ids=known_stage_ids,
             known_wbs_item_ids=known_wbs_item_ids,
         )
+
+    @staticmethod
+    def _insert_domain_work_item_document(project, domain_item: DomainWorkItem):
+        return frappe.get_doc(
+            {
+                "doctype": "NPI Domain Work Item",
+                "global_id": str(domain_item.global_id),
+                "tenant_id": str(project.tenant_id),
+                "project_global_id": str(project.global_id),
+                "stage_global_id": (
+                    str(domain_item.stage_global_id)
+                    if domain_item.stage_global_id is not None
+                    else None
+                ),
+                "wbs_item_global_id": (
+                    str(domain_item.wbs_item_global_id)
+                    if domain_item.wbs_item_global_id is not None
+                    else None
+                ),
+                "kind": domain_item.kind.value,
+                "title": domain_item.title,
+                "detail": domain_item.detail,
+                "owner_user_id": domain_item.owner_user_id,
+                "due_at": _database_datetime(domain_item.due_at),
+                "severity": domain_item.severity.value,
+                "blocking": domain_item.blocking,
+                "state_key": domain_item.state_key,
+                "state_label_source": domain_item.state_label_source,
+                "state_terminal": domain_item.state_terminal,
+                "work_policy_global_id": str(domain_item.work_policy_global_id),
+                "work_policy_version": domain_item.work_policy_version,
+                "work_policy_snapshot_hash": (
+                    domain_item.work_policy_snapshot_hash
+                ),
+                "relations": [
+                    str(value) for value in domain_item.related_work_item_ids
+                ],
+                "evidence_references": [],
+                "source_system": "NPI_ONE",
+                "optimistic_version": domain_item.version,
+            }
+        ).insert()
 
     def _upsert_team_documents(
         self,

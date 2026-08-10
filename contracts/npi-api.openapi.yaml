@@ -2845,7 +2845,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/CreateTrialPlan" }
       responses:
-        "201": { $ref: "#/components/responses/TrialCommandResult" }
+        "201": { $ref: "#/components/responses/TrialPlanDetailCommandResult" }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/AuthenticationError" }
         "403": { $ref: "#/components/responses/PermissionError" }
@@ -5920,24 +5920,6 @@ components:
         X-Trace-ID:
           required: true
           schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
-        Cache-Control:
-          required: true
-          schema: { type: string, const: "private, no-store" }
-      content:
-        application/json:
-          schema: { $ref: "#/components/schemas/TrialPlanningWorkspace" }
-    TrialCommandResult:
-      description: Project Trial planning workspace after one atomic command or safe actor-bound replay
-      headers:
-        X-Request-ID:
-          required: true
-          schema: { type: string, format: uuid }
-        X-Trace-ID:
-          required: true
-          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
-        Idempotency-Replayed:
-          required: true
-          schema: { type: boolean }
         Cache-Control:
           required: true
           schema: { type: string, const: "private, no-store" }
@@ -11644,6 +11626,7 @@ components:
         plannedEndAt: { type: string, format: date-time }
         resources:
           type: array
+          minItems: 2
           maxItems: 50
           items: { $ref: "#/components/schemas/TrialResourceProposal" }
         responsibleMembers:
@@ -11842,6 +11825,7 @@ components:
         plannedEndAt: { type: string, format: date-time }
         resources:
           type: array
+          minItems: 2
           maxItems: 50
           items: { $ref: "#/components/schemas/TrialResourceProposalInput" }
         responsibleMemberGlobalIds:
@@ -11883,6 +11867,7 @@ components:
         plannedEndAt: { type: string, format: date-time }
         resources:
           type: array
+          minItems: 2
           maxItems: 50
           items: { $ref: "#/components/schemas/TrialResourceProposalInput" }
         responsibleMemberGlobalIds:
@@ -11902,7 +11887,6 @@ components:
         [
           expectedPlanRevisionGlobalId,
           expectedPlanRevisionSnapshotHash,
-          displayLabel,
           reason,
         ]
       properties:
@@ -11910,20 +11894,29 @@ components:
         expectedPlanRevisionSnapshotHash:
           { type: string, pattern: "^[a-f0-9]{64}$" }
         displayLabel:
-          { type: string, pattern: "^T(?:0|[1-9][0-9]{0,3})$" }
+          { type: [string, "null"], pattern: "^T(?:0|[1-9][0-9]{0,3})$" }
         reason: { type: string, minLength: 1, maxLength: 500 }
     TrialPlanActionInput:
       type: object
       additionalProperties: false
-      required: [actionKey, title, responsibleMemberGlobalId, priority]
+      required:
+        [
+          actionKey,
+          title,
+          responsibleMemberGlobalId,
+          dueAt,
+          severity,
+          blocking,
+        ]
       properties:
         actionKey:
           { type: string, minLength: 1, maxLength: 64, pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$" }
         title: { type: string, minLength: 1, maxLength: 280 }
         description: { type: [string, "null"], maxLength: 2000 }
         responsibleMemberGlobalId: { type: string, format: uuid }
-        dueAt: { type: [string, "null"], format: date-time }
-        priority: { type: string, enum: [low, normal, high, critical] }
+        dueAt: { type: string, format: date-time }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        blocking: { type: boolean }
     GenerateTrialPlanActions:
       type: object
       additionalProperties: false

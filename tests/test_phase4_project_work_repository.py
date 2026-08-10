@@ -189,16 +189,21 @@ class ProjectWorkRepositorySeamTest(unittest.TestCase):
         )
         insert_calls = [
             node
-            for node in ast.walk(method)
+            for node in ast.walk(self.method("_insert_domain_work_item_document"))
             if isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
             and node.func.attr == "insert"
         ]
+        insert_helper_calls = self.calls(
+            "create_domain_work_item",
+            "self._insert_domain_work_item_document",
+        )
         self.assertEqual(len(count_calls), 1)
         self.assertEqual(len(build_calls), 1)
-        self.assertTrue(insert_calls)
+        self.assertEqual(len(insert_helper_calls), 1)
+        self.assertEqual(len(insert_calls), 1)
         self.assertLess(count_calls[0].lineno, build_calls[0].lineno)
-        self.assertLess(build_calls[0].lineno, min(call.lineno for call in insert_calls))
+        self.assertLess(build_calls[0].lineno, insert_helper_calls[0].lineno)
         comparisons = [
             node
             for node in ast.walk(method)

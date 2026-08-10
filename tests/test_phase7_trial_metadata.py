@@ -265,7 +265,13 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "NPI Domain Work Item",
         ):
             self.assertIn(f'"{parent}"', source)
-        self.assertIn('"optimistic_version": member.optimistic_version', source)
+        self.assertIn("require_current_project_member(", source)
+        self.assertIn(
+            "int(document.optimistic_version) != member.optimistic_version",
+            source,
+        )
+        self.assertIn("starts <= today and (ends is None or today <= ends)", source)
+        self.assertIn('str(_record_value(user, "user_type")) != "System User"', source)
         self.assertIn('"snapshot_hash": value.trial_plan_revision_snapshot_hash', source)
 
     def test_all_visible_sources_have_symmetric_chinese_translations(self) -> None:

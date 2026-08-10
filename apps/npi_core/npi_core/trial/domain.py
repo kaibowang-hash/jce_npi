@@ -9,7 +9,7 @@ from enum import StrEnum
 from typing import Mapping, Sequence
 from uuid import UUID
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 
 try:
     from frappe import _
@@ -27,6 +27,51 @@ _HASH_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 _KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _ROUND_LABEL_PATTERN = re.compile(r"^T(?:0|[1-9][0-9]{0,3})$")
 _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+
+class TrialUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_UNAVAILABLE",
+            _("The Trial planning object is unavailable."),
+        )
+
+
+class TrialReferenceUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_REFERENCE_UNAVAILABLE",
+            _("The related Trial planning reference is unavailable."),
+        )
+
+
+class TrialVersionConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TRIAL_VERSION_CONFLICT",
+            _("The Trial Plan was changed by another user."),
+        )
+
+
+class TrialLabelConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TRIAL_LABEL_CONFLICT",
+            _("The Trial Round label is already used in this Plan."),
+        )
+
+
+class TrialIdempotencyConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TRIAL_IDEMPOTENCY_CONFLICT",
+            _("The idempotency key was already used for a different Trial request."),
+        )
 
 
 class TrialPurpose(StrEnum):
