@@ -34,9 +34,10 @@ class CurrentTaskVerifierTest(unittest.TestCase):
 
     def test_repository_manifest_and_state_pass(self) -> None:
         value = validate_current_task(check_git=False)
-        self.assertEqual(value["task_id"], "DELIVERY_PIPELINE_OPTIMIZATION")
-        self.assertEqual(value["completion_gate"], "LEVEL_3")
-        self.assertEqual(value["authorized_next_task"], "P7-02")
+        self.assertEqual(value["task_id"], "P7-02")
+        self.assertEqual(value["task_kind"], "product")
+        self.assertEqual(value["completion_gate"], "LEVEL_2")
+        self.assertEqual(value["authorized_next_task"], "P7-03")
 
     def test_manifest_rejects_duplicate_or_unknown_keys(self) -> None:
         source = MANIFEST.read_text(encoding="utf-8")
@@ -53,7 +54,12 @@ class CurrentTaskVerifierTest(unittest.TestCase):
             load_manifest(self.write_manifest({**self.manifest, "extra": True}))
 
     def test_delivery_task_rejects_product_requirement_claim(self) -> None:
-        changed = {**self.manifest, "requirement_ids": ["FR-TR-001"]}
+        changed = {
+            **self.manifest,
+            "task_kind": "delivery_infrastructure",
+            "completion_gate": "LEVEL_3",
+            "requirement_ids": ["FR-TR-001"],
+        }
         with self.assertRaisesRegex(CurrentTaskError, "must not claim"):
             validate_current_task(self.write_manifest(changed), check_git=False)
 
@@ -61,7 +67,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
         for key, value in (
             ("status", "PASS"),
             ("completion_gate", "LEVEL_1"),
-            ("authorized_next_task", "P7-03"),
+            ("authorized_next_task", "p7-03"),
             ("base_checkpoint", "short"),
         ):
             with self.subTest(key=key):
@@ -94,7 +100,7 @@ class CurrentTaskVerifierTest(unittest.TestCase):
     def test_git_path_validation_is_invoked_for_normal_check(self) -> None:
         with patch(
             "scripts.verify_current_task.changed_paths",
-            return_value=("apps/npi_core/npi_core/trial/domain.py",),
+            return_value=("docs/ARCHITECTURE.md",),
         ):
             with self.assertRaisesRegex(CurrentTaskError, "outside"):
                 validate_current_task(check_git=True)

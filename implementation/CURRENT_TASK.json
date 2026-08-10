@@ -87,7 +87,8 @@
     "tests/test_phase7_trial_metadata.py",
     "tests/test_phase7_trial_repository.py",
     "tests/test_phase7_trial_repository_seams.py",
-    "tests/test_phase7_trial_runtime_verifier.py"
+    "tests/test_phase7_trial_runtime_verifier.py",
+    "tests/test_current_task_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
