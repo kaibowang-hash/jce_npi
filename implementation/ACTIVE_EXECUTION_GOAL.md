@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T11:30:29Z`
+Updated: `2026-08-10T13:49:23Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — DELIVERY PIPELINE OPTIMIZATION`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-02 CHECKPOINT 1`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -13,24 +13,20 @@ Updated: `2026-08-10T11:30:29Z`
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
-- Latest complete exact-SHA CI:
-  `31380834335` (`PASS`; repository `93430635765`, fixed-Linux visual
-  `93430635728` at `97/97`, and cumulative controlled Site `93430635851`)
-- Latest controlled-Site run:
-  `31380834335` (`PASS`, unchanged exact SHA `78efa3e`; cumulative scope
-  `p5-01-through-p7-01`)
-- Controlled PASS artifact:
-  `9059935812`, GitHub digest
-  `sha256:b7e00cbbd0622961517b22ea690f372aafb7748f81542cb6c67fd7090a74632f`
+- Latest complete exact-SHA delivery Gate:
+  `31392474781` (`PASS — LEVEL 3` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`;
+  repository, frontend, secret, `97/97` visual and cumulative controlled Site)
+- Latest evidence-only exact-SHA CI:
+  `31393689222` (`PASS` at `fbac85b49b020a356554ab0e5540b8028ce5862f`)
 - Current controller task:
-  `Delivery Pipeline Optimization`
-  (`IN_PROGRESS — FROZEN PLAN IMPLEMENTATION`)
-- Resumed product task after exact Level 3 PASS: `P7-02` (`PAUSED`)
+  `P7-02 — Locked inputs, actuals, samples and evidence`
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
+- Resumed product task: `P7-02` (`ACTIVE_CHECKPOINT_1`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — PRODUCT TASKS PAUSED AFTER P7-01`)
+  (`IN_PROGRESS — P7-02 CHECKPOINT 1`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -50,14 +46,20 @@ production availability/reservation is not. All retained Trial history is
 append-only and rollback after use is route-disable plus reviewed forward
 repair.
 
-The user's ordered delivery hold is active. P7-02 and later Phase 7 product
-tasks must not start until the independent Delivery Pipeline Optimization task
-passes Level 3. The bounded audit is complete and its scope, non-scope,
-affected checks, allowed paths, rollback and exact PASS conditions are frozen
-in `implementation/CURRENT_TASK.json` and
-`implementation/evidence/delivery-pipeline-optimization/plan.md`. Only that
-delivery-mechanics implementation is active. It may not weaken or relabel any
-product or Gate invariant. There is no active technical Hard Blocker.
+The ordered Delivery Pipeline Optimization is complete. Exact implementation
+checkpoint `22cb24d` passes ordinary PR CI `31388734891` and complete Level 3
+workflow `31392474781`; evidence commit `fbac85b` passes CI `31393689222`.
+The accepted evidence is
+`implementation/evidence/delivery-pipeline-optimization/validation.md`.
+
+The bounded P7-02 audit passes and its plan is frozen in
+`implementation/evidence/phase-7/p7-02-plan.md`. Only checkpoint 1 is active:
+pure immutable Trial input-lock, actual, sample-batch and evidence-reference
+domains; closed contracts; exact ownership; guarded additive metadata; direct
+tests and translations. It must create no live route, business row, file,
+fixture or UI and may not claim automatic machine acquisition, ERPNext formal
+quality, Gate authority, approval or release. The machine-readable scope is
+`implementation/CURRENT_TASK.json`. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_IMPLEMENTATION — DELIVERY PIPELINE OPTIMIZATION`
+`IN_PROGRESS_CHECKPOINT_1 — P7-02`
 
-Recovery time: `2026-08-10T11:30:29Z`
+Recovery time: `2026-08-10T13:49:23Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -35,24 +35,24 @@ readiness, handover, Released Trial Summary, mobile field actions, production
 ERPNext, official quality authority, Gate mutation, external projection and
 production print policy remain scoped holds, not global Hard Blockers.
 
-Per the user's 2026-08-10 transition directive, P7-02 and every later Phase 7
-product task are paused. The audit is complete. The active atomic action is to
-implement only the frozen delivery-mechanics plan in
-`implementation/evidence/delivery-pipeline-optimization/plan.md`, enforced by
-`implementation/CURRENT_TASK.json`: parallel fail-closed ordinary lanes,
-exact-SHA prior-Gate reuse for Level 2 controlled Sites, a retained complete
-Level 3 mode, reviewed Node.js 24 Action upgrades, governed P0 catalog-pixel
-stabilization and machine-validated task/controller/path consistency.
+Delivery Pipeline Optimization is complete: implementation SHA `22cb24d`
+passes ordinary PR CI `31388734891` and complete Level 3 `31392474781`; the
+evidence-only SHA `fbac85b` passes CI `31393689222`. The ordered hold is
+removed without changing product, Gate or test truth.
 
-After affected checks pass, run the complete Level 3 Gate on the final exact
-SHA. Only that PASS may remove the ordered hold and resume the bounded P7-02
-audit.
+The P7-02 audit passes. Execute only checkpoint 1 from
+`implementation/evidence/phase-7/p7-02-plan.md`, enforced by
+`implementation/CURRENT_TASK.json`: add pure immutable domains, closed
+contracts, exact ownership, guarded additive DocTypes, direct translations and
+focused tests for exact locked Round inputs, versioned Trial Actuals, sample
+batches/cavities and private evidence references. Activate no live route,
+business row, file, fixture or UI. Manual acquisition is the only truthful
+source; automatic machine import, formal ERPNext quality, Gate/conclusion/
+approval/release truth remain unavailable.
 
-The Node.js 20 deprecation warnings on `actions/checkout@v4`,
-`actions/setup-node@v4`, `actions/setup-python@v5`,
-`actions/upload-artifact@v4` and the Gitleaks action are audit inputs, not a
-P7-01 failure. No optimization may skip a trigger-appropriate current-tree or
-full-branch secret scan.
+After checkpoint 1 affected checks and task-scope validation pass, commit and
+run ordinary CI. Only that PASS activates checkpoint 2 repository/BFF/private
+file/lifecycle work.
 
 ## Retained P6-05 and P6-06 execution history
 

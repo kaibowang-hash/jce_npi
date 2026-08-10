@@ -1,27 +1,24 @@
 # Blockers
 
-Updated: `2026-08-10T11:30:29Z`
+Updated: `2026-08-10T13:49:23Z`
 
 ## Active hard blockers
 
-None. P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged
-workflow `31380834335` passes repository, `97/97` fixed-Linux visuals and the
-cumulative disposable Site through `p5-01-through-p7-01`. Runtime artifact
-`9059935812` records `result=PASS`, exact SHA, two Plan revisions, one planned
-Round, one action link, route rollback, cross-process replay, unavailable
-reservation truth and zero integration traffic. No user action is required.
+None. Delivery Pipeline Optimization passes ordinary CI `31388734891` and
+complete Level 3 `31392474781` at exact implementation SHA `22cb24d`; its
+evidence-only checkpoint `fbac85b` passes CI `31393689222`. P7-02 checkpoint 1
+is active and no user action is required.
 
 ## Active recovery
 
-None. P7-01 is sealed at Level 2. The Delivery Pipeline Optimization audit is
-frozen and its bounded implementation is active; this is an ordered independent
-delivery task, not a Hard Blocker. P7-02 and later Phase 7 product tasks are
-intentionally paused until that task reaches Level 3 PASS.
+None. The ordered delivery hold is removed. The bounded P7-02 audit passes and
+checkpoint 1 is active under the frozen plan and machine-readable path guard.
 
-Confirmed machine/person/material reservation, production ERPNext access,
-official quality/approval authority, exact later Trial/Gate lifecycle policy,
-the external Released Trial Summary event/projection under `DR-REC-009`, and
-production print policy remain scoped holds, not global Hard Blockers.
+Automatic machine import, confirmed production reservation, production ERPNext
+access, formal quality/approval authority, Trial conclusion/Gate/readiness/
+release policy, the external Released Trial Summary event/projection under
+`DR-REC-009`, and production print policy remain scoped holds, not global Hard
+Blockers.
 
 ## Historical recovery
 
