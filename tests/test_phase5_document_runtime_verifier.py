@@ -2029,7 +2029,10 @@ class Phase5DocumentRuntimeVerifierTest(unittest.TestCase):
         )
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         required_fragments = (
-            "if: github.event_name == 'workflow_dispatch'",
+            "github.event_name == 'workflow_dispatch' &&",
+            "needs: controlled_preflight",
+            "inputs.gate_mode == 'level_3'",
+            "needs.controlled_preflight.result == 'success'",
             "timeout-minutes: 45",
             f'"frappe-bench=={toolchain["BENCH_EXPECTED_VERSION"]}"',
             f'"uv=={toolchain["UV_EXPECTED_VERSION"]}"',

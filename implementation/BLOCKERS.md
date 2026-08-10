@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-10T11:04:13Z`
+Updated: `2026-08-10T11:30:29Z`
 
 ## Active hard blockers
 
@@ -13,10 +13,10 @@ reservation truth and zero integration traffic. No user action is required.
 
 ## Active recovery
 
-None. P7-01 is sealed at Level 2. The active Delivery Pipeline Optimization
-audit is an ordered independent delivery task, not a Hard Blocker. P7-02 and
-later Phase 7 product tasks are intentionally paused until that task reaches
-Level 3 PASS.
+None. P7-01 is sealed at Level 2. The Delivery Pipeline Optimization audit is
+frozen and its bounded implementation is active; this is an ordered independent
+delivery task, not a Hard Blocker. P7-02 and later Phase 7 product tasks are
+intentionally paused until that task reaches Level 3 PASS.
 
 Confirmed machine/person/material reservation, production ERPNext access,
 official quality/approval authority, exact later Trial/Gate lifecycle policy,

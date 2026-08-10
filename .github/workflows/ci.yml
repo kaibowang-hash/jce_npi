@@ -7,6 +7,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      gate_mode:
+        description: Complete Level 3 Gate or exact-SHA Level 2 controlled reuse
+        required: true
+        default: level_3
+        type: choice
+        options:
+          - level_3
+          - level_2_controlled
+      ordinary_run_id:
+        description: Required successful pull-request run ID for level_2_controlled
+        required: false
+        type: string
 
 concurrency:
   group: >-
@@ -15,37 +28,53 @@ concurrency:
       || format('{0}-{1}', github.event_name, github.ref) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-permissions: { contents: read }
+permissions: { actions: read, contents: read }
 jobs:
   repository:
+    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
-      - uses: actions/setup-node@v4
+      - name: Install required repository verification tools when absent
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes ripgrep
+          fi
+      - run: bash scripts/verify.sh --repository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  frontend:
+    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "24.18.0"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --strict-allow-scripts
         working-directory: frontend
-      - name: Install repository verification tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes ripgrep
-      - run: bash scripts/verify-dev-config.sh
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - run: bash scripts/verify.sh
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - run: bash scripts/verify.sh --frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
       - run: npm run test:e2e
         working-directory: frontend
-      - uses: gitleaks/gitleaks-action@v2
+
+  secret_scan:
+    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11" }
+      - run: python scripts/verify_current_task.py
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITLEAKS_VERSION: 8.24.3
@@ -59,12 +88,13 @@ jobs:
           --log-opts="--no-merges origin/main..HEAD"
 
   visual:
+    if: github.event_name != 'workflow_dispatch' || inputs.gate_mode == 'level_3'
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/devcontainers/python:1-3.11-bookworm@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "24.18.0"
           cache: npm
@@ -100,7 +130,7 @@ jobs:
         env:
           NPI_EVIDENCE_SCOPE: phase-5/r1-06-stage-3
         working-directory: frontend
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: r1-06-linux-visual-evidence
@@ -146,16 +176,54 @@ jobs:
           include-hidden-files: true
           retention-days: 30
 
+  controlled_preflight:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11" }
+      - name: Verify current task and runtime contract before Site setup
+        run: |
+          python scripts/verify_current_task.py
+          python -m unittest tests.test_phase7_trial_runtime_verifier -v
+          bash -n scripts/verify-frappe-runtime.sh
+      - name: Verify exact prior pull-request Gate for Level 2 reuse
+        if: inputs.gate_mode == 'level_2_controlled'
+        run: >-
+          python scripts/verify_prior_gate.py
+          --repository "${{ github.repository }}"
+          --run-id "${{ inputs.ordinary_run_id }}"
+          --sha "${{ github.sha }}"
+          --output "${RUNNER_TEMP}/prior-gate/attestation.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v6
+        if: inputs.gate_mode == 'level_2_controlled'
+        with:
+          name: prior-gate-attestation-${{ github.run_id }}
+          path: ${{ runner.temp }}/prior-gate/attestation.json
+          if-no-files-found: error
+          retention-days: 30
+
   document_runtime:
     name: P5 controlled document runtime and P6 Tooling through export and P7-01 Trial planning
-    if: github.event_name == 'workflow_dispatch'
+    needs: controlled_preflight
+    if: >-
+      always() &&
+      github.event_name == 'workflow_dispatch' &&
+      !cancelled() &&
+      (inputs.gate_mode == 'level_3' ||
+      (inputs.gate_mode == 'level_2_controlled' &&
+      needs.controlled_preflight.result == 'success'))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: "24.18.0" }
       - name: Install and verify exact Bench runtime tools
         run: |
@@ -179,6 +247,7 @@ jobs:
             printf 'result=PASS\n'
             printf 'head_sha=%s\n' "${GITHUB_SHA}"
             printf 'run_id=%s\n' "${GITHUB_RUN_ID}"
+            printf 'gate_mode=%s\n' "${{ inputs.gate_mode }}"
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
@@ -191,7 +260,7 @@ jobs:
             printf 'p5_predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
             printf 'predecessor_artifact=p6-tooling-runtime-${{ github.run_id }}\n'
           } >"${RUNNER_TEMP}/p7-trial-runtime/result.txt"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: p7-trial-runtime-${{ github.run_id }}
           path: ${{ runner.temp }}/p7-trial-runtime/result.txt

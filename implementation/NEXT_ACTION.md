@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_EVIDENCE_AUDIT — DELIVERY PIPELINE OPTIMIZATION`
+`IN_PROGRESS_IMPLEMENTATION — DELIVERY PIPELINE OPTIMIZATION`
 
-Recovery time: `2026-08-10T11:04:13Z`
+Recovery time: `2026-08-10T11:30:29Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -36,19 +36,17 @@ ERPNext, official quality authority, Gate mutation, external projection and
 production print policy remain scoped holds, not global Hard Blockers.
 
 Per the user's 2026-08-10 transition directive, P7-02 and every later Phase 7
-product task are paused. The current atomic action is the independent
-`Delivery Pipeline Optimization` bounded evidence audit only:
+product task are paused. The audit is complete. The active atomic action is to
+implement only the frozen delivery-mechanics plan in
+`implementation/evidence/delivery-pipeline-optimization/plan.md`, enforced by
+`implementation/CURRENT_TASK.json`: parallel fail-closed ordinary lanes,
+exact-SHA prior-Gate reuse for Level 2 controlled Sites, a retained complete
+Level 3 mode, reviewed Node.js 24 Action upgrades, governed P0 catalog-pixel
+stabilization and machine-validated task/controller/path consistency.
 
-1. inspect current workflow structure, triggers, action runtimes, dependency
-   installation, caching, duplicate work, artifacts, secret lanes, controlled
-   Site cost and historical timings using repository and GitHub evidence;
-2. freeze scope, non-scope, changed-files-to-tests mapping, rollback and exact
-   Level 3 PASS criteria before implementation;
-3. optimize delivery mechanics without changing product code, requirements,
-   architecture, permissions, ownership, i18n, visual baselines, test cases,
-   thresholds, Gate labels or production/external-system behavior; and
-4. run the complete Level 3 Gate on the final exact SHA. Only that PASS may
-   remove the ordered hold and resume the bounded P7-02 audit.
+After affected checks pass, run the complete Level 3 Gate on the final exact
+SHA. Only that PASS may remove the ordered hold and resume the bounded P7-02
+audit.
 
 The Node.js 20 deprecation warnings on `actions/checkout@v4`,
 `actions/setup-node@v4`, `actions/setup-python@v5`,

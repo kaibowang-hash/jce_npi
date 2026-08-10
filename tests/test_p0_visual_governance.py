@@ -66,8 +66,8 @@ class P0VisualGovernanceTest(unittest.TestCase):
         source = self.registry.read_text(encoding="utf-8")
         self.registry.write_text(
             source.replace(
-                '"schemaVersion": 1,',
-                '"schemaVersion": 1, "schemaVersion": 1,',
+                '"schemaVersion": 2,',
+                '"schemaVersion": 2, "schemaVersion": 2,',
                 1,
             ),
             encoding="utf-8",
@@ -77,7 +77,8 @@ class P0VisualGovernanceTest(unittest.TestCase):
 
     def test_registry_rejects_viewport_locale_and_screen_drift(self) -> None:
         safe = {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
+            "catalogVisualVersion": "22376a8a97684454",
             "viewport": EXPECTED_VIEWPORT,
             "scenario": "normal",
             "locales": EXPECTED_LOCALES,
@@ -87,6 +88,7 @@ class P0VisualGovernanceTest(unittest.TestCase):
             {**safe, "viewport": {**EXPECTED_VIEWPORT, "width": 1439}},
             {**safe, "locales": ["en", "zh"]},
             {**safe, "screens": EXPECTED_SCREENS[:-1]},
+            {**safe, "catalogVisualVersion": "not-a-hash"},
             {**safe, "extra": True},
         )
         for document in variants:

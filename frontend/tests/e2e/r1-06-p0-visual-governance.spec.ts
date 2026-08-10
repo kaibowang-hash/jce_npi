@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+import { catalogVersion } from "../../src/generated/catalogs";
 import {
   expectNoDocumentOverflow,
   expectNoMixedLanguage,
@@ -70,6 +71,11 @@ test.describe("@visual R1-06 durable 1440 P0 matrix", () => {
         await expectNoMixedLanguage(page, locale);
         await expectNoDocumentOverflow(page);
         await expectP0Density(page, screen);
+        const catalogFingerprint = page.locator(".status-bar__catalog code");
+        await expect(catalogFingerprint).toHaveText(catalogVersion);
+        await catalogFingerprint.evaluate((element, visualVersion) => {
+          element.textContent = visualVersion;
+        }, p0VisualRegistry.catalogVisualVersion);
         await page.addStyleTag({
           content:
             "*, *::before, *::after { animation-delay: 0s !important; animation-duration: 0s !important; transition: none !important; }",

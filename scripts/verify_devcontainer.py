@@ -225,6 +225,12 @@ def validate_repository_verifier(repository_verify: str) -> None:
         "Repository verifier must load the pinned toolchain",
     )
     require(
+        'verification_mode="${1:---all}"' in repository_verify
+        and "--repository)" in repository_verify
+        and "--frontend)" in repository_verify,
+        "Repository verifier must expose exact full, repository and frontend modes",
+    )
+    require(
         'node_actual="$(node --version 2>/dev/null || true)"'
         in repository_verify
         and 'npm_actual="$(npm --version 2>/dev/null || true)"'
@@ -237,6 +243,24 @@ def validate_repository_verifier(repository_verify: str) -> None:
         and '"${npm_actual}" != "${NPM_EXPECTED_VERSION}"'
         in repository_verify,
         "Repository verifier must reject Node or npm runtime drift",
+    )
+    frontend_guard = repository_verify.find(
+        'if [[ "${verify_frontend}" == true ]]; then'
+    )
+    node_check = repository_verify.find('node_actual="$(node --version')
+    repository_guard = repository_verify.find(
+        'if [[ "${verify_repository}" == true ]]; then'
+    )
+    frontend_verify = repository_verify.find("npm --prefix frontend run verify")
+    require(
+        0 <= frontend_guard < node_check < repository_guard < frontend_verify,
+        "Separated verifier modes must retain their exact toolchain boundaries",
+    )
+    require(
+        "bash scripts/verify-dev-config.sh" in repository_verify
+        and "python -m unittest discover -s tests -v" in repository_verify
+        and "python scripts/verify_v1_2_reconciliation.py" in repository_verify,
+        "Repository mode lost a complete governance boundary",
     )
     dependency_check = repository_verify.find("command -v rg")
     scan = repository_verify.find("rg -n 'ignore_permissions")
@@ -281,84 +305,98 @@ def validate_ci_verification_tools(
     ci_workflow: str,
     visual_container_reference: str,
 ) -> None:
-    def has_scoped_actions_token(step: str) -> bool:
-        token_binding = re.escape("GITHUB_TOKEN: ${{ github.token }}")
-        return (
-            re.search(
-                rf"(?m)^(?P<indent>[ \t]*)- {re.escape(step)}\n"
-                rf"(?P=indent)  env:\n"
-                rf"(?P=indent)    {token_binding}[ \t]*(?:\n|$)",
-                ci_workflow,
-            )
-            is not None
+    for retired in (
+        "actions/checkout@v4",
+        "actions/setup-node@v4",
+        "actions/setup-python@v5",
+        "actions/upload-artifact@v4",
+        "gitleaks/gitleaks-action@v2",
+    ):
+        require(
+            retired not in ci_workflow,
+            f"CI retains deprecated Action runtime: {retired}",
+        )
+    for current in (
+        "actions/checkout@v6",
+        "actions/setup-node@v6",
+        "actions/setup-python@v6",
+        "actions/upload-artifact@v6",
+        "gitleaks/gitleaks-action@v3",
+    ):
+        require(
+            current in ci_workflow,
+            f"CI is missing reviewed Node.js 24 Action: {current}",
         )
 
-    repository_checkout = ci_workflow.find("- uses: actions/checkout@v4")
-    fetch_depth_matches = tuple(
-        re.finditer(r"with:\s*\{\s*fetch-depth:\s*0\s*\}", ci_workflow)
-    )
-    repository_fetch_depth = (
-        fetch_depth_matches[0].start() if fetch_depth_matches else -1
-    )
-    repository_python = ci_workflow.find(
-        "- uses: actions/setup-python@v5",
-        repository_checkout,
-    )
-    apt_update = ci_workflow.find("sudo apt-get update")
-    ripgrep_install = ci_workflow.find("sudo apt-get install --yes ripgrep")
-    repository_verify = ci_workflow.find("- run: bash scripts/verify.sh")
-    require(apt_update >= 0, "CI must refresh APT metadata before installing ripgrep")
-    require(ripgrep_install >= 0, "CI must install the required ripgrep verifier")
-    require(repository_verify >= 0, "CI must run the repository verifier")
     require(
-        repository_checkout < repository_fetch_depth < repository_python,
-        "CI repository checkout must retain full history for PR secret scanning",
+        "permissions: { actions: read, contents: read }" in ci_workflow,
+        "CI prior-Gate verification must use read-only Actions and contents access",
+    )
+    for job in ("repository", "frontend", "secret_scan", "visual"):
+        require(f"\n  {job}:\n" in ci_workflow, f"CI ordinary lane is missing: {job}")
+    require(
+        ci_workflow.count(
+            "if: github.event_name != 'workflow_dispatch' || "
+            "inputs.gate_mode == 'level_3'"
+        )
+        == 4,
+        "Every ordinary lane must run for PR/push and complete Level 3 only",
     )
     require(
-        len(fetch_depth_matches) == 1,
-        "Only the repository verification job may require full Git history",
+        "bash scripts/verify.sh --repository" in ci_workflow
+        and "bash scripts/verify.sh --frontend" in ci_workflow,
+        "CI must run the separated fail-closed repository and frontend modes",
     )
     require(
-        apt_update < ripgrep_install < repository_verify,
-        "CI must install ripgrep before running the repository verifier",
+        "if ! command -v rg >/dev/null 2>&1; then" in ci_workflow
+        and "sudo apt-get update" in ci_workflow
+        and "sudo apt-get install --yes ripgrep" in ci_workflow
+        and "sudo apt-get install --yes ripgrep || true" not in ci_workflow,
+        "CI must conditionally install ripgrep without hiding failure",
     )
-    require(
-        "sudo apt-get install --yes ripgrep || true" not in ci_workflow,
-        "CI must not ignore a failed ripgrep installation",
+
+    secret_job = ci_workflow.find("\n  secret_scan:")
+    visual_job = ci_workflow.find("\n  visual:")
+    gitleaks_action = ci_workflow.find(
+        "- uses: gitleaks/gitleaks-action@v3", secret_job
     )
-    require(
-        has_scoped_actions_token("run: bash scripts/verify-dev-config.sh"),
-        "CI development configuration verification must use the scoped Actions token",
-    )
-    require(
-        has_scoped_actions_token("run: bash scripts/verify.sh"),
-        "CI repository verification must use the scoped Actions token",
-    )
-    require(
-        has_scoped_actions_token("uses: gitleaks/gitleaks-action@v2"),
-        "CI secret scanning must use the scoped Actions token",
-    )
-    gitleaks_action = ci_workflow.find("- uses: gitleaks/gitleaks-action@v2")
     full_history_scan = ci_workflow.find(
-        '/tmp/gitleaks-8.24.3/gitleaks detect',
-        gitleaks_action,
-    )
-    visual_job = ci_workflow.find("\nvisual:")
-    if visual_job < 0:
-        visual_job = ci_workflow.find("\n  visual:")
-    require(
-        "GITLEAKS_VERSION: 8.24.3" in ci_workflow,
-        "CI secret scanning must use the reviewed Gitleaks version",
+        '/tmp/gitleaks-8.24.3/gitleaks detect', gitleaks_action
     )
     require(
-        "if: github.event_name == 'pull_request'" in ci_workflow
+        secret_job < gitleaks_action < full_history_scan < visual_job,
+        "Current-tree and pull-request-history secret scans must stay in the secret lane",
+    )
+    require(
+        "GITLEAKS_VERSION: 8.24.3" in ci_workflow
         and '--log-opts="--no-merges origin/main..HEAD"' in ci_workflow,
-        "CI must scan the complete pull-request branch range",
+        "CI must retain the reviewed current-tree and complete branch-history scans",
     )
     require(
-        gitleaks_action < full_history_scan < visual_job,
-        "The complete pull-request secret scan must remain in the repository job",
+        "python scripts/verify_current_task.py" in ci_workflow,
+        "CI must fail closed on current task/controller/path drift",
     )
+
+    preflight = ci_workflow.find("\n  controlled_preflight:")
+    controlled = ci_workflow.find("\n  document_runtime:")
+    require(0 <= preflight < controlled, "CI must verify evidence before Site setup")
+    for marker in (
+        "level_2_controlled",
+        "ordinary_run_id",
+        "python scripts/verify_prior_gate.py",
+        '--sha "${{ github.sha }}"',
+        "prior-gate-attestation-${{ github.run_id }}",
+        "needs: controlled_preflight",
+        "needs.controlled_preflight.result == 'success'",
+        "inputs.gate_mode == 'level_3'",
+    ):
+        require(marker in ci_workflow, f"CI controlled Gate contract is missing: {marker}")
+    require(
+        ci_workflow.find("python scripts/verify_current_task.py", preflight)
+        < ci_workflow.find("Initialize pinned Frappe Bench", controlled),
+        "Task and runtime preflight must precede expensive Site setup",
+    )
+
     visual_container = ci_workflow.find(
         f"image: {visual_container_reference}"
     )
@@ -398,7 +436,8 @@ def validate_ci_verification_tools(
         "CI canonical visual setup must sanitize the obsolete main Yarn source",
     )
     require(
-        visual_container
+        visual_job
+        < visual_container
         < visual_source_cleanup
         < visual_browser_install
         < visual_test

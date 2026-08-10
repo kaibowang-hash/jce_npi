@@ -117,7 +117,8 @@ export interface CoreScreen {
 }
 
 export interface P0VisualRegistry {
-  schemaVersion: 1;
+  schemaVersion: 2;
+  catalogVisualVersion: string;
   viewport: {
     width: 1440;
     height: 900;

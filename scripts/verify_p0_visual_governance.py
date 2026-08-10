@@ -19,6 +19,7 @@ SNAPSHOT_DIRECTORY = (
 
 EXPECTED_REGISTRY_KEYS = {
     "schemaVersion",
+    "catalogVisualVersion",
     "viewport",
     "scenario",
     "locales",
@@ -83,6 +84,9 @@ REQUIRED_SPEC_FRAGMENTS = (
     "await expectNoMixedLanguage(page, locale);",
     "await expectNoDocumentOverflow(page);",
     "await expectP0Density(page, screen);",
+    'page.locator(".status-bar__catalog code")',
+    "await expect(catalogFingerprint).toHaveText(catalogVersion);",
+    "}, p0VisualRegistry.catalogVisualVersion);",
     """page.locator('[data-visual-primary="true"]:visible')""",
     "expect(contextGeometry.height).toBeLessThanOrEqual(210);",
     "expect(workGeometry.width).toBeGreaterThanOrEqual(560);",
@@ -129,8 +133,17 @@ def load_registry(path: Path = REGISTRY) -> dict[str, Any]:
     )
     _require(
         type(document["schemaVersion"]) is int
-        and document["schemaVersion"] == 1,
-        "P0 visual registry schemaVersion must be integer 1",
+        and document["schemaVersion"] == 2,
+        "P0 visual registry schemaVersion must be integer 2",
+    )
+    _require(
+        type(document["catalogVisualVersion"]) is str
+        and len(document["catalogVisualVersion"]) == 16
+        and all(
+            character in "0123456789abcdef"
+            for character in document["catalogVisualVersion"]
+        ),
+        "P0 catalog visual version must be one stable 16-character lowercase hash",
     )
     _require(
         type(document["viewport"]) is dict

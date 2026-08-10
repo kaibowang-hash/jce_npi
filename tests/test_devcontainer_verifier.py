@@ -150,6 +150,27 @@ class DevcontainerVerifierTest(unittest.TestCase):
             "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm"
             "@sha256:b726eb94f42fcddb10056835f2c474c9f9e12e717ba2b2d2f9a8b1d78feeb68b"
         )
+        repository_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "ci.yml"
+        ).read_text(encoding="utf-8")
+        validate_ci_verification_tools(repository_workflow, visual_image)
+        unsafe_current_variants = (
+            repository_workflow.replace("actions/checkout@v6", "actions/checkout@v4", 1),
+            repository_workflow.replace("bash scripts/verify.sh --repository", "true", 1),
+            repository_workflow.replace("gitleaks/gitleaks-action@v3", "gitleaks/gitleaks-action@v2", 1),
+            repository_workflow.replace("python scripts/verify_current_task.py", "true"),
+            repository_workflow.replace("python scripts/verify_prior_gate.py", "true", 1),
+            repository_workflow.replace(f"image: {visual_image}", "image: ubuntu:24.04", 1),
+            repository_workflow.replace("include-hidden-files: true", "include-hidden-files: false", 1),
+            repository_workflow.replace("--grep @visual", "--grep @visual --update-snapshots=all", 1),
+        )
+        for unsafe_workflow in unsafe_current_variants:
+            with self.subTest(variant=unsafe_workflow[:80]), self.assertRaises(
+                VerificationError
+            ):
+                validate_ci_verification_tools(unsafe_workflow, visual_image)
+        return
+
         safe_workflow = """steps:
   - uses: actions/checkout@v4
     with: {fetch-depth: 0}
@@ -408,8 +429,8 @@ fi
             repository_verify.replace("|| scan_status=$?", ""),
             repository_verify.replace('exit "${scan_status}"', "true"),
             repository_verify.replace(
-                "scan_status=0\nrg -n",
-                "scan_status=0\nif rg -n",
+                "scan_status=0\n  rg -n",
+                "scan_status=0\n  if rg -n",
             ),
         )
         for unsafe in unsafe_variants:

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "task_id": "DELIVERY_PIPELINE_OPTIMIZATION",
+  "task_kind": "delivery_infrastructure",
+  "phase": 7,
+  "status": "IN_PROGRESS_IMPLEMENTATION",
+  "completion_gate": "LEVEL_3",
+  "authorized_next_task": "P7-02",
+  "base_checkpoint": "937ac245cd8629ff029208d39b54e8cbecfb6a9a",
+  "predecessor_product_checkpoint": "78efa3ec5c584928f510e4b095ead5a36f2fb376",
+  "requirement_ids": [],
+  "scope": [
+    "Split the serial ordinary repository lane into fail-closed parallel repository, frontend, and secret-scan lanes.",
+    "Allow a Level 2 controlled-Site dispatch to reuse one exact-SHA successful pull-request ordinary Gate after machine verification.",
+    "Retain a complete Level 3 mode that runs every repository, frontend, secret, visual, and cumulative controlled-Site boundary.",
+    "Upgrade repository GitHub Actions from deprecated Node.js 20 runtimes to reviewed Node.js 24 releases.",
+    "Stabilize only the governed P0 screenshot rendering of the already-validated catalog fingerprint while retaining direct catalog integrity checks.",
+    "Fail closed when the machine-readable task manifest, controller state, requirement allocation, allowed paths, affected tests, or rollback contract disagree."
+  ],
+  "non_scope": [
+    "Product behavior, public API, architecture, domain rules, permissions, ownership, Schema, migrations, or production integration.",
+    "Translation source text, direct zh or zh-TW translations, catalog generation, catalog integrity, or mixed-language PASS criteria.",
+    "Visual components, accepted Linux baselines, visual cases, thresholds, tolerances, or accessibility criteria.",
+    "Test deletion, coverage reduction, Gate relabeling, secret-scan removal, or replacement of the final Level 3 Gate.",
+    "Production ERPNext access, credentials, deployment, release, or external-system mutation."
+  ],
+  "frozen_invariants": [
+    "PRODUCT_SCOPE",
+    "REQUIREMENTS",
+    "DOMAIN_RULES",
+    "API",
+    "PERMISSIONS",
+    "OWNERSHIP",
+    "SCHEMA",
+    "I18N_COVERAGE",
+    "VISUAL_MATRIX",
+    "TEST_COVERAGE",
+    "SECRET_SCAN_BOUNDARIES",
+    "LEVEL_1_2_3_PASS_CRITERIA"
+  ],
+  "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "frontend/tests/e2e/p0-visual-registry.json",
+    "frontend/tests/e2e/r1-06-p0-visual-governance.spec.ts",
+    "frontend/tests/e2e/support.ts",
+    "implementation/ACTIVE_EXECUTION_GOAL.md",
+    "implementation/AUTOPILOT_CONTROLLER.md",
+    "implementation/BLOCKERS.md",
+    "implementation/CURRENT_TASK.json",
+    "implementation/DECISION_LOG.md",
+    "implementation/NEXT_ACTION.md",
+    "implementation/PHASE_STATUS.yaml",
+    "implementation/RISK_REGISTER.md",
+    "implementation/evidence/delivery-pipeline-optimization/*",
+    "scripts/verify.sh",
+    "scripts/verify_current_task.py",
+    "scripts/verify_devcontainer.py",
+    "scripts/verify_p0_visual_governance.py",
+    "scripts/verify_prior_gate.py",
+    "tests/test_current_task_verifier.py",
+    "tests/test_devcontainer_verifier.py",
+    "tests/test_phase5_document_runtime_verifier.py",
+    "tests/test_p0_visual_governance.py",
+    "tests/test_prior_gate_verifier.py"
+  ],
+  "affected_checks": {
+    "level_1": [
+      ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_prior_gate_verifier", "tests.test_devcontainer_verifier", "tests.test_p0_visual_governance", "-v"],
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "scripts/verify_p0_visual_governance.py"],
+      ["bash", "-n", "scripts/verify.sh", "scripts/verify-frappe-runtime.sh"],
+      ["git", "diff", "--check"]
+    ],
+    "level_2": [
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/r1-06-p0-visual-governance.spec.ts", "tests/e2e/r1-05-panes.spec.ts", "tests/e2e/r1-05-field-attachments.spec.ts", "--grep", "@visual"]
+    ],
+    "runtime_preflight": [
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase7_trial_runtime_verifier", "-v"],
+      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
+    ],
+    "level_3": [
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/r1-06-p0-visual-governance.spec.ts", "tests/e2e/r1-05-panes.spec.ts", "tests/e2e/r1-05-field-attachments.spec.ts", "--grep", "@visual"],
+      ["bash", "scripts/verify-frappe-runtime.sh", "--trial-only"]
+    ]
+  },
+  "expected_state": {
+    "phase_status_current_task": "DELIVERY_PIPELINE_OPTIMIZATION",
+    "phase_status_execution_hold": "P7_02_PENDING_DELIVERY_PIPELINE_OPTIMIZATION_LEVEL_3",
+    "phase_status_resumed_product_task": "P7-02",
+    "active_goal_marker": "DELIVERY PIPELINE OPTIMIZATION",
+    "next_action_marker": "DELIVERY PIPELINE OPTIMIZATION",
+    "controller_marker": "Delivery Pipeline Optimization activation"
+  },
+  "rollback": {
+    "before_product_resume": "Revert only the optimization commits and restore the former serial CI workflow; no product or database rollback is required.",
+    "after_product_resume": "Keep the complete Level 3 workflow available, disable only the optimized Level 2 dispatch path, and deliver a reviewed forward repair without rewriting retained evidence."
+  }
+}
