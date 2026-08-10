@@ -117,6 +117,34 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
 
+    def test_revision_fixture_does_not_resubmit_server_owned_plan_identity(self) -> None:
+        payload = self.module.revise_payload(
+            {
+                "toolingMasterGlobalId": "0878087f-6192-4e40-862d-05e0a5927638",
+                "globalId": "4a02b83c-e069-4da2-835c-c9b42cc1246e",
+                "snapshotHash": "a" * 64,
+                "planVersion": 1,
+            }
+        )
+        self.assertNotIn("toolingMasterGlobalId", payload)
+        self.assertEqual(
+            set(payload),
+            {
+                "expectedRevisionGlobalId",
+                "expectedRevisionSnapshotHash",
+                "expectedPlanVersion",
+                "purpose",
+                "objective",
+                "plannedStartAt",
+                "plannedEndAt",
+                "resources",
+                "responsibleMemberGlobalIds",
+                "sampleQuantity",
+                "measurementPlan",
+                "reason",
+            },
+        )
+
     def test_runtime_proves_replay_conflict_rollback_and_idor(self) -> None:
         required = (
             'validate_problem(create_conflict, 409, "TRIAL_IDEMPOTENCY_CONFLICT")',

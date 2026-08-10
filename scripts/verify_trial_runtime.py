@@ -343,6 +343,7 @@ def create_payload(master_id: str) -> dict[str, object]:
 
 def revise_payload(initial: dict[str, Any]) -> dict[str, object]:
     payload = create_payload(str(initial["toolingMasterGlobalId"]))
+    payload.pop("toolingMasterGlobalId")
     payload.update(
         {
             "expectedRevisionGlobalId": initial["globalId"],
