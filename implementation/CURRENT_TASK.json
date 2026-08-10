@@ -60,6 +60,7 @@
     "frontend/src/pages/live-trial-page.tsx",
     "frontend/src/styles/app.css",
     "frontend/tests/e2e/p7-01-trial-planning-live.spec.ts",
+    "frontend/tests/e2e/p7-01-trial-planning-live.spec.ts-snapshots/p7-01-*-linux.png",
     "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
     "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts-snapshots/*",
     "frontend/tests/support/trial-planning-fixture.ts",
