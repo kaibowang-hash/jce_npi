@@ -3,38 +3,64 @@
   "task_id": "P7-03",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_2",
   "authorized_next_task": "P7-04",
-  "base_checkpoint": "3a267196d11921ba1111a0774f5f85bd8647ed9f",
+  "base_checkpoint": "135d083bcb4e620c571fa3d4737cae54e7a8be2a",
   "predecessor_product_checkpoint": "3a267196d11921ba1111a0774f5f85bd8647ed9f",
   "requirement_ids": [
     "FR-TR-004",
     "FR-TR-009"
   ],
   "scope": [
-    "Audit the exact Round and cavity defect, corrective-action, responsibility, target-Round and independent-verification requirements against retained Trial and Tooling foundations.",
-    "Freeze a minimum complete vertical slice, ownership boundary, lifecycle, closed BFF, additive persistence, UI state matrix, tests and rollback before product code.",
-    "Preserve exact Project, Trial Round, input-lock, Tooling Revision, physical Set and cavity identities without latest-value substitution.",
-    "Keep formal ERPNext NCR or Quality Inspection, Gate decisions and Tooling lifecycle mutation outside P7-03 authority."
+    "Create immutable exact-cavity result revisions bound to one running Round, input lock, Sample Batch, Tooling Revision and physical cavity.",
+    "Continue the single stable NPI defect identity from the P6 Tooling stream into exact Trial-bound successors without cross-store forks.",
+    "Bind containment, corrective and preventive actions to exact responsible Project members and exact target Trial Rounds.",
+    "Record independent append-only verification attempts against exact actions, verification Rounds, cavity results and clean Trial evidence.",
+    "Deliver Project-first closed BFF commands, exact cavity filters and Pareto truth, a dense trilingual quality workspace and cumulative disposable-Site Level 2 proof."
   ],
   "non_scope": [
-    "Product implementation before the audit and frozen plan pass.",
-    "Automatic NCR creation, formal Quality Inspection result, Gate mutation, Tooling lifecycle transition, Trial conclusion, approval, readiness or release.",
-    "Production ERPNext access, external event projection, machine import, production reservation or print policy.",
-    "Generic DocType CRUD, direct database access, Frappe or ERPNext core changes, test deletion, threshold reduction or translation fallback."
+    "Automatic NCR creation, formal ERPNext Quality Inspection/result mutation, production ERPNext access or external-system mutation.",
+    "Gate or Tooling lifecycle mutation, automatic Work Item closure, Trial conclusion/submission/approval, NPI readiness, release or Released Trial Summary.",
+    "Full cross-Round parameter/dimension/defect trend comparison or one-page summary assigned to P7-04.",
+    "Raw private File URLs, caller-selected scan/privacy/hash truth, generic DocType CRUD, direct database access or Frappe/ERPNext core changes.",
+    "Test deletion, coverage reduction, visual threshold change, accepted-baseline weakening or mixed-language fallback."
   ],
   "frozen_invariants": [
-    "DEFECT_LINEAGE_BINDS_EXACT_ROUND_AND_CAVITY",
-    "CORRECTIVE_ACTION_HAS_RESPONSIBLE_OWNER_AND_EXACT_TARGET_ROUND",
-    "VERIFICATION_IS_INDEPENDENT_APPEND_ONLY_TRUTH",
+    "ONE_LOGICAL_DEFECT_IDENTITY_ACROSS_TOOLING_AND_TRIAL",
+    "EXACT_ROUND_INPUT_SAMPLE_TOOLING_SET_AND_CAVITY_REFERENCES",
+    "CAVITY_RESULTS_AND_DEFECT_OBSERVATIONS_ARE_APPEND_ONLY",
+    "ACTIONS_BIND_RESPONSIBLE_MEMBER_AND_EXACT_TARGET_ROUND",
+    "VERIFICATION_IS_INDEPENDENT_AND_NEVER_AUTO_CLOSES",
     "NO_AUTOMATIC_NCR_GATE_OR_TOOLING_LIFECYCLE_MUTATION",
     "PROJECT_FIRST_AUTHORIZATION_AND_ACTOR_BOUND_IDEMPOTENCY",
-    "NO_LATEST_VALUE_SUBSTITUTION",
+    "NO_LATEST_VALUE_SUBSTITUTION_OR_CROSS_STORE_FORK",
     "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/trial/*",
+    "apps/npi_core/npi_core/trial_api.py",
+    "apps/npi_core/npi_core/tooling/engineering_controls_domain.py",
+    "apps/npi_core/npi_core/tooling/engineering_controls_repository.py",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_trial_*/*",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/trial-data-source.ts",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/live-trial-page.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
+    "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts",
+    "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/*",
+    "frontend/tests/support/trial-execution-fixture.ts",
+    "frontend/tests/support/trial-quality-fixture.ts",
+    "frontend/tests/unit/live-trial-page.test.tsx",
+    "frontend/tests/unit/trial-data-source.test.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -44,26 +70,42 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
-    "implementation/evidence/phase-7/p7-02-*.md",
     "implementation/evidence/phase-7/p7-03-*.md",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify.sh",
+    "scripts/verify_trial_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
-    "tests/test_current_task_verifier.py"
+    "tests/test_current_task_verifier.py",
+    "tests/test_phase6_tooling_engineering_controls_domain.py",
+    "tests/test_phase6_tooling_engineering_controls_repository.py",
+    "tests/test_phase7_trial_api.py",
+    "tests/test_phase7_trial_quality_contract.py",
+    "tests/test_phase7_trial_quality_domain.py",
+    "tests/test_phase7_trial_quality_metadata.py",
+    "tests/test_phase7_trial_quality_repository.py",
+    "tests/test_phase7_trial_quality_repository_seams.py",
+    "tests/test_phase7_trial_quality_runtime_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
+      ["python", "-m", "unittest", "tests.test_phase7_trial_quality_domain", "tests.test_phase7_trial_quality_metadata", "tests.test_phase7_trial_quality_contract", "-v"],
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/p7-02-trial-execution-live.spec.ts", "tests/e2e/p7-03-trial-quality-live.spec.ts", "--grep", "@visual"]
     ],
     "runtime_preflight": [
-      ["python", "scripts/verify_current_task.py"]
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase7_trial_quality_runtime_verifier", "-v"],
+      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
       ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/r1-06-p0-visual-governance.spec.ts", "tests/e2e/r1-05-panes.spec.ts", "tests/e2e/r1-05-field-attachments.spec.ts", "--grep", "@visual"],
       ["bash", "scripts/verify-frappe-runtime.sh", "--trial-only"]
     ]
   },
@@ -73,10 +115,10 @@
     "phase_status_resumed_product_task": "P7-03",
     "active_goal_marker": "P7-03",
     "next_action_marker": "P7-03",
-    "controller_marker": "P7-02 Level 2 PASS; P7-03 audit active"
+    "controller_marker": "P7-03 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore the P7-02 Level 2 checkpoint; the audit creates no product row, route, metadata or external effect.",
-    "after_product_resume": "Use the rollback frozen in the accepted P7-03 plan; after retained defect/action/verification history, disable only independent P7-03 routes and workspace and deliver reviewed forward repair without rewriting history."
+    "before_product_resume": "Before retained P7-03 rows, restore the starting controller checkpoint and migrate only a disposable Site fresh.",
+    "after_product_resume": "After retained cavity-result, defect, verification, receipt or audit history, disable only independent P7-03 routes/workspace and deliver reviewed forward repair without splitting or rewriting the single defect timeline."
   }
 }

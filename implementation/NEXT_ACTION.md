@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-03`
+`IN_PROGRESS_CHECKPOINT_1 — P7-03`
 
-Recovery time: `2026-08-11T05:35:00Z`
+Recovery time: `2026-08-11T05:55:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -65,19 +65,23 @@ visual `93597778040` at `100/100`. Optimized controlled workflow
 scope `p5-01-through-p7-02`. Complete evidence is
 `implementation/evidence/phase-7/p7-02-validation.md`.
 
-Execute only the P7-03 Requirement/domain/existing-capability audit enforced by
-`implementation/CURRENT_TASK.json`. Reconcile exact Round/cavity defect
-lineage, responsible action ownership, target Round and independent
-verification against the live P7-01/P7-02 Trial and P6-05 Tooling foundations.
-Freeze a minimum complete vertical slice, ownership, lifecycle, closed BFF,
-additive persistence, dense trilingual UI, tests and rollback before changing
-product code. Do not activate automatic NCR, formal ERPNext quality, Gate or
-Tooling lifecycle mutation, Trial conclusion/approval/readiness/release,
-external projection or production print.
+Starting controller checkpoint `135d083` passes ordinary CI `31434848448`:
+repository `93606569009`, frontend `93606569079`, secret scan `93606569091`
+and fixed-Linux visual `93606569081` at `100/100` all pass; controlled runtime
+correctly skips. The bounded P7-03 audit passes and its frozen plan is
+`implementation/evidence/phase-7/p7-03-plan.md`.
 
-After the bounded audit passes, commit the frozen P7-03 plan and update the
-machine-readable path guard to activate only checkpoint 1. Then run ordinary
-CI before any later checkpoint or controlled runtime.
+Execute only checkpoint 1, enforced by `implementation/CURRENT_TASK.json`:
+add pure immutable Cavity Result, cross-store single-defect successor, exact
+action target and independent-verification domains; closed OpenAPI/ownership;
+three guarded additive DocTypes; direct translations and focused tests. Create
+no live route, business row, UI or runtime fixture. Do not activate automatic
+NCR, formal ERPNext quality, Gate or Tooling lifecycle mutation, Trial
+conclusion/approval/readiness/release, external projection or production print.
+
+After checkpoint 1 affected checks and task-scope validation pass, commit and
+run ordinary CI. Only that PASS activates checkpoint 2 repository/BFF/single-
+tip behavior.
 
 ## Retained P6-05 and P6-06 execution history
 

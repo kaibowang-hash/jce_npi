@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T05:35:00Z`
+Updated: `2026-08-11T05:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P7-03`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 1`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -17,19 +17,19 @@ Updated: `2026-08-11T05:35:00Z`
   `31392474781` (`PASS — LEVEL 3` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`;
   repository, frontend, secret, `97/97` visual and cumulative controlled Site)
 - Latest evidence-only exact-SHA CI:
-  `31393689222` (`PASS` at `fbac85b49b020a356554ab0e5540b8028ce5862f`)
+  `31434848448` (`PASS` at `135d083bcb4e620c571fa3d4737cae54e7a8be2a`)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
 - Current controller task:
   `P7-03 — Cavity defects, actions and verification`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Resumed product task: `P7-03` (`ACTIVE_AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
+- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_1`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-03 AUDIT`)
+  (`IN_PROGRESS — P7-03 CHECKPOINT 1`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -66,14 +66,15 @@ aggregate disposition is
 `TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD`; evidence is
 `implementation/evidence/phase-7/p7-02-validation.md`.
 
-Only the bounded P7-03 audit is active under
-`implementation/CURRENT_TASK.json`: reconcile `FR-TR-004`, `FR-TR-009` and
-the retained `FR-TL-009/010` foundation into exact Round/cavity defect,
-responsibility, target-Round action and independent-verification truth; freeze
-the minimum vertical slice, ownership, lifecycle, routes, persistence, UI,
-tests and rollback before product code. Automatic NCR, formal ERPNext quality,
-Gate or Tooling lifecycle mutation, conclusion, approval and release remain
-outside authority. There is no active technical Hard Blocker.
+The bounded P7-03 audit passes after starting controller SHA `135d083` passes
+ordinary CI `31434848448`. Its frozen plan is
+`implementation/evidence/phase-7/p7-03-plan.md`. Only checkpoint 1 is active:
+pure Cavity Result, single cross-store defect successor, exact action-target
+Round and independent-verification domains; closed contracts/ownership; three
+guarded additive DocTypes; translations and focused tests. It creates no live
+route, business row, UI, fixture, automatic NCR, formal ERPNext quality,
+Gate/Tooling lifecycle effect, conclusion, approval or release. There is no
+active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-11T05:35:00Z'
+updated_at: '2026-08-11T05:55:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-03
-current_task_status: IN_PROGRESS_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
 current_task_completed_stage: P7_02_LEVEL_2_PASS
-current_task_next_stage: P7_03_REQUIREMENT_DOMAIN_CAPABILITY_AUDIT
+current_task_next_stage: P7_03_DOMAIN_CONTRACT_ADDITIVE_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-03
-resumed_product_task_status: ACTIVE_AUDIT
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1654,7 +1654,7 @@ p7_02:
 p7_03:
   task: P7-03
   controller_task: P7-03_CAVITY_DEFECTS_ACTIONS_VERIFICATION
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-03
   requirements:
@@ -1665,9 +1665,11 @@ p7_03:
     - FR-TL-010
   predecessor_product_checkpoint: 3a267196d11921ba1111a0774f5f85bd8647ed9f
   starting_controller_checkpoint: 3a267196d11921ba1111a0774f5f85bd8647ed9f
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_AND_CHECKPOINT_1
+  starting_controller_ci_workflow: 31434848448
+  audit: PASS
+  plan: implementation/evidence/phase-7/p7-03-plan.md
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage_after_pass: REPOSITORY_BFF_SINGLE_TIP
   product_code_changed: false
   external_holds:
     - ERPNEXT_FORMAL_NCR_AND_QUALITY_INSPECTION
@@ -1676,6 +1678,7 @@ p7_03:
     - EXTERNAL_EVENT_PROJECTION_AND_PRODUCTION_PRINT
   evidence:
     - implementation/evidence/phase-7/p7-02-validation.md
+    - implementation/evidence/phase-7/p7-03-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

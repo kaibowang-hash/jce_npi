@@ -2550,3 +2550,23 @@ repeat or rewrite it merely to restore context. See
   target Round, independent verification, ownership, lifecycle, BFF,
   persistence, UI, tests and rollback. It grants no automatic NCR, formal
   Quality Inspection, Gate or Tooling lifecycle mutation.
+
+## 2026-08-11 P7-03 audit PASS; checkpoint 1 active
+
+- Starting controller checkpoint `135d083bcb4e620c571fa3d4737cae54e7a8be2a`
+  passes ordinary CI `31434848448`: repository `93606569009`, frontend
+  `93606569079`, secret scan `93606569091` and fixed-Linux visual
+  `93606569081` at `100/100` pass; controlled runtime correctly skips.
+- The bounded audit proves that P7-02 supplies exact Round/input/Sample/cavity/
+  evidence truth and P6-05 supplies one stable NPI Tooling defect identity,
+  but no Cavity Result, exact Trial-bound defect successor, action target Round
+  or independent verification exists.
+- The frozen plan continues the same stable `defectGlobalId` across the P6 and
+  P7 immutable stores and fails closed against two current tips. It adds exact
+  cavity results and separate verification attempts without copying a second
+  logical defect or mutating historical P6 snapshots.
+- Accepted plan is `implementation/evidence/phase-7/p7-03-plan.md`. Activate
+  only checkpoint 1 pure domains, closed contracts/ownership, three guarded
+  additive DocTypes, translations and focused tests. No live route, business
+  row, UI, runtime fixture, NCR, formal quality, Gate, Tooling lifecycle,
+  conclusion, approval, readiness or release authority is active.
