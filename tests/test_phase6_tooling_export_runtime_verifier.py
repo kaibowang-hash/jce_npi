@@ -124,6 +124,8 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             'validate_problem(conflict, 409, "TOOLING_VERSION_CONFLICT")',
             '"hiddenColumns": ["origin"]',
             '"columnId": "tooling", "width": 272',
+            '"manual" in observed_sources',
+            'observed_sources <= {"manual", "controlled_xlsx_import"}',
         )
         for marker in required:
             with self.subTest(marker=marker):

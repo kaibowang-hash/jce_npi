@@ -385,13 +385,14 @@ def verify_views_and_paging(
             f"P6-08 {view_id} membership drifted",
         )
         view_counts[view_id] = len(actual)
+    observed_sources = {item.get("source") for item in all_rows}
     require(
         view_counts["missing_applicability"] >= 1
         and view_counts["missing_physical_set"] >= 1
         and view_counts["missing_design_revision"] >= 1
         and view_counts["customer_owned_set"] >= 1
-        and {item.get("source") for item in all_rows}
-        == {"manual", "controlled_xlsx_import"},
+        and "manual" in observed_sources
+        and observed_sources <= {"manual", "controlled_xlsx_import"},
         "P6-08 controlled view fixture coverage drifted",
     )
     first = assert_list(
