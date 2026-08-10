@@ -89,6 +89,11 @@ EXPORT_DOCTYPES = (
     "NPI Tooling Export Package",
     "NPI Tooling Export Command Idempotency",
 )
+EXPORT_MUTATION_PROTECTED_FIELDS = {
+    "NPI Tooling List Preference": "snapshot_hash",
+    "NPI Tooling Export Package": "snapshot_hash",
+    "NPI Tooling Export Command Idempotency": "payload_hash",
+}
 
 
 def deterministic_uuid(label: str) -> str:
@@ -989,24 +994,25 @@ def verify_generic_mutation_denial(
     project_id: str,
 ) -> None:
     for doctype in EXPORT_DOCTYPES:
+        protected_field = EXPORT_MUTATION_PROTECTED_FIELDS[doctype]
         retained_rows = rows(
             actor,
             base_url,
             doctype,
             [["project_global_id", "=", project_id]],
-            ["global_id", "snapshot_hash"],
+            ["global_id", protected_field],
         )
         require(bool(retained_rows), f"P6-08 retained {doctype} is unavailable")
         retained = retained_rows[0]
         name = str(retained["global_id"])
         before = get_resource(actor, base_url, doctype, name)
-        before_hash = before.body.get("data", {}).get("snapshot_hash")
+        before_hash = before.body.get("data", {}).get(protected_field)
         rejected_update = update_resource(
             actor,
             base_url,
             doctype,
             name,
-            {"snapshot_hash": "0" * 64},
+            {protected_field: "0" * 64},
             csrf_token,
         )
         rejected_delete = delete_resource(
@@ -1024,7 +1030,7 @@ def verify_generic_mutation_denial(
             and rejected_update.status in {403, 417}
             and rejected_delete.status in {403, 417}
             and after.status == 200
-            and after.body.get("data", {}).get("snapshot_hash") == before_hash,
+            and after.body.get("data", {}).get(protected_field) == before_hash,
             f"P6-08 {doctype} accepted generic mutation",
         )
 

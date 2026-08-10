@@ -74,6 +74,14 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             module.PACKAGE_MEMBERS,
             ("manifest.json", "tooling-objects.csv", "README.txt"),
         )
+        self.assertEqual(
+            module.EXPORT_MUTATION_PROTECTED_FIELDS,
+            {
+                "NPI Tooling List Preference": "snapshot_hash",
+                "NPI Tooling Export Package": "snapshot_hash",
+                "NPI Tooling Export Command Idempotency": "payload_hash",
+            },
+        )
         project_id = "10000000-0000-4000-8000-000000000001"
         package_id = "20000000-0000-4000-8000-000000000002"
         self.assertEqual(
