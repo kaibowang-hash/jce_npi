@@ -5868,3 +5868,134 @@ The idempotency key was already used for a different Trial request.,此冪等鍵
 The related Trial planning reference is unavailable.,相關試模規劃參照無法使用。
 The Trial planning workspace is temporarily unavailable.,試模規劃工作區暫時無法使用。
 Configure a published Project Work Policy before creating actions.,建立行動項目前請設定已發布的專案工作原則。
+Open Project Trial planning,開啟專案試模規劃
+Open the authorized live Trial planning workspace for this Project.,開啟該專案已授權的即時試模規劃工作區。
+First Trial,首次試模
+Tooling change verification,模具變更驗證
+Design verification,設計驗證
+Material and color verification,材料和顏色驗證
+Capability study,能力研究
+Customer sample,客戶樣件
+Other Trial purpose,其他試模目的
+Planned,已規劃
+Prepared,已準備
+Running,執行中
+Analysis,分析中
+Create Trial Plan,建立試模計畫
+Append Trial Plan revision,附加試模計畫版本
+Create planned Trial Round,建立已規劃試模輪次
+Generate governed action,產生受控行動項目
+Creating Trial Plan,正在建立試模計畫
+Appending Trial Plan revision,正在附加試模計畫版本
+Creating planned Trial Round,正在建立已規劃試模輪次
+Generating governed action,正在產生受控行動項目
+Loading Trial planning workspace,正在載入試模規劃工作區
+Complete every required Trial field with exact stable references before review.,請在審查前使用精確穩定參照填寫所有必填試模欄位。
+Trial planning workspace unavailable,試模規劃工作區無法使用
+Trial Plans,試模計畫
+Planned Rounds,已規劃輪次
+Generated actions,已產生行動項目
+Trial planning workspace,試模規劃工作區
+Planning foundation active,規劃基礎已啟用
+Later Trial sections,後續試模區段
+Trial truth inspector,試模事實檢查器
+Trial planning is read only in this session.,目前工作階段中的試模規劃為唯讀。
+Session verification is required before a Trial command can be submitted.,提交試模命令前需要完成工作階段驗證。
+Trial planning is read only for this Project.,該專案的試模規劃為唯讀。
+"The server, not the browser, controls each available Trial action.",伺服器而非瀏覽器控制每個可用的試模動作。
+The Trial command is being verified and committed atomically.,正在驗證試模命令並以不可分割方式提交。
+The exact prior Trial command response was replayed safely.,已安全重播先前試模命令的精確回應。
+The Trial command was committed with immutable history and audit truth.,試模命令已連同不可變歷程和稽核事實提交。
+Trial command not completed,試模命令未完成
+No Trial Plan has been recorded for this Project.,該專案尚未記錄試模計畫。
+"Create a Plan only when exact Tooling, responsible-member and proposed-resource references are known.",僅在已知精確模具、負責成員和建議資源參照時建立計畫。
+Tooling Master stable ID,模具主檔穩定識別碼
+Trial purpose,試模目的
+Trial objective,試模目標
+Planned start (UTC),計畫開始時間（世界協調時間）
+Planned end (UTC),計畫結束時間（世界協調時間）
+Proposed machine,建議機台
+Machine source system,機台來源系統
+Machine source object ID,機台來源物件識別碼
+Machine label,機台標籤
+Proposed material,建議材料
+Material source system,材料來源系統
+Material source object ID,材料來源物件識別碼
+Material label,材料標籤
+Material quantity,材料數量
+Material unit,材料單位
+Responsible Project member stable IDs,負責專案成員的穩定識別碼
+Separate multiple stable IDs with commas,使用逗號分隔多個穩定識別碼
+Planned sample quantity,計畫樣件數量
+Measurement-plan intent,量測計畫意圖
+Optional Round label,選用輪次標籤
+Leave blank for the next server label,留空以使用伺服器指派的下一個標籤
+Action key,行動項目鍵
+Action title,行動項目標題
+Action description,行動項目說明
+Responsible Project member stable ID,負責專案成員的穩定識別碼
+Action due time (UTC),行動項目截止時間（世界協調時間）
+Action severity,行動項目嚴重度
+Related Trial Round,相關試模輪次
+Plan only,僅計畫
+Blocking action,阻斷行動項目
+The Round will be created only in planned state against the exact current Plan revision.,該輪次只會依據精確的目前計畫版本以已規劃狀態建立。
+The generated record uses the governed Project Work lifecycle; Trial stores only an immutable link.,產生的記錄使用受控的專案工作生命週期；試模僅儲存不可變關聯。
+Resource entries are proposals only. Availability and reservation remain unavailable.,資源項目僅為建議。可用性和預約仍無法使用。
+Review command,審查命令
+Version {{version}},版本 {{version}}
+"{{rounds}} Rounds, {{actions}} actions",{{rounds}} 個輪次、{{actions}} 個行動項目
+Trial Plan unavailable,試模計畫無法使用
+Current Trial Plan revision,目前試模計畫版本
+Append revision,附加版本
+Create planned Round,建立已規劃輪次
+Generate action,產生行動項目
+Objective,目標
+Purpose,目的
+Planned end,計畫結束時間
+Controlled document intent only,僅受控文件意圖
+Proposed resources,建議資源
+Resource kind,資源類型
+Resource,資源
+Booking state,預約狀態
+Material,材料
+Auxiliary equipment,輔助設備
+Not specified,未指定
+Responsible Project members,負責專案成員
+Member,成員
+Immutable Plan revision history,不可變計畫版本歷程
+Round,輪次
+Planned interval,計畫時段
+No planned Trial Round is linked to this Plan revision history.,該計畫版本歷程尚未關聯已規劃試模輪次。
+Plan revision,計畫版本
+Related Round,相關輪次
+Linked at,關聯時間
+No governed Project Work action is linked to this Trial Plan.,該試模計畫尚未關聯受控專案工作行動項目。
+Locked preparation inputs,已鎖定準備輸入
+Actual process parameters,實際製程參數
+Samples and cavity evidence,樣件和模穴證據
+Defects and measurements,缺陷和量測
+Conclusion and approval,結論和核准
+Formal quality and ERPNext execution,正式品質和 ERPNext 執行
+Unavailable in this checkpoint,本檢查點無法使用
+Project stable ID,專案穩定識別碼
+Plan stable ID,計畫穩定識別碼
+No Plan selected,未選取計畫
+Plan snapshot,計畫快照
+Resource availability,資源可用性
+Resource reservation,資源預約
+Action state owner,行動項目狀態主責方
+Project Work,專案工作
+Formal resource and quality owner,正式資源和品質主責方
+No booking claim,無預約聲明
+An approved resource reader and booking policy are not configured. Proposed resources are not confirmed or reserved.,尚未設定已核准的資源讀取器和預約原則。建議資源未經確認或預約。
+Planned state only,僅已規劃狀態
+"P7-01 creates only planned Rounds. Preparation, execution, evidence, conclusion and approval remain unavailable.",本檢查點僅建立已規劃輪次。準備、執行、證據、結論和核准仍無法使用。
+Initial revision,初始版本
+Creates one governed Domain Work Item and an immutable Trial link.,建立一個受控領域工作項目和一筆不可變試模關聯。
+Appends immutable Trial planning history; prior versions are not overwritten.,附加不可變試模規劃歷程；不會覆寫先前版本。
+The server rechecks Project membership and System Manager command authority.,伺服器會重新檢查專案成員關係和系統管理員命令權限。
+Committed Trial history cannot be edited or deleted through generic CRUD.,已提交的試模歷程不能透過通用新增、讀取、更新和刪除進行編輯或刪除。
+A failed command changes no Trial or Project Work row and can be retried with the same exact request.,失敗的命令不會變更任何試模或專案工作記錄，並可使用相同的精確請求重試。
+"The command records actor, request, trace, reason and immutable snapshot evidence.",命令記錄執行人、請求、追蹤、原因和不可變快照證據。
+Review immutable Trial command,審查不可變試模命令

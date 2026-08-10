@@ -24,6 +24,10 @@ const liveToolingMasterRoutePattern = new RegExp(
   `^/projects/(${uuidRouteSegment})/tooling/(${uuidRouteSegment})/?$`,
   "u",
 );
+const liveTrialRoutePattern = new RegExp(
+  `^/projects/(${uuidRouteSegment})/trials/?$`,
+  "u",
+);
 const approvedPathPatterns = [
   /^\/work\/?$/u,
   /^\/demo\/work\/?$/u,
@@ -36,6 +40,7 @@ const approvedPathPatterns = [
   liveGateRoutePattern,
   liveToolingRoutePattern,
   liveToolingMasterRoutePattern,
+  liveTrialRoutePattern,
   new RegExp(`^/tooling/${fixtureRouteSegment}/?$`, "u"),
   new RegExp(`^/trials/${fixtureRouteSegment}/?$`, "u"),
   /^\/execution\/?$/u,
@@ -61,6 +66,7 @@ export interface AppRoute {
   toolingMasterGlobalId: string | null;
   toolingMode: "live" | "demo" | null;
   toolingWorkspace: "cockpit" | "import";
+  trialMode: "live" | "demo" | null;
 }
 
 function parseScenario(value: string | null): Scenario {
@@ -139,23 +145,26 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
   const liveGateMatch = liveGateRoutePattern.exec(pathname);
   const liveToolingMatch = liveToolingRoutePattern.exec(pathname);
   const liveToolingMasterMatch = liveToolingMasterRoutePattern.exec(pathname);
+  const liveTrialMatch = liveTrialRoutePattern.exec(pathname);
   const demoWork = /^\/demo\/work\/?$/u.test(pathname);
   const screen: ScreenId =
     demoGateMatch || liveGateMatch || liveGatePathPattern.test(pathname)
       ? "gate"
-      : liveToolingMatch || liveToolingMasterMatch
-        ? "tooling"
-        : demoProjectMatch
-          ? "project"
-          : pathname.startsWith("/projects/")
+      : liveTrialMatch
+        ? "trial"
+        : liveToolingMatch || liveToolingMasterMatch
+          ? "tooling"
+          : demoProjectMatch
             ? "project"
-            : pathname.startsWith("/tooling/")
-              ? "tooling"
-              : pathname.startsWith("/trials/")
-                ? "trial"
-                : pathname.startsWith("/execution")
-                  ? "execution"
-                  : "work";
+            : pathname.startsWith("/projects/")
+              ? "project"
+              : pathname.startsWith("/tooling/")
+                ? "tooling"
+                : pathname.startsWith("/trials/")
+                  ? "trial"
+                  : pathname.startsWith("/execution")
+                    ? "execution"
+                    : "work";
   const projectMode =
     screen === "project" ? (demoProjectMatch ? "demo" : "live") : null;
   const gateMode = screen === "gate" ? (demoGateMatch ? "demo" : "live") : null;
@@ -165,12 +174,15 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
         ? "live"
         : "demo"
       : null;
+  const trialMode =
+    screen === "trial" ? (liveTrialMatch ? "live" : "demo") : null;
   const workMode = screen === "work" ? (demoWork ? "demo" : "live") : null;
   const liveRoute =
     workMode === "live" ||
     projectMode === "live" ||
     gateMode === "live" ||
-    toolingMode === "live";
+    toolingMode === "live" ||
+    trialMode === "live";
   return {
     gateGlobalId: liveGateMatch?.[2] ?? null,
     gateMode,
@@ -183,6 +195,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
       liveGateMatch?.[1] ??
       liveToolingMatch?.[1] ??
       liveToolingMasterMatch?.[1] ??
+      liveTrialMatch?.[1] ??
       null,
     projectMode,
     toolingMasterGlobalId: liveToolingMasterMatch?.[2] ?? null,
@@ -193,6 +206,7 @@ export function parseRoute(location: Location = globalThis.location): AppRoute {
       parameters.get("workspace") === "import"
         ? "import"
         : "cockpit",
+    trialMode,
     workMode,
   };
 }

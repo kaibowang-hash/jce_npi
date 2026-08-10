@@ -150,8 +150,10 @@ export function AppShell({
   const isLiveGate = route.screen === "gate" && route.gateMode === "live";
   const isLiveTooling =
     route.screen === "tooling" && route.toolingMode === "live";
+  const isLiveTrial = route.screen === "trial" && route.trialMode === "live";
   const isLiveWork = route.screen === "work" && route.workMode === "live";
-  const isLiveProjectContext = isLiveProject || isLiveGate || isLiveTooling;
+  const isLiveProjectContext =
+    isLiveProject || isLiveGate || isLiveTooling || isLiveTrial;
   const isLiveDataContext = isLiveWork || isLiveProjectContext;
   const prototypeNavigationAllowed = !isLiveDataContext;
   const liveProjectPath =
@@ -159,6 +161,7 @@ export function AppShell({
       ? null
       : `/projects/${route.projectGlobalId}`;
   const liveToolingPath = liveProjectPath ? `${liveProjectPath}/tooling` : null;
+  const liveTrialPath = liveProjectPath ? `${liveProjectPath}/trials` : null;
   const denied = route.scenario === "no_permission";
   const routeContext = denied
     ? { exempt: false, value: t("Protected object") }
@@ -192,7 +195,12 @@ export function AppShell({
                   : "PJ-26018 · TL-26018-01",
               }
             : route.screen === "trial"
-              ? { exempt: true, value: "TL-26018-01 · T1" }
+              ? {
+                  exempt: true,
+                  value: isLiveTrial
+                    ? (route.projectGlobalId ?? "")
+                    : "TL-26018-01 · T1",
+                }
               : { exempt: false, value: t("Cross-system operations") };
   const breadcrumbRoot =
     route.screen === "tooling"
@@ -261,9 +269,11 @@ export function AppShell({
       id: "trial",
       icon: "play",
       label: t("Trial and NPI"),
-      ...(prototypeNavigationAllowed
-        ? { path: "/trials/T1" }
-        : { unavailableReason: liveNavigationUnavailable }),
+      ...(isLiveProjectContext && liveTrialPath
+        ? { path: liveTrialPath }
+        : prototypeNavigationAllowed
+          ? { path: "/trials/T1" }
+          : { unavailableReason: liveNavigationUnavailable }),
       screen: "trial",
     },
     {
@@ -350,13 +360,21 @@ export function AppShell({
       },
       {
         id: "trial",
-        label: t("Open Trial prototype"),
-        description: t("Open the existing Trial prototype workspace."),
+        label: isLiveProjectContext
+          ? t("Open Project Trial planning")
+          : t("Open Trial prototype"),
+        description: isLiveProjectContext
+          ? t(
+              "Open the authorized live Trial planning workspace for this Project.",
+            )
+          : t("Open the existing Trial prototype workspace."),
         icon: "play",
         keywords: [t("Trial"), t("NPI")],
-        ...(prototypeNavigationAllowed
-          ? { target: "/trials/T1" }
-          : { unavailableReason: liveNavigationUnavailable }),
+        ...(isLiveProjectContext && liveTrialPath
+          ? { target: liveTrialPath }
+          : prototypeNavigationAllowed
+            ? { target: "/trials/T1" }
+            : { unavailableReason: liveNavigationUnavailable }),
       },
       {
         id: "execution",
@@ -373,6 +391,7 @@ export function AppShell({
     ],
     [
       isLiveProjectContext,
+      liveTrialPath,
       liveNavigationUnavailable,
       liveProjectPath,
       liveToolingPath,

@@ -5868,3 +5868,134 @@ The idempotency key was already used for a different Trial request.,该幂等键
 The related Trial planning reference is unavailable.,相关试模规划引用不可用。
 The Trial planning workspace is temporarily unavailable.,试模规划工作区暂时不可用。
 Configure a published Project Work Policy before creating actions.,创建行动项前请配置已发布的项目工作策略。
+Open Project Trial planning,打开项目试模规划
+Open the authorized live Trial planning workspace for this Project.,打开该项目已授权的实时试模规划工作区。
+First Trial,首次试模
+Tooling change verification,模具变更验证
+Design verification,设计验证
+Material and color verification,材料和颜色验证
+Capability study,能力研究
+Customer sample,客户样件
+Other Trial purpose,其他试模目的
+Planned,已规划
+Prepared,已准备
+Running,运行中
+Analysis,分析中
+Create Trial Plan,创建试模计划
+Append Trial Plan revision,追加试模计划版本
+Create planned Trial Round,创建已规划试模轮次
+Generate governed action,生成受控行动项
+Creating Trial Plan,正在创建试模计划
+Appending Trial Plan revision,正在追加试模计划版本
+Creating planned Trial Round,正在创建已规划试模轮次
+Generating governed action,正在生成受控行动项
+Loading Trial planning workspace,正在加载试模规划工作区
+Complete every required Trial field with exact stable references before review.,请在审核前使用精确稳定引用填写所有必填试模字段。
+Trial planning workspace unavailable,试模规划工作区不可用
+Trial Plans,试模计划
+Planned Rounds,已规划轮次
+Generated actions,已生成行动项
+Trial planning workspace,试模规划工作区
+Planning foundation active,规划基础已启用
+Later Trial sections,后续试模区段
+Trial truth inspector,试模事实检查器
+Trial planning is read only in this session.,当前会话中的试模规划为只读。
+Session verification is required before a Trial command can be submitted.,提交试模命令前需要完成会话验证。
+Trial planning is read only for this Project.,该项目的试模规划为只读。
+"The server, not the browser, controls each available Trial action.",服务器而非浏览器控制每个可用的试模动作。
+The Trial command is being verified and committed atomically.,正在验证试模命令并以原子方式提交。
+The exact prior Trial command response was replayed safely.,已安全重放先前试模命令的精确响应。
+The Trial command was committed with immutable history and audit truth.,试模命令已连同不可变历史和审计事实提交。
+Trial command not completed,试模命令未完成
+No Trial Plan has been recorded for this Project.,该项目尚未记录试模计划。
+"Create a Plan only when exact Tooling, responsible-member and proposed-resource references are known.",仅在已知精确模具、责任成员和建议资源引用时创建计划。
+Tooling Master stable ID,模具主档稳定标识
+Trial purpose,试模目的
+Trial objective,试模目标
+Planned start (UTC),计划开始时间（协调世界时）
+Planned end (UTC),计划结束时间（协调世界时）
+Proposed machine,建议机台
+Machine source system,机台来源系统
+Machine source object ID,机台来源对象标识
+Machine label,机台标签
+Proposed material,建议材料
+Material source system,材料来源系统
+Material source object ID,材料来源对象标识
+Material label,材料标签
+Material quantity,材料数量
+Material unit,材料单位
+Responsible Project member stable IDs,负责项目成员的稳定标识
+Separate multiple stable IDs with commas,使用逗号分隔多个稳定标识
+Planned sample quantity,计划样件数量
+Measurement-plan intent,测量计划意图
+Optional Round label,可选轮次标签
+Leave blank for the next server label,留空以使用服务器分配的下一个标签
+Action key,行动项键
+Action title,行动项标题
+Action description,行动项说明
+Responsible Project member stable ID,负责项目成员的稳定标识
+Action due time (UTC),行动项截止时间（协调世界时）
+Action severity,行动项严重度
+Related Trial Round,相关试模轮次
+Plan only,仅计划
+Blocking action,阻断行动项
+The Round will be created only in planned state against the exact current Plan revision.,该轮次只会基于精确的当前计划版本以已规划状态创建。
+The generated record uses the governed Project Work lifecycle; Trial stores only an immutable link.,生成的记录使用受控的项目工作生命周期；试模仅存储不可变关联。
+Resource entries are proposals only. Availability and reservation remain unavailable.,资源条目仅为建议。可用性和预约仍不可用。
+Review command,审核命令
+Version {{version}},版本 {{version}}
+"{{rounds}} Rounds, {{actions}} actions",{{rounds}} 个轮次、{{actions}} 个行动项
+Trial Plan unavailable,试模计划不可用
+Current Trial Plan revision,当前试模计划版本
+Append revision,追加版本
+Create planned Round,创建已规划轮次
+Generate action,生成行动项
+Objective,目标
+Purpose,目的
+Planned end,计划结束时间
+Controlled document intent only,仅受控文件意图
+Proposed resources,建议资源
+Resource kind,资源类型
+Resource,资源
+Booking state,预约状态
+Material,材料
+Auxiliary equipment,辅助设备
+Not specified,未指定
+Responsible Project members,负责项目成员
+Member,成员
+Immutable Plan revision history,不可变计划版本历史
+Round,轮次
+Planned interval,计划时段
+No planned Trial Round is linked to this Plan revision history.,该计划版本历史尚未关联已规划试模轮次。
+Plan revision,计划版本
+Related Round,相关轮次
+Linked at,关联时间
+No governed Project Work action is linked to this Trial Plan.,该试模计划尚未关联受控项目工作行动项。
+Locked preparation inputs,已锁定准备输入
+Actual process parameters,实际工艺参数
+Samples and cavity evidence,样件和型腔证据
+Defects and measurements,缺陷和测量
+Conclusion and approval,结论和批准
+Formal quality and ERPNext execution,正式质量和 ERPNext 执行
+Unavailable in this checkpoint,本检查点不可用
+Project stable ID,项目稳定标识
+Plan stable ID,计划稳定标识
+No Plan selected,未选择计划
+Plan snapshot,计划快照
+Resource availability,资源可用性
+Resource reservation,资源预约
+Action state owner,行动项状态主责方
+Project Work,项目工作
+Formal resource and quality owner,正式资源和质量主责方
+No booking claim,无预约声明
+An approved resource reader and booking policy are not configured. Proposed resources are not confirmed or reserved.,尚未配置已批准的资源读取器和预约策略。建议资源未经确认或预约。
+Planned state only,仅已规划状态
+"P7-01 creates only planned Rounds. Preparation, execution, evidence, conclusion and approval remain unavailable.",本检查点仅创建已规划轮次。准备、执行、证据、结论和批准仍不可用。
+Initial revision,初始版本
+Creates one governed Domain Work Item and an immutable Trial link.,创建一个受控领域工作项和一条不可变试模关联。
+Appends immutable Trial planning history; prior versions are not overwritten.,追加不可变试模规划历史；不会覆盖先前版本。
+The server rechecks Project membership and System Manager command authority.,服务器会重新检查项目成员关系和系统管理员命令权限。
+Committed Trial history cannot be edited or deleted through generic CRUD.,已提交的试模历史不能通过通用增删改查进行编辑或删除。
+A failed command changes no Trial or Project Work row and can be retried with the same exact request.,失败的命令不会更改任何试模或项目工作记录，并可使用相同的精确请求重试。
+"The command records actor, request, trace, reason and immutable snapshot evidence.",命令记录执行人、请求、追踪、原因和不可变快照证据。
+Review immutable Trial command,审核不可变试模命令

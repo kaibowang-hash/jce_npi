@@ -25,8 +25,10 @@ function route(
   const demo = pathname.startsWith("/demo/");
   const pathParts = pathname.split("/");
   const liveTooling = screen === "tooling" && pathname.startsWith("/projects/");
+  const liveTrial = screen === "trial" && pathname.startsWith("/projects/");
   const liveProjectGlobalId =
-    (screen === "project" || screen === "gate" || liveTooling) && !demo
+    (screen === "project" || screen === "gate" || liveTooling || liveTrial) &&
+    !demo
       ? (pathParts[2] ?? null)
       : null;
   const liveGateGlobalId =
@@ -43,6 +45,7 @@ function route(
     toolingMasterGlobalId: liveTooling ? (pathParts[4] ?? null) : null,
     toolingMode: screen === "tooling" ? (liveTooling ? "live" : "demo") : null,
     toolingWorkspace: "cockpit",
+    trialMode: screen === "trial" ? (liveTrial ? "live" : "demo") : null,
     workMode: screen === "work" ? (demo ? "demo" : "live") : null,
   };
 }

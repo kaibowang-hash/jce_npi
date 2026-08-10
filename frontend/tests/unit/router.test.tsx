@@ -31,6 +31,7 @@ describe("application routing", () => {
       "tooling",
     ],
     ["/trials/T1", "trial"],
+    ["/projects/11111111-1111-4111-8111-111111111111/trials", "trial"],
     ["/execution", "execution"],
   ] as const)("maps %s to the %s screen", (path, screen) => {
     expect(parseRoute(locationFor(path)).screen).toBe(screen);
@@ -115,6 +116,22 @@ describe("application routing", () => {
     expect(
       parseRoute(
         locationFor(
+          "/projects/11111111-1111-4111-8111-111111111111/trials?scenario=error",
+        ),
+      ),
+    ).toMatchObject({
+      projectGlobalId: "11111111-1111-4111-8111-111111111111",
+      scenario: "normal",
+      screen: "trial",
+      trialMode: "live",
+    });
+    expect(parseRoute(locationFor("/trials/T1"))).toMatchObject({
+      projectGlobalId: null,
+      trialMode: "demo",
+    });
+    expect(
+      parseRoute(
+        locationFor(
           "/projects/11111111-1111-4111-8111-111111111111/tooling?workspace=import",
         ),
       ),
@@ -174,6 +191,7 @@ describe("application routing", () => {
       `/projects/${projectId}/gates/${gateId}`,
       `/projects/${projectId}/tooling`,
       `/projects/${projectId}/tooling/${gateId}`,
+      `/projects/${projectId}/trials`,
       "/tooling/TL-26018-01",
       "/trials/T1",
       "/execution",

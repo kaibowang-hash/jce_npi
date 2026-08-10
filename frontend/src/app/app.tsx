@@ -28,6 +28,7 @@ import { LiveControlledPrintDataSource } from "../api/controlled-print-data-sour
 import { LiveToolingDataSource } from "../api/tooling-data-source";
 import { LiveToolingImportDataSource } from "../api/tooling-import-data-source";
 import { LiveToolingListDataSource } from "../api/tooling-list-data-source";
+import { LiveTrialDataSource } from "../api/trial-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -45,6 +46,7 @@ const ToolingImportWorkspace = lazy(
   () => import("../pages/tooling-import-workspace"),
 );
 const TrialPage = lazy(() => import("../pages/trial-page"));
+const LiveTrialPage = lazy(() => import("../pages/live-trial-page"));
 const ExecutionPage = lazy(() => import("../pages/execution-page"));
 const liveProjectDataSource = new LiveProjectCockpitDataSource();
 const liveProjectControlsDataSource = new LiveProjectControlsDataSource();
@@ -61,6 +63,7 @@ const liveMyWorkDataSource = new LiveMyWorkDataSource();
 const liveToolingDataSource = new LiveToolingDataSource();
 const liveToolingImportDataSource = new LiveToolingImportDataSource();
 const liveToolingListDataSource = new LiveToolingListDataSource();
+const liveTrialDataSource = new LiveTrialDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -213,6 +216,13 @@ export function App(): React.JSX.Element {
       />
     ) : route.screen === "tooling" ? (
       <ToolingPage navigate={guardedNavigate} scenario={route.scenario} />
+    ) : route.screen === "trial" && route.trialMode === "live" ? (
+      <LiveTrialPage
+        dataSource={liveTrialDataSource}
+        navigate={guardedNavigate}
+        projectId={route.projectGlobalId ?? ""}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+      />
     ) : route.screen === "trial" ? (
       <TrialPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "execution" ? (
@@ -230,6 +240,7 @@ export function App(): React.JSX.Element {
     route.projectMode !== "live" &&
     route.gateMode !== "live" &&
     route.toolingMode !== "live" &&
+    route.trialMode !== "live" &&
     !["normal", "read_only", "partial", "dirty"].includes(route.scenario);
   const pageClass =
     route.screen === "work"

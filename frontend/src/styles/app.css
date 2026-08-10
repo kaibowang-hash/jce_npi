@@ -1186,6 +1186,125 @@ textarea::placeholder {
     );
 }
 
+.trial-live {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.trial-live__layout {
+  display: grid;
+  grid-template-columns: 260px minmax(520px, 1fr) var(
+      --npi-inspector-width,
+      var(--npi-layout-contextInspector)
+    );
+  align-items: start;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.trial-live__center {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-2);
+}
+
+.trial-live__tree-control {
+  display: grid;
+  width: 100%;
+  gap: var(--npi-space-1);
+  padding: var(--npi-space-1);
+  border: var(--npi-space-0);
+  border-left: var(--npi-border-selected) solid transparent;
+  border-radius: var(--npi-radius-none);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.trial-live__tree-control:hover {
+  background: var(--npi-color-surface-sunken);
+}
+
+.trial-live__tree-control[aria-current="true"] {
+  border-left-color: var(--npi-color-brand-primary);
+  background: var(--npi-color-brand-subtle);
+}
+
+.trial-live__tree-meta {
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+}
+
+.trial-live__command-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--npi-space-2);
+  margin-bottom: var(--npi-space-2);
+  padding-bottom: var(--npi-space-2);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: var(--npi-space-2) var(--npi-space-3);
+}
+
+.trial-live__editor > label,
+.trial-live__resource-editor {
+  display: grid;
+  align-content: start;
+  gap: var(--npi-space-1);
+  min-width: 0;
+}
+
+.trial-live__resource-editor legend {
+  padding-inline: var(--npi-space-1);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.trial-live__editor-wide {
+  grid-column: 1 / -1;
+}
+
+.trial-live__resource-editor {
+  margin: var(--npi-space-0);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-radius: var(--npi-radius-none);
+}
+
+.trial-live__checkbox {
+  display: flex !important;
+  grid-auto-flow: column;
+  grid-template-columns: min-content 1fr;
+  align-items: center;
+}
+
+.trial-live__later {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__later-item {
+  display: grid;
+  gap: var(--npi-space-1);
+  min-height: var(--npi-density-row-comfortable);
+  padding: var(--npi-space-2);
+  border-right: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__resource-reference {
+  display: block;
+  color: var(--npi-color-text-secondary);
+}
+
 .tooling-live__center,
 .tooling-live__downstream {
   display: grid;
@@ -4356,7 +4475,8 @@ textarea::placeholder {
   .project-learning-layout,
   .gate-evidence-layout,
   .review-layout,
-  .trial-layout {
+  .trial-layout,
+  .trial-live__layout {
     grid-template-columns: minmax(390px, 1fr) minmax(280px, 320px);
   }
 
@@ -4364,7 +4484,8 @@ textarea::placeholder {
   .project-activity-layout > .docked-inspector,
   .project-learning-layout > .docked-inspector,
   .review-layout > .docked-inspector,
-  .trial-layout > .docked-inspector {
+  .trial-layout > .docked-inspector,
+  .trial-live__layout > .docked-inspector {
     grid-row: 1 / span 2;
     grid-column: 2;
   }
@@ -4450,6 +4571,7 @@ textarea::placeholder {
   .gate-evidence-layout,
   .review-layout,
   .trial-layout,
+  .trial-live__layout,
   .worklist-layout,
   .execution-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -4480,6 +4602,7 @@ textarea::placeholder {
   .project-learning-layout > .docked-inspector,
   .review-layout > .docked-inspector,
   .trial-layout > .docked-inspector,
+  .trial-live__layout > .docked-inspector,
   .ebom-workspace__layout > .docked-inspector {
     position: static;
     grid-row: auto;
@@ -4550,6 +4673,11 @@ textarea::placeholder {
   }
 
   .evidence-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trial-live__editor,
+  .trial-live__later {
     grid-template-columns: minmax(0, 1fr);
   }
 
