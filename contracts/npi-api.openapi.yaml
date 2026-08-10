@@ -2992,6 +2992,316 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/trial-rounds/{trialRoundId}/execution:
+    get:
+      tags: [Trials]
+      operationId: getTrialRoundExecution
+      description: >
+        Returns exact immutable input-lock, manual Trial Actual, Sample Batch
+        and clean private evidence truth after Project-first authorization.
+        Automatic machine import and formal ERPNext quality remain unavailable.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/TrialExecutionResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}:prepare:
+    post:
+      tags: [Trials]
+      operationId: prepareTrialRound
+      description: >
+        Server-resolves and appends one exact immutable input-lock revision,
+        then advances only the exact planned Round to prepared.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_round.prepare
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PrepareTrialRound" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}:start:
+    post:
+      tags: [Trials]
+      operationId: startTrialRound
+      description: >
+        Freezes the first exact manual execution context and advances only the
+        exact prepared Round to running. It does not import machine data.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_round.start
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StartTrialRound" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/actual-revisions:
+    post:
+      tags: [Trials]
+      operationId: appendTrialActualRevision
+      description: Appends one exact immutable manual Trial Actual successor.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_actual.append
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppendTrialActualRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/sample-batches:
+    post:
+      tags: [Trials]
+      operationId: createTrialSampleBatch
+      description: Creates one stable Sample Batch and its first immutable revision.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_sample.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTrialSampleBatch" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/sample-batches/{sampleBatchId}/revisions:
+    post:
+      tags: [Trials]
+      operationId: appendTrialSampleBatchRevision
+      description: Appends one exact immutable Sample Batch successor revision.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_sample.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: sampleBatchId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppendTrialSampleBatchRevision" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/files:
+    post:
+      tags: [Trials]
+      operationId: uploadTrialEvidenceFile
+      description: >
+        Uploads bounded bytes to one private scanner-pending File Revision.
+        It does not create a Trial evidence reference or return a raw File URL.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-file-registration
+      x-audit-operation: trial_file.upload
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: "#/components/schemas/UploadTrialEvidenceFile" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "413": { $ref: "#/components/responses/ProjectValidationError" }
+        "415": { $ref: "#/components/responses/ProjectValidationError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/evidence:
+    post:
+      tags: [Trials]
+      operationId: bindTrialEvidence
+      description: Binds one exact clean private File Revision to Round or Sample truth.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-round-execution
+      x-audit-operation: trial_evidence.bind
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BindTrialEvidence" }
+      responses:
+        "201": { $ref: "#/components/responses/TrialExecutionCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/evidence/{evidenceId}:content:
+    post:
+      tags: [Trials]
+      operationId: readTrialEvidenceContent
+      description: >
+        Reauthorizes the exact Project, Round, evidence and clean private File
+        revision, audits access and streams bytes without a redirect or URL.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-trial-evidence-access-audit
+      x-audit-operation: trial_evidence.content.read
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - in: path
+          name: trialRoundId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: evidenceId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200": { $ref: "#/components/responses/TrialEvidenceContentResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}/publish-requests:
     get:
       tags: [Execution]
@@ -5959,6 +6269,60 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/TrialPlanDetail" }
+    TrialExecutionResult:
+      description: Authorized exact Trial Round execution truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/TrialExecutionWorkspace" }
+    TrialExecutionCommandResult:
+      description: Exact Trial execution workspace after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/TrialExecutionWorkspace" }
+    TrialEvidenceContentResult:
+      description: Audited exact private evidence bytes; never a redirect or stable URL
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+        Content-Disposition:
+          required: true
+          schema: { type: string, pattern: '^attachment; filename="[^"\\r\\n]+"$' }
+        X-Content-Type-Options:
+          required: true
+          schema: { type: string, const: nosniff }
+      content:
+        application/octet-stream:
+          schema: { type: string, format: binary }
     ToolingSetCollectionResult:
       description: Authorized bounded physical Tooling Set collection
       headers:
@@ -11938,6 +12302,496 @@ components:
           maxItems: 50
           items: { $ref: "#/components/schemas/TrialPlanActionInput" }
         reason: { type: string, minLength: 1, maxLength: 500 }
+    TrialLockedReferenceKind:
+      type: string
+      enum:
+        [
+          design_baseline,
+          part_revision,
+          tooling_revision,
+          tooling_set,
+          tooling_set_binding,
+          cavity,
+          process_chain,
+          inspection_document,
+        ]
+    TrialLockedReferenceInput:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, expectedOptimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/TrialLockedReferenceKind" }
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+    TrialLockedReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, kind, optimisticVersion, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/TrialLockedReferenceKind" }
+        optimisticVersion: { type: integer, minimum: 1 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialMaterialObservationInput:
+      type: object
+      additionalProperties: false
+      required: [sourceSystem, sourceObjectId, lotBatchCode, label, observedAt]
+      properties:
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        lotBatchCode:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        label: { type: string, minLength: 1, maxLength: 140 }
+        color: { type: [string, "null"], minLength: 1, maxLength: 80 }
+        additive: { type: [string, "null"], minLength: 1, maxLength: 140 }
+        observedAt: { type: string, format: date-time }
+    TrialMaterialObservation:
+      type: object
+      additionalProperties: false
+      required:
+        [sourceSystem, sourceObjectId, lotBatchCode, label, color, additive, observedAt, confirmedByUserId, erpVerification]
+      properties:
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        lotBatchCode:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        label: { type: string, minLength: 1, maxLength: 140 }
+        color: { type: [string, "null"], maxLength: 80 }
+        additive: { type: [string, "null"], maxLength: 140 }
+        observedAt: { type: string, format: date-time }
+        confirmedByUserId: { type: string, format: email, maxLength: 254 }
+        erpVerification: { type: string, const: unavailable }
+    TrialParameterValueKind:
+      type: string
+      enum: [decimal, integer, text, boolean]
+    TrialParameterDefinitionInput:
+      type: object
+      additionalProperties: false
+      required: [key, category, valueKind, required]
+      properties:
+        key:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        valueKind: { $ref: "#/components/schemas/TrialParameterValueKind" }
+        required: { type: boolean }
+        unit: { type: [string, "null"], minLength: 1, maxLength: 32 }
+        targetValue: { type: [string, "null"], maxLength: 280 }
+        lowerLimit: { type: [string, "null"], maxLength: 64 }
+        upperLimit: { type: [string, "null"], maxLength: 64 }
+    TrialParameterDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, category, valueKind, required, unit, targetValue, lowerLimit, upperLimit]
+      properties:
+        key:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        category: { type: string, minLength: 1, maxLength: 80 }
+        valueKind: { $ref: "#/components/schemas/TrialParameterValueKind" }
+        required: { type: boolean }
+        unit: { type: [string, "null"], maxLength: 32 }
+        targetValue: { type: [string, "null"], maxLength: 280 }
+        lowerLimit: { type: [string, "null"], maxLength: 64 }
+        upperLimit: { type: [string, "null"], maxLength: 64 }
+    TrialRoundInputLockRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, inputLockGlobalId, projectGlobalId, trialRoundGlobalId, trialPlanRevisionGlobalId, trialPlanRevisionSnapshotHash, lockVersion, predecessorGlobalId, predecessorSnapshotHash, references, material, parameterDefinitions, reason, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        inputLockGlobalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        trialPlanRevisionGlobalId: { type: string, format: uuid }
+        trialPlanRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        lockVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        references:
+          type: array
+          minItems: 8
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialLockedReference" }
+        material: { $ref: "#/components/schemas/TrialMaterialObservation" }
+        parameterDefinitions:
+          type: array
+          minItems: 1
+          maxItems: 250
+          items: { $ref: "#/components/schemas/TrialParameterDefinition" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialActualResourceInput:
+      type: object
+      additionalProperties: false
+      required: [kind, sourceSystem, sourceObjectId, label]
+      properties:
+        kind: { type: string, enum: [machine, auxiliary_equipment] }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        label: { type: string, minLength: 1, maxLength: 140 }
+    TrialActualResource:
+      type: object
+      additionalProperties: false
+      required: [kind, sourceSystem, sourceObjectId, label, erpVerification]
+      properties:
+        kind: { type: string, enum: [machine, auxiliary_equipment] }
+        sourceSystem: { type: string, enum: [NPI_ONE, ERPNEXT] }
+        sourceObjectId:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        label: { type: string, minLength: 1, maxLength: 140 }
+        erpVerification: { type: string, const: unavailable }
+    TrialEnvironmentObservationInput:
+      type: object
+      additionalProperties: false
+      required: [key, value, observedAt]
+      properties:
+        key:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        value: { type: string, minLength: 1, maxLength: 140 }
+        unit: { type: [string, "null"], minLength: 1, maxLength: 32 }
+        observedAt: { type: string, format: date-time }
+    TrialEnvironmentObservation:
+      type: object
+      additionalProperties: false
+      required: [key, value, unit, observedAt]
+      properties:
+        key:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        value: { type: string, minLength: 1, maxLength: 140 }
+        unit: { type: [string, "null"], maxLength: 32 }
+        observedAt: { type: string, format: date-time }
+    TrialParameterObservationInput:
+      type: object
+      additionalProperties: false
+      required: [definitionKey, state]
+      properties:
+        definitionKey:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        state: { type: string, enum: [measured, not_measured] }
+        value: { type: [string, "null"], maxLength: 280 }
+        unit: { type: [string, "null"], maxLength: 32 }
+        source:
+          oneOf:
+            - { type: string, const: manual }
+            - { type: "null" }
+        observedAt: { type: [string, "null"], format: date-time }
+    TrialParameterObservation:
+      type: object
+      additionalProperties: false
+      required: [definitionKey, state, value, unit, source, observedAt]
+      properties:
+        definitionKey:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        state: { type: string, enum: [measured, not_measured] }
+        value: { type: [string, "null"], maxLength: 280 }
+        unit: { type: [string, "null"], maxLength: 32 }
+        source:
+          oneOf:
+            - { type: string, const: manual }
+            - { type: "null" }
+        observedAt: { type: [string, "null"], format: date-time }
+    TrialRoundActualRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, actualGlobalId, projectGlobalId, trialRoundGlobalId, inputLockRevisionGlobalId, inputLockRevisionSnapshotHash, actualVersion, predecessorGlobalId, predecessorSnapshotHash, acquisitionMode, resources, material, environment, parameters, operatorUserId, confirmedByUserId, executionStartedAt, machineImport, reason, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        actualGlobalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        inputLockRevisionGlobalId: { type: string, format: uuid }
+        inputLockRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        actualVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        acquisitionMode: { type: string, const: manual }
+        resources:
+          type: array
+          minItems: 1
+          maxItems: 25
+          items: { $ref: "#/components/schemas/TrialActualResource" }
+        material: { $ref: "#/components/schemas/TrialMaterialObservation" }
+        environment:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/TrialEnvironmentObservation" }
+        parameters:
+          type: array
+          minItems: 1
+          maxItems: 250
+          items: { $ref: "#/components/schemas/TrialParameterObservation" }
+        operatorUserId: { type: string, format: email, maxLength: 254 }
+        confirmedByUserId: { type: string, format: email, maxLength: 254 }
+        executionStartedAt: { type: string, format: date-time }
+        machineImport: { type: string, const: unavailable }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialSampleBatchRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, sampleBatchGlobalId, projectGlobalId, trialRoundGlobalId, inputLockRevisionGlobalId, inputLockRevisionSnapshotHash, sampleVersion, predecessorGlobalId, predecessorSnapshotHash, label, cavityGlobalIds, materialSnapshotHash, quantity, unit, packaging, destination, feedbackText, feedbackSource, feedbackObservedAt, reason, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        sampleBatchGlobalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        inputLockRevisionGlobalId: { type: string, format: uuid }
+        inputLockRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sampleVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId: { type: [string, "null"], format: uuid }
+        predecessorSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        label: { type: string, minLength: 1, maxLength: 128 }
+        cavityGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 128
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        materialSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        quantity: { type: integer, minimum: 1 }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        packaging: { type: string, minLength: 1, maxLength: 280 }
+        destination: { type: string, minLength: 1, maxLength: 280 }
+        feedbackText: { type: [string, "null"], maxLength: 4000 }
+        feedbackSource: { type: [string, "null"], maxLength: 140 }
+        feedbackObservedAt: { type: [string, "null"], format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialEvidenceReference:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, projectGlobalId, trialRoundGlobalId, role, sampleBatchRevisionGlobalId, sampleBatchRevisionSnapshotHash, fileRevisionGlobalId, fileSha256, fileSizeBytes, fileMimeType, scanState, privacy, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        role: { type: string, enum: [photo, video, parameter_curve, measurement_report, customer_feedback] }
+        sampleBatchRevisionGlobalId: { type: [string, "null"], format: uuid }
+        sampleBatchRevisionSnapshotHash: { type: [string, "null"], pattern: "^[a-f0-9]{64}$" }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        fileSha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        fileSizeBytes: { type: integer, minimum: 1 }
+        fileMimeType: { type: string, minLength: 1, maxLength: 140 }
+        scanState: { type: string, const: clean }
+        privacy: { type: string, const: private }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialPendingFileRevision:
+      type: object
+      additionalProperties: false
+      required: [globalId, fileName, mimeType, sizeBytes, sha256, scanState, privacy]
+      properties:
+        globalId: { type: string, format: uuid }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        mimeType: { type: string, minLength: 1, maxLength: 140 }
+        sizeBytes: { type: integer, minimum: 1 }
+        sha256: { type: string, pattern: "^[a-f0-9]{64}$" }
+        scanState: { type: string, enum: [pending, clean, infected, failed] }
+        privacy: { type: string, const: private }
+    TrialExecutionCapabilities:
+      type: object
+      additionalProperties: false
+      required: [machineImport, erpQuality, conclusion, gateEffect, approvedBaseline]
+      properties:
+        machineImport: { type: string, const: unavailable }
+        erpQuality: { type: string, const: unavailable }
+        conclusion: { type: string, const: unavailable }
+        gateEffect: { type: string, const: unavailable }
+        approvedBaseline: { type: string, const: unavailable }
+    TrialExecutionPermissions:
+      type: object
+      additionalProperties: false
+      required: [canPrepare, canStart, canRecordActual, canManageSamples, canManageEvidence]
+      properties:
+        canPrepare: { type: boolean }
+        canStart: { type: boolean }
+        canRecordActual: { type: boolean }
+        canManageSamples: { type: boolean }
+        canManageEvidence: { type: boolean }
+    TrialExecutionWorkspace:
+      type: object
+      additionalProperties: false
+      required:
+        [projectGlobalId, round, inputLocks, actualRevisions, sampleBatchRevisions, evidence, pendingFiles, missingFacts, capabilities, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        round: { $ref: "#/components/schemas/TrialRoundSummary" }
+        inputLocks:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/TrialRoundInputLockRevision" }
+        actualRevisions:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/TrialRoundActualRevision" }
+        sampleBatchRevisions:
+          type: array
+          maxItems: 5000
+          items: { $ref: "#/components/schemas/TrialSampleBatchRevision" }
+        evidence:
+          type: array
+          maxItems: 5000
+          items: { $ref: "#/components/schemas/TrialEvidenceReference" }
+        pendingFiles:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/TrialPendingFileRevision" }
+        missingFacts:
+          type: array
+          maxItems: 250
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+        capabilities: { $ref: "#/components/schemas/TrialExecutionCapabilities" }
+        permissions: { $ref: "#/components/schemas/TrialExecutionPermissions" }
+    PrepareTrialRound:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, references, material, parameterDefinitions, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        references:
+          type: array
+          minItems: 8
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialLockedReferenceInput" }
+        material: { $ref: "#/components/schemas/TrialMaterialObservationInput" }
+        parameterDefinitions:
+          type: array
+          minItems: 1
+          maxItems: 250
+          items: { $ref: "#/components/schemas/TrialParameterDefinitionInput" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    StartTrialRound:
+      type: object
+      additionalProperties: false
+      required:
+        [expectedRoundOptimisticVersion, expectedInputLockRevisionGlobalId, expectedInputLockVersion, resources, material, environment, parameters, operatorUserId, executionStartedAt, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedInputLockRevisionGlobalId: { type: string, format: uuid }
+        expectedInputLockVersion: { type: integer, minimum: 1 }
+        resources:
+          type: array
+          minItems: 1
+          maxItems: 25
+          items: { $ref: "#/components/schemas/TrialActualResourceInput" }
+        material: { $ref: "#/components/schemas/TrialMaterialObservationInput" }
+        environment:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/TrialEnvironmentObservationInput" }
+        parameters:
+          type: array
+          minItems: 1
+          maxItems: 250
+          items: { $ref: "#/components/schemas/TrialParameterObservationInput" }
+        operatorUserId: { type: string, format: email, maxLength: 254 }
+        executionStartedAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    AppendTrialActualRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [expectedRoundOptimisticVersion, expectedActualRevisionGlobalId, expectedActualVersion, resources, material, environment, parameters, operatorUserId, executionStartedAt, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedActualRevisionGlobalId: { type: string, format: uuid }
+        expectedActualVersion: { type: integer, minimum: 1 }
+        resources:
+          type: array
+          minItems: 1
+          maxItems: 25
+          items: { $ref: "#/components/schemas/TrialActualResourceInput" }
+        material: { $ref: "#/components/schemas/TrialMaterialObservationInput" }
+        environment:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/TrialEnvironmentObservationInput" }
+        parameters:
+          type: array
+          minItems: 1
+          maxItems: 250
+          items: { $ref: "#/components/schemas/TrialParameterObservationInput" }
+        operatorUserId: { type: string, format: email, maxLength: 254 }
+        executionStartedAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    TrialSampleBatchInput:
+      type: object
+      additionalProperties: false
+      required: [label, cavityGlobalIds, quantity, unit, packaging, destination]
+      properties:
+        label:
+          { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        cavityGlobalIds:
+          type: array
+          minItems: 1
+          maxItems: 128
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        quantity: { type: integer, minimum: 1 }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        packaging: { type: string, minLength: 1, maxLength: 280 }
+        destination: { type: string, minLength: 1, maxLength: 280 }
+        feedbackText: { type: [string, "null"], minLength: 1, maxLength: 4000 }
+        feedbackSource: { type: [string, "null"], minLength: 1, maxLength: 140 }
+        feedbackObservedAt: { type: [string, "null"], format: date-time }
+    CreateTrialSampleBatch:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, expectedInputLockRevisionGlobalId, sample, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedInputLockRevisionGlobalId: { type: string, format: uuid }
+        sample: { $ref: "#/components/schemas/TrialSampleBatchInput" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    AppendTrialSampleBatchRevision:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, expectedRevisionGlobalId, expectedSampleVersion, sample, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedSampleVersion: { type: integer, minimum: 1 }
+        sample: { $ref: "#/components/schemas/TrialSampleBatchInput" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    UploadTrialEvidenceFile:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, file]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        file: { type: string, format: binary }
+    BindTrialEvidence:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, role, fileRevisionGlobalId, expectedFileOptimisticVersion]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        role: { type: string, enum: [photo, video, parameter_curve, measurement_report, customer_feedback] }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        expectedFileOptimisticVersion: { type: integer, minimum: 1 }
+        sampleBatchRevisionGlobalId: { type: [string, "null"], format: uuid }
+        expectedSampleVersion: { type: [integer, "null"], minimum: 1 }
     CreateEngineeringBomPublishRequest:
       type: object
       additionalProperties: false

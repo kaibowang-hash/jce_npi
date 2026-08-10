@@ -739,6 +739,47 @@ objects:
       response_seal_transition: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [NPI_ONE_TRIAL_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
       sealed_response_and_target_identity: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
 
+  TrialRoundInputLockRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_lock_round_project_and_plan_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      exact_design_part_tooling_set_cavity_process_and_document_references: {owner: SOURCE_AGGREGATE_PER_REFERENCE, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      observed_material_color_additive_and_batch: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      parameter_definitions_units_targets_and_windows: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_WITHIN_LOCK_REVISION}
+      erp_master_availability_reservation_and_batch_verification: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialRoundActualRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_actual_round_and_exact_input_lock_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      manual_machine_material_environment_and_parameter_observations: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_MANUAL_OBSERVATION}
+      measured_and_not_measured_state: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_NO_IMPUTATION}
+      customer_standard_values: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROL_COMMAND, editable_in: [], direction: NONE, conflict: NEVER_COPY_TO_TRIAL_ACTUAL}
+      approved_process_baseline: {owner: FUTURE_APPROVED_TRIAL_BASELINE_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_02}
+      automatic_machine_import: {owner: FUTURE_APPROVED_ACQUISITION_ADAPTER, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialSampleBatchRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_batch_round_and_exact_input_lock_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      cavity_material_quantity_packaging_destination_and_feedback: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      formal_item_batch_stock_and_delivery_truth: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
+  TrialEvidenceReference:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_round_and_optional_sample_revision_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_EXACT_REFERENCE}
+      exact_private_file_revision_hash_size_mime_scan_and_role: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: CLEAN_PRIVATE_FILE_ONLY}
+      raw_private_file_url_or_token: {owner: CONTROLLED_FILE_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_RETURN}
+      formal_quality_inspection_ncr_approval_and_gate_effect: {owner: ERPNEXT_AND_FUTURE_GATE_COMMAND, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_02}
+
   EngineeringChange:
     owner_system: SPLIT
     fields:

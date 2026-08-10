@@ -5999,3 +5999,132 @@ Committed Trial history cannot be edited or deleted through generic CRUD.,已提
 A failed command changes no Trial or Project Work row and can be retried with the same exact request.,失败的命令不会更改任何试模或项目工作记录，并可使用相同的精确请求重试。
 "The command records actor, request, trace, reason and immutable snapshot evidence.",命令记录执行人、请求、追踪、原因和不可变快照证据。
 Review immutable Trial command,审核不可变试模命令
+A Sample Batch successor requires its exact predecessor.,样品批次后续修订需要其精确的前序修订。
+A Trial Actual successor requires its exact predecessor.,试模实际值后续修订需要其精确的前序修订。
+A not-measured parameter cannot contain a measured value.,未测量参数不能包含测量值。
+Actual Trial Resource Snapshot,试模实际资源快照
+Actual Trial resources must be unique.,试模实际资源必须唯一。
+An input lock successor requires its exact predecessor.,输入锁后续修订需要其精确的前序修订。
+Automatic machine import is unavailable.,自动机台导入不可用。
+Confirmed By User ID,确认人用户标识
+ERP material verification is unavailable.,ERP 物料验证不可用。
+ERP resource verification is unavailable.,ERP 资源验证不可用。
+Enter a valid material observation.,请输入有效的物料观察。
+Enter a valid numeric value.,请输入有效数值。
+"Enter both parameter limits, or leave both empty.",请同时输入参数上下限，或全部留空。
+Enter the complete Sample Batch feedback observation.,请输入完整的样品批次反馈观察。
+Enter true or false.,请输入 true 或 false。
+Enter valid Trial environment observations.,请输入有效的试模环境观察。
+Enter valid Trial parameter definitions.,请输入有效的试模参数定义。
+Enter valid Trial parameter observations.,请输入有效的试模参数观察。
+Enter valid actual Trial resources.,请输入有效的试模实际资源。
+Enter valid locked Trial references.,请输入有效的已锁定试模引用。
+File MIME Type,文件 MIME 类型
+File SHA-256,文件 SHA-256
+File Size in Bytes,文件大小（字节）
+Lock every required Trial input before preparation.,准备前请锁定所有必需的试模输入。
+Locked Trial Reference Snapshot,已锁定试模引用快照
+Locked Trial references do not match the exact input lock.,已锁定试模引用与精确输入锁不匹配。
+Locked Trial references must be unique.,已锁定试模引用必须唯一。
+NPI Trial Actual Revision,NPI 试模实际值修订
+NPI Trial Evidence Reference,NPI 试模证据引用
+NPI Trial Input Lock Revision,NPI 试模输入锁修订
+NPI Trial Sample Batch Revision,NPI 试模样品批次修订
+Only manual Trial acquisition is available.,仅支持手动采集试模数据。
+Only numeric parameters can use a unit or limits.,只有数值参数可以使用单位或上下限。
+Predecessor Trial Actual Revision Global ID,前序试模实际值修订全局标识
+Predecessor Trial Input Lock Revision Global ID,前序试模输入锁修订全局标识
+Predecessor Trial Sample Batch Revision Global ID,前序试模样品批次修订全局标识
+Record one explicit observation for every locked Trial parameter.,请为每个已锁定试模参数记录一个明确观察。
+Sample Batch cavities do not match the exact snapshot.,样品批次型腔与精确快照不匹配。
+Sample Batch fields do not match the exact snapshot.,样品批次字段与精确快照不匹配。
+Select an exact clean private file revision.,请选择精确、扫描干净的私有文件修订。
+Select exactly one actual Trial machine.,请选择且仅选择一台试模实际机台。
+"Select one complete Sample Batch revision, or leave it empty.",请选择一个完整的样品批次修订，或留空。
+Select the exact current Sample Batch revision.,请选择精确的当前样品批次修订。
+Select the exact current Trial Actual revision.,请选择精确的当前试模实际值修订。
+Select the exact current Trial input lock revision.,请选择精确的当前试模输入锁修订。
+Select the exact prepared Trial input lock revision.,请选择精确的已准备试模输入锁修订。
+Select unique cavities for the Sample Batch.,请为样品批次选择不重复的型腔。
+The Sample Batch snapshot hash does not match.,样品批次快照哈希不匹配。
+The Trial Actual snapshot hash does not match.,试模实际值快照哈希不匹配。
+The Trial evidence reference snapshot hash does not match.,试模证据引用快照哈希不匹配。
+The Trial input lock snapshot hash does not match.,试模输入锁快照哈希不匹配。
+The exact Sample Batch revision is unavailable for this evidence.,此证据所需的精确样品批次修订不可用。
+The exact Trial Plan Revision is unavailable for this input lock.,此输入锁所需的精确试模计划修订不可用。
+The exact Trial Round is unavailable for this Sample Batch.,此样品批次所需的精确试模轮次不可用。
+The exact Trial Round is unavailable for this Trial Actual.,此试模实际值所需的精确试模轮次不可用。
+The exact Trial Round is unavailable for this evidence.,此证据所需的精确试模轮次不可用。
+The exact Trial input lock is unavailable for this Sample Batch.,此样品批次所需的精确试模输入锁不可用。
+The exact Trial input lock is unavailable for this Trial Actual.,此试模实际值所需的精确试模输入锁不可用。
+The exact planned Trial Round is unavailable for this input lock.,此输入锁所需的精确已计划试模轮次不可用。
+The exact predecessor Sample Batch is unavailable.,精确的前序样品批次不可用。
+The exact predecessor Trial Actual is unavailable.,精确的前序试模实际值不可用。
+The exact predecessor Trial input lock is unavailable.,精确的前序试模输入锁不可用。
+The first Sample Batch revision cannot have a predecessor.,首个样品批次修订不能有前序修订。
+The first Trial Actual revision cannot have a predecessor.,首个试模实际值修订不能有前序修订。
+The first input lock revision cannot have a predecessor.,首个输入锁修订不能有前序修订。
+The measured unit does not match the locked definition.,测量单位与已锁定定义不匹配。
+The upper limit must not be below the lower limit.,上限不得低于下限。
+Trial Acquisition Mode,试模采集方式
+Trial Actual Global ID,试模实际值全局标识
+Trial Actual Revision Reason,试模实际值修订原因
+Trial Actual Revision Snapshot,试模实际值修订快照
+Trial Actual Snapshot Hash does not match.,试模实际值快照哈希不匹配。
+Trial Actual Version,试模实际值版本
+Trial Actual Version Key Hash,试模实际值版本键哈希
+Trial Actual Version Key Hash does not match.,试模实际值版本键哈希不匹配。
+Trial Actual detail does not match the exact snapshot.,试模实际值明细与精确快照不匹配。
+Trial Actual fields do not match the exact snapshot.,试模实际值字段与精确快照不匹配。
+Trial Actual material does not match the exact snapshot.,试模实际物料与精确快照不匹配。
+Trial Environment Observation Snapshot,试模环境观察快照
+Trial Evidence Reference Snapshot,试模证据引用快照
+Trial Evidence Reference Snapshot Hash does not match.,试模证据引用快照哈希不匹配。
+Trial Evidence Role,试模证据角色
+Trial Execution Started At,试模执行开始时间
+Trial Input Lock Global ID,试模输入锁全局标识
+Trial Input Lock Revision,试模输入锁修订
+Trial Input Lock Revision Global ID,试模输入锁修订全局标识
+Trial Input Lock Revision Reason,试模输入锁修订原因
+Trial Input Lock Revision Snapshot,试模输入锁修订快照
+Trial Input Lock Revision Snapshot Hash,试模输入锁修订快照哈希
+Trial Input Lock Snapshot Hash does not match.,试模输入锁快照哈希不匹配。
+Trial Input Lock Version,试模输入锁版本
+Trial Input Lock Version Key Hash,试模输入锁版本键哈希
+Trial Input Lock Version Key Hash does not match.,试模输入锁版本键哈希不匹配。
+Trial Material Observation Snapshot,试模物料观察快照
+Trial Material Observation Snapshot Hash,试模物料观察快照哈希
+Trial Operator User ID,试模操作员用户标识
+Trial Parameter Definition Snapshot,试模参数定义快照
+Trial Parameter Observation Snapshot,试模参数观察快照
+Trial Sample Batch Cavity Snapshot,试模样品批次型腔快照
+Trial Sample Batch Global ID,试模样品批次全局标识
+Trial Sample Batch Label,试模样品批次标签
+Trial Sample Batch Quantity,试模样品批次数量
+Trial Sample Batch Revision,试模样品批次修订
+Trial Sample Batch Revision Global ID,试模样品批次修订全局标识
+Trial Sample Batch Revision Reason,试模样品批次修订原因
+Trial Sample Batch Revision Snapshot,试模样品批次修订快照
+Trial Sample Batch Revision Snapshot Hash,试模样品批次修订快照哈希
+Trial Sample Batch Snapshot Hash does not match.,试模样品批次快照哈希不匹配。
+Trial Sample Batch Version,试模样品批次版本
+Trial Sample Batch Version Key Hash,试模样品批次版本键哈希
+Trial Sample Batch Version Key Hash does not match.,试模样品批次版本键哈希不匹配。
+Trial Sample Destination,试模样品目的地
+Trial Sample Feedback,试模样品反馈
+Trial Sample Feedback Observed At,试模样品反馈观察时间
+Trial Sample Feedback Source,试模样品反馈来源
+Trial Sample Packaging,试模样品包装
+Trial environment keys must be unique.,试模环境键必须唯一。
+Trial evidence fields do not match the exact snapshot.,试模证据字段与精确快照不匹配。
+Trial input lock fields do not match the exact snapshot.,试模输入锁字段与精确快照不匹配。
+Trial material does not match the exact input lock.,试模物料与精确输入锁不匹配。
+Trial parameter keys must be unique.,试模参数键必须唯一。
+Trial parameter observations must be unique.,试模参数观察必须唯一。
+Trial parameters do not match the exact input lock.,试模参数与精确输入锁不匹配。
+customer_feedback,客户反馈
+manual,手动
+measurement_report,测量报告
+parameter_curve,参数曲线
+photo,照片
+video,视频

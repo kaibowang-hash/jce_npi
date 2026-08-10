@@ -142,6 +142,114 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "created_at",
             "updated_at",
         },
+        "npi_trial_input_lock_revision": {
+            "global_id",
+            "input_lock_global_id",
+            "version_key_hash",
+            "tenant_id",
+            "project_global_id",
+            "trial_round",
+            "trial_round_global_id",
+            "trial_plan_revision",
+            "trial_plan_revision_global_id",
+            "trial_plan_revision_snapshot_hash",
+            "lock_version",
+            "predecessor_global_id",
+            "predecessor_snapshot_hash",
+            "reference_snapshot",
+            "material_snapshot",
+            "parameter_definition_snapshot",
+            "reason",
+            "created_by_user_id",
+            "created_at",
+            "request_id",
+            "trace_id",
+            "lock_snapshot",
+            "snapshot_hash",
+        },
+        "npi_trial_actual_revision": {
+            "global_id",
+            "actual_global_id",
+            "version_key_hash",
+            "tenant_id",
+            "project_global_id",
+            "trial_round",
+            "trial_round_global_id",
+            "input_lock_revision",
+            "input_lock_revision_global_id",
+            "input_lock_revision_snapshot_hash",
+            "actual_version",
+            "predecessor_global_id",
+            "predecessor_snapshot_hash",
+            "acquisition_mode",
+            "resource_snapshot",
+            "material_snapshot",
+            "environment_snapshot",
+            "parameter_snapshot",
+            "operator_user_id",
+            "confirmed_by_user_id",
+            "execution_started_at",
+            "reason",
+            "created_at",
+            "request_id",
+            "trace_id",
+            "actual_snapshot",
+            "snapshot_hash",
+        },
+        "npi_trial_sample_batch_revision": {
+            "global_id",
+            "sample_batch_global_id",
+            "version_key_hash",
+            "tenant_id",
+            "project_global_id",
+            "trial_round",
+            "trial_round_global_id",
+            "input_lock_revision",
+            "input_lock_revision_global_id",
+            "input_lock_revision_snapshot_hash",
+            "sample_version",
+            "predecessor_global_id",
+            "predecessor_snapshot_hash",
+            "label",
+            "cavity_snapshot",
+            "material_snapshot_hash",
+            "quantity",
+            "unit",
+            "packaging",
+            "destination",
+            "feedback_text",
+            "feedback_source",
+            "feedback_observed_at",
+            "reason",
+            "created_by_user_id",
+            "created_at",
+            "request_id",
+            "trace_id",
+            "sample_snapshot",
+            "snapshot_hash",
+        },
+        "npi_trial_evidence_reference": {
+            "global_id",
+            "tenant_id",
+            "project_global_id",
+            "trial_round",
+            "trial_round_global_id",
+            "role",
+            "sample_batch_revision",
+            "sample_batch_revision_global_id",
+            "sample_batch_revision_snapshot_hash",
+            "file_revision",
+            "file_revision_global_id",
+            "file_sha256",
+            "file_size_bytes",
+            "file_mime_type",
+            "created_by_user_id",
+            "created_at",
+            "request_id",
+            "trace_id",
+            "evidence_snapshot",
+            "snapshot_hash",
+        },
     }
 
     def load(self, folder: str) -> dict[str, object]:
@@ -170,6 +278,10 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "npi_trial_plan_revision",
             "npi_trial_round_lifecycle_event",
             "npi_trial_plan_work_link",
+            "npi_trial_input_lock_revision",
+            "npi_trial_actual_revision",
+            "npi_trial_sample_batch_revision",
+            "npi_trial_evidence_reference",
         ):
             metadata = self.load(folder)
             self.assertEqual(metadata.get("read_only"), 1)
@@ -234,6 +346,10 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "gate_status",
             "conclusion",
             "sample_result",
+            "file_url",
+            "machine_endpoint",
+            "automatic_import_success",
+            "approved_baseline_value",
         ):
             self.assertNotIn(forbidden, serialized)
         work_fields = self.fields(self.load("npi_trial_plan_work_link"))
@@ -263,6 +379,10 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "NPI Trial Round",
             "NPI Trial Round Lifecycle Event",
             "NPI Domain Work Item",
+            "NPI Trial Input Lock Revision",
+            "NPI Trial Actual Revision",
+            "NPI Trial Sample Batch Revision",
+            "NPI File Revision",
         ):
             self.assertIn(f'"{parent}"', source)
         self.assertIn("require_current_project_member(", source)
@@ -273,6 +393,35 @@ class Phase7TrialMetadataTest(unittest.TestCase):
         self.assertIn("starts <= today and (ends is None or today <= ends)", source)
         self.assertIn('str(_record_value(user, "user_type")) != "System User"', source)
         self.assertIn('"snapshot_hash": value.trial_plan_revision_snapshot_hash', source)
+        self.assertIn('"scan_state": "clean"', source)
+        self.assertIn('"is_private": 1', source)
+
+    def test_execution_metadata_keeps_manual_single_owner_truth(self) -> None:
+        actual = self.fields(self.load("npi_trial_actual_revision"))
+        self.assertEqual(actual["acquisition_mode"]["options"], "manual")
+        evidence = self.fields(self.load("npi_trial_evidence_reference"))
+        self.assertEqual(
+            evidence["role"]["options"].splitlines(),
+            [
+                "photo",
+                "video",
+                "parameter_curve",
+                "measurement_report",
+                "customer_feedback",
+            ],
+        )
+        for folder in (
+            "npi_trial_input_lock_revision",
+            "npi_trial_actual_revision",
+            "npi_trial_sample_batch_revision",
+            "npi_trial_evidence_reference",
+        ):
+            metadata = self.load(folder)
+            self.assertEqual(metadata.get("read_only"), 1)
+            self.assertEqual(metadata.get("permissions"), [SYSTEM_MANAGER_APPEND, API_APPEND])
+            self.assertTrue(
+                all(field.get("read_only") == 1 for field in self.fields(metadata).values())
+            )
 
     def test_all_visible_sources_have_symmetric_chinese_translations(self) -> None:
         sources: set[str] = set()

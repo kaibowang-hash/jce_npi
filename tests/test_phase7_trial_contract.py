@@ -174,6 +174,134 @@ class Phase7TrialContractTest(unittest.TestCase):
         self.assertIn("raw_idempotency_key:", OWNERSHIP)
         self.assertIn("conflict: NEVER_PERSIST", OWNERSHIP)
 
+    def test_p702_execution_paths_are_project_first_closed_and_not_live_yet(self) -> None:
+        paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
+        for path in (
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/execution:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}:prepare:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}:start:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/actual-revisions:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/sample-batches:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/sample-batches/{sampleBatchId}/revisions:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/files:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/evidence:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/evidence/{evidenceId}:content:",
+        ):
+            self.assertIn(path, paths)
+        for audit in (
+            "trial_round.prepare",
+            "trial_round.start",
+            "trial_actual.append",
+            "trial_sample.create",
+            "trial_sample.revise",
+            "trial_file.upload",
+            "trial_evidence.bind",
+            "trial_evidence.content.read",
+        ):
+            self.assertIn(f"x-audit-operation: {audit}", paths)
+        for inactive_command in (
+            "get_trial_round_execution",
+            "prepare_trial_round",
+            "start_trial_round",
+            "append_trial_actual_revision",
+            "create_trial_sample_batch",
+            "append_trial_sample_batch_revision",
+            "upload_trial_evidence_file",
+            "bind_trial_evidence",
+            "read_trial_evidence_content",
+        ):
+            self.assertNotIn(inactive_command, BFF)
+
+    def test_p702_execution_schemas_are_closed_and_keep_layers_disjoint(self) -> None:
+        names = (
+            "TrialLockedReferenceInput",
+            "TrialLockedReference",
+            "TrialMaterialObservationInput",
+            "TrialMaterialObservation",
+            "TrialParameterDefinitionInput",
+            "TrialParameterDefinition",
+            "TrialRoundInputLockRevision",
+            "TrialActualResourceInput",
+            "TrialActualResource",
+            "TrialEnvironmentObservationInput",
+            "TrialEnvironmentObservation",
+            "TrialParameterObservationInput",
+            "TrialParameterObservation",
+            "TrialRoundActualRevision",
+            "TrialSampleBatchRevision",
+            "TrialEvidenceReference",
+            "TrialPendingFileRevision",
+            "TrialExecutionCapabilities",
+            "TrialExecutionPermissions",
+            "TrialExecutionWorkspace",
+            "PrepareTrialRound",
+            "StartTrialRound",
+            "AppendTrialActualRevision",
+            "TrialSampleBatchInput",
+            "CreateTrialSampleBatch",
+            "AppendTrialSampleBatchRevision",
+            "UploadTrialEvidenceFile",
+            "BindTrialEvidence",
+        )
+        for name in names:
+            with self.subTest(name=name):
+                self.assertIn("additionalProperties: false", _schema(name))
+        actual = _schema("TrialRoundActualRevision")
+        self.assertIn("acquisitionMode: { type: string, const: manual }", actual)
+        self.assertIn("machineImport: { type: string, const: unavailable }", actual)
+        self.assertNotIn("customerStandard", actual)
+        self.assertNotIn("approvedBaselineValue", actual)
+        evidence = _schema("TrialEvidenceReference")
+        self.assertIn("scanState: { type: string, const: clean }", evidence)
+        self.assertIn("privacy: { type: string, const: private }", evidence)
+        self.assertNotIn("url:", evidence.casefold())
+
+    def test_p702_requests_cannot_claim_server_external_or_approval_truth(self) -> None:
+        requests = "\n".join(
+            _schema(name)
+            for name in (
+                "PrepareTrialRound",
+                "StartTrialRound",
+                "AppendTrialActualRevision",
+                "CreateTrialSampleBatch",
+                "AppendTrialSampleBatchRevision",
+                "UploadTrialEvidenceFile",
+                "BindTrialEvidence",
+            )
+        )
+        for forbidden in (
+            "tenantId:",
+            "projectGlobalId:",
+            "snapshotHash:",
+            "createdByUserId:",
+            "confirmedByUserId:",
+            "requestId:",
+            "traceId:",
+            "scanState:",
+            "privacy:",
+            "fileUrl:",
+            "machineImport:",
+            "erpVerification:",
+            "qualityResult:",
+            "conclusion:",
+            "gateEffect:",
+            "approvedBaseline:",
+        ):
+            self.assertNotIn(forbidden, requests)
+
+    def test_p702_ownership_has_one_npi_actual_owner_and_external_holds(self) -> None:
+        for object_name in (
+            "TrialRoundInputLockRevision",
+            "TrialRoundActualRevision",
+            "TrialSampleBatchRevision",
+            "TrialEvidenceReference",
+        ):
+            self.assertIn(f"  {object_name}:\n", OWNERSHIP)
+        self.assertIn("conflict: NEVER_COPY_TO_TRIAL_ACTUAL", OWNERSHIP)
+        self.assertIn("conflict: EXPLICIT_NO_IMPUTATION", OWNERSHIP)
+        self.assertIn("conflict: UNAVAILABLE_IN_P7_02", OWNERSHIP)
+        self.assertIn("conflict: NEVER_PERSIST_OR_RETURN", OWNERSHIP)
+
 
 if __name__ == "__main__":
     unittest.main()

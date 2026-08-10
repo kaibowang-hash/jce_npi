@@ -23,6 +23,12 @@ from npi_core.trial.domain import (
     trial_round_from_snapshot,
     trial_work_link_from_snapshot,
 )
+from npi_core.trial.execution_domain import (
+    actual_revision_from_snapshot,
+    evidence_reference_from_snapshot,
+    input_lock_from_snapshot,
+    sample_batch_from_snapshot,
+)
 from npi_core.trial.frappe_validation import trial_domain_value
 
 
@@ -416,4 +422,427 @@ def validate_work_link_document(document: Any) -> None:
     document.domain_work_item = str(value.domain_work_item_global_id)
     document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
     document.link_snapshot = canonical_json(value.snapshot_payload())
+    document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+
+
+def _normalize_execution_identity(
+    document: Any,
+    fields: tuple[tuple[str, str], ...],
+    optional_fields: tuple[tuple[str, str], ...] = (),
+) -> None:
+    for fieldname, label in fields:
+        setattr(document, fieldname, canonical_uuid(getattr(document, fieldname), label))
+    for fieldname, label in optional_fields:
+        setattr(document, fieldname, optional_uuid(getattr(document, fieldname), label))
+    document.tenant_id = tenant_text(document.tenant_id)
+
+
+def normalize_input_lock_identity(document: Any) -> None:
+    _normalize_execution_identity(
+        document,
+        (
+            ("global_id", _("Global ID")),
+            ("input_lock_global_id", _("Trial Input Lock Global ID")),
+            ("project_global_id", _("Project Global ID")),
+            ("trial_round_global_id", _("Trial Round Global ID")),
+            ("trial_plan_revision_global_id", _("Trial Plan Revision Global ID")),
+            ("request_id", _("Request ID")),
+        ),
+        (("predecessor_global_id", _("Predecessor Trial Input Lock Revision Global ID")),),
+    )
+
+
+def validate_input_lock_document(document: Any) -> None:
+    supplied = json_object(document.lock_snapshot, _("Trial Input Lock Revision Snapshot"))
+    value = trial_domain_value(lambda: input_lock_from_snapshot(supplied))
+    expected = (
+        str(value.global_id),
+        str(value.input_lock_global_id),
+        value.tenant_id,
+        str(value.project_global_id),
+        str(value.trial_round_global_id),
+        str(value.trial_plan_revision_global_id),
+        value.trial_plan_revision_snapshot_hash,
+        value.lock_version,
+        str(value.predecessor_global_id) if value.predecessor_global_id else None,
+        value.predecessor_snapshot_hash,
+        value.reason,
+        value.created_by_user_id,
+        str(value.request_id),
+        value.trace_id,
+    )
+    actual = (
+        document.global_id,
+        document.input_lock_global_id,
+        document.tenant_id,
+        document.project_global_id,
+        document.trial_round_global_id,
+        document.trial_plan_revision_global_id,
+        document.trial_plan_revision_snapshot_hash,
+        document.lock_version,
+        document.predecessor_global_id or None,
+        document.predecessor_snapshot_hash or None,
+        document.reason,
+        document.created_by_user_id,
+        document.request_id,
+        document.trace_id,
+    )
+    if actual != expected:
+        frappe.throw(
+            _("Trial input lock fields do not match the exact snapshot."),
+            frappe.ValidationError,
+        )
+    if document.version_key_hash not in (None, "", value.version_key_hash):
+        frappe.throw(_("Trial Input Lock Version Key Hash does not match."), frappe.ValidationError)
+    if document.snapshot_hash not in (None, "", value.snapshot_hash):
+        frappe.throw(_("Trial Input Lock Snapshot Hash does not match."), frappe.ValidationError)
+    if json_array(document.reference_snapshot, _("Locked Trial Reference Snapshot")) != [
+        item.snapshot_payload() for item in value.references
+    ]:
+        frappe.throw(_("Locked Trial references do not match the exact input lock."), frappe.ValidationError)
+    if json_object(document.material_snapshot, _("Trial Material Observation Snapshot")) != value.material.snapshot_payload():
+        frappe.throw(_("Trial material does not match the exact input lock."), frappe.ValidationError)
+    if json_array(document.parameter_definition_snapshot, _("Trial Parameter Definition Snapshot")) != [
+        item.snapshot_payload() for item in value.parameter_definitions
+    ]:
+        frappe.throw(_("Trial parameters do not match the exact input lock."), frappe.ValidationError)
+    require_exact_parent(
+        "NPI Trial Round",
+        str(value.trial_round_global_id),
+        {
+            "global_id": str(value.trial_round_global_id),
+            "tenant_id": value.tenant_id,
+            "project_global_id": str(value.project_global_id),
+            "trial_plan_revision_global_id": str(value.trial_plan_revision_global_id),
+            "trial_plan_revision_snapshot_hash": value.trial_plan_revision_snapshot_hash,
+        },
+        _("The exact planned Trial Round is unavailable for this input lock."),
+    )
+    require_exact_parent(
+        "NPI Trial Plan Revision",
+        str(value.trial_plan_revision_global_id),
+        {
+            "global_id": str(value.trial_plan_revision_global_id),
+            "tenant_id": value.tenant_id,
+            "project_global_id": str(value.project_global_id),
+            "snapshot_hash": value.trial_plan_revision_snapshot_hash,
+        },
+        _("The exact Trial Plan Revision is unavailable for this input lock."),
+    )
+    if value.predecessor_global_id is not None:
+        require_exact_parent(
+            "NPI Trial Input Lock Revision",
+            str(value.predecessor_global_id),
+            {
+                "global_id": str(value.predecessor_global_id),
+                "input_lock_global_id": str(value.input_lock_global_id),
+                "tenant_id": value.tenant_id,
+                "project_global_id": str(value.project_global_id),
+                "trial_round_global_id": str(value.trial_round_global_id),
+                "lock_version": value.lock_version - 1,
+                "snapshot_hash": value.predecessor_snapshot_hash,
+            },
+            _("The exact predecessor Trial input lock is unavailable."),
+        )
+    document.trial_round = str(value.trial_round_global_id)
+    document.trial_plan_revision = str(value.trial_plan_revision_global_id)
+    document.version_key_hash = value.version_key_hash
+    document.reference_snapshot = canonical_json([item.snapshot_payload() for item in value.references])
+    document.material_snapshot = canonical_json(value.material.snapshot_payload())
+    document.parameter_definition_snapshot = canonical_json(
+        [item.snapshot_payload() for item in value.parameter_definitions]
+    )
+    document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
+    document.lock_snapshot = canonical_json(value.snapshot_payload())
+    document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+
+
+def normalize_actual_identity(document: Any) -> None:
+    _normalize_execution_identity(
+        document,
+        (
+            ("global_id", _("Global ID")),
+            ("actual_global_id", _("Trial Actual Global ID")),
+            ("project_global_id", _("Project Global ID")),
+            ("trial_round_global_id", _("Trial Round Global ID")),
+            ("input_lock_revision_global_id", _("Trial Input Lock Revision Global ID")),
+            ("request_id", _("Request ID")),
+        ),
+        (("predecessor_global_id", _("Predecessor Trial Actual Revision Global ID")),),
+    )
+
+
+def validate_actual_document(document: Any) -> None:
+    supplied = json_object(document.actual_snapshot, _("Trial Actual Revision Snapshot"))
+    value = trial_domain_value(lambda: actual_revision_from_snapshot(supplied))
+    expected = (
+        str(value.global_id),
+        str(value.actual_global_id),
+        value.tenant_id,
+        str(value.project_global_id),
+        str(value.trial_round_global_id),
+        str(value.input_lock_revision_global_id),
+        value.input_lock_revision_snapshot_hash,
+        value.actual_version,
+        str(value.predecessor_global_id) if value.predecessor_global_id else None,
+        value.predecessor_snapshot_hash,
+        value.acquisition_mode.value,
+        value.operator_user_id,
+        value.confirmed_by_user_id,
+        value.reason,
+        str(value.request_id),
+        value.trace_id,
+    )
+    actual = (
+        document.global_id,
+        document.actual_global_id,
+        document.tenant_id,
+        document.project_global_id,
+        document.trial_round_global_id,
+        document.input_lock_revision_global_id,
+        document.input_lock_revision_snapshot_hash,
+        document.actual_version,
+        document.predecessor_global_id or None,
+        document.predecessor_snapshot_hash or None,
+        document.acquisition_mode,
+        document.operator_user_id,
+        document.confirmed_by_user_id,
+        document.reason,
+        document.request_id,
+        document.trace_id,
+    )
+    if actual != expected:
+        frappe.throw(_("Trial Actual fields do not match the exact snapshot."), frappe.ValidationError)
+    if document.version_key_hash not in (None, "", value.version_key_hash):
+        frappe.throw(_("Trial Actual Version Key Hash does not match."), frappe.ValidationError)
+    if document.snapshot_hash not in (None, "", value.snapshot_hash):
+        frappe.throw(_("Trial Actual Snapshot Hash does not match."), frappe.ValidationError)
+    snapshots = (
+        (document.resource_snapshot, _("Actual Trial Resource Snapshot"), [item.snapshot_payload() for item in value.resources]),
+        (document.environment_snapshot, _("Trial Environment Observation Snapshot"), [item.snapshot_payload() for item in value.environment]),
+        (document.parameter_snapshot, _("Trial Parameter Observation Snapshot"), [item.snapshot_payload() for item in value.parameters]),
+    )
+    for supplied_snapshot, label, expected_snapshot in snapshots:
+        if json_array(supplied_snapshot, label) != expected_snapshot:
+            frappe.throw(_("Trial Actual detail does not match the exact snapshot."), frappe.ValidationError)
+    if json_object(document.material_snapshot, _("Trial Material Observation Snapshot")) != value.material.snapshot_payload():
+        frappe.throw(_("Trial Actual material does not match the exact snapshot."), frappe.ValidationError)
+    require_exact_parent(
+        "NPI Trial Round",
+        str(value.trial_round_global_id),
+        {
+            "global_id": str(value.trial_round_global_id),
+            "tenant_id": value.tenant_id,
+            "project_global_id": str(value.project_global_id),
+        },
+        _("The exact Trial Round is unavailable for this Trial Actual."),
+    )
+    require_exact_parent(
+        "NPI Trial Input Lock Revision",
+        str(value.input_lock_revision_global_id),
+        {
+            "global_id": str(value.input_lock_revision_global_id),
+            "tenant_id": value.tenant_id,
+            "project_global_id": str(value.project_global_id),
+            "trial_round_global_id": str(value.trial_round_global_id),
+            "snapshot_hash": value.input_lock_revision_snapshot_hash,
+        },
+        _("The exact Trial input lock is unavailable for this Trial Actual."),
+    )
+    if value.predecessor_global_id is not None:
+        require_exact_parent(
+            "NPI Trial Actual Revision",
+            str(value.predecessor_global_id),
+            {
+                "global_id": str(value.predecessor_global_id),
+                "actual_global_id": str(value.actual_global_id),
+                "actual_version": value.actual_version - 1,
+                "snapshot_hash": value.predecessor_snapshot_hash,
+            },
+            _("The exact predecessor Trial Actual is unavailable."),
+        )
+    document.trial_round = str(value.trial_round_global_id)
+    document.input_lock_revision = str(value.input_lock_revision_global_id)
+    document.version_key_hash = value.version_key_hash
+    document.resource_snapshot = canonical_json([item.snapshot_payload() for item in value.resources])
+    document.material_snapshot = canonical_json(value.material.snapshot_payload())
+    document.environment_snapshot = canonical_json([item.snapshot_payload() for item in value.environment])
+    document.parameter_snapshot = canonical_json([item.snapshot_payload() for item in value.parameters])
+    document.execution_started_at = frappe_utc_datetime_text(value.execution_started_at, _("Trial Execution Started At"))
+    document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
+    document.actual_snapshot = canonical_json(value.snapshot_payload())
+    document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+
+
+def normalize_sample_identity(document: Any) -> None:
+    _normalize_execution_identity(
+        document,
+        (
+            ("global_id", _("Global ID")),
+            ("sample_batch_global_id", _("Trial Sample Batch Global ID")),
+            ("project_global_id", _("Project Global ID")),
+            ("trial_round_global_id", _("Trial Round Global ID")),
+            ("input_lock_revision_global_id", _("Trial Input Lock Revision Global ID")),
+            ("request_id", _("Request ID")),
+        ),
+        (("predecessor_global_id", _("Predecessor Trial Sample Batch Revision Global ID")),),
+    )
+
+
+def validate_sample_document(document: Any) -> None:
+    supplied = json_object(document.sample_snapshot, _("Trial Sample Batch Revision Snapshot"))
+    value = trial_domain_value(lambda: sample_batch_from_snapshot(supplied))
+    expected = (
+        str(value.global_id), str(value.sample_batch_global_id), value.tenant_id,
+        str(value.project_global_id), str(value.trial_round_global_id),
+        str(value.input_lock_revision_global_id), value.input_lock_revision_snapshot_hash,
+        value.sample_version,
+        str(value.predecessor_global_id) if value.predecessor_global_id else None,
+        value.predecessor_snapshot_hash, value.label, value.material_snapshot_hash,
+        value.quantity, value.unit, value.packaging, value.destination,
+        value.feedback_text, value.feedback_source, value.reason,
+        value.created_by_user_id, str(value.request_id), value.trace_id,
+    )
+    actual = (
+        document.global_id, document.sample_batch_global_id, document.tenant_id,
+        document.project_global_id, document.trial_round_global_id,
+        document.input_lock_revision_global_id, document.input_lock_revision_snapshot_hash,
+        document.sample_version, document.predecessor_global_id or None,
+        document.predecessor_snapshot_hash or None, document.label,
+        document.material_snapshot_hash, document.quantity, document.unit,
+        document.packaging, document.destination, document.feedback_text or None,
+        document.feedback_source or None, document.reason, document.created_by_user_id,
+        document.request_id, document.trace_id,
+    )
+    if actual != expected:
+        frappe.throw(_("Sample Batch fields do not match the exact snapshot."), frappe.ValidationError)
+    if document.version_key_hash not in (None, "", value.version_key_hash):
+        frappe.throw(_("Trial Sample Batch Version Key Hash does not match."), frappe.ValidationError)
+    if document.snapshot_hash not in (None, "", value.snapshot_hash):
+        frappe.throw(_("Trial Sample Batch Snapshot Hash does not match."), frappe.ValidationError)
+    if json_array(document.cavity_snapshot, _("Trial Sample Batch Cavity Snapshot")) != [
+        str(item) for item in value.cavity_global_ids
+    ]:
+        frappe.throw(_("Sample Batch cavities do not match the exact snapshot."), frappe.ValidationError)
+    require_exact_parent(
+        "NPI Trial Round",
+        str(value.trial_round_global_id),
+        {"global_id": str(value.trial_round_global_id), "tenant_id": value.tenant_id, "project_global_id": str(value.project_global_id)},
+        _("The exact Trial Round is unavailable for this Sample Batch."),
+    )
+    require_exact_parent(
+        "NPI Trial Input Lock Revision",
+        str(value.input_lock_revision_global_id),
+        {
+            "global_id": str(value.input_lock_revision_global_id),
+            "trial_round_global_id": str(value.trial_round_global_id),
+            "snapshot_hash": value.input_lock_revision_snapshot_hash,
+        },
+        _("The exact Trial input lock is unavailable for this Sample Batch."),
+    )
+    if value.predecessor_global_id is not None:
+        require_exact_parent(
+            "NPI Trial Sample Batch Revision",
+            str(value.predecessor_global_id),
+            {
+                "global_id": str(value.predecessor_global_id),
+                "sample_batch_global_id": str(value.sample_batch_global_id),
+                "sample_version": value.sample_version - 1,
+                "snapshot_hash": value.predecessor_snapshot_hash,
+            },
+            _("The exact predecessor Sample Batch is unavailable."),
+        )
+    document.trial_round = str(value.trial_round_global_id)
+    document.input_lock_revision = str(value.input_lock_revision_global_id)
+    document.version_key_hash = value.version_key_hash
+    document.cavity_snapshot = canonical_json([str(item) for item in value.cavity_global_ids])
+    document.feedback_observed_at = (
+        frappe_utc_datetime_text(value.feedback_observed_at, _("Trial Sample Feedback Observed At"))
+        if value.feedback_observed_at else None
+    )
+    document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
+    document.sample_snapshot = canonical_json(value.snapshot_payload())
+    document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+
+
+def normalize_evidence_identity(document: Any) -> None:
+    _normalize_execution_identity(
+        document,
+        (
+            ("global_id", _("Global ID")),
+            ("project_global_id", _("Project Global ID")),
+            ("trial_round_global_id", _("Trial Round Global ID")),
+            ("file_revision_global_id", _("File Revision Global ID")),
+            ("request_id", _("Request ID")),
+        ),
+        (("sample_batch_revision_global_id", _("Trial Sample Batch Revision Global ID")),),
+    )
+
+
+def validate_evidence_document(document: Any) -> None:
+    supplied = json_object(document.evidence_snapshot, _("Trial Evidence Reference Snapshot"))
+    value = trial_domain_value(lambda: evidence_reference_from_snapshot(supplied))
+    expected = (
+        str(value.global_id), value.tenant_id, str(value.project_global_id),
+        str(value.trial_round_global_id), value.role.value,
+        str(value.sample_batch_revision_global_id) if value.sample_batch_revision_global_id else None,
+        value.sample_batch_revision_snapshot_hash, str(value.file_revision_global_id),
+        value.file_sha256, value.file_size_bytes, value.file_mime_type,
+        value.created_by_user_id, str(value.request_id), value.trace_id,
+    )
+    actual = (
+        document.global_id, document.tenant_id, document.project_global_id,
+        document.trial_round_global_id, document.role,
+        document.sample_batch_revision_global_id or None,
+        document.sample_batch_revision_snapshot_hash or None,
+        document.file_revision_global_id, document.file_sha256,
+        document.file_size_bytes, document.file_mime_type,
+        document.created_by_user_id, document.request_id, document.trace_id,
+    )
+    if actual != expected:
+        frappe.throw(_("Trial evidence fields do not match the exact snapshot."), frappe.ValidationError)
+    if document.snapshot_hash not in (None, "", value.snapshot_hash):
+        frappe.throw(_("Trial Evidence Reference Snapshot Hash does not match."), frappe.ValidationError)
+    require_exact_parent(
+        "NPI Trial Round",
+        str(value.trial_round_global_id),
+        {"global_id": str(value.trial_round_global_id), "tenant_id": value.tenant_id, "project_global_id": str(value.project_global_id)},
+        _("The exact Trial Round is unavailable for this evidence."),
+    )
+    if value.sample_batch_revision_global_id is not None:
+        require_exact_parent(
+            "NPI Trial Sample Batch Revision",
+            str(value.sample_batch_revision_global_id),
+            {
+                "global_id": str(value.sample_batch_revision_global_id),
+                "tenant_id": value.tenant_id,
+                "project_global_id": str(value.project_global_id),
+                "trial_round_global_id": str(value.trial_round_global_id),
+                "snapshot_hash": value.sample_batch_revision_snapshot_hash,
+            },
+            _("The exact Sample Batch revision is unavailable for this evidence."),
+        )
+    require_exact_parent(
+        "NPI File Revision",
+        str(value.file_revision_global_id),
+        {
+            "global_id": str(value.file_revision_global_id),
+            "tenant_id": value.tenant_id,
+            "project_global_id": str(value.project_global_id),
+            "sha256": value.file_sha256,
+            "size_bytes": value.file_size_bytes,
+            "mime_type": value.file_mime_type,
+            "is_private": 1,
+            "scan_state": "clean",
+        },
+        _("Select an exact clean private file revision."),
+    )
+    document.trial_round = str(value.trial_round_global_id)
+    document.sample_batch_revision = (
+        str(value.sample_batch_revision_global_id)
+        if value.sample_batch_revision_global_id else None
+    )
+    document.file_revision = str(value.file_revision_global_id)
+    document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
+    document.evidence_snapshot = canonical_json(value.snapshot_payload())
     document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
