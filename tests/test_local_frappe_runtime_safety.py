@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import base64
 import importlib.util
 import sys
 import unittest
@@ -24,6 +25,7 @@ def controlled_site_config() -> dict[str, object]:
         "db_port": 3306,
         "db_type": "mariadb",
         "developer_mode": 1,
+        "encryption_key": base64.urlsafe_b64encode(b"k" * 32).decode("ascii"),
         "npi_runtime_disposable_marker": "npi-one-local-runtime-disposable-v1",
         "npi_tenant_id": "runtime-tenant",
     }
@@ -80,6 +82,22 @@ class LocalFrappeRuntimeSafetyTest(unittest.TestCase):
             with self.subTest(field=field):
                 site_config = controlled_site_config()
                 site_config[field] = value
+                with self.assertRaises(guard.SiteSafetyError):
+                    guard.parse_controlled_database(
+                        site_config,
+                        {},
+                        require_runtime_config=True,
+                    )
+
+        for value in (
+            None,
+            "",
+            base64.urlsafe_b64encode(b"k" * 31).decode("ascii"),
+            base64.b64encode(b"\xfb" * 32).decode("ascii"),
+        ):
+            with self.subTest(encryption_key=value):
+                site_config = controlled_site_config()
+                site_config["encryption_key"] = value
                 with self.assertRaises(guard.SiteSafetyError):
                     guard.parse_controlled_database(
                         site_config,
@@ -172,6 +190,21 @@ class LocalFrappeRuntimeSafetyTest(unittest.TestCase):
         self.assertIn('--mariadb-user-host-login-scope "%"', initializer)
         self.assertLess(
             initializer.index("run_site_guard database"),
+            initializer.index('set-config npi_tenant_id "${tenant_id}"'),
+        )
+        for marker in (
+            "base64.urlsafe_b64encode(secrets.token_bytes(32))",
+            'set-config encryption_key "${runtime_encryption_key}"',
+            "unset runtime_encryption_key",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, initializer)
+        self.assertLess(
+            initializer.index("run_site_guard database"),
+            initializer.index('set-config encryption_key "${runtime_encryption_key}"'),
+        )
+        self.assertLess(
+            initializer.index('set-config encryption_key "${runtime_encryption_key}"'),
             initializer.index('set-config npi_tenant_id "${tenant_id}"'),
         )
         final_live_guard = initializer.rindex("run_site_guard live")

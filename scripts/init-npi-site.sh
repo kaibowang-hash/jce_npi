@@ -194,6 +194,15 @@ if [[ "${site_created}" == true ]]; then
   # new-site created only the explicitly named Frappe database. Prove its live
   # database/user identity before installing apps or changing Site settings.
   run_site_guard database
+  # The product reads only a persisted per-Site encryption key for signed
+  # cursors and must never auto-provision one inside an API request. Provision
+  # a fresh key only while creating this already-guarded disposable Site.
+  runtime_encryption_key="$(
+    "${bench_path}/env/bin/python" -c \
+      'import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii"))'
+  )"
+  run_bench --site "${site_name}" set-config encryption_key "${runtime_encryption_key}"
+  unset runtime_encryption_key
 else
   # The strict configuration anchor above is followed by a live identity probe
   # before any existing-Site command is allowed to run.

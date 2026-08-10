@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import json
 import os
 from dataclasses import dataclass, field
@@ -79,6 +81,17 @@ def validate_database_environment(environment: Mapping[str, str]) -> None:
     )
 
 
+def has_canonical_encryption_key(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        encoded = value.encode("ascii")
+        decoded = base64.b64decode(encoded, altchars=b"-_", validate=True)
+    except (binascii.Error, UnicodeError, ValueError):
+        return False
+    return len(decoded) == 32 and base64.urlsafe_b64encode(decoded) == encoded
+
+
 def parse_controlled_database(
     site_config: Mapping[str, Any],
     common_config: Mapping[str, Any],
@@ -131,6 +144,10 @@ def parse_controlled_database(
             and site_config.get("npi_tenant_id") == TENANT_ID
             and site_config.get("npi_runtime_disposable_marker") == RUNTIME_MARKER,
             "Controlled local Frappe runtime safety configuration drifted",
+        )
+        require(
+            has_canonical_encryption_key(site_config.get("encryption_key")),
+            "Controlled local Frappe Site encryption key is unavailable",
         )
     return ControlledDatabase(
         host=DATABASE_HOST,
