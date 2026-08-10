@@ -568,7 +568,6 @@ describe("Trial planning data source", () => {
     const responseBody = await new Response("clean evidence", {
       headers: { "Content-Type": "image/png" },
     }).blob();
-    vi.stubGlobal("Blob", responseBody.constructor);
     const fetch = vi.fn<typeof globalThis.fetch>((_request, init) => {
       const requestId = new Headers(init?.headers).get("X-Request-ID") ?? "";
       return Promise.resolve(

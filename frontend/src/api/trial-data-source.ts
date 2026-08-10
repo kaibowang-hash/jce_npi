@@ -2168,6 +2168,15 @@ function validBindEvidence(value: BindTrialEvidenceCommand): boolean {
   );
 }
 
+function isBinaryBlob(value: unknown): value is Blob {
+  return (
+    value instanceof Blob ||
+    (Boolean(value) &&
+      typeof value === "object" &&
+      Object.prototype.toString.call(value) === "[object Blob]")
+  );
+}
+
 async function sha256Blob(value: Blob): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest(
     "SHA-256",
@@ -2614,7 +2623,7 @@ export class LiveTrialDataSource implements TrialDataSource {
           requireTraceId: true,
           responseType: "blob",
           validate: (value): value is Blob =>
-            value instanceof Blob &&
+            isBinaryBlob(value) &&
             value.size === evidence.fileSizeBytes &&
             value.type === evidence.fileMimeType,
           validateResponse: (response) => {
