@@ -12599,9 +12599,10 @@ components:
     TrialPendingFileRevision:
       type: object
       additionalProperties: false
-      required: [globalId, fileName, mimeType, sizeBytes, sha256, scanState, privacy]
+      required: [globalId, optimisticVersion, fileName, mimeType, sizeBytes, sha256, scanState, privacy]
       properties:
         globalId: { type: string, format: uuid }
+        optimisticVersion: { type: integer, minimum: 1 }
         fileName: { type: string, minLength: 1, maxLength: 255 }
         mimeType: { type: string, minLength: 1, maxLength: 140 }
         sizeBytes: { type: integer, minimum: 1 }

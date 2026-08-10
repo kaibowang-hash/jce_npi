@@ -43,6 +43,7 @@ from npi_core.trial.execution_validation import (
     create_sample_values,
     positive,
     prepare_values,
+    multipart_positive,
     revise_sample_values,
     start_values,
 )
@@ -625,7 +626,7 @@ def upload_trial_evidence_file(
             project_id,
             round_id,
             idempotency_key_hash=key_hash,
-            expected_round_optimistic_version=positive(
+            expected_round_optimistic_version=multipart_positive(
                 expectedRoundOptimisticVersion,
                 "expectedRoundOptimisticVersion",
             ),

@@ -1038,6 +1038,7 @@ class FrappeTrialExecutionRepository(FrappeTrialRepository):
             pending_files.append(
                 {
                     "globalId": str(snapshot["globalId"]),
+                    "optimisticVersion": int(snapshot["fileOptimisticVersion"]),
                     "fileName": str(snapshot["fileName"]),
                     "mimeType": str(snapshot["mimeType"]),
                     "sizeBytes": int(snapshot["sizeBytes"]),

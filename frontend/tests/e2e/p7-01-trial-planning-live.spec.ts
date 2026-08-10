@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 import type { TrialPermissions } from "../../src/api/trial-data-source";
+import { trialExecutionWorkspace } from "../support/trial-execution-fixture";
 import {
   trialPlanDetail,
   trialPlanningIds,
@@ -18,7 +19,7 @@ import {
 const csrfToken = "p7-01-trial-planning-browser-csrf";
 const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const trialEndpoint =
-  /\/api\/npi\/v1\/projects\/[^/?]+\/(?:trials|trial-plans(?:\/.*)?)$/u;
+  /\/api\/npi\/v1\/projects\/[^/?]+\/(?:trials|trial-plans(?:\/.*)?|trial-rounds(?:\/.*|:[^/?]+))$/u;
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
@@ -150,6 +151,36 @@ async function installTrialApi(
       await fulfillJson(route, workspace);
       return;
     }
+    if (request.method() === "GET" && path.endsWith("/execution")) {
+      const planned = trialPlanDetail().rounds[0];
+      if (!planned)
+        throw new Error("P7-01 browser fixture requires one Round.");
+      await fulfillJson(
+        route,
+        trialExecutionWorkspace({
+          actualRevisions: [],
+          evidence: [],
+          inputLocks: [],
+          missingFacts: [
+            "input_lock",
+            "actual_context",
+            "sample_batch",
+            "evidence",
+          ],
+          pendingFiles: [],
+          permissions: {
+            canManageEvidence: false,
+            canManageSamples: false,
+            canPrepare: true,
+            canRecordActual: false,
+            canStart: false,
+          },
+          round: planned,
+          sampleBatchRevisions: [],
+        }),
+      );
+      return;
+    }
     if (request.method() === "GET") {
       await fulfillJson(
         route,
@@ -227,12 +258,12 @@ test.describe("P7-01 live Trial planning workspace", () => {
       await installTrialApi(page);
       await openWorkspace(page, locale);
 
-      await expect(page.locator("#trial-live-plans li")).toHaveCount(1);
-      await expect(page.getByText("T0", { exact: true })).toBeVisible();
+      await expect(page.locator("#trial-live-plans > li")).toHaveCount(1);
+      await expect(page.getByText("T0", { exact: true }).first()).toBeVisible();
       await expect(page.getByText("No booking claim")).toHaveCount(
         locale === "en" ? 1 : 0,
       );
-      await expect(page.locator(".trial-live__later-item")).toHaveCount(6);
+      await expect(page.locator(".trial-live__later-item")).toHaveCount(3);
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

@@ -7,6 +7,10 @@ import { NpiTransportError } from "../../src/api/http";
 import LiveTrialPage from "../../src/pages/live-trial-page";
 import { renderWithLocale } from "../support/render";
 import {
+  trialExecutionWorkspace,
+  trialInputLock,
+} from "../support/trial-execution-fixture";
+import {
   trialPlanDetail,
   trialPlanningIds,
   trialPlanningWorkspace,
@@ -15,13 +19,47 @@ import {
 const sessionCsrfToken = "c".repeat(64);
 
 function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
+  const round = trialPlanDetail().rounds[0];
+  if (!round) throw new Error("The Trial page test requires one Round.");
   return {
+    appendActualRevision: () => Promise.reject(new Error("not used")),
+    appendSampleBatchRevision: () => Promise.reject(new Error("not used")),
+    bindEvidence: () => Promise.reject(new Error("not used")),
     createPlan: () => Promise.reject(new Error("not used")),
     createRound: () => Promise.reject(new Error("not used")),
+    createSampleBatch: () => Promise.reject(new Error("not used")),
+    downloadEvidence: () => Promise.reject(new Error("not used")),
     generateActions: () => Promise.reject(new Error("not used")),
     loadPlan: () => Promise.resolve(trialPlanDetail()),
+    loadRoundExecution: () =>
+      Promise.resolve(
+        trialExecutionWorkspace({
+          actualRevisions: [],
+          evidence: [],
+          inputLocks: [],
+          missingFacts: [
+            "input_lock",
+            "actual_context",
+            "sample_batch",
+            "evidence",
+          ],
+          pendingFiles: [],
+          permissions: {
+            canManageEvidence: false,
+            canManageSamples: false,
+            canPrepare: true,
+            canRecordActual: false,
+            canStart: false,
+          },
+          round,
+          sampleBatchRevisions: [],
+        }),
+      ),
     loadWorkspace: () => Promise.resolve(trialPlanningWorkspace()),
+    prepareRound: () => Promise.reject(new Error("not used")),
     revisePlan: () => Promise.reject(new Error("not used")),
+    startRound: () => Promise.reject(new Error("not used")),
+    uploadEvidenceFile: () => Promise.reject(new Error("not used")),
     ...overrides,
   };
 }
@@ -93,11 +131,11 @@ describe("live Trial planning page", () => {
       ).toHaveLength(2);
     });
     expect(screen.getByText("PA66-GF30 natural")).toBeVisible();
-    expect(screen.getByText("T0")).toBeVisible();
+    expect(screen.getAllByText("T0").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(trialPlanningIds.workItem)).toBeVisible();
     expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("No booking claim")).toBeVisible();
-    expect(screen.getByText("Planned state only")).toBeVisible();
+    expect(screen.getByText("Execution boundary active")).toBeVisible();
   });
 
   it("shows an honest empty planning state without inventing a Round", async () => {
@@ -426,6 +464,223 @@ describe("live Trial planning page", () => {
     });
     expect(
       await screen.findByRole("heading", { name: /Trial planning workspace/u }),
+    ).toBeVisible();
+  });
+
+  it("renders dense running actual, Sample and private-evidence truth", async () => {
+    const running = trialExecutionWorkspace();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundExecution: () => Promise.resolve(running),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Actual process parameters" }),
+    ).toBeVisible();
+    expect(screen.getByText("91 MPa")).toBeVisible();
+    expect(screen.getByText("T0-SAMPLE-01")).toBeVisible();
+    expect(screen.getByText("Clean and private")).toBeVisible();
+    expect(screen.getByText("Machine import unavailable")).toBeVisible();
+    expect(screen.getByText("Pending scan")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Bind as evidence" }),
+    ).toBeDisabled();
+  });
+
+  it("starts only the exact prepared Round with manual observations", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const prepared = trialExecutionWorkspace({
+      actualRevisions: [],
+      evidence: [],
+      missingFacts: ["actual_context", "sample_batch", "evidence"],
+      pendingFiles: [],
+      permissions: {
+        canManageEvidence: false,
+        canManageSamples: false,
+        canPrepare: false,
+        canRecordActual: false,
+        canStart: true,
+      },
+      round: {
+        ...trialExecutionWorkspace().round,
+        currentState: "prepared",
+        optimisticVersion: 2,
+      },
+      sampleBatchRevisions: [],
+    });
+    const startRound = vi
+      .fn<TrialDataSource["startRound"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialExecutionWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundExecution: () => Promise.resolve(prepared),
+          startRound,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const start = await screen.findByRole("button", {
+      name: "Start Trial Round",
+    });
+    await waitFor(() => {
+      expect(start).toBeEnabled();
+    });
+    await user.click(start);
+    await user.selectOptions(
+      screen.getByLabelText("injection.pressure measurement state"),
+      "measured",
+    );
+    await user.type(
+      screen.getByLabelText("injection.pressure observed value"),
+      "91",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("cooling.time measurement state"),
+      "measured",
+    );
+    await user.type(screen.getByLabelText("cooling.time observed value"), "20");
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial execution command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Begin controlled T0 execution",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Start Trial Round" }),
+    );
+
+    await waitFor(() => {
+      expect(startRound).toHaveBeenCalledOnce();
+    });
+    expect(startRound.mock.calls[0]?.[2]).toMatchObject({
+      expectedInputLockRevisionGlobalId: trialInputLock().globalId,
+      expectedInputLockVersion: 1,
+      expectedRoundOptimisticVersion: 2,
+      operatorUserId: "trial.engineer@example.invalid",
+      parameters: [
+        { definitionKey: "injection.pressure", state: "measured", value: "91" },
+        { definitionKey: "cooling.time", state: "measured", value: "20" },
+      ],
+    });
+  });
+
+  it("binds only a clean pending File Revision with its exact version", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const running = trialExecutionWorkspace({
+      evidence: [],
+      missingFacts: ["evidence"],
+      pendingFiles: [
+        {
+          fileName: "trial-photo.png",
+          globalId: "10000000-0000-4000-8000-000000000007",
+          mimeType: "image/png",
+          optimisticVersion: 3,
+          privacy: "private",
+          scanState: "clean",
+          sha256: "9".repeat(64),
+          sizeBytes: 2048,
+        },
+      ],
+    });
+    const bindEvidence = vi
+      .fn<TrialDataSource["bindEvidence"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialExecutionWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          bindEvidence,
+          loadRoundExecution: () => Promise.resolve(running),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const bind = await screen.findByRole("button", {
+      name: "Bind as evidence",
+    });
+    await waitFor(() => {
+      expect(bind).toBeEnabled();
+    });
+    await user.click(bind);
+    await user.selectOptions(
+      screen.getByLabelText("Evidence role"),
+      "measurement_report",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Related Sample Batch revision"),
+      running.sampleBatchRevisions[0]?.globalId ?? "",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Bind clean evidence" }),
+    );
+
+    await waitFor(() => {
+      expect(bindEvidence).toHaveBeenCalledOnce();
+    });
+    expect(bindEvidence.mock.calls[0]?.[2]).toMatchObject({
+      expectedFileOptimisticVersion: 3,
+      expectedRoundOptimisticVersion: running.round.optimisticVersion,
+      role: "measurement_report",
+      sampleBatchRevisionGlobalId: running.sampleBatchRevisions[0]?.globalId,
+      expectedSampleVersion: 1,
+    });
+  });
+
+  it("retries a referenced execution-workspace load failure", async () => {
+    const user = userEvent.setup();
+    const loadRoundExecution = vi
+      .fn<TrialDataSource["loadRoundExecution"]>()
+      .mockRejectedValueOnce(
+        new NpiTransportError("network", "request-execution-test", "request"),
+      )
+      .mockResolvedValueOnce(trialExecutionWorkspace());
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({ loadRoundExecution })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Trial execution workspace unavailable",
+      }),
+    ).toBeVisible();
+    expect(screen.getByText("request-execution-test")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => {
+      expect(loadRoundExecution).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Actual process parameters" }),
     ).toBeVisible();
   });
 });

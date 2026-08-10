@@ -6,7 +6,7 @@ import json
 import sys
 import types
 import unittest
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import patch
 from uuid import UUID, uuid4
@@ -629,7 +629,7 @@ class Phase7TrialRepositoryTest(unittest.TestCase):
                 "tenant_id": "TENANT-A",
                 "project_global_id": str(PROJECT_ID),
                 "user_id": "member@example.invalid",
-                "effective_from": date.today().isoformat(),
+                "effective_from": datetime.now(UTC).date().isoformat(),
                 "effective_to": None,
                 "optimistic_version": 1,
             },
@@ -638,7 +638,9 @@ class Phase7TrialRepositoryTest(unittest.TestCase):
 
     def test_responsible_member_with_future_end_date_remains_current(self) -> None:
         member = self.documents["NPI Project Member"][str(MEMBER_ID)]
-        member.effective_to = (date.today() + timedelta(days=30)).isoformat()
+        member.effective_to = (
+            datetime.now(UTC).date() + timedelta(days=30)
+        ).isoformat()
         resolved = self.repository._responsible_member(self.project, MEMBER_ID)
         self.assertEqual(resolved.global_id, MEMBER_ID)
         self.assertEqual(resolved.user_id, "member@example.invalid")
@@ -817,6 +819,14 @@ class Phase7TrialRepositoryTest(unittest.TestCase):
                 return_value=True,
             ),
         ):
+            pending = self.execution_repository.execution_workspace(
+                PROJECT_ID,
+                round_id,
+            )
+            self.assertEqual(
+                pending["pendingFiles"][0]["optimisticVersion"],
+                2,
+            )
             bound = self.execution_repository.bind_evidence(
                 PROJECT_ID,
                 round_id,

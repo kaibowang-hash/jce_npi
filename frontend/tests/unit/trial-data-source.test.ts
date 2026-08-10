@@ -1,12 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  isTrialExecutionWorkspace,
   isTrialPlanDetail,
   isTrialPlanningWorkspace,
   LiveTrialDataSource,
   type CreateTrialPlanCommand,
 } from "../../src/api/trial-data-source";
 import { NpiTransportError } from "../../src/api/http";
+import {
+  trialActualRevision,
+  trialExecutionWorkspace,
+  trialInputLock,
+  trialSampleRevision,
+} from "../support/trial-execution-fixture";
 import {
   trialPlanDetail,
   trialPlanningIds,
@@ -91,6 +98,38 @@ afterEach(() => {
 });
 
 describe("Trial planning data source", () => {
+  it("accepts only exact Project-contained execution snapshots", () => {
+    const workspace = trialExecutionWorkspace();
+
+    expect(isTrialExecutionWorkspace(workspace)).toBe(true);
+    expect(
+      isTrialExecutionWorkspace({ ...workspace, machineImported: true }),
+    ).toBe(false);
+    expect(
+      isTrialExecutionWorkspace({
+        ...workspace,
+        pendingFiles: workspace.pendingFiles.map((file) => ({
+          fileName: file.fileName,
+          globalId: file.globalId,
+          mimeType: file.mimeType,
+          privacy: file.privacy,
+          scanState: file.scanState,
+          sha256: file.sha256,
+          sizeBytes: file.sizeBytes,
+        })),
+      }),
+    ).toBe(false);
+    expect(
+      isTrialExecutionWorkspace({
+        ...workspace,
+        actualRevisions: workspace.actualRevisions.map((revision) => ({
+          ...revision,
+          projectGlobalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        })),
+      }),
+    ).toBe(false);
+  });
+
   it("accepts only exact contained workspace and Plan snapshots", () => {
     const workspace = trialPlanningWorkspace();
     const detail = trialPlanDetail();
@@ -301,5 +340,160 @@ describe("Trial planning data source", () => {
       ),
     ).rejects.toBeInstanceOf(NpiTransportError);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("loads and writes the exact Round execution command surface", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>((_request, init) =>
+      Promise.resolve(
+        response(
+          trialExecutionWorkspace({
+            pendingFiles: [
+              {
+                fileName: "curve.csv",
+                globalId: "10000000-0000-4000-8000-000000000007",
+                mimeType: "text/csv",
+                optimisticVersion: 2,
+                privacy: "private",
+                scanState: "clean",
+                sha256: "9".repeat(64),
+                sizeBytes: 1024,
+              },
+            ],
+          }),
+          init,
+          init?.method === "POST" ? false : undefined,
+        ),
+      ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const lock = trialInputLock();
+    const actual = trialActualRevision();
+    const sample = trialSampleRevision();
+
+    await source.loadRoundExecution(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      new AbortController().signal,
+    );
+    await source.prepareRound(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        expectedRoundOptimisticVersion: 1,
+        material: {
+          additive: lock.material.additive,
+          color: lock.material.color,
+          label: lock.material.label,
+          lotBatchCode: lock.material.lotBatchCode,
+          observedAt: lock.material.observedAt,
+          sourceObjectId: lock.material.sourceObjectId,
+          sourceSystem: lock.material.sourceSystem,
+        },
+        parameterDefinitions: lock.parameterDefinitions,
+        reason: "Freeze exact Trial inputs",
+        references: lock.references.map((reference) => ({
+          expectedOptimisticVersion: reference.optimisticVersion,
+          globalId: reference.globalId,
+          kind: reference.kind,
+        })),
+      },
+      context("prepare"),
+    );
+    await source.startRound(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        environment: actual.environment,
+        executionStartedAt: actual.executionStartedAt,
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockVersion: lock.lockVersion,
+        expectedRoundOptimisticVersion: 2,
+        material: {
+          additive: actual.material.additive,
+          color: actual.material.color,
+          label: actual.material.label,
+          lotBatchCode: actual.material.lotBatchCode,
+          observedAt: actual.material.observedAt,
+          sourceObjectId: actual.material.sourceObjectId,
+          sourceSystem: actual.material.sourceSystem,
+        },
+        operatorUserId: actual.operatorUserId,
+        parameters: actual.parameters,
+        reason: "Start exact manual Trial context",
+        resources: actual.resources.map((resource) => ({
+          kind: resource.kind,
+          label: resource.label,
+          sourceObjectId: resource.sourceObjectId,
+          sourceSystem: resource.sourceSystem,
+        })),
+      },
+      context("start"),
+    );
+    await source.createSampleBatch(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedRoundOptimisticVersion: 3,
+        reason: "Register exact Sample Batch",
+        sample: {
+          cavityGlobalIds: sample.cavityGlobalIds,
+          destination: sample.destination,
+          feedbackObservedAt: sample.feedbackObservedAt,
+          feedbackSource: sample.feedbackSource,
+          feedbackText: sample.feedbackText,
+          label: sample.label,
+          packaging: sample.packaging,
+          quantity: sample.quantity,
+          unit: sample.unit,
+        },
+      },
+      context("sample"),
+    );
+    await source.uploadEvidenceFile(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        expectedRoundOptimisticVersion: 3,
+        file: new File(["curve"], "curve.csv", { type: "text/csv" }),
+      },
+      context("upload"),
+    );
+    await source.bindEvidence(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        expectedFileOptimisticVersion: 2,
+        expectedRoundOptimisticVersion: 3,
+        fileRevisionGlobalId: "10000000-0000-4000-8000-000000000007",
+        role: "parameter_curve",
+        sampleBatchRevisionGlobalId: sample.globalId,
+        expectedSampleVersion: sample.sampleVersion,
+      },
+      context("bind"),
+    );
+
+    expect(fetch).toHaveBeenCalledTimes(6);
+    expect(requestUrl(fetch.mock.calls[0]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}/execution`,
+    );
+    expect(requestUrl(fetch.mock.calls[1]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}:prepare`,
+    );
+    expect(requestUrl(fetch.mock.calls[2]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}:start`,
+    );
+    expect(requestUrl(fetch.mock.calls[3]?.[0])).toContain("/sample-batches");
+    expect(fetch.mock.calls[4]?.[1]?.body).toBeInstanceOf(FormData);
+    expect(
+      (fetch.mock.calls[4]?.[1]?.body as FormData).get(
+        "expectedRoundOptimisticVersion",
+      ),
+    ).toBe("3");
+    expect(bodyValue(fetch.mock.calls[5]?.[1]?.body)).toMatchObject({
+      expectedFileOptimisticVersion: 2,
+      role: "parameter_curve",
+    });
   });
 });

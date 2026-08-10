@@ -536,6 +536,13 @@ def positive(value: object, path: str) -> int:
     return value
 
 
+def multipart_positive(value: object, path: str) -> int:
+    """Normalize one canonical multipart integer without weakening JSON commands."""
+    if isinstance(value, str) and re.fullmatch(r"[1-9][0-9]{0,15}", value):
+        return int(value)
+    return positive(value, path)
+
+
 def optional_positive(value: object, path: str) -> int | None:
     return None if value in (None, "") else positive(value, path)
 

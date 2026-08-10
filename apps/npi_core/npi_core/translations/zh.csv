@@ -5974,7 +5974,6 @@ Linked at,关联时间
 No governed Project Work action is linked to this Trial Plan.,该试模计划尚未关联受控项目工作行动项。
 Locked preparation inputs,已锁定准备输入
 Actual process parameters,实际工艺参数
-Samples and cavity evidence,样件和型腔证据
 Defects and measurements,缺陷和测量
 Conclusion and approval,结论和批准
 Formal quality and ERPNext execution,正式质量和 ERPNext 执行
@@ -5990,8 +5989,6 @@ Project Work,项目工作
 Formal resource and quality owner,正式资源和质量主责方
 No booking claim,无预约声明
 An approved resource reader and booking policy are not configured. Proposed resources are not confirmed or reserved.,尚未配置已批准的资源读取器和预约策略。建议资源未经确认或预约。
-Planned state only,仅已规划状态
-"P7-01 creates only planned Rounds. Preparation, execution, evidence, conclusion and approval remain unavailable.",本检查点仅创建已规划轮次。准备、执行、证据、结论和批准仍不可用。
 Initial revision,初始版本
 Creates one governed Domain Work Item and an immutable Trial link.,创建一个受控领域工作项和一条不可变试模关联。
 Appends immutable Trial planning history; prior versions are not overwritten.,追加不可变试模规划历史；不会覆盖先前版本。
@@ -6137,3 +6134,166 @@ The execution routes are disabled while a reviewed forward fix is applied.,执�
 Select one complete Sample Batch revision.,请选择一个完整的样品批次版本。
 Enter one complete measured parameter observation.,请输入一条完整的已测量参数观测记录。
 Enter one complete feedback observation.,请输入一条完整的反馈观测记录。
+Design baseline,设计基线
+Part revision,零件版本
+Tooling revision,工装版本
+Tooling Set binding,工装组绑定
+Process chain,工艺链
+Inspection document,检验文件
+Photo,照片
+Video,视频
+Parameter curve,参数曲线
+Customer feedback,客户反馈
+Locked input revision,锁定输入版本
+Actual execution context,实际执行上下文
+Sample Batch,样品批次
+Clean evidence,洁净证据
+Measured parameter: {{key}},已测参数：{{key}}
+Complete every required execution field with exact references before review.,请先使用精确引用填写所有必填执行字段，再进行复核。
+Preparing Trial Round,正在准备试模轮次
+Appending Trial Actual revision,正在追加试模实际版本
+Starting Trial Round,正在开始试模轮次
+Creating Sample Batch,正在创建样品批次
+Appending Sample Batch revision,正在追加样品批次版本
+Uploading private Trial file,正在上传私有试模文件
+Binding clean Trial evidence,正在绑定洁净试模证据
+Preparing secure evidence download,正在准备安全证据下载
+Private Trial evidence downloaded,私有试模证据已下载
+Prepare Trial Round,准备试模轮次
+Start Trial Round,开始试模轮次
+Append actual revision,追加实际版本
+Trial Round execution,试模轮次执行
+Create Sample Batch,创建样品批次
+Upload private evidence file,上传私有证据文件
+Round version,轮次版本
+Input lock version,输入锁版本
+Not prepared,未准备
+Actual revision,实际版本
+Trial execution is read only in this session.,当前会话中的试模执行为只读。
+Session verification is required before an execution command can be submitted.,提交执行命令前需要完成会话验证。
+Trial execution is read only for this Round.,此轮次的试模执行为只读。
+The current Round state and server permissions allow no execution command.,当前轮次状态和服务器权限不允许执行任何命令。
+The exact execution command is being verified and committed atomically.,正在验证精确执行命令并以原子方式提交。
+The exact prior execution command response was replayed safely.,已安全重放先前精确执行命令的响应。
+The execution command completed with immutable audit truth.,执行命令已完成并保留不可变审计事实。
+Trial execution command not completed,试模执行命令未完成
+Prepare exact locked inputs,准备精确锁定输入
+Required released references,必需的已发布引用
+Reference kind,引用类型
+Stable ID,稳定标识
+{{kind}} stable ID,{{kind}}稳定标识
+{{kind}} version,{{kind}}版本
+Observed material identity,已观测物料标识
+Source system,来源系统
+Lot or batch code,批号或批次代码
+Material color,物料颜色
+Material additive,物料添加剂
+Observed at (UTC),观测时间（协调世界时）
+Material observed at (UTC),物料观测时间（协调世界时）
+Parameter definitions,参数定义
+Key,键
+Value kind,值类型
+Limits,限值
+Parameter {{index}} key,参数 {{index}} 键
+Parameter {{index}} category,参数 {{index}} 类别
+Parameter {{index}} value kind,参数 {{index}} 值类型
+Decimal,小数
+Integer,整数
+Text,文本
+Boolean,布尔值
+Parameter {{index}} unit,参数 {{index}} 单位
+Parameter {{index}} target,参数 {{index}} 目标值
+Parameter {{index}} lower limit,参数 {{index}} 下限
+Parameter {{index}} upper limit,参数 {{index}} 上限
+Parameter {{index}} required,参数 {{index}} 必填
+Add parameter,添加参数
+Confirmed machine,已确认设备
+Actual machine source object ID,实际设备来源对象标识
+Actual machine label,实际设备标签
+ERP verification unavailable,企业资源计划系统验证不可用
+Execution context,执行上下文
+Operator user,操作员用户
+Execution started at (UTC),执行开始时间（协调世界时）
+Environment key,环境键
+Environment value,环境值
+Environment unit,环境单位
+Locked material,已锁定物料
+Manual parameter observations,手动参数观测
+Target and limits,目标值和限值
+Measurement state,测量状态
+Observed value,观测值
+Acquisition,采集方式
+{{key}} measurement state,{{key}}测量状态
+Measured,已测量
+{{key}} observed value,{{key}}观测值
+Manual only,仅手动
+Append Sample Batch revision,追加样品批次版本
+Sample label,样品标签
+Cavity stable IDs,型腔稳定标识
+Packaging,包装
+Destination,去向
+Feedback source,反馈来源
+Feedback observation,反馈观测
+Feedback observed at (UTC),反馈观测时间（协调世界时）
+"Sample identity, cavities, material, quantity and unit remain locked across revisions.",样品标识、型腔、物料、数量和单位在各版本间保持锁定。
+The Sample Batch is bound to the exact prepared material and selected cavities.,样品批次绑定到精确的已准备物料和所选型腔。
+Evidence file,证据文件
+Private and pending scan,私有且等待扫描
+Upload registers a private pending File Revision only. It is not evidence until a clean scan result is bound separately.,上传仅登记一个等待扫描的私有文件版本；在单独绑定洁净扫描结果前不构成证据。
+Upload pending file,上传待扫描文件
+Bind clean Trial evidence,绑定洁净试模证据
+Related Sample Batch revision,相关样品批次版本
+Round evidence only,仅轮次证据
+The server rechecks the exact clean private File Revision and optional Sample Batch version before binding.,绑定前服务器会重新检查精确的洁净私有文件版本及可选样品批次版本。
+Bind clean evidence,绑定洁净证据
+Lock revision,锁定版本
+Lock snapshot,锁定快照
+ERP verification,企业资源计划系统验证
+Locked released references,锁定的已发布引用
+This planned Round has no locked input revision.,此已规划轮次没有锁定输入版本。
+"Prepare the exact eight released reference kinds, observed material and parameter definitions before execution.",执行前请准备精确的八类已发布引用、已观测物料和参数定义。
+Value,值
+Observed at,观测时间
+No actual execution revision has been recorded.,尚未记录实际执行版本。
+Starting the prepared Round records the first complete manual actual context.,开始已准备轮次会记录首个完整的手动实际上下文。
+Machine import unavailable,设备导入不可用
+Parameters remain manual observations. No controller or ERP value is imported or presented as measured.,参数保持为手动观测；不会导入控制器或企业资源计划系统数值，也不会将其显示为已测量。
+Sample Batches,样品批次
+Sample,样品
+No Sample Batch has been recorded for this Round.,此轮次尚未记录样品批次。
+"Record stable sample identity, all cavities, quantity, packaging and destination during a running Round.",请在运行中的轮次记录稳定样品标识、全部型腔、数量、包装和去向。
+Private files awaiting evidence binding,等待证据绑定的私有文件
+Pending scan,等待扫描
+Bind as evidence,绑定为证据
+No private uploaded file is awaiting evidence binding.,没有等待证据绑定的私有上传文件。
+Controlled Trial evidence,受控试模证据
+Sample revision,样品版本
+Clean and private,洁净且私有
+Download audited bytes,下载已审计字节
+No clean evidence has been bound to this Round.,此轮次尚未绑定洁净证据。
+"Upload, scan and bind are separate; a pending or failed file is never presented as evidence.",上传、扫描和绑定相互独立；等待或失败的文件绝不会显示为证据。
+Execution completeness and unavailable capabilities,执行完整性和不可用能力
+Missing execution facts,缺失的执行事实
+No missing execution fact,没有缺失的执行事实
+Machine parameter import,设备参数导入
+ERP formal quality results,企业资源计划系统正式质量结果
+Conclusion and Gate effect,结论和阶段门影响
+Approved Trial baseline,已批准试模基线
+"Freezes exact released references, observed material and parameter definitions before execution.",执行前冻结精确的已发布引用、已观测物料和参数定义。
+Appends a manual immutable actual context against the exact prepared input lock.,针对精确的已准备输入锁追加手动不可变实际上下文。
+Appends immutable Sample Batch history without rewriting its stable identity or cavities.,追加不可变样品批次历史且不改写其稳定标识或型腔。
+"The server rechecks Project membership, internal role and current Round-state authority.",服务器会重新检查项目成员身份、内部角色和当前轮次状态权限。
+Committed execution history is immutable and cannot be edited through generic CRUD.,已提交的执行历史不可变，不能通过通用增删改查编辑。
+A failed command changes no execution row and can be retried with the same exact request.,失败的命令不会更改执行记录，可使用完全相同的请求重试。
+Review immutable Trial execution command,复核不可变试模执行命令
+Trial execution workspace unavailable,试模执行工作区不可用
+No Trial Round is selected.,未选择试模轮次。
+Create or select a planned Trial Round before opening execution truth.,打开执行事实前请创建或选择已规划试模轮次。
+Selected Round,所选轮次
+No Round selected,未选择轮次
+Round state,轮次状态
+Execution missing facts,执行缺失事实
+Execution boundary active,执行边界已启用
+"P7-02 supports exact preparation, running actuals, Sample Batches and clean private evidence. Conclusion, Gate effect and formal ERP quality remain unavailable.",本检查点支持精确准备、运行实际值、样品批次和洁净私有证据；结论、阶段门影响和企业资源计划系统正式质量仍不可用。
+{{sample}} · Version {{version}},{{sample}} · 版本 {{version}}
+{{size}} B,{{size}} B

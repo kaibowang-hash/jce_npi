@@ -418,6 +418,26 @@ class Phase7TrialApiTest(unittest.TestCase):
             "sampleBatchRevisionGlobalId",
         )
 
+    def test_upload_normalizes_only_one_canonical_multipart_version(self) -> None:
+        response = self.call(
+            self.api.upload_trial_evidence_file,
+            {"expectedRoundOptimisticVersion": "3"},
+        )
+        self.assertEqual(response, self.response)
+        name, _args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "upload_evidence_file")
+        self.assertEqual(kwargs["expected_round_optimistic_version"], 3)
+
+        rejected = self.call(
+            self.api.upload_trial_evidence_file,
+            {"expectedRoundOptimisticVersion": "03"},
+        )
+        self.assertEqual(rejected["code"], "VALIDATION_FAILED")
+        self.assertEqual(
+            rejected["fieldErrors"][0]["path"],
+            "expectedRoundOptimisticVersion",
+        )
+
     def test_create_plan_parses_closed_resource_and_measurement_intent(self) -> None:
         response = self.call(self.api.create_trial_plan, self.plan_payload())
         self.assertEqual(response, self.response)

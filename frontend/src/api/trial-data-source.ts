@@ -30,6 +30,36 @@ export const trialRoundStates = [
 ] as const;
 export type TrialRoundState = (typeof trialRoundStates)[number];
 
+export const trialLockedReferenceKinds = [
+  "design_baseline",
+  "part_revision",
+  "tooling_revision",
+  "tooling_set",
+  "tooling_set_binding",
+  "cavity",
+  "process_chain",
+  "inspection_document",
+] as const;
+export type TrialLockedReferenceKind =
+  (typeof trialLockedReferenceKinds)[number];
+
+export const trialParameterValueKinds = [
+  "decimal",
+  "integer",
+  "text",
+  "boolean",
+] as const;
+export type TrialParameterValueKind = (typeof trialParameterValueKinds)[number];
+
+export const trialEvidenceRoles = [
+  "photo",
+  "video",
+  "parameter_curve",
+  "measurement_report",
+  "customer_feedback",
+] as const;
+export type TrialEvidenceRole = (typeof trialEvidenceRoles)[number];
+
 export const trialActionSeverities = [
   "low",
   "medium",
@@ -226,6 +256,291 @@ export interface TrialCommandResult {
   replayed: boolean;
 }
 
+export interface TrialLockedReferenceInput {
+  globalId: string;
+  kind: TrialLockedReferenceKind;
+  expectedOptimisticVersion: number;
+}
+
+export interface TrialLockedReference {
+  globalId: string;
+  kind: TrialLockedReferenceKind;
+  optimisticVersion: number;
+  snapshotHash: string;
+}
+
+export interface TrialMaterialObservationInput {
+  sourceSystem: "NPI_ONE" | "ERPNEXT";
+  sourceObjectId: string;
+  lotBatchCode: string;
+  label: string;
+  color: string | null;
+  additive: string | null;
+  observedAt: string;
+}
+
+export interface TrialMaterialObservation extends TrialMaterialObservationInput {
+  confirmedByUserId: string;
+  erpVerification: "unavailable";
+}
+
+export interface TrialParameterDefinitionInput {
+  key: string;
+  category: string;
+  valueKind: TrialParameterValueKind;
+  required: boolean;
+  unit: string | null;
+  targetValue: string | null;
+  lowerLimit: string | null;
+  upperLimit: string | null;
+}
+
+export type TrialParameterDefinition = TrialParameterDefinitionInput;
+
+export interface TrialRoundInputLockRevision {
+  schemaVersion: 1;
+  globalId: string;
+  inputLockGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  trialPlanRevisionGlobalId: string;
+  trialPlanRevisionSnapshotHash: string;
+  lockVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  references: readonly TrialLockedReference[];
+  material: TrialMaterialObservation;
+  parameterDefinitions: readonly TrialParameterDefinition[];
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface TrialActualResourceInput {
+  kind: "machine" | "auxiliary_equipment";
+  sourceSystem: "NPI_ONE" | "ERPNEXT";
+  sourceObjectId: string;
+  label: string;
+}
+
+export interface TrialActualResource extends TrialActualResourceInput {
+  erpVerification: "unavailable";
+}
+
+export interface TrialEnvironmentObservationInput {
+  key: string;
+  value: string;
+  unit: string | null;
+  observedAt: string;
+}
+
+export type TrialEnvironmentObservation = TrialEnvironmentObservationInput;
+
+export interface TrialParameterObservationInput {
+  definitionKey: string;
+  state: "measured" | "not_measured";
+  value: string | null;
+  unit: string | null;
+  source: "manual" | null;
+  observedAt: string | null;
+}
+
+export type TrialParameterObservation = TrialParameterObservationInput;
+
+export interface TrialRoundActualRevision {
+  schemaVersion: 1;
+  globalId: string;
+  actualGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  inputLockRevisionGlobalId: string;
+  inputLockRevisionSnapshotHash: string;
+  actualVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  acquisitionMode: "manual";
+  resources: readonly TrialActualResource[];
+  material: TrialMaterialObservation;
+  environment: readonly TrialEnvironmentObservation[];
+  parameters: readonly TrialParameterObservation[];
+  operatorUserId: string;
+  confirmedByUserId: string;
+  executionStartedAt: string;
+  machineImport: "unavailable";
+  reason: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface TrialSampleBatchInput {
+  label: string;
+  cavityGlobalIds: readonly string[];
+  quantity: number;
+  unit: string;
+  packaging: string;
+  destination: string;
+  feedbackText: string | null;
+  feedbackSource: string | null;
+  feedbackObservedAt: string | null;
+}
+
+export interface TrialSampleBatchRevision extends TrialSampleBatchInput {
+  schemaVersion: 1;
+  globalId: string;
+  sampleBatchGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  inputLockRevisionGlobalId: string;
+  inputLockRevisionSnapshotHash: string;
+  sampleVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  materialSnapshotHash: string;
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface TrialEvidenceReference {
+  schemaVersion: 1;
+  globalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  role: TrialEvidenceRole;
+  sampleBatchRevisionGlobalId: string | null;
+  sampleBatchRevisionSnapshotHash: string | null;
+  fileRevisionGlobalId: string;
+  fileSha256: string;
+  fileSizeBytes: number;
+  fileMimeType: string;
+  scanState: "clean";
+  privacy: "private";
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface TrialPendingFileRevision {
+  globalId: string;
+  optimisticVersion: number;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanState: "pending" | "clean" | "infected" | "failed";
+  privacy: "private";
+}
+
+export interface TrialExecutionPermissions {
+  canPrepare: boolean;
+  canStart: boolean;
+  canRecordActual: boolean;
+  canManageSamples: boolean;
+  canManageEvidence: boolean;
+}
+
+export interface TrialExecutionWorkspace {
+  projectGlobalId: string;
+  round: TrialRoundSummary;
+  inputLocks: readonly TrialRoundInputLockRevision[];
+  actualRevisions: readonly TrialRoundActualRevision[];
+  sampleBatchRevisions: readonly TrialSampleBatchRevision[];
+  evidence: readonly TrialEvidenceReference[];
+  pendingFiles: readonly TrialPendingFileRevision[];
+  missingFacts: readonly string[];
+  capabilities: {
+    machineImport: "unavailable";
+    erpQuality: "unavailable";
+    conclusion: "unavailable";
+    gateEffect: "unavailable";
+    approvedBaseline: "unavailable";
+  };
+  permissions: TrialExecutionPermissions;
+}
+
+export interface PrepareTrialRoundCommand {
+  expectedRoundOptimisticVersion: number;
+  references: readonly TrialLockedReferenceInput[];
+  material: TrialMaterialObservationInput;
+  parameterDefinitions: readonly TrialParameterDefinitionInput[];
+  reason: string;
+}
+
+export interface TrialActualContextInput {
+  resources: readonly TrialActualResourceInput[];
+  material: TrialMaterialObservationInput;
+  environment: readonly TrialEnvironmentObservationInput[];
+  parameters: readonly TrialParameterObservationInput[];
+  operatorUserId: string;
+  executionStartedAt: string;
+  reason: string;
+}
+
+export interface StartTrialRoundCommand extends TrialActualContextInput {
+  expectedRoundOptimisticVersion: number;
+  expectedInputLockRevisionGlobalId: string;
+  expectedInputLockVersion: number;
+}
+
+export interface AppendTrialActualRevisionCommand extends TrialActualContextInput {
+  expectedRoundOptimisticVersion: number;
+  expectedActualRevisionGlobalId: string;
+  expectedActualVersion: number;
+}
+
+export interface CreateTrialSampleBatchCommand {
+  expectedRoundOptimisticVersion: number;
+  expectedInputLockRevisionGlobalId: string;
+  sample: TrialSampleBatchInput;
+  reason: string;
+}
+
+export interface AppendTrialSampleBatchRevisionCommand {
+  expectedRoundOptimisticVersion: number;
+  expectedRevisionGlobalId: string;
+  expectedSampleVersion: number;
+  sample: TrialSampleBatchInput;
+  reason: string;
+}
+
+export interface UploadTrialEvidenceFileCommand {
+  expectedRoundOptimisticVersion: number;
+  file: File;
+}
+
+export interface BindTrialEvidenceCommand {
+  expectedRoundOptimisticVersion: number;
+  role: TrialEvidenceRole;
+  fileRevisionGlobalId: string;
+  expectedFileOptimisticVersion: number;
+  sampleBatchRevisionGlobalId?: string | null | undefined;
+  expectedSampleVersion?: number | null | undefined;
+}
+
+export interface TrialExecutionCommandResult {
+  workspace: TrialExecutionWorkspace;
+  replayed: boolean;
+}
+
+export interface TrialEvidenceDownload {
+  blob: Blob;
+  fileName: string;
+}
+
 export interface TrialDataSource {
   loadWorkspace(
     projectId: string,
@@ -259,6 +574,60 @@ export interface TrialDataSource {
     command: GenerateTrialPlanActionsCommand,
     context: TrialCommandContext,
   ): Promise<TrialCommandResult>;
+  loadRoundExecution(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialExecutionWorkspace>;
+  prepareRound(
+    projectId: string,
+    roundId: string,
+    command: PrepareTrialRoundCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  startRound(
+    projectId: string,
+    roundId: string,
+    command: StartTrialRoundCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  appendActualRevision(
+    projectId: string,
+    roundId: string,
+    command: AppendTrialActualRevisionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  createSampleBatch(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialSampleBatchCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  appendSampleBatchRevision(
+    projectId: string,
+    roundId: string,
+    sampleBatchId: string,
+    command: AppendTrialSampleBatchRevisionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  uploadEvidenceFile(
+    projectId: string,
+    roundId: string,
+    command: UploadTrialEvidenceFileCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  bindEvidence(
+    projectId: string,
+    roundId: string,
+    command: BindTrialEvidenceCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult>;
+  downloadEvidence(
+    projectId: string,
+    roundId: string,
+    evidence: TrialEvidenceReference,
+    context: Omit<TrialCommandContext, "idempotencyKey">,
+  ): Promise<TrialEvidenceDownload>;
 }
 
 export class TrialRequestCancelledError extends Error {
@@ -758,6 +1127,609 @@ export function isTrialPlanDetail(value: unknown): value is TrialPlanDetail {
   );
 }
 
+function nullableText(value: unknown, maximum: number): value is string | null {
+  return value === null || textValue(value, 1, maximum);
+}
+
+function email(value: unknown): value is string {
+  return textValue(value, 3, 254) && value.includes("@");
+}
+
+function nullableUuid(value: unknown): value is string | null {
+  return (
+    value === null || (typeof value === "string" && uuidPattern.test(value))
+  );
+}
+
+function nullableHash(value: unknown): value is string | null {
+  return (
+    value === null || (typeof value === "string" && hashPattern.test(value))
+  );
+}
+
+function isLockedReference(value: unknown): value is TrialLockedReference {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["globalId", "kind", "optimisticVersion", "snapshotHash"]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    member(item.kind, trialLockedReferenceKinds) &&
+    whole(item.optimisticVersion, 1) &&
+    typeof item.snapshotHash === "string" &&
+    hashPattern.test(item.snapshotHash)
+  );
+}
+
+function isMaterialObservation(
+  value: unknown,
+): value is TrialMaterialObservation {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "sourceSystem",
+      "sourceObjectId",
+      "lotBatchCode",
+      "label",
+      "color",
+      "additive",
+      "observedAt",
+      "confirmedByUserId",
+      "erpVerification",
+    ]) &&
+    member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
+    typeof item.sourceObjectId === "string" &&
+    referencePattern.test(item.sourceObjectId) &&
+    typeof item.lotBatchCode === "string" &&
+    referencePattern.test(item.lotBatchCode) &&
+    textValue(item.label, 1, 140) &&
+    nullableText(item.color, 80) &&
+    nullableText(item.additive, 140) &&
+    dateTime(item.observedAt) &&
+    email(item.confirmedByUserId) &&
+    item.erpVerification === "unavailable"
+  );
+}
+
+function isParameterDefinition(
+  value: unknown,
+): value is TrialParameterDefinition {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "key",
+      "category",
+      "valueKind",
+      "required",
+      "unit",
+      "targetValue",
+      "lowerLimit",
+      "upperLimit",
+    ]) &&
+    typeof item.key === "string" &&
+    referencePattern.test(item.key) &&
+    textValue(item.category, 1, 80) &&
+    member(item.valueKind, trialParameterValueKinds) &&
+    typeof item.required === "boolean" &&
+    nullableText(item.unit, 32) &&
+    nullableText(item.targetValue, 280) &&
+    nullableText(item.lowerLimit, 64) &&
+    nullableText(item.upperLimit, 64)
+  );
+}
+
+function isInputLock(value: unknown): value is TrialRoundInputLockRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "inputLockGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "trialPlanRevisionGlobalId",
+      "trialPlanRevisionSnapshotHash",
+      "lockVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "references",
+      "material",
+      "parameterDefinitions",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.inputLockGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.trialPlanRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    typeof item.tenantId !== "string" ||
+    !referencePattern.test(item.tenantId) ||
+    typeof item.trialPlanRevisionSnapshotHash !== "string" ||
+    !hashPattern.test(item.trialPlanRevisionSnapshotHash) ||
+    !whole(item.lockVersion, 1) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    !Array.isArray(item.references) ||
+    item.references.length < 8 ||
+    item.references.length > 100 ||
+    !item.references.every(isLockedReference) ||
+    !unique(
+      item.references.map(
+        (reference) => `${reference.kind}:${reference.globalId}`,
+      ),
+    ) ||
+    !isMaterialObservation(item.material) ||
+    !Array.isArray(item.parameterDefinitions) ||
+    item.parameterDefinitions.length < 1 ||
+    item.parameterDefinitions.length > 250 ||
+    !item.parameterDefinitions.every(isParameterDefinition) ||
+    !unique(item.parameterDefinitions.map((definition) => definition.key)) ||
+    !textValue(item.reason, 1, 500) ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 8, 128) ||
+    typeof item.snapshotHash !== "string" ||
+    !hashPattern.test(item.snapshotHash)
+  )
+    return false;
+  return item.lockVersion === 1
+    ? item.predecessorGlobalId === null && item.predecessorSnapshotHash === null
+    : item.predecessorGlobalId !== null &&
+        item.predecessorSnapshotHash !== null;
+}
+
+function isActualResource(value: unknown): value is TrialActualResource {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "kind",
+      "sourceSystem",
+      "sourceObjectId",
+      "label",
+      "erpVerification",
+    ]) &&
+    member(item.kind, ["machine", "auxiliary_equipment"] as const) &&
+    member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
+    typeof item.sourceObjectId === "string" &&
+    referencePattern.test(item.sourceObjectId) &&
+    textValue(item.label, 1, 140) &&
+    item.erpVerification === "unavailable"
+  );
+}
+
+function isEnvironmentObservation(
+  value: unknown,
+): value is TrialEnvironmentObservation {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["key", "value", "unit", "observedAt"]) &&
+    typeof item.key === "string" &&
+    referencePattern.test(item.key) &&
+    textValue(item.value, 1, 140) &&
+    nullableText(item.unit, 32) &&
+    dateTime(item.observedAt)
+  );
+}
+
+function isParameterObservation(
+  value: unknown,
+): value is TrialParameterObservation {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "definitionKey",
+      "state",
+      "value",
+      "unit",
+      "source",
+      "observedAt",
+    ]) ||
+    typeof item.definitionKey !== "string" ||
+    !referencePattern.test(item.definitionKey) ||
+    !member(item.state, ["measured", "not_measured"] as const) ||
+    !nullableText(item.value, 280) ||
+    !nullableText(item.unit, 32) ||
+    !(item.source === null || item.source === "manual") ||
+    !(item.observedAt === null || dateTime(item.observedAt))
+  )
+    return false;
+  return item.state === "measured"
+    ? item.value !== null &&
+        item.source === "manual" &&
+        item.observedAt !== null
+    : item.value === null &&
+        item.unit === null &&
+        item.source === null &&
+        item.observedAt === null;
+}
+
+function isActualRevision(value: unknown): value is TrialRoundActualRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "actualGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "inputLockRevisionGlobalId",
+      "inputLockRevisionSnapshotHash",
+      "actualVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "acquisitionMode",
+      "resources",
+      "material",
+      "environment",
+      "parameters",
+      "operatorUserId",
+      "confirmedByUserId",
+      "executionStartedAt",
+      "machineImport",
+      "reason",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.actualGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.inputLockRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    typeof item.tenantId !== "string" ||
+    !referencePattern.test(item.tenantId) ||
+    typeof item.inputLockRevisionSnapshotHash !== "string" ||
+    !hashPattern.test(item.inputLockRevisionSnapshotHash) ||
+    !whole(item.actualVersion, 1) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    item.acquisitionMode !== "manual" ||
+    !Array.isArray(item.resources) ||
+    item.resources.length < 1 ||
+    item.resources.length > 25 ||
+    !item.resources.every(isActualResource) ||
+    !isMaterialObservation(item.material) ||
+    !Array.isArray(item.environment) ||
+    item.environment.length > 50 ||
+    !item.environment.every(isEnvironmentObservation) ||
+    !Array.isArray(item.parameters) ||
+    item.parameters.length < 1 ||
+    item.parameters.length > 250 ||
+    !item.parameters.every(isParameterObservation) ||
+    !unique(item.parameters.map((parameter) => parameter.definitionKey)) ||
+    !email(item.operatorUserId) ||
+    !email(item.confirmedByUserId) ||
+    !dateTime(item.executionStartedAt) ||
+    item.machineImport !== "unavailable" ||
+    !textValue(item.reason, 1, 500) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 8, 128) ||
+    typeof item.snapshotHash !== "string" ||
+    !hashPattern.test(item.snapshotHash)
+  )
+    return false;
+  return item.actualVersion === 1
+    ? item.predecessorGlobalId === null && item.predecessorSnapshotHash === null
+    : item.predecessorGlobalId !== null &&
+        item.predecessorSnapshotHash !== null;
+}
+
+function isSampleRevision(value: unknown): value is TrialSampleBatchRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "sampleBatchGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "inputLockRevisionGlobalId",
+      "inputLockRevisionSnapshotHash",
+      "sampleVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "label",
+      "cavityGlobalIds",
+      "materialSnapshotHash",
+      "quantity",
+      "unit",
+      "packaging",
+      "destination",
+      "feedbackText",
+      "feedbackSource",
+      "feedbackObservedAt",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.sampleBatchGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.inputLockRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    typeof item.tenantId !== "string" ||
+    !referencePattern.test(item.tenantId) ||
+    typeof item.inputLockRevisionSnapshotHash !== "string" ||
+    !hashPattern.test(item.inputLockRevisionSnapshotHash) ||
+    !whole(item.sampleVersion, 1) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    typeof item.label !== "string" ||
+    !referencePattern.test(item.label) ||
+    !Array.isArray(item.cavityGlobalIds) ||
+    item.cavityGlobalIds.length < 1 ||
+    item.cavityGlobalIds.length > 128 ||
+    !item.cavityGlobalIds.every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !unique(item.cavityGlobalIds) ||
+    typeof item.materialSnapshotHash !== "string" ||
+    !hashPattern.test(item.materialSnapshotHash) ||
+    !whole(item.quantity, 1) ||
+    !textValue(item.unit, 1, 32) ||
+    !textValue(item.packaging, 1, 280) ||
+    !textValue(item.destination, 1, 280) ||
+    !nullableText(item.feedbackText, 4000) ||
+    !nullableText(item.feedbackSource, 140) ||
+    !(item.feedbackObservedAt === null || dateTime(item.feedbackObservedAt)) ||
+    !textValue(item.reason, 1, 500) ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 8, 128) ||
+    typeof item.snapshotHash !== "string" ||
+    !hashPattern.test(item.snapshotHash)
+  )
+    return false;
+  const feedback = [
+    item.feedbackText,
+    item.feedbackSource,
+    item.feedbackObservedAt,
+  ];
+  if (
+    !feedback.every((candidate) => candidate === null) &&
+    feedback.some((candidate) => candidate === null)
+  )
+    return false;
+  return item.sampleVersion === 1
+    ? item.predecessorGlobalId === null && item.predecessorSnapshotHash === null
+    : item.predecessorGlobalId !== null &&
+        item.predecessorSnapshotHash !== null;
+}
+
+function isEvidence(value: unknown): value is TrialEvidenceReference {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "role",
+      "sampleBatchRevisionGlobalId",
+      "sampleBatchRevisionSnapshotHash",
+      "fileRevisionGlobalId",
+      "fileSha256",
+      "fileSizeBytes",
+      "fileMimeType",
+      "scanState",
+      "privacy",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.fileRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    typeof item.tenantId !== "string" ||
+    !referencePattern.test(item.tenantId) ||
+    !member(item.role, trialEvidenceRoles) ||
+    !nullableUuid(item.sampleBatchRevisionGlobalId) ||
+    !nullableHash(item.sampleBatchRevisionSnapshotHash) ||
+    typeof item.fileSha256 !== "string" ||
+    !hashPattern.test(item.fileSha256) ||
+    !whole(item.fileSizeBytes, 1) ||
+    !textValue(item.fileMimeType, 1, 140) ||
+    item.scanState !== "clean" ||
+    item.privacy !== "private" ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 8, 128) ||
+    typeof item.snapshotHash !== "string" ||
+    !hashPattern.test(item.snapshotHash)
+  )
+    return false;
+  return (
+    (item.sampleBatchRevisionGlobalId === null) ===
+    (item.sampleBatchRevisionSnapshotHash === null)
+  );
+}
+
+function isPendingFile(value: unknown): value is TrialPendingFileRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "globalId",
+      "optimisticVersion",
+      "fileName",
+      "mimeType",
+      "sizeBytes",
+      "sha256",
+      "scanState",
+      "privacy",
+    ]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    whole(item.optimisticVersion, 1) &&
+    textValue(item.fileName, 1, 255) &&
+    textValue(item.mimeType, 1, 140) &&
+    whole(item.sizeBytes, 1) &&
+    typeof item.sha256 === "string" &&
+    hashPattern.test(item.sha256) &&
+    member(item.scanState, [
+      "pending",
+      "clean",
+      "infected",
+      "failed",
+    ] as const) &&
+    item.privacy === "private"
+  );
+}
+
+function isExecutionCapabilities(
+  value: unknown,
+): value is TrialExecutionWorkspace["capabilities"] {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "machineImport",
+      "erpQuality",
+      "conclusion",
+      "gateEffect",
+      "approvedBaseline",
+    ]) && Object.values(item).every((candidate) => candidate === "unavailable")
+  );
+}
+
+function isExecutionPermissions(
+  value: unknown,
+): value is TrialExecutionPermissions {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "canPrepare",
+      "canStart",
+      "canRecordActual",
+      "canManageSamples",
+      "canManageEvidence",
+    ]) &&
+    Object.values(item).every((candidate) => typeof candidate === "boolean")
+  );
+}
+
+export function isTrialExecutionWorkspace(
+  value: unknown,
+): value is TrialExecutionWorkspace {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "projectGlobalId",
+      "round",
+      "inputLocks",
+      "actualRevisions",
+      "sampleBatchRevisions",
+      "evidence",
+      "pendingFiles",
+      "missingFacts",
+      "capabilities",
+      "permissions",
+    ]) ||
+    typeof item.projectGlobalId !== "string" ||
+    !uuidPattern.test(item.projectGlobalId) ||
+    !isTrialRound(item.round) ||
+    !Array.isArray(item.inputLocks) ||
+    item.inputLocks.length > 1000 ||
+    !item.inputLocks.every(isInputLock) ||
+    !Array.isArray(item.actualRevisions) ||
+    item.actualRevisions.length > 1000 ||
+    !item.actualRevisions.every(isActualRevision) ||
+    !Array.isArray(item.sampleBatchRevisions) ||
+    item.sampleBatchRevisions.length > 5000 ||
+    !item.sampleBatchRevisions.every(isSampleRevision) ||
+    !Array.isArray(item.evidence) ||
+    item.evidence.length > 5000 ||
+    !item.evidence.every(isEvidence) ||
+    !Array.isArray(item.pendingFiles) ||
+    item.pendingFiles.length > 500 ||
+    !item.pendingFiles.every(isPendingFile) ||
+    !Array.isArray(item.missingFacts) ||
+    item.missingFacts.length > 250 ||
+    !item.missingFacts.every((candidate) => textValue(candidate, 1, 128)) ||
+    !unique(item.missingFacts) ||
+    !isExecutionCapabilities(item.capabilities) ||
+    !isExecutionPermissions(item.permissions)
+  )
+    return false;
+  const projectId = item.projectGlobalId;
+  const roundId = item.round.globalId;
+  const nested = [
+    ...item.inputLocks,
+    ...item.actualRevisions,
+    ...item.sampleBatchRevisions,
+    ...item.evidence,
+  ];
+  return (
+    item.round.projectGlobalId === projectId &&
+    nested.every(
+      (candidate) =>
+        candidate.projectGlobalId === projectId &&
+        candidate.trialRoundGlobalId === roundId,
+    ) &&
+    unique(item.inputLocks.map((candidate) => candidate.globalId)) &&
+    unique(item.actualRevisions.map((candidate) => candidate.globalId)) &&
+    unique(item.sampleBatchRevisions.map((candidate) => candidate.globalId)) &&
+    unique(item.evidence.map((candidate) => candidate.globalId)) &&
+    unique(item.pendingFiles.map((candidate) => candidate.globalId))
+  );
+}
+
 function requestNotReady(): NpiTransportError {
   return new NpiTransportError(
     "request_not_ready",
@@ -927,6 +1899,285 @@ function validGenerateActions(value: GenerateTrialPlanActionsCommand): boolean {
   );
 }
 
+function validMaterialInput(
+  value: unknown,
+): value is TrialMaterialObservationInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "sourceSystem",
+      "sourceObjectId",
+      "lotBatchCode",
+      "label",
+      "color",
+      "additive",
+      "observedAt",
+    ]) &&
+    member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
+    typeof item.sourceObjectId === "string" &&
+    referencePattern.test(item.sourceObjectId) &&
+    typeof item.lotBatchCode === "string" &&
+    referencePattern.test(item.lotBatchCode) &&
+    textValue(item.label, 1, 140) &&
+    nullableText(item.color, 80) &&
+    nullableText(item.additive, 140) &&
+    dateTime(item.observedAt)
+  );
+}
+
+function validReferenceInput(
+  value: unknown,
+): value is TrialLockedReferenceInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["globalId", "kind", "expectedOptimisticVersion"]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    member(item.kind, trialLockedReferenceKinds) &&
+    whole(item.expectedOptimisticVersion, 1)
+  );
+}
+
+function validParameterDefinitionInput(
+  value: unknown,
+): value is TrialParameterDefinitionInput {
+  return isParameterDefinition(value);
+}
+
+function validPrepare(value: PrepareTrialRoundCommand): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "references",
+      "material",
+      "parameterDefinitions",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    value.references.length >= 8 &&
+    value.references.length <= 100 &&
+    value.references.every(validReferenceInput) &&
+    unique(
+      value.references.map(
+        (reference) => `${reference.kind}:${reference.globalId}`,
+      ),
+    ) &&
+    validMaterialInput(value.material) &&
+    value.parameterDefinitions.length >= 1 &&
+    value.parameterDefinitions.length <= 250 &&
+    value.parameterDefinitions.every(validParameterDefinitionInput) &&
+    unique(value.parameterDefinitions.map((definition) => definition.key)) &&
+    textValue(value.reason, 1, 500)
+  );
+}
+
+function validActualResourceInput(
+  value: unknown,
+): value is TrialActualResourceInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["kind", "sourceSystem", "sourceObjectId", "label"]) &&
+    member(item.kind, ["machine", "auxiliary_equipment"] as const) &&
+    member(item.sourceSystem, ["NPI_ONE", "ERPNEXT"] as const) &&
+    typeof item.sourceObjectId === "string" &&
+    referencePattern.test(item.sourceObjectId) &&
+    textValue(item.label, 1, 140)
+  );
+}
+
+function validEnvironmentInput(
+  value: unknown,
+): value is TrialEnvironmentObservationInput {
+  return isEnvironmentObservation(value);
+}
+
+function validParameterInput(
+  value: unknown,
+): value is TrialParameterObservationInput {
+  return isParameterObservation(value);
+}
+
+function validActualContext(value: TrialActualContextInput): boolean {
+  return (
+    value.resources.length >= 1 &&
+    value.resources.length <= 25 &&
+    value.resources.every(validActualResourceInput) &&
+    validMaterialInput(value.material) &&
+    value.environment.length <= 50 &&
+    value.environment.every(validEnvironmentInput) &&
+    value.parameters.length >= 1 &&
+    value.parameters.length <= 250 &&
+    value.parameters.every(validParameterInput) &&
+    unique(value.parameters.map((parameter) => parameter.definitionKey)) &&
+    email(value.operatorUserId) &&
+    dateTime(value.executionStartedAt) &&
+    textValue(value.reason, 1, 500)
+  );
+}
+
+function validStart(value: StartTrialRoundCommand): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedInputLockRevisionGlobalId",
+      "expectedInputLockVersion",
+      "resources",
+      "material",
+      "environment",
+      "parameters",
+      "operatorUserId",
+      "executionStartedAt",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    uuidPattern.test(value.expectedInputLockRevisionGlobalId) &&
+    whole(value.expectedInputLockVersion, 1) &&
+    validActualContext(value)
+  );
+}
+
+function validActualRevision(value: AppendTrialActualRevisionCommand): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedActualRevisionGlobalId",
+      "expectedActualVersion",
+      "resources",
+      "material",
+      "environment",
+      "parameters",
+      "operatorUserId",
+      "executionStartedAt",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    uuidPattern.test(value.expectedActualRevisionGlobalId) &&
+    whole(value.expectedActualVersion, 1) &&
+    validActualContext(value)
+  );
+}
+
+function validSampleInput(value: unknown): value is TrialSampleBatchInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "label",
+      "cavityGlobalIds",
+      "quantity",
+      "unit",
+      "packaging",
+      "destination",
+      "feedbackText",
+      "feedbackSource",
+      "feedbackObservedAt",
+    ]) ||
+    typeof item.label !== "string" ||
+    !referencePattern.test(item.label) ||
+    !Array.isArray(item.cavityGlobalIds) ||
+    item.cavityGlobalIds.length < 1 ||
+    item.cavityGlobalIds.length > 128 ||
+    !item.cavityGlobalIds.every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !unique(item.cavityGlobalIds) ||
+    !whole(item.quantity, 1) ||
+    !textValue(item.unit, 1, 32) ||
+    !textValue(item.packaging, 1, 280) ||
+    !textValue(item.destination, 1, 280) ||
+    !nullableText(item.feedbackText, 4000) ||
+    !nullableText(item.feedbackSource, 140) ||
+    !(item.feedbackObservedAt === null || dateTime(item.feedbackObservedAt))
+  )
+    return false;
+  const feedback = [
+    item.feedbackText,
+    item.feedbackSource,
+    item.feedbackObservedAt,
+  ];
+  return (
+    feedback.every((candidate) => candidate === null) ||
+    feedback.every((candidate) => candidate !== null)
+  );
+}
+
+function validCreateSample(value: CreateTrialSampleBatchCommand): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedInputLockRevisionGlobalId",
+      "sample",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    uuidPattern.test(value.expectedInputLockRevisionGlobalId) &&
+    validSampleInput(value.sample) &&
+    textValue(value.reason, 1, 500)
+  );
+}
+
+function validReviseSample(
+  value: AppendTrialSampleBatchRevisionCommand,
+): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedRevisionGlobalId",
+      "expectedSampleVersion",
+      "sample",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    uuidPattern.test(value.expectedRevisionGlobalId) &&
+    whole(value.expectedSampleVersion, 1) &&
+    validSampleInput(value.sample) &&
+    textValue(value.reason, 1, 500)
+  );
+}
+
+function validBindEvidence(value: BindTrialEvidenceCommand): boolean {
+  const sampleId = value.sampleBatchRevisionGlobalId;
+  const sampleVersion = value.expectedSampleVersion;
+  return (
+    exactWithOptional(
+      value,
+      [
+        "expectedRoundOptimisticVersion",
+        "role",
+        "fileRevisionGlobalId",
+        "expectedFileOptimisticVersion",
+      ],
+      ["sampleBatchRevisionGlobalId", "expectedSampleVersion"],
+    ) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    member(value.role, trialEvidenceRoles) &&
+    uuidPattern.test(value.fileRevisionGlobalId) &&
+    whole(value.expectedFileOptimisticVersion, 1) &&
+    (sampleId === undefined || sampleId === null) ===
+      (sampleVersion === undefined || sampleVersion === null) &&
+    (sampleId === undefined ||
+      sampleId === null ||
+      uuidPattern.test(sampleId)) &&
+    (sampleVersion === undefined ||
+      sampleVersion === null ||
+      whole(sampleVersion, 1))
+  );
+}
+
+async function sha256Blob(value: Blob): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest(
+    "SHA-256",
+    await value.arrayBuffer(),
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function cancelled(signal: AbortSignal): void {
   if (signal.aborted) throw new TrialRequestCancelledError();
 }
@@ -994,6 +2245,34 @@ export class LiveTrialDataSource implements TrialDataSource {
     }
   }
 
+  async loadRoundExecution(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialExecutionWorkspace> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    cancelled(signal);
+    try {
+      return await this.http.request<TrialExecutionWorkspace>(
+        `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/execution`,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialExecutionWorkspace =>
+            isTrialExecutionWorkspace(value) &&
+            value.projectGlobalId === expectedProjectId &&
+            value.round.globalId === expectedRoundId,
+        },
+      );
+    } catch (error) {
+      cancelled(signal);
+      throw error;
+    }
+  }
+
   private async command(
     path: string,
     projectId: string,
@@ -1031,6 +2310,49 @@ export class LiveTrialDataSource implements TrialDataSource {
         },
       );
       return { detail, replayed };
+    } catch (error) {
+      cancelled(context.signal);
+      throw error;
+    }
+  }
+
+  private async executionCommand(
+    path: string,
+    projectId: string,
+    roundId: string,
+    body: object | FormData,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    cancelled(context.signal);
+    let replayed = false;
+    try {
+      const workspace = await this.http.request<TrialExecutionWorkspace>(
+        path,
+        {
+          body: body instanceof FormData ? body : JSON.stringify(body),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialExecutionWorkspace =>
+            isTrialExecutionWorkspace(value) &&
+            value.projectGlobalId === projectId &&
+            value.round.globalId === roundId,
+          validateResponse: (response) => {
+            const header = replayHeader(response);
+            if (header === null) return false;
+            replayed = header;
+            return true;
+          },
+        },
+      );
+      return { replayed, workspace };
     } catch (error) {
       cancelled(context.signal);
       throw error;
@@ -1109,5 +2431,224 @@ export class LiveTrialDataSource implements TrialDataSource {
       command,
       context,
     );
+  }
+
+  prepareRound(
+    projectId: string,
+    roundId: string,
+    command: PrepareTrialRoundCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validPrepare(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}:prepare`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  startRound(
+    projectId: string,
+    roundId: string,
+    command: StartTrialRoundCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validStart(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}:start`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  appendActualRevision(
+    projectId: string,
+    roundId: string,
+    command: AppendTrialActualRevisionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validActualRevision(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/actual-revisions`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  createSampleBatch(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialSampleBatchCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validCreateSample(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/sample-batches`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  appendSampleBatchRevision(
+    projectId: string,
+    roundId: string,
+    sampleBatchId: string,
+    command: AppendTrialSampleBatchRevisionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedSampleBatchId = requireUuid(sampleBatchId);
+    if (!validContext(context) || !validReviseSample(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/sample-batches/${expectedSampleBatchId}/revisions`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  uploadEvidenceFile(
+    projectId: string,
+    roundId: string,
+    command: UploadTrialEvidenceFileCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (
+      !validContext(context) ||
+      !exact(command, ["expectedRoundOptimisticVersion", "file"]) ||
+      !whole(command.expectedRoundOptimisticVersion, 1) ||
+      !(command.file instanceof File) ||
+      !textValue(command.file.name, 1, 255) ||
+      command.file.size < 1 ||
+      command.file.size > 67_108_864
+    )
+      return Promise.reject(requestNotReady());
+    const form = new FormData();
+    form.append(
+      "expectedRoundOptimisticVersion",
+      String(command.expectedRoundOptimisticVersion),
+    );
+    form.append("file", command.file, command.file.name);
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/files`,
+      expectedProjectId,
+      expectedRoundId,
+      form,
+      context,
+    );
+  }
+
+  bindEvidence(
+    projectId: string,
+    roundId: string,
+    command: BindTrialEvidenceCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialExecutionCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validBindEvidence(command))
+      return Promise.reject(requestNotReady());
+    return this.executionCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/evidence`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  async downloadEvidence(
+    projectId: string,
+    roundId: string,
+    evidence: TrialEvidenceReference,
+    context: Omit<TrialCommandContext, "idempotencyKey">,
+  ): Promise<TrialEvidenceDownload> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (
+      !isEvidence(evidence) ||
+      evidence.projectGlobalId !== expectedProjectId ||
+      evidence.trialRoundGlobalId !== expectedRoundId ||
+      !validContext({ ...context, idempotencyKey: "download-12345678" })
+    )
+      throw requestNotReady();
+    cancelled(context.signal);
+    let fileName = "";
+    try {
+      const blob = await this.http.request<Blob>(
+        `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/evidence/${evidence.globalId}:content`,
+        {
+          headers: { Accept: evidence.fileMimeType },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          responseType: "blob",
+          validate: (value): value is Blob =>
+            value instanceof Blob &&
+            value.size === evidence.fileSizeBytes &&
+            value.type === evidence.fileMimeType,
+          validateResponse: (response) => {
+            const disposition =
+              response.headers.get("Content-Disposition") ?? "";
+            const match = /filename\*=UTF-8''([^;]+)$/u.exec(disposition);
+            if (!match?.[1]) return false;
+            try {
+              fileName = decodeURIComponent(match[1]);
+            } catch {
+              return false;
+            }
+            return (
+              fileName.length >= 1 &&
+              fileName.length <= 255 &&
+              !/[\r\n/\\]/u.test(fileName) &&
+              response.headers.get("Content-Type")?.split(";", 1)[0]?.trim() ===
+                evidence.fileMimeType &&
+              response.headers.get("X-Content-Type-Options")?.toLowerCase() ===
+                "nosniff" &&
+              response.headers.get("Content-Security-Policy") ===
+                "sandbox; default-src 'none'" &&
+              response.headers.get("Referrer-Policy")?.toLowerCase() ===
+                "no-referrer"
+            );
+          },
+        },
+      );
+      if ((await sha256Blob(blob)) !== evidence.fileSha256)
+        throw requestNotReady();
+      return { blob, fileName };
+    } catch (error) {
+      cancelled(context.signal);
+      throw error;
+    }
   }
 }

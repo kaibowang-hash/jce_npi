@@ -5974,7 +5974,6 @@ Linked at,關聯時間
 No governed Project Work action is linked to this Trial Plan.,該試模計畫尚未關聯受控專案工作行動項目。
 Locked preparation inputs,已鎖定準備輸入
 Actual process parameters,實際製程參數
-Samples and cavity evidence,樣件和模穴證據
 Defects and measurements,缺陷和量測
 Conclusion and approval,結論和核准
 Formal quality and ERPNext execution,正式品質和 ERPNext 執行
@@ -5990,8 +5989,6 @@ Project Work,專案工作
 Formal resource and quality owner,正式資源和品質主責方
 No booking claim,無預約聲明
 An approved resource reader and booking policy are not configured. Proposed resources are not confirmed or reserved.,尚未設定已核准的資源讀取器和預約原則。建議資源未經確認或預約。
-Planned state only,僅已規劃狀態
-"P7-01 creates only planned Rounds. Preparation, execution, evidence, conclusion and approval remain unavailable.",本檢查點僅建立已規劃輪次。準備、執行、證據、結論和核准仍無法使用。
 Initial revision,初始版本
 Creates one governed Domain Work Item and an immutable Trial link.,建立一個受控領域工作項目和一筆不可變試模關聯。
 Appends immutable Trial planning history; prior versions are not overwritten.,附加不可變試模規劃歷程；不會覆寫先前版本。
@@ -6137,3 +6134,166 @@ The execution routes are disabled while a reviewed forward fix is applied.,執�
 Select one complete Sample Batch revision.,請選擇一個完整的樣品批次版本。
 Enter one complete measured parameter observation.,請輸入一筆完整的已測量參數觀測記錄。
 Enter one complete feedback observation.,請輸入一筆完整的回饋觀測記錄。
+Design baseline,設計基線
+Part revision,零件版本
+Tooling revision,工裝版本
+Tooling Set binding,工裝組綁定
+Process chain,製程鏈
+Inspection document,檢驗文件
+Photo,照片
+Video,影片
+Parameter curve,參數曲線
+Customer feedback,客戶回饋
+Locked input revision,鎖定輸入版本
+Actual execution context,實際執行上下文
+Sample Batch,樣品批次
+Clean evidence,潔淨證據
+Measured parameter: {{key}},已測參數：{{key}}
+Complete every required execution field with exact references before review.,請先使用精確引用填寫所有必填執行欄位，再進行複核。
+Preparing Trial Round,正在準備試模輪次
+Appending Trial Actual revision,正在追加試模實際版本
+Starting Trial Round,正在開始試模輪次
+Creating Sample Batch,正在建立樣品批次
+Appending Sample Batch revision,正在追加樣品批次版本
+Uploading private Trial file,正在上傳私有試模檔案
+Binding clean Trial evidence,正在綁定潔淨試模證據
+Preparing secure evidence download,正在準備安全證據下載
+Private Trial evidence downloaded,私有試模證據已下載
+Prepare Trial Round,準備試模輪次
+Start Trial Round,開始試模輪次
+Append actual revision,追加實際版本
+Trial Round execution,試模輪次執行
+Create Sample Batch,建立樣品批次
+Upload private evidence file,上傳私有證據檔案
+Round version,輪次版本
+Input lock version,輸入鎖版本
+Not prepared,未準備
+Actual revision,實際版本
+Trial execution is read only in this session.,目前工作階段中的試模執行為唯讀。
+Session verification is required before an execution command can be submitted.,提交執行命令前需要完成工作階段驗證。
+Trial execution is read only for this Round.,此輪次的試模執行為唯讀。
+The current Round state and server permissions allow no execution command.,目前輪次狀態和伺服器權限不允許執行任何命令。
+The exact execution command is being verified and committed atomically.,正在驗證精確執行命令並以原子方式提交。
+The exact prior execution command response was replayed safely.,已安全重播先前精確執行命令的回應。
+The execution command completed with immutable audit truth.,執行命令已完成並保留不可變稽核事實。
+Trial execution command not completed,試模執行命令未完成
+Prepare exact locked inputs,準備精確鎖定輸入
+Required released references,必要的已發佈引用
+Reference kind,引用類型
+Stable ID,穩定識別
+{{kind}} stable ID,{{kind}}穩定識別
+{{kind}} version,{{kind}}版本
+Observed material identity,已觀測物料識別
+Source system,來源系統
+Lot or batch code,批號或批次代碼
+Material color,物料顏色
+Material additive,物料添加劑
+Observed at (UTC),觀測時間（世界協調時間）
+Material observed at (UTC),物料觀測時間（世界協調時間）
+Parameter definitions,參數定義
+Key,鍵
+Value kind,值類型
+Limits,限值
+Parameter {{index}} key,參數 {{index}} 鍵
+Parameter {{index}} category,參數 {{index}} 類別
+Parameter {{index}} value kind,參數 {{index}} 值類型
+Decimal,小數
+Integer,整數
+Text,文字
+Boolean,布林值
+Parameter {{index}} unit,參數 {{index}} 單位
+Parameter {{index}} target,參數 {{index}} 目標值
+Parameter {{index}} lower limit,參數 {{index}} 下限
+Parameter {{index}} upper limit,參數 {{index}} 上限
+Parameter {{index}} required,參數 {{index}} 必填
+Add parameter,新增參數
+Confirmed machine,已確認設備
+Actual machine source object ID,實際設備來源物件識別
+Actual machine label,實際設備標籤
+ERP verification unavailable,企業資源規劃系統驗證無法使用
+Execution context,執行上下文
+Operator user,操作員使用者
+Execution started at (UTC),執行開始時間（世界協調時間）
+Environment key,環境鍵
+Environment value,環境值
+Environment unit,環境單位
+Locked material,已鎖定物料
+Manual parameter observations,手動參數觀測
+Target and limits,目標值和限值
+Measurement state,量測狀態
+Observed value,觀測值
+Acquisition,擷取方式
+{{key}} measurement state,{{key}}量測狀態
+Measured,已量測
+{{key}} observed value,{{key}}觀測值
+Manual only,僅手動
+Append Sample Batch revision,追加樣品批次版本
+Sample label,樣品標籤
+Cavity stable IDs,模穴穩定識別
+Packaging,包裝
+Destination,去向
+Feedback source,回饋來源
+Feedback observation,回饋觀測
+Feedback observed at (UTC),回饋觀測時間（世界協調時間）
+"Sample identity, cavities, material, quantity and unit remain locked across revisions.",樣品識別、模穴、物料、數量和單位在各版本間保持鎖定。
+The Sample Batch is bound to the exact prepared material and selected cavities.,樣品批次綁定到精確的已準備物料和所選模穴。
+Evidence file,證據檔案
+Private and pending scan,私有且等待掃描
+Upload registers a private pending File Revision only. It is not evidence until a clean scan result is bound separately.,上傳僅登記一個等待掃描的私有檔案版本；在單獨綁定潔淨掃描結果前不構成證據。
+Upload pending file,上傳待掃描檔案
+Bind clean Trial evidence,綁定潔淨試模證據
+Related Sample Batch revision,相關樣品批次版本
+Round evidence only,僅輪次證據
+The server rechecks the exact clean private File Revision and optional Sample Batch version before binding.,綁定前伺服器會重新檢查精確的潔淨私有檔案版本及可選樣品批次版本。
+Bind clean evidence,綁定潔淨證據
+Lock revision,鎖定版本
+Lock snapshot,鎖定快照
+ERP verification,企業資源規劃系統驗證
+Locked released references,鎖定的已發佈引用
+This planned Round has no locked input revision.,此已規劃輪次沒有鎖定輸入版本。
+"Prepare the exact eight released reference kinds, observed material and parameter definitions before execution.",執行前請準備精確的八類已發佈引用、已觀測物料和參數定義。
+Value,值
+Observed at,觀測時間
+No actual execution revision has been recorded.,尚未記錄實際執行版本。
+Starting the prepared Round records the first complete manual actual context.,開始已準備輪次會記錄首個完整的手動實際上下文。
+Machine import unavailable,設備匯入無法使用
+Parameters remain manual observations. No controller or ERP value is imported or presented as measured.,參數保持為手動觀測；不會匯入控制器或企業資源規劃系統數值，也不會將其顯示為已量測。
+Sample Batches,樣品批次
+Sample,樣品
+No Sample Batch has been recorded for this Round.,此輪次尚未記錄樣品批次。
+"Record stable sample identity, all cavities, quantity, packaging and destination during a running Round.",請在執行中的輪次記錄穩定樣品識別、全部模穴、數量、包裝和去向。
+Private files awaiting evidence binding,等待證據綁定的私有檔案
+Pending scan,等待掃描
+Bind as evidence,綁定為證據
+No private uploaded file is awaiting evidence binding.,沒有等待證據綁定的私有上傳檔案。
+Controlled Trial evidence,受控試模證據
+Sample revision,樣品版本
+Clean and private,潔淨且私有
+Download audited bytes,下載已稽核位元組
+No clean evidence has been bound to this Round.,此輪次尚未綁定潔淨證據。
+"Upload, scan and bind are separate; a pending or failed file is never presented as evidence.",上傳、掃描和綁定相互獨立；等待或失敗的檔案絕不會顯示為證據。
+Execution completeness and unavailable capabilities,執行完整性和無法使用的能力
+Missing execution facts,缺少的執行事實
+No missing execution fact,沒有缺少的執行事實
+Machine parameter import,設備參數匯入
+ERP formal quality results,企業資源規劃系統正式品質結果
+Conclusion and Gate effect,結論和階段門影響
+Approved Trial baseline,已核准試模基線
+"Freezes exact released references, observed material and parameter definitions before execution.",執行前凍結精確的已發佈引用、已觀測物料和參數定義。
+Appends a manual immutable actual context against the exact prepared input lock.,針對精確的已準備輸入鎖追加手動不可變實際上下文。
+Appends immutable Sample Batch history without rewriting its stable identity or cavities.,追加不可變樣品批次歷程且不改寫其穩定識別或模穴。
+"The server rechecks Project membership, internal role and current Round-state authority.",伺服器會重新檢查專案成員身分、內部角色和目前輪次狀態權限。
+Committed execution history is immutable and cannot be edited through generic CRUD.,已提交的執行歷程不可變，不能透過通用新增、查詢、修改和刪除編輯。
+A failed command changes no execution row and can be retried with the same exact request.,失敗的命令不會變更執行記錄，可使用完全相同的請求重試。
+Review immutable Trial execution command,複核不可變試模執行命令
+Trial execution workspace unavailable,試模執行工作區無法使用
+No Trial Round is selected.,未選取試模輪次。
+Create or select a planned Trial Round before opening execution truth.,開啟執行事實前請建立或選取已規劃試模輪次。
+Selected Round,所選輪次
+No Round selected,未選取輪次
+Round state,輪次狀態
+Execution missing facts,執行缺少事實
+Execution boundary active,執行邊界已啟用
+"P7-02 supports exact preparation, running actuals, Sample Batches and clean private evidence. Conclusion, Gate effect and formal ERP quality remain unavailable.",本檢查點支援精確準備、執行實際值、樣品批次和潔淨私有證據；結論、階段門影響和企業資源規劃系統正式品質仍無法使用。
+{{sample}} · Version {{version}},{{sample}} · 版本 {{version}}
+{{size}} B,{{size}} B
