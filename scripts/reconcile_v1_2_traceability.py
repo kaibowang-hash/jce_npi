@@ -45,7 +45,7 @@ UX_REMEDIATION_ALLOCATION = {
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
-    "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
+    "UX-020": ("7", "ANCHORED_P7_08"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
@@ -315,6 +315,26 @@ P6_UX_ANCHOR_EVIDENCE = {
         "implementation/evidence/phase-6/p6-00-validation.md",
     )
     for requirement_id in ("UX-004", "UX-016")
+}
+P7_UX_ANCHOR_EVIDENCE = {
+    "UX-020": (
+        "implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv",
+        "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+        "implementation/phase-7-requirement-anchor.md",
+        "implementation/evidence/phase-7/p7-00-validation.md",
+    ),
+}
+P7_ADDENDUM_ANCHOR_EVIDENCE = {
+    "FR-PRN-002": P5_06_PLAN_EVIDENCE["FR-PRN-002"]
+    + (
+        "implementation/phase-7-requirement-anchor.md",
+        "implementation/evidence/phase-7/p7-00-validation.md",
+    ),
+    "FR-INT-015": (
+        "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+        "implementation/phase-7-requirement-anchor.md",
+        "implementation/evidence/phase-7/p7-00-validation.md",
+    ),
 }
 P6_01_COMPLETED_EVIDENCE = {
     "FR-TX-001": (
@@ -623,6 +643,8 @@ def _expanded_rows(
             evidence = "; ".join(R1_06_STAGE_3_EVIDENCE[requirement_id])
         if requirement_id in P6_UX_ANCHOR_EVIDENCE:
             evidence = "; ".join(P6_UX_ANCHOR_EVIDENCE[requirement_id])
+        if requirement_id in P7_UX_ANCHOR_EVIDENCE:
+            evidence = "; ".join(P7_UX_ANCHOR_EVIDENCE[requirement_id])
         if requirement_id in P6_01_COMPLETED_EVIDENCE:
             evidence = "; ".join(P6_01_COMPLETED_EVIDENCE[requirement_id])
         elif requirement_id in P6_02_COMPLETED_EVIDENCE:
@@ -691,6 +713,8 @@ def _expanded_rows(
             evidence = "; ".join(P6_05_ADDENDUM_EVIDENCE[requirement_id])
         elif requirement_id in {"FR-TX-019", "FR-TX-020"}:
             evidence = "; ".join(P6_ANCHOR_EVIDENCE)
+        if requirement_id in P7_ADDENDUM_ANCHOR_EVIDENCE:
+            evidence = "; ".join(P7_ADDENDUM_ANCHOR_EVIDENCE[requirement_id])
         normalized_row = {
             "requirement_id": requirement_id,
             "priority": priority,

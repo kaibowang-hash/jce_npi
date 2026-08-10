@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T04:36:24Z`
+Updated: `2026-08-10T05:12:25Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_ANCHOR — P7-00 TRIAL AND NPI`
+- Mode: `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P7-01 TRIAL PLAN/ROUND`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -12,8 +12,9 @@ Updated: `2026-08-10T04:36:24Z`
   `68f230fee73b1b6ca95206346d128e1518613d82` (pushed; P6-08 Level 2 and
   Phase 6 Level 3 product/runtime checkpoint PASS)
 - Latest complete normal CI:
-  `31355006189` (`PASS`, exact SHA `68f230f`; repository `93352955845` and
-  fixed-Linux visual `93352955834` at `94/94` passed; controlled job skipped)
+  `31356737236` (`PASS`, exact controller SHA `e662684`; repository
+  `93357718684` and fixed-Linux visual `93357718640` at `94/94` passed;
+  controlled job skipped)
 - Latest controlled-Site run:
   `31355555773` (`PASS`, unchanged exact SHA `68f230f`; repository
   `93354448586`, visual `93354448605` at `94/94` and controlled Site
@@ -22,14 +23,13 @@ Updated: `2026-08-10T04:36:24Z`
   `9050565297`, GitHub digest
   `sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`
 - Current controller task:
-  `P7-00 — Phase 7 Trial and NPI requirement anchor`
+  `P7-01 — Trial Plan and Round identity/lifecycle foundation`
   (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Current Requirement IDs: to be frozen by the P7-00 anchor from M6-01..08,
-  the live 282-row trace and scoped `DR-REC-009` boundary
+- Current Requirement ID: `FR-TR-001`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `7 — Trial, Quality Issues and NPI Readiness` (`IN_PROGRESS — P7-00`)
+  `7 — Trial, Quality Issues and NPI Readiness` (`IN_PROGRESS — P7-01`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -44,15 +44,21 @@ Complete task and Phase evidence is retained in
 `implementation/evidence/phase-6/p6-08-validation.md` and
 `implementation/phase-6-gate.md`.
 
-The current atomic task is P7-00 documentation/trace only. It must read the
-Phase 7/M6 Trial and NPI specifications and live repository truth; allocate
-M6-01 through M6-08 to atomic P7 tasks; preserve distinct Trial Plan, Round,
-locked inputs, samples, cavity results, defects/actions, conclusions,
-readiness, handover and immutable Released Trial Summary identities; reconcile
-Phase 6's `not_measured` Trial Actual/unavailable Approved Baseline and
-acceptance holds; record `DR-REC-009`; and freeze ownership, authorities,
-task order, migration/rollback and changed-files-to-tests mapping. It changes
-no product code. There is no active technical Hard Blocker.
+P7-00 passes its Level 2 documentation/trace Gate in
+`implementation/phase-7-requirement-anchor.md` and
+`implementation/evidence/phase-7/p7-00-validation.md`. All twenty-five
+primary Trial/NPI requirements plus `UX-020` are allocated to P7-01..08;
+`FR-PRN-002` and `FR-INT-015` retain their earlier truth while gaining scoped
+Phase 7 evidence. No product requirement is claimed implemented by the anchor.
+
+The current atomic task is the bounded P7-01 audit for `FR-TR-001`. It must
+inspect reusable Project, Tooling, permission, receipt, audit and lifecycle
+patterns; freeze distinct Trial Plan and immutable Trial Round identities,
+their legal lifecycle and exact Project/Tooling membership; decide no business
+rule beyond accepted specifications; and publish the checkpoint plan and
+changed-files-to-tests mapping before product code. Trial evidence, reservation,
+quality authority, Gate mutation, ERPNext contact and later P7 requirements
+remain inactive. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

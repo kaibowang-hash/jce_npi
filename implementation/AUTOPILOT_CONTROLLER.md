@@ -2273,3 +2273,31 @@ repeat or rewrite it merely to restore context. See
   identities, ownership, authorities, task order, migration/rollback and test
   impact. It changes no product code and may not invent lifecycle/quality/
   external-event/ERP or production-print authority.
+
+## 2026-08-10 P7-00 Level 2 PASS and P7-01 audit activation
+
+- `implementation/phase-7-requirement-anchor.md` and
+  `implementation/evidence/phase-7/p7-00-validation.md` allocate all
+  `FR-TR-001..010`, `FR-NP-001..015` and `UX-020` to exact P7-01..08 atomic
+  tasks. `FR-PRN-002` retains `TECHNICAL_VERIFIED`; `FR-INT-015` retains its
+  Phase 8 read-only projection status while both receive the scoped Phase 7
+  anchor evidence.
+- Exact predecessor controller SHA `e662684ffefd9d44c11a0e5e70e8801bd0a5f1e3`
+  passes ordinary CI `31356737236`: repository `93357718684` passes `1,420`
+  tracked Python, `809` frontend unit, `352` non-visual E2E, `5,753` direct
+  trilingual sources, statement coverage `80.07%`, build, audits and both
+  secret lanes; fixed-Linux visual `93357718640` passes `94/94`; controlled
+  runtime correctly skips. Visual artifact `9050946139` has digest
+  `sha256:66ddac29acc24b757b49d8064c445d4e2638d7661e9c8dea218579893860902f`.
+- The repository audit records that the current Trial page is only a
+  deterministic in-memory prototype and that no live Trial/NPI domain,
+  DocType, repository, BFF route or durable audit exists. P7-00 therefore
+  claims no product implementation.
+- Standing transition authority activates only the bounded P7-01
+  Requirement/domain/existing-capability audit for `FR-TR-001`. It must freeze
+  distinct Trial Plan and append-only Trial Round identities, Project/Tooling
+  containment, lifecycle, authority, concurrency/idempotency, migration,
+  rollback and changed-files-to-tests before product code. Input locking,
+  samples/cavities, defects/actions, conclusions, readiness, handover,
+  Released Trial Summary, mobile, ERPNext, official quality/Gate authority,
+  external projection and production print remain inactive.

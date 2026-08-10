@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_ANCHOR — P7-00 TRIAL AND NPI`
+`IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P7-01 TRIAL PLAN/ROUND`
 
-Recovery time: `2026-08-10T04:36:24Z`
+Recovery time: `2026-08-10T05:12:25Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -25,19 +25,27 @@ Runtime artifact `9050565297` has digest
 Complete evidence is `implementation/evidence/phase-6/p6-08-validation.md`
 and `implementation/phase-6-gate.md`.
 
-The current atomic action is P7-00 only: perform a bounded Phase 7/M6 Trial
-and NPI Requirement/domain/existing-capability audit; allocate M6-01..08 and
-their exact requirement/decision anchors; preserve Trial Plan/Round, locked
-input, sample, cavity/defect/action, conclusion, readiness, handover and
-Released Trial Summary identities; reconcile Phase 6's Trial Actual,
-Approved Baseline and acceptance holds plus `DR-REC-009`; and freeze authority,
-atomic task order, changed-files-to-tests, migration and rollback in a Phase 7
-requirement anchor and P7-00 validation record. This task changes no product
-code. No Phase 7 product task begins until the documentation/trace Gate passes.
+P7-00 passes Level 2 in `implementation/phase-7-requirement-anchor.md` and
+`implementation/evidence/phase-7/p7-00-validation.md`. The latest controller
+checkpoint `e662684` passes ordinary CI `31356737236`: repository
+`93357718684`, fixed-Linux visual `93357718640` at `94/94`, and the controlled
+job correctly skipped. The anchor allocates every primary Trial/NPI requirement
+and preserves the earlier truth for the controlled-print and Phase 8 external-
+projection foundations.
 
-Production ERPNext, official quality authority, approved Trial/Gate lifecycle,
-external Released Trial Summary event/projection and production print policy
-remain scoped holds, not global Hard Blockers.
+The current atomic action is P7-01 audit only for `FR-TR-001`: inspect the
+reusable live Project/Tooling domain, DocType, repository, permission, receipt,
+audit and route-switch patterns; freeze a distinct mutable Trial Plan identity
+and append-only Trial Round identity, Project-first containment, legal Plan/
+Round lifecycle, numbering and concurrency/idempotency boundaries; and record
+the smallest checkpoint order, migration/rollback and changed-files-to-tests
+mapping in `implementation/evidence/phase-7/p7-01-plan.md`. Product code may
+start only after that bounded audit is accepted by the task controller.
+
+Round input locking, samples/cavities, defects/actions, conclusions, readiness,
+handover, Released Trial Summary, mobile field actions, production ERPNext,
+official quality authority, Gate mutation, external event/projection and
+production print policy remain scoped holds, not global Hard Blockers.
 
 ## Retained P6-05 and P6-06 execution history
 

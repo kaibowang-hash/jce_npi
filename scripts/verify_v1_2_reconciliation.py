@@ -66,13 +66,48 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
-    "UX-020": ("7", "PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS"),
+    "UX-020": ("7", "ANCHORED_P7_08"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
     "UX-030": ("5", "TECHNICAL_VERIFIED_GOVERNANCE_PRODUCT_APPROVAL_HELD"),
     "UX-035": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
     "UX-036": ("5", "TECHNICAL_VERIFIED_CURRENT_P0_SCOPE"),
+}
+EXPECTED_P7_ANCHOR_ALLOCATION = {
+    "P7-01": {"FR-TR-001"},
+    "P7-02": {
+        "FR-NP-004",
+        "FR-NP-005",
+        "FR-TR-002",
+        "FR-TR-003",
+        "FR-TR-010",
+    },
+    "P7-03": {"FR-TR-004", "FR-TR-009"},
+    "P7-04": {"FR-TR-005", "FR-TR-006", "FR-TR-007", "FR-TR-008"},
+    "P7-05": {
+        "FR-NP-001",
+        "FR-NP-002",
+        "FR-NP-003",
+        "FR-NP-006",
+        "FR-NP-007",
+        "FR-NP-008",
+        "FR-NP-009",
+        "FR-NP-010",
+        "FR-NP-011",
+        "FR-NP-012",
+        "FR-NP-013",
+    },
+    "P7-06": {"FR-NP-014", "FR-NP-015"},
+    "P7-08": {"UX-020"},
+}
+EXPECTED_P7_ANCHOR_EVIDENCE = {
+    "implementation/phase-7-requirement-anchor.md",
+    "implementation/evidence/phase-7/p7-00-validation.md",
+}
+EXPECTED_P7_CARRIED_FOUNDATIONS = {
+    "FR-PRN-002": ("5", "TECHNICAL_VERIFIED"),
+    "FR-INT-015": ("8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
 }
 EXPECTED_R1_03_TRACE = {
     "FR-UX-039": (
@@ -1616,7 +1651,12 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the completed P5-06 trace truth"
             )
-        if actual_evidence != expected_evidence:
+        permitted_evidence = expected_evidence | (
+            EXPECTED_P7_ANCHOR_EVIDENCE
+            if requirement_id in EXPECTED_P7_CARRIED_FOUNDATIONS
+            else set()
+        )
+        if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain its complete P5-06 plan evidence set"
             )
@@ -1914,6 +1954,40 @@ def verify_trace_sets() -> None:
         ):
             raise ReconciliationVerificationError(
                 f"{requirement_id} has stale remediation allocation"
+            )
+
+    for task_id, requirement_ids in EXPECTED_P7_ANCHOR_ALLOCATION.items():
+        expected_status = f"ANCHORED_{task_id.replace('-', '_')}"
+        for requirement_id in requirement_ids:
+            row = by_id[requirement_id]
+            if (row["phase"], row["status"]) != ("7", expected_status):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} is not allocated to {task_id}"
+                )
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            if not EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} lacks the Phase 7 anchor evidence"
+                )
+
+    for requirement_id, expected_trace in EXPECTED_P7_CARRIED_FOUNDATIONS.items():
+        row = by_id[requirement_id]
+        if (row["phase"], row["status"]) != expected_trace:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} must retain its pre-Phase 7 trace truth"
+            )
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if not EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks the Phase 7 scoped-hold evidence"
             )
 
     linked_alias_ids = {

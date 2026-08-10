@@ -81,13 +81,18 @@ class V12ReconciliationTests(unittest.TestCase):
                 row["status"],
                 "TECHNICAL_VERIFIED",
             )
+            expected_evidence = set(
+                self.verifier.EXPECTED_P5_06_TRACE[requirement_id][1]
+            )
+            if requirement_id in self.verifier.EXPECTED_P7_CARRIED_FOUNDATIONS:
+                expected_evidence |= self.verifier.EXPECTED_P7_ANCHOR_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
                     for value in row["evidence"].split(";")
                     if value.strip()
                 },
-                self.verifier.EXPECTED_P5_06_TRACE[requirement_id][1],
+                expected_evidence,
             )
         self.assertEqual(
             by_id["FR-PRN-003"]["status"],
@@ -175,6 +180,41 @@ class V12ReconciliationTests(unittest.TestCase):
                     (self.verifier.ROOT / evidence_path).is_file(),
                     evidence_path,
                 )
+
+    def test_p7_00_trace_is_anchored_to_exact_atomic_tasks(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for task_id, requirement_ids in (
+            self.verifier.EXPECTED_P7_ANCHOR_ALLOCATION.items()
+        ):
+            expected_status = f"ANCHORED_{task_id.replace('-', '_')}"
+            for requirement_id in requirement_ids:
+                row = by_id[requirement_id]
+                self.assertEqual(row["phase"], "7")
+                self.assertEqual(row["status"], expected_status)
+                evidence = {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                }
+                self.assertTrue(
+                    self.verifier.EXPECTED_P7_ANCHOR_EVIDENCE.issubset(
+                        evidence
+                    )
+                )
+        for requirement_id, expected_trace in (
+            self.verifier.EXPECTED_P7_CARRIED_FOUNDATIONS.items()
+        ):
+            row = by_id[requirement_id]
+            self.assertEqual((row["phase"], row["status"]), expected_trace)
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            self.assertTrue(
+                self.verifier.EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence)
+            )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)

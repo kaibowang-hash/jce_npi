@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-10T04:36:24Z'
+updated_at: '2026-08-10T05:12:25Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P7-00
-current_task_status: IN_PROGRESS_REQUIREMENT_ANCHOR
-current_task_completed_stage: P6_08_LEVEL_2_AND_PHASE_6_LEVEL_3_PASS
-current_task_next_stage: P7_00_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task: P7-01
+current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+current_task_completed_stage: P7_00_LEVEL_2_PASS
+current_task_next_stage: P7_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P7-00
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_ANCHOR
+resumed_product_task: P7-01
+resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1514,15 +1514,47 @@ p6_08:
 p7_00:
   task: P7-00
   controller_task: P7_00_TRIAL_NPI_REQUIREMENT_ANCHOR
-  status: IN_PROGRESS_REQUIREMENT_ANCHOR
+  status: PASS_LEVEL_2
   phase: 7
   compatibility_milestone: M6
   starting_product_checkpoint: 68f230fee73b1b6ca95206346d128e1518613d82
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage: DOCUMENTATION_TRACE_LEVEL_2_TASK_GATE
+  starting_controller_checkpoint: e662684ffefd9d44c11a0e5e70e8801bd0a5f1e3
+  current_stage: COMPLETE
+  next_stage: P7_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
   product_code_changed: false
+  predecessor_ordinary_ci: 31356737236
+  predecessor_repository_job: 93357718684
+  predecessor_visual_job: 93357718640
+  predecessor_visual_result: 94_OF_94_PASS
+  predecessor_visual_artifact: 9050946139
+  predecessor_visual_digest: sha256:66ddac29acc24b757b49d8064c445d4e2638d7661e9c8dea218579893860902f
+  primary_requirements_anchored: 25
+  ux_requirements_anchored: 1
   evidence:
     - implementation/phase-6-gate.md
+    - implementation/phase-7-requirement-anchor.md
+    - implementation/evidence/phase-7/p7-00-validation.md
+p7_01:
+  task: P7-01
+  controller_task: P7_01_TRIAL_PLAN_ROUND_IDENTITY_LIFECYCLE
+  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  phase: 7
+  compatibility_milestone: M6-01
+  requirement_ids:
+    - FR-TR-001
+  retained_product_checkpoint: 68f230fee73b1b6ca95206346d128e1518613d82
+  predecessor_controller_checkpoint: e662684ffefd9d44c11a0e5e70e8801bd0a5f1e3
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  next_stage: CHECKPOINT_PLAN_TASK_GATE
+  product_code_changed: false
+  scoped_holds:
+    - TRIAL_INPUT_LOCKING_AND_EVIDENCE
+    - SAMPLE_CAVITY_DEFECT_ACTION_AND_CONCLUSION
+    - NPI_READINESS_HANDOVER_AND_RELEASED_SUMMARY
+    - ERP_QUALITY_GATE_AND_EXTERNAL_PROJECTION_AUTHORITY
+  evidence:
+    - implementation/phase-7-requirement-anchor.md
+    - implementation/evidence/phase-7/p7-00-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1548,6 +1580,6 @@ phases:
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
-  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P7-00}
+  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P7-00], current_task: P7-01}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

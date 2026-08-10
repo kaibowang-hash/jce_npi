@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-10T04:36:24Z`
+Updated: `2026-08-10T05:12:25Z`
 
 ## Active hard blockers
 
@@ -13,9 +13,9 @@ required.
 
 ## Active recovery
 
-None. Phase 6 is sealed in `implementation/phase-6-gate.md`. P7-00 is active
-only for the bounded Phase 7 Trial/NPI requirement anchor and changes no
-product code.
+None. Phase 6 is sealed in `implementation/phase-6-gate.md`; P7-00 passes its
+Level 2 documentation/trace Gate. P7-01 is active only for the bounded
+`FR-TR-001` Trial Plan/Round identity and lifecycle audit before product code.
 
 Production ERPNext access, official quality/approval authority, exact Trial/
 Gate lifecycle policy, the external Released Trial Summary event/projection

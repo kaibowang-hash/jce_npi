@@ -89,31 +89,31 @@ FR-DS-011,P0,5,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,implementation/e
 FR-DS-012,P1,5,TECHNICAL_VERIFIED,docs/DETAILED_REQUIREMENTS.md,implementation/evidence/phase-5/p5-04-plan.md; implementation/evidence/phase-5/p5-04-domain-metadata-checkpoint.md; implementation/evidence/phase-5/p5-04-repository-api-checkpoint.md; implementation/evidence/phase-5/p5-04-frontend-checkpoint.md; implementation/evidence/phase-5/p5-04-controlled-runtime-candidate.md; implementation/evidence/phase-5/p5-04-validation.md,PACK_CANONICAL,FR-DS-012
 FR-DS-013,P0,5,TECHNICAL_VERIFIED_FOUNDATION,docs/DETAILED_REQUIREMENTS.md,implementation/phase-5-requirement-anchor.md; implementation/evidence/phase-5/p5-05-plan.md; implementation/evidence/phase-5/p5-05-domain-metadata-checkpoint.md; implementation/evidence/phase-5/p5-05-repository-api-checkpoint.md; implementation/evidence/phase-5/p5-05-frontend-checkpoint.md; implementation/evidence/phase-5/p5-05-controlled-runtime-candidate.md; implementation/evidence/phase-5/p5-05-validation.md,PACK_CANONICAL,FR-DS-013
 FR-DS-014,P2,5,TECHNICAL_VERIFIED_FOUNDATION,docs/DETAILED_REQUIREMENTS.md,implementation/evidence/phase-5/p5-01-reconciliation-hold.md; implementation/evidence/reconciliation/r1-shared-bridge-level-3-validation.md; implementation/phase-5-requirement-anchor.md; implementation/evidence/phase-5/p5-01-plan.md; implementation/evidence/phase-5/p5-01-resume-audit.md; implementation/evidence/phase-5/p5-01-frontend-runtime-checkpoint.md; implementation/evidence/phase-5/p5-01-controlled-runtime-projection-validation-blocker.md; implementation/evidence/phase-5/p5-01-post-checkout-recovery.md; implementation/evidence/phase-5/p5-01-validation.md,PACK_CANONICAL,FR-DS-014
-FR-NP-001,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-001
-FR-NP-002,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-002
-FR-NP-003,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-003
-FR-NP-004,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-004
-FR-NP-005,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-005
-FR-NP-006,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-006
-FR-NP-007,P1,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-007
-FR-NP-008,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-008
-FR-NP-009,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-009
-FR-NP-010,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-010
-FR-NP-011,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-011
-FR-NP-012,P1,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-012
-FR-NP-013,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-013
-FR-NP-014,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-014
-FR-NP-015,P1,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-NP-015
-FR-TR-001,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-001
-FR-TR-002,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-002
-FR-TR-003,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-003
-FR-TR-004,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-004
-FR-TR-005,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-005
-FR-TR-006,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-006
-FR-TR-007,P0,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-007
-FR-TR-008,P1,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-008
-FR-TR-009,P1,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-009
-FR-TR-010,P2,7,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-TR-010
+FR-NP-001,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-001
+FR-NP-002,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-002
+FR-NP-003,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-003
+FR-NP-004,P0,7,ANCHORED_P7_02,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-004
+FR-NP-005,P0,7,ANCHORED_P7_02,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-005
+FR-NP-006,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-006
+FR-NP-007,P1,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-007
+FR-NP-008,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-008
+FR-NP-009,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-009
+FR-NP-010,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-010
+FR-NP-011,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-011
+FR-NP-012,P1,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-012
+FR-NP-013,P0,7,ANCHORED_P7_05,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-013
+FR-NP-014,P0,7,ANCHORED_P7_06,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-014
+FR-NP-015,P1,7,ANCHORED_P7_06,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-NP-015
+FR-TR-001,P0,7,ANCHORED_P7_01,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-001
+FR-TR-002,P0,7,ANCHORED_P7_02,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-002
+FR-TR-003,P0,7,ANCHORED_P7_02,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-003
+FR-TR-004,P0,7,ANCHORED_P7_03,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-004
+FR-TR-005,P0,7,ANCHORED_P7_04,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-005
+FR-TR-006,P0,7,ANCHORED_P7_04,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-006
+FR-TR-007,P0,7,ANCHORED_P7_04,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-007
+FR-TR-008,P1,7,ANCHORED_P7_04,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-008
+FR-TR-009,P1,7,ANCHORED_P7_03,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-009
+FR-TR-010,P2,7,ANCHORED_P7_02,docs/DETAILED_REQUIREMENTS.md,implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,PACK_CANONICAL,FR-TR-010
 FR-CH-001,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-CH-001
 FR-CH-002,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-CH-002
 FR-CH-003,P0,9,PLANNED,docs/DETAILED_REQUIREMENTS.md,,PACK_CANONICAL,FR-CH-003
@@ -191,7 +191,7 @@ UX-016,P0,8,TECHNICAL_VERIFIED_FOUNDATION,implementation/V1_2_DOCX_REQUIREMENTS.
 UX-017,P0,3,RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-013
 UX-018,P1,5,TECHNICAL_VERIFIED_FOUNDATION,implementation/V1_2_DOCX_REQUIREMENTS.csv,frontend/src/app/command-palette.tsx; frontend/src/app/router.ts; frontend/tests/unit/pages-and-shell.test.tsx; frontend/tests/unit/router.test.tsx; frontend/tests/e2e/r1-03-shell.spec.ts; implementation/evidence/reconciliation/r1-03-validation.md,DOCX_RECONCILED,
 UX-019,P0,3,RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-010; FR-UX-011
-UX-020,P1,7,PLANNED_PHASE_7_MOBILE_FIELD_ACTIONS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-016; NFR-UX-001
+UX-020,P1,7,ANCHORED_P7_08,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md; implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,DOCX_RECONCILED,FR-UX-016; NFR-UX-001
 UX-021,P0,3,RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-017
 UX-022,P0,3,RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-021; FR-UX-026; FR-UX-034; FR-UX-035; FR-UX-036; NFR-LOC-001; NFR-LOC-002
 UX-023,P0,3,RECONCILED_ALIAS_LINKED_TO_CANONICAL_IDS,implementation/V1_2_DOCX_REQUIREMENTS.csv,implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv; docs/V1_2_RECONCILIATION_ADDENDUM.md,DOCX_RECONCILED,FR-UX-020; FR-UX-033; FR-UX-037
@@ -273,9 +273,9 @@ FR-UX-040,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,apps/npi_
 FR-UX-041,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,frontend/src/components/attachment-workflow.ts; frontend/src/components/field-attachment-primitives.tsx; frontend/src/pages/trial-page.tsx; frontend/src/pages/gate-evidence-page.tsx; frontend/src/styles/app.css; frontend/tests/unit/field-attachment-primitives.test.tsx; frontend/tests/unit/pages-and-shell.test.tsx; frontend/tests/unit/gate-evidence-page.test.tsx; frontend/tests/e2e/r1-05-field-attachments.spec.ts; frontend/tests/e2e/states-locales-accessibility.spec.ts; apps/npi_core/npi_core/translations/zh.csv; apps/npi_core/npi_core/translations/zh-TW.csv; frontend/src/generated/catalogs.ts; implementation/evidence/reconciliation/r1-05-stage-2-validation.md,ADDENDUM_DIRECT,FR-UX-041
 FR-UX-042,P0,5,DECISION_REQUIRED_DR_REC_001,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md,ADDENDUM_DIRECT,FR-UX-042
 FR-PRN-001,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md; implementation/phase-5-requirement-anchor.md; apps/npi_core/npi_core/controlled_print/domain.py; apps/npi_core/npi_core/controlled_print/frappe_repository.py; apps/npi_core/npi_core/controlled_print_api.py; contracts/npi-api.openapi.yaml; frontend/src/components/controlled-print-action.tsx; tests/test_phase5_controlled_print_repository.py; scripts/verify_controlled_print_runtime.py; implementation/evidence/phase-5/p5-06-validation.md; implementation/phase-5-gate.md,ADDENDUM_DIRECT,FR-PRN-001
-FR-PRN-002,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md; implementation/phase-5-requirement-anchor.md; apps/npi_core/npi_core/controlled_print/rendering.py; apps/npi_core/npi_core/controlled_print/qr.py; apps/npi_core/npi_core/controlled_print/frappe_repository.py; frontend/src/api/controlled-print-data-source.ts; tests/test_phase5_controlled_print_rendering.py; tests/test_phase5_controlled_print_repository_transaction.py; scripts/verify_controlled_print_runtime.py; implementation/evidence/phase-5/p5-06-validation.md; implementation/phase-5-gate.md,ADDENDUM_DIRECT,FR-PRN-002
+FR-PRN-002,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md; implementation/phase-5-requirement-anchor.md; apps/npi_core/npi_core/controlled_print/rendering.py; apps/npi_core/npi_core/controlled_print/qr.py; apps/npi_core/npi_core/controlled_print/frappe_repository.py; frontend/src/api/controlled-print-data-source.ts; tests/test_phase5_controlled_print_rendering.py; tests/test_phase5_controlled_print_repository_transaction.py; scripts/verify_controlled_print_runtime.py; implementation/evidence/phase-5/p5-06-validation.md; implementation/phase-5-gate.md; implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,ADDENDUM_DIRECT,FR-PRN-002
 FR-PRN-003,P0,5,DECISION_REQUIRED_DR_REC_003_004,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md,ADDENDUM_DIRECT,FR-PRN-003
-FR-INT-015,P1,8,PLANNED_NPI_SIDE_READ_ONLY_PROJECTION,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md,ADDENDUM_DIRECT,FR-INT-015
+FR-INT-015,P1,8,PLANNED_NPI_SIDE_READ_ONLY_PROJECTION,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md; implementation/phase-7-requirement-anchor.md; implementation/evidence/phase-7/p7-00-validation.md,ADDENDUM_DIRECT,FR-INT-015
 FR-BR-001,P0,5,TECHNICAL_VERIFIED,docs/V1_2_RECONCILIATION_ADDENDUM.md,frontend/src/ui-adapters/display-brand.tsx; frontend/scripts/verify-display-brand.mjs; frontend/tests/unit/display-brand.test.tsx; frontend/tests/e2e/display-brand.spec.ts; implementation/evidence/reconciliation/r1-02-validation.md,ADDENDUM_DIRECT,FR-BR-001
 FR-BR-002,P1,8,PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET,docs/V1_2_RECONCILIATION_ADDENDUM.md,implementation/V1_2_RECONCILIATION_DECISIONS.md,ADDENDUM_DIRECT,FR-BR-002
 FR-TX-019,P0,6,TECHNICAL_VERIFIED_FOUNDATION,docs/V1_2_RECONCILIATION_ADDENDUM.md,apps/npi_core/npi_core/tooling/engineering_controls_domain.py; apps/npi_core/npi_core/tooling/engineering_controls_repository.py; contracts/npi-api.openapi.yaml; contracts/data-ownership.yaml; frontend/src/pages/tooling-engineering-controls-workspace.tsx; tests/test_phase6_tooling_engineering_controls_domain.py; scripts/verify_tooling_engineering_controls_runtime.py; implementation/evidence/phase-6/p6-05-validation.md; Customer Standard Trial Actual and Approved Baseline are disjoint typed layers while Phase 7 retains actual and approval creation,ADDENDUM_DIRECT,FR-TX-019
