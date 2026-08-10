@@ -2301,3 +2301,28 @@ repeat or rewrite it merely to restore context. See
   samples/cavities, defects/actions, conclusions, readiness, handover,
   Released Trial Summary, mobile, ERPNext, official quality/Gate authority,
   external projection and production print remain inactive.
+
+## 2026-08-10 P7-00 exact-SHA CI PASS; P7-01 audit PASS and checkpoint 1 activation
+
+- Exact P7-00 controller checkpoint
+  `4865e0a6e0e3946f21b847b79675ebeaa828e2b2` passes ordinary CI
+  `31358008296`: repository `93361224683` passes the complete repository and
+  `352/352` non-visual E2E, fixed-Linux visual `93361224744` passes `94/94`,
+  both secret lanes pass and controlled runtime correctly skips.
+- `implementation/evidence/phase-7/p7-01-plan.md` passes the bounded
+  Requirement/domain/existing-capability audit for `FR-TR-001`. There is no
+  live Trial backend. Three early OpenAPI placeholders omit Project-first
+  containment, collapse Plan into Round or expose later-task behavior and have
+  no implementation/consumer; they must be replaced by the exact P7-01
+  contract before activation.
+- The plan freezes immutable Plan revisions; distinct planned Round identity,
+  sequence and lifecycle events; exact Project/Tooling/member/document/work
+  containment; existing Domain Work Item truth plus immutable Trial links;
+  actor-bound idempotency/audit; and explicit unavailable resource booking.
+  `FR-TR-001` cannot claim confirmed reservation without an approved policy and
+  reader.
+- Standing authority activates only checkpoint 1: pure domain, corrected
+  closed Project-first OpenAPI, exact ownership, five guarded additive
+  DocTypes and direct metadata/security tests. No live route, business row,
+  policy, fixture, SPA, external call, lifecycle beyond planned-state rules,
+  confirmed reservation, quality/Gate effect or later P7 behavior is active.

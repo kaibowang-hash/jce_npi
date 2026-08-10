@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-10T05:12:25Z`
+Updated: `2026-08-10T05:26:23Z`
 
 ## Active hard blockers
 
@@ -13,14 +13,15 @@ required.
 
 ## Active recovery
 
-None. Phase 6 is sealed in `implementation/phase-6-gate.md`; P7-00 passes its
-Level 2 documentation/trace Gate. P7-01 is active only for the bounded
-`FR-TR-001` Trial Plan/Round identity and lifecycle audit before product code.
+None. Phase 6 is sealed; P7-00 and exact-SHA CI `31358008296` pass. The bounded
+P7-01 audit also passes. Only checkpoint 1 pure domain/contract/additive
+metadata is active; it has no route, business row, policy, fixture or external
+effect.
 
-Production ERPNext access, official quality/approval authority, exact Trial/
-Gate lifecycle policy, the external Released Trial Summary event/projection
-under `DR-REC-009`, and production print policy remain scoped holds for their
-dependent behavior, not global Hard Blockers.
+Confirmed machine/person/material reservation, production ERPNext access,
+official quality/approval authority, exact later Trial/Gate lifecycle policy,
+the external Released Trial Summary event/projection under `DR-REC-009`, and
+production print policy remain scoped holds, not global Hard Blockers.
 
 ## Historical recovery
 

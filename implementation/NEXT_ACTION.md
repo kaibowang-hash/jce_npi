@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P7-01 TRIAL PLAN/ROUND`
+`IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P7-01 CHECKPOINT 1`
 
-Recovery time: `2026-08-10T05:12:25Z`
+Recovery time: `2026-08-10T05:26:23Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -27,22 +27,23 @@ and `implementation/phase-6-gate.md`.
 
 P7-00 passes Level 2 in `implementation/phase-7-requirement-anchor.md` and
 `implementation/evidence/phase-7/p7-00-validation.md`. The latest controller
-checkpoint `e662684` passes ordinary CI `31356737236`: repository
-`93357718684`, fixed-Linux visual `93357718640` at `94/94`, and the controlled
+checkpoint `4865e0a` passes ordinary CI `31358008296`: repository
+`93361224683`, fixed-Linux visual `93361224744` at `94/94`, and the controlled
 job correctly skipped. The anchor allocates every primary Trial/NPI requirement
 and preserves the earlier truth for the controlled-print and Phase 8 external-
 projection foundations.
 
-The current atomic action is P7-01 audit only for `FR-TR-001`: inspect the
-reusable live Project/Tooling domain, DocType, repository, permission, receipt,
-audit and route-switch patterns; freeze a distinct mutable Trial Plan identity
-and append-only Trial Round identity, Project-first containment, legal Plan/
-Round lifecycle, numbering and concurrency/idempotency boundaries; and record
-the smallest checkpoint order, migration/rollback and changed-files-to-tests
-mapping in `implementation/evidence/phase-7/p7-01-plan.md`. Product code may
-start only after that bounded audit is accepted by the task controller.
+The bounded P7-01 audit passes in
+`implementation/evidence/phase-7/p7-01-plan.md`. The current atomic action is
+checkpoint 1 only: add pure immutable Trial Plan Revision, planned Trial Round,
+lifecycle-event, Trial-to-Domain-Work link and command-receipt domains; replace
+the unimplemented non-Project-first Trial OpenAPI placeholders with closed
+P7-01 schemas; add exact data ownership; add five guarded additive DocTypes;
+and prove hash/version/non-collapse/parent/immutability/generic-CRUD security.
+No handler, live route, business row, fixture or SPA is activated.
 
-Round input locking, samples/cavities, defects/actions, conclusions, readiness,
+Repository/BFF, live Trial workspace, confirmed reservation, Round input
+locking, samples/cavities, defects/actions, conclusions, readiness,
 handover, Released Trial Summary, mobile field actions, production ERPNext,
 official quality authority, Gate mutation, external event/projection and
 production print policy remain scoped holds, not global Hard Blockers.

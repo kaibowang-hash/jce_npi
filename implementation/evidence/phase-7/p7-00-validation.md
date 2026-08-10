@@ -10,6 +10,13 @@ Starting controller checkpoint:
 Retained product/runtime checkpoint:
 `68f230fee73b1b6ca95206346d128e1518613d82`
 
+Closure controller checkpoint:
+`4865e0a6e0e3946f21b847b79675ebeaa828e2b2`
+
+Closure ordinary CI: `31358008296` (`PASS`; repository `93361224683`,
+fixed-Linux visual `93361224744` at `94/94`, controlled runtime correctly
+skipped)
+
 Result: **PASS — LEVEL 2 DOCUMENTATION/TRACE TASK GATE**
 
 ## Scope and non-scope

@@ -1,19 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T05:12:25Z`
+Updated: `2026-08-10T05:26:23Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT — P7-01 TRIAL PLAN/ROUND`
+- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P7-01 CHECKPOINT 1`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact task/product checkpoint:
-  `68f230fee73b1b6ca95206346d128e1518613d82` (pushed; P6-08 Level 2 and
-  Phase 6 Level 3 product/runtime checkpoint PASS)
+- Latest exact controller checkpoint:
+  `4865e0a6e0e3946f21b847b79675ebeaa828e2b2` (pushed; P7-00 Level 2
+  documentation/trace checkpoint PASS)
+- Retained product/runtime checkpoint:
+  `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
+  Level 3 PASS)
 - Latest complete normal CI:
-  `31356737236` (`PASS`, exact controller SHA `e662684`; repository
-  `93357718684` and fixed-Linux visual `93357718640` at `94/94` passed;
+  `31358008296` (`PASS`, exact controller SHA `4865e0a`; repository
+  `93361224683` and fixed-Linux visual `93361224744` at `94/94` passed;
   controlled job skipped)
 - Latest controlled-Site run:
   `31355555773` (`PASS`, unchanged exact SHA `68f230f`; repository
@@ -24,7 +27,7 @@ Updated: `2026-08-10T05:12:25Z`
   `sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`
 - Current controller task:
   `P7-01 — Trial Plan and Round identity/lifecycle foundation`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
 - Current Requirement ID: `FR-TR-001`
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
@@ -51,14 +54,20 @@ primary Trial/NPI requirements plus `UX-020` are allocated to P7-01..08;
 `FR-PRN-002` and `FR-INT-015` retain their earlier truth while gaining scoped
 Phase 7 evidence. No product requirement is claimed implemented by the anchor.
 
-The current atomic task is the bounded P7-01 audit for `FR-TR-001`. It must
-inspect reusable Project, Tooling, permission, receipt, audit and lifecycle
-patterns; freeze distinct Trial Plan and immutable Trial Round identities,
-their legal lifecycle and exact Project/Tooling membership; decide no business
-rule beyond accepted specifications; and publish the checkpoint plan and
-changed-files-to-tests mapping before product code. Trial evidence, reservation,
-quality authority, Gate mutation, ERPNext contact and later P7 requirements
-remain inactive. There is no active technical Hard Blocker.
+The bounded P7-01 audit passes in
+`implementation/evidence/phase-7/p7-01-plan.md`. It proves no live Trial
+backend exists, rejects the non-Project-first OpenAPI placeholders and freezes
+distinct immutable Plan revisions, planned Round identity/events, exact
+Project/Tooling/member/work links, fail-closed resource booking and four
+checkpoint boundaries.
+
+The current atomic scope is checkpoint 1 only: pure Plan/Round/work-link/
+receipt domains, corrected closed Project-first contract, exact ownership and
+five guarded additive DocTypes with direct security/metadata tests. It creates
+no live route, business row, policy, fixture, UI or external behavior. Trial
+input locking, lifecycle transitions, confirmed reservations, quality/Gate
+authority, ERPNext contact and later P7 requirements remain inactive. There is
+no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

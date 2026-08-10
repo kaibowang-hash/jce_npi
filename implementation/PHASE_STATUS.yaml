@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-10T05:12:25Z'
+updated_at: '2026-08-10T05:26:23Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
 current_task: P7-01
-current_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
-current_task_completed_stage: P7_00_LEVEL_2_PASS
-current_task_next_stage: P7_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
+current_task_completed_stage: P7_01_REQUIREMENT_DOMAIN_AUDIT_PASS
+current_task_next_stage: P7_01_CHECKPOINT_1_DOMAIN_CONTRACT_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-01
-resumed_product_task_status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+resumed_product_task_status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1522,12 +1522,11 @@ p7_00:
   current_stage: COMPLETE
   next_stage: P7_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
   product_code_changed: false
-  predecessor_ordinary_ci: 31356737236
-  predecessor_repository_job: 93357718684
-  predecessor_visual_job: 93357718640
-  predecessor_visual_result: 94_OF_94_PASS
-  predecessor_visual_artifact: 9050946139
-  predecessor_visual_digest: sha256:66ddac29acc24b757b49d8064c445d4e2638d7661e9c8dea218579893860902f
+  closure_controller_checkpoint: 4865e0a6e0e3946f21b847b79675ebeaa828e2b2
+  closure_ordinary_ci: 31358008296
+  closure_repository_job: 93361224683
+  closure_visual_job: 93361224744
+  closure_visual_result: 94_OF_94_PASS
   primary_requirements_anchored: 25
   ux_requirements_anchored: 1
   evidence:
@@ -1537,15 +1536,21 @@ p7_00:
 p7_01:
   task: P7-01
   controller_task: P7_01_TRIAL_PLAN_ROUND_IDENTITY_LIFECYCLE
-  status: IN_PROGRESS_REQUIREMENT_DOMAIN_AUDIT
+  status: IN_PROGRESS_DOMAIN_CONTRACT_METADATA
   phase: 7
   compatibility_milestone: M6-01
   requirement_ids:
     - FR-TR-001
   retained_product_checkpoint: 68f230fee73b1b6ca95206346d128e1518613d82
   predecessor_controller_checkpoint: e662684ffefd9d44c11a0e5e70e8801bd0a5f1e3
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage: CHECKPOINT_PLAN_TASK_GATE
+  audit_status: PASS
+  audit_checkpoint: 4865e0a6e0e3946f21b847b79675ebeaa828e2b2
+  audit_ordinary_ci: 31358008296
+  audit_repository_job: 93361224683
+  audit_visual_job: 93361224744
+  audit_visual_result: 94_OF_94_PASS
+  current_stage: CHECKPOINT_1_DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage: CHECKPOINT_1_TASK_GATE
   product_code_changed: false
   scoped_holds:
     - TRIAL_INPUT_LOCKING_AND_EVIDENCE
@@ -1555,6 +1560,7 @@ p7_01:
   evidence:
     - implementation/phase-7-requirement-anchor.md
     - implementation/evidence/phase-7/p7-00-validation.md
+    - implementation/evidence/phase-7/p7-01-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
