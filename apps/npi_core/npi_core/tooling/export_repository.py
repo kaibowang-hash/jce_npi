@@ -51,13 +51,7 @@ from npi_core.tooling.export_domain import (
     tooling_list_preference_key_hash,
     tooling_list_query_snapshot_hash,
 )
-from npi_core.tooling.export_frappe_validation import (
-    PACKAGE_CREATE_DIAGNOSTIC_HEADER,
-    mark_tooling_package_create_substage,
-    record_tooling_package_create_fallback,
-    tooling_export_write,
-    tooling_package_create_diagnostics,
-)
+from npi_core.tooling.export_frappe_validation import tooling_export_write
 from npi_core.tooling.export_rendering import (
     RenderedToolingObjectPackage,
     render_tooling_object_package,
@@ -288,35 +282,6 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
         filter_spec: ToolingListFilter | None,
         query_snapshot_hash: str | None,
     ) -> ToolingExportCommandOutcome | None:
-        with tooling_package_create_diagnostics(
-            self.trace_id,
-            enabled=frappe.get_request_header("X-NPI-P6-08-Diagnostic")
-            == PACKAGE_CREATE_DIAGNOSTIC_HEADER,
-        ):
-            try:
-                return self._create_tooling_export_package(
-                    project_id,
-                    idempotency_key_hash=idempotency_key_hash,
-                    mode=mode,
-                    selection=selection,
-                    filter_spec=filter_spec,
-                    query_snapshot_hash=query_snapshot_hash,
-                )
-            except Exception as error:
-                record_tooling_package_create_fallback(error)
-                raise
-
-    def _create_tooling_export_package(
-        self,
-        project_id: UUID,
-        *,
-        idempotency_key_hash: str,
-        mode: ToolingExportMode,
-        selection: Sequence[ToolingExportReference] | None,
-        filter_spec: ToolingListFilter | None,
-        query_snapshot_hash: str | None,
-    ) -> ToolingExportCommandOutcome | None:
-        mark_tooling_package_create_substage("P608_PACKAGE_COMMAND_CONTEXT")
         project = self._locked_authorized_project(project_id)
         if project is None or not self._is_internal_system_manager():
             return None
@@ -339,9 +304,7 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
         if isinstance(context, dict):
             return ToolingExportCommandOutcome(context, replayed=True)
         receipt_key, payload_hash = context
-        mark_tooling_package_create_substage("P608_PACKAGE_ROWS")
         rows = self._tooling_list_rows(project)
-        mark_tooling_package_create_substage("P608_PACKAGE_SELECTION")
         if mode is ToolingExportMode.SELECTION:
             if selection is None or filter_spec is not None or query_snapshot_hash is not None:
                 raise _mode_error()
@@ -372,7 +335,6 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
                         }
                     ]
                 )
-        mark_tooling_package_create_substage("P608_PACKAGE_IDENTITY")
         package_id = self._new_export_uuid()
         now = self._now_export()
         language = ToolingExportLanguage(validate_language_code(get_user_lang(self.actor)))
@@ -390,7 +352,6 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
             request_id=UUID(self.request_id),
             trace_id=self.trace_id,
         )
-        mark_tooling_package_create_substage("P608_PACKAGE_RENDER")
         try:
             rendered = render_tooling_object_package(
                 rows=selected,
@@ -416,7 +377,6 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
             ) from error
         response: dict[str, Any]
         with tooling_export_write():
-            mark_tooling_package_create_substage("P608_PACKAGE_RECEIPT_INSERT")
             receipt = self._insert_export_receipt(
                 project,
                 receipt_key=receipt_key,
@@ -425,20 +385,15 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
                 payload_hash=payload_hash,
                 now=now,
             )
-            mark_tooling_package_create_substage("P608_PACKAGE_FILE_SAVE")
             file_document = self._save_private_package(package_id, rendered)
-            mark_tooling_package_create_substage("P608_PACKAGE_ORPHAN_CLEANUP")
             self._register_orphan_cleanup(file_document)
-            mark_tooling_package_create_substage("P608_PACKAGE_INSERT")
             package = self._insert_package(
                 project,
                 identity=identity,
                 rendered=rendered,
                 file_document=file_document,
             )
-            mark_tooling_package_create_substage("P608_PACKAGE_RESPONSE_BUILD")
             response = {"package": self._public_package(package)}
-            mark_tooling_package_create_substage("P608_PACKAGE_AUDIT_APPEND")
             self._append_audit(
                 operation=ToolingExportOperation.CREATE.value,
                 global_id=package_id,
@@ -452,14 +407,12 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
                     "manifestSha256": rendered.manifest_sha256,
                 },
             )
-            mark_tooling_package_create_substage("P608_PACKAGE_RECEIPT_SEAL")
             self._seal_export_receipt(
                 receipt,
                 target_id=package_id,
                 response=response,
                 now=now,
             )
-        mark_tooling_package_create_substage("P608_PACKAGE_TRANSACTION_LIFECYCLE")
         return ToolingExportCommandOutcome(response)
 
     def tooling_export_package_content(
@@ -923,12 +876,21 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
             is_private=1,
         )
         content = document.get_content()
+        if isinstance(content, str):
+            content = content.encode("utf-8")
+        content_hash = str(document.content_hash or "")
         if not isinstance(content, bytes) or any(
             (
                 int(document.is_private or 0) != 1,
-                str(document.file_name) != rendered.file_name,
-                len(content) != rendered.size_bytes,
-                hashlib.sha256(content).hexdigest() != rendered.sha256,
+                int(document.is_remote_file or 0) != 0,
+                str(document.attached_to_doctype) != "NPI Tooling Export Package",
+                str(document.attached_to_name) != str(package_id),
+                content != rendered.content,
+                not _retained_package_file_name_matches(
+                    str(document.file_name),
+                    rendered.file_name,
+                    content_hash,
+                ),
             )
         ):
             raise ToolingReferenceUnavailable()
@@ -942,6 +904,7 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
         rendered: RenderedToolingObjectPackage,
         file_document: object,
     ):
+        retained_file_name = str(file_document.file_name)
         snapshot = {
             "globalId": str(identity.global_id),
             "tenantId": identity.tenant_id,
@@ -956,7 +919,7 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
             "generatedAt": _utc_text(identity.generated_at),
             "expiresAt": _utc_text(identity.expires_at),
             "frappeFileId": str(file_document.name),
-            "fileName": rendered.file_name,
+            "fileName": retained_file_name,
             "mimeType": rendered.mime_type,
             "sizeBytes": rendered.size_bytes,
             "sha256": rendered.sha256,
@@ -980,7 +943,7 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
                 "generated_at": _database_datetime(identity.generated_at),
                 "expires_at": _database_datetime(identity.expires_at),
                 "frappe_file_id": str(file_document.name),
-                "file_name": rendered.file_name,
+                "file_name": retained_file_name,
                 "mime_type": rendered.mime_type,
                 "size_bytes": rendered.size_bytes,
                 "sha256": rendered.sha256,
@@ -1092,6 +1055,22 @@ class FrappeToolingExportRepository(FrappeToolingRepository):
     def _new_export_uuid(self) -> UUID:
         value = self._export_uuid_factory()
         return value if isinstance(value, UUID) else UUID(str(value))
+
+
+def _retained_package_file_name_matches(
+    actual: str,
+    requested: str,
+    content_hash: str,
+) -> bool:
+    if len(content_hash) != 32 or any(
+        character not in "0123456789abcdef" for character in content_hash
+    ):
+        return False
+    requested_path = PurePosixPath(requested)
+    conflict_safe_name = (
+        f"{requested_path.stem}{content_hash[-6:]}{requested_path.suffix}"
+    )
+    return actual in {requested, conflict_safe_name}
 
 
 def _current_applicabilities(values: Sequence[object], now: datetime) -> tuple[object, ...]:

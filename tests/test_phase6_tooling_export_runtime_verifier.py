@@ -128,9 +128,6 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             'observed_sources <= {"manual", "controlled_xlsx_import"}',
             'f"P6-08 Tooling List returned HTTP {result.status} "',
             "problem_code if isinstance(problem_code, str) else 'unavailable'",
-            'if query_key == "package-create-diagnostic":',
-            'headers["X-NPI-P6-08-Diagnostic"] = "p608-package-create-v1"',
-            "diagnostic=first_package is None",
         )
         for marker in required:
             with self.subTest(marker=marker):
@@ -193,6 +190,11 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn("message", diagnostic)
         self.assertNotIn("must not be emitted", diagnostic)
+
+    def test_temporary_package_create_diagnostic_activation_is_closed(self) -> None:
+        self.assertNotIn("X-NPI-P6-08-Diagnostic", self.source)
+        self.assertNotIn("p608-package-create-v1", self.source)
+        self.assertNotIn("package-create-diagnostic", self.source)
 
     def test_verifier_covers_selection_filter_package_and_localized_bytes(self) -> None:
         required = (

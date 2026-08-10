@@ -157,48 +157,6 @@ _REVISION_STAGE_DIAGNOSTIC_CODES = frozenset(
         "DOCUMENT_REVISION_RECEIPT_SEAL",
     }
 )
-_P608_PACKAGE_CREATE_DIAGNOSTIC_CODES = frozenset(
-    {
-        "P608_PACKAGE_COMMAND_CONTEXT",
-        "P608_PACKAGE_ROWS",
-        "P608_PACKAGE_SELECTION",
-        "P608_PACKAGE_IDENTITY",
-        "P608_PACKAGE_RENDER",
-        "P608_PACKAGE_RECEIPT_INSERT",
-        "P608_PACKAGE_FILE_SAVE",
-        "P608_PACKAGE_ORPHAN_CLEANUP",
-        "P608_PACKAGE_INSERT",
-        "P608_PACKAGE_RESPONSE_BUILD",
-        "P608_PACKAGE_AUDIT_APPEND",
-        "P608_PACKAGE_RECEIPT_SEAL",
-        "P608_PACKAGE_TRANSACTION_LIFECYCLE",
-        "P608_PACKAGE_WRITE_GUARD",
-        "P608_PACKAGE_NORMALIZE_IDENTITIES",
-        "P608_PACKAGE_BOUNDS",
-        "P608_PACKAGE_CONFIDENTIALITY",
-        "P608_PACKAGE_MIME",
-        "P608_PACKAGE_HASHES",
-        "P608_PACKAGE_MODE",
-        "P608_PACKAGE_SNAPSHOT",
-        "P608_PACKAGE_PROJECTION",
-        "P608_PACKAGE_TIME_PROJECTION",
-        "P608_PACKAGE_JSON_PROJECTION",
-        "P608_PACKAGE_EXPIRY",
-        "P608_PACKAGE_PARENT",
-        "P608_PACKAGE_STANDARD_VALIDATION",
-        "P608_PACKAGE_RECEIPT_NORMALIZE_IDENTITIES",
-        "P608_PACKAGE_RECEIPT_HASHES",
-        "P608_PACKAGE_RECEIPT_OPERATION",
-        "P608_PACKAGE_RECEIPT_KEY",
-        "P608_PACKAGE_RECEIPT_INITIAL_STATE",
-        "P608_PACKAGE_RECEIPT_UPDATE_IDENTITY",
-        "P608_PACKAGE_RECEIPT_SEAL_SHAPE",
-        "P608_PACKAGE_RECEIPT_TARGET",
-        "P608_PACKAGE_RECEIPT_TARGET_IDENTITY",
-        "P608_PACKAGE_RECEIPT_RESPONSE",
-        "P608_PACKAGE_RECEIPT_STANDARD_VALIDATION",
-    }
-)
 _RUNTIME_RELATIONSHIP_DIAGNOSTIC_CODES = frozenset(
     {
         "P5_RUNTIME_RELATIONSHIP_FILTER_HTTP",
@@ -687,12 +645,6 @@ def _sanitized_bff_log_diagnostic(
                         isinstance(diagnostic_code, str)
                         and diagnostic_code
                         in _GATE_EVIDENCE_ATTACH_SERVER_DIAGNOSTIC_CODES
-                    ):
-                        return diagnostic_type, diagnostic_code, trace_id
-                    if (
-                        isinstance(diagnostic_code, str)
-                        and diagnostic_code
-                        in _P608_PACKAGE_CREATE_DIAGNOSTIC_CODES
                     ):
                         return diagnostic_type, diagnostic_code, trace_id
                     if (

@@ -37,7 +37,7 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
             "tooling_list": "_tooling_list_rows(",
             "tooling_list_preference": "_preference_for_key(",
             "save_tooling_list_preference": "_locked_preference_for_key(",
-            "_create_tooling_export_package": "_export_command_context(",
+            "create_tooling_export_package": "_export_command_context(",
             "tooling_export_package_content": "_package_for_project(",
         }
         for method_name, lookup_marker in lookup_markers.items():
@@ -133,19 +133,8 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
         clock = ast.unparse(_method("_now_export"))
         self.assertIn("astimezone(UTC).replace(microsecond=0)", clock)
 
-    def test_package_create_diagnostic_is_exact_header_and_response_neutral(self) -> None:
-        wrapper = ast.unparse(_method("create_tooling_export_package"))
-        for marker in (
-            "tooling_package_create_diagnostics",
-            "X-NPI-P6-08-Diagnostic",
-            "PACKAGE_CREATE_DIAGNOSTIC_HEADER",
-            "record_tooling_package_create_fallback",
-            "self._create_tooling_export_package",
-        ):
-            self.assertIn(marker, wrapper)
-
     def test_create_orders_receipt_file_package_audit_and_seal_in_one_guard(self) -> None:
-        method = _method("_create_tooling_export_package")
+        method = _method("create_tooling_export_package")
         guards = [
             node
             for node in ast.walk(method)
@@ -175,7 +164,7 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
 
     def test_selection_and_filtered_exports_revalidate_current_exact_truth(self) -> None:
-        method = ast.unparse(_method("_create_tooling_export_package"))
+        method = ast.unparse(_method("create_tooling_export_package"))
         for marker in (
             "rows = self._tooling_list_rows(project)",
             "resolve_exact_selection(rows, ToolingExportSelection(tuple(selection)))",
@@ -260,6 +249,30 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
             self.assertIn(marker, method)
         self.assertNotIn("rmtree", method)
         self.assertNotIn("glob(", method)
+
+    def test_private_package_accepts_only_exact_frappe_retained_file_truth(self) -> None:
+        saved = ast.unparse(_method("_save_private_package"))
+        for marker in (
+            "isinstance(content, str)",
+            "content.encode('utf-8')",
+            "content != rendered.content",
+            "int(document.is_remote_file or 0) != 0",
+            "document.attached_to_doctype",
+            "document.attached_to_name",
+            "_retained_package_file_name_matches",
+        ):
+            self.assertIn(marker, saved)
+        retained_name = ast.unparse(_method("_retained_package_file_name_matches"))
+        for marker in (
+            "len(content_hash) != 32",
+            "content_hash[-6:]",
+            "actual in {requested, conflict_safe_name}",
+        ):
+            self.assertIn(marker, retained_name)
+        inserted = ast.unparse(_method("_insert_package"))
+        self.assertIn("retained_file_name = str(file_document.file_name)", inserted)
+        self.assertIn("'fileName': retained_file_name", inserted)
+        self.assertIn("'file_name': retained_file_name", inserted)
 
     def test_public_contract_and_audits_are_url_and_raw_value_free(self) -> None:
         public = ast.unparse(_method("_public_package"))

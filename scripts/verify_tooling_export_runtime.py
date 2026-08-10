@@ -140,8 +140,6 @@ def json_request(
     )
     if csrf_token is not None:
         headers["X-Frappe-CSRF-Token"] = csrf_token
-    if query_key == "package-create-diagnostic":
-        headers["X-NPI-P6-08-Diagnostic"] = "p608-package-create-v1"
     result = document_runtime.request(
         opener,
         base_url,
@@ -605,7 +603,6 @@ def create_package(
     key: str,
     *,
     replayed: str,
-    diagnostic: bool = False,
 ) -> tuple[HttpResult, dict[str, Any]]:
     result = json_request(
         actor,
@@ -615,9 +612,7 @@ def create_package(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
-        query_key=(
-            "package-create-diagnostic" if diagnostic else "package-create"
-        ),
+        query_key="package-create",
     )
     package = result.body.get("package")
     require(
@@ -1077,7 +1072,6 @@ def run_fresh(
             payload,
             create_key(language),
             replayed="false",
-            diagnostic=first_package is None,
         )
         replay, replay_package = create_package(
             current_actor,
