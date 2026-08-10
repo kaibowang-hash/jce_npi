@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-02`
+`IN_PROGRESS_CHECKPOINT_3 — P7-02`
 
-Recovery time: `2026-08-10T14:48:18Z`
+Recovery time: `2026-08-10T15:58:45Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -49,19 +49,26 @@ four guarded additive DocTypes, translations and focused tests; catalog commit
 `93489719819` and visual `93489719881` at `97/97`. Complete evidence is
 `implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 2 from `implementation/evidence/phase-7/p7-02-plan.md`,
-enforced by `implementation/CURRENT_TASK.json`: add Project-first execution
-workspace reads and the exact prepare/start/actual/sample/private-upload/
-evidence/content commands; activate only `planned -> prepared -> running`;
-reuse the controlled private File Revision mechanics; enforce exact
-containment, CSRF, actor-bound idempotency, one transaction, append-only audit,
-cleanup and the independent fail-closed P7-02 route switch. Activate no UI,
-runtime fixture, automatic machine import, formal ERPNext quality, conclusion,
-Gate, approval, release, Tooling lifecycle or reservation authority.
+P7-02 checkpoint 2 passes at exact product checkpoint `318f1c8`. Ordinary CI
+`31405749894` passes repository `93511539477` (`1,521` tracked Python), frontend
+`93511539390` (`822/822` unit and `359/359` non-visual E2E), secret scan
+`93511539293`, visual `93511539413` at `97/97`, `6,139` complete direct
+trilingual sources and zero vulnerabilities. Complete evidence is
+`implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md`.
 
-After checkpoint 2 affected repository/API/security tests and task-scope
-validation pass, commit and run ordinary CI. Only that PASS activates the live
-trilingual Trial execution workspace.
+Execute only checkpoint 3 from `implementation/evidence/phase-7/p7-02-plan.md`,
+enforced by `implementation/CURRENT_TASK.json`: add the strict Trial execution
+data source and dense trilingual locked-input/parameter/sample/evidence work
+area. Cover loading, empty, pending-scan, read-only, permission, validation,
+conflict, processing, retry and unavailable-machine-import states; preserve
+the one-primary-action industrial layout, translated keyboard/accessibility
+paths and affected fixed-Linux visual evidence. Activate no controlled runtime,
+automatic import, formal ERPNext quality, conclusion, Gate, approval, release,
+Tooling lifecycle or reservation authority.
+
+After checkpoint 3 component/data-source/E2E/i18n/accessibility/affected-visual
+checks and task-scope validation pass, commit and run ordinary CI. Only that
+PASS activates checkpoint 4 cumulative controlled runtime and Level 2.
 
 ## Retained P6-05 and P6-06 execution history
 

@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T14:48:18Z`
+Updated: `2026-08-10T15:58:45Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-02 CHECKPOINT 2`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-02 CHECKPOINT 3`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -19,17 +19,17 @@ Updated: `2026-08-10T14:48:18Z`
 - Latest evidence-only exact-SHA CI:
   `31393689222` (`PASS` at `fbac85b49b020a356554ab0e5540b8028ce5862f`)
 - Latest P7-02 product checkpoint:
-  `37a4d9d49c3842813bdd3b54574893c0d403144d` (`CHECKPOINT 1 PASS`;
-  ordinary CI `31399227239`)
+  `318f1c8a624df3182280c866c371705fa3e843be` (`CHECKPOINT 2 PASS`;
+  ordinary CI `31405749894`)
 - Current controller task:
   `P7-02 — Locked inputs, actuals, samples and evidence`
-  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/PRIVATE FILE/LIFECYCLE`)
-- Resumed product task: `P7-02` (`ACTIVE_CHECKPOINT_2`)
+  (`IN_PROGRESS — CHECKPOINT 3 LIVE TRIAL EXECUTION WORKSPACE`)
+- Resumed product task: `P7-02` (`ACTIVE_CHECKPOINT_3`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-02 CHECKPOINT 2`)
+  (`IN_PROGRESS — P7-02 CHECKPOINT 3`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -64,14 +64,23 @@ clean-private evidence domains, closed contracts, ownership and four guarded
 additive DocTypes; it activates no route, business row, File write or UI.
 Evidence is `implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md`.
 
-Only checkpoint 2 is active under the frozen plan and
-`implementation/CURRENT_TASK.json`: Project-first repository/BFF reads and
-commands, exact `planned -> prepared -> running` lifecycle, controlled pending
-private upload and clean evidence access, actor-bound idempotency, one
-transaction, append-only audit/rollback and an independent fail-closed route
-switch. UI, controlled runtime, automatic machine acquisition, ERPNext formal
-quality, conclusion/Gate/approval/release authority remain inactive. There is
-no active technical Hard Blocker.
+P7-02 checkpoint 2 passes at exact product checkpoint `318f1c8`. Ordinary CI
+`31405749894` passes `1,521` tracked Python tests, `822/822` frontend unit,
+`359/359` non-visual E2E, `6,139` complete direct trilingual sources, both
+secret boundaries and the unchanged `97/97` fixed-Linux visual matrix. It
+activates only Project-first execution reads and prepare/start/manual Actual/
+Sample/pending-private-upload/clean-evidence commands behind an independent
+default-closed switch. Evidence is
+`implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md`.
+
+Only checkpoint 3 is active under the frozen plan and
+`implementation/CURRENT_TASK.json`: compose the strict execution data source
+and dense trilingual locked-input/parameter/sample/evidence workspace with
+loading, empty, pending-scan, read-only, permission, validation, conflict,
+processing, retry and unavailable-import truth plus affected fixed-Linux
+visual evidence. Controlled runtime, automatic machine acquisition, ERPNext
+formal quality, conclusion/Gate/approval/release and Tooling authority remain
+inactive. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-10T13:49:23Z`
+Updated: `2026-08-10T15:58:45Z`
 
 ## Authority and operating mode
 
@@ -2496,3 +2496,29 @@ repeat or rewrite it merely to restore context. See
   one transaction, append-only audit/cleanup and the independent default-
   closed P7-02 switch. UI, runtime fixture, automatic import, ERPNext quality,
   conclusion/Gate/approval/release and Tooling lifecycle remain inactive.
+
+## 2026-08-10 P7-02 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint `318f1c8a624df3182280c866c371705fa3e843be`
+  activates only the Project-first execution workspace read plus prepare,
+  start, manual Actual, Sample successor, pending private upload, clean
+  evidence bind and audited exact-byte commands behind the independent
+  default-closed P7-02 route switch.
+- Exact-SHA ordinary CI `31405749894` passes repository `93511539477` with
+  `1,521` tracked Python tests, frontend `93511539390` with `822/822` unit and
+  `359/359` non-visual E2E tests, `6,139` complete direct trilingual sources,
+  zero vulnerabilities, secret scan `93511539293`, and visual `93511539413`
+  at the unchanged `97/97` fixed-Linux matrix. Controlled runtime correctly
+  skips at this checkpoint.
+- Repository evidence proves exact released-document lifecycle containment,
+  two-cavity preservation, append-only Actual/Sample lineage, actor-bound
+  replay, Project authorization before upload-byte access, clean/private/live
+  evidence reauthorization, URL-free responses, access audit and rollback
+  cleanup registration. It grants no automatic import, ERPNext quality,
+  conclusion, Gate, approval, release, reservation or Tooling authority.
+- Accepted evidence is
+  `implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md`.
+  Activate only checkpoint 3: the strict data source and dense trilingual live
+  Trial execution workspace with its complete honest state matrix and affected
+  fixed-Linux visuals. Controlled runtime and Level 2 remain inactive until
+  checkpoint 3 passes ordinary CI.
