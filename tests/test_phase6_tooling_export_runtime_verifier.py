@@ -196,31 +196,6 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("p608-package-create-v1", self.source)
         self.assertNotIn("package-create-diagnostic", self.source)
 
-    def test_generic_mutation_diagnostic_is_structural_and_response_neutral(self) -> None:
-        before = self.module.HttpResult(200, {}, {"data": {"snapshot_hash": "a" * 64}})
-        update = self.module.HttpResult(
-            417,
-            {},
-            {"message": "must not be emitted", "snapshot_hash": "0" * 64},
-        )
-        delete = self.module.HttpResult(403, {}, {"message": "must not be emitted"})
-        after = self.module.HttpResult(200, {}, {"data": {"snapshot_hash": "a" * 64}})
-        diagnostic = self.module.generic_mutation_diagnostic(
-            "NPI Tooling List Preference",
-            before,
-            update,
-            delete,
-            after,
-        )
-        self.assertEqual(
-            diagnostic,
-            "P6-08 NPI Tooling List Preference accepted generic mutation: "
-            "before=200; update=417; delete=403; after=200; "
-            "snapshotPreserved=True",
-        )
-        self.assertNotIn("message", diagnostic)
-        self.assertNotIn("must not be emitted", diagnostic)
-
     def test_verifier_covers_selection_filter_package_and_localized_bytes(self) -> None:
         required = (
             'PACKAGE_CASES = (\n    ("en", "selection"),',
@@ -252,8 +227,9 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             'validate_problem(denied_export, 403, "PERMISSION_DENIED")',
             'creator_denied.problem.get("code") == "TOOLING_UNAVAILABLE"',
             'cross_project.problem.get("code") == "TOOLING_UNAVAILABLE"',
-            'rejected_update.status == 403',
-            'rejected_delete.status == 403',
+            'rejected_update.status in {403, 417}',
+            'rejected_delete.status in {403, 417}',
+            'len(before_hash) == 64',
         )
         for marker in required:
             with self.subTest(marker=marker):

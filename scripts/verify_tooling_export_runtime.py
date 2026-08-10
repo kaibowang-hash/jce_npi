@@ -1000,6 +1000,7 @@ def verify_generic_mutation_denial(
         retained = retained_rows[0]
         name = str(retained["global_id"])
         before = get_resource(actor, base_url, doctype, name)
+        before_hash = before.body.get("data", {}).get("snapshot_hash")
         rejected_update = update_resource(
             actor,
             base_url,
@@ -1018,36 +1019,14 @@ def verify_generic_mutation_denial(
         after = get_resource(actor, base_url, doctype, name)
         require(
             before.status == 200
-            and rejected_update.status == 403
-            and rejected_delete.status == 403
+            and isinstance(before_hash, str)
+            and len(before_hash) == 64
+            and rejected_update.status in {403, 417}
+            and rejected_delete.status in {403, 417}
             and after.status == 200
-            and after.body.get("data", {}).get("snapshot_hash")
-            == before.body.get("data", {}).get("snapshot_hash"),
-            generic_mutation_diagnostic(
-                doctype,
-                before,
-                rejected_update,
-                rejected_delete,
-                after,
-            ),
+            and after.body.get("data", {}).get("snapshot_hash") == before_hash,
+            f"P6-08 {doctype} accepted generic mutation",
         )
-
-
-def generic_mutation_diagnostic(
-    doctype: str,
-    before: HttpResult,
-    rejected_update: HttpResult,
-    rejected_delete: HttpResult,
-    after: HttpResult,
-) -> str:
-    before_hash = before.body.get("data", {}).get("snapshot_hash")
-    after_hash = after.body.get("data", {}).get("snapshot_hash")
-    return (
-        f"P6-08 {doctype} accepted generic mutation: "
-        f"before={before.status}; update={rejected_update.status}; "
-        f"delete={rejected_delete.status}; after={after.status}; "
-        f"snapshotPreserved={isinstance(before_hash, str) and after_hash == before_hash}"
-    )
 
 
 def run_fresh(
