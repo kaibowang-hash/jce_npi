@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import unittest
+import urllib.request
 from unittest.mock import patch
 
 from scripts.verify_prior_gate import (
+    ExactOriginRedirectHandler,
     PriorGateError,
     validate_prior_gate,
     verify_prior_gate,
@@ -118,6 +120,40 @@ class PriorGateVerifierTest(unittest.TestCase):
             )
         self.assertEqual(result["run_id"], RUN_ID)
         self.assertEqual(request.call_count, 2)
+
+    def test_authorized_redirect_is_confined_to_exact_github_api_origin(self) -> None:
+        handler = ExactOriginRedirectHandler()
+        request = urllib.request.Request(
+            "https://api.github.com/repos/owner/repository/actions/runs/1",
+            headers={"Authorization": "Bearer sentinel-token"},
+        )
+        redirected = handler.redirect_request(
+            request,
+            None,
+            302,
+            "Found",
+            {},
+            "https://api.github.com/repos/owner/repository/actions/runs/2",
+        )
+        self.assertEqual(
+            redirected.get_header("Authorization"),
+            "Bearer sentinel-token",
+        )
+        for unsafe_url in (
+            "http://api.github.com/steal",
+            "https://api.github.com:443/steal",
+            "https://api.github.com.evil.example/steal",
+            "https://github.com/steal",
+        ):
+            with self.subTest(url=unsafe_url), self.assertRaises(PriorGateError):
+                handler.redirect_request(
+                    request,
+                    None,
+                    302,
+                    "Found",
+                    {},
+                    unsafe_url,
+                )
 
 
 if __name__ == "__main__":
