@@ -133,6 +133,22 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
 
+    def test_preference_diagnostic_is_response_neutral_and_structural(self) -> None:
+        result = self.module.HttpResult(
+            500,
+            {},
+            {"code": "INTERNAL_ERROR", "message": "must not be emitted"},
+        )
+        diagnostic = self.module.preference_save_diagnostic(result, {"viewId": "all"})
+        self.assertEqual(
+            diagnostic,
+            "P6-08 saved preference truth drifted: HTTP 500; "
+            "code=INTERNAL_ERROR; storedTrue=False; versionOne=False; "
+            "snapshotHashValid=False; preferenceMatches=False",
+        )
+        self.assertNotIn("message", diagnostic)
+        self.assertNotIn("must not be emitted", diagnostic)
+
     def test_verifier_covers_selection_filter_package_and_localized_bytes(self) -> None:
         required = (
             'PACKAGE_CASES = (\n    ("en", "selection"),',

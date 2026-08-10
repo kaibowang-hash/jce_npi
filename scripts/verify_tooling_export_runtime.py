@@ -475,6 +475,22 @@ def preference_payload(view_id: str) -> dict[str, object]:
     }
 
 
+def preference_save_diagnostic(
+    result: HttpResult,
+    expected_preference: dict[str, object],
+) -> str:
+    problem_code = result.body.get("code")
+    return (
+        "P6-08 saved preference truth drifted: "
+        f"HTTP {result.status}; "
+        f"code={problem_code if isinstance(problem_code, str) else 'unavailable'}; "
+        f"storedTrue={result.body.get('stored') is True}; "
+        f"versionOne={result.body.get('optimisticVersion') == 1}; "
+        f"snapshotHashValid={isinstance(result.body.get('snapshotHash'), str) and len(result.body['snapshotHash']) == 64}; "
+        f"preferenceMatches={result.body.get('preference') == expected_preference}"
+    )
+
+
 def verify_preference(
     actor,
     base_url: str,
@@ -508,7 +524,7 @@ def verify_preference(
         and saved.body.get("stored") is True
         and saved.body.get("optimisticVersion") == 1
         and saved.body.get("preference") == payload["preference"],
-        "P6-08 saved preference truth drifted",
+        preference_save_diagnostic(saved, payload["preference"]),
     )
     require_hash(saved.body.get("snapshotHash"), "P6-08 preference")
     retained = json_request(actor, base_url, path, query_key="preference-retained")
