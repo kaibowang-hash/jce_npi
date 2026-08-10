@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Mapping, Sequence
@@ -108,6 +108,8 @@ class TrialRoundState(StrEnum):
 
 class TrialLifecycleEventType(StrEnum):
     CREATED = "created"
+    PREPARED = "prepared"
+    STARTED = "started"
     CANCELLED = "cancelled"
 
 
@@ -535,6 +537,20 @@ class TrialRoundLifecycleEvent:
         if self.event_type is TrialLifecycleEventType.CREATED:
             if self.event_version != 1 or self.from_state is not None or self.to_state is not TrialRoundState.PLANNED:
                 raise _problem("eventType", _("A Trial Round creation event must establish planned state."))
+        elif self.event_type is TrialLifecycleEventType.PREPARED:
+            active = (
+                self.from_state is TrialRoundState.PLANNED
+                and self.to_state is TrialRoundState.PREPARED
+            )
+            if not active:
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.STARTED:
+            active = (
+                self.from_state is TrialRoundState.PREPARED
+                and self.to_state is TrialRoundState.RUNNING
+            )
+            if not active:
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
         elif (
             self.from_state is not TrialRoundState.PLANNED
             or self.to_state is not TrialRoundState.CANCELLED
@@ -617,6 +633,8 @@ class TrialRound:
         _enum(self.current_state, TrialRoundState, "currentState")
         if self.current_state not in {
             TrialRoundState.PLANNED,
+            TrialRoundState.PREPARED,
+            TrialRoundState.RUNNING,
             TrialRoundState.CANCELLED,
         }:
             raise _problem(
@@ -707,6 +725,55 @@ def create_planned_trial_round(
         trace_id=trace_id,
     )
     return trial_round, event
+
+
+def transition_trial_round(
+    trial_round: TrialRound,
+    *,
+    event_global_id: UUID,
+    to_state: TrialRoundState,
+    reason: str,
+    created_by_user_id: str,
+    created_at: datetime,
+    request_id: UUID,
+    trace_id: str,
+) -> tuple[TrialRound, TrialRoundLifecycleEvent]:
+    """Advance only the P7-02 prepared/running lifecycle boundary."""
+
+    if trial_round.current_state is TrialRoundState.PLANNED and to_state is TrialRoundState.PREPARED:
+        event_type = TrialLifecycleEventType.PREPARED
+    elif trial_round.current_state is TrialRoundState.PREPARED and to_state is TrialRoundState.RUNNING:
+        event_type = TrialLifecycleEventType.STARTED
+    else:
+        raise _problem(
+            "toState",
+            _("This Trial lifecycle transition is not active in this task."),
+        )
+    event = TrialRoundLifecycleEvent(
+        global_id=event_global_id,
+        tenant_id=trial_round.tenant_id,
+        project_global_id=trial_round.project_global_id,
+        trial_round_global_id=trial_round.global_id,
+        event_version=trial_round.optimistic_version + 1,
+        event_type=event_type,
+        from_state=trial_round.current_state,
+        to_state=to_state,
+        reason=reason,
+        created_by_user_id=created_by_user_id,
+        created_at=created_at,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+    return (
+        replace(
+            trial_round,
+            current_state=to_state,
+            current_event_global_id=event.global_id,
+            optimistic_version=trial_round.optimistic_version + 1,
+            snapshot_hash="",
+        ),
+        event,
+    )
 
 
 @dataclass(frozen=True, slots=True)

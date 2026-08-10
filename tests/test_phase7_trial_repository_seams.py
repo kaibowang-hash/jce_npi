@@ -10,6 +10,7 @@ TRIAL_PATH = (
     ROOT
     / "apps/npi_core/npi_core/trial/frappe_repository.py"
 )
+EXECUTION_PATH = ROOT / "apps/npi_core/npi_core/trial/execution_repository.py"
 WORK_PATH = (
     ROOT
     / "apps/npi_core/npi_core/project_work/frappe_repository.py"
@@ -53,6 +54,10 @@ class Phase7TrialRepositorySeamTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.trial = RepositoryAst(TRIAL_PATH, "FrappeTrialRepository")
+        cls.execution = RepositoryAst(
+            EXECUTION_PATH,
+            "FrappeTrialExecutionRepository",
+        )
         cls.work = RepositoryAst(WORK_PATH, "FrappeProjectWorkRepository")
 
     def test_commands_authorize_project_before_resolving_child_references(self) -> None:
@@ -148,6 +153,88 @@ class Phase7TrialRepositorySeamTest(unittest.TestCase):
             "generate_actions",
         ):
             method = self.trial.method(method_name)
+            qualified = {
+                _qualified_name(node.func)
+                for node in ast.walk(method)
+                if isinstance(node, ast.Call)
+            }
+            with self.subTest(method=method_name):
+                self.assertNotIn("frappe.db.commit", qualified)
+                self.assertNotIn("frappe.db.rollback", qualified)
+                self.assertFalse(
+                    any(
+                        isinstance(node, ast.Try)
+                        and any(
+                            handler.type is None
+                            or (
+                                isinstance(handler.type, ast.Name)
+                                and handler.type.id in {"Exception", "BaseException"}
+                            )
+                            for handler in node.handlers
+                        )
+                        for node in ast.walk(method)
+                    )
+                )
+
+    def test_execution_commands_are_project_first_and_replay_before_mutability(self) -> None:
+        for method_name in (
+            "prepare_round",
+            "start_round",
+            "append_actual_revision",
+            "_write_sample",
+            "upload_evidence_file",
+            "bind_evidence",
+        ):
+            with self.subTest(method=method_name):
+                project = self.execution.calls(
+                    method_name,
+                    "self._locked_authorized_project",
+                )
+                replay = self.execution.calls(
+                    method_name,
+                    "self._idempotency_replay",
+                )
+                terminal = self.execution.calls(method_name, "require_mutable_project")
+                self.assertEqual(len(project), 1)
+                self.assertEqual(len(replay), 1)
+                self.assertEqual(len(terminal), 1)
+                self.assertLess(project[0].lineno, replay[0].lineno)
+                self.assertLess(replay[0].lineno, terminal[0].lineno)
+
+    def test_execution_receipts_precede_writes_and_seal_after_audit(self) -> None:
+        writes = {
+            "prepare_round": "self._insert_input_lock",
+            "start_round": "self._insert_actual",
+            "append_actual_revision": "self._insert_actual",
+            "_write_sample": "self._insert_sample",
+            "upload_evidence_file": "save_file",
+            "bind_evidence": "self._insert_evidence",
+        }
+        for method_name, write_name in writes.items():
+            with self.subTest(method=method_name):
+                receipt = self.execution.calls(method_name, "self._insert_receipt")
+                write = self.execution.calls(method_name, write_name)
+                audit = self.execution.calls(method_name, "self._append_audit")
+                seal = self.execution.calls(method_name, "self._seal_receipt")
+                self.assertEqual(len(receipt), 1)
+                self.assertEqual(len(write), 1)
+                self.assertEqual(len(audit), 1)
+                self.assertEqual(len(seal), 1)
+                self.assertLess(receipt[0].lineno, write[0].lineno)
+                self.assertLess(write[0].lineno, audit[0].lineno)
+                self.assertLess(audit[0].lineno, seal[0].lineno)
+
+    def test_execution_commands_do_not_commit_rollback_or_swallow_failures(self) -> None:
+        for method_name in (
+            "prepare_round",
+            "start_round",
+            "append_actual_revision",
+            "_write_sample",
+            "upload_evidence_file",
+            "bind_evidence",
+            "evidence_content",
+        ):
+            method = self.execution.method(method_name)
             qualified = {
                 _qualified_name(node.func)
                 for node in ast.walk(method)

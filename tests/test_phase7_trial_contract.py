@@ -174,7 +174,7 @@ class Phase7TrialContractTest(unittest.TestCase):
         self.assertIn("raw_idempotency_key:", OWNERSHIP)
         self.assertIn("conflict: NEVER_PERSIST", OWNERSHIP)
 
-    def test_p702_execution_paths_are_project_first_closed_and_not_live_yet(self) -> None:
+    def test_p702_execution_paths_are_project_first_and_live_behind_switch(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
         for path in (
             "/projects/{projectId}/trial-rounds/{trialRoundId}/execution:",
@@ -199,7 +199,7 @@ class Phase7TrialContractTest(unittest.TestCase):
             "trial_evidence.content.read",
         ):
             self.assertIn(f"x-audit-operation: {audit}", paths)
-        for inactive_command in (
+        for active_command in (
             "get_trial_round_execution",
             "prepare_trial_round",
             "start_trial_round",
@@ -210,7 +210,9 @@ class Phase7TrialContractTest(unittest.TestCase):
             "bind_trial_evidence",
             "read_trial_evidence_content",
         ):
-            self.assertNotIn(inactive_command, BFF)
+            self.assertIn(active_command, BFF)
+        self.assertIn("npi_p7_02_routes_disabled", BFF)
+        self.assertIn("trial_execution_routes_disabled", BFF)
 
     def test_p702_execution_schemas_are_closed_and_keep_layers_disjoint(self) -> None:
         names = (

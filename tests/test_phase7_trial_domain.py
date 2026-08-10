@@ -22,6 +22,7 @@ from npi_core.trial.domain import (
     TrialRoundLifecycleEvent,
     TrialRoundState,
     create_planned_trial_round,
+    transition_trial_round,
     trial_event_from_snapshot,
     trial_plan_from_snapshot,
     trial_round_from_snapshot,
@@ -495,6 +496,56 @@ class Phase7TrialDomainTest(unittest.TestCase):
         with self.assertRaises(RequestValidationFailed):
             replace(event, from_state=TrialRoundState.RUNNING)
 
+    def test_p702_activates_only_planned_prepared_running(self) -> None:
+        trial_round, _created = create_planned_trial_round(
+            global_id=ROUND,
+            event_global_id=EVENT,
+            plan=plan_revision(),
+            round_sequence=0,
+            display_label="T0",
+            reason="Create the planned Trial Round.",
+            created_by_user_id="trial.owner@example.invalid",
+            created_at=NOW,
+            request_id=REQUEST,
+            trace_id="trace-p702-round",
+        )
+        prepared, prepared_event = transition_trial_round(
+            trial_round,
+            event_global_id=UUID(int=901),
+            to_state=TrialRoundState.PREPARED,
+            reason="Freeze the exact execution input lock.",
+            created_by_user_id="trial.owner@example.invalid",
+            created_at=NOW,
+            request_id=REQUEST,
+            trace_id="trace-p702-prepare",
+        )
+        self.assertEqual(prepared.current_state, TrialRoundState.PREPARED)
+        self.assertEqual(prepared_event.event_type, TrialLifecycleEventType.PREPARED)
+        running, started_event = transition_trial_round(
+            prepared,
+            event_global_id=UUID(int=902),
+            to_state=TrialRoundState.RUNNING,
+            reason="Freeze the first exact manual execution context.",
+            created_by_user_id="trial.owner@example.invalid",
+            created_at=NOW,
+            request_id=REQUEST,
+            trace_id="trace-p702-start",
+        )
+        self.assertEqual(running.current_state, TrialRoundState.RUNNING)
+        self.assertEqual(started_event.event_type, TrialLifecycleEventType.STARTED)
+        self.assertEqual(running.optimistic_version, 3)
+        with self.assertRaises(RequestValidationFailed):
+            transition_trial_round(
+                running,
+                event_global_id=UUID(int=903),
+                to_state=TrialRoundState.ANALYSIS,
+                reason="Do not activate later lifecycle truth.",
+                created_by_user_id="trial.owner@example.invalid",
+                created_at=NOW,
+                request_id=REQUEST,
+                trace_id="trace-p702-held",
+            )
+
     def test_work_link_retains_existing_work_item_as_the_task_truth(self) -> None:
         revision = plan_revision()
         link = TrialPlanWorkLink(
@@ -687,6 +738,19 @@ class Phase7TrialDomainTest(unittest.TestCase):
         )
         with self.assertRaises(RequestValidationFailed):
             replace(first, cavity_global_ids=())
+        for fieldname, value in (
+            ("label", "SAMPLE-BATCH-02"),
+            ("cavity_global_ids", (UUID(int=999),)),
+            ("material_snapshot_hash", "c" * 64),
+            ("quantity", 21),
+            ("unit", "box"),
+        ):
+            with self.subTest(field=fieldname):
+                with self.assertRaises(RequestValidationFailed):
+                    validate_sample_batch_successor(
+                        first,
+                        replace(second, **{fieldname: value}),
+                    )
 
     def test_evidence_binds_only_exact_clean_private_file_without_raw_url(self) -> None:
         sample = sample_revision(input_lock_revision())

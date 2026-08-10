@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, Protocol
+from urllib.parse import quote
 from uuid import UUID
 
 import frappe
 from frappe import _
 
-from npi_core.api import frappe_domain_call
+from npi_core.api import BinaryPayload, frappe_binary_call, frappe_domain_call
 from npi_core.foundation.errors import PermissionDenied, RequestValidationFailed
 from npi_core.foundation.security import Principal
 from npi_core.foundation.tracing import current_trace_id
@@ -24,6 +26,26 @@ from npi_core.request_security import (
     response_request_id,
 )
 from npi_core.trial.domain import TrialPurpose, TrialUnavailable
+from npi_core.trial.execution_domain import (
+    TrialExecutionRoutesDisabled,
+    TrialExecutionUnavailable,
+)
+from npi_core.trial.execution_validation import (
+    ACTUAL_FIELDS,
+    BIND_EVIDENCE_FIELDS,
+    CREATE_SAMPLE_FIELDS,
+    PREPARE_FIELDS,
+    REVISE_SAMPLE_FIELDS,
+    START_FIELDS,
+    UPLOAD_FIELDS,
+    actual_values,
+    bind_evidence_values,
+    create_sample_values,
+    positive,
+    prepare_values,
+    revise_sample_values,
+    start_values,
+)
 
 
 _PLAN_FIELDS = frozenset(
@@ -129,6 +151,28 @@ class _Repository(Protocol):
     def generate_actions(self, project_id: UUID, plan_id: UUID, **values: Any): ...
 
 
+class _ExecutionRepository(Protocol):
+    def execution_workspace(self, project_id: UUID, round_id: UUID): ...
+    def prepare_round(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def start_round(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def append_actual_revision(
+        self, project_id: UUID, round_id: UUID, **values: Any
+    ): ...
+    def create_sample_batch(
+        self, project_id: UUID, round_id: UUID, **values: Any
+    ): ...
+    def append_sample_batch_revision(
+        self, project_id: UUID, round_id: UUID, sample_batch_id: UUID, **values: Any
+    ): ...
+    def upload_evidence_file(
+        self, project_id: UUID, round_id: UUID, **values: Any
+    ): ...
+    def bind_evidence(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def evidence_content(
+        self, project_id: UUID, round_id: UUID, evidence_id: UUID
+    ): ...
+
+
 def _repository_factory(
     *,
     principal: Principal,
@@ -138,6 +182,21 @@ def _repository_factory(
     from npi_core.trial.frappe_repository import FrappeTrialRepository
 
     return FrappeTrialRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _execution_repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _ExecutionRepository:
+    from npi_core.trial.execution_repository import FrappeTrialExecutionRepository
+
+    return FrappeTrialExecutionRepository(
         principal=principal,
         request_id=request_id,
         trace_id=trace_id,
@@ -367,6 +426,297 @@ def generate_trial_plan_actions(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_trial_round_execution(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository = _execution_query_repository(request_fields)
+        response = repository.execution_workspace(
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+        )
+        if response is None:
+            raise TrialExecutionUnavailable()
+        headers["X-Request-ID"] = request_id
+        return response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def prepare_trial_round(
+    expectedRoundOptimisticVersion: Any = None,
+    references: Any = None,
+    material: Any = None,
+    parameterDefinitions: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "references": references,
+        "material": material,
+        "parameterDefinitions": parameterDefinitions,
+        "reason": reason,
+    }
+    return _execution_command(
+        allowed_fields=PREPARE_FIELDS,
+        required_fields=PREPARE_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.prepare_round(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **prepare_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def start_trial_round(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    expectedInputLockVersion: Any = None,
+    resources: Any = None,
+    material: Any = None,
+    environment: Any = None,
+    parameters: Any = None,
+    operatorUserId: Any = None,
+    executionStartedAt: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "expectedInputLockRevisionGlobalId": expectedInputLockRevisionGlobalId,
+        "expectedInputLockVersion": expectedInputLockVersion,
+        "resources": resources,
+        "material": material,
+        "environment": environment,
+        "parameters": parameters,
+        "operatorUserId": operatorUserId,
+        "executionStartedAt": executionStartedAt,
+        "reason": reason,
+    }
+    return _execution_command(
+        allowed_fields=START_FIELDS,
+        required_fields=START_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.start_round(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **start_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def append_trial_actual_revision(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedActualRevisionGlobalId: Any = None,
+    expectedActualVersion: Any = None,
+    resources: Any = None,
+    material: Any = None,
+    environment: Any = None,
+    parameters: Any = None,
+    operatorUserId: Any = None,
+    executionStartedAt: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "expectedActualRevisionGlobalId": expectedActualRevisionGlobalId,
+        "expectedActualVersion": expectedActualVersion,
+        "resources": resources,
+        "material": material,
+        "environment": environment,
+        "parameters": parameters,
+        "operatorUserId": operatorUserId,
+        "executionStartedAt": executionStartedAt,
+        "reason": reason,
+    }
+    return _execution_command(
+        allowed_fields=ACTUAL_FIELDS,
+        required_fields=ACTUAL_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.append_actual_revision(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **actual_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_trial_sample_batch(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedInputLockRevisionGlobalId: Any = None,
+    sample: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "expectedInputLockRevisionGlobalId": expectedInputLockRevisionGlobalId,
+        "sample": sample,
+        "reason": reason,
+    }
+    return _execution_command(
+        allowed_fields=CREATE_SAMPLE_FIELDS,
+        required_fields=CREATE_SAMPLE_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.create_sample_batch(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **create_sample_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def append_trial_sample_batch_revision(
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRevisionGlobalId: Any = None,
+    expectedSampleVersion: Any = None,
+    sample: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "expectedRevisionGlobalId": expectedRevisionGlobalId,
+        "expectedSampleVersion": expectedSampleVersion,
+        "sample": sample,
+        "reason": reason,
+    }
+    return _execution_command(
+        allowed_fields=REVISE_SAMPLE_FIELDS,
+        required_fields=REVISE_SAMPLE_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.append_sample_batch_revision(
+            project_id,
+            round_id,
+            _opaque_route_uuid("sample_batch_id"),
+            idempotency_key_hash=key_hash,
+            **revise_sample_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def upload_trial_evidence_file(
+    expectedRoundOptimisticVersion: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    return _execution_command(
+        allowed_fields=UPLOAD_FIELDS,
+        required_fields=UPLOAD_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.upload_evidence_file(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            expected_round_optimistic_version=positive(
+                expectedRoundOptimisticVersion,
+                "expectedRoundOptimisticVersion",
+            ),
+            upload=_uploaded_trial_file,
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def bind_trial_evidence(
+    expectedRoundOptimisticVersion: Any = None,
+    role: Any = None,
+    fileRevisionGlobalId: Any = None,
+    expectedFileOptimisticVersion: Any = None,
+    sampleBatchRevisionGlobalId: Any = None,
+    expectedSampleVersion: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {
+        "expectedRoundOptimisticVersion": expectedRoundOptimisticVersion,
+        "role": role,
+        "fileRevisionGlobalId": fileRevisionGlobalId,
+        "expectedFileOptimisticVersion": expectedFileOptimisticVersion,
+        "sampleBatchRevisionGlobalId": sampleBatchRevisionGlobalId,
+        "expectedSampleVersion": expectedSampleVersion,
+    }
+    required = BIND_EVIDENCE_FIELDS - {
+        "sampleBatchRevisionGlobalId",
+        "expectedSampleVersion",
+    }
+    return _execution_command(
+        allowed_fields=BIND_EVIDENCE_FIELDS,
+        required_fields=required,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.bind_evidence(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **bind_evidence_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def read_trial_evidence_content(**request_fields: Any) -> None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> BinaryPayload:
+        _require_trial_execution_routes_enabled()
+        actor = authenticated_user()
+        require_csrf_token()
+        principal = authenticated_principal(actor)
+        _require_role(principal)
+        reject_unexpected_request_fields(frozenset(), request_fields)
+        request_id, repository = _new_execution_repository(principal)
+        outcome = repository.evidence_content(
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+            _opaque_route_uuid("evidence_id"),
+        )
+        if outcome is None:
+            raise TrialExecutionUnavailable()
+        headers["X-Request-ID"] = request_id
+        return BinaryPayload(
+            content=outcome.content,
+            file_name=outcome.file_name,
+            mime_type=outcome.mime_type,
+            disposition="attachment",
+            headers={
+                "Content-Disposition": _trial_content_disposition(outcome.file_name),
+                "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "sandbox; default-src 'none'",
+                "Referrer-Policy": "no-referrer",
+            },
+        )
+
+    frappe_binary_call(handle, response_headers=headers)
+
+
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
+def trial_execution_routes_disabled(**_request_fields: Any) -> dict[str, Any] | None:
+    def handle() -> dict[str, Any]:
+        raise TrialExecutionRoutesDisabled()
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _query_repository(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository]:
@@ -376,6 +726,17 @@ def _query_repository(
     _require_role(principal)
     reject_unexpected_request_fields(frozenset(), request_fields)
     return _new_repository(principal)
+
+
+def _execution_query_repository(
+    request_fields: dict[str, Any],
+) -> tuple[str, _ExecutionRepository]:
+    _require_trial_execution_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    _require_role(principal)
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return _new_execution_repository(principal)
 
 
 def _command(
@@ -424,6 +785,52 @@ def _command(
     )
 
 
+def _execution_command(
+    *,
+    allowed_fields: frozenset[str],
+    required_fields: frozenset[str],
+    request_fields: dict[str, Any],
+    invoke,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        _require_trial_execution_routes_enabled()
+        actor = authenticated_user()
+        require_csrf_token()
+        principal = authenticated_principal(actor)
+        _require_role(principal)
+        request_id, repository = _new_execution_repository(principal)
+        reject_unexpected_request_fields(allowed_fields, request_fields)
+        require_request_fields(required_fields, request_fields)
+        outcome = invoke(
+            repository,
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+            actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            ),
+        )
+        if outcome is None:
+            raise TrialExecutionUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Trial execution replay response is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return outcome.response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
 def _new_repository(principal: Principal) -> tuple[str, _Repository]:
     request_id = str(_canonical_uuid(frappe.get_request_header("X-Request-ID"), "requestId"))
     trace_id = current_trace_id.get()
@@ -434,6 +841,40 @@ def _new_repository(principal: Principal) -> tuple[str, _Repository]:
         request_id=request_id,
         trace_id=trace_id,
     )
+
+
+def _new_execution_repository(
+    principal: Principal,
+) -> tuple[str, _ExecutionRepository]:
+    request_id = str(
+        _canonical_uuid(
+            frappe.get_request_header("X-Request-ID"),
+            "requestId",
+        )
+    )
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The Trial request has no active trace identity.")
+    return request_id, _execution_repository_factory(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _trial_execution_routes_are_disabled() -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_02_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def _require_trial_execution_routes_enabled() -> None:
+    if _trial_execution_routes_are_disabled():
+        raise TrialExecutionRoutesDisabled()
 
 
 def _require_role(principal: Principal) -> None:
@@ -743,6 +1184,54 @@ def _datetime(value: object, path: str) -> datetime:
     if parsed.tzinfo is None:
         raise _field(path, _("Enter a valid date and time."))
     return parsed.astimezone(UTC)
+
+
+def _uploaded_trial_file() -> tuple[str, bytes]:
+    request = getattr(frappe, "request", None)
+    files = getattr(request, "files", None)
+    if files is None or not hasattr(files, "keys"):
+        raise _field("file", _("Select one file."))
+    if set(files.keys()) != {"file"}:
+        raise _field("file", _("Select exactly one file."))
+    values = files.getlist("file") if hasattr(files, "getlist") else [files.get("file")]
+    if len(values) != 1 or values[0] is None:
+        raise _field("file", _("Select exactly one file."))
+    uploaded = values[0]
+    file_name = getattr(uploaded, "filename", None)
+    stream = getattr(uploaded, "stream", uploaded)
+    read = getattr(stream, "read", None)
+    if not callable(read):
+        raise _field("file", _("Select one file."))
+    content = read(25 * 1024 * 1024 + 1)
+    if not isinstance(content, bytes):
+        raise _field("file", _("Select one binary file."))
+    if len(content) > 25 * 1024 * 1024:
+        raise _field(
+            "file",
+            _("The file exceeds the supported infrastructure limit."),
+        )
+    return _text(file_name, "fileName", 255), content
+
+
+def _trial_content_disposition(file_name: str) -> str:
+    normalized = unicodedata.normalize("NFC", file_name)
+    if (
+        "\r" in normalized
+        or "\n" in normalized
+        or "/" in normalized
+        or "\\" in normalized
+    ):
+        raise ValueError("The Trial evidence filename is unsafe.")
+    ascii_name = (
+        unicodedata.normalize("NFKD", normalized)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+    fallback = re.sub(r"[^A-Za-z0-9._-]", "_", ascii_name).strip("._")
+    if not fallback:
+        fallback = "trial-evidence"
+    encoded = quote(normalized, safe="")
+    return f'attachment; filename="{fallback}"; filename*=UTF-8\'\'{encoded}'
 
 
 def _field(path: str, message: str) -> RequestValidationFailed:

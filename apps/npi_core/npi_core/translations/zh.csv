@@ -2477,6 +2477,7 @@ NPI Document Share Grant,NPI 文档共享授权
 Share Grant Key,共享授权键
 Share Grant State,共享授权状态
 prepared,已准备
+started,已启动
 revoked,已撤销
 External Retrieval State,外部检索状态
 External Retrieval Reason Code,外部检索原因代码
@@ -6128,3 +6129,11 @@ measurement_report,测量报告
 parameter_curve,参数曲线
 photo,照片
 video,视频
+The Trial execution object is unavailable.,试模执行对象不可用。
+The related Trial execution reference is unavailable.,相关试模执行引用不可用。
+The Trial execution record was changed by another user.,试模执行记录已被其他用户更改。
+The Trial execution workspace is temporarily unavailable.,试模执行工作区暂时不可用。
+The execution routes are disabled while a reviewed forward fix is applied.,执行路由已禁用，正在应用经过评审的前向修复。
+Select one complete Sample Batch revision.,请选择一个完整的样品批次版本。
+Enter one complete measured parameter observation.,请输入一条完整的已测量参数观测记录。
+Enter one complete feedback observation.,请输入一条完整的反馈观测记录。

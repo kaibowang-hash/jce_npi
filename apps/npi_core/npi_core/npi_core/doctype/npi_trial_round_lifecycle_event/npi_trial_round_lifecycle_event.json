@@ -13,7 +13,7 @@
     {"fieldname": "project_global_id", "fieldtype": "Data", "label": "Project Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
     {"fieldname": "trial_round_global_id", "fieldtype": "Data", "label": "Trial Round Global ID", "reqd": 1, "read_only": 1, "search_index": 1},
     {"fieldname": "event_version", "fieldtype": "Int", "label": "Trial Lifecycle Event Version", "reqd": 1, "read_only": 1},
-    {"fieldname": "event_type", "fieldtype": "Select", "label": "Trial Lifecycle Event Type", "options": "created\ncancelled", "reqd": 1, "read_only": 1},
+    {"fieldname": "event_type", "fieldtype": "Select", "label": "Trial Lifecycle Event Type", "options": "created\nprepared\nstarted\ncancelled", "reqd": 1, "read_only": 1},
     {"fieldname": "from_state", "fieldtype": "Select", "label": "Previous Trial Round State", "options": "\nplanned\nprepared\nrunning\nanalysis\nsubmitted\napproved\nrejected\ncancelled", "read_only": 1},
     {"fieldname": "to_state", "fieldtype": "Select", "label": "Next Trial Round State", "options": "planned\nprepared\nrunning\nanalysis\nsubmitted\napproved\nrejected\ncancelled", "reqd": 1, "read_only": 1},
     {"fieldname": "reason", "fieldtype": "Small Text", "label": "Trial Lifecycle Event Reason", "reqd": 1, "read_only": 1},

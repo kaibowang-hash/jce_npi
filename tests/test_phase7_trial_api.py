@@ -16,6 +16,9 @@ PROJECT_ID = "2e96f421-5872-4c96-a0dd-718d5c970a21"
 PLAN_ID = "0878087f-6192-4e40-862d-05e0a5927638"
 REVISION_ID = "29e933a3-3954-4a96-9400-2be1987ae370"
 ROUND_ID = "89953948-4178-46dc-b7ca-8b94f2ac4e36"
+SAMPLE_ID = "6dd227c4-2c74-4f2f-a3ce-347497758118"
+EVIDENCE_ID = "99d03125-7947-4a72-a94f-47930cfcb7bb"
+FILE_REVISION_ID = "97adf8ba-827c-4e31-a62c-370248685ab8"
 MASTER_ID = "eb233de2-5d4d-4556-ad16-9476d8f0776f"
 MEMBER_ID = "a6bfd0bf-8ab3-4a92-b49e-818735db4f55"
 REQUEST_ID = "5dc0ef7b-8563-46ad-9f40-76dd474566ea"
@@ -71,6 +74,30 @@ class MockRepository:
     def generate_actions(self, *args: object, **kwargs: Any):
         return self._command("generate_actions", args, kwargs)
 
+    def execution_workspace(self, *args: object, **kwargs: Any):
+        return self._query("execution_workspace", args, kwargs)
+
+    def prepare_round(self, *args: object, **kwargs: Any):
+        return self._command("prepare_round", args, kwargs)
+
+    def start_round(self, *args: object, **kwargs: Any):
+        return self._command("start_round", args, kwargs)
+
+    def append_actual_revision(self, *args: object, **kwargs: Any):
+        return self._command("append_actual_revision", args, kwargs)
+
+    def create_sample_batch(self, *args: object, **kwargs: Any):
+        return self._command("create_sample_batch", args, kwargs)
+
+    def append_sample_batch_revision(self, *args: object, **kwargs: Any):
+        return self._command("append_sample_batch_revision", args, kwargs)
+
+    def upload_evidence_file(self, *args: object, **kwargs: Any):
+        return self._command("upload_evidence_file", args, kwargs)
+
+    def bind_evidence(self, *args: object, **kwargs: Any):
+        return self._command("bind_evidence", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         return copy.deepcopy(self.owner.response) if self.available else None
@@ -118,12 +145,16 @@ class Phase7TrialApiTest(unittest.TestCase):
         self.frappe.conf = AttrDict(
             npi_tenant_id="TENANT-A",
             npi_p7_01_routes_disabled=False,
+            npi_p7_02_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
             npi_route_params={
                 "project_id": PROJECT_ID,
                 "trial_plan_id": PLAN_ID,
+                "trial_round_id": ROUND_ID,
+                "sample_batch_id": SAMPLE_ID,
+                "evidence_id": EVIDENCE_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -159,6 +190,7 @@ class Phase7TrialApiTest(unittest.TestCase):
         self.router = importlib.import_module("npi_core.bff")
         self.repository = MockRepository(self)
         self.api._repository_factory = lambda **_values: self.repository
+        self.api._execution_repository_factory = lambda **_values: self.repository
         self.response = {
             "projectGlobalId": PROJECT_ID,
             "plans": [],
@@ -231,6 +263,47 @@ class Phase7TrialApiTest(unittest.TestCase):
             "reason": "Generate governed Project actions.",
         }
 
+    @staticmethod
+    def prepare_payload() -> dict[str, object]:
+        reference_kinds = (
+            "design_baseline",
+            "part_revision",
+            "tooling_revision",
+            "tooling_set",
+            "tooling_set_binding",
+            "cavity",
+            "process_chain",
+            "inspection_document",
+        )
+        return {
+            "expectedRoundOptimisticVersion": 1,
+            "references": [
+                {
+                    "globalId": str(UUID(int=index + 100)),
+                    "kind": kind,
+                    "expectedOptimisticVersion": 1,
+                }
+                for index, kind in enumerate(reference_kinds)
+            ],
+            "material": {
+                "sourceSystem": "NPI_ONE",
+                "sourceObjectId": "material-1",
+                "lotBatchCode": "lot-1",
+                "label": "PA66 lot 1",
+                "observedAt": "2026-08-10T08:00:00Z",
+            },
+            "parameterDefinitions": [
+                {
+                    "key": "melt_temperature",
+                    "category": "temperature",
+                    "valueKind": "decimal",
+                    "required": True,
+                    "unit": "degC",
+                }
+            ],
+            "reason": "Freeze exact Trial execution inputs.",
+        }
+
     def test_project_first_route_matrix_maps_exact_handlers(self) -> None:
         cases = (
             ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/trials", "get_trial_planning_workspace"),
@@ -239,6 +312,15 @@ class Phase7TrialApiTest(unittest.TestCase):
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-plans/{PLAN_ID}/revisions", "create_trial_plan_revision"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-plans/{PLAN_ID}/rounds", "create_planned_trial_round"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-plans/{PLAN_ID}/actions:generate", "generate_trial_plan_actions"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/execution", "get_trial_round_execution"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}:prepare", "prepare_trial_round"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}:start", "start_trial_round"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/actual-revisions", "append_trial_actual_revision"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/sample-batches", "create_trial_sample_batch"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/sample-batches/{SAMPLE_ID}/revisions", "append_trial_sample_batch_revision"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/files", "upload_trial_evidence_file"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/evidence", "bind_trial_evidence"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/evidence/{EVIDENCE_ID}:content", "read_trial_evidence_content"),
         )
         for method, path, command in cases:
             with self.subTest(method=method, path=path):
@@ -266,6 +348,26 @@ class Phase7TrialApiTest(unittest.TestCase):
             self.frappe.local.form_dict.cmd,
             "npi_core.bff.trial_routes_disabled",
         )
+        self.frappe.conf.npi_p7_01_routes_disabled = False
+        self.frappe.conf.pop("npi_p7_02_routes_disabled")
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/execution",
+            method="GET",
+        )
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.trial_execution_routes_disabled",
+        )
+        self.frappe.conf.npi_p7_02_routes_disabled = False
+        self.frappe.conf.pop("npi_p7_01_routes_disabled")
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.get_trial_round_execution",
+        )
 
     def test_workspace_query_uses_opaque_project_identity(self) -> None:
         response = self.call(self.api.get_trial_planning_workspace)
@@ -273,6 +375,48 @@ class Phase7TrialApiTest(unittest.TestCase):
         name, args, _kwargs = self.repository.calls[-1]
         self.assertEqual(name, "workspace")
         self.assertEqual(args, (UUID(PROJECT_ID),))
+
+    def test_execution_query_uses_project_and_round_identity(self) -> None:
+        response = self.call(self.api.get_trial_round_execution)
+        self.assertEqual(response, self.response)
+        name, args, _kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "execution_workspace")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+
+    def test_prepare_parses_exact_references_and_rejects_forged_hash(self) -> None:
+        payload = self.prepare_payload()
+        response = self.call(self.api.prepare_trial_round, payload)
+        self.assertEqual(response, self.response)
+        name, args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "prepare_round")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+        self.assertEqual(len(kwargs["references"]), 8)
+        self.assertIsInstance(kwargs["references"][0]["globalId"], UUID)
+        self.assertIsInstance(kwargs["material"]["observedAt"], self.api.datetime)
+
+        forged = self.prepare_payload()
+        forged["references"][0]["snapshotHash"] = SHA256_A
+        response = self.call(self.api.prepare_trial_round, forged)
+        self.assertEqual(response["code"], "VALIDATION_FAILED")
+        self.assertEqual(
+            response["fieldErrors"][0]["path"],
+            "references[0].snapshotHash",
+        )
+
+    def test_bind_evidence_requires_complete_sample_revision_pair(self) -> None:
+        payload = {
+            "expectedRoundOptimisticVersion": 3,
+            "role": "photo",
+            "fileRevisionGlobalId": FILE_REVISION_ID,
+            "expectedFileOptimisticVersion": 2,
+            "sampleBatchRevisionGlobalId": SAMPLE_ID,
+        }
+        response = self.call(self.api.bind_trial_evidence, payload)
+        self.assertEqual(response["code"], "VALIDATION_FAILED")
+        self.assertEqual(
+            response["fieldErrors"][0]["path"],
+            "sampleBatchRevisionGlobalId",
+        )
 
     def test_create_plan_parses_closed_resource_and_measurement_intent(self) -> None:
         response = self.call(self.api.create_trial_plan, self.plan_payload())

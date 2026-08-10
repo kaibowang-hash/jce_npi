@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Sequence
 from uuid import UUID
 
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 from npi_core.trial.domain import TRIAL_SCHEMA_VERSION, sha256_json
 
 try:
@@ -58,6 +58,44 @@ class TrialEvidenceRole(StrEnum):
     PARAMETER_CURVE = "parameter_curve"
     MEASUREMENT_REPORT = "measurement_report"
     CUSTOMER_FEEDBACK = "customer_feedback"
+
+
+class TrialExecutionUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_EXECUTION_UNAVAILABLE",
+            _("The Trial execution object is unavailable."),
+        )
+
+
+class TrialExecutionReferenceUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "TRIAL_EXECUTION_REFERENCE_UNAVAILABLE",
+            _("The related Trial execution reference is unavailable."),
+        )
+
+
+class TrialExecutionConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "TRIAL_EXECUTION_CONFLICT",
+            _("The Trial execution record was changed by another user."),
+        )
+
+
+class TrialExecutionRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "TRIAL_EXECUTION_ROUTES_DISABLED",
+            _("The Trial execution workspace is temporarily unavailable."),
+            _("The execution routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )
 
 
 _REQUIRED_LOCK_KINDS = frozenset(
@@ -1006,6 +1044,11 @@ def validate_sample_batch_successor(
         or successor.sample_version != predecessor.sample_version + 1
         or successor.predecessor_global_id != predecessor.global_id
         or successor.predecessor_snapshot_hash != predecessor.snapshot_hash
+        or successor.label != predecessor.label
+        or successor.cavity_global_ids != predecessor.cavity_global_ids
+        or successor.material_snapshot_hash != predecessor.material_snapshot_hash
+        or successor.quantity != predecessor.quantity
+        or successor.unit != predecessor.unit
     ):
         raise _problem(
             "predecessorGlobalId",

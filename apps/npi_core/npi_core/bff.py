@@ -99,6 +99,43 @@ _PROJECT_TRIAL_PLAN_ACTIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
     r"(?P<trial_plan_id>[^/:]+)/actions:generate$"
 )
+_PROJECT_TRIAL_EXECUTION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/execution$"
+)
+_PROJECT_TRIAL_PREPARE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+):prepare$"
+)
+_PROJECT_TRIAL_START_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+):start$"
+)
+_PROJECT_TRIAL_ACTUAL_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/actual-revisions$"
+)
+_PROJECT_TRIAL_SAMPLE_BATCHES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/sample-batches$"
+)
+_PROJECT_TRIAL_SAMPLE_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/sample-batches/"
+    r"(?P<sample_batch_id>[^/:]+)/revisions$"
+)
+_PROJECT_TRIAL_FILES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/files$"
+)
+_PROJECT_TRIAL_EVIDENCE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/evidence$"
+)
+_PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/evidence/(?P<evidence_id>[^/:]+):content$"
+)
 _PROJECT_TOOLING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
 )
@@ -577,6 +614,10 @@ def route_request() -> None:
                 "npi_core.trial_api.get_trial_planning_workspace",
             ),
             (_PROJECT_TRIAL_PLAN_ROUTE, "npi_core.trial_api.get_trial_plan"),
+            (
+                _PROJECT_TRIAL_EXECUTION_ROUTE,
+                "npi_core.trial_api.get_trial_round_execution",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -597,6 +638,38 @@ def route_request() -> None:
             (
                 _PROJECT_TRIAL_PLAN_ACTIONS_ROUTE,
                 "npi_core.trial_api.generate_trial_plan_actions",
+            ),
+            (
+                _PROJECT_TRIAL_PREPARE_ROUTE,
+                "npi_core.trial_api.prepare_trial_round",
+            ),
+            (
+                _PROJECT_TRIAL_START_ROUTE,
+                "npi_core.trial_api.start_trial_round",
+            ),
+            (
+                _PROJECT_TRIAL_ACTUAL_REVISIONS_ROUTE,
+                "npi_core.trial_api.append_trial_actual_revision",
+            ),
+            (
+                _PROJECT_TRIAL_SAMPLE_BATCHES_ROUTE,
+                "npi_core.trial_api.create_trial_sample_batch",
+            ),
+            (
+                _PROJECT_TRIAL_SAMPLE_REVISIONS_ROUTE,
+                "npi_core.trial_api.append_trial_sample_batch_revision",
+            ),
+            (
+                _PROJECT_TRIAL_FILES_ROUTE,
+                "npi_core.trial_api.upload_trial_evidence_file",
+            ),
+            (
+                _PROJECT_TRIAL_EVIDENCE_ROUTE,
+                "npi_core.trial_api.bind_trial_evidence",
+            ),
+            (
+                _PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE,
+                "npi_core.trial_api.read_trial_evidence_content",
             ),
         ):
             match = route.fullmatch(path)
@@ -1197,6 +1270,9 @@ def route_request() -> None:
     if _p7_01_routes_disabled(command):
         command = "npi_core.bff.trial_routes_disabled"
         route_params = {}
+    if _p7_02_routes_disabled(command):
+        command = "npi_core.trial_api.trial_execution_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1614,9 +1690,34 @@ def _p6_08_routes_disabled(command: str | None) -> bool:
 
 
 def _p7_01_routes_disabled(command: str | None) -> bool:
-    return trial_routes_are_disabled() and (
-        isinstance(command, str) and command.startswith("npi_core.trial_api.")
+    return trial_routes_are_disabled() and command in {
+        "npi_core.trial_api.get_trial_planning_workspace",
+        "npi_core.trial_api.get_trial_plan",
+        "npi_core.trial_api.create_trial_plan",
+        "npi_core.trial_api.create_trial_plan_revision",
+        "npi_core.trial_api.create_planned_trial_round",
+        "npi_core.trial_api.generate_trial_plan_actions",
+    }
+
+
+def _p7_02_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_02_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
     )
+    return value is not False and command in {
+        "npi_core.trial_api.get_trial_round_execution",
+        "npi_core.trial_api.prepare_trial_round",
+        "npi_core.trial_api.start_trial_round",
+        "npi_core.trial_api.append_trial_actual_revision",
+        "npi_core.trial_api.create_trial_sample_batch",
+        "npi_core.trial_api.append_trial_sample_batch_revision",
+        "npi_core.trial_api.upload_trial_evidence_file",
+        "npi_core.trial_api.bind_trial_evidence",
+        "npi_core.trial_api.read_trial_evidence_content",
+    }
 
 
 def _p5_01_routes_disabled(command: str | None) -> bool:
@@ -1709,6 +1810,15 @@ def _requires_project_request_id(method: str, path: str) -> bool:
         or _PROJECT_TRIAL_PLAN_REVISIONS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TRIAL_PLAN_ROUNDS_ROUTE.fullmatch(path) is not None
         or _PROJECT_TRIAL_PLAN_ACTIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_EXECUTION_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_PREPARE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_START_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_ACTUAL_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_SAMPLE_BATCHES_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_SAMPLE_REVISIONS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_FILES_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_EVIDENCE_ROUTE.fullmatch(path) is not None
+        or _PROJECT_TRIAL_EVIDENCE_CONTENT_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (
