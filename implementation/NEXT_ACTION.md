@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-02`
+`IN_PROGRESS_AUDIT — P7-03`
 
-Recovery time: `2026-08-10T15:58:45Z`
+Recovery time: `2026-08-11T05:35:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Completed P7-01 product checkpoint:
-`78efa3ec5c584928f510e4b095ead5a36f2fb376`
+Completed P7-02 product checkpoint:
+`3a267196d11921ba1111a0774f5f85bd8647ed9f`
 
 ## Current authoritative action
 
@@ -56,19 +56,28 @@ P7-02 checkpoint 2 passes at exact product checkpoint `318f1c8`. Ordinary CI
 trilingual sources and zero vulnerabilities. Complete evidence is
 `implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md`.
 
-Execute only checkpoint 3 from `implementation/evidence/phase-7/p7-02-plan.md`,
-enforced by `implementation/CURRENT_TASK.json`: add the strict Trial execution
-data source and dense trilingual locked-input/parameter/sample/evidence work
-area. Cover loading, empty, pending-scan, read-only, permission, validation,
-conflict, processing, retry and unavailable-machine-import states; preserve
-the one-primary-action industrial layout, translated keyboard/accessibility
-paths and affected fixed-Linux visual evidence. Activate no controlled runtime,
-automatic import, formal ERPNext quality, conclusion, Gate, approval, release,
-Tooling lifecycle or reservation authority.
+P7-02 passes Level 2 at exact product checkpoint `3a26719`. Ordinary CI
+`31432120639` passes repository `93597777986` (`1,524` tracked Python),
+frontend `93597778042` (`832/832` unit, `365/365` E2E, `6,311` direct
+trilingual sources and zero vulnerabilities), secret scan `93597778102` and
+visual `93597778040` at `100/100`. Optimized controlled workflow
+`31432837104` verifies that exact PR Gate and passes cumulative disposable Site
+scope `p5-01-through-p7-02`. Complete evidence is
+`implementation/evidence/phase-7/p7-02-validation.md`.
 
-After checkpoint 3 component/data-source/E2E/i18n/accessibility/affected-visual
-checks and task-scope validation pass, commit and run ordinary CI. Only that
-PASS activates checkpoint 4 cumulative controlled runtime and Level 2.
+Execute only the P7-03 Requirement/domain/existing-capability audit enforced by
+`implementation/CURRENT_TASK.json`. Reconcile exact Round/cavity defect
+lineage, responsible action ownership, target Round and independent
+verification against the live P7-01/P7-02 Trial and P6-05 Tooling foundations.
+Freeze a minimum complete vertical slice, ownership, lifecycle, closed BFF,
+additive persistence, dense trilingual UI, tests and rollback before changing
+product code. Do not activate automatic NCR, formal ERPNext quality, Gate or
+Tooling lifecycle mutation, Trial conclusion/approval/readiness/release,
+external projection or production print.
+
+After the bounded audit passes, commit the frozen P7-03 plan and update the
+machine-readable path guard to activate only checkpoint 1. Then run ordinary
+CI before any later checkpoint or controlled runtime.
 
 ## Retained P6-05 and P6-06 execution history
 

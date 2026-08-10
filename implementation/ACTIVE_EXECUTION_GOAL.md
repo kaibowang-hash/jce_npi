@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T15:58:45Z`
+Updated: `2026-08-11T05:35:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-02 CHECKPOINT 3`
+- Mode: `IN_PROGRESS_AUDIT — P7-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `78efa3ec5c584928f510e4b095ead5a36f2fb376` (pushed; P7-01 Level 2 PASS)
+  `3a267196d11921ba1111a0774f5f85bd8647ed9f` (pushed; P7-02 Level 2 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -18,18 +18,18 @@ Updated: `2026-08-10T15:58:45Z`
   repository, frontend, secret, `97/97` visual and cumulative controlled Site)
 - Latest evidence-only exact-SHA CI:
   `31393689222` (`PASS` at `fbac85b49b020a356554ab0e5540b8028ce5862f`)
-- Latest P7-02 product checkpoint:
-  `318f1c8a624df3182280c866c371705fa3e843be` (`CHECKPOINT 2 PASS`;
-  ordinary CI `31405749894`)
+- Latest P7-02 product Gate:
+  ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
+  (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
 - Current controller task:
-  `P7-02 — Locked inputs, actuals, samples and evidence`
-  (`IN_PROGRESS — CHECKPOINT 3 LIVE TRIAL EXECUTION WORKSPACE`)
-- Resumed product task: `P7-02` (`ACTIVE_CHECKPOINT_3`)
+  `P7-03 — Cavity defects, actions and verification`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Resumed product task: `P7-03` (`ACTIVE_AUDIT`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-02 CHECKPOINT 3`)
+  (`IN_PROGRESS — P7-03 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -55,32 +55,25 @@ workflow `31392474781`; evidence commit `fbac85b` passes CI `31393689222`.
 The accepted evidence is
 `implementation/evidence/delivery-pipeline-optimization/validation.md`.
 
-P7-02 checkpoint 1 passes at exact stable checkpoint `37a4d9d`. Ordinary CI
-`31399227239` passes `1,510` tracked Python tests, `822/822` frontend unit,
-`359/359` non-visual E2E, `6,130` complete direct trilingual sources, both
-secret boundaries and the unchanged `97/97` fixed-Linux visual matrix. It
-delivers only pure immutable input-lock, manual Actual, Sample Batch and exact
-clean-private evidence domains, closed contracts, ownership and four guarded
-additive DocTypes; it activates no route, business row, File write or UI.
-Evidence is `implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md`.
+P7-02 passes Level 2 at exact product checkpoint `3a26719`. Ordinary CI
+`31432120639` passes `1,524` tracked Python tests, `832/832` frontend unit,
+`365/365` E2E, `6,311` complete direct trilingual sources, both secret
+boundaries and `100/100` fixed-Linux visuals. Exact-SHA controlled Gate
+`31432837104` proves cumulative disposable-Site runtime through
+`p5-01-through-p7-02`, replay/conflict/rollback/IDOR, route recovery,
+migrations, redaction, zero integration traffic and cleanup. The truthful
+aggregate disposition is
+`TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD`; evidence is
+`implementation/evidence/phase-7/p7-02-validation.md`.
 
-P7-02 checkpoint 2 passes at exact product checkpoint `318f1c8`. Ordinary CI
-`31405749894` passes `1,521` tracked Python tests, `822/822` frontend unit,
-`359/359` non-visual E2E, `6,139` complete direct trilingual sources, both
-secret boundaries and the unchanged `97/97` fixed-Linux visual matrix. It
-activates only Project-first execution reads and prepare/start/manual Actual/
-Sample/pending-private-upload/clean-evidence commands behind an independent
-default-closed switch. Evidence is
-`implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md`.
-
-Only checkpoint 3 is active under the frozen plan and
-`implementation/CURRENT_TASK.json`: compose the strict execution data source
-and dense trilingual locked-input/parameter/sample/evidence workspace with
-loading, empty, pending-scan, read-only, permission, validation, conflict,
-processing, retry and unavailable-import truth plus affected fixed-Linux
-visual evidence. Controlled runtime, automatic machine acquisition, ERPNext
-formal quality, conclusion/Gate/approval/release and Tooling authority remain
-inactive. There is no active technical Hard Blocker.
+Only the bounded P7-03 audit is active under
+`implementation/CURRENT_TASK.json`: reconcile `FR-TR-004`, `FR-TR-009` and
+the retained `FR-TL-009/010` foundation into exact Round/cavity defect,
+responsibility, target-Round action and independent-verification truth; freeze
+the minimum vertical slice, ownership, lifecycle, routes, persistence, UI,
+tests and rollback before product code. Automatic NCR, formal ERPNext quality,
+Gate or Tooling lifecycle mutation, conclusion, approval and release remain
+outside authority. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -105,6 +105,13 @@ EXPECTED_P7_ANCHOR_EVIDENCE = {
     "implementation/phase-7-requirement-anchor.md",
     "implementation/evidence/phase-7/p7-00-validation.md",
 }
+EXPECTED_P7_02_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-02-plan.md",
+    "implementation/evidence/phase-7/p7-02-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-02-repository-bff-private-file-checkpoint.md",
+    "implementation/evidence/phase-7/p7-02-live-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-02-validation.md",
+}
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-TR-001": (
         "7",
@@ -117,6 +124,23 @@ EXPECTED_P7_COMPLETED_TRACES = {
             "implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md",
             "implementation/evidence/phase-7/p7-01-validation.md",
         },
+    ),
+    "FR-NP-004": (
+        "7",
+        "TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD",
+        EXPECTED_P7_02_EVIDENCE,
+    ),
+    "FR-NP-005": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_02_EVIDENCE),
+    "FR-TR-002": (
+        "7",
+        "TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD",
+        EXPECTED_P7_02_EVIDENCE,
+    ),
+    "FR-TR-003": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_02_EVIDENCE),
+    "FR-TR-010": (
+        "7",
+        "TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD",
+        EXPECTED_P7_02_EVIDENCE,
     ),
 }
 EXPECTED_P7_CARRIED_FOUNDATIONS = {

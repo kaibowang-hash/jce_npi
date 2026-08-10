@@ -1,26 +1,24 @@
 # Blockers
 
-Updated: `2026-08-10T15:58:45Z`
+Updated: `2026-08-11T05:35:00Z`
 
 ## Active hard blockers
 
-None. Delivery Pipeline Optimization passes ordinary CI `31388734891` and
-complete Level 3 `31392474781` at exact implementation SHA `22cb24d`; its
-evidence-only checkpoint `fbac85b` passes CI `31393689222`. P7-02 checkpoint 2
-passes CI `31405749894` at `318f1c8`; checkpoint 3 is active and no user action
-is required.
+None. P7-02 passes ordinary CI `31432120639` and exact-SHA cumulative
+controlled Gate `31432837104` at product checkpoint `3a26719`. P7-03 has
+entered its bounded audit; no user action is required.
 
 ## Active recovery
 
-None. The ordered delivery hold is removed. P7-02 checkpoints 1-2 are proven
-and checkpoint 3 is active under the frozen plan and machine-readable path
+None. The ordered delivery hold remains resolved. P7-02 is complete at Level 2
+and the P7-03 audit is active under a documentation-only machine-readable path
 guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext
-access, formal quality/approval authority, Trial conclusion/Gate/readiness/
-release policy, the external Released Trial Summary event/projection under
-`DR-REC-009`, and production print policy remain scoped holds, not global Hard
-Blockers.
+access, formal NCR/Quality Inspection and approval authority, Trial conclusion/
+Gate/readiness/release policy, Tooling lifecycle mutation, the external
+Released Trial Summary event/projection under `DR-REC-009`, and production
+print policy remain scoped holds, not global Hard Blockers.
 
 ## Historical recovery
 
