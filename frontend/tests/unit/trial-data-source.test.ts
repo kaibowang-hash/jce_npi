@@ -565,26 +565,30 @@ describe("Trial planning data source", () => {
         "736b88fa9eefc18bd6598e09ca6ac60111d8797e3a7e9ad5ba06bd3697577689",
       fileSizeBytes: 14,
     };
-    const responseBody = await new Response("clean evidence", {
-      headers: { "Content-Type": "image/png" },
-    }).blob();
+    const responseBytes = new TextEncoder().encode("clean evidence");
+    const responseBody = {
+      arrayBuffer: () => Promise.resolve(responseBytes.slice().buffer),
+      size: responseBytes.byteLength,
+      type: "image/png",
+      [Symbol.toStringTag]: "Blob",
+    } as unknown as Blob;
     const fetch = vi.fn<typeof globalThis.fetch>((_request, init) => {
       const requestId = new Headers(init?.headers).get("X-Request-ID") ?? "";
-      return Promise.resolve(
-        new Response(responseBody, {
-          headers: {
-            "Cache-Control": "private, no-store",
-            "Content-Disposition": "attachment; filename*=UTF-8''t0-photo.png",
-            "Content-Security-Policy": "sandbox; default-src 'none'",
-            "Content-Type": "image/png",
-            "Referrer-Policy": "no-referrer",
-            "X-Content-Type-Options": "nosniff",
-            "X-Request-ID": requestId,
-            "X-Trace-ID": "trace-trial-evidence-download",
-          },
-          status: 200,
-        }),
-      );
+      const binaryResponse = new Response(null, {
+        headers: {
+          "Cache-Control": "private, no-store",
+          "Content-Disposition": "attachment; filename*=UTF-8''t0-photo.png",
+          "Content-Security-Policy": "sandbox; default-src 'none'",
+          "Content-Type": "image/png",
+          "Referrer-Policy": "no-referrer",
+          "X-Content-Type-Options": "nosniff",
+          "X-Request-ID": requestId,
+          "X-Trace-ID": "trace-trial-evidence-download",
+        },
+        status: 200,
+      });
+      vi.spyOn(binaryResponse, "blob").mockResolvedValue(responseBody);
+      return Promise.resolve(binaryResponse);
     });
     vi.stubGlobal("fetch", fetch);
     const source = new LiveTrialDataSource();
