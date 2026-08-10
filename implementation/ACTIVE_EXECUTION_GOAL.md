@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T05:55:00Z`
+Updated: `2026-08-10T22:36:19Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 1`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 2`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -21,15 +21,18 @@ Updated: `2026-08-11T05:55:00Z`
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
+- Latest P7-03 product checkpoint:
+  `42812c3162a6d3e72508ecc12bf0a5c944e334c7` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31438191274`)
 - Current controller task:
   `P7-03 — Cavity defects, actions and verification`
-  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
-- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_1`)
+  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/SINGLE TIP`)
+- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-03 CHECKPOINT 1`)
+  (`IN_PROGRESS — P7-03 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -66,15 +69,21 @@ aggregate disposition is
 `TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD`; evidence is
 `implementation/evidence/phase-7/p7-02-validation.md`.
 
-The bounded P7-03 audit passes after starting controller SHA `135d083` passes
-ordinary CI `31434848448`. Its frozen plan is
-`implementation/evidence/phase-7/p7-03-plan.md`. Only checkpoint 1 is active:
-pure Cavity Result, single cross-store defect successor, exact action-target
-Round and independent-verification domains; closed contracts/ownership; three
-guarded additive DocTypes; translations and focused tests. It creates no live
-route, business row, UI, fixture, automatic NCR, formal ERPNext quality,
-Gate/Tooling lifecycle effect, conclusion, approval or release. There is no
-active technical Hard Blocker.
+P7-03 checkpoint 1 passes at exact product checkpoint `42812c3`. Ordinary CI
+`31438191274` passes the complete repository, frontend/E2E, secret and
+unchanged `100/100` fixed-Linux visual lanes. It adds only pure immutable
+Cavity Result, single cross-store defect successor, exact action-target Round
+and independent-verification domains, closed contracts/ownership, three
+guarded additive DocTypes and direct translations; no route or business row is
+active. Evidence is
+`implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md`.
+
+Only checkpoint 2 is active: Project-first quality reads and exact cavity-
+result/defect/verification commands, transactional P6-to-P7 single-tip
+enforcement, actor-bound replay, one transaction, append-only audit and the
+independent default-closed P7-03 switch. UI, runtime fixture, NCR, formal
+quality, Gate/Tooling lifecycle, conclusion, approval and release remain
+inactive. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

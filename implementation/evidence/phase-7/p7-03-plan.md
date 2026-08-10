@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-11`
 
-Status: `FROZEN — AUDIT PASS; CHECKPOINT 1 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZED`
 
 Starting controller checkpoint:
 `135d083bcb4e620c571fa3d4737cae54e7a8be2a`

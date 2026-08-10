@@ -2570,3 +2570,22 @@ repeat or rewrite it merely to restore context. See
   additive DocTypes, translations and focused tests. No live route, business
   row, UI, runtime fixture, NCR, formal quality, Gate, Tooling lifecycle,
   conclusion, approval, readiness or release authority is active.
+
+## 2026-08-11 P7-03 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint `42812c3162a6d3e72508ecc12bf0a5c944e334c7`
+  adds only pure immutable exact-cavity result, cross-store defect successor,
+  exact action-target Round and independent-verification domains, closed
+  contracts/ownership, three guarded additive DocTypes and focused direct
+  translations/tests. It activates no route, business row, UI or runtime.
+- Ordinary CI `31438191274` passes repository `93617010649`, frontend/E2E
+  `93617010756`, secret scan `93617010700` and the unchanged `100/100`
+  fixed-Linux visual matrix in `93617010730`. Controlled runtime correctly
+  skips. Accepted evidence is
+  `implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md`.
+- Activate only checkpoint 2: Project-first quality reads and exact cavity-
+  result/defect/verification commands, transactional P6-to-P7 single-tip
+  enforcement, actor-bound replay, one transaction, append-only audit and the
+  independent default-closed P7-03 route switch. UI, runtime fixture, NCR,
+  formal quality, Gate/Tooling lifecycle, conclusion, approval, readiness,
+  release, external projection and production print remain inactive.

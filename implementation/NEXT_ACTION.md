@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-03`
+`IN_PROGRESS_CHECKPOINT_2 — P7-03`
 
-Recovery time: `2026-08-11T05:55:00Z`
+Recovery time: `2026-08-10T22:36:19Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -71,17 +71,24 @@ and fixed-Linux visual `93606569081` at `100/100` all pass; controlled runtime
 correctly skips. The bounded P7-03 audit passes and its frozen plan is
 `implementation/evidence/phase-7/p7-03-plan.md`.
 
-Execute only checkpoint 1, enforced by `implementation/CURRENT_TASK.json`:
-add pure immutable Cavity Result, cross-store single-defect successor, exact
-action target and independent-verification domains; closed OpenAPI/ownership;
-three guarded additive DocTypes; direct translations and focused tests. Create
-no live route, business row, UI or runtime fixture. Do not activate automatic
-NCR, formal ERPNext quality, Gate or Tooling lifecycle mutation, Trial
-conclusion/approval/readiness/release, external projection or production print.
+P7-03 checkpoint 1 passes at exact product checkpoint `42812c3`. Ordinary CI
+`31438191274` passes repository `93617010649`, frontend/E2E `93617010756`,
+secret scan `93617010700` and unchanged `100/100` fixed-Linux visual job
+`93617010730`. Complete evidence is
+`implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md`.
 
-After checkpoint 1 affected checks and task-scope validation pass, commit and
-run ordinary CI. Only that PASS activates checkpoint 2 repository/BFF/single-
-tip behavior.
+Execute only checkpoint 2, enforced by `implementation/CURRENT_TASK.json`:
+add Project-first quality reads and exact cavity-result/defect/verification
+commands; enforce exact Round/input/Sample/Tooling Revision/Set/cavity and one
+P6-to-P7 cross-store defect tip; use actor-bound idempotency, one transaction,
+append-only audit and an independent default-closed P7-03 route switch. Create
+no UI or runtime fixture. Do not activate NCR, formal ERPNext quality, Gate or
+Tooling lifecycle mutation, Trial conclusion/approval/readiness/release,
+external projection or production print.
+
+After checkpoint 2 affected repository/API/security tests and task-scope
+validation pass, commit and run ordinary CI. Only that PASS activates the live
+trilingual cavity-quality workspace.
 
 ## Retained P6-05 and P6-06 execution history
 
