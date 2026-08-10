@@ -1023,8 +1023,31 @@ def verify_generic_mutation_denial(
             and after.status == 200
             and after.body.get("data", {}).get("snapshot_hash")
             == before.body.get("data", {}).get("snapshot_hash"),
-            f"P6-08 {doctype} accepted generic mutation",
+            generic_mutation_diagnostic(
+                doctype,
+                before,
+                rejected_update,
+                rejected_delete,
+                after,
+            ),
         )
+
+
+def generic_mutation_diagnostic(
+    doctype: str,
+    before: HttpResult,
+    rejected_update: HttpResult,
+    rejected_delete: HttpResult,
+    after: HttpResult,
+) -> str:
+    before_hash = before.body.get("data", {}).get("snapshot_hash")
+    after_hash = after.body.get("data", {}).get("snapshot_hash")
+    return (
+        f"P6-08 {doctype} accepted generic mutation: "
+        f"before={before.status}; update={rejected_update.status}; "
+        f"delete={rejected_delete.status}; after={after.status}; "
+        f"snapshotPreserved={isinstance(before_hash, str) and after_hash == before_hash}"
+    )
 
 
 def run_fresh(
