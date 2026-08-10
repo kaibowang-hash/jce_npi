@@ -1,92 +1,58 @@
 # Active Execution Goal
 
-Updated: `2026-08-09T23:24:00Z`
+Updated: `2026-08-10T04:36:24Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+- Mode: `IN_PROGRESS_REQUIREMENT_ANCHOR — P7-00 TRIAL AND NPI`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact task/product checkpoint:
-  `82ebcaf712f78e48f6718d7cb0ac675712f9e689` (pushed; P6-08 checkpoint 3
-  dense trilingual Tooling List/export workspace PASS)
-- Latest completed controller/evidence checkpoint:
-  `d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0` (pushed; P6-07 evidence/
-  trace closure and P6-08 bounded audit activation)
+  `68f230fee73b1b6ca95206346d128e1518613d82` (pushed; P6-08 Level 2 and
+  Phase 6 Level 3 product/runtime checkpoint PASS)
 - Latest complete normal CI:
-  `31341354013` (`PASS`, exact SHA `82ebcaf`; repository `93315593607` and
-  fixed-Linux visual `93315593576` at `94/94` passed; controlled job
-  `93315593910` skipped)
+  `31355006189` (`PASS`, exact SHA `68f230f`; repository `93352955845` and
+  fixed-Linux visual `93352955834` at `94/94` passed; controlled job skipped)
 - Latest controlled-Site run:
-  `31330684809` (`PASS`, unchanged exact SHA `d8e4897`; repository
-  `93288346191`, visual `93288346156` at `91/91` and controlled Site
-  `93288346195` passed)
+  `31355555773` (`PASS`, unchanged exact SHA `68f230f`; repository
+  `93354448586`, visual `93354448605` at `94/94` and controlled Site
+  `93354448564` passed)
 - Controlled PASS artifact:
-  `9042876293`, GitHub digest
-  `sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`
+  `9050565297`, GitHub digest
+  `sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`
 - Current controller task:
-  `P6-08 — Controlled selection/filter and object-package export`
-  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME, LEVEL 2 AND PHASE 6 GATE`)
-- Current Requirement ID: `UX-007`
+  `P7-00 — Phase 7 Trial and NPI requirement anchor`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Current Requirement IDs: to be frozen by the P7-00 anchor from M6-01..08,
+  the live 282-row trace and scoped `DR-REC-009` boundary
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `6 — Tooling Domain` (`IN_PROGRESS — P6-08 CHECKPOINT 4`)
+  `7 — Trial, Quality Issues and NPI Readiness` (`IN_PROGRESS — P7-00`)
 - Latest complete product Phase:
-  `5 — Part Design, Documents, Baselines, and EBOM` (`PASS — LEVEL 3`)
+  `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P6-07 passes Level 2 at exact checkpoint `d8e4897`. Ordinary CI
-`31330677928` and unchanged final workflow `31330684809` pass the complete
-repository, `91/91` fixed-Linux visual matrix and cumulative disposable-Site
-runtime. Artifact `9042876293` records `result=PASS`, exact SHA and scope
-`p5-01-through-p6-07`. Complete evidence is
-`implementation/evidence/phase-6/p6-07-validation.md`.
+P6-08 passes Level 2 and closes Phase 6 at exact product checkpoint `68f230f`.
+Ordinary CI `31355006189` and final unchanged workflow `31355555773` pass the
+complete repository, `94/94` fixed-Linux visuals and cumulative disposable
+Site through `p5-01-through-p6-08`. Runtime artifact `9050565297` records
+`result=PASS`, exact SHA, pinned Frappe and disposable Site/database identity.
+Complete task and Phase evidence is retained in
+`implementation/evidence/phase-6/p6-08-validation.md` and
+`implementation/phase-6-gate.md`.
 
-The bounded P6-08 audit passes in
-`implementation/evidence/phase-6/p6-08-plan.md`. It freezes a four-checkpoint
-delivery: pure list/query/preference/export/package domains with closed
-contracts and additive metadata; Project-first repository/BFF/private artifact
-and download; dense trilingual Tooling List workspace; then cumulative
-controlled Site, Level 2 and Phase 6 Level 3.
-
-Checkpoint 1 passes at exact stable checkpoint `5b15609`; its complete
-evidence is
-`implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
-
-Checkpoint 2 passes at exact stable checkpoint `ac0a29c`. Product commit
-`759b448` added the default-closed Project-first list/preference/create/
-download routes, stable paging/query snapshots, exact shared-Master
-containment, conservative export authorization and single-transaction private
-File/package/audit/receipt persistence with creator-bound hash-verified
-one-hour POST download. Initial CI passed the repository and isolated only
-eighteen footer catalog fingerprints; exact artifact review and baseline-only
-repair changed no source component or Gate rule. Final ordinary CI
-`31336841275` passes `1,405` tracked Python, `796` frontend unit, `343`
-non-visual E2E, complete `5,647`-source direct trilingual coverage, statements
-`80.00%`, both secret lanes and `91/91` fixed-Linux visuals. Evidence is
-`implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
-
-Checkpoint 3 passes at exact stable checkpoint `82ebcaf`. Primary product
-commit `70802d6` added the fixed P6-08 data source and dense trilingual Tooling
-List/export workspace. Final ordinary CI `31341354013` passes `1,405` tracked
-Python, `809` frontend unit, `352` non-visual E2E, complete `5,753`-source
-direct trilingual coverage, statements `80.07%`, both secret lanes and
-`94/94` fixed-Linux visuals. Complete evidence is
-`implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
-
-The current atomic task is checkpoint 4 only: extend the cumulative
-disposable-Site verifier/workflow through P6-08. Seed bounded Tooling truth
-and prove all ten views, exact selection and complete-filter packages,
-localized fixed members, formula neutralization, immutable member/package
-hashes, one-hour expiry, cross-process replay, actor/Project/IDOR/expiry/stale
-denials, independent route disable/recovery, two migrations, raw-log
-redaction, no ERP/network/Outbox and cleanup. Then execute the P6-08 Level 2
-Task Gate, reconcile `UX-007`, and run the Phase 6 Level 3 release gate.
-Production ERPNext, production mapping and Tooling/lifecycle authority remain
-inactive. There is no active technical Hard Blocker.
+The current atomic task is P7-00 documentation/trace only. It must read the
+Phase 7/M6 Trial and NPI specifications and live repository truth; allocate
+M6-01 through M6-08 to atomic P7 tasks; preserve distinct Trial Plan, Round,
+locked inputs, samples, cavity results, defects/actions, conclusions,
+readiness, handover and immutable Released Trial Summary identities; reconcile
+Phase 6's `not_measured` Trial Actual/unavailable Approved Baseline and
+acceptance holds; record `DR-REC-009`; and freeze ownership, authorities,
+task order, migration/rollback and changed-files-to-tests mapping. It changes
+no product code. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -2223,3 +2223,53 @@ repeat or rewrite it merely to restore context. See
   Outbox activity and cleanup. Then complete the P6-08 Level 2 Task Gate,
   reconcile `UX-007`, and run the Phase 6 Level 3 release gate. Production-
   scale performance evidence remains external.
+
+## 2026-08-10 P6-08 checkpoint 4 and Level 2 PASS; Phase 6 Level 3 PASS
+
+- Checkpoint 4 begins with runtime verifier/workflow commit `fd15bdc` and ends
+  at exact stable product SHA
+  `68f230fee73b1b6ca95206346d128e1518613d82` after serial evidence-proved
+  controlled-runtime repairs. Temporary response-neutral diagnostics are
+  closed. No Requirement, public route, role/permission, ownership, Schema,
+  transaction, idempotency, audit, visual matrix, threshold or PASS rule was
+  weakened.
+- Exact-SHA ordinary CI `31355006189` passes repository `93352955845` with
+  `1,420/1,420` tracked Python tests, `809/809` frontend unit tests in `52`
+  files, `352/352` non-visual E2E, `5,753` literal English sources at direct
+  `100%` `zh` and `zh-TW` coverage, statements `80.07%`, clean build, two
+  zero-vulnerability audits and both Gitleaks lanes. Fixed-Linux visual job
+  `93352955834` passes `94/94`.
+- Final unchanged workflow `31355555773` retains the same exact SHA and passes
+  repository `93354448586`, visual `93354448605` at `94/94`, and controlled
+  Site `93354448564`. Runtime artifact `9050565297`, digest
+  `sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`,
+  records `result=PASS`, Site `npi.localhost`, database `npi_one_runtime`,
+  marker `npi-one-local-runtime-disposable-v1`, pinned Frappe commit
+  `a3d8090ba80cb91d3ed72ea90bec67df201db5c1` and cumulative scope
+  `p5-01-through-p6-08`.
+- Controlled truth includes ten fixed views, eight non-empty fixture views,
+  four immutable packages, three localized packages, exact fixed members and
+  hashes, formula neutralization, one-hour expiry denial, same/fresh-process
+  replay, permission/IDOR/stale/conflict/wrong-hash/generic-mutation denial,
+  route recovery, two migrations, raw-log redaction, zero integration traffic
+  and cleanup.
+- Ordinary visual artifact `9050369290` has digest
+  `sha256:6907839620609abb7eb3a128304e759f093d6af50324aa01a1b8ddfceb8f9bdc`;
+  final visual artifact `9050546526` has digest
+  `sha256:169e49019c28d64d5c79bbb145759617ad7dc42b8aef83a7631dd2d3bac584d2`.
+  Ordinary and final Gitleaks artifacts are `9050477721` and `9050637324`.
+- `UX-007` retains `TECHNICAL_VERIFIED_FOUNDATION` with the complete P6-08
+  evidence set. Arbitrary/global export, raw private File URLs, production
+  mapping, representative-scale performance, ERPNext and Tooling lifecycle
+  authority remain prohibited, held or external.
+- Evidence-based Level 3 `release-gate` review accepts P6-00 through P6-08
+  with no open blocker, major or minor finding. Complete reports are
+  `implementation/evidence/phase-6/p6-08-validation.md` and
+  `implementation/phase-6-gate.md`.
+- Standing transition authority closes Phase 6 and activates only
+  `P7-00 — Phase 7 Trial and NPI requirement anchor`. P7-00 is documentation/
+  trace work: allocate M6-01..08, exact Trial/quality/readiness/handover/
+  Released Trial Summary/mobile requirements and scoped decisions; freeze
+  identities, ownership, authorities, task order, migration/rollback and test
+  impact. It changes no product code and may not invent lifecycle/quality/
+  external-event/ERP or production-print authority.

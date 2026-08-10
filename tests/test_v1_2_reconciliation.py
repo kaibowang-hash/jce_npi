@@ -191,6 +191,10 @@ class V12ReconciliationTests(unittest.TestCase):
                 "implementation/evidence/reconciliation/r1-04-validation.md",
                 by_id[requirement_id]["evidence"],
             )
+        self.assertIn(
+            "implementation/evidence/phase-6/p6-08-validation.md",
+            by_id["UX-007"]["evidence"],
+        )
         for _, expected_evidence in self.verifier.EXPECTED_R1_04_TRACE.values():
             for evidence_path in expected_evidence:
                 self.assertTrue(

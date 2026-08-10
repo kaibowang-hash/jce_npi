@@ -1,25 +1,26 @@
 # Blockers
 
-Updated: `2026-08-09T23:24:00Z`
+Updated: `2026-08-10T04:36:24Z`
 
 ## Active hard blockers
 
-None. P6-08 checkpoint 3 passes at exact checkpoint `82ebcaf`. Ordinary CI
-`31341354013` passes repository `93315593607` and fixed-Linux visual
-`93315593576` at `94/94`; controlled runtime correctly skips at this boundary.
-No user action is required.
+None. P6-08 passes Level 2 and Phase 6 passes Level 3 at exact product
+checkpoint `68f230f`. Ordinary CI `31355006189` and final unchanged workflow
+`31355555773` pass the complete repository, `94/94` fixed-Linux visuals and
+cumulative disposable Site through `p5-01-through-p6-08`. Runtime artifact
+`9050565297` records `result=PASS` and the exact SHA. No user action is
+required.
 
 ## Active recovery
 
-None. P6-08 checkpoint 3 dense trilingual Tooling List/export workspace is
-sealed in
-`implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
-Checkpoint 4 cumulative controlled Site, P6-08 Level 2 and Phase 6 Level 3
-Gate are active.
+None. Phase 6 is sealed in `implementation/phase-6-gate.md`. P7-00 is active
+only for the bounded Phase 7 Trial/NPI requirement anchor and changes no
+product code.
 
-Production ERPNext access, production Tooling-list mapping, destructive
-downstream rollback, raw private File URL export and arbitrary database export
-remain scoped holds or explicit non-scope, not global Hard Blockers.
+Production ERPNext access, official quality/approval authority, exact Trial/
+Gate lifecycle policy, the external Released Trial Summary event/projection
+under `DR-REC-009`, and production print policy remain scoped holds for their
+dependent behavior, not global Hard Blockers.
 
 ## Historical recovery
 

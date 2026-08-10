@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
-current_phase: 6
-updated_at: '2026-08-09T12:53:36Z'
+current_phase: 7
+updated_at: '2026-08-10T04:36:24Z'
 authorization: automatic_transition_after_pass
 execution_hold: null
-current_task: P6-07
-current_task_status: IN_PROGRESS_CHECKPOINT_5
-current_task_completed_stage: P6_07_CHECKPOINT_4_PASS
-current_task_next_stage: P6_07_CONTROLLED_SITE_AND_LEVEL_2_GATE
+current_task: P7-00
+current_task_status: IN_PROGRESS_REQUIREMENT_ANCHOR
+current_task_completed_stage: P6_08_LEVEL_2_AND_PHASE_6_LEVEL_3_PASS
+current_task_next_stage: P7_00_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P6-07
-resumed_product_task_status: IN_PROGRESS_CHECKPOINT_5
+resumed_product_task: P7-00
+resumed_product_task_status: IN_PROGRESS_REQUIREMENT_ANCHOR
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1439,7 +1439,7 @@ p6_07:
 p6_08:
   task: P6-08
   controller_task: P6-08_CONTROLLED_SELECTION_FILTER_OBJECT_PACKAGE_EXPORT
-  status: IN_PROGRESS_CHECKPOINT_4
+  status: PASS_LEVEL_2
   requirements: [UX-007]
   starting_checkpoint: d5d6064b6db8a5c0e82c1f8e398272b1b432d6a0
   audit_predecessor_ordinary_ci: 31331504738
@@ -1447,8 +1447,8 @@ p6_08:
   audit_predecessor_visual_job: 93290380955
   audit_predecessor_visual_result: 91_OF_91_PASS
   audit_decision: PASS_BOUNDED_FOUR_CHECKPOINT_PLAN
-  current_stage: CUMULATIVE_CONTROLLED_RUNTIME_LEVEL_2_PHASE_6_GATE
-  next_stage: CHECKPOINT_4_LEVEL_2_AND_PHASE_6_LEVEL_3
+  current_stage: LEVEL_2_TASK_GATE_PASS
+  next_stage: COMPLETE
   checkpoint_1_product_sha: 5b1560921eda850380d298d7b50375943d7a69e2
   checkpoint_1_ordinary_ci: 31334024291
   checkpoint_1_repository_job: 93296765481
@@ -1476,7 +1476,28 @@ p6_08:
   tooling_export_business_rows_active: true
   tooling_export_private_files_active: true
   live_tooling_list_export_active: true
-  controlled_runtime_active: false
+  checkpoint_4_primary_runtime_commit: fd15bdc
+  checkpoint_4_stable_checkpoint: 68f230fee73b1b6ca95206346d128e1518613d82
+  checkpoint_4_ordinary_ci: 31355006189
+  checkpoint_4_ordinary_repository_job: 93352955845
+  checkpoint_4_ordinary_visual_job: 93352955834
+  checkpoint_4_ordinary_visual_result: 94_OF_94_PASS
+  checkpoint_4_ordinary_visual_artifact: 9050369290
+  checkpoint_4_ordinary_visual_digest: sha256:6907839620609abb7eb3a128304e759f093d6af50324aa01a1b8ddfceb8f9bdc
+  checkpoint_4_ordinary_gitleaks_artifact: 9050477721
+  checkpoint_4_ordinary_gitleaks_digest: sha256:d4c5ecb69580a95c8bda59a639a4e8fdbaaca3f86a72c7add24957f3d5298f00
+  checkpoint_4_final_ci: 31355555773
+  checkpoint_4_final_repository_job: 93354448586
+  checkpoint_4_final_visual_job: 93354448605
+  checkpoint_4_controlled_job: 93354448564
+  checkpoint_4_runtime_artifact: 9050565297
+  checkpoint_4_runtime_digest: sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222
+  checkpoint_4_final_visual_artifact: 9050546526
+  checkpoint_4_final_visual_digest: sha256:169e49019c28d64d5c79bbb145759617ad7dc42b8aef83a7631dd2d3bac584d2
+  checkpoint_4_final_gitleaks_artifact: 9050637324
+  checkpoint_4_final_gitleaks_digest: sha256:843abc3661a89d038c8ae9e44f199fce250b99152a3795857276fbc237908a3f
+  checkpoint_4_decision: PASS
+  controlled_runtime_active: true
   separate_export_authority: INTERNAL_SYSTEM_MANAGER_AND_PROJECT_VIEW
   package_schema: tooling-object-package-v1
   maximum_exported_tooling_masters: 100
@@ -1488,6 +1509,20 @@ p6_08:
     - implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md
     - implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md
     - implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md
+    - implementation/evidence/phase-6/p6-08-validation.md
+    - implementation/phase-6-gate.md
+p7_00:
+  task: P7-00
+  controller_task: P7_00_TRIAL_NPI_REQUIREMENT_ANCHOR
+  status: IN_PROGRESS_REQUIREMENT_ANCHOR
+  phase: 7
+  compatibility_milestone: M6
+  starting_product_checkpoint: 68f230fee73b1b6ca95206346d128e1518613d82
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  next_stage: DOCUMENTATION_TRACE_LEVEL_2_TASK_GATE
+  product_code_changed: false
+  evidence:
+    - implementation/phase-6-gate.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1512,7 +1547,7 @@ phases:
   - {id: 3, name: React App Shell Siemens UI and i18n Foundation, status: TECHNICAL_PASS_PENDING_UAT, repair_round: 1, gate: implementation/phase-3-gate.md}
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
-  - {id: 6, name: Tooling Domain, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07], current_task: P6-08}
-  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: NOT_STARTED, repair_round: 0}
+  - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
+  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P7-00}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

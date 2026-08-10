@@ -1,84 +1,43 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P6-08 CONTROLLED SELECTION AND OBJECT-PACKAGE EXPORT`
+`IN_PROGRESS_REQUIREMENT_ANCHOR — P7-00 TRIAL AND NPI`
 
-Recovery time: `2026-08-09T23:24:00Z`
+Recovery time: `2026-08-10T04:36:24Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Recovery synchronized product checkpoint:
-`82ebcaf712f78e48f6718d7cb0ac675712f9e689`
+`68f230fee73b1b6ca95206346d128e1518613d82`
 
 ## Current authoritative action
 
-P6-07 passes Level 2 at exact stable checkpoint `d8e4897`. Ordinary CI
-`31330677928` passes repository `93288333713` (`1,363` Python, `796`
-frontend unit in `50` files, `343` non-visual E2E, `5,553` direct trilingual
-sources at complete `zh`/`zh-TW` coverage, statements `80.00%`, zero
-vulnerabilities and both secret lanes) and visual `93288333688` at `91/91`.
-Unchanged final workflow `31330684809` passes repository `93288346191`,
-visual `93288346156` at `91/91` and controlled Site `93288346195` through
-cumulative scope `p5-01-through-p6-07`. Runtime artifact `9042876293` has
-digest
-`sha256:ba966c30fd334e5572d8fe88f23c175f76413d2e5f8234467651aa87f3be562f`.
-Complete evidence is `implementation/evidence/phase-6/p6-07-validation.md`.
-P6-07 evidence/trace closure checkpoint `d5d6064` also passes ordinary CI
-`31331504738`, including repository `93290380976` and visual `93290380955` at
-`91/91`; the controlled job correctly skips because product/runtime truth is
-unchanged.
+P6-08 passes Level 2 and Phase 6 passes Level 3 at exact product checkpoint
+`68f230f`. Ordinary CI `31355006189` passes repository `93352955845`
+(`1,420` tracked Python, `809` frontend unit in `52` files, `352` non-visual
+E2E, `5,753` direct trilingual sources, statements `80.07%`, zero
+vulnerabilities and both secret lanes) and visual `93352955834` at `94/94`.
+Final unchanged workflow `31355555773` passes repository `93354448586`,
+visual `93354448605` at `94/94` and cumulative controlled Site `93354448564`.
+Runtime artifact `9050565297` has digest
+`sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`.
+Complete evidence is `implementation/evidence/phase-6/p6-08-validation.md`
+and `implementation/phase-6-gate.md`.
 
-The bounded audit passes in
-`implementation/evidence/phase-6/p6-08-plan.md`. It confirms that the shared
-DenseGrid, fixed My Work preference pattern, Tooling Project-first repository
-and P6-07 private binary artifact/download path are reusable, but no Tooling
-list query, ten-view preference, export authority, object-package renderer,
-immutable artifact/download or live action exists.
+The current atomic action is P7-00 only: perform a bounded Phase 7/M6 Trial
+and NPI Requirement/domain/existing-capability audit; allocate M6-01..08 and
+their exact requirement/decision anchors; preserve Trial Plan/Round, locked
+input, sample, cavity/defect/action, conclusion, readiness, handover and
+Released Trial Summary identities; reconcile Phase 6's Trial Actual,
+Approved Baseline and acceptance holds plus `DR-REC-009`; and freeze authority,
+atomic task order, changed-files-to-tests, migration and rollback in a Phase 7
+requirement anchor and P7-00 validation record. This task changes no product
+code. No Phase 7 product task begins until the documentation/trace Gate passes.
 
-Checkpoint 1 passes at exact stable product checkpoint `5b15609`; complete
-evidence is
-`implementation/evidence/phase-6/p6-08-domain-metadata-checkpoint.md`.
-
-Checkpoint 2 passes at exact stable product checkpoint `ac0a29c`. Product
-commit `759b448` activated only the independently default-closed Project-first
-Tooling list/preference/export-create/download BFF, stable paging/query
-snapshots, exact shared-Master containment, conservative `System Manager` plus
-Project `VIEW` export authority, immutable private File/package/audit/receipt
-transaction and creator-bound one-hour hash-verified POST download. Initial CI
-passed the repository and isolated only eighteen footer catalog fingerprints;
-artifact `9044488283` proved no business-region change, and baseline-only
-repair `ac0a29c` copied exactly the reviewed Linux actuals. Final CI
-`31336841275` passes repository `93303992048` (`1,405` tracked Python, `796`
-frontend unit in `50` files, `343` non-visual E2E, `5,647` complete direct
-trilingual sources, statements `80.00%`, zero vulnerabilities and both secret
-lanes) and visual `93303992034` at `91/91`; controlled job `93303992327`
-correctly skips. Complete evidence is
-`implementation/evidence/phase-6/p6-08-repository-bff-checkpoint.md`.
-
-Checkpoint 3 passes at exact stable checkpoint `82ebcaf`. Primary product
-commit `70802d6` added the strict P6-08 data source and dense trilingual ten-
-view Tooling List/export workspace. Ordinary CI `31341354013` passes
-repository `93315593607` (`1,405` tracked Python, `809` frontend unit in `52`
-files, `352` non-visual E2E, `5,753` complete direct trilingual sources,
-statements `80.07%`, zero vulnerabilities, install-script/brand/full verify
-and both secret lanes) and visual `93315593576` at `94/94`; controlled job
-`93315593910` correctly skips. Complete evidence is
-`implementation/evidence/phase-6/p6-08-live-workspace-checkpoint.md`.
-
-The current atomic action is checkpoint 4 only: extend the cumulative
-disposable-Site verifier and controlled workflow through P6-08. Seed bounded
-Tooling truth and prove all ten views, exact selection and complete-filter
-packages, localized fixed members, formula neutralization, immutable hashes,
-one-hour expiry, cross-process replay, actor/Project/IDOR/expiry/stale denials,
-independent route disable/recovery, two migrations, raw-log redaction, no ERP/
-network/Outbox and cleanup. Then run the P6-08 Level 2 Task Gate, reconcile
-`UX-007`, and run the Phase 6 Level 3 release gate.
-
-P6-08 cannot expose an arbitrary database dump, raw private File URLs,
-cross-Project data or production Tooling/ERP authority. `DR-REC-007` retains
-production mapping approval and `DR-REC-008` retains downstream rollback
-denial. There is no active technical Hard Blocker.
+Production ERPNext, official quality authority, approved Trial/Gate lifecycle,
+external Released Trial Summary event/projection and production print policy
+remain scoped holds, not global Hard Blockers.
 
 ## Retained P6-05 and P6-06 execution history
 
