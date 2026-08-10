@@ -551,7 +551,7 @@ export function DockedInspector({
           </div>
         ) : null}
         {!controlled && !collapsed ? (
-          <label>
+          <label className="inspector-controls__range">
             <span className="visually-hidden">{t("Inspector width")}</span>
             <input
               aria-label={t("Inspector width")}

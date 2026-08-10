@@ -1950,8 +1950,17 @@ textarea::placeholder {
   scrollbar-gutter: stable;
 }
 
+.inspector-controls__range {
+  display: block;
+  padding-inline: 2px;
+  line-height: 0;
+}
+
 .inspector-controls input[type="range"] {
+  display: block;
   width: 112px;
+  height: 16px;
+  margin: 0;
   accent-color: var(--npi-color-brand-primary);
 }
 
