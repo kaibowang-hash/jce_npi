@@ -1,22 +1,22 @@
 # Blockers
 
-Updated: `2026-08-10T05:26:23Z`
+Updated: `2026-08-10T11:04:13Z`
 
 ## Active hard blockers
 
-None. P6-08 passes Level 2 and Phase 6 passes Level 3 at exact product
-checkpoint `68f230f`. Ordinary CI `31355006189` and final unchanged workflow
-`31355555773` pass the complete repository, `94/94` fixed-Linux visuals and
-cumulative disposable Site through `p5-01-through-p6-08`. Runtime artifact
-`9050565297` records `result=PASS` and the exact SHA. No user action is
-required.
+None. P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged
+workflow `31380834335` passes repository, `97/97` fixed-Linux visuals and the
+cumulative disposable Site through `p5-01-through-p7-01`. Runtime artifact
+`9059935812` records `result=PASS`, exact SHA, two Plan revisions, one planned
+Round, one action link, route rollback, cross-process replay, unavailable
+reservation truth and zero integration traffic. No user action is required.
 
 ## Active recovery
 
-None. Phase 6 is sealed; P7-00 and exact-SHA CI `31358008296` pass. The bounded
-P7-01 audit also passes. Only checkpoint 1 pure domain/contract/additive
-metadata is active; it has no route, business row, policy, fixture or external
-effect.
+None. P7-01 is sealed at Level 2. The active Delivery Pipeline Optimization
+audit is an ordered independent delivery task, not a Hard Blocker. P7-02 and
+later Phase 7 product tasks are intentionally paused until that task reaches
+Level 3 PASS.
 
 Confirmed machine/person/material reservation, production ERPNext access,
 official quality/approval authority, exact later Trial/Gate lifecycle policy,

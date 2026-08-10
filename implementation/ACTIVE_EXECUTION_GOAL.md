@@ -1,73 +1,63 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T05:26:23Z`
+Updated: `2026-08-10T11:04:13Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_DOMAIN_CONTRACT_METADATA — P7-01 CHECKPOINT 1`
+- Mode: `IN_PROGRESS_EVIDENCE_AUDIT — DELIVERY PIPELINE OPTIMIZATION`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
-- Latest exact controller checkpoint:
-  `4865e0a6e0e3946f21b847b79675ebeaa828e2b2` (pushed; P7-00 Level 2
-  documentation/trace checkpoint PASS)
-- Retained product/runtime checkpoint:
+- Latest exact product checkpoint:
+  `78efa3ec5c584928f510e4b095ead5a36f2fb376` (pushed; P7-01 Level 2 PASS)
+- Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
-- Latest complete normal CI:
-  `31358008296` (`PASS`, exact controller SHA `4865e0a`; repository
-  `93361224683` and fixed-Linux visual `93361224744` at `94/94` passed;
-  controlled job skipped)
+- Latest complete exact-SHA CI:
+  `31380834335` (`PASS`; repository `93430635765`, fixed-Linux visual
+  `93430635728` at `97/97`, and cumulative controlled Site `93430635851`)
 - Latest controlled-Site run:
-  `31355555773` (`PASS`, unchanged exact SHA `68f230f`; repository
-  `93354448586`, visual `93354448605` at `94/94` and controlled Site
-  `93354448564` passed)
+  `31380834335` (`PASS`, unchanged exact SHA `78efa3e`; cumulative scope
+  `p5-01-through-p7-01`)
 - Controlled PASS artifact:
-  `9050565297`, GitHub digest
-  `sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`
+  `9059935812`, GitHub digest
+  `sha256:b7e00cbbd0622961517b22ea690f372aafb7748f81542cb6c67fd7090a74632f`
 - Current controller task:
-  `P7-01 — Trial Plan and Round identity/lifecycle foundation`
-  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
-- Current Requirement ID: `FR-TR-001`
+  `Delivery Pipeline Optimization`
+  (`IN_PROGRESS — BOUNDED REPOSITORY/RUNTIME/CI EVIDENCE AUDIT`)
+- Resumed product task after exact Level 3 PASS: `P7-02` (`PAUSED`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `7 — Trial, Quality Issues and NPI Readiness` (`IN_PROGRESS — P7-01`)
+  `7 — Trial, Quality Issues and NPI Readiness`
+  (`IN_PROGRESS — PRODUCT TASKS PAUSED AFTER P7-01`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P6-08 passes Level 2 and closes Phase 6 at exact product checkpoint `68f230f`.
-Ordinary CI `31355006189` and final unchanged workflow `31355555773` pass the
-complete repository, `94/94` fixed-Linux visuals and cumulative disposable
-Site through `p5-01-through-p6-08`. Runtime artifact `9050565297` records
-`result=PASS`, exact SHA, pinned Frappe and disposable Site/database identity.
-Complete task and Phase evidence is retained in
-`implementation/evidence/phase-6/p6-08-validation.md` and
-`implementation/phase-6-gate.md`.
+P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
+workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,
+`359/359` non-visual E2E, `97/97` fixed-Linux visuals, complete direct
+trilingual coverage, vulnerability/secret checks and the cumulative disposable
+Site through `p5-01-through-p7-01`. Complete evidence is
+`implementation/evidence/phase-7/p7-01-validation.md`.
 
-P7-00 passes its Level 2 documentation/trace Gate in
-`implementation/phase-7-requirement-anchor.md` and
-`implementation/evidence/phase-7/p7-00-validation.md`. All twenty-five
-primary Trial/NPI requirements plus `UX-020` are allocated to P7-01..08;
-`FR-PRN-002` and `FR-INT-015` retain their earlier truth while gaining scoped
-Phase 7 evidence. No product requirement is claimed implemented by the anchor.
+`FR-TR-001` is truthful only as
+`TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD`: Plan revisions,
+distinct planned Round, proposed resources and governed actions are proven;
+production availability/reservation is not. All retained Trial history is
+append-only and rollback after use is route-disable plus reviewed forward
+repair.
 
-The bounded P7-01 audit passes in
-`implementation/evidence/phase-7/p7-01-plan.md`. It proves no live Trial
-backend exists, rejects the non-Project-first OpenAPI placeholders and freezes
-distinct immutable Plan revisions, planned Round identity/events, exact
-Project/Tooling/member/work links, fail-closed resource booking and four
-checkpoint boundaries.
-
-The current atomic scope is checkpoint 1 only: pure Plan/Round/work-link/
-receipt domains, corrected closed Project-first contract, exact ownership and
-five guarded additive DocTypes with direct security/metadata tests. It creates
-no live route, business row, policy, fixture, UI or external behavior. Trial
-input locking, lifecycle transitions, confirmed reservations, quality/Gate
-authority, ERPNext contact and later P7 requirements remain inactive. There is
-no active technical Hard Blocker.
+The user's ordered delivery hold is active. P7-02 and later Phase 7 product
+tasks must not start until the independent Delivery Pipeline Optimization task
+passes Level 3. The current atomic scope is its evidence audit: inspect the
+workflow, action runtimes, installs/caches, duplicate work, artifacts, trigger-
+specific secret scans, controlled Site and historical timings; then freeze the
+optimization plan, non-scope, affected-tests map, rollback and full PASS
+criteria. It may change delivery mechanics only and may not weaken or relabel
+any product or Gate invariant. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

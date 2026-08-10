@@ -1,79 +1,60 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CONTROLLED_RUNTIME — P7-01 CHECKPOINT 4`
+`IN_PROGRESS_EVIDENCE_AUDIT — DELIVERY PIPELINE OPTIMIZATION`
 
-Recovery time: `2026-08-10T10:02:00Z`
+Recovery time: `2026-08-10T11:04:13Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Recovery synchronized product checkpoint:
-`68f230fee73b1b6ca95206346d128e1518613d82`
+Completed P7-01 product checkpoint:
+`78efa3ec5c584928f510e4b095ead5a36f2fb376`
 
 ## Current authoritative action
 
-P6-08 passes Level 2 and Phase 6 passes Level 3 at exact product checkpoint
-`68f230f`. Ordinary CI `31355006189` passes repository `93352955845`
-(`1,420` tracked Python, `809` frontend unit in `52` files, `352` non-visual
-E2E, `5,753` direct trilingual sources, statements `80.07%`, zero
-vulnerabilities and both secret lanes) and visual `93352955834` at `94/94`.
-Final unchanged workflow `31355555773` passes repository `93354448586`,
-visual `93354448605` at `94/94` and cumulative controlled Site `93354448564`.
-Runtime artifact `9050565297` has digest
-`sha256:2b6b91366fff2ba206bec9cfc4784472c1a4659e5eeb9dfbd2802eccbcbff222`.
-Complete evidence is `implementation/evidence/phase-6/p6-08-validation.md`
-and `implementation/phase-6-gate.md`.
+P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
+`31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,
+`822/822` frontend unit in `54/54` files, `359/359` non-visual E2E, `6,001`
+direct trilingual sources, statements `80.10%`, zero vulnerabilities and
+Gitleaks), fixed-Linux visual `93430635728` at `97/97`, and cumulative
+controlled Site `93430635851` through `p5-01-through-p7-01`.
 
-P7-00 passes Level 2 in `implementation/phase-7-requirement-anchor.md` and
-`implementation/evidence/phase-7/p7-00-validation.md`. The latest controller
-checkpoint `4865e0a` passes ordinary CI `31358008296`: repository
-`93361224683`, fixed-Linux visual `93361224744` at `94/94`, and the controlled
-job correctly skipped. The anchor allocates every primary Trial/NPI requirement
-and preserves the earlier truth for the controlled-print and Phase 8 external-
-projection foundations.
+Runtime artifact `9059935812` has digest
+`sha256:b7e00cbbd0622961517b22ea690f372aafb7748f81542cb6c67fd7090a74632f`
+and proves two immutable Plan revisions, one distinct planned Round, one
+governed action link, same/cross-process replay, route rollback, synchronized
+metadata, zero integration traffic and truthful
+`resourceReservation=unavailable`. Complete evidence is
+`implementation/evidence/phase-7/p7-01-validation.md`.
 
-The bounded P7-01 audit and checkpoints 1 through 3 pass. Checkpoint 1 is
-recorded at stable SHA `87c2ab0`; checkpoint 2 at `256ea97`; and the live
-workspace checkpoint at exact stable SHA
-`583c879c85831c1c31de237960e0521f7c599a5b`. Final ordinary CI
-`31375548428` passes repository `93413841285` (`1,475` tracked Python,
-`822/822` frontend unit, `359/359` non-visual E2E, `6,001` direct trilingual
-sources, statements `80.10%`, zero vulnerabilities and both secret lanes) and
-fixed-Linux visual `93413841113` at `97/97`. The controlled job correctly
-skips because checkpoint 4 is not yet present.
+`FR-TR-001` is reconciled only to
+`TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD`. Confirmed resource
+booking, Round input locking, samples/cavities, defects/actions, conclusions,
+readiness, handover, Released Trial Summary, mobile field actions, production
+ERPNext, official quality authority, Gate mutation, external projection and
+production print policy remain scoped holds, not global Hard Blockers.
 
-Complete checkpoint evidence is:
+Per the user's 2026-08-10 transition directive, P7-02 and every later Phase 7
+product task are paused. The current atomic action is the independent
+`Delivery Pipeline Optimization` bounded evidence audit only:
 
-- `implementation/evidence/phase-7/p7-01-domain-metadata-checkpoint.md`;
-- `implementation/evidence/phase-7/p7-01-repository-bff-checkpoint.md`; and
-- `implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md`.
+1. inspect current workflow structure, triggers, action runtimes, dependency
+   installation, caching, duplicate work, artifacts, secret lanes, controlled
+   Site cost and historical timings using repository and GitHub evidence;
+2. freeze scope, non-scope, changed-files-to-tests mapping, rollback and exact
+   Level 3 PASS criteria before implementation;
+3. optimize delivery mechanics without changing product code, requirements,
+   architecture, permissions, ownership, i18n, visual baselines, test cases,
+   thresholds, Gate labels or production/external-system behavior; and
+4. run the complete Level 3 Gate on the final exact SHA. Only that PASS may
+   remove the ordered hold and resume the bounded P7-02 audit.
 
-The current atomic action is checkpoint 4 only: extend the cumulative
-disposable-Site verifier and controlled workflow through P7-01; seed bounded
-synthetic Project/Tooling/member/document truth; prove initial and successor
-Plan revisions, a distinct planned Round, governed Domain Work Items and Trial
-links, same- and cross-process replay/conflict, transaction rollback,
-Project/actor/IDOR denials, independent Trial route disable/recovery, two
-migrations, raw-log redaction, zero ERP/network/Outbox activity and cleanup.
-After complete ordinary CI, run one unchanged controlled-Site Gate, reconcile
-`FR-TR-001` only to the truthful resource-reservation-held foundation, perform
-the Level 2 Task Diff Review and close P7-01. Do not activate P7-02 directly.
-The user's 2026-08-10 transition directive inserts one independent Delivery
-Pipeline Optimization task after P7-01. That task must begin with a bounded
-repository/CI evidence audit, preserve every product and Gate invariant, and
-pass its own Level 3 Gate before P7-02 may resume.
-
-Confirmed reservation, Round input locking, samples/cavities, defects/actions,
-conclusions, readiness, handover, Released Trial Summary, mobile field
-actions, production ERPNext, official quality authority, Gate mutation,
-external event/projection and production print policy remain scoped holds,
-not global Hard Blockers.
-
-P7-02 and every later Phase 7 product task are explicitly paused after P7-01
-until Delivery Pipeline Optimization reaches Level 3 PASS. This is an ordered
-delivery hold, not a product Hard Blocker and not authorization to weaken,
-skip or parallelize the P7-01 controlled runtime Gate.
+The Node.js 20 deprecation warnings on `actions/checkout@v4`,
+`actions/setup-node@v4`, `actions/setup-python@v5`,
+`actions/upload-artifact@v4` and the Gitleaks action are audit inputs, not a
+P7-01 failure. No optimization may skip a trigger-appropriate current-tree or
+full-branch secret scan.
 
 ## Retained P6-05 and P6-06 execution history
 

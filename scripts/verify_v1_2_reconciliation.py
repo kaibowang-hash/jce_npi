@@ -105,6 +105,20 @@ EXPECTED_P7_ANCHOR_EVIDENCE = {
     "implementation/phase-7-requirement-anchor.md",
     "implementation/evidence/phase-7/p7-00-validation.md",
 }
+EXPECTED_P7_COMPLETED_TRACES = {
+    "FR-TR-001": (
+        "7",
+        "TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD",
+        EXPECTED_P7_ANCHOR_EVIDENCE
+        | {
+            "implementation/evidence/phase-7/p7-01-plan.md",
+            "implementation/evidence/phase-7/p7-01-domain-metadata-checkpoint.md",
+            "implementation/evidence/phase-7/p7-01-repository-bff-checkpoint.md",
+            "implementation/evidence/phase-7/p7-01-live-workspace-checkpoint.md",
+            "implementation/evidence/phase-7/p7-01-validation.md",
+        },
+    ),
+}
 EXPECTED_P7_CARRIED_FOUNDATIONS = {
     "FR-PRN-002": ("5", "TECHNICAL_VERIFIED"),
     "FR-INT-015": ("8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
@@ -1957,10 +1971,17 @@ def verify_trace_sets() -> None:
             )
 
     for task_id, requirement_ids in EXPECTED_P7_ANCHOR_ALLOCATION.items():
-        expected_status = f"ANCHORED_{task_id.replace('-', '_')}"
+        anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
         for requirement_id in requirement_ids:
             row = by_id[requirement_id]
-            if (row["phase"], row["status"]) != ("7", expected_status):
+            completed_trace = EXPECTED_P7_COMPLETED_TRACES.get(requirement_id)
+            expected_phase, expected_status = (
+                completed_trace[:2] if completed_trace else ("7", anchored_status)
+            )
+            if (row["phase"], row["status"]) != (
+                expected_phase,
+                expected_status,
+            ):
                 raise ReconciliationVerificationError(
                     f"{requirement_id} is not allocated to {task_id}"
                 )
@@ -1972,6 +1993,18 @@ def verify_trace_sets() -> None:
             if not EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence):
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks the Phase 7 anchor evidence"
+                )
+            if completed_trace and evidence != completed_trace[2]:
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} lacks its exact completed task evidence"
+                )
+            missing_evidence = sorted(
+                path for path in evidence if not (ROOT / path).is_file()
+            )
+            if missing_evidence:
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} references missing Phase 7 evidence: "
+                    f"{missing_evidence}"
                 )
 
     for requirement_id, expected_trace in EXPECTED_P7_CARRIED_FOUNDATIONS.items():

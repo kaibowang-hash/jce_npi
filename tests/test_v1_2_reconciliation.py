@@ -187,10 +187,18 @@ class V12ReconciliationTests(unittest.TestCase):
         for task_id, requirement_ids in (
             self.verifier.EXPECTED_P7_ANCHOR_ALLOCATION.items()
         ):
-            expected_status = f"ANCHORED_{task_id.replace('-', '_')}"
+            anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
             for requirement_id in requirement_ids:
                 row = by_id[requirement_id]
-                self.assertEqual(row["phase"], "7")
+                completed_trace = self.verifier.EXPECTED_P7_COMPLETED_TRACES.get(
+                    requirement_id
+                )
+                expected_phase, expected_status = (
+                    completed_trace[:2]
+                    if completed_trace
+                    else ("7", anchored_status)
+                )
+                self.assertEqual(row["phase"], expected_phase)
                 self.assertEqual(row["status"], expected_status)
                 evidence = {
                     value.strip()
@@ -202,6 +210,13 @@ class V12ReconciliationTests(unittest.TestCase):
                         evidence
                     )
                 )
+                if completed_trace:
+                    self.assertEqual(evidence, completed_trace[2])
+                for evidence_path in evidence:
+                    self.assertTrue(
+                        (self.verifier.ROOT / evidence_path).is_file(),
+                        evidence_path,
+                    )
         for requirement_id, expected_trace in (
             self.verifier.EXPECTED_P7_CARRIED_FOUNDATIONS.items()
         ):
