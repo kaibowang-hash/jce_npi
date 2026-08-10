@@ -6309,3 +6309,117 @@ Execution boundary active,執行邊界已啟用
 "P7-02 supports exact preparation, running actuals, Sample Batches and clean private evidence. Conclusion, Gate effect and formal ERP quality remain unavailable.",本檢查點支援精確準備、執行實際值、樣品批次和潔淨私有證據；結論、階段門影響和企業資源規劃系統正式品質仍無法使用。
 {{sample}} · Version {{version}},{{sample}} · 版本 {{version}}
 {{size}} B,{{size}} B
+The nominal value must be within the specification limits.,標稱值必須位於規格上下限內。
+A not measured characteristic cannot contain a numeric value.,未量測的特性不能包含數值。
+The Trial cavity result snapshot hash does not match.,試模型腔結果快照雜湊不符。
+Select the exact current Trial cavity result revision.,請選取精確的目前試模型腔結果修訂。
+"Select one complete defect verification revision, or leave it empty.",請選取一個完整的缺陷驗證修訂，或留空。
+A verified defect action requires one exact successful verification.,已驗證的缺陷措施需要一個精確的成功驗證。
+The first Trial defect revision cannot have a predecessor.,第一個試模缺陷修訂不能有前驅。
+The first Trial defect revision must be open.,第一個試模缺陷修訂必須為待處理狀態。
+A Trial defect successor requires its exact predecessor.,試模缺陷後繼修訂需要其精確前驅。
+Ready for verification requires a completed corrective action.,待驗證狀態需要已完成的矯正措施。
+Closed defects require an exact root cause.,已關閉缺陷需要精確的根本原因。
+Closed defects require independently verified actions.,已關閉缺陷需要經獨立驗證的措施。
+The Trial defect snapshot hash does not match.,試模缺陷快照雜湊不符。
+Select the exact current NPI defect revision.,請選取精確的目前 NPI 缺陷修訂。
+The NPI defect cavity cannot be rebound.,不能重新綁定 NPI 缺陷的型腔。
+A defect update in the same Round cannot rebind exact Trial context.,同一輪次內的缺陷更新不能重新綁定精確試模內容。
+A Trial defect successor cannot remove or rebind evidence.,試模缺陷後繼修訂不能移除或重新綁定證據。
+A Trial defect successor cannot remove or rebind an existing action.,試模缺陷後繼修訂不能移除或重新綁定現有措施。
+Select the next supported defect action state.,請選取下一個支援的缺陷措施狀態。
+The Trial defect verification snapshot hash does not match.,試模缺陷驗證快照雜湊不符。
+Select the exact current Trial defect action.,請選取精確的目前試模缺陷措施。
+Only a completed defect action can be verified.,只能驗證已完成的缺陷措施。
+Select the exact target Trial Round for verification.,請選取用於驗證的精確目標試模輪次。
+Select the exact cavity result for this verification Round.,請選取此驗證輪次的精確型腔結果。
+Measure every required cavity characteristic before verification.,驗證前請量測所有必要的型腔特性。
+The verifier must differ from the action responsible member.,驗證人必須與措施負責人不同。
+External Trial quality effects are unavailable.,外部試模品質影響目前無法使用。
+The cavity measurement comparison state does not match.,型腔量測比較狀態不符。
+A successor requires its exact predecessor.,後繼修訂需要其精確前驅。
+Trial Cavity Result Global ID,試模型腔結果全域識別碼
+Predecessor Trial Cavity Result Revision Global ID,前驅試模型腔結果修訂全域識別碼
+Trial Cavity Result Revision Snapshot,試模型腔結果修訂快照
+Trial cavity result fields do not match the exact snapshot.,試模型腔結果欄位與精確快照不符。
+Trial Cavity Result,試模型腔結果
+Trial Cavity Measurement Snapshot,試模型腔量測快照
+Cavity measurements do not match the exact result snapshot.,型腔量測與精確結果快照不符。
+Trial Quality Evidence Snapshot,試模品質證據快照
+Trial quality evidence does not match the exact result snapshot.,試模品質證據與精確結果快照不符。
+The exact predecessor Trial cavity result is unavailable.,精確的前驅試模型腔結果無法使用。
+NPI Defect Global ID,NPI 缺陷全域識別碼
+Predecessor NPI Defect Revision Global ID,前驅 NPI 缺陷修訂全域識別碼
+Trial Defect Revision Snapshot,試模缺陷修訂快照
+Trial defect fields do not match the exact snapshot.,試模缺陷欄位與精確快照不符。
+Trial Defect,試模缺陷
+Trial Defect Action Snapshot,試模缺陷措施快照
+Trial defect actions do not match the exact snapshot.,試模缺陷措施與精確快照不符。
+Trial quality evidence does not match the exact defect snapshot.,試模品質證據與精確缺陷快照不符。
+Trial Defect External Effect Snapshot,試模缺陷外部影響快照
+Trial defect external effects do not match the exact snapshot.,試模缺陷外部影響與精確快照不符。
+The exact successful defect verification is unavailable.,精確的成功缺陷驗證無法使用。
+The exact predecessor NPI defect revision is unavailable.,精確的前驅 NPI 缺陷修訂無法使用。
+NPI Defect Revision Snapshot,NPI 缺陷修訂快照
+Trial Defect Verification Global ID,試模缺陷驗證全域識別碼
+Trial Defect Revision Global ID,試模缺陷修訂全域識別碼
+Trial Defect Action Global ID,試模缺陷措施全域識別碼
+Target Trial Round Global ID,目標試模輪次全域識別碼
+Verification Trial Round Global ID,驗證試模輪次全域識別碼
+Trial Cavity Result Revision Global ID,試模型腔結果修訂全域識別碼
+Verifier Project Member Global ID,驗證專案成員全域識別碼
+Trial Defect Verification Revision Snapshot,試模缺陷驗證修訂快照
+Trial defect verification fields do not match the exact snapshot.,試模缺陷驗證欄位與精確快照不符。
+Trial Defect Verification,試模缺陷驗證
+Trial verification evidence does not match the exact snapshot.,試模驗證證據與精確快照不符。
+The exact Trial defect revision is unavailable for verification.,用於驗證的精確試模缺陷修訂無法使用。
+The exact Trial cavity result is unavailable for verification.,用於驗證的精確試模型腔結果無法使用。
+{object} Version Key Hash does not match.,{object}版本鍵雜湊不符。
+{object} Snapshot Hash does not match.,{object}快照雜湊不符。
+The exact running Trial Round is unavailable for quality recording.,用於品質記錄的精確執行中試模輪次無法使用。
+The exact target Trial Round is unavailable.,精確的目標試模輪次無法使用。
+The exact Trial input lock is unavailable for quality recording.,用於品質記錄的精確試模輸入鎖無法使用。
+"The exact Tooling Revision, Set, or cavity is not locked for this Round.",精確的模具修訂、套件或型腔未鎖定至此輪次。
+The exact Tooling Revision is unavailable for Trial quality.,用於試模品質的精確模具修訂無法使用。
+The exact Tooling Set is unavailable for Trial quality.,用於試模品質的精確模具套件無法使用。
+The exact Sample Batch revision is unavailable for Trial quality.,用於試模品質的精確樣品批次修訂無法使用。
+The exact cavity is unavailable in this Sample Batch.,此樣品批次中沒有該精確型腔。
+The exact Project member is unavailable for Trial quality.,用於試模品質的精確專案成員無法使用。
+The exact Trial quality evidence is unavailable.,精確的試模品質證據無法使用。
+NPI Trial Cavity Result Revision,NPI 試模型腔結果修訂
+Trial Cavity Result Version Key Hash,試模型腔結果版本鍵雜湊
+Trial Cavity Result Version,試模型腔結果版本
+Trial Cavity Result Revision Reason,試模型腔結果修訂原因
+NPI Trial Defect Revision,NPI 試模缺陷修訂
+NPI Defect Version Key Hash,NPI 缺陷版本鍵雜湊
+Trial Round Optimistic Version,試模輪次樂觀鎖版本
+Trial Round Snapshot Hash,試模輪次快照雜湊
+NPI Defect Version,NPI 缺陷版本
+NPI Defect Predecessor Kind,NPI 缺陷前驅類型
+trial_defect_revision,試模缺陷修訂
+NPI Defect Code,NPI 缺陷編碼
+NPI Defect Title,NPI 缺陷標題
+NPI Defect Description,NPI 缺陷說明
+NPI Defect Category Key,NPI 缺陷類別鍵
+NPI Defect Location,NPI 缺陷位置
+NPI Defect Severity,NPI 缺陷嚴重度
+NPI Defect State,NPI 缺陷狀態
+Trial Defect Occurrence Count,試模缺陷發生次數
+Trial Defect Revision Reason,試模缺陷修訂原因
+NPI Trial Defect Verification Revision,NPI 試模缺陷驗證修訂
+Trial Defect Verification Version Key Hash,試模缺陷驗證版本鍵雜湊
+Trial Defect Verification Attempt Sequence,試模缺陷驗證嘗試序號
+Trial Defect Revision,試模缺陷修訂
+Trial Defect Revision Snapshot Hash,試模缺陷修訂快照雜湊
+Target Trial Round,目標試模輪次
+Target Trial Round Optimistic Version,目標試模輪次樂觀鎖版本
+Target Trial Round Snapshot Hash,目標試模輪次快照雜湊
+Verification Trial Round,驗證試模輪次
+Verification Trial Round Optimistic Version,驗證試模輪次樂觀鎖版本
+Verification Trial Round Snapshot Hash,驗證試模輪次快照雜湊
+Trial Cavity Result Revision,試模型腔結果修訂
+Trial Cavity Result Revision Snapshot Hash,試模型腔結果修訂快照雜湊
+Verifier Project Member,驗證專案成員
+Trial Defect Verification Result,試模缺陷驗證結果
+fail,失敗
+Trial Defect Verification Finding,試模缺陷驗證發現

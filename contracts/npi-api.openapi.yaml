@@ -16573,6 +16573,264 @@ components:
       required: [expectedSnapshotHash]
       properties:
         expectedSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialQualityEvidenceReference:
+      type: object
+      additionalProperties: false
+      description: Exact reference to one clean private P7-02 Trial Evidence snapshot
+      required: [globalId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    TrialCavityMeasurement:
+      type: object
+      additionalProperties: false
+      required:
+        [characteristicKey, label, unit, nominalValue, lowerLimit, upperLimit,
+         required, state, value, comparisonState, source, observedAt,
+         observedByUserId]
+      properties:
+        characteristicKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]*$" }
+        label: { type: string, minLength: 1, maxLength: 255 }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+        nominalValue: { type: string, minLength: 1, maxLength: 64 }
+        lowerLimit: { type: string, minLength: 1, maxLength: 64 }
+        upperLimit: { type: string, minLength: 1, maxLength: 64 }
+        required: { type: boolean }
+        state: { type: string, enum: [measured, not_measured] }
+        value:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 64 }
+            - { type: "null" }
+        comparisonState: { type: string, readOnly: true, enum: [not_measured, within_spec, out_of_spec] }
+        source: { type: string, const: manual }
+        observedAt: { type: string, format: date-time }
+        observedByUserId: { type: string, minLength: 1, maxLength: 254 }
+    TrialCavityResultRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [schemaVersion, globalId, cavityResultGlobalId, tenantId, projectGlobalId,
+         trialRoundGlobalId, inputLockRevisionGlobalId,
+         inputLockRevisionSnapshotHash, sampleBatchRevisionGlobalId,
+         sampleBatchRevisionSnapshotHash, toolingRevisionGlobalId,
+         toolingRevisionSnapshotHash, toolingSetGlobalId, toolingSetSnapshotHash,
+         cavityGlobalId, resultVersion, predecessorGlobalId,
+         predecessorSnapshotHash, measurements, evidence, reason, createdByUserId,
+         createdAt, requestId, traceId, versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        cavityResultGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        inputLockRevisionGlobalId: { type: string, format: uuid }
+        inputLockRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        sampleBatchRevisionGlobalId: { type: string, format: uuid }
+        sampleBatchRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cavityGlobalId: { type: string, format: uuid }
+        resultVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        predecessorSnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+        measurements:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/TrialCavityMeasurement" }
+        evidence:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialQualityEvidenceReference" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
+    TrialDefectAction:
+      type: object
+      additionalProperties: false
+      required:
+        [globalId, actionType, state, detail, responsibleMember, dueDate,
+         targetRoundGlobalId, targetRoundOptimisticVersion,
+         targetRoundSnapshotHash, verificationRevisionGlobalId,
+         verificationRevisionSnapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        actionType: { type: string, enum: [containment, corrective, preventive] }
+        state: { type: string, enum: [planned, completed, verified] }
+        detail: { type: string, minLength: 1, maxLength: 2000 }
+        responsibleMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        dueDate: { type: string, format: date }
+        targetRoundGlobalId: { type: string, format: uuid }
+        targetRoundOptimisticVersion: { type: integer, minimum: 1 }
+        targetRoundSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        verificationRevisionGlobalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        verificationRevisionSnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+    TrialDefectExternalEffects:
+      type: object
+      additionalProperties: false
+      required: [ncr, qualityInspection, gate, toolingLifecycle]
+      properties:
+        ncr: { type: string, const: unavailable }
+        qualityInspection: { type: string, const: unavailable }
+        gate: { type: string, const: unavailable }
+        toolingLifecycle: { type: string, const: unavailable }
+    TrialDefectRevision:
+      type: object
+      additionalProperties: false
+      required:
+        [schemaVersion, globalId, defectGlobalId, tenantId, projectGlobalId,
+         toolingMasterGlobalId, trialRoundGlobalId, trialRoundOptimisticVersion,
+         trialRoundSnapshotHash, inputLockRevisionGlobalId,
+         inputLockRevisionSnapshotHash, toolingRevisionGlobalId,
+         toolingRevisionSnapshotHash, toolingSetGlobalId, toolingSetSnapshotHash,
+         cavityGlobalId, sampleBatchRevisionGlobalId,
+         sampleBatchRevisionSnapshotHash, defectVersion, predecessorKind,
+         predecessorGlobalId, predecessorSnapshotHash, businessCode, title,
+         description, categoryKey, location, severity, blocking, state,
+         rootCauseState, rootCause, responsibleMember, occurrenceCount, actions,
+         evidence, externalEffects, reason, createdByUserId, createdAt, requestId,
+         traceId, versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        defectGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        trialRoundOptimisticVersion: { type: integer, minimum: 1 }
+        trialRoundSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        inputLockRevisionGlobalId: { type: string, format: uuid }
+        inputLockRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        toolingRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        toolingSetSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cavityGlobalId: { type: string, format: uuid }
+        sampleBatchRevisionGlobalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        sampleBatchRevisionSnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+        defectVersion: { type: integer, minimum: 1 }
+        predecessorKind:
+          oneOf:
+            - { type: string, enum: [tooling_defect_revision, trial_defect_revision] }
+            - { type: "null" }
+        predecessorGlobalId:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+        predecessorSnapshotHash:
+          oneOf:
+            - { type: string, pattern: "^[a-f0-9]{64}$" }
+            - { type: "null" }
+        businessCode: { type: string, minLength: 1, maxLength: 128 }
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string, minLength: 1, maxLength: 4000 }
+        categoryKey: { type: string, minLength: 1, maxLength: 128 }
+        location: { type: string, minLength: 1, maxLength: 255 }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        blocking: { type: boolean }
+        state: { type: string, enum: [open, assigned, in_progress, ready_for_verification, closed, reopened] }
+        rootCauseState: { type: string, enum: [pending, recorded] }
+        rootCause:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 4000 }
+            - { type: "null" }
+        responsibleMember:
+          oneOf:
+            - { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+            - { type: "null" }
+        occurrenceCount: { type: integer, minimum: 1 }
+        actions:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialDefectAction" }
+        evidence:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialQualityEvidenceReference" }
+        externalEffects: { $ref: "#/components/schemas/TrialDefectExternalEffects" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
+    TrialDefectVerificationRevision:
+      type: object
+      additionalProperties: false
+      description: Immutable independent verification attempt; never closes a defect by itself
+      required:
+        [schemaVersion, globalId, verificationGlobalId, attemptSequence, tenantId,
+         projectGlobalId, defectGlobalId, defectRevisionGlobalId,
+         defectRevisionSnapshotHash, actionGlobalId, targetRoundGlobalId,
+         targetRoundOptimisticVersion, targetRoundSnapshotHash,
+         verificationRoundGlobalId, verificationRoundOptimisticVersion,
+         verificationRoundSnapshotHash, cavityResultRevisionGlobalId,
+         cavityResultRevisionSnapshotHash, verifierMember, result, finding,
+         observedAt, evidence, createdByUserId, createdAt, requestId, traceId,
+         versionKeyHash, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        verificationGlobalId: { type: string, format: uuid }
+        attemptSequence: { type: integer, minimum: 1 }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        defectGlobalId: { type: string, format: uuid }
+        defectRevisionGlobalId: { type: string, format: uuid }
+        defectRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        actionGlobalId: { type: string, format: uuid }
+        targetRoundGlobalId: { type: string, format: uuid }
+        targetRoundOptimisticVersion: { type: integer, minimum: 1 }
+        targetRoundSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        verificationRoundGlobalId: { type: string, format: uuid }
+        verificationRoundOptimisticVersion: { type: integer, minimum: 1 }
+        verificationRoundSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        cavityResultRevisionGlobalId: { type: string, format: uuid }
+        cavityResultRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        verifierMember: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        result: { type: string, enum: [pass, fail] }
+        finding: { type: string, minLength: 1, maxLength: 4000 }
+        observedAt: { type: string, format: date-time }
+        evidence:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialQualityEvidenceReference" }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
+        snapshotHash: { type: string, readOnly: true, pattern: "^[a-f0-9]{64}$" }
     ProblemDetails:
       type: object
       additionalProperties: false

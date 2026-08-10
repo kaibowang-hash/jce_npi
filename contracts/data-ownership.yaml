@@ -496,7 +496,37 @@ objects:
       severity_blocking_intent_root_cause_responsibility_and_target_round_intention: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
       action_state_and_clean_private_verification_evidence: {owner: NPI_ONE_TOOLING_ENGINEERING_CONTROLS_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
       exact_trial_round_and_official_quality_result: {owner: FUTURE_PHASE_7_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+      exact_trial_successor_tip: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: SINGLE_LOGICAL_DEFECT_NO_FORK}
       project_work_item_and_gate_blocking_application: {owner: FUTURE_PHASE_7_GATE_INTEGRATION, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
+  TrialCavityResultRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_result_version_predecessor_round_input_lock_sample_tooling_set_and_cavity: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      characteristic_definition_measurement_state_value_source_actor_and_time: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      clean_private_trial_measurement_evidence: {owner: NPI_ONE_TRIAL_EVIDENCE_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      missing_measurement_interpretation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXPLICIT_NO_ZERO_OR_PASS_IMPUTATION}
+      formal_quality_inspection_and_approved_result: {owner: ERPNEXT_AND_FUTURE_APPROVED_TRIAL_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
+
+  TrialDefectRevision:
+    owner_system: NPI_ONE
+    erp_view: optional_ncr_request_only
+    fields:
+      stable_defect_identity_and_cross_store_exact_predecessor_tip: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: SINGLE_LOGICAL_DEFECT_NO_FORK}
+      exact_round_input_lock_sample_tooling_revision_set_cavity_and_observation: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      category_location_severity_blocking_root_cause_responsibility_occurrence_and_evidence: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      action_identity_state_member_due_date_and_exact_target_round: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      ncr_quality_inspection_gate_tooling_lifecycle_and_work_item_effects: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
+
+  TrialDefectVerificationRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_attempt_defect_revision_action_target_round_verification_round_and_cavity_result: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      independent_verifier_result_finding_time_and_clean_private_evidence: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      defect_action_and_lifecycle_effect: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_SUCCESSOR_REQUIRED}
+      formal_ncr_quality_inspection_gate_and_tooling_lifecycle_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
 
   ToolingProcessProfileRevision:
     owner_system: SPLIT_BY_FACT_LAYER
