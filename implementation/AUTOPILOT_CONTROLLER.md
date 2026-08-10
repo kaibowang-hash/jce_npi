@@ -2589,3 +2589,21 @@ repeat or rewrite it merely to restore context. See
   independent default-closed P7-03 route switch. UI, runtime fixture, NCR,
   formal quality, Gate/Tooling lifecycle, conclusion, approval, readiness,
   release, external projection and production print remain inactive.
+
+## 2026-08-11 P7-03 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint `21b3bdaf729d1607831566cc1db108e1b255ea3e`
+  activates only Project-first quality reads and exact cavity-result, shared-
+  defect-successor and independent-verification commands with exact Round/
+  input/Sample/Tooling/Set/cavity containment, one P6/P7 tip, actor-bound
+  replay, one transaction, append-only audit and a separate fail-closed switch.
+- Ordinary CI `31442261342` passes repository `93629232884`, frontend/E2E
+  `93629232849`, secret scan `93629232857` and the unchanged `100/100`
+  fixed-Linux visual matrix in `93629232835`. Controlled runtime correctly
+  skips. Accepted evidence is
+  `implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md`.
+- Activate only checkpoint 3: the strict quality data source and dense
+  trilingual cavity-result, defect/action, verification and Pareto workspace
+  with the frozen honest states and affected Linux visuals. Runtime fixture,
+  NCR, formal quality, Gate/Tooling lifecycle, conclusion, approval, readiness,
+  release, external projection and production print remain inactive.

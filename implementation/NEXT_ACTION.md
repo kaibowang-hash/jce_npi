@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-03`
+`IN_PROGRESS_CHECKPOINT_3 — P7-03`
 
-Recovery time: `2026-08-10T22:36:19Z`
+Recovery time: `2026-08-10T23:35:30Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -77,18 +77,25 @@ secret scan `93617010700` and unchanged `100/100` fixed-Linux visual job
 `93617010730`. Complete evidence is
 `implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 2, enforced by `implementation/CURRENT_TASK.json`:
-add Project-first quality reads and exact cavity-result/defect/verification
-commands; enforce exact Round/input/Sample/Tooling Revision/Set/cavity and one
-P6-to-P7 cross-store defect tip; use actor-bound idempotency, one transaction,
-append-only audit and an independent default-closed P7-03 route switch. Create
-no UI or runtime fixture. Do not activate NCR, formal ERPNext quality, Gate or
-Tooling lifecycle mutation, Trial conclusion/approval/readiness/release,
-external projection or production print.
+P7-03 checkpoint 2 passes at exact product checkpoint `21b3bda`. Ordinary CI
+`31442261342` passes repository `93629232884` (`1,552` tracked Python),
+frontend `93629232849` (`832/832` unit, `365/365` E2E, `6,440` direct
+trilingual sources and zero vulnerabilities), secret scan `93629232857` and
+unchanged `100/100` fixed-Linux visual job `93629232835`. Complete evidence is
+`implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md`.
 
-After checkpoint 2 affected repository/API/security tests and task-scope
-validation pass, commit and run ordinary CI. Only that PASS activates the live
-trilingual cavity-quality workspace.
+Execute only checkpoint 3, enforced by `implementation/CURRENT_TASK.json`:
+add the strict quality data source and dense trilingual cavity-result, defect,
+action, independent-verification and Pareto workspace. Cover loading, empty,
+read-only, permission, validation, conflict, processing, retry and explicit
+unavailable NCR/Gate/Tooling states; produce affected Linux visuals. Create no
+runtime fixture. Do not activate NCR, formal ERPNext quality, Gate or Tooling
+lifecycle mutation, Trial conclusion/approval/readiness/release, external
+projection or production print.
+
+After checkpoint 3 affected frontend/i18n/accessibility/visual checks and task-
+scope validation pass, commit and run ordinary CI. Only that PASS activates
+checkpoint 4 controlled runtime and Level 2.
 
 ## Retained P6-05 and P6-06 execution history
 

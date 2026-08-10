@@ -1,18 +1,18 @@
 # Blockers
 
-Updated: `2026-08-10T22:36:19Z`
+Updated: `2026-08-10T23:35:30Z`
 
 ## Active hard blockers
 
 None. P7-02 passes ordinary CI `31432120639` and exact-SHA cumulative
 controlled Gate `31432837104` at product checkpoint `3a26719`. P7-03
-checkpoint 1 passes ordinary CI `31438191274` at `42812c3`; checkpoint 2 is
+checkpoint 2 passes ordinary CI `31442261342` at `21b3bda`; checkpoint 3 is
 active and no user action is required.
 
 ## Active recovery
 
 None. The ordered delivery hold remains resolved. P7-02 is complete at Level 2
-and P7-03 checkpoint 1 is proven. Checkpoint 2 is active under the frozen plan
+and P7-03 checkpoint 2 is proven. Checkpoint 3 is active under the frozen plan
 and machine-readable path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext

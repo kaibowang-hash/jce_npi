@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T22:36:19Z`
+Updated: `2026-08-10T23:35:30Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 2`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 3`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `3a267196d11921ba1111a0774f5f85bd8647ed9f` (pushed; P7-02 Level 2 PASS)
+  `21b3bdaf729d1607831566cc1db108e1b255ea3e` (pushed; P7-03 checkpoint 2 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -22,17 +22,17 @@ Updated: `2026-08-10T22:36:19Z`
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
 - Latest P7-03 product checkpoint:
-  `42812c3162a6d3e72508ecc12bf0a5c944e334c7` (`CHECKPOINT 1 PASS`;
-  ordinary CI `31438191274`)
+  `21b3bdaf729d1607831566cc1db108e1b255ea3e` (`CHECKPOINT 2 PASS`;
+  ordinary CI `31442261342`)
 - Current controller task:
   `P7-03 — Cavity defects, actions and verification`
-  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/SINGLE TIP`)
-- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_2`)
+  (`IN_PROGRESS — CHECKPOINT 3 LIVE CAVITY QUALITY WORKSPACE`)
+- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_3`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-03 CHECKPOINT 2`)
+  (`IN_PROGRESS — P7-03 CHECKPOINT 3`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -78,12 +78,21 @@ guarded additive DocTypes and direct translations; no route or business row is
 active. Evidence is
 `implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md`.
 
-Only checkpoint 2 is active: Project-first quality reads and exact cavity-
-result/defect/verification commands, transactional P6-to-P7 single-tip
-enforcement, actor-bound replay, one transaction, append-only audit and the
-independent default-closed P7-03 switch. UI, runtime fixture, NCR, formal
-quality, Gate/Tooling lifecycle, conclusion, approval and release remain
-inactive. There is no active technical Hard Blocker.
+P7-03 checkpoint 2 passes at exact product checkpoint `21b3bda`. Ordinary CI
+`31442261342` passes `1,552` tracked Python tests, `832/832` frontend unit,
+`365/365` non-visual E2E, `6,440` direct trilingual sources, both secret lanes
+and the unchanged `100/100` fixed-Linux visual matrix. The live boundary
+enforces exact Project/Round/input/Sample/Tooling/Set/cavity containment, one
+transactional P6/P7 defect tip, actor-bound replay, append-only audit and
+independent verification with explicit unavailable external effects. Evidence
+is `implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md`.
+
+Only checkpoint 3 is active: add the strict quality data source and dense
+trilingual cavity-result, defect/action, verification and Pareto workspace with
+honest loading, empty, read-only, permission, validation, conflict, processing,
+retry and unavailable-effect states plus affected Linux visuals. Runtime
+fixture, NCR, formal quality, Gate/Tooling lifecycle, conclusion, approval and
+release remain inactive. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 
