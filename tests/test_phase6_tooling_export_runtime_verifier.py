@@ -128,6 +128,9 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             'observed_sources <= {"manual", "controlled_xlsx_import"}',
             'f"P6-08 Tooling List returned HTTP {result.status} "',
             "problem_code if isinstance(problem_code, str) else 'unavailable'",
+            'if query_key == "package-create-diagnostic":',
+            'headers["X-NPI-P6-08-Diagnostic"] = "p608-package-create-v1"',
+            "diagnostic=first_package is None",
         )
         for marker in required:
             with self.subTest(marker=marker):
@@ -158,6 +161,33 @@ class Phase6ToolingExportRuntimeVerifierTest(unittest.TestCase):
             "code=INTERNAL_ERROR; storedTrue=False; versionOne=False; "
             "snapshotHashValid=False; preferenceMatches=False "
             "[diagnostic_code=UNEXPECTED_BFF_EXCEPTION; "
+            "exc_type=ValidationError; "
+            "trace_id=trace-0123456789abcdef0123456789abcdef]",
+        )
+        self.assertNotIn("message", diagnostic)
+        self.assertNotIn("must not be emitted", diagnostic)
+
+    def test_package_create_diagnostic_is_response_neutral_and_structural(self) -> None:
+        result = self.module.HttpResult(
+            500,
+            {"Idempotency-Replayed": "false"},
+            {"code": "INTERNAL_ERROR", "message": "must not be emitted"},
+        )
+        with patch.object(
+            self.module.document_runtime,
+            "sanitized_http_failure",
+            return_value=(
+                " [diagnostic_code=P608_PACKAGE_TIME_PROJECTION; "
+                "exc_type=ValidationError; "
+                "trace_id=trace-0123456789abcdef0123456789abcdef]"
+            ),
+        ):
+            diagnostic = self.module.package_create_diagnostic(result, "false")
+        self.assertEqual(
+            diagnostic,
+            "P6-08 package creation/replay truth drifted: HTTP 500; "
+            "code=INTERNAL_ERROR; replayHeaderMatches=True; packageObject=False "
+            "[diagnostic_code=P608_PACKAGE_TIME_PROJECTION; "
             "exc_type=ValidationError; "
             "trace_id=trace-0123456789abcdef0123456789abcdef]",
         )

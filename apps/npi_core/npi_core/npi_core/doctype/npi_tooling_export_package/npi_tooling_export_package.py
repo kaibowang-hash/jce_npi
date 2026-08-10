@@ -15,6 +15,7 @@ from npi_core.tooling.export_frappe_validation import (
     canonical_export_uuid,
     deny_tooling_export_delete,
     deny_tooling_export_update,
+    mark_tooling_package_create_substage,
     require_datetime_snapshot_projection,
     require_json_projection,
     require_snapshot_projection,
@@ -40,14 +41,17 @@ class NPIToolingExportPackage(Document):
         self.name = self.global_id
 
     def before_insert(self) -> None:
+        mark_tooling_package_create_substage("P608_PACKAGE_WRITE_GUARD")
         require_tooling_export_write()
 
     def before_save(self) -> None:
+        mark_tooling_package_create_substage("P608_PACKAGE_WRITE_GUARD")
         require_tooling_export_write()
         if self.get_doc_before_save() is not None:
             deny_tooling_export_update()
 
     def before_validate(self) -> None:
+        mark_tooling_package_create_substage("P608_PACKAGE_NORMALIZE_IDENTITIES")
         for fieldname, label in (
             ("global_id", _("Global ID")),
             ("project_global_id", _("Project Global ID")),
@@ -56,26 +60,31 @@ class NPIToolingExportPackage(Document):
             canonical_export_uuid(self, fieldname, label)
 
     def validate(self) -> None:
+        mark_tooling_package_create_substage("P608_PACKAGE_BOUNDS")
         if not 1 <= self.object_count <= MAX_TOOLING_EXPORT_OBJECTS:
             frappe.throw(
                 _("Select between one and one hundred Tooling Masters."),
                 frappe.ValidationError,
             )
+        mark_tooling_package_create_substage("P608_PACKAGE_CONFIDENTIALITY")
         if self.confidentiality_class != TOOLING_OBJECT_PACKAGE_CONFIDENTIALITY:
             frappe.throw(
                 _("Select the internal Project confidentiality class."),
                 frappe.ValidationError,
             )
+        mark_tooling_package_create_substage("P608_PACKAGE_MIME")
         if self.mime_type != TOOLING_OBJECT_PACKAGE_MIME_TYPE:
             frappe.throw(
                 _("Select the Tooling object package media type."),
                 frappe.ValidationError,
             )
+        mark_tooling_package_create_substage("P608_PACKAGE_HASHES")
         self.sha256 = lowercase_sha256(self.sha256, _("SHA-256"))
         self.manifest_sha256 = lowercase_sha256(
             self.manifest_sha256,
             _("Manifest SHA-256"),
         )
+        mark_tooling_package_create_substage("P608_PACKAGE_MODE")
         if self.mode == ToolingExportMode.FILTERED.value:
             self.query_snapshot_hash = lowercase_sha256(
                 self.query_snapshot_hash,
@@ -86,6 +95,7 @@ class NPIToolingExportPackage(Document):
                 _("A selection export cannot include a filtered query snapshot."),
                 frappe.ValidationError,
             )
+        mark_tooling_package_create_substage("P608_PACKAGE_SNAPSHOT")
         snapshot = validate_immutable_snapshot(
             self,
             snapshot_field="package_snapshot",
@@ -93,6 +103,7 @@ class NPIToolingExportPackage(Document):
             snapshot_hash_field="snapshot_hash",
             immutable_fields=_IMMUTABLE_FIELDS,
         )
+        mark_tooling_package_create_substage("P608_PACKAGE_PROJECTION")
         require_snapshot_projection(
             self,
             snapshot,
@@ -116,6 +127,7 @@ class NPIToolingExportPackage(Document):
                 ("trace_id", "traceId"),
             ),
         )
+        mark_tooling_package_create_substage("P608_PACKAGE_TIME_PROJECTION")
         require_datetime_snapshot_projection(
             self,
             snapshot,
@@ -124,14 +136,18 @@ class NPIToolingExportPackage(Document):
                 ("expires_at", "expiresAt"),
             ),
         )
+        mark_tooling_package_create_substage("P608_PACKAGE_JSON_PROJECTION")
         require_json_projection(self, "object_refs", snapshot, "objectRefs")
+        mark_tooling_package_create_substage("P608_PACKAGE_EXPIRY")
         validate_package_expiry(self)
+        mark_tooling_package_create_substage("P608_PACKAGE_PARENT")
         require_exact_parent(
             "NPI Engineering Project",
             self.project_global_id,
             {"global_id": self.project_global_id, "tenant_id": self.tenant_id},
             _("The exact Project is unavailable for this Tooling export package."),
         )
+        mark_tooling_package_create_substage("P608_PACKAGE_STANDARD_VALIDATION")
 
     def on_trash(self) -> None:
         deny_tooling_export_delete(self)

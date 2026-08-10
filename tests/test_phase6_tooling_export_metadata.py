@@ -116,6 +116,50 @@ class Phase6ToolingExportMetadataTests(unittest.TestCase):
         )
         self.assertNotIn("last_changed_at", projections["require_snapshot_projection"])
 
+    def test_package_create_diagnostic_stages_are_closed(self) -> None:
+        validation = (
+            ROOT / "apps/npi_core/npi_core/tooling/export_frappe_validation.py"
+        ).read_text(encoding="utf-8")
+        package = (
+            DOCTYPE_ROOT
+            / "npi_tooling_export_package"
+            / "npi_tooling_export_package.py"
+        ).read_text(encoding="utf-8")
+        receipt = (
+            DOCTYPE_ROOT
+            / "npi_tooling_export_command_idempotency"
+            / "npi_tooling_export_command_idempotency.py"
+        ).read_text(encoding="utf-8")
+        expected = {
+            "P608_PACKAGE_COMMAND_CONTEXT",
+            "P608_PACKAGE_RECEIPT_INSERT",
+            "P608_PACKAGE_FILE_SAVE",
+            "P608_PACKAGE_INSERT",
+            "P608_PACKAGE_AUDIT_APPEND",
+            "P608_PACKAGE_RECEIPT_SEAL",
+            "P608_PACKAGE_TIME_PROJECTION",
+            "P608_PACKAGE_EXPIRY",
+            "P608_PACKAGE_PARENT",
+            "P608_PACKAGE_RECEIPT_INITIAL_STATE",
+            "P608_PACKAGE_RECEIPT_RESPONSE",
+            "P608_PACKAGE_TRANSACTION_LIFECYCLE",
+        }
+        for code in expected:
+            self.assertIn(code, validation)
+        for code in (
+            "P608_PACKAGE_TIME_PROJECTION",
+            "P608_PACKAGE_EXPIRY",
+            "P608_PACKAGE_PARENT",
+        ):
+            self.assertIn(code, package)
+        for code in (
+            "P608_PACKAGE_RECEIPT_INITIAL_STATE",
+            "P608_PACKAGE_RECEIPT_RESPONSE",
+        ):
+            self.assertIn(code, receipt)
+        self.assertIn("record_safe_diagnostic(", validation)
+        self.assertNotIn("str(error)", validation)
+
     def test_package_datetime_projection_compares_the_same_utc_instant(self) -> None:
         module_names = (
             "frappe",

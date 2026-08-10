@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from contextlib import contextmanager
 from datetime import UTC, timedelta
 from typing import Iterator
@@ -21,6 +22,52 @@ from npi_core.tooling.export_domain import TOOLING_OBJECT_PACKAGE_VALIDITY
 
 TOOLING_EXPORT_WRITE_FLAG = "npi_tooling_export_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
+PACKAGE_CREATE_DIAGNOSTIC_FLAG = "npi_tooling_package_create_diagnostic"
+PACKAGE_CREATE_DIAGNOSTIC_HEADER = "p608-package-create-v1"
+PACKAGE_CREATE_DIAGNOSTIC_CODES = frozenset(
+    {
+        "P608_PACKAGE_COMMAND_CONTEXT",
+        "P608_PACKAGE_ROWS",
+        "P608_PACKAGE_SELECTION",
+        "P608_PACKAGE_IDENTITY",
+        "P608_PACKAGE_RENDER",
+        "P608_PACKAGE_RECEIPT_INSERT",
+        "P608_PACKAGE_FILE_SAVE",
+        "P608_PACKAGE_ORPHAN_CLEANUP",
+        "P608_PACKAGE_INSERT",
+        "P608_PACKAGE_RESPONSE_BUILD",
+        "P608_PACKAGE_AUDIT_APPEND",
+        "P608_PACKAGE_RECEIPT_SEAL",
+        "P608_PACKAGE_TRANSACTION_LIFECYCLE",
+        "P608_PACKAGE_WRITE_GUARD",
+        "P608_PACKAGE_NORMALIZE_IDENTITIES",
+        "P608_PACKAGE_BOUNDS",
+        "P608_PACKAGE_CONFIDENTIALITY",
+        "P608_PACKAGE_MIME",
+        "P608_PACKAGE_HASHES",
+        "P608_PACKAGE_MODE",
+        "P608_PACKAGE_SNAPSHOT",
+        "P608_PACKAGE_PROJECTION",
+        "P608_PACKAGE_TIME_PROJECTION",
+        "P608_PACKAGE_JSON_PROJECTION",
+        "P608_PACKAGE_EXPIRY",
+        "P608_PACKAGE_PARENT",
+        "P608_PACKAGE_STANDARD_VALIDATION",
+        "P608_PACKAGE_RECEIPT_NORMALIZE_IDENTITIES",
+        "P608_PACKAGE_RECEIPT_HASHES",
+        "P608_PACKAGE_RECEIPT_OPERATION",
+        "P608_PACKAGE_RECEIPT_KEY",
+        "P608_PACKAGE_RECEIPT_INITIAL_STATE",
+        "P608_PACKAGE_RECEIPT_UPDATE_IDENTITY",
+        "P608_PACKAGE_RECEIPT_SEAL_SHAPE",
+        "P608_PACKAGE_RECEIPT_TARGET",
+        "P608_PACKAGE_RECEIPT_TARGET_IDENTITY",
+        "P608_PACKAGE_RECEIPT_RESPONSE",
+        "P608_PACKAGE_RECEIPT_STANDARD_VALIDATION",
+    }
+)
+_DIAGNOSTIC_TYPE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_.]{0,127}$")
+_DIAGNOSTIC_TRACE_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 
 
 def require_tooling_export_write() -> None:
@@ -37,6 +84,79 @@ def tooling_export_write() -> Iterator[None]:
 
     with _flag_scope(TOOLING_EXPORT_WRITE_FLAG), _flag_scope(AUDIT_APPEND_FLAG):
         yield
+
+
+@contextmanager
+def tooling_package_create_diagnostics(
+    trace_id: str,
+    *,
+    enabled: bool,
+) -> Iterator[None]:
+    """Activate one response-neutral package-create validation diagnostic."""
+
+    state = (
+        {"trace_id": trace_id, "substage": None, "recorded": False}
+        if enabled and _DIAGNOSTIC_TRACE_PATTERN.fullmatch(trace_id) is not None
+        else None
+    )
+    missing = object()
+    previous = getattr(frappe.flags, PACKAGE_CREATE_DIAGNOSTIC_FLAG, missing)
+    setattr(frappe.flags, PACKAGE_CREATE_DIAGNOSTIC_FLAG, state)
+    try:
+        yield
+    finally:
+        if previous is missing:
+            try:
+                delattr(frappe.flags, PACKAGE_CREATE_DIAGNOSTIC_FLAG)
+            except AttributeError:
+                pass
+        else:
+            setattr(frappe.flags, PACKAGE_CREATE_DIAGNOSTIC_FLAG, previous)
+
+
+def mark_tooling_package_create_substage(code: str) -> None:
+    state = _tooling_package_create_diagnostic_state()
+    if state is not None and code in PACKAGE_CREATE_DIAGNOSTIC_CODES:
+        state["substage"] = code
+
+
+def record_tooling_package_create_fallback(error: Exception) -> None:
+    state = _tooling_package_create_diagnostic_state()
+    if state is None or state.get("recorded") is True:
+        return
+    candidate = state.get("substage")
+    code = (
+        str(candidate)
+        if candidate in PACKAGE_CREATE_DIAGNOSTIC_CODES
+        else "P608_PACKAGE_TRANSACTION_LIFECYCLE"
+    )
+    exception_type = type(error).__name__
+    if _DIAGNOSTIC_TYPE_PATTERN.fullmatch(exception_type) is None:
+        return
+    state["recorded"] = True
+    try:
+        from npi_core.api import record_safe_diagnostic
+
+        record_safe_diagnostic(
+            code=code,
+            title="NPI Tooling package creation failed",
+            exception_type=exception_type,
+            trace_id=str(state["trace_id"]),
+        )
+    except Exception:
+        pass
+
+
+def _tooling_package_create_diagnostic_state() -> dict[str, object] | None:
+    state = getattr(frappe.flags, PACKAGE_CREATE_DIAGNOSTIC_FLAG, None)
+    if (
+        not isinstance(state, dict)
+        or set(state) != {"trace_id", "substage", "recorded"}
+        or not isinstance(state.get("trace_id"), str)
+        or _DIAGNOSTIC_TRACE_PATTERN.fullmatch(str(state["trace_id"])) is None
+    ):
+        return None
+    return state
 
 
 def deny_tooling_export_update() -> None:

@@ -37,7 +37,7 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
             "tooling_list": "_tooling_list_rows(",
             "tooling_list_preference": "_preference_for_key(",
             "save_tooling_list_preference": "_locked_preference_for_key(",
-            "create_tooling_export_package": "_export_command_context(",
+            "_create_tooling_export_package": "_export_command_context(",
             "tooling_export_package_content": "_package_for_project(",
         }
         for method_name, lookup_marker in lookup_markers.items():
@@ -133,8 +133,19 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
         clock = ast.unparse(_method("_now_export"))
         self.assertIn("astimezone(UTC).replace(microsecond=0)", clock)
 
+    def test_package_create_diagnostic_is_exact_header_and_response_neutral(self) -> None:
+        wrapper = ast.unparse(_method("create_tooling_export_package"))
+        for marker in (
+            "tooling_package_create_diagnostics",
+            "X-NPI-P6-08-Diagnostic",
+            "PACKAGE_CREATE_DIAGNOSTIC_HEADER",
+            "record_tooling_package_create_fallback",
+            "self._create_tooling_export_package",
+        ):
+            self.assertIn(marker, wrapper)
+
     def test_create_orders_receipt_file_package_audit_and_seal_in_one_guard(self) -> None:
-        method = _method("create_tooling_export_package")
+        method = _method("_create_tooling_export_package")
         guards = [
             node
             for node in ast.walk(method)
@@ -164,7 +175,7 @@ class Phase6ToolingExportRepositoryTests(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
 
     def test_selection_and_filtered_exports_revalidate_current_exact_truth(self) -> None:
-        method = ast.unparse(_method("create_tooling_export_package"))
+        method = ast.unparse(_method("_create_tooling_export_package"))
         for marker in (
             "rows = self._tooling_list_rows(project)",
             "resolve_exact_selection(rows, ToolingExportSelection(tuple(selection)))",

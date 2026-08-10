@@ -140,6 +140,8 @@ def json_request(
     )
     if csrf_token is not None:
         headers["X-Frappe-CSRF-Token"] = csrf_token
+    if query_key == "package-create-diagnostic":
+        headers["X-NPI-P6-08-Diagnostic"] = "p608-package-create-v1"
     result = document_runtime.request(
         opener,
         base_url,
@@ -603,6 +605,7 @@ def create_package(
     key: str,
     *,
     replayed: str,
+    diagnostic: bool = False,
 ) -> tuple[HttpResult, dict[str, Any]]:
     result = json_request(
         actor,
@@ -612,13 +615,16 @@ def create_package(
         payload=payload,
         csrf_token=csrf_token,
         idempotency_key=key,
+        query_key=(
+            "package-create-diagnostic" if diagnostic else "package-create"
+        ),
     )
     package = result.body.get("package")
     require(
         result.status == 201
         and result.headers.get("Idempotency-Replayed") == replayed
         and isinstance(package, dict),
-        "P6-08 package creation/replay truth drifted",
+        package_create_diagnostic(result, replayed),
     )
     require(
         "/private/files/" not in repr(result.body)
@@ -627,6 +633,18 @@ def create_package(
         "P6-08 package response exposed a private File identity",
     )
     return result, package
+
+
+def package_create_diagnostic(result: HttpResult, replayed: str) -> str:
+    problem_code = result.body.get("code")
+    return (
+        "P6-08 package creation/replay truth drifted: "
+        f"HTTP {result.status}; "
+        f"code={problem_code if isinstance(problem_code, str) else 'unavailable'}; "
+        f"replayHeaderMatches={result.headers.get('Idempotency-Replayed') == replayed}; "
+        f"packageObject={isinstance(result.body.get('package'), dict)}"
+        f"{document_runtime.sanitized_http_failure(result)}"
+    )
 
 
 def validate_package_content(
@@ -1059,6 +1077,7 @@ def run_fresh(
             payload,
             create_key(language),
             replayed="false",
+            diagnostic=first_package is None,
         )
         replay, replay_package = create_package(
             current_actor,
