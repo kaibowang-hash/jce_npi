@@ -147,7 +147,7 @@ jobs:
           retention-days: 30
 
   document_runtime:
-    name: P5 controlled document runtime and P6 Tooling through export
+    name: P5 controlled document runtime and P6 Tooling through export and P7-01 Trial planning
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -170,11 +170,11 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 and P6-08 controlled runtime
-        run: bash scripts/verify-frappe-runtime.sh --tooling-only
+      - name: Verify cumulative P5 and P6-08 controlled runtime and P7-01 Trial planning
+        run: bash scripts/verify-frappe-runtime.sh --trial-only
       - name: Record controlled runtime result
         run: |
-          mkdir -p "${RUNNER_TEMP}/p6-tooling-runtime"
+          mkdir -p "${RUNNER_TEMP}/p7-trial-runtime"
           {
             printf 'result=PASS\n'
             printf 'head_sha=%s\n' "${GITHUB_SHA}"
@@ -182,16 +182,19 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p6-08\n'
-            printf 'predecessor_scope=p5-01-through-p6-07\n'
+            printf 'scope=p5-01-through-p7-01\n'
+            printf 'predecessor_scope=p5-01-through-p6-08\n'
+            printf 'p6_predecessor_scope=p5-01-through-p6-07\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
-            printf 'command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'
-            printf 'predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
-          } >"${RUNNER_TEMP}/p6-tooling-runtime/result.txt"
+            printf 'command=bash scripts/verify-frappe-runtime.sh --trial-only\n'
+            printf 'predecessor_command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'
+            printf 'p5_predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
+            printf 'predecessor_artifact=p6-tooling-runtime-${{ github.run_id }}\n'
+          } >"${RUNNER_TEMP}/p7-trial-runtime/result.txt"
       - uses: actions/upload-artifact@v4
         with:
-          name: p6-tooling-runtime-${{ github.run_id }}
-          path: ${{ runner.temp }}/p6-tooling-runtime/result.txt
+          name: p7-trial-runtime-${{ github.run_id }}
+          path: ${{ runner.temp }}/p7-trial-runtime/result.txt
           if-no-files-found: error
           retention-days: 30
       - name: Clean ephemeral runtime resources
