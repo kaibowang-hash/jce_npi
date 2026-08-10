@@ -178,7 +178,7 @@ The checkpoint replaces the unimplemented placeholder paths with:
 | `POST /projects/{projectId}/trial-plans` | create a stable Plan and immutable initial revision |
 | `POST /projects/{projectId}/trial-plans/{trialPlanId}/revisions` | append one exact successor Plan revision |
 | `POST /projects/{projectId}/trial-plans/{trialPlanId}/rounds` | create one distinct planned Round against the exact Plan revision |
-| `POST /projects/{projectId}/trial-plans/{trialPlanId}:generate-actions` | atomically create governed Domain Work Item actions and immutable Trial links |
+| `POST /projects/{projectId}/trial-plans/{trialPlanId}/actions:generate` | atomically create governed Domain Work Item actions and immutable Trial links |
 
 P7-01 exposes no `submit`, `prepare`, `start`, actual-value, defect, conclusion,
 approval, Gate, ERP quality or resource-confirmation command. Later tasks add

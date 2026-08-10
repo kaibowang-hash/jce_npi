@@ -690,13 +690,54 @@ objects:
       shot_count: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       maintenance: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
 
+  TrialPlanRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_plan_identity_and_project_tooling_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_version_predecessor_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SUCCESSOR}
+      objective_purpose_time_sample_and_measurement_intent: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      responsible_project_member_snapshot: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: NEW_REVISION}
+      machine_equipment_and_material_proposals: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: PLANNING_PROPOSAL_ONLY}
+      resource_availability_and_reservation: {owner: FUTURE_APPROVED_RESOURCE_READER_AND_BOOKING_POLICY, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
   TrialRound:
     owner_system: NPI_ONE
+    erp_view: none
     fields:
-      locked_inputs: {owner: NPI_ONE, editable_in: [NPI_ONE_UNTIL_PREPARED], direction: NONE, conflict: NEW_ROUND_OR_REOPEN}
-      process_parameters: {owner: NPI_ONE, editable_in: [NPI_ONE_UNTIL_SUBMITTED], direction: NPI_TO_ERPNEXT_VIA_RELEASE, conflict: NEW_REVISION}
-      defects: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: OPTIONAL_NCR_REQUEST, conflict: OWNER_WINS}
+      stable_round_identity_and_project_tooling_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      exact_trial_plan_revision_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
+      round_sequence_label_purpose_and_planned_interval: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_PLANNING_SNAPSHOT}
+      current_state_event_and_optimistic_version: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [NPI_ONE_TRIAL_COMMAND], direction: NONE, conflict: APPEND_EVENT_THEN_ADVANCE}
+      locked_inputs: {owner: FUTURE_P7_TRIAL_PREPARATION_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
+      process_parameters: {owner: FUTURE_P7_TRIAL_EXECUTION_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
+      defects: {owner: FUTURE_P7_TRIAL_ANALYSIS_COMMAND, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_01}
       official_quality_result: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+
+  TrialRoundLifecycleEvent:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_round_event_version_state_transition_and_reason: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      actor_time_request_trace_and_snapshot_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_AUDIT_SNAPSHOT}
+
+  TrialPlanWorkLink:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_plan_revision_and_optional_round_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_EXACT_REFERENCE}
+      domain_work_item_reference: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_LINK}
+      task_state_due_owner_and_completion_truth: {owner: NPI_ONE_DOMAIN_WORK_COMMAND, editable_in: [NPI_ONE_DOMAIN_WORK_COMMAND], direction: NONE, conflict: DOMAIN_WORK_ITEM_OWNER_WINS}
+
+  TrialCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [NPI_ONE_TRIAL_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_target_identity: {owner: NPI_ONE_TRIAL_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
 
   EngineeringChange:
     owner_system: SPLIT

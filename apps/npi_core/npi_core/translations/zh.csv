@@ -5751,3 +5751,111 @@ Separate export authority and current Project visibility are required.,需要独
 Exact object snapshots,精确对象快照
 Exact filtered query snapshot,精确筛选查询快照
 Review Tooling object package export,审查模具对象包导出
+A Trial Round creation event must establish planned state.,试模轮次创建事件必须建立计划中状态。
+A Trial command response can only be sealed once.,试模命令响应只能封存一次。
+A Trial command response must be sealed after success.,试模命令响应必须在成功后封存。
+A responsible Project member is unavailable for this Trial Plan.,此试模计划的项目负责人不可用。
+A successor Trial Plan revision requires its exact predecessor.,后续试模计划版本必须引用其精确前置版本。
+Current Trial Event Global ID,当前试模事件全局标识
+Domain Work Item,领域工作项
+Domain Work Item Global ID,领域工作项全局标识
+Enter a Trial Round label such as T0 or T1.,请输入 T0 或 T1 等试模轮次标签。
+Enter a measurement plan or select a controlled document revision.,请输入测量计划或选择一个受控文件版本。
+Enter a valid measurement plan.,请输入有效的测量计划。
+"Enter both the planned quantity and unit, or leave both empty.",请同时输入计划数量和单位，或将两者留空。
+Enter zero or a positive integer.,请输入零或正整数。
+Measurement Plan Snapshot,测量计划快照
+Measurement plan does not match the exact Trial Plan.,测量计划与精确试模计划不匹配。
+NPI Trial Command Idempotency,NPI 试模命令幂等记录
+NPI Trial Plan Revision,NPI 试模计划版本
+NPI Trial Plan Work Link,NPI 试模计划工作关联
+NPI Trial Round,NPI 试模轮次
+NPI Trial Round Lifecycle Event,NPI 试模轮次生命周期事件
+Next Trial Round State,下一试模轮次状态
+Planned End At,计划结束时间
+Planned Sample Quantity,计划样件数量
+Planned Start At,计划开始时间
+Predecessor Trial Plan Revision Global ID,前置试模计划版本全局标识
+Previous Trial Round State,上一试模轮次状态
+Resource Proposal Snapshot,资源提议快照
+Resource proposal IDs must be unique.,资源提议标识必须唯一。
+Resource proposals do not match the exact Trial Plan.,资源提议与精确试模计划不匹配。
+Responsible Member Snapshot,负责人快照
+Responsible Project members must be unique.,项目负责人必须唯一。
+Responsible members do not match the exact Trial Plan.,负责人与精确试模计划不匹配。
+Select a supported Trial command operation.,请选择支持的试模命令操作。
+Select one complete controlled document revision.,请选择一个完整的受控文件版本。
+Select the exact current Trial Plan revision.,请选择精确的当前试模计划版本。
+Select valid responsible Project members.,请选择有效的项目负责人。
+The Domain Work Item is unavailable for this Trial Plan.,此试模计划的领域工作项不可用。
+The Project is unavailable for this Trial Plan.,此试模计划的项目不可用。
+The Tooling Master is unavailable for this Project.,此项目的模具主对象不可用。
+The Tooling Master is unavailable for this Trial Plan.,此试模计划的模具主对象不可用。
+The Trial Plan snapshot hash does not match.,试模计划快照哈希不匹配。
+The Trial Round is unavailable for this work link.,此工作关联的试模轮次不可用。
+The Trial Round snapshot hash does not match.,试模轮次快照哈希不匹配。
+The Trial command receipt does not match its Project.,试模命令收据与其项目不匹配。
+The Trial lifecycle event hash does not match.,试模生命周期事件哈希不匹配。
+The Trial work link hash does not match.,试模工作关联哈希不匹配。
+The exact Trial Plan Revision is unavailable for this Round.,此轮次的精确试模计划版本不可用。
+The exact Trial Plan Revision is unavailable for this work link.,此工作关联的精确试模计划版本不可用。
+The first Trial Plan revision cannot have a predecessor.,首个试模计划版本不能有前置版本。
+The measurement plan document is unavailable.,测量计划文件不可用。
+The planned end must be after the start.,计划结束时间必须晚于开始时间。
+The predecessor Trial Plan Revision is unavailable.,前置试模计划版本不可用。
+This Trial lifecycle transition is not active in this task.,此试模生命周期转换在本任务中未启用。
+Trial Lifecycle Event Reason,试模生命周期事件原因
+Trial Lifecycle Event Snapshot,试模生命周期事件快照
+Trial Lifecycle Event Snapshot Hash does not match.,试模生命周期事件快照哈希不匹配。
+Trial Lifecycle Event Type,试模生命周期事件类型
+Trial Lifecycle Event Version,试模生命周期事件版本
+Trial Objective,试模目标
+Trial Plan Global ID,试模计划全局标识
+Trial Plan Revision,试模计划版本
+Trial Plan Revision Global ID,试模计划版本全局标识
+Trial Plan Revision Reason,试模计划版本原因
+Trial Plan Revision Snapshot,试模计划版本快照
+Trial Plan Revision Snapshot Hash,试模计划版本快照哈希
+Trial Plan Revision fields do not match the exact snapshot.,试模计划版本字段与精确快照不匹配。
+Trial Plan Snapshot Hash does not match.,试模计划快照哈希不匹配。
+Trial Plan Version,试模计划版本号
+Trial Plan Version Key Hash,试模计划版本键哈希
+Trial Plan Version Key Hash does not match.,试模计划版本键哈希不匹配。
+Trial Plan Work Link Snapshot,试模计划工作关联快照
+Trial Plan Work Link Snapshot Hash does not match.,试模计划工作关联快照哈希不匹配。
+Trial Plan work-link fields do not match the exact snapshot.,试模计划工作关联字段与精确快照不匹配。
+Trial Purpose,试模目的
+Trial Round,试模轮次
+Trial Round Global ID,试模轮次全局标识
+Trial Round Label,试模轮次标签
+Trial Round Sequence,试模轮次序号
+Trial Round Snapshot,试模轮次快照
+Trial Round Snapshot Hash does not match.,试模轮次快照哈希不匹配。
+Trial Round State,试模轮次状态
+Trial Round fields do not match the exact snapshot.,试模轮次字段与精确快照不匹配。
+Trial history cannot be changed.,试模历史不能更改。
+Trial history cannot be deleted.,试模历史不能删除。
+Trial lifecycle event fields do not match the exact snapshot.,试模生命周期事件字段与精确快照不匹配。
+Trial records can only be changed through an authorized NPI command.,试模记录只能通过已授权的 NPI 命令更改。
+analysis,分析中
+capability_study,能力研究
+customer_sample,客户样件
+design_verification,设计验证
+first_trial,首次试模
+material_color_verification,材料颜色验证
+other,其他
+planned,计划中
+running,运行中
+tooling_change_verification,模具变更验证
+trial_plan.create,创建试模计划
+trial_plan.generate_actions,生成试模计划行动项
+trial_plan.revise,修订试模计划
+trial_plan_revision,试模计划版本
+trial_plan_work_link_set,试模计划工作关联集
+trial_round,试模轮次
+trial_round.cancel,取消试模轮次
+trial_round.create,创建试模轮次
+Add between 1 and 50 valid resources.,请添加 1 至 50 项有效资源。
+Select a machine and material for the Trial Plan.,请为试模计划选择机台和材料。
+The exact current Trial lifecycle event is unavailable.,精确的当前试模生命周期事件不可用。
+This Trial Round state is not active in this task.,此试模轮次状态在本任务中未启用。
