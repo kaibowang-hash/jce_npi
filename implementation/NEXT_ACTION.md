@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-05`
+`IN_PROGRESS_CHECKPOINT_1 — P7-05`
 
-Recovery time: `2026-08-11T12:16:16Z`
+Recovery time: `2026-08-11T12:39:41Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -11,8 +11,8 @@ Required branch:
 Completed P7-04 product checkpoint:
 `02781c0c712c4d8c739114ead24545daa537329d`
 
-P7-05 audit base checkpoint:
-`02781c0c712c4d8c739114ead24545daa537329d`
+P7-05 starting controller checkpoint:
+`81b720487cface6ca78a9e77724223e61c766871`
 
 ## Current authoritative action
 
@@ -138,14 +138,15 @@ statements `80.05%`), secret scan `93770486159` and visual `93770486218` at
 Gate and passes cumulative disposable Site scope `p5-01-through-p7-04`.
 Complete evidence is `implementation/evidence/phase-7/p7-04-validation.md`.
 
-Execute only the P7-05 Requirement/domain/existing-capability audit enforced
-by `implementation/CURRENT_TASK.json`. Reconcile `FR-NP-001..003/006..013`
-against retained Project/Gate/Work Item, controlled documents, Tooling/
-capacity, Trial/quality/review and private-File truth. Freeze a minimum
-complete versioned readiness template and exact Project instance, evidence and
-applicability rules, deterministic category/total scoring, separately dominant
-blockers, closed BFF/persistence/UI checkpoints, migration, tests and rollback
-before any product implementation.
+P7-05 bounded audit and frozen plan pass at starting controller SHA `81b7204`.
+Ordinary CI `31491185573` passes repository `93777828829`, frontend/E2E
+`93777828858`, secret scan `93777829035` and unchanged `106/106` visual job
+`93777828744`. Execute only checkpoint 1 in
+`implementation/evidence/phase-7/p7-05-plan.md`: pure immutable template/
+Project-instance, exact evidence/source, deterministic score, blocker-dominance
+and Gate-separation domains; closed OpenAPI/ownership; four guarded additive
+DocTypes, receipts, translations and focused tests. No route, business row,
+Gate-input change, UI or runtime fixture is active in checkpoint 1.
 
 Do not invent a G6/G7 policy, caller-supplied score, blocker waiver, ERP result,
 PFMEA/MSA/CPK/PPAP global applicability or automatic Gate/Work Item/Tooling

@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-11T12:16:16Z'
+updated_at: '2026-08-11T12:39:41Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-05
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P7_04_LEVEL_2_PASS
-current_task_next_stage: P7_05_REQUIREMENT_DOMAIN_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P7_05_AUDIT_PASS
+current_task_next_stage: P7_05_DOMAIN_CONTRACT_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-05
-resumed_product_task_status: ACTIVE_AUDIT
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1745,7 +1745,7 @@ p7_04:
 p7_05:
   task: P7-05
   controller_task: P7-05_NPI_CHECKLIST_READINESS_BLOCKERS
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-05
   requirements:
@@ -1761,9 +1761,11 @@ p7_05:
     - FR-NP-012
     - FR-NP-013
   predecessor_product_checkpoint: 02781c0c712c4d8c739114ead24545daa537329d
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  starting_controller_checkpoint: 81b720487cface6ca78a9e77724223e61c766871
+  starting_controller_ci: 31491185573
+  audit: PASS
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage_after_pass: REPOSITORY_BFF_GATE_INPUT_BOUNDARY
   product_code_changed: false
   external_holds:
     - PRODUCTION_ERPNEXT_MATERIAL_QUALITY_CAPACITY_AND_RUN_AT_RATE_RESULTS
@@ -1771,6 +1773,7 @@ p7_05:
     - PRODUCTION_HANDOVER_RELEASE_EXTERNAL_PROJECTION_AND_PRINT
   evidence:
     - implementation/evidence/phase-7/p7-04-validation.md
+    - implementation/evidence/phase-7/p7-05-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

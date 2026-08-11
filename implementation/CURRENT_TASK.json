@@ -3,10 +3,10 @@
   "task_id": "P7-05",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_2",
   "authorized_next_task": "P7-06",
-  "base_checkpoint": "02781c0c712c4d8c739114ead24545daa537329d",
+  "base_checkpoint": "81b720487cface6ca78a9e77724223e61c766871",
   "predecessor_product_checkpoint": "02781c0c712c4d8c739114ead24545daa537329d",
   "requirement_ids": [
     "FR-NP-001",
@@ -22,14 +22,14 @@
     "FR-NP-013"
   ],
   "scope": [
-    "Audit reusable NPI readiness template versions and independently frozen Project checklist instances against the exact Phase 4 through P7-04 evidence foundations.",
-    "Freeze checklist category, owner, due date, status, evidence, applicability, blocking level and exact Gate-or-policy reference semantics without inventing production defaults.",
-    "Freeze deterministic server-derived category and total readiness scores while keeping every applicable blocker separately dominant over percentage.",
-    "Separate NPI evidence, controlled reports and unavailable formal ERP results, and preserve Gate evaluation as a separately authorized existing policy command.",
-    "Define the minimum complete vertical slice, ownership, additive persistence, closed BFF, trilingual industrial workspace, tests, migration and rollback before product code."
+    "Publish immutable readiness-template versions with explicit Project-type, customer and NPI-owned industry applicability and no installed business default.",
+    "Freeze independently versioned Project checklist instances with exact category, item, owner, due date, status, evidence, applicability, blocking level and Gate identities.",
+    "Derive deterministic category and total scores from exact applicable weights while keeping every applicable P0, failed mandatory result and required unavailable source separately dominant.",
+    "Resolve bounded Project, Work Item, controlled-document, Tooling/capacity, Trial and private-File sources exactly while formal ERP material, quality, production, HR and supplier truth stays unavailable.",
+    "Feed exact P0 blockers and readiness-revision dependency into the existing independently authorized Gate review without deciding, passing, closing or mutating a Gate.",
+    "Deliver the dense trilingual Project readiness workspace, controlled runtime, traceability and Level 2 evidence under the frozen P7-05 plan."
   ],
   "non_scope": [
-    "Product implementation before the P7-05 audit and frozen plan pass.",
     "Automatic G6 or G7 pass/close, Gate policy invention, automatic Work Item closure, Tooling lifecycle mutation or production handover.",
     "Fabricated ERP material, quality, Run-at-rate, OEE, yield, supplier, training or production-result truth; production ERPNext access or mutation.",
     "Hard-coded PFMEA, MSA, CPK, PPAP or automotive applicability for every Project, or caller-supplied readiness scores and blocker suppression.",
@@ -49,6 +49,28 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/readiness/*",
+    "apps/npi_core/npi_core/readiness_api.py",
+    "apps/npi_core/npi_core/gate_review/frappe_repository.py",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_readiness_*/*",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/readiness-data-source.ts",
+    "frontend/src/app/app-shell.tsx",
+    "frontend/src/app/app.tsx",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/project-readiness-workspace.tsx",
+    "frontend/src/pages/project-workspace.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-05-readiness-live.spec.ts",
+    "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/*",
+    "frontend/tests/support/readiness-fixture.ts",
+    "frontend/tests/unit/project-readiness-workspace.test.tsx",
+    "frontend/tests/unit/readiness-data-source.test.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -59,22 +81,36 @@
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
     "implementation/phase-7-requirement-anchor.md",
-    "implementation/evidence/phase-7/p7-04-*.md",
     "implementation/evidence/phase-7/p7-05-*.md",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify.sh",
+    "scripts/verify_readiness_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
-    "tests/test_current_task_verifier.py"
+    "tests/test_current_task_verifier.py",
+    "tests/test_phase7_readiness_api.py",
+    "tests/test_phase7_readiness_contract.py",
+    "tests/test_phase7_readiness_domain.py",
+    "tests/test_phase7_readiness_metadata.py",
+    "tests/test_phase7_readiness_repository.py",
+    "tests/test_phase7_readiness_repository_seams.py",
+    "tests/test_phase7_readiness_runtime_verifier.py",
+    "tests/test_phase4_gate_review_repository.py"
   ],
   "affected_checks": {
     "level_1": [
+      ["python", "-m", "unittest", "tests.test_phase7_readiness_domain", "tests.test_phase7_readiness_metadata", "tests.test_phase7_readiness_contract", "-v"],
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/p7-05-readiness-live.spec.ts", "--grep", "@visual"]
     ],
     "runtime_preflight": [
-      ["python", "scripts/verify_current_task.py"]
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase7_readiness_runtime_verifier", "-v"],
+      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
@@ -88,10 +124,10 @@
     "phase_status_resumed_product_task": "P7-05",
     "active_goal_marker": "P7-05",
     "next_action_marker": "P7-05",
-    "controller_marker": "P7-04 Level 2 PASS; P7-05 audit active"
+    "controller_marker": "P7-05 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore the P7-04 Level 2 checkpoint; the bounded P7-05 audit creates no product row, route, metadata or external effect.",
-    "after_product_resume": "Use the rollback frozen in the accepted P7-05 plan; after retained readiness history, disable only independent P7-05 routes and workspace and deliver reviewed forward repair without rewriting templates, instances, evidence or derived snapshots."
+    "before_product_resume": "Before retained P7-05 rows, restore the starting controller checkpoint and migrate only a disposable Site fresh.",
+    "after_product_resume": "After retained template or instance history, disable only independent P7-05 routes, workspace and Gate-input inclusion and deliver a reviewed forward repair without rewriting templates, instances, evidence or derived snapshots."
   }
 }

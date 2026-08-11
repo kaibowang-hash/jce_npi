@@ -152,15 +152,19 @@ route recovery, migrations, redaction, zero integration/downstream effects and
 cleanup. The four truthful held dispositions and complete evidence are in
 `implementation/evidence/phase-7/p7-04-validation.md`.
 
-Only the bounded P7-05 audit is active under
-`implementation/CURRENT_TASK.json`: reconcile `FR-NP-001..003/006..013`
-against exact Project, Gate, Work Item, controlled-document, Tooling/capacity,
-Trial/quality/review and private-File foundations; freeze versioned readiness
-templates, exact Project instances, evidence/applicability, deterministic
-category/total scores, separately dominant blockers, Gate separation, tests
-and rollback before product code. Production ERP results, automatic Gate/Work
-Item/Tooling mutation, handover, release, projection and print remain outside
-authority. There is no active technical Hard Blocker.
+P7-05 bounded audit and frozen plan pass at controller checkpoint `81b7204`.
+Ordinary CI `31491185573` passes repository `93777828829`, frontend/E2E
+`93777828858`, secret scan `93777829035` and unchanged `106/106` fixed-Linux
+visuals in `93777828744`. Checkpoint 1 is active under
+`implementation/CURRENT_TASK.json` and
+`implementation/evidence/phase-7/p7-05-plan.md`: add only pure immutable
+readiness-template/Project-instance, exact evidence/source, deterministic
+score, dominant-blocker and Gate-separation domains; closed contracts/
+ownership; four guarded additive DocTypes, receipts, translations and focused
+tests. No route, business row, Gate-input change, UI or runtime fixture is yet
+active. Production ERP results, automatic Gate/Work Item/Tooling mutation,
+handover, release, projection and print remain outside authority. There is no
+active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 
