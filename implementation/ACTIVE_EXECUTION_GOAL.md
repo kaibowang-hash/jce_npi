@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T05:25:36Z`
+Updated: `2026-08-11T06:41:24Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (pushed; P7-03 Level 2 PASS)
+  `8e676acaebb08efbe8f322d7abeba894770f86c6` (pushed; P7-04 checkpoint 1 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -24,15 +24,18 @@ Updated: `2026-08-11T05:25:36Z`
 - Latest P7-03 product checkpoint:
   `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (`LEVEL 2 PASS`;
   ordinary CI `31459395711`, controlled Gate `31459974578`)
+- Latest P7-04 product checkpoint:
+  `8e676acaebb08efbe8f322d7abeba894770f86c6` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31465224626`)
 - Current controller task:
   `P7-04 — Round comparison, conclusion, quality and approval references`
-  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
-- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_1`)
+  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/POLICY BOUNDARY`)
+- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-04 CHECKPOINT 1`)
+  (`IN_PROGRESS — P7-04 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -107,17 +110,23 @@ zero integration traffic and cleanup. The truthful disposition is
 `TECHNICAL_VERIFIED`; evidence is
 `implementation/evidence/phase-7/p7-03-validation.md`.
 
-The bounded P7-04 audit passes. Starting controller SHA `1c0e8fd` passes
-ordinary PR CI `31460976409`: repository `93684251780`, frontend/E2E
-`93684251739`, secret scan `93684251722` and fixed-Linux visual
-`93684251718` at `103/103`. The frozen plan is
-`implementation/evidence/phase-7/p7-04-plan.md`.
+P7-04 checkpoint 1 passes at exact product checkpoint `8e676ac`. Ordinary CI
+`31465224626` passes repository `93696644312` (`1,586` tracked Python),
+frontend `93696644266` (`843/843` unit, `371/371` E2E and `6,664` complete
+direct trilingual sources), secret scan `93696644315` and unchanged `103/103`
+fixed-Linux visual job `93696644330`. The additive boundary contains pure
+exact-source comparison, controlled-reference, published-policy/server-
+blocker, immutable conclusion/decision/reopen and summary-input domains;
+closed contracts/ownership; four guarded DocTypes and receipt values. It
+opens no route, business row, lifecycle execution, UI or runtime fixture.
+Evidence is
+`implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md`.
 
-Only checkpoint 1 is active under `implementation/CURRENT_TASK.json`: pure
-exact comparison, controlled-reference, policy, blocker, immutable conclusion/
-decision/reopen and summary-input domains; closed contracts/ownership; four
-guarded additive DocTypes; receipt values, direct translations and focused
-tests. No route, row, lifecycle transition, UI or runtime fixture is
+Only checkpoint 2 is active under `implementation/CURRENT_TASK.json`: Project-
+first review read and exact begin-analysis/comparison/reference/conclusion/
+decision/reopen commands, fail-closed published policy/authority, server-
+derived blockers, actor-bound replay, one transaction, append-only audit and
+an independently default-closed P7-04 switch. No UI or runtime fixture is
 authorized. Automatic Gate/Tooling/Work Item mutation, production ERPNext,
 customer signature authority, readiness, release, projection and production
 print remain outside authority. There is no active technical Hard Blocker.

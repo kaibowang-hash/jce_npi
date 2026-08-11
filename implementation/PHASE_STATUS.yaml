@@ -5,12 +5,12 @@ updated_at: '2026-08-11T05:25:36Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-04
-current_task_status: IN_PROGRESS_CHECKPOINT_1
-current_task_completed_stage: P7_04_AUDIT_PASS
-current_task_next_stage: P7_04_DOMAIN_CONTRACT_ADDITIVE_METADATA
+current_task_status: IN_PROGRESS_CHECKPOINT_2
+current_task_completed_stage: P7_04_DOMAIN_CONTRACT_ADDITIVE_METADATA_PASS
+current_task_next_stage: P7_04_REPOSITORY_BFF_POLICY_BOUNDARY
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-04
-resumed_product_task_status: ACTIVE_CHECKPOINT_1
+resumed_product_task_status: ACTIVE_CHECKPOINT_2
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1697,7 +1697,7 @@ p7_03:
 p7_04:
   task: P7-04
   controller_task: P7-04_ROUND_COMPARISON_CONCLUSION_QUALITY_APPROVAL
-  status: IN_PROGRESS_CHECKPOINT_1
+  status: IN_PROGRESS_CHECKPOINT_2
   phase: 7
   milestone: M6-04
   requirements:
@@ -1707,10 +1707,13 @@ p7_04:
     - FR-TR-008
   predecessor_product_checkpoint: 102de35b9cff4b7303e0e2f17d2bbb146795fc3d
   starting_controller_checkpoint: 1c0e8fdd73901c59ce920ff73fa5eea962be70c0
+  checkpoint_1_product_checkpoint: 8e676acaebb08efbe8f322d7abeba894770f86c6
+  checkpoint_1_ordinary_ci: 31465224626
   audit: PASS
-  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
-  next_stage_after_pass: REPOSITORY_BFF_POLICY_BOUNDARY
-  product_code_changed: false
+  checkpoint_1: PASS
+  current_stage: REPOSITORY_BFF_POLICY_BOUNDARY
+  next_stage_after_pass: LIVE_COMPARISON_CONCLUSION_WORKSPACE
+  product_code_changed: true
   external_holds:
     - ERPNEXT_FORMAL_NCR_QUALITY_INSPECTION_AND_REPORT_PROJECTION
     - AUTOMATIC_GATE_AND_TOOLING_LIFECYCLE_MUTATION
@@ -1719,6 +1722,7 @@ p7_04:
   evidence:
     - implementation/evidence/phase-7/p7-03-validation.md
     - implementation/evidence/phase-7/p7-04-plan.md
+    - implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

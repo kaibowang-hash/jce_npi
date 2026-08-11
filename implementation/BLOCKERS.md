@@ -1,20 +1,19 @@
 # Blockers
 
-Updated: `2026-08-11T05:25:36Z`
+Updated: `2026-08-11T06:41:24Z`
 
 ## Active hard blockers
 
-None. P7-03 passes Level 2 at exact product checkpoint `102de35`. The bounded
-P7-04 audit is complete, and starting controller SHA `1c0e8fd` passes ordinary
-CI `31460976409`, including repository, frontend/E2E, secret and `103/103`
-fixed-Linux visual lanes. Checkpoint 1 is active; no user action or GitHub
-frontend login is required.
+None. P7-04 checkpoint 1 passes at exact product checkpoint `8e676ac` and
+ordinary CI `31465224626`, including repository, frontend/E2E, secret and
+`103/103` fixed-Linux visual lanes. Checkpoint 2 is active; no user action or
+GitHub frontend login is required.
 
 ## Active recovery
 
 None. The ordered delivery hold remains resolved. P7-04 is restricted to the
-frozen checkpoint 1 domain/contract/additive-metadata boundary under the
-machine-readable path guard.
+frozen checkpoint 2 repository/BFF/policy boundary under the machine-readable
+path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

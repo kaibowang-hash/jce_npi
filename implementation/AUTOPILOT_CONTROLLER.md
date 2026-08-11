@@ -2679,3 +2679,28 @@ repeat or rewrite it merely to restore context. See
   tests. No route, business row, lifecycle transition, UI, runtime fixture,
   ERP/customer signature, Gate/Tooling/Work Item mutation, readiness, release,
   external projection or production print is authorized.
+
+## 2026-08-11 P7-04 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product SHA `8e676acaebb08efbe8f322d7abeba894770f86c6`
+  passes ordinary PR CI `31465224626`: repository `93696644312` proves
+  `1,586` tracked Python tests; frontend `93696644266` proves `843/843` unit,
+  `371/371` non-visual E2E and `6,664` direct English/`zh`/`zh-TW` sources;
+  secret scan `93696644315` passes both boundaries; fixed-Linux visual job
+  `93696644330` retains `103/103`. Controlled runtime correctly skips.
+- Checkpoint 1 adds only pure deterministic exact-source comparison,
+  controlled-reference, published-policy/server-blocker, immutable conclusion/
+  decision/reopen and localized-neutral summary-input domains; closed OpenAPI/
+  ownership; four guarded append-only DocTypes; receipt values, direct
+  translations and focused tests. It opens no route, row, lifecycle execution,
+  UI, production policy, authority fixture, ERP adapter or external effect.
+- Exact Link-target and metadata guards prove all new Links resolve to
+  repository DocTypes, generic update/delete remains denied and the metadata
+  installs no business row. Evidence is
+  `implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md`.
+- Activate only checkpoint 2: Project-first review read and exact begin-
+  analysis/comparison/reference/conclusion/decision/reopen commands, fail-
+  closed published policy/authority, server blockers, actor-bound replay, one
+  transaction, append-only audit and an independently default-closed P7-04
+  switch. UI/runtime and all ERP/customer/Gate/Tooling/readiness/release/
+  projection/print authority remain inactive.

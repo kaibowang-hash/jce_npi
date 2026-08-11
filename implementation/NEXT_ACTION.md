@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-04`
+`IN_PROGRESS_CHECKPOINT_2 — P7-04`
 
-Recovery time: `2026-08-11T05:25:36Z`
+Recovery time: `2026-08-11T06:41:24Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -108,12 +108,19 @@ repository `93684251780`, frontend/E2E `93684251739`, secret scan
 P7-04 audit passes; its frozen plan is
 `implementation/evidence/phase-7/p7-04-plan.md`.
 
-Execute only checkpoint 1 enforced by `implementation/CURRENT_TASK.json`:
-pure exact multi-Round comparison, controlled-review-reference, published-
-policy, server-blocker, immutable conclusion/decision/reopen and one-page
-summary-input domains; closed OpenAPI/ownership; four guarded additive
-DocTypes; receipt values, direct English/`zh`/`zh-TW` translations and focused
-tests. Create no route, business row, lifecycle transition, UI or runtime
+P7-04 checkpoint 1 passes at exact product SHA `8e676ac`. Ordinary CI
+`31465224626` passes repository `93696644312` (`1,586` tracked Python),
+frontend `93696644266` (`843/843` unit, `371/371` E2E and `6,664` direct
+trilingual sources), secret scan `93696644315` and unchanged `103/103` fixed-
+Linux visuals in `93696644330`. Complete evidence is
+`implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md`.
+
+Execute only checkpoint 2 enforced by `implementation/CURRENT_TASK.json`:
+Project-first exact review read and begin-analysis/comparison/reference/
+conclusion/decision/reopen commands; fail-closed published policy and eligible
+authority; server-derived blockers; exact optimistic versions and hashes;
+actor-bound idempotency; one transaction; append-only audit; and an
+independently default-closed P7-04 switch. Create no UI or controlled runtime
 fixture in this checkpoint.
 
 Cycle/yield and formal ERP quality must remain explicitly unavailable unless
