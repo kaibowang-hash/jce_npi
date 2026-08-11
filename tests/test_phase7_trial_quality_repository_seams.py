@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUALITY_REPOSITORY = ROOT / "apps/npi_core/npi_core/trial/quality_repository.py"
 TOOLING_REPOSITORY = ROOT / "apps/npi_core/npi_core/tooling/engineering_controls_repository.py"
 BFF = ROOT / "apps/npi_core/npi_core/bff.py"
+QUALITY_DIAGNOSTICS = ROOT / "apps/npi_core/npi_core/trial/quality_diagnostics.py"
 
 
 class Phase7TrialQualityRepositorySeamTest(unittest.TestCase):
@@ -74,6 +75,21 @@ class Phase7TrialQualityRepositorySeamTest(unittest.TestCase):
             "not chain or chain[-1].global_id != verification.global_id",
         ):
             self.assertIn(condition, boundary)
+
+    def test_unexpected_type_diagnostics_are_bounded_and_response_neutral(self) -> None:
+        source = QUALITY_DIAGNOSTICS.read_text(encoding="utf-8")
+        self.assertIn("except TypeError as error:", source)
+        self.assertIn("exception_type=type(error).__name__", source)
+        self.assertIn("trace_id=trace_id", source)
+        self.assertIn("raise\n", source)
+        for forbidden in (
+            "str(error)",
+            "repr(error)",
+            "traceback",
+            "request_data",
+            "response_body",
+        ):
+            self.assertNotIn(forbidden, source)
 
 
 if __name__ == "__main__":

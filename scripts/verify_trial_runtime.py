@@ -157,10 +157,11 @@ _FIELD_PATH = re.compile(
 )
 _TRACE_ID = re.compile(r"^trace-[a-f0-9]{32}$")
 _SAFE_UNEXPECTED_DIAGNOSTIC = re.compile(
-    rb'\{"code":"UNEXPECTED_BFF_EXCEPTION","exceptionType":"'
+    rb'\{"code":"(?P<code>[A-Z][A-Z0-9_]{1,127})","exceptionType":"'
     rb'(?P<exception>[A-Za-z][A-Za-z0-9_]{0,127})","traceId":"'
     rb'(?P<trace>trace-[a-f0-9]{32})"\}'
 )
+_SAFE_QUALITY_STAGE_PREFIX = b"P703_QUALITY_"
 _DIAGNOSTIC_TAIL_BYTES = 256 * 1024
 
 
@@ -382,14 +383,17 @@ def sanitized_trial_failure(result: HttpResult) -> str:
                 paths.append(path)
     if paths:
         details.append(f"field_paths={','.join(paths)}")
-    exception_type = _safe_unexpected_exception_type(result)
-    if exception_type is not None:
+    diagnostic = _safe_unexpected_diagnostic(result)
+    if diagnostic is not None:
+        diagnostic_code, exception_type = diagnostic
+        if diagnostic_code.startswith("P703_QUALITY_"):
+            details.append(f"server_stage={diagnostic_code}")
         details.append(f"exception_type={exception_type}")
     return f" [{'; '.join(details)}]" if details else ""
 
 
-def _safe_unexpected_exception_type(result: HttpResult) -> str | None:
-    """Read only the exception type from this request's pre-sanitized BFF log."""
+def _safe_unexpected_diagnostic(result: HttpResult) -> tuple[str, str] | None:
+    """Read only an allowlisted stage and type from this request's safe BFF log."""
 
     if (
         result.status != 500
@@ -407,9 +411,25 @@ def _safe_unexpected_exception_type(result: HttpResult) -> str | None:
     except OSError:
         return None
     encoded_trace = result.trace_id.encode("ascii")
-    for match in reversed(tuple(_SAFE_UNEXPECTED_DIAGNOSTIC.finditer(content))):
-        if match.group("trace") == encoded_trace:
-            return match.group("exception").decode("ascii")
+    matches = tuple(_SAFE_UNEXPECTED_DIAGNOSTIC.finditer(content))
+    for match in matches:
+        if (
+            match.group("trace") == encoded_trace
+            and match.group("code").startswith(_SAFE_QUALITY_STAGE_PREFIX)
+        ):
+            return (
+                match.group("code").decode("ascii"),
+                match.group("exception").decode("ascii"),
+            )
+    for match in reversed(matches):
+        if (
+            match.group("trace") == encoded_trace
+            and match.group("code") == b"UNEXPECTED_BFF_EXCEPTION"
+        ):
+            return (
+                "UNEXPECTED_BFF_EXCEPTION",
+                match.group("exception").decode("ascii"),
+            )
     return None
 
 

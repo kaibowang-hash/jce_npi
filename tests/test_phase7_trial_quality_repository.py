@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 import types
 import unittest
+from datetime import UTC, date, datetime
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -132,6 +134,34 @@ class Phase7TrialQualityRepositoryTest(unittest.TestCase):
         rows = FrappeTrialQualityRepository._pareto((older, current))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["count"], 3)
+
+    def test_exact_member_normalizes_frappe_datetime_date_without_type_error(self) -> None:
+        member = types.SimpleNamespace(
+            global_id=UUID(int=32),
+            tenant_id="tenant-a",
+            project_global_id=PROJECT_ID,
+            optimistic_version=1,
+            effective_from=datetime(2026, 8, 10, tzinfo=UTC),
+            effective_to=None,
+            user_id="responsible@example.invalid",
+        )
+        project = types.SimpleNamespace(
+            global_id=PROJECT_ID,
+            tenant_id="tenant-a",
+        )
+        supplied = {"global_id": member.global_id, "optimistic_version": 1}
+        with patch(
+            "npi_core.trial.quality_repository._optional_doc",
+            return_value=member,
+        ):
+            exact = FrappeTrialQualityRepository._exact_member(
+                types.SimpleNamespace(),
+                project,
+                supplied,
+            )
+        self.assertEqual(exact.global_id, member.global_id)
+        self.assertEqual(exact.user_id, member.user_id)
+        self.assertEqual(member.effective_from.date(), date(2026, 8, 10))
 
     def test_create_defect_requires_complete_new_or_p6_predecessor_shape(self) -> None:
         base = {

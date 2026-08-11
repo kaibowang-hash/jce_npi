@@ -90,6 +90,9 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             (bench / "logs").mkdir()
             (bench / "logs" / "npi_core.log").write_text(
                 "request body Synthetic secret must not be exposed\n"
+                '{"code":"P703_QUALITY_MEMBER_RESOLVE",'
+                '"exceptionType":"TypeError",'
+                f'"traceId":"{trace_id}"}}\n'
                 '{"code":"UNEXPECTED_BFF_EXCEPTION",'
                 '"exceptionType":"ValidationError",'
                 f'"traceId":"{trace_id}"}}\n',
@@ -114,7 +117,8 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             detail,
             (
                 " [problem_code=INTERNAL_SERVER_ERROR; "
-                "exception_type=ValidationError]"
+                "server_stage=P703_QUALITY_MEMBER_RESOLVE; "
+                "exception_type=TypeError]"
             ),
         )
         self.assertNotIn("Synthetic secret", detail)

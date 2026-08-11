@@ -18,6 +18,7 @@ from npi_core.documents.frappe_validation import (
 )
 from npi_core.tooling.engineering_controls_domain import defect_revision_from_snapshot
 from npi_core.trial.frappe_validation import trial_domain_value
+from npi_core.trial.quality_diagnostics import quality_type_error_stage
 from npi_core.trial.quality_domain import (
     TrialDefectPredecessorKind,
     cavity_result_from_snapshot,
@@ -195,7 +196,11 @@ def validate_trial_defect_document(document: Any) -> None:
         document.trial_defect_snapshot,
         _("Trial Defect Revision Snapshot"),
     )
-    value = trial_domain_value(lambda: trial_defect_from_snapshot(supplied))
+    with quality_type_error_stage(
+        "P703_QUALITY_DEFECT_SNAPSHOT_PARSE",
+        str(document.trace_id),
+    ):
+        value = trial_domain_value(lambda: trial_defect_from_snapshot(supplied))
     expected = (
         str(value.global_id), str(value.defect_global_id), value.tenant_id,
         str(value.project_global_id), str(value.tooling_master_global_id),
@@ -258,96 +263,132 @@ def validate_trial_defect_document(document: Any) -> None:
             _("Trial defect external effects do not match the exact snapshot."),
             frappe.ValidationError,
         )
-    _require_running_round(
-        tenant_id=value.tenant_id,
-        project_global_id=str(value.project_global_id),
-        round_global_id=str(value.trial_round_global_id),
-        optimistic_version=value.trial_round_optimistic_version,
-        snapshot_hash=value.trial_round_snapshot_hash,
-    )
-    _require_trial_context(value)
-    _require_member(value.responsible_member, value)
-    for item in value.actions:
-        _require_member(item.responsible_member, value)
-        _require_round_reference(
-            value.tenant_id,
-            str(value.project_global_id),
-            str(item.target_round_global_id),
-            item.target_round_optimistic_version,
-            item.target_round_snapshot_hash,
+    with quality_type_error_stage(
+        "P703_QUALITY_DEFECT_RUNNING_ROUND",
+        value.trace_id,
+    ):
+        _require_running_round(
+            tenant_id=value.tenant_id,
+            project_global_id=str(value.project_global_id),
+            round_global_id=str(value.trial_round_global_id),
+            optimistic_version=value.trial_round_optimistic_version,
+            snapshot_hash=value.trial_round_snapshot_hash,
         )
-        if item.verification_revision_global_id is not None:
-            require_exact_parent(
-                "NPI Trial Defect Verification Revision",
-                str(item.verification_revision_global_id),
+    with quality_type_error_stage("P703_QUALITY_DEFECT_CONTEXT", value.trace_id):
+        _require_trial_context(value)
+    with quality_type_error_stage(
+        "P703_QUALITY_DEFECT_RESPONSIBILITY",
+        value.trace_id,
+    ):
+        _require_member(value.responsible_member, value)
+        for item in value.actions:
+            _require_member(item.responsible_member, value)
+            _require_round_reference(
+                value.tenant_id,
+                str(value.project_global_id),
+                str(item.target_round_global_id),
+                item.target_round_optimistic_version,
+                item.target_round_snapshot_hash,
+            )
+            if item.verification_revision_global_id is not None:
+                require_exact_parent(
+                    "NPI Trial Defect Verification Revision",
+                    str(item.verification_revision_global_id),
+                    {
+                        "global_id": str(item.verification_revision_global_id),
+                        "tenant_id": value.tenant_id,
+                        "project_global_id": str(value.project_global_id),
+                        "defect_global_id": str(value.defect_global_id),
+                        "action_global_id": str(item.global_id),
+                        "result": "pass",
+                        "snapshot_hash": item.verification_revision_snapshot_hash,
+                    },
+                    _("The exact successful defect verification is unavailable."),
+                )
+    with quality_type_error_stage("P703_QUALITY_DEFECT_EVIDENCE", value.trace_id):
+        _require_quality_evidence(value, require_measurement_report=False)
+    if value.predecessor_global_id is not None:
+        with quality_type_error_stage(
+            "P703_QUALITY_DEFECT_PREDECESSOR",
+            value.trace_id,
+        ):
+            predecessor_doctype = (
+                "NPI Tooling Defect Revision"
+                if value.predecessor_kind
+                is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
+                else "NPI Trial Defect Revision"
+            )
+            snapshot_field = (
+                "defect_snapshot"
+                if value.predecessor_kind
+                is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
+                else "trial_defect_snapshot"
+            )
+            predecessor = require_exact_parent(
+                predecessor_doctype,
+                str(value.predecessor_global_id),
                 {
-                    "global_id": str(item.verification_revision_global_id),
+                    "global_id": str(value.predecessor_global_id),
+                    "defect_global_id": str(value.defect_global_id),
                     "tenant_id": value.tenant_id,
                     "project_global_id": str(value.project_global_id),
-                    "defect_global_id": str(value.defect_global_id),
-                    "action_global_id": str(item.global_id),
-                    "result": "pass",
-                    "snapshot_hash": item.verification_revision_snapshot_hash,
+                    "tooling_master_global_id": str(value.tooling_master_global_id),
+                    "defect_version": value.defect_version - 1,
+                    "snapshot_hash": value.predecessor_snapshot_hash,
                 },
-                _("The exact successful defect verification is unavailable."),
+                _("The exact predecessor NPI defect revision is unavailable."),
+                extra_fields=(snapshot_field,),
             )
-    _require_quality_evidence(value, require_measurement_report=False)
-    if value.predecessor_global_id is not None:
-        predecessor_doctype = (
-            "NPI Tooling Defect Revision"
-            if value.predecessor_kind is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
-            else "NPI Trial Defect Revision"
-        )
-        snapshot_field = (
-            "defect_snapshot"
-            if value.predecessor_kind is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
-            else "trial_defect_snapshot"
-        )
-        predecessor = require_exact_parent(
-            predecessor_doctype,
-            str(value.predecessor_global_id),
-            {
-                "global_id": str(value.predecessor_global_id),
-                "defect_global_id": str(value.defect_global_id),
-                "tenant_id": value.tenant_id,
-                "project_global_id": str(value.project_global_id),
-                "tooling_master_global_id": str(value.tooling_master_global_id),
-                "defect_version": value.defect_version - 1,
-                "snapshot_hash": value.predecessor_snapshot_hash,
-            },
-            _("The exact predecessor NPI defect revision is unavailable."),
-            extra_fields=(snapshot_field,),
-        )
-        parser = (
-            defect_revision_from_snapshot
-            if value.predecessor_kind is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
-            else trial_defect_from_snapshot
-        )
-        current = trial_domain_value(
-            lambda: parser(
-                json_object(predecessor[snapshot_field], _("NPI Defect Revision Snapshot"))
+            parser = (
+                defect_revision_from_snapshot
+                if value.predecessor_kind
+                is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
+                else trial_defect_from_snapshot
             )
+            current = trial_domain_value(
+                lambda: parser(
+                    json_object(
+                        predecessor[snapshot_field],
+                        _("NPI Defect Revision Snapshot"),
+                    )
+                )
+            )
+            trial_domain_value(
+                lambda: validate_trial_defect_successor(current, value)
+            )
+    with quality_type_error_stage("P703_QUALITY_DEFECT_NORMALIZE", value.trace_id):
+        document.tooling_master = str(value.tooling_master_global_id)
+        document.trial_round = str(value.trial_round_global_id)
+        document.input_lock_revision = str(value.input_lock_revision_global_id)
+        document.tooling_revision = str(value.tooling_revision_global_id)
+        document.tooling_set = str(value.tooling_set_global_id)
+        document.sample_batch_revision = (
+            str(value.sample_batch_revision_global_id)
+            if value.sample_batch_revision_global_id
+            else None
         )
-        trial_domain_value(lambda: validate_trial_defect_successor(current, value))
-    document.tooling_master = str(value.tooling_master_global_id)
-    document.trial_round = str(value.trial_round_global_id)
-    document.input_lock_revision = str(value.input_lock_revision_global_id)
-    document.tooling_revision = str(value.tooling_revision_global_id)
-    document.tooling_set = str(value.tooling_set_global_id)
-    document.sample_batch_revision = (
-        str(value.sample_batch_revision_global_id)
-        if value.sample_batch_revision_global_id else None
-    )
-    document.responsible_member = (
-        str(value.responsible_member.global_id) if value.responsible_member else None
-    )
-    document.version_key_hash = value.version_key_hash
-    document.action_snapshot = canonical_json([item.snapshot_payload() for item in value.actions])
-    document.evidence_snapshot = canonical_json([item.snapshot_payload() for item in value.evidence])
-    document.external_effect_snapshot = canonical_json(supplied["externalEffects"])
-    document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
-    document.trial_defect_snapshot = canonical_json(value.snapshot_payload())
-    document.snapshot_hash = lowercase_sha256(value.snapshot_hash, _("Snapshot Hash"))
+        document.responsible_member = (
+            str(value.responsible_member.global_id)
+            if value.responsible_member
+            else None
+        )
+        document.version_key_hash = value.version_key_hash
+        document.action_snapshot = canonical_json(
+            [item.snapshot_payload() for item in value.actions]
+        )
+        document.evidence_snapshot = canonical_json(
+            [item.snapshot_payload() for item in value.evidence]
+        )
+        document.external_effect_snapshot = canonical_json(supplied["externalEffects"])
+        document.created_at = frappe_utc_datetime_text(
+            value.created_at,
+            _("Created At"),
+        )
+        document.trial_defect_snapshot = canonical_json(value.snapshot_payload())
+        document.snapshot_hash = lowercase_sha256(
+            value.snapshot_hash,
+            _("Snapshot Hash"),
+        )
 
 
 def normalize_verification_identity(document: Any) -> None:

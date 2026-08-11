@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -28,6 +28,7 @@ from npi_core.trial.frappe_repository import (
     _round_response,
 )
 from npi_core.trial.frappe_validation import trial_command_write
+from npi_core.trial.quality_diagnostics import quality_type_error_stage
 from npi_core.trial.quality_domain import (
     TrialCavityMeasurement,
     TrialCavityResultRevision,
@@ -51,6 +52,19 @@ from npi_core.trial.quality_domain import (
 _MAX_CAVITY_RESULTS = 5_000
 _MAX_DEFECTS = 5_000
 _MAX_VERIFICATIONS = 5_000
+
+
+def _member_effective_date(value: object) -> date | None:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value).date()
+        except ValueError:
+            return None
+    return None
 
 
 class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
@@ -529,17 +543,19 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
             defect_id,
             predecessor,
         )
-        exact_member = (
-            None
-            if values["responsible_member"] is None
-            else self._exact_member(project, values["responsible_member"])
-        )
-        actions = self._exact_actions(
-            project,
-            trial_round.tooling_master_global_id,
-            exact_predecessor,
-            values["actions"],
-        )
+        with quality_type_error_stage("P703_QUALITY_MEMBER_RESOLVE", self.trace_id):
+            exact_member = (
+                None
+                if values["responsible_member"] is None
+                else self._exact_member(project, values["responsible_member"])
+            )
+        with quality_type_error_stage("P703_QUALITY_ACTION_RESOLVE", self.trace_id):
+            actions = self._exact_actions(
+                project,
+                trial_round.tooling_master_global_id,
+                exact_predecessor,
+                values["actions"],
+            )
         evidence = self._merged_defect_evidence(
             project,
             round_id,
@@ -548,58 +564,71 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
             sample.global_id if sample else None,
         )
         now = datetime.now(UTC)
-        value = TrialDefectRevision(
-            global_id=uuid4(),
-            defect_global_id=stable_id,
-            tenant_id=str(project.tenant_id),
-            project_global_id=project_id,
-            tooling_master_global_id=trial_round.tooling_master_global_id,
-            trial_round_global_id=round_id,
-            trial_round_optimistic_version=trial_round.optimistic_version,
-            trial_round_snapshot_hash=trial_round.snapshot_hash,
-            input_lock_revision_global_id=input_lock.global_id,
-            input_lock_revision_snapshot_hash=input_lock.snapshot_hash,
-            tooling_revision_global_id=tooling_revision.global_id,
-            tooling_revision_snapshot_hash=tooling_revision.snapshot_hash,
-            tooling_set_global_id=tooling_set.global_id,
-            tooling_set_snapshot_hash=tooling_set.snapshot_hash,
-            cavity_global_id=values["cavity_id"],
-            sample_batch_revision_global_id=sample.global_id if sample else None,
-            sample_batch_revision_snapshot_hash=sample.snapshot_hash if sample else None,
-            defect_version=1 if exact_predecessor is None else exact_predecessor.defect_version + 1,
-            predecessor_kind=(
-                None
-                if exact_predecessor is None
-                else (
-                    TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
-                    if isinstance(exact_predecessor, ToolingDefectRevision)
-                    else TrialDefectPredecessorKind.TRIAL_DEFECT_REVISION
-                )
-            ),
-            predecessor_global_id=exact_predecessor.global_id if exact_predecessor else None,
-            predecessor_snapshot_hash=exact_predecessor.snapshot_hash if exact_predecessor else None,
-            business_code=values["business_code"],
-            title=values["title"],
-            description=values["description"],
-            category_key=values["category_key"],
-            location=values["location"],
-            severity=values["severity"],
-            blocking=values["blocking"],
-            state=values["state"],
-            root_cause_state=values["root_cause_state"],
-            root_cause=values["root_cause"],
-            responsible_member=exact_member,
-            occurrence_count=values["occurrence_count"],
-            actions=actions,
-            evidence=evidence,
-            reason=values["reason"],
-            created_by_user_id=self.actor,
-            created_at=now,
-            request_id=UUID(self.request_id),
-            trace_id=self.trace_id,
-        )
+        with quality_type_error_stage("P703_QUALITY_DEFECT_BUILD", self.trace_id):
+            value = TrialDefectRevision(
+                global_id=uuid4(),
+                defect_global_id=stable_id,
+                tenant_id=str(project.tenant_id),
+                project_global_id=project_id,
+                tooling_master_global_id=trial_round.tooling_master_global_id,
+                trial_round_global_id=round_id,
+                trial_round_optimistic_version=trial_round.optimistic_version,
+                trial_round_snapshot_hash=trial_round.snapshot_hash,
+                input_lock_revision_global_id=input_lock.global_id,
+                input_lock_revision_snapshot_hash=input_lock.snapshot_hash,
+                tooling_revision_global_id=tooling_revision.global_id,
+                tooling_revision_snapshot_hash=tooling_revision.snapshot_hash,
+                tooling_set_global_id=tooling_set.global_id,
+                tooling_set_snapshot_hash=tooling_set.snapshot_hash,
+                cavity_global_id=values["cavity_id"],
+                sample_batch_revision_global_id=sample.global_id if sample else None,
+                sample_batch_revision_snapshot_hash=sample.snapshot_hash if sample else None,
+                defect_version=(
+                    1
+                    if exact_predecessor is None
+                    else exact_predecessor.defect_version + 1
+                ),
+                predecessor_kind=(
+                    None
+                    if exact_predecessor is None
+                    else (
+                        TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
+                        if isinstance(exact_predecessor, ToolingDefectRevision)
+                        else TrialDefectPredecessorKind.TRIAL_DEFECT_REVISION
+                    )
+                ),
+                predecessor_global_id=(
+                    exact_predecessor.global_id if exact_predecessor else None
+                ),
+                predecessor_snapshot_hash=(
+                    exact_predecessor.snapshot_hash if exact_predecessor else None
+                ),
+                business_code=values["business_code"],
+                title=values["title"],
+                description=values["description"],
+                category_key=values["category_key"],
+                location=values["location"],
+                severity=values["severity"],
+                blocking=values["blocking"],
+                state=values["state"],
+                root_cause_state=values["root_cause_state"],
+                root_cause=values["root_cause"],
+                responsible_member=exact_member,
+                occurrence_count=values["occurrence_count"],
+                actions=actions,
+                evidence=evidence,
+                reason=values["reason"],
+                created_by_user_id=self.actor,
+                created_at=now,
+                request_id=UUID(self.request_id),
+                trace_id=self.trace_id,
+            )
         if exact_predecessor is not None:
-            validate_trial_defect_successor(exact_predecessor, value)
+            with quality_type_error_stage(
+                "P703_QUALITY_DEFECT_SUCCESSOR_VALIDATE",
+                self.trace_id,
+            ):
+                validate_trial_defect_successor(exact_predecessor, value)
         return self._persist_quality_command(
             project,
             trial_round,
@@ -636,43 +665,51 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
         now,
     ) -> TrialExecutionCommandOutcome:
         with trial_command_write():
-            receipt = self._insert_receipt(
-                project,
-                operation=operation,
-                idempotency_key_hash=idempotency_key_hash,
-                payload_hash=payload_hash,
-                created_at=now,
-            )
+            with quality_type_error_stage(
+                "P703_QUALITY_RECEIPT_INSERT",
+                self.trace_id,
+            ):
+                receipt = self._insert_receipt(
+                    project,
+                    operation=operation,
+                    idempotency_key_hash=idempotency_key_hash,
+                    payload_hash=payload_hash,
+                    created_at=now,
+                )
             if isinstance(receipt, dict):
                 return TrialExecutionCommandOutcome(receipt, replayed=True)
-            insert(target)
-            self._append_audit(
-                operation=operation,
-                global_id=target.global_id,
-                object_version=(
-                    target.result_version
-                    if isinstance(target, TrialCavityResultRevision)
-                    else (
-                        target.defect_version
-                        if isinstance(target, TrialDefectRevision)
-                        else target.attempt_sequence
-                    )
-                ),
-                summary={
-                    "projectId": str(project.global_id),
-                    "trialRoundGlobalId": str(trial_round.global_id),
-                    "snapshotHash": target.snapshot_hash,
-                    "requestId": self.request_id,
-                },
-            )
-            response = self._quality_workspace_for(project, trial_round)
-            self._seal_receipt(
-                receipt,
-                target_object_type=target_type,
-                target_global_id=target.global_id,
-                response=response,
-                updated_at=now,
-            )
+            with quality_type_error_stage("P703_QUALITY_TARGET_INSERT", self.trace_id):
+                insert(target)
+            with quality_type_error_stage("P703_QUALITY_AUDIT_APPEND", self.trace_id):
+                self._append_audit(
+                    operation=operation,
+                    global_id=target.global_id,
+                    object_version=(
+                        target.result_version
+                        if isinstance(target, TrialCavityResultRevision)
+                        else (
+                            target.defect_version
+                            if isinstance(target, TrialDefectRevision)
+                            else target.attempt_sequence
+                        )
+                    ),
+                    summary={
+                        "projectId": str(project.global_id),
+                        "trialRoundGlobalId": str(trial_round.global_id),
+                        "snapshotHash": target.snapshot_hash,
+                        "requestId": self.request_id,
+                    },
+                )
+            with quality_type_error_stage("P703_QUALITY_RESPONSE_BUILD", self.trace_id):
+                response = self._quality_workspace_for(project, trial_round)
+            with quality_type_error_stage("P703_QUALITY_RECEIPT_SEAL", self.trace_id):
+                self._seal_receipt(
+                    receipt,
+                    target_object_type=target_type,
+                    target_global_id=target.global_id,
+                    response=response,
+                    updated_at=now,
+                )
         return TrialExecutionCommandOutcome(response)
 
     def _exact_running_context(
@@ -798,9 +835,9 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
         if member is None:
             raise TrialQualityReferenceUnavailable()
         today = datetime.now(UTC).date()
-        effective_from = getattr(member, "effective_from", None)
-        if isinstance(effective_from, str):
-            effective_from = datetime.fromisoformat(effective_from).date()
+        effective_from = _member_effective_date(
+            getattr(member, "effective_from", None)
+        )
         if any(
             (
                 str(member.global_id) != str(supplied["global_id"]),
