@@ -8,6 +8,7 @@ import re
 import subprocess
 import urllib.error
 import urllib.request
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -41,6 +42,9 @@ TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = "Administrator"
 RESPONSIBLE_MEMBER_ID = document_runtime.BASELINE_MEMBER_ID
 VERIFIER_MEMBER_ID = document_runtime.fixture_id("p7-03-verifier-member")
+REVIEW_MEMBER_ID = document_runtime.fixture_id("p7-04-review-member")
+REVIEW_POLICY_ID = document_runtime.fixture_id("p7-04-review-policy")
+REVIEW_POLICY_REVISION_ID = document_runtime.fixture_id("p7-04-review-policy-r1")
 VERIFIER_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-verifier@example.invalid"
 UNRELATED_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000701"
@@ -80,6 +84,21 @@ CONTINUE_TOOLING_DEFECT_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-tooling"
 CROSS_ROUND_DEFECT_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-cross-round"
 VERIFY_FAIL_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-verify-fail"
 VERIFY_PASS_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-verify-pass"
+BEGIN_ANALYSIS_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-begin-analysis"
+COMPARISON_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-comparison"
+STALE_COMPARISON_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-stale-comparison"
+INTERNAL_REFERENCE_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-internal-reference"
+CONTROLLED_REFERENCE_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-controlled-reference"
+CONTROLLED_REFERENCE_REVISE_KEY = (
+    f"p7-04-runtime-{FIXTURE_RUN_ID}-controlled-reference-revise"
+)
+STALE_REFERENCE_REVISE_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-stale-reference"
+BLOCKED_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-blocked-conclusion"
+SUBMIT_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-submit-conclusion"
+APPROVE_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-approve-conclusion"
+REOPEN_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-reopen-conclusion"
+RESUBMIT_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-resubmit-conclusion"
+REJECT_CONCLUSION_KEY = f"p7-04-runtime-{FIXTURE_RUN_ID}-reject-conclusion"
 EVIDENCE_FILE_NAME = "p7-02-controlled-parameters.csv"
 EVIDENCE_CONTENT = (
     b"definitionKey,value,unit\n"
@@ -99,6 +118,10 @@ TRIAL_DOCTYPES = (
     "NPI Trial Cavity Result Revision",
     "NPI Trial Defect Revision",
     "NPI Trial Defect Verification Revision",
+    "NPI Trial Conclusion Policy Version",
+    "NPI Trial Round Comparison Snapshot",
+    "NPI Trial Review Reference Revision",
+    "NPI Trial Conclusion Revision",
 )
 TRIAL_PROTECTED_FIELDS = {
     "NPI Trial Plan Revision": "snapshot_hash",
@@ -113,6 +136,10 @@ TRIAL_PROTECTED_FIELDS = {
     "NPI Trial Cavity Result Revision": "snapshot_hash",
     "NPI Trial Defect Revision": "snapshot_hash",
     "NPI Trial Defect Verification Revision": "snapshot_hash",
+    "NPI Trial Conclusion Policy Version": "snapshot_hash",
+    "NPI Trial Round Comparison Snapshot": "snapshot_hash",
+    "NPI Trial Review Reference Revision": "snapshot_hash",
+    "NPI Trial Conclusion Revision": "snapshot_hash",
 }
 EXPECTED_CAPABILITIES = [
     {
@@ -151,6 +178,14 @@ EXPECTED_QUALITY_EXTERNAL_EFFECTS = {
     "gate": "unavailable",
     "toolingLifecycle": "unavailable",
 }
+EXPECTED_REVIEW_EXTERNAL_EFFECTS = {
+    "formalErpQuality": "unavailable",
+    "customerSignature": "unavailable",
+    "gate": "unavailable",
+    "npiReadiness": "unavailable",
+    "toolingLifecycle": "unavailable",
+    "nextWork": "proposal_only",
+}
 _PROBLEM_CODE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
 _FIELD_PATH = re.compile(
     r"^[A-Za-z][A-Za-z0-9]*(?:(?:\.[A-Za-z][A-Za-z0-9]*)|(?:\[[0-9]{1,3}\]))*$"
@@ -178,6 +213,10 @@ def execution_path(project_id: str, round_id: str, suffix: str = "/execution") -
 
 
 def quality_path(project_id: str, round_id: str, suffix: str = "/quality") -> str:
+    return f"/api/npi/v1/projects/{project_id}/trial-rounds/{round_id}{suffix}"
+
+
+def review_path(project_id: str, round_id: str, suffix: str = "/review") -> str:
     return f"/api/npi/v1/projects/{project_id}/trial-rounds/{round_id}{suffix}"
 
 
@@ -686,6 +725,71 @@ def assert_quality_workspace(
     return result.body
 
 
+def assert_review_workspace(
+    result: HttpResult,
+    project_id: str,
+    round_id: str,
+    *,
+    state: str,
+    round_version: int,
+    policies: int,
+    comparisons: int,
+    references: int,
+    conclusions: int,
+) -> dict[str, Any]:
+    require(result.status in {200, 201}, "P7-04 review workspace failed")
+    require(
+        set(result.body)
+        == {
+            "projectGlobalId",
+            "trialRound",
+            "policyVersions",
+            "comparisonSnapshots",
+            "reviewReferenceRevisions",
+            "conclusionRevisions",
+            "permissions",
+            "externalEffects",
+        },
+        "P7-04 review workspace contract drifted",
+    )
+    trial_round = result.body.get("trialRound", {})
+    require(
+        result.body.get("projectGlobalId") == project_id
+        and trial_round.get("globalId") == round_id
+        and trial_round.get("currentState") == state
+        and trial_round.get("optimisticVersion") == round_version,
+        "P7-04 exact review Round identity drifted",
+    )
+    require(
+        len(result.body.get("policyVersions", [])) == policies
+        and len(result.body.get("comparisonSnapshots", [])) == comparisons
+        and len(result.body.get("reviewReferenceRevisions", [])) == references
+        and len(result.body.get("conclusionRevisions", [])) == conclusions,
+        "P7-04 immutable review cardinality drifted",
+    )
+    for collection in (
+        "policyVersions",
+        "comparisonSnapshots",
+        "reviewReferenceRevisions",
+        "conclusionRevisions",
+    ):
+        for value in result.body[collection]:
+            require_hash(value.get("snapshotHash"), f"P7-04 {collection}")
+    require(
+        result.body.get("externalEffects") == EXPECTED_REVIEW_EXTERNAL_EFFECTS,
+        "P7-04 review projection claimed unavailable external authority",
+    )
+    serialized = json.dumps(result.body, sort_keys=True)
+    require(
+        "customerSignature" in serialized
+        and "proposal_only" in serialized
+        and "fileUrl" not in serialized
+        and "/private/files/" not in serialized,
+        "P7-04 review workspace leaked a private path or external success",
+    )
+    return result.body
+
+
 def measurement_payload(*, corrected: bool, observed_at: str) -> list[dict[str, object]]:
     return [
         {
@@ -1154,6 +1258,13 @@ def persisted_counts(administrator, base_url: str, project_id: str) -> dict[str,
         "trial_defect.create",
         "trial_defect.revise",
         "trial_defect.verify",
+        "trial_round.begin_analysis",
+        "trial_comparison.create",
+        "trial_review_reference.create",
+        "trial_review_reference.revise",
+        "trial_conclusion.submit",
+        "trial_conclusion.decide",
+        "trial_conclusion.reopen",
     ):
         counts[f"audit:{operation}"] = len(
             tooling_runtime.rows(
@@ -1233,6 +1344,7 @@ def verify_idor(
     project_id: str,
     plan_id: str,
     round_id: str,
+    review_round_id: str,
 ) -> None:
     document_runtime.create_internal_fixture_user(
         administrator,
@@ -1326,6 +1438,31 @@ def verify_idor(
             },
             "P7-03 unauthorized and absent quality identities are distinguishable",
         )
+        denied_review = trial_request(
+            unrelated,
+            base_url,
+            review_path(project_id, review_round_id),
+            query_key="unrelated-review",
+        )
+        absent_review = trial_request(
+            unrelated,
+            base_url,
+            review_path(ABSENT_PROJECT_ID, review_round_id),
+            query_key="absent-review",
+        )
+        validate_problem(denied_review, 404, "TRIAL_REVIEW_UNAVAILABLE")
+        validate_problem(absent_review, 404, "TRIAL_REVIEW_UNAVAILABLE")
+        require(
+            {
+                key: denied_review.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            }
+            == {
+                key: absent_review.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            },
+            "P7-04 unauthorized and absent review identities are distinguishable",
+        )
     finally:
         delete_disposable_user(
             administrator,
@@ -1383,6 +1520,20 @@ def verify_idor(
     )
     validate_problem(cross_project_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
     validate_problem(absent_authorized_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
+    cross_project_review = trial_request(
+        administrator,
+        base_url,
+        review_path(second_project_id(administrator, base_url), review_round_id),
+        query_key="cross-project-review",
+    )
+    absent_authorized_review = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, ABSENT_PLAN_ID),
+        query_key="absent-authorized-review",
+    )
+    validate_problem(cross_project_review, 404, "TRIAL_REVIEW_UNAVAILABLE")
+    validate_problem(absent_authorized_review, 404, "TRIAL_REVIEW_UNAVAILABLE")
 
 
 def run_execution_fresh(
@@ -2768,6 +2919,534 @@ def run_quality_replay(
     )
 
 
+def review_policy_context(
+    policy: dict[str, Any],
+    trial_round: dict[str, Any],
+) -> dict[str, object]:
+    return {
+        "policyRevisionGlobalId": policy["globalId"],
+        "expectedPolicyRevisionSnapshotHash": policy["snapshotHash"],
+        "expectedRoundOptimisticVersion": trial_round["optimisticVersion"],
+        "expectedRoundSnapshotHash": trial_round["snapshotHash"],
+    }
+
+
+def review_reference_payload(
+    context: dict[str, Any],
+    policy: dict[str, Any],
+    trial_round: dict[str, Any],
+    comparison: dict[str, Any],
+    *,
+    kind: str,
+    predecessor: dict[str, Any] | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        **review_policy_context(policy, trial_round),
+        "comparisonSnapshotGlobalId": comparison["globalId"],
+        "expectedComparisonSnapshotHash": comparison["snapshotHash"],
+        "referenceKind": kind,
+        "partRevisionGlobalId": context["partRevisionGlobalId"],
+        "expectedPartRevisionSnapshotHash": context["partRevisionSnapshotHash"],
+        "toolingMasterGlobalId": context["toolingMasterGlobalId"],
+        "toolingRevisionGlobalId": context["toolingRevisionGlobalId"],
+        "expectedToolingRevisionSnapshotHash": context[
+            "toolingRevisionSnapshotHash"
+        ],
+        "toolingSetGlobalId": context["toolingSetGlobalId"],
+        "expectedToolingSetSnapshotHash": context["toolingSetSnapshotHash"],
+        "fileRevisionGlobalId": context["fileRevisionGlobalId"],
+        "expectedFileRevisionSnapshotHash": context["fileRevisionSnapshotHash"],
+        "effectiveFrom": "2027-02-10",
+        "effectiveTo": None,
+        "reason": (
+            "Append the exact controlled quality report reference successor."
+            if predecessor
+            else f"Create the exact {kind} review reference."
+        ),
+    }
+    if predecessor:
+        payload.update(
+            {
+                "referenceGlobalId": predecessor["referenceGlobalId"],
+                "expectedReferenceRevisionGlobalId": predecessor["globalId"],
+                "expectedReferenceRevisionSnapshotHash": predecessor["snapshotHash"],
+                "expectedReferenceVersion": predecessor["referenceVersion"],
+                "effectiveTo": "2027-12-31",
+            }
+        )
+    return payload
+
+
+def conclusion_payload(
+    policy: dict[str, Any],
+    trial_round: dict[str, Any],
+    comparison: dict[str, Any],
+    references: list[dict[str, Any]],
+    *,
+    predecessor: dict[str, Any] | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        **review_policy_context(policy, trial_round),
+        "comparisonSnapshotGlobalId": comparison["globalId"],
+        "expectedComparisonSnapshotHash": comparison["snapshotHash"],
+        "reviewReferences": [
+            {"globalId": value["globalId"], "snapshotHash": value["snapshotHash"]}
+            for value in references
+        ],
+        "conclusionCode": "conditional_pass",
+        "proposedNextWork": ["Verify the controlled process-tuning proposal."],
+        "proposedGateEffect": "Proposal only; no Gate mutation is authorized.",
+        "proposedNpiEffect": "Proposal only; no NPI readiness mutation is authorized.",
+        "reason": (
+            "Resubmit the immutable controlled Trial conclusion successor."
+            if predecessor
+            else "Submit the immutable controlled Trial conclusion."
+        ),
+    }
+    if predecessor:
+        payload.update(
+            {
+                "conclusionGlobalId": predecessor["conclusionGlobalId"],
+                "expectedConclusionRevisionGlobalId": predecessor["globalId"],
+                "expectedConclusionRevisionSnapshotHash": predecessor["snapshotHash"],
+                "expectedConclusionVersion": predecessor["conclusionVersion"],
+            }
+        )
+    return payload
+
+
+def run_review_fresh(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    plan_id: str,
+    plan_revision: dict[str, Any],
+    primary: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, object]:
+    round_id = target["round"]["globalId"]
+    fixture = run_bench_fixture(
+        "ensure_trial_review_policy",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "plan_id": plan_id,
+            "plan_revision_id": plan_revision["globalId"],
+            "plan_revision_snapshot_hash": plan_revision["snapshotHash"],
+            "round_id": round_id,
+            "input_lock_id": target["inputLock"]["globalId"],
+            "file_revision_id": target["evidence"]["fileRevisionGlobalId"],
+        },
+    )
+    initial = assert_review_workspace(
+        trial_request(
+            administrator,
+            base_url,
+            review_path(project_id, round_id),
+            query_key="review-initial",
+        ),
+        project_id,
+        round_id,
+        state="running",
+        round_version=3,
+        policies=1,
+        comparisons=0,
+        references=0,
+        conclusions=0,
+    )
+    policy = exact_single(initial["policyVersions"], "P7-04 review policy")
+    require(
+        policy.get("globalId") == REVIEW_POLICY_REVISION_ID
+        and policy.get("requiredReferenceKinds") == ["controlled_quality_report"]
+        and policy.get("authorityBindings", [{}])[0].get("member", {}).get("globalId")
+        == REVIEW_MEMBER_ID
+        and initial.get("permissions", {}).get("beginAnalysis") is True,
+        "P7-04 exact policy or authority binding drifted",
+    )
+    begun = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, ":begin-analysis"),
+        {
+            **review_policy_context(policy, initial["trialRound"]),
+            "reason": "Begin the exact controlled Trial review analysis.",
+        },
+        BEGIN_ANALYSIS_KEY,
+    )
+    analysis = assert_review_workspace(
+        begun,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=4,
+        policies=1,
+        comparisons=0,
+        references=0,
+        conclusions=0,
+    )
+    require(
+        all(
+            analysis["permissions"].get(key) is True
+            for key in (
+                "createComparison",
+                "manageReviewReferences",
+                "submitConclusion",
+            )
+        ),
+        "P7-04 analysis permissions drifted",
+    )
+    comparison_payload = {
+        **review_policy_context(policy, analysis["trialRound"]),
+        "rounds": [
+            {
+                "trialRoundGlobalId": primary["round"]["globalId"],
+                "expectedOptimisticVersion": primary["round"]["optimisticVersion"],
+                "expectedSnapshotHash": primary["round"]["snapshotHash"],
+            },
+            {
+                "trialRoundGlobalId": analysis["trialRound"]["globalId"],
+                "expectedOptimisticVersion": analysis["trialRound"]["optimisticVersion"],
+                "expectedSnapshotHash": analysis["trialRound"]["snapshotHash"],
+            },
+        ],
+        "reason": "Seal the exact chronological T0 to T1 comparison.",
+    }
+    compared = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/comparisons"),
+        comparison_payload,
+        COMPARISON_KEY,
+    )
+    compared_body = assert_review_workspace(
+        compared,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=4,
+        policies=1,
+        comparisons=1,
+        references=0,
+        conclusions=0,
+    )
+    comparison = exact_single(
+        compared_body["comparisonSnapshots"],
+        "P7-04 comparison",
+    )
+    require(
+        [value.get("trialRoundGlobalId") for value in comparison.get("sources", [])]
+        == [primary["round"]["globalId"], round_id]
+        and comparison.get("formalErpQuality") == "unavailable",
+        "P7-04 chronological comparison or unavailable source truth drifted",
+    )
+    stale_payload = dict(comparison_payload)
+    stale_payload["expectedRoundOptimisticVersion"] = 3
+    stale = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, round_id, "/comparisons"),
+        method="POST",
+        payload=stale_payload,
+        csrf_token=csrf_token,
+        idempotency_key=STALE_COMPARISON_KEY,
+    )
+    validate_problem(stale, 409, "TRIAL_REVIEW_CONFLICT")
+    conflicting_payload = dict(comparison_payload)
+    conflicting_payload["reason"] = "Conflicting comparison payload must be rejected."
+    idempotency_conflict = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, round_id, "/comparisons"),
+        method="POST",
+        payload=conflicting_payload,
+        csrf_token=csrf_token,
+        idempotency_key=COMPARISON_KEY,
+    )
+    validate_problem(idempotency_conflict, 409, "TRIAL_IDEMPOTENCY_CONFLICT")
+
+    reference_context = fixture["referenceContext"]
+    internal_created = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/review-references"),
+        review_reference_payload(
+            reference_context,
+            policy,
+            compared_body["trialRound"],
+            comparison,
+            kind="internal_sample_review",
+        ),
+        INTERNAL_REFERENCE_KEY,
+    )
+    internal_body = assert_review_workspace(
+        internal_created,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=4,
+        policies=1,
+        comparisons=1,
+        references=1,
+        conclusions=0,
+    )
+    internal_reference = exact_single(
+        internal_body["reviewReferenceRevisions"],
+        "P7-04 internal review reference",
+    )
+    before_blocked = persisted_counts(administrator, base_url, project_id)
+    blocked = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, round_id, "/conclusions"),
+        method="POST",
+        payload=conclusion_payload(
+            policy,
+            internal_body["trialRound"],
+            comparison,
+            [internal_reference],
+        ),
+        csrf_token=csrf_token,
+        idempotency_key=BLOCKED_CONCLUSION_KEY,
+    )
+    validate_problem(blocked, 422, "VALIDATION_FAILED")
+    require(
+        any(
+            value.get("path") == "blockers"
+            for value in blocked.body.get("fieldErrors", [])
+        )
+        and persisted_counts(administrator, base_url, project_id) == before_blocked,
+        "P7-04 policy blocker did not fail closed with rollback",
+    )
+    controlled_created = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/review-references"),
+        review_reference_payload(
+            reference_context,
+            policy,
+            internal_body["trialRound"],
+            comparison,
+            kind="controlled_quality_report",
+        ),
+        CONTROLLED_REFERENCE_KEY,
+    )
+    controlled_v1 = exact_single(
+        [
+            value
+            for value in controlled_created.body["reviewReferenceRevisions"]
+            if value.get("referenceKind") == "controlled_quality_report"
+        ],
+        "P7-04 controlled reference v1",
+    )
+    controlled_revised = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/review-references"),
+        review_reference_payload(
+            reference_context,
+            policy,
+            controlled_created.body["trialRound"],
+            comparison,
+            kind="controlled_quality_report",
+            predecessor=controlled_v1,
+        ),
+        CONTROLLED_REFERENCE_REVISE_KEY,
+    )
+    controlled_v2 = max(
+        (
+            value
+            for value in controlled_revised.body["reviewReferenceRevisions"]
+            if value.get("referenceGlobalId") == controlled_v1["referenceGlobalId"]
+        ),
+        key=lambda value: value["referenceVersion"],
+    )
+    require(
+        controlled_v2.get("referenceVersion") == 2
+        and controlled_v2.get("predecessorGlobalId") == controlled_v1["globalId"]
+        and controlled_v2.get("predecessorSnapshotHash")
+        == controlled_v1["snapshotHash"],
+        "P7-04 immutable reference successor lineage drifted",
+    )
+    before_stale = persisted_counts(administrator, base_url, project_id)
+    stale_reference = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, round_id, "/review-references"),
+        method="POST",
+        payload=review_reference_payload(
+            reference_context,
+            policy,
+            controlled_revised.body["trialRound"],
+            comparison,
+            kind="controlled_quality_report",
+            predecessor=controlled_v1,
+        ),
+        csrf_token=csrf_token,
+        idempotency_key=STALE_REFERENCE_REVISE_KEY,
+    )
+    validate_problem(stale_reference, 409, "TRIAL_REVIEW_CONFLICT")
+    require(
+        persisted_counts(administrator, base_url, project_id) == before_stale,
+        "P7-04 stale reference fork changed immutable cardinality",
+    )
+
+    submitted = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/conclusions"),
+        conclusion_payload(
+            policy,
+            controlled_revised.body["trialRound"],
+            comparison,
+            [internal_reference, controlled_v2],
+        ),
+        SUBMIT_CONCLUSION_KEY,
+    )
+    submitted_body = assert_review_workspace(
+        submitted,
+        project_id,
+        round_id,
+        state="submitted",
+        round_version=5,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=1,
+    )
+    conclusion_v1 = exact_single(
+        submitted_body["conclusionRevisions"],
+        "P7-04 conclusion v1",
+    )
+    require(
+        conclusion_v1.get("blockers") == []
+        and conclusion_v1.get("externalEffects") == EXPECTED_REVIEW_EXTERNAL_EFFECTS
+        and submitted_body["permissions"].get("decideConclusion") is True,
+        "P7-04 conclusion inputs or decision authority drifted",
+    )
+    approved = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(
+            project_id,
+            round_id,
+            f"/conclusions/{conclusion_v1['conclusionGlobalId']}:decide",
+        ),
+        {
+            **review_policy_context(policy, submitted_body["trialRound"]),
+            "expectedConclusionRevisionGlobalId": conclusion_v1["globalId"],
+            "expectedConclusionRevisionSnapshotHash": conclusion_v1["snapshotHash"],
+            "expectedConclusionVersion": 1,
+            "decision": "approved",
+            "reason": "Approve the controlled Trial conclusion without external effect.",
+        },
+        APPROVE_CONCLUSION_KEY,
+    )
+    approved_tip = approved.body["conclusionRevisions"][-1]
+    reopened = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, ":reopen"),
+        {
+            **review_policy_context(policy, approved.body["trialRound"]),
+            "conclusionGlobalId": approved_tip["conclusionGlobalId"],
+            "expectedConclusionRevisionGlobalId": approved_tip["globalId"],
+            "expectedConclusionRevisionSnapshotHash": approved_tip["snapshotHash"],
+            "expectedConclusionVersion": 2,
+            "reason": "Reopen the exact approved conclusion for controlled correction.",
+        },
+        REOPEN_CONCLUSION_KEY,
+    )
+    reopened_tip = reopened.body["conclusionRevisions"][-1]
+    resubmitted = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(project_id, round_id, "/conclusions"),
+        conclusion_payload(
+            policy,
+            reopened.body["trialRound"],
+            comparison,
+            [internal_reference, controlled_v2],
+            predecessor=reopened_tip,
+        ),
+        RESUBMIT_CONCLUSION_KEY,
+    )
+    resubmitted_tip = resubmitted.body["conclusionRevisions"][-1]
+    reject_payload = {
+        **review_policy_context(policy, resubmitted.body["trialRound"]),
+        "expectedConclusionRevisionGlobalId": resubmitted_tip["globalId"],
+        "expectedConclusionRevisionSnapshotHash": resubmitted_tip["snapshotHash"],
+        "expectedConclusionVersion": 4,
+        "decision": "rejected",
+        "reason": "Reject the corrected proposal without mutating external authorities.",
+    }
+    rejected = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(
+            project_id,
+            round_id,
+            f"/conclusions/{resubmitted_tip['conclusionGlobalId']}:decide",
+        ),
+        reject_payload,
+        REJECT_CONCLUSION_KEY,
+    )
+    final = assert_review_workspace(
+        rejected,
+        project_id,
+        round_id,
+        state="rejected",
+        round_version=9,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=5,
+    )
+    require(
+        [value.get("state") for value in final["conclusionRevisions"]]
+        == ["submitted", "approved", "reopened", "submitted", "rejected"]
+        and [value.get("conclusionVersion") for value in final["conclusionRevisions"]]
+        == [1, 2, 3, 4, 5],
+        "P7-04 submit, approve, reopen, resubmit and reject history drifted",
+    )
+    same_process_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(
+            project_id,
+            round_id,
+            f"/conclusions/{resubmitted_tip['conclusionGlobalId']}:decide",
+        ),
+        reject_payload,
+        REJECT_CONCLUSION_KEY,
+    )
+    require(
+        same_process_replay.headers.get("Idempotency-Replayed") == "true"
+        and same_process_replay.body == rejected.body,
+        "P7-04 same-process conclusion replay changed sealed response truth",
+    )
+    return {
+        "roundId": round_id,
+        "policy": policy,
+        "comparison": comparison,
+        "finalConclusion": final["conclusionRevisions"][-1],
+        "replayConclusion": resubmitted_tip,
+        "rejectPayload": reject_payload,
+    }
+
+
 def run_fresh(
     administrator,
     base_url: str,
@@ -3030,6 +3709,16 @@ def run_fresh(
         primary=primary_quality_context,
         target=target_execution,
     )
+    review = run_review_fresh(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        plan_id=plan_id,
+        plan_revision=successor,
+        primary=primary_quality_context,
+        target=target_execution,
+    )
     verify_idor(
         administrator,
         base_url,
@@ -3038,6 +3727,7 @@ def run_fresh(
         project_id,
         plan_id,
         round_id,
+        review["roundId"],
     )
     verify_generic_mutation_denial(
         administrator,
@@ -3049,9 +3739,9 @@ def run_fresh(
     require(
         final_counts["NPI Trial Plan Revision"] == 2
         and final_counts["NPI Trial Round"] == 2
-        and final_counts["NPI Trial Round Lifecycle Event"] == 6
+        and final_counts["NPI Trial Round Lifecycle Event"] == 12
         and final_counts["NPI Trial Plan Work Link"] == 1
-        and final_counts["NPI Trial Command Idempotency"] == 29
+        and final_counts["NPI Trial Command Idempotency"] == 39
         and final_counts["NPI Trial Input Lock Revision"] == 2
         and final_counts["NPI Trial Actual Revision"] == 3
         and final_counts["NPI Trial Sample Batch Revision"] == 3
@@ -3059,6 +3749,10 @@ def run_fresh(
         and final_counts["NPI Trial Cavity Result Revision"] == 2
         and final_counts["NPI Trial Defect Revision"] == 8
         and final_counts["NPI Trial Defect Verification Revision"] == 2
+        and final_counts["NPI Trial Conclusion Policy Version"] == 1
+        and final_counts["NPI Trial Round Comparison Snapshot"] == 1
+        and final_counts["NPI Trial Review Reference Revision"] == 3
+        and final_counts["NPI Trial Conclusion Revision"] == 5
         and all(
             final_counts[f"audit:{operation}"] == expected
             for operation, expected in {
@@ -3079,13 +3773,21 @@ def run_fresh(
                 "trial_defect.create": 2,
                 "trial_defect.revise": 6,
                 "trial_defect.verify": 2,
+                "trial_round.begin_analysis": 1,
+                "trial_comparison.create": 1,
+                "trial_review_reference.create": 2,
+                "trial_review_reference.revise": 1,
+                "trial_conclusion.submit": 2,
+                "trial_conclusion.decide": 2,
+                "trial_conclusion.reopen": 1,
             }.items()
         ),
-        "P7-03 cumulative controlled persistence cardinality drifted",
+        "P7-04 cumulative controlled persistence cardinality drifted",
     )
     require(
         (final_counts["outbox"], final_counts["inbox"]) == integration_before,
-        "P7-03 controlled Trial quality created ERP integration traffic",
+        # Preserved predecessor evidence: "P7-03 controlled Trial quality created ERP integration traffic"
+        "P7-04 controlled Trial review created ERP integration traffic",
     )
     return {
         "actionLinkCount": 1,
@@ -3098,17 +3800,24 @@ def run_fresh(
         "metadataSynchronized": schema["metadataSynchronized"],
         "planRevisionCount": 2,
         "plannedRoundCount": 2,
-        "roundState": "running",
+        "roundState": "rejected",
         "sampleBatchRevisionCount": 3,
         "trialActualRevisionCount": 3,
         "cavityResultRevisionCount": 2,
         "trialDefectRevisionCount": 8,
         "verificationRevisionCount": 2,
+        "comparisonSnapshotCount": 1,
+        "reviewReferenceRevisionCount": 3,
+        "conclusionRevisionCount": 5,
+        "reviewRoundId": review["roundId"],
         "crossRoundDefectRevisionId": quality["crossRoundRevisionId"],
         "verifiedEvidenceId": execution["evidenceId"],
         "automaticMachineAcquisition": "unavailable",
         "erpQualityAuthority": "unavailable",
         "gateAndApprovalAuthority": "unavailable",
+        "customerSignatureAuthority": "unavailable",
+        "npiReadinessAuthority": "unavailable",
+        "nextWorkEffect": "proposal_only",
         "resourceReservation": "unavailable",
         "rollbackVerified": True,
     }
@@ -3141,6 +3850,65 @@ def retained_detail(administrator, base_url: str) -> tuple[str, str, dict[str, A
         links=1,
     )
     return project_id, plan_id, detail
+
+
+def run_review_replay(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    round_id: str,
+) -> None:
+    review = assert_review_workspace(
+        trial_request(
+            administrator,
+            base_url,
+            review_path(project_id, round_id),
+            query_key="review-replay-context",
+        ),
+        project_id,
+        round_id,
+        state="rejected",
+        round_version=9,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=5,
+    )
+    policy = exact_single(review["policyVersions"], "P7-04 replay policy")
+    submitted = review["conclusionRevisions"][-2]
+    rejected = review["conclusionRevisions"][-1]
+    payload = {
+        "policyRevisionGlobalId": policy["globalId"],
+        "expectedPolicyRevisionSnapshotHash": policy["snapshotHash"],
+        "expectedRoundOptimisticVersion": submitted["trialRoundOptimisticVersion"],
+        "expectedRoundSnapshotHash": submitted["trialRoundSnapshotHash"],
+        "expectedConclusionRevisionGlobalId": submitted["globalId"],
+        "expectedConclusionRevisionSnapshotHash": submitted["snapshotHash"],
+        "expectedConclusionVersion": submitted["conclusionVersion"],
+        "decision": "rejected",
+        "reason": rejected["reason"],
+    }
+    before = persisted_counts(administrator, base_url, project_id)
+    replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        review_path(
+            project_id,
+            round_id,
+            f"/conclusions/{submitted['conclusionGlobalId']}:decide",
+        ),
+        payload,
+        REJECT_CONCLUSION_KEY,
+    )
+    require(
+        replay.headers.get("Idempotency-Replayed") == "true"
+        and replay.body == review
+        and persisted_counts(administrator, base_url, project_id) == before,
+        "P7-04 cross-process review replay changed sealed truth or cardinality",
+    )
 
 
 def run_replay(administrator, base_url: str, csrf_token: str) -> None:
@@ -3337,8 +4105,8 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         target_execution_result,
         project_id,
         target_round_id,
-        state="running",
-        round_version=3,
+        state="rejected",
+        round_version=9,
         locks=1,
         actuals=1,
         samples=1,
@@ -3442,8 +4210,17 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         "evidence": evidence,
         "cavityId": cavity_ids[0],
     }
+    historical_target = run_bench_fixture(
+        "historical_trial_round_context",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "round_id": target_round_id,
+            "event_version": 3,
+        },
+    )
     target_context = {
-        "round": target_execution["round"],
+        "round": historical_target,
         "inputLock": target_input_lock,
         "sample": target_sample,
         "evidence": target_evidence,
@@ -3461,10 +4238,18 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         primary=primary_context,
         target=target_context,
     )
+    run_review_replay(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        round_id=target_round_id,
+    )
     after = persisted_counts(administrator, base_url, project_id)
     require(
         after == before,
-        "P7-03 cumulative cross-process replay changed immutable cardinality or integration truth",
+        # Preserved predecessor evidence: "P7-03 cumulative cross-process replay changed immutable cardinality or integration truth"
+        "P7-04 cumulative cross-process replay changed immutable cardinality or integration truth",
     )
 
 
@@ -3482,6 +4267,11 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         "route probe Round",
     )
     round_id = require_uuid(selected_round["global_id"], "Round")
+    review_round = exact_single(
+        [value for value in rounds if value.get("display_label") == "T1"],
+        "review route probe Round",
+    )
+    review_round_id = require_uuid(review_round["global_id"], "review Round")
     trials = trial_request(
         administrator,
         base_url,
@@ -3510,6 +4300,12 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         quality_path(project_id, round_id),
         query_key=f"quality-route-{expected_mode}",
     )
+    review = trial_request(
+        administrator,
+        base_url,
+        review_path(project_id, review_round_id),
+        query_key=f"review-route-{expected_mode}",
+    )
     if expected_mode == "planning-disabled":
         validate_problem(trials, 503, "TRIAL_ROUTES_DISABLED")
         assert_execution_workspace(
@@ -3533,6 +4329,17 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
             tooling_defects=2,
             verifications=2,
         )
+        assert_review_workspace(
+            review,
+            project_id,
+            review_round_id,
+            state="rejected",
+            round_version=9,
+            policies=1,
+            comparisons=1,
+            references=3,
+            conclusions=5,
+        )
         return
     if expected_mode == "execution-disabled":
         assert_workspace(trials, project_id, expected_plans=1)
@@ -3545,6 +4352,17 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
             trial_defects=8,
             tooling_defects=2,
             verifications=2,
+        )
+        assert_review_workspace(
+            review,
+            project_id,
+            review_round_id,
+            state="rejected",
+            round_version=9,
+            policies=1,
+            comparisons=1,
+            references=3,
+            conclusions=5,
         )
         return
     if expected_mode == "quality-disabled":
@@ -3562,10 +4380,51 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
             pending=0,
         )
         validate_problem(quality, 503, "TRIAL_QUALITY_ROUTES_DISABLED")
+        assert_review_workspace(
+            review,
+            project_id,
+            review_round_id,
+            state="rejected",
+            round_version=9,
+            policies=1,
+            comparisons=1,
+            references=3,
+            conclusions=5,
+        )
+        return
+    if expected_mode == "review-disabled":
+        assert_workspace(trials, project_id, expected_plans=1)
+        assert_execution_workspace(
+            execution,
+            project_id,
+            round_id,
+            state="running",
+            round_version=3,
+            locks=1,
+            actuals=2,
+            samples=2,
+            evidence=1,
+            pending=0,
+        )
+        assert_quality_workspace(
+            quality,
+            project_id,
+            round_id,
+            cavity_results=2,
+            trial_defects=8,
+            tooling_defects=2,
+            verifications=2,
+        )
+        validate_problem(review, 503, "TRIAL_REVIEW_ROUTES_DISABLED")
         return
     require(
         expected_mode
-        in {"planning-recovered", "execution-recovered", "quality-recovered"},
+        in {
+            "planning-recovered",
+            "execution-recovered",
+            "quality-recovered",
+            "review-recovered",
+        },
         "P7 cumulative route probe mode drifted",
     )
     assert_workspace(trials, project_id, expected_plans=1)
@@ -3589,6 +4448,17 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         trial_defects=8,
         tooling_defects=2,
         verifications=2,
+    )
+    assert_review_workspace(
+        review,
+        project_id,
+        review_round_id,
+        state="rejected",
+        round_version=9,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=5,
     )
 
 
@@ -3694,6 +4564,37 @@ def verify_trial_runtime_schema(fixture_run_id: str) -> dict[str, object]:
             "verification_snapshot",
             "snapshot_hash",
         },
+        "NPI Trial Conclusion Policy Version": {
+            "global_id",
+            "policy_global_id",
+            "policy_version",
+            "trial_plan_revision_global_id",
+            "policy_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Trial Round Comparison Snapshot": {
+            "global_id",
+            "target_round_global_id",
+            "policy_revision_global_id",
+            "comparison_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Trial Review Reference Revision": {
+            "global_id",
+            "reference_global_id",
+            "reference_version",
+            "predecessor_global_id",
+            "reference_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Trial Conclusion Revision": {
+            "global_id",
+            "conclusion_global_id",
+            "conclusion_version",
+            "predecessor_global_id",
+            "conclusion_snapshot",
+            "snapshot_hash",
+        },
     }
     for doctype in TRIAL_DOCTYPES:
         require(
@@ -3771,6 +4672,264 @@ def ensure_trial_quality_verifier_member(
         "globalId": VERIFIER_MEMBER_ID,
         "optimisticVersion": 1,
     }
+
+
+def ensure_trial_review_policy(
+    fixture_run_id: str,
+    *,
+    project_id: str,
+    plan_id: str,
+    plan_revision_id: str,
+    plan_revision_snapshot_hash: str,
+    round_id: str,
+    input_lock_id: str,
+    file_revision_id: str,
+) -> dict[str, object]:
+    import frappe
+
+    from npi_core.tooling.manufacturing_domain import ProjectMemberResponsibility
+    from npi_core.trial.execution_repository import _file_revision_source_snapshot
+    from npi_core.trial.frappe_validation import trial_command_write
+    from npi_core.trial.review_domain import (
+        TrialConclusionCapability,
+        TrialConclusionCode,
+        TrialConclusionPolicyVersion,
+        TrialPolicyAuthorityBinding,
+        TrialReviewReferenceKind,
+    )
+    from npi_core.trial.review_repository import _payload_hash
+
+    document_runtime._validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "P7-04 review-policy fixture namespace drifted",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    trial_round = frappe.get_doc("NPI Trial Round", round_id)
+    input_lock = frappe.get_doc("NPI Trial Input Lock Revision", input_lock_id)
+    file_revision = frappe.get_doc("NPI File Revision", file_revision_id)
+    require(
+        str(project.global_id) == project_id
+        and str(project.tenant_id) == TENANT_ID
+        and str(trial_round.project_global_id) == project_id
+        and str(trial_round.trial_plan_global_id) == plan_id
+        and str(trial_round.trial_plan_revision_global_id) == plan_revision_id
+        and str(trial_round.trial_plan_revision_snapshot_hash)
+        == plan_revision_snapshot_hash
+        and str(input_lock.project_global_id) == project_id
+        and str(input_lock.trial_round_global_id) == round_id
+        and str(file_revision.project_global_id) == project_id
+        and str(file_revision.document_global_id) == round_id
+        and str(file_revision.scan_state) == "clean",
+        "P7-04 exact review-policy source context drifted",
+    )
+    if not frappe.db.exists("NPI Project Member", REVIEW_MEMBER_ID):
+        previous = getattr(frappe.flags, "npi_project_work_command_write", None)
+        setattr(frappe.flags, "npi_project_work_command_write", True)
+        try:
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Project Member",
+                    "global_id": REVIEW_MEMBER_ID,
+                    "tenant_id": TENANT_ID,
+                    "project_global_id": project_id,
+                    "user_id": ACTOR_USER,
+                    "effective_from": "2026-01-01",
+                    "effective_to": None,
+                    "optimistic_version": 1,
+                }
+            ).insert()
+        finally:
+            if previous is None:
+                delattr(frappe.flags, "npi_project_work_command_write")
+            else:
+                setattr(frappe.flags, "npi_project_work_command_write", previous)
+    member = frappe.get_doc("NPI Project Member", REVIEW_MEMBER_ID)
+    require(
+        str(member.project_global_id) == project_id
+        and str(member.user_id) == ACTOR_USER
+        and int(member.optimistic_version) == 1,
+        "P7-04 review authority member drifted",
+    )
+    if not frappe.db.exists(
+        "NPI Trial Conclusion Policy Version",
+        REVIEW_POLICY_REVISION_ID,
+    ):
+        policy = TrialConclusionPolicyVersion(
+            global_id=UUID(REVIEW_POLICY_REVISION_ID),
+            policy_global_id=UUID(REVIEW_POLICY_ID),
+            tenant_id=TENANT_ID,
+            project_global_id=UUID(project_id),
+            trial_plan_global_id=UUID(plan_id),
+            trial_plan_revision_global_id=UUID(plan_revision_id),
+            trial_plan_revision_snapshot_hash=plan_revision_snapshot_hash,
+            policy_version=1,
+            predecessor_global_id=None,
+            predecessor_snapshot_hash=None,
+            required_parameter_keys=(),
+            required_dimension_keys=(),
+            required_reference_kinds=(
+                TrialReviewReferenceKind.CONTROLLED_QUALITY_REPORT,
+            ),
+            require_cavity_results=False,
+            block_on_open_blocking_defects=False,
+            block_on_unverified_required_actions=False,
+            allowed_conclusion_codes=(
+                TrialConclusionCode.CONDITIONAL_PASS,
+                TrialConclusionCode.PROCESS_TUNING,
+            ),
+            out_of_spec_blocking_codes=(),
+            authority_bindings=(
+                TrialPolicyAuthorityBinding(
+                    member=ProjectMemberResponsibility(
+                        global_id=UUID(REVIEW_MEMBER_ID),
+                        user_id=ACTOR_USER,
+                        optimistic_version=1,
+                    ),
+                    capabilities=tuple(TrialConclusionCapability),
+                ),
+            ),
+            published_by_user_id=ACTOR_USER,
+            published_at=datetime.now(UTC),
+            request_id=uuid4(),
+            trace_id="trace-p704-runtime-policy",
+        )
+        payload = policy.snapshot_payload()
+        with trial_command_write():
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Trial Conclusion Policy Version",
+                    "global_id": str(policy.global_id),
+                    "policy_global_id": str(policy.policy_global_id),
+                    "version_key_hash": policy.version_key_hash,
+                    "tenant_id": policy.tenant_id,
+                    "project_global_id": str(policy.project_global_id),
+                    "trial_plan_global_id": str(policy.trial_plan_global_id),
+                    "trial_plan_revision": str(policy.trial_plan_revision_global_id),
+                    "trial_plan_revision_global_id": str(
+                        policy.trial_plan_revision_global_id
+                    ),
+                    "trial_plan_revision_snapshot_hash": (
+                        policy.trial_plan_revision_snapshot_hash
+                    ),
+                    "policy_version": policy.policy_version,
+                    "predecessor_global_id": None,
+                    "predecessor_snapshot_hash": None,
+                    "required_parameter_snapshot": [],
+                    "required_dimension_snapshot": [],
+                    "required_reference_kind_snapshot": payload[
+                        "requiredReferenceKinds"
+                    ],
+                    "require_cavity_results": 0,
+                    "block_on_open_blocking_defects": 0,
+                    "block_on_unverified_required_actions": 0,
+                    "allowed_conclusion_code_snapshot": payload[
+                        "allowedConclusionCodes"
+                    ],
+                    "out_of_spec_blocking_code_snapshot": [],
+                    "authority_binding_snapshot": payload["authorityBindings"],
+                    "published_by_user_id": policy.published_by_user_id,
+                    "published_at": policy.published_at,
+                    "request_id": str(policy.request_id),
+                    "trace_id": policy.trace_id,
+                    "policy_snapshot": payload,
+                    "snapshot_hash": policy.snapshot_hash,
+                }
+            ).insert()
+    frappe.db.commit()
+    policy_document = frappe.get_doc(
+        "NPI Trial Conclusion Policy Version",
+        REVIEW_POLICY_REVISION_ID,
+    )
+    reference_values = (
+        json.loads(input_lock.reference_snapshot)
+        if isinstance(input_lock.reference_snapshot, str)
+        else input_lock.reference_snapshot
+    )
+    require(
+        isinstance(reference_values, list),
+        "P7-04 locked review reference source is invalid",
+    )
+    by_kind = {
+        str(value.get("kind")): value
+        for value in reference_values
+        if isinstance(value, dict)
+    }
+    require(
+        {"part_revision", "tooling_revision", "tooling_set"} <= set(by_kind),
+        "P7-04 exact locked review references are unavailable",
+    )
+    file_source_hash = _payload_hash(_file_revision_source_snapshot(file_revision))
+    return {
+        "fixtureRunId": fixture_run_id,
+        "policyGlobalId": str(policy_document.global_id),
+        "policySnapshotHash": str(policy_document.snapshot_hash),
+        "referenceContext": {
+            "partRevisionGlobalId": by_kind["part_revision"]["globalId"],
+            "partRevisionSnapshotHash": by_kind["part_revision"]["snapshotHash"],
+            "toolingMasterGlobalId": str(trial_round.tooling_master_global_id),
+            "toolingRevisionGlobalId": by_kind["tooling_revision"]["globalId"],
+            "toolingRevisionSnapshotHash": by_kind["tooling_revision"][
+                "snapshotHash"
+            ],
+            "toolingSetGlobalId": by_kind["tooling_set"]["globalId"],
+            "toolingSetSnapshotHash": by_kind["tooling_set"]["snapshotHash"],
+            "fileRevisionGlobalId": file_revision_id,
+            "fileRevisionSnapshotHash": file_source_hash,
+        },
+    }
+
+
+def historical_trial_round_context(
+    fixture_run_id: str,
+    *,
+    project_id: str,
+    round_id: str,
+    event_version: int,
+) -> dict[str, object]:
+    import frappe
+
+    from npi_core.trial.domain import trial_round_from_snapshot
+
+    document_runtime._validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID and event_version == 3,
+        "P7-04 historical Round fixture boundary drifted",
+    )
+    document = frappe.get_doc("NPI Trial Round", round_id)
+    events = frappe.get_all(
+        "NPI Trial Round Lifecycle Event",
+        filters={
+            "tenant_id": TENANT_ID,
+            "project_global_id": project_id,
+            "trial_round_global_id": round_id,
+            "event_version": event_version,
+        },
+        fields=["global_id", "to_state"],
+        limit_page_length=2,
+    )
+    event = exact_single(events, "P7-04 historical Round lifecycle event")
+    supplied = (
+        json.loads(document.round_snapshot)
+        if isinstance(document.round_snapshot, str)
+        else dict(document.round_snapshot)
+    )
+    supplied.update(
+        {
+            "currentState": str(event.to_state),
+            "currentEventGlobalId": str(event.global_id),
+            "optimisticVersion": event_version,
+        }
+    )
+    historical = trial_round_from_snapshot(supplied)
+    require(
+        str(historical.project_global_id) == project_id
+        and str(historical.global_id) == round_id
+        and historical.current_state.value == "running"
+        and historical.optimistic_version == 3,
+        "P7-04 historical target Round reconstruction drifted",
+    )
+    return historical.snapshot_payload() | {"snapshotHash": historical.snapshot_hash}
 
 
 def trial_execution_reference_context(
@@ -4018,6 +5177,8 @@ def observe_trial_file_scan(
 
 BENCH_FIXTURES = {
     "ensure_trial_quality_verifier_member": ensure_trial_quality_verifier_member,
+    "ensure_trial_review_policy": ensure_trial_review_policy,
+    "historical_trial_round_context": historical_trial_round_context,
     "observe_trial_file_scan": observe_trial_file_scan,
     "trial_execution_reference_context": trial_execution_reference_context,
     "verify_trial_runtime_schema": verify_trial_runtime_schema,
@@ -4091,7 +5252,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Verify the cumulative controlled P7-03 Trial quality runtime.",
+        description="Verify the cumulative controlled P7-04 Trial review runtime.",
     )
     parser.add_argument("--base-url")
     parser.add_argument("--bench-fixture", choices=tuple(BENCH_FIXTURES))
@@ -4105,6 +5266,8 @@ def main() -> None:
             "execution-recovered",
             "quality-disabled",
             "quality-recovered",
+            "review-disabled",
+            "review-recovered",
         ),
     )
     parser.add_argument("--replay-only", action="store_true")
@@ -4176,7 +5339,7 @@ def main() -> None:
                 sort_keys=True,
             )
         )
-        print("local Frappe Trial execution runtime replay verification passed")
+        print("local Frappe Trial review runtime replay verification passed")
         return
     evidence = run_fresh(
         administrator,
@@ -4185,7 +5348,7 @@ def main() -> None:
         fixture_password,
     )
     print(json.dumps(evidence, sort_keys=True))
-    print("local Frappe Trial execution runtime verification passed")
+    print("local Frappe Trial review runtime verification passed")
 
 
 if __name__ == "__main__":
