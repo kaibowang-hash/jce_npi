@@ -923,6 +923,7 @@ class Phase4ProjectContractTests(unittest.TestCase):
                 "stateLabelSource",
                 "stateLabelSource",
                 "stateLabelSource",
+                "stateLabelSource",
             ),
         )
         for field_name, line, field in label_fields:

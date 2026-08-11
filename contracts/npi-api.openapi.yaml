@@ -20,6 +20,7 @@ tags:
   - { name: ControlledPrint }
   - { name: Tooling }
   - { name: Trials }
+  - { name: Readiness }
   - { name: Execution }
 paths:
   /session/bootstrap:
@@ -5731,6 +5732,214 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /npi-readiness/templates:
+    get:
+      tags: [Readiness]
+      operationId: listEligibleReadinessTemplates
+      description: >
+        Returns only exact published readiness-template versions eligible for
+        the already-authorized Project. Project visibility is established
+        before resolving template applicability.
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          description: Immutable Engineering Project global_id used for Project-first authorization and applicability
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ReadinessTemplateCatalogResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Readiness]
+      operationId: createReadinessTemplateDraft
+      description: >
+        Creates one internal-admin draft with explicit applicability, item,
+        evidence, blocking and Gate configuration. No business default is
+        installed or inferred.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: readiness-template
+      x-audit-operation: readiness_template.create
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateReadinessTemplate" }
+      responses:
+        "201": { $ref: "#/components/responses/ReadinessTemplateCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /npi-readiness/templates/{templateId}/versions/{templateVersion}:
+    put:
+      tags: [Readiness]
+      operationId: editReadinessTemplateDraft
+      description: >
+        Replaces the exact current draft configuration under optimistic
+        concurrency. Published versions are immutable.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: readiness-template
+      x-audit-operation: readiness_template.edit
+      parameters:
+        - $ref: "#/components/parameters/ReadinessTemplateId"
+        - $ref: "#/components/parameters/ReadinessTemplateVersionParam"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditReadinessTemplate" }
+      responses:
+        "200": { $ref: "#/components/responses/ReadinessTemplateCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /npi-readiness/templates/{templateId}/versions/{templateVersion}:publish:
+    post:
+      tags: [Readiness]
+      operationId: publishReadinessTemplateVersion
+      description: >
+        Atomically publishes one exact validated draft as an immutable
+        readiness-template version. It does not initialize a Project instance.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: readiness-template
+      x-audit-operation: readiness_template.publish
+      parameters:
+        - $ref: "#/components/parameters/ReadinessTemplateId"
+        - $ref: "#/components/parameters/ReadinessTemplateVersionParam"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishReadinessTemplate" }
+      responses:
+        "200": { $ref: "#/components/responses/ReadinessTemplateCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/npi-readiness:
+    get:
+      tags: [Readiness]
+      operationId: getProjectReadinessWorkspace
+      description: >
+        Returns the exact current Project readiness instance, immutable
+        history, server-resolved sources, scores, blockers, permissions and
+        explicitly unavailable formal projections after Project-first authorization.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ReadinessQueryResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Readiness]
+      operationId: initializeProjectReadiness
+      description: >
+        Initializes one independently versioned Project readiness instance
+        from an exact published template. Project/context, Gate and item facts
+        are server-resolved and frozen without mutating a Gate.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-readiness-instance
+      x-audit-operation: readiness_instance.initialize
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InitializeProjectReadiness" }
+      responses:
+        "201": { $ref: "#/components/responses/ReadinessCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/npi-readiness/{instanceId}/revisions:
+    post:
+      tags: [Readiness]
+      operationId: reviseProjectReadinessItem
+      description: >
+        Appends one immutable direct successor for one exact applicable item.
+        Owner membership and every exact source are reauthorized server-side;
+        scores and dominant blockers are derived and no Gate transition occurs.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: project-readiness-instance
+      x-audit-operation: readiness_instance.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ReadinessInstanceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviseProjectReadinessItem" }
+      responses:
+        "201": { $ref: "#/components/responses/ReadinessCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -5821,6 +6030,24 @@ components:
       in: path
       name: trialId
       required: true
+      schema: { type: string, format: uuid }
+    ReadinessTemplateId:
+      in: path
+      name: templateId
+      required: true
+      description: Stable readiness-template global_id
+      schema: { type: string, format: uuid }
+    ReadinessTemplateVersionParam:
+      in: path
+      name: templateVersion
+      required: true
+      description: Exact positive readiness-template version
+      schema: { type: integer, minimum: 1 }
+    ReadinessInstanceId:
+      in: path
+      name: instanceId
+      required: true
+      description: Stable Project readiness-instance global_id within the already-authorized Project
       schema: { type: string, format: uuid }
     IdempotencyKey:
       in: header
@@ -7028,6 +7255,44 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ToolingProcessChainRevision" }
+    ReadinessTemplateCatalogResult:
+      description: Exact published readiness-template versions eligible for the authorized Project
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReadinessTemplateCatalog" }
+    ReadinessTemplateCommandResult:
+      description: Exact readiness-template draft or published version after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReadinessTemplateVersion" }
+    ReadinessQueryResult:
+      description: Exact authorized Project readiness workspace and immutable history
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReadinessWorkspace" }
+    ReadinessCommandResult:
+      description: Exact Project readiness workspace after one atomic append-only command or safe actor-bound replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReadinessWorkspace" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -18290,7 +18555,10 @@ components:
         required: { type: boolean }
         blockingLevel: { type: string, enum: [P0, P1, P2, none] }
         gateKey: { type: string, minLength: 1, maxLength: 128 }
-        completionRule: { type: string, enum: [confirmation, exact_evidence, exact_source_result] }
+        completionRule:
+          type: string
+          description: A controlled quality report is exact evidence only; exact_source_result accepts only governed result dispositions.
+          enum: [confirmation, exact_evidence, exact_source_result]
         applicability: { $ref: "#/components/schemas/ReadinessApplicabilitySelector" }
         evidenceRequirements:
           type: array
@@ -18477,6 +18745,188 @@ components:
         traceId: { type: string, minLength: 1, maxLength: 128 }
         versionKeyHash: { $ref: "#/components/schemas/ReadinessSha256" }
         snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+    CreateReadinessTemplate:
+      type: object
+      additionalProperties: false
+      required: [templateCode, title, applicability, categories, items]
+      properties:
+        templateCode:
+          { type: string, minLength: 1, maxLength: 64, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$" }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        applicability: { $ref: "#/components/schemas/ReadinessApplicabilitySelector" }
+        categories:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessCategoryDefinition" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessItemDefinition" }
+    EditReadinessTemplate:
+      type: object
+      additionalProperties: false
+      required: [expectedOptimisticVersion, title, applicability, categories, items]
+      properties:
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        applicability: { $ref: "#/components/schemas/ReadinessApplicabilitySelector" }
+        categories:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessCategoryDefinition" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessItemDefinition" }
+    PublishReadinessTemplate:
+      type: object
+      additionalProperties: false
+      required: [expectedOptimisticVersion]
+      properties:
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+    ReadinessTemplateCatalog:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, templates]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        templates:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessTemplateVersion" }
+    ReadinessAssignment:
+      type: object
+      additionalProperties: false
+      required: [itemKey, ownerMemberGlobalId, dueDate]
+      properties:
+        itemKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" }
+        ownerMemberGlobalId: { type: string, format: uuid }
+        dueDate: { type: string, format: date }
+    InitializeProjectReadiness:
+      type: object
+      additionalProperties: false
+      description: Project, customer, Gate and item state are resolved and frozen by the server; the caller supplies no score or blocker truth.
+      required: [templateRevisionGlobalId, templateVersion, templateSnapshotHash, industryKey, assignments]
+      properties:
+        templateRevisionGlobalId: { type: string, format: uuid }
+        templateVersion: { type: integer, minimum: 1 }
+        templateSnapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+        industryKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" }
+        assignments:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessAssignment" }
+    ReadinessInternalSourceSelection:
+      type: object
+      additionalProperties: false
+      required: [requirementKey, kind, globalId, sourceVersion, snapshotHash]
+      properties:
+        requirementKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" }
+        kind:
+          type: string
+          enum: [project, domain_work_item, released_document, release_baseline, file_revision, tooling_capacity_scenario, trial_input_lock, trial_actual, trial_sample, trial_cavity_result, trial_defect, trial_defect_verification, trial_comparison, trial_review_reference, trial_conclusion, controlled_quality_result]
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+    ReadinessExternalSourceSelection:
+      type: object
+      additionalProperties: false
+      description: Selects one configured formal provider kind; identity and unavailable state remain server-owned.
+      required: [requirementKey, kind]
+      properties:
+        requirementKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" }
+        kind:
+          type: string
+          enum: [erp_material_specification, erp_quality_result, erp_run_at_rate, erp_hr_qualification, erp_supplier_execution]
+    ReadinessSourceSelection:
+      description: Closed union of one exact internal source or one identity-free formal provider kind; caller source state is forbidden.
+      oneOf:
+        - { $ref: "#/components/schemas/ReadinessInternalSourceSelection" }
+        - { $ref: "#/components/schemas/ReadinessExternalSourceSelection" }
+    ReviseProjectReadinessItem:
+      type: object
+      additionalProperties: false
+      description: Scores, blockers, applicability, Gate identity and source disposition are server-derived and cannot be submitted.
+      required: [expectedInstanceVersion, expectedRevisionGlobalId, expectedRevisionSnapshotHash, itemKey, ownerMemberGlobalId, dueDate, state, confirmationValue, sources]
+      properties:
+        expectedInstanceVersion: { type: integer, minimum: 1 }
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedRevisionSnapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+        itemKey: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" }
+        ownerMemberGlobalId: { type: string, format: uuid }
+        dueDate: { type: string, format: date }
+        state: { type: string, enum: [not_started, in_progress, complete, failed] }
+        confirmationValue:
+          oneOf: [{ type: string, minLength: 1, maxLength: 4000 }, { type: "null" }]
+        sources:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessSourceSelection" }
+    ReadinessUnavailableProjection:
+      type: object
+      additionalProperties: false
+      description: Explicit formal-provider hold. It performs no ERP or network call and accepts no caller disposition.
+      required: [kind, state, reasonCode]
+      properties:
+        kind:
+          type: string
+          enum: [erp_material_specification, erp_quality_result, erp_run_at_rate, erp_hr_qualification, erp_supplier_execution]
+        state: { type: string, const: unavailable }
+        reasonCode:
+          type: string
+          enum: [erp_material_specification_provider_unavailable, erp_quality_result_provider_unavailable, erp_run_at_rate_provider_unavailable, erp_hr_qualification_provider_unavailable, erp_supplier_execution_provider_unavailable]
+    ReadinessSourceOption:
+      type: object
+      additionalProperties: false
+      description: Server-validated Project Work Item source identity exposed by the readiness workspace so the browser never invents a private snapshot hash.
+      required: [kind, globalId, sourceVersion, snapshotHash, label, stateLabelSource, stateTerminal]
+      properties:
+        kind: { type: string, const: domain_work_item }
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+        label: { type: string, minLength: 1, maxLength: 280 }
+        stateLabelSource:
+          type: string
+          description: Literal English source string from the canonical Project Work policy label registry.
+          enum: [Draft, Identified, Not started, Open, Requested]
+        stateTerminal: { type: boolean }
+    ReadinessPermissions:
+      type: object
+      additionalProperties: false
+      required: [canManageTemplates, canInitialize, canRevise]
+      properties:
+        canManageTemplates: { type: boolean }
+        canInitialize: { type: boolean }
+        canRevise: { type: boolean }
+    ReadinessWorkspace:
+      type: object
+      additionalProperties: false
+      description: Exact Project readiness history ordered oldest to newest; formal ERP projections remain explicitly unavailable.
+      required: [projectGlobalId, currentRevision, revisions, sourceOptions, unavailableProjections, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        currentRevision:
+          oneOf: [{ $ref: "#/components/schemas/ReadinessInstanceRevision" }, { type: "null" }]
+        revisions:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessInstanceRevision" }
+        sourceOptions:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessSourceOption" }
+        unavailableProjections:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ReadinessUnavailableProjection" }
+        permissions: { $ref: "#/components/schemas/ReadinessPermissions" }
     ProblemDetails:
       type: object
       additionalProperties: false

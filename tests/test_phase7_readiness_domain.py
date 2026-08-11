@@ -131,10 +131,7 @@ def draft() -> ReadinessTemplateVersion:
                 requirements=(
                     ReadinessEvidenceRequirement(
                         "quality",
-                        (
-                            ReadinessSourceKind.CONTROLLED_QUALITY_RESULT,
-                            ReadinessSourceKind.ERP_QUALITY_RESULT,
-                        ),
+                        (ReadinessSourceKind.ERP_QUALITY_RESULT,),
                         unavailable_blocks=True,
                     ),
                 ),
@@ -239,6 +236,10 @@ class Phase7ReadinessDomainTest(unittest.TestCase):
         )
         self.assertEqual(instance_from_snapshot(value.snapshot_payload()), value)
 
+    def test_instance_accepts_the_configured_site_tenant_vocabulary(self) -> None:
+        value = replace(instance(), tenant_id="tenant/site@example.invalid")
+        self.assertEqual(value.tenant_id, "tenant/site@example.invalid")
+
     def test_high_percentage_never_hides_incomplete_p0_blocker(self) -> None:
         current = instance()
         successor = revise_readiness_item(
@@ -293,22 +294,45 @@ class Phase7ReadinessDomainTest(unittest.TestCase):
     def test_failed_quality_blocks_even_when_configured_below_p0(self) -> None:
         current = instance()
         selected = current.items[1]
-        definition = replace(selected.definition, blocking_level=ReadinessBlockingLevel.P1)
-        failed = replace(
-            selected,
-            definition=definition,
-            state=ReadinessItemState.FAILED,
-            sources=(
-                exact_source(
-                    "quality",
-                    ReadinessSourceKind.CONTROLLED_QUALITY_RESULT,
-                    22,
-                    state=ReadinessSourceState.FAILED,
-                ),
+        for index, kind in enumerate(
+            (
+                ReadinessSourceKind.TRIAL_CAVITY_RESULT,
+                ReadinessSourceKind.TRIAL_DEFECT,
+                ReadinessSourceKind.TRIAL_DEFECT_VERIFICATION,
             ),
-        )
-        manual = replace(current, items=(current.items[0], failed, current.items[2]))
-        self.assertIn("failed_mandatory_quality", {row.code.value for row in manual.evaluation.blockers})
+            start=22,
+        ):
+            with self.subTest(kind=kind):
+                quality_requirement = replace(
+                    selected.definition.evidence_requirements[0],
+                    accepted_source_kinds=(kind,),
+                )
+                definition = replace(
+                    selected.definition,
+                    blocking_level=ReadinessBlockingLevel.P1,
+                    evidence_requirements=(quality_requirement,),
+                )
+                failed = replace(
+                    selected,
+                    definition=definition,
+                    state=ReadinessItemState.FAILED,
+                    sources=(
+                        exact_source(
+                            "quality",
+                            kind,
+                            index,
+                            state=ReadinessSourceState.FAILED,
+                        ),
+                    ),
+                )
+                manual = replace(
+                    current,
+                    items=(current.items[0], failed, current.items[2]),
+                )
+                self.assertIn(
+                    "failed_mandatory_quality",
+                    {row.code.value for row in manual.evaluation.blockers},
+                )
 
     def test_complete_state_requires_exact_evidence(self) -> None:
         with self.assertRaises(RequestValidationFailed):
@@ -327,6 +351,59 @@ class Phase7ReadinessDomainTest(unittest.TestCase):
                 request_id=uid(17),
                 trace_id="trace-unsafe-complete",
             )
+
+    def test_disallowed_source_kind_cannot_suppress_an_unavailable_blocker(self) -> None:
+        with self.assertRaises(RequestValidationFailed):
+            revise_readiness_item(
+                instance(),
+                global_id=uid(23),
+                expected_instance_version=1,
+                item_key="formal_quality",
+                owner=MEMBER,
+                due_date=date(2026, 9, 2),
+                state=ReadinessItemState.IN_PROGRESS,
+                confirmation_value=None,
+                sources=(
+                    exact_source(
+                        "quality",
+                        ReadinessSourceKind.RELEASED_DOCUMENT,
+                        24,
+                    ),
+                ),
+                created_by_user_id="owner@example.invalid",
+                created_at=NOW,
+                request_id=uid(25),
+                trace_id="trace-disallowed-source-kind",
+            )
+
+    def test_evidence_existence_cannot_be_configured_as_source_result_approval(self) -> None:
+        for kind in (
+            ReadinessSourceKind.RELEASED_DOCUMENT,
+            ReadinessSourceKind.CONTROLLED_QUALITY_RESULT,
+        ):
+            with self.subTest(kind=kind), self.assertRaises(RequestValidationFailed):
+                item(
+                    "unsafe_report_approval",
+                    10,
+                    blocking=ReadinessBlockingLevel.P0,
+                    gate="G6",
+                    rule=ReadinessCompletionRule.EXACT_SOURCE_RESULT,
+                    requirements=(requirement("report", kind),),
+                )
+
+        evidence = item(
+            "controlled_report_evidence",
+            10,
+            blocking=ReadinessBlockingLevel.P1,
+            gate="G6",
+            rule=ReadinessCompletionRule.EXACT_EVIDENCE,
+            requirements=(
+                requirement(
+                    "report", ReadinessSourceKind.CONTROLLED_QUALITY_RESULT
+                ),
+            ),
+        )
+        self.assertIs(evidence.completion_rule, ReadinessCompletionRule.EXACT_EVIDENCE)
 
     def test_successor_changes_exactly_one_item_and_preserves_policy(self) -> None:
         current = instance()

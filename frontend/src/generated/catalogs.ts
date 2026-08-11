@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'ccac1f09bc4d4928';
+export const catalogVersion = '4cb88a31d077ad3b';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -5753,6 +5753,7 @@ export const catalogs = {
     "The NPI defect cavity cannot be rebound.": "不能重新绑定 NPI 缺陷的型腔。",
     "The NPI readiness record was changed by another user.": "NPI 就绪度记录已被其他用户更改。",
     "The NPI Readiness Template is unavailable.": "NPI 就绪度模板不可用。",
+    "The NPI Readiness workspace is temporarily unavailable.": "NPI 就绪度工作区暂时不可用。",
     "The object was changed by another user.": "该对象已被其他用户变更。",
     "The one-page Trial summary input does not match the exact snapshots.": "单页试模摘要输入与精确快照不匹配。",
     "The one-page Trial summary input has invalid controlled fields.": "试模单页摘要输入包含无效的受控字段。",
@@ -12621,6 +12622,7 @@ export const catalogs = {
     "The NPI defect cavity cannot be rebound.": "不能重新綁定 NPI 缺陷的型腔。",
     "The NPI readiness record was changed by another user.": "NPI 就緒度記錄已被其他使用者變更。",
     "The NPI Readiness Template is unavailable.": "NPI 就緒度範本無法使用。",
+    "The NPI Readiness workspace is temporarily unavailable.": "NPI 就緒度工作區暫時無法使用。",
     "The object was changed by another user.": "該物件已被其他使用者變更。",
     "The one-page Trial summary input does not match the exact snapshots.": "單頁試模摘要輸入與精確快照不相符。",
     "The one-page Trial summary input has invalid controlled fields.": "試模單頁摘要輸入包含無效的受控欄位。",

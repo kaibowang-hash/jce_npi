@@ -75,6 +75,12 @@ _ROUTES = {
     ("GET", "/api/npi/v1/learning"): (
         "npi_core.project_controls_api.search_project_learning"
     ),
+    ("GET", "/api/npi/v1/npi-readiness/templates"): (
+        "npi_core.readiness_api.get_readiness_templates"
+    ),
+    ("POST", "/api/npi/v1/npi-readiness/templates"): (
+        "npi_core.readiness_api.create_readiness_template"
+    ),
 }
 
 _PROJECT_COCKPIT_ROUTE = re.compile(
@@ -82,6 +88,21 @@ _PROJECT_COCKPIT_ROUTE = re.compile(
 )
 _PROJECT_TRIALS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trials$"
+)
+_READINESS_TEMPLATE_VERSION_ROUTE = re.compile(
+    r"^/api/npi/v1/npi-readiness/templates/(?P<template_id>[^/:]+)/versions/"
+    r"(?P<template_version>[^/:]+)$"
+)
+_READINESS_TEMPLATE_PUBLISH_ROUTE = re.compile(
+    r"^/api/npi/v1/npi-readiness/templates/(?P<template_id>[^/:]+)/versions/"
+    r"(?P<template_version>[^/:]+):publish$"
+)
+_PROJECT_READINESS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/npi-readiness$"
+)
+_PROJECT_READINESS_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/npi-readiness/"
+    r"(?P<instance_id>[^/:]+)/revisions$"
 )
 _PROJECT_TRIAL_PLAN_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
@@ -679,6 +700,10 @@ def route_request() -> None:
                 _PROJECT_TRIAL_REVIEW_ROUTE,
                 "npi_core.trial_api.get_trial_review_workspace",
             ),
+            (
+                _PROJECT_READINESS_ROUTE,
+                "npi_core.readiness_api.get_project_readiness",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -776,12 +801,29 @@ def route_request() -> None:
                 _PROJECT_TRIAL_REOPEN_ROUTE,
                 "npi_core.trial_api.reopen_trial_conclusion",
             ),
+            (
+                _READINESS_TEMPLATE_PUBLISH_ROUTE,
+                "npi_core.readiness_api.publish_readiness_template",
+            ),
+            (
+                _PROJECT_READINESS_ROUTE,
+                "npi_core.readiness_api.initialize_project_readiness",
+            ),
+            (
+                _PROJECT_READINESS_REVISIONS_ROUTE,
+                "npi_core.readiness_api.revise_project_readiness",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
                 command = candidate
                 route_params = match.groupdict()
                 break
+    if command is None and request.method == "PUT":
+        match = _READINESS_TEMPLATE_VERSION_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_core.readiness_api.edit_readiness_template"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         for route, candidate in (
             (_PROJECT_TOOLING_LIST_ROUTE, "npi_core.tooling_export_api.get_tooling_list"),
@@ -1384,6 +1426,9 @@ def route_request() -> None:
     if _p7_04_routes_disabled(command):
         command = "npi_core.trial_api.trial_review_routes_disabled"
         route_params = {}
+    if _p7_05_routes_disabled(command):
+        command = "npi_core.readiness_api.readiness_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1866,6 +1911,24 @@ def _p7_04_routes_disabled(command: str | None) -> bool:
     }
 
 
+def _p7_05_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_05_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and command in {
+        "npi_core.readiness_api.get_readiness_templates",
+        "npi_core.readiness_api.create_readiness_template",
+        "npi_core.readiness_api.edit_readiness_template",
+        "npi_core.readiness_api.publish_readiness_template",
+        "npi_core.readiness_api.get_project_readiness",
+        "npi_core.readiness_api.initialize_project_readiness",
+        "npi_core.readiness_api.revise_project_readiness",
+    }
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1930,6 +1993,27 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "POST" and path == "/api/npi/v1/projects":
         return True
     if method == "GET" and path == "/api/npi/v1/me/work":
+        return True
+    if (
+        method in {"GET", "POST"}
+        and path == "/api/npi/v1/npi-readiness/templates"
+    ):
+        return True
+    if (
+        (method == "PUT" and _READINESS_TEMPLATE_VERSION_ROUTE.fullmatch(path))
+        or (
+            method == "POST"
+            and _READINESS_TEMPLATE_PUBLISH_ROUTE.fullmatch(path)
+        )
+        or (
+            method in {"GET", "POST"}
+            and _PROJECT_READINESS_ROUTE.fullmatch(path)
+        )
+        or (
+            method == "POST"
+            and _PROJECT_READINESS_REVISIONS_ROUTE.fullmatch(path)
+        )
+    ):
         return True
     if (
         method in {"GET", "PUT"}

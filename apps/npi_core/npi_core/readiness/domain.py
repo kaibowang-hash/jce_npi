@@ -26,6 +26,7 @@ except ImportError:  # Keeps the domain independently testable.
 
 _CODE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$")
 _KEY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_TENANT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$")
 _HASH = re.compile(r"^[0-9a-f]{64}$")
 _EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 MAX_CATEGORIES = 100
@@ -102,8 +103,23 @@ EXTERNAL_SOURCE_KINDS = frozenset(
 )
 QUALITY_RESULT_KINDS = frozenset(
     {
-        ReadinessSourceKind.CONTROLLED_QUALITY_RESULT,
         ReadinessSourceKind.ERP_QUALITY_RESULT,
+        ReadinessSourceKind.TRIAL_CAVITY_RESULT,
+        ReadinessSourceKind.TRIAL_DEFECT,
+        ReadinessSourceKind.TRIAL_DEFECT_VERIFICATION,
+    }
+)
+RESULT_SOURCE_KINDS = frozenset(
+    {
+        ReadinessSourceKind.TOOLING_CAPACITY_SCENARIO,
+        ReadinessSourceKind.TRIAL_CAVITY_RESULT,
+        ReadinessSourceKind.TRIAL_DEFECT,
+        ReadinessSourceKind.TRIAL_DEFECT_VERIFICATION,
+        ReadinessSourceKind.TRIAL_CONCLUSION,
+        ReadinessSourceKind.ERP_QUALITY_RESULT,
+        ReadinessSourceKind.ERP_RUN_AT_RATE,
+        ReadinessSourceKind.ERP_HR_QUALIFICATION,
+        ReadinessSourceKind.ERP_SUPPLIER_EXECUTION,
     }
 )
 
@@ -348,6 +364,11 @@ class ReadinessItemDefinition:
         _unique(tuple(value.key.casefold() for value in requirements), "items.evidenceRequirements")
         if self.completion_rule is not ReadinessCompletionRule.CONFIRMATION and not requirements:
             raise _problem("items.evidenceRequirements", _("Add at least one evidence requirement."))
+        if self.completion_rule is ReadinessCompletionRule.EXACT_SOURCE_RESULT and any(
+            not set(requirement.accepted_source_kinds).issubset(RESULT_SOURCE_KINDS)
+            for requirement in requirements
+        ):
+            raise _problem("items.evidenceRequirements.acceptedSourceKinds", _("Select a supported value."))
         object.__setattr__(self, "evidence_requirements", requirements)
 
     def snapshot_payload(self) -> dict[str, object]:
@@ -709,9 +730,17 @@ class ReadinessItemSnapshot:
             tuple((value.requirement_key, value.kind, value.global_id, value.source_version) for value in sources),
             "items.sources",
         )
-        known_requirements = {value.key for value in self.definition.evidence_requirements}
-        if any(value.requirement_key not in known_requirements for value in sources):
+        requirements = {
+            value.key: value for value in self.definition.evidence_requirements
+        }
+        if any(value.requirement_key not in requirements for value in sources):
             raise _problem("items.sources.requirementKey", _("Select an evidence requirement from this item."))
+        if any(
+            value.kind
+            not in requirements[value.requirement_key].accepted_source_kinds
+            for value in sources
+        ):
+            raise _problem("items.sources.kind", _("Select a supported value."))
         object.__setattr__(self, "sources", tuple(sorted(sources, key=lambda value: (value.requirement_key, value.kind.value, str(value.global_id or "")))))
         object.__setattr__(self, "confirmation_value", _optional_text(self.confirmation_value, "items.confirmationValue", 4_000))
         if not self.applicable:
@@ -756,8 +785,15 @@ class ReadinessItemSnapshot:
     @property
     def has_required_unavailable_source(self) -> bool:
         for requirement in self.definition.evidence_requirements:
-            values = tuple(value for value in self.sources if value.requirement_key == requirement.key)
-            satisfied = sum(value.state is ReadinessSourceState.SATISFIED for value in values)
+            values = tuple(
+                value
+                for value in self.sources
+                if value.requirement_key == requirement.key
+                and value.kind in requirement.accepted_source_kinds
+            )
+            satisfied = sum(
+                value.state is ReadinessSourceState.SATISFIED for value in values
+            )
             if (
                 requirement.unavailable_blocks
                 and satisfied < requirement.minimum_count
@@ -905,7 +941,11 @@ class ReadinessInstanceRevision:
     def __post_init__(self) -> None:
         _uuid(self.global_id, "globalId")
         _uuid(self.instance_global_id, "instanceGlobalId")
-        object.__setattr__(self, "tenant_id", _text(self.tenant_id, "tenantId", 128, pattern=_KEY))
+        object.__setattr__(
+            self,
+            "tenant_id",
+            _text(self.tenant_id, "tenantId", 128, pattern=_TENANT),
+        )
         if not isinstance(self.project, ReadinessProjectSnapshot):
             raise _problem("project", _("Enter an exact Project snapshot."))
         if not isinstance(self.template_revision, ReadinessExactReference):

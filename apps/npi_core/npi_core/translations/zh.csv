@@ -6847,6 +6847,7 @@ Select the exact predecessor readiness revision.,请选择精确的前序就绪�
 Stored JSON does not match the exact readiness snapshot.,存储的数据对象与精确就绪度快照不匹配。
 Stored list does not match the exact readiness snapshot.,存储的列表与精确就绪度快照不匹配。
 The NPI Readiness Template is unavailable.,NPI 就绪度模板不可用。
+The NPI Readiness workspace is temporarily unavailable.,NPI 就绪度工作区暂时不可用。
 The NPI readiness record was changed by another user.,NPI 就绪度记录已被其他用户更改。
 The Project is unavailable for this NPI Readiness Instance.,此 NPI 就绪度实例的项目不可用。
 The predecessor NPI Readiness revision is unavailable.,前序 NPI 就绪度修订不可用。

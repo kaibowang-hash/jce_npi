@@ -1952,6 +1952,22 @@ class FrappeGateReviewRepository:
             )
         if set(by_requirement) - known:
             raise ValueError("Persisted Gate evidence has an unknown requirement.")
+        blockers = tuple(
+            GateBlockerInput(
+                global_id=UUID(str(document.global_id)),
+                version=int(document.optimistic_version),
+                state=str(document.state_key),
+                blocking=True,
+                terminal=False,
+            )
+            for document in self._blocker_documents(project, gate)
+        )
+        blockers, dependencies = _merge_current_readiness_gate_input(
+            project_id=UUID(str(project.global_id)),
+            gate_id=UUID(str(gate.global_id)),
+            blockers=blockers,
+            dependencies=tuple(dependencies),
+        )
         return GateInputSnapshot(
             gate_global_id=UUID(str(gate.global_id)),
             project_global_id=UUID(str(project.global_id)),
@@ -1959,17 +1975,8 @@ class FrappeGateReviewRepository:
             gate_version=int(gate.review_input_version or 1),
             requirements=tuple(requirements),
             evidence=tuple(evidence_values),
-            blockers=tuple(
-                GateBlockerInput(
-                    global_id=UUID(str(document.global_id)),
-                    version=int(document.optimistic_version),
-                    state=str(document.state_key),
-                    blocking=True,
-                    terminal=False,
-                )
-                for document in self._blocker_documents(project, gate)
-            ),
-            dependencies=tuple(dependencies),
+            blockers=blockers,
+            dependencies=dependencies,
         )
 
     @staticmethod
@@ -3334,6 +3341,134 @@ def _input_snapshot_from_payload(payload: Mapping[str, object]) -> GateInputSnap
     )
     if value.canonical_dict() != dict(payload):
         raise ValueError("Persisted Gate input snapshot is not canonical.")
+    return value
+
+
+def _merge_current_readiness_gate_input(
+    *,
+    project_id: UUID,
+    gate_id: UUID,
+    blockers: tuple[GateBlockerInput, ...],
+    dependencies: tuple[GateDependencyInput, ...],
+) -> tuple[tuple[GateBlockerInput, ...], tuple[GateDependencyInput, ...]]:
+    """Add only the bounded read-only readiness projection to Gate input."""
+    configuration = getattr(frappe, "conf", None)
+    if (
+        configuration is None
+        or not hasattr(configuration, "get")
+        or configuration.get("npi_p7_05_routes_disabled") is not False
+    ):
+        return blockers, dependencies
+
+    # Deliberately lazy: the disabled Gate path must not import readiness runtime.
+    from npi_core.readiness.frappe_repository import current_gate_readiness_input
+
+    projection = current_gate_readiness_input(
+        project_id=project_id,
+        gate_id=gate_id,
+    )
+    if not isinstance(projection, Mapping) or set(projection) != {
+        "blockers",
+        "dependency",
+    }:
+        raise ValueError("Current readiness Gate input projection is invalid.")
+    blocker_payloads = projection["blockers"]
+    if not isinstance(blocker_payloads, Sequence) or isinstance(
+        blocker_payloads, (str, bytes)
+    ):
+        raise TypeError("Current readiness Gate blocker projection is invalid.")
+    if len(blocker_payloads) > _MAX_BLOCKERS:
+        raise ValueError("Current readiness Gate blocker projection is too large.")
+
+    readiness_blockers: list[GateBlockerInput] = []
+    for payload in blocker_payloads:
+        if not isinstance(payload, Mapping) or set(payload) != {
+            "globalId",
+            "version",
+            "state",
+            "blocking",
+            "terminal",
+        }:
+            raise ValueError("Current readiness Gate blocker projection is invalid.")
+        if (
+            payload["state"] != "readiness_incomplete_p0"
+            or payload["blocking"] is not True
+            or payload["terminal"] is not False
+        ):
+            raise ValueError("Current readiness Gate blocker projection is unsafe.")
+        readiness_blockers.append(
+            GateBlockerInput(
+                global_id=_readiness_projection_uuid(
+                    payload["globalId"], "blocker global ID"
+                ),
+                version=_readiness_projection_version(payload["version"]),
+                state="readiness_incomplete_p0",
+                blocking=True,
+                terminal=False,
+            )
+        )
+
+    dependency_payload = projection["dependency"]
+    readiness_dependencies: tuple[GateDependencyInput, ...] = ()
+    if dependency_payload is not None:
+        if not isinstance(dependency_payload, Mapping) or set(dependency_payload) != {
+            "globalId",
+            "version",
+            "snapshotHash",
+        }:
+            raise ValueError(
+                "Current readiness Gate dependency projection is invalid."
+            )
+        readiness_dependencies = (
+            GateDependencyInput(
+                kind=DependencyEvaluator.GATE_INPUT_SNAPSHOT,
+                global_id=_readiness_projection_uuid(
+                    dependency_payload["globalId"], "dependency global ID"
+                ),
+                version=_readiness_projection_version(dependency_payload["version"]),
+                snapshot_hash=_strict_sha256(
+                    dependency_payload["snapshotHash"],
+                    "readiness dependency snapshot hash",
+                ),
+            ),
+        )
+    elif readiness_blockers:
+        raise ValueError("Current readiness Gate blockers have no exact dependency.")
+
+    if len(blockers) + len(readiness_blockers) > _MAX_BLOCKERS:
+        raise ValueError("Combined Gate blocker input exceeds its safe bound.")
+    blocker_ids = {value.global_id for value in blockers}
+    readiness_blocker_ids = [value.global_id for value in readiness_blockers]
+    if (
+        len(set(readiness_blocker_ids)) != len(readiness_blocker_ids)
+        or blocker_ids.intersection(readiness_blocker_ids)
+    ):
+        raise ValueError("Current readiness Gate blocker identity collides.")
+
+    dependency_keys = {(value.kind, value.global_id) for value in dependencies}
+    if any(
+        (value.kind, value.global_id) in dependency_keys
+        for value in readiness_dependencies
+    ):
+        raise ValueError("Current readiness Gate dependency identity collides.")
+    return blockers + tuple(readiness_blockers), dependencies + readiness_dependencies
+
+
+def _readiness_projection_uuid(value: object, label: str) -> UUID:
+    if not isinstance(value, str):
+        raise TypeError(f"Current readiness {label} is invalid.")
+    try:
+        parsed = UUID(value)
+    except (ValueError, AttributeError) as error:
+        raise ValueError(f"Current readiness {label} is invalid.") from error
+    if str(parsed) != value:
+        raise ValueError(f"Current readiness {label} is not canonical.")
+    return parsed
+
+
+def _readiness_projection_version(value: object) -> int:
+    if type(value) is not int or value < 1:
+        raise ValueError("Current readiness projection version is invalid.")
     return value
 
 

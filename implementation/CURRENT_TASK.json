@@ -94,6 +94,7 @@
     "tests/test_phase7_readiness_repository.py",
     "tests/test_phase7_readiness_repository_seams.py",
     "tests/test_phase7_readiness_runtime_verifier.py",
+    "tests/test_phase4_project_contract.py",
     "tests/test_phase4_gate_review_repository.py"
   ],
   "affected_checks": {

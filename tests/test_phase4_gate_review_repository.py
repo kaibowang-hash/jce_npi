@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib
+import inspect
 import json
 import sys
 import types
@@ -27,6 +28,8 @@ DEPENDENCY_ID = UUID("4abcc093-5366-4a58-a6d2-7efcdf824840")
 REFERENCE_ID = UUID("9ac17691-24cf-4b28-a2ef-6597df9414dd")
 SOURCE_ID = UUID("d73df0ec-ef0e-444a-a8bc-a5e9a08c0014")
 BASELINE_ID = UUID("1ba71ee3-c1fe-46d9-b9c6-67fb3c06aff2")
+READINESS_BLOCKER_ID = UUID("70a583ce-8c98-4fc9-80c4-0814ea02aa57")
+READINESS_REVISION_ID = UUID("f1dbd5e9-0e88-4bcc-a687-8ec344ec350f")
 RESOLVED_ACTION_ID = UUID("a05978ee-1e35-4340-a693-6e211bc0880c")
 SECOND_RESOLVED_ACTION_ID = UUID("21b9baf4-4ed8-49fb-adca-d23c9996aca9")
 TENANT_ID = "tenant-test"
@@ -223,6 +226,7 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
         "npi_core.gate_review.frappe_repository",
         "npi_core.gate_review.frappe_validation",
         "npi_core.gate_review_api",
+        "npi_core.readiness.frappe_repository",
         ("npi_core.npi_core.doctype.npi_file_revision." "npi_file_revision"),
         (
             "npi_core.npi_core.doctype.npi_gate_evidence_reference."
@@ -538,6 +542,237 @@ class Phase4GateReviewRepositoryTest(unittest.TestCase):
                 ),
             ),
         )
+
+    def _readiness_base_inputs(self):
+        blocker = self.domain.GateBlockerInput(
+            UUID(int=1),
+            1,
+            "open",
+            True,
+            False,
+        )
+        dependency = self.domain.GateDependencyInput(
+            self.domain.DependencyEvaluator.GATE_INPUT_SNAPSHOT,
+            UUID(int=2),
+            1,
+            "a" * 64,
+        )
+        return (blocker,), (dependency,)
+
+    def _readiness_input_hash(self, blockers, dependencies) -> str:
+        return self.domain.GateInputSnapshot(
+            gate_global_id=GATE_ID,
+            project_global_id=PROJECT_ID,
+            tenant_id=TENANT_ID,
+            gate_version=1,
+            requirements=(),
+            evidence=(),
+            blockers=tuple(blockers),
+            dependencies=tuple(dependencies),
+        ).snapshot_hash
+
+    @staticmethod
+    def _install_readiness_projection(projection: object, calls: list[object]) -> None:
+        readiness = types.ModuleType("npi_core.readiness.frappe_repository")
+
+        def current_gate_readiness_input(*, project_id: UUID, gate_id: UUID):
+            calls.append((project_id, gate_id))
+            return projection
+
+        readiness.current_gate_readiness_input = current_gate_readiness_input
+        sys.modules[readiness.__name__] = readiness
+
+    def _merge_readiness_input(self, blockers=None, dependencies=None):
+        base_blockers, base_dependencies = self._readiness_base_inputs()
+        return self.repository_module._merge_current_readiness_gate_input(
+            project_id=PROJECT_ID,
+            gate_id=GATE_ID,
+            blockers=base_blockers if blockers is None else tuple(blockers),
+            dependencies=(
+                base_dependencies if dependencies is None else tuple(dependencies)
+            ),
+        )
+
+    def test_readiness_missing_and_true_switch_do_not_import_or_change_hash(
+        self,
+    ) -> None:
+        blockers, dependencies = self._readiness_base_inputs()
+        expected_hash = self._readiness_input_hash(blockers, dependencies)
+        self.frappe.conf = AttrDoc()
+
+        unchanged = self._merge_readiness_input(blockers, dependencies)
+        self.assertIs(unchanged[0], blockers)
+        self.assertIs(unchanged[1], dependencies)
+        self.assertNotIn("npi_core.readiness.frappe_repository", sys.modules)
+
+        calls: list[object] = []
+        self._install_readiness_projection({}, calls)
+        self.frappe.conf.npi_p7_05_routes_disabled = True
+        unchanged = self._merge_readiness_input(blockers, dependencies)
+        self.assertEqual(calls, [])
+        self.assertEqual(self._readiness_input_hash(*unchanged), expected_hash)
+
+    def test_readiness_strict_false_adds_scoped_p0_and_exact_dependency(
+        self,
+    ) -> None:
+        calls: list[object] = []
+        self._install_readiness_projection(
+            {
+                "blockers": (
+                    {
+                        "globalId": str(READINESS_BLOCKER_ID),
+                        "version": 7,
+                        "state": "readiness_incomplete_p0",
+                        "blocking": True,
+                        "terminal": False,
+                    },
+                ),
+                "dependency": {
+                    "globalId": str(READINESS_REVISION_ID),
+                    "version": 7,
+                    "snapshotHash": "b" * 64,
+                },
+            },
+            calls,
+        )
+        self.frappe.conf = AttrDoc(npi_p7_05_routes_disabled=False)
+
+        blockers, dependencies = self._merge_readiness_input()
+
+        self.assertEqual(calls, [(PROJECT_ID, GATE_ID)])
+        self.assertEqual(len(blockers), 2)
+        self.assertEqual(blockers[-1].global_id, READINESS_BLOCKER_ID)
+        self.assertEqual(blockers[-1].state, "readiness_incomplete_p0")
+        self.assertTrue(blockers[-1].active)
+        self.assertEqual(len(dependencies), 2)
+        self.assertEqual(dependencies[-1].global_id, READINESS_REVISION_ID)
+        self.assertEqual(dependencies[-1].snapshot_hash, "b" * 64)
+
+    def test_readiness_input_identity_collisions_fail_closed(self) -> None:
+        base_blockers, base_dependencies = self._readiness_base_inputs()
+        projections = (
+            {
+                "blockers": (
+                    {
+                        "globalId": str(base_blockers[0].global_id),
+                        "version": 2,
+                        "state": "readiness_incomplete_p0",
+                        "blocking": True,
+                        "terminal": False,
+                    },
+                ),
+                "dependency": {
+                    "globalId": str(READINESS_REVISION_ID),
+                    "version": 2,
+                    "snapshotHash": "b" * 64,
+                },
+            },
+            {
+                "blockers": (),
+                "dependency": {
+                    "globalId": str(base_dependencies[0].global_id),
+                    "version": 2,
+                    "snapshotHash": "b" * 64,
+                },
+            },
+        )
+        self.frappe.conf = AttrDoc(npi_p7_05_routes_disabled=False)
+        for projection in projections:
+            with self.subTest(projection=projection):
+                self._install_readiness_projection(projection, [])
+                with self.assertRaisesRegex(ValueError, "identity collides"):
+                    self._merge_readiness_input(base_blockers, base_dependencies)
+
+    def test_readiness_combined_blocker_capacity_above_256_fails_closed(
+        self,
+    ) -> None:
+        existing = tuple(
+            self.domain.GateBlockerInput(
+                UUID(int=index),
+                1,
+                "open",
+                True,
+                False,
+            )
+            for index in range(1, 257)
+        )
+        self._install_readiness_projection(
+            {
+                "blockers": (
+                    {
+                        "globalId": str(READINESS_BLOCKER_ID),
+                        "version": 1,
+                        "state": "readiness_incomplete_p0",
+                        "blocking": True,
+                        "terminal": False,
+                    },
+                ),
+                "dependency": {
+                    "globalId": str(READINESS_REVISION_ID),
+                    "version": 1,
+                    "snapshotHash": "b" * 64,
+                },
+            },
+            [],
+        )
+        self.frappe.conf = AttrDoc(npi_p7_05_routes_disabled=False)
+
+        with self.assertRaisesRegex(ValueError, "exceeds its safe bound"):
+            self._merge_readiness_input(existing, ())
+
+    def test_readiness_corrupt_or_non_p0_projection_fails_closed(self) -> None:
+        invalid = (
+            {"blockers": (), "dependency": None, "extra": True},
+            {
+                "blockers": (
+                    {
+                        "globalId": str(READINESS_BLOCKER_ID),
+                        "version": 1,
+                        "state": "readiness_incomplete_p1",
+                        "blocking": True,
+                        "terminal": False,
+                    },
+                ),
+                "dependency": None,
+            },
+            {
+                "blockers": (
+                    {
+                        "globalId": str(READINESS_BLOCKER_ID).upper(),
+                        "version": 1,
+                        "state": "readiness_incomplete_p0",
+                        "blocking": True,
+                        "terminal": False,
+                    },
+                ),
+                "dependency": {
+                    "globalId": str(READINESS_REVISION_ID),
+                    "version": 1,
+                    "snapshotHash": "b" * 64,
+                },
+            },
+        )
+        self.frappe.conf = AttrDoc(npi_p7_05_routes_disabled=False)
+        for projection in invalid:
+            with self.subTest(projection=projection):
+                self._install_readiness_projection(projection, [])
+                with self.assertRaises((TypeError, ValueError)):
+                    self._merge_readiness_input()
+
+    def test_readiness_gate_boundary_has_no_mutation_path(self) -> None:
+        source = inspect.getsource(
+            self.repository_module._merge_current_readiness_gate_input
+        ).casefold()
+        for forbidden in (
+            "refresh_",
+            "transition",
+            "create_audit_event",
+            "reviewcycle",
+            ".save(",
+            ".insert(",
+            "frappe.db",
+        ):
+            self.assertNotIn(forbidden, source)
 
     def _projection_policy_and_bindings(self):
         domain = self.domain
