@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import os
 import sys
 import unittest
@@ -86,6 +87,16 @@ class Phase7TrialQualityRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
+
+    def test_round_cardinality_tracks_primary_then_target_creation(self) -> None:
+        fresh_source = inspect.getsource(self.module.run_fresh)
+        primary_projection = fresh_source.split("planned_round = command", 1)[1].split(
+            "round_value = exact_single", 1
+        )[0]
+        self.assertIn("rounds=1", primary_projection)
+
+        retained_source = inspect.getsource(self.module.retained_detail)
+        self.assertIn("rounds=2", retained_source)
 
     def test_quality_runtime_is_fail_closed_and_has_no_external_authority(self) -> None:
         for marker in (

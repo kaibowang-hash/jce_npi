@@ -2853,7 +2853,7 @@ def run_fresh(
         project_id,
         plan_id=plan_id,
         revisions=2,
-        rounds=2,
+        rounds=1,
         links=0,
     )
     round_value = exact_single(round_detail["rounds"], "planned Round")
@@ -3072,7 +3072,7 @@ def retained_detail(administrator, base_url: str) -> tuple[str, str, dict[str, A
         project_id,
         plan_id=plan_id,
         revisions=2,
-        rounds=1,
+        rounds=2,
         links=1,
     )
     return project_id, plan_id, detail
