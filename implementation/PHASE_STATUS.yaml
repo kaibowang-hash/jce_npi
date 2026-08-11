@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-11T05:25:36Z'
+updated_at: '2026-08-11T07:53:20Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-04
-current_task_status: IN_PROGRESS_CHECKPOINT_2
-current_task_completed_stage: P7_04_DOMAIN_CONTRACT_ADDITIVE_METADATA_PASS
-current_task_next_stage: P7_04_REPOSITORY_BFF_POLICY_BOUNDARY
+current_task_status: IN_PROGRESS_CHECKPOINT_3
+current_task_completed_stage: P7_04_REPOSITORY_BFF_POLICY_BOUNDARY_PASS
+current_task_next_stage: P7_04_LIVE_COMPARISON_CONCLUSION_WORKSPACE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-04
-resumed_product_task_status: ACTIVE_CHECKPOINT_2
+resumed_product_task_status: ACTIVE_CHECKPOINT_3
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1697,7 +1697,7 @@ p7_03:
 p7_04:
   task: P7-04
   controller_task: P7-04_ROUND_COMPARISON_CONCLUSION_QUALITY_APPROVAL
-  status: IN_PROGRESS_CHECKPOINT_2
+  status: IN_PROGRESS_CHECKPOINT_3
   phase: 7
   milestone: M6-04
   requirements:
@@ -1709,10 +1709,13 @@ p7_04:
   starting_controller_checkpoint: 1c0e8fdd73901c59ce920ff73fa5eea962be70c0
   checkpoint_1_product_checkpoint: 8e676acaebb08efbe8f322d7abeba894770f86c6
   checkpoint_1_ordinary_ci: 31465224626
+  checkpoint_2_product_checkpoint: b65415f8789be3b24c8f3ab8be0a85a5f5f636b3
+  checkpoint_2_ordinary_ci: 31469876418
   audit: PASS
   checkpoint_1: PASS
-  current_stage: REPOSITORY_BFF_POLICY_BOUNDARY
-  next_stage_after_pass: LIVE_COMPARISON_CONCLUSION_WORKSPACE
+  checkpoint_2: PASS
+  current_stage: LIVE_COMPARISON_CONCLUSION_WORKSPACE
+  next_stage_after_pass: CONTROLLED_RUNTIME_LEVEL_2
   product_code_changed: true
   external_holds:
     - ERPNEXT_FORMAL_NCR_QUALITY_INSPECTION_AND_REPORT_PROJECTION
@@ -1723,6 +1726,7 @@ p7_04:
     - implementation/evidence/phase-7/p7-03-validation.md
     - implementation/evidence/phase-7/p7-04-plan.md
     - implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

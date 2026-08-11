@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-04`
+`IN_PROGRESS_CHECKPOINT_3 — P7-04`
 
-Recovery time: `2026-08-11T06:41:24Z`
+Recovery time: `2026-08-11T07:53:20Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -115,19 +115,27 @@ trilingual sources), secret scan `93696644315` and unchanged `103/103` fixed-
 Linux visuals in `93696644330`. Complete evidence is
 `implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 2 enforced by `implementation/CURRENT_TASK.json`:
-Project-first exact review read and begin-analysis/comparison/reference/
-conclusion/decision/reopen commands; fail-closed published policy and eligible
-authority; server-derived blockers; exact optimistic versions and hashes;
-actor-bound idempotency; one transaction; append-only audit; and an
-independently default-closed P7-04 switch. Create no UI or controlled runtime
-fixture in this checkpoint.
+P7-04 checkpoint 2 passes at exact product SHA `b65415f`. Ordinary CI
+`31469876418` passes repository `93710640289` (`1,601` tracked Python),
+frontend `93710640314` (`843/843` unit, `371/371` E2E and `6,670` direct
+trilingual sources), secret scan `93710640333` and unchanged `103/103` fixed-
+Linux visual job `93710640286`. Complete evidence is
+`implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md`.
+
+Execute only checkpoint 3 enforced by `implementation/CURRENT_TASK.json`: add
+the strict Trial review data source and dense English/Simplified-Chinese/
+Traditional-Chinese comparison and conclusion workspace. Preserve exact source
+identity, policy/authority/blocker truth and controlled reference state across
+honest loading, empty, read-only, permission, validation, conflict, processing,
+retry and unavailable-external-effect surfaces; add only affected Linux visual
+evidence. Create no controlled runtime fixture in this checkpoint.
 
 Cycle/yield and formal ERP quality must remain explicitly unavailable unless
 an exact governed source exists. Evidence is not approval. Keep automatic
 Gate/Tooling/Work Item mutation, production ERPNext, customer signature
 authority, readiness, handover, release, external projection and production
-print inactive.
+print inactive. Controlled runtime and Level 2 remain checkpoint 4; Level 3
+remains reserved for the applicable PR/Phase/release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 

@@ -2704,3 +2704,35 @@ repeat or rewrite it merely to restore context. See
   transaction, append-only audit and an independently default-closed P7-04
   switch. UI/runtime and all ERP/customer/Gate/Tooling/readiness/release/
   projection/print authority remain inactive.
+
+## 2026-08-11 P7-04 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product SHA `b65415f8789be3b24c8f3ab8be0a85a5f5f636b3`
+  passes ordinary PR CI `31469876418`: repository `93710640289` proves
+  `1,601` tracked Python tests; frontend `93710640314` proves `843/843` unit,
+  `371/371` non-visual E2E and `6,670` direct English/`zh`/`zh-TW` sources,
+  production build and zero vulnerabilities; secret scan `93710640333` passes
+  both boundaries; fixed-Linux visual job `93710640286` retains `103/103`.
+  Artifact `9093023227` has digest
+  `de7eba53691d9da6c75b096a32cee5d8a5988dc1206ea6fd6aa3368a06136534`.
+  Controlled runtime correctly skips.
+- Checkpoint 2 activates only the Project-first exact review aggregate and
+  begin-analysis/comparison/reference/conclusion/decision/reopen commands. It
+  enforces same-Project/same-Plan exact immutable Round tuples, no latest or
+  zero substitution, fail-closed published policy and eligible authority,
+  controlled clean File/product/Tooling reference binding, evidence-not-
+  approval, server-derived blockers and distinct append-only lifecycle/
+  conclusion successors.
+- Actor-bound replay, target insert, lifecycle event, Round state, append-only
+  audit and response receipt are sealed in one transaction. ERP formal quality,
+  customer signature, Gate, Tooling lifecycle, Work Item, readiness, release,
+  projection and print effects remain explicitly unavailable or proposal-only.
+  Evidence is
+  `implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md`.
+- Activate only checkpoint 3: the strict Trial review data source and dense
+  English/Simplified-Chinese/Traditional-Chinese comparison/reference/
+  conclusion workspace with honest loading, empty, read-only, permission,
+  validation, conflict, processing, retry and unavailable-external-effect
+  states plus affected Linux visuals. Controlled runtime and Level 2 remain
+  checkpoint 4. Level 3 remains reserved for the applicable PR/Phase/release
+  boundary; no external authority is broadened.
