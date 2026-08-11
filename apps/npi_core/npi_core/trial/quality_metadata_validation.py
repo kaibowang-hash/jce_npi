@@ -21,6 +21,7 @@ from npi_core.trial.frappe_validation import trial_domain_value
 from npi_core.trial.quality_diagnostics import quality_type_error_stage
 from npi_core.trial.quality_domain import (
     TrialDefectPredecessorKind,
+    TrialDefectRevision,
     cavity_result_from_snapshot,
     trial_defect_from_snapshot,
     validate_cavity_result_successor,
@@ -305,8 +306,7 @@ def validate_trial_defect_document(document: Any) -> None:
                     },
                     _("The exact successful defect verification is unavailable."),
                 )
-    with quality_type_error_stage("P703_QUALITY_DEFECT_EVIDENCE", value.trace_id):
-        _require_quality_evidence(value, require_measurement_report=False)
+    predecessor_value: Any = None
     if value.predecessor_global_id is not None:
         with quality_type_error_stage(
             "P703_QUALITY_DEFECT_PREDECESSOR",
@@ -345,7 +345,7 @@ def validate_trial_defect_document(document: Any) -> None:
                 is TrialDefectPredecessorKind.TOOLING_DEFECT_REVISION
                 else trial_defect_from_snapshot
             )
-            current = trial_domain_value(
+            predecessor_value = trial_domain_value(
                 lambda: parser(
                     json_object(
                         predecessor[snapshot_field],
@@ -354,8 +354,22 @@ def validate_trial_defect_document(document: Any) -> None:
                 )
             )
             trial_domain_value(
-                lambda: validate_trial_defect_successor(current, value)
+                lambda: validate_trial_defect_successor(predecessor_value, value)
             )
+    retained_evidence = (
+        {
+            item.global_id: item.snapshot_hash
+            for item in predecessor_value.evidence
+        }
+        if isinstance(predecessor_value, TrialDefectRevision)
+        else {}
+    )
+    with quality_type_error_stage("P703_QUALITY_DEFECT_EVIDENCE", value.trace_id):
+        _require_quality_evidence(
+            value,
+            require_measurement_report=False,
+            retained_evidence=retained_evidence,
+        )
     with quality_type_error_stage("P703_QUALITY_DEFECT_NORMALIZE", value.trace_id):
         document.tooling_master = str(value.tooling_master_global_id)
         document.trial_round = str(value.trial_round_global_id)
@@ -693,7 +707,13 @@ def _require_member(member: Any, value: Any) -> None:
     )
 
 
-def _require_quality_evidence(value: Any, *, require_measurement_report: bool) -> None:
+def _require_quality_evidence(
+    value: Any,
+    *,
+    require_measurement_report: bool,
+    retained_evidence: dict[object, str] | None = None,
+) -> None:
+    retained_evidence = retained_evidence or {}
     sample_global_id = getattr(value, "sample_batch_revision_global_id", None)
     sample_hash = getattr(value, "sample_batch_revision_snapshot_hash", None)
     round_global_id = getattr(value, "trial_round_global_id", None)
@@ -704,12 +724,13 @@ def _require_quality_evidence(value: Any, *, require_measurement_report: bool) -
             "global_id": str(item.global_id),
             "tenant_id": value.tenant_id,
             "project_global_id": str(value.project_global_id),
-            "trial_round_global_id": str(round_global_id),
             "snapshot_hash": item.snapshot_hash,
         }
-        if sample_global_id is not None:
-            filters["sample_batch_revision_global_id"] = str(sample_global_id)
-            filters["sample_batch_revision_snapshot_hash"] = sample_hash
+        if retained_evidence.get(item.global_id) != item.snapshot_hash:
+            filters["trial_round_global_id"] = str(round_global_id)
+            if sample_global_id is not None:
+                filters["sample_batch_revision_global_id"] = str(sample_global_id)
+                filters["sample_batch_revision_snapshot_hash"] = sample_hash
         if require_measurement_report:
             filters["role"] = "measurement_report"
         require_exact_parent(

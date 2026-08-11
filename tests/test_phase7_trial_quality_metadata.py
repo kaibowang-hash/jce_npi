@@ -137,6 +137,23 @@ class Phase7TrialQualityMetadataTest(unittest.TestCase):
             ROOT / "contracts/data-ownership.yaml"
         ).read_text(encoding="utf-8"))
 
+    def test_cross_round_defect_keeps_predecessor_evidence_exact(self) -> None:
+        start = QUALITY_VALIDATION.index("def validate_trial_defect_document")
+        end = QUALITY_VALIDATION.index("def normalize_verification_identity", start)
+        defect_validation = QUALITY_VALIDATION[start:end]
+        predecessor = defect_validation.index("predecessor = require_exact_parent")
+        evidence = defect_validation.index("_require_quality_evidence(", predecessor)
+        self.assertLess(predecessor, evidence)
+        self.assertIn(
+            "if isinstance(predecessor_value, TrialDefectRevision)",
+            defect_validation,
+        )
+        self.assertIn(
+            "if retained_evidence.get(item.global_id) != item.snapshot_hash:\n"
+            '            filters["trial_round_global_id"] = str(round_global_id)',
+            QUALITY_VALIDATION,
+        )
+
     def test_metadata_does_not_create_external_or_approval_truth(self) -> None:
         serialized = json.dumps(
             [self.load(folder) for folder in self.FIELDS],
