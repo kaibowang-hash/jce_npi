@@ -72,6 +72,19 @@ class Phase7TrialReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertNotIn("ignore_" + "permissions=True", self.source)
         self.assertNotIn("core." + "whjichen.cn", self.source)
 
+    def test_review_runtime_uses_exact_authorized_email_actor(self) -> None:
+        actor_source = inspect.getsource(self.module.prepare_trial_review_actor)
+        policy_source = inspect.getsource(self.module.ensure_trial_review_policy)
+        review_source = inspect.getsource(self.module.run_review_fresh)
+        replay_source = inspect.getsource(self.module.run_review_replay)
+        self.assertTrue(self.module.REVIEW_USER.endswith("@example.invalid"))
+        self.assertNotEqual(self.module.REVIEW_USER, self.module.ACTOR_USER)
+        self.assertIn('{"role": "System Manager"}', actor_source)
+        self.assertIn('"user_id": REVIEW_USER', policy_source)
+        self.assertNotIn('"user_id": ACTOR_USER', policy_source)
+        self.assertIn("reviewer, reviewer_csrf", review_source)
+        self.assertIn("reviewer_csrf", replay_source)
+
     def test_review_runtime_proves_exact_policy_comparison_and_history(self) -> None:
         review_source = inspect.getsource(self.module.run_review_fresh)
         for marker in (

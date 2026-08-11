@@ -26,6 +26,7 @@ from verify_frappe_runtime import (
 )
 from verify_project_runtime import (
     bootstrap_csrf,
+    create_resource,
     delete_resource,
     get_resource,
     list_resources,
@@ -46,6 +47,7 @@ REVIEW_MEMBER_ID = document_runtime.fixture_id("p7-04-review-member")
 REVIEW_POLICY_ID = document_runtime.fixture_id("p7-04-review-policy")
 REVIEW_POLICY_REVISION_ID = document_runtime.fixture_id("p7-04-review-policy-r1")
 VERIFIER_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-verifier@example.invalid"
+REVIEW_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-reviewer@example.invalid"
 UNRELATED_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000701"
 ABSENT_PLAN_ID = "00000000-0000-4000-8000-000000000702"
@@ -3015,10 +3017,60 @@ def conclusion_payload(
     return payload
 
 
+def prepare_trial_review_actor(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    fixture_password: str,
+):
+    created = create_resource(
+        administrator,
+        base_url,
+        "User",
+        {
+            "email": REVIEW_USER,
+            "enabled": 1,
+            "first_name": "NPI Trial Review",
+            "language": "en",
+            "last_name": "Runtime Manager",
+            "new_password": fixture_password,
+            "roles": [
+                {"role": "Desk User"},
+                {"role": "NPI API User"},
+                {"role": "System Manager"},
+            ],
+            "send_welcome_email": 0,
+            "user_type": "System User",
+        },
+        csrf_token,
+    )
+    require(
+        created.status in {200, 201},
+        "P7-04 review actor fixture could not be created",
+    )
+    retained = get_resource(administrator, base_url, "User", REVIEW_USER)
+    data = retained.body.get("data", {})
+    roles = {
+        str(value.get("role"))
+        for value in data.get("roles", [])
+        if isinstance(value, dict)
+    }
+    require(
+        retained.status == 200
+        and data.get("enabled") == 1
+        and data.get("user_type") == "System User"
+        and {"NPI API User", "System Manager"} <= roles,
+        "P7-04 review actor authority drifted",
+    )
+    reviewer = login(base_url, REVIEW_USER, fixture_password)
+    return reviewer, bootstrap_csrf(reviewer, base_url, REVIEW_USER)
+
+
 def run_review_fresh(
     administrator,
     base_url: str,
     csrf_token: str,
+    fixture_password: str,
     *,
     project_id: str,
     plan_id: str,
@@ -3027,6 +3079,12 @@ def run_review_fresh(
     target: dict[str, Any],
 ) -> dict[str, object]:
     round_id = target["round"]["globalId"]
+    reviewer, reviewer_csrf = prepare_trial_review_actor(
+        administrator,
+        base_url,
+        csrf_token,
+        fixture_password,
+    )
     fixture = run_bench_fixture(
         "ensure_trial_review_policy",
         {
@@ -3042,7 +3100,7 @@ def run_review_fresh(
     )
     initial = assert_review_workspace(
         trial_request(
-            administrator,
+            reviewer,
             base_url,
             review_path(project_id, round_id),
             query_key="review-initial",
@@ -3066,9 +3124,9 @@ def run_review_fresh(
         "P7-04 exact policy or authority binding drifted",
     )
     begun = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         execution_path(project_id, round_id, ":begin-analysis"),
         {
             **review_policy_context(policy, initial["trialRound"]),
@@ -3115,9 +3173,9 @@ def run_review_fresh(
         "reason": "Seal the exact chronological T0 to T1 comparison.",
     }
     compared = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/comparisons"),
         comparison_payload,
         COMPARISON_KEY,
@@ -3146,33 +3204,33 @@ def run_review_fresh(
     stale_payload = dict(comparison_payload)
     stale_payload["expectedRoundOptimisticVersion"] = 3
     stale = trial_request(
-        administrator,
+        reviewer,
         base_url,
         review_path(project_id, round_id, "/comparisons"),
         method="POST",
         payload=stale_payload,
-        csrf_token=csrf_token,
+        csrf_token=reviewer_csrf,
         idempotency_key=STALE_COMPARISON_KEY,
     )
     validate_problem(stale, 409, "TRIAL_REVIEW_CONFLICT")
     conflicting_payload = dict(comparison_payload)
     conflicting_payload["reason"] = "Conflicting comparison payload must be rejected."
     idempotency_conflict = trial_request(
-        administrator,
+        reviewer,
         base_url,
         review_path(project_id, round_id, "/comparisons"),
         method="POST",
         payload=conflicting_payload,
-        csrf_token=csrf_token,
+        csrf_token=reviewer_csrf,
         idempotency_key=COMPARISON_KEY,
     )
     validate_problem(idempotency_conflict, 409, "TRIAL_IDEMPOTENCY_CONFLICT")
 
     reference_context = fixture["referenceContext"]
     internal_created = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/review-references"),
         review_reference_payload(
             reference_context,
@@ -3200,7 +3258,7 @@ def run_review_fresh(
     )
     before_blocked = persisted_counts(administrator, base_url, project_id)
     blocked = trial_request(
-        administrator,
+        reviewer,
         base_url,
         review_path(project_id, round_id, "/conclusions"),
         method="POST",
@@ -3210,7 +3268,7 @@ def run_review_fresh(
             comparison,
             [internal_reference],
         ),
-        csrf_token=csrf_token,
+        csrf_token=reviewer_csrf,
         idempotency_key=BLOCKED_CONCLUSION_KEY,
     )
     validate_problem(blocked, 422, "VALIDATION_FAILED")
@@ -3223,9 +3281,9 @@ def run_review_fresh(
         "P7-04 policy blocker did not fail closed with rollback",
     )
     controlled_created = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/review-references"),
         review_reference_payload(
             reference_context,
@@ -3245,9 +3303,9 @@ def run_review_fresh(
         "P7-04 controlled reference v1",
     )
     controlled_revised = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/review-references"),
         review_reference_payload(
             reference_context,
@@ -3276,7 +3334,7 @@ def run_review_fresh(
     )
     before_stale = persisted_counts(administrator, base_url, project_id)
     stale_reference = trial_request(
-        administrator,
+        reviewer,
         base_url,
         review_path(project_id, round_id, "/review-references"),
         method="POST",
@@ -3288,7 +3346,7 @@ def run_review_fresh(
             kind="controlled_quality_report",
             predecessor=controlled_v1,
         ),
-        csrf_token=csrf_token,
+        csrf_token=reviewer_csrf,
         idempotency_key=STALE_REFERENCE_REVISE_KEY,
     )
     validate_problem(stale_reference, 409, "TRIAL_REVIEW_CONFLICT")
@@ -3298,9 +3356,9 @@ def run_review_fresh(
     )
 
     submitted = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/conclusions"),
         conclusion_payload(
             policy,
@@ -3332,9 +3390,9 @@ def run_review_fresh(
         "P7-04 conclusion inputs or decision authority drifted",
     )
     approved = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(
             project_id,
             round_id,
@@ -3352,9 +3410,9 @@ def run_review_fresh(
     )
     approved_tip = approved.body["conclusionRevisions"][-1]
     reopened = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         execution_path(project_id, round_id, ":reopen"),
         {
             **review_policy_context(policy, approved.body["trialRound"]),
@@ -3368,9 +3426,9 @@ def run_review_fresh(
     )
     reopened_tip = reopened.body["conclusionRevisions"][-1]
     resubmitted = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(project_id, round_id, "/conclusions"),
         conclusion_payload(
             policy,
@@ -3391,9 +3449,9 @@ def run_review_fresh(
         "reason": "Reject the corrected proposal without mutating external authorities.",
     }
     rejected = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(
             project_id,
             round_id,
@@ -3421,9 +3479,9 @@ def run_review_fresh(
         "P7-04 submit, approve, reopen, resubmit and reject history drifted",
     )
     same_process_replay = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(
             project_id,
             round_id,
@@ -3713,6 +3771,7 @@ def run_fresh(
         administrator,
         base_url,
         csrf_token,
+        fixture_password,
         project_id=project_id,
         plan_id=plan_id,
         plan_revision=successor,
@@ -3853,16 +3912,16 @@ def retained_detail(administrator, base_url: str) -> tuple[str, str, dict[str, A
 
 
 def run_review_replay(
-    administrator,
+    reviewer,
     base_url: str,
-    csrf_token: str,
+    reviewer_csrf: str,
     *,
     project_id: str,
     round_id: str,
 ) -> None:
     review = assert_review_workspace(
         trial_request(
-            administrator,
+            reviewer,
             base_url,
             review_path(project_id, round_id),
             query_key="review-replay-context",
@@ -3890,11 +3949,11 @@ def run_review_replay(
         "decision": "rejected",
         "reason": rejected["reason"],
     }
-    before = persisted_counts(administrator, base_url, project_id)
+    before = persisted_counts(reviewer, base_url, project_id)
     replay = command(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         review_path(
             project_id,
             round_id,
@@ -3906,12 +3965,18 @@ def run_review_replay(
     require(
         replay.headers.get("Idempotency-Replayed") == "true"
         and replay.body == review
-        and persisted_counts(administrator, base_url, project_id) == before,
+        and persisted_counts(reviewer, base_url, project_id) == before,
         "P7-04 cross-process review replay changed sealed truth or cardinality",
     )
 
 
-def run_replay(administrator, base_url: str, csrf_token: str) -> None:
+def run_replay(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    reviewer,
+    reviewer_csrf: str,
+) -> None:
     project_id, plan_id, detail = retained_detail(administrator, base_url)
     master_id = str(detail["latestRevision"]["toolingMasterGlobalId"])
     initial, successor = detail["revisions"]
@@ -4239,9 +4304,9 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         target=target_context,
     )
     run_review_replay(
-        administrator,
+        reviewer,
         base_url,
-        csrf_token,
+        reviewer_csrf,
         project_id=project_id,
         round_id=target_round_id,
     )
@@ -4733,7 +4798,7 @@ def ensure_trial_review_policy(
                     "global_id": REVIEW_MEMBER_ID,
                     "tenant_id": TENANT_ID,
                     "project_global_id": project_id,
-                    "user_id": ACTOR_USER,
+                    "user_id": REVIEW_USER,
                     "effective_from": "2026-01-01",
                     "effective_to": None,
                     "optimistic_version": 1,
@@ -4747,7 +4812,7 @@ def ensure_trial_review_policy(
     member = frappe.get_doc("NPI Project Member", REVIEW_MEMBER_ID)
     require(
         str(member.project_global_id) == project_id
-        and str(member.user_id) == ACTOR_USER
+        and str(member.user_id) == REVIEW_USER
         and int(member.optimistic_version) == 1,
         "P7-04 review authority member drifted",
     )
@@ -4783,13 +4848,13 @@ def ensure_trial_review_policy(
                 TrialPolicyAuthorityBinding(
                     member=ProjectMemberResponsibility(
                         global_id=UUID(REVIEW_MEMBER_ID),
-                        user_id=ACTOR_USER,
+                        user_id=REVIEW_USER,
                         optimistic_version=1,
                     ),
                     capabilities=tuple(TrialConclusionCapability),
                 ),
             ),
-            published_by_user_id=ACTOR_USER,
+            published_by_user_id=REVIEW_USER,
             published_at=datetime.now(UTC),
             request_id=uuid4(),
             trace_id="trace-p704-runtime-policy",
@@ -5302,16 +5367,18 @@ def main() -> None:
     require(
         FIXTURE_RUN_ID != "0" * 32
         and VERIFIER_USER.endswith("@example.invalid")
+        and REVIEW_USER.endswith("@example.invalid")
         and UNRELATED_USER.endswith("@example.invalid")
         and len(
             {
                 ACTOR_USER,
                 VERIFIER_USER,
+                REVIEW_USER,
                 UNRELATED_USER,
                 document_runtime.BASELINE_USER,
             }
         )
-        == 4
+        == 5
         and RESPONSIBLE_MEMBER_ID == document_runtime.BASELINE_MEMBER_ID,
         "P7-02 fixture identity drifted",
     )
@@ -5332,7 +5399,15 @@ def main() -> None:
         print(json.dumps({"routeMode": arguments.route_disable_probe}, sort_keys=True))
         return
     if arguments.replay_only:
-        run_replay(administrator, base_url, csrf_token)
+        reviewer = login(base_url, REVIEW_USER, fixture_password)
+        reviewer_csrf = bootstrap_csrf(reviewer, base_url, REVIEW_USER)
+        run_replay(
+            administrator,
+            base_url,
+            csrf_token,
+            reviewer,
+            reviewer_csrf,
+        )
         print(
             json.dumps(
                 {"crossProcessReplay": True, "fixtureRunId": FIXTURE_RUN_ID},
