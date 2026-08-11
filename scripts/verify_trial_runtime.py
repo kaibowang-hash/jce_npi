@@ -4752,6 +4752,7 @@ def ensure_trial_review_policy(
 ) -> dict[str, object]:
     import frappe
 
+    from npi_core.documents.frappe_validation import canonical_json
     from npi_core.tooling.manufacturing_domain import ProjectMemberResponsibility
     from npi_core.trial.execution_repository import _file_revision_source_snapshot
     from npi_core.trial.frappe_validation import trial_command_write
@@ -4880,24 +4881,26 @@ def ensure_trial_review_policy(
                     "policy_version": policy.policy_version,
                     "predecessor_global_id": None,
                     "predecessor_snapshot_hash": None,
-                    "required_parameter_snapshot": "[]",
-                    "required_dimension_snapshot": "[]",
-                    "required_reference_kind_snapshot": payload[
-                        "requiredReferenceKinds"
-                    ],
+                    "required_parameter_snapshot": canonical_json([]),
+                    "required_dimension_snapshot": canonical_json([]),
+                    "required_reference_kind_snapshot": canonical_json(
+                        payload["requiredReferenceKinds"]
+                    ),
                     "require_cavity_results": 0,
                     "block_on_open_blocking_defects": 0,
                     "block_on_unverified_required_actions": 0,
-                    "allowed_conclusion_code_snapshot": payload[
-                        "allowedConclusionCodes"
-                    ],
-                    "out_of_spec_blocking_code_snapshot": "[]",
-                    "authority_binding_snapshot": payload["authorityBindings"],
+                    "allowed_conclusion_code_snapshot": canonical_json(
+                        payload["allowedConclusionCodes"]
+                    ),
+                    "out_of_spec_blocking_code_snapshot": canonical_json([]),
+                    "authority_binding_snapshot": canonical_json(
+                        payload["authorityBindings"]
+                    ),
                     "published_by_user_id": policy.published_by_user_id,
                     "published_at": policy.published_at,
                     "request_id": str(policy.request_id),
                     "trace_id": policy.trace_id,
-                    "policy_snapshot": payload,
+                    "policy_snapshot": canonical_json(payload),
                     "snapshot_hash": policy.snapshot_hash,
                 }
             ).insert()

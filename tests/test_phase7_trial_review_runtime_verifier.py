@@ -82,9 +82,20 @@ class Phase7TrialReviewRuntimeVerifierTest(unittest.TestCase):
         self.assertIn('{"role": "System Manager"}', actor_source)
         self.assertIn('"user_id": REVIEW_USER', policy_source)
         self.assertNotIn('"user_id": ACTOR_USER', policy_source)
-        self.assertIn('"required_parameter_snapshot": "[]"', policy_source)
-        self.assertIn('"required_dimension_snapshot": "[]"', policy_source)
-        self.assertIn('"out_of_spec_blocking_code_snapshot": "[]"', policy_source)
+        for field in (
+            "required_parameter_snapshot",
+            "required_dimension_snapshot",
+            "required_reference_kind_snapshot",
+            "allowed_conclusion_code_snapshot",
+            "out_of_spec_blocking_code_snapshot",
+            "authority_binding_snapshot",
+            "policy_snapshot",
+        ):
+            with self.subTest(field=field):
+                self.assertRegex(
+                    policy_source,
+                    rf'"{field}": canonical_json\(',
+                )
         self.assertIn("reviewer, reviewer_csrf", review_source)
         self.assertIn("reviewer_csrf", replay_source)
 
