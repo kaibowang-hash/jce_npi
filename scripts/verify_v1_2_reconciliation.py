@@ -119,6 +119,13 @@ EXPECTED_P7_03_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
     "implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md",
     "implementation/evidence/phase-7/p7-03-validation.md",
 }
+EXPECTED_P7_04_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-04-plan.md",
+    "implementation/evidence/phase-7/p7-04-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md",
+    "implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-04-validation.md",
+}
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-TR-001": (
         "7",
@@ -145,6 +152,26 @@ EXPECTED_P7_COMPLETED_TRACES = {
     ),
     "FR-TR-003": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_02_EVIDENCE),
     "FR-TR-004": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_03_EVIDENCE),
+    "FR-TR-005": (
+        "7",
+        "TECHNICAL_VERIFIED_FOUNDATION_GATE_EFFECT_POLICY_HELD",
+        EXPECTED_P7_04_EVIDENCE,
+    ),
+    "FR-TR-006": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_REFERENCE_FOUNDATION_FORMAL_ERP_PROJECTION_HELD",
+        EXPECTED_P7_04_EVIDENCE,
+    ),
+    "FR-TR-007": (
+        "7",
+        "TECHNICAL_VERIFIED_INTERNAL_REFERENCE_FOUNDATION_CUSTOMER_AUTHORITY_HELD",
+        EXPECTED_P7_04_EVIDENCE,
+    ),
+    "FR-TR-008": (
+        "7",
+        "TECHNICAL_VERIFIED_COMPARISON_FOUNDATION_SUMMARY_OUTPUT_HELD",
+        EXPECTED_P7_04_EVIDENCE,
+    ),
     "FR-TR-009": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_03_EVIDENCE),
     "FR-TR-010": (
         "7",

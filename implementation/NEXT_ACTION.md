@@ -1,18 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P7-04`
+`IN_PROGRESS_AUDIT — P7-05`
 
-Recovery time: `2026-08-11T09:27:57Z`
+Recovery time: `2026-08-11T12:16:16Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Completed P7-03 product checkpoint:
-`102de35b9cff4b7303e0e2f17d2bbb146795fc3d`
+Completed P7-04 product checkpoint:
+`02781c0c712c4d8c739114ead24545daa537329d`
 
-P7-04 starting controller checkpoint:
-`1c0e8fdd73901c59ce920ff73fa5eea962be70c0`
+P7-05 audit base checkpoint:
+`02781c0c712c4d8c739114ead24545daa537329d`
 
 ## Current authoritative action
 
@@ -130,21 +130,28 @@ secret scan `93732624335` and the expanded `106/106` fixed-Linux visual matrix
 in `93732624345`. Complete evidence is
 `implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md`.
 
-Execute only checkpoint 4 enforced by `implementation/CURRENT_TASK.json`:
-extend the cumulative disposable-Site Trial runtime through P7-04 and prove
-exact multi-Round comparison, explicit unavailable sources, controlled
-reference succession, policy blockers, immutable submit/approve/reject/reopen
-history, same/cross-process replay, stale/fork/conflict/rollback/IDOR/route
-recovery/migrations/redaction, zero ERP/network/Outbox or Gate/Tooling effect
-and cleanup. Then complete the P7-04 Requirement trace, Task Diff Review and
-Level 2 Gate on one exact SHA.
+P7-04 passes Level 2 at exact SHA `02781c0`. Ordinary CI `31488890426` passes
+repository `93770486127` (`1,609` tracked Python), frontend `93770486210`
+(`853/853` unit, `378/378` E2E, `6,770` direct trilingual sources and
+statements `80.05%`), secret scan `93770486159` and visual `93770486218` at
+`106/106`. Optimized controlled workflow `31489609774` verifies that exact PR
+Gate and passes cumulative disposable Site scope `p5-01-through-p7-04`.
+Complete evidence is `implementation/evidence/phase-7/p7-04-validation.md`.
 
-Cycle/yield and formal ERP quality must remain explicitly unavailable unless
-an exact governed source exists. Evidence is not approval. Keep automatic
-Gate/Tooling/Work Item mutation, production ERPNext, customer signature
-authority, readiness, handover, release, external projection and production
-print inactive. No further UI expansion is authorized. Level 3 remains reserved
-for the applicable PR/Phase/release boundary.
+Execute only the P7-05 Requirement/domain/existing-capability audit enforced
+by `implementation/CURRENT_TASK.json`. Reconcile `FR-NP-001..003/006..013`
+against retained Project/Gate/Work Item, controlled documents, Tooling/
+capacity, Trial/quality/review and private-File truth. Freeze a minimum
+complete versioned readiness template and exact Project instance, evidence and
+applicability rules, deterministic category/total scoring, separately dominant
+blockers, closed BFF/persistence/UI checkpoints, migration, tests and rollback
+before any product implementation.
+
+Do not invent a G6/G7 policy, caller-supplied score, blocker waiver, ERP result,
+PFMEA/MSA/CPK/PPAP global applicability or automatic Gate/Work Item/Tooling
+mutation. Production handover, Released Trial Summary, external projection and
+production print remain later tasks. Level 3 remains reserved for the Phase,
+PR or release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 

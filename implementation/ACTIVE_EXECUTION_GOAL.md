@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T09:27:57Z`
+Updated: `2026-08-11T12:16:16Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-04`
+- Mode: `IN_PROGRESS_AUDIT — P7-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `0b7d3c762fd340d546be316cf7915a7fb31390fb` (pushed; P7-04 checkpoint 3 PASS)
+  `02781c0c712c4d8c739114ead24545daa537329d` (pushed; P7-04 Level 2 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -25,17 +25,17 @@ Updated: `2026-08-11T09:27:57Z`
   `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (`LEVEL 2 PASS`;
   ordinary CI `31459395711`, controlled Gate `31459974578`)
 - Latest P7-04 product checkpoint:
-  `0b7d3c762fd340d546be316cf7915a7fb31390fb` (`CHECKPOINT 3 PASS`;
-  ordinary CI `31476917719`)
+  `02781c0c712c4d8c739114ead24545daa537329d` (`LEVEL 2 PASS`;
+  ordinary CI `31488890426`, controlled Gate `31489609774`)
 - Current controller task:
-  `P7-04 — Round comparison, conclusion, quality and approval references`
-  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
-- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_4`)
+  `P7-05 — NPI checklist, readiness and blockers`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Resumed product task: `P7-05` (`ACTIVE_AUDIT`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-04 CHECKPOINT 4`)
+  (`IN_PROGRESS — P7-05 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -142,16 +142,25 @@ controlled-reference, blocker, immutable conclusion/decision/reopen and
 proposal-only external-effect truth. Evidence is
 `implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md`.
 
-Only checkpoint 4 is active under `implementation/CURRENT_TASK.json`: extend
-the cumulative disposable-Site Trial fixture through P7-04 and prove exact
-multi-Round comparison, unavailable sources, controlled reference succession,
-policy blockers, submit/decide/reopen history, same/cross-process replay,
-stale/fork/conflict/rollback/IDOR/route recovery/migrations/redaction, zero
-ERP/network/Outbox or Gate/Tooling effect and cleanup; then complete trace,
-Task Diff Review and Level 2. Automatic Gate/Tooling/Work Item mutation,
-production ERPNext, customer signature authority, readiness, release,
-projection and production print remain outside authority. There is no active
-technical Hard Blocker.
+P7-04 passes Level 2 at exact product checkpoint `02781c0`. Ordinary CI
+`31488890426` proves `1,609` Python, `853/853` frontend unit, `378/378`
+non-visual E2E, `6,770` complete direct trilingual sources, both secret lanes
+and `106/106` fixed-Linux visuals. Optimized controlled Gate `31489609774`
+proves cumulative disposable-Site runtime through `p5-01-through-p7-04`, exact
+comparison/reference/conclusion succession, replay/conflict/rollback/IDOR,
+route recovery, migrations, redaction, zero integration/downstream effects and
+cleanup. The four truthful held dispositions and complete evidence are in
+`implementation/evidence/phase-7/p7-04-validation.md`.
+
+Only the bounded P7-05 audit is active under
+`implementation/CURRENT_TASK.json`: reconcile `FR-NP-001..003/006..013`
+against exact Project, Gate, Work Item, controlled-document, Tooling/capacity,
+Trial/quality/review and private-File foundations; freeze versioned readiness
+templates, exact Project instances, evidence/applicability, deterministic
+category/total scores, separately dominant blockers, Gate separation, tests
+and rollback before product code. Production ERP results, automatic Gate/Work
+Item/Tooling mutation, handover, release, projection and print remain outside
+authority. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 
