@@ -5,11 +5,16 @@ import {
   trialLockedReferenceKinds,
   trialParameterValueKinds,
   trialActionSeverities,
+  trialConclusionCodes,
   trialPurposes,
+  trialReviewReferenceKinds,
   TrialRequestCancelledError,
   type AppendTrialActualRevisionCommand,
   type AppendTrialSampleBatchRevisionCommand,
   type BindTrialEvidenceCommand,
+  type BeginTrialAnalysisCommand,
+  type CreateTrialRoundComparisonCommand,
+  type CreateTrialReviewReferenceCommand,
   type CreateTrialCavityResultCommand,
   type CreateTrialDefectCommand,
   type CreatePlannedTrialRoundCommand,
@@ -21,6 +26,9 @@ import {
   type StartTrialRoundCommand,
   type TrialActionSeverity,
   type TrialCommandResult,
+  type TrialConclusionBlocker,
+  type TrialConclusionCode,
+  type TrialConclusionRevision,
   type TrialDataSource,
   type TrialEvidenceReference,
   type TrialEvidenceRole,
@@ -31,6 +39,9 @@ import {
   type TrialQualityCommandResult,
   type TrialQualityDefectRevision,
   type TrialQualityWorkspace,
+  type TrialReviewCommandResult,
+  type TrialReviewReferenceKind,
+  type TrialReviewWorkspace,
   type TrialLockedReferenceKind,
   type TrialParameterValueKind,
   type TrialPlanDetail,
@@ -38,9 +49,13 @@ import {
   type TrialPurpose,
   type TrialResourceProposalInput,
   type TrialRoundState,
+  type TrialRoundSummary,
   type ReviseTrialCavityResultCommand,
   type ReviseTrialDefectCommand,
   type VerifyTrialDefectCommand,
+  type DecideTrialConclusionCommand,
+  type ReopenTrialConclusionCommand,
+  type SubmitTrialConclusionCommand,
 } from "../api/trial-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
@@ -78,6 +93,11 @@ type QualityState =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "loaded"; value: TrialQualityWorkspace }
+  | { kind: "failed"; failure: RequestFailure };
+type ReviewState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "loaded"; value: TrialReviewWorkspace }
   | { kind: "failed"; failure: RequestFailure };
 type EditorKind =
   | "create_plan"
@@ -270,6 +290,109 @@ function defectStateLabel(
       return t("Closed");
     case "reopened":
       return t("Reopened");
+  }
+}
+
+function reviewReferenceKindLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: TrialReviewReferenceKind,
+): string {
+  switch (kind) {
+    case "controlled_quality_report":
+      return t("Controlled quality report");
+    case "internal_sample_review":
+      return t("Internal sample review");
+    case "customer_evidence":
+      return t("Customer evidence");
+    case "deviation_or_waiver":
+      return t("Deviation or waiver");
+  }
+}
+
+function conclusionCodeLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  code: TrialConclusionCode,
+): string {
+  switch (code) {
+    case "pass":
+      return t("Pass");
+    case "conditional_pass":
+      return t("Conditional pass");
+    case "tooling_change":
+      return t("Tooling change");
+    case "design_change":
+      return t("Design change");
+    case "process_tuning":
+      return t("Process tuning");
+    case "material_change":
+      return t("Material change");
+    case "cancelled":
+      return t("Cancelled");
+  }
+}
+
+function conclusionStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: TrialConclusionRevision["state"],
+): string {
+  switch (state) {
+    case "submitted":
+      return t("Submitted");
+    case "approved":
+      return t("Approved");
+    case "rejected":
+      return t("Rejected");
+    case "reopened":
+      return t("Reopened");
+  }
+}
+
+function reviewBlockerLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  blocker: TrialConclusionBlocker["code"],
+): string {
+  switch (blocker) {
+    case "missing_input_lock":
+      return t("Input lock is missing");
+    case "missing_actual":
+      return t("Actual execution revision is missing");
+    case "required_parameter_not_measured":
+      return t("A required parameter is not measured");
+    case "missing_cavity_result":
+      return t("A required cavity result is missing");
+    case "required_dimension_not_measured":
+      return t("A required dimension is not measured");
+    case "open_blocking_defect":
+      return t("A blocking defect remains open");
+    case "required_action_not_verified":
+      return t("A required action is not independently verified");
+    case "required_review_reference_unavailable":
+      return t("A required review reference is unavailable");
+    case "out_of_spec_blocking":
+      return t("An out-of-spec result blocks this conclusion");
+  }
+}
+
+function reviewResultStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state:
+    | "measured"
+    | "not_measured"
+    | "unavailable"
+    | "within_spec"
+    | "out_of_spec",
+): string {
+  switch (state) {
+    case "measured":
+      return t("Measured");
+    case "not_measured":
+      return t("Not measured");
+    case "unavailable":
+      return t("Unavailable");
+    case "within_spec":
+      return t("Within specification");
+    case "out_of_spec":
+      return t("Out of specification");
   }
 }
 
@@ -4255,6 +4378,1066 @@ function TrialQualitySection({
   );
 }
 
+type ReviewCommandKind =
+  | "begin_analysis"
+  | "create_comparison"
+  | "create_reference"
+  | "submit_conclusion"
+  | "decide_conclusion"
+  | "reopen_conclusion";
+
+interface ReviewDraft {
+  conclusionCode: TrialConclusionCode;
+  decision: "approved" | "rejected";
+  fileRevisionGlobalId: string;
+  fileRevisionSnapshotHash: string;
+  partRevisionGlobalId: string;
+  partRevisionSnapshotHash: string;
+  proposedGateEffect: string;
+  proposedNextWork: string;
+  proposedNpiEffect: string;
+  referenceKind: TrialReviewReferenceKind;
+  toolingRevisionGlobalId: string;
+  toolingRevisionSnapshotHash: string;
+  toolingSetGlobalId: string;
+  toolingSetSnapshotHash: string;
+}
+
+function latestReviewReferences(
+  workspace: TrialReviewWorkspace,
+): TrialReviewWorkspace["reviewReferenceRevisions"] {
+  const latest = new Map<
+    string,
+    TrialReviewWorkspace["reviewReferenceRevisions"][number]
+  >();
+  for (const revision of workspace.reviewReferenceRevisions) {
+    const current = latest.get(revision.referenceGlobalId);
+    if (!current || revision.referenceVersion > current.referenceVersion)
+      latest.set(revision.referenceGlobalId, revision);
+  }
+  return [...latest.values()];
+}
+
+function reviewCommandLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: ReviewCommandKind,
+): string {
+  switch (kind) {
+    case "begin_analysis":
+      return t("Begin analysis");
+    case "create_comparison":
+      return t("Create exact comparison");
+    case "create_reference":
+      return t("Bind review reference");
+    case "submit_conclusion":
+      return t("Submit conclusion proposal");
+    case "decide_conclusion":
+      return t("Record conclusion decision");
+    case "reopen_conclusion":
+      return t("Reopen conclusion");
+  }
+}
+
+function TrialReviewSection({
+  candidateRounds,
+  dataSource,
+  onWorkspace,
+  projectId,
+  reportWorkspaceDirty,
+  workspace,
+}: {
+  candidateRounds: readonly TrialRoundSummary[];
+  dataSource: TrialDataSource;
+  onWorkspace: (value: TrialReviewWorkspace) => void;
+  projectId: string;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  workspace: TrialReviewWorkspace;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const latestPolicy = workspace.policyVersions.at(-1) ?? null;
+  const latestComparison = workspace.comparisonSnapshots.at(-1) ?? null;
+  const references = latestReviewReferences(workspace);
+  const latestConclusion = workspace.conclusionRevisions.at(-1) ?? null;
+  const [command, setCommand] = useState<CommandState>({ kind: "idle" });
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [draftDirty, setDraftDirty] = useState(false);
+  const [draft, setDraft] = useState<ReviewDraft>({
+    conclusionCode:
+      latestPolicy?.allowedConclusionCodes[0] ?? trialConclusionCodes[0],
+    decision: "approved",
+    fileRevisionGlobalId: "",
+    fileRevisionSnapshotHash: "",
+    partRevisionGlobalId: "",
+    partRevisionSnapshotHash: "",
+    proposedGateEffect: "",
+    proposedNextWork: "",
+    proposedNpiEffect: "",
+    referenceKind:
+      latestPolicy?.requiredReferenceKinds[0] ?? trialReviewReferenceKinds[0],
+    toolingRevisionGlobalId: "",
+    toolingRevisionSnapshotHash: "",
+    toolingSetGlobalId: "",
+    toolingSetSnapshotHash: "",
+  });
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const latestCommand = useRef<(() => void) | null>(null);
+  const processing = command.kind === "processing";
+
+  const activeCommand: ReviewCommandKind | null = useMemo(() => {
+    if (workspace.permissions.beginAnalysis) return "begin_analysis";
+    if (workspace.permissions.createComparison) return "create_comparison";
+    if (
+      latestConclusion?.state === "submitted" &&
+      workspace.permissions.decideConclusion
+    )
+      return "decide_conclusion";
+    if (
+      (latestConclusion?.state === "approved" ||
+        latestConclusion?.state === "rejected") &&
+      workspace.permissions.reopenConclusion
+    )
+      return "reopen_conclusion";
+    if (!references.length && workspace.permissions.manageReviewReferences)
+      return "create_reference";
+    if (workspace.permissions.submitConclusion) return "submit_conclusion";
+    if (workspace.permissions.manageReviewReferences) return "create_reference";
+    return null;
+  }, [latestConclusion?.state, references.length, workspace.permissions]);
+
+  const updateDraft = <Key extends keyof ReviewDraft>(
+    key: Key,
+    value: ReviewDraft[Key],
+  ): void => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setDraftDirty(true);
+    setFormError(null);
+  };
+
+  useEffect(() => {
+    if (!reportWorkspaceDirty) return undefined;
+    if (!draftDirty) {
+      reportWorkspaceDirty(null);
+      return undefined;
+    }
+    reportWorkspaceDirty({
+      objectIdentity: workspace.trialRound.globalId,
+      version: `trial-round-v${String(workspace.trialRound.optimisticVersion)}`,
+      returnFocusTarget: () => returnFocus.current,
+    });
+    return () => {
+      reportWorkspaceDirty(null);
+    };
+  }, [draftDirty, reportWorkspaceDirty, workspace.trialRound]);
+
+  const commandReady = useMemo(() => {
+    if (!activeCommand || !latestPolicy || !sessionCommandContext) return false;
+    if (activeCommand === "create_comparison")
+      return candidateRounds.length >= 2;
+    if (activeCommand === "create_reference")
+      return (
+        Boolean(latestComparison) &&
+        [
+          draft.fileRevisionGlobalId,
+          draft.partRevisionGlobalId,
+          draft.toolingRevisionGlobalId,
+          draft.toolingSetGlobalId,
+        ].every((value) => uuidPattern.test(value.trim())) &&
+        [
+          draft.fileRevisionSnapshotHash,
+          draft.partRevisionSnapshotHash,
+          draft.toolingRevisionSnapshotHash,
+          draft.toolingSetSnapshotHash,
+        ].every((value) => /^[0-9a-f]{64}$/u.test(value.trim()))
+      );
+    if (activeCommand === "submit_conclusion")
+      return (
+        Boolean(latestComparison) &&
+        references.length >= 1 &&
+        Boolean(draft.proposedNextWork.trim()) &&
+        Boolean(draft.proposedGateEffect.trim()) &&
+        Boolean(draft.proposedNpiEffect.trim())
+      );
+    return latestConclusion !== null || activeCommand === "begin_analysis";
+  }, [
+    activeCommand,
+    candidateRounds,
+    draft,
+    latestComparison,
+    latestConclusion,
+    latestPolicy,
+    references.length,
+    sessionCommandContext,
+  ]);
+
+  const acceptCommand = useCallback(
+    (result: TrialReviewCommandResult, label: string): void => {
+      onWorkspace(result.workspace);
+      setCommand({ kind: "succeeded", label, replayed: result.replayed });
+      setDraftDirty(false);
+      setReviewOpen(false);
+      setFormError(null);
+      globalThis.queueMicrotask(() => returnFocus.current?.focus());
+    },
+    [onWorkspace],
+  );
+
+  const runCommand = useCallback(
+    (
+      label: string,
+      operation: (signal: AbortSignal) => Promise<TrialReviewCommandResult>,
+    ): void => {
+      const execute = (): void => {
+        const controller = new AbortController();
+        setCommand({ kind: "processing", label });
+        void operation(controller.signal)
+          .then((result) => {
+            acceptCommand(result, label);
+          })
+          .catch((error: unknown) => {
+            if (
+              controller.signal.aborted ||
+              error instanceof TrialRequestCancelledError
+            )
+              return;
+            setReviewOpen(false);
+            setCommand({ kind: "failed", failure: toRequestFailure(error) });
+          });
+      };
+      latestCommand.current = execute;
+      execute();
+    },
+    [acceptCommand],
+  );
+
+  const confirmCommand = (reason: string): void => {
+    if (
+      !activeCommand ||
+      !latestPolicy ||
+      !sessionCommandContext ||
+      !commandReady
+    )
+      return;
+    const commandContext = {
+      csrfToken: sessionCommandContext.csrfToken,
+      idempotencyKey: `trial-review-${activeCommand}-${globalThis.crypto.randomUUID()}`,
+    };
+    const policyContext = {
+      expectedPolicyRevisionSnapshotHash: latestPolicy.snapshotHash,
+      expectedRoundOptimisticVersion: workspace.trialRound.optimisticVersion,
+      expectedRoundSnapshotHash: workspace.trialRound.snapshotHash,
+      policyRevisionGlobalId: latestPolicy.globalId,
+    } as const;
+    const label = reviewCommandLabel(t, activeCommand);
+    if (activeCommand === "begin_analysis") {
+      const value: BeginTrialAnalysisCommand = { ...policyContext, reason };
+      runCommand(label, (signal) =>
+        dataSource.beginAnalysis(
+          projectId,
+          workspace.trialRound.globalId,
+          value,
+          {
+            ...commandContext,
+            signal,
+          },
+        ),
+      );
+      return;
+    }
+    if (activeCommand === "create_comparison") {
+      const value: CreateTrialRoundComparisonCommand = {
+        ...policyContext,
+        reason,
+        rounds: candidateRounds.map((round) => ({
+          expectedOptimisticVersion: round.optimisticVersion,
+          expectedSnapshotHash: round.snapshotHash,
+          trialRoundGlobalId: round.globalId,
+        })),
+      };
+      runCommand(label, (signal) =>
+        dataSource.createComparison(
+          projectId,
+          workspace.trialRound.globalId,
+          value,
+          { ...commandContext, signal },
+        ),
+      );
+      return;
+    }
+    if (activeCommand === "create_reference" && latestComparison) {
+      const value: CreateTrialReviewReferenceCommand = {
+        ...policyContext,
+        comparisonSnapshotGlobalId: latestComparison.globalId,
+        expectedComparisonSnapshotHash: latestComparison.snapshotHash,
+        expectedFileRevisionSnapshotHash: draft.fileRevisionSnapshotHash.trim(),
+        expectedPartRevisionSnapshotHash: draft.partRevisionSnapshotHash.trim(),
+        expectedToolingRevisionSnapshotHash:
+          draft.toolingRevisionSnapshotHash.trim(),
+        expectedToolingSetSnapshotHash: draft.toolingSetSnapshotHash.trim(),
+        fileRevisionGlobalId: draft.fileRevisionGlobalId.trim(),
+        partRevisionGlobalId: draft.partRevisionGlobalId.trim(),
+        reason,
+        referenceKind: draft.referenceKind,
+        toolingMasterGlobalId: workspace.trialRound.toolingMasterGlobalId,
+        toolingRevisionGlobalId: draft.toolingRevisionGlobalId.trim(),
+        toolingSetGlobalId: draft.toolingSetGlobalId.trim(),
+      };
+      runCommand(label, (signal) =>
+        dataSource.createReviewReference(
+          projectId,
+          workspace.trialRound.globalId,
+          value,
+          { ...commandContext, signal },
+        ),
+      );
+      return;
+    }
+    if (activeCommand === "submit_conclusion" && latestComparison) {
+      const value: SubmitTrialConclusionCommand = {
+        ...policyContext,
+        comparisonSnapshotGlobalId: latestComparison.globalId,
+        conclusionCode: draft.conclusionCode,
+        expectedComparisonSnapshotHash: latestComparison.snapshotHash,
+        proposedGateEffect: draft.proposedGateEffect.trim(),
+        proposedNextWork: [draft.proposedNextWork.trim()],
+        proposedNpiEffect: draft.proposedNpiEffect.trim(),
+        reason,
+        reviewReferences: references.map((reference) => ({
+          globalId: reference.globalId,
+          snapshotHash: reference.snapshotHash,
+        })),
+      };
+      runCommand(label, (signal) =>
+        dataSource.submitConclusion(
+          projectId,
+          workspace.trialRound.globalId,
+          value,
+          { ...commandContext, signal },
+        ),
+      );
+      return;
+    }
+    if (activeCommand === "decide_conclusion" && latestConclusion) {
+      const value: DecideTrialConclusionCommand = {
+        ...policyContext,
+        decision: draft.decision,
+        expectedConclusionRevisionGlobalId: latestConclusion.globalId,
+        expectedConclusionRevisionSnapshotHash: latestConclusion.snapshotHash,
+        expectedConclusionVersion: latestConclusion.conclusionVersion,
+        reason,
+      };
+      runCommand(label, (signal) =>
+        dataSource.decideConclusion(
+          projectId,
+          workspace.trialRound.globalId,
+          latestConclusion.conclusionGlobalId,
+          value,
+          { ...commandContext, signal },
+        ),
+      );
+      return;
+    }
+    if (activeCommand === "reopen_conclusion" && latestConclusion) {
+      const value: ReopenTrialConclusionCommand = {
+        ...policyContext,
+        conclusionGlobalId: latestConclusion.conclusionGlobalId,
+        expectedConclusionRevisionGlobalId: latestConclusion.globalId,
+        expectedConclusionRevisionSnapshotHash: latestConclusion.snapshotHash,
+        expectedConclusionVersion: latestConclusion.conclusionVersion,
+        reason,
+      };
+      runCommand(label, (signal) =>
+        dataSource.reopenConclusion(
+          projectId,
+          workspace.trialRound.globalId,
+          value,
+          { ...commandContext, signal },
+        ),
+      );
+    }
+  };
+
+  const requestReview = (trigger: HTMLElement): void => {
+    returnFocus.current = trigger;
+    if (!commandReady) {
+      setFormError(
+        activeCommand === "create_comparison"
+          ? t(
+              "At least two exact Trial Round snapshots are required for comparison.",
+            )
+          : t(
+              "Complete every required exact reference and proposal field before review.",
+            ),
+      );
+      return;
+    }
+    setFormError(null);
+    setReviewOpen(true);
+  };
+
+  return (
+    <>
+      <Panel title={t("Trial review and conclusion")}>
+        <div className="trial-live__command-bar">
+          {activeCommand ? (
+            <Button
+              disabled={processing || !sessionCommandContext}
+              id="trial-review-primary-action"
+              onClick={(event) => {
+                requestReview(event.currentTarget);
+              }}
+              visual="primary"
+            >
+              {reviewCommandLabel(t, activeCommand)}
+            </Button>
+          ) : null}
+        </div>
+        <DefinitionList
+          rows={[
+            {
+              label: t("Selected Round"),
+              value: workspace.trialRound.displayLabel,
+              exempt: "identifier",
+            },
+            {
+              label: t("Round state"),
+              value: roundStateLabel(t, workspace.trialRound.currentState),
+            },
+            {
+              label: t("Exact policy revision"),
+              value: latestPolicy?.globalId ?? t("Unavailable"),
+              ...(latestPolicy ? { exempt: "identifier" as const } : {}),
+            },
+            {
+              label: t("Policy snapshot"),
+              value: latestPolicy?.snapshotHash ?? t("Unavailable"),
+              ...(latestPolicy ? { exempt: "identifier" as const } : {}),
+            },
+            {
+              label: t("Latest comparison snapshot"),
+              value: latestComparison?.snapshotHash ?? t("Unavailable"),
+              ...(latestComparison ? { exempt: "identifier" as const } : {}),
+            },
+            {
+              label: t("Comparison snapshots"),
+              value: formatNumber(
+                locale,
+                workspace.comparisonSnapshots.length,
+                0,
+              ),
+            },
+            {
+              label: t("Current review references"),
+              value: formatNumber(locale, references.length, 0),
+            },
+            {
+              label: t("Conclusion state"),
+              value: latestConclusion
+                ? conclusionStateLabel(t, latestConclusion.state)
+                : t("Not submitted"),
+            },
+          ]}
+        />
+      </Panel>
+      {!sessionCommandContext || !workspace.permissions.view ? (
+        <div
+          className="scenario-banner scenario-banner--read-only"
+          role="status"
+        >
+          <span>{t("Trial review is read only in this session.")}</span>
+          <span>
+            {t(
+              "The server rechecks Project membership, exact policy revision and conclusion authority for every command.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "processing" ? (
+        <div
+          className="scenario-banner scenario-banner--processing"
+          role="status"
+        >
+          <span>{command.label}</span>
+          <span>
+            {t(
+              "The exact policy, Round and predecessor snapshots are being verified atomically.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "succeeded" ? (
+        <div className="scenario-banner scenario-banner--queued" role="status">
+          <span>{command.label}</span>
+          <span>
+            {command.replayed
+              ? t(
+                  "The exact prior review command response was replayed safely.",
+                )
+              : t("The review command appended immutable audit history.")}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "failed" ? (
+        <Panel title={t("Trial review command failed")}>
+          <RequestFailurePanel failure={command.failure} />
+          {canRetry(command.failure) ? (
+            <Button onClick={() => latestCommand.current?.()}>
+              {t("Retry")}
+            </Button>
+          ) : null}
+        </Panel>
+      ) : null}
+      {formError ? (
+        <div className="form-error" role="alert">
+          {formError}
+        </div>
+      ) : null}
+      {activeCommand === "create_reference" ? (
+        <Panel title={t("Exact review reference input")}>
+          <div className="trial-live__review-form">
+            <label>
+              <span>{t("Reference kind")}</span>
+              <Select
+                onChange={(event) => {
+                  updateDraft(
+                    "referenceKind",
+                    event.target.value as TrialReviewReferenceKind,
+                  );
+                }}
+                value={draft.referenceKind}
+              >
+                {trialReviewReferenceKinds.map((kind) => (
+                  <option key={kind} value={kind}>
+                    {reviewReferenceKindLabel(t, kind)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {(
+              [
+                ["partRevisionGlobalId", t("Part revision stable ID")],
+                ["partRevisionSnapshotHash", t("Part revision snapshot")],
+                ["toolingRevisionGlobalId", t("Tooling revision stable ID")],
+                ["toolingRevisionSnapshotHash", t("Tooling revision snapshot")],
+                ["toolingSetGlobalId", t("Tooling Set stable ID")],
+                ["toolingSetSnapshotHash", t("Tooling Set snapshot")],
+                ["fileRevisionGlobalId", t("File revision stable ID")],
+                ["fileRevisionSnapshotHash", t("File revision snapshot")],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key}>
+                <span>{label}</span>
+                <TextInput
+                  onChange={(event) => {
+                    updateDraft(key, event.target.value);
+                  }}
+                  value={draft[key]}
+                />
+              </label>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+      {activeCommand === "submit_conclusion" ? (
+        <Panel title={t("Conclusion proposal input")}>
+          <div className="trial-live__review-form">
+            <label>
+              <span>{t("Conclusion code")}</span>
+              <Select
+                onChange={(event) => {
+                  updateDraft(
+                    "conclusionCode",
+                    event.target.value as TrialConclusionCode,
+                  );
+                }}
+                value={draft.conclusionCode}
+              >
+                {(
+                  latestPolicy?.allowedConclusionCodes ?? trialConclusionCodes
+                ).map((code) => (
+                  <option key={code} value={code}>
+                    {conclusionCodeLabel(t, code)}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {(
+              [
+                ["proposedNextWork", t("Proposed next work")],
+                ["proposedGateEffect", t("Proposed Gate effect")],
+                ["proposedNpiEffect", t("Proposed NPI effect")],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key}>
+                <span>{label}</span>
+                <textarea
+                  maxLength={1000}
+                  onChange={(event) => {
+                    updateDraft(key, event.target.value);
+                  }}
+                  value={draft[key]}
+                />
+              </label>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+      {activeCommand === "decide_conclusion" ? (
+        <Panel title={t("Independent conclusion decision")}>
+          <label className="trial-live__review-decision">
+            <span>{t("Decision")}</span>
+            <Select
+              onChange={(event) => {
+                updateDraft(
+                  "decision",
+                  event.target.value as ReviewDraft["decision"],
+                );
+              }}
+              value={draft.decision}
+            >
+              <option value="approved">{t("Approve")}</option>
+              <option value="rejected">{t("Reject")}</option>
+            </Select>
+          </label>
+        </Panel>
+      ) : null}
+      {latestComparison ? (
+        <>
+          <Panel title={t("Exact Round input comparison")}>
+            <table
+              aria-label={t("Exact Round input comparison")}
+              className="data-table trial-live__comparison-table"
+              tabIndex={0}
+            >
+              <thead>
+                <tr>
+                  <th>{t("Input key")}</th>
+                  <th>{t("Change")}</th>
+                  {latestComparison.sources.map((sourceItem) => (
+                    <th key={sourceItem.trialRoundGlobalId}>
+                      {t("Round {{sequence}}", {
+                        sequence: sourceItem.sequence,
+                      })}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {latestComparison.inputRows.map((row) => (
+                  <tr key={row.semanticKey}>
+                    <td data-language-exempt="identifier">{row.semanticKey}</td>
+                    <td>
+                      {row.changeState === "added"
+                        ? t("Added")
+                        : row.changeState === "removed"
+                          ? t("Removed")
+                          : row.changeState === "changed"
+                            ? t("Changed")
+                            : t("Same")}
+                    </td>
+                    {row.cells.map((cell) => (
+                      <td
+                        data-language-exempt="business-data"
+                        key={cell.trialRoundGlobalId}
+                      >
+                        {cell.canonicalValue ?? t("Unavailable")}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+          <Panel title={t("Performance and dimension comparison")}>
+            <table
+              aria-label={t("Performance and dimension comparison")}
+              className="data-table trial-live__comparison-table"
+              tabIndex={0}
+            >
+              <thead>
+                <tr>
+                  <th>{t("Metric")}</th>
+                  <th>{t("Unit state")}</th>
+                  {latestComparison.sources.map((sourceItem) => (
+                    <th key={sourceItem.trialRoundGlobalId}>
+                      {t("Round {{sequence}}", {
+                        sequence: sourceItem.sequence,
+                      })}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {latestComparison.metricRows.map((row) => (
+                  <tr
+                    key={`${row.metricKind}-${row.metricKey}-${row.cavityGlobalId ?? "all"}`}
+                  >
+                    <td>
+                      <strong data-language-exempt="identifier">
+                        {row.metricKey}
+                      </strong>
+                      <small className="trial-live__resource-reference">
+                        {row.metricKind === "parameter"
+                          ? t("Parameter")
+                          : row.metricKind === "dimension"
+                            ? t("Dimension")
+                            : row.metricKind === "cycle_time"
+                              ? t("Cycle time")
+                              : t("Yield")}
+                      </small>
+                    </td>
+                    <td>
+                      {row.unitState === "comparable"
+                        ? t("Comparable")
+                        : row.unitState === "unit_mismatch"
+                          ? t("Unit mismatch")
+                          : t("Unavailable")}
+                    </td>
+                    {row.cells.map((cell) => (
+                      <td key={cell.trialRoundGlobalId}>
+                        <SemanticStatus
+                          label={
+                            cell.comparisonState === "within_spec"
+                              ? t("Within specification")
+                              : cell.comparisonState === "out_of_spec"
+                                ? t("Out of specification")
+                                : cell.state === "not_measured"
+                                  ? t("Not measured")
+                                  : cell.state === "unavailable"
+                                    ? t("Unavailable")
+                                    : t("Measured")
+                          }
+                          tone={
+                            cell.comparisonState === "out_of_spec"
+                              ? "warning"
+                              : "info"
+                          }
+                        />
+                        <span data-language-exempt="business-data">
+                          {cell.value ?? "—"} {cell.unit ?? ""}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+          <Panel title={t("Defect trend across compared Rounds")}>
+            {latestComparison.defectTrends.length ? (
+              <table
+                aria-label={t("Defect trend across compared Rounds")}
+                className="data-table"
+                tabIndex={0}
+              >
+                <thead>
+                  <tr>
+                    <th>{t("Defect")}</th>
+                    <th>{t("Trend")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {latestComparison.defectTrends.map((trend) => (
+                    <tr key={trend.defectGlobalId}>
+                      <td data-language-exempt="identifier">
+                        {trend.defectGlobalId}
+                      </td>
+                      <td>
+                        {trend.state === "new"
+                          ? t("New")
+                          : trend.state === "continued"
+                            ? t("Continued")
+                            : trend.state === "resolved"
+                              ? t("Resolved")
+                              : t("Reopened")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state" role="status">
+                <strong>
+                  {t("No defect trend is present in this comparison.")}
+                </strong>
+              </div>
+            )}
+          </Panel>
+        </>
+      ) : (
+        <Panel title={t("Exact Round comparison")}>
+          <div className="empty-state" role="status">
+            <strong>{t("No immutable Round comparison is available.")}</strong>
+            <span>
+              {t(
+                "Begin analysis and compare at least two exact Round snapshots under one policy revision.",
+              )}
+            </span>
+          </div>
+        </Panel>
+      )}
+      <Panel title={t("Controlled review references")}>
+        {references.length ? (
+          <table
+            aria-label={t("Controlled review references")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Reference kind")}</th>
+                <th>{t("Version")}</th>
+                <th>{t("Part revision")}</th>
+                <th>{t("Tooling revision")}</th>
+                <th>{t("File revision")}</th>
+                <th>{t("Approval authority")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {references.map((reference) => (
+                <tr key={reference.globalId}>
+                  <td>
+                    {reviewReferenceKindLabel(t, reference.referenceKind)}
+                  </td>
+                  <td>{formatNumber(locale, reference.referenceVersion, 0)}</td>
+                  <td data-language-exempt="identifier">
+                    {reference.partRevision.globalId}
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {reference.toolingRevision.globalId}
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {reference.fileRevision.globalId}
+                  </td>
+                  <td>
+                    <SemanticStatus label={t("Unavailable")} tone="warning" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>{t("No controlled review reference is bound.")}</strong>
+            <span>
+              {t(
+                "A conclusion cannot be submitted until every policy-required reference kind is bound to exact revisions.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      {latestConclusion ? (
+        <>
+          <Panel title={t("One-page conclusion summary")}>
+            <div className="trial-live__summary-grid">
+              <section>
+                <h3>{t("Conclusion")}</h3>
+                <SemanticStatus
+                  label={conclusionStateLabel(t, latestConclusion.state)}
+                  tone={
+                    latestConclusion.state === "approved"
+                      ? "success"
+                      : "warning"
+                  }
+                />
+                <p>{conclusionCodeLabel(t, latestConclusion.conclusionCode)}</p>
+              </section>
+              <section>
+                <h3>{t("Input changes")}</h3>
+                <p>
+                  {t("{{changed}} changed, {{same}} unchanged", {
+                    changed: formatNumber(
+                      locale,
+                      latestConclusion.summaryInput.inputChangeCounts.changed,
+                      0,
+                    ),
+                    same: formatNumber(
+                      locale,
+                      latestConclusion.summaryInput.inputChangeCounts.same,
+                      0,
+                    ),
+                  })}
+                </p>
+              </section>
+              <section>
+                <h3>{t("Cycle time")}</h3>
+                <p>
+                  {reviewResultStateLabel(
+                    t,
+                    latestConclusion.summaryInput.cycleTimeState,
+                  )}
+                </p>
+              </section>
+              <section>
+                <h3>{t("Yield")}</h3>
+                <p>
+                  {reviewResultStateLabel(
+                    t,
+                    latestConclusion.summaryInput.yieldState,
+                  )}
+                </p>
+              </section>
+            </div>
+            <DefinitionList
+              rows={[
+                {
+                  label: t("Proposed next work"),
+                  value: latestConclusion.proposedNextWork.join("; "),
+                  exempt: "business-data",
+                },
+                {
+                  label: t("Proposed Gate effect"),
+                  value: latestConclusion.proposedGateEffect,
+                  exempt: "business-data",
+                },
+                {
+                  label: t("Proposed NPI effect"),
+                  value: latestConclusion.proposedNpiEffect,
+                  exempt: "business-data",
+                },
+              ]}
+            />
+          </Panel>
+          <Panel title={t("Policy blockers")}>
+            {latestConclusion.blockers.length ? (
+              <table
+                aria-label={t("Policy blockers")}
+                className="data-table"
+                tabIndex={0}
+              >
+                <thead>
+                  <tr>
+                    <th>{t("Blocking rule")}</th>
+                    <th>{t("Exact source")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {latestConclusion.blockers.map((blocker) => (
+                    <tr key={`${blocker.code}-${blocker.sourceKey}`}>
+                      <td>
+                        <SemanticStatus
+                          label={reviewBlockerLabel(t, blocker.code)}
+                          tone="warning"
+                        />
+                      </td>
+                      <td data-language-exempt="identifier">
+                        {blocker.sourceKey}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state" role="status">
+                <strong>{t("No policy blocker is recorded.")}</strong>
+              </div>
+            )}
+          </Panel>
+          <Panel title={t("Immutable conclusion history")}>
+            <table
+              aria-label={t("Immutable conclusion history")}
+              className="data-table"
+              tabIndex={0}
+            >
+              <thead>
+                <tr>
+                  <th>{t("Version")}</th>
+                  <th>{t("State")}</th>
+                  <th>{t("Conclusion code")}</th>
+                  <th>{t("Reason")}</th>
+                  <th>{t("Created by")}</th>
+                  <th>{t("Created at")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workspace.conclusionRevisions.map((revision) => (
+                  <tr key={revision.globalId}>
+                    <td>
+                      {formatNumber(locale, revision.conclusionVersion, 0)}
+                    </td>
+                    <td>{conclusionStateLabel(t, revision.state)}</td>
+                    <td>{conclusionCodeLabel(t, revision.conclusionCode)}</td>
+                    <td data-language-exempt="business-data">
+                      {revision.reason}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {revision.createdByUserId}
+                    </td>
+                    <td>{formatDateTime(locale, revision.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+        </>
+      ) : (
+        <Panel title={t("One-page conclusion summary")}>
+          <div className="empty-state" role="status">
+            <strong>{t("No conclusion proposal has been submitted.")}</strong>
+          </div>
+        </Panel>
+      )}
+      <Panel title={t("External decision effects")}>
+        <div className="trial-live__external-effects">
+          {[
+            t("Formal ERP quality"),
+            t("Customer signature"),
+            t("Gate decision"),
+            t("NPI readiness"),
+            t("Tooling lifecycle"),
+          ].map((label) => (
+            <div className="trial-live__later-item" key={label}>
+              <SemanticStatus label={t("Unavailable")} tone="neutral" />
+              <span>{label}</span>
+            </div>
+          ))}
+          <div className="trial-live__later-item">
+            <SemanticStatus label={t("Proposal only")} tone="info" />
+            <span>{t("Next work")}</span>
+          </div>
+        </div>
+        <p className="context-help">
+          {t(
+            "This review records an NPI One proposal only. It does not create ERP quality, customer signature, Gate, readiness or Tooling lifecycle truth.",
+          )}
+        </p>
+      </Panel>
+      {reviewOpen && activeCommand ? (
+        <ImpactReview
+          confirmLabel={reviewCommandLabel(t, activeCommand)}
+          details={{
+            objectIdentity: workspace.trialRound.globalId,
+            version: `v${String(workspace.trialRound.optimisticVersion)}`,
+            impact: t(
+              "Appends immutable Trial review history against exact policy, Round, comparison and predecessor snapshots.",
+            ),
+            permission: t(
+              "The server rechecks Project membership and the policy-bound submit, decide or reopen authority.",
+            ),
+            irreversible: t(
+              "Committed review revisions are never overwritten by generic CRUD.",
+            ),
+            failureHandling: t(
+              "A failed command changes no review state and can be retried with the same idempotency key.",
+            ),
+            audit: t(
+              "Actor, reason, request, trace and every exact snapshot reference are retained.",
+            ),
+          }}
+          onCancel={() => {
+            setReviewOpen(false);
+          }}
+          onConfirm={confirmCommand}
+          reasonMaxLength={2000}
+          returnFocusTarget={() => returnFocus.current}
+          title={t("Review immutable Trial conclusion command")}
+        />
+      ) : null}
+    </>
+  );
+}
+
 export default function LiveTrialPage({
   dataSource,
   navigate,
@@ -4271,12 +5454,14 @@ export default function LiveTrialPage({
   const [detailAttempt, setDetailAttempt] = useState(0);
   const [executionAttempt, setExecutionAttempt] = useState(0);
   const [qualityAttempt, setQualityAttempt] = useState(0);
+  const [reviewAttempt, setReviewAttempt] = useState(0);
   const [resource, setResource] = useState<ResourceState>({ kind: "loading" });
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailState>({ kind: "idle" });
   const [execution, setExecution] = useState<ExecutionState>({ kind: "idle" });
   const [quality, setQuality] = useState<QualityState>({ kind: "idle" });
+  const [review, setReview] = useState<ReviewState>({ kind: "idle" });
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -4289,6 +5474,12 @@ export default function LiveTrialPage({
   const executionWorkspace =
     execution.kind === "loaded" ? execution.value : null;
   const qualityWorkspace = quality.kind === "loaded" ? quality.value : null;
+  const reviewWorkspace = review.kind === "loaded" ? review.value : null;
+  const selectedRoundTruth =
+    reviewWorkspace?.trialRound ??
+    qualityWorkspace?.trialRound ??
+    executionWorkspace?.round ??
+    null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -4326,6 +5517,7 @@ export default function LiveTrialPage({
         setSelectedRoundId(nextRoundId);
         setExecution(nextRoundId ? { kind: "loading" } : { kind: "idle" });
         setQuality(nextRoundId ? { kind: "loading" } : { kind: "idle" });
+        setReview(nextRoundId ? { kind: "loading" } : { kind: "idle" });
       })
       .catch((error: unknown) => {
         if (
@@ -4398,6 +5590,43 @@ export default function LiveTrialPage({
       controller.abort();
     };
   }, [dataSource, projectId, qualityAttempt, selectedRoundId]);
+
+  useEffect(() => {
+    if (!selectedRoundId) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadRoundReview(projectId, selectedRoundId, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setReview({ kind: "loaded", value });
+        setDetail((current) =>
+          current.kind === "loaded"
+            ? {
+                kind: "loaded",
+                value: {
+                  ...current.value,
+                  rounds: current.value.rounds.map((round) =>
+                    round.globalId === value.trialRound.globalId
+                      ? value.trialRound
+                      : round,
+                  ),
+                },
+              }
+            : current,
+        );
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof TrialRequestCancelledError
+        )
+          return;
+        setReview({ kind: "failed", failure: toRequestFailure(error) });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, projectId, reviewAttempt, selectedRoundId]);
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
@@ -4812,7 +6041,8 @@ export default function LiveTrialPage({
           { id: "trial-live-actions", label: t("Generated actions") },
           { id: "trial-live-execution", label: t("Trial Round execution") },
           { id: "trial-live-quality", label: t("Trial quality workspace") },
-          { id: "trial-live-later", label: t("Later Trial sections") },
+          { id: "trial-live-review", label: t("Trial review and conclusion") },
+          { id: "trial-live-later", label: t("External execution boundary") },
           { id: "trial-live-inspector", label: t("Trial truth inspector") },
         ]}
       />
@@ -5321,6 +6551,7 @@ export default function LiveTrialPage({
                     setSelectedRoundId(null);
                     setExecution({ kind: "idle" });
                     setQuality({ kind: "idle" });
+                    setReview({ kind: "idle" });
                     setCommand({ kind: "idle" });
                   }}
                   type="button"
@@ -5352,6 +6583,7 @@ export default function LiveTrialPage({
                             setSelectedRoundId(round.globalId);
                             setExecution({ kind: "loading" });
                             setQuality({ kind: "loading" });
+                            setReview({ kind: "loading" });
                           }}
                           type="button"
                         >
@@ -5623,6 +6855,7 @@ export default function LiveTrialPage({
                                 setSelectedRoundId(round.globalId);
                                 setExecution({ kind: "loading" });
                                 setQuality({ kind: "loading" });
+                                setReview({ kind: "loading" });
                               }}
                               type="button"
                             >
@@ -5780,24 +7013,63 @@ export default function LiveTrialPage({
                   workspace={quality.value}
                 />
               ) : null}
-              <Panel title={t("Later Trial sections")}>
+              <div id="trial-live-review" tabIndex={-1} />
+              {review.kind === "loading" ? <LoadingSurface /> : null}
+              {review.kind === "failed" ? (
+                <Panel title={t("Trial review workspace unavailable")}>
+                  <RequestFailurePanel failure={review.failure} />
+                  {canRetry(review.failure) ? (
+                    <Button
+                      onClick={() => {
+                        setReview({ kind: "loading" });
+                        setReviewAttempt((current) => current + 1);
+                      }}
+                    >
+                      {t("Retry")}
+                    </Button>
+                  ) : null}
+                </Panel>
+              ) : null}
+              {review.kind === "loaded" ? (
+                <TrialReviewSection
+                  candidateRounds={planDetail.rounds}
+                  dataSource={dataSource}
+                  onWorkspace={(value) => {
+                    setReview({ kind: "loaded", value });
+                    setDetail((current) =>
+                      current.kind === "loaded"
+                        ? {
+                            kind: "loaded",
+                            value: {
+                              ...current.value,
+                              rounds: current.value.rounds.map((round) =>
+                                round.globalId === value.trialRound.globalId
+                                  ? value.trialRound
+                                  : round,
+                              ),
+                            },
+                          }
+                        : current,
+                    );
+                  }}
+                  projectId={projectId}
+                  reportWorkspaceDirty={reportWorkspaceDirty}
+                  workspace={review.value}
+                />
+              ) : null}
+              <Panel title={t("External execution boundary")}>
                 <div
                   className="trial-live__later"
                   id="trial-live-later"
                   tabIndex={-1}
                 >
-                  {[
-                    t("Conclusion and approval"),
-                    t("Formal quality and ERPNext execution"),
-                  ].map((label) => (
-                    <div className="trial-live__later-item" key={label}>
-                      <SemanticStatus
-                        label={t("Unavailable in this checkpoint")}
-                        tone="neutral"
-                      />
-                      <span>{label}</span>
-                    </div>
-                  ))}
+                  <div className="trial-live__later-item">
+                    <SemanticStatus
+                      label={t("Unavailable in this checkpoint")}
+                      tone="neutral"
+                    />
+                    <span>{t("Formal quality and ERPNext execution")}</span>
+                  </div>
                 </div>
               </Panel>
             </>
@@ -5830,16 +7102,15 @@ export default function LiveTrialPage({
               {
                 label: t("Selected Round"),
                 value:
-                  executionWorkspace?.round.displayLabel ??
-                  t("No Round selected"),
-                ...(executionWorkspace
+                  selectedRoundTruth?.displayLabel ?? t("No Round selected"),
+                ...(selectedRoundTruth
                   ? { exempt: "identifier" as const }
                   : {}),
               },
               {
                 label: t("Round state"),
-                value: executionWorkspace
-                  ? roundStateLabel(t, executionWorkspace.round.currentState)
+                value: selectedRoundTruth
+                  ? roundStateLabel(t, selectedRoundTruth.currentState)
                   : t("Unavailable"),
               },
               {
@@ -5872,6 +7143,36 @@ export default function LiveTrialPage({
                     )
                   : t("Unavailable"),
               },
+              {
+                label: t("Review policy versions"),
+                value: reviewWorkspace
+                  ? formatNumber(
+                      locale,
+                      reviewWorkspace.policyVersions.length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
+              {
+                label: t("Review references"),
+                value: reviewWorkspace
+                  ? formatNumber(
+                      locale,
+                      latestReviewReferences(reviewWorkspace).length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
+              {
+                label: t("Conclusion state"),
+                value: reviewWorkspace?.conclusionRevisions.at(-1)
+                  ? conclusionStateLabel(
+                      t,
+                      reviewWorkspace.conclusionRevisions.at(-1)?.state ??
+                        "reopened",
+                    )
+                  : t("Not submitted"),
+              },
               { label: t("Resource availability"), value: t("Unavailable") },
               { label: t("Resource reservation"), value: t("Unavailable") },
               { label: t("Action state owner"), value: t("Project Work") },
@@ -5897,7 +7198,7 @@ export default function LiveTrialPage({
             />
             <p>
               {t(
-                "P7-03 adds exact cavity results, stable defect continuity, governed actions and independent verification. Conclusion, Gate effect, NCR and formal ERP quality remain unavailable.",
+                "P7-04 adds policy-bound comparison, review references, conclusion proposals, independent decisions and reopen history. Gate, readiness, customer signature and formal ERP quality remain unavailable.",
               )}
             </p>
           </div>

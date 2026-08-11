@@ -5914,7 +5914,6 @@ Planned Rounds,已規劃輪次
 Generated actions,已產生行動項目
 Trial planning workspace,試模規劃工作區
 Planning foundation active,規劃基礎已啟用
-Later Trial sections,後續試模區段
 Trial truth inspector,試模事實檢查器
 Trial planning is read only in this session.,目前工作階段中的試模規劃為唯讀。
 Session verification is required before a Trial command can be submitted.,提交試模命令前需要完成工作階段驗證。
@@ -5990,7 +5989,6 @@ Linked at,關聯時間
 No governed Project Work action is linked to this Trial Plan.,該試模計畫尚未關聯受控專案工作行動項目。
 Locked preparation inputs,已鎖定準備輸入
 Actual process parameters,實際製程參數
-Conclusion and approval,結論和核准
 Formal quality and ERPNext execution,正式品質和 ERPNext 執行
 Unavailable in this checkpoint,本檢查點無法使用
 Project stable ID,專案穩定識別碼
@@ -6529,7 +6527,6 @@ Review immutable Trial quality command,審查不可變試模品質命令
 Trial quality workspace unavailable,試模品質工作區無法使用
 Quality defect revisions,品質缺陷修訂數
 Verification attempts,驗證嘗試次數
-"P7-03 adds exact cavity results, stable defect continuity, governed actions and independent verification. Conclusion, Gate effect, NCR and formal ERP quality remain unavailable.",本檢查點新增精確模穴結果、穩定缺陷延續、受控行動和獨立驗證；結論、階段門影響、不合格報告和企業資源規劃系統正式品質仍無法使用。
 Governed defect action,受控缺陷行動
 Action detail,行動明細
 Action state,行動狀態
@@ -6668,3 +6665,106 @@ The one-page Trial summary input has invalid controlled fields.,試模單頁摘�
 Trial review references must match the exact comparison scope.,試模審查參照必須與精確比較範圍相符。
 The end date must not be before the start date.,結束日期不能早於開始日期。
 "Select one complete exact predecessor, or leave it empty.","請選擇一個完整、精確的前序版本，或將其留空。"
+Controlled quality report,受控品質報告
+Internal sample review,內部樣件審查
+Customer evidence,客戶證據
+Deviation or waiver,偏差或豁免
+Tooling change,模具變更
+Design change,設計變更
+Process tuning,製程調校
+Material change,材料變更
+Input lock is missing,缺少輸入鎖定
+Actual execution revision is missing,缺少實際執行修訂
+A required parameter is not measured,必要參數尚未量測
+A required cavity result is missing,缺少必要的模穴結果
+A required dimension is not measured,必要尺寸尚未量測
+A blocking defect remains open,阻斷缺陷仍未關閉
+A required action is not independently verified,必要行動尚未獨立驗證
+A required review reference is unavailable,必要審查參照無法使用
+An out-of-spec result blocks this conclusion,超出規格的結果阻斷此結論
+Begin analysis,開始分析
+Create exact comparison,建立精確比較
+Bind review reference,繫結審查參照
+Submit conclusion proposal,提交結論提案
+Record conclusion decision,記錄結論決策
+Reopen conclusion,重新開啟結論
+At least two exact Trial Round snapshots are required for comparison.,比較至少需要兩個精確的試模輪次快照。
+Complete every required exact reference and proposal field before review.,審查前請填寫所有必要的精確參照和提案欄位。
+Trial review and conclusion,試模審查與結論
+Exact policy revision,精確策略修訂
+Policy snapshot,策略快照
+Latest comparison snapshot,最新比較快照
+Comparison snapshots,比較快照
+Current review references,目前審查參照
+Conclusion state,結論狀態
+Trial review is read only in this session.,此工作階段中的試模審查為唯讀。
+"The server rechecks Project membership, exact policy revision and conclusion authority for every command.",伺服器會為每個命令重新核驗專案成員資格、精確策略修訂和結論權限。
+"The exact policy, Round and predecessor snapshots are being verified atomically.",正在以原子方式核驗精確策略、輪次和前序快照。
+The exact prior review command response was replayed safely.,已安全重播先前精確審查命令的回應。
+The review command appended immutable audit history.,審查命令已追加不可變稽核歷史。
+Trial review command failed,試模審查命令失敗
+Exact review reference input,精確審查參照輸入
+Part revision stable ID,零件修訂穩定識別碼
+Part revision snapshot,零件修訂快照
+Tooling revision stable ID,模具修訂穩定識別碼
+Tooling revision snapshot,模具修訂快照
+Tooling Set stable ID,模具組穩定識別碼
+Tooling Set snapshot,模具組快照
+File revision stable ID,檔案修訂穩定識別碼
+File revision snapshot,檔案修訂快照
+Conclusion proposal input,結論提案輸入
+Conclusion code,結論代碼
+Proposed next work,建議的後續工作
+Proposed Gate effect,建議的階段門影響
+Proposed NPI effect,建議的 NPI 影響
+Independent conclusion decision,獨立結論決策
+Exact Round input comparison,精確輪次輸入比較
+Input key,輸入鍵
+Change,變化
+Round {{sequence}},輪次 {{sequence}}
+Same,相同
+Performance and dimension comparison,效能與尺寸比較
+Unit state,單位狀態
+Comparable,可比較
+Unit mismatch,單位不相符
+Defect trend across compared Rounds,比較輪次間的缺陷趨勢
+Trend,趨勢
+New,新增
+Continued,延續
+Resolved,已解決
+No defect trend is present in this comparison.,此比較中沒有缺陷趨勢。
+Exact Round comparison,精確輪次比較
+No immutable Round comparison is available.,沒有可用的不可變輪次比較。
+Begin analysis and compare at least two exact Round snapshots under one policy revision.,請開始分析，並在同一策略修訂下比較至少兩個精確輪次快照。
+Controlled review references,受控審查參照
+Approval authority,核准權限
+No controlled review reference is bound.,尚未繫結受控審查參照。
+A conclusion cannot be submitted until every policy-required reference kind is bound to exact revisions.,只有將策略要求的每種參照繫結到精確修訂後才能提交結論。
+One-page conclusion summary,單頁結論摘要
+Conclusion,結論
+Input changes,輸入變化
+"{{changed}} changed, {{same}} unchanged","{{changed}} 項已變化，{{same}} 項未變化"
+Policy blockers,策略阻斷項目
+Blocking rule,阻斷規則
+Exact source,精確來源
+No policy blocker is recorded.,未記錄策略阻斷項目。
+Immutable conclusion history,不可變結論歷史
+No conclusion proposal has been submitted.,尚未提交結論提案。
+External decision effects,外部決策影響
+Formal ERP quality,企業資源規劃系統正式品質
+Customer signature,客戶簽署
+Gate decision,階段門決策
+Proposal only,僅為提案
+Next work,後續工作
+"This review records an NPI One proposal only. It does not create ERP quality, customer signature, Gate, readiness or Tooling lifecycle truth.",此審查僅記錄 NPI One 提案，不會建立企業資源規劃系統品質、客戶簽署、階段門、就緒度或模具生命週期事實。
+"Appends immutable Trial review history against exact policy, Round, comparison and predecessor snapshots.",依據精確策略、輪次、比較和前序快照追加不可變試模審查歷史。
+"The server rechecks Project membership and the policy-bound submit, decide or reopen authority.",伺服器會重新核驗專案成員資格以及策略約束的提交、決策或重新開啟權限。
+Committed review revisions are never overwritten by generic CRUD.,已提交的審查修訂不會被通用新增、讀取、更新和刪除操作覆寫。
+A failed command changes no review state and can be retried with the same idempotency key.,失敗命令不會變更審查狀態，並可使用相同冪等鍵重試。
+"Actor, reason, request, trace and every exact snapshot reference are retained.",將保留操作者、原因、請求、追蹤資訊和每個精確快照參照。
+Review immutable Trial conclusion command,審查不可變試模結論命令
+External execution boundary,外部執行邊界
+Trial review workspace unavailable,試模審查工作區無法使用
+Review policy versions,審查策略版本
+Review references,審查參照
+"P7-04 adds policy-bound comparison, review references, conclusion proposals, independent decisions and reopen history. Gate, readiness, customer signature and formal ERP quality remain unavailable.",本任務新增策略約束的比較、審查參照、結論提案、獨立決策和重新開啟歷史；階段門、就緒度、客戶簽署和企業資源規劃系統正式品質仍無法使用。

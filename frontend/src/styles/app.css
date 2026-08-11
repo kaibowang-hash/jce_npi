@@ -864,6 +864,17 @@ textarea::placeholder {
   background: var(--npi-color-surface-subtle);
 }
 
+.trial-live .section-anchors {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.trial-live .section-anchors button {
+  height: var(--npi-density-control-compact);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .prototype-banner,
 .scenario-banner {
   display: flex;
@@ -1415,6 +1426,50 @@ textarea::placeholder {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: var(--npi-border-default) solid var(--npi-color-border-default);
   border-left: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__review-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: var(--npi-space-2) var(--npi-space-3);
+}
+
+.trial-live__review-form > label,
+.trial-live__review-decision {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  gap: var(--npi-space-1);
+}
+
+.trial-live__review-decision {
+  max-width: 360px;
+}
+
+.trial-live__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  margin-bottom: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-left: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__summary-grid section {
+  min-width: 0;
+  padding: var(--npi-space-2);
+  border-right: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-bottom: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.trial-live__summary-grid h3,
+.trial-live__summary-grid p {
+  margin: var(--npi-space-0);
+}
+
+.trial-live__summary-grid h3 {
+  margin-bottom: var(--npi-space-1);
+  color: var(--npi-color-text-secondary);
+  font-size: var(--npi-typography-size-xs);
 }
 
 .trial-live__execution-form > label,
@@ -2279,6 +2334,10 @@ textarea::placeholder {
   color: var(--npi-color-text-secondary);
   font-size: var(--npi-typography-size-xs);
   line-height: 1.25;
+}
+
+.trial-live__comparison-table td > .semantic-status {
+  margin-right: var(--npi-space-1);
 }
 
 .semantic-status__shape {
@@ -4878,6 +4937,8 @@ textarea::placeholder {
   .trial-live__quality-form,
   .trial-live__quality-action,
   .trial-live__external-effects,
+  .trial-live__review-form,
+  .trial-live__summary-grid,
   .trial-live__execution-form,
   .trial-live__execution-grid,
   .trial-live__truth-grid {

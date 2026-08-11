@@ -5,6 +5,7 @@ import {
   isTrialPlanDetail,
   isTrialPlanningWorkspace,
   isTrialQualityWorkspace,
+  isTrialReviewWorkspace,
   LiveTrialDataSource,
   type CreateTrialCavityResultCommand,
   type CreateTrialDefectCommand,
@@ -29,6 +30,14 @@ import {
   trialQualityVerification,
   trialQualityWorkspace,
 } from "../support/trial-quality-fixture";
+import {
+  trialComparison,
+  trialConclusion,
+  trialConclusionPolicy,
+  trialReviewIds,
+  trialReviewReference,
+  trialReviewWorkspace,
+} from "../support/trial-review-fixture";
 
 function requestUrl(request: RequestInfo | URL | undefined): string {
   if (typeof request === "string") return request;
@@ -926,6 +935,215 @@ describe("Trial planning data source", () => {
           sampleBatchRevisionGlobalId: sample.globalId,
         },
         context("quality-invalid"),
+      ),
+    ).rejects.toBeInstanceOf(NpiTransportError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("accepts only exact and fully contained Trial review snapshots", () => {
+    const workspace = trialReviewWorkspace();
+
+    expect(isTrialReviewWorkspace(workspace)).toBe(true);
+    expect(
+      isTrialReviewWorkspace({ ...workspace, gateDecisionCreated: true }),
+    ).toBe(false);
+    expect(
+      isTrialReviewWorkspace({
+        ...workspace,
+        comparisonSnapshots: workspace.comparisonSnapshots.map((snapshot) => ({
+          ...snapshot,
+          sources: [...snapshot.sources].reverse(),
+        })),
+      }),
+    ).toBe(false);
+    expect(
+      isTrialReviewWorkspace({
+        ...workspace,
+        conclusionRevisions: workspace.conclusionRevisions.map((revision) => ({
+          ...revision,
+          externalEffects: {
+            ...revision.externalEffects,
+            gate: "approved",
+          },
+        })),
+      }),
+    ).toBe(false);
+  });
+
+  it("sends exact policy-bound Trial review commands and preserves replay evidence", async () => {
+    const workspace = trialReviewWorkspace();
+    const policy = trialConclusionPolicy();
+    const comparison = trialComparison();
+    const reference = trialReviewReference();
+    const conclusion = trialConclusion();
+    const fetch = vi.fn<typeof globalThis.fetch>((_request, init) =>
+      Promise.resolve(
+        response(workspace, init, init?.method === "POST" ? true : undefined),
+      ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const policyContext = {
+      expectedPolicyRevisionSnapshotHash: policy.snapshotHash,
+      expectedRoundOptimisticVersion: workspace.trialRound.optimisticVersion,
+      expectedRoundSnapshotHash: workspace.trialRound.snapshotHash,
+      policyRevisionGlobalId: policy.globalId,
+    } as const;
+
+    await source.loadRoundReview(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      new AbortController().signal,
+    );
+    await source.beginAnalysis(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      { ...policyContext, reason: "Begin policy-bound analysis" },
+      context("review-begin"),
+    );
+    await source.createComparison(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        ...policyContext,
+        reason: "Compare exact Round snapshots",
+        rounds: comparison.sources.map((item) => ({
+          expectedOptimisticVersion: item.trialRoundOptimisticVersion,
+          expectedSnapshotHash: item.trialRoundSnapshotHash,
+          trialRoundGlobalId: item.trialRoundGlobalId,
+        })),
+      },
+      context("review-compare"),
+    );
+    await source.createReviewReference(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        ...policyContext,
+        comparisonSnapshotGlobalId: comparison.globalId,
+        expectedComparisonSnapshotHash: comparison.snapshotHash,
+        expectedFileRevisionSnapshotHash: reference.fileRevision.snapshotHash,
+        expectedPartRevisionSnapshotHash: reference.partRevision.snapshotHash,
+        expectedToolingRevisionSnapshotHash:
+          reference.toolingRevision.snapshotHash,
+        expectedToolingSetSnapshotHash: reference.toolingSet.snapshotHash,
+        fileRevisionGlobalId: reference.fileRevision.globalId,
+        partRevisionGlobalId: reference.partRevision.globalId,
+        reason: "Bind exact review evidence",
+        referenceKind: reference.referenceKind,
+        toolingMasterGlobalId: reference.toolingMasterGlobalId,
+        toolingRevisionGlobalId: reference.toolingRevision.globalId,
+        toolingSetGlobalId: reference.toolingSet.globalId,
+      },
+      context("review-reference"),
+    );
+    await source.submitConclusion(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        ...policyContext,
+        comparisonSnapshotGlobalId: comparison.globalId,
+        conclusionCode: conclusion.conclusionCode,
+        expectedComparisonSnapshotHash: comparison.snapshotHash,
+        proposedGateEffect: conclusion.proposedGateEffect,
+        proposedNextWork: conclusion.proposedNextWork,
+        proposedNpiEffect: conclusion.proposedNpiEffect,
+        reason: "Submit the immutable conclusion proposal",
+        reviewReferences: conclusion.reviewReferences,
+      },
+      context("review-submit"),
+    );
+    await source.decideConclusion(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      conclusion.conclusionGlobalId,
+      {
+        ...policyContext,
+        decision: "approved",
+        expectedConclusionRevisionGlobalId: conclusion.globalId,
+        expectedConclusionRevisionSnapshotHash: conclusion.snapshotHash,
+        expectedConclusionVersion: conclusion.conclusionVersion,
+        reason: "Approve the exact submitted revision",
+      },
+      context("review-decide"),
+    );
+    await source.reopenConclusion(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      {
+        ...policyContext,
+        conclusionGlobalId: conclusion.conclusionGlobalId,
+        expectedConclusionRevisionGlobalId: conclusion.globalId,
+        expectedConclusionRevisionSnapshotHash: conclusion.snapshotHash,
+        expectedConclusionVersion: conclusion.conclusionVersion,
+        reason: "Reopen the exact decided revision",
+      },
+      context("review-reopen"),
+    );
+
+    expect(fetch).toHaveBeenCalledTimes(7);
+    expect(requestUrl(fetch.mock.calls[0]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}/review`,
+    );
+    expect(requestUrl(fetch.mock.calls[1]?.[0])).toContain(":begin-analysis");
+    expect(requestUrl(fetch.mock.calls[2]?.[0])).toContain("/comparisons");
+    expect(requestUrl(fetch.mock.calls[3]?.[0])).toContain(
+      "/review-references",
+    );
+    expect(requestUrl(fetch.mock.calls[4]?.[0])).toContain("/conclusions");
+    expect(requestUrl(fetch.mock.calls[5]?.[0])).toContain(
+      `/conclusions/${trialReviewIds.conclusion}:decide`,
+    );
+    expect(requestUrl(fetch.mock.calls[6]?.[0])).toContain(":reopen");
+    for (const call of fetch.mock.calls.slice(1)) {
+      expect(call[1]?.method).toBe("POST");
+      expect(new Headers(call[1]?.headers).get("Idempotency-Key")).toMatch(
+        /^trial-review-/u,
+      );
+    }
+    expect(bodyValue(fetch.mock.calls[5]?.[1]?.body)).toMatchObject({
+      decision: "approved",
+      expectedConclusionRevisionGlobalId: conclusion.globalId,
+      expectedPolicyRevisionSnapshotHash: policy.snapshotHash,
+    });
+  });
+
+  it("fails closed before transport for an incomplete review reference tuple", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const workspace = trialReviewWorkspace();
+    const policy = trialConclusionPolicy();
+    const comparison = trialComparison();
+    const reference = trialReviewReference();
+
+    await expect(
+      source.createReviewReference(
+        trialPlanningIds.project,
+        trialPlanningIds.round,
+        {
+          comparisonSnapshotGlobalId: comparison.globalId,
+          expectedComparisonSnapshotHash: comparison.snapshotHash,
+          expectedFileRevisionSnapshotHash: reference.fileRevision.snapshotHash,
+          expectedPartRevisionSnapshotHash: reference.partRevision.snapshotHash,
+          expectedPolicyRevisionSnapshotHash: policy.snapshotHash,
+          expectedReferenceVersion: 1,
+          expectedRoundOptimisticVersion:
+            workspace.trialRound.optimisticVersion,
+          expectedRoundSnapshotHash: workspace.trialRound.snapshotHash,
+          expectedToolingRevisionSnapshotHash:
+            reference.toolingRevision.snapshotHash,
+          expectedToolingSetSnapshotHash: reference.toolingSet.snapshotHash,
+          fileRevisionGlobalId: reference.fileRevision.globalId,
+          partRevisionGlobalId: reference.partRevision.globalId,
+          policyRevisionGlobalId: policy.globalId,
+          reason: "The predecessor tuple is intentionally incomplete",
+          referenceKind: reference.referenceKind,
+          toolingMasterGlobalId: reference.toolingMasterGlobalId,
+          toolingRevisionGlobalId: reference.toolingRevision.globalId,
+          toolingSetGlobalId: reference.toolingSet.globalId,
+        },
+        context("review-invalid"),
       ),
     ).rejects.toBeInstanceOf(NpiTransportError);
     expect(fetch).not.toHaveBeenCalled();

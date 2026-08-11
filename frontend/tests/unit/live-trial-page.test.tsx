@@ -20,6 +20,11 @@ import {
   trialQualityIds,
   trialQualityWorkspace,
 } from "../support/trial-quality-fixture";
+import {
+  trialConclusion,
+  trialReviewIds,
+  trialReviewWorkspace,
+} from "../support/trial-review-fixture";
 
 const sessionCsrfToken = "c".repeat(64);
 
@@ -30,15 +35,19 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
     appendActualRevision: () => Promise.reject(new Error("not used")),
     appendSampleBatchRevision: () => Promise.reject(new Error("not used")),
     bindEvidence: () => Promise.reject(new Error("not used")),
+    beginAnalysis: () => Promise.reject(new Error("not used")),
+    createComparison: () => Promise.reject(new Error("not used")),
     createPlan: () => Promise.reject(new Error("not used")),
     createCavityResult: () => Promise.reject(new Error("not used")),
     createDefect: () => Promise.reject(new Error("not used")),
     createRound: () => Promise.reject(new Error("not used")),
+    createReviewReference: () => Promise.reject(new Error("not used")),
     createSampleBatch: () => Promise.reject(new Error("not used")),
     downloadEvidence: () => Promise.reject(new Error("not used")),
     generateActions: () => Promise.reject(new Error("not used")),
     loadPlan: () => Promise.resolve(trialPlanDetail()),
     loadRoundQuality: () => Promise.resolve(trialQualityWorkspace()),
+    loadRoundReview: () => Promise.resolve(trialReviewWorkspace()),
     loadRoundExecution: () =>
       Promise.resolve(
         trialExecutionWorkspace({
@@ -68,7 +77,10 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
     reviseCavityResult: () => Promise.reject(new Error("not used")),
     reviseDefect: () => Promise.reject(new Error("not used")),
     revisePlan: () => Promise.reject(new Error("not used")),
+    decideConclusion: () => Promise.reject(new Error("not used")),
+    reopenConclusion: () => Promise.reject(new Error("not used")),
     startRound: () => Promise.reject(new Error("not used")),
+    submitConclusion: () => Promise.reject(new Error("not used")),
     uploadEvidenceFile: () => Promise.reject(new Error("not used")),
     verifyDefect: () => Promise.reject(new Error("not used")),
     ...overrides,
@@ -1009,8 +1021,91 @@ describe("live Trial planning page", () => {
     ).toBeVisible();
     expect(screen.getByText("NCR creation")).toBeVisible();
     expect(screen.getAllByText("Unavailable in this checkpoint")).toHaveLength(
-      7,
+      6,
     );
+  });
+
+  it("renders exact Round comparison, policy blockers and proposal-only conclusion truth", async () => {
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource()}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Trial review and conclusion",
+      }),
+    ).toBeVisible();
+    expect(screen.getByText("material.lot_batch")).toBeVisible();
+    expect(screen.getAllByText("rib.end.width")).toHaveLength(2);
+    expect(screen.getByText("Controlled quality report")).toBeVisible();
+    expect(screen.getAllByText("Conditional pass")).toHaveLength(2);
+    expect(screen.getByText("A blocking defect remains open")).toBeVisible();
+    expect(screen.getByText("Proposal only")).toBeVisible();
+    expect(
+      screen.getByText(
+        "This review records an NPI One proposal only. It does not create ERP quality, customer signature, Gate, readiness or Tooling lifecycle truth.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("records an independent decision against the exact submitted conclusion", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const decideConclusion = vi
+      .fn<TrialDataSource["decideConclusion"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialReviewWorkspace(),
+      });
+    const conclusion = trialConclusion();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({ decideConclusion })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Record conclusion decision",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial conclusion command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Approve the exact submitted proposal after independent review",
+    );
+    await user.click(
+      within(dialog).getByRole("button", {
+        name: "Record conclusion decision",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(decideConclusion).toHaveBeenCalledOnce();
+    });
+    expect(decideConclusion.mock.calls[0]?.[2]).toBe(trialReviewIds.conclusion);
+    expect(decideConclusion.mock.calls[0]?.[3]).toMatchObject({
+      decision: "approved",
+      expectedConclusionRevisionGlobalId: conclusion.globalId,
+      expectedConclusionRevisionSnapshotHash: conclusion.snapshotHash,
+      expectedConclusionVersion: conclusion.conclusionVersion,
+      expectedPolicyRevisionSnapshotHash: "1".repeat(64),
+      expectedRoundOptimisticVersion: 2,
+      expectedRoundSnapshotHash: "5".repeat(64),
+      reason: "Approve the exact submitted proposal after independent review",
+    });
   });
 
   it("records one exact cavity result through review and immutable command context", async () => {

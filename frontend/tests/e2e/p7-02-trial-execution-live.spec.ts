@@ -15,6 +15,7 @@ import {
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
 import { trialQualityWorkspace } from "../support/trial-quality-fixture";
+import { emptyTrialReviewWorkspace } from "../support/trial-review-fixture";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,
@@ -161,6 +162,10 @@ async function installTrialApi(
     }
     if (request.method() === "GET" && path.endsWith("/quality")) {
       await fulfillJson(route, trialQualityWorkspace());
+      return;
+    }
+    if (request.method() === "GET" && path.endsWith("/review")) {
+      await fulfillJson(route, emptyTrialReviewWorkspace(execution.round));
       return;
     }
     if (request.method() === "GET") {

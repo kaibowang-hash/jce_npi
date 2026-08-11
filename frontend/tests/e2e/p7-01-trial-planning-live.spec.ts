@@ -9,6 +9,7 @@ import {
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
 import { trialQualityWorkspace } from "../support/trial-quality-fixture";
+import { emptyTrialReviewWorkspace } from "../support/trial-review-fixture";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,
@@ -186,6 +187,13 @@ async function installTrialApi(
       await fulfillJson(route, trialQualityWorkspace());
       return;
     }
+    if (request.method() === "GET" && path.endsWith("/review")) {
+      const planned = trialPlanDetail().rounds[0];
+      if (!planned)
+        throw new Error("P7-01 browser fixture requires one Round.");
+      await fulfillJson(route, emptyTrialReviewWorkspace(planned));
+      return;
+    }
     if (request.method() === "GET") {
       await fulfillJson(
         route,
@@ -270,7 +278,7 @@ test.describe("P7-01 live Trial planning workspace", () => {
       );
       await expect(
         page.locator("#trial-live-later .trial-live__later-item"),
-      ).toHaveCount(2);
+      ).toHaveCount(1);
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

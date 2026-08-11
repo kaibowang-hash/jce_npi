@@ -794,6 +794,378 @@ export interface TrialQualityCommandResult {
   replayed: boolean;
 }
 
+export const trialReviewReferenceKinds = [
+  "controlled_quality_report",
+  "internal_sample_review",
+  "customer_evidence",
+  "deviation_or_waiver",
+] as const;
+export type TrialReviewReferenceKind =
+  (typeof trialReviewReferenceKinds)[number];
+
+export const trialConclusionCodes = [
+  "pass",
+  "conditional_pass",
+  "tooling_change",
+  "design_change",
+  "process_tuning",
+  "material_change",
+  "cancelled",
+] as const;
+export type TrialConclusionCode = (typeof trialConclusionCodes)[number];
+export type TrialConclusionState =
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "reopened";
+
+export interface TrialReviewExactReference {
+  globalId: string;
+  snapshotHash: string;
+}
+
+export interface TrialConclusionPolicyVersion {
+  schemaVersion: "npi.trial.v1";
+  globalId: string;
+  policyGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialPlanGlobalId: string;
+  trialPlanRevisionGlobalId: string;
+  trialPlanRevisionSnapshotHash: string;
+  policyVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  requiredParameterKeys: readonly string[];
+  requiredDimensionKeys: readonly string[];
+  requiredReferenceKinds: readonly TrialReviewReferenceKind[];
+  requireCavityResults: boolean;
+  blockOnOpenBlockingDefects: boolean;
+  blockOnUnverifiedRequiredActions: boolean;
+  allowedConclusionCodes: readonly TrialConclusionCode[];
+  outOfSpecBlockingCodes: readonly TrialConclusionCode[];
+  authorityBindings: readonly {
+    member: TrialQualityMemberReference;
+    capabilities: readonly ("submit" | "decide" | "reopen")[];
+  }[];
+  publishedByUserId: string;
+  publishedAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialRoundComparisonSource {
+  sequence: number;
+  trialRoundGlobalId: string;
+  trialRoundOptimisticVersion: number;
+  trialRoundSnapshotHash: string;
+  trialPlanRevision: TrialReviewExactReference;
+  inputLockRevision: TrialReviewExactReference | null;
+  actualRevision: TrialReviewExactReference | null;
+  sampleRevisions: readonly TrialReviewExactReference[];
+  cavityResults: readonly {
+    cavityGlobalId: string;
+    revision: TrialReviewExactReference;
+  }[];
+  defects: readonly {
+    defectGlobalId: string;
+    sourceKind: "tooling" | "trial";
+    revision: TrialReviewExactReference;
+    state: TrialDefectState;
+    blocking: boolean;
+    requiredActionsUnverified: number;
+  }[];
+}
+
+export interface TrialInputComparisonRow {
+  semanticKey: string;
+  changeState: "added" | "removed" | "changed" | "same";
+  cells: readonly {
+    trialRoundGlobalId: string;
+    canonicalValue: string | null;
+    sourceRevision: TrialReviewExactReference | null;
+  }[];
+}
+
+export interface TrialMetricComparisonRow {
+  metricKind: "parameter" | "dimension" | "cycle_time" | "yield";
+  metricKey: string;
+  cavityGlobalId: string | null;
+  unitState: "comparable" | "unit_mismatch" | "unavailable";
+  cells: readonly {
+    trialRoundGlobalId: string;
+    state: "measured" | "not_measured" | "unavailable";
+    value: string | null;
+    unit: string | null;
+    lowerLimit: string | null;
+    upperLimit: string | null;
+    comparisonState:
+      | "measured"
+      | "not_measured"
+      | "unavailable"
+      | "within_spec"
+      | "out_of_spec";
+    sourceRevision: TrialReviewExactReference | null;
+    deltaFromPrevious: string | null;
+  }[];
+}
+
+export interface TrialRoundComparisonSnapshot {
+  schemaVersion: "npi.trial.v1";
+  globalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialPlanGlobalId: string;
+  targetRoundGlobalId: string;
+  policyRevision: TrialReviewExactReference;
+  sources: readonly TrialRoundComparisonSource[];
+  inputRows: readonly TrialInputComparisonRow[];
+  metricRows: readonly TrialMetricComparisonRow[];
+  defectTrends: readonly {
+    defectGlobalId: string;
+    state: "new" | "continued" | "resolved" | "reopened";
+  }[];
+  formalErpQuality: "unavailable";
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  snapshotHash: string;
+}
+
+export interface TrialReviewReferenceRevision {
+  schemaVersion: "npi.trial.v1";
+  globalId: string;
+  referenceGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  comparisonSnapshot: TrialReviewExactReference;
+  referenceKind: TrialReviewReferenceKind;
+  referenceVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  partRevision: TrialReviewExactReference;
+  toolingMasterGlobalId: string;
+  toolingRevision: TrialReviewExactReference;
+  toolingSet: TrialReviewExactReference;
+  fileRevision: TrialReviewExactReference;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  approvalAuthority: "unavailable";
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialConclusionBlocker {
+  code:
+    | "missing_input_lock"
+    | "missing_actual"
+    | "required_parameter_not_measured"
+    | "missing_cavity_result"
+    | "required_dimension_not_measured"
+    | "open_blocking_defect"
+    | "required_action_not_verified"
+    | "required_review_reference_unavailable"
+    | "out_of_spec_blocking";
+  sourceKey: string;
+}
+
+export interface TrialOnePageSummaryInput {
+  schemaVersion: "npi.trial.v1";
+  comparisonSnapshot: TrialReviewExactReference;
+  rounds: readonly TrialReviewExactReference[];
+  targetRoundGlobalId: string;
+  inputChangeCounts: {
+    added: number;
+    removed: number;
+    changed: number;
+    same: number;
+  };
+  metricRowHashes: readonly string[];
+  defectTrendCounts: {
+    new: number;
+    continued: number;
+    resolved: number;
+    reopened: number;
+  };
+  reviewReferences: readonly (TrialReviewExactReference & {
+    referenceKind: TrialReviewReferenceKind;
+  })[];
+  cycleTimeState:
+    | "measured"
+    | "not_measured"
+    | "unavailable"
+    | "within_spec"
+    | "out_of_spec";
+  yieldState:
+    | "measured"
+    | "not_measured"
+    | "unavailable"
+    | "within_spec"
+    | "out_of_spec";
+  formalErpQuality: "unavailable";
+  conclusionCode: TrialConclusionCode;
+  conclusionState: TrialConclusionState;
+  externalEffects: {
+    nextWork: "proposal_only";
+    gate: "unavailable";
+    npiReadiness: "unavailable";
+    toolingLifecycle: "unavailable";
+  };
+}
+
+export interface TrialConclusionRevision {
+  schemaVersion: "npi.trial.v1";
+  globalId: string;
+  conclusionGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  trialRoundOptimisticVersion: number;
+  trialRoundSnapshotHash: string;
+  conclusionVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  state: TrialConclusionState;
+  conclusionCode: TrialConclusionCode;
+  policyRevision: TrialReviewExactReference;
+  comparisonSnapshot: TrialReviewExactReference;
+  reviewReferences: readonly TrialReviewExactReference[];
+  blockers: readonly TrialConclusionBlocker[];
+  summaryInput: TrialOnePageSummaryInput;
+  proposedNextWork: readonly string[];
+  proposedGateEffect: string;
+  proposedNpiEffect: string;
+  externalEffects: {
+    nextWork: "proposal_only";
+    gate: "unavailable";
+    npiReadiness: "unavailable";
+    toolingLifecycle: "unavailable";
+    formalErpQuality: "unavailable";
+    customerSignature: "unavailable";
+  };
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialReviewWorkspace {
+  projectGlobalId: string;
+  trialRound: TrialRoundSummary;
+  policyVersions: readonly TrialConclusionPolicyVersion[];
+  comparisonSnapshots: readonly TrialRoundComparisonSnapshot[];
+  reviewReferenceRevisions: readonly TrialReviewReferenceRevision[];
+  conclusionRevisions: readonly TrialConclusionRevision[];
+  permissions: {
+    view: boolean;
+    requiresExactPolicyRevision: true;
+    beginAnalysis: boolean;
+    createComparison: boolean;
+    manageReviewReferences: boolean;
+    submitConclusion: boolean;
+    decideConclusion: boolean;
+    reopenConclusion: boolean;
+  };
+  externalEffects: {
+    formalErpQuality: "unavailable";
+    customerSignature: "unavailable";
+    gate: "unavailable";
+    npiReadiness: "unavailable";
+    toolingLifecycle: "unavailable";
+    nextWork: "proposal_only";
+  };
+}
+
+export interface TrialReviewPolicyRoundContext {
+  policyRevisionGlobalId: string;
+  expectedPolicyRevisionSnapshotHash: string;
+  expectedRoundOptimisticVersion: number;
+  expectedRoundSnapshotHash: string;
+}
+
+export interface BeginTrialAnalysisCommand extends TrialReviewPolicyRoundContext {
+  reason: string;
+}
+
+export interface CreateTrialRoundComparisonCommand extends TrialReviewPolicyRoundContext {
+  rounds: readonly {
+    trialRoundGlobalId: string;
+    expectedOptimisticVersion: number;
+    expectedSnapshotHash: string;
+  }[];
+  reason: string;
+}
+
+export interface CreateTrialReviewReferenceCommand extends TrialReviewPolicyRoundContext {
+  referenceGlobalId?: string | undefined;
+  expectedReferenceRevisionGlobalId?: string | undefined;
+  expectedReferenceRevisionSnapshotHash?: string | undefined;
+  expectedReferenceVersion?: number | undefined;
+  comparisonSnapshotGlobalId: string;
+  expectedComparisonSnapshotHash: string;
+  referenceKind: TrialReviewReferenceKind;
+  partRevisionGlobalId: string;
+  expectedPartRevisionSnapshotHash: string;
+  toolingMasterGlobalId: string;
+  toolingRevisionGlobalId: string;
+  expectedToolingRevisionSnapshotHash: string;
+  toolingSetGlobalId: string;
+  expectedToolingSetSnapshotHash: string;
+  fileRevisionGlobalId: string;
+  expectedFileRevisionSnapshotHash: string;
+  effectiveFrom?: string | undefined;
+  effectiveTo?: string | undefined;
+  reason: string;
+}
+
+export interface SubmitTrialConclusionCommand extends TrialReviewPolicyRoundContext {
+  conclusionGlobalId?: string | undefined;
+  expectedConclusionRevisionGlobalId?: string | undefined;
+  expectedConclusionRevisionSnapshotHash?: string | undefined;
+  expectedConclusionVersion?: number | undefined;
+  comparisonSnapshotGlobalId: string;
+  expectedComparisonSnapshotHash: string;
+  reviewReferences: readonly TrialReviewExactReference[];
+  conclusionCode: TrialConclusionCode;
+  proposedNextWork: readonly string[];
+  proposedGateEffect: string;
+  proposedNpiEffect: string;
+  reason: string;
+}
+
+export interface DecideTrialConclusionCommand extends TrialReviewPolicyRoundContext {
+  expectedConclusionRevisionGlobalId: string;
+  expectedConclusionRevisionSnapshotHash: string;
+  expectedConclusionVersion: number;
+  decision: "approved" | "rejected";
+  reason: string;
+}
+
+export interface ReopenTrialConclusionCommand extends TrialReviewPolicyRoundContext {
+  conclusionGlobalId: string;
+  expectedConclusionRevisionGlobalId: string;
+  expectedConclusionRevisionSnapshotHash: string;
+  expectedConclusionVersion: number;
+  reason: string;
+}
+
+export interface TrialReviewCommandResult {
+  workspace: TrialReviewWorkspace;
+  replayed: boolean;
+}
+
 export interface PrepareTrialRoundCommand {
   expectedRoundOptimisticVersion: number;
   references: readonly TrialLockedReferenceInput[];
@@ -988,6 +1360,48 @@ export interface TrialDataSource {
     command: VerifyTrialDefectCommand,
     context: TrialCommandContext,
   ): Promise<TrialQualityCommandResult>;
+  loadRoundReview(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialReviewWorkspace>;
+  beginAnalysis(
+    projectId: string,
+    roundId: string,
+    command: BeginTrialAnalysisCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
+  createComparison(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialRoundComparisonCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
+  createReviewReference(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialReviewReferenceCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
+  submitConclusion(
+    projectId: string,
+    roundId: string,
+    command: SubmitTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
+  decideConclusion(
+    projectId: string,
+    roundId: string,
+    conclusionId: string,
+    command: DecideTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
+  reopenConclusion(
+    projectId: string,
+    roundId: string,
+    command: ReopenTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult>;
 }
 
 export class TrialRequestCancelledError extends Error {
@@ -2648,6 +3062,844 @@ export function isTrialQualityWorkspace(
   );
 }
 
+function isReviewExactReference(
+  value: unknown,
+): value is TrialReviewExactReference {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["globalId", "snapshotHash"]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    typeof item.snapshotHash === "string" &&
+    hashPattern.test(item.snapshotHash)
+  );
+}
+
+function isNullableReviewReference(
+  value: unknown,
+): value is TrialReviewExactReference | null {
+  return value === null || isReviewExactReference(value);
+}
+
+function isReviewPolicy(value: unknown): value is TrialConclusionPolicyVersion {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "policyGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialPlanGlobalId",
+      "trialPlanRevisionGlobalId",
+      "trialPlanRevisionSnapshotHash",
+      "policyVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "requiredParameterKeys",
+      "requiredDimensionKeys",
+      "requiredReferenceKinds",
+      "requireCavityResults",
+      "blockOnOpenBlockingDefects",
+      "blockOnUnverifiedRequiredActions",
+      "allowedConclusionCodes",
+      "outOfSpecBlockingCodes",
+      "authorityBindings",
+      "publishedByUserId",
+      "publishedAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== "npi.trial.v1" ||
+    ![
+      item.globalId,
+      item.policyGlobalId,
+      item.projectGlobalId,
+      item.trialPlanGlobalId,
+      item.trialPlanRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !textValue(item.tenantId, 1, 256) ||
+    ![
+      item.trialPlanRevisionSnapshotHash,
+      item.versionKeyHash,
+      item.snapshotHash,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) ||
+    !whole(item.policyVersion, 1) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    !Array.isArray(item.requiredParameterKeys) ||
+    item.requiredParameterKeys.length > 250 ||
+    !item.requiredParameterKeys.every((candidate) =>
+      textValue(candidate, 1, 256),
+    ) ||
+    !unique(item.requiredParameterKeys) ||
+    !Array.isArray(item.requiredDimensionKeys) ||
+    item.requiredDimensionKeys.length > 1000 ||
+    !item.requiredDimensionKeys.every((candidate) =>
+      textValue(candidate, 1, 256),
+    ) ||
+    !unique(item.requiredDimensionKeys) ||
+    !Array.isArray(item.requiredReferenceKinds) ||
+    item.requiredReferenceKinds.length < 1 ||
+    item.requiredReferenceKinds.length > trialReviewReferenceKinds.length ||
+    !item.requiredReferenceKinds.every((candidate) =>
+      member(candidate, trialReviewReferenceKinds),
+    ) ||
+    !unique(item.requiredReferenceKinds) ||
+    typeof item.requireCavityResults !== "boolean" ||
+    typeof item.blockOnOpenBlockingDefects !== "boolean" ||
+    typeof item.blockOnUnverifiedRequiredActions !== "boolean" ||
+    !Array.isArray(item.allowedConclusionCodes) ||
+    item.allowedConclusionCodes.length < 1 ||
+    item.allowedConclusionCodes.length > trialConclusionCodes.length ||
+    !item.allowedConclusionCodes.every((candidate) =>
+      member(candidate, trialConclusionCodes),
+    ) ||
+    !unique(item.allowedConclusionCodes) ||
+    !Array.isArray(item.outOfSpecBlockingCodes) ||
+    item.outOfSpecBlockingCodes.length > trialConclusionCodes.length ||
+    !item.outOfSpecBlockingCodes.every((candidate) =>
+      member(candidate, trialConclusionCodes),
+    ) ||
+    !unique(item.outOfSpecBlockingCodes) ||
+    !Array.isArray(item.authorityBindings) ||
+    item.authorityBindings.length < 1 ||
+    item.authorityBindings.length > 100 ||
+    !item.authorityBindings.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const binding = candidate as Record<string, unknown>;
+      return (
+        exact(binding, ["member", "capabilities"]) &&
+        isQualityMember(binding.member) &&
+        Array.isArray(binding.capabilities) &&
+        binding.capabilities.length >= 1 &&
+        binding.capabilities.length <= 3 &&
+        binding.capabilities.every((capability) =>
+          member(capability, ["submit", "decide", "reopen"] as const),
+        ) &&
+        unique(binding.capabilities)
+      );
+    }) ||
+    !email(item.publishedByUserId) ||
+    !dateTime(item.publishedAt) ||
+    !textValue(item.traceId, 1, 256)
+  )
+    return false;
+  return (
+    (item.policyVersion === 1) ===
+    (item.predecessorGlobalId === null && item.predecessorSnapshotHash === null)
+  );
+}
+
+function isReviewComparisonSource(
+  value: unknown,
+): value is TrialRoundComparisonSource {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "sequence",
+      "trialRoundGlobalId",
+      "trialRoundOptimisticVersion",
+      "trialRoundSnapshotHash",
+      "trialPlanRevision",
+      "inputLockRevision",
+      "actualRevision",
+      "sampleRevisions",
+      "cavityResults",
+      "defects",
+    ]) &&
+    whole(item.sequence, 1) &&
+    typeof item.trialRoundGlobalId === "string" &&
+    uuidPattern.test(item.trialRoundGlobalId) &&
+    whole(item.trialRoundOptimisticVersion, 1) &&
+    typeof item.trialRoundSnapshotHash === "string" &&
+    hashPattern.test(item.trialRoundSnapshotHash) &&
+    isReviewExactReference(item.trialPlanRevision) &&
+    isNullableReviewReference(item.inputLockRevision) &&
+    isNullableReviewReference(item.actualRevision) &&
+    Array.isArray(item.sampleRevisions) &&
+    item.sampleRevisions.length <= 1000 &&
+    item.sampleRevisions.every(isReviewExactReference) &&
+    unique(item.sampleRevisions.map((entry) => entry.globalId)) &&
+    Array.isArray(item.cavityResults) &&
+    item.cavityResults.length <= 1000 &&
+    item.cavityResults.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const cavity = candidate as Record<string, unknown>;
+      return (
+        exact(cavity, ["cavityGlobalId", "revision"]) &&
+        typeof cavity.cavityGlobalId === "string" &&
+        uuidPattern.test(cavity.cavityGlobalId) &&
+        isReviewExactReference(cavity.revision)
+      );
+    }) &&
+    Array.isArray(item.defects) &&
+    item.defects.length <= 10000 &&
+    item.defects.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const defect = candidate as Record<string, unknown>;
+      return (
+        exact(defect, [
+          "defectGlobalId",
+          "sourceKind",
+          "revision",
+          "state",
+          "blocking",
+          "requiredActionsUnverified",
+        ]) &&
+        typeof defect.defectGlobalId === "string" &&
+        uuidPattern.test(defect.defectGlobalId) &&
+        member(defect.sourceKind, ["tooling", "trial"] as const) &&
+        isReviewExactReference(defect.revision) &&
+        member(defect.state, [
+          "open",
+          "assigned",
+          "in_progress",
+          "ready_for_verification",
+          "closed",
+          "reopened",
+        ] as const) &&
+        typeof defect.blocking === "boolean" &&
+        whole(defect.requiredActionsUnverified, 0)
+      );
+    })
+  );
+}
+
+function isReviewInputRow(value: unknown): value is TrialInputComparisonRow {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["semanticKey", "changeState", "cells"]) &&
+    textValue(item.semanticKey, 1, 256) &&
+    member(item.changeState, [
+      "added",
+      "removed",
+      "changed",
+      "same",
+    ] as const) &&
+    Array.isArray(item.cells) &&
+    item.cells.length >= 2 &&
+    item.cells.length <= 100 &&
+    item.cells.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const cell = candidate as Record<string, unknown>;
+      return (
+        exact(cell, [
+          "trialRoundGlobalId",
+          "canonicalValue",
+          "sourceRevision",
+        ]) &&
+        typeof cell.trialRoundGlobalId === "string" &&
+        uuidPattern.test(cell.trialRoundGlobalId) &&
+        (cell.canonicalValue === null ||
+          textValue(cell.canonicalValue, 1, 2000)) &&
+        isNullableReviewReference(cell.sourceRevision) &&
+        (cell.canonicalValue === null || cell.sourceRevision !== null)
+      );
+    })
+  );
+}
+
+function isReviewMetricRow(value: unknown): value is TrialMetricComparisonRow {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "metricKind",
+      "metricKey",
+      "cavityGlobalId",
+      "unitState",
+      "cells",
+    ]) &&
+    member(item.metricKind, [
+      "parameter",
+      "dimension",
+      "cycle_time",
+      "yield",
+    ] as const) &&
+    textValue(item.metricKey, 1, 256) &&
+    nullableUuid(item.cavityGlobalId) &&
+    member(item.unitState, [
+      "comparable",
+      "unit_mismatch",
+      "unavailable",
+    ] as const) &&
+    Array.isArray(item.cells) &&
+    item.cells.length >= 2 &&
+    item.cells.length <= 100 &&
+    item.cells.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const cell = candidate as Record<string, unknown>;
+      return (
+        exact(cell, [
+          "trialRoundGlobalId",
+          "state",
+          "value",
+          "unit",
+          "lowerLimit",
+          "upperLimit",
+          "comparisonState",
+          "sourceRevision",
+          "deltaFromPrevious",
+        ]) &&
+        typeof cell.trialRoundGlobalId === "string" &&
+        uuidPattern.test(cell.trialRoundGlobalId) &&
+        member(cell.state, [
+          "measured",
+          "not_measured",
+          "unavailable",
+        ] as const) &&
+        nullableText(cell.value, 64) &&
+        nullableText(cell.unit, 32) &&
+        nullableText(cell.lowerLimit, 64) &&
+        nullableText(cell.upperLimit, 64) &&
+        member(cell.comparisonState, [
+          "measured",
+          "not_measured",
+          "unavailable",
+          "within_spec",
+          "out_of_spec",
+        ] as const) &&
+        isNullableReviewReference(cell.sourceRevision) &&
+        nullableText(cell.deltaFromPrevious, 64) &&
+        (cell.state === "measured") === (cell.value !== null) &&
+        (cell.state === "unavailable") === (cell.sourceRevision === null)
+      );
+    })
+  );
+}
+
+function isReviewComparison(
+  value: unknown,
+): value is TrialRoundComparisonSnapshot {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialPlanGlobalId",
+      "targetRoundGlobalId",
+      "policyRevision",
+      "sources",
+      "inputRows",
+      "metricRows",
+      "defectTrends",
+      "formalErpQuality",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== "npi.trial.v1" ||
+    ![
+      item.globalId,
+      item.projectGlobalId,
+      item.trialPlanGlobalId,
+      item.targetRoundGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !textValue(item.tenantId, 1, 256) ||
+    !isReviewExactReference(item.policyRevision) ||
+    !Array.isArray(item.sources) ||
+    item.sources.length < 2 ||
+    item.sources.length > 100 ||
+    !item.sources.every(isReviewComparisonSource) ||
+    !Array.isArray(item.inputRows) ||
+    item.inputRows.length < 1 ||
+    item.inputRows.length > 2000 ||
+    !item.inputRows.every(isReviewInputRow) ||
+    !Array.isArray(item.metricRows) ||
+    item.metricRows.length < 4 ||
+    item.metricRows.length > 10000 ||
+    !item.metricRows.every(isReviewMetricRow) ||
+    !Array.isArray(item.defectTrends) ||
+    item.defectTrends.length > 10000 ||
+    !item.defectTrends.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const trend = candidate as Record<string, unknown>;
+      return (
+        exact(trend, ["defectGlobalId", "state"]) &&
+        typeof trend.defectGlobalId === "string" &&
+        uuidPattern.test(trend.defectGlobalId) &&
+        member(trend.state, [
+          "new",
+          "continued",
+          "resolved",
+          "reopened",
+        ] as const)
+      );
+    }) ||
+    item.formalErpQuality !== "unavailable" ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 1, 256) ||
+    typeof item.snapshotHash !== "string" ||
+    !hashPattern.test(item.snapshotHash)
+  )
+    return false;
+  const sources = item.sources.filter(isReviewComparisonSource);
+  const roundIds = sources.map((source) => source.trialRoundGlobalId);
+  return (
+    sources.every((source, index) => source.sequence === index + 1) &&
+    unique(roundIds) &&
+    sources.at(-1)?.trialRoundGlobalId === item.targetRoundGlobalId &&
+    item.inputRows.every(
+      (row) =>
+        isReviewInputRow(row) &&
+        row.cells.map((cell) => cell.trialRoundGlobalId).join("|") ===
+          roundIds.join("|"),
+    ) &&
+    item.metricRows.every(
+      (row) =>
+        isReviewMetricRow(row) &&
+        row.cells.map((cell) => cell.trialRoundGlobalId).join("|") ===
+          roundIds.join("|"),
+    )
+  );
+}
+
+function isReviewReference(
+  value: unknown,
+): value is TrialReviewReferenceRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "schemaVersion",
+      "globalId",
+      "referenceGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "comparisonSnapshot",
+      "referenceKind",
+      "referenceVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "partRevision",
+      "toolingMasterGlobalId",
+      "toolingRevision",
+      "toolingSet",
+      "fileRevision",
+      "effectiveFrom",
+      "effectiveTo",
+      "approvalAuthority",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) &&
+    item.schemaVersion === "npi.trial.v1" &&
+    [
+      item.globalId,
+      item.referenceGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.toolingMasterGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) &&
+    textValue(item.tenantId, 1, 256) &&
+    isReviewExactReference(item.comparisonSnapshot) &&
+    member(item.referenceKind, trialReviewReferenceKinds) &&
+    whole(item.referenceVersion, 1) &&
+    nullableUuid(item.predecessorGlobalId) &&
+    nullableHash(item.predecessorSnapshotHash) &&
+    isReviewExactReference(item.partRevision) &&
+    isReviewExactReference(item.toolingRevision) &&
+    isReviewExactReference(item.toolingSet) &&
+    isReviewExactReference(item.fileRevision) &&
+    (item.effectiveFrom === null || dateOnly(item.effectiveFrom)) &&
+    (item.effectiveTo === null || dateOnly(item.effectiveTo)) &&
+    item.approvalAuthority === "unavailable" &&
+    textValue(item.reason, 1, 1000) &&
+    email(item.createdByUserId) &&
+    dateTime(item.createdAt) &&
+    textValue(item.traceId, 1, 256) &&
+    [item.versionKeyHash, item.snapshotHash].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) &&
+    (item.referenceVersion === 1) ===
+      (item.predecessorGlobalId === null &&
+        item.predecessorSnapshotHash === null)
+  );
+}
+
+function isReviewBlocker(value: unknown): value is TrialConclusionBlocker {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["code", "sourceKey"]) &&
+    member(item.code, [
+      "missing_input_lock",
+      "missing_actual",
+      "required_parameter_not_measured",
+      "missing_cavity_result",
+      "required_dimension_not_measured",
+      "open_blocking_defect",
+      "required_action_not_verified",
+      "required_review_reference_unavailable",
+      "out_of_spec_blocking",
+    ] as const) &&
+    textValue(item.sourceKey, 1, 256)
+  );
+}
+
+function isReviewCounts(value: unknown, keys: readonly string[]): boolean {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, keys) && Object.values(item).every((count) => whole(count, 0))
+  );
+}
+
+function isReviewSummary(value: unknown): value is TrialOnePageSummaryInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  const externalEffects = item.externalEffects;
+  return (
+    exact(item, [
+      "schemaVersion",
+      "comparisonSnapshot",
+      "rounds",
+      "targetRoundGlobalId",
+      "inputChangeCounts",
+      "metricRowHashes",
+      "defectTrendCounts",
+      "reviewReferences",
+      "cycleTimeState",
+      "yieldState",
+      "formalErpQuality",
+      "conclusionCode",
+      "conclusionState",
+      "externalEffects",
+    ]) &&
+    item.schemaVersion === "npi.trial.v1" &&
+    isReviewExactReference(item.comparisonSnapshot) &&
+    Array.isArray(item.rounds) &&
+    item.rounds.length >= 2 &&
+    item.rounds.length <= 100 &&
+    item.rounds.every(isReviewExactReference) &&
+    typeof item.targetRoundGlobalId === "string" &&
+    uuidPattern.test(item.targetRoundGlobalId) &&
+    isReviewCounts(item.inputChangeCounts, [
+      "added",
+      "removed",
+      "changed",
+      "same",
+    ]) &&
+    Array.isArray(item.metricRowHashes) &&
+    item.metricRowHashes.length >= 4 &&
+    item.metricRowHashes.length <= 10000 &&
+    item.metricRowHashes.every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) &&
+    isReviewCounts(item.defectTrendCounts, [
+      "new",
+      "continued",
+      "resolved",
+      "reopened",
+    ]) &&
+    Array.isArray(item.reviewReferences) &&
+    item.reviewReferences.length >= 1 &&
+    item.reviewReferences.length <= 100 &&
+    item.reviewReferences.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const reference = candidate as Record<string, unknown>;
+      return (
+        exact(reference, ["globalId", "snapshotHash", "referenceKind"]) &&
+        typeof reference.globalId === "string" &&
+        uuidPattern.test(reference.globalId) &&
+        typeof reference.snapshotHash === "string" &&
+        hashPattern.test(reference.snapshotHash) &&
+        member(reference.referenceKind, trialReviewReferenceKinds)
+      );
+    }) &&
+    member(item.cycleTimeState, [
+      "measured",
+      "not_measured",
+      "unavailable",
+      "within_spec",
+      "out_of_spec",
+    ] as const) &&
+    member(item.yieldState, [
+      "measured",
+      "not_measured",
+      "unavailable",
+      "within_spec",
+      "out_of_spec",
+    ] as const) &&
+    item.formalErpQuality === "unavailable" &&
+    member(item.conclusionCode, trialConclusionCodes) &&
+    member(item.conclusionState, [
+      "submitted",
+      "approved",
+      "rejected",
+      "reopened",
+    ] as const) &&
+    externalEffects !== null &&
+    typeof externalEffects === "object" &&
+    exact(externalEffects, [
+      "nextWork",
+      "gate",
+      "npiReadiness",
+      "toolingLifecycle",
+    ]) &&
+    (externalEffects as Record<string, unknown>).nextWork === "proposal_only" &&
+    [
+      (externalEffects as Record<string, unknown>).gate,
+      (externalEffects as Record<string, unknown>).npiReadiness,
+      (externalEffects as Record<string, unknown>).toolingLifecycle,
+    ].every((candidate) => candidate === "unavailable")
+  );
+}
+
+function isReviewConclusion(value: unknown): value is TrialConclusionRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  const externalEffects = item.externalEffects;
+  return (
+    exact(item, [
+      "schemaVersion",
+      "globalId",
+      "conclusionGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "trialRoundOptimisticVersion",
+      "trialRoundSnapshotHash",
+      "conclusionVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "state",
+      "conclusionCode",
+      "policyRevision",
+      "comparisonSnapshot",
+      "reviewReferences",
+      "blockers",
+      "summaryInput",
+      "proposedNextWork",
+      "proposedGateEffect",
+      "proposedNpiEffect",
+      "externalEffects",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) &&
+    item.schemaVersion === "npi.trial.v1" &&
+    [
+      item.globalId,
+      item.conclusionGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) &&
+    textValue(item.tenantId, 1, 256) &&
+    whole(item.trialRoundOptimisticVersion, 1) &&
+    typeof item.trialRoundSnapshotHash === "string" &&
+    hashPattern.test(item.trialRoundSnapshotHash) &&
+    whole(item.conclusionVersion, 1) &&
+    nullableUuid(item.predecessorGlobalId) &&
+    nullableHash(item.predecessorSnapshotHash) &&
+    member(item.state, [
+      "submitted",
+      "approved",
+      "rejected",
+      "reopened",
+    ] as const) &&
+    member(item.conclusionCode, trialConclusionCodes) &&
+    isReviewExactReference(item.policyRevision) &&
+    isReviewExactReference(item.comparisonSnapshot) &&
+    Array.isArray(item.reviewReferences) &&
+    item.reviewReferences.length >= 1 &&
+    item.reviewReferences.length <= 100 &&
+    item.reviewReferences.every(isReviewExactReference) &&
+    Array.isArray(item.blockers) &&
+    item.blockers.length <= 10000 &&
+    item.blockers.every(isReviewBlocker) &&
+    isReviewSummary(item.summaryInput) &&
+    Array.isArray(item.proposedNextWork) &&
+    item.proposedNextWork.length >= 1 &&
+    item.proposedNextWork.length <= 100 &&
+    item.proposedNextWork.every((candidate) => textValue(candidate, 1, 1000)) &&
+    textValue(item.proposedGateEffect, 1, 1000) &&
+    textValue(item.proposedNpiEffect, 1, 1000) &&
+    externalEffects !== null &&
+    typeof externalEffects === "object" &&
+    exact(externalEffects, [
+      "nextWork",
+      "gate",
+      "npiReadiness",
+      "toolingLifecycle",
+      "formalErpQuality",
+      "customerSignature",
+    ]) &&
+    (externalEffects as Record<string, unknown>).nextWork === "proposal_only" &&
+    [
+      (externalEffects as Record<string, unknown>).gate,
+      (externalEffects as Record<string, unknown>).npiReadiness,
+      (externalEffects as Record<string, unknown>).toolingLifecycle,
+      (externalEffects as Record<string, unknown>).formalErpQuality,
+      (externalEffects as Record<string, unknown>).customerSignature,
+    ].every((candidate) => candidate === "unavailable") &&
+    textValue(item.reason, 1, 2000) &&
+    email(item.createdByUserId) &&
+    dateTime(item.createdAt) &&
+    textValue(item.traceId, 1, 256) &&
+    [item.versionKeyHash, item.snapshotHash].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) &&
+    (item.conclusionVersion === 1) ===
+      (item.predecessorGlobalId === null &&
+        item.predecessorSnapshotHash === null)
+  );
+}
+
+function isReviewPermissions(
+  value: unknown,
+): value is TrialReviewWorkspace["permissions"] {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "view",
+      "requiresExactPolicyRevision",
+      "beginAnalysis",
+      "createComparison",
+      "manageReviewReferences",
+      "submitConclusion",
+      "decideConclusion",
+      "reopenConclusion",
+    ]) &&
+    item.requiresExactPolicyRevision === true &&
+    Object.entries(item)
+      .filter(([key]) => key !== "requiresExactPolicyRevision")
+      .every(([, candidate]) => typeof candidate === "boolean")
+  );
+}
+
+function isReviewExternalEffects(
+  value: unknown,
+): value is TrialReviewWorkspace["externalEffects"] {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "formalErpQuality",
+      "customerSignature",
+      "gate",
+      "npiReadiness",
+      "toolingLifecycle",
+      "nextWork",
+    ]) &&
+    item.nextWork === "proposal_only" &&
+    [
+      item.formalErpQuality,
+      item.customerSignature,
+      item.gate,
+      item.npiReadiness,
+      item.toolingLifecycle,
+    ].every((candidate) => candidate === "unavailable")
+  );
+}
+
+export function isTrialReviewWorkspace(
+  value: unknown,
+): value is TrialReviewWorkspace {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "projectGlobalId",
+      "trialRound",
+      "policyVersions",
+      "comparisonSnapshots",
+      "reviewReferenceRevisions",
+      "conclusionRevisions",
+      "permissions",
+      "externalEffects",
+    ]) ||
+    typeof item.projectGlobalId !== "string" ||
+    !uuidPattern.test(item.projectGlobalId) ||
+    !isTrialRound(item.trialRound) ||
+    !Array.isArray(item.policyVersions) ||
+    item.policyVersions.length > 1000 ||
+    !item.policyVersions.every(isReviewPolicy) ||
+    !Array.isArray(item.comparisonSnapshots) ||
+    item.comparisonSnapshots.length > 5000 ||
+    !item.comparisonSnapshots.every(isReviewComparison) ||
+    !Array.isArray(item.reviewReferenceRevisions) ||
+    item.reviewReferenceRevisions.length > 10000 ||
+    !item.reviewReferenceRevisions.every(isReviewReference) ||
+    !Array.isArray(item.conclusionRevisions) ||
+    item.conclusionRevisions.length > 10000 ||
+    !item.conclusionRevisions.every(isReviewConclusion) ||
+    !isReviewPermissions(item.permissions) ||
+    !isReviewExternalEffects(item.externalEffects)
+  )
+    return false;
+  const projectId = item.projectGlobalId;
+  const roundId = item.trialRound.globalId;
+  return (
+    item.trialRound.projectGlobalId === projectId &&
+    item.policyVersions.every((entry) => entry.projectGlobalId === projectId) &&
+    item.comparisonSnapshots.every(
+      (entry) =>
+        entry.projectGlobalId === projectId &&
+        entry.targetRoundGlobalId === roundId,
+    ) &&
+    item.reviewReferenceRevisions.every(
+      (entry) =>
+        entry.projectGlobalId === projectId &&
+        entry.trialRoundGlobalId === roundId,
+    ) &&
+    item.conclusionRevisions.every(
+      (entry) =>
+        entry.projectGlobalId === projectId &&
+        entry.trialRoundGlobalId === roundId,
+    ) &&
+    unique(item.policyVersions.map((entry) => entry.globalId)) &&
+    unique(item.comparisonSnapshots.map((entry) => entry.globalId)) &&
+    unique(item.reviewReferenceRevisions.map((entry) => entry.globalId)) &&
+    unique(item.conclusionRevisions.map((entry) => entry.globalId))
+  );
+}
+
 function requestNotReady(): NpiTransportError {
   return new NpiTransportError(
     "request_not_ready",
@@ -3457,6 +4709,263 @@ function validVerification(value: VerifyTrialDefectCommand): boolean {
   );
 }
 
+function validReviewPolicyContext(
+  value: TrialReviewPolicyRoundContext,
+): boolean {
+  return (
+    uuidPattern.test(value.policyRevisionGlobalId) &&
+    hashPattern.test(value.expectedPolicyRevisionSnapshotHash) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedRoundSnapshotHash)
+  );
+}
+
+function validBeginAnalysis(value: BeginTrialAnalysisCommand): boolean {
+  return (
+    exact(value, [
+      "policyRevisionGlobalId",
+      "expectedPolicyRevisionSnapshotHash",
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "reason",
+    ]) &&
+    validReviewPolicyContext(value) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validComparisonCommand(
+  value: CreateTrialRoundComparisonCommand,
+): boolean {
+  const rounds: unknown = value.rounds;
+  return (
+    exact(value, [
+      "policyRevisionGlobalId",
+      "expectedPolicyRevisionSnapshotHash",
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "rounds",
+      "reason",
+    ]) &&
+    validReviewPolicyContext(value) &&
+    Array.isArray(rounds) &&
+    rounds.length >= 2 &&
+    rounds.length <= 100 &&
+    rounds.every((candidate: unknown) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const round = candidate as Record<string, unknown>;
+      return (
+        exact(round, [
+          "trialRoundGlobalId",
+          "expectedOptimisticVersion",
+          "expectedSnapshotHash",
+        ]) &&
+        typeof round.trialRoundGlobalId === "string" &&
+        uuidPattern.test(round.trialRoundGlobalId) &&
+        whole(round.expectedOptimisticVersion, 1) &&
+        typeof round.expectedSnapshotHash === "string" &&
+        hashPattern.test(round.expectedSnapshotHash)
+      );
+    }) &&
+    unique(
+      rounds.map((candidate: unknown) =>
+        typeof candidate === "object" &&
+        candidate !== null &&
+        typeof (candidate as Record<string, unknown>).trialRoundGlobalId ===
+          "string"
+          ? ((candidate as Record<string, unknown>)
+              .trialRoundGlobalId as string)
+          : "",
+      ),
+    ) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validReferenceCommand(
+  value: CreateTrialReviewReferenceCommand,
+): boolean {
+  const predecessor = [
+    value.referenceGlobalId,
+    value.expectedReferenceRevisionGlobalId,
+    value.expectedReferenceRevisionSnapshotHash,
+    value.expectedReferenceVersion,
+  ];
+  const predecessorComplete = predecessor.every(
+    (candidate) => candidate !== undefined,
+  );
+  const predecessorEmpty = predecessor.every(
+    (candidate) => candidate === undefined,
+  );
+  return (
+    exactWithOptional(
+      value,
+      [
+        "policyRevisionGlobalId",
+        "expectedPolicyRevisionSnapshotHash",
+        "expectedRoundOptimisticVersion",
+        "expectedRoundSnapshotHash",
+        "comparisonSnapshotGlobalId",
+        "expectedComparisonSnapshotHash",
+        "referenceKind",
+        "partRevisionGlobalId",
+        "expectedPartRevisionSnapshotHash",
+        "toolingMasterGlobalId",
+        "toolingRevisionGlobalId",
+        "expectedToolingRevisionSnapshotHash",
+        "toolingSetGlobalId",
+        "expectedToolingSetSnapshotHash",
+        "fileRevisionGlobalId",
+        "expectedFileRevisionSnapshotHash",
+        "reason",
+      ],
+      [
+        "referenceGlobalId",
+        "expectedReferenceRevisionGlobalId",
+        "expectedReferenceRevisionSnapshotHash",
+        "expectedReferenceVersion",
+        "effectiveFrom",
+        "effectiveTo",
+      ],
+    ) &&
+    validReviewPolicyContext(value) &&
+    (predecessorComplete || predecessorEmpty) &&
+    (value.referenceGlobalId === undefined ||
+      uuidPattern.test(value.referenceGlobalId)) &&
+    (value.expectedReferenceRevisionGlobalId === undefined ||
+      uuidPattern.test(value.expectedReferenceRevisionGlobalId)) &&
+    (value.expectedReferenceRevisionSnapshotHash === undefined ||
+      hashPattern.test(value.expectedReferenceRevisionSnapshotHash)) &&
+    (value.expectedReferenceVersion === undefined ||
+      whole(value.expectedReferenceVersion, 1)) &&
+    uuidPattern.test(value.comparisonSnapshotGlobalId) &&
+    hashPattern.test(value.expectedComparisonSnapshotHash) &&
+    member(value.referenceKind, trialReviewReferenceKinds) &&
+    uuidPattern.test(value.partRevisionGlobalId) &&
+    hashPattern.test(value.expectedPartRevisionSnapshotHash) &&
+    uuidPattern.test(value.toolingMasterGlobalId) &&
+    uuidPattern.test(value.toolingRevisionGlobalId) &&
+    hashPattern.test(value.expectedToolingRevisionSnapshotHash) &&
+    uuidPattern.test(value.toolingSetGlobalId) &&
+    hashPattern.test(value.expectedToolingSetSnapshotHash) &&
+    uuidPattern.test(value.fileRevisionGlobalId) &&
+    hashPattern.test(value.expectedFileRevisionSnapshotHash) &&
+    (value.effectiveFrom === undefined || dateOnly(value.effectiveFrom)) &&
+    (value.effectiveTo === undefined || dateOnly(value.effectiveTo)) &&
+    (value.effectiveTo === undefined || value.effectiveFrom !== undefined) &&
+    (value.effectiveFrom === undefined ||
+      value.effectiveTo === undefined ||
+      value.effectiveFrom <= value.effectiveTo) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validConclusionCommand(value: SubmitTrialConclusionCommand): boolean {
+  const predecessor = [
+    value.conclusionGlobalId,
+    value.expectedConclusionRevisionGlobalId,
+    value.expectedConclusionRevisionSnapshotHash,
+    value.expectedConclusionVersion,
+  ];
+  return (
+    exactWithOptional(
+      value,
+      [
+        "policyRevisionGlobalId",
+        "expectedPolicyRevisionSnapshotHash",
+        "expectedRoundOptimisticVersion",
+        "expectedRoundSnapshotHash",
+        "comparisonSnapshotGlobalId",
+        "expectedComparisonSnapshotHash",
+        "reviewReferences",
+        "conclusionCode",
+        "proposedNextWork",
+        "proposedGateEffect",
+        "proposedNpiEffect",
+        "reason",
+      ],
+      [
+        "conclusionGlobalId",
+        "expectedConclusionRevisionGlobalId",
+        "expectedConclusionRevisionSnapshotHash",
+        "expectedConclusionVersion",
+      ],
+    ) &&
+    validReviewPolicyContext(value) &&
+    (predecessor.every((candidate) => candidate === undefined) ||
+      predecessor.every((candidate) => candidate !== undefined)) &&
+    (value.conclusionGlobalId === undefined ||
+      uuidPattern.test(value.conclusionGlobalId)) &&
+    (value.expectedConclusionRevisionGlobalId === undefined ||
+      uuidPattern.test(value.expectedConclusionRevisionGlobalId)) &&
+    (value.expectedConclusionRevisionSnapshotHash === undefined ||
+      hashPattern.test(value.expectedConclusionRevisionSnapshotHash)) &&
+    (value.expectedConclusionVersion === undefined ||
+      whole(value.expectedConclusionVersion, 1)) &&
+    uuidPattern.test(value.comparisonSnapshotGlobalId) &&
+    hashPattern.test(value.expectedComparisonSnapshotHash) &&
+    Array.isArray(value.reviewReferences) &&
+    value.reviewReferences.length >= 1 &&
+    value.reviewReferences.length <= 100 &&
+    value.reviewReferences.every(isReviewExactReference) &&
+    unique(value.reviewReferences.map((reference) => reference.globalId)) &&
+    member(value.conclusionCode, trialConclusionCodes) &&
+    Array.isArray(value.proposedNextWork) &&
+    value.proposedNextWork.length >= 1 &&
+    value.proposedNextWork.length <= 100 &&
+    value.proposedNextWork.every((candidate) =>
+      textValue(candidate, 1, 1000),
+    ) &&
+    textValue(value.proposedGateEffect, 1, 1000) &&
+    textValue(value.proposedNpiEffect, 1, 1000) &&
+    textValue(value.reason, 1, 2000)
+  );
+}
+
+function validDecisionCommand(value: DecideTrialConclusionCommand): boolean {
+  return (
+    exact(value, [
+      "policyRevisionGlobalId",
+      "expectedPolicyRevisionSnapshotHash",
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "expectedConclusionRevisionGlobalId",
+      "expectedConclusionRevisionSnapshotHash",
+      "expectedConclusionVersion",
+      "decision",
+      "reason",
+    ]) &&
+    validReviewPolicyContext(value) &&
+    uuidPattern.test(value.expectedConclusionRevisionGlobalId) &&
+    hashPattern.test(value.expectedConclusionRevisionSnapshotHash) &&
+    whole(value.expectedConclusionVersion, 1) &&
+    member(value.decision, ["approved", "rejected"] as const) &&
+    textValue(value.reason, 1, 2000)
+  );
+}
+
+function validReopenCommand(value: ReopenTrialConclusionCommand): boolean {
+  return (
+    exact(value, [
+      "policyRevisionGlobalId",
+      "expectedPolicyRevisionSnapshotHash",
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "conclusionGlobalId",
+      "expectedConclusionRevisionGlobalId",
+      "expectedConclusionRevisionSnapshotHash",
+      "expectedConclusionVersion",
+      "reason",
+    ]) &&
+    validReviewPolicyContext(value) &&
+    uuidPattern.test(value.conclusionGlobalId) &&
+    uuidPattern.test(value.expectedConclusionRevisionGlobalId) &&
+    hashPattern.test(value.expectedConclusionRevisionSnapshotHash) &&
+    whole(value.expectedConclusionVersion, 1) &&
+    textValue(value.reason, 1, 2000)
+  );
+}
+
 function isBinaryBlob(value: unknown): value is Blob {
   return (
     value instanceof Blob ||
@@ -3599,6 +5108,34 @@ export class LiveTrialDataSource implements TrialDataSource {
     }
   }
 
+  async loadRoundReview(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialReviewWorkspace> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    cancelled(signal);
+    try {
+      return await this.http.request<TrialReviewWorkspace>(
+        `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/review`,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialReviewWorkspace =>
+            isTrialReviewWorkspace(value) &&
+            value.projectGlobalId === expectedProjectId &&
+            value.trialRound.globalId === expectedRoundId,
+        },
+      );
+    } catch (error) {
+      cancelled(signal);
+      throw error;
+    }
+  }
+
   private async command(
     path: string,
     projectId: string,
@@ -3711,6 +5248,49 @@ export class LiveTrialDataSource implements TrialDataSource {
           requireTraceId: true,
           validate: (value): value is TrialQualityWorkspace =>
             isTrialQualityWorkspace(value) &&
+            value.projectGlobalId === projectId &&
+            value.trialRound.globalId === roundId,
+          validateResponse: (response) => {
+            const header = replayHeader(response);
+            if (header === null) return false;
+            replayed = header;
+            return true;
+          },
+        },
+      );
+      return { replayed, workspace };
+    } catch (error) {
+      cancelled(context.signal);
+      throw error;
+    }
+  }
+
+  private async reviewCommand(
+    path: string,
+    projectId: string,
+    roundId: string,
+    body: object,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    cancelled(context.signal);
+    let replayed = false;
+    try {
+      const workspace = await this.http.request<TrialReviewWorkspace>(
+        path,
+        {
+          body: JSON.stringify(body),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialReviewWorkspace =>
+            isTrialReviewWorkspace(value) &&
             value.projectGlobalId === projectId &&
             value.trialRound.globalId === roundId,
           validateResponse: (response) => {
@@ -4045,6 +5625,122 @@ export class LiveTrialDataSource implements TrialDataSource {
       return Promise.reject(requestNotReady());
     return this.qualityCommand(
       `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/defects/${expectedDefectId}/verifications`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  beginAnalysis(
+    projectId: string,
+    roundId: string,
+    command: BeginTrialAnalysisCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validBeginAnalysis(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}:begin-analysis`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  createComparison(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialRoundComparisonCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validComparisonCommand(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/comparisons`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  createReviewReference(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialReviewReferenceCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validReferenceCommand(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/review-references`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  submitConclusion(
+    projectId: string,
+    roundId: string,
+    command: SubmitTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validConclusionCommand(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/conclusions`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  decideConclusion(
+    projectId: string,
+    roundId: string,
+    conclusionId: string,
+    command: DecideTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedConclusionId = requireUuid(conclusionId);
+    if (!validContext(context) || !validDecisionCommand(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/conclusions/${expectedConclusionId}:decide`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  reopenConclusion(
+    projectId: string,
+    roundId: string,
+    command: ReopenTrialConclusionCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialReviewCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validReopenCommand(command))
+      return Promise.reject(requestNotReady());
+    return this.reviewCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}:reopen`,
       expectedProjectId,
       expectedRoundId,
       command,
