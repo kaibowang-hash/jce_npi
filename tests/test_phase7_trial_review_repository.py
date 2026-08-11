@@ -249,6 +249,69 @@ class Phase7TrialReviewValidationTest(unittest.TestCase):
             self.assertIsInstance(captured[fieldname], str)
             self.assertEqual(json.loads(captured[fieldname]), expected_value)
 
+    def test_conclusion_insert_serializes_empty_required_json_arrays(self) -> None:
+        snapshot = {
+            "reviewReferences": [{"globalId": REVISION}],
+            "blockers": [],
+            "externalEffects": {"erpExecution": "not_requested"},
+        }
+        summary_input = {"conclusionCode": "pass"}
+        captured: dict[str, object] = {}
+
+        def get_doc(values: dict[str, object]):
+            captured.update(values)
+            return types.SimpleNamespace(insert=lambda: None)
+
+        value = types.SimpleNamespace(
+            global_id=UUID(REVISION),
+            conclusion_global_id=UUID(REVISION_2),
+            version_key_hash=SHA,
+            tenant_id="TENANT-A",
+            project_global_id=UUID(PROJECT),
+            trial_round_global_id=UUID(ROUND),
+            trial_round_optimistic_version=5,
+            trial_round_snapshot_hash=SHA,
+            conclusion_version=1,
+            predecessor_global_id=None,
+            predecessor_snapshot_hash=None,
+            state=types.SimpleNamespace(value="submitted"),
+            conclusion_code=types.SimpleNamespace(value="pass"),
+            policy_revision=types.SimpleNamespace(
+                global_id=UUID(STABLE),
+                snapshot_hash=SHA,
+            ),
+            comparison_snapshot=types.SimpleNamespace(
+                global_id=UUID(ROUND_2),
+                snapshot_hash=SHA,
+            ),
+            summary_input=summary_input,
+            proposed_next_work=(),
+            proposed_gate_effect="No automatic gate transition.",
+            proposed_npi_effect="No automatic NPI transition.",
+            reason="Submit the controlled conclusion.",
+            created_by_user_id="reviewer@example.com",
+            created_at=datetime(2026, 8, 11, tzinfo=UTC),
+            request_id=UUID(REVISION),
+            trace_id="trace-p7-04-conclusion",
+            snapshot_hash=SHA,
+            snapshot_payload=lambda: snapshot,
+        )
+
+        with patch.object(self.repository.frappe, "get_doc", get_doc, create=True):
+            self.repository.FrappeTrialReviewRepository._insert_conclusion(value)
+
+        expected = {
+            "review_reference_snapshot": snapshot["reviewReferences"],
+            "blocker_snapshot": [],
+            "summary_input_snapshot": summary_input,
+            "proposed_next_work_snapshot": [],
+            "external_effect_snapshot": snapshot["externalEffects"],
+            "conclusion_snapshot": snapshot,
+        }
+        for fieldname, expected_value in expected.items():
+            self.assertIsInstance(captured[fieldname], str)
+            self.assertEqual(json.loads(captured[fieldname]), expected_value)
+
 
 if __name__ == "__main__":
     unittest.main()
