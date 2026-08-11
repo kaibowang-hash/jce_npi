@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 import types
 import unittest
+from datetime import UTC, datetime
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -200,6 +203,51 @@ class Phase7TrialReviewValidationTest(unittest.TestCase):
         self.assertIsNone(cell.value)
         self.assertEqual(cell.source_revision.global_id, actual_id)
         self.assertEqual(cell.source_revision.snapshot_hash, SHA)
+
+    def test_comparison_insert_serializes_every_frappe_json_field(self) -> None:
+        snapshot = {
+            "sources": [{"sequence": 1}],
+            "inputRows": [{"semanticKey": "machine"}],
+            "metricRows": [{"metricKind": "parameter"}],
+            "defectTrends": [{"state": "open"}],
+        }
+        captured: dict[str, object] = {}
+
+        def get_doc(values: dict[str, object]):
+            captured.update(values)
+            return types.SimpleNamespace(insert=lambda: None)
+
+        value = types.SimpleNamespace(
+            global_id=UUID(REVISION),
+            tenant_id="TENANT-A",
+            project_global_id=UUID(PROJECT),
+            trial_plan_global_id=UUID(REVISION_2),
+            target_round_global_id=UUID(ROUND),
+            policy_revision=types.SimpleNamespace(
+                global_id=UUID(STABLE),
+                snapshot_hash=SHA,
+            ),
+            created_by_user_id="reviewer@example.com",
+            created_at=datetime(2026, 8, 11, tzinfo=UTC),
+            request_id=UUID(ROUND_2),
+            trace_id="trace-p7-04-comparison",
+            snapshot_hash=SHA,
+            snapshot_payload=lambda: snapshot,
+        )
+
+        with patch.object(self.repository.frappe, "get_doc", get_doc, create=True):
+            self.repository.FrappeTrialReviewRepository._insert_comparison(value)
+
+        expected = {
+            "source_snapshot": snapshot["sources"],
+            "input_comparison_snapshot": snapshot["inputRows"],
+            "metric_comparison_snapshot": snapshot["metricRows"],
+            "defect_trend_snapshot": snapshot["defectTrends"],
+            "comparison_snapshot": snapshot,
+        }
+        for fieldname, expected_value in expected.items():
+            self.assertIsInstance(captured[fieldname], str)
+            self.assertEqual(json.loads(captured[fieldname]), expected_value)
 
 
 if __name__ == "__main__":

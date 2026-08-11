@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 import frappe
 
+from npi_core.documents.frappe_validation import canonical_json
 from npi_core.project_controls.terminal_guard import require_mutable_project
 from npi_core.tooling.engineering_controls_domain import (
     ToolingDefectActionState,
@@ -1426,16 +1427,16 @@ class FrappeTrialReviewRepository(FrappeTrialQualityRepository):
                 "policy_revision": str(value.policy_revision.global_id),
                 "policy_revision_global_id": str(value.policy_revision.global_id),
                 "policy_revision_snapshot_hash": value.policy_revision.snapshot_hash,
-                "source_snapshot": payload["sources"],
-                "input_comparison_snapshot": payload["inputRows"],
-                "metric_comparison_snapshot": payload["metricRows"],
-                "defect_trend_snapshot": payload["defectTrends"],
+                "source_snapshot": canonical_json(payload["sources"]),
+                "input_comparison_snapshot": canonical_json(payload["inputRows"]),
+                "metric_comparison_snapshot": canonical_json(payload["metricRows"]),
+                "defect_trend_snapshot": canonical_json(payload["defectTrends"]),
                 "formal_erp_quality": "unavailable",
                 "created_by_user_id": value.created_by_user_id,
                 "created_at": _database_datetime(value.created_at),
                 "request_id": str(value.request_id),
                 "trace_id": value.trace_id,
-                "comparison_snapshot": payload,
+                "comparison_snapshot": canonical_json(payload),
                 "snapshot_hash": value.snapshot_hash,
             }
         ).insert()
