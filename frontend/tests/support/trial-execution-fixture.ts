@@ -21,6 +21,7 @@ export const trialExecutionIds = {
   requestSample: "10000000-0000-4000-8000-00000000000b",
   sampleBatch: "10000000-0000-4000-8000-00000000000c",
   sampleRevision: "10000000-0000-4000-8000-00000000000d",
+  cavity: "20000000-0000-4000-8000-000000000006",
 } as const;
 
 const referenceKinds: readonly TrialLockedReferenceKind[] = [

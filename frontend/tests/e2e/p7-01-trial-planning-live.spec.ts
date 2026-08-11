@@ -8,6 +8,7 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
+import { trialQualityWorkspace } from "../support/trial-quality-fixture";
 import {
   effectiveViewport,
   expectIndustrialComputedStyles,
@@ -181,6 +182,10 @@ async function installTrialApi(
       );
       return;
     }
+    if (request.method() === "GET" && path.endsWith("/quality")) {
+      await fulfillJson(route, trialQualityWorkspace());
+      return;
+    }
     if (request.method() === "GET") {
       await fulfillJson(
         route,
@@ -263,7 +268,9 @@ test.describe("P7-01 live Trial planning workspace", () => {
       await expect(page.getByText("No booking claim")).toHaveCount(
         locale === "en" ? 1 : 0,
       );
-      await expect(page.locator(".trial-live__later-item")).toHaveCount(3);
+      await expect(
+        page.locator("#trial-live-later .trial-live__later-item"),
+      ).toHaveCount(2);
       await expectNoMixedLanguage(page, locale);
       await expectNoDocumentOverflow(page);
       await expectIndustrialComputedStyles(page);

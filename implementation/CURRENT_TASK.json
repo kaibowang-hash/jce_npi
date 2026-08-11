@@ -54,6 +54,7 @@
     "frontend/src/generated/catalogs.ts",
     "frontend/src/pages/live-trial-page.tsx",
     "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-01-trial-planning-live.spec.ts",
     "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
     "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts",
     "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/*",

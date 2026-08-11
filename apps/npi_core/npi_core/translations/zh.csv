@@ -5986,7 +5986,6 @@ Linked at,关联时间
 No governed Project Work action is linked to this Trial Plan.,该试模计划尚未关联受控项目工作行动项。
 Locked preparation inputs,已锁定准备输入
 Actual process parameters,实际工艺参数
-Defects and measurements,缺陷和测量
 Conclusion and approval,结论和批准
 Formal quality and ERPNext execution,正式质量和 ERPNext 执行
 Unavailable in this checkpoint,本检查点不可用
@@ -6306,7 +6305,6 @@ No Round selected,未选择轮次
 Round state,轮次状态
 Execution missing facts,执行缺失事实
 Execution boundary active,执行边界已启用
-"P7-02 supports exact preparation, running actuals, Sample Batches and clean private evidence. Conclusion, Gate effect and formal ERP quality remain unavailable.",本检查点支持精确准备、运行实际值、样品批次和洁净私有证据；结论、阶段门影响和企业资源计划系统正式质量仍不可用。
 {{sample}} · Version {{version}},{{sample}} · 版本 {{version}}
 {{size}} B,{{size}} B
 The nominal value must be within the specification limits.,标称值必须位于规格上下限内。
@@ -6438,3 +6436,99 @@ trial_defect.create,创建试模缺陷
 trial_defect.revise,修订试模缺陷
 trial_defect.verify,验证试模缺陷
 trial_defect_verification_revision,试模缺陷验证修订
+Record cavity result,记录型腔结果
+Append cavity result revision,追加型腔结果修订
+Record Trial defect,记录试模缺陷
+Append Trial defect revision,追加试模缺陷修订
+Record independent verification,记录独立验证
+Complete every required quality field and exact evidence reference before review.,请在审查前填写所有必填质量字段和精确证据引用。
+Recording cavity result,正在记录型腔结果
+Appending cavity result revision,正在追加型腔结果修订
+Recording Trial defect,正在记录试模缺陷
+Appending Trial defect revision,正在追加试模缺陷修订
+Recording independent verification,正在记录独立验证
+Trial quality workspace,试模质量工作区
+Cavity filter,型腔筛选
+All cavities,全部型腔
+Cavity result revisions,型腔结果修订数
+Defect timeline revisions,缺陷时间线修订数
+Independent verification attempts,独立验证尝试次数
+Trial quality is read only in this session.,当前会话中的试模质量为只读。
+The server still controls Project membership and every quality command permission.,服务器仍控制项目成员资格和每项质量命令权限。
+The exact quality command is being verified and committed atomically.,正在验证精确质量命令并以原子方式提交。
+The exact prior quality command response was replayed safely.,已安全重放完全相同的先前质量命令响应。
+The quality command completed with immutable audit truth.,质量命令已完成并生成不可变审计事实。
+Trial quality command not completed,试模质量命令未完成
+Cavity stable ID,型腔稳定标识
+Characteristic key,特性键
+Characteristic label,特性标签
+Lower limit,下限
+Nominal value,标称值
+Upper limit,上限
+Defect code,缺陷编码
+Category key,类别键
+Defect state,缺陷状态
+Occurrence count,发生次数
+Responsible member stable ID,责任成员稳定标识
+Blocking defect,阻断缺陷
+Action stable ID,行动稳定标识
+Verification result,验证结果
+Fail,失败
+Verifier member stable ID,验证成员稳定标识
+Verifier member version,验证成员版本
+Verification finding,验证发现
+Evidence stable ID,证据稳定标识
+"The server rechecks every predecessor, Round, input lock, Sample Batch, evidence and member version before append.",服务器会在追加前重新检查每个前序、轮次、输入锁、样品批次、证据和成员版本。
+Defect Pareto,缺陷帕累托
+Occurrences,发生次数
+No defects match the selected cavity.,没有缺陷与所选型腔匹配。
+"The Pareto uses immutable defect occurrence counts, not revision row counts.",帕累托使用不可变的缺陷发生次数，而不是修订行数。
+Cavity measurements,型腔测量
+Characteristic,特性
+Specification,规格
+Comparison,比较结果
+Within specification,规格内
+Out of specification,规格外
+Revise,修订
+No cavity result has been recorded.,尚未记录型腔结果。
+Record exact measurements against one Sample Batch revision and clean evidence snapshot.,请针对一个样品批次修订和洁净证据快照记录精确测量值。
+Defect timeline,缺陷时间线
+Defect,缺陷
+Continue in Trial,在试模中延续
+Verify,验证
+Tooling and Trial revisions share one stable defect identity without rewriting history.,工装和试模修订共享一个稳定缺陷标识且不改写历史。
+Action type,行动类型
+Target Round,目标轮次
+Containment,遏制
+Corrective,纠正
+Preventive,预防
+Verified,已验证
+No governed defect action is recorded.,尚未记录受控缺陷行动。
+Actions remain part of immutable defect revisions and target an exact Trial Round snapshot.,行动仍属于不可变缺陷修订，并指向精确的试模轮次快照。
+Independent verification,独立验证
+Verification Round,验证轮次
+Verifier,验证人员
+No independent verification has been recorded.,尚未记录独立验证。
+"Verification must bind one completed action, target Round and cavity result revision exactly.",验证必须精确绑定一个已完成行动、目标轮次和型腔结果修订。
+External quality effects,外部质量影响
+NCR creation,不合格报告创建
+Formal quality inspection,正式质量检验
+Gate effect,阶段门影响
+Tooling lifecycle effect,工装生命周期影响
+"No external NCR, formal Quality Inspection, Gate decision or Tooling lifecycle state is created by this workspace.",此工作区不会创建外部不合格报告、正式质量检验、阶段门决策或工装生命周期状态。
+"Appends immutable cavity, defect or verification quality history without overwriting prior evidence.",追加不可变的型腔、缺陷或验证质量历史，且不覆盖先前证据。
+"The server rechecks Project membership, quality role and current Round-state authority.",服务器会重新检查项目成员资格、质量角色和当前轮次状态权限。
+Committed quality history cannot be edited or deleted through generic CRUD.,已提交的质量历史不能通过通用增删改查进行编辑或删除。
+A failed command changes no quality row and can be retried with the same exact request.,失败的命令不会更改任何质量记录，并可使用完全相同的请求重试。
+"The command records actor, request, trace, reason and exact predecessor snapshots.",命令会记录执行人、请求、追踪、原因和精确前序快照。
+Review immutable Trial quality command,审查不可变试模质量命令
+Trial quality workspace unavailable,试模质量工作区不可用
+Quality defect revisions,质量缺陷修订数
+Verification attempts,验证尝试次数
+"P7-03 adds exact cavity results, stable defect continuity, governed actions and independent verification. Conclusion, Gate effect, NCR and formal ERP quality remain unavailable.",本检查点新增精确型腔结果、稳定缺陷延续、受控行动和独立验证；结论、阶段门影响、不合格报告和企业资源计划系统正式质量仍不可用。
+Governed defect action,受控缺陷行动
+Action detail,行动明细
+Action state,行动状态
+Action responsible member stable ID,行动责任成员稳定标识
+Action responsible member version,行动责任成员版本
+Leave the action detail empty only when this defect revision has no governed action.,仅当此缺陷修订没有受控行动时才留空行动明细。

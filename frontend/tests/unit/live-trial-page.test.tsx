@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { TrialDataSource } from "../../src/api/trial-data-source";
-import { NpiTransportError } from "../../src/api/http";
+import { NpiApiError, NpiTransportError } from "../../src/api/http";
 import LiveTrialPage from "../../src/pages/live-trial-page";
 import { renderWithLocale } from "../support/render";
 import {
@@ -16,6 +16,10 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
+import {
+  trialQualityIds,
+  trialQualityWorkspace,
+} from "../support/trial-quality-fixture";
 
 const sessionCsrfToken = "c".repeat(64);
 
@@ -27,11 +31,14 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
     appendSampleBatchRevision: () => Promise.reject(new Error("not used")),
     bindEvidence: () => Promise.reject(new Error("not used")),
     createPlan: () => Promise.reject(new Error("not used")),
+    createCavityResult: () => Promise.reject(new Error("not used")),
+    createDefect: () => Promise.reject(new Error("not used")),
     createRound: () => Promise.reject(new Error("not used")),
     createSampleBatch: () => Promise.reject(new Error("not used")),
     downloadEvidence: () => Promise.reject(new Error("not used")),
     generateActions: () => Promise.reject(new Error("not used")),
     loadPlan: () => Promise.resolve(trialPlanDetail()),
+    loadRoundQuality: () => Promise.resolve(trialQualityWorkspace()),
     loadRoundExecution: () =>
       Promise.resolve(
         trialExecutionWorkspace({
@@ -58,9 +65,12 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
       ),
     loadWorkspace: () => Promise.resolve(trialPlanningWorkspace()),
     prepareRound: () => Promise.reject(new Error("not used")),
+    reviseCavityResult: () => Promise.reject(new Error("not used")),
+    reviseDefect: () => Promise.reject(new Error("not used")),
     revisePlan: () => Promise.reject(new Error("not used")),
     startRound: () => Promise.reject(new Error("not used")),
     uploadEvidenceFile: () => Promise.reject(new Error("not used")),
+    verifyDefect: () => Promise.reject(new Error("not used")),
     ...overrides,
   };
 }
@@ -116,6 +126,17 @@ async function confirmExecutionCommand(
     target: { value: reason },
   });
   await user.click(within(dialog).getByRole("button", { name: commandName }));
+}
+
+async function completeCavityEditor(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  await user.type(screen.getByLabelText("Characteristic key"), "rib.width");
+  await user.type(screen.getByLabelText("Characteristic label"), "Rib width");
+  await user.type(screen.getByLabelText("Lower limit"), "2.40");
+  await user.type(screen.getByLabelText("Nominal value"), "2.50");
+  await user.type(screen.getByLabelText("Upper limit"), "2.60");
+  await user.type(screen.getByLabelText("Measured value"), "2.51");
 }
 
 afterEach(() => {
@@ -962,5 +983,467 @@ describe("live Trial planning page", () => {
     expect(
       await screen.findByRole("heading", { name: "Actual process parameters" }),
     ).toBeVisible();
+  });
+
+  it("renders dense cavity, defect, action, verification and unavailable external quality truth", async () => {
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource()}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Trial quality workspace" }),
+    ).toBeVisible();
+    expect(screen.getByText("Rib end width")).toBeVisible();
+    expect(screen.getAllByText("DEF-T0-001")).toHaveLength(3);
+    expect(screen.getByText("Corrective")).toBeVisible();
+    expect(
+      screen.getByText(
+        "The first verification still shows an undersized rib end.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByText("NCR creation")).toBeVisible();
+    expect(screen.getAllByText("Unavailable in this checkpoint")).toHaveLength(
+      7,
+    );
+  });
+
+  it("records one exact cavity result through review and immutable command context", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const createCavityResult = vi
+      .fn<TrialDataSource["createCavityResult"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialQualityWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          createCavityResult,
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const record = await screen.findByRole("button", {
+      name: "Record cavity result",
+    });
+    await waitFor(() => {
+      expect(record).toBeEnabled();
+    });
+    await user.click(record);
+    await user.type(screen.getByLabelText("Characteristic key"), "rib.width");
+    await user.type(screen.getByLabelText("Characteristic label"), "Rib width");
+    await user.type(screen.getByLabelText("Lower limit"), "2.40");
+    await user.type(screen.getByLabelText("Nominal value"), "2.50");
+    await user.type(screen.getByLabelText("Upper limit"), "2.60");
+    await user.type(screen.getByLabelText("Measured value"), "2.51");
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial quality command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Record exact T0 cavity evidence",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Record cavity result" }),
+    );
+
+    await waitFor(() => {
+      expect(createCavityResult).toHaveBeenCalledOnce();
+    });
+    expect(createCavityResult.mock.calls[0]?.[2]).toMatchObject({
+      cavityGlobalId: trialExecutionIds.cavity,
+      evidence: [
+        {
+          globalId: trialExecutionIds.evidence,
+          snapshotHash: "f".repeat(64),
+        },
+      ],
+      measurements: [
+        {
+          characteristicKey: "rib.width",
+          lowerLimit: "2.40",
+          nominalValue: "2.50",
+          state: "measured",
+          upperLimit: "2.60",
+          value: "2.51",
+        },
+      ],
+      reason: "Record exact T0 cavity evidence",
+    });
+    expect(createCavityResult.mock.calls[0]?.[3].csrfToken).toBe(
+      sessionCsrfToken,
+    );
+  });
+
+  it("renders empty quality truth and blocks review until every exact field is valid", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+          loadRoundQuality: () =>
+            Promise.resolve(
+              trialQualityWorkspace({
+                cavityFilters: [],
+                cavityResultRevisions: [],
+                defectRevisions: [],
+                pareto: [],
+                verificationRevisions: [],
+              }),
+            ),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const record = await screen.findByRole("button", {
+      name: "Record cavity result",
+    });
+    await waitFor(() => {
+      expect(record).toBeEnabled();
+    });
+    expect(
+      screen.getByText("No cavity result has been recorded."),
+    ).toBeVisible();
+    expect(
+      screen.getByText("No governed defect action is recorded."),
+    ).toBeVisible();
+    expect(
+      screen.getByText("No independent verification has been recorded."),
+    ).toBeVisible();
+
+    await user.click(record);
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    expect(
+      screen.getByText(
+        "Complete every required quality field and exact evidence reference before review.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("dialog", {
+        name: "Review immutable Trial quality command",
+      }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(
+      screen.queryByRole("heading", { name: "Record cavity result" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("retries one conflicted quality command with the original idempotency key", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const createCavityResult = vi
+      .fn<TrialDataSource["createCavityResult"]>()
+      .mockRejectedValueOnce(
+        new NpiApiError({
+          code: "TRIAL_QUALITY_CONFLICT",
+          retryable: true,
+          status: 409,
+          title: "The Trial quality workspace changed.",
+          traceId: "trace-quality-conflict",
+          type: "urn:npi:error:trial_quality_conflict",
+        }),
+      )
+      .mockResolvedValueOnce({
+        replayed: true,
+        workspace: trialQualityWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          createCavityResult,
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const record = await screen.findByRole("button", {
+      name: "Record cavity result",
+    });
+    await waitFor(() => {
+      expect(record).toBeEnabled();
+    });
+    await user.click(record);
+    await completeCavityEditor(user);
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial quality command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Record an exact conflict retry",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Record cavity result" }),
+    );
+
+    expect(
+      await screen.findByText("The Trial quality workspace changed."),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "Retry exact command" }),
+    );
+
+    await waitFor(() => {
+      expect(createCavityResult).toHaveBeenCalledTimes(2);
+    });
+    expect(createCavityResult.mock.calls[0]?.[3].idempotencyKey).toBe(
+      createCavityResult.mock.calls[1]?.[3].idempotencyKey,
+    );
+    expect(
+      await screen.findByText(
+        "The exact prior quality command response was replayed safely.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("reloads the quality workspace after a retryable load failure", async () => {
+    const loadRoundQuality = vi
+      .fn<TrialDataSource["loadRoundQuality"]>()
+      .mockRejectedValueOnce(
+        new NpiTransportError("network", "request-quality-load", "request"),
+      )
+      .mockResolvedValueOnce(trialQualityWorkspace());
+    const user = userEvent.setup();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({ loadRoundQuality })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const unavailable = await screen.findByRole("heading", {
+      name: "Trial quality workspace unavailable",
+    });
+    const panel = unavailable.closest("section");
+    if (!panel) throw new Error("The quality failure panel is required.");
+    await user.click(within(panel).getByRole("button", { name: "Retry" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Trial quality workspace" }),
+    ).toBeVisible();
+    expect(loadRoundQuality).toHaveBeenCalledTimes(2);
+  });
+
+  it("records an independent verification against exact defect, action, Round and cavity truth", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const verifyDefect = vi
+      .fn<TrialDataSource["verifyDefect"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialQualityWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+          verifyDefect,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Verify" }));
+    await user.type(
+      screen.getByLabelText("Verification finding"),
+      "The second exact attempt confirms the corrective action.",
+    );
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial quality command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Verify the exact completed action",
+    );
+    await user.click(
+      within(dialog).getByRole("button", {
+        name: "Record independent verification",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(verifyDefect).toHaveBeenCalledOnce();
+    });
+    expect(verifyDefect.mock.calls[0]?.[2]).toBe(trialQualityIds.defect);
+    expect(verifyDefect.mock.calls[0]?.[3]).toMatchObject({
+      actionGlobalId: trialQualityIds.action,
+      cavityResultRevisionGlobalId: trialQualityIds.cavityResultRevision,
+      expectedAttemptSequence: 1,
+      expectedDefectRevisionGlobalId: trialQualityIds.trialDefectRevision,
+      expectedTargetRoundOptimisticVersion: 1,
+      finding: "The second exact attempt confirms the corrective action.",
+      result: "pass",
+      targetRoundGlobalId: trialPlanningIds.round,
+      verificationGlobalId: trialQualityIds.verification,
+    });
+  });
+
+  it("appends a cavity result revision against its exact predecessor", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const reviseCavityResult = vi
+      .fn<TrialDataSource["reviseCavityResult"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialQualityWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+          reviseCavityResult,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const cavityTable = await screen.findByRole("table", {
+      name: "Cavity measurements",
+    });
+    await user.click(
+      within(cavityTable).getByRole("button", { name: "Revise" }),
+    );
+    await user.clear(screen.getByLabelText("Measured value"));
+    await user.type(screen.getByLabelText("Measured value"), "2.52");
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial quality command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Append the corrected exact measurement",
+    );
+    await user.click(
+      within(dialog).getByRole("button", {
+        name: "Append cavity result revision",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(reviseCavityResult).toHaveBeenCalledOnce();
+    });
+    expect(reviseCavityResult.mock.calls[0]?.[2]).toBe(
+      trialQualityIds.cavityResult,
+    );
+    expect(reviseCavityResult.mock.calls[0]?.[3]).toMatchObject({
+      expectedResultVersion: 1,
+      expectedRevisionGlobalId: trialQualityIds.cavityResultRevision,
+      expectedRevisionSnapshotHash: "9".repeat(64),
+      measurements: [{ value: "2.52" }],
+      reason: "Append the corrected exact measurement",
+    });
+  });
+
+  it("continues one Tooling defect with a governed action and exact predecessor", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const createDefect = vi
+      .fn<TrialDataSource["createDefect"]>()
+      .mockResolvedValue({
+        replayed: false,
+        workspace: trialQualityWorkspace(),
+      });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          createDefect,
+          loadRoundExecution: () => Promise.resolve(trialExecutionWorkspace()),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: "Continue in Trial" }),
+    );
+    await user.type(screen.getByLabelText("Location"), "Rib end");
+    await user.type(
+      screen.getByLabelText("Action detail"),
+      "Increase fill pressure and inspect the exact cavity.",
+    );
+    await user.type(
+      screen.getByLabelText("Action responsible member stable ID"),
+      trialPlanningIds.member,
+    );
+    await user.type(
+      screen.getByLabelText("Action responsible member version"),
+      "1",
+    );
+    await user.clear(screen.getByLabelText("Due date"));
+    await user.type(screen.getByLabelText("Due date"), "2026-08-13");
+    await user.click(screen.getByRole("button", { name: "Review command" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable Trial quality command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Continue the stable Tooling defect into T0",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Record Trial defect" }),
+    );
+
+    await waitFor(() => {
+      expect(createDefect).toHaveBeenCalledOnce();
+    });
+    expect(createDefect.mock.calls[0]?.[2]).toMatchObject({
+      actions: [
+        {
+          actionType: "corrective",
+          detail: "Increase fill pressure and inspect the exact cavity.",
+          dueDate: "2026-08-13",
+          globalId: null,
+          responsibleMember: {
+            globalId: trialPlanningIds.member,
+            optimisticVersion: 1,
+          },
+          state: "planned",
+          targetRoundGlobalId: trialPlanningIds.round,
+        },
+      ],
+      defectGlobalId: trialQualityIds.defect,
+      expectedDefectVersion: 1,
+      expectedPredecessorGlobalId: trialQualityIds.toolingDefectRevision,
+      expectedPredecessorKind: "tooling_defect_revision",
+      expectedPredecessorSnapshotHash: "5".repeat(64),
+      location: "Rib end",
+      reason: "Continue the stable Tooling defect into T0",
+    });
   });
 });

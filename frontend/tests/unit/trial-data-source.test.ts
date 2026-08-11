@@ -4,12 +4,16 @@ import {
   isTrialExecutionWorkspace,
   isTrialPlanDetail,
   isTrialPlanningWorkspace,
+  isTrialQualityWorkspace,
   LiveTrialDataSource,
+  type CreateTrialCavityResultCommand,
+  type CreateTrialDefectCommand,
   type CreateTrialPlanCommand,
 } from "../../src/api/trial-data-source";
 import { NpiTransportError } from "../../src/api/http";
 import {
   trialActualRevision,
+  trialExecutionIds,
   trialExecutionWorkspace,
   trialInputLock,
   trialSampleRevision,
@@ -19,6 +23,12 @@ import {
   trialPlanningIds,
   trialPlanningWorkspace,
 } from "../support/trial-planning-fixture";
+import {
+  trialQualityDefect,
+  trialQualityIds,
+  trialQualityVerification,
+  trialQualityWorkspace,
+} from "../support/trial-quality-fixture";
 
 function requestUrl(request: RequestInfo | URL | undefined): string {
   if (typeof request === "string") return request;
@@ -625,5 +635,299 @@ describe("Trial planning data source", () => {
       ),
     ).rejects.toBeInstanceOf(NpiTransportError);
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("accepts only exact contained Trial quality snapshots", () => {
+    const workspace = trialQualityWorkspace();
+
+    expect(isTrialQualityWorkspace(workspace)).toBe(true);
+    expect(isTrialQualityWorkspace({ ...workspace, ncrCreated: true })).toBe(
+      false,
+    );
+    expect(
+      isTrialQualityWorkspace({
+        ...workspace,
+        externalEffects: { ...workspace.externalEffects, gate: "available" },
+      }),
+    ).toBe(false);
+    expect(
+      isTrialQualityWorkspace({
+        ...workspace,
+        cavityResultRevisions: workspace.cavityResultRevisions.map(
+          (revision) => ({
+            ...revision,
+            projectGlobalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          }),
+        ),
+      }),
+    ).toBe(false);
+    expect(
+      isTrialQualityWorkspace({
+        ...workspace,
+        defectRevisions: workspace.defectRevisions.map((entry) =>
+          entry.source === "trial"
+            ? {
+                ...entry,
+                revision: {
+                  ...entry.revision,
+                  actions: entry.revision.actions.map((action) => ({
+                    ...action,
+                    targetRoundSnapshotHash: "not-a-hash",
+                  })),
+                },
+              }
+            : entry,
+        ),
+      }),
+    ).toBe(false);
+    expect(
+      isTrialQualityWorkspace({
+        ...workspace,
+        defectRevisions: workspace.defectRevisions.map((entry) =>
+          entry.source === "tooling"
+            ? {
+                ...entry,
+                revision: {
+                  ...entry.revision,
+                  evidence: [{ globalId: trialQualityIds.verification }],
+                },
+              }
+            : entry,
+        ),
+      }),
+    ).toBe(false);
+  });
+
+  it("loads and writes the exact Trial quality command surface", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>((_request, init) =>
+      Promise.resolve(
+        response(
+          trialQualityWorkspace(),
+          init,
+          init?.method === "POST" ? false : undefined,
+        ),
+      ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const workspace = trialQualityWorkspace();
+    const execution = trialExecutionWorkspace();
+    const lock = trialInputLock();
+    const sample = trialSampleRevision();
+    const cavity = workspace.cavityResultRevisions[0];
+    const defect = trialQualityDefect();
+    const verification = trialQualityVerification();
+    if (!cavity) throw new Error("The quality test requires a cavity result.");
+    const measurement = cavity.measurements.map((value) => ({
+      characteristicKey: value.characteristicKey,
+      label: value.label,
+      lowerLimit: value.lowerLimit,
+      nominalValue: value.nominalValue,
+      observedAt: value.observedAt,
+      required: value.required,
+      source: value.source,
+      state: value.state,
+      unit: value.unit,
+      upperLimit: value.upperLimit,
+      value: value.value,
+    }));
+    const evidence = cavity.evidence;
+    const cavityCommand: CreateTrialCavityResultCommand = {
+      cavityGlobalId: cavity.cavityGlobalId,
+      evidence,
+      expectedInputLockRevisionGlobalId: lock.globalId,
+      expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+      expectedRoundOptimisticVersion: execution.round.optimisticVersion,
+      expectedRoundSnapshotHash: execution.round.snapshotHash,
+      expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+      measurements: measurement,
+      reason: "Record exact cavity result",
+      sampleBatchRevisionGlobalId: sample.globalId,
+    };
+    const defectFields = {
+      actions: defect.actions.map((action) => ({
+        actionType: action.actionType,
+        detail: action.detail,
+        dueDate: action.dueDate,
+        globalId: action.globalId,
+        responsibleMember: {
+          globalId: action.responsibleMember.globalId,
+          optimisticVersion: action.responsibleMember.optimisticVersion,
+        },
+        state: action.state,
+        targetRoundGlobalId: action.targetRoundGlobalId,
+        targetRoundOptimisticVersion: action.targetRoundOptimisticVersion,
+        targetRoundSnapshotHash: action.targetRoundSnapshotHash,
+        verificationRevisionGlobalId: action.verificationRevisionGlobalId,
+        verificationRevisionSnapshotHash:
+          action.verificationRevisionSnapshotHash,
+      })),
+      blocking: defect.blocking,
+      businessCode: defect.businessCode,
+      categoryKey: defect.categoryKey,
+      cavityGlobalId: defect.cavityGlobalId,
+      description: defect.description,
+      evidence: defect.evidence,
+      expectedInputLockRevisionGlobalId: lock.globalId,
+      expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+      expectedRoundOptimisticVersion: execution.round.optimisticVersion,
+      expectedRoundSnapshotHash: execution.round.snapshotHash,
+      expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+      location: defect.location,
+      occurrenceCount: defect.occurrenceCount,
+      reason: "Append exact Trial defect truth",
+      responsibleMember: defect.responsibleMember
+        ? {
+            globalId: defect.responsibleMember.globalId,
+            optimisticVersion: defect.responsibleMember.optimisticVersion,
+          }
+        : undefined,
+      rootCause: defect.rootCause ?? undefined,
+      rootCauseState: defect.rootCauseState,
+      sampleBatchRevisionGlobalId: sample.globalId,
+      severity: defect.severity,
+      state: defect.state,
+      title: defect.title,
+    } as const;
+    const createDefect: CreateTrialDefectCommand = {
+      ...defectFields,
+      defectGlobalId: defect.defectGlobalId,
+      expectedDefectVersion: 1,
+      expectedPredecessorGlobalId: trialQualityIds.toolingDefectRevision,
+      expectedPredecessorKind: "tooling_defect_revision",
+      expectedPredecessorSnapshotHash: "5".repeat(64),
+    };
+
+    await source.loadRoundQuality(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      new AbortController().signal,
+    );
+    await source.createCavityResult(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      cavityCommand,
+      context("quality-cavity-create"),
+    );
+    await source.reviseCavityResult(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      cavity.cavityResultGlobalId,
+      {
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+        expectedResultVersion: cavity.resultVersion,
+        expectedRevisionGlobalId: cavity.globalId,
+        expectedRevisionSnapshotHash: cavity.snapshotHash,
+        expectedRoundOptimisticVersion: execution.round.optimisticVersion,
+        expectedRoundSnapshotHash: execution.round.snapshotHash,
+        measurements: measurement,
+        reason: "Append exact cavity result revision",
+      },
+      context("quality-cavity-revise"),
+    );
+    await source.createDefect(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      createDefect,
+      context("quality-defect-create"),
+    );
+    await source.reviseDefect(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      defect.defectGlobalId,
+      {
+        ...defectFields,
+        expectedDefectVersion: defect.defectVersion,
+        expectedPredecessorGlobalId: defect.globalId,
+        expectedPredecessorKind: "trial_defect_revision",
+        expectedPredecessorSnapshotHash: defect.snapshotHash,
+      },
+      context("quality-defect-revise"),
+    );
+    await source.verifyDefect(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      defect.defectGlobalId,
+      {
+        actionGlobalId: verification.actionGlobalId,
+        cavityResultRevisionGlobalId: verification.cavityResultRevisionGlobalId,
+        evidence: verification.evidence,
+        expectedAttemptSequence: verification.attemptSequence,
+        expectedCavityResultRevisionSnapshotHash:
+          verification.cavityResultRevisionSnapshotHash,
+        expectedDefectRevisionGlobalId: verification.defectRevisionGlobalId,
+        expectedDefectRevisionSnapshotHash:
+          verification.defectRevisionSnapshotHash,
+        expectedTargetRoundOptimisticVersion:
+          verification.targetRoundOptimisticVersion,
+        expectedTargetRoundSnapshotHash: verification.targetRoundSnapshotHash,
+        finding: "Independent retry confirms the exact target Round result.",
+        observedAt: verification.observedAt,
+        result: "pass",
+        targetRoundGlobalId: verification.targetRoundGlobalId,
+        verificationGlobalId: verification.verificationGlobalId,
+        verifierMember: {
+          globalId: verification.verifierMember.globalId,
+          optimisticVersion: verification.verifierMember.optimisticVersion,
+        },
+      },
+      context("quality-verify"),
+    );
+
+    expect(fetch).toHaveBeenCalledTimes(6);
+    expect(requestUrl(fetch.mock.calls[0]?.[0])).toContain(
+      `/trial-rounds/${trialPlanningIds.round}/quality`,
+    );
+    expect(requestUrl(fetch.mock.calls[1]?.[0])).toContain("/cavity-results");
+    expect(requestUrl(fetch.mock.calls[2]?.[0])).toContain(
+      `/cavity-results/${cavity.cavityResultGlobalId}/revisions`,
+    );
+    expect(requestUrl(fetch.mock.calls[3]?.[0])).toContain("/defects");
+    expect(requestUrl(fetch.mock.calls[4]?.[0])).toContain(
+      `/defects/${defect.defectGlobalId}/revisions`,
+    );
+    expect(requestUrl(fetch.mock.calls[5]?.[0])).toContain(
+      `/defects/${defect.defectGlobalId}/verifications`,
+    );
+    for (const call of fetch.mock.calls.slice(1)) {
+      expect(call[1]?.method).toBe("POST");
+      expect(new Headers(call[1]?.headers).get("X-Frappe-CSRF-Token")).toBe(
+        "c".repeat(32),
+      );
+      expect(new Headers(call[1]?.headers).get("Idempotency-Key")).toMatch(
+        /^trial-/u,
+      );
+    }
+  });
+
+  it("fails closed before transport for incomplete Trial quality evidence", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const execution = trialExecutionWorkspace();
+    const lock = trialInputLock();
+    const sample = trialSampleRevision();
+
+    await expect(
+      source.createCavityResult(
+        trialPlanningIds.project,
+        trialPlanningIds.round,
+        {
+          cavityGlobalId: trialExecutionIds.cavity,
+          evidence: [],
+          expectedInputLockRevisionGlobalId: lock.globalId,
+          expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+          expectedRoundOptimisticVersion: execution.round.optimisticVersion,
+          expectedRoundSnapshotHash: execution.round.snapshotHash,
+          expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+          measurements: [],
+          reason: "Invalid empty evidence and measurement arrays",
+          sampleBatchRevisionGlobalId: sample.globalId,
+        },
+        context("quality-invalid"),
+      ),
+    ).rejects.toBeInstanceOf(NpiTransportError);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

@@ -10,6 +10,8 @@ import {
   type AppendTrialActualRevisionCommand,
   type AppendTrialSampleBatchRevisionCommand,
   type BindTrialEvidenceCommand,
+  type CreateTrialCavityResultCommand,
+  type CreateTrialDefectCommand,
   type CreatePlannedTrialRoundCommand,
   type CreateTrialSampleBatchCommand,
   type CreateTrialPlanCommand,
@@ -24,6 +26,11 @@ import {
   type TrialEvidenceRole,
   type TrialExecutionCommandResult,
   type TrialExecutionWorkspace,
+  type TrialDefectRevision,
+  type TrialDefectSeverity,
+  type TrialQualityCommandResult,
+  type TrialQualityDefectRevision,
+  type TrialQualityWorkspace,
   type TrialLockedReferenceKind,
   type TrialParameterValueKind,
   type TrialPlanDetail,
@@ -31,6 +38,9 @@ import {
   type TrialPurpose,
   type TrialResourceProposalInput,
   type TrialRoundState,
+  type ReviseTrialCavityResultCommand,
+  type ReviseTrialDefectCommand,
+  type VerifyTrialDefectCommand,
 } from "../api/trial-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
@@ -63,6 +73,11 @@ type ExecutionState =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "loaded"; value: TrialExecutionWorkspace }
+  | { kind: "failed"; failure: RequestFailure };
+type QualityState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "loaded"; value: TrialQualityWorkspace }
   | { kind: "failed"; failure: RequestFailure };
 type EditorKind =
   | "create_plan"
@@ -102,6 +117,55 @@ interface EditorState {
   actionSeverity: TrialActionSeverity;
   actionBlocking: boolean;
   trialRoundGlobalId: string;
+}
+
+type QualityEditorKind =
+  | "create_cavity"
+  | "revise_cavity"
+  | "create_defect"
+  | "revise_defect"
+  | "verify_defect";
+
+interface QualityEditorState {
+  kind: QualityEditorKind;
+  sourceGlobalId: string | null;
+  cavityGlobalId: string;
+  characteristicKey: string;
+  characteristicLabel: string;
+  unit: string;
+  nominalValue: string;
+  lowerLimit: string;
+  upperLimit: string;
+  measurementState: "measured" | "not_measured";
+  measuredValue: string;
+  observedAt: string;
+  evidenceGlobalId: string;
+  evidenceSnapshotHash: string;
+  businessCode: string;
+  title: string;
+  description: string;
+  categoryKey: string;
+  location: string;
+  severity: TrialDefectSeverity;
+  blocking: boolean;
+  defectState: TrialDefectRevision["state"];
+  rootCause: string;
+  occurrenceCount: string;
+  responsibleMemberGlobalId: string;
+  responsibleMemberVersion: string;
+  actionGlobalId: string;
+  actionType: "containment" | "corrective" | "preventive";
+  actionState: "planned" | "completed" | "verified";
+  actionDetail: string;
+  actionResponsibleMemberGlobalId: string;
+  actionResponsibleMemberVersion: string;
+  actionDueDate: string;
+  verifierMemberGlobalId: string;
+  verifierMemberVersion: string;
+  verificationGlobalId: string;
+  expectedAttemptSequence: string;
+  verificationResult: "pass" | "fail";
+  finding: string;
 }
 
 const source = {
@@ -186,6 +250,44 @@ function severityLabel(
       return t("High");
     case "critical":
       return t("Critical");
+  }
+}
+
+function defectStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: TrialDefectRevision["state"],
+): string {
+  switch (state) {
+    case "open":
+      return t("Open");
+    case "assigned":
+      return t("Assigned");
+    case "in_progress":
+      return t("In progress");
+    case "ready_for_verification":
+      return t("Ready for verification");
+    case "closed":
+      return t("Closed");
+    case "reopened":
+      return t("Reopened");
+  }
+}
+
+function qualityEditorLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: QualityEditorKind,
+): string {
+  switch (kind) {
+    case "create_cavity":
+      return t("Record cavity result");
+    case "revise_cavity":
+      return t("Append cavity result revision");
+    case "create_defect":
+      return t("Record Trial defect");
+    case "revise_defect":
+      return t("Append Trial defect revision");
+    case "verify_defect":
+      return t("Record independent verification");
   }
 }
 
@@ -2514,6 +2616,1645 @@ function TrialExecutionSection({
   );
 }
 
+function initialQualityEditor(
+  kind: QualityEditorKind,
+  workspace: TrialQualityWorkspace,
+  execution: TrialExecutionWorkspace | null,
+  sourceGlobalId: string | null = null,
+): QualityEditorState {
+  const cavityResult = workspace.cavityResultRevisions.find(
+    (revision) => revision.globalId === sourceGlobalId,
+  );
+  const defectEntry = workspace.defectRevisions.find(
+    (entry) => entry.revision.globalId === sourceGlobalId,
+  );
+  const trialDefect =
+    defectEntry?.source === "trial" ? defectEntry.revision : null;
+  const sourceDefect = defectEntry?.revision ?? null;
+  const sourceAction = sourceDefect?.actions[0] ?? null;
+  const firstMeasurement = cavityResult?.measurements[0];
+  const firstAction = trialDefect?.actions.find(
+    (action) => action.state === "completed" || action.state === "verified",
+  );
+  const latestVerification = firstAction
+    ? workspace.verificationRevisions
+        .filter(
+          (revision) =>
+            revision.defectGlobalId === trialDefect?.defectGlobalId &&
+            revision.actionGlobalId === firstAction.globalId,
+        )
+        .at(-1)
+    : null;
+  const evidence =
+    cavityResult?.evidence[0] ??
+    trialDefect?.evidence[0] ??
+    workspace.cavityResultRevisions[0]?.evidence[0] ??
+    workspace.defectRevisions.find((entry) => entry.source === "trial")
+      ?.revision.evidence[0] ??
+    null;
+  const defaultCavity =
+    sourceDefect?.cavityGlobalId ??
+    workspace.cavityFilters[0]?.globalId ??
+    execution?.inputLocks
+      .at(-1)
+      ?.references.find((reference) => reference.kind === "cavity")?.globalId ??
+    "";
+  return {
+    actionGlobalId:
+      kind === "verify_defect"
+        ? (firstAction?.globalId ?? "")
+        : (sourceAction?.globalId ?? ""),
+    actionDetail: sourceAction?.detail ?? "",
+    actionDueDate:
+      sourceAction?.dueDate ?? new Date().toISOString().slice(0, 10),
+    actionResponsibleMemberGlobalId:
+      sourceAction?.responsibleMember.globalId ?? "",
+    actionResponsibleMemberVersion: sourceAction
+      ? String(sourceAction.responsibleMember.optimisticVersion)
+      : "",
+    actionState:
+      defectEntry?.source === "tooling" && sourceAction?.state === "verified"
+        ? "completed"
+        : (sourceAction?.state ?? "planned"),
+    actionType: sourceAction?.actionType ?? "corrective",
+    blocking: sourceDefect?.blocking ?? false,
+    businessCode: sourceDefect?.businessCode ?? "",
+    categoryKey: sourceDefect?.categoryKey ?? "",
+    cavityGlobalId: cavityResult?.cavityGlobalId ?? defaultCavity,
+    characteristicKey: firstMeasurement?.characteristicKey ?? "",
+    characteristicLabel: firstMeasurement?.label ?? "",
+    description: sourceDefect?.description ?? "",
+    defectState: trialDefect?.state ?? "open",
+    evidenceGlobalId: evidence?.globalId ?? "",
+    evidenceSnapshotHash: evidence?.snapshotHash ?? "",
+    expectedAttemptSequence: latestVerification
+      ? String(latestVerification.attemptSequence)
+      : "",
+    finding: "",
+    kind,
+    location: trialDefect?.location ?? "",
+    lowerLimit: firstMeasurement?.lowerLimit ?? "",
+    measuredValue: firstMeasurement?.value ?? "",
+    measurementState: firstMeasurement?.state ?? "measured",
+    nominalValue: firstMeasurement?.nominalValue ?? "",
+    observedAt: utcInput(new Date().toISOString()),
+    occurrenceCount: String(trialDefect?.occurrenceCount ?? 1),
+    responsibleMemberGlobalId: trialDefect?.responsibleMember?.globalId ?? "",
+    responsibleMemberVersion: trialDefect?.responsibleMember
+      ? String(trialDefect.responsibleMember.optimisticVersion)
+      : "",
+    rootCause: trialDefect?.rootCause ?? "",
+    severity: sourceDefect?.severity ?? "medium",
+    sourceGlobalId,
+    title: sourceDefect?.title ?? "",
+    unit: firstMeasurement?.unit ?? "mm",
+    upperLimit: firstMeasurement?.upperLimit ?? "",
+    verificationGlobalId: latestVerification?.verificationGlobalId ?? "",
+    verificationResult: "pass",
+    verifierMemberGlobalId: latestVerification?.verifierMember.globalId ?? "",
+    verifierMemberVersion: latestVerification
+      ? String(latestVerification.verifierMember.optimisticVersion)
+      : "",
+  };
+}
+
+function TrialQualitySection({
+  dataSource,
+  execution,
+  onWorkspace,
+  projectId,
+  reportWorkspaceDirty,
+  workspace,
+}: {
+  dataSource: TrialDataSource;
+  execution: TrialExecutionWorkspace | null;
+  onWorkspace: (value: TrialQualityWorkspace) => void;
+  projectId: string;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  workspace: TrialQualityWorkspace;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const [cavityFilter, setCavityFilter] = useState("");
+  const [editor, setEditor] = useState<QualityEditorState | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [command, setCommand] = useState<CommandState>({ kind: "idle" });
+  const latestCommand = useRef<(() => void) | null>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const firstControl = useRef<HTMLInputElement | null>(null);
+  const processing = command.kind === "processing";
+  const lock = execution?.inputLocks.at(-1) ?? null;
+  const sample = execution?.sampleBatchRevisions.at(-1) ?? null;
+  const filteredCavityResults = workspace.cavityResultRevisions.filter(
+    (revision) => !cavityFilter || revision.cavityGlobalId === cavityFilter,
+  );
+  const filteredDefects = workspace.defectRevisions.filter(
+    (entry) => !cavityFilter || entry.revision.cavityGlobalId === cavityFilter,
+  );
+  const filteredPareto = workspace.pareto.filter(
+    (row) => !cavityFilter || row.cavityGlobalId === cavityFilter,
+  );
+  const trialDefects = workspace.defectRevisions.filter(
+    (
+      entry,
+    ): entry is Extract<TrialQualityDefectRevision, { source: "trial" }> =>
+      entry.source === "trial",
+  );
+
+  useEffect(() => {
+    if (!reportWorkspaceDirty) return undefined;
+    if (!editor) {
+      reportWorkspaceDirty(null);
+      return undefined;
+    }
+    reportWorkspaceDirty({
+      objectIdentity: editor.sourceGlobalId ?? workspace.trialRound.globalId,
+      returnFocusTarget: () =>
+        firstControl.current ??
+        document.getElementById("trial-quality-primary-action"),
+      version: `trial-quality-round-v${String(workspace.trialRound.optimisticVersion)}`,
+    });
+    return () => {
+      reportWorkspaceDirty(null);
+    };
+  }, [editor, reportWorkspaceDirty, workspace.trialRound]);
+
+  const closeEditor = (): void => {
+    setEditor(null);
+    setReviewOpen(false);
+    setFormError(null);
+    const target = returnFocus.current;
+    globalThis.queueMicrotask(() => target?.focus());
+  };
+
+  const openEditor = (
+    kind: QualityEditorKind,
+    trigger: HTMLElement,
+    sourceGlobalId: string | null = null,
+  ): void => {
+    returnFocus.current = trigger;
+    setCommand({ kind: "idle" });
+    setFormError(null);
+    setReviewOpen(false);
+    setEditor(initialQualityEditor(kind, workspace, execution, sourceGlobalId));
+    globalThis.queueMicrotask(() => firstControl.current?.focus());
+  };
+
+  const evidenceValid = Boolean(
+    editor &&
+    uuidPattern.test(editor.evidenceGlobalId.trim()) &&
+    /^[a-f0-9]{64}$/u.test(editor.evidenceSnapshotHash.trim()),
+  );
+  const actionPresent = Boolean(
+    editor && (editor.actionGlobalId || editor.actionDetail.trim()),
+  );
+  const actionValid = Boolean(
+    !actionPresent ||
+    (editor &&
+      Boolean(editor.actionDetail.trim()) &&
+      uuidPattern.test(editor.actionResponsibleMemberGlobalId.trim()) &&
+      Number.isInteger(Number(editor.actionResponsibleMemberVersion)) &&
+      Number(editor.actionResponsibleMemberVersion) > 0 &&
+      /^\d{4}-\d{2}-\d{2}$/u.test(editor.actionDueDate)),
+  );
+  const editorValid = Boolean(
+    editor &&
+    lock &&
+    sample &&
+    uuidPattern.test(editor.cavityGlobalId.trim()) &&
+    evidenceValid &&
+    (editor.kind === "create_cavity" || editor.kind === "revise_cavity"
+      ? Boolean(editor.characteristicKey.trim()) &&
+        Boolean(editor.characteristicLabel.trim()) &&
+        Boolean(editor.unit.trim()) &&
+        [editor.nominalValue, editor.lowerLimit, editor.upperLimit].every(
+          (value) => Number.isFinite(Number(value)),
+        ) &&
+        Number(editor.lowerLimit) <= Number(editor.nominalValue) &&
+        Number(editor.nominalValue) <= Number(editor.upperLimit) &&
+        (editor.measurementState === "not_measured" ||
+          Number.isFinite(Number(editor.measuredValue)))
+      : editor.kind === "create_defect" || editor.kind === "revise_defect"
+        ? Boolean(editor.businessCode.trim()) &&
+          Boolean(editor.title.trim()) &&
+          Boolean(editor.description.trim()) &&
+          Boolean(editor.categoryKey.trim()) &&
+          Boolean(editor.location.trim()) &&
+          actionValid &&
+          (editor.kind !== "create_defect" ||
+            editor.sourceGlobalId !== null ||
+            editor.defectState === "open") &&
+          Number.isInteger(Number(editor.occurrenceCount)) &&
+          Number(editor.occurrenceCount) > 0 &&
+          (editor.defectState === "open" ||
+            (uuidPattern.test(editor.responsibleMemberGlobalId.trim()) &&
+              Number(editor.responsibleMemberVersion) > 0))
+        : uuidPattern.test(editor.actionGlobalId.trim()) &&
+          uuidPattern.test(editor.verifierMemberGlobalId.trim()) &&
+          Number(editor.verifierMemberVersion) > 0 &&
+          Boolean(editor.finding.trim()) &&
+          Boolean(workspace.cavityResultRevisions[0])),
+  );
+
+  const reviewCommand = (): void => {
+    if (!editorValid) {
+      setFormError(
+        t(
+          "Complete every required quality field and exact evidence reference before review.",
+        ),
+      );
+      return;
+    }
+    setFormError(null);
+    setReviewOpen(true);
+  };
+
+  const runCommand = (
+    label: string,
+    operation: () => Promise<TrialQualityCommandResult>,
+  ): void => {
+    const execute = (): void => {
+      setCommand({ kind: "processing", label });
+      void operation()
+        .then((result) => {
+          onWorkspace(result.workspace);
+          setEditor(null);
+          setReviewOpen(false);
+          setFormError(null);
+          setCommand({ kind: "succeeded", label, replayed: result.replayed });
+          const target = returnFocus.current;
+          globalThis.queueMicrotask(() => target?.focus());
+        })
+        .catch((error: unknown) => {
+          setReviewOpen(false);
+          setCommand({ kind: "failed", failure: toRequestFailure(error) });
+        });
+    };
+    latestCommand.current = execute;
+    execute();
+  };
+
+  const confirmCommand = (reason: string): void => {
+    if (!editor || !sessionCommandContext || !lock || !sample) return;
+    const context = {
+      csrfToken: sessionCommandContext.csrfToken,
+      idempotencyKey: `trial-quality-${globalThis.crypto.randomUUID()}`,
+      signal: new AbortController().signal,
+    };
+    const evidence = [
+      {
+        globalId: editor.evidenceGlobalId.trim(),
+        snapshotHash: editor.evidenceSnapshotHash.trim(),
+      },
+    ];
+    const measurement = {
+      characteristicKey: editor.characteristicKey.trim(),
+      label: editor.characteristicLabel.trim(),
+      lowerLimit: editor.lowerLimit.trim(),
+      nominalValue: editor.nominalValue.trim(),
+      observedAt: utcInstant(editor.observedAt),
+      required: true,
+      source: "manual" as const,
+      state: editor.measurementState,
+      unit: editor.unit.trim(),
+      upperLimit: editor.upperLimit.trim(),
+      value:
+        editor.measurementState === "measured"
+          ? editor.measuredValue.trim()
+          : null,
+    };
+    const round = workspace.trialRound;
+    if (editor.kind === "create_cavity") {
+      const commandValue: CreateTrialCavityResultCommand = {
+        cavityGlobalId: editor.cavityGlobalId.trim(),
+        evidence,
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+        expectedRoundOptimisticVersion: round.optimisticVersion,
+        expectedRoundSnapshotHash: round.snapshotHash,
+        expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+        measurements: [measurement],
+        reason,
+        sampleBatchRevisionGlobalId: sample.globalId,
+      };
+      runCommand(t("Recording cavity result"), () =>
+        dataSource.createCavityResult(
+          projectId,
+          round.globalId,
+          commandValue,
+          context,
+        ),
+      );
+      return;
+    }
+    if (editor.kind === "revise_cavity") {
+      const revision = workspace.cavityResultRevisions.find(
+        (candidate) => candidate.globalId === editor.sourceGlobalId,
+      );
+      if (!revision) return;
+      const commandValue: ReviseTrialCavityResultCommand = {
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+        expectedResultVersion: revision.resultVersion,
+        expectedRevisionGlobalId: revision.globalId,
+        expectedRevisionSnapshotHash: revision.snapshotHash,
+        expectedRoundOptimisticVersion: round.optimisticVersion,
+        expectedRoundSnapshotHash: round.snapshotHash,
+        measurements: [
+          measurement,
+          ...revision.measurements.slice(1).map((value) => ({
+            characteristicKey: value.characteristicKey,
+            label: value.label,
+            lowerLimit: value.lowerLimit,
+            nominalValue: value.nominalValue,
+            observedAt: value.observedAt,
+            required: value.required,
+            source: value.source,
+            state: value.state,
+            unit: value.unit,
+            upperLimit: value.upperLimit,
+            value: value.value,
+          })),
+        ],
+        reason,
+      };
+      runCommand(t("Appending cavity result revision"), () =>
+        dataSource.reviseCavityResult(
+          projectId,
+          round.globalId,
+          revision.cavityResultGlobalId,
+          commandValue,
+          context,
+        ),
+      );
+      return;
+    }
+    const member =
+      editor.responsibleMemberGlobalId && editor.responsibleMemberVersion
+        ? {
+            globalId: editor.responsibleMemberGlobalId.trim(),
+            optimisticVersion: Number(editor.responsibleMemberVersion),
+          }
+        : undefined;
+    const sourceTrialDefect = trialDefects.find(
+      (entry) => entry.revision.globalId === editor.sourceGlobalId,
+    )?.revision;
+    const existingAction = sourceTrialDefect?.actions.find(
+      (action) => action.globalId === editor.actionGlobalId,
+    );
+    const editedAction = actionPresent
+      ? {
+          actionType: editor.actionType,
+          detail: editor.actionDetail.trim(),
+          dueDate: editor.actionDueDate,
+          globalId: editor.actionGlobalId || null,
+          responsibleMember: {
+            globalId: editor.actionResponsibleMemberGlobalId.trim(),
+            optimisticVersion: Number(editor.actionResponsibleMemberVersion),
+          },
+          state: editor.actionState,
+          targetRoundGlobalId: round.globalId,
+          targetRoundOptimisticVersion: round.optimisticVersion,
+          targetRoundSnapshotHash: round.snapshotHash,
+          verificationRevisionGlobalId:
+            editor.actionState === "verified"
+              ? (existingAction?.verificationRevisionGlobalId ?? null)
+              : null,
+          verificationRevisionSnapshotHash:
+            editor.actionState === "verified"
+              ? (existingAction?.verificationRevisionSnapshotHash ?? null)
+              : null,
+        }
+      : null;
+    if (editor.kind === "create_defect") {
+      const predecessor = workspace.defectRevisions.find(
+        (entry) =>
+          entry.source === "tooling" &&
+          entry.revision.globalId === editor.sourceGlobalId,
+      );
+      const commandValue: CreateTrialDefectCommand = {
+        actions: editedAction ? [editedAction] : [],
+        blocking: editor.blocking,
+        businessCode: editor.businessCode.trim(),
+        categoryKey: editor.categoryKey.trim(),
+        cavityGlobalId: editor.cavityGlobalId.trim(),
+        description: editor.description.trim(),
+        evidence,
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+        expectedRoundOptimisticVersion: round.optimisticVersion,
+        expectedRoundSnapshotHash: round.snapshotHash,
+        expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+        location: editor.location.trim(),
+        occurrenceCount: Number(editor.occurrenceCount),
+        reason,
+        rootCauseState: editor.rootCause.trim() ? "recorded" : "pending",
+        sampleBatchRevisionGlobalId: sample.globalId,
+        severity: editor.severity,
+        state: editor.defectState,
+        title: editor.title.trim(),
+        ...(editor.rootCause.trim()
+          ? { rootCause: editor.rootCause.trim() }
+          : {}),
+        ...(member ? { responsibleMember: member } : {}),
+        ...(predecessor
+          ? {
+              defectGlobalId: predecessor.revision.defectGlobalId,
+              expectedDefectVersion: predecessor.revision.defectVersion,
+              expectedPredecessorGlobalId: predecessor.revision.globalId,
+              expectedPredecessorKind: "tooling_defect_revision" as const,
+              expectedPredecessorSnapshotHash:
+                predecessor.revision.snapshotHash,
+            }
+          : {}),
+      };
+      runCommand(t("Recording Trial defect"), () =>
+        dataSource.createDefect(
+          projectId,
+          round.globalId,
+          commandValue,
+          context,
+        ),
+      );
+      return;
+    }
+    const defectEntry = trialDefects.find(
+      (entry) => entry.revision.globalId === editor.sourceGlobalId,
+    );
+    if (!defectEntry) return;
+    const defect = defectEntry.revision;
+    if (editor.kind === "revise_defect") {
+      const commandValue: ReviseTrialDefectCommand = {
+        actions: [
+          ...(editedAction ? [editedAction] : []),
+          ...defect.actions
+            .filter((action) => action.globalId !== editor.actionGlobalId)
+            .map((action) => ({
+              actionType: action.actionType,
+              detail: action.detail,
+              dueDate: action.dueDate,
+              globalId: action.globalId,
+              responsibleMember: {
+                globalId: action.responsibleMember.globalId,
+                optimisticVersion: action.responsibleMember.optimisticVersion,
+              },
+              state: action.state,
+              targetRoundGlobalId: action.targetRoundGlobalId,
+              targetRoundOptimisticVersion: action.targetRoundOptimisticVersion,
+              targetRoundSnapshotHash: action.targetRoundSnapshotHash,
+              verificationRevisionGlobalId: action.verificationRevisionGlobalId,
+              verificationRevisionSnapshotHash:
+                action.verificationRevisionSnapshotHash,
+            })),
+        ],
+        blocking: editor.blocking,
+        businessCode: editor.businessCode.trim(),
+        categoryKey: editor.categoryKey.trim(),
+        cavityGlobalId: editor.cavityGlobalId.trim(),
+        description: editor.description.trim(),
+        evidence,
+        expectedDefectVersion: defect.defectVersion,
+        expectedInputLockRevisionGlobalId: lock.globalId,
+        expectedInputLockRevisionSnapshotHash: lock.snapshotHash,
+        expectedPredecessorGlobalId: defect.globalId,
+        expectedPredecessorKind: "trial_defect_revision",
+        expectedPredecessorSnapshotHash: defect.snapshotHash,
+        expectedRoundOptimisticVersion: round.optimisticVersion,
+        expectedRoundSnapshotHash: round.snapshotHash,
+        expectedSampleBatchRevisionSnapshotHash: sample.snapshotHash,
+        location: editor.location.trim(),
+        occurrenceCount: Number(editor.occurrenceCount),
+        reason,
+        rootCauseState: editor.rootCause.trim() ? "recorded" : "pending",
+        sampleBatchRevisionGlobalId: sample.globalId,
+        severity: editor.severity,
+        state: editor.defectState,
+        title: editor.title.trim(),
+        ...(editor.rootCause.trim()
+          ? { rootCause: editor.rootCause.trim() }
+          : {}),
+        ...(member ? { responsibleMember: member } : {}),
+      };
+      runCommand(t("Appending Trial defect revision"), () =>
+        dataSource.reviseDefect(
+          projectId,
+          round.globalId,
+          defect.defectGlobalId,
+          commandValue,
+          context,
+        ),
+      );
+      return;
+    }
+    const cavityResult = workspace.cavityResultRevisions[0];
+    if (!cavityResult) return;
+    const commandValue: VerifyTrialDefectCommand = {
+      actionGlobalId: editor.actionGlobalId.trim(),
+      cavityResultRevisionGlobalId: cavityResult.globalId,
+      evidence,
+      expectedCavityResultRevisionSnapshotHash: cavityResult.snapshotHash,
+      expectedDefectRevisionGlobalId: defect.globalId,
+      expectedDefectRevisionSnapshotHash: defect.snapshotHash,
+      expectedTargetRoundOptimisticVersion: round.optimisticVersion,
+      expectedTargetRoundSnapshotHash: round.snapshotHash,
+      finding: editor.finding.trim(),
+      observedAt: utcInstant(editor.observedAt),
+      result: editor.verificationResult,
+      targetRoundGlobalId: round.globalId,
+      verifierMember: {
+        globalId: editor.verifierMemberGlobalId.trim(),
+        optimisticVersion: Number(editor.verifierMemberVersion),
+      },
+      ...(editor.verificationGlobalId && editor.expectedAttemptSequence
+        ? {
+            expectedAttemptSequence: Number(editor.expectedAttemptSequence),
+            verificationGlobalId: editor.verificationGlobalId,
+          }
+        : {}),
+    };
+    runCommand(t("Recording independent verification"), () =>
+      dataSource.verifyDefect(
+        projectId,
+        round.globalId,
+        defect.defectGlobalId,
+        commandValue,
+        context,
+      ),
+    );
+  };
+
+  return (
+    <>
+      <Panel title={t("Trial quality workspace")}>
+        <div className="trial-live__command-bar">
+          {workspace.permissions.recordCavityResult ? (
+            <Button
+              disabled={!sessionCommandContext || !execution || processing}
+              id="trial-quality-primary-action"
+              onClick={(event) => {
+                openEditor("create_cavity", event.currentTarget);
+              }}
+              visual="primary"
+            >
+              {t("Record cavity result")}
+            </Button>
+          ) : null}
+          {workspace.permissions.manageDefects ? (
+            <Button
+              disabled={!sessionCommandContext || !execution || processing}
+              onClick={(event) => {
+                openEditor("create_defect", event.currentTarget);
+              }}
+            >
+              {t("Record Trial defect")}
+            </Button>
+          ) : null}
+          <label className="trial-live__filter">
+            <span>{t("Cavity filter")}</span>
+            <Select
+              onChange={(event) => {
+                setCavityFilter(event.target.value);
+              }}
+              value={cavityFilter}
+            >
+              <option value="">{t("All cavities")}</option>
+              {workspace.cavityFilters.map((cavity) => (
+                <option key={cavity.globalId} value={cavity.globalId}>
+                  {cavity.globalId}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
+        <DefinitionList
+          rows={[
+            {
+              label: t("Cavity result revisions"),
+              value: formatNumber(locale, filteredCavityResults.length, 0),
+            },
+            {
+              label: t("Defect timeline revisions"),
+              value: formatNumber(locale, filteredDefects.length, 0),
+            },
+            {
+              label: t("Independent verification attempts"),
+              value: formatNumber(
+                locale,
+                workspace.verificationRevisions.length,
+                0,
+              ),
+            },
+          ]}
+        />
+      </Panel>
+      {!sessionCommandContext ||
+      !workspace.permissions.view ||
+      (!workspace.permissions.recordCavityResult &&
+        !workspace.permissions.manageDefects &&
+        !workspace.permissions.verifyDefects) ? (
+        <div
+          className="scenario-banner scenario-banner--read-only"
+          role="status"
+        >
+          <span>{t("Trial quality is read only in this session.")}</span>
+          <span>
+            {t(
+              "The server still controls Project membership and every quality command permission.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "processing" ? (
+        <div
+          className="scenario-banner scenario-banner--processing"
+          role="status"
+        >
+          <span>{command.label}</span>
+          <span>
+            {t(
+              "The exact quality command is being verified and committed atomically.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "succeeded" ? (
+        <div className="scenario-banner scenario-banner--queued" role="status">
+          <span>{command.label}</span>
+          <span>
+            {command.replayed
+              ? t(
+                  "The exact prior quality command response was replayed safely.",
+                )
+              : t("The quality command completed with immutable audit truth.")}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "failed" ? (
+        <Panel title={t("Trial quality command not completed")}>
+          <RequestFailurePanel failure={command.failure} />
+          {canRetry(command.failure) ? (
+            <Button onClick={() => latestCommand.current?.()}>
+              {t("Retry exact command")}
+            </Button>
+          ) : null}
+        </Panel>
+      ) : null}
+      {editor ? (
+        <Panel title={qualityEditorLabel(t, editor.kind)}>
+          <form
+            className="trial-live__quality-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              reviewCommand();
+            }}
+          >
+            {(editor.kind === "create_cavity" ||
+              editor.kind === "revise_cavity") && (
+              <>
+                <label>
+                  <span>{t("Cavity stable ID")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        cavityGlobalId: event.target.value,
+                      });
+                    }}
+                    ref={firstControl}
+                    value={editor.cavityGlobalId}
+                  />
+                </label>
+                <label>
+                  <span>{t("Characteristic key")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        characteristicKey: event.target.value,
+                      });
+                    }}
+                    value={editor.characteristicKey}
+                  />
+                </label>
+                <label>
+                  <span>{t("Characteristic label")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        characteristicLabel: event.target.value,
+                      });
+                    }}
+                    value={editor.characteristicLabel}
+                  />
+                </label>
+                <label>
+                  <span>{t("Unit")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, unit: event.target.value });
+                    }}
+                    value={editor.unit}
+                  />
+                </label>
+                <label>
+                  <span>{t("Lower limit")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, lowerLimit: event.target.value });
+                    }}
+                    value={editor.lowerLimit}
+                  />
+                </label>
+                <label>
+                  <span>{t("Nominal value")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        nominalValue: event.target.value,
+                      });
+                    }}
+                    value={editor.nominalValue}
+                  />
+                </label>
+                <label>
+                  <span>{t("Upper limit")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, upperLimit: event.target.value });
+                    }}
+                    value={editor.upperLimit}
+                  />
+                </label>
+                <label>
+                  <span>{t("Measurement state")}</span>
+                  <Select
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        measurementState: event.target.value as
+                          | "measured"
+                          | "not_measured",
+                      });
+                    }}
+                    value={editor.measurementState}
+                  >
+                    <option value="measured">{t("Measured")}</option>
+                    <option value="not_measured">{t("Not measured")}</option>
+                  </Select>
+                </label>
+                <label>
+                  <span>{t("Measured value")}</span>
+                  <TextInput
+                    disabled={editor.measurementState === "not_measured"}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        measuredValue: event.target.value,
+                      });
+                    }}
+                    value={editor.measuredValue}
+                  />
+                </label>
+              </>
+            )}
+            {(editor.kind === "create_defect" ||
+              editor.kind === "revise_defect") && (
+              <>
+                <label>
+                  <span>{t("Cavity stable ID")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        cavityGlobalId: event.target.value,
+                      });
+                    }}
+                    ref={firstControl}
+                    value={editor.cavityGlobalId}
+                  />
+                </label>
+                <label>
+                  <span>{t("Defect code")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        businessCode: event.target.value,
+                      });
+                    }}
+                    value={editor.businessCode}
+                  />
+                </label>
+                <label>
+                  <span>{t("Title")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, title: event.target.value });
+                    }}
+                    value={editor.title}
+                  />
+                </label>
+                <label>
+                  <span>{t("Category key")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, categoryKey: event.target.value });
+                    }}
+                    value={editor.categoryKey}
+                  />
+                </label>
+                <label>
+                  <span>{t("Location")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({ ...editor, location: event.target.value });
+                    }}
+                    value={editor.location}
+                  />
+                </label>
+                <label>
+                  <span>{t("Severity")}</span>
+                  <Select
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        severity: event.target.value as TrialDefectSeverity,
+                      });
+                    }}
+                    value={editor.severity}
+                  >
+                    {(["low", "medium", "high", "critical"] as const).map(
+                      (severity) => (
+                        <option key={severity} value={severity}>
+                          {severityLabel(t, severity)}
+                        </option>
+                      ),
+                    )}
+                  </Select>
+                </label>
+                <label>
+                  <span>{t("Defect state")}</span>
+                  <Select
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        defectState: event.target
+                          .value as TrialDefectRevision["state"],
+                      });
+                    }}
+                    value={editor.defectState}
+                  >
+                    {(
+                      [
+                        "open",
+                        "assigned",
+                        "in_progress",
+                        "ready_for_verification",
+                        "closed",
+                        "reopened",
+                      ] as const
+                    ).map((state) => (
+                      <option key={state} value={state}>
+                        {defectStateLabel(t, state)}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <label>
+                  <span>{t("Occurrence count")}</span>
+                  <TextInput
+                    min={1}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        occurrenceCount: event.target.value,
+                      });
+                    }}
+                    type="number"
+                    value={editor.occurrenceCount}
+                  />
+                </label>
+                <label className="trial-live__editor-wide">
+                  <span>{t("Description")}</span>
+                  <textarea
+                    onChange={(event) => {
+                      setEditor({ ...editor, description: event.target.value });
+                    }}
+                    value={editor.description}
+                  />
+                </label>
+                <label className="trial-live__editor-wide">
+                  <span>{t("Root cause")}</span>
+                  <textarea
+                    onChange={(event) => {
+                      setEditor({ ...editor, rootCause: event.target.value });
+                    }}
+                    value={editor.rootCause}
+                  />
+                </label>
+                <label>
+                  <span>{t("Responsible member stable ID")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        responsibleMemberGlobalId: event.target.value,
+                      });
+                    }}
+                    value={editor.responsibleMemberGlobalId}
+                  />
+                </label>
+                <label>
+                  <span>{t("Responsible member version")}</span>
+                  <TextInput
+                    min={1}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        responsibleMemberVersion: event.target.value,
+                      });
+                    }}
+                    type="number"
+                    value={editor.responsibleMemberVersion}
+                  />
+                </label>
+                <fieldset className="trial-live__quality-action trial-live__editor-wide">
+                  <legend>{t("Governed defect action")}</legend>
+                  <label className="trial-live__editor-wide">
+                    <span>{t("Action detail")}</span>
+                    <textarea
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionDetail: event.target.value,
+                        });
+                      }}
+                      value={editor.actionDetail}
+                    />
+                  </label>
+                  <label>
+                    <span>{t("Action type")}</span>
+                    <Select
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionType: event.target.value as
+                            | "containment"
+                            | "corrective"
+                            | "preventive",
+                        });
+                      }}
+                      value={editor.actionType}
+                    >
+                      <option value="containment">{t("Containment")}</option>
+                      <option value="corrective">{t("Corrective")}</option>
+                      <option value="preventive">{t("Preventive")}</option>
+                    </Select>
+                  </label>
+                  <label>
+                    <span>{t("Action state")}</span>
+                    <Select
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionState: event.target.value as
+                            | "planned"
+                            | "completed"
+                            | "verified",
+                        });
+                      }}
+                      value={editor.actionState}
+                    >
+                      <option value="planned">{t("Planned")}</option>
+                      <option value="completed">{t("Completed")}</option>
+                      {editor.actionState === "verified" ? (
+                        <option value="verified">{t("Verified")}</option>
+                      ) : null}
+                    </Select>
+                  </label>
+                  <label>
+                    <span>{t("Action responsible member stable ID")}</span>
+                    <TextInput
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionResponsibleMemberGlobalId: event.target.value,
+                        });
+                      }}
+                      value={editor.actionResponsibleMemberGlobalId}
+                    />
+                  </label>
+                  <label>
+                    <span>{t("Action responsible member version")}</span>
+                    <TextInput
+                      min={1}
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionResponsibleMemberVersion: event.target.value,
+                        });
+                      }}
+                      type="number"
+                      value={editor.actionResponsibleMemberVersion}
+                    />
+                  </label>
+                  <label>
+                    <span>{t("Due date")}</span>
+                    <TextInput
+                      onChange={(event) => {
+                        setEditor({
+                          ...editor,
+                          actionDueDate: event.target.value,
+                        });
+                      }}
+                      type="date"
+                      value={editor.actionDueDate}
+                    />
+                  </label>
+                  <p className="context-help trial-live__editor-wide">
+                    {t(
+                      "Leave the action detail empty only when this defect revision has no governed action.",
+                    )}
+                  </p>
+                </fieldset>
+                <label className="checkbox-field">
+                  <input
+                    checked={editor.blocking}
+                    onChange={(event) => {
+                      setEditor({ ...editor, blocking: event.target.checked });
+                    }}
+                    type="checkbox"
+                  />
+                  <span>{t("Blocking defect")}</span>
+                </label>
+              </>
+            )}
+            {editor.kind === "verify_defect" ? (
+              <>
+                <label>
+                  <span>{t("Action stable ID")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        actionGlobalId: event.target.value,
+                      });
+                    }}
+                    ref={firstControl}
+                    value={editor.actionGlobalId}
+                  />
+                </label>
+                <label>
+                  <span>{t("Verification result")}</span>
+                  <Select
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        verificationResult: event.target.value as
+                          | "pass"
+                          | "fail",
+                      });
+                    }}
+                    value={editor.verificationResult}
+                  >
+                    <option value="pass">{t("Pass")}</option>
+                    <option value="fail">{t("Fail")}</option>
+                  </Select>
+                </label>
+                <label>
+                  <span>{t("Verifier member stable ID")}</span>
+                  <TextInput
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        verifierMemberGlobalId: event.target.value,
+                      });
+                    }}
+                    value={editor.verifierMemberGlobalId}
+                  />
+                </label>
+                <label>
+                  <span>{t("Verifier member version")}</span>
+                  <TextInput
+                    min={1}
+                    onChange={(event) => {
+                      setEditor({
+                        ...editor,
+                        verifierMemberVersion: event.target.value,
+                      });
+                    }}
+                    type="number"
+                    value={editor.verifierMemberVersion}
+                  />
+                </label>
+                <label className="trial-live__editor-wide">
+                  <span>{t("Verification finding")}</span>
+                  <textarea
+                    onChange={(event) => {
+                      setEditor({ ...editor, finding: event.target.value });
+                    }}
+                    value={editor.finding}
+                  />
+                </label>
+              </>
+            ) : null}
+            {(editor.kind === "create_cavity" ||
+              editor.kind === "revise_cavity" ||
+              editor.kind === "verify_defect") && (
+              <label>
+                <span>{t("Observed at")}</span>
+                <TextInput
+                  onChange={(event) => {
+                    setEditor({ ...editor, observedAt: event.target.value });
+                  }}
+                  type="datetime-local"
+                  value={editor.observedAt}
+                />
+              </label>
+            )}
+            <label>
+              <span>{t("Evidence stable ID")}</span>
+              <TextInput
+                onChange={(event) => {
+                  setEditor({
+                    ...editor,
+                    evidenceGlobalId: event.target.value,
+                  });
+                }}
+                value={editor.evidenceGlobalId}
+              />
+            </label>
+            <label className="trial-live__editor-wide">
+              <span>{t("Evidence snapshot")}</span>
+              <TextInput
+                onChange={(event) => {
+                  setEditor({
+                    ...editor,
+                    evidenceSnapshotHash: event.target.value,
+                  });
+                }}
+                value={editor.evidenceSnapshotHash}
+              />
+            </label>
+            {formError ? (
+              <p className="form-error trial-live__editor-wide" role="alert">
+                {formError}
+              </p>
+            ) : null}
+            <p className="context-help trial-live__editor-wide">
+              {t(
+                "The server rechecks every predecessor, Round, input lock, Sample Batch, evidence and member version before append.",
+              )}
+            </p>
+            <div className="detail-actions trial-live__editor-wide">
+              <Button disabled={processing} type="submit" visual="primary">
+                {t("Review command")}
+              </Button>
+              <Button disabled={processing} onClick={closeEditor}>
+                {t("Cancel")}
+              </Button>
+            </div>
+          </form>
+        </Panel>
+      ) : null}
+      <Panel title={t("Defect Pareto")}>
+        {filteredPareto.length ? (
+          <table
+            aria-label={t("Defect Pareto")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Category")}</th>
+                <th>{t("Cavity")}</th>
+                <th>{t("Severity")}</th>
+                <th>{t("Occurrences")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPareto.map((row) => (
+                <tr
+                  key={`${row.categoryKey}-${row.cavityGlobalId}-${row.severity}`}
+                >
+                  <td data-language-exempt="identifier">{row.categoryKey}</td>
+                  <td data-language-exempt="identifier">
+                    {row.cavityGlobalId}
+                  </td>
+                  <td>
+                    <SemanticStatus
+                      label={severityLabel(t, row.severity)}
+                      tone="warning"
+                    />
+                  </td>
+                  <td>{formatNumber(locale, row.count, 0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>{t("No defects match the selected cavity.")}</strong>
+            <span>
+              {t(
+                "The Pareto uses immutable defect occurrence counts, not revision row counts.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      <Panel title={t("Cavity measurements")}>
+        {filteredCavityResults.length ? (
+          <table
+            aria-label={t("Cavity measurements")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Cavity")}</th>
+                <th>{t("Version")}</th>
+                <th>{t("Characteristic")}</th>
+                <th>{t("Specification")}</th>
+                <th>{t("Measured value")}</th>
+                <th>{t("Comparison")}</th>
+                <th>{t("Actions")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCavityResults.flatMap((revision) =>
+                revision.measurements.map((measurement, index) => (
+                  <tr
+                    key={`${revision.globalId}-${measurement.characteristicKey}`}
+                  >
+                    <td data-language-exempt="identifier">
+                      {revision.cavityGlobalId}
+                    </td>
+                    <td>{formatNumber(locale, revision.resultVersion, 0)}</td>
+                    <td data-language-exempt="business-data">
+                      {measurement.label}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {measurement.lowerLimit}–{measurement.nominalValue}–
+                      {measurement.upperLimit} {measurement.unit}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {measurement.value ?? "—"}
+                    </td>
+                    <td>
+                      <SemanticStatus
+                        label={
+                          measurement.comparisonState === "within_spec"
+                            ? t("Within specification")
+                            : measurement.comparisonState === "out_of_spec"
+                              ? t("Out of specification")
+                              : t("Not measured")
+                        }
+                        tone={
+                          measurement.comparisonState === "within_spec"
+                            ? "success"
+                            : "warning"
+                        }
+                      />
+                    </td>
+                    <td>
+                      {index === 0 &&
+                      workspace.permissions.recordCavityResult ? (
+                        <Button
+                          onClick={(event) => {
+                            openEditor(
+                              "revise_cavity",
+                              event.currentTarget,
+                              revision.globalId,
+                            );
+                          }}
+                        >
+                          {t("Revise")}
+                        </Button>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>{t("No cavity result has been recorded.")}</strong>
+            <span>
+              {t(
+                "Record exact measurements against one Sample Batch revision and clean evidence snapshot.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      <Panel title={t("Defect timeline")}>
+        {filteredDefects.length ? (
+          <table
+            aria-label={t("Defect timeline")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Source")}</th>
+                <th>{t("Defect")}</th>
+                <th>{t("Cavity")}</th>
+                <th>{t("Severity")}</th>
+                <th>{t("State")}</th>
+                <th>{t("Occurrences")}</th>
+                <th>{t("Version")}</th>
+                <th>{t("Actions")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDefects.map((entry) => (
+                <tr key={entry.revision.globalId}>
+                  <td>
+                    {entry.source === "tooling" ? t("Tooling") : t("Trial")}
+                  </td>
+                  <td>
+                    <strong data-language-exempt="identifier">
+                      {entry.revision.businessCode}
+                    </strong>
+                    <br />
+                    <span data-language-exempt="business-data">
+                      {entry.revision.title}
+                    </span>
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {entry.revision.cavityGlobalId ?? "—"}
+                  </td>
+                  <td>
+                    <SemanticStatus
+                      label={severityLabel(t, entry.revision.severity)}
+                      tone="warning"
+                    />
+                  </td>
+                  <td>{defectStateLabel(t, entry.revision.state)}</td>
+                  <td>
+                    {entry.source === "trial"
+                      ? formatNumber(locale, entry.revision.occurrenceCount, 0)
+                      : "—"}
+                  </td>
+                  <td>
+                    {formatNumber(locale, entry.revision.defectVersion, 0)}
+                  </td>
+                  <td className="trial-live__row-actions">
+                    {entry.source === "tooling" &&
+                    workspace.permissions.manageDefects ? (
+                      <Button
+                        onClick={(event) => {
+                          openEditor(
+                            "create_defect",
+                            event.currentTarget,
+                            entry.revision.globalId,
+                          );
+                        }}
+                      >
+                        {t("Continue in Trial")}
+                      </Button>
+                    ) : null}
+                    {entry.source === "trial" &&
+                    workspace.permissions.manageDefects ? (
+                      <Button
+                        onClick={(event) => {
+                          openEditor(
+                            "revise_defect",
+                            event.currentTarget,
+                            entry.revision.globalId,
+                          );
+                        }}
+                      >
+                        {t("Revise")}
+                      </Button>
+                    ) : null}
+                    {entry.source === "trial" &&
+                    workspace.permissions.verifyDefects &&
+                    entry.revision.actions.some(
+                      (action) =>
+                        action.state === "completed" ||
+                        action.state === "verified",
+                    ) ? (
+                      <Button
+                        onClick={(event) => {
+                          openEditor(
+                            "verify_defect",
+                            event.currentTarget,
+                            entry.revision.globalId,
+                          );
+                        }}
+                      >
+                        {t("Verify")}
+                      </Button>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>{t("No defects match the selected cavity.")}</strong>
+            <span>
+              {t(
+                "Tooling and Trial revisions share one stable defect identity without rewriting history.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      <Panel title={t("Defect actions")}>
+        {trialDefects.some((entry) => entry.revision.actions.length) ? (
+          <table
+            aria-label={t("Defect actions")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Defect")}</th>
+                <th>{t("Action type")}</th>
+                <th>{t("Action")}</th>
+                <th>{t("Responsible member")}</th>
+                <th>{t("Due date")}</th>
+                <th>{t("Target Round")}</th>
+                <th>{t("State")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trialDefects.flatMap((entry) =>
+                entry.revision.actions.map((action) => (
+                  <tr key={action.globalId}>
+                    <td data-language-exempt="identifier">
+                      {entry.revision.businessCode}
+                    </td>
+                    <td>
+                      {action.actionType === "containment"
+                        ? t("Containment")
+                        : action.actionType === "corrective"
+                          ? t("Corrective")
+                          : t("Preventive")}
+                    </td>
+                    <td data-language-exempt="business-data">
+                      {action.detail}
+                    </td>
+                    <td data-language-exempt="identifier">
+                      {action.responsibleMember.userId}
+                    </td>
+                    <td>{action.dueDate}</td>
+                    <td data-language-exempt="identifier">
+                      {action.targetRoundGlobalId}
+                    </td>
+                    <td>
+                      {action.state === "planned"
+                        ? t("Planned")
+                        : action.state === "completed"
+                          ? t("Completed")
+                          : t("Verified")}
+                    </td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>{t("No governed defect action is recorded.")}</strong>
+            <span>
+              {t(
+                "Actions remain part of immutable defect revisions and target an exact Trial Round snapshot.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      <Panel title={t("Independent verification")}>
+        {workspace.verificationRevisions.length ? (
+          <table
+            aria-label={t("Independent verification")}
+            className="data-table"
+            tabIndex={0}
+          >
+            <thead>
+              <tr>
+                <th>{t("Attempt")}</th>
+                <th>{t("Defect")}</th>
+                <th>{t("Action")}</th>
+                <th>{t("Verification Round")}</th>
+                <th>{t("Verifier")}</th>
+                <th>{t("Result")}</th>
+                <th>{t("Finding")}</th>
+                <th>{t("Observed at")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workspace.verificationRevisions.map((revision) => (
+                <tr key={revision.globalId}>
+                  <td>{formatNumber(locale, revision.attemptSequence, 0)}</td>
+                  <td data-language-exempt="identifier">
+                    {revision.defectGlobalId}
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {revision.actionGlobalId}
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {revision.verificationRoundGlobalId}
+                  </td>
+                  <td data-language-exempt="identifier">
+                    {revision.verifierMember.userId}
+                  </td>
+                  <td>
+                    <SemanticStatus
+                      label={revision.result === "pass" ? t("Pass") : t("Fail")}
+                      tone={revision.result === "pass" ? "success" : "warning"}
+                    />
+                  </td>
+                  <td data-language-exempt="business-data">
+                    {revision.finding}
+                  </td>
+                  <td>{formatDateTime(locale, revision.observedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state" role="status">
+            <strong>
+              {t("No independent verification has been recorded.")}
+            </strong>
+            <span>
+              {t(
+                "Verification must bind one completed action, target Round and cavity result revision exactly.",
+              )}
+            </span>
+          </div>
+        )}
+      </Panel>
+      <Panel title={t("External quality effects")}>
+        <div className="trial-live__external-effects">
+          {[
+            t("NCR creation"),
+            t("Formal quality inspection"),
+            t("Gate effect"),
+            t("Tooling lifecycle effect"),
+          ].map((label) => (
+            <div className="trial-live__later-item" key={label}>
+              <SemanticStatus
+                label={t("Unavailable in this checkpoint")}
+                tone="neutral"
+              />
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="context-help">
+          {t(
+            "No external NCR, formal Quality Inspection, Gate decision or Tooling lifecycle state is created by this workspace.",
+          )}
+        </p>
+      </Panel>
+      {reviewOpen && editor ? (
+        <ImpactReview
+          confirmLabel={qualityEditorLabel(t, editor.kind)}
+          details={{
+            objectIdentity:
+              editor.sourceGlobalId ?? workspace.trialRound.globalId,
+            version: `v${String(workspace.trialRound.optimisticVersion)}`,
+            impact: t(
+              "Appends immutable cavity, defect or verification quality history without overwriting prior evidence.",
+            ),
+            permission: t(
+              "The server rechecks Project membership, quality role and current Round-state authority.",
+            ),
+            irreversible: t(
+              "Committed quality history cannot be edited or deleted through generic CRUD.",
+            ),
+            failureHandling: t(
+              "A failed command changes no quality row and can be retried with the same exact request.",
+            ),
+            audit: t(
+              "The command records actor, request, trace, reason and exact predecessor snapshots.",
+            ),
+          }}
+          onCancel={() => {
+            setReviewOpen(false);
+          }}
+          onConfirm={confirmCommand}
+          reasonMaxLength={1000}
+          returnFocusTarget={() => returnFocus.current}
+          title={t("Review immutable Trial quality command")}
+        />
+      ) : null}
+    </>
+  );
+}
+
 export default function LiveTrialPage({
   dataSource,
   navigate,
@@ -2529,11 +4270,13 @@ export default function LiveTrialPage({
   const [attempt, setAttempt] = useState(0);
   const [detailAttempt, setDetailAttempt] = useState(0);
   const [executionAttempt, setExecutionAttempt] = useState(0);
+  const [qualityAttempt, setQualityAttempt] = useState(0);
   const [resource, setResource] = useState<ResourceState>({ kind: "loading" });
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailState>({ kind: "idle" });
   const [execution, setExecution] = useState<ExecutionState>({ kind: "idle" });
+  const [quality, setQuality] = useState<QualityState>({ kind: "idle" });
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -2545,6 +4288,7 @@ export default function LiveTrialPage({
   const planDetail = detail.kind === "loaded" ? detail.value : null;
   const executionWorkspace =
     execution.kind === "loaded" ? execution.value : null;
+  const qualityWorkspace = quality.kind === "loaded" ? quality.value : null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -2581,6 +4325,7 @@ export default function LiveTrialPage({
         const nextRoundId = value.rounds[0]?.globalId ?? null;
         setSelectedRoundId(nextRoundId);
         setExecution(nextRoundId ? { kind: "loading" } : { kind: "idle" });
+        setQuality(nextRoundId ? { kind: "loading" } : { kind: "idle" });
       })
       .catch((error: unknown) => {
         if (
@@ -2631,6 +4376,28 @@ export default function LiveTrialPage({
       controller.abort();
     };
   }, [dataSource, executionAttempt, projectId, selectedRoundId]);
+
+  useEffect(() => {
+    if (!selectedRoundId) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadRoundQuality(projectId, selectedRoundId, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setQuality({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof TrialRequestCancelledError
+        )
+          return;
+        setQuality({ kind: "failed", failure: toRequestFailure(error) });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, projectId, qualityAttempt, selectedRoundId]);
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
@@ -3044,6 +4811,7 @@ export default function LiveTrialPage({
           { id: "trial-live-rounds", label: t("Planned Rounds") },
           { id: "trial-live-actions", label: t("Generated actions") },
           { id: "trial-live-execution", label: t("Trial Round execution") },
+          { id: "trial-live-quality", label: t("Trial quality workspace") },
           { id: "trial-live-later", label: t("Later Trial sections") },
           { id: "trial-live-inspector", label: t("Trial truth inspector") },
         ]}
@@ -3552,6 +5320,7 @@ export default function LiveTrialPage({
                     setSelectedPlanId(plan.planGlobalId);
                     setSelectedRoundId(null);
                     setExecution({ kind: "idle" });
+                    setQuality({ kind: "idle" });
                     setCommand({ kind: "idle" });
                   }}
                   type="button"
@@ -3582,6 +5351,7 @@ export default function LiveTrialPage({
                           onClick={() => {
                             setSelectedRoundId(round.globalId);
                             setExecution({ kind: "loading" });
+                            setQuality({ kind: "loading" });
                           }}
                           type="button"
                         >
@@ -3852,6 +5622,7 @@ export default function LiveTrialPage({
                               onClick={() => {
                                 setSelectedRoundId(round.globalId);
                                 setExecution({ kind: "loading" });
+                                setQuality({ kind: "loading" });
                               }}
                               type="button"
                             >
@@ -3980,6 +5751,35 @@ export default function LiveTrialPage({
                   </div>
                 </Panel>
               ) : null}
+              <div id="trial-live-quality" tabIndex={-1} />
+              {quality.kind === "loading" ? <LoadingSurface /> : null}
+              {quality.kind === "failed" ? (
+                <Panel title={t("Trial quality workspace unavailable")}>
+                  <RequestFailurePanel failure={quality.failure} />
+                  {canRetry(quality.failure) ? (
+                    <Button
+                      onClick={() => {
+                        setQuality({ kind: "loading" });
+                        setQualityAttempt((current) => current + 1);
+                      }}
+                    >
+                      {t("Retry")}
+                    </Button>
+                  ) : null}
+                </Panel>
+              ) : null}
+              {quality.kind === "loaded" ? (
+                <TrialQualitySection
+                  dataSource={dataSource}
+                  execution={executionWorkspace}
+                  onWorkspace={(value) => {
+                    setQuality({ kind: "loaded", value });
+                  }}
+                  projectId={projectId}
+                  reportWorkspaceDirty={reportWorkspaceDirty}
+                  workspace={quality.value}
+                />
+              ) : null}
               <Panel title={t("Later Trial sections")}>
                 <div
                   className="trial-live__later"
@@ -3987,7 +5787,6 @@ export default function LiveTrialPage({
                   tabIndex={-1}
                 >
                   {[
-                    t("Defects and measurements"),
                     t("Conclusion and approval"),
                     t("Formal quality and ERPNext execution"),
                   ].map((label) => (
@@ -4053,6 +5852,26 @@ export default function LiveTrialPage({
                     )
                   : t("Unavailable"),
               },
+              {
+                label: t("Quality defect revisions"),
+                value: qualityWorkspace
+                  ? formatNumber(
+                      locale,
+                      qualityWorkspace.defectRevisions.length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
+              {
+                label: t("Verification attempts"),
+                value: qualityWorkspace
+                  ? formatNumber(
+                      locale,
+                      qualityWorkspace.verificationRevisions.length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
               { label: t("Resource availability"), value: t("Unavailable") },
               { label: t("Resource reservation"), value: t("Unavailable") },
               { label: t("Action state owner"), value: t("Project Work") },
@@ -4078,7 +5897,7 @@ export default function LiveTrialPage({
             />
             <p>
               {t(
-                "P7-02 supports exact preparation, running actuals, Sample Batches and clean private evidence. Conclusion, Gate effect and formal ERP quality remain unavailable.",
+                "P7-03 adds exact cavity results, stable defect continuity, governed actions and independent verification. Conclusion, Gate effect, NCR and formal ERP quality remain unavailable.",
               )}
             </p>
           </div>

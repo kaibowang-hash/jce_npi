@@ -1,4 +1,8 @@
 import { NpiHttpClient, NpiTransportError } from "./http";
+import {
+  isToolingDefectRevisionCommand,
+  type ToolingDefectRevisionViewModel,
+} from "./tooling-engineering-controls-contract";
 
 export const trialPurposes = [
   "first_trial",
@@ -472,6 +476,324 @@ export interface TrialExecutionWorkspace {
   permissions: TrialExecutionPermissions;
 }
 
+export const trialQualityMeasurementStates = [
+  "measured",
+  "not_measured",
+] as const;
+export type TrialQualityMeasurementState =
+  (typeof trialQualityMeasurementStates)[number];
+export type TrialQualityComparisonState =
+  | "not_measured"
+  | "within_spec"
+  | "out_of_spec";
+export type TrialDefectSeverity = "low" | "medium" | "high" | "critical";
+export type TrialDefectState =
+  | "open"
+  | "assigned"
+  | "in_progress"
+  | "ready_for_verification"
+  | "closed"
+  | "reopened";
+export type TrialDefectRootCauseState = "pending" | "recorded";
+export type TrialDefectActionType = "containment" | "corrective" | "preventive";
+export type TrialDefectActionState = "planned" | "completed" | "verified";
+export type TrialDefectPredecessorKind =
+  | "tooling_defect_revision"
+  | "trial_defect_revision";
+
+export interface TrialQualityEvidenceReference {
+  globalId: string;
+  snapshotHash: string;
+}
+
+export interface TrialCavityMeasurementInput {
+  characteristicKey: string;
+  label: string;
+  unit: string;
+  nominalValue: string;
+  lowerLimit: string;
+  upperLimit: string;
+  required: boolean;
+  state: TrialQualityMeasurementState;
+  value: string | null;
+  source: "manual";
+  observedAt: string;
+}
+
+export interface TrialCavityMeasurement extends TrialCavityMeasurementInput {
+  comparisonState: TrialQualityComparisonState;
+  observedByUserId: string;
+}
+
+export interface TrialCavityResultRevision {
+  schemaVersion: 1;
+  globalId: string;
+  cavityResultGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialRoundGlobalId: string;
+  inputLockRevisionGlobalId: string;
+  inputLockRevisionSnapshotHash: string;
+  sampleBatchRevisionGlobalId: string;
+  sampleBatchRevisionSnapshotHash: string;
+  toolingRevisionGlobalId: string;
+  toolingRevisionSnapshotHash: string;
+  toolingSetGlobalId: string;
+  toolingSetSnapshotHash: string;
+  cavityGlobalId: string;
+  resultVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  measurements: readonly TrialCavityMeasurement[];
+  evidence: readonly TrialQualityEvidenceReference[];
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialQualityMemberReference {
+  globalId: string;
+  userId: string;
+  optimisticVersion: number;
+}
+
+export interface TrialQualityMemberInput {
+  globalId: string;
+  optimisticVersion: number;
+}
+
+export interface TrialDefectAction {
+  globalId: string;
+  actionType: TrialDefectActionType;
+  state: TrialDefectActionState;
+  detail: string;
+  responsibleMember: TrialQualityMemberReference;
+  dueDate: string;
+  targetRoundGlobalId: string;
+  targetRoundOptimisticVersion: number;
+  targetRoundSnapshotHash: string;
+  verificationRevisionGlobalId: string | null;
+  verificationRevisionSnapshotHash: string | null;
+}
+
+export interface TrialDefectActionInput {
+  globalId: string | null;
+  actionType: TrialDefectActionType;
+  state: TrialDefectActionState;
+  detail: string;
+  responsibleMember: TrialQualityMemberInput;
+  dueDate: string;
+  targetRoundGlobalId: string;
+  targetRoundOptimisticVersion: number;
+  targetRoundSnapshotHash: string;
+  verificationRevisionGlobalId: string | null;
+  verificationRevisionSnapshotHash: string | null;
+}
+
+export interface TrialDefectRevision {
+  schemaVersion: 1;
+  globalId: string;
+  defectGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  toolingMasterGlobalId: string;
+  trialRoundGlobalId: string;
+  trialRoundOptimisticVersion: number;
+  trialRoundSnapshotHash: string;
+  inputLockRevisionGlobalId: string;
+  inputLockRevisionSnapshotHash: string;
+  toolingRevisionGlobalId: string;
+  toolingRevisionSnapshotHash: string;
+  toolingSetGlobalId: string;
+  toolingSetSnapshotHash: string;
+  cavityGlobalId: string;
+  sampleBatchRevisionGlobalId: string | null;
+  sampleBatchRevisionSnapshotHash: string | null;
+  defectVersion: number;
+  predecessorKind: TrialDefectPredecessorKind | null;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  businessCode: string;
+  title: string;
+  description: string;
+  categoryKey: string;
+  location: string;
+  severity: TrialDefectSeverity;
+  blocking: boolean;
+  state: TrialDefectState;
+  rootCauseState: TrialDefectRootCauseState;
+  rootCause: string | null;
+  responsibleMember: TrialQualityMemberReference | null;
+  occurrenceCount: number;
+  actions: readonly TrialDefectAction[];
+  evidence: readonly TrialQualityEvidenceReference[];
+  externalEffects: TrialQualityExternalEffects;
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialDefectVerificationRevision {
+  schemaVersion: 1;
+  globalId: string;
+  verificationGlobalId: string;
+  attemptSequence: number;
+  tenantId: string;
+  projectGlobalId: string;
+  defectGlobalId: string;
+  defectRevisionGlobalId: string;
+  defectRevisionSnapshotHash: string;
+  actionGlobalId: string;
+  targetRoundGlobalId: string;
+  targetRoundOptimisticVersion: number;
+  targetRoundSnapshotHash: string;
+  verificationRoundGlobalId: string;
+  verificationRoundOptimisticVersion: number;
+  verificationRoundSnapshotHash: string;
+  cavityResultRevisionGlobalId: string;
+  cavityResultRevisionSnapshotHash: string;
+  verifierMember: TrialQualityMemberReference;
+  result: "pass" | "fail";
+  finding: string;
+  observedAt: string;
+  evidence: readonly TrialQualityEvidenceReference[];
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  snapshotHash: string;
+}
+
+export interface TrialQualityExternalEffects {
+  ncr: "unavailable";
+  qualityInspection: "unavailable";
+  gate: "unavailable";
+  toolingLifecycle: "unavailable";
+}
+
+export type TrialQualityDefectRevision =
+  | { source: "tooling"; revision: ToolingDefectRevisionViewModel }
+  | { source: "trial"; revision: TrialDefectRevision };
+
+export interface TrialQualityWorkspace {
+  projectGlobalId: string;
+  trialRound: TrialRoundSummary;
+  cavityResultRevisions: readonly TrialCavityResultRevision[];
+  defectRevisions: readonly TrialQualityDefectRevision[];
+  verificationRevisions: readonly TrialDefectVerificationRevision[];
+  cavityFilters: readonly { globalId: string }[];
+  pareto: readonly {
+    categoryKey: string;
+    severity: TrialDefectSeverity;
+    cavityGlobalId: string;
+    count: number;
+  }[];
+  permissions: {
+    view: boolean;
+    recordCavityResult: boolean;
+    manageDefects: boolean;
+    verifyDefects: boolean;
+  };
+  externalEffects: TrialQualityExternalEffects;
+}
+
+export interface CreateTrialCavityResultCommand {
+  expectedRoundOptimisticVersion: number;
+  expectedRoundSnapshotHash: string;
+  expectedInputLockRevisionGlobalId: string;
+  expectedInputLockRevisionSnapshotHash: string;
+  sampleBatchRevisionGlobalId: string;
+  expectedSampleBatchRevisionSnapshotHash: string;
+  cavityGlobalId: string;
+  measurements: readonly TrialCavityMeasurementInput[];
+  evidence: readonly TrialQualityEvidenceReference[];
+  reason: string;
+}
+
+export interface ReviseTrialCavityResultCommand {
+  expectedRoundOptimisticVersion: number;
+  expectedRoundSnapshotHash: string;
+  expectedInputLockRevisionGlobalId: string;
+  expectedInputLockRevisionSnapshotHash: string;
+  expectedRevisionGlobalId: string;
+  expectedRevisionSnapshotHash: string;
+  expectedResultVersion: number;
+  measurements: readonly TrialCavityMeasurementInput[];
+  reason: string;
+}
+
+export interface TrialDefectCommandFields {
+  expectedRoundOptimisticVersion: number;
+  expectedRoundSnapshotHash: string;
+  expectedInputLockRevisionGlobalId: string;
+  expectedInputLockRevisionSnapshotHash: string;
+  sampleBatchRevisionGlobalId?: string | undefined;
+  expectedSampleBatchRevisionSnapshotHash?: string | undefined;
+  cavityGlobalId: string;
+  businessCode: string;
+  title: string;
+  description: string;
+  categoryKey: string;
+  location: string;
+  severity: TrialDefectSeverity;
+  blocking: boolean;
+  state: TrialDefectState;
+  rootCauseState: TrialDefectRootCauseState;
+  rootCause?: string | undefined;
+  responsibleMember?: TrialQualityMemberInput | undefined;
+  occurrenceCount: number;
+  actions: readonly TrialDefectActionInput[];
+  evidence: readonly TrialQualityEvidenceReference[];
+  reason: string;
+}
+
+export interface CreateTrialDefectCommand extends TrialDefectCommandFields {
+  defectGlobalId?: string | undefined;
+  expectedPredecessorKind?: TrialDefectPredecessorKind | undefined;
+  expectedPredecessorGlobalId?: string | undefined;
+  expectedPredecessorSnapshotHash?: string | undefined;
+  expectedDefectVersion?: number | undefined;
+}
+
+export interface ReviseTrialDefectCommand extends TrialDefectCommandFields {
+  expectedPredecessorKind: "trial_defect_revision";
+  expectedPredecessorGlobalId: string;
+  expectedPredecessorSnapshotHash: string;
+  expectedDefectVersion: number;
+}
+
+export interface VerifyTrialDefectCommand {
+  expectedDefectRevisionGlobalId: string;
+  expectedDefectRevisionSnapshotHash: string;
+  actionGlobalId: string;
+  verificationGlobalId?: string | undefined;
+  expectedAttemptSequence?: number | undefined;
+  targetRoundGlobalId: string;
+  expectedTargetRoundOptimisticVersion: number;
+  expectedTargetRoundSnapshotHash: string;
+  cavityResultRevisionGlobalId: string;
+  expectedCavityResultRevisionSnapshotHash: string;
+  verifierMember: TrialQualityMemberInput;
+  result: "pass" | "fail";
+  finding: string;
+  observedAt: string;
+  evidence: readonly TrialQualityEvidenceReference[];
+}
+
+export interface TrialQualityCommandResult {
+  workspace: TrialQualityWorkspace;
+  replayed: boolean;
+}
+
 export interface PrepareTrialRoundCommand {
   expectedRoundOptimisticVersion: number;
   references: readonly TrialLockedReferenceInput[];
@@ -628,6 +950,44 @@ export interface TrialDataSource {
     evidence: TrialEvidenceReference,
     context: Omit<TrialCommandContext, "idempotencyKey">,
   ): Promise<TrialEvidenceDownload>;
+  loadRoundQuality(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialQualityWorkspace>;
+  createCavityResult(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialCavityResultCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult>;
+  reviseCavityResult(
+    projectId: string,
+    roundId: string,
+    cavityResultId: string,
+    command: ReviseTrialCavityResultCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult>;
+  createDefect(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult>;
+  reviseDefect(
+    projectId: string,
+    roundId: string,
+    defectId: string,
+    command: ReviseTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult>;
+  verifyDefect(
+    projectId: string,
+    roundId: string,
+    defectId: string,
+    command: VerifyTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult>;
 }
 
 export class TrialRequestCancelledError extends Error {
@@ -1730,6 +2090,564 @@ export function isTrialExecutionWorkspace(
   );
 }
 
+function dateOnly(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/u.test(value) &&
+    Number.isFinite(Date.parse(`${value}T00:00:00Z`))
+  );
+}
+
+function isQualityEvidenceReference(
+  value: unknown,
+): value is TrialQualityEvidenceReference {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["globalId", "snapshotHash"]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    typeof item.snapshotHash === "string" &&
+    hashPattern.test(item.snapshotHash)
+  );
+}
+
+function isQualityMember(value: unknown): value is TrialQualityMemberReference {
+  return isMemberReference(value);
+}
+
+function isCavityMeasurement(value: unknown): value is TrialCavityMeasurement {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, [
+      "characteristicKey",
+      "label",
+      "unit",
+      "nominalValue",
+      "lowerLimit",
+      "upperLimit",
+      "required",
+      "state",
+      "value",
+      "comparisonState",
+      "source",
+      "observedAt",
+      "observedByUserId",
+    ]) &&
+    typeof item.characteristicKey === "string" &&
+    referencePattern.test(item.characteristicKey) &&
+    textValue(item.label, 1, 255) &&
+    textValue(item.unit, 1, 32) &&
+    textValue(item.nominalValue, 1, 64) &&
+    textValue(item.lowerLimit, 1, 64) &&
+    textValue(item.upperLimit, 1, 64) &&
+    typeof item.required === "boolean" &&
+    member(item.state, trialQualityMeasurementStates) &&
+    (item.value === null || textValue(item.value, 1, 64)) &&
+    member(item.comparisonState, [
+      "not_measured",
+      "within_spec",
+      "out_of_spec",
+    ] as const) &&
+    item.source === "manual" &&
+    dateTime(item.observedAt) &&
+    email(item.observedByUserId) &&
+    (item.state === "measured") === (item.value !== null) &&
+    (item.state === "not_measured") ===
+      (item.comparisonState === "not_measured")
+  );
+}
+
+function isCavityResultRevision(
+  value: unknown,
+): value is TrialCavityResultRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "cavityResultGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialRoundGlobalId",
+      "inputLockRevisionGlobalId",
+      "inputLockRevisionSnapshotHash",
+      "sampleBatchRevisionGlobalId",
+      "sampleBatchRevisionSnapshotHash",
+      "toolingRevisionGlobalId",
+      "toolingRevisionSnapshotHash",
+      "toolingSetGlobalId",
+      "toolingSetSnapshotHash",
+      "cavityGlobalId",
+      "resultVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "measurements",
+      "evidence",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.cavityResultGlobalId,
+      item.projectGlobalId,
+      item.trialRoundGlobalId,
+      item.inputLockRevisionGlobalId,
+      item.sampleBatchRevisionGlobalId,
+      item.toolingRevisionGlobalId,
+      item.toolingSetGlobalId,
+      item.cavityGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !textValue(item.tenantId, 1, 128) ||
+    ![
+      item.inputLockRevisionSnapshotHash,
+      item.sampleBatchRevisionSnapshotHash,
+      item.toolingRevisionSnapshotHash,
+      item.toolingSetSnapshotHash,
+      item.versionKeyHash,
+      item.snapshotHash,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) ||
+    !whole(item.resultVersion, 1) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    !Array.isArray(item.measurements) ||
+    item.measurements.length < 1 ||
+    item.measurements.length > 500 ||
+    !item.measurements.every(isCavityMeasurement) ||
+    !unique(item.measurements.map((entry) => entry.characteristicKey)) ||
+    !Array.isArray(item.evidence) ||
+    item.evidence.length < 1 ||
+    item.evidence.length > 100 ||
+    !item.evidence.every(isQualityEvidenceReference) ||
+    !unique(item.evidence.map((entry) => entry.globalId)) ||
+    !textValue(item.reason, 1, 1000) ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 1, 128)
+  )
+    return false;
+  return (
+    (item.resultVersion === 1) ===
+    (item.predecessorGlobalId === null && item.predecessorSnapshotHash === null)
+  );
+}
+
+function isTrialDefectAction(value: unknown): value is TrialDefectAction {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "globalId",
+      "actionType",
+      "state",
+      "detail",
+      "responsibleMember",
+      "dueDate",
+      "targetRoundGlobalId",
+      "targetRoundOptimisticVersion",
+      "targetRoundSnapshotHash",
+      "verificationRevisionGlobalId",
+      "verificationRevisionSnapshotHash",
+    ]) ||
+    typeof item.globalId !== "string" ||
+    !uuidPattern.test(item.globalId) ||
+    !member(item.actionType, [
+      "containment",
+      "corrective",
+      "preventive",
+    ] as const) ||
+    !member(item.state, ["planned", "completed", "verified"] as const) ||
+    !textValue(item.detail, 1, 2000) ||
+    !isQualityMember(item.responsibleMember) ||
+    !dateOnly(item.dueDate) ||
+    typeof item.targetRoundGlobalId !== "string" ||
+    !uuidPattern.test(item.targetRoundGlobalId) ||
+    !whole(item.targetRoundOptimisticVersion, 1) ||
+    typeof item.targetRoundSnapshotHash !== "string" ||
+    !hashPattern.test(item.targetRoundSnapshotHash) ||
+    !nullableUuid(item.verificationRevisionGlobalId) ||
+    !nullableHash(item.verificationRevisionSnapshotHash)
+  )
+    return false;
+  const verified = item.state === "verified";
+  return (
+    verified === (item.verificationRevisionGlobalId !== null) &&
+    verified === (item.verificationRevisionSnapshotHash !== null)
+  );
+}
+
+function isQualityExternalEffects(
+  value: unknown,
+): value is TrialQualityExternalEffects {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["ncr", "qualityInspection", "gate", "toolingLifecycle"]) &&
+    Object.values(item).every((candidate) => candidate === "unavailable")
+  );
+}
+
+function isTrialDefectRevision(value: unknown): value is TrialDefectRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "defectGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "toolingMasterGlobalId",
+      "trialRoundGlobalId",
+      "trialRoundOptimisticVersion",
+      "trialRoundSnapshotHash",
+      "inputLockRevisionGlobalId",
+      "inputLockRevisionSnapshotHash",
+      "toolingRevisionGlobalId",
+      "toolingRevisionSnapshotHash",
+      "toolingSetGlobalId",
+      "toolingSetSnapshotHash",
+      "cavityGlobalId",
+      "sampleBatchRevisionGlobalId",
+      "sampleBatchRevisionSnapshotHash",
+      "defectVersion",
+      "predecessorKind",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "businessCode",
+      "title",
+      "description",
+      "categoryKey",
+      "location",
+      "severity",
+      "blocking",
+      "state",
+      "rootCauseState",
+      "rootCause",
+      "responsibleMember",
+      "occurrenceCount",
+      "actions",
+      "evidence",
+      "externalEffects",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.defectGlobalId,
+      item.projectGlobalId,
+      item.toolingMasterGlobalId,
+      item.trialRoundGlobalId,
+      item.inputLockRevisionGlobalId,
+      item.toolingRevisionGlobalId,
+      item.toolingSetGlobalId,
+      item.cavityGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !textValue(item.tenantId, 1, 128) ||
+    !whole(item.trialRoundOptimisticVersion, 1) ||
+    ![
+      item.trialRoundSnapshotHash,
+      item.inputLockRevisionSnapshotHash,
+      item.toolingRevisionSnapshotHash,
+      item.toolingSetSnapshotHash,
+      item.versionKeyHash,
+      item.snapshotHash,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) ||
+    !nullableUuid(item.sampleBatchRevisionGlobalId) ||
+    !nullableHash(item.sampleBatchRevisionSnapshotHash) ||
+    !whole(item.defectVersion, 1) ||
+    (item.predecessorKind !== null &&
+      !member(item.predecessorKind, [
+        "tooling_defect_revision",
+        "trial_defect_revision",
+      ] as const)) ||
+    !nullableUuid(item.predecessorGlobalId) ||
+    !nullableHash(item.predecessorSnapshotHash) ||
+    !textValue(item.businessCode, 1, 128) ||
+    !textValue(item.title, 1, 255) ||
+    !textValue(item.description, 1, 4000) ||
+    !textValue(item.categoryKey, 1, 128) ||
+    !textValue(item.location, 1, 255) ||
+    !member(item.severity, ["low", "medium", "high", "critical"] as const) ||
+    typeof item.blocking !== "boolean" ||
+    !member(item.state, [
+      "open",
+      "assigned",
+      "in_progress",
+      "ready_for_verification",
+      "closed",
+      "reopened",
+    ] as const) ||
+    !member(item.rootCauseState, ["pending", "recorded"] as const) ||
+    (item.rootCause !== null && !textValue(item.rootCause, 1, 4000)) ||
+    (item.responsibleMember !== null &&
+      !isQualityMember(item.responsibleMember)) ||
+    !whole(item.occurrenceCount, 1) ||
+    !Array.isArray(item.actions) ||
+    item.actions.length > 100 ||
+    !item.actions.every(isTrialDefectAction) ||
+    !unique(item.actions.map((entry) => entry.globalId)) ||
+    !Array.isArray(item.evidence) ||
+    item.evidence.length < 1 ||
+    item.evidence.length > 100 ||
+    !item.evidence.every(isQualityEvidenceReference) ||
+    !unique(item.evidence.map((entry) => entry.globalId)) ||
+    !isQualityExternalEffects(item.externalEffects) ||
+    !textValue(item.reason, 1, 1000) ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 1, 128)
+  )
+    return false;
+  const first = item.defectVersion === 1;
+  const predecessorComplete =
+    item.predecessorKind !== null &&
+    item.predecessorGlobalId !== null &&
+    item.predecessorSnapshotHash !== null;
+  return (
+    first !== predecessorComplete &&
+    (item.sampleBatchRevisionGlobalId === null) ===
+      (item.sampleBatchRevisionSnapshotHash === null) &&
+    (item.rootCauseState === "recorded") === (item.rootCause !== null)
+  );
+}
+
+function isToolingQualityDefectRevision(
+  value: unknown,
+): value is ToolingDefectRevisionViewModel {
+  return isToolingDefectRevisionCommand({ defect: value });
+}
+
+function isVerificationRevision(
+  value: unknown,
+): value is TrialDefectVerificationRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "schemaVersion",
+      "globalId",
+      "verificationGlobalId",
+      "attemptSequence",
+      "tenantId",
+      "projectGlobalId",
+      "defectGlobalId",
+      "defectRevisionGlobalId",
+      "defectRevisionSnapshotHash",
+      "actionGlobalId",
+      "targetRoundGlobalId",
+      "targetRoundOptimisticVersion",
+      "targetRoundSnapshotHash",
+      "verificationRoundGlobalId",
+      "verificationRoundOptimisticVersion",
+      "verificationRoundSnapshotHash",
+      "cavityResultRevisionGlobalId",
+      "cavityResultRevisionSnapshotHash",
+      "verifierMember",
+      "result",
+      "finding",
+      "observedAt",
+      "evidence",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "snapshotHash",
+    ]) ||
+    item.schemaVersion !== 1 ||
+    ![
+      item.globalId,
+      item.verificationGlobalId,
+      item.projectGlobalId,
+      item.defectGlobalId,
+      item.defectRevisionGlobalId,
+      item.actionGlobalId,
+      item.targetRoundGlobalId,
+      item.verificationRoundGlobalId,
+      item.cavityResultRevisionGlobalId,
+      item.requestId,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && uuidPattern.test(candidate),
+    ) ||
+    !whole(item.attemptSequence, 1) ||
+    !textValue(item.tenantId, 1, 128) ||
+    !whole(item.targetRoundOptimisticVersion, 1) ||
+    !whole(item.verificationRoundOptimisticVersion, 1) ||
+    ![
+      item.defectRevisionSnapshotHash,
+      item.targetRoundSnapshotHash,
+      item.verificationRoundSnapshotHash,
+      item.cavityResultRevisionSnapshotHash,
+      item.versionKeyHash,
+      item.snapshotHash,
+    ].every(
+      (candidate) =>
+        typeof candidate === "string" && hashPattern.test(candidate),
+    ) ||
+    !isQualityMember(item.verifierMember) ||
+    !member(item.result, ["pass", "fail"] as const) ||
+    !textValue(item.finding, 1, 4000) ||
+    !dateTime(item.observedAt) ||
+    !Array.isArray(item.evidence) ||
+    item.evidence.length < 1 ||
+    item.evidence.length > 100 ||
+    !item.evidence.every(isQualityEvidenceReference) ||
+    !unique(item.evidence.map((entry) => entry.globalId)) ||
+    !email(item.createdByUserId) ||
+    !dateTime(item.createdAt) ||
+    !textValue(item.traceId, 1, 128)
+  )
+    return false;
+  return (
+    item.targetRoundGlobalId === item.verificationRoundGlobalId &&
+    item.targetRoundOptimisticVersion ===
+      item.verificationRoundOptimisticVersion &&
+    item.targetRoundSnapshotHash === item.verificationRoundSnapshotHash
+  );
+}
+
+function isQualityDefectRevision(
+  value: unknown,
+): value is TrialQualityDefectRevision {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["source", "revision"]) &&
+    ((item.source === "trial" && isTrialDefectRevision(item.revision)) ||
+      (item.source === "tooling" &&
+        isToolingQualityDefectRevision(item.revision)))
+  );
+}
+
+function isQualityCavityFilter(
+  value: unknown,
+): value is TrialQualityWorkspace["cavityFilters"][number] {
+  if (!value || typeof value !== "object") return false;
+  const filter = value as Record<string, unknown>;
+  return (
+    exact(filter, ["globalId"]) &&
+    typeof filter.globalId === "string" &&
+    uuidPattern.test(filter.globalId)
+  );
+}
+
+export function isTrialQualityWorkspace(
+  value: unknown,
+): value is TrialQualityWorkspace {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "projectGlobalId",
+      "trialRound",
+      "cavityResultRevisions",
+      "defectRevisions",
+      "verificationRevisions",
+      "cavityFilters",
+      "pareto",
+      "permissions",
+      "externalEffects",
+    ]) ||
+    typeof item.projectGlobalId !== "string" ||
+    !uuidPattern.test(item.projectGlobalId) ||
+    !isTrialRound(item.trialRound) ||
+    !Array.isArray(item.cavityResultRevisions) ||
+    item.cavityResultRevisions.length > 5000 ||
+    !item.cavityResultRevisions.every(isCavityResultRevision) ||
+    !Array.isArray(item.defectRevisions) ||
+    item.defectRevisions.length > 10000 ||
+    !item.defectRevisions.every(isQualityDefectRevision) ||
+    !Array.isArray(item.verificationRevisions) ||
+    item.verificationRevisions.length > 5000 ||
+    !item.verificationRevisions.every(isVerificationRevision) ||
+    !Array.isArray(item.cavityFilters) ||
+    item.cavityFilters.length > 128 ||
+    !item.cavityFilters.every(isQualityCavityFilter) ||
+    !Array.isArray(item.pareto) ||
+    item.pareto.length > 5000 ||
+    !item.pareto.every((candidate) => {
+      if (!candidate || typeof candidate !== "object") return false;
+      const row = candidate as Record<string, unknown>;
+      return (
+        exact(row, ["categoryKey", "severity", "cavityGlobalId", "count"]) &&
+        textValue(row.categoryKey, 1, 128) &&
+        member(row.severity, ["low", "medium", "high", "critical"] as const) &&
+        typeof row.cavityGlobalId === "string" &&
+        uuidPattern.test(row.cavityGlobalId) &&
+        whole(row.count, 1)
+      );
+    }) ||
+    !item.permissions ||
+    typeof item.permissions !== "object" ||
+    !exact(item.permissions, [
+      "view",
+      "recordCavityResult",
+      "manageDefects",
+      "verifyDefects",
+    ]) ||
+    !Object.values(item.permissions).every(
+      (candidate) => typeof candidate === "boolean",
+    ) ||
+    !isQualityExternalEffects(item.externalEffects)
+  )
+    return false;
+  const projectId = item.projectGlobalId;
+  const roundId = item.trialRound.globalId;
+  const defectRevisions = item.defectRevisions.filter(isQualityDefectRevision);
+  const defectIds = new Set(
+    defectRevisions.map((entry) => entry.revision.defectGlobalId),
+  );
+  return (
+    item.trialRound.projectGlobalId === projectId &&
+    item.cavityResultRevisions.every(
+      (entry) =>
+        entry.projectGlobalId === projectId &&
+        entry.trialRoundGlobalId === roundId,
+    ) &&
+    defectRevisions.every(
+      (entry) => entry.revision.projectGlobalId === projectId,
+    ) &&
+    item.verificationRevisions.every(
+      (entry) =>
+        entry.projectGlobalId === projectId &&
+        defectIds.has(entry.defectGlobalId),
+    ) &&
+    unique(item.cavityFilters.map((entry) => entry.globalId)) &&
+    unique(item.cavityResultRevisions.map((entry) => entry.globalId)) &&
+    unique(item.verificationRevisions.map((entry) => entry.globalId))
+  );
+}
+
 function requestNotReady(): NpiTransportError {
   return new NpiTransportError(
     "request_not_ready",
@@ -2168,6 +3086,377 @@ function validBindEvidence(value: BindTrialEvidenceCommand): boolean {
   );
 }
 
+function validQualityEvidence(
+  values: readonly TrialQualityEvidenceReference[],
+): boolean {
+  return (
+    values.length >= 1 &&
+    values.length <= 100 &&
+    values.every(isQualityEvidenceReference) &&
+    unique(values.map((value) => value.globalId))
+  );
+}
+
+function validMeasurementInput(
+  value: unknown,
+): value is TrialCavityMeasurementInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "characteristicKey",
+      "label",
+      "unit",
+      "nominalValue",
+      "lowerLimit",
+      "upperLimit",
+      "required",
+      "state",
+      "value",
+      "source",
+      "observedAt",
+    ]) ||
+    typeof item.characteristicKey !== "string" ||
+    !referencePattern.test(item.characteristicKey) ||
+    !textValue(item.label, 1, 255) ||
+    !textValue(item.unit, 1, 32) ||
+    !textValue(item.nominalValue, 1, 64) ||
+    !textValue(item.lowerLimit, 1, 64) ||
+    !textValue(item.upperLimit, 1, 64) ||
+    typeof item.required !== "boolean" ||
+    !member(item.state, trialQualityMeasurementStates) ||
+    (item.value !== null && !textValue(item.value, 1, 64)) ||
+    item.source !== "manual" ||
+    !dateTime(item.observedAt)
+  )
+    return false;
+  const lower = Number(item.lowerLimit);
+  const nominal = Number(item.nominalValue);
+  const upper = Number(item.upperLimit);
+  return (
+    Number.isFinite(lower) &&
+    Number.isFinite(nominal) &&
+    Number.isFinite(upper) &&
+    lower <= nominal &&
+    nominal <= upper &&
+    (item.state === "measured") === (item.value !== null) &&
+    (item.value === null || Number.isFinite(Number(item.value)))
+  );
+}
+
+function validCavityMeasurements(
+  values: readonly TrialCavityMeasurementInput[],
+): boolean {
+  return (
+    values.length >= 1 &&
+    values.length <= 500 &&
+    values.every(validMeasurementInput) &&
+    unique(values.map((value) => value.characteristicKey))
+  );
+}
+
+function validCreateCavityResult(
+  value: CreateTrialCavityResultCommand,
+): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "expectedInputLockRevisionGlobalId",
+      "expectedInputLockRevisionSnapshotHash",
+      "sampleBatchRevisionGlobalId",
+      "expectedSampleBatchRevisionSnapshotHash",
+      "cavityGlobalId",
+      "measurements",
+      "evidence",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedRoundSnapshotHash) &&
+    uuidPattern.test(value.expectedInputLockRevisionGlobalId) &&
+    hashPattern.test(value.expectedInputLockRevisionSnapshotHash) &&
+    uuidPattern.test(value.sampleBatchRevisionGlobalId) &&
+    hashPattern.test(value.expectedSampleBatchRevisionSnapshotHash) &&
+    uuidPattern.test(value.cavityGlobalId) &&
+    validCavityMeasurements(value.measurements) &&
+    validQualityEvidence(value.evidence) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validReviseCavityResult(
+  value: ReviseTrialCavityResultCommand,
+): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "expectedInputLockRevisionGlobalId",
+      "expectedInputLockRevisionSnapshotHash",
+      "expectedRevisionGlobalId",
+      "expectedRevisionSnapshotHash",
+      "expectedResultVersion",
+      "measurements",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedRoundSnapshotHash) &&
+    uuidPattern.test(value.expectedInputLockRevisionGlobalId) &&
+    hashPattern.test(value.expectedInputLockRevisionSnapshotHash) &&
+    uuidPattern.test(value.expectedRevisionGlobalId) &&
+    hashPattern.test(value.expectedRevisionSnapshotHash) &&
+    whole(value.expectedResultVersion, 1) &&
+    validCavityMeasurements(value.measurements) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validQualityMemberInput(
+  value: unknown,
+): value is TrialQualityMemberInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    exact(item, ["globalId", "optimisticVersion"]) &&
+    typeof item.globalId === "string" &&
+    uuidPattern.test(item.globalId) &&
+    whole(item.optimisticVersion, 1)
+  );
+}
+
+function validDefectActionInput(
+  value: unknown,
+): value is TrialDefectActionInput {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  if (
+    !exact(item, [
+      "globalId",
+      "actionType",
+      "state",
+      "detail",
+      "responsibleMember",
+      "dueDate",
+      "targetRoundGlobalId",
+      "targetRoundOptimisticVersion",
+      "targetRoundSnapshotHash",
+      "verificationRevisionGlobalId",
+      "verificationRevisionSnapshotHash",
+    ]) ||
+    !nullableUuid(item.globalId) ||
+    !member(item.actionType, [
+      "containment",
+      "corrective",
+      "preventive",
+    ] as const) ||
+    !member(item.state, ["planned", "completed", "verified"] as const) ||
+    !textValue(item.detail, 1, 2000) ||
+    !validQualityMemberInput(item.responsibleMember) ||
+    !dateOnly(item.dueDate) ||
+    typeof item.targetRoundGlobalId !== "string" ||
+    !uuidPattern.test(item.targetRoundGlobalId) ||
+    !whole(item.targetRoundOptimisticVersion, 1) ||
+    typeof item.targetRoundSnapshotHash !== "string" ||
+    !hashPattern.test(item.targetRoundSnapshotHash) ||
+    !nullableUuid(item.verificationRevisionGlobalId) ||
+    !nullableHash(item.verificationRevisionSnapshotHash)
+  )
+    return false;
+  const verified = item.state === "verified";
+  return (
+    verified === (item.verificationRevisionGlobalId !== null) &&
+    verified === (item.verificationRevisionSnapshotHash !== null)
+  );
+}
+
+function validDefectFields(value: TrialDefectCommandFields): boolean {
+  const sampleId = value.sampleBatchRevisionGlobalId;
+  const sampleHash = value.expectedSampleBatchRevisionSnapshotHash;
+  return (
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedRoundSnapshotHash) &&
+    uuidPattern.test(value.expectedInputLockRevisionGlobalId) &&
+    hashPattern.test(value.expectedInputLockRevisionSnapshotHash) &&
+    (sampleId === undefined) === (sampleHash === undefined) &&
+    (sampleId === undefined || uuidPattern.test(sampleId)) &&
+    (sampleHash === undefined || hashPattern.test(sampleHash)) &&
+    uuidPattern.test(value.cavityGlobalId) &&
+    textValue(value.businessCode, 1, 128) &&
+    textValue(value.title, 1, 255) &&
+    textValue(value.description, 1, 4000) &&
+    referencePattern.test(value.categoryKey) &&
+    textValue(value.location, 1, 255) &&
+    member(value.severity, ["low", "medium", "high", "critical"] as const) &&
+    typeof value.blocking === "boolean" &&
+    member(value.state, [
+      "open",
+      "assigned",
+      "in_progress",
+      "ready_for_verification",
+      "closed",
+      "reopened",
+    ] as const) &&
+    member(value.rootCauseState, ["pending", "recorded"] as const) &&
+    (value.rootCauseState === "recorded") === (value.rootCause !== undefined) &&
+    (value.rootCause === undefined || textValue(value.rootCause, 1, 4000)) &&
+    (value.responsibleMember === undefined ||
+      validQualityMemberInput(value.responsibleMember)) &&
+    (value.state === "open" || value.responsibleMember !== undefined) &&
+    whole(value.occurrenceCount, 1) &&
+    value.actions.length <= 100 &&
+    value.actions.every(validDefectActionInput) &&
+    unique(
+      value.actions
+        .map((action) => action.globalId)
+        .filter((candidate): candidate is string => candidate !== null),
+    ) &&
+    validQualityEvidence(value.evidence) &&
+    textValue(value.reason, 1, 1000)
+  );
+}
+
+function validCreateDefect(value: CreateTrialDefectCommand): boolean {
+  const required = [
+    "expectedRoundOptimisticVersion",
+    "expectedRoundSnapshotHash",
+    "expectedInputLockRevisionGlobalId",
+    "expectedInputLockRevisionSnapshotHash",
+    "cavityGlobalId",
+    "businessCode",
+    "title",
+    "description",
+    "categoryKey",
+    "location",
+    "severity",
+    "blocking",
+    "state",
+    "rootCauseState",
+    "occurrenceCount",
+    "actions",
+    "evidence",
+    "reason",
+  ];
+  const optional = [
+    "defectGlobalId",
+    "expectedPredecessorKind",
+    "expectedPredecessorGlobalId",
+    "expectedPredecessorSnapshotHash",
+    "expectedDefectVersion",
+    "sampleBatchRevisionGlobalId",
+    "expectedSampleBatchRevisionSnapshotHash",
+    "rootCause",
+    "responsibleMember",
+  ];
+  if (
+    !exactWithOptional(value, required, optional) ||
+    !validDefectFields(value)
+  )
+    return false;
+  const predecessor = [
+    value.defectGlobalId,
+    value.expectedPredecessorKind,
+    value.expectedPredecessorGlobalId,
+    value.expectedPredecessorSnapshotHash,
+    value.expectedDefectVersion,
+  ];
+  const absent = predecessor.every((candidate) => candidate === undefined);
+  const present =
+    value.expectedPredecessorKind === "tooling_defect_revision" &&
+    typeof value.defectGlobalId === "string" &&
+    uuidPattern.test(value.defectGlobalId) &&
+    typeof value.expectedPredecessorGlobalId === "string" &&
+    uuidPattern.test(value.expectedPredecessorGlobalId) &&
+    typeof value.expectedPredecessorSnapshotHash === "string" &&
+    hashPattern.test(value.expectedPredecessorSnapshotHash) &&
+    whole(value.expectedDefectVersion, 1);
+  return (absent || present) && (!absent || value.state === "open");
+}
+
+function validReviseDefect(value: ReviseTrialDefectCommand): boolean {
+  return (
+    exactWithOptional(
+      value,
+      [
+        "expectedRoundOptimisticVersion",
+        "expectedRoundSnapshotHash",
+        "expectedInputLockRevisionGlobalId",
+        "expectedInputLockRevisionSnapshotHash",
+        "expectedPredecessorKind",
+        "expectedPredecessorGlobalId",
+        "expectedPredecessorSnapshotHash",
+        "expectedDefectVersion",
+        "cavityGlobalId",
+        "businessCode",
+        "title",
+        "description",
+        "categoryKey",
+        "location",
+        "severity",
+        "blocking",
+        "state",
+        "rootCauseState",
+        "occurrenceCount",
+        "actions",
+        "evidence",
+        "reason",
+      ],
+      [
+        "sampleBatchRevisionGlobalId",
+        "expectedSampleBatchRevisionSnapshotHash",
+        "rootCause",
+        "responsibleMember",
+      ],
+    ) &&
+    uuidPattern.test(value.expectedPredecessorGlobalId) &&
+    hashPattern.test(value.expectedPredecessorSnapshotHash) &&
+    whole(value.expectedDefectVersion, 1) &&
+    validDefectFields(value)
+  );
+}
+
+function validVerification(value: VerifyTrialDefectCommand): boolean {
+  return (
+    exactWithOptional(
+      value,
+      [
+        "expectedDefectRevisionGlobalId",
+        "expectedDefectRevisionSnapshotHash",
+        "actionGlobalId",
+        "targetRoundGlobalId",
+        "expectedTargetRoundOptimisticVersion",
+        "expectedTargetRoundSnapshotHash",
+        "cavityResultRevisionGlobalId",
+        "expectedCavityResultRevisionSnapshotHash",
+        "verifierMember",
+        "result",
+        "finding",
+        "observedAt",
+        "evidence",
+      ],
+      ["verificationGlobalId", "expectedAttemptSequence"],
+    ) &&
+    uuidPattern.test(value.expectedDefectRevisionGlobalId) &&
+    hashPattern.test(value.expectedDefectRevisionSnapshotHash) &&
+    uuidPattern.test(value.actionGlobalId) &&
+    (value.verificationGlobalId === undefined) ===
+      (value.expectedAttemptSequence === undefined) &&
+    (value.verificationGlobalId === undefined ||
+      uuidPattern.test(value.verificationGlobalId)) &&
+    (value.expectedAttemptSequence === undefined ||
+      whole(value.expectedAttemptSequence, 1)) &&
+    uuidPattern.test(value.targetRoundGlobalId) &&
+    whole(value.expectedTargetRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedTargetRoundSnapshotHash) &&
+    uuidPattern.test(value.cavityResultRevisionGlobalId) &&
+    hashPattern.test(value.expectedCavityResultRevisionSnapshotHash) &&
+    validQualityMemberInput(value.verifierMember) &&
+    member(value.result, ["pass", "fail"] as const) &&
+    textValue(value.finding, 1, 4000) &&
+    dateTime(value.observedAt) &&
+    validQualityEvidence(value.evidence)
+  );
+}
+
 function isBinaryBlob(value: unknown): value is Blob {
   return (
     value instanceof Blob ||
@@ -2282,6 +3571,34 @@ export class LiveTrialDataSource implements TrialDataSource {
     }
   }
 
+  async loadRoundQuality(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<TrialQualityWorkspace> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    cancelled(signal);
+    try {
+      return await this.http.request<TrialQualityWorkspace>(
+        `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/quality`,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialQualityWorkspace =>
+            isTrialQualityWorkspace(value) &&
+            value.projectGlobalId === expectedProjectId &&
+            value.trialRound.globalId === expectedRoundId,
+        },
+      );
+    } catch (error) {
+      cancelled(signal);
+      throw error;
+    }
+  }
+
   private async command(
     path: string,
     projectId: string,
@@ -2353,6 +3670,49 @@ export class LiveTrialDataSource implements TrialDataSource {
             isTrialExecutionWorkspace(value) &&
             value.projectGlobalId === projectId &&
             value.round.globalId === roundId,
+          validateResponse: (response) => {
+            const header = replayHeader(response);
+            if (header === null) return false;
+            replayed = header;
+            return true;
+          },
+        },
+      );
+      return { replayed, workspace };
+    } catch (error) {
+      cancelled(context.signal);
+      throw error;
+    }
+  }
+
+  private async qualityCommand(
+    path: string,
+    projectId: string,
+    roundId: string,
+    body: object,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    cancelled(context.signal);
+    let replayed = false;
+    try {
+      const workspace = await this.http.request<TrialQualityWorkspace>(
+        path,
+        {
+          body: JSON.stringify(body),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is TrialQualityWorkspace =>
+            isTrialQualityWorkspace(value) &&
+            value.projectGlobalId === projectId &&
+            value.trialRound.globalId === roundId,
           validateResponse: (response) => {
             const header = replayHeader(response);
             if (header === null) return false;
@@ -2584,6 +3944,107 @@ export class LiveTrialDataSource implements TrialDataSource {
       return Promise.reject(requestNotReady());
     return this.executionCommand(
       `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/evidence`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  createCavityResult(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialCavityResultCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validCreateCavityResult(command))
+      return Promise.reject(requestNotReady());
+    return this.qualityCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/cavity-results`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  reviseCavityResult(
+    projectId: string,
+    roundId: string,
+    cavityResultId: string,
+    command: ReviseTrialCavityResultCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedResultId = requireUuid(cavityResultId);
+    if (!validContext(context) || !validReviseCavityResult(command))
+      return Promise.reject(requestNotReady());
+    return this.qualityCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/cavity-results/${expectedResultId}/revisions`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  createDefect(
+    projectId: string,
+    roundId: string,
+    command: CreateTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validCreateDefect(command))
+      return Promise.reject(requestNotReady());
+    return this.qualityCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/defects`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  reviseDefect(
+    projectId: string,
+    roundId: string,
+    defectId: string,
+    command: ReviseTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedDefectId = requireUuid(defectId);
+    if (!validContext(context) || !validReviseDefect(command))
+      return Promise.reject(requestNotReady());
+    return this.qualityCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/defects/${expectedDefectId}/revisions`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  verifyDefect(
+    projectId: string,
+    roundId: string,
+    defectId: string,
+    command: VerifyTrialDefectCommand,
+    context: TrialCommandContext,
+  ): Promise<TrialQualityCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedDefectId = requireUuid(defectId);
+    if (!validContext(context) || !validVerification(command))
+      return Promise.reject(requestNotReady());
+    return this.qualityCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/defects/${expectedDefectId}/verifications`,
       expectedProjectId,
       expectedRoundId,
       command,
