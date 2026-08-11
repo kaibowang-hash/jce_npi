@@ -41,6 +41,7 @@ TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = "Administrator"
 RESPONSIBLE_MEMBER_ID = document_runtime.BASELINE_MEMBER_ID
 VERIFIER_MEMBER_ID = document_runtime.fixture_id("p7-03-verifier-member")
+VERIFIER_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-verifier@example.invalid"
 UNRELATED_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000701"
 ABSENT_PLAN_ID = "00000000-0000-4000-8000-000000000702"
@@ -2006,11 +2007,19 @@ def run_quality_fresh(
     administrator,
     base_url: str,
     csrf_token: str,
+    fixture_password: str,
     *,
     project_id: str,
     primary: dict[str, Any],
     target: dict[str, Any],
 ) -> dict[str, object]:
+    document_runtime.create_internal_fixture_user(
+        administrator,
+        base_url,
+        VERIFIER_USER,
+        fixture_password,
+        csrf_token,
+    )
     run_bench_fixture(
         "ensure_trial_quality_verifier_member",
         {"fixture_run_id": FIXTURE_RUN_ID, "project_id": project_id},
@@ -2961,6 +2970,7 @@ def run_fresh(
         administrator,
         base_url,
         csrf_token,
+        fixture_password,
         project_id=project_id,
         primary=primary_quality_context,
         target=target_execution,
@@ -3680,7 +3690,7 @@ def ensure_trial_quality_verifier_member(
                     "global_id": VERIFIER_MEMBER_ID,
                     "tenant_id": TENANT_ID,
                     "project_global_id": project_id,
-                    "user_id": ACTOR_USER,
+                    "user_id": VERIFIER_USER,
                     "effective_from": "2026-01-01",
                     "effective_to": None,
                     "optimistic_version": 1,
@@ -3696,7 +3706,7 @@ def ensure_trial_quality_verifier_member(
     require(
         str(member.project_global_id) == project_id
         and str(member.tenant_id) == TENANT_ID
-        and str(member.user_id) == ACTOR_USER
+        and str(member.user_id) == VERIFIER_USER
         and int(member.optimistic_version) == 1
         and VERIFIER_MEMBER_ID != RESPONSIBLE_MEMBER_ID,
         "P7-03 independent verifier member drifted",
@@ -4073,7 +4083,17 @@ def main() -> None:
     )
     require(
         FIXTURE_RUN_ID != "0" * 32
+        and VERIFIER_USER.endswith("@example.invalid")
         and UNRELATED_USER.endswith("@example.invalid")
+        and len(
+            {
+                ACTOR_USER,
+                VERIFIER_USER,
+                UNRELATED_USER,
+                document_runtime.BASELINE_USER,
+            }
+        )
+        == 4
         and RESPONSIBLE_MEMBER_ID == document_runtime.BASELINE_MEMBER_ID,
         "P7-02 fixture identity drifted",
     )

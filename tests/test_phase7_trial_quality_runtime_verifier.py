@@ -98,6 +98,23 @@ class Phase7TrialQualityRuntimeVerifierTest(unittest.TestCase):
         retained_source = inspect.getsource(self.module.retained_detail)
         self.assertIn("rounds=2", retained_source)
 
+    def test_independent_verifier_uses_a_distinct_retained_fixture_user(self) -> None:
+        self.assertTrue(self.module.VERIFIER_USER.endswith("@example.invalid"))
+        self.assertNotIn(
+            self.module.VERIFIER_USER,
+            {self.module.ACTOR_USER, self.module.UNRELATED_USER},
+        )
+        quality_source = inspect.getsource(self.module.run_quality_fresh)
+        self.assertLess(
+            quality_source.index("create_internal_fixture_user"),
+            quality_source.index('"ensure_trial_quality_verifier_member"'),
+        )
+        member_source = inspect.getsource(
+            self.module.ensure_trial_quality_verifier_member
+        )
+        self.assertIn('"user_id": VERIFIER_USER', member_source)
+        self.assertNotIn('"user_id": ACTOR_USER', member_source)
+
     def test_quality_runtime_is_fail_closed_and_has_no_external_authority(self) -> None:
         for marker in (
             'validate_problem(stale_result, 409, "TRIAL_QUALITY_CONFLICT")',
