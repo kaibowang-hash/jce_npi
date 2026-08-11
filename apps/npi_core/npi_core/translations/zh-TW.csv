@@ -6768,3 +6768,99 @@ Trial review workspace unavailable,試模審查工作區無法使用
 Review policy versions,審查策略版本
 Review references,審查參照
 "P7-04 adds policy-bound comparison, review references, conclusion proposals, independent decisions and reopen history. Gate, readiness, customer signature and formal ERP quality remain unavailable.",本任務新增策略約束的比較、審查參照、結論提案、獨立決策和重新開啟歷史；階段門、就緒度、客戶簽署和企業資源規劃系統正式品質仍無法使用。
+A non-applicable readiness item cannot be revised.,不適用的就緒度項目不能修訂。
+A non-applicable readiness item cannot retain completion evidence.,不適用的就緒度項目不能保留完成證據。
+A non-applicable readiness item must remain not applicable.,不適用的就緒度項目必須維持不適用狀態。
+A published NPI Readiness Template version cannot be changed.,已發布的 NPI 就緒度範本版本不能變更。
+A readiness successor cannot change frozen item identity or policy.,就緒度後續修訂不能變更已凍結的項目身分或策略。
+A readiness successor must revise exactly one item.,就緒度後續修訂必須且只能修訂一個項目。
+Add at least one evidence requirement.,請至少新增一項證據要求。
+Add at least one readiness category and item before publishing.,發布前請至少新增一個就緒度類別和一個項目。
+An applicable readiness item cannot be marked not applicable.,適用的就緒度項目不能標記為不適用。
+Assign every applicable readiness item exactly once.,請為每個適用的就緒度項目指派且僅指派一次。
+Bind the exact failed source before marking this item failed.,將此項目標記為失敗前，請綁定精確的失敗來源。
+Changed At,變更時間
+Changed By User ID,變更者使用者 ID
+Enter a confirmation before completing this item.,完成此項目前請輸入確認內容。
+Enter a due date.,請輸入截止日期。
+Enter a positive optimistic version.,請輸入正數樂觀鎖版本。
+Enter a supported evidence count.,請輸入支援的證據數量。
+Enter a valid NPI Readiness Template code.,請輸入有效的 NPI 就緒度範本編碼。
+Enter a valid NPI Readiness Template title.,請輸入有效的 NPI 就緒度範本標題。
+Enter a valid applicability selector.,請輸入有效的適用性選擇器。
+Enter a valid immutable readiness snapshot.,請輸入有效且不可變的就緒度快照。
+Enter a valid readiness item definition.,請輸入有效的就緒度項目定義。
+Enter a valid timestamp.,請輸入有效的時間戳記。
+Enter an exact Project snapshot.,請輸入精確的專案快照。
+Enter only supported template changes.,請僅輸入支援的範本變更。
+Freeze at least one readiness category and item.,請至少凍結一個就緒度類別和一個項目。
+Item project types must be allowed by the template.,項目專案類型必須在範本允許的範圍內。
+NPI Readiness Command Idempotency,NPI 就緒度命令冪等記錄
+NPI Readiness Instance Global ID,NPI 就緒度執行個體全域 ID
+NPI Readiness Instance Revision,NPI 就緒度執行個體修訂
+NPI Readiness Instance Revision Snapshot,NPI 就緒度執行個體修訂快照
+NPI Readiness Instance Snapshot Hash does not match.,NPI 就緒度執行個體快照雜湊不相符。
+NPI Readiness Instance Version,NPI 就緒度執行個體版本
+NPI Readiness Instance Version Key Hash,NPI 就緒度執行個體版本鍵雜湊
+NPI Readiness Instance Version Key Hash does not match.,NPI 就緒度執行個體版本鍵雜湊不相符。
+NPI Readiness Instance fields do not match the exact snapshot.,NPI 就緒度執行個體欄位與精確快照不相符。
+NPI Readiness Template,NPI 就緒度範本
+NPI Readiness Template Code,NPI 就緒度範本編碼
+NPI Readiness Template Global ID,NPI 就緒度範本全域 ID
+NPI Readiness Template Revision Global ID,NPI 就緒度範本修訂全域 ID
+NPI Readiness Template Snapshot Hash,NPI 就緒度範本快照雜湊
+NPI Readiness Template Snapshot Hash does not match.,NPI 就緒度範本快照雜湊不相符。
+NPI Readiness Template Title,NPI 就緒度範本標題
+NPI Readiness Template Version,NPI 就緒度範本版本
+NPI Readiness Template Version Key Hash,NPI 就緒度範本版本鍵雜湊
+NPI Readiness Template Version Key Hash does not match.,NPI 就緒度範本版本鍵雜湊不相符。
+NPI Readiness Template Version Snapshot,NPI 就緒度範本版本快照
+NPI Readiness Template Version Title,NPI 就緒度範本版本標題
+NPI Readiness Template fields do not match the exact snapshot.,NPI 就緒度範本欄位與精確快照不相符。
+NPI readiness history cannot be changed.,NPI 就緒度歷史不能變更。
+NPI readiness history cannot be deleted.,NPI 就緒度歷史不能刪除。
+NPI readiness records can only be changed through an authorized command.,NPI 就緒度記錄只能透過獲授權的命令變更。
+Only an unavailable external provider may omit source identity.,只有無法使用的外部提供者可以省略來源身分。
+Predecessor NPI Readiness Revision,前序 NPI 就緒度修訂
+Predecessor NPI Readiness Revision Global ID,前序 NPI 就緒度修訂全域 ID
+Project Optimistic Version,專案樂觀鎖版本
+Project Snapshot Hash,專案快照雜湊
+Readiness Applicability Snapshot,就緒度適用性快照
+Readiness Category Snapshot,就緒度類別快照
+Readiness Evaluation Snapshot,就緒度評估快照
+Readiness Item Definition Snapshot,就緒度項目定義快照
+Readiness Item Snapshot,就緒度項目快照
+Readiness Project Snapshot,就緒度專案快照
+Readiness item applicability does not match the frozen Project context.,就緒度項目適用性與已凍結的專案內容不相符。
+Resolve every configured Gate exactly once.,請精確解析每個已設定的階段門且僅解析一次。
+Resolve every required evidence source before completing this item.,完成此項目前，請解析所有必要的證據來源。
+Select a category from this instance.,請選擇此執行個體中的類別。
+Select a category from this template.,請選擇此範本中的類別。
+Select a readiness item from this instance.,請選擇此執行個體中的就緒度項目。
+Select an evidence requirement from this item.,請選擇此項目中的證據要求。
+Select an exact published readiness template version.,請選擇精確的已發布就緒度範本版本。
+Select an exact source object.,請選擇精確的來源物件。
+Select at least one supported source kind.,請至少選擇一種支援的來源類型。
+Select the exact Gate for this readiness item.,請為此就緒度項目選擇精確的階段門。
+Select the exact current readiness revision.,請選擇精確的目前就緒度修訂。
+Select the exact predecessor readiness revision.,請選擇精確的前序就緒度修訂。
+Stored JSON does not match the exact readiness snapshot.,儲存的 JSON 與精確就緒度快照不相符。
+Stored list does not match the exact readiness snapshot.,儲存的清單與精確就緒度快照不相符。
+The NPI Readiness Template is unavailable.,NPI 就緒度範本無法使用。
+The NPI readiness record was changed by another user.,NPI 就緒度記錄已被其他使用者變更。
+The Project is unavailable for this NPI Readiness Instance.,此 NPI 就緒度執行個體的專案無法使用。
+The predecessor NPI Readiness revision is unavailable.,前序 NPI 就緒度修訂無法使用。
+The published NPI Readiness Template version is unavailable.,已發布的 NPI 就緒度範本版本無法使用。
+The readiness item identity is invalid.,就緒度項目身分無效。
+The readiness template does not apply to this Project.,就緒度範本不適用於此專案。
+The stored readiness evaluation is not derived from the exact item snapshot.,儲存的就緒度評估不是從精確項目快照衍生的。
+The template version identity is invalid.,範本版本身分無效。
+Unavailable sources cannot claim an exact source identity.,無法使用的來源不能宣告精確的來源身分。
+readiness_instance.initialize,初始化就緒度執行個體
+readiness_instance.revise,修訂就緒度執行個體
+readiness_instance_revision,就緒度執行個體修訂
+readiness_template,就緒度範本
+readiness_template.create,建立就緒度範本
+readiness_template.edit,編輯就緒度範本
+readiness_template.publish,發布就緒度範本
+readiness_template_version,就緒度範本版本

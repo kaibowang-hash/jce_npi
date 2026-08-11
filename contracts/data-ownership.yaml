@@ -565,6 +565,34 @@ objects:
       proposed_next_work_gate_and_npi_effect: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: PROPOSAL_ONLY_NO_EXTERNAL_MUTATION}
       gate_npi_readiness_tooling_lifecycle_formal_quality_and_customer_signature_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_04}
 
+  NpiReadinessTemplate:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_template_identity_code_title_and_enabled_selection: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_OPTIMISTIC_COMMAND_ONLY}
+      production_default_template_policy_or_authority: {owner: FUTURE_APPROVED_READINESS_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  NpiReadinessTemplateVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_template_version_project_type_customer_and_npi_industry_applicability: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_VERSIONED_CONFIGURATION}
+      category_item_weight_completion_evidence_blocking_level_and_gate_definition: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: NEW_TEMPLATE_VERSION_AFTER_PUBLISH}
+      published_template_snapshot: {owner: NPI_ONE_READINESS_TEMPLATE_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      industry_deliverable_defaults: {owner: VERSIONED_READINESS_TEMPLATE, editable_in: [], direction: NONE, conflict: CONFIGURATION_NOT_GLOBAL_HARDCODE}
+
+  NpiReadinessInstanceRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: read_only_external_provider_projection
+    fields:
+      exact_instance_version_predecessor_project_template_gate_and_item_identity: {owner: NPI_ONE_READINESS_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY_EXACT_SNAPSHOT}
+      npi_confirmation_owner_due_status_and_controlled_evidence: {owner: NPI_ONE_READINESS_COMMAND, editable_in: [NPI_ONE_READINESS_COMMAND], direction: NONE, conflict: IMMUTABLE_SUCCESSOR_REQUIRED}
+      exact_project_work_document_tooling_trial_and_file_sources: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      formal_erp_material_quality_run_at_rate_hr_and_supplier_sources: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_NO_CALLER_STATUS}
+      deterministic_category_total_scores_and_blockers: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_ITEM_SNAPSHOT_WINS}
+      readiness_blocker_to_gate_review_input: {owner: NPI_ONE_GATE_REVIEW_INPUT_BUILDER, editable_in: [], direction: REFERENCE_ONLY, conflict: GATE_POLICY_REMAINS_INDEPENDENT}
+      gate_work_item_risk_tooling_handover_and_external_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_05}
+
   ToolingProcessProfileRevision:
     owner_system: SPLIT_BY_FACT_LAYER
     erp_view: none

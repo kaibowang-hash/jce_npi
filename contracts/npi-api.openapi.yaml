@@ -18230,6 +18230,253 @@ components:
         traceId: { type: string, minLength: 1, maxLength: 256 }
         versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
         snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    ReadinessSha256:
+      type: string
+      minLength: 64
+      maxLength: 64
+      pattern: "^[0-9a-f]{64}$"
+    ReadinessApplicabilitySelector:
+      type: object
+      additionalProperties: false
+      required: [projectTypes, customerReferenceKeys, industryKeys]
+      properties:
+        projectTypes:
+          type: array
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, enum: [customer_owned_tool, new_tool, tool_change] }
+        customerReferenceKeys:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 256 }
+        industryKeys:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 128 }
+    ReadinessCategoryDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, title]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 128 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+    ReadinessEvidenceRequirement:
+      type: object
+      additionalProperties: false
+      required: [key, acceptedSourceKinds, minimumCount, unavailableBlocks]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 128 }
+        acceptedSourceKinds:
+          type: array
+          minItems: 1
+          maxItems: 30
+          uniqueItems: true
+          items:
+            type: string
+            enum: [project, domain_work_item, released_document, release_baseline, file_revision, tooling_capacity_scenario, trial_input_lock, trial_actual, trial_sample, trial_cavity_result, trial_defect, trial_defect_verification, trial_comparison, trial_review_reference, trial_conclusion, controlled_quality_result, erp_material_specification, erp_quality_result, erp_run_at_rate, erp_hr_qualification, erp_supplier_execution]
+        minimumCount: { type: integer, minimum: 1, maximum: 100 }
+        unavailableBlocks: { type: boolean }
+    ReadinessItemDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, title, categoryKey, weight, required, blockingLevel, gateKey, completionRule, applicability, evidenceRequirements]
+      properties:
+        key: { type: string, minLength: 1, maxLength: 128 }
+        title: { type: string, minLength: 1, maxLength: 240 }
+        categoryKey: { type: string, minLength: 1, maxLength: 128 }
+        weight: { type: integer, minimum: 1 }
+        required: { type: boolean }
+        blockingLevel: { type: string, enum: [P0, P1, P2, none] }
+        gateKey: { type: string, minLength: 1, maxLength: 128 }
+        completionRule: { type: string, enum: [confirmation, exact_evidence, exact_source_result] }
+        applicability: { $ref: "#/components/schemas/ReadinessApplicabilitySelector" }
+        evidenceRequirements:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/ReadinessEvidenceRequirement" }
+    ReadinessTemplateVersion:
+      type: object
+      additionalProperties: false
+      description: Exact draft or immutable published readiness configuration. Metadata installs no production default row.
+      required: [globalId, templateGlobalId, templateCode, templateVersion, optimisticVersion, title, publicationState, applicability, categories, items, changedByUserId, changedAt, requestId, traceId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        templateGlobalId: { type: string, format: uuid }
+        templateCode: { type: string, minLength: 1, maxLength: 64 }
+        templateVersion: { type: integer, minimum: 1 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        publicationState: { type: string, enum: [draft, published] }
+        applicability: { $ref: "#/components/schemas/ReadinessApplicabilitySelector" }
+        categories:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessCategoryDefinition" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessItemDefinition" }
+        changedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        changedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+    ReadinessExactReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+    ReadinessProjectSnapshot:
+      type: object
+      additionalProperties: false
+      description: Exact Project facts plus an NPI-owned frozen industry key; never ERP customer-master truth.
+      required: [globalId, optimisticVersion, snapshotHash, projectType, customerReferenceKeys, industryKey]
+      properties:
+        globalId: { type: string, format: uuid }
+        optimisticVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+        projectType: { type: string, enum: [customer_owned_tool, new_tool, tool_change] }
+        customerReferenceKeys:
+          type: array
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 256 }
+        industryKey: { type: string, minLength: 1, maxLength: 128 }
+    ReadinessMemberReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, userId, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        userId: { type: string, minLength: 1, maxLength: 254 }
+        optimisticVersion: { type: integer, minimum: 1 }
+    ReadinessGateReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, gateKey, optimisticVersion, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        gateKey: { type: string, minLength: 1, maxLength: 128 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
+    ReadinessSourceReference:
+      type: object
+      additionalProperties: false
+      description: Exact internal source or explicitly identity-free unavailable external provider; caller status is never authority.
+      required: [requirementKey, kind, state, globalId, sourceVersion, snapshotHash, reasonCode]
+      properties:
+        requirementKey: { type: string, minLength: 1, maxLength: 128 }
+        kind:
+          type: string
+          enum: [project, domain_work_item, released_document, release_baseline, file_revision, tooling_capacity_scenario, trial_input_lock, trial_actual, trial_sample, trial_cavity_result, trial_defect, trial_defect_verification, trial_comparison, trial_review_reference, trial_conclusion, controlled_quality_result, erp_material_specification, erp_quality_result, erp_run_at_rate, erp_hr_qualification, erp_supplier_execution]
+        state: { type: string, enum: [satisfied, failed, unavailable] }
+        globalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        sourceVersion:
+          oneOf: [{ type: integer, minimum: 1 }, { type: "null" }]
+        snapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/ReadinessSha256" }, { type: "null" }]
+        reasonCode:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+    ReadinessItemSnapshot:
+      type: object
+      additionalProperties: false
+      required: [globalId, itemVersion, definition, applicable, gate, owner, dueDate, state, confirmationValue, sources]
+      properties:
+        globalId: { type: string, format: uuid }
+        itemVersion: { type: integer, minimum: 1 }
+        definition: { $ref: "#/components/schemas/ReadinessItemDefinition" }
+        applicable: { type: boolean }
+        gate: { $ref: "#/components/schemas/ReadinessGateReference" }
+        owner:
+          oneOf: [{ $ref: "#/components/schemas/ReadinessMemberReference" }, { type: "null" }]
+        dueDate:
+          oneOf: [{ type: string, format: date }, { type: "null" }]
+        state: { type: string, enum: [not_started, in_progress, complete, failed, not_applicable] }
+        confirmationValue:
+          oneOf: [{ type: string, minLength: 1, maxLength: 4000 }, { type: "null" }]
+        sources:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessSourceReference" }
+    ReadinessScore:
+      type: object
+      additionalProperties: false
+      required: [categoryKey, earnedWeight, applicableWeight, basisPoints, state]
+      properties:
+        categoryKey:
+          oneOf: [{ type: string, minLength: 1, maxLength: 128 }, { type: "null" }]
+        earnedWeight: { type: integer, minimum: 0 }
+        applicableWeight: { type: integer, minimum: 0 }
+        basisPoints:
+          oneOf: [{ type: integer, minimum: 0, maximum: 10000 }, { type: "null" }]
+        state: { type: string, enum: [scored, not_applicable] }
+    ReadinessBlocker:
+      type: object
+      additionalProperties: false
+      description: Blockers remain visible and dominant regardless of score; they do not decide or close a Gate.
+      required: [code, itemGlobalId, itemKey, gate]
+      properties:
+        code: { type: string, enum: [incomplete_p0, failed_mandatory_quality, required_source_unavailable] }
+        itemGlobalId: { type: string, format: uuid }
+        itemKey: { type: string, minLength: 1, maxLength: 128 }
+        gate: { $ref: "#/components/schemas/ReadinessGateReference" }
+    ReadinessEvaluation:
+      type: object
+      additionalProperties: false
+      required: [formulaVersion, categoryScores, totalScore, blockers, ready]
+      properties:
+        formulaVersion: { type: string, const: readiness-score.v1 }
+        categoryScores:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessScore" }
+        totalScore: { $ref: "#/components/schemas/ReadinessScore" }
+        blockers:
+          type: array
+          maxItems: 3000
+          items: { $ref: "#/components/schemas/ReadinessBlocker" }
+        ready: { type: boolean, readOnly: true }
+    ReadinessInstanceRevision:
+      type: object
+      additionalProperties: false
+      description: Immutable Project instance revision. Scores and blockers are server-derived; no Gate, Work Item, risk, Tooling, handover or external mutation is performed.
+      required: [globalId, instanceGlobalId, tenantId, project, templateRevision, instanceVersion, predecessorGlobalId, predecessorSnapshotHash, categories, items, evaluation, createdByUserId, createdAt, requestId, traceId, versionKeyHash, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        instanceGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        project: { $ref: "#/components/schemas/ReadinessProjectSnapshot" }
+        templateRevision: { $ref: "#/components/schemas/ReadinessExactReference" }
+        instanceVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        predecessorSnapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/ReadinessSha256" }, { type: "null" }]
+        categories:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReadinessCategoryDefinition" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ReadinessItemSnapshot" }
+        evaluation: { $ref: "#/components/schemas/ReadinessEvaluation" }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 128 }
+        versionKeyHash: { $ref: "#/components/schemas/ReadinessSha256" }
+        snapshotHash: { $ref: "#/components/schemas/ReadinessSha256" }
     ProblemDetails:
       type: object
       additionalProperties: false
