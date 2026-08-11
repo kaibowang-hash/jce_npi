@@ -421,6 +421,33 @@ class Phase7TrialReviewDomainTest(unittest.TestCase):
         with self.assertRaises(RequestValidationFailed):
             TrialInputComparisonCell(ROUND_2, "ABS-B", None)
 
+    def test_dimension_unavailable_sentinel_never_invents_a_cavity_identity(self) -> None:
+        row = TrialMetricComparisonRow(
+            TrialComparisonMetricKind.DIMENSION,
+            "unavailable",
+            None,
+            (unavailable(ROUND_1), unavailable(ROUND_2)),
+        )
+        self.assertIsNone(row.cavity_global_id)
+        self.assertEqual(row.unit_state, TrialComparisonUnitState.UNAVAILABLE)
+        with self.assertRaises(RequestValidationFailed):
+            TrialMetricComparisonRow(
+                TrialComparisonMetricKind.DIMENSION,
+                "critical_length",
+                None,
+                (unavailable(ROUND_1), unavailable(ROUND_2)),
+            )
+        with self.assertRaises(RequestValidationFailed):
+            TrialMetricComparisonRow(
+                TrialComparisonMetricKind.DIMENSION,
+                "unavailable",
+                None,
+                (
+                    unavailable(ROUND_1),
+                    measured(ROUND_2, "10.1", unit="mm", source_id=412),
+                ),
+            )
+
     def test_defect_trends_are_derived_from_exact_round_tips(self) -> None:
         continued = uid(420)
         reopened = uid(421)

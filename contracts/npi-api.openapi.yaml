@@ -3514,6 +3514,162 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/trial-rounds/{trialRoundId}/review:
+    get:
+      tags: [Trials]
+      operationId: getTrialReviewWorkspace
+      description: Returns bounded immutable policy, comparison, controlled-reference and conclusion histories without resolving any supplied identity to latest.
+      x-required-roles: [NPI API User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/TrialReviewResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}:begin-analysis:
+    post:
+      tags: [Trials]
+      operationId: beginTrialAnalysis
+      description: Atomically validates exact policy authority and advances one exact running Round to analysis with an immutable lifecycle event, audit and actor-bound receipt.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-submit-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_round.begin_analysis
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BeginTrialAnalysis" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/comparisons:
+    post:
+      tags: [Trials]
+      operationId: createTrialRoundComparison
+      description: Derives and retains an immutable multi-Round comparison from exact server-owned inputs, measurements and defect tips; missing cycle time or yield is unavailable, never zero.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-submit-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_comparison.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTrialRoundComparison" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/review-references:
+    post:
+      tags: [Trials]
+      operationId: createTrialReviewReferenceRevision
+      description: Appends an initial or exact successor controlled-reference revision after validating exact Part, Tooling, Set and clean private File truth. Evidence never grants approval.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-submit-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_review_reference.create-or-revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTrialReviewReferenceRevision" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/conclusions:
+    post:
+      tags: [Trials]
+      operationId: submitTrialConclusion
+      description: Derives blockers and one-page summary input on the server, appends an immutable submitted conclusion and advances the exact Round in one transaction. Proposed effects mutate no external authority.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-submit-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_conclusion.submit
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitTrialConclusion" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/conclusions/{conclusionId}:decide:
+    post:
+      tags: [Trials]
+      operationId: decideTrialConclusion
+      description: Appends an approved or rejected exact successor and advances the submitted Round in the same transaction without mutating Gate, NPI readiness, Tooling or ERPNext.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-decision-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_conclusion.decide
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - in: path
+          name: conclusionId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DecideTrialConclusion" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}:reopen:
+    post:
+      tags: [Trials]
+      operationId: reopenTrialConclusion
+      description: Appends an immutable reopened conclusion successor and returns the exact submitted, approved or rejected Round to analysis without rewriting retained history.
+      x-required-roles: [System Manager]
+      x-business-authority: exact-trial-conclusion-policy-reopen-binding
+      x-transaction-boundary: project-trial-review
+      x-audit-operation: trial_conclusion.reopen
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReopenTrialConclusion" }
+      responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
   /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}/publish-requests:
     get:
       tags: [Execution]
@@ -5597,6 +5753,12 @@ components:
       required: true
       description: Immutable Engineering Project global_id; never a mutable business code
       schema: { type: string, format: uuid }
+    TrialRoundId:
+      in: path
+      name: trialRoundId
+      required: true
+      description: Immutable Trial Round global_id within the already-authorized Project
+      schema: { type: string, format: uuid }
     GateId:
       in: path
       name: gateId
@@ -6547,6 +6709,39 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/TrialQualityWorkspace" }
+    TrialReviewResult:
+      description: Authorized exact Trial review workspace and immutable histories
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/TrialReviewWorkspace" }
+    TrialReviewCommandResult:
+      description: Exact Trial review workspace after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/TrialReviewWorkspace" }
     TrialEvidenceContentResult:
       description: Audited exact private evidence bytes; never a redirect or stable URL
       headers:
@@ -17372,6 +17567,214 @@ components:
           items: { $ref: "#/components/schemas/TrialQualityParetoRow" }
         permissions: { $ref: "#/components/schemas/TrialQualityPermissions" }
         externalEffects: { $ref: "#/components/schemas/TrialDefectExternalEffects" }
+    TrialReviewPolicyRoundContext:
+      type: object
+      additionalProperties: false
+      required: [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash, expectedRoundOptimisticVersion, expectedRoundSnapshotHash]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+    BeginTrialAnalysis:
+      type: object
+      additionalProperties: false
+      required: [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash, expectedRoundOptimisticVersion, expectedRoundSnapshotHash, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    TrialComparisonRoundInput:
+      type: object
+      additionalProperties: false
+      required: [trialRoundGlobalId, expectedOptimisticVersion, expectedSnapshotHash]
+      properties:
+        trialRoundGlobalId: { type: string, format: uuid }
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+        expectedSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    CreateTrialRoundComparison:
+      type: object
+      additionalProperties: false
+      required: [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash, expectedRoundOptimisticVersion, expectedRoundSnapshotHash, rounds, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        rounds:
+          type: array
+          minItems: 2
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/TrialComparisonRoundInput" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateTrialReviewReferenceRevision:
+      type: object
+      additionalProperties: false
+      dependentRequired:
+        referenceGlobalId: [expectedReferenceRevisionGlobalId, expectedReferenceRevisionSnapshotHash, expectedReferenceVersion]
+        expectedReferenceRevisionGlobalId: [referenceGlobalId, expectedReferenceRevisionSnapshotHash, expectedReferenceVersion]
+        expectedReferenceRevisionSnapshotHash: [referenceGlobalId, expectedReferenceRevisionGlobalId, expectedReferenceVersion]
+        expectedReferenceVersion: [referenceGlobalId, expectedReferenceRevisionGlobalId, expectedReferenceRevisionSnapshotHash]
+      required:
+        [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash,
+         expectedRoundOptimisticVersion, expectedRoundSnapshotHash,
+         comparisonSnapshotGlobalId, expectedComparisonSnapshotHash,
+         referenceKind, partRevisionGlobalId,
+         expectedPartRevisionSnapshotHash, toolingMasterGlobalId,
+         toolingRevisionGlobalId, expectedToolingRevisionSnapshotHash,
+         toolingSetGlobalId, expectedToolingSetSnapshotHash,
+         fileRevisionGlobalId, expectedFileRevisionSnapshotHash, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        referenceGlobalId: { type: string, format: uuid }
+        expectedReferenceRevisionGlobalId: { type: string, format: uuid }
+        expectedReferenceRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedReferenceVersion: { type: integer, minimum: 1 }
+        comparisonSnapshotGlobalId: { type: string, format: uuid }
+        expectedComparisonSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        referenceKind: { type: string, enum: [controlled_quality_report, internal_sample_review, customer_evidence, deviation_or_waiver] }
+        partRevisionGlobalId: { type: string, format: uuid }
+        expectedPartRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRevisionGlobalId: { type: string, format: uuid }
+        expectedToolingRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        toolingSetGlobalId: { type: string, format: uuid }
+        expectedToolingSetSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        fileRevisionGlobalId: { type: string, format: uuid }
+        expectedFileRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    TrialReviewReferenceInput:
+      type: object
+      additionalProperties: false
+      required: [globalId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    SubmitTrialConclusion:
+      type: object
+      additionalProperties: false
+      dependentRequired:
+        conclusionGlobalId: [expectedConclusionRevisionGlobalId, expectedConclusionRevisionSnapshotHash, expectedConclusionVersion]
+        expectedConclusionRevisionGlobalId: [conclusionGlobalId, expectedConclusionRevisionSnapshotHash, expectedConclusionVersion]
+        expectedConclusionRevisionSnapshotHash: [conclusionGlobalId, expectedConclusionRevisionGlobalId, expectedConclusionVersion]
+        expectedConclusionVersion: [conclusionGlobalId, expectedConclusionRevisionGlobalId, expectedConclusionRevisionSnapshotHash]
+      required:
+        [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash,
+         expectedRoundOptimisticVersion, expectedRoundSnapshotHash,
+         comparisonSnapshotGlobalId, expectedComparisonSnapshotHash,
+         reviewReferences, conclusionCode, proposedNextWork,
+         proposedGateEffect, proposedNpiEffect, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        conclusionGlobalId: { type: string, format: uuid }
+        expectedConclusionRevisionGlobalId: { type: string, format: uuid }
+        expectedConclusionRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedConclusionVersion: { type: integer, minimum: 1 }
+        comparisonSnapshotGlobalId: { type: string, format: uuid }
+        expectedComparisonSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        reviewReferences:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/TrialReviewReferenceInput" }
+        conclusionCode: { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+        proposedNextWork:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 1000 }
+        proposedGateEffect: { type: string, minLength: 1, maxLength: 1000 }
+        proposedNpiEffect: { type: string, minLength: 1, maxLength: 1000 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    DecideTrialConclusion:
+      type: object
+      additionalProperties: false
+      required: [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash, expectedRoundOptimisticVersion, expectedRoundSnapshotHash, expectedConclusionRevisionGlobalId, expectedConclusionRevisionSnapshotHash, expectedConclusionVersion, decision, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedConclusionRevisionGlobalId: { type: string, format: uuid }
+        expectedConclusionRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedConclusionVersion: { type: integer, minimum: 1 }
+        decision: { type: string, enum: [approved, rejected] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    ReopenTrialConclusion:
+      type: object
+      additionalProperties: false
+      required: [policyRevisionGlobalId, expectedPolicyRevisionSnapshotHash, expectedRoundOptimisticVersion, expectedRoundSnapshotHash, conclusionGlobalId, expectedConclusionRevisionGlobalId, expectedConclusionRevisionSnapshotHash, expectedConclusionVersion, reason]
+      properties:
+        policyRevisionGlobalId: { type: string, format: uuid }
+        expectedPolicyRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        conclusionGlobalId: { type: string, format: uuid }
+        expectedConclusionRevisionGlobalId: { type: string, format: uuid }
+        expectedConclusionRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        expectedConclusionVersion: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    TrialReviewPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, requiresExactPolicyRevision, beginAnalysis, createComparison, manageReviewReferences, submitConclusion, decideConclusion, reopenConclusion]
+      properties:
+        view: { type: boolean }
+        requiresExactPolicyRevision: { type: boolean, const: true }
+        beginAnalysis: { type: boolean }
+        createComparison: { type: boolean }
+        manageReviewReferences: { type: boolean }
+        submitConclusion: { type: boolean }
+        decideConclusion: { type: boolean }
+        reopenConclusion: { type: boolean }
+    TrialReviewExternalEffects:
+      type: object
+      additionalProperties: false
+      required: [formalErpQuality, customerSignature, gate, npiReadiness, toolingLifecycle, nextWork]
+      properties:
+        formalErpQuality: { type: string, const: unavailable }
+        customerSignature: { type: string, const: unavailable }
+        gate: { type: string, const: unavailable }
+        npiReadiness: { type: string, const: unavailable }
+        toolingLifecycle: { type: string, const: unavailable }
+        nextWork: { type: string, const: proposal_only }
+    TrialReviewWorkspace:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, trialRound, policyVersions, comparisonSnapshots, reviewReferenceRevisions, conclusionRevisions, permissions, externalEffects]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        trialRound: { $ref: "#/components/schemas/TrialRoundSummary" }
+        policyVersions:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/TrialConclusionPolicyVersion" }
+        comparisonSnapshots:
+          type: array
+          maxItems: 5000
+          items: { $ref: "#/components/schemas/TrialRoundComparisonSnapshot" }
+        reviewReferenceRevisions:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialReviewReferenceRevision" }
+        conclusionRevisions:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialConclusionRevision" }
+        permissions: { $ref: "#/components/schemas/TrialReviewPermissions" }
+        externalEffects: { $ref: "#/components/schemas/TrialReviewExternalEffects" }
     TrialReviewSha256:
       type: string
       pattern: "^[a-f0-9]{64}$"
@@ -17407,7 +17810,7 @@ components:
          requireCavityResults, blockOnOpenBlockingDefects,
          blockOnUnverifiedRequiredActions, allowedConclusionCodes,
          outOfSpecBlockingCodes, authorityBindings, publishedByUserId,
-         publishedAt, requestId, traceId]
+         publishedAt, requestId, traceId, versionKeyHash, snapshotHash]
       properties:
         schemaVersion: { type: string, const: npi.trial.v1 }
         globalId: { type: string, format: uuid }
@@ -17467,6 +17870,8 @@ components:
         publishedAt: { type: string, format: date-time }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 1, maxLength: 256 }
+        versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
     TrialReviewCavityResultTip:
       type: object
       additionalProperties: false
@@ -17567,6 +17972,7 @@ components:
         metricKind: { type: string, enum: [parameter, dimension, cycle_time, yield] }
         metricKey: { type: string, minLength: 1, maxLength: 256 }
         cavityGlobalId:
+          description: Exact cavity identity for dimension rows; null is allowed only for the explicit all-unavailable dimension sentinel.
           oneOf: [{ type: string, format: uuid }, { type: "null" }]
         unitState: { type: string, readOnly: true, enum: [comparable, unit_mismatch, unavailable] }
         cells:
@@ -17589,7 +17995,7 @@ components:
         [schemaVersion, globalId, tenantId, projectGlobalId,
          trialPlanGlobalId, targetRoundGlobalId, policyRevision, sources,
          inputRows, metricRows, defectTrends, formalErpQuality,
-         createdByUserId, createdAt, requestId, traceId]
+         createdByUserId, createdAt, requestId, traceId, snapshotHash]
       properties:
         schemaVersion: { type: string, const: npi.trial.v1 }
         globalId: { type: string, format: uuid }
@@ -17622,6 +18028,7 @@ components:
         createdAt: { type: string, format: date-time }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 1, maxLength: 256 }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
     TrialReviewReferenceRevision:
       type: object
       additionalProperties: false
@@ -17633,7 +18040,7 @@ components:
          predecessorSnapshotHash, partRevision, toolingMasterGlobalId,
          toolingRevision, toolingSet, fileRevision, effectiveFrom,
          effectiveTo, approvalAuthority, reason, createdByUserId,
-         createdAt, requestId, traceId]
+         createdAt, requestId, traceId, versionKeyHash, snapshotHash]
       properties:
         schemaVersion: { type: string, const: npi.trial.v1 }
         globalId: { type: string, format: uuid }
@@ -17664,6 +18071,8 @@ components:
         createdAt: { type: string, format: date-time }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 1, maxLength: 256 }
+        versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
     TrialConclusionBlocker:
       type: object
       additionalProperties: false
@@ -17776,7 +18185,7 @@ components:
          comparisonSnapshot, reviewReferences, blockers, summaryInput,
          proposedNextWork, proposedGateEffect, proposedNpiEffect,
          externalEffects, reason, createdByUserId, createdAt, requestId,
-         traceId]
+         traceId, versionKeyHash, snapshotHash]
       properties:
         schemaVersion: { type: string, const: npi.trial.v1 }
         globalId: { type: string, format: uuid }
@@ -17819,6 +18228,8 @@ components:
         createdAt: { type: string, format: date-time }
         requestId: { type: string, format: uuid }
         traceId: { type: string, minLength: 1, maxLength: 256 }
+        versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
     ProblemDetails:
       type: object
       additionalProperties: false

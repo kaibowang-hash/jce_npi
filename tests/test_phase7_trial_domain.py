@@ -496,7 +496,7 @@ class Phase7TrialDomainTest(unittest.TestCase):
         with self.assertRaises(RequestValidationFailed):
             replace(event, from_state=TrialRoundState.RUNNING)
 
-    def test_p702_activates_only_planned_prepared_running(self) -> None:
+    def test_trial_round_allows_only_explicit_sequential_lifecycle_transitions(self) -> None:
         trial_round, _created = create_planned_trial_round(
             global_id=ROUND,
             event_global_id=EVENT,
@@ -534,16 +534,31 @@ class Phase7TrialDomainTest(unittest.TestCase):
         self.assertEqual(running.current_state, TrialRoundState.RUNNING)
         self.assertEqual(started_event.event_type, TrialLifecycleEventType.STARTED)
         self.assertEqual(running.optimistic_version, 3)
+        analysis, analysis_event = transition_trial_round(
+            running,
+            event_global_id=UUID(int=903),
+            to_state=TrialRoundState.ANALYSIS,
+            reason="Begin exact policy-bound Trial analysis.",
+            created_by_user_id="trial.owner@example.invalid",
+            created_at=NOW,
+            request_id=REQUEST,
+            trace_id="trace-p704-analysis",
+        )
+        self.assertEqual(analysis.current_state, TrialRoundState.ANALYSIS)
+        self.assertEqual(
+            analysis_event.event_type,
+            TrialLifecycleEventType.ANALYSIS_BEGUN,
+        )
         with self.assertRaises(RequestValidationFailed):
             transition_trial_round(
-                running,
-                event_global_id=UUID(int=903),
-                to_state=TrialRoundState.ANALYSIS,
-                reason="Do not activate later lifecycle truth.",
+                analysis,
+                event_global_id=UUID(int=904),
+                to_state=TrialRoundState.APPROVED,
+                reason="Do not skip immutable conclusion submission.",
                 created_by_user_id="trial.owner@example.invalid",
                 created_at=NOW,
                 request_id=REQUEST,
-                trace_id="trace-p702-held",
+                trace_id="trace-p704-held",
             )
 
     def test_work_link_retains_existing_work_item_as_the_task_truth(self) -> None:

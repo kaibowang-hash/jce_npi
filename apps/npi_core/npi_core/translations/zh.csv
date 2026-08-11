@@ -5839,6 +5839,10 @@ Trial history cannot be deleted.,试模历史不能删除。
 Trial lifecycle event fields do not match the exact snapshot.,试模生命周期事件字段与精确快照不匹配。
 Trial records can only be changed through an authorized NPI command.,试模记录只能通过已授权的 NPI 命令更改。
 analysis,分析中
+analysis_begun,已开始分析
+conclusion_approved,结论已批准
+conclusion_rejected,结论已驳回
+conclusion_submitted,结论已提交
 capability_study,能力研究
 customer_sample,客户样件
 design_verification,设计验证
@@ -6662,3 +6666,5 @@ Out-of-specification blocker codes must be allowed conclusions.,超出规格阻�
 Select a conclusion code allowed by the exact policy.,请选择精确策略允许的结论代码。
 The one-page Trial summary input has invalid controlled fields.,试模单页摘要输入包含无效的受控字段。
 Trial review references must match the exact comparison scope.,试模审查引用必须与精确比较范围匹配。
+The end date must not be before the start date.,结束日期不能早于开始日期。
+"Select one complete exact predecessor, or leave it empty.","请选择一个完整、精确的前序版本，或将其留空。"

@@ -110,6 +110,11 @@ class TrialLifecycleEventType(StrEnum):
     CREATED = "created"
     PREPARED = "prepared"
     STARTED = "started"
+    ANALYSIS_BEGUN = "analysis_begun"
+    CONCLUSION_SUBMITTED = "conclusion_submitted"
+    CONCLUSION_APPROVED = "conclusion_approved"
+    CONCLUSION_REJECTED = "conclusion_rejected"
+    REOPENED = "reopened"
     CANCELLED = "cancelled"
 
 
@@ -551,6 +556,40 @@ class TrialRoundLifecycleEvent:
             )
             if not active:
                 raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.ANALYSIS_BEGUN:
+            if not (
+                self.from_state is TrialRoundState.RUNNING
+                and self.to_state is TrialRoundState.ANALYSIS
+            ):
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.CONCLUSION_SUBMITTED:
+            if not (
+                self.from_state is TrialRoundState.ANALYSIS
+                and self.to_state is TrialRoundState.SUBMITTED
+            ):
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.CONCLUSION_APPROVED:
+            if not (
+                self.from_state is TrialRoundState.SUBMITTED
+                and self.to_state is TrialRoundState.APPROVED
+            ):
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.CONCLUSION_REJECTED:
+            if not (
+                self.from_state is TrialRoundState.SUBMITTED
+                and self.to_state is TrialRoundState.REJECTED
+            ):
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
+        elif self.event_type is TrialLifecycleEventType.REOPENED:
+            if not (
+                self.from_state in {
+                    TrialRoundState.SUBMITTED,
+                    TrialRoundState.APPROVED,
+                    TrialRoundState.REJECTED,
+                }
+                and self.to_state is TrialRoundState.ANALYSIS
+            ):
+                raise _problem("eventType", _("This Trial lifecycle transition is not active in this task."))
         elif (
             self.from_state is not TrialRoundState.PLANNED
             or self.to_state is not TrialRoundState.CANCELLED
@@ -631,12 +670,7 @@ class TrialRound:
         if self.planned_end_at <= self.planned_start_at:
             raise _problem("plannedEndAt", _("The planned end must be after the start."))
         _enum(self.current_state, TrialRoundState, "currentState")
-        if self.current_state not in {
-            TrialRoundState.PLANNED,
-            TrialRoundState.PREPARED,
-            TrialRoundState.RUNNING,
-            TrialRoundState.CANCELLED,
-        }:
+        if self.current_state not in set(TrialRoundState):
             raise _problem(
                 "currentState",
                 _("This Trial Round state is not active in this task."),
@@ -738,12 +772,30 @@ def transition_trial_round(
     request_id: UUID,
     trace_id: str,
 ) -> tuple[TrialRound, TrialRoundLifecycleEvent]:
-    """Advance only the P7-02 prepared/running lifecycle boundary."""
+    """Advance only the explicitly authorized Trial lifecycle boundary."""
 
     if trial_round.current_state is TrialRoundState.PLANNED and to_state is TrialRoundState.PREPARED:
         event_type = TrialLifecycleEventType.PREPARED
     elif trial_round.current_state is TrialRoundState.PREPARED and to_state is TrialRoundState.RUNNING:
         event_type = TrialLifecycleEventType.STARTED
+    elif trial_round.current_state is TrialRoundState.RUNNING and to_state is TrialRoundState.ANALYSIS:
+        event_type = TrialLifecycleEventType.ANALYSIS_BEGUN
+    elif trial_round.current_state is TrialRoundState.ANALYSIS and to_state is TrialRoundState.SUBMITTED:
+        event_type = TrialLifecycleEventType.CONCLUSION_SUBMITTED
+    elif trial_round.current_state is TrialRoundState.SUBMITTED and to_state is TrialRoundState.APPROVED:
+        event_type = TrialLifecycleEventType.CONCLUSION_APPROVED
+    elif trial_round.current_state is TrialRoundState.SUBMITTED and to_state is TrialRoundState.REJECTED:
+        event_type = TrialLifecycleEventType.CONCLUSION_REJECTED
+    elif (
+        trial_round.current_state
+        in {
+            TrialRoundState.SUBMITTED,
+            TrialRoundState.APPROVED,
+            TrialRoundState.REJECTED,
+        }
+        and to_state is TrialRoundState.ANALYSIS
+    ):
+        event_type = TrialLifecycleEventType.REOPENED
     else:
         raise _problem(
             "toState",

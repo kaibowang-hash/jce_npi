@@ -736,13 +736,6 @@ class TrialMetricComparisonRow:
             "cavity_global_id",
             _optional_uuid(self.cavity_global_id, "metricRows.cavityGlobalId"),
         )
-        if (self.metric_kind is TrialComparisonMetricKind.DIMENSION) != (
-            self.cavity_global_id is not None
-        ):
-            raise _problem(
-                "metricRows.cavityGlobalId",
-                _("Only dimension comparisons require one exact cavity identity."),
-            )
         cells = _typed_tuple(
             self.cells,
             TrialMetricComparisonCell,
@@ -752,6 +745,24 @@ class TrialMetricComparisonRow:
         )
         _unique((value.trial_round_global_id for value in cells), "metricRows.cells")
         object.__setattr__(self, "cells", cells)
+        unavailable_dimension = (
+            self.metric_kind is TrialComparisonMetricKind.DIMENSION
+            and self.metric_key == "unavailable"
+            and self.cavity_global_id is None
+            and all(value.state is TrialComparisonCellState.UNAVAILABLE for value in cells)
+        )
+        if (
+            self.metric_kind is TrialComparisonMetricKind.DIMENSION
+            and self.cavity_global_id is None
+            and not unavailable_dimension
+        ) or (
+            self.metric_kind is not TrialComparisonMetricKind.DIMENSION
+            and self.cavity_global_id is not None
+        ):
+            raise _problem(
+                "metricRows.cavityGlobalId",
+                _("Only dimension comparisons require one exact cavity identity."),
+            )
 
     @property
     def unit_state(self) -> TrialComparisonUnitState:

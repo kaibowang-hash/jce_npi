@@ -21,6 +21,10 @@ EVIDENCE_ID = "99d03125-7947-4a72-a94f-47930cfcb7bb"
 CAVITY_ID = "a8ab6f87-227f-42f9-a7cb-d695e8d34bca"
 CAVITY_RESULT_ID = "166236d9-2d86-4034-b7e1-4cab3f405da7"
 DEFECT_ID = "427230fd-fc1f-4738-ac31-3fd098d91561"
+POLICY_ID = "2df58f07-d14b-4c59-a464-ef2fb73b8690"
+COMPARISON_ID = "37e1c8d5-f636-44b2-a029-9f812d53fe20"
+REFERENCE_ID = "4532adad-cb72-469d-b818-d537966e42ac"
+CONCLUSION_ID = "5f30470c-40ab-4946-82ea-b799366821ce"
 FILE_REVISION_ID = "97adf8ba-827c-4e31-a62c-370248685ab8"
 MASTER_ID = "eb233de2-5d4d-4556-ad16-9476d8f0776f"
 MEMBER_ID = "a6bfd0bf-8ab3-4a92-b49e-818735db4f55"
@@ -119,6 +123,27 @@ class MockRepository:
     def verify_defect(self, *args: object, **kwargs: Any):
         return self._command("verify_defect", args, kwargs)
 
+    def review_workspace(self, *args: object, **kwargs: Any):
+        return self._query("review_workspace", args, kwargs)
+
+    def begin_analysis(self, *args: object, **kwargs: Any):
+        return self._command("begin_analysis", args, kwargs)
+
+    def create_comparison(self, *args: object, **kwargs: Any):
+        return self._command("create_comparison", args, kwargs)
+
+    def create_review_reference(self, *args: object, **kwargs: Any):
+        return self._command("create_review_reference", args, kwargs)
+
+    def submit_conclusion(self, *args: object, **kwargs: Any):
+        return self._command("submit_conclusion", args, kwargs)
+
+    def decide_conclusion(self, *args: object, **kwargs: Any):
+        return self._command("decide_conclusion", args, kwargs)
+
+    def reopen_conclusion(self, *args: object, **kwargs: Any):
+        return self._command("reopen_conclusion", args, kwargs)
+
     def _query(self, name: str, args: tuple[object, ...], kwargs: dict[str, Any]):
         self.calls.append((name, args, kwargs))
         return copy.deepcopy(self.owner.response) if self.available else None
@@ -168,6 +193,7 @@ class Phase7TrialApiTest(unittest.TestCase):
             npi_p7_01_routes_disabled=False,
             npi_p7_02_routes_disabled=False,
             npi_p7_03_routes_disabled=False,
+            npi_p7_04_routes_disabled=False,
         )
         self.frappe.flags = types.SimpleNamespace(
             npi_bff_request=False,
@@ -179,6 +205,7 @@ class Phase7TrialApiTest(unittest.TestCase):
                 "evidence_id": EVIDENCE_ID,
                 "cavity_result_id": CAVITY_RESULT_ID,
                 "defect_id": DEFECT_ID,
+                "conclusion_id": CONCLUSION_ID,
             },
         )
         self.frappe.local = types.SimpleNamespace(
@@ -216,6 +243,7 @@ class Phase7TrialApiTest(unittest.TestCase):
         self.api._repository_factory = lambda **_values: self.repository
         self.api._execution_repository_factory = lambda **_values: self.repository
         self.api._quality_repository_factory = lambda **_values: self.repository
+        self.api._review_repository_factory = lambda **_values: self.repository
         self.response = {
             "projectGlobalId": PROJECT_ID,
             "plans": [],
@@ -329,6 +357,34 @@ class Phase7TrialApiTest(unittest.TestCase):
             "reason": "Freeze exact Trial execution inputs.",
         }
 
+    @staticmethod
+    def review_policy_payload() -> dict[str, object]:
+        return {
+            "policyRevisionGlobalId": POLICY_ID,
+            "expectedPolicyRevisionSnapshotHash": SHA256_A,
+            "expectedRoundOptimisticVersion": 4,
+            "expectedRoundSnapshotHash": SHA256_A,
+        }
+
+    @classmethod
+    def review_reference_payload(cls) -> dict[str, object]:
+        return cls.review_policy_payload() | {
+            "comparisonSnapshotGlobalId": COMPARISON_ID,
+            "expectedComparisonSnapshotHash": SHA256_A,
+            "referenceKind": "controlled_quality_report",
+            "partRevisionGlobalId": REVISION_ID,
+            "expectedPartRevisionSnapshotHash": SHA256_A,
+            "toolingMasterGlobalId": MASTER_ID,
+            "toolingRevisionGlobalId": REVISION_ID,
+            "expectedToolingRevisionSnapshotHash": SHA256_A,
+            "toolingSetGlobalId": REVISION_ID,
+            "expectedToolingSetSnapshotHash": SHA256_A,
+            "fileRevisionGlobalId": FILE_REVISION_ID,
+            "expectedFileRevisionSnapshotHash": SHA256_A,
+            "effectiveFrom": "2026-08-11",
+            "reason": "Bind one exact controlled review reference.",
+        }
+
     def test_project_first_route_matrix_maps_exact_handlers(self) -> None:
         cases = (
             ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/trials", "get_trial_planning_workspace"),
@@ -352,6 +408,13 @@ class Phase7TrialApiTest(unittest.TestCase):
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects", "create_trial_defect"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects/{DEFECT_ID}/revisions", "revise_trial_defect"),
             ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/defects/{DEFECT_ID}/verifications", "verify_trial_defect"),
+            ("GET", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/review", "get_trial_review_workspace"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}:begin-analysis", "begin_trial_analysis"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/comparisons", "create_trial_comparison"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/review-references", "create_trial_review_reference"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/conclusions", "submit_trial_conclusion"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/conclusions/{CONCLUSION_ID}:decide", "decide_trial_conclusion"),
+            ("POST", f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}:reopen", "reopen_trial_conclusion"),
         )
         for method, path, command in cases:
             with self.subTest(method=method, path=path):
@@ -418,6 +481,24 @@ class Phase7TrialApiTest(unittest.TestCase):
             self.frappe.local.form_dict.cmd,
             "npi_core.trial_api.get_trial_quality_workspace",
         )
+        self.frappe.conf.pop("npi_p7_04_routes_disabled")
+        self.frappe.local.request = types.SimpleNamespace(
+            path=f"/api/npi/v1/projects/{PROJECT_ID}/trial-rounds/{ROUND_ID}/review",
+            method="GET",
+        )
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.trial_review_routes_disabled",
+        )
+        self.frappe.conf.npi_p7_04_routes_disabled = False
+        self.frappe.local.form_dict = AttrDict()
+        self.router.route_request()
+        self.assertEqual(
+            self.frappe.local.form_dict.cmd,
+            "npi_core.trial_api.get_trial_review_workspace",
+        )
 
     def test_workspace_query_uses_opaque_project_identity(self) -> None:
         response = self.call(self.api.get_trial_planning_workspace)
@@ -439,6 +520,85 @@ class Phase7TrialApiTest(unittest.TestCase):
         name, args, _kwargs = self.repository.calls[-1]
         self.assertEqual(name, "quality_workspace")
         self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+
+    def test_review_query_uses_project_and_round_identity(self) -> None:
+        response = self.call(self.api.get_trial_review_workspace)
+        self.assertEqual(response, self.response)
+        name, args, _kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "review_workspace")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+
+    def test_begin_analysis_binds_exact_policy_round_and_actor_idempotency(self) -> None:
+        payload = self.review_policy_payload() | {
+            "reason": "Begin exact policy-bound analysis.",
+        }
+        response = self.call(self.api.begin_trial_analysis, payload)
+        self.assertEqual(response, self.response)
+        name, args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "begin_analysis")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID)))
+        self.assertEqual(kwargs["policy_revision_id"], UUID(POLICY_ID))
+        self.assertEqual(kwargs["expected_round_optimistic_version"], 4)
+        self.assertEqual(len(kwargs["idempotency_key_hash"]), 64)
+
+    def test_comparison_requires_closed_unique_exact_rounds(self) -> None:
+        payload = self.review_policy_payload() | {
+            "rounds": [
+                {
+                    "trialRoundGlobalId": str(UUID(int=8001)),
+                    "expectedOptimisticVersion": 3,
+                    "expectedSnapshotHash": SHA256_A,
+                },
+                {
+                    "trialRoundGlobalId": ROUND_ID,
+                    "expectedOptimisticVersion": 4,
+                    "expectedSnapshotHash": SHA256_A,
+                },
+            ],
+            "reason": "Derive a comparison from exact Round sources.",
+        }
+        response = self.call(self.api.create_trial_comparison, payload)
+        self.assertEqual(response, self.response)
+        name, _args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "create_comparison")
+        self.assertEqual(kwargs["rounds"][-1]["global_id"], UUID(ROUND_ID))
+        forged = copy.deepcopy(payload)
+        forged["rounds"][0]["latest"] = True
+        rejected = self.call(self.api.create_trial_comparison, forged)
+        self.assertEqual(rejected["code"], "VALIDATION_FAILED")
+        self.assertEqual(rejected["fieldErrors"][0]["path"], "rounds[0]")
+
+    def test_review_reference_rejects_partial_predecessor_and_parses_exact_sources(self) -> None:
+        payload = self.review_reference_payload()
+        response = self.call(self.api.create_trial_review_reference, payload)
+        self.assertEqual(response, self.response)
+        name, _args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "create_review_reference")
+        self.assertEqual(kwargs["part_revision"]["global_id"], UUID(REVISION_ID))
+        self.assertIsNone(kwargs["reference_predecessor"])
+        forged = self.review_reference_payload() | {"referenceGlobalId": REFERENCE_ID}
+        rejected = self.call(self.api.create_trial_review_reference, forged)
+        self.assertEqual(rejected["code"], "VALIDATION_FAILED")
+        self.assertEqual(rejected["fieldErrors"][0]["path"], "referenceGlobalId")
+
+    def test_conclusion_decision_allows_only_approved_or_rejected(self) -> None:
+        payload = self.review_policy_payload() | {
+            "expectedConclusionRevisionGlobalId": REVISION_ID,
+            "expectedConclusionRevisionSnapshotHash": SHA256_A,
+            "expectedConclusionVersion": 1,
+            "decision": "approved",
+            "reason": "Approve exact submitted review sources.",
+        }
+        response = self.call(self.api.decide_trial_conclusion, payload)
+        self.assertEqual(response, self.response)
+        name, args, kwargs = self.repository.calls[-1]
+        self.assertEqual(name, "decide_conclusion")
+        self.assertEqual(args, (UUID(PROJECT_ID), UUID(ROUND_ID), UUID(CONCLUSION_ID)))
+        self.assertEqual(kwargs["decision"].value, "approved")
+        payload["decision"] = "reopened"
+        rejected = self.call(self.api.decide_trial_conclusion, payload)
+        self.assertEqual(rejected["code"], "VALIDATION_FAILED")
+        self.assertEqual(rejected["fieldErrors"][0]["path"], "decision")
 
     def test_cavity_result_command_parses_exact_closed_context(self) -> None:
         payload = {

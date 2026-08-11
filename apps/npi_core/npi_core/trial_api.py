@@ -64,6 +64,24 @@ from npi_core.trial.quality_validation import (
     revise_defect_values,
     verification_values,
 )
+from npi_core.trial.review_domain import (
+    TrialReviewRoutesDisabled,
+    TrialReviewUnavailable,
+)
+from npi_core.trial.review_validation import (
+    BEGIN_ANALYSIS_FIELDS,
+    CREATE_COMPARISON_FIELDS,
+    CREATE_REFERENCE_FIELDS,
+    DECIDE_CONCLUSION_FIELDS,
+    REOPEN_CONCLUSION_FIELDS,
+    SUBMIT_CONCLUSION_FIELDS,
+    begin_analysis_values,
+    comparison_values,
+    conclusion_values,
+    decision_values,
+    reference_values,
+    reopen_values,
+)
 
 
 _PLAN_FIELDS = frozenset(
@@ -218,6 +236,22 @@ class _QualityRepository(Protocol):
     ): ...
 
 
+class _ReviewRepository(Protocol):
+    def review_workspace(self, project_id: UUID, round_id: UUID): ...
+    def begin_analysis(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def create_comparison(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def create_review_reference(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def submit_conclusion(self, project_id: UUID, round_id: UUID, **values: Any): ...
+    def decide_conclusion(
+        self,
+        project_id: UUID,
+        round_id: UUID,
+        conclusion_id: UUID,
+        **values: Any,
+    ): ...
+    def reopen_conclusion(self, project_id: UUID, round_id: UUID, **values: Any): ...
+
+
 def _repository_factory(
     *,
     principal: Principal,
@@ -257,6 +291,21 @@ def _quality_repository_factory(
     from npi_core.trial.quality_repository import FrappeTrialQualityRepository
 
     return FrappeTrialQualityRepository(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
+def _review_repository_factory(
+    *,
+    principal: Principal,
+    request_id: str,
+    trace_id: str,
+) -> _ReviewRepository:
+    from npi_core.trial.review_repository import FrappeTrialReviewRepository
+
+    return FrappeTrialReviewRepository(
         principal=principal,
         request_id=request_id,
         trace_id=trace_id,
@@ -955,6 +1004,223 @@ def verify_trial_defect(
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET"])
+def get_trial_review_workspace(**request_fields: Any) -> dict[str, Any] | None:
+    headers = {"X-Request-ID": response_request_id()}
+
+    def handle() -> dict[str, Any]:
+        request_id, repository = _review_query_repository(request_fields)
+        response = repository.review_workspace(
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+        )
+        if response is None:
+            raise TrialReviewUnavailable()
+        headers["X-Request-ID"] = request_id
+        return response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers=headers,
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def begin_trial_analysis(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _review_command(
+        allowed_fields=BEGIN_ANALYSIS_FIELDS,
+        required_fields=BEGIN_ANALYSIS_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.begin_analysis(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **begin_analysis_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_trial_comparison(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    rounds: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _review_command(
+        allowed_fields=CREATE_COMPARISON_FIELDS,
+        required_fields=CREATE_COMPARISON_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.create_comparison(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **comparison_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def create_trial_review_reference(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    referenceGlobalId: Any = None,
+    expectedReferenceRevisionGlobalId: Any = None,
+    expectedReferenceRevisionSnapshotHash: Any = None,
+    expectedReferenceVersion: Any = None,
+    comparisonSnapshotGlobalId: Any = None,
+    expectedComparisonSnapshotHash: Any = None,
+    referenceKind: Any = None,
+    partRevisionGlobalId: Any = None,
+    expectedPartRevisionSnapshotHash: Any = None,
+    toolingMasterGlobalId: Any = None,
+    toolingRevisionGlobalId: Any = None,
+    expectedToolingRevisionSnapshotHash: Any = None,
+    toolingSetGlobalId: Any = None,
+    expectedToolingSetSnapshotHash: Any = None,
+    fileRevisionGlobalId: Any = None,
+    expectedFileRevisionSnapshotHash: Any = None,
+    effectiveFrom: Any = None,
+    effectiveTo: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    optional = frozenset(
+        {
+            "referenceGlobalId",
+            "expectedReferenceRevisionGlobalId",
+            "expectedReferenceRevisionSnapshotHash",
+            "expectedReferenceVersion",
+            "effectiveFrom",
+            "effectiveTo",
+        }
+    )
+    return _review_command(
+        allowed_fields=CREATE_REFERENCE_FIELDS,
+        required_fields=CREATE_REFERENCE_FIELDS - optional,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.create_review_reference(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **reference_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def submit_trial_conclusion(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    conclusionGlobalId: Any = None,
+    expectedConclusionRevisionGlobalId: Any = None,
+    expectedConclusionRevisionSnapshotHash: Any = None,
+    expectedConclusionVersion: Any = None,
+    comparisonSnapshotGlobalId: Any = None,
+    expectedComparisonSnapshotHash: Any = None,
+    reviewReferences: Any = None,
+    conclusionCode: Any = None,
+    proposedNextWork: Any = None,
+    proposedGateEffect: Any = None,
+    proposedNpiEffect: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    optional = frozenset(
+        {
+            "conclusionGlobalId",
+            "expectedConclusionRevisionGlobalId",
+            "expectedConclusionRevisionSnapshotHash",
+            "expectedConclusionVersion",
+        }
+    )
+    return _review_command(
+        allowed_fields=SUBMIT_CONCLUSION_FIELDS,
+        required_fields=SUBMIT_CONCLUSION_FIELDS - optional,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.submit_conclusion(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **conclusion_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def decide_trial_conclusion(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    expectedConclusionRevisionGlobalId: Any = None,
+    expectedConclusionRevisionSnapshotHash: Any = None,
+    expectedConclusionVersion: Any = None,
+    decision: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _review_command(
+        allowed_fields=DECIDE_CONCLUSION_FIELDS,
+        required_fields=DECIDE_CONCLUSION_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.decide_conclusion(
+            project_id,
+            round_id,
+            _opaque_route_uuid("conclusion_id"),
+            idempotency_key_hash=key_hash,
+            **decision_values(values),
+        ),
+    )
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def reopen_trial_conclusion(
+    policyRevisionGlobalId: Any = None,
+    expectedPolicyRevisionSnapshotHash: Any = None,
+    expectedRoundOptimisticVersion: Any = None,
+    expectedRoundSnapshotHash: Any = None,
+    conclusionGlobalId: Any = None,
+    expectedConclusionRevisionGlobalId: Any = None,
+    expectedConclusionRevisionSnapshotHash: Any = None,
+    expectedConclusionVersion: Any = None,
+    reason: Any = None,
+    **request_fields: Any,
+) -> dict[str, Any] | None:
+    values = {name: value for name, value in locals().items() if name != "request_fields"}
+    return _review_command(
+        allowed_fields=REOPEN_CONCLUSION_FIELDS,
+        required_fields=REOPEN_CONCLUSION_FIELDS,
+        request_fields=request_fields,
+        invoke=lambda repository, project_id, round_id, key_hash: repository.reopen_conclusion(
+            project_id,
+            round_id,
+            idempotency_key_hash=key_hash,
+            **reopen_values(values),
+        ),
+    )
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def read_trial_evidence_content(**request_fields: Any) -> None:
     headers = {"X-Request-ID": response_request_id()}
@@ -1015,6 +1281,18 @@ def trial_quality_routes_disabled(**_request_fields: Any) -> dict[str, Any] | No
     )
 
 
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
+def trial_review_routes_disabled(**_request_fields: Any) -> dict[str, Any] | None:
+    def handle() -> dict[str, Any]:
+        raise TrialReviewRoutesDisabled()
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        response_headers={"X-Request-ID": response_request_id()},
+    )
+
+
 def _query_repository(
     request_fields: dict[str, Any],
 ) -> tuple[str, _Repository]:
@@ -1046,6 +1324,17 @@ def _quality_query_repository(
     _require_role(principal)
     reject_unexpected_request_fields(frozenset(), request_fields)
     return _new_quality_repository(principal)
+
+
+def _review_query_repository(
+    request_fields: dict[str, Any],
+) -> tuple[str, _ReviewRepository]:
+    _require_trial_review_routes_enabled()
+    actor = authenticated_user()
+    principal = authenticated_principal(actor)
+    _require_role(principal)
+    reject_unexpected_request_fields(frozenset(), request_fields)
+    return _new_review_repository(principal)
 
 
 def _command(
@@ -1190,6 +1479,52 @@ def _quality_command(
     )
 
 
+def _review_command(
+    *,
+    allowed_fields: frozenset[str],
+    required_fields: frozenset[str],
+    request_fields: dict[str, Any],
+    invoke,
+) -> dict[str, Any] | None:
+    headers = {
+        "X-Request-ID": response_request_id(),
+        "Idempotency-Replayed": "false",
+    }
+
+    def handle() -> dict[str, Any]:
+        _require_trial_review_routes_enabled()
+        actor = authenticated_user()
+        require_csrf_token()
+        principal = authenticated_principal(actor)
+        _require_role(principal)
+        request_id, repository = _new_review_repository(principal)
+        reject_unexpected_request_fields(allowed_fields, request_fields)
+        require_request_fields(required_fields, request_fields)
+        outcome = invoke(
+            repository,
+            _opaque_project_uuid(),
+            _opaque_route_uuid("trial_round_id"),
+            actor_idempotency_key_hash(
+                actor,
+                frappe.get_request_header("Idempotency-Key"),
+            ),
+        )
+        if outcome is None:
+            raise TrialReviewUnavailable()
+        if type(outcome.replayed) is not bool:
+            raise RuntimeError("The Trial review replay response is invalid.")
+        headers["X-Request-ID"] = request_id
+        headers["Idempotency-Replayed"] = str(outcome.replayed).lower()
+        return outcome.response
+
+    return frappe_domain_call(
+        handle,
+        cache_control="private, no-store",
+        success_status=201,
+        response_headers=headers,
+    )
+
+
 def _new_repository(principal: Principal) -> tuple[str, _Repository]:
     request_id = str(_canonical_uuid(frappe.get_request_header("X-Request-ID"), "requestId"))
     trace_id = current_trace_id.get()
@@ -1240,6 +1575,25 @@ def _new_quality_repository(
     )
 
 
+def _new_review_repository(
+    principal: Principal,
+) -> tuple[str, _ReviewRepository]:
+    request_id = str(
+        _canonical_uuid(
+            frappe.get_request_header("X-Request-ID"),
+            "requestId",
+        )
+    )
+    trace_id = current_trace_id.get()
+    if trace_id is None:
+        raise RuntimeError("The Trial review request has no active trace identity.")
+    return request_id, _review_repository_factory(
+        principal=principal,
+        request_id=request_id,
+        trace_id=trace_id,
+    )
+
+
 def _trial_execution_routes_are_disabled() -> bool:
     configuration = getattr(frappe, "conf", None)
     value = (
@@ -1268,6 +1622,21 @@ def _trial_quality_routes_are_disabled() -> bool:
 def _require_trial_quality_routes_enabled() -> None:
     if _trial_quality_routes_are_disabled():
         raise TrialQualityRoutesDisabled()
+
+
+def _trial_review_routes_are_disabled() -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_04_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False
+
+
+def _require_trial_review_routes_enabled() -> None:
+    if _trial_review_routes_are_disabled():
+        raise TrialReviewRoutesDisabled()
 
 
 def _require_role(principal: Principal) -> None:

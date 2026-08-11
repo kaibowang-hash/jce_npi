@@ -17,7 +17,7 @@ def schema(name: str) -> str:
 
 
 class Phase7TrialReviewContractTest(unittest.TestCase):
-    def test_checkpoint_one_adds_closed_schemas_without_opening_routes(self) -> None:
+    def test_checkpoint_two_exposes_only_closed_project_first_review_routes(self) -> None:
         for name in (
             "TrialReviewExactReference",
             "TrialConclusionAuthorityBinding",
@@ -36,19 +36,37 @@ class Phase7TrialReviewContractTest(unittest.TestCase):
             "TrialOnePageSummaryInput",
             "TrialConclusionExternalEffects",
             "TrialConclusionRevision",
+            "BeginTrialAnalysis",
+            "TrialComparisonRoundInput",
+            "CreateTrialRoundComparison",
+            "CreateTrialReviewReferenceRevision",
+            "SubmitTrialConclusion",
+            "DecideTrialConclusion",
+            "ReopenTrialConclusion",
+            "TrialReviewPermissions",
+            "TrialReviewExternalEffects",
+            "TrialReviewWorkspace",
         ):
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", schema(name))
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        for forbidden in (
-            "/trial-rounds/{trialRoundId}/review:",
-            "/trial-rounds/{trialRoundId}:begin-analysis:",
-            "/trial-rounds/{trialRoundId}/comparisons:",
-            "/trial-rounds/{trialRoundId}/review-references:",
-            "/trial-rounds/{trialRoundId}/conclusions:",
-            "/trial-rounds/{trialRoundId}:reopen:",
+        for required in (
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/review:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}:begin-analysis:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/comparisons:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/review-references:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/conclusions:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}/conclusions/{conclusionId}:decide:",
+            "/projects/{projectId}/trial-rounds/{trialRoundId}:reopen:",
             "operationId: submitTrialConclusion",
             "operationId: decideTrialConclusion",
+        ):
+            self.assertIn(required, paths)
+        for forbidden in (
+            "/trial-rounds/{trialRoundId}/review-references/{referenceId}",
+            "/trial-rounds/{trialRoundId}/conclusions/{conclusionId}:delete",
+            "latestPolicy",
+            "rawDoctype",
         ):
             self.assertNotIn(forbidden, paths)
 

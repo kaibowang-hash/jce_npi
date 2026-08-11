@@ -301,6 +301,21 @@ class Phase7TrialMetadataTest(unittest.TestCase):
         self.assertTrue(
             all(field.get("read_only") == 1 for field in self.fields(round_metadata).values())
         )
+        lifecycle = self.fields(self.load("npi_trial_round_lifecycle_event"))
+        self.assertEqual(
+            lifecycle["event_type"]["options"].splitlines(),
+            [
+                "created",
+                "prepared",
+                "started",
+                "analysis_begun",
+                "conclusion_submitted",
+                "conclusion_approved",
+                "conclusion_rejected",
+                "reopened",
+                "cancelled",
+            ],
+        )
 
     def test_receipt_has_actor_bound_one_way_seal(self) -> None:
         receipt = self.load("npi_trial_command_idempotency")

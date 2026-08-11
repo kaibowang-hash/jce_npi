@@ -161,6 +161,34 @@ _PROJECT_TRIAL_DEFECT_VERIFICATIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
     r"(?P<trial_round_id>[^/:]+)/defects/(?P<defect_id>[^/:]+)/verifications$"
 )
+_PROJECT_TRIAL_REVIEW_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/review$"
+)
+_PROJECT_TRIAL_BEGIN_ANALYSIS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+):begin-analysis$"
+)
+_PROJECT_TRIAL_COMPARISONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/comparisons$"
+)
+_PROJECT_TRIAL_REVIEW_REFERENCES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/review-references$"
+)
+_PROJECT_TRIAL_CONCLUSIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/conclusions$"
+)
+_PROJECT_TRIAL_CONCLUSION_DECIDE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/conclusions/(?P<conclusion_id>[^/:]+):decide$"
+)
+_PROJECT_TRIAL_REOPEN_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+):reopen$"
+)
 _PROJECT_TOOLING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
 )
@@ -647,6 +675,10 @@ def route_request() -> None:
                 _PROJECT_TRIAL_QUALITY_ROUTE,
                 "npi_core.trial_api.get_trial_quality_workspace",
             ),
+            (
+                _PROJECT_TRIAL_REVIEW_ROUTE,
+                "npi_core.trial_api.get_trial_review_workspace",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -719,6 +751,30 @@ def route_request() -> None:
             (
                 _PROJECT_TRIAL_DEFECT_VERIFICATIONS_ROUTE,
                 "npi_core.trial_api.verify_trial_defect",
+            ),
+            (
+                _PROJECT_TRIAL_BEGIN_ANALYSIS_ROUTE,
+                "npi_core.trial_api.begin_trial_analysis",
+            ),
+            (
+                _PROJECT_TRIAL_COMPARISONS_ROUTE,
+                "npi_core.trial_api.create_trial_comparison",
+            ),
+            (
+                _PROJECT_TRIAL_REVIEW_REFERENCES_ROUTE,
+                "npi_core.trial_api.create_trial_review_reference",
+            ),
+            (
+                _PROJECT_TRIAL_CONCLUSIONS_ROUTE,
+                "npi_core.trial_api.submit_trial_conclusion",
+            ),
+            (
+                _PROJECT_TRIAL_CONCLUSION_DECIDE_ROUTE,
+                "npi_core.trial_api.decide_trial_conclusion",
+            ),
+            (
+                _PROJECT_TRIAL_REOPEN_ROUTE,
+                "npi_core.trial_api.reopen_trial_conclusion",
             ),
         ):
             match = route.fullmatch(path)
@@ -1325,6 +1381,9 @@ def route_request() -> None:
     if _p7_03_routes_disabled(command):
         command = "npi_core.trial_api.trial_quality_routes_disabled"
         route_params = {}
+    if _p7_04_routes_disabled(command):
+        command = "npi_core.trial_api.trial_review_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1786,6 +1845,24 @@ def _p7_03_routes_disabled(command: str | None) -> bool:
         "npi_core.trial_api.create_trial_defect",
         "npi_core.trial_api.revise_trial_defect",
         "npi_core.trial_api.verify_trial_defect",
+    }
+
+
+def _p7_04_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_04_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and command in {
+        "npi_core.trial_api.get_trial_review_workspace",
+        "npi_core.trial_api.begin_trial_analysis",
+        "npi_core.trial_api.create_trial_comparison",
+        "npi_core.trial_api.create_trial_review_reference",
+        "npi_core.trial_api.submit_trial_conclusion",
+        "npi_core.trial_api.decide_trial_conclusion",
+        "npi_core.trial_api.reopen_trial_conclusion",
     }
 
 

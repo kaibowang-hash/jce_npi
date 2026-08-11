@@ -80,6 +80,7 @@
     "scripts/verify_trial_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
+    "tests/test_phase7_trial_domain.py",
     "tests/test_phase7_trial_api.py",
     "tests/test_phase7_trial_metadata.py",
     "tests/test_phase7_trial_review_contract.py",
