@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-11T12:39:41Z`
+Updated: `2026-08-11T17:21:49Z`
 
 ## Authority and operating mode
 
@@ -2833,3 +2833,35 @@ repeat or rewrite it merely to restore context. See
   readiness P0 blockers plus one exact revision dependency in existing Gate-
   review input. No Gate decision, pass, close, reopen or mutation is allowed;
   UI and controlled runtime remain inactive.
+
+## 2026-08-11 P7-05 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product SHA `7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f`
+  passes pull-request CI `31515222245`: repository `93858576011` proves
+  `1,715` tracked Python tests; frontend `93858575911` proves `853/853` unit,
+  `378/378` non-visual E2E, `6,867` direct trilingual sources, statements
+  `80.05%` and zero vulnerabilities; secret scan `93858575821` passes; and
+  visual job `93858575907` passes the unchanged `106/106` fixed-Linux matrix.
+  Controlled preflight `93858576515` and runtime `93858576840` skip as
+  required for checkpoint 2.
+- The checkpoint activates only the frozen seven-route Project-first
+  repository/BFF boundary, exact supported-source closure and identity-free
+  unavailable external sources, actor-bound replay, one-transaction append-
+  only audit/receipt sealing and a separately default-closed P7-05 switch.
+  Recursively closed canonical responses fail safely on drift or corruption.
+- Existing Gate-review input may receive current applicable incomplete P0
+  blockers and one exact readiness-revision dependency. P7-05 creates no Gate
+  decision, transition, cycle, event or refresh and performs no ERP, Work Item,
+  Tooling, handover, release, projection or print mutation.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md`.
+  This is checkpoint 2 PASS, not the P7-05 Level 2 Task Gate.
+- Activate only checkpoint 3: the strict readiness data source and dense
+  trilingual Project readiness workspace with blocker-first truth, exact
+  category/item/owner/due/evidence/source state, score detail/history, honest
+  loading/empty/read-only/permission/validation/conflict/processing/retry/
+  drift/unavailable states, accessibility and affected fixed-Linux visuals.
+  `frontend/src/pages/project-page.tsx` is added to the path guard solely as
+  the existing App-to-ProjectWorkspace data-source injection seam; the live
+  data source must not be instantiated inside the workspace. Controlled
+  runtime and Level 2 remain checkpoint 4.

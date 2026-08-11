@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-11T13:37:12Z'
+updated_at: '2026-08-11T17:21:49Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-05
-current_task_status: IN_PROGRESS_CHECKPOINT_2
-current_task_completed_stage: P7_05_CHECKPOINT_1_PASS
-current_task_next_stage: P7_05_REPOSITORY_BFF_GATE_INPUT
+current_task_status: IN_PROGRESS_CHECKPOINT_3
+current_task_completed_stage: P7_05_REPOSITORY_BFF_GATE_INPUT_PASS
+current_task_next_stage: P7_05_LIVE_PROJECT_READINESS_WORKSPACE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-05
-resumed_product_task_status: ACTIVE_CHECKPOINT_2
+resumed_product_task_status: ACTIVE_CHECKPOINT_3
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1745,7 +1745,7 @@ p7_04:
 p7_05:
   task: P7-05
   controller_task: P7-05_NPI_CHECKLIST_READINESS_BLOCKERS
-  status: IN_PROGRESS_CHECKPOINT_2
+  status: IN_PROGRESS_CHECKPOINT_3
   phase: 7
   milestone: M6-05
   requirements:
@@ -1767,8 +1767,11 @@ p7_05:
   checkpoint_1_product_commit: 60da5cf1f437edbd7cfd0ebbc6ab4f099124d584
   checkpoint_1_final_checkpoint: c75956c4ef14677fe29a27f67f622a6c9f1fc8d1
   checkpoint_1_ci: 31496046593
-  current_stage: REPOSITORY_BFF_GATE_INPUT_BOUNDARY
-  next_stage_after_pass: LIVE_PROJECT_READINESS_WORKSPACE
+  checkpoint_2_product_commit: 7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f
+  checkpoint_2_final_checkpoint: 7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f
+  checkpoint_2_ci: 31515222245
+  current_stage: LIVE_PROJECT_READINESS_WORKSPACE
+  next_stage_after_pass: CONTROLLED_RUNTIME_AND_LEVEL_2
   product_code_changed: true
   external_holds:
     - PRODUCTION_ERPNEXT_MATERIAL_QUALITY_CAPACITY_AND_RUN_AT_RATE_RESULTS
@@ -1778,6 +1781,7 @@ p7_05:
     - implementation/evidence/phase-7/p7-04-validation.md
     - implementation/evidence/phase-7/p7-05-plan.md
     - implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md
+    - implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

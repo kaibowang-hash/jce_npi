@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T13:37:12Z`
+Updated: `2026-08-11T17:21:49Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `c75956c4ef14677fe29a27f67f622a6c9f1fc8d1` (pushed; P7-05 checkpoint 1
+  `7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f` (pushed; P7-05 checkpoint 2
   PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
@@ -30,13 +30,13 @@ Updated: `2026-08-11T13:37:12Z`
   ordinary CI `31488890426`, controlled Gate `31489609774`)
 - Current controller task:
   `P7-05 — NPI checklist, readiness and blockers`
-  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/GATE-INPUT BOUNDARY`)
-- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_2`)
+  (`IN_PROGRESS — CHECKPOINT 3 LIVE PROJECT READINESS WORKSPACE`)
+- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_3`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-05 CHECKPOINT 2`)
+  (`IN_PROGRESS — P7-05 CHECKPOINT 3`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -166,15 +166,25 @@ weakening the scanner. Ordinary CI `31496046593` passes repository
 Complete evidence is
 `implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md`.
 
-Checkpoint 2 is the only active scope: internal-admin template commands,
-Project-first instance read/initialize/revise behavior, exact supported and
-unavailable source resolution, actor-bound replay, one transaction, append-
-only audit, an independently default-closed switch, and readiness P0 blockers
-plus one exact revision dependency as input to the existing Gate review. It
-must not decide, pass, close, reopen or otherwise mutate a Gate. UI/runtime,
-production ERP results, automatic Work Item/Tooling mutation, handover,
-release, projection and print remain outside authority. There is no active
-technical Hard Blocker.
+P7-05 checkpoint 2 passes at exact product checkpoint `7bc9e64`. Ordinary CI
+`31515222245` passes repository `93858576011` (`1,715` tracked Python),
+frontend `93858575911` (`853/853` unit, `378/378` E2E, `6,867` direct
+trilingual sources, statements `80.05%` and zero vulnerabilities), secret scan
+`93858575821` and unchanged `106/106` fixed-Linux visuals in `93858575907`.
+The Project-first repository/BFF boundary enforces exact source closure,
+actor-bound replay, one-transaction audit/receipt sealing, recursively closed
+responses and current P0 blockers plus one exact readiness dependency as Gate
+review input without any Gate mutation. Complete evidence is
+`implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md`.
+
+Checkpoint 3 is the only active scope: compose the strict readiness data
+source and dense trilingual Project readiness workspace with blocker-first
+summary, exact category/item/owner/due/evidence/source state, score detail and
+history, plus honest loading, empty, read-only, permission, validation,
+conflict, processing, retry, drift and unavailable-external-source states.
+Controlled runtime remains checkpoint 4. Production ERP results, automatic
+Gate/Work Item/Tooling mutation, handover, release, projection and print remain
+outside authority. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

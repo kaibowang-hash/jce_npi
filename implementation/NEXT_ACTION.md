@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-05`
+`IN_PROGRESS_CHECKPOINT_3 — P7-05`
 
-Recovery time: `2026-08-11T13:37:12Z`
+Recovery time: `2026-08-11T17:21:49Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -16,6 +16,9 @@ P7-05 starting controller checkpoint:
 
 P7-05 checkpoint 1 final checkpoint:
 `c75956c4ef14677fe29a27f67f622a6c9f1fc8d1`
+
+P7-05 checkpoint 2 product checkpoint:
+`7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f`
 
 ## Current authoritative action
 
@@ -149,20 +152,32 @@ scan `93793900081` and unchanged `106/106` visual job `93793900326`. Complete
 evidence is
 `implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 2 in
-`implementation/evidence/phase-7/p7-05-plan.md`: internal-admin template
-commands, Project-first instance read/initialize/revise behavior, exact source
-resolvers, actor-bound replay, one transaction and append-only audit, an
-independently default-closed switch, and bounded inclusion of current readiness
-P0 blockers plus one exact revision dependency in existing Gate-review input.
-Do not add UI/runtime fixtures or decide, pass, close, reopen or otherwise
-mutate a Gate.
+P7-05 checkpoint 2 passes at exact product SHA `7bc9e64`. Ordinary CI
+`31515222245` passes repository `93858576011` (`1,715` tracked Python),
+frontend `93858575911` (`853/853` unit, `378/378` E2E, `6,867` complete
+direct trilingual sources, statements `80.05%` and zero vulnerabilities),
+secret scan `93858575821` and unchanged `106/106` fixed-Linux visuals in
+`93858575907`. Complete evidence is
+`implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md`.
+
+Execute only checkpoint 3 in
+`implementation/evidence/phase-7/p7-05-plan.md`: the strict readiness data
+source and dense Project workspace with blocker-first summary, exact category,
+item, owner, due, evidence and source truth, score detail and revision history.
+Cover loading, empty, read-only, permission, validation, conflict, processing,
+retry, drift and unavailable external sources in English, `zh` and `zh-TW`,
+accessibility and affected fixed-Linux visuals. Reuse exact Project members for
+owner selection and only server-returned exact source options; do not invent a
+template-admin UI or a generic source picker. Use `project-page.tsx` only as
+the existing data-source injection seam. Treat configured template/category/
+item titles as business data; all shell, state and error copy remains literal
+English source text with direct `zh` and `zh-TW` translations.
 
 Do not invent a G6/G7 policy, caller-supplied score, blocker waiver, ERP result,
 PFMEA/MSA/CPK/PPAP global applicability or automatic Gate/Work Item/Tooling
 mutation. Production handover, Released Trial Summary, external projection and
-production print remain later tasks. Level 3 remains reserved for the Phase,
-PR or release boundary.
+production print remain later tasks. Controlled runtime and Level 2 remain
+checkpoint 4. Level 3 remains reserved for the Phase, PR or release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 
