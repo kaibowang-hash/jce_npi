@@ -6,7 +6,7 @@ import json
 import sys
 import types
 import unittest
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from unittest.mock import patch
 from uuid import UUID, uuid4
@@ -517,6 +517,15 @@ class Phase7TrialRepositoryTest(unittest.TestCase):
         values["objective"] = "A different immutable objective."
         with self.assertRaises(self.module.TrialIdempotencyConflict):
             self.repository.create_plan(PROJECT_ID, **values)
+
+    def test_payload_hash_normalizes_action_due_date(self) -> None:
+        due_date = date(2027, 2, 12)
+        self.assertEqual(
+            self.module._payload_hash({"actions": ({"dueDate": due_date},)}),
+            self.module.sha256_json(
+                {"actions": [{"dueDate": "2027-02-12"}]}
+            ),
+        )
 
     def test_revision_requires_exact_current_predecessor(self) -> None:
         created = self.repository.create_plan(PROJECT_ID, **self.plan_values())

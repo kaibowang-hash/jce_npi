@@ -1446,6 +1446,8 @@ def _json_value(value: object) -> object:
         return [_json_value(item) for item in value]
     if isinstance(value, datetime):
         return _datetime_iso(value)
+    if isinstance(value, date):
+        return value.isoformat()
     if isinstance(value, UUID):
         return str(value)
     enum_value = getattr(value, "value", value)
