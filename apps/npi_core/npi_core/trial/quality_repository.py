@@ -508,41 +508,46 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
             "predecessor": predecessor,
             **values,
         }
-        project, replay, payload_hash = self._command_start(
-            project_id,
-            operation,
-            idempotency_key_hash,
-            payload,
-        )
+        with quality_type_error_stage("P703_QUALITY_COMMAND_START", self.trace_id):
+            project, replay, payload_hash = self._command_start(
+                project_id,
+                operation,
+                idempotency_key_hash,
+                payload,
+            )
         if project is None or replay is not None:
             return None if project is None else TrialExecutionCommandOutcome(replay, replayed=True)
-        trial_round, input_lock = self._exact_running_context(
-            project,
-            round_id,
-            values["expected_round_optimistic_version"],
-            values["expected_round_snapshot_hash"],
-            values["expected_input_lock_revision_id"],
-            values["expected_input_lock_revision_snapshot_hash"],
-        )
-        tooling_revision, tooling_set = self._locked_tooling_context(
-            input_lock,
-            values["cavity_id"],
-        )
-        sample = None
-        if values["sample_batch_revision_id"] is not None:
-            sample = self._exact_quality_sample(
+        with quality_type_error_stage("P703_QUALITY_RUNNING_CONTEXT", self.trace_id):
+            trial_round, input_lock = self._exact_running_context(
                 project,
                 round_id,
-                values["sample_batch_revision_id"],
-                values["expected_sample_batch_revision_snapshot_hash"],
+                values["expected_round_optimistic_version"],
+                values["expected_round_snapshot_hash"],
+                values["expected_input_lock_revision_id"],
+                values["expected_input_lock_revision_snapshot_hash"],
+            )
+        with quality_type_error_stage("P703_QUALITY_TOOLING_CONTEXT", self.trace_id):
+            tooling_revision, tooling_set = self._locked_tooling_context(
+                input_lock,
                 values["cavity_id"],
             )
-        stable_id, exact_predecessor = self._exact_defect_tip(
-            project,
-            trial_round.tooling_master_global_id,
-            defect_id,
-            predecessor,
-        )
+        sample = None
+        if values["sample_batch_revision_id"] is not None:
+            with quality_type_error_stage("P703_QUALITY_SAMPLE_RESOLVE", self.trace_id):
+                sample = self._exact_quality_sample(
+                    project,
+                    round_id,
+                    values["sample_batch_revision_id"],
+                    values["expected_sample_batch_revision_snapshot_hash"],
+                    values["cavity_id"],
+                )
+        with quality_type_error_stage("P703_QUALITY_DEFECT_TIP", self.trace_id):
+            stable_id, exact_predecessor = self._exact_defect_tip(
+                project,
+                trial_round.tooling_master_global_id,
+                defect_id,
+                predecessor,
+            )
         with quality_type_error_stage("P703_QUALITY_MEMBER_RESOLVE", self.trace_id):
             exact_member = (
                 None
@@ -556,13 +561,14 @@ class FrappeTrialQualityRepository(FrappeTrialExecutionRepository):
                 exact_predecessor,
                 values["actions"],
             )
-        evidence = self._merged_defect_evidence(
-            project,
-            round_id,
-            exact_predecessor,
-            values["evidence"],
-            sample.global_id if sample else None,
-        )
+        with quality_type_error_stage("P703_QUALITY_EVIDENCE_RESOLVE", self.trace_id):
+            evidence = self._merged_defect_evidence(
+                project,
+                round_id,
+                exact_predecessor,
+                values["evidence"],
+                sample.global_id if sample else None,
+            )
         now = datetime.now(UTC)
         with quality_type_error_stage("P703_QUALITY_DEFECT_BUILD", self.trace_id):
             value = TrialDefectRevision(

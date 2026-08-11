@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 QUALITY_REPOSITORY = ROOT / "apps/npi_core/npi_core/trial/quality_repository.py"
+TRIAL_API = ROOT / "apps/npi_core/npi_core/trial_api.py"
 TOOLING_REPOSITORY = ROOT / "apps/npi_core/npi_core/tooling/engineering_controls_repository.py"
 BFF = ROOT / "apps/npi_core/npi_core/bff.py"
 QUALITY_DIAGNOSTICS = ROOT / "apps/npi_core/npi_core/trial/quality_diagnostics.py"
@@ -90,6 +91,27 @@ class Phase7TrialQualityRepositorySeamTest(unittest.TestCase):
             "response_body",
         ):
             self.assertNotIn(forbidden, source)
+
+    def test_defect_create_type_diagnostics_cover_each_early_runtime_boundary(self) -> None:
+        repository = QUALITY_REPOSITORY.read_text(encoding="utf-8")
+        api = TRIAL_API.read_text(encoding="utf-8")
+        diagnostics = QUALITY_DIAGNOSTICS.read_text(encoding="utf-8")
+        quality_command = api[api.index("def _quality_command(") :]
+        self.assertIn("P703_QUALITY_API_INVOKE", quality_command)
+        self.assertIn("P703_QUALITY_API_INVOKE", diagnostics)
+        for code in (
+            "P703_QUALITY_COMMAND_START",
+            "P703_QUALITY_RUNNING_CONTEXT",
+            "P703_QUALITY_TOOLING_CONTEXT",
+            "P703_QUALITY_SAMPLE_RESOLVE",
+            "P703_QUALITY_DEFECT_TIP",
+            "P703_QUALITY_MEMBER_RESOLVE",
+            "P703_QUALITY_ACTION_RESOLVE",
+            "P703_QUALITY_EVIDENCE_RESOLVE",
+        ):
+            with self.subTest(code=code):
+                self.assertIn(code, repository)
+                self.assertIn(code, diagnostics)
 
 
 if __name__ == "__main__":

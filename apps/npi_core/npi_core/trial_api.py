@@ -51,6 +51,7 @@ from npi_core.trial.quality_domain import (
     TrialQualityRoutesDisabled,
     TrialQualityUnavailable,
 )
+from npi_core.trial.quality_diagnostics import quality_type_error_stage
 from npi_core.trial.quality_validation import (
     CREATE_CAVITY_RESULT_FIELDS,
     CREATE_DEFECT_FIELDS,
@@ -1160,15 +1161,19 @@ def _quality_command(
         request_id, repository = _new_quality_repository(principal)
         reject_unexpected_request_fields(allowed_fields, request_fields)
         require_request_fields(required_fields, request_fields)
-        outcome = invoke(
-            repository,
-            _opaque_project_uuid(),
-            _opaque_route_uuid("trial_round_id"),
-            actor_idempotency_key_hash(
-                actor,
-                frappe.get_request_header("Idempotency-Key"),
-            ),
-        )
+        trace_id = current_trace_id.get()
+        if trace_id is None:
+            raise RuntimeError("The Trial quality request has no active trace identity.")
+        with quality_type_error_stage("P703_QUALITY_API_INVOKE", trace_id):
+            outcome = invoke(
+                repository,
+                _opaque_project_uuid(),
+                _opaque_route_uuid("trial_round_id"),
+                actor_idempotency_key_hash(
+                    actor,
+                    frappe.get_request_header("Idempotency-Key"),
+                ),
+            )
         if outcome is None:
             raise TrialQualityUnavailable()
         if type(outcome.replayed) is not bool:
