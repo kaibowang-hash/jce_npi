@@ -126,6 +126,7 @@ class Phase7TrialQualityRuntimeVerifierTest(unittest.TestCase):
             "P7-03 Trial quality",
             "scope=p5-01-through-p7-03",
             "predecessor_scope=p5-01-through-p7-02",
+            "python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier -v",
             "bash scripts/verify-frappe-runtime.sh --trial-only",
         ):
             with self.subTest(marker=marker):

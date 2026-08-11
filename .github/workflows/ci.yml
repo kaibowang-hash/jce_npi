@@ -195,7 +195,7 @@ jobs:
       - name: Verify current task and runtime contract before Site setup
         run: |
           python scripts/verify_current_task.py
-          python -m unittest tests.test_phase7_trial_runtime_verifier -v
+          python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier -v
           bash -n scripts/verify-frappe-runtime.sh
       - name: Verify exact prior pull-request Gate for Level 2 reuse
         if: inputs.gate_mode == 'level_2_controlled'
