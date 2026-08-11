@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-04`
+`IN_PROGRESS_CHECKPOINT_4 — P7-04`
 
-Recovery time: `2026-08-11T07:53:20Z`
+Recovery time: `2026-08-11T09:27:57Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -122,20 +122,29 @@ trilingual sources), secret scan `93710640333` and unchanged `103/103` fixed-
 Linux visual job `93710640286`. Complete evidence is
 `implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md`.
 
-Execute only checkpoint 3 enforced by `implementation/CURRENT_TASK.json`: add
-the strict Trial review data source and dense English/Simplified-Chinese/
-Traditional-Chinese comparison and conclusion workspace. Preserve exact source
-identity, policy/authority/blocker truth and controlled reference state across
-honest loading, empty, read-only, permission, validation, conflict, processing,
-retry and unavailable-external-effect surfaces; add only affected Linux visual
-evidence. Create no controlled runtime fixture in this checkpoint.
+P7-04 checkpoint 3 passes at exact product SHA `0b7d3c7`. Ordinary CI
+`31476917719` passes repository `93732624387` (`1,601` tracked Python),
+frontend `93732624360` (`853/853` unit, `378/378` E2E, `6,770` complete
+direct trilingual sources, statements `80.05%` and zero vulnerabilities),
+secret scan `93732624335` and the expanded `106/106` fixed-Linux visual matrix
+in `93732624345`. Complete evidence is
+`implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md`.
+
+Execute only checkpoint 4 enforced by `implementation/CURRENT_TASK.json`:
+extend the cumulative disposable-Site Trial runtime through P7-04 and prove
+exact multi-Round comparison, explicit unavailable sources, controlled
+reference succession, policy blockers, immutable submit/approve/reject/reopen
+history, same/cross-process replay, stale/fork/conflict/rollback/IDOR/route
+recovery/migrations/redaction, zero ERP/network/Outbox or Gate/Tooling effect
+and cleanup. Then complete the P7-04 Requirement trace, Task Diff Review and
+Level 2 Gate on one exact SHA.
 
 Cycle/yield and formal ERP quality must remain explicitly unavailable unless
 an exact governed source exists. Evidence is not approval. Keep automatic
 Gate/Tooling/Work Item mutation, production ERPNext, customer signature
 authority, readiness, handover, release, external projection and production
-print inactive. Controlled runtime and Level 2 remain checkpoint 4; Level 3
-remains reserved for the applicable PR/Phase/release boundary.
+print inactive. No further UI expansion is authorized. Level 3 remains reserved
+for the applicable PR/Phase/release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 

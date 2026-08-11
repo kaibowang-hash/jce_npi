@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T07:53:20Z`
+Updated: `2026-08-11T09:27:57Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `b65415f8789be3b24c8f3ab8be0a85a5f5f636b3` (pushed; P7-04 checkpoint 2 PASS)
+  `0b7d3c762fd340d546be316cf7915a7fb31390fb` (pushed; P7-04 checkpoint 3 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -25,17 +25,17 @@ Updated: `2026-08-11T07:53:20Z`
   `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (`LEVEL 2 PASS`;
   ordinary CI `31459395711`, controlled Gate `31459974578`)
 - Latest P7-04 product checkpoint:
-  `b65415f8789be3b24c8f3ab8be0a85a5f5f636b3` (`CHECKPOINT 2 PASS`;
-  ordinary CI `31469876418`)
+  `0b7d3c762fd340d546be316cf7915a7fb31390fb` (`CHECKPOINT 3 PASS`;
+  ordinary CI `31476917719`)
 - Current controller task:
   `P7-04 — Round comparison, conclusion, quality and approval references`
-  (`IN_PROGRESS — CHECKPOINT 3 LIVE COMPARISON/CONCLUSION WORKSPACE`)
-- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_3`)
+  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
+- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_4`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-04 CHECKPOINT 3`)
+  (`IN_PROGRESS — P7-04 CHECKPOINT 4`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -132,14 +132,26 @@ clean reference binding, distinct lifecycle/conclusion successors, actor-bound
 replay and one-transaction audit/receipt sealing. Evidence is
 `implementation/evidence/phase-7/p7-04-repository-bff-policy-checkpoint.md`.
 
-Only checkpoint 3 is active under `implementation/CURRENT_TASK.json`: the
-strict Trial review data source and dense trilingual comparison/conclusion
-workspace with honest loading, empty, read-only, permission, validation,
-conflict, processing, retry and unavailable-external-effect states plus
-affected Linux visuals. Controlled runtime and Level 2 remain checkpoint 4.
-Automatic Gate/Tooling/Work Item mutation, production ERPNext, customer
-signature authority, readiness, release, projection and production print
-remain outside authority. There is no active technical Hard Blocker.
+P7-04 checkpoint 3 passes at exact product checkpoint `0b7d3c7`. Ordinary CI
+`31476917719` passes repository `93732624387` (`1,601` tracked Python),
+frontend `93732624360` (`853/853` unit, `378/378` E2E, `6,770` complete
+direct trilingual sources and statements `80.05%`), secret scan `93732624335`
+and the expanded `106/106` fixed-Linux visual matrix in `93732624345`. The
+strict data source and dense trilingual workspace preserve exact comparison,
+controlled-reference, blocker, immutable conclusion/decision/reopen and
+proposal-only external-effect truth. Evidence is
+`implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md`.
+
+Only checkpoint 4 is active under `implementation/CURRENT_TASK.json`: extend
+the cumulative disposable-Site Trial fixture through P7-04 and prove exact
+multi-Round comparison, unavailable sources, controlled reference succession,
+policy blockers, submit/decide/reopen history, same/cross-process replay,
+stale/fork/conflict/rollback/IDOR/route recovery/migrations/redaction, zero
+ERP/network/Outbox or Gate/Tooling effect and cleanup; then complete trace,
+Task Diff Review and Level 2. Automatic Gate/Tooling/Work Item mutation,
+production ERPNext, customer signature authority, readiness, release,
+projection and production print remain outside authority. There is no active
+technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

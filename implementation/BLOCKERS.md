@@ -1,20 +1,19 @@
 # Blockers
 
-Updated: `2026-08-11T07:53:20Z`
+Updated: `2026-08-11T09:27:57Z`
 
 ## Active hard blockers
 
-None. P7-04 checkpoint 2 passes at exact product checkpoint `b65415f` and
-ordinary CI `31469876418`, including repository, frontend/E2E, secret and
-`103/103` fixed-Linux visual lanes. Checkpoint 3 is active; no user action or
-GitHub frontend login is required.
+None. P7-04 checkpoint 3 passes ordinary CI `31476917719` at exact product
+checkpoint `0b7d3c7`, including repository, frontend/E2E, both secret
+boundaries and `106/106` fixed-Linux visuals. Checkpoint 4 controlled runtime
+and Level 2 are active; no user action or GitHub frontend login is required.
 
 ## Active recovery
 
-None. The ordered delivery hold remains resolved. P7-04 is restricted to the
-frozen checkpoint 3 strict data-source and trilingual comparison/conclusion
-workspace boundary under the machine-readable path guard. Controlled runtime
-and Level 2 remain checkpoint 4.
+None. The ordered delivery hold remains resolved. P7-04 checkpoint 3 is proven.
+Checkpoint 4 cumulative disposable-Site runtime and Level 2 are active under
+the frozen plan and machine-readable path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

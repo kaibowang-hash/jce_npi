@@ -2736,3 +2736,24 @@ repeat or rewrite it merely to restore context. See
   states plus affected Linux visuals. Controlled runtime and Level 2 remain
   checkpoint 4. Level 3 remains reserved for the applicable PR/Phase/release
   boundary; no external authority is broadened.
+
+## 2026-08-11 P7-04 checkpoint 3 PASS; checkpoint 4 active
+
+- Exact product checkpoint `0b7d3c762fd340d546be316cf7915a7fb31390fb`
+  adds only the strict Trial review data source and dense trilingual exact
+  comparison, controlled-reference, blocker, immutable conclusion/decision/
+  reopen and summary-input workspace with honest loading, empty, read-only,
+  permission, validation, conflict, processing, retry and unavailable-effect
+  states.
+- Ordinary CI `31476917719` passes repository `93732624387` with `1,601`
+  tracked Python tests, frontend `93732624360` with `853/853` unit,
+  `378/378` non-visual E2E, `6,770` complete direct trilingual sources and
+  statements `80.05%`, secret scan `93732624335` and the expanded `106/106`
+  fixed-Linux visual matrix in `93732624345`. Accepted evidence is
+  `implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md`.
+- Activate only checkpoint 4: cumulative disposable-Site P7-04 runtime,
+  exact-SHA controlled dispatch, Requirement trace, Task Diff Review and Level
+  2. No further UI expansion, production ERPNext, customer signature, Gate/
+  Tooling/Work Item mutation, readiness, release, external projection or
+  production print is authorized. Level 3 remains reserved for the applicable
+  PR/Phase/release boundary.
