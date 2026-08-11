@@ -17372,6 +17372,453 @@ components:
           items: { $ref: "#/components/schemas/TrialQualityParetoRow" }
         permissions: { $ref: "#/components/schemas/TrialQualityPermissions" }
         externalEffects: { $ref: "#/components/schemas/TrialDefectExternalEffects" }
+    TrialReviewSha256:
+      type: string
+      pattern: "^[a-f0-9]{64}$"
+    TrialReviewExactReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    TrialConclusionAuthorityBinding:
+      type: object
+      additionalProperties: false
+      required: [member, capabilities]
+      properties:
+        member: { $ref: "#/components/schemas/ToolingProjectMemberResponsibility" }
+        capabilities:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: { type: string, enum: [submit, decide, reopen] }
+    TrialConclusionPolicyVersion:
+      type: object
+      additionalProperties: false
+      description: Immutable Project and Trial Plan scoped conclusion policy; metadata installs no production row or authority.
+      required:
+        [schemaVersion, globalId, policyGlobalId, tenantId, projectGlobalId,
+         trialPlanGlobalId, trialPlanRevisionGlobalId,
+         trialPlanRevisionSnapshotHash, policyVersion, predecessorGlobalId,
+         predecessorSnapshotHash, requiredParameterKeys,
+         requiredDimensionKeys, requiredReferenceKinds,
+         requireCavityResults, blockOnOpenBlockingDefects,
+         blockOnUnverifiedRequiredActions, allowedConclusionCodes,
+         outOfSpecBlockingCodes, authorityBindings, publishedByUserId,
+         publishedAt, requestId, traceId]
+      properties:
+        schemaVersion: { type: string, const: npi.trial.v1 }
+        globalId: { type: string, format: uuid }
+        policyGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 256 }
+        projectGlobalId: { type: string, format: uuid }
+        trialPlanGlobalId: { type: string, format: uuid }
+        trialPlanRevisionGlobalId: { type: string, format: uuid }
+        trialPlanRevisionSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        policyVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        predecessorSnapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewSha256" }, { type: "null" }]
+        requiredParameterKeys:
+          type: array
+          maxItems: 250
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 256 }
+        requiredDimensionKeys:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 256 }
+        requiredReferenceKinds:
+          type: array
+          minItems: 1
+          maxItems: 4
+          uniqueItems: true
+          items:
+            type: string
+            enum: [controlled_quality_report, internal_sample_review, customer_evidence, deviation_or_waiver]
+        requireCavityResults: { type: boolean }
+        blockOnOpenBlockingDefects: { type: boolean }
+        blockOnUnverifiedRequiredActions: { type: boolean }
+        allowedConclusionCodes:
+          type: array
+          minItems: 7
+          maxItems: 7
+          uniqueItems: true
+          items:
+            type: string
+            enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled]
+        outOfSpecBlockingCodes:
+          type: array
+          maxItems: 7
+          uniqueItems: true
+          items:
+            type: string
+            enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled]
+        authorityBindings:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialConclusionAuthorityBinding" }
+        publishedByUserId: { type: string, minLength: 1, maxLength: 254 }
+        publishedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 256 }
+    TrialReviewCavityResultTip:
+      type: object
+      additionalProperties: false
+      required: [cavityGlobalId, revision]
+      properties:
+        cavityGlobalId: { type: string, format: uuid }
+        revision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+    TrialReviewDefectTip:
+      type: object
+      additionalProperties: false
+      required: [defectGlobalId, sourceKind, revision, state, blocking, requiredActionsUnverified]
+      properties:
+        defectGlobalId: { type: string, format: uuid }
+        sourceKind: { type: string, enum: [tooling, trial] }
+        revision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        state: { type: string, enum: [open, assigned, in_progress, ready_for_verification, closed, reopened] }
+        blocking: { type: boolean }
+        requiredActionsUnverified: { type: integer, minimum: 0 }
+    TrialRoundComparisonSource:
+      type: object
+      additionalProperties: false
+      required:
+        [sequence, trialRoundGlobalId, trialRoundOptimisticVersion,
+         trialRoundSnapshotHash, trialPlanRevision, inputLockRevision,
+         actualRevision, sampleRevisions, cavityResults, defects]
+      properties:
+        sequence: { type: integer, minimum: 1 }
+        trialRoundGlobalId: { type: string, format: uuid }
+        trialRoundOptimisticVersion: { type: integer, minimum: 1 }
+        trialRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        trialPlanRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        inputLockRevision:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewExactReference" }, { type: "null" }]
+        actualRevision:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewExactReference" }, { type: "null" }]
+        sampleRevisions:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        cavityResults:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/TrialReviewCavityResultTip" }
+        defects:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialReviewDefectTip" }
+    TrialInputComparisonCell:
+      type: object
+      additionalProperties: false
+      required: [trialRoundGlobalId, canonicalValue, sourceRevision]
+      properties:
+        trialRoundGlobalId: { type: string, format: uuid }
+        canonicalValue:
+          oneOf: [{ type: string, maxLength: 2000 }, { type: "null" }]
+        sourceRevision:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewExactReference" }, { type: "null" }]
+    TrialInputComparisonRow:
+      type: object
+      additionalProperties: false
+      required: [semanticKey, changeState, cells]
+      properties:
+        semanticKey: { type: string, minLength: 1, maxLength: 256 }
+        changeState: { type: string, readOnly: true, enum: [added, removed, changed, same] }
+        cells:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialInputComparisonCell" }
+    TrialMetricComparisonCell:
+      type: object
+      additionalProperties: false
+      required:
+        [trialRoundGlobalId, state, value, unit, lowerLimit, upperLimit,
+         comparisonState, sourceRevision, deltaFromPrevious]
+      properties:
+        trialRoundGlobalId: { type: string, format: uuid }
+        state: { type: string, enum: [measured, not_measured, unavailable] }
+        value:
+          oneOf: [{ type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }, { type: "null" }]
+        unit:
+          oneOf: [{ type: string, minLength: 1, maxLength: 32 }, { type: "null" }]
+        lowerLimit:
+          oneOf: [{ type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }, { type: "null" }]
+        upperLimit:
+          oneOf: [{ type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }, { type: "null" }]
+        comparisonState:
+          { type: string, readOnly: true, enum: [measured, not_measured, unavailable, within_spec, out_of_spec] }
+        sourceRevision:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewExactReference" }, { type: "null" }]
+        deltaFromPrevious:
+          oneOf: [{ type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }, { type: "null" }]
+    TrialMetricComparisonRow:
+      type: object
+      additionalProperties: false
+      required: [metricKind, metricKey, cavityGlobalId, unitState, cells]
+      properties:
+        metricKind: { type: string, enum: [parameter, dimension, cycle_time, yield] }
+        metricKey: { type: string, minLength: 1, maxLength: 256 }
+        cavityGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        unitState: { type: string, readOnly: true, enum: [comparable, unit_mismatch, unavailable] }
+        cells:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialMetricComparisonCell" }
+    TrialDefectTrend:
+      type: object
+      additionalProperties: false
+      required: [defectGlobalId, state]
+      properties:
+        defectGlobalId: { type: string, format: uuid }
+        state: { type: string, readOnly: true, enum: [new, continued, resolved, reopened] }
+    TrialRoundComparisonSnapshot:
+      type: object
+      additionalProperties: false
+      description: Immutable multi-Round comparison; absent governed cycle time or yield remains unavailable and is never imputed as zero.
+      required:
+        [schemaVersion, globalId, tenantId, projectGlobalId,
+         trialPlanGlobalId, targetRoundGlobalId, policyRevision, sources,
+         inputRows, metricRows, defectTrends, formalErpQuality,
+         createdByUserId, createdAt, requestId, traceId]
+      properties:
+        schemaVersion: { type: string, const: npi.trial.v1 }
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 256 }
+        projectGlobalId: { type: string, format: uuid }
+        trialPlanGlobalId: { type: string, format: uuid }
+        targetRoundGlobalId: { type: string, format: uuid }
+        policyRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        sources:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialRoundComparisonSource" }
+        inputRows:
+          type: array
+          minItems: 1
+          maxItems: 2000
+          items: { $ref: "#/components/schemas/TrialInputComparisonRow" }
+        metricRows:
+          type: array
+          minItems: 4
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialMetricComparisonRow" }
+        defectTrends:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialDefectTrend" }
+        formalErpQuality: { type: string, readOnly: true, const: unavailable }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 256 }
+    TrialReviewReferenceRevision:
+      type: object
+      additionalProperties: false
+      description: Controlled evidence reference. Presence never grants customer, production or formal ERP quality approval.
+      required:
+        [schemaVersion, globalId, referenceGlobalId, tenantId,
+         projectGlobalId, trialRoundGlobalId, comparisonSnapshot,
+         referenceKind, referenceVersion, predecessorGlobalId,
+         predecessorSnapshotHash, partRevision, toolingMasterGlobalId,
+         toolingRevision, toolingSet, fileRevision, effectiveFrom,
+         effectiveTo, approvalAuthority, reason, createdByUserId,
+         createdAt, requestId, traceId]
+      properties:
+        schemaVersion: { type: string, const: npi.trial.v1 }
+        globalId: { type: string, format: uuid }
+        referenceGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 256 }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        comparisonSnapshot: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        referenceKind:
+          { type: string, enum: [controlled_quality_report, internal_sample_review, customer_evidence, deviation_or_waiver] }
+        referenceVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        predecessorSnapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewSha256" }, { type: "null" }]
+        partRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        toolingMasterGlobalId: { type: string, format: uuid }
+        toolingRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        toolingSet: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        fileRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        effectiveFrom:
+          oneOf: [{ type: string, format: date }, { type: "null" }]
+        effectiveTo:
+          oneOf: [{ type: string, format: date }, { type: "null" }]
+        approvalAuthority: { type: string, readOnly: true, const: unavailable }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 256 }
+    TrialConclusionBlocker:
+      type: object
+      additionalProperties: false
+      required: [code, sourceKey]
+      properties:
+        code:
+          type: string
+          readOnly: true
+          enum: [missing_input_lock, missing_actual, required_parameter_not_measured, missing_cavity_result, required_dimension_not_measured, open_blocking_defect, required_action_not_verified, required_review_reference_unavailable, out_of_spec_blocking]
+        sourceKey: { type: string, minLength: 1, maxLength: 256 }
+    TrialOnePageSummaryExactReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    TrialOnePageSummaryReviewReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, snapshotHash, referenceKind]
+      properties:
+        globalId: { type: string, format: uuid }
+        snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        referenceKind:
+          { type: string, enum: [controlled_quality_report, internal_sample_review, customer_evidence, deviation_or_waiver] }
+    TrialOnePageSummaryExternalEffects:
+      type: object
+      additionalProperties: false
+      required: [nextWork, gate, npiReadiness, toolingLifecycle]
+      properties:
+        nextWork: { type: string, const: proposal_only }
+        gate: { type: string, const: unavailable }
+        npiReadiness: { type: string, const: unavailable }
+        toolingLifecycle: { type: string, const: unavailable }
+    TrialOnePageSummaryInput:
+      type: object
+      additionalProperties: false
+      required:
+        [schemaVersion, comparisonSnapshot, rounds, targetRoundGlobalId,
+         inputChangeCounts, metricRowHashes, defectTrendCounts,
+         reviewReferences, cycleTimeState, yieldState, formalErpQuality,
+         conclusionCode, conclusionState, externalEffects]
+      properties:
+        schemaVersion: { type: string, const: npi.trial.v1 }
+        comparisonSnapshot: { $ref: "#/components/schemas/TrialOnePageSummaryExactReference" }
+        rounds:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialOnePageSummaryExactReference" }
+        targetRoundGlobalId: { type: string, format: uuid }
+        inputChangeCounts:
+          type: object
+          additionalProperties: false
+          required: [added, removed, changed, same]
+          properties:
+            added: { type: integer, minimum: 0 }
+            removed: { type: integer, minimum: 0 }
+            changed: { type: integer, minimum: 0 }
+            same: { type: integer, minimum: 0 }
+        metricRowHashes:
+          type: array
+          minItems: 4
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialReviewSha256" }
+        defectTrendCounts:
+          type: object
+          additionalProperties: false
+          required: [new, continued, resolved, reopened]
+          properties:
+            new: { type: integer, minimum: 0 }
+            continued: { type: integer, minimum: 0 }
+            resolved: { type: integer, minimum: 0 }
+            reopened: { type: integer, minimum: 0 }
+        reviewReferences:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialOnePageSummaryReviewReference" }
+        cycleTimeState:
+          { type: string, enum: [measured, not_measured, unavailable, within_spec, out_of_spec] }
+        yieldState:
+          { type: string, enum: [measured, not_measured, unavailable, within_spec, out_of_spec] }
+        formalErpQuality: { type: string, const: unavailable }
+        conclusionCode:
+          { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+        conclusionState: { type: string, enum: [submitted, approved, rejected, reopened] }
+        externalEffects: { $ref: "#/components/schemas/TrialOnePageSummaryExternalEffects" }
+    TrialConclusionExternalEffects:
+      type: object
+      additionalProperties: false
+      required: [nextWork, gate, npiReadiness, toolingLifecycle, formalErpQuality, customerSignature]
+      properties:
+        nextWork: { type: string, const: proposal_only }
+        gate: { type: string, const: unavailable }
+        npiReadiness: { type: string, const: unavailable }
+        toolingLifecycle: { type: string, const: unavailable }
+        formalErpQuality: { type: string, const: unavailable }
+        customerSignature: { type: string, const: unavailable }
+    TrialConclusionRevision:
+      type: object
+      additionalProperties: false
+      description: Immutable submit, decision or reopen revision. Proposed effects never mutate Gate, NPI readiness, Tooling lifecycle or external quality.
+      required:
+        [schemaVersion, globalId, conclusionGlobalId, tenantId,
+         projectGlobalId, trialRoundGlobalId, trialRoundOptimisticVersion,
+         trialRoundSnapshotHash, conclusionVersion, predecessorGlobalId,
+         predecessorSnapshotHash, state, conclusionCode, policyRevision,
+         comparisonSnapshot, reviewReferences, blockers, summaryInput,
+         proposedNextWork, proposedGateEffect, proposedNpiEffect,
+         externalEffects, reason, createdByUserId, createdAt, requestId,
+         traceId]
+      properties:
+        schemaVersion: { type: string, const: npi.trial.v1 }
+        globalId: { type: string, format: uuid }
+        conclusionGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 256 }
+        projectGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        trialRoundOptimisticVersion: { type: integer, minimum: 1 }
+        trialRoundSnapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+        conclusionVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        predecessorSnapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/TrialReviewSha256" }, { type: "null" }]
+        state: { type: string, enum: [submitted, approved, rejected, reopened] }
+        conclusionCode:
+          { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+        policyRevision: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        comparisonSnapshot: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        reviewReferences:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/TrialReviewExactReference" }
+        blockers:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/TrialConclusionBlocker" }
+        summaryInput: { $ref: "#/components/schemas/TrialOnePageSummaryInput" }
+        proposedNextWork:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 1000 }
+        proposedGateEffect: { type: string, minLength: 1, maxLength: 1000 }
+        proposedNpiEffect: { type: string, minLength: 1, maxLength: 1000 }
+        externalEffects: { $ref: "#/components/schemas/TrialConclusionExternalEffects" }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 256 }
     ProblemDetails:
       type: object
       additionalProperties: false

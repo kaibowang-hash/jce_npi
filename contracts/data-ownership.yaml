@@ -528,6 +528,43 @@ objects:
       defect_action_and_lifecycle_effect: {owner: NPI_ONE_TRIAL_QUALITY_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_SUCCESSOR_REQUIRED}
       formal_ncr_quality_inspection_gate_and_tooling_lifecycle_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_03}
 
+  TrialConclusionPolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_version_predecessor_project_plan_and_plan_revision: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      required_source_reference_blocker_and_conclusion_rules: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      submit_decide_and_reopen_authority_bindings: {owner: NPI_ONE_TRIAL_REVIEW_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: EXACT_PUBLISHED_POLICY_VERSION}
+      default_production_policy_or_authority_row: {owner: FUTURE_APPROVED_TRIAL_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  TrialRoundComparisonSnapshot:
+    owner_system: NPI_ONE
+    erp_view: read_only_formal_quality_projection
+    fields:
+      exact_project_plan_target_round_policy_and_ordered_round_sources: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      input_parameter_dimension_and_defect_comparison_truth: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_SOURCE_SNAPSHOTS_WIN}
+      missing_cycle_time_and_yield_interpretation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXPLICIT_UNAVAILABLE_NO_ZERO_IMPUTATION}
+      formal_quality_inspection_ncr_report_identity_and_result: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IN_P7_04}
+
+  TrialReviewReferenceRevision:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      exact_reference_version_predecessor_project_round_and_comparison: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+      exact_part_tooling_revision_physical_set_and_clean_private_file_revision: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      reference_kind_effectivity_and_reason: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      customer_signature_production_approval_and_formal_quality_authority: {owner: FUTURE_APPROVED_POLICY_OR_PROVIDER, editable_in: [], direction: NONE, conflict: EVIDENCE_IS_NOT_APPROVAL_UNAVAILABLE_IN_P7_04}
+
+  TrialConclusionRevision:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_conclusion_version_predecessor_round_policy_comparison_and_review_references: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY}
+      server_derived_blockers_and_one_page_summary_input: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: EXACT_SOURCE_SNAPSHOTS_WIN}
+      submitted_decision_and_reopen_history: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: EXPLICIT_IMMUTABLE_SUCCESSOR_REQUIRED}
+      proposed_next_work_gate_and_npi_effect: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: PROPOSAL_ONLY_NO_EXTERNAL_MUTATION}
+      gate_npi_readiness_tooling_lifecycle_formal_quality_and_customer_signature_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_04}
+
   ToolingProcessProfileRevision:
     owner_system: SPLIT_BY_FACT_LAYER
     erp_view: none

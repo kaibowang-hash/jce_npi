@@ -6532,3 +6532,133 @@ Action state,行动状态
 Action responsible member stable ID,行动责任成员稳定标识
 Action responsible member version,行动责任成员版本
 Leave the action detail empty only when this defect revision has no governed action.,仅当此缺陷修订没有受控行动时才留空行动明细。
+A Trial conclusion decision or reopen must retain the submitted sources.,试模结论决策或重开必须保留已提交的来源。
+A measured comparison value requires its unit and exact source revision.,已测量的比较值必须包含单位和精确来源修订。
+A missing comparison value cannot contain a numeric value.,缺失的比较值不能包含数值。
+Allowed Trial Conclusion Code Snapshot,允许的试模结论代码快照
+An unavailable comparison value cannot claim a source revision.,不可用的比较值不能声称存在来源修订。
+"Bind submit, decision and reopen authority explicitly.",请明确绑定提交、决策和重开权限。
+Block on Open Blocking Trial Defects,存在未关闭的阻断试模缺陷时阻止
+Block on Unverified Required Trial Actions,存在未验证的必需试模行动时阻止
+Comparison cells must follow the exact Round source order.,比较单元格必须遵循精确的轮次来源顺序。
+Comparison source sequences must be consecutive.,比较来源序号必须连续。
+Customer and production approval authority is unavailable in this task.,此任务中客户和生产批准权限不可用。
+Enter a valid closed snapshot.,请输入有效的封闭快照。
+"Enter both specification limits, or leave both empty.",请同时输入两个规格限值，或将两者都留空。
+Enter the effectivity start date.,请输入生效开始日期。
+Enter the proposed next Trial work.,请输入建议的下一项试模工作。
+File Revision Snapshot Hash,文件修订快照哈希
+Formal ERP Quality,企业资源计划系统正式质量
+Formal ERP quality is unavailable in this task.,此任务中企业资源计划系统正式质量不可用。
+NPI Trial Conclusion Policy Version,NPI 试模结论策略版本
+NPI Trial Conclusion Revision,NPI 试模结论修订
+NPI Trial Review Reference Revision,NPI 试模审查引用修订
+NPI Trial Round Comparison Snapshot,NPI 试模轮次比较快照
+Only dimension comparisons require one exact cavity identity.,只有尺寸比较需要一个精确型腔标识。
+Out-of-Specification Blocking Code Snapshot,超出规格阻断代码快照
+Predecessor Trial Conclusion Global ID,前序试模结论全局标识
+Predecessor Trial Conclusion Policy Global ID,前序试模结论策略全局标识
+Predecessor Trial Review Reference Global ID,前序试模审查引用全局标识
+Proposed Gate Effect,建议的阶段门影响
+Proposed NPI Readiness Effect,建议的 NPI 就绪度影响
+Proposed Next Trial Work Snapshot,建议的下一项试模工作快照
+Published By User ID,发布人用户标识
+"Represent parameter, dimension, cycle time and yield comparison truth.",请表示参数、尺寸、周期时间和良率比较事实。
+Require Trial Cavity Results,要求试模型腔结果
+Required Trial Dimension Snapshot,必需试模尺寸快照
+Required Trial Parameter Snapshot,必需试模参数快照
+Required Trial Review Reference Kind Snapshot,必需试模审查引用类型快照
+Resolve every critical Trial blocker before conclusion submission.,提交结论前请解决所有关键试模阻断项。
+Select an exact Trial revision.,请选择精确的试模修订。
+Select the exact current Trial conclusion policy version.,请选择精确的当前试模结论策略版本。
+Select the exact current Trial conclusion revision and transition.,请选择精确的当前试模结论修订和转换。
+Select the exact current Trial review reference revision.,请选择精确的当前试模审查引用修订。
+Select the exact published Trial conclusion policy.,请选择精确的已发布试模结论策略。
+The Trial Round comparison snapshot hash does not match.,试模轮次比较快照哈希不匹配。
+The Trial conclusion policy snapshot hash does not match.,试模结论策略快照哈希不匹配。
+The Trial conclusion snapshot hash does not match.,试模结论快照哈希不匹配。
+The Trial conclusion sources do not match the exact review snapshots.,试模结论来源与精确审查快照不匹配。
+The Trial review object is unavailable.,试模审查对象不可用。
+The Trial review record was changed by another user.,试模审查记录已被其他用户更改。
+The Trial review reference snapshot hash does not match.,试模审查引用快照哈希不匹配。
+The Trial review workspace is temporarily unavailable.,试模审查工作区暂时不可用。
+The comparison target must be the final exact Round source.,比较目标必须是最后一个精确轮次来源。
+The effectivity end cannot precede the start.,生效结束日期不能早于开始日期。
+The first Trial conclusion revision must be submitted.,首个试模结论修订必须为已提交状态。
+The input change state does not match.,输入变更状态不匹配。
+The metric comparison delta does not match.,指标比较差值不匹配。
+The metric comparison state does not match.,指标比较状态不匹配。
+The one-page Trial summary input does not match the exact snapshots.,单页试模摘要输入与精确快照不匹配。
+The review routes are disabled while a reviewed forward fix is applied.,应用经审查的前向修复期间，审查路由已禁用。
+The upper limit must not be lower than the lower limit.,上限不能低于下限。
+Trial Conclusion,试模结论
+Trial Conclusion Authority Binding Snapshot,试模结论权限绑定快照
+Trial Conclusion Blocker Snapshot,试模结论阻断项快照
+Trial Conclusion Code,试模结论代码
+Trial Conclusion External Effect Snapshot,试模结论外部影响快照
+Trial Conclusion Global ID,试模结论全局标识
+Trial Conclusion Policy,试模结论策略
+Trial Conclusion Policy Global ID,试模结论策略全局标识
+Trial Conclusion Policy Revision,试模结论策略修订
+Trial Conclusion Policy Revision Global ID,试模结论策略修订全局标识
+Trial Conclusion Policy Revision Snapshot Hash,试模结论策略修订快照哈希
+Trial Conclusion Policy Version,试模结论策略版本
+Trial Conclusion Policy Version Key Hash,试模结论策略版本键哈希
+Trial Conclusion Policy Version Snapshot,试模结论策略版本快照
+Trial Conclusion Revision Reason,试模结论修订原因
+Trial Conclusion Revision Snapshot,试模结论修订快照
+Trial Conclusion State,试模结论状态
+Trial Conclusion Version,试模结论版本
+Trial Conclusion Version Key Hash,试模结论版本键哈希
+Trial Defect Trend Snapshot,试模缺陷趋势快照
+Trial Input Comparison Snapshot,试模输入比较快照
+Trial Metric Comparison Snapshot,试模指标比较快照
+Trial One-Page Summary Input Snapshot,试模单页摘要输入快照
+Trial Review Approval Authority,试模审查批准权限
+Trial Review Reference,试模审查引用
+Trial Review Reference Global ID,试模审查引用全局标识
+Trial Review Reference Kind,试模审查引用类型
+Trial Review Reference Revision Reason,试模审查引用修订原因
+Trial Review Reference Revision Snapshot,试模审查引用修订快照
+Trial Review Reference Snapshot,试模审查引用快照
+Trial Review Reference Version,试模审查引用版本
+Trial Review Reference Version Key Hash,试模审查引用版本键哈希
+Trial Round Comparison,试模轮次比较
+Trial Round Comparison Global ID,试模轮次比较全局标识
+Trial Round Comparison Snapshot,试模轮次比较快照
+Trial Round Comparison Snapshot Hash,试模轮次比较快照哈希
+Trial Round Comparison Source Snapshot,试模轮次比较来源快照
+Trial Round comparison fields do not match the exact snapshot.,试模轮次比较字段与精确快照不匹配。
+Trial conclusion blockers do not match server truth.,试模结论阻断项与服务器事实不匹配。
+Trial conclusion external effects are unavailable.,试模结论外部影响不可用。
+Trial conclusion fields do not match the exact snapshot.,试模结论字段与精确快照不匹配。
+Trial conclusion policy fields do not match the exact snapshot.,试模结论策略字段与精确快照不匹配。
+Trial defect trends do not match exact source truth.,试模缺陷趋势与精确来源事实不匹配。
+Trial review reference fields do not match the exact snapshot.,试模审查引用字段与精确快照不匹配。
+Use an exact cavity global ID and characteristic key.,请使用精确的型腔全局标识和特性键。
+Use the supported Trial schema version.,请使用受支持的试模架构版本。
+controlled_quality_report,受控质量报告
+customer_evidence,客户证据
+design_change,设计变更
+deviation_or_waiver,偏差或豁免
+internal_sample_review,内部样品审查
+material_change,材料变更
+process_tuning,工艺调优
+tooling_change,工装变更
+trial_comparison.create,创建试模比较
+trial_conclusion.decide,决策试模结论
+trial_conclusion.reopen,重开试模结论
+trial_conclusion.submit,提交试模结论
+trial_conclusion_revision,试模结论修订
+trial_review_reference.create,创建试模审查引用
+trial_review_reference.revise,修订试模审查引用
+trial_review_reference_revision,试模审查引用修订
+trial_round.begin_analysis,开始试模轮次分析
+trial_round_comparison_snapshot,试模轮次比较快照
+trial_round_lifecycle_event,试模轮次生命周期事件
+{object} does not match the exact snapshot.,{object} 与精确快照不匹配。
+A comparison value requires its exact source revision.,比较值必须包含其精确来源修订。
+Out-of-specification blocker codes must be allowed conclusions.,超出规格阻断代码必须属于允许的结论。
+Select a conclusion code allowed by the exact policy.,请选择精确策略允许的结论代码。
+The one-page Trial summary input has invalid controlled fields.,试模单页摘要输入包含无效的受控字段。
+Trial review references must match the exact comparison scope.,试模审查引用必须与精确比较范围匹配。

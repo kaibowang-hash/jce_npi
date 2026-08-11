@@ -327,6 +327,13 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "trial_defect.create": "trial_defect_revision",
             "trial_defect.revise": "trial_defect_revision",
             "trial_defect.verify": "trial_defect_verification_revision",
+            "trial_round.begin_analysis": "trial_round_lifecycle_event",
+            "trial_comparison.create": "trial_round_comparison_snapshot",
+            "trial_review_reference.create": "trial_review_reference_revision",
+            "trial_review_reference.revise": "trial_review_reference_revision",
+            "trial_conclusion.submit": "trial_conclusion_revision",
+            "trial_conclusion.decide": "trial_conclusion_revision",
+            "trial_conclusion.reopen": "trial_conclusion_revision",
         }
         self.assertEqual(
             str(fields["operation"].get("options", "")).splitlines(),
@@ -368,7 +375,6 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "secret",
             "quality_result",
             "gate_status",
-            "conclusion",
             "sample_result",
             "file_url",
             "machine_endpoint",
