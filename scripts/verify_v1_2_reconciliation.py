@@ -112,6 +112,13 @@ EXPECTED_P7_02_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
     "implementation/evidence/phase-7/p7-02-live-workspace-checkpoint.md",
     "implementation/evidence/phase-7/p7-02-validation.md",
 }
+EXPECTED_P7_03_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-03-plan.md",
+    "implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md",
+    "implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-03-validation.md",
+}
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-TR-001": (
         "7",
@@ -137,6 +144,8 @@ EXPECTED_P7_COMPLETED_TRACES = {
         EXPECTED_P7_02_EVIDENCE,
     ),
     "FR-TR-003": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_02_EVIDENCE),
+    "FR-TR-004": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_03_EVIDENCE),
+    "FR-TR-009": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_03_EVIDENCE),
     "FR-TR-010": (
         "7",
         "TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD",

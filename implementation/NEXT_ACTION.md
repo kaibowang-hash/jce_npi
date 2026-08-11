@@ -1,15 +1,15 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P7-03`
+`IN_PROGRESS_AUDIT — P7-04`
 
-Recovery time: `2026-08-11T01:15:28Z`
+Recovery time: `2026-08-11T05:06:27Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
-Completed P7-02 product checkpoint:
-`3a267196d11921ba1111a0774f5f85bd8647ed9f`
+Completed P7-03 product checkpoint:
+`102de35b9cff4b7303e0e2f17d2bbb146795fc3d`
 
 ## Current authoritative action
 
@@ -90,18 +90,30 @@ secret scan `93646502749` and the expanded `103/103` fixed-Linux visual matrix
 in `93646502784`. Complete checkpoint evidence is
 `implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md`.
 
-Execute only checkpoint 4, enforced by `implementation/CURRENT_TASK.json`:
-extend the cumulative disposable-Site Trial runtime through P7-03 and prove
-cavity-result successor, new and continued P6 defect, exact cross-Round action
-target, failed/passed independent verification, explicit close/reopen, same/
-cross-process replay, fork/conflict/rollback/IDOR/route recovery/migrations/
-redaction, zero ERP/network/Outbox traffic and cleanup. Then complete the P7-03
-Requirement trace, Task Diff Review and Level 2 Gate on one exact SHA.
+P7-03 passes Level 2 at exact product checkpoint `102de35`. Ordinary CI
+`31459395711` passes repository `93679724914` (`1,565` tracked Python),
+frontend `93679724949` (`843/843` unit, `371/371` E2E, `6,534` direct
+trilingual sources and zero vulnerabilities), secret scan `93679724995` and
+visual `93679724973` at `103/103`. Optimized controlled workflow
+`31459974578` verifies that exact PR Gate and passes cumulative disposable Site
+scope `p5-01-through-p7-03`. Complete evidence is
+`implementation/evidence/phase-7/p7-03-validation.md`.
 
-Do not expand the UI or activate NCR, formal ERPNext quality, Gate or Tooling
-lifecycle mutation, Trial conclusion/approval/readiness/release, external
-projection or production print. Only a checkpoint-4 Level 2 PASS activates the
-bounded P7-04 Requirement/domain/existing-capability audit.
+Execute only the P7-04 Requirement/domain/existing-capability audit enforced by
+`implementation/CURRENT_TASK.json`. Reconcile exact Round input/parameter/
+dimension/defect comparison, immutable conclusion/reopen and server-derived
+critical blockers, formal ERPNext quality read-only/unavailable truth,
+version-locked internal/customer/deviation approval references and one-page
+summary input against the live P7-01 through P7-03 foundations. Freeze a
+minimum complete vertical slice, ownership, lifecycle, closed BFF, additive
+persistence, dense trilingual UI, tests and rollback before changing product
+code.
+
+After the bounded audit passes, commit the frozen P7-04 plan and update the
+machine-readable path guard to activate only checkpoint 1. Do not activate
+automatic Gate/Tooling mutation, production ERPNext, customer signature
+authority, readiness, handover, release, external projection or production
+print.
 
 ## Retained P6-05 and P6-06 execution history
 

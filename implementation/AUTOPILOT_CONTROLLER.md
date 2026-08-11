@@ -2624,3 +2624,32 @@ repeat or rewrite it merely to restore context. See
   2. No further UI expansion, NCR, formal quality, Gate/Tooling lifecycle,
   conclusion, approval, readiness, release, external projection or production
   print is authorized.
+
+## 2026-08-11 P7-03 Level 2 PASS; P7-04 audit active
+
+- Exact task SHA `102de35b9cff4b7303e0e2f17d2bbb146795fc3d`
+  passes ordinary PR CI `31459395711`: repository `93679724914` with
+  `1,565` tracked Python tests, frontend `93679724949` with `843/843` unit and
+  `371/371` non-visual E2E tests, `6,534` complete direct trilingual sources,
+  zero vulnerabilities, secret scan `93679724995`, and fixed-Linux visual
+  `93679724973` at `103/103`.
+- Optimized exact-SHA controlled workflow `31459974578` verifies that prior
+  PR Gate and passes cumulative pinned-Frappe disposable-Site scope
+  `p5-01-through-p7-03` in runtime job `93681432172`, including cavity-result
+  succession, new and continued P6 defects, cross-Round action targets,
+  independent verification, explicit close/reopen, replay/conflict/rollback/
+  IDOR, route recovery, migrations, redaction, zero integration traffic and
+  cleanup.
+- `FR-TR-004` and `FR-TR-009` advance only to `TECHNICAL_VERIFIED` for
+  NPI-owned cavity/defect/action/verification truth. Formal ERPNext NCR/
+  Quality Inspection, Gate/Tooling lifecycle, conclusion/approval/readiness/
+  release and external projection remain separate scoped holds. Accepted
+  evidence is `implementation/evidence/phase-7/p7-03-validation.md`.
+- Standing automatic-transition authority activates only the bounded P7-04
+  Requirement/domain/existing-capability audit. Before product code it must
+  freeze exact Round input/parameter/dimension/defect comparison, immutable
+  conclusion/reopen rules, critical blockers, formal-quality unavailable/read-
+  only truth, controlled approval references, one-page summary input,
+  persistence, UI, tests and rollback. It grants no automatic Gate, Tooling,
+  ERPNext, customer-signature, readiness, release, projection or print
+  authority.

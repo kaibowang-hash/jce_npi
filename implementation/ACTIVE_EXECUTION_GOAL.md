@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T01:15:28Z`
+Updated: `2026-08-11T05:06:27Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 4`
+- Mode: `IN_PROGRESS_AUDIT — P7-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `f1b175cfe68033fbae4ab7e082d0f3742a55a52d` (pushed; P7-03 checkpoint 3 PASS)
+  `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (pushed; P7-03 Level 2 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -22,17 +22,17 @@ Updated: `2026-08-11T01:15:28Z`
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
 - Latest P7-03 product checkpoint:
-  `f1b175cfe68033fbae4ab7e082d0f3742a55a52d` (`CHECKPOINT 3 PASS`;
-  ordinary CI `31448066504`)
+  `102de35b9cff4b7303e0e2f17d2bbb146795fc3d` (`LEVEL 2 PASS`;
+  ordinary CI `31459395711`, controlled Gate `31459974578`)
 - Current controller task:
-  `P7-03 — Cavity defects, actions and verification`
-  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
-- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_4`)
+  `P7-04 — Round comparison, conclusion, quality and approval references`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Resumed product task: `P7-04` (`ACTIVE_AUDIT`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-03 CHECKPOINT 4`)
+  (`IN_PROGRESS — P7-04 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -96,13 +96,27 @@ verification lineage, honest failure states and explicit unavailable external
 effects. Evidence is
 `implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md`.
 
-Only checkpoint 4 is active: extend the cumulative disposable-Site fixture
-through P7-03 and prove cavity-result succession, new and continued Tooling
-defects, cross-Round actions, independent verification, replay, conflict,
-rollback, IDOR, route recovery, migrations, redaction, zero integration traffic
-and cleanup before Level 2 trace and Task Diff Review. NCR, formal quality,
-Gate/Tooling lifecycle, conclusion, approval and release remain inactive. There
-is no active technical Hard Blocker.
+P7-03 passes Level 2 at exact product checkpoint `102de35`. Ordinary CI
+`31459395711` passes `1,565` tracked Python tests, `843/843` frontend unit,
+`371/371` E2E, `6,534` complete direct trilingual sources, both secret
+boundaries and `103/103` fixed-Linux visuals. Exact-SHA controlled Gate
+`31459974578` proves cumulative disposable-Site runtime through
+`p5-01-through-p7-03`, including exact cross-Round defect/action/verification
+lineage, replay/conflict/rollback/IDOR, route recovery, migrations, redaction,
+zero integration traffic and cleanup. The truthful disposition is
+`TECHNICAL_VERIFIED`; evidence is
+`implementation/evidence/phase-7/p7-03-validation.md`.
+
+Only the bounded P7-04 audit is active under
+`implementation/CURRENT_TASK.json`: reconcile `FR-TR-005..008` into exact
+Round comparison, immutable conclusion and controlled reopen, explicit
+critical blockers, formal-quality read-only/unavailable truth, version-locked
+internal/customer/deviation references and one-page summary input. Freeze the
+minimum vertical slice, ownership, lifecycle, routes, persistence, UI, tests
+and rollback before product code. Automatic Gate/Tooling mutation, production
+ERPNext, customer signature authority, readiness, release, projection and
+production print remain outside authority. There is no active technical Hard
+Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 
