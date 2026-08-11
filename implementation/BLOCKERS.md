@@ -1,18 +1,18 @@
 # Blockers
 
-Updated: `2026-08-10T23:35:30Z`
+Updated: `2026-08-11T01:15:28Z`
 
 ## Active hard blockers
 
-None. P7-02 passes ordinary CI `31432120639` and exact-SHA cumulative
-controlled Gate `31432837104` at product checkpoint `3a26719`. P7-03
-checkpoint 2 passes ordinary CI `31442261342` at `21b3bda`; checkpoint 3 is
-active and no user action is required.
+None. P7-03 checkpoint 3 passes ordinary CI `31448066504` at exact product
+checkpoint `f1b175c`, including repository, frontend/E2E, both secret boundaries
+and `103/103` fixed-Linux visuals. Checkpoint 4 controlled runtime and Level 2
+are active; no user action or GitHub frontend login is required.
 
 ## Active recovery
 
 None. The ordered delivery hold remains resolved. P7-02 is complete at Level 2
-and P7-03 checkpoint 2 is proven. Checkpoint 3 is active under the frozen plan
+and P7-03 checkpoint 3 is proven. Checkpoint 4 is active under the frozen plan
 and machine-readable path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext

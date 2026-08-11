@@ -1,15 +1,15 @@
 # Active Execution Goal
 
-Updated: `2026-08-10T23:35:30Z`
+Updated: `2026-08-11T01:15:28Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 3`
+- Mode: `IN_PROGRESS_IMPLEMENTATION — P7-03 CHECKPOINT 4`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `21b3bdaf729d1607831566cc1db108e1b255ea3e` (pushed; P7-03 checkpoint 2 PASS)
+  `f1b175cfe68033fbae4ab7e082d0f3742a55a52d` (pushed; P7-03 checkpoint 3 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -22,17 +22,17 @@ Updated: `2026-08-10T23:35:30Z`
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
 - Latest P7-03 product checkpoint:
-  `21b3bdaf729d1607831566cc1db108e1b255ea3e` (`CHECKPOINT 2 PASS`;
-  ordinary CI `31442261342`)
+  `f1b175cfe68033fbae4ab7e082d0f3742a55a52d` (`CHECKPOINT 3 PASS`;
+  ordinary CI `31448066504`)
 - Current controller task:
   `P7-03 — Cavity defects, actions and verification`
-  (`IN_PROGRESS — CHECKPOINT 3 LIVE CAVITY QUALITY WORKSPACE`)
-- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_3`)
+  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
+- Resumed product task: `P7-03` (`ACTIVE_CHECKPOINT_4`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-03 CHECKPOINT 3`)
+  (`IN_PROGRESS — P7-03 CHECKPOINT 4`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -87,12 +87,22 @@ transactional P6/P7 defect tip, actor-bound replay, append-only audit and
 independent verification with explicit unavailable external effects. Evidence
 is `implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md`.
 
-Only checkpoint 3 is active: add the strict quality data source and dense
-trilingual cavity-result, defect/action, verification and Pareto workspace with
-honest loading, empty, read-only, permission, validation, conflict, processing,
-retry and unavailable-effect states plus affected Linux visuals. Runtime
-fixture, NCR, formal quality, Gate/Tooling lifecycle, conclusion, approval and
-release remain inactive. There is no active technical Hard Blocker.
+P7-03 checkpoint 3 passes at exact product checkpoint `f1b175c`. Ordinary CI
+`31448066504` passes repository `93646502808`, frontend/E2E `93646502753`,
+secret scan `93646502749` and the expanded `103/103` fixed-Linux visual matrix
+in `93646502784`. The strict data source and dense English, Simplified-Chinese
+and Traditional-Chinese quality workspace preserve exact cavity/defect/action/
+verification lineage, honest failure states and explicit unavailable external
+effects. Evidence is
+`implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md`.
+
+Only checkpoint 4 is active: extend the cumulative disposable-Site fixture
+through P7-03 and prove cavity-result succession, new and continued Tooling
+defects, cross-Round actions, independent verification, replay, conflict,
+rollback, IDOR, route recovery, migrations, redaction, zero integration traffic
+and cleanup before Level 2 trace and Task Diff Review. NCR, formal quality,
+Gate/Tooling lifecycle, conclusion, approval and release remain inactive. There
+is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

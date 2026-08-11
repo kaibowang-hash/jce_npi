@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-03`
+`IN_PROGRESS_CHECKPOINT_4 — P7-03`
 
-Recovery time: `2026-08-10T23:35:30Z`
+Recovery time: `2026-08-11T01:15:28Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -84,18 +84,24 @@ trilingual sources and zero vulnerabilities), secret scan `93629232857` and
 unchanged `100/100` fixed-Linux visual job `93629232835`. Complete evidence is
 `implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md`.
 
-Execute only checkpoint 3, enforced by `implementation/CURRENT_TASK.json`:
-add the strict quality data source and dense trilingual cavity-result, defect,
-action, independent-verification and Pareto workspace. Cover loading, empty,
-read-only, permission, validation, conflict, processing, retry and explicit
-unavailable NCR/Gate/Tooling states; produce affected Linux visuals. Create no
-runtime fixture. Do not activate NCR, formal ERPNext quality, Gate or Tooling
-lifecycle mutation, Trial conclusion/approval/readiness/release, external
-projection or production print.
+P7-03 checkpoint 3 passes at exact product checkpoint `f1b175c`. Final ordinary
+CI `31448066504` passes repository `93646502808`, frontend/E2E `93646502753`,
+secret scan `93646502749` and the expanded `103/103` fixed-Linux visual matrix
+in `93646502784`. Complete checkpoint evidence is
+`implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md`.
 
-After checkpoint 3 affected frontend/i18n/accessibility/visual checks and task-
-scope validation pass, commit and run ordinary CI. Only that PASS activates
-checkpoint 4 controlled runtime and Level 2.
+Execute only checkpoint 4, enforced by `implementation/CURRENT_TASK.json`:
+extend the cumulative disposable-Site Trial runtime through P7-03 and prove
+cavity-result successor, new and continued P6 defect, exact cross-Round action
+target, failed/passed independent verification, explicit close/reopen, same/
+cross-process replay, fork/conflict/rollback/IDOR/route recovery/migrations/
+redaction, zero ERP/network/Outbox traffic and cleanup. Then complete the P7-03
+Requirement trace, Task Diff Review and Level 2 Gate on one exact SHA.
+
+Do not expand the UI or activate NCR, formal ERPNext quality, Gate or Tooling
+lifecycle mutation, Trial conclusion/approval/readiness/release, external
+projection or production print. Only a checkpoint-4 Level 2 PASS activates the
+bounded P7-04 Requirement/domain/existing-capability audit.
 
 ## Retained P6-05 and P6-06 execution history
 

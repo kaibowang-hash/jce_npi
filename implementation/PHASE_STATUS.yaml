@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-10T23:35:30Z'
+updated_at: '2026-08-11T01:15:28Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-03
-current_task_status: IN_PROGRESS_CHECKPOINT_3
-current_task_completed_stage: P7_03_REPOSITORY_BFF_SINGLE_TIP_PASS
-current_task_next_stage: P7_03_LIVE_CAVITY_QUALITY_WORKSPACE
+current_task_status: IN_PROGRESS_CHECKPOINT_4
+current_task_completed_stage: P7_03_LIVE_CAVITY_QUALITY_WORKSPACE_PASS
+current_task_next_stage: P7_03_CONTROLLED_RUNTIME_AND_LEVEL_2
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-03
-resumed_product_task_status: ACTIVE_CHECKPOINT_3
+resumed_product_task_status: ACTIVE_CHECKPOINT_4
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1654,7 +1654,7 @@ p7_02:
 p7_03:
   task: P7-03
   controller_task: P7-03_CAVITY_DEFECTS_ACTIONS_VERIFICATION
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: IN_PROGRESS_CHECKPOINT_4
   phase: 7
   milestone: M6-03
   requirements:
@@ -1668,13 +1668,15 @@ p7_03:
   starting_controller_ci_workflow: 31434848448
   audit: PASS
   plan: implementation/evidence/phase-7/p7-03-plan.md
-  current_stage: LIVE_CAVITY_QUALITY_WORKSPACE
-  next_stage_after_pass: CONTROLLED_RUNTIME_AND_LEVEL_2
+  current_stage: CONTROLLED_RUNTIME_AND_LEVEL_2
+  next_stage_after_pass: P7_04_REQUIREMENT_DOMAIN_AUDIT
   product_code_changed: true
   checkpoint_1_product_checkpoint: 42812c3162a6d3e72508ecc12bf0a5c944e334c7
   checkpoint_1_ci_workflow: 31438191274
   checkpoint_2_product_checkpoint: 21b3bdaf729d1607831566cc1db108e1b255ea3e
   checkpoint_2_ci_workflow: 31442261342
+  checkpoint_3_product_checkpoint: f1b175cfe68033fbae4ab7e082d0f3742a55a52d
+  checkpoint_3_ci_workflow: 31448066504
   external_holds:
     - ERPNEXT_FORMAL_NCR_AND_QUALITY_INSPECTION
     - TRIAL_CONCLUSION_GATE_READINESS_RELEASE
@@ -1685,6 +1687,7 @@ p7_03:
     - implementation/evidence/phase-7/p7-03-plan.md
     - implementation/evidence/phase-7/p7-03-domain-metadata-checkpoint.md
     - implementation/evidence/phase-7/p7-03-repository-bff-single-tip-checkpoint.md
+    - implementation/evidence/phase-7/p7-03-live-quality-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
