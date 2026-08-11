@@ -88,7 +88,8 @@
     "tests/test_phase7_trial_quality_metadata.py",
     "tests/test_phase7_trial_quality_repository.py",
     "tests/test_phase7_trial_quality_repository_seams.py",
-    "tests/test_phase7_trial_quality_runtime_verifier.py"
+    "tests/test_phase7_trial_quality_runtime_verifier.py",
+    "tests/test_phase7_trial_runtime_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
@@ -103,7 +104,7 @@
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_phase7_trial_quality_runtime_verifier", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase7_trial_runtime_verifier", "tests.test_phase7_trial_quality_runtime_verifier", "-v"],
       ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
