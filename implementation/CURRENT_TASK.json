@@ -89,6 +89,7 @@
     "tests/test_phase7_trial_quality_repository.py",
     "tests/test_phase7_trial_quality_repository_seams.py",
     "tests/test_phase7_trial_quality_runtime_verifier.py",
+    "tests/test_phase7_trial_repository.py",
     "tests/test_phase7_trial_runtime_verifier.py"
   ],
   "affected_checks": {
