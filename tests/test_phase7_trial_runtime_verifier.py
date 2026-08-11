@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -81,6 +82,43 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertNotIn("raw value", detail)
         self.assertNotIn("secret objective", detail)
+
+    def test_failure_diagnostic_reads_only_matching_safe_exception_type(self) -> None:
+        trace_id = "trace-0123456789abcdef0123456789abcdef"
+        with tempfile.TemporaryDirectory() as temporary:
+            bench = Path(temporary)
+            (bench / "logs").mkdir()
+            (bench / "logs" / "npi_core.log").write_text(
+                "request body Synthetic secret must not be exposed\n"
+                '{"code":"UNEXPECTED_BFF_EXCEPTION",'
+                '"exceptionType":"ValidationError",'
+                f'"traceId":"{trace_id}"}}\n',
+                encoding="utf-8",
+            )
+            result = self.module.HttpResult(
+                status=500,
+                headers=Mock(),
+                body={"code": "INTERNAL_SERVER_ERROR"},
+                trace_id=trace_id,
+            )
+            with patch.object(self.module, "BENCH_PATH", bench):
+                detail = self.module.sanitized_trial_failure(result)
+                mismatched = self.module.HttpResult(
+                    status=500,
+                    headers=Mock(),
+                    body={"code": "INTERNAL_SERVER_ERROR"},
+                    trace_id="trace-ffffffffffffffffffffffffffffffff",
+                )
+                mismatched_detail = self.module.sanitized_trial_failure(mismatched)
+        self.assertEqual(
+            detail,
+            (
+                " [problem_code=INTERNAL_SERVER_ERROR; "
+                "exception_type=ValidationError]"
+            ),
+        )
+        self.assertNotIn("Synthetic secret", detail)
+        self.assertEqual(mismatched_detail, " [problem_code=INTERNAL_SERVER_ERROR]")
 
     def test_verifier_uses_only_the_fixed_disposable_runtime(self) -> None:
         required = (

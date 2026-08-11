@@ -155,6 +155,13 @@ _PROBLEM_CODE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
 _FIELD_PATH = re.compile(
     r"^[A-Za-z][A-Za-z0-9]*(?:(?:\.[A-Za-z][A-Za-z0-9]*)|(?:\[[0-9]{1,3}\]))*$"
 )
+_TRACE_ID = re.compile(r"^trace-[a-f0-9]{32}$")
+_SAFE_UNEXPECTED_DIAGNOSTIC = re.compile(
+    rb'\{"code":"UNEXPECTED_BFF_EXCEPTION","exceptionType":"'
+    rb'(?P<exception>[A-Za-z][A-Za-z0-9_]{0,127})","traceId":"'
+    rb'(?P<trace>trace-[a-f0-9]{32})"\}'
+)
+_DIAGNOSTIC_TAIL_BYTES = 256 * 1024
 
 
 def trial_path(project_id: str, suffix: str = "") -> str:
@@ -375,7 +382,35 @@ def sanitized_trial_failure(result: HttpResult) -> str:
                 paths.append(path)
     if paths:
         details.append(f"field_paths={','.join(paths)}")
+    exception_type = _safe_unexpected_exception_type(result)
+    if exception_type is not None:
+        details.append(f"exception_type={exception_type}")
     return f" [{'; '.join(details)}]" if details else ""
+
+
+def _safe_unexpected_exception_type(result: HttpResult) -> str | None:
+    """Read only the exception type from this request's pre-sanitized BFF log."""
+
+    if (
+        result.status != 500
+        or not isinstance(result.trace_id, str)
+        or _TRACE_ID.fullmatch(result.trace_id) is None
+    ):
+        return None
+    log_path = BENCH_PATH / "logs" / "npi_core.log"
+    try:
+        with log_path.open("rb") as handle:
+            handle.seek(0, 2)
+            size = handle.tell()
+            handle.seek(max(0, size - _DIAGNOSTIC_TAIL_BYTES))
+            content = handle.read(_DIAGNOSTIC_TAIL_BYTES)
+    except OSError:
+        return None
+    encoded_trace = result.trace_id.encode("ascii")
+    for match in reversed(tuple(_SAFE_UNEXPECTED_DIAGNOSTIC.finditer(content))):
+        if match.group("trace") == encoded_trace:
+            return match.group("exception").decode("ascii")
+    return None
 
 
 def exact_single(values: object, label: str) -> dict[str, Any]:
