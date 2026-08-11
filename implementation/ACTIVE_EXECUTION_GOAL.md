@@ -1,15 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T12:16:16Z`
+Updated: `2026-08-11T13:37:12Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P7-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `02781c0c712c4d8c739114ead24545daa537329d` (pushed; P7-04 Level 2 PASS)
+  `c75956c4ef14677fe29a27f67f622a6c9f1fc8d1` (pushed; P7-05 checkpoint 1
+  PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -29,13 +30,13 @@ Updated: `2026-08-11T12:16:16Z`
   ordinary CI `31488890426`, controlled Gate `31489609774`)
 - Current controller task:
   `P7-05 — NPI checklist, readiness and blockers`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Resumed product task: `P7-05` (`ACTIVE_AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 2 REPOSITORY/BFF/GATE-INPUT BOUNDARY`)
+- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-05 AUDIT`)
+  (`IN_PROGRESS — P7-05 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -152,19 +153,28 @@ route recovery, migrations, redaction, zero integration/downstream effects and
 cleanup. The four truthful held dispositions and complete evidence are in
 `implementation/evidence/phase-7/p7-04-validation.md`.
 
-P7-05 bounded audit and frozen plan pass at controller checkpoint `81b7204`.
-Ordinary CI `31491185573` passes repository `93777828829`, frontend/E2E
-`93777828858`, secret scan `93777829035` and unchanged `106/106` fixed-Linux
-visuals in `93777828744`. Checkpoint 1 is active under
-`implementation/CURRENT_TASK.json` and
-`implementation/evidence/phase-7/p7-05-plan.md`: add only pure immutable
-readiness-template/Project-instance, exact evidence/source, deterministic
-score, dominant-blocker and Gate-separation domains; closed contracts/
-ownership; four guarded additive DocTypes, receipts, translations and focused
-tests. No route, business row, Gate-input change, UI or runtime fixture is yet
-active. Production ERP results, automatic Gate/Work Item/Tooling mutation,
-handover, release, projection and print remain outside authority. There is no
-active technical Hard Blocker.
+P7-05 checkpoint 1 passes at exact final checkpoint `c75956c`. Product commit
+`60da5cf` adds only pure immutable readiness-template/Project-instance,
+evidence/source, deterministic score, dominant-blocker and Gate-separation
+domains; closed contracts/ownership; four guarded additive DocTypes, receipts
+and direct translations. Catalog repair `c75956c` synchronizes the generated
+React catalog and removes six unapproved retained Latin tokens without
+weakening the scanner. Ordinary CI `31496046593` passes repository
+`93793900208` (`1,639` Python), frontend `93793900200` (`853/853` unit,
+`378/378` E2E and `6,866` direct trilingual sources), secret scan
+`93793900081` and unchanged `106/106` fixed-Linux visuals in `93793900326`.
+Complete evidence is
+`implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md`.
+
+Checkpoint 2 is the only active scope: internal-admin template commands,
+Project-first instance read/initialize/revise behavior, exact supported and
+unavailable source resolution, actor-bound replay, one transaction, append-
+only audit, an independently default-closed switch, and readiness P0 blockers
+plus one exact revision dependency as input to the existing Gate review. It
+must not decide, pass, close, reopen or otherwise mutate a Gate. UI/runtime,
+production ERP results, automatic Work Item/Tooling mutation, handover,
+release, projection and print remain outside authority. There is no active
+technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

@@ -2805,3 +2805,31 @@ repeat or rewrite it merely to restore context. See
   separation domains, closed contracts/ownership, four guarded additive
   DocTypes, receipts, translations and tests. No route, business row,
   Gate-input change, UI/runtime or external effect is active.
+
+## 2026-08-11 P7-05 checkpoint 1 PASS; checkpoint 2 active
+
+- Product commit `60da5cf1f437edbd7cfd0ebbc6ab4f099124d584`
+  adds only the pure immutable template/instance/evidence/source,
+  deterministic-score, dominant-blocker and Gate-separation domains, closed
+  contracts/ownership, four guarded additive DocTypes, receipt vocabulary,
+  direct translations and focused tests. It opens no route, business row,
+  Gate-input behavior, UI or runtime fixture.
+- The first ordinary run correctly fails only because generated React catalogs
+  are stale. Exact repair `c75956c4ef14677fe29a27f67f622a6c9f1fc8d1`
+  runs the repository generator and replaces six unapproved retained
+  `ID`/`JSON` tokens in Chinese translations with direct Chinese terms. It
+  changes no scanner, allowlist, threshold, test or product behavior.
+- Exact-SHA ordinary CI `31496046593` passes: repository `93793900208`
+  (`1,639` tracked Python), frontend `93793900200` (`853/853` unit,
+  `378/378` non-visual E2E, `6,866` direct trilingual sources and zero
+  vulnerabilities), secret scan `93793900081`, and unchanged `106/106`
+  fixed-Linux visuals in `93793900326`. Controlled lanes skip as required.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md`.
+- Activate only checkpoint 2: internal-admin template commands, Project-first
+  instance read/initialize/revise behavior, exact supported/unavailable source
+  resolvers, actor-bound replay, one transaction, append-only audit, an
+  independently default-closed P7-05 switch, and bounded inclusion of current
+  readiness P0 blockers plus one exact revision dependency in existing Gate-
+  review input. No Gate decision, pass, close, reopen or mutation is allowed;
+  UI and controlled runtime remain inactive.

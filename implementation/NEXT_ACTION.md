@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-05`
+`IN_PROGRESS_CHECKPOINT_2 — P7-05`
 
-Recovery time: `2026-08-11T12:39:41Z`
+Recovery time: `2026-08-11T13:37:12Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -13,6 +13,9 @@ Completed P7-04 product checkpoint:
 
 P7-05 starting controller checkpoint:
 `81b720487cface6ca78a9e77724223e61c766871`
+
+P7-05 checkpoint 1 final checkpoint:
+`c75956c4ef14677fe29a27f67f622a6c9f1fc8d1`
 
 ## Current authoritative action
 
@@ -138,15 +141,22 @@ statements `80.05%`), secret scan `93770486159` and visual `93770486218` at
 Gate and passes cumulative disposable Site scope `p5-01-through-p7-04`.
 Complete evidence is `implementation/evidence/phase-7/p7-04-validation.md`.
 
-P7-05 bounded audit and frozen plan pass at starting controller SHA `81b7204`.
-Ordinary CI `31491185573` passes repository `93777828829`, frontend/E2E
-`93777828858`, secret scan `93777829035` and unchanged `106/106` visual job
-`93777828744`. Execute only checkpoint 1 in
-`implementation/evidence/phase-7/p7-05-plan.md`: pure immutable template/
-Project-instance, exact evidence/source, deterministic score, blocker-dominance
-and Gate-separation domains; closed OpenAPI/ownership; four guarded additive
-DocTypes, receipts, translations and focused tests. No route, business row,
-Gate-input change, UI or runtime fixture is active in checkpoint 1.
+P7-05 checkpoint 1 passes at exact final checkpoint `c75956c`. Product commit
+`60da5cf` and catalog repair `c75956c` pass ordinary CI `31496046593`:
+repository `93793900208` (`1,639` tracked Python), frontend `93793900200`
+(`853/853` unit, `378/378` E2E and `6,866` direct trilingual sources), secret
+scan `93793900081` and unchanged `106/106` visual job `93793900326`. Complete
+evidence is
+`implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md`.
+
+Execute only checkpoint 2 in
+`implementation/evidence/phase-7/p7-05-plan.md`: internal-admin template
+commands, Project-first instance read/initialize/revise behavior, exact source
+resolvers, actor-bound replay, one transaction and append-only audit, an
+independently default-closed switch, and bounded inclusion of current readiness
+P0 blockers plus one exact revision dependency in existing Gate-review input.
+Do not add UI/runtime fixtures or decide, pass, close, reopen or otherwise
+mutate a Gate.
 
 Do not invent a G6/G7 policy, caller-supplied score, blocker waiver, ERP result,
 PFMEA/MSA/CPK/PPAP global applicability or automatic Gate/Work Item/Tooling

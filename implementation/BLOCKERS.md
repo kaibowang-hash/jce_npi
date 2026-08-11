@@ -1,21 +1,21 @@
 # Blockers
 
-Updated: `2026-08-11T12:39:41Z`
+Updated: `2026-08-11T13:37:12Z`
 
 ## Active hard blockers
 
-None. P7-04 passes Level 2 at exact product checkpoint `02781c0`. P7-05 audit
-and plan are frozen from controller checkpoint `81b7204`, whose ordinary CI
-`31491185573` passes repository, frontend/E2E, secret and unchanged `106/106`
-visual boundaries. Checkpoint 1 is active; no user action or GitHub frontend
+None. P7-05 checkpoint 1 passes at exact checkpoint `c75956c`. Ordinary CI
+`31496046593` passes repository, frontend/E2E, secret and unchanged `106/106`
+visual boundaries. Checkpoint 2 is active; no user action or GitHub frontend
 login is required.
 
 ## Active recovery
 
 None. The ordered delivery hold remains resolved. P7-04 is proven and sealed.
-P7-05 is limited to checkpoint 1 pure domain/contract/additive-metadata work
-under the machine-readable path guard; no route, business row, Gate-input
-change, UI or runtime fixture is active yet.
+P7-05 is limited to checkpoint 2 Project-first repository/BFF, exact source,
+actor-bound replay/transaction/audit, independent switch and Gate-review input
+behavior under the machine-readable path guard. UI and runtime fixtures remain
+inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
