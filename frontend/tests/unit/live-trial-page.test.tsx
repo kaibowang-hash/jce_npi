@@ -140,6 +140,21 @@ async function confirmExecutionCommand(
   await user.click(within(dialog).getByRole("button", { name: commandName }));
 }
 
+async function confirmReviewCommand(
+  user: ReturnType<typeof userEvent.setup>,
+  commandName: string,
+  reason: string,
+): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: commandName }));
+  const dialog = await screen.findByRole("dialog", {
+    name: "Review immutable Trial conclusion command",
+  });
+  fireEvent.change(within(dialog).getByLabelText("Reason"), {
+    target: { value: reason },
+  });
+  await user.click(within(dialog).getByRole("button", { name: commandName }));
+}
+
 async function completeCavityEditor(
   user: ReturnType<typeof userEvent.setup>,
 ): Promise<void> {
@@ -1106,6 +1121,327 @@ describe("live Trial planning page", () => {
       expectedRoundSnapshotHash: "5".repeat(64),
       reason: "Approve the exact submitted proposal after independent review",
     });
+  });
+
+  it("begins policy-bound analysis and safely retries the same failed command", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const base = trialReviewWorkspace();
+    const workspace = trialReviewWorkspace({
+      comparisonSnapshots: [],
+      conclusionRevisions: [],
+      permissions: {
+        ...base.permissions,
+        beginAnalysis: true,
+        decideConclusion: false,
+      },
+      reviewReferenceRevisions: [],
+    });
+    const beginAnalysis = vi
+      .fn<TrialDataSource["beginAnalysis"]>()
+      .mockRejectedValueOnce(
+        new NpiApiError({
+          code: "TRIAL_REVIEW_CONFLICT",
+          retryable: true,
+          status: 409,
+          title: "The Trial review workspace changed.",
+          traceId: "trace-review-conflict",
+          type: "urn:npi:error:trial_review_conflict",
+        }),
+      )
+      .mockResolvedValueOnce({ replayed: true, workspace });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          beginAnalysis,
+          loadRoundReview: () => Promise.resolve(workspace),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await confirmReviewCommand(
+      user,
+      "Begin analysis",
+      "Begin exact policy-bound Trial analysis",
+    );
+    expect(
+      await screen.findByRole("heading", {
+        name: "Trial review command failed",
+      }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => {
+      expect(beginAnalysis).toHaveBeenCalledTimes(2);
+    });
+    expect(beginAnalysis.mock.calls[0]?.[2]).toMatchObject({
+      expectedPolicyRevisionSnapshotHash: "1".repeat(64),
+      expectedRoundOptimisticVersion: 2,
+      expectedRoundSnapshotHash: "5".repeat(64),
+      policyRevisionGlobalId: trialReviewIds.policyRevision,
+      reason: "Begin exact policy-bound Trial analysis",
+    });
+    expect(beginAnalysis.mock.calls[1]?.[3].idempotencyKey).toBe(
+      beginAnalysis.mock.calls[0]?.[3].idempotencyKey,
+    );
+    expect(
+      await screen.findByText(
+        "The exact prior review command response was replayed safely.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("creates one comparison from chronologically ordered exact Round snapshots", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const base = trialReviewWorkspace();
+    const workspace = trialReviewWorkspace({
+      comparisonSnapshots: [],
+      conclusionRevisions: [],
+      permissions: {
+        ...base.permissions,
+        createComparison: true,
+        decideConclusion: false,
+      },
+      reviewReferenceRevisions: [],
+    });
+    const detail = trialPlanDetail();
+    const targetRound = detail.rounds[0];
+    if (!targetRound)
+      throw new Error("The review comparison test requires one target Round.");
+    const previousRound = {
+      ...targetRound,
+      displayLabel: "T-1",
+      globalId: trialReviewIds.previousRound,
+      optimisticVersion: 4,
+      roundSequence: -1,
+      snapshotHash: "4".repeat(64),
+    };
+    const createComparison = vi
+      .fn<TrialDataSource["createComparison"]>()
+      .mockResolvedValue({ replayed: false, workspace });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          createComparison,
+          loadPlan: () =>
+            Promise.resolve({
+              ...detail,
+              rounds: [previousRound, targetRound],
+            }),
+          loadRoundReview: () => Promise.resolve(workspace),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await confirmReviewCommand(
+      user,
+      "Create exact comparison",
+      "Compare the exact predecessor and target Round snapshots",
+    );
+
+    await waitFor(() => {
+      expect(createComparison).toHaveBeenCalledOnce();
+    });
+    expect(createComparison.mock.calls[0]?.[2]).toMatchObject({
+      reason: "Compare the exact predecessor and target Round snapshots",
+      rounds: [
+        {
+          expectedOptimisticVersion: 4,
+          expectedSnapshotHash: "4".repeat(64),
+          trialRoundGlobalId: trialReviewIds.previousRound,
+        },
+        {
+          expectedOptimisticVersion: 2,
+          expectedSnapshotHash: "5".repeat(64),
+          trialRoundGlobalId: trialPlanningIds.round,
+        },
+      ],
+    });
+  });
+
+  it("binds a controlled review reference from every exact predecessor field", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const base = trialReviewWorkspace();
+    const workspace = trialReviewWorkspace({
+      conclusionRevisions: [],
+      permissions: {
+        ...base.permissions,
+        decideConclusion: false,
+        manageReviewReferences: true,
+      },
+      reviewReferenceRevisions: [],
+    });
+    const createReviewReference = vi
+      .fn<TrialDataSource["createReviewReference"]>()
+      .mockResolvedValue({ replayed: false, workspace });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          createReviewReference,
+          loadRoundReview: () => Promise.resolve(workspace),
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const exactFields = [
+      ["Part revision stable ID", trialReviewIds.partRevision],
+      ["Part revision snapshot", "7".repeat(64)],
+      ["Tooling revision stable ID", trialReviewIds.toolingRevision],
+      ["Tooling revision snapshot", "9".repeat(64)],
+      ["Tooling Set stable ID", trialReviewIds.toolingSet],
+      ["Tooling Set snapshot", "a".repeat(64)],
+      ["File revision stable ID", trialReviewIds.fileRevision],
+      ["File revision snapshot", "6".repeat(64)],
+    ] as const;
+    for (const [label, value] of exactFields) {
+      fireEvent.change(await screen.findByLabelText(label), {
+        target: { value },
+      });
+    }
+    await confirmReviewCommand(
+      user,
+      "Bind review reference",
+      "Bind one controlled quality report to the exact comparison",
+    );
+
+    await waitFor(() => {
+      expect(createReviewReference).toHaveBeenCalledOnce();
+    });
+    expect(createReviewReference.mock.calls[0]?.[2]).toMatchObject({
+      comparisonSnapshotGlobalId: trialReviewIds.comparison,
+      expectedComparisonSnapshotHash: "3".repeat(64),
+      expectedFileRevisionSnapshotHash: "6".repeat(64),
+      expectedPartRevisionSnapshotHash: "7".repeat(64),
+      expectedToolingRevisionSnapshotHash: "9".repeat(64),
+      expectedToolingSetSnapshotHash: "a".repeat(64),
+      fileRevisionGlobalId: trialReviewIds.fileRevision,
+      partRevisionGlobalId: trialReviewIds.partRevision,
+      referenceKind: "controlled_quality_report",
+      toolingRevisionGlobalId: trialReviewIds.toolingRevision,
+      toolingSetGlobalId: trialReviewIds.toolingSet,
+    });
+  });
+
+  it("submits one immutable proposal without creating an external effect", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const base = trialReviewWorkspace();
+    const workspace = trialReviewWorkspace({
+      conclusionRevisions: [],
+      permissions: {
+        ...base.permissions,
+        decideConclusion: false,
+        submitConclusion: true,
+      },
+    });
+    const submitConclusion = vi
+      .fn<TrialDataSource["submitConclusion"]>()
+      .mockResolvedValue({ replayed: false, workspace });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundReview: () => Promise.resolve(workspace),
+          submitConclusion,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    fireEvent.change(await screen.findByLabelText("Proposed next work"), {
+      target: { value: "Verify the corrective action in the next Round." },
+    });
+    fireEvent.change(screen.getByLabelText("Proposed Gate effect"), {
+      target: { value: "Keep the Gate unchanged pending verification." },
+    });
+    fireEvent.change(screen.getByLabelText("Proposed NPI effect"), {
+      target: { value: "Keep readiness unchanged." },
+    });
+    await confirmReviewCommand(
+      user,
+      "Submit conclusion proposal",
+      "Submit exact comparison evidence for independent decision",
+    );
+
+    await waitFor(() => {
+      expect(submitConclusion).toHaveBeenCalledOnce();
+    });
+    expect(submitConclusion.mock.calls[0]?.[2]).toMatchObject({
+      conclusionCode: "pass",
+      proposedGateEffect: "Keep the Gate unchanged pending verification.",
+      proposedNextWork: ["Verify the corrective action in the next Round."],
+      proposedNpiEffect: "Keep readiness unchanged.",
+      reviewReferences: [
+        {
+          globalId: trialReviewIds.referenceRevision,
+          snapshotHash: "8".repeat(64),
+        },
+      ],
+    });
+  });
+
+  it("reopens the exact decided conclusion revision without changing external truth", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const base = trialReviewWorkspace();
+    const decided = { ...trialConclusion(), state: "approved" as const };
+    const workspace = trialReviewWorkspace({
+      conclusionRevisions: [decided],
+      permissions: {
+        ...base.permissions,
+        decideConclusion: false,
+        reopenConclusion: true,
+      },
+    });
+    const reopenConclusion = vi
+      .fn<TrialDataSource["reopenConclusion"]>()
+      .mockResolvedValue({ replayed: false, workspace });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadRoundReview: () => Promise.resolve(workspace),
+          reopenConclusion,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await confirmReviewCommand(
+      user,
+      "Reopen conclusion",
+      "Reopen the exact approved conclusion for a controlled successor",
+    );
+
+    await waitFor(() => {
+      expect(reopenConclusion).toHaveBeenCalledOnce();
+    });
+    expect(reopenConclusion.mock.calls[0]?.[2]).toMatchObject({
+      conclusionGlobalId: trialReviewIds.conclusion,
+      expectedConclusionRevisionGlobalId: trialReviewIds.conclusionRevision,
+      expectedConclusionRevisionSnapshotHash: "c".repeat(64),
+      expectedConclusionVersion: 1,
+      reason: "Reopen the exact approved conclusion for a controlled successor",
+    });
+    expect(screen.getAllByText("Unavailable").length).toBeGreaterThanOrEqual(5);
   });
 
   it("records one exact cavity result through review and immutable command context", async () => {
