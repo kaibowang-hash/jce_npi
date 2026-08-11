@@ -6780,7 +6780,7 @@ An applicable readiness item cannot be marked not applicable.,适用的就绪度
 Assign every applicable readiness item exactly once.,请为每个适用的就绪度项分配且仅分配一次。
 Bind the exact failed source before marking this item failed.,将此项标记为失败前，请绑定精确的失败来源。
 Changed At,更改时间
-Changed By User ID,更改者用户 ID
+Changed By User ID,更改者用户标识符
 Enter a confirmation before completing this item.,完成此项前请输入确认内容。
 Enter a due date.,请输入截止日期。
 Enter a positive optimistic version.,请输入正数乐观锁版本。
@@ -6796,7 +6796,7 @@ Enter only supported template changes.,请仅输入受支持的模板更改。
 Freeze at least one readiness category and item.,请至少冻结一个就绪度类别和一个项目。
 Item project types must be allowed by the template.,项目类型必须在模板允许的范围内。
 NPI Readiness Command Idempotency,NPI 就绪度命令幂等记录
-NPI Readiness Instance Global ID,NPI 就绪度实例全局 ID
+NPI Readiness Instance Global ID,NPI 就绪度实例全局标识符
 NPI Readiness Instance Revision,NPI 就绪度实例修订
 NPI Readiness Instance Revision Snapshot,NPI 就绪度实例修订快照
 NPI Readiness Instance Snapshot Hash does not match.,NPI 就绪度实例快照哈希不匹配。
@@ -6806,8 +6806,8 @@ NPI Readiness Instance Version Key Hash does not match.,NPI 就绪度实例版�
 NPI Readiness Instance fields do not match the exact snapshot.,NPI 就绪度实例字段与精确快照不匹配。
 NPI Readiness Template,NPI 就绪度模板
 NPI Readiness Template Code,NPI 就绪度模板编码
-NPI Readiness Template Global ID,NPI 就绪度模板全局 ID
-NPI Readiness Template Revision Global ID,NPI 就绪度模板修订全局 ID
+NPI Readiness Template Global ID,NPI 就绪度模板全局标识符
+NPI Readiness Template Revision Global ID,NPI 就绪度模板修订全局标识符
 NPI Readiness Template Snapshot Hash,NPI 就绪度模板快照哈希
 NPI Readiness Template Snapshot Hash does not match.,NPI 就绪度模板快照哈希不匹配。
 NPI Readiness Template Title,NPI 就绪度模板标题
@@ -6822,7 +6822,7 @@ NPI readiness history cannot be deleted.,NPI 就绪度历史不能删除。
 NPI readiness records can only be changed through an authorized command.,NPI 就绪度记录只能通过获授权的命令更改。
 Only an unavailable external provider may omit source identity.,只有不可用的外部提供方可以省略来源身份。
 Predecessor NPI Readiness Revision,前序 NPI 就绪度修订
-Predecessor NPI Readiness Revision Global ID,前序 NPI 就绪度修订全局 ID
+Predecessor NPI Readiness Revision Global ID,前序 NPI 就绪度修订全局标识符
 Project Optimistic Version,项目乐观锁版本
 Project Snapshot Hash,项目快照哈希
 Readiness Applicability Snapshot,就绪度适用性快照
@@ -6844,7 +6844,7 @@ Select at least one supported source kind.,请至少选择一种受支持的来�
 Select the exact Gate for this readiness item.,请为此就绪度项选择精确的阶段门。
 Select the exact current readiness revision.,请选择精确的当前就绪度修订。
 Select the exact predecessor readiness revision.,请选择精确的前序就绪度修订。
-Stored JSON does not match the exact readiness snapshot.,存储的 JSON 与精确就绪度快照不匹配。
+Stored JSON does not match the exact readiness snapshot.,存储的数据对象与精确就绪度快照不匹配。
 Stored list does not match the exact readiness snapshot.,存储的列表与精确就绪度快照不匹配。
 The NPI Readiness Template is unavailable.,NPI 就绪度模板不可用。
 The NPI readiness record was changed by another user.,NPI 就绪度记录已被其他用户更改。

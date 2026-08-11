@@ -6780,7 +6780,7 @@ An applicable readiness item cannot be marked not applicable.,適用的就緒度
 Assign every applicable readiness item exactly once.,請為每個適用的就緒度項目指派且僅指派一次。
 Bind the exact failed source before marking this item failed.,將此項目標記為失敗前，請綁定精確的失敗來源。
 Changed At,變更時間
-Changed By User ID,變更者使用者 ID
+Changed By User ID,變更者使用者識別碼
 Enter a confirmation before completing this item.,完成此項目前請輸入確認內容。
 Enter a due date.,請輸入截止日期。
 Enter a positive optimistic version.,請輸入正數樂觀鎖版本。
@@ -6796,7 +6796,7 @@ Enter only supported template changes.,請僅輸入支援的範本變更。
 Freeze at least one readiness category and item.,請至少凍結一個就緒度類別和一個項目。
 Item project types must be allowed by the template.,項目專案類型必須在範本允許的範圍內。
 NPI Readiness Command Idempotency,NPI 就緒度命令冪等記錄
-NPI Readiness Instance Global ID,NPI 就緒度執行個體全域 ID
+NPI Readiness Instance Global ID,NPI 就緒度執行個體全域識別碼
 NPI Readiness Instance Revision,NPI 就緒度執行個體修訂
 NPI Readiness Instance Revision Snapshot,NPI 就緒度執行個體修訂快照
 NPI Readiness Instance Snapshot Hash does not match.,NPI 就緒度執行個體快照雜湊不相符。
@@ -6806,8 +6806,8 @@ NPI Readiness Instance Version Key Hash does not match.,NPI 就緒度執行個�
 NPI Readiness Instance fields do not match the exact snapshot.,NPI 就緒度執行個體欄位與精確快照不相符。
 NPI Readiness Template,NPI 就緒度範本
 NPI Readiness Template Code,NPI 就緒度範本編碼
-NPI Readiness Template Global ID,NPI 就緒度範本全域 ID
-NPI Readiness Template Revision Global ID,NPI 就緒度範本修訂全域 ID
+NPI Readiness Template Global ID,NPI 就緒度範本全域識別碼
+NPI Readiness Template Revision Global ID,NPI 就緒度範本修訂全域識別碼
 NPI Readiness Template Snapshot Hash,NPI 就緒度範本快照雜湊
 NPI Readiness Template Snapshot Hash does not match.,NPI 就緒度範本快照雜湊不相符。
 NPI Readiness Template Title,NPI 就緒度範本標題
@@ -6822,7 +6822,7 @@ NPI readiness history cannot be deleted.,NPI 就緒度歷史不能刪除。
 NPI readiness records can only be changed through an authorized command.,NPI 就緒度記錄只能透過獲授權的命令變更。
 Only an unavailable external provider may omit source identity.,只有無法使用的外部提供者可以省略來源身分。
 Predecessor NPI Readiness Revision,前序 NPI 就緒度修訂
-Predecessor NPI Readiness Revision Global ID,前序 NPI 就緒度修訂全域 ID
+Predecessor NPI Readiness Revision Global ID,前序 NPI 就緒度修訂全域識別碼
 Project Optimistic Version,專案樂觀鎖版本
 Project Snapshot Hash,專案快照雜湊
 Readiness Applicability Snapshot,就緒度適用性快照
@@ -6844,7 +6844,7 @@ Select at least one supported source kind.,請至少選擇一種支援的來源�
 Select the exact Gate for this readiness item.,請為此就緒度項目選擇精確的階段門。
 Select the exact current readiness revision.,請選擇精確的目前就緒度修訂。
 Select the exact predecessor readiness revision.,請選擇精確的前序就緒度修訂。
-Stored JSON does not match the exact readiness snapshot.,儲存的 JSON 與精確就緒度快照不相符。
+Stored JSON does not match the exact readiness snapshot.,儲存的資料物件與精確就緒度快照不相符。
 Stored list does not match the exact readiness snapshot.,儲存的清單與精確就緒度快照不相符。
 The NPI Readiness Template is unavailable.,NPI 就緒度範本無法使用。
 The NPI readiness record was changed by another user.,NPI 就緒度記錄已被其他使用者變更。
