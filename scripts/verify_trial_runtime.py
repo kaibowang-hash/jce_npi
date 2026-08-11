@@ -40,6 +40,7 @@ FIXTURE_RUN_ID = document_runtime.FIXTURE_RUN_ID
 TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = "Administrator"
 RESPONSIBLE_MEMBER_ID = document_runtime.BASELINE_MEMBER_ID
+VERIFIER_MEMBER_ID = document_runtime.fixture_id("p7-03-verifier-member")
 UNRELATED_USER = f"npi-trial-{FIXTURE_RUN_ID[:20]}-unrelated@example.invalid"
 ABSENT_PROJECT_ID = "00000000-0000-4000-8000-000000000701"
 ABSENT_PLAN_ID = "00000000-0000-4000-8000-000000000702"
@@ -48,6 +49,7 @@ CREATE_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-create"
 REVISE_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-revise"
 STALE_REVISE_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-stale-revise"
 ROUND_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-round"
+TARGET_ROUND_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-round"
 ROUND_CONFLICT_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-round-conflict"
 ACTION_KEY = f"p7-01-runtime-{FIXTURE_RUN_ID}-actions"
 
@@ -60,6 +62,23 @@ SAMPLE_KEY = f"p7-02-runtime-{FIXTURE_RUN_ID}-sample"
 SAMPLE_REVISE_KEY = f"p7-02-runtime-{FIXTURE_RUN_ID}-sample-revise"
 UPLOAD_KEY = f"p7-02-runtime-{FIXTURE_RUN_ID}-upload"
 BIND_KEY = f"p7-02-runtime-{FIXTURE_RUN_ID}-bind"
+TARGET_PREPARE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-prepare"
+TARGET_START_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-start"
+TARGET_SAMPLE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-sample"
+TARGET_UPLOAD_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-upload"
+TARGET_BIND_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-target-bind"
+CAVITY_CREATE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-cavity-create"
+CAVITY_REVISE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-cavity-revise"
+CAVITY_STALE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-cavity-stale"
+NEW_DEFECT_CREATE_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-new"
+NEW_DEFECT_KEYS = tuple(
+    f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-new-v{version}"
+    for version in range(2, 7)
+)
+CONTINUE_TOOLING_DEFECT_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-tooling"
+CROSS_ROUND_DEFECT_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-defect-cross-round"
+VERIFY_FAIL_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-verify-fail"
+VERIFY_PASS_KEY = f"p7-03-runtime-{FIXTURE_RUN_ID}-verify-pass"
 EVIDENCE_FILE_NAME = "p7-02-controlled-parameters.csv"
 EVIDENCE_CONTENT = (
     b"definitionKey,value,unit\n"
@@ -76,6 +95,9 @@ TRIAL_DOCTYPES = (
     "NPI Trial Actual Revision",
     "NPI Trial Sample Batch Revision",
     "NPI Trial Evidence Reference",
+    "NPI Trial Cavity Result Revision",
+    "NPI Trial Defect Revision",
+    "NPI Trial Defect Verification Revision",
 )
 TRIAL_PROTECTED_FIELDS = {
     "NPI Trial Plan Revision": "snapshot_hash",
@@ -87,6 +109,9 @@ TRIAL_PROTECTED_FIELDS = {
     "NPI Trial Actual Revision": "snapshot_hash",
     "NPI Trial Sample Batch Revision": "snapshot_hash",
     "NPI Trial Evidence Reference": "snapshot_hash",
+    "NPI Trial Cavity Result Revision": "snapshot_hash",
+    "NPI Trial Defect Revision": "snapshot_hash",
+    "NPI Trial Defect Verification Revision": "snapshot_hash",
 }
 EXPECTED_CAPABILITIES = [
     {
@@ -113,6 +138,18 @@ EXPECTED_EXECUTION_CAPABILITIES = {
     "gateEffect": "unavailable",
     "approvedBaseline": "unavailable",
 }
+EXPECTED_QUALITY_PERMISSIONS = {
+    "view": True,
+    "recordCavityResult": True,
+    "manageDefects": True,
+    "verifyDefects": True,
+}
+EXPECTED_QUALITY_EXTERNAL_EFFECTS = {
+    "ncr": "unavailable",
+    "qualityInspection": "unavailable",
+    "gate": "unavailable",
+    "toolingLifecycle": "unavailable",
+}
 _PROBLEM_CODE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
 _FIELD_PATH = re.compile(
     r"^[A-Za-z][A-Za-z0-9]*(?:(?:\.[A-Za-z][A-Za-z0-9]*)|(?:\[[0-9]{1,3}\]))*$"
@@ -128,6 +165,10 @@ def plan_path(project_id: str, plan_id: str, suffix: str = "") -> str:
 
 
 def execution_path(project_id: str, round_id: str, suffix: str = "/execution") -> str:
+    return f"/api/npi/v1/projects/{project_id}/trial-rounds/{round_id}{suffix}"
+
+
+def quality_path(project_id: str, round_id: str, suffix: str = "/quality") -> str:
     return f"/api/npi/v1/projects/{project_id}/trial-rounds/{round_id}{suffix}"
 
 
@@ -520,6 +561,292 @@ def assert_execution_workspace(
     return result.body
 
 
+def assert_quality_workspace(
+    result: HttpResult,
+    project_id: str,
+    round_id: str,
+    *,
+    cavity_results: int,
+    trial_defects: int,
+    tooling_defects: int,
+    verifications: int,
+) -> dict[str, Any]:
+    require(result.status in {200, 201}, "P7-03 quality workspace failed")
+    require(
+        set(result.body)
+        == {
+            "projectGlobalId",
+            "trialRound",
+            "cavityResultRevisions",
+            "defectRevisions",
+            "verificationRevisions",
+            "cavityFilters",
+            "pareto",
+            "permissions",
+            "externalEffects",
+        },
+        "P7-03 quality workspace contract drifted",
+    )
+    require(
+        result.body.get("projectGlobalId") == project_id
+        and result.body.get("trialRound", {}).get("globalId") == round_id
+        and result.body.get("trialRound", {}).get("currentState") == "running"
+        and result.body.get("trialRound", {}).get("optimisticVersion") == 3,
+        "P7-03 exact quality Round identity drifted",
+    )
+    defect_rows = result.body.get("defectRevisions")
+    require(
+        isinstance(defect_rows, list)
+        and len(result.body.get("cavityResultRevisions", [])) == cavity_results
+        and sum(value.get("source") == "trial" for value in defect_rows) == trial_defects
+        and sum(value.get("source") == "tooling" for value in defect_rows) == tooling_defects
+        and len(result.body.get("verificationRevisions", [])) == verifications,
+        "P7-03 immutable quality cardinality drifted",
+    )
+    require(
+        result.body.get("permissions") == EXPECTED_QUALITY_PERMISSIONS
+        and result.body.get("externalEffects") == EXPECTED_QUALITY_EXTERNAL_EFFECTS,
+        "P7-03 quality authority projection drifted",
+    )
+    for value in result.body["cavityResultRevisions"]:
+        require_hash(value.get("snapshotHash"), "P7-03 cavity result")
+    for wrapper in defect_rows:
+        require(
+            set(wrapper) == {"source", "revision"}
+            and wrapper.get("source") in {"tooling", "trial"}
+            and isinstance(wrapper.get("revision"), dict),
+            "P7-03 defect source wrapper drifted",
+        )
+        require_hash(wrapper["revision"].get("snapshotHash"), "P7-03 defect")
+    for value in result.body["verificationRevisions"]:
+        require_hash(value.get("snapshotHash"), "P7-03 verification")
+    serialized = json.dumps(result.body, sort_keys=True)
+    require(
+        "fileUrl" not in serialized
+        and "/private/files/" not in serialized
+        and all(value in serialized for value in EXPECTED_QUALITY_EXTERNAL_EFFECTS.values()),
+        "P7-03 quality workspace leaked a private path or external success",
+    )
+    return result.body
+
+
+def measurement_payload(*, corrected: bool, observed_at: str) -> list[dict[str, object]]:
+    return [
+        {
+            "characteristicKey": "cavity_width",
+            "label": "Controlled synthetic cavity width",
+            "unit": "mm",
+            "nominalValue": "10.00",
+            "lowerLimit": "9.90",
+            "upperLimit": "10.10",
+            "required": True,
+            "state": "measured",
+            "value": "10.04" if corrected else "10.12",
+            "source": "manual",
+            "observedAt": observed_at,
+        }
+    ]
+
+
+def quality_round_context(
+    round_value: dict[str, Any],
+    input_lock: dict[str, Any],
+) -> dict[str, object]:
+    return {
+        "expectedRoundOptimisticVersion": round_value["optimisticVersion"],
+        "expectedRoundSnapshotHash": round_value["snapshotHash"],
+        "expectedInputLockRevisionGlobalId": input_lock["globalId"],
+        "expectedInputLockRevisionSnapshotHash": input_lock["snapshotHash"],
+    }
+
+
+def cavity_result_payload(
+    context: dict[str, Any],
+    *,
+    corrected: bool,
+) -> dict[str, object]:
+    value = {
+        **quality_round_context(context["round"], context["inputLock"]),
+        "measurements": measurement_payload(
+            corrected=corrected,
+            observed_at=(
+                "2027-02-10T10:00:00Z"
+                if corrected
+                else "2027-02-10T09:30:00Z"
+            ),
+        ),
+        "reason": (
+            "Append the corrected controlled cavity result."
+            if corrected
+            else "Record the initial controlled cavity result."
+        ),
+    }
+    if not corrected:
+        value.update(
+            {
+                "sampleBatchRevisionGlobalId": context["sample"]["globalId"],
+                "expectedSampleBatchRevisionSnapshotHash": context["sample"]["snapshotHash"],
+                "cavityGlobalId": context["cavityId"],
+                "evidence": [
+                    {
+                        "globalId": context["evidence"]["globalId"],
+                        "snapshotHash": context["evidence"]["snapshotHash"],
+                    }
+                ],
+            }
+        )
+    return value
+
+
+def defect_action_payload(
+    context: dict[str, Any],
+    *,
+    action: dict[str, Any] | None,
+    state: str,
+    verification: dict[str, Any] | None = None,
+) -> dict[str, object]:
+    return {
+        "globalId": None if action is None else action["globalId"],
+        "actionType": "corrective",
+        "state": state,
+        "detail": "Correct the controlled cavity fit and verify the exact target Round.",
+        "responsibleMember": {
+            "globalId": RESPONSIBLE_MEMBER_ID,
+            "optimisticVersion": 1,
+        },
+        "dueDate": "2027-02-12",
+        "targetRoundGlobalId": context["round"]["globalId"],
+        "targetRoundOptimisticVersion": context["round"]["optimisticVersion"],
+        "targetRoundSnapshotHash": context["round"]["snapshotHash"],
+        "verificationRevisionGlobalId": (
+            None if verification is None else verification["globalId"]
+        ),
+        "verificationRevisionSnapshotHash": (
+            None if verification is None else verification["snapshotHash"]
+        ),
+    }
+
+
+def defect_payload(
+    observation: dict[str, Any],
+    target: dict[str, Any],
+    *,
+    predecessor: dict[str, Any] | None,
+    predecessor_kind: str | None,
+    business_code: str,
+    state: str,
+    action_state: str,
+    action: dict[str, Any] | None,
+    verification: dict[str, Any] | None = None,
+    create_new: bool = False,
+) -> dict[str, object]:
+    root_cause_recorded = state != "open"
+    return {
+        **quality_round_context(observation["round"], observation["inputLock"]),
+        **(
+            {"defectGlobalId": None}
+            if create_new
+            else {"defectGlobalId": predecessor["defectGlobalId"]}
+            if predecessor_kind == "tooling_defect_revision"
+            else {}
+        ),
+        "expectedPredecessorKind": predecessor_kind,
+        "expectedPredecessorGlobalId": (
+            None if predecessor is None else predecessor["globalId"]
+        ),
+        "expectedPredecessorSnapshotHash": (
+            None if predecessor is None else predecessor["snapshotHash"]
+        ),
+        "expectedDefectVersion": (
+            None if predecessor is None else predecessor["defectVersion"]
+        ),
+        "sampleBatchRevisionGlobalId": observation["sample"]["globalId"],
+        "expectedSampleBatchRevisionSnapshotHash": observation["sample"]["snapshotHash"],
+        "cavityGlobalId": observation["cavityId"],
+        "businessCode": business_code,
+        "title": "Controlled synthetic cavity flash",
+        "description": "Controlled exact-cavity defect observation for runtime proof.",
+        "categoryKey": "appearance.flash",
+        "location": "parting-line",
+        "severity": "high",
+        "blocking": True,
+        "state": state,
+        "rootCauseState": "recorded" if root_cause_recorded else "pending",
+        "rootCause": (
+            "Controlled synthetic cavity fit variation."
+            if root_cause_recorded
+            else None
+        ),
+        "responsibleMember": (
+            None
+            if state == "open"
+            else {"globalId": RESPONSIBLE_MEMBER_ID, "optimisticVersion": 1}
+        ),
+        "occurrenceCount": 2,
+        "actions": [
+            defect_action_payload(
+                target,
+                action=action,
+                state=action_state,
+                verification=verification,
+            )
+        ],
+        "evidence": [
+            {
+                "globalId": observation["evidence"]["globalId"],
+                "snapshotHash": observation["evidence"]["snapshotHash"],
+            }
+        ],
+        "reason": f"Record controlled defect state {state}.",
+    }
+
+
+def verification_payload(
+    context: dict[str, Any],
+    defect: dict[str, Any],
+    action: dict[str, Any],
+    cavity_result: dict[str, Any],
+    *,
+    result: str,
+    predecessor: dict[str, Any] | None,
+) -> dict[str, object]:
+    return {
+        "expectedDefectRevisionGlobalId": defect["globalId"],
+        "expectedDefectRevisionSnapshotHash": defect["snapshotHash"],
+        "actionGlobalId": action["globalId"],
+        "verificationGlobalId": (
+            None if predecessor is None else predecessor["verificationGlobalId"]
+        ),
+        "expectedAttemptSequence": (
+            None if predecessor is None else predecessor["attemptSequence"]
+        ),
+        "targetRoundGlobalId": context["round"]["globalId"],
+        "expectedTargetRoundOptimisticVersion": context["round"]["optimisticVersion"],
+        "expectedTargetRoundSnapshotHash": context["round"]["snapshotHash"],
+        "cavityResultRevisionGlobalId": cavity_result["globalId"],
+        "expectedCavityResultRevisionSnapshotHash": cavity_result["snapshotHash"],
+        "verifierMember": {
+            "globalId": VERIFIER_MEMBER_ID,
+            "optimisticVersion": 1,
+        },
+        "result": result,
+        "finding": (
+            "Independent controlled verification passed."
+            if result == "pass"
+            else "Independent controlled verification found a remaining deviation."
+        ),
+        "observedAt": (
+            "2027-02-10T11:30:00Z" if result == "pass" else "2027-02-10T11:00:00Z"
+        ),
+        "evidence": [
+            {
+                "globalId": context["evidence"]["globalId"],
+                "snapshotHash": context["evidence"]["snapshotHash"],
+            }
+        ],
+    }
+
+
 def create_payload(master_id: str) -> dict[str, object]:
     return {
         "toolingMasterGlobalId": master_id,
@@ -569,11 +896,15 @@ def revise_payload(initial: dict[str, Any]) -> dict[str, object]:
     return payload
 
 
-def round_payload(successor: dict[str, Any]) -> dict[str, object]:
+def round_payload(
+    successor: dict[str, Any],
+    *,
+    display_label: str = "T0",
+) -> dict[str, object]:
     return {
         "expectedPlanRevisionGlobalId": successor["globalId"],
         "expectedPlanRevisionSnapshotHash": successor["snapshotHash"],
-        "displayLabel": "T0",
+        "displayLabel": display_label,
         "reason": "Create one distinct planned synthetic Trial Round.",
     }
 
@@ -674,9 +1005,14 @@ def actual_context_payload(*, successor: bool) -> dict[str, object]:
     }
 
 
-def sample_payload(cavity_ids: list[str], *, successor: bool) -> dict[str, object]:
+def sample_payload(
+    cavity_ids: list[str],
+    *,
+    successor: bool,
+    label_prefix: str = "P702",
+) -> dict[str, object]:
     return {
-        "label": f"P702-SAMPLE-{FIXTURE_RUN_ID[:12]}",
+        "label": f"{label_prefix}-SAMPLE-{FIXTURE_RUN_ID[:12]}",
         "cavityGlobalIds": cavity_ids,
         "quantity": 80,
         "unit": "piece",
@@ -757,6 +1093,11 @@ def persisted_counts(administrator, base_url: str, project_id: str) -> dict[str,
         "trial_file.upload",
         "trial_evidence.bind",
         "trial_evidence.content.read",
+        "trial_cavity_result.create",
+        "trial_cavity_result.revise",
+        "trial_defect.create",
+        "trial_defect.revise",
+        "trial_defect.verify",
     ):
         counts[f"audit:{operation}"] = len(
             tooling_runtime.rows(
@@ -904,6 +1245,31 @@ def verify_idor(
             },
             "P7-02 unauthorized and absent execution identities are distinguishable",
         )
+        denied_quality = trial_request(
+            unrelated,
+            base_url,
+            quality_path(project_id, round_id),
+            query_key="unrelated-quality",
+        )
+        absent_quality = trial_request(
+            unrelated,
+            base_url,
+            quality_path(ABSENT_PROJECT_ID, round_id),
+            query_key="absent-quality",
+        )
+        validate_problem(denied_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
+        validate_problem(absent_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
+        require(
+            {
+                key: denied_quality.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            }
+            == {
+                key: absent_quality.body.get(key)
+                for key in ("type", "title", "status", "code", "retryable")
+            },
+            "P7-03 unauthorized and absent quality identities are distinguishable",
+        )
     finally:
         delete_disposable_user(
             administrator,
@@ -947,6 +1313,20 @@ def verify_idor(
         404,
         "TRIAL_EXECUTION_UNAVAILABLE",
     )
+    cross_project_quality = trial_request(
+        administrator,
+        base_url,
+        quality_path(second_project_id(administrator, base_url), round_id),
+        query_key="cross-project-quality",
+    )
+    absent_authorized_quality = trial_request(
+        administrator,
+        base_url,
+        quality_path(project_id, ABSENT_PLAN_ID),
+        query_key="absent-authorized-quality",
+    )
+    validate_problem(cross_project_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
+    validate_problem(absent_authorized_quality, 404, "TRIAL_QUALITY_UNAVAILABLE")
 
 
 def run_execution_fresh(
@@ -1292,7 +1672,7 @@ def run_execution_fresh(
 
     bind_payload = {
         "expectedRoundOptimisticVersion": 3,
-        "role": "parameter_curve",
+        "role": "measurement_report",
         "fileRevisionGlobalId": file_revision_id,
         "expectedFileOptimisticVersion": 2,
         "sampleBatchRevisionGlobalId": sample_successor_id,
@@ -1422,9 +1802,906 @@ def run_execution_fresh(
         "evidenceId": evidence_id,
         "fileRevisionId": file_revision_id,
         "inputLockId": input_lock_id,
+        "inputLock": input_lock,
+        "round": bound_body["round"],
+        "sample": sample_successor,
+        "evidence": evidence,
+        "cavityIds": cavity_ids,
         "sampleBatchId": sample_batch_id,
         "sampleSuccessorId": sample_successor_id,
     }
+
+
+def run_target_execution_fresh(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    plan_id: str,
+    plan_successor: dict[str, Any],
+    source_input_lock: dict[str, Any],
+) -> dict[str, Any]:
+    created_round = command(
+        administrator,
+        base_url,
+        csrf_token,
+        plan_path(project_id, plan_id, "/rounds"),
+        round_payload(plan_successor, display_label="T1"),
+        TARGET_ROUND_KEY,
+    )
+    detail = assert_detail(
+        created_round,
+        project_id,
+        plan_id=plan_id,
+        revisions=2,
+        rounds=2,
+        links=1,
+    )
+    target_round = exact_single(
+        [value for value in detail["rounds"] if value.get("displayLabel") == "T1"],
+        "P7-03 target Round",
+    )
+    round_id = require_uuid(target_round.get("globalId"), "P7-03 target Round")
+    require(
+        target_round.get("roundSequence") == 1
+        and target_round.get("currentState") == "planned"
+        and target_round.get("optimisticVersion") == 1,
+        "P7-03 distinct target Round truth drifted",
+    )
+    references = replay_references(source_input_lock)
+    prepared = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, ":prepare"),
+        prepare_execution_payload(references),
+        TARGET_PREPARE_KEY,
+    )
+    prepared_body = assert_execution_workspace(
+        prepared,
+        project_id,
+        round_id,
+        state="prepared",
+        round_version=2,
+        locks=1,
+        actuals=0,
+        samples=0,
+        evidence=0,
+        pending=0,
+    )
+    input_lock = exact_single(prepared_body["inputLocks"], "P7-03 target input lock")
+    started = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, ":start"),
+        {
+            "expectedRoundOptimisticVersion": 2,
+            "expectedInputLockRevisionGlobalId": input_lock["globalId"],
+            "expectedInputLockVersion": 1,
+            **actual_context_payload(successor=False),
+        },
+        TARGET_START_KEY,
+    )
+    started_body = assert_execution_workspace(
+        started,
+        project_id,
+        round_id,
+        state="running",
+        round_version=3,
+        locks=1,
+        actuals=1,
+        samples=0,
+        evidence=0,
+        pending=0,
+    )
+    cavity_ids = [
+        value["globalId"]
+        for value in input_lock["references"]
+        if value.get("kind") == "cavity"
+    ]
+    created_sample = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, "/sample-batches"),
+        {
+            "expectedRoundOptimisticVersion": 3,
+            "expectedInputLockRevisionGlobalId": input_lock["globalId"],
+            "sample": sample_payload(
+                cavity_ids,
+                successor=False,
+                label_prefix="P703",
+            ),
+            "reason": "Create one exact target-Round Sample Batch.",
+        },
+        TARGET_SAMPLE_KEY,
+    )
+    sample_body = assert_execution_workspace(
+        created_sample,
+        project_id,
+        round_id,
+        state="running",
+        round_version=3,
+        locks=1,
+        actuals=1,
+        samples=1,
+        evidence=0,
+        pending=0,
+    )
+    sample = exact_single(sample_body["sampleBatchRevisions"], "P7-03 target Sample")
+    uploaded = multipart_trial_upload(
+        administrator,
+        base_url,
+        execution_path(project_id, round_id, "/files"),
+        csrf_token=csrf_token,
+        idempotency_key=TARGET_UPLOAD_KEY,
+        round_version=3,
+    )
+    require(
+        uploaded.status == 201
+        and uploaded.headers.get("Idempotency-Replayed") == "false",
+        "P7-03 target evidence upload failed",
+    )
+    uploaded_body = assert_execution_workspace(
+        uploaded,
+        project_id,
+        round_id,
+        state="running",
+        round_version=3,
+        locks=1,
+        actuals=1,
+        samples=1,
+        evidence=0,
+        pending=1,
+    )
+    pending_file = exact_single(uploaded_body["pendingFiles"], "P7-03 target File")
+    run_bench_fixture(
+        "observe_trial_file_scan",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "round_id": round_id,
+            "file_revision_id": pending_file["globalId"],
+        },
+    )
+    bound = command(
+        administrator,
+        base_url,
+        csrf_token,
+        execution_path(project_id, round_id, "/evidence"),
+        {
+            "expectedRoundOptimisticVersion": 3,
+            "role": "measurement_report",
+            "fileRevisionGlobalId": pending_file["globalId"],
+            "expectedFileOptimisticVersion": 2,
+            "sampleBatchRevisionGlobalId": sample["globalId"],
+            "expectedSampleVersion": 1,
+        },
+        TARGET_BIND_KEY,
+    )
+    bound_body = assert_execution_workspace(
+        bound,
+        project_id,
+        round_id,
+        state="running",
+        round_version=3,
+        locks=1,
+        actuals=1,
+        samples=1,
+        evidence=1,
+        pending=0,
+    )
+    return {
+        "round": bound_body["round"],
+        "inputLock": input_lock,
+        "sample": sample,
+        "evidence": exact_single(bound_body["evidence"], "P7-03 target evidence"),
+        "cavityId": cavity_ids[0],
+    }
+
+
+def run_quality_fresh(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    primary: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, object]:
+    run_bench_fixture(
+        "ensure_trial_quality_verifier_member",
+        {"fixture_run_id": FIXTURE_RUN_ID, "project_id": project_id},
+    )
+    round_id = primary["round"]["globalId"]
+    initial = assert_quality_workspace(
+        trial_request(
+            administrator,
+            base_url,
+            quality_path(project_id, round_id),
+            query_key="quality-empty",
+        ),
+        project_id,
+        round_id,
+        cavity_results=0,
+        trial_defects=0,
+        tooling_defects=2,
+        verifications=0,
+    )
+    tooling_tip = max(
+        (
+            value["revision"]
+            for value in initial["defectRevisions"]
+            if value.get("source") == "tooling"
+        ),
+        key=lambda value: value["defectVersion"],
+    )
+
+    created_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(project_id, round_id, "/cavity-results"),
+        cavity_result_payload(primary, corrected=False),
+        CAVITY_CREATE_KEY,
+    )
+    created_result_body = assert_quality_workspace(
+        created_result,
+        project_id,
+        round_id,
+        cavity_results=1,
+        trial_defects=0,
+        tooling_defects=2,
+        verifications=0,
+    )
+    first_result = exact_single(
+        created_result_body["cavityResultRevisions"],
+        "P7-03 initial cavity result",
+    )
+    result_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(project_id, round_id, "/cavity-results"),
+        cavity_result_payload(primary, corrected=False),
+        CAVITY_CREATE_KEY,
+    )
+    require(
+        result_replay.headers.get("Idempotency-Replayed") == "true"
+        and result_replay.body == created_result.body,
+        "P7-03 same-process cavity-result replay drifted",
+    )
+    revised_result_payload = {
+        **cavity_result_payload(primary, corrected=True),
+        "expectedRevisionGlobalId": first_result["globalId"],
+        "expectedRevisionSnapshotHash": first_result["snapshotHash"],
+        "expectedResultVersion": 1,
+    }
+    revised_result = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(
+            project_id,
+            round_id,
+            f"/cavity-results/{first_result['cavityResultGlobalId']}/revisions",
+        ),
+        revised_result_payload,
+        CAVITY_REVISE_KEY,
+    )
+    revised_result_body = assert_quality_workspace(
+        revised_result,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=0,
+        tooling_defects=2,
+        verifications=0,
+    )
+    result_successor = revised_result_body["cavityResultRevisions"][-1]
+    require(
+        result_successor.get("resultVersion") == 2
+        and result_successor.get("predecessorGlobalId") == first_result["globalId"]
+        and result_successor.get("predecessorSnapshotHash") == first_result["snapshotHash"]
+        and result_successor.get("cavityResultGlobalId")
+        == first_result["cavityResultGlobalId"],
+        "P7-03 cavity-result successor lineage drifted",
+    )
+
+    continued_tooling = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(project_id, round_id, "/defects"),
+        defect_payload(
+            primary,
+            target,
+            predecessor=tooling_tip,
+            predecessor_kind="tooling_defect_revision",
+            business_code=tooling_tip["businessCode"],
+            state="in_progress",
+            action_state="completed",
+            action=None,
+        ),
+        CONTINUE_TOOLING_DEFECT_KEY,
+    )
+    continued_body = assert_quality_workspace(
+        continued_tooling,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=1,
+        tooling_defects=2,
+        verifications=0,
+    )
+    tooling_trial_tip = exact_single(
+        [
+            value["revision"]
+            for value in continued_body["defectRevisions"]
+            if value.get("source") == "trial"
+        ],
+        "P7-03 continued Tooling defect",
+    )
+    tooling_action = exact_single(tooling_trial_tip["actions"], "P7-03 Tooling action")
+    require(
+        tooling_trial_tip.get("defectGlobalId") == tooling_tip["defectGlobalId"]
+        and tooling_trial_tip.get("defectVersion") == tooling_tip["defectVersion"] + 1
+        and tooling_trial_tip.get("predecessorKind") == "tooling_defect_revision"
+        and tooling_action.get("targetRoundGlobalId") == target["round"]["globalId"],
+        "P7-03 P6-to-P7 defect single-tip continuation drifted",
+    )
+    cross_round = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(
+            project_id,
+            target["round"]["globalId"],
+            f"/defects/{tooling_trial_tip['defectGlobalId']}/revisions",
+        ),
+        defect_payload(
+            target,
+            target,
+            predecessor=tooling_trial_tip,
+            predecessor_kind="trial_defect_revision",
+            business_code=tooling_tip["businessCode"],
+            state="ready_for_verification",
+            action_state="completed",
+            action=tooling_action,
+        ),
+        CROSS_ROUND_DEFECT_KEY,
+    )
+    cross_round_body = assert_quality_workspace(
+        cross_round,
+        project_id,
+        target["round"]["globalId"],
+        cavity_results=0,
+        trial_defects=2,
+        tooling_defects=2,
+        verifications=0,
+    )
+    cross_round_tip = max(
+        (
+            value["revision"]
+            for value in cross_round_body["defectRevisions"]
+            if value.get("source") == "trial"
+        ),
+        key=lambda value: value["defectVersion"],
+    )
+    require(
+        cross_round_tip.get("trialRoundGlobalId") == target["round"]["globalId"]
+        and cross_round_tip.get("predecessorGlobalId") == tooling_trial_tip["globalId"]
+        and cross_round_tip.get("inputLockRevisionGlobalId") == target["inputLock"]["globalId"],
+        "P7-03 cross-Round defect observation drifted",
+    )
+
+    new_created = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(project_id, round_id, "/defects"),
+        defect_payload(
+            primary,
+            primary,
+            predecessor=None,
+            predecessor_kind=None,
+            business_code="P7-03-DEF-NEW",
+            state="open",
+            action_state="planned",
+            action=None,
+            create_new=True,
+        ),
+        NEW_DEFECT_CREATE_KEY,
+    )
+    new_created_body = assert_quality_workspace(
+        new_created,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=3,
+        tooling_defects=2,
+        verifications=0,
+    )
+    new_tip = exact_single(
+        [
+            value["revision"]
+            for value in new_created_body["defectRevisions"]
+            if value.get("source") == "trial"
+            and value.get("revision", {}).get("businessCode") == "P7-03-DEF-NEW"
+        ],
+        "P7-03 new defect",
+    )
+    new_action = exact_single(new_tip["actions"], "P7-03 new defect action")
+    new_replay = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(project_id, round_id, "/defects"),
+        defect_payload(
+            primary,
+            primary,
+            predecessor=None,
+            predecessor_kind=None,
+            business_code="P7-03-DEF-NEW",
+            state="open",
+            action_state="planned",
+            action=None,
+            create_new=True,
+        ),
+        NEW_DEFECT_CREATE_KEY,
+    )
+    require(
+        new_replay.headers.get("Idempotency-Replayed") == "true"
+        and new_replay.body == new_created.body,
+        "P7-03 same-process defect replay drifted",
+    )
+
+    for index, (state, action_state) in enumerate(
+        (
+            ("assigned", "planned"),
+            ("in_progress", "completed"),
+            ("ready_for_verification", "completed"),
+        )
+    ):
+        revised = command(
+            administrator,
+            base_url,
+            csrf_token,
+            quality_path(
+                project_id,
+                round_id,
+                f"/defects/{new_tip['defectGlobalId']}/revisions",
+            ),
+            defect_payload(
+                primary,
+                primary,
+                predecessor=new_tip,
+                predecessor_kind="trial_defect_revision",
+                business_code="P7-03-DEF-NEW",
+                state=state,
+                action_state=action_state,
+                action=new_action,
+            ),
+            NEW_DEFECT_KEYS[index],
+        )
+        revised_body = revised.body
+        new_tip = max(
+            (
+                value["revision"]
+                for value in revised_body["defectRevisions"]
+                if value.get("source") == "trial"
+                and value.get("revision", {}).get("businessCode") == "P7-03-DEF-NEW"
+            ),
+            key=lambda value: value["defectVersion"],
+        )
+        new_action = exact_single(new_tip["actions"], "P7-03 successor action")
+        require(new_tip.get("state") == state, "P7-03 defect state transition drifted")
+
+    failed = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(
+            project_id,
+            round_id,
+            f"/defects/{new_tip['defectGlobalId']}/verifications",
+        ),
+        verification_payload(
+            primary,
+            new_tip,
+            new_action,
+            result_successor,
+            result="fail",
+            predecessor=None,
+        ),
+        VERIFY_FAIL_KEY,
+    )
+    failed_body = assert_quality_workspace(
+        failed,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=6,
+        tooling_defects=2,
+        verifications=1,
+    )
+    failed_verification = exact_single(
+        failed_body["verificationRevisions"],
+        "P7-03 failed verification",
+    )
+    require(
+        failed_verification.get("result") == "fail"
+        and failed_verification.get("attemptSequence") == 1,
+        "P7-03 failed independent verification drifted",
+    )
+    passed = command(
+        administrator,
+        base_url,
+        csrf_token,
+        quality_path(
+            project_id,
+            round_id,
+            f"/defects/{new_tip['defectGlobalId']}/verifications",
+        ),
+        verification_payload(
+            primary,
+            new_tip,
+            new_action,
+            result_successor,
+            result="pass",
+            predecessor=failed_verification,
+        ),
+        VERIFY_PASS_KEY,
+    )
+    passed_body = assert_quality_workspace(
+        passed,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=6,
+        tooling_defects=2,
+        verifications=2,
+    )
+    passed_verification = passed_body["verificationRevisions"][-1]
+    require(
+        passed_verification.get("result") == "pass"
+        and passed_verification.get("attemptSequence") == 2
+        and passed_verification.get("verificationGlobalId")
+        == failed_verification.get("verificationGlobalId"),
+        "P7-03 passed independent verification succession drifted",
+    )
+
+    for offset, state in enumerate(("closed", "reopened"), start=3):
+        revised = command(
+            administrator,
+            base_url,
+            csrf_token,
+            quality_path(
+                project_id,
+                round_id,
+                f"/defects/{new_tip['defectGlobalId']}/revisions",
+            ),
+            defect_payload(
+                primary,
+                primary,
+                predecessor=new_tip,
+                predecessor_kind="trial_defect_revision",
+                business_code="P7-03-DEF-NEW",
+                state=state,
+                action_state="verified",
+                action=new_action,
+                verification=passed_verification,
+            ),
+            NEW_DEFECT_KEYS[offset],
+        )
+        new_tip = max(
+            (
+                value["revision"]
+                for value in revised.body["defectRevisions"]
+                if value.get("source") == "trial"
+                and value.get("revision", {}).get("businessCode") == "P7-03-DEF-NEW"
+            ),
+            key=lambda value: value["defectVersion"],
+        )
+        new_action = exact_single(new_tip["actions"], "P7-03 closed action")
+        require(new_tip.get("state") == state, "P7-03 close/reopen transition drifted")
+
+    before_failed = persisted_counts(administrator, base_url, project_id)
+    stale_result = trial_request(
+        administrator,
+        base_url,
+        quality_path(
+            project_id,
+            round_id,
+            f"/cavity-results/{first_result['cavityResultGlobalId']}/revisions",
+        ),
+        method="POST",
+        payload={**revised_result_payload, "reason": "Reject stale cavity result."},
+        csrf_token=csrf_token,
+        idempotency_key=CAVITY_STALE_KEY,
+    )
+    validate_problem(stale_result, 409, "TRIAL_QUALITY_CONFLICT")
+    idempotency_conflict_payload = defect_payload(
+        primary,
+        primary,
+        predecessor=None,
+        predecessor_kind=None,
+        business_code="P7-03-DEF-NEW",
+        state="open",
+        action_state="planned",
+        action=None,
+        create_new=True,
+    )
+    idempotency_conflict_payload["title"] = "Different controlled payload"
+    idempotency_conflict = trial_request(
+        administrator,
+        base_url,
+        quality_path(project_id, round_id, "/defects"),
+        method="POST",
+        payload=idempotency_conflict_payload,
+        csrf_token=csrf_token,
+        idempotency_key=NEW_DEFECT_CREATE_KEY,
+    )
+    validate_problem(idempotency_conflict, 409, "TRIAL_IDEMPOTENCY_CONFLICT")
+    require(
+        persisted_counts(administrator, base_url, project_id) == before_failed,
+        "P7-03 failed commands changed immutable cardinality",
+    )
+    final = assert_quality_workspace(
+        trial_request(
+            administrator,
+            base_url,
+            quality_path(project_id, round_id),
+            query_key="quality-final",
+        ),
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=8,
+        tooling_defects=2,
+        verifications=2,
+    )
+    require(
+        new_tip.get("state") == "reopened"
+        and new_action.get("state") == "verified"
+        and new_action.get("verificationRevisionGlobalId")
+        == passed_verification.get("globalId")
+        and final.get("pareto") == [
+            {
+                "categoryKey": "appearance.flash",
+                "severity": "high",
+                "cavityGlobalId": primary["cavityId"],
+                "count": 6,
+            }
+        ],
+        "P7-03 close/reopen, verified action or Pareto truth drifted",
+    )
+    return {
+        "cavityResultId": first_result["cavityResultGlobalId"],
+        "continuedToolingDefectId": tooling_tip["defectGlobalId"],
+        "crossRoundRevisionId": cross_round_tip["globalId"],
+        "newDefectId": new_tip["defectGlobalId"],
+        "verificationId": passed_verification["verificationGlobalId"],
+    }
+
+
+def run_quality_replay(
+    administrator,
+    base_url: str,
+    csrf_token: str,
+    *,
+    project_id: str,
+    primary: dict[str, Any],
+    target: dict[str, Any],
+) -> None:
+    round_id = primary["round"]["globalId"]
+    quality = assert_quality_workspace(
+        trial_request(
+            administrator,
+            base_url,
+            quality_path(project_id, round_id),
+            query_key="quality-replay-context",
+        ),
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=8,
+        tooling_defects=2,
+        verifications=2,
+    )
+    cavity_one, cavity_two = quality["cavityResultRevisions"]
+    wrappers = quality["defectRevisions"]
+    tooling_tip = max(
+        (
+            value["revision"]
+            for value in wrappers
+            if value.get("source") == "tooling"
+        ),
+        key=lambda value: value["defectVersion"],
+    )
+    trial_revisions = [
+        value["revision"] for value in wrappers if value.get("source") == "trial"
+    ]
+    tooling_trial = sorted(
+        [
+            value
+            for value in trial_revisions
+            if value["defectGlobalId"] == tooling_tip["defectGlobalId"]
+        ],
+        key=lambda value: value["defectVersion"],
+    )
+    new_trial = sorted(
+        [value for value in trial_revisions if value["businessCode"] == "P7-03-DEF-NEW"],
+        key=lambda value: value["defectVersion"],
+    )
+    require(
+        len(tooling_trial) == 2 and len(new_trial) == 6,
+        "P7-03 retained defect replay context drifted",
+    )
+    failed_verification, passed_verification = quality["verificationRevisions"]
+
+    replay_cases: list[tuple[str, dict[str, object], str]] = [
+        (
+            quality_path(project_id, round_id, "/cavity-results"),
+            cavity_result_payload(primary, corrected=False),
+            CAVITY_CREATE_KEY,
+        ),
+        (
+            quality_path(
+                project_id,
+                round_id,
+                f"/cavity-results/{cavity_one['cavityResultGlobalId']}/revisions",
+            ),
+            {
+                **cavity_result_payload(primary, corrected=True),
+                "expectedRevisionGlobalId": cavity_one["globalId"],
+                "expectedRevisionSnapshotHash": cavity_one["snapshotHash"],
+                "expectedResultVersion": 1,
+            },
+            CAVITY_REVISE_KEY,
+        ),
+        (
+            quality_path(project_id, round_id, "/defects"),
+            defect_payload(
+                primary,
+                target,
+                predecessor=tooling_tip,
+                predecessor_kind="tooling_defect_revision",
+                business_code=tooling_tip["businessCode"],
+                state="in_progress",
+                action_state="completed",
+                action=None,
+            ),
+            CONTINUE_TOOLING_DEFECT_KEY,
+        ),
+        (
+            quality_path(
+                project_id,
+                target["round"]["globalId"],
+                f"/defects/{tooling_tip['defectGlobalId']}/revisions",
+            ),
+            defect_payload(
+                target,
+                target,
+                predecessor=tooling_trial[0],
+                predecessor_kind="trial_defect_revision",
+                business_code=tooling_tip["businessCode"],
+                state="ready_for_verification",
+                action_state="completed",
+                action=exact_single(
+                    tooling_trial[0]["actions"],
+                    "P7-03 replay Tooling action",
+                ),
+            ),
+            CROSS_ROUND_DEFECT_KEY,
+        ),
+        (
+            quality_path(project_id, round_id, "/defects"),
+            defect_payload(
+                primary,
+                primary,
+                predecessor=None,
+                predecessor_kind=None,
+                business_code="P7-03-DEF-NEW",
+                state="open",
+                action_state="planned",
+                action=None,
+                create_new=True,
+            ),
+            NEW_DEFECT_CREATE_KEY,
+        ),
+    ]
+    states = (
+        ("assigned", "planned", None),
+        ("in_progress", "completed", None),
+        ("ready_for_verification", "completed", None),
+        ("closed", "verified", passed_verification),
+        ("reopened", "verified", passed_verification),
+    )
+    for index, (state, action_state, verification) in enumerate(states):
+        predecessor = new_trial[index]
+        replay_cases.append(
+            (
+                quality_path(
+                    project_id,
+                    round_id,
+                    f"/defects/{predecessor['defectGlobalId']}/revisions",
+                ),
+                defect_payload(
+                    primary,
+                    primary,
+                    predecessor=predecessor,
+                    predecessor_kind="trial_defect_revision",
+                    business_code="P7-03-DEF-NEW",
+                    state=state,
+                    action_state=action_state,
+                    action=exact_single(
+                        predecessor["actions"],
+                        "P7-03 replay defect action",
+                    ),
+                    verification=verification,
+                ),
+                NEW_DEFECT_KEYS[index],
+            )
+        )
+    ready_defect = new_trial[3]
+    ready_action = exact_single(ready_defect["actions"], "P7-03 replay ready action")
+    replay_cases.extend(
+        (
+            (
+                quality_path(
+                    project_id,
+                    round_id,
+                    f"/defects/{ready_defect['defectGlobalId']}/verifications",
+                ),
+                verification_payload(
+                    primary,
+                    ready_defect,
+                    ready_action,
+                    cavity_two,
+                    result="fail",
+                    predecessor=None,
+                ),
+                VERIFY_FAIL_KEY,
+            ),
+            (
+                quality_path(
+                    project_id,
+                    round_id,
+                    f"/defects/{ready_defect['defectGlobalId']}/verifications",
+                ),
+                verification_payload(
+                    primary,
+                    ready_defect,
+                    ready_action,
+                    cavity_two,
+                    result="pass",
+                    predecessor=failed_verification,
+                ),
+                VERIFY_PASS_KEY,
+            ),
+        )
+    )
+    before = persisted_counts(administrator, base_url, project_id)
+    for path, payload, key in replay_cases:
+        replay = command(
+            administrator,
+            base_url,
+            csrf_token,
+            path,
+            payload,
+            key,
+        )
+        require(
+            replay.headers.get("Idempotency-Replayed") == "true",
+            f"P7-03 cross-process command was not replayed: {key}",
+        )
+    require(
+        persisted_counts(administrator, base_url, project_id) == before,
+        "P7-03 cross-process replay changed immutable cardinality or integration truth",
+    )
 
 
 def run_fresh(
@@ -1576,7 +2853,7 @@ def run_fresh(
         project_id,
         plan_id=plan_id,
         revisions=2,
-        rounds=1,
+        rounds=2,
         links=0,
     )
     round_value = exact_single(round_detail["rounds"], "planned Round")
@@ -1664,6 +2941,30 @@ def run_fresh(
         project_id=project_id,
         round_id=round_id,
     )
+    primary_quality_context = {
+        "round": execution["round"],
+        "inputLock": execution["inputLock"],
+        "sample": execution["sample"],
+        "evidence": execution["evidence"],
+        "cavityId": execution["cavityIds"][0],
+    }
+    target_execution = run_target_execution_fresh(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        plan_id=plan_id,
+        plan_successor=successor,
+        source_input_lock=execution["inputLock"],
+    )
+    quality = run_quality_fresh(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        primary=primary_quality_context,
+        target=target_execution,
+    )
     verify_idor(
         administrator,
         base_url,
@@ -1682,51 +2983,63 @@ def run_fresh(
     final_counts = persisted_counts(administrator, base_url, project_id)
     require(
         final_counts["NPI Trial Plan Revision"] == 2
-        and final_counts["NPI Trial Round"] == 1
-        and final_counts["NPI Trial Round Lifecycle Event"] == 3
+        and final_counts["NPI Trial Round"] == 2
+        and final_counts["NPI Trial Round Lifecycle Event"] == 6
         and final_counts["NPI Trial Plan Work Link"] == 1
-        and final_counts["NPI Trial Command Idempotency"] == 11
-        and final_counts["NPI Trial Input Lock Revision"] == 1
-        and final_counts["NPI Trial Actual Revision"] == 2
-        and final_counts["NPI Trial Sample Batch Revision"] == 2
-        and final_counts["NPI Trial Evidence Reference"] == 1
+        and final_counts["NPI Trial Command Idempotency"] == 29
+        and final_counts["NPI Trial Input Lock Revision"] == 2
+        and final_counts["NPI Trial Actual Revision"] == 3
+        and final_counts["NPI Trial Sample Batch Revision"] == 3
+        and final_counts["NPI Trial Evidence Reference"] == 2
+        and final_counts["NPI Trial Cavity Result Revision"] == 2
+        and final_counts["NPI Trial Defect Revision"] == 8
+        and final_counts["NPI Trial Defect Verification Revision"] == 2
         and all(
-            final_counts[f"audit:{operation}"] == 1
-            for operation in (
-                "trial_plan.create",
-                "trial_plan.revise",
-                "trial_round.create",
-                "trial_plan.generate_actions",
-                "trial_round.prepare",
-                "trial_round.start",
-                "trial_actual.append",
-                "trial_sample.create",
-                "trial_sample.revise",
-                "trial_file.upload",
-                "trial_evidence.bind",
-                "trial_evidence.content.read",
-            )
+            final_counts[f"audit:{operation}"] == expected
+            for operation, expected in {
+                "trial_plan.create": 1,
+                "trial_plan.revise": 1,
+                "trial_round.create": 2,
+                "trial_plan.generate_actions": 1,
+                "trial_round.prepare": 2,
+                "trial_round.start": 2,
+                "trial_actual.append": 1,
+                "trial_sample.create": 2,
+                "trial_sample.revise": 1,
+                "trial_file.upload": 2,
+                "trial_evidence.bind": 2,
+                "trial_evidence.content.read": 1,
+                "trial_cavity_result.create": 1,
+                "trial_cavity_result.revise": 1,
+                "trial_defect.create": 2,
+                "trial_defect.revise": 6,
+                "trial_defect.verify": 2,
+            }.items()
         ),
-        "P7-02 cumulative controlled persistence cardinality drifted",
+        "P7-03 cumulative controlled persistence cardinality drifted",
     )
     require(
         (final_counts["outbox"], final_counts["inbox"]) == integration_before,
-        "P7-01 controlled Trial planning created ERP integration traffic",
+        "P7-03 controlled Trial quality created ERP integration traffic",
     )
     return {
         "actionLinkCount": 1,
         "crossProcessReplayReady": True,
         "doctypeCount": schema["doctypeCount"],
-        "evidenceReferenceCount": 1,
+        "evidenceReferenceCount": 2,
         "fixtureRunId": FIXTURE_RUN_ID,
-        "inputLockRevisionCount": 1,
+        "inputLockRevisionCount": 2,
         "integrationTrafficCreated": False,
         "metadataSynchronized": schema["metadataSynchronized"],
         "planRevisionCount": 2,
-        "plannedRoundCount": 1,
+        "plannedRoundCount": 2,
         "roundState": "running",
-        "sampleBatchRevisionCount": 2,
-        "trialActualRevisionCount": 2,
+        "sampleBatchRevisionCount": 3,
+        "trialActualRevisionCount": 3,
+        "cavityResultRevisionCount": 2,
+        "trialDefectRevisionCount": 8,
+        "verificationRevisionCount": 2,
+        "crossRoundDefectRevisionId": quality["crossRoundRevisionId"],
         "verifiedEvidenceId": execution["evidenceId"],
         "automaticMachineAcquisition": "unavailable",
         "erpQualityAuthority": "unavailable",
@@ -1769,7 +3082,16 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
     project_id, plan_id, detail = retained_detail(administrator, base_url)
     master_id = str(detail["latestRevision"]["toolingMasterGlobalId"])
     initial, successor = detail["revisions"]
-    round_id = str(exact_single(detail["rounds"], "replay Round")["globalId"])
+    primary_round = exact_single(
+        [value for value in detail["rounds"] if value.get("displayLabel") == "T0"],
+        "replay primary Round",
+    )
+    target_round = exact_single(
+        [value for value in detail["rounds"] if value.get("displayLabel") == "T1"],
+        "replay target Round",
+    )
+    round_id = str(primary_round["globalId"])
+    target_round_id = str(target_round["globalId"])
     cases = (
         (trial_path(project_id), create_payload(master_id), CREATE_KEY, 1, 0, 0),
         (
@@ -1787,6 +3109,14 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
             2,
             1,
             0,
+        ),
+        (
+            plan_path(project_id, plan_id, "/rounds"),
+            round_payload(successor, display_label="T1"),
+            TARGET_ROUND_KEY,
+            2,
+            2,
+            1,
         ),
         (
             plan_path(project_id, plan_id, "/actions:generate"),
@@ -1897,7 +3227,7 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
             execution_path(project_id, round_id, "/evidence"),
             {
                 "expectedRoundOptimisticVersion": 3,
-                "role": "parameter_curve",
+                "role": "measurement_report",
                 "fileRevisionGlobalId": evidence["fileRevisionGlobalId"],
                 "expectedFileOptimisticVersion": 2,
                 "sampleBatchRevisionGlobalId": sample_successor["globalId"],
@@ -1932,10 +3262,144 @@ def run_replay(administrator, base_url: str, csrf_token: str) -> None:
         and upload_replay.headers.get("Idempotency-Replayed") == "true",
         "P7-02 cross-process upload command was not replayed",
     )
+    target_execution_result = trial_request(
+        administrator,
+        base_url,
+        execution_path(project_id, target_round_id),
+        query_key="replay-target-execution",
+    )
+    target_execution = assert_execution_workspace(
+        target_execution_result,
+        project_id,
+        target_round_id,
+        state="running",
+        round_version=3,
+        locks=1,
+        actuals=1,
+        samples=1,
+        evidence=1,
+        pending=0,
+    )
+    target_input_lock = exact_single(
+        target_execution["inputLocks"],
+        "P7-03 replay target input lock",
+    )
+    target_actual = exact_single(
+        target_execution["actualRevisions"],
+        "P7-03 replay target Actual",
+    )
+    target_sample = exact_single(
+        target_execution["sampleBatchRevisions"],
+        "P7-03 replay target Sample",
+    )
+    target_evidence = exact_single(
+        target_execution["evidence"],
+        "P7-03 replay target evidence",
+    )
+    target_cavity_ids = [
+        value["globalId"]
+        for value in target_input_lock["references"]
+        if value.get("kind") == "cavity"
+    ]
+    target_cases = (
+        (
+            execution_path(project_id, target_round_id, ":prepare"),
+            prepare_execution_payload(replay_references(target_input_lock)),
+            TARGET_PREPARE_KEY,
+        ),
+        (
+            execution_path(project_id, target_round_id, ":start"),
+            {
+                "expectedRoundOptimisticVersion": 2,
+                "expectedInputLockRevisionGlobalId": target_input_lock["globalId"],
+                "expectedInputLockVersion": 1,
+                **actual_context_payload(successor=False),
+            },
+            TARGET_START_KEY,
+        ),
+        (
+            execution_path(project_id, target_round_id, "/sample-batches"),
+            {
+                "expectedRoundOptimisticVersion": 3,
+                "expectedInputLockRevisionGlobalId": target_input_lock["globalId"],
+                "sample": sample_payload(
+                    target_cavity_ids,
+                    successor=False,
+                    label_prefix="P703",
+                ),
+                "reason": "Create one exact target-Round Sample Batch.",
+            },
+            TARGET_SAMPLE_KEY,
+        ),
+        (
+            execution_path(project_id, target_round_id, "/evidence"),
+            {
+                "expectedRoundOptimisticVersion": 3,
+                "role": "measurement_report",
+                "fileRevisionGlobalId": target_evidence["fileRevisionGlobalId"],
+                "expectedFileOptimisticVersion": 2,
+                "sampleBatchRevisionGlobalId": target_sample["globalId"],
+                "expectedSampleVersion": 1,
+            },
+            TARGET_BIND_KEY,
+        ),
+    )
+    for path, payload, key in target_cases:
+        replay = command(
+            administrator,
+            base_url,
+            csrf_token,
+            path,
+            payload,
+            key,
+        )
+        require(
+            replay.headers.get("Idempotency-Replayed") == "true",
+            "P7-03 target-Round command was not replayed",
+        )
+    target_upload_replay = multipart_trial_upload(
+        administrator,
+        base_url,
+        execution_path(project_id, target_round_id, "/files"),
+        csrf_token=csrf_token,
+        idempotency_key=TARGET_UPLOAD_KEY,
+        round_version=3,
+    )
+    require(
+        target_upload_replay.status == 201
+        and target_upload_replay.headers.get("Idempotency-Replayed") == "true",
+        "P7-03 target-Round upload command was not replayed",
+    )
+    primary_context = {
+        "round": execution["round"],
+        "inputLock": input_lock,
+        "sample": sample_successor,
+        "evidence": evidence,
+        "cavityId": cavity_ids[0],
+    }
+    target_context = {
+        "round": target_execution["round"],
+        "inputLock": target_input_lock,
+        "sample": target_sample,
+        "evidence": target_evidence,
+        "cavityId": target_cavity_ids[0],
+    }
+    require(
+        target_actual.get("actualVersion") == 1,
+        "P7-03 target-Round retained Actual drifted",
+    )
+    run_quality_replay(
+        administrator,
+        base_url,
+        csrf_token,
+        project_id=project_id,
+        primary=primary_context,
+        target=target_context,
+    )
     after = persisted_counts(administrator, base_url, project_id)
     require(
         after == before,
-        "P7-02 cross-process replay changed immutable cardinality or integration truth",
+        "P7-03 cumulative cross-process replay changed immutable cardinality or integration truth",
     )
 
 
@@ -1946,9 +3410,13 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         base_url,
         "NPI Trial Round",
         [["project_global_id", "=", project_id]],
-        ["global_id"],
+        ["global_id", "display_label"],
     )
-    round_id = require_uuid(exact_single(rounds, "route probe Round")["global_id"], "Round")
+    selected_round = exact_single(
+        [value for value in rounds if value.get("display_label") == "T0"],
+        "route probe Round",
+    )
+    round_id = require_uuid(selected_round["global_id"], "Round")
     trials = trial_request(
         administrator,
         base_url,
@@ -1971,6 +3439,12 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         execution_path(project_id, round_id),
         query_key=f"execution-route-{expected_mode}",
     )
+    quality = trial_request(
+        administrator,
+        base_url,
+        quality_path(project_id, round_id),
+        query_key=f"quality-route-{expected_mode}",
+    )
     if expected_mode == "planning-disabled":
         validate_problem(trials, 503, "TRIAL_ROUTES_DISABLED")
         assert_execution_workspace(
@@ -1985,13 +3459,48 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
             evidence=1,
             pending=0,
         )
+        assert_quality_workspace(
+            quality,
+            project_id,
+            round_id,
+            cavity_results=2,
+            trial_defects=8,
+            tooling_defects=2,
+            verifications=2,
+        )
         return
     if expected_mode == "execution-disabled":
         assert_workspace(trials, project_id, expected_plans=1)
         validate_problem(execution, 503, "TRIAL_EXECUTION_ROUTES_DISABLED")
+        assert_quality_workspace(
+            quality,
+            project_id,
+            round_id,
+            cavity_results=2,
+            trial_defects=8,
+            tooling_defects=2,
+            verifications=2,
+        )
+        return
+    if expected_mode == "quality-disabled":
+        assert_workspace(trials, project_id, expected_plans=1)
+        assert_execution_workspace(
+            execution,
+            project_id,
+            round_id,
+            state="running",
+            round_version=3,
+            locks=1,
+            actuals=2,
+            samples=2,
+            evidence=1,
+            pending=0,
+        )
+        validate_problem(quality, 503, "TRIAL_QUALITY_ROUTES_DISABLED")
         return
     require(
-        expected_mode in {"planning-recovered", "execution-recovered"},
+        expected_mode
+        in {"planning-recovered", "execution-recovered", "quality-recovered"},
         "P7 cumulative route probe mode drifted",
     )
     assert_workspace(trials, project_id, expected_plans=1)
@@ -2006,6 +3515,15 @@ def route_disable_probe(administrator, base_url: str, *, expected_mode: str) -> 
         samples=2,
         evidence=1,
         pending=0,
+    )
+    assert_quality_workspace(
+        quality,
+        project_id,
+        round_id,
+        cavity_results=2,
+        trial_defects=8,
+        tooling_defects=2,
+        verifications=2,
     )
 
 
@@ -2087,6 +3605,30 @@ def verify_trial_runtime_schema(fixture_run_id: str) -> dict[str, object]:
             "evidence_snapshot",
             "snapshot_hash",
         },
+        "NPI Trial Cavity Result Revision": {
+            "global_id",
+            "cavity_result_global_id",
+            "result_version",
+            "predecessor_global_id",
+            "cavity_result_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Trial Defect Revision": {
+            "global_id",
+            "defect_global_id",
+            "defect_version",
+            "predecessor_global_id",
+            "trial_defect_snapshot",
+            "snapshot_hash",
+        },
+        "NPI Trial Defect Verification Revision": {
+            "global_id",
+            "verification_global_id",
+            "attempt_sequence",
+            "defect_global_id",
+            "verification_snapshot",
+            "snapshot_hash",
+        },
     }
     for doctype in TRIAL_DOCTYPES:
         require(
@@ -2106,6 +3648,63 @@ def verify_trial_runtime_schema(fixture_run_id: str) -> dict[str, object]:
         "fixtureRunId": fixture_run_id,
         "metadataSynchronized": True,
         "runtimeMarker": RUNTIME_MARKER,
+    }
+
+
+def ensure_trial_quality_verifier_member(
+    fixture_run_id: str,
+    *,
+    project_id: str,
+) -> dict[str, object]:
+    import frappe
+
+    document_runtime._validated_runtime_site()
+    require(
+        fixture_run_id == FIXTURE_RUN_ID,
+        "P7-03 verifier-member fixture namespace drifted",
+    )
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.global_id) == project_id
+        and str(project.tenant_id) == TENANT_ID,
+        "P7-03 verifier-member Project identity drifted",
+    )
+    existing = frappe.db.exists("NPI Project Member", VERIFIER_MEMBER_ID)
+    if not existing:
+        previous = getattr(frappe.flags, "npi_project_work_command_write", None)
+        setattr(frappe.flags, "npi_project_work_command_write", True)
+        try:
+            frappe.get_doc(
+                {
+                    "doctype": "NPI Project Member",
+                    "global_id": VERIFIER_MEMBER_ID,
+                    "tenant_id": TENANT_ID,
+                    "project_global_id": project_id,
+                    "user_id": ACTOR_USER,
+                    "effective_from": "2026-01-01",
+                    "effective_to": None,
+                    "optimistic_version": 1,
+                }
+            ).insert()
+        finally:
+            if previous is None:
+                delattr(frappe.flags, "npi_project_work_command_write")
+            else:
+                setattr(frappe.flags, "npi_project_work_command_write", previous)
+        frappe.db.commit()
+    member = frappe.get_doc("NPI Project Member", VERIFIER_MEMBER_ID)
+    require(
+        str(member.project_global_id) == project_id
+        and str(member.tenant_id) == TENANT_ID
+        and str(member.user_id) == ACTOR_USER
+        and int(member.optimistic_version) == 1
+        and VERIFIER_MEMBER_ID != RESPONSIBLE_MEMBER_ID,
+        "P7-03 independent verifier member drifted",
+    )
+    return {
+        "fixtureRunId": fixture_run_id,
+        "globalId": VERIFIER_MEMBER_ID,
+        "optimisticVersion": 1,
     }
 
 
@@ -2353,6 +3952,7 @@ def observe_trial_file_scan(
 
 
 BENCH_FIXTURES = {
+    "ensure_trial_quality_verifier_member": ensure_trial_quality_verifier_member,
     "observe_trial_file_scan": observe_trial_file_scan,
     "trial_execution_reference_context": trial_execution_reference_context,
     "verify_trial_runtime_schema": verify_trial_runtime_schema,
@@ -2426,7 +4026,7 @@ def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Verify the cumulative controlled P7-02 Trial execution runtime.",
+        description="Verify the cumulative controlled P7-03 Trial quality runtime.",
     )
     parser.add_argument("--base-url")
     parser.add_argument("--bench-fixture", choices=tuple(BENCH_FIXTURES))
@@ -2438,6 +4038,8 @@ def main() -> None:
             "planning-recovered",
             "execution-disabled",
             "execution-recovered",
+            "quality-disabled",
+            "quality-recovered",
         ),
     )
     parser.add_argument("--replay-only", action="store_true")

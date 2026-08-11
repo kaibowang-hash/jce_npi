@@ -380,6 +380,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+trial_quality_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p7_03_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -550,6 +566,16 @@ verify_trial_execution_route_switch_state() {
   fi
 }
 
+verify_trial_quality_route_switch_state() {
+  local expected="$1"
+  local actual
+  actual="$(trial_quality_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P7-03 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 route_disable_original_state="$(p405_route_switch_state)"
 if [[ "${route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P4-05 route-disable switch." >&2
@@ -653,6 +679,11 @@ if [[ "${trial_execution_route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P7-02 route-disable switch." >&2
   exit 2
 fi
+trial_quality_route_disable_original_state="$(trial_quality_route_switch_state)"
+if [[ "${trial_quality_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P7-03 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -689,6 +720,7 @@ tooling_import_route_disable_config_changed=false
 tooling_export_route_disable_config_changed=false
 trial_route_disable_config_changed=false
 trial_execution_route_disable_config_changed=false
+trial_quality_route_disable_config_changed=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -941,6 +973,17 @@ set_trial_execution_route_switch() {
   verify_trial_execution_route_switch_state "${expected}"
 }
 
+set_trial_quality_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p7_03_routes_disabled "${value}"
+  )
+  verify_trial_quality_route_switch_state "${expected}"
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
@@ -1060,6 +1103,13 @@ restore_trial_execution_route_switch() {
   trial_execution_route_disable_config_changed=false
 }
 
+restore_trial_quality_route_switch() {
+  if ! set_trial_quality_route_switch None absent; then
+    return 1
+  fi
+  trial_quality_route_disable_config_changed=false
+}
+
 cleanup() {
   local exit_status=$?
   trap - EXIT
@@ -1165,6 +1215,12 @@ cleanup() {
   if [[ "${trial_execution_route_disable_config_changed}" == true ]]; then
     if ! restore_trial_execution_route_switch; then
       echo "Failed to restore the P7-02 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${trial_quality_route_disable_config_changed}" == true ]]; then
+    if ! restore_trial_quality_route_switch; then
+      echo "Failed to restore the P7-03 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -2203,11 +2259,15 @@ verify_trial_runtime_log_redaction() {
     "Controlled PA66 material observation" \
     "P702-MATERIAL-" \
     "P702-SAMPLE-" \
+    "P703-SAMPLE-" \
     "Controlled dimensional laboratory" \
+    "Controlled synthetic cavity width" \
+    "Controlled exact-cavity defect observation for runtime proof." \
+    "Independent controlled verification passed." \
     "p7-02-controlled-parameters.csv" \
     "melt_temperature,287,degC"; do
     if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
-      echo "P7-02 raw Trial execution value leaked into the runtime log." >&2
+      echo "P7-03 raw Trial quality value leaked into the runtime log." >&2
       return 1
     fi
   done
@@ -2711,9 +2771,11 @@ if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--trial-only" ]]; then
   trial_route_disable_config_changed=true
   trial_execution_route_disable_config_changed=true
+  trial_quality_route_disable_config_changed=true
   stop_runtime_server
   set_trial_route_switch false false
   set_trial_execution_route_switch false false
+  set_trial_quality_route_switch false false
   start_runtime_server
   wait_for_runtime_server
   if ! run_trial_runtime_verifier fresh; then
@@ -2754,6 +2816,24 @@ if [[ "${verification_mode}" == "all" ||
   wait_for_runtime_server
   if ! run_trial_route_probe execution-recovered; then
     echo "Local Frappe Trial execution route recovery probe failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  stop_runtime_server
+  set_trial_quality_route_switch true true
+  start_runtime_server
+  wait_for_runtime_server
+  if ! run_trial_route_probe quality-disabled; then
+    echo "Local Frappe Trial quality route-disable probe failed." >&2
+    tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  stop_runtime_server
+  set_trial_quality_route_switch false false
+  start_runtime_server
+  wait_for_runtime_server
+  if ! run_trial_route_probe quality-recovered; then
+    echo "Local Frappe Trial quality route recovery probe failed." >&2
     tail -100 "${runtime_log}" >&2
     exit 1
   fi

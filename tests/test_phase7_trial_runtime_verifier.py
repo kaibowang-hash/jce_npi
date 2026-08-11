@@ -152,7 +152,7 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             'validate_problem(duplicate_label, 409, "TRIAL_LABEL_CONFLICT")',
             'validate_problem(denied, 404, "TRIAL_UNAVAILABLE")',
             'validate_problem(cross_project, 404, "TRIAL_UNAVAILABLE")',
-            '"P7-02 cross-process replay changed immutable cardinality or integration truth"',
+            '"P7-03 cumulative cross-process replay changed immutable cardinality or integration truth"',
             '"P7-01 same-process action replay changed sealed response truth"',
             '"rollbackVerified": True',
             'validate_problem(stale_prepare, 409, "TRIAL_EXECUTION_CONFLICT")',
@@ -174,7 +174,7 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             "rejected_delete.status in {403, 417}",
             '"NPI Outbox Message"',
             '"NPI Inbox Message"',
-            '"P7-01 controlled Trial planning created ERP integration traffic"',
+            '"P7-03 controlled Trial quality created ERP integration traffic"',
             '"integrationTrafficCreated": False',
             '"NPI Trial Input Lock Revision"',
             '"NPI Trial Actual Revision"',
@@ -235,11 +235,11 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
     def test_workflow_records_exact_cumulative_scope(self) -> None:
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         required = (
-            "P7-02 Trial execution",
-            "Verify cumulative P5 and P6-08 controlled runtime plus P7-01 planning and P7-02 execution",
+            "P7-03 Trial quality",
+            "Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-03 Trial quality",
             "bash scripts/verify-frappe-runtime.sh --trial-only",
-            "scope=p5-01-through-p7-02",
-            "predecessor_scope=p5-01-through-p7-01",
+            "scope=p5-01-through-p7-03",
+            "predecessor_scope=p5-01-through-p7-02",
             "p6_scope=p5-01-through-p6-08",
             "p7-trial-runtime-${{ github.run_id }}",
             "site=npi.localhost",
@@ -266,7 +266,7 @@ class Phase7TrialRuntimeVerifierTest(unittest.TestCase):
             "Controlled dimensional laboratory",
             "p7-02-controlled-parameters.csv",
             "melt_temperature,287,degC",
-            "P7-02 raw Trial execution value leaked into the runtime log.",
+            "P7-03 raw Trial quality value leaked into the runtime log.",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.shell)
