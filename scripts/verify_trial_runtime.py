@@ -4880,8 +4880,8 @@ def ensure_trial_review_policy(
                     "policy_version": policy.policy_version,
                     "predecessor_global_id": None,
                     "predecessor_snapshot_hash": None,
-                    "required_parameter_snapshot": [],
-                    "required_dimension_snapshot": [],
+                    "required_parameter_snapshot": "[]",
+                    "required_dimension_snapshot": "[]",
                     "required_reference_kind_snapshot": payload[
                         "requiredReferenceKinds"
                     ],
@@ -4891,7 +4891,7 @@ def ensure_trial_review_policy(
                     "allowed_conclusion_code_snapshot": payload[
                         "allowedConclusionCodes"
                     ],
-                    "out_of_spec_blocking_code_snapshot": [],
+                    "out_of_spec_blocking_code_snapshot": "[]",
                     "authority_binding_snapshot": payload["authorityBindings"],
                     "published_by_user_id": policy.published_by_user_id,
                     "published_at": policy.published_at,
