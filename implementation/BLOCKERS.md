@@ -1,26 +1,27 @@
 # Blockers
 
-Updated: `2026-08-11T05:06:27Z`
+Updated: `2026-08-11T05:25:36Z`
 
 ## Active hard blockers
 
-None. P7-03 passes Level 2 at exact product checkpoint `102de35`: ordinary CI
-`31459395711` and optimized controlled Gate `31459974578` pass the complete
-ordinary matrix and cumulative disposable-Site runtime through P7-03. The
-bounded P7-04 audit is active; no user action or GitHub frontend login is
-required.
+None. P7-03 passes Level 2 at exact product checkpoint `102de35`. The bounded
+P7-04 audit is complete, and starting controller SHA `1c0e8fd` passes ordinary
+CI `31460976409`, including repository, frontend/E2E, secret and `103/103`
+fixed-Linux visual lanes. Checkpoint 1 is active; no user action or GitHub
+frontend login is required.
 
 ## Active recovery
 
-None. The ordered delivery hold remains resolved. P7-03 is complete at Level 2
-and P7-04 is restricted to the Requirement/domain/existing-capability audit
-under the machine-readable path guard.
+None. The ordered delivery hold remains resolved. P7-04 is restricted to the
+frozen checkpoint 1 domain/contract/additive-metadata boundary under the
+machine-readable path guard.
 
 Automatic machine import, confirmed production reservation, production ERPNext
-access, formal NCR/Quality Inspection and approval authority, Trial conclusion/
-Gate/readiness/release policy, Tooling lifecycle mutation, the external
-Released Trial Summary event/projection under `DR-REC-009`, and production
-print policy remain scoped holds, not global Hard Blockers.
+access, formal NCR/Quality Inspection projection, production approval/customer
+signature authority, automatic Gate/Work Item/Tooling mutation, readiness/
+release, the external Released Trial Summary event/projection under
+`DR-REC-009`, and production print policy remain scoped holds, not global Hard
+Blockers.
 
 ## Historical recovery
 

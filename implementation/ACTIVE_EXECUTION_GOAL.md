@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T05:06:27Z`
+Updated: `2026-08-11T05:25:36Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P7-04`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-04`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -17,7 +17,7 @@ Updated: `2026-08-11T05:06:27Z`
   `31392474781` (`PASS — LEVEL 3` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`;
   repository, frontend, secret, `97/97` visual and cumulative controlled Site)
 - Latest evidence-only exact-SHA CI:
-  `31434848448` (`PASS` at `135d083bcb4e620c571fa3d4737cae54e7a8be2a`)
+  `31460976409` (`PASS` at `1c0e8fdd73901c59ce920ff73fa5eea962be70c0`)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -26,13 +26,13 @@ Updated: `2026-08-11T05:06:27Z`
   ordinary CI `31459395711`, controlled Gate `31459974578`)
 - Current controller task:
   `P7-04 — Round comparison, conclusion, quality and approval references`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Resumed product task: `P7-04` (`ACTIVE_AUDIT`)
+  (`IN_PROGRESS — CHECKPOINT 1 DOMAIN/CONTRACT/ADDITIVE METADATA`)
+- Resumed product task: `P7-04` (`ACTIVE_CHECKPOINT_1`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-04 AUDIT`)
+  (`IN_PROGRESS — P7-04 CHECKPOINT 1`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -107,16 +107,20 @@ zero integration traffic and cleanup. The truthful disposition is
 `TECHNICAL_VERIFIED`; evidence is
 `implementation/evidence/phase-7/p7-03-validation.md`.
 
-Only the bounded P7-04 audit is active under
-`implementation/CURRENT_TASK.json`: reconcile `FR-TR-005..008` into exact
-Round comparison, immutable conclusion and controlled reopen, explicit
-critical blockers, formal-quality read-only/unavailable truth, version-locked
-internal/customer/deviation references and one-page summary input. Freeze the
-minimum vertical slice, ownership, lifecycle, routes, persistence, UI, tests
-and rollback before product code. Automatic Gate/Tooling mutation, production
-ERPNext, customer signature authority, readiness, release, projection and
-production print remain outside authority. There is no active technical Hard
-Blocker.
+The bounded P7-04 audit passes. Starting controller SHA `1c0e8fd` passes
+ordinary PR CI `31460976409`: repository `93684251780`, frontend/E2E
+`93684251739`, secret scan `93684251722` and fixed-Linux visual
+`93684251718` at `103/103`. The frozen plan is
+`implementation/evidence/phase-7/p7-04-plan.md`.
+
+Only checkpoint 1 is active under `implementation/CURRENT_TASK.json`: pure
+exact comparison, controlled-reference, policy, blocker, immutable conclusion/
+decision/reopen and summary-input domains; closed contracts/ownership; four
+guarded additive DocTypes; receipt values, direct translations and focused
+tests. No route, row, lifecycle transition, UI or runtime fixture is
+authorized. Automatic Gate/Tooling/Work Item mutation, production ERPNext,
+customer signature authority, readiness, release, projection and production
+print remain outside authority. There is no active technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

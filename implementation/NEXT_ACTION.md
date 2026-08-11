@@ -1,15 +1,18 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-04`
+`IN_PROGRESS_CHECKPOINT_1 — P7-04`
 
-Recovery time: `2026-08-11T05:06:27Z`
+Recovery time: `2026-08-11T05:25:36Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
 
 Completed P7-03 product checkpoint:
 `102de35b9cff4b7303e0e2f17d2bbb146795fc3d`
+
+P7-04 starting controller checkpoint:
+`1c0e8fdd73901c59ce920ff73fa5eea962be70c0`
 
 ## Current authoritative action
 
@@ -99,21 +102,25 @@ visual `93679724973` at `103/103`. Optimized controlled workflow
 scope `p5-01-through-p7-03`. Complete evidence is
 `implementation/evidence/phase-7/p7-03-validation.md`.
 
-Execute only the P7-04 Requirement/domain/existing-capability audit enforced by
-`implementation/CURRENT_TASK.json`. Reconcile exact Round input/parameter/
-dimension/defect comparison, immutable conclusion/reopen and server-derived
-critical blockers, formal ERPNext quality read-only/unavailable truth,
-version-locked internal/customer/deviation approval references and one-page
-summary input against the live P7-01 through P7-03 foundations. Freeze a
-minimum complete vertical slice, ownership, lifecycle, closed BFF, additive
-persistence, dense trilingual UI, tests and rollback before changing product
-code.
+Starting controller SHA `1c0e8fd` passes ordinary PR CI `31460976409`:
+repository `93684251780`, frontend/E2E `93684251739`, secret scan
+`93684251722` and fixed-Linux visual `93684251718` at `103/103`. The bounded
+P7-04 audit passes; its frozen plan is
+`implementation/evidence/phase-7/p7-04-plan.md`.
 
-After the bounded audit passes, commit the frozen P7-04 plan and update the
-machine-readable path guard to activate only checkpoint 1. Do not activate
-automatic Gate/Tooling mutation, production ERPNext, customer signature
-authority, readiness, handover, release, external projection or production
-print.
+Execute only checkpoint 1 enforced by `implementation/CURRENT_TASK.json`:
+pure exact multi-Round comparison, controlled-review-reference, published-
+policy, server-blocker, immutable conclusion/decision/reopen and one-page
+summary-input domains; closed OpenAPI/ownership; four guarded additive
+DocTypes; receipt values, direct English/`zh`/`zh-TW` translations and focused
+tests. Create no route, business row, lifecycle transition, UI or runtime
+fixture in this checkpoint.
+
+Cycle/yield and formal ERP quality must remain explicitly unavailable unless
+an exact governed source exists. Evidence is not approval. Keep automatic
+Gate/Tooling/Work Item mutation, production ERPNext, customer signature
+authority, readiness, handover, release, external projection and production
+print inactive.
 
 ## Retained P6-05 and P6-06 execution history
 

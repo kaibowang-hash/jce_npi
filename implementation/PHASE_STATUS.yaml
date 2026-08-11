@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-11T05:06:27Z'
+updated_at: '2026-08-11T05:25:36Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-04
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P7_03_LEVEL_2_PASS
-current_task_next_stage: P7_04_REQUIREMENT_DOMAIN_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P7_04_AUDIT_PASS
+current_task_next_stage: P7_04_DOMAIN_CONTRACT_ADDITIVE_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-04
-resumed_product_task_status: ACTIVE_AUDIT
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1697,7 +1697,7 @@ p7_03:
 p7_04:
   task: P7-04
   controller_task: P7-04_ROUND_COMPARISON_CONCLUSION_QUALITY_APPROVAL
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-04
   requirements:
@@ -1706,10 +1706,10 @@ p7_04:
     - FR-TR-007
     - FR-TR-008
   predecessor_product_checkpoint: 102de35b9cff4b7303e0e2f17d2bbb146795fc3d
-  starting_controller_checkpoint: 102de35b9cff4b7303e0e2f17d2bbb146795fc3d
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_AND_CHECKPOINT_1
+  starting_controller_checkpoint: 1c0e8fdd73901c59ce920ff73fa5eea962be70c0
+  audit: PASS
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage_after_pass: REPOSITORY_BFF_POLICY_BOUNDARY
   product_code_changed: false
   external_holds:
     - ERPNEXT_FORMAL_NCR_QUALITY_INSPECTION_AND_REPORT_PROJECTION
@@ -1718,6 +1718,7 @@ p7_04:
     - NPI_READINESS_RELEASE_EXTERNAL_PROJECTION_AND_PRODUCTION_PRINT
   evidence:
     - implementation/evidence/phase-7/p7-03-validation.md
+    - implementation/evidence/phase-7/p7-04-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1743,6 +1744,6 @@ phases:
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
-  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02], current_task: P7-03}
+  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03], current_task: P7-04}
   - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

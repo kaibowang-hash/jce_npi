@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-10T15:58:45Z`
+Updated: `2026-08-11T05:25:36Z`
 
 ## Authority and operating mode
 
@@ -2653,3 +2653,29 @@ repeat or rewrite it merely to restore context. See
   persistence, UI, tests and rollback. It grants no automatic Gate, Tooling,
   ERPNext, customer-signature, readiness, release, projection or print
   authority.
+
+## 2026-08-11 P7-04 audit PASS; checkpoint 1 active
+
+- Exact starting controller SHA
+  `1c0e8fdd73901c59ce920ff73fa5eea962be70c0` passes ordinary PR CI
+  `31460976409`: repository `93684251780` in `42s`, secret scan
+  `93684251722` in `24s`, fixed-Linux visual `93684251718` at the retained
+  `103/103` matrix in `3m53s`, and frontend/E2E `93684251739` in `10m44s`.
+  Controlled runtime correctly skips for the audit-only checkpoint.
+- The audit confirms exact immutable Round/input-lock/manual-Actual/Sample/
+  cavity-result/defect/action/verification foundations but no existing
+  comparison snapshot, conclusion, review-reference aggregate, published
+  conclusion policy, formal ERP quality projection or customer-signature
+  authority. Dedicated cycle/yield truth is absent and must remain unavailable
+  unless an exact governed parameter definition supplies it.
+- The accepted plan is
+  `implementation/evidence/phase-7/p7-04-plan.md`. It freezes deterministic
+  exact multi-Round comparisons, distinct controlled references, published-
+  policy/server-blocker conclusion submission, immutable decisions/reopen,
+  explicit unavailable external truth and one-page summary input. Lifecycle,
+  conclusion and external effects remain distinct.
+- Activate only checkpoint 1: pure domains, closed contracts/ownership, four
+  guarded additive DocTypes, receipt values, direct translations and focused
+  tests. No route, business row, lifecycle transition, UI, runtime fixture,
+  ERP/customer signature, Gate/Tooling/Work Item mutation, readiness, release,
+  external projection or production print is authorized.

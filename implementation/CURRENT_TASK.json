@@ -3,10 +3,10 @@
   "task_id": "P7-04",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_2",
   "authorized_next_task": "P7-05",
-  "base_checkpoint": "102de35b9cff4b7303e0e2f17d2bbb146795fc3d",
+  "base_checkpoint": "1c0e8fdd73901c59ce920ff73fa5eea962be70c0",
   "predecessor_product_checkpoint": "102de35b9cff4b7303e0e2f17d2bbb146795fc3d",
   "requirement_ids": [
     "FR-TR-005",
@@ -15,30 +15,56 @@
     "FR-TR-008"
   ],
   "scope": [
-    "Audit exact cross-Round input, parameter, dimension and defect comparisons against retained immutable Trial sources without latest-value substitution.",
-    "Freeze immutable Trial conclusion submission/reopen behavior, critical-completeness blockers and exact policy-bound lifecycle effects without inventing Gate or Tooling authority.",
-    "Freeze NPI-owned controlled quality, internal/customer approval and deviation/waiver references while formal ERPNext quality remains read-only or explicitly unavailable.",
-    "Freeze the minimum one-page Trial summary input, ownership, closed BFF, additive persistence, dense trilingual UI, tests and rollback before product code."
+    "Capture deterministic immutable comparisons over at least two exact same-Project/same-Plan Round source tuples without latest-value substitution.",
+    "Bind controlled internal-quality, internal-sample, customer-evidence and deviation-or-waiver references to exact product, Tooling and clean File revisions without treating evidence as approval.",
+    "Add exact published policy-bound Trial analysis, immutable conclusion submission, approve-or-reject decision and controlled reopen behavior with server-derived blockers.",
+    "Expose formal ERPNext quality, cycle and yield truth as read-only or unavailable when exact sources or adapters do not exist.",
+    "Deliver a dense trilingual comparison/conclusion workspace and immutable one-page summary input while keeping released export and every external effect inactive."
   ],
   "non_scope": [
-    "Product implementation before the audit and frozen plan pass.",
     "Automatic Gate or Tooling lifecycle mutation, automatic Work Item closure, NPI readiness, production handover, Released Trial Summary release or production print.",
-    "Production ERPNext access or mutation, synthetic Quality Inspection/NCR status, customer portal/signature authority, external event projection or machine import.",
-    "Generic DocType CRUD, direct database access, Frappe or ERPNext core changes, test deletion, threshold reduction, accepted-baseline weakening or translation fallback."
+    "Production ERPNext access or mutation, synthetic Quality Inspection/NCR/report status, customer portal/signature authority, external event projection or machine import.",
+    "Invented cycle or yield values, latest-source substitution, evidence-as-approval, caller-selected derived readiness or unversioned business authority.",
+    "Raw private File URLs, caller-selected scan/privacy/hash truth, generic DocType CRUD, direct database access or Frappe/ERPNext core changes.",
+    "Test deletion, coverage reduction, visual threshold change, accepted-baseline weakening or mixed-language fallback."
   ],
   "frozen_invariants": [
     "COMPARISON_BINDS_EXACT_IMMUTABLE_ROUND_SOURCES",
+    "MISSING_CYCLE_YIELD_OR_FORMAL_QUALITY_IS_UNAVAILABLE_NOT_ZERO_OR_SUCCESS",
     "CONCLUSION_IS_AN_IMMUTABLE_SNAPSHOT_WITH_SERVER_BLOCKERS",
     "LIFECYCLE_AND_CONCLUSION_ARE_DISTINCT_POLICY_BOUND_FACTS",
     "FORMAL_ERP_QUALITY_IS_READ_ONLY_OR_UNAVAILABLE",
     "EVIDENCE_PRESENCE_IS_NOT_APPROVAL",
     "APPROVAL_REFERENCES_BIND_EXACT_PRODUCT_TOOLING_AND_FILE_VERSIONS",
-    "NO_AUTOMATIC_GATE_TOOLING_OR_EXTERNAL_MUTATION",
+    "NO_AUTOMATIC_GATE_TOOLING_WORK_ITEM_OR_EXTERNAL_MUTATION",
     "PROJECT_FIRST_AUTHORIZATION_AND_ACTOR_BOUND_IDEMPOTENCY",
+    "NO_LATEST_VALUE_SUBSTITUTION",
     "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/trial/*",
+    "apps/npi_core/npi_core/trial_api.py",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_trial_*/*",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/trial-data-source.ts",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/live-trial-page.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-02-trial-execution-live.spec.ts",
+    "frontend/tests/e2e/p7-03-trial-quality-live.spec.ts",
+    "frontend/tests/e2e/p7-04-trial-review-live.spec.ts",
+    "frontend/tests/e2e/p7-04-trial-review-live.spec.ts-snapshots/*",
+    "frontend/tests/support/trial-execution-fixture.ts",
+    "frontend/tests/support/trial-quality-fixture.ts",
+    "frontend/tests/support/trial-review-fixture.ts",
+    "frontend/tests/unit/live-trial-page.test.tsx",
+    "frontend/tests/unit/trial-data-source.test.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -48,28 +74,40 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
-    "implementation/phase-7-requirement-anchor.md",
-    "implementation/evidence/phase-7/p7-03-*.md",
     "implementation/evidence/phase-7/p7-04-*.md",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify.sh",
+    "scripts/verify_trial_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
-    "tests/test_current_task_verifier.py"
+    "tests/test_current_task_verifier.py",
+    "tests/test_phase7_trial_api.py",
+    "tests/test_phase7_trial_review_contract.py",
+    "tests/test_phase7_trial_review_domain.py",
+    "tests/test_phase7_trial_review_metadata.py",
+    "tests/test_phase7_trial_review_repository.py",
+    "tests/test_phase7_trial_review_repository_seams.py",
+    "tests/test_phase7_trial_review_runtime_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
+      ["python", "-m", "unittest", "tests.test_phase7_trial_review_domain", "tests.test_phase7_trial_review_metadata", "tests.test_phase7_trial_review_contract", "-v"],
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_current_task_verifier", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/p7-02-trial-execution-live.spec.ts", "tests/e2e/p7-03-trial-quality-live.spec.ts", "tests/e2e/p7-04-trial-review-live.spec.ts", "--grep", "@visual"]
     ],
     "runtime_preflight": [
-      ["python", "scripts/verify_current_task.py"]
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase7_trial_review_runtime_verifier", "-v"],
+      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
       ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/r1-06-p0-visual-governance.spec.ts", "tests/e2e/r1-05-panes.spec.ts", "tests/e2e/r1-05-field-attachments.spec.ts", "--grep", "@visual"],
       ["bash", "scripts/verify-frappe-runtime.sh", "--trial-only"]
     ]
   },
@@ -79,10 +117,10 @@
     "phase_status_resumed_product_task": "P7-04",
     "active_goal_marker": "P7-04",
     "next_action_marker": "P7-04",
-    "controller_marker": "P7-03 Level 2 PASS; P7-04 audit active"
+    "controller_marker": "P7-04 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore the P7-03 Level 2 checkpoint; the audit creates no product row, route, metadata or external effect.",
-    "after_product_resume": "Use the rollback frozen in the accepted P7-04 plan; after retained comparison, conclusion or approval-reference history, disable only independent P7-04 routes and workspace and deliver reviewed forward repair without rewriting history."
+    "before_product_resume": "Before retained P7-04 rows, restore the starting controller checkpoint and migrate only a disposable Site fresh.",
+    "after_product_resume": "After retained comparison, reference, conclusion, lifecycle, receipt or audit history, disable only independent P7-04 routes/workspace and deliver reviewed forward repair without rewriting exact sources or decisions."
   }
 }
