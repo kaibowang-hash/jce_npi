@@ -465,6 +465,9 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
         )
 
     def test_workflow_records_exact_p705_scope_and_exact_sha_controlled_preflight(self) -> None:
+        preflight_job = self.workflow.split("\n  controlled_preflight:\n", 1)[1].split(
+            "\n  document_runtime:\n", 1
+        )[0]
         runtime_job = self.workflow.split("\n  document_runtime:\n", 1)[1]
         for marker in (
             "P7-05 NPI readiness",
@@ -483,12 +486,10 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             "- frontend",
             "- secret_scan",
             "- visual",
-            "- controlled_preflight",
         ):
             with self.subTest(prerequisite=prerequisite):
-                self.assertIn(prerequisite, runtime_job)
+                self.assertIn(prerequisite, preflight_job)
         for required_result in (
-            "needs.controlled_preflight.result == 'success'",
             "needs.repository.result == 'success'",
             "needs.frontend.result == 'success'",
             "needs.secret_scan.result == 'success'",
@@ -499,7 +500,9 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             "needs.visual.result == 'skipped'",
         ):
             with self.subTest(required_result=required_result):
-                self.assertIn(required_result, runtime_job)
+                self.assertIn(required_result, preflight_job)
+        self.assertIn("needs: controlled_preflight", runtime_job)
+        self.assertIn("needs.controlled_preflight.result == 'success'", runtime_job)
         for marker in (
             "tests.test_phase7_readiness_runtime_verifier",
             "inputs.gate_mode == 'level_2_controlled'",

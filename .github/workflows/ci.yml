@@ -195,7 +195,25 @@ jobs:
   controlled_preflight:
     # Preserved P7-03 predecessor evidence: python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier -v
     # Preserved P7-04 predecessor evidence: python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier -v
-    if: github.event_name == 'workflow_dispatch'
+    needs:
+      - repository
+      - frontend
+      - secret_scan
+      - visual
+    if: >-
+      always() &&
+      github.event_name == 'workflow_dispatch' &&
+      !cancelled() &&
+      ((inputs.gate_mode == 'level_3' &&
+      needs.repository.result == 'success' &&
+      needs.frontend.result == 'success' &&
+      needs.secret_scan.result == 'success' &&
+      needs.visual.result == 'success') ||
+      (inputs.gate_mode == 'level_2_controlled' &&
+      needs.repository.result == 'skipped' &&
+      needs.frontend.result == 'skipped' &&
+      needs.secret_scan.result == 'skipped' &&
+      needs.visual.result == 'skipped'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -235,27 +253,8 @@ jobs:
     # scope=p5-01-through-p7-04
     # predecessor_scope=p5-01-through-p7-03
     name: P5 controlled document runtime and P6 Tooling through export plus P7-05 NPI readiness
-    needs:
-      - repository
-      - frontend
-      - secret_scan
-      - visual
-      - controlled_preflight
-    if: >-
-      always() &&
-      github.event_name == 'workflow_dispatch' &&
-      !cancelled() &&
-      needs.controlled_preflight.result == 'success' &&
-      ((inputs.gate_mode == 'level_3' &&
-      needs.repository.result == 'success' &&
-      needs.frontend.result == 'success' &&
-      needs.secret_scan.result == 'success' &&
-      needs.visual.result == 'success') ||
-      (inputs.gate_mode == 'level_2_controlled' &&
-      needs.repository.result == 'skipped' &&
-      needs.frontend.result == 'skipped' &&
-      needs.secret_scan.result == 'skipped' &&
-      needs.visual.result == 'skipped'))
+    needs: controlled_preflight
+    if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
