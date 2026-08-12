@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-11T17:21:49Z`
+Updated: `2026-08-12T05:43:01Z`
 
 ## Authority and operating mode
 
@@ -2865,3 +2865,37 @@ repeat or rewrite it merely to restore context. See
   the existing App-to-ProjectWorkspace data-source injection seam; the live
   data source must not be instantiated inside the workspace. Controlled
   runtime and Level 2 remain checkpoint 4.
+
+## 2026-08-12 P7-05 checkpoint 3 PASS; checkpoint 4 active
+
+- Product implementation
+  `583f3474133e7044bbfb11643b79342f75146d5f` delivers the strict readiness
+  data source and dense trilingual blocker-first Project workspace.
+  Diagnostic ordinary CI `31565808057` passes repository (`1,715`), frontend
+  (`881` unit, `388` E2E, `7,003` direct trilingual sources and statements
+  `80.14%`), secret scan and all three new readiness visuals. It correctly
+  fails the complete visual lane on exactly nine retained Project-navigation
+  baselines and is diagnostic evidence, not a PASS Gate.
+- Final checkpoint `680877f8a12886f3aff42f07569a6bb4787a844f` changes only
+  those nine independently reviewed Linux baselines and their exact
+  current-task allowlist. Final pull-request CI `31566736104` at that exact
+  SHA passes repository `94019970901` (`1,715`), frontend `94019970910`
+  (`56/56` files, `881/881` unit, `388/388` non-visual E2E, `7,003` direct
+  trilingual sources, statements `80.14%` and zero vulnerabilities), secret
+  scan `94019970998` and visual `94019970973` (`109/109`). Controlled
+  preflight `94019971431` and runtime `94019971505` skip as required.
+- The reviewed workspace preserves server-derived score and blocker truth,
+  exact item/owner/due/evidence/source/revision history, Project-member and
+  source-option containment, same-key retry, unavailable external truth,
+  dirty-navigation protection and English/`zh`/`zh-TW` accessibility. It
+  creates no caller score, Gate decision or ERP/downstream effect.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md`.
+  This is checkpoint 3 PASS, not P7-05 runtime, Level 2 or Level 3. The latest
+  complete Level 3 remains `31392474781` at
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+- Standing transition authority activates only checkpoint 4: extend the
+  cumulative disposable-Site fixture through P7-05, execute the exact-SHA
+  controlled runtime, and complete traceability, Task Diff Review and Level 2.
+  No further UI, Level 3, production ERP contact, automatic Gate/Work Item/
+  Tooling mutation, handover, release, projection or print authority is active.

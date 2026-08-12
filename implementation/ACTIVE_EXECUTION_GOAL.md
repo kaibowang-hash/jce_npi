@@ -1,16 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-11T17:21:49Z`
+Updated: `2026-08-12T05:43:01Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-05`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-05`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f` (pushed; P7-05 checkpoint 2
-  PASS)
+  `680877f8a12886f3aff42f07569a6bb4787a844f` (pushed; P7-05 checkpoint 3
+  final checkpoint PASS; product implementation
+  `583f3474133e7044bbfb11643b79342f75146d5f`)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -30,13 +31,13 @@ Updated: `2026-08-11T17:21:49Z`
   ordinary CI `31488890426`, controlled Gate `31489609774`)
 - Current controller task:
   `P7-05 — NPI checklist, readiness and blockers`
-  (`IN_PROGRESS — CHECKPOINT 3 LIVE PROJECT READINESS WORKSPACE`)
-- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_3`)
+  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
+- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_4`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-05 CHECKPOINT 3`)
+  (`IN_PROGRESS — P7-05 CHECKPOINT 4`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -177,14 +178,26 @@ responses and current P0 blockers plus one exact readiness dependency as Gate
 review input without any Gate mutation. Complete evidence is
 `implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md`.
 
-Checkpoint 3 is the only active scope: compose the strict readiness data
-source and dense trilingual Project readiness workspace with blocker-first
-summary, exact category/item/owner/due/evidence/source state, score detail and
-history, plus honest loading, empty, read-only, permission, validation,
-conflict, processing, retry, drift and unavailable-external-source states.
-Controlled runtime remains checkpoint 4. Production ERP results, automatic
-Gate/Work Item/Tooling mutation, handover, release, projection and print remain
-outside authority. There is no active technical Hard Blocker.
+P7-05 checkpoint 3 passes. Product implementation
+`583f3474133e7044bbfb11643b79342f75146d5f` delivers the strict readiness data
+source and dense trilingual blocker-first Project workspace. Diagnostic
+ordinary CI `31565808057` passes repository (`1,715`), frontend (`881` unit,
+`388` E2E, `7,003` direct trilingual sources and statements `80.14%`), secret
+scan and all three new readiness visuals while correctly failing the complete
+visual lane on exactly nine retained Project-navigation baselines. Final
+checkpoint `680877f8a12886f3aff42f07569a6bb4787a844f` changes only those nine
+reviewed Linux baselines and their exact current-task allowlist. Final ordinary
+CI `31566736104` at that SHA passes repository, frontend, secret scan and the
+expanded `109/109` fixed-Linux visual matrix; controlled lanes skip as
+required. Complete evidence is
+`implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md`.
+
+Checkpoint 4 is the only active scope: extend the cumulative disposable-Site
+fixture through P7-05, run the exact-SHA controlled runtime, and complete
+traceability, Task Diff Review and Level 2. No further UI expansion, Level 3,
+production ERP contact, automatic Gate/Work Item/Tooling mutation, handover,
+release, projection or print authority is active. There is no technical Hard
+Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

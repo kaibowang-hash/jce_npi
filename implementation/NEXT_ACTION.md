@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-05`
+`IN_PROGRESS_CHECKPOINT_4 — P7-05`
 
-Recovery time: `2026-08-11T17:21:49Z`
+Recovery time: `2026-08-12T05:43:01Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -19,6 +19,12 @@ P7-05 checkpoint 1 final checkpoint:
 
 P7-05 checkpoint 2 product checkpoint:
 `7bc9e641f104c025b7ccdebdfe0c3c6c6d3a020f`
+
+P7-05 checkpoint 3 product commit:
+`583f3474133e7044bbfb11643b79342f75146d5f`
+
+P7-05 checkpoint 3 final checkpoint:
+`680877f8a12886f3aff42f07569a6bb4787a844f`
 
 ## Current authoritative action
 
@@ -160,24 +166,31 @@ secret scan `93858575821` and unchanged `106/106` fixed-Linux visuals in
 `93858575907`. Complete evidence is
 `implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md`.
 
-Execute only checkpoint 3 in
-`implementation/evidence/phase-7/p7-05-plan.md`: the strict readiness data
-source and dense Project workspace with blocker-first summary, exact category,
-item, owner, due, evidence and source truth, score detail and revision history.
-Cover loading, empty, read-only, permission, validation, conflict, processing,
-retry, drift and unavailable external sources in English, `zh` and `zh-TW`,
-accessibility and affected fixed-Linux visuals. Reuse exact Project members for
-owner selection and only server-returned exact source options; do not invent a
-template-admin UI or a generic source picker. Use `project-page.tsx` only as
-the existing data-source injection seam. Treat configured template/category/
-item titles as business data; all shell, state and error copy remains literal
-English source text with direct `zh` and `zh-TW` translations.
+P7-05 checkpoint 3 passes. Product implementation
+`583f3474133e7044bbfb11643b79342f75146d5f` delivers the strict readiness data
+source and dense trilingual blocker-first Project workspace. Diagnostic
+ordinary CI `31565808057` passes repository (`1,715`), frontend (`881` unit,
+`388` E2E, `7,003` direct trilingual sources and statements `80.14%`), secret
+scan and all three new readiness visuals while correctly failing the complete
+visual lane on exactly nine retained Project-navigation baselines. Final
+checkpoint `680877f8a12886f3aff42f07569a6bb4787a844f` changes only those nine
+reviewed Linux baselines and their exact current-task allowlist. Final ordinary
+CI `31566736104` at that SHA passes repository, frontend, secret scan and the
+expanded `109/109` fixed-Linux visual matrix; controlled lanes skip as
+required. Complete evidence is
+`implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md`.
 
-Do not invent a G6/G7 policy, caller-supplied score, blocker waiver, ERP result,
-PFMEA/MSA/CPK/PPAP global applicability or automatic Gate/Work Item/Tooling
-mutation. Production handover, Released Trial Summary, external projection and
-production print remain later tasks. Controlled runtime and Level 2 remain
-checkpoint 4. Level 3 remains reserved for the Phase, PR or release boundary.
+Execute only checkpoint 4 in
+`implementation/evidence/phase-7/p7-05-plan.md`: extend the cumulative
+disposable-Site fixture through P7-05 and prove template publish/read,
+independent Project initialization and revision, exact supported sources and
+the five identity-free unavailable external source classes, deterministic
+score and P0 dominance, and Gate blocker/dependency input drift without Gate
+mutation. Prove same- and cross-process replay, stale/fork/conflict/rollback,
+IDOR, route recovery, migrations, redaction, zero ERP/network/Outbox/downstream
+effects and cleanup; then complete traceability, Task Diff Review and Level 2.
+No further UI is authorized. Level 3 remains reserved for the Phase, PR or
+release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 
