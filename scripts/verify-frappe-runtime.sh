@@ -412,6 +412,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+readiness_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p7_05_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -602,6 +618,16 @@ verify_trial_review_route_switch_state() {
   fi
 }
 
+verify_readiness_route_switch_state() {
+  local expected="$1"
+  local actual
+  actual="$(readiness_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P7-05 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 route_disable_original_state="$(p405_route_switch_state)"
 if [[ "${route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P4-05 route-disable switch." >&2
@@ -715,6 +741,11 @@ if [[ "${trial_review_route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P7-04 route-disable switch." >&2
   exit 2
 fi
+readiness_route_disable_original_state="$(readiness_route_switch_state)"
+if [[ "${readiness_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P7-05 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -753,6 +784,7 @@ trial_route_disable_config_changed=false
 trial_execution_route_disable_config_changed=false
 trial_quality_route_disable_config_changed=false
 trial_review_route_disable_config_changed=false
+readiness_route_disable_config_changed=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -777,7 +809,7 @@ start_runtime_server() {
       -u NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
       -u NPI_RUNTIME_FIXTURE_PASSWORD \
       bench --site "${site_name}" serve --port "${port}" --noreload
-  ) >"${runtime_log}" 2>&1 &
+  ) >>"${runtime_log}" 2>&1 &
   server_pid="$!"
 }
 
@@ -798,7 +830,7 @@ stop_runtime_server() {
   return 1
 }
 
-wait_for_runtime_server() {
+wait_until_runtime_server_ready() {
   local ready=false
   for _attempt in $(seq 1 60); do
     if ! kill -0 "${server_pid}" 2>/dev/null; then
@@ -811,11 +843,25 @@ wait_for_runtime_server() {
     fi
     sleep 1
   done
-  if [[ "${ready}" != true ]]; then
-    echo "Local Frappe runtime did not become ready." >&2
-    tail -100 "${runtime_log}" >&2
-    return 1
+  [[ "${ready}" == true ]]
+}
+
+wait_for_runtime_server() {
+  if wait_until_runtime_server_ready; then
+    return 0
   fi
+  echo "Local Frappe runtime did not become ready." >&2
+  tail -100 "${runtime_log}" >&2
+  return 1
+}
+
+wait_for_readiness_runtime_server() {
+  if wait_until_runtime_server_ready; then
+    return 0
+  fi
+  echo "Local Frappe runtime did not become ready." >&2
+  report_readiness_runtime_failure
+  return 1
 }
 
 set_p405_route_switch() {
@@ -1027,6 +1073,17 @@ set_trial_review_route_switch() {
   verify_trial_review_route_switch_state "${expected}"
 }
 
+set_readiness_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p7_05_routes_disabled "${value}"
+  )
+  verify_readiness_route_switch_state "${expected}"
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
@@ -1160,6 +1217,13 @@ restore_trial_review_route_switch() {
   trial_review_route_disable_config_changed=false
 }
 
+restore_readiness_route_switch() {
+  if ! set_readiness_route_switch None absent; then
+    return 1
+  fi
+  readiness_route_disable_config_changed=false
+}
+
 cleanup() {
   local exit_status=$?
   trap - EXIT
@@ -1277,6 +1341,12 @@ cleanup() {
   if [[ "${trial_review_route_disable_config_changed}" == true ]]; then
     if ! restore_trial_review_route_switch; then
       echo "Failed to restore the P7-04 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${readiness_route_disable_config_changed}" == true ]]; then
+    if ! restore_readiness_route_switch; then
+      echo "Failed to restore the P7-05 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -2276,6 +2346,66 @@ run_trial_route_probe() {
   )
 }
 
+run_readiness_runtime_verifier() {
+  local mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_readiness_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_readiness_runtime.py" \
+        --base-url "${base_url}" \
+        --replay-only
+    fi
+    echo "Unknown NPI readiness runtime verification mode." >&2
+    exit 2
+  )
+}
+
+run_readiness_route_probe() {
+  local expected_mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_readiness_runtime.py" \
+      --base-url "${base_url}" \
+      --route-disable-probe "${expected_mode}"
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -2332,6 +2462,25 @@ verify_trial_runtime_log_redaction() {
       return 1
     fi
   done
+}
+
+verify_readiness_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "Synthetic controlled readiness template" \
+    "Synthetic readiness confirmation sentinel" \
+    "P705-ERP-MATERIAL-SENTINEL" \
+    "P705-GATE-DRIFT-SENTINEL" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P7-05 raw readiness value or private path leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_readiness_runtime_failure() {
+  echo "P7-05 runtime log output withheld because it may contain controlled readiness values or private paths." >&2
 }
 
 if [[ "${verification_mode}" == "all" ]]; then
@@ -2925,6 +3074,43 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! verify_trial_runtime_log_redaction; then
     tail -100 "${runtime_log}" >&2
+    exit 1
+  fi
+  readiness_route_disable_config_changed=true
+  stop_runtime_server
+  set_readiness_route_switch false false
+  start_runtime_server
+  wait_for_readiness_runtime_server
+  if ! run_readiness_runtime_verifier fresh; then
+    echo "Local Frappe NPI readiness runtime verification failed." >&2
+    report_readiness_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_readiness_route_switch true true
+  start_runtime_server
+  wait_for_readiness_runtime_server
+  if ! run_readiness_route_probe disabled; then
+    echo "Local Frappe NPI readiness route-disable probe failed." >&2
+    report_readiness_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_readiness_route_switch false false
+  start_runtime_server
+  wait_for_readiness_runtime_server
+  if ! run_readiness_route_probe recovered; then
+    echo "Local Frappe NPI readiness route recovery probe failed." >&2
+    report_readiness_runtime_failure
+    exit 1
+  fi
+  if ! run_readiness_runtime_verifier replay-only; then
+    echo "Local Frappe NPI readiness cross-process replay verification failed." >&2
+    report_readiness_runtime_failure
+    exit 1
+  fi
+  if ! verify_readiness_runtime_log_redaction; then
+    report_readiness_runtime_failure
     exit 1
   fi
 fi
