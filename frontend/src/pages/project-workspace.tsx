@@ -10,6 +10,7 @@ import type { ProjectControlsDataSource } from "../api/project-controls-data-sou
 import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
+import type { ReadinessDataSource } from "../api/readiness-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -51,6 +52,7 @@ import {
 } from "./project-governance-workspace";
 import { ProjectDocumentWorkspace } from "./project-document-workspace";
 import { ProjectEngineeringBomWorkspace } from "./project-ebom-workspace";
+import { ProjectReadinessWorkspace } from "./project-readiness-workspace";
 
 type ProjectWorkspaceTab =
   | "overview"
@@ -58,6 +60,7 @@ type ProjectWorkspaceTab =
   | "plan"
   | "work-items"
   | "documents"
+  | "readiness"
   | "ebom"
   | ProjectGovernanceSection;
 
@@ -70,6 +73,7 @@ const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
   "activity",
   "learning",
   "documents",
+  "readiness",
   "ebom",
 ]);
 
@@ -1273,6 +1277,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource,
   engineeringBomDataSource,
   publishRequestDataSource,
+  readinessDataSource,
   navigate,
   onProjectChanged,
   overview,
@@ -1286,6 +1291,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
+  readinessDataSource?: ReadinessDataSource | undefined;
   navigate: (target: string) => void;
   onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
   overview: ReactNode;
@@ -1304,7 +1310,7 @@ export function ProjectWorkspace({
   const activeTab =
     tabSelection.routeSearch === routeSearch ? tabSelection.tab : routeTab;
   const [contextRequested, setContextRequested] = useState(
-    routeTab === "team" || routeTab === "plan",
+    routeTab === "team" || routeTab === "plan" || routeTab === "readiness",
   );
   const [workItemsRequested, setWorkItemsRequested] = useState(
     routeTab === "work-items",
@@ -1330,7 +1336,10 @@ export function ProjectWorkspace({
   );
   const workItemsQuerySignature = JSON.stringify(workItemsQuery);
   const contextIsRequested =
-    contextRequested || activeTab === "team" || activeTab === "plan";
+    contextRequested ||
+    activeTab === "team" ||
+    activeTab === "plan" ||
+    activeTab === "readiness";
   const workItemsAreRequested =
     workItemsRequested || activeTab === "work-items";
 
@@ -1454,6 +1463,7 @@ export function ProjectWorkspace({
     { id: "activity", label: t("Activity") },
     { id: "learning", label: t("Learning") },
     { id: "documents", label: t("Design and documents") },
+    { id: "readiness", label: t("NPI readiness") },
     { id: "ebom", label: t("EBOM") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
@@ -1464,7 +1474,9 @@ export function ProjectWorkspace({
     if (tab === activeTab) return;
     const perform = (): void => {
       setTabSelection({ routeSearch, tab });
-      if (tab === "team" || tab === "plan") setContextRequested(true);
+      if (tab === "team" || tab === "plan" || tab === "readiness") {
+        setContextRequested(true);
+      }
       if (tab === "work-items") setWorkItemsRequested(true);
       if (focusSelected) {
         globalThis.queueMicrotask(() => {
@@ -1628,6 +1640,45 @@ export function ProjectWorkspace({
         requestWorkspaceTransition={requestWorkspaceTransition}
       />
     );
+  } else if (activeTab === "readiness") {
+    if (!readinessDataSource) {
+      content = (
+        <section className="workspace-resource-state" role="status">
+          <SemanticStatus label={t("Unavailable")} tone="warning" />
+          <p>{t("The live NPI readiness data source is not configured.")}</p>
+        </section>
+      );
+    } else if (!contextDataSource) {
+      content = <MissingWorkspaceDataSource resource="context" />;
+    } else if (
+      contextState.kind === "idle" ||
+      contextState.kind === "loading"
+    ) {
+      content = (
+        <WorkspaceResourceLoading label={t("Loading project work context")} />
+      );
+    } else if (contextState.kind === "failed") {
+      content = (
+        <WorkspaceResourceFailure
+          failure={contextState.failure}
+          resource="context"
+          retry={() => {
+            setContextState({ kind: "loading" });
+            setContextAttempt((current) => current + 1);
+          }}
+        />
+      );
+    } else {
+      content = (
+        <ProjectReadinessWorkspace
+          dataSource={readinessDataSource}
+          members={contextState.value.members}
+          projectId={cockpit.project.globalId}
+          reportWorkspaceDirty={reportWorkspaceDirty}
+          requestWorkspaceTransition={requestWorkspaceTransition}
+        />
+      );
+    }
   } else if (activeTab === "ebom") {
     content = (
       <ProjectEngineeringBomWorkspace

@@ -29,6 +29,7 @@ import { LiveToolingDataSource } from "../api/tooling-data-source";
 import { LiveToolingImportDataSource } from "../api/tooling-import-data-source";
 import { LiveToolingListDataSource } from "../api/tooling-list-data-source";
 import { LiveTrialDataSource } from "../api/trial-data-source";
+import { LiveReadinessDataSource } from "../api/readiness-data-source";
 import type {
   RequestWorkspaceTransition,
   WorkspaceDirtyRegistration,
@@ -64,6 +65,7 @@ const liveToolingDataSource = new LiveToolingDataSource();
 const liveToolingImportDataSource = new LiveToolingImportDataSource();
 const liveToolingListDataSource = new LiveToolingListDataSource();
 const liveTrialDataSource = new LiveTrialDataSource();
+const liveReadinessDataSource = new LiveReadinessDataSource();
 
 export function App(): React.JSX.Element {
   const { route, navigate, syncRoute } = useAppRouter();
@@ -177,6 +179,7 @@ export function App(): React.JSX.Element {
         domainWorkItemsDataSource={liveProjectDomainWorkItemsDataSource}
         engineeringBomDataSource={liveEngineeringBomDataSource}
         publishRequestDataSource={liveEngineeringBomPublishRequestDataSource}
+        readinessDataSource={liveReadinessDataSource}
         globalId={route.projectGlobalId ?? ""}
         navigate={guardedNavigate}
         reportWorkspaceDirty={reportWorkspaceDirty}

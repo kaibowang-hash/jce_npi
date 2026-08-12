@@ -5480,3 +5480,243 @@ textarea::placeholder {
     grid-column: auto;
   }
 }
+
+.readiness-workspace,
+.readiness-workspace__empty {
+  display: grid;
+  gap: var(--npi-space-2);
+  min-inline-size: 0;
+}
+
+.readiness-workspace__notice,
+.readiness-workspace__command-state {
+  align-items: center;
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-inline-start: var(--npi-border-selected) solid
+    var(--npi-color-brand-primary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--npi-space-2);
+  padding: var(--npi-space-2);
+}
+
+.readiness-workspace__notice p,
+.readiness-workspace__command-state p {
+  margin: 0;
+}
+
+.readiness-workspace__summary [data-testid="readiness-summary"] {
+  align-items: start;
+  display: grid;
+  gap: var(--npi-space-3);
+  grid-template-columns: minmax(18rem, 0.75fr) minmax(32rem, 1.5fr);
+}
+
+.readiness-workspace__summary [data-testid="readiness-blocker-summary"],
+.readiness-workspace__summary [data-testid="readiness-score-summary"] {
+  min-inline-size: 0;
+}
+
+.readiness-workspace__summary table {
+  inline-size: 100%;
+  margin-block-start: var(--npi-space-2);
+}
+
+.readiness-workspace__blockers {
+  border-block-start: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  display: grid;
+  gap: 0;
+  margin: var(--npi-space-2) 0 0;
+  padding: 0;
+}
+
+.readiness-workspace__blockers.readiness-workspace__blockers li {
+  border-block-end: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-1);
+  grid-template-columns: minmax(8rem, auto) minmax(0, 1fr) auto;
+  list-style-position: inside;
+  min-block-size: var(--npi-density-control-compact);
+  padding: var(--npi-space-1) var(--npi-space-2);
+}
+
+.readiness-workspace__grid {
+  --npi-readiness-inspector-width: 22rem;
+
+  align-items: start;
+  display: grid;
+  gap: var(--npi-space-2);
+  grid-template-columns:
+    12rem minmax(34rem, 1fr)
+    var(--npi-readiness-inspector-width);
+  min-block-size: 36rem;
+  min-inline-size: 0;
+}
+
+.readiness-workspace__categories {
+  position: sticky;
+  top: var(--npi-space-2);
+}
+
+.readiness-workspace__categories.readiness-workspace__categories nav {
+  display: grid;
+  gap: 0;
+}
+
+.readiness-workspace__categories nav .npi-button {
+  border-block-end: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  border-inline-start: var(--npi-border-selected) solid transparent;
+  inline-size: 100%;
+  justify-content: flex-start;
+  min-block-size: var(--npi-density-control-compact);
+  text-align: start;
+}
+
+.readiness-workspace__categories nav .npi-button[aria-current="page"] {
+  background: var(--npi-color-surface-sunken);
+  border-inline-start-color: var(--npi-color-brand-primary);
+  color: var(--npi-color-brand-primary);
+  font-weight: var(--npi-typography-weight-semibold);
+}
+
+.readiness-workspace__items,
+.readiness-workspace__grid > .docked-inspector {
+  min-inline-size: 0;
+}
+
+.readiness-workspace__items-body {
+  max-block-size: 38rem;
+  overflow: auto;
+}
+
+.readiness-workspace__item-select {
+  background: transparent;
+  border: var(--npi-space-0);
+  color: var(--npi-color-brand-primary);
+  cursor: pointer;
+  font: inherit;
+  inline-size: 100%;
+  padding: 0;
+  text-align: start;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.readiness-workspace__item-select:focus-visible {
+  outline: 2px solid var(--npi-color-focus);
+  outline-offset: 2px;
+}
+
+.readiness-workspace__source-list {
+  display: grid;
+  gap: var(--npi-space-1);
+  list-style: none;
+  margin: var(--npi-space-2) 0;
+  padding: 0;
+}
+
+.readiness-workspace__source-list.readiness-workspace__source-list li {
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-1);
+  padding: var(--npi-space-2);
+}
+
+.readiness-workspace__editor,
+.readiness-workspace__initialize {
+  border-block-start: var(--npi-border-default) solid
+    var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-2);
+  margin-block-start: var(--npi-space-3);
+  padding-block-start: var(--npi-space-3);
+}
+
+.readiness-workspace__editor.readiness-workspace__editor label,
+.readiness-workspace__initialize.readiness-workspace__initialize > label {
+  display: grid;
+  gap: var(--npi-space-1);
+}
+
+.readiness-workspace__editor fieldset,
+.readiness-workspace__initialize fieldset {
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  display: grid;
+  gap: var(--npi-space-2);
+  margin: 0;
+  min-inline-size: 0;
+  padding: var(--npi-space-2);
+}
+
+.readiness-workspace__editor.readiness-workspace__editor fieldset label {
+  align-items: start;
+  display: grid;
+  gap: var(--npi-space-2);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.readiness-workspace__editor fieldset input[type="checkbox"] {
+  block-size: 1rem;
+  inline-size: 1rem;
+}
+
+.readiness-workspace__history,
+.readiness-workspace__unavailable {
+  min-inline-size: 0;
+  overflow: auto;
+}
+
+.readiness-workspace__initialize {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.readiness-workspace__initialize fieldset,
+.readiness-workspace__initialize .form-error,
+.readiness-workspace__initialize.readiness-workspace__initialize > .npi-button,
+.readiness-workspace__initialize > p {
+  grid-column: 1 / -1;
+}
+
+@media (width <= 78rem) {
+  .readiness-workspace__summary [data-testid="readiness-summary"] {
+    grid-template-columns: 1fr;
+  }
+
+  .readiness-workspace__grid {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+
+  .readiness-workspace__grid > .docked-inspector {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (width <= 52rem) {
+  .readiness-workspace__grid,
+  .readiness-workspace__initialize {
+    grid-template-columns: 1fr;
+  }
+
+  .readiness-workspace__categories {
+    position: static;
+  }
+
+  .readiness-workspace__categories nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .readiness-workspace__grid > .docked-inspector,
+  .readiness-workspace__initialize fieldset,
+  .readiness-workspace__initialize .form-error,
+  .readiness-workspace__initialize > .npi-button,
+  .readiness-workspace__initialize > p {
+    grid-column: auto;
+  }
+
+  .readiness-workspace__blockers.readiness-workspace__blockers li {
+    grid-template-columns: 1fr;
+  }
+}
