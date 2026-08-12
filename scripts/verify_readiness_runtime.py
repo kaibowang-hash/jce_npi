@@ -7,11 +7,13 @@ import os
 import re
 import subprocess
 from collections.abc import Mapping, Sequence
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
 import verify_document_runtime as document_runtime
+import verify_tooling_engineering_controls_runtime as tooling_controls_runtime
 import verify_trial_runtime as trial_runtime
 from verify_frappe_runtime import (
     HttpResult,
@@ -100,7 +102,21 @@ EXTERNAL_REVISE_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-external"
 STALE_REVISE_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-stale"
 ROLLBACK_REVISE_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-rollback"
 IDOR_REVISE_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-idor"
+CAPACITY_SOURCE_PREP_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-capacity-source"
+TRIAL_REFERENCE_REOPEN_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-reopen"
+TRIAL_REFERENCE_COMPARISON_KEY = (
+    f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-comparison"
+)
+TRIAL_REFERENCE_CREATE_KEY = f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-create"
+SOURCE_PREPARATION_IDEMPOTENCY_KEYS = (
+    CAPACITY_SOURCE_PREP_KEY,
+    TRIAL_REFERENCE_REOPEN_KEY,
+    TRIAL_REFERENCE_COMPARISON_KEY,
+    TRIAL_REFERENCE_CREATE_KEY,
+)
 TEMPLATE_CODE = f"P705-{FIXTURE_RUN_ID[:16].upper()}"
+CAPACITY_SOURCE_SENTINEL = "P705-CAPACITY-SOURCE-SENTINEL"
+TRIAL_REFERENCE_SENTINEL = "P705-TRIAL-REFERENCE-SENTINEL"
 
 ABSENT_INSTANCE_ID = "00000000-0000-4000-8000-000000000705"
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
@@ -358,6 +374,424 @@ def template_payload(context: Mapping[str, object], *, edited: bool = False) -> 
     }
 
 
+def capacity_source_payload(
+    context: Mapping[str, object],
+    profile: Mapping[str, object],
+) -> dict[str, object]:
+    """Build one bounded passing source without rewriting retained P6 history."""
+
+    applications = context.get("applicability")
+    require(
+        isinstance(applications, list)
+        and len(applications) == 2
+        and all(isinstance(value, dict) for value in applications),
+        "P7-05 Capacity source requires the two retained applicability rows",
+    )
+    payload = tooling_controls_runtime.capacity_payload(
+        dict(context),
+        dict(profile),
+        version=1,
+    )
+    require(
+        "scenarioGlobalId" not in payload and "expectedVersion" not in payload,
+        "P7-05 Capacity source must remain an independent first revision",
+    )
+    return {
+        **payload,
+        "title": CAPACITY_SOURCE_SENTINEL,
+        "effectiveFrom": "2026-08-23",
+        "targetMonthlyAssemblyUnits": "25000.0",
+        "reason": CAPACITY_SOURCE_SENTINEL,
+    }
+
+
+def current_controlled_reference(
+    workspace: Mapping[str, object],
+) -> dict[str, object] | None:
+    """Return one controlled reference only when its frozen target is still current."""
+
+    trial_round = workspace.get("trialRound")
+    comparisons = workspace.get("comparisonSnapshots")
+    references = workspace.get("reviewReferenceRevisions")
+    if not (
+        isinstance(trial_round, dict)
+        and isinstance(comparisons, list)
+        and isinstance(references, list)
+    ):
+        return None
+    round_id = trial_round.get("globalId")
+    round_version = trial_round.get("optimisticVersion")
+    round_hash = trial_round.get("snapshotHash")
+    matches: list[dict[str, object]] = []
+    for reference in references:
+        if not (
+            isinstance(reference, dict)
+            and reference.get("referenceKind") == "controlled_quality_report"
+            and reference.get("trialRoundGlobalId") == round_id
+        ):
+            continue
+        exact = reference.get("comparisonSnapshot")
+        if not isinstance(exact, dict):
+            continue
+        candidates = [
+            value
+            for value in comparisons
+            if isinstance(value, dict)
+            and value.get("globalId") == exact.get("globalId")
+            and value.get("snapshotHash") == exact.get("snapshotHash")
+        ]
+        if len(candidates) != 1:
+            continue
+        comparison = candidates[0]
+        sources = comparison.get("sources")
+        if not isinstance(sources, list) or not sources:
+            continue
+        target = sources[-1]
+        if (
+            comparison.get("targetRoundGlobalId") == round_id
+            and isinstance(target, dict)
+            and target.get("trialRoundGlobalId") == round_id
+            and target.get("trialRoundOptimisticVersion") == round_version
+            and target.get("trialRoundSnapshotHash") == round_hash
+        ):
+            matches.append(dict(reference))
+    return matches[0] if len(matches) == 1 else None
+
+
+def _prepare_capacity_source(
+    administrator,
+    base_url: str,
+    administrator_csrf: str,
+) -> dict[str, object]:
+    context = tooling_controls_runtime.project_context(administrator, base_url)
+    path = tooling_controls_runtime.engineering_path(
+        str(context["projectId"]),
+        str(context["masterId"]),
+    )
+    retained = tooling_controls_runtime.assert_engineering_context(
+        tooling_controls_runtime.tooling_request(
+            administrator,
+            base_url,
+            path,
+            query_key="readiness-source-before",
+        ),
+        context=context,
+        expected_count=2,
+    )
+    profiles = retained["process"]["customerStandardRevisions"]
+    require(
+        isinstance(profiles, list) and len(profiles) == 2,
+        "P7-05 retained Customer Standard profiles are unavailable",
+    )
+    profile = max(profiles, key=lambda value: int(value.get("profileVersion") or 0))
+    require(
+        isinstance(profile, dict) and profile.get("profileVersion") == 2,
+        "P7-05 exact Customer Standard successor is unavailable",
+    )
+    result = tooling_controls_runtime.command(
+        administrator,
+        base_url,
+        administrator_csrf,
+        tooling_controls_runtime.engineering_command_path(
+            str(context["projectId"]),
+            str(context["masterId"]),
+            "/capacity-scenario-revisions",
+        ),
+        capacity_source_payload(context, profile),
+        CAPACITY_SOURCE_PREP_KEY,
+    )
+    scenario = result.body.get("scenario")
+    require(isinstance(scenario, dict), "P7-05 prepared Capacity Scenario drifted")
+    scenario_result = scenario.get("result")
+    try:
+        target = Decimal(str(scenario.get("targetMonthlyAssemblyUnits")))
+        gap = Decimal(str(scenario_result.get("gap")))
+    except (AttributeError, InvalidOperation):
+        require(False, "P7-05 prepared Capacity Scenario result is invalid")
+        raise AssertionError
+    require(
+        scenario.get("scenarioVersion") == 1
+        and scenario.get("predecessorGlobalId") is None
+        and scenario.get("predecessorSnapshotHash") is None
+        and target == Decimal("25000")
+        and gap == Decimal("0")
+        and isinstance(scenario.get("lines"), list)
+        and len(scenario["lines"]) == 2,
+        "P7-05 prepared Capacity Scenario is not an independent satisfied source",
+    )
+    _uuid(scenario.get("globalId"), "prepared Capacity Scenario revision")
+    _hash(scenario.get("snapshotHash"), "prepared Capacity Scenario revision")
+    after = tooling_controls_runtime.tooling_request(
+        administrator,
+        base_url,
+        path,
+        query_key="readiness-source-after",
+    )
+    scenarios = after.body.get("capacityScenarioRevisions")
+    require(
+        after.status == 200
+        and after.body.get("projectGlobalId") == context["projectId"]
+        and after.body.get("toolingMasterGlobalId") == context["masterId"]
+        and isinstance(scenarios, list)
+        and len(scenarios) == 3
+        and len(after.body.get("defectRevisions", [])) == 2
+        and len(
+            after.body.get("process", {}).get("customerStandardRevisions", [])
+        )
+        == 2
+        and sum(
+            1
+            for value in scenarios
+            if isinstance(value, dict)
+            and value.get("globalId") == scenario.get("globalId")
+            and value.get("snapshotHash") == scenario.get("snapshotHash")
+        )
+        == 1,
+        "P7-05 Capacity source preparation changed retained P6 chains",
+    )
+    return {
+        "globalId": scenario["globalId"],
+        "scenarioVersion": 1,
+        "snapshotHash": scenario["snapshotHash"],
+    }
+
+
+def _exact_reference_context(reference: Mapping[str, object]) -> dict[str, object]:
+    exact_fields = {
+        "partRevision": "partRevision",
+        "toolingRevision": "toolingRevision",
+        "toolingSet": "toolingSet",
+        "fileRevision": "fileRevision",
+    }
+    exact: dict[str, dict[str, object]] = {}
+    for source, label in exact_fields.items():
+        value = reference.get(source)
+        require(isinstance(value, dict), f"P7-05 exact {label} is unavailable")
+        exact[source] = value
+        _uuid(value.get("globalId"), f"P7-05 exact {label}")
+        _hash(value.get("snapshotHash"), f"P7-05 exact {label}")
+    return {
+        "partRevisionGlobalId": exact["partRevision"]["globalId"],
+        "partRevisionSnapshotHash": exact["partRevision"]["snapshotHash"],
+        "toolingMasterGlobalId": _uuid(
+            reference.get("toolingMasterGlobalId"),
+            "P7-05 exact Tooling Master",
+        ),
+        "toolingRevisionGlobalId": exact["toolingRevision"]["globalId"],
+        "toolingRevisionSnapshotHash": exact["toolingRevision"]["snapshotHash"],
+        "toolingSetGlobalId": exact["toolingSet"]["globalId"],
+        "toolingSetSnapshotHash": exact["toolingSet"]["snapshotHash"],
+        "fileRevisionGlobalId": exact["fileRevision"]["globalId"],
+        "fileRevisionSnapshotHash": exact["fileRevision"]["snapshotHash"],
+    }
+
+
+def _prepare_current_trial_reference(
+    administrator,
+    base_url: str,
+    fixture_password: str,
+) -> dict[str, object]:
+    project_id, _plan_id, detail = trial_runtime.retained_detail(
+        administrator, base_url
+    )
+    primary = trial_runtime.exact_single(
+        [value for value in detail["rounds"] if value.get("displayLabel") == "T0"],
+        "P7-05 primary Trial Round",
+    )
+    target = trial_runtime.exact_single(
+        [value for value in detail["rounds"] if value.get("displayLabel") == "T1"],
+        "P7-05 target Trial Round",
+    )
+    round_id = str(target["globalId"])
+    reviewer = login(base_url, trial_runtime.REVIEW_USER, fixture_password)
+    reviewer_csrf = bootstrap_csrf(
+        reviewer,
+        base_url,
+        trial_runtime.REVIEW_USER,
+    )
+    rejected = trial_runtime.assert_review_workspace(
+        trial_runtime.trial_request(
+            reviewer,
+            base_url,
+            trial_runtime.review_path(project_id, round_id),
+            query_key="readiness-source-rejected",
+        ),
+        project_id,
+        round_id,
+        state="rejected",
+        round_version=9,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=5,
+    )
+    policy = trial_runtime.exact_single(
+        rejected["policyVersions"],
+        "P7-05 Trial review policy",
+    )
+    rejected_conclusion = rejected["conclusionRevisions"][-1]
+    controlled = max(
+        (
+            value
+            for value in rejected["reviewReferenceRevisions"]
+            if value.get("referenceKind") == "controlled_quality_report"
+        ),
+        key=lambda value: int(value.get("referenceVersion") or 0),
+        default=None,
+    )
+    require(
+        isinstance(controlled, dict) and controlled.get("referenceVersion") == 2,
+        "P7-05 retained controlled quality reference is unavailable",
+    )
+    reference_context = _exact_reference_context(controlled)
+    reopened_result = trial_runtime.command(
+        reviewer,
+        base_url,
+        reviewer_csrf,
+        trial_runtime.execution_path(project_id, round_id, ":reopen"),
+        {
+            **trial_runtime.review_policy_context(policy, rejected["trialRound"]),
+            "conclusionGlobalId": rejected_conclusion["conclusionGlobalId"],
+            "expectedConclusionRevisionGlobalId": rejected_conclusion["globalId"],
+            "expectedConclusionRevisionSnapshotHash": rejected_conclusion[
+                "snapshotHash"
+            ],
+            "expectedConclusionVersion": rejected_conclusion["conclusionVersion"],
+            "reason": TRIAL_REFERENCE_SENTINEL,
+        },
+        TRIAL_REFERENCE_REOPEN_KEY,
+    )
+    reopened = trial_runtime.assert_review_workspace(
+        reopened_result,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=10,
+        policies=1,
+        comparisons=1,
+        references=3,
+        conclusions=6,
+    )
+    comparison_ids = {
+        value.get("globalId") for value in reopened["comparisonSnapshots"]
+    }
+    compared_result = trial_runtime.command(
+        reviewer,
+        base_url,
+        reviewer_csrf,
+        trial_runtime.review_path(project_id, round_id, "/comparisons"),
+        {
+            **trial_runtime.review_policy_context(policy, reopened["trialRound"]),
+            "rounds": [
+                {
+                    "trialRoundGlobalId": primary["globalId"],
+                    "expectedOptimisticVersion": primary["optimisticVersion"],
+                    "expectedSnapshotHash": primary["snapshotHash"],
+                },
+                {
+                    "trialRoundGlobalId": reopened["trialRound"]["globalId"],
+                    "expectedOptimisticVersion": reopened["trialRound"][
+                        "optimisticVersion"
+                    ],
+                    "expectedSnapshotHash": reopened["trialRound"]["snapshotHash"],
+                },
+            ],
+            "reason": TRIAL_REFERENCE_SENTINEL,
+        },
+        TRIAL_REFERENCE_COMPARISON_KEY,
+    )
+    compared = trial_runtime.assert_review_workspace(
+        compared_result,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=10,
+        policies=1,
+        comparisons=2,
+        references=3,
+        conclusions=6,
+    )
+    new_comparisons = [
+        value
+        for value in compared["comparisonSnapshots"]
+        if value.get("globalId") not in comparison_ids
+    ]
+    comparison = trial_runtime.exact_single(
+        new_comparisons,
+        "P7-05 current Trial comparison",
+    )
+    reference_payload = trial_runtime.review_reference_payload(
+        reference_context,
+        policy,
+        compared["trialRound"],
+        comparison,
+        kind="controlled_quality_report",
+    )
+    reference_payload["reason"] = TRIAL_REFERENCE_SENTINEL
+    created_result = trial_runtime.command(
+        reviewer,
+        base_url,
+        reviewer_csrf,
+        trial_runtime.review_path(project_id, round_id, "/review-references"),
+        reference_payload,
+        TRIAL_REFERENCE_CREATE_KEY,
+    )
+    created = trial_runtime.assert_review_workspace(
+        created_result,
+        project_id,
+        round_id,
+        state="analysis",
+        round_version=10,
+        policies=1,
+        comparisons=2,
+        references=4,
+        conclusions=6,
+    )
+    reference = current_controlled_reference(created)
+    require(
+        isinstance(reference, dict)
+        and reference.get("comparisonSnapshot")
+        == {
+            "globalId": comparison["globalId"],
+            "snapshotHash": comparison["snapshotHash"],
+        }
+        and reference.get("referenceVersion") == 1,
+        "P7-05 prepared Trial review reference is not current",
+    )
+    return {
+        "globalId": reference["globalId"],
+        "referenceVersion": reference["referenceVersion"],
+        "snapshotHash": reference["snapshotHash"],
+    }
+
+
+def prepare_readiness_source_fixtures(
+    administrator,
+    base_url: str,
+    administrator_csrf: str,
+    fixture_password: str,
+) -> dict[str, object]:
+    """Create only the missing current sources before the P7-05 mutation baseline."""
+
+    capacity = _prepare_capacity_source(
+        administrator,
+        base_url,
+        administrator_csrf,
+    )
+    reference = _prepare_current_trial_reference(
+        administrator,
+        base_url,
+        fixture_password,
+    )
+    return {
+        "capacitySourcePrepared": True,
+        "currentTrialReferencePrepared": True,
+        "sourcePreparationCommandCount": len(SOURCE_PREPARATION_IDEMPOTENCY_KEYS),
+        "capacitySource": capacity,
+        "trialReference": reference,
+    }
+
+
 def edit_template_payload(context: Mapping[str, object], optimistic_version: int) -> dict[str, object]:
     payload = template_payload(context, edited=True)
     payload.pop("templateCode")
@@ -598,6 +1032,7 @@ def readiness_persistence_context(
         "NPI Tooling Defect Revision",
         "NPI Tooling Process Profile Revision",
         "NPI Tooling Capacity Scenario Revision",
+        "NPI Tooling Command Idempotency",
     )
     document_doctypes = (
         "NPI Document Revision",
@@ -631,6 +1066,32 @@ def readiness_persistence_context(
     downstream_digests["NPI Inbox Message"] = _canonical_row_digest(
         frappe, "NPI Inbox Message", {}
     )
+    preparation_audit_filters = {
+        "toolingCapacity": {
+            "actor": "Administrator",
+            "operation": "tooling_capacity_scenario.create",
+        },
+        "trialComparison": {
+            "actor": trial_runtime.REVIEW_USER,
+            "operation": "trial_comparison.create",
+        },
+        "trialReference": {
+            "actor": trial_runtime.REVIEW_USER,
+            "operation": "trial_review_reference.create",
+        },
+        "trialReopen": {
+            "actor": trial_runtime.REVIEW_USER,
+            "operation": "trial_conclusion.reopen",
+        },
+    }
+    preparation_audit_counts = {
+        key: int(frappe.db.count("NPI Audit Event", filters))
+        for key, filters in preparation_audit_filters.items()
+    }
+    preparation_audit_digests = {
+        key: _canonical_row_digest(frappe, "NPI Audit Event", filters)
+        for key, filters in preparation_audit_filters.items()
+    }
     return {
         "customerReferenceKeys": list(_customer_reference_keys(project)),
         "downstreamCounts": downstream,
@@ -645,6 +1106,8 @@ def readiness_persistence_context(
         "projectOptimisticVersion": int(project.optimistic_version),
         "projectType": str(project.project_type),
         "secondProjectGlobalId": str(second_projects[0].global_id),
+        "sourcePreparationAuditCounts": preparation_audit_counts,
+        "sourcePreparationAuditDigests": preparation_audit_digests,
     }
 
 
@@ -1651,11 +2114,136 @@ def verify_downstream_unchanged(
         == after_counts.get("NPI Inbox Message"),
         "P7-05 controlled readiness created ERP integration traffic",
     )
+    require(
+        before.get("sourcePreparationAuditCounts")
+        == after.get("sourcePreparationAuditCounts")
+        and before.get("sourcePreparationAuditDigests")
+        == after.get("sourcePreparationAuditDigests"),
+        "P7-05 controlled readiness changed source-preparation audit history",
+    )
     return {
-        "integrationTrafficCreated": False,
-        "gateMutationCreated": False,
-        "workItemMutationCreated": False,
-        "toolingMutationCreated": False,
+        "readinessIntegrationTrafficCreated": False,
+        "readinessGateMutationCreated": False,
+        "readinessTrialMutationCreated": False,
+        "readinessWorkItemMutationCreated": False,
+        "readinessToolingMutationCreated": False,
+    }
+
+
+def verify_source_preparation_scope(
+    before: Mapping[str, object], after: Mapping[str, object]
+) -> dict[str, object]:
+    """Prove the explicit fixture extension and reject every adjacent mutation."""
+
+    stable_context_fields = {
+        "customerReferenceKeys",
+        "fixtureRunId",
+        "gateGlobalId",
+        "gateKey",
+        "gateOptimisticVersion",
+        "memberGlobalId",
+        "memberOptimisticVersion",
+        "projectGlobalId",
+        "projectOptimisticVersion",
+        "projectType",
+        "secondProjectGlobalId",
+    }
+    require(
+        stable_context_fields <= set(before)
+        and stable_context_fields <= set(after)
+        and {key: before.get(key) for key in stable_context_fields}
+        == {key: after.get(key) for key in stable_context_fields},
+        "P7-05 source fixture preparation changed Project/member/Gate context",
+    )
+    before_counts = before.get("downstreamCounts")
+    after_counts = after.get("downstreamCounts")
+    before_digests = before.get("downstreamDigests")
+    after_digests = after.get("downstreamDigests")
+    before_audit_counts = before.get("sourcePreparationAuditCounts")
+    after_audit_counts = after.get("sourcePreparationAuditCounts")
+    before_audit_digests = before.get("sourcePreparationAuditDigests")
+    after_audit_digests = after.get("sourcePreparationAuditDigests")
+    require(
+        isinstance(before_counts, dict)
+        and isinstance(after_counts, dict)
+        and isinstance(before_digests, dict)
+        and isinstance(after_digests, dict)
+        and isinstance(before_audit_counts, dict)
+        and isinstance(after_audit_counts, dict)
+        and isinstance(before_audit_digests, dict)
+        and isinstance(after_audit_digests, dict)
+        and set(before_counts) == set(after_counts) == set(before_digests)
+        == set(after_digests),
+        "P7-05 source fixture persistence inventory drifted",
+    )
+    allowed_count_deltas = {
+        "tooling:NPI Tooling Capacity Scenario Revision": 1,
+        "tooling:NPI Tooling Command Idempotency": 1,
+        "trial:NPI Trial Round": 0,
+        "trial:NPI Trial Round Lifecycle Event": 1,
+        "trial:NPI Trial Command Idempotency": 3,
+        "trial:NPI Trial Round Comparison Snapshot": 1,
+        "trial:NPI Trial Review Reference Revision": 1,
+        "trial:NPI Trial Conclusion Revision": 1,
+    }
+    require(
+        set(allowed_count_deltas) | {"NPI Outbox Message", "NPI Inbox Message"}
+        <= set(before_counts),
+        "P7-05 source fixture persistence inventory is incomplete",
+    )
+    for key in before_counts:
+        expected_delta = allowed_count_deltas.get(key, 0)
+        require(
+            int(after_counts[key]) - int(before_counts[key]) == expected_delta,
+            f"P7-05 source fixture changed an unauthorized collection: {key}",
+        )
+        if key in allowed_count_deltas:
+            require(
+                after_digests[key] != before_digests[key],
+                f"P7-05 source fixture did not append its declared history: {key}",
+            )
+        else:
+            require(
+                after_digests[key] == before_digests[key],
+                f"P7-05 source fixture rewrote adjacent truth: {key}",
+            )
+    require(
+        set(before_audit_counts)
+        == set(after_audit_counts)
+        == set(before_audit_digests)
+        == set(after_audit_digests)
+        == {
+            "toolingCapacity",
+            "trialComparison",
+            "trialReference",
+            "trialReopen",
+        }
+        and all(
+            int(after_audit_counts[key]) - int(before_audit_counts[key]) == 1
+            and after_audit_digests[key] != before_audit_digests[key]
+            for key in before_audit_counts
+        ),
+        "P7-05 source fixture preparation audit history drifted",
+    )
+    require(
+        before_counts["NPI Outbox Message"] == after_counts["NPI Outbox Message"]
+        and before_counts["NPI Inbox Message"]
+        == after_counts["NPI Inbox Message"]
+        and before_digests["NPI Outbox Message"]
+        == after_digests["NPI Outbox Message"]
+        and before_digests["NPI Inbox Message"]
+        == after_digests["NPI Inbox Message"],
+        "P7-05 source fixture preparation created ERP integration traffic",
+    )
+    return {
+        "fixtureCapacityCommandCount": 1,
+        "fixtureCapacityScenarioCreated": True,
+        "fixtureAuditEventCount": 4,
+        "fixtureIntegrationTrafficCreated": False,
+        "fixtureSourcePreparationCommandCount": 4,
+        "fixtureTrialCommandCount": 3,
+        "fixtureTrialHistoryExtended": True,
+        "fixtureTrialRoundReopenedToAnalysis": True,
     }
 
 
@@ -1664,8 +2252,10 @@ def run_fresh(
     actor,
     unrelated,
     base_url: str,
+    administrator_csrf: str,
     actor_csrf: str,
     unrelated_csrf: str,
+    fixture_password: str,
 ) -> dict[str, object]:
     project_id, _project_version = document_runtime.fixture_project(
         administrator, base_url
@@ -1673,9 +2263,49 @@ def run_fresh(
     schema = run_bench_fixture(
         "verify_readiness_runtime_schema", {"fixture_run_id": FIXTURE_RUN_ID}
     )
+    fixture_before_context = run_bench_fixture(
+        "readiness_persistence_context",
+        {"fixture_run_id": FIXTURE_RUN_ID, "project_id": project_id},
+    )
+    fixture_before_gate = run_bench_fixture(
+        "readiness_gate_input_context",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "gate_id": fixture_before_context["gateGlobalId"],
+        },
+    )
+    source_preparation = prepare_readiness_source_fixtures(
+        administrator,
+        base_url,
+        administrator_csrf,
+        fixture_password,
+    )
+    require(
+        source_preparation.get("capacitySourcePrepared") is True
+        and source_preparation.get("currentTrialReferencePrepared") is True
+        and source_preparation.get("sourcePreparationCommandCount") == 4,
+        "P7-05 exact source preparation was incomplete",
+    )
     context = run_bench_fixture(
         "readiness_persistence_context",
         {"fixture_run_id": FIXTURE_RUN_ID, "project_id": project_id},
+    )
+    fixture_scope = verify_source_preparation_scope(
+        fixture_before_context,
+        context,
+    )
+    fixture_after_gate = run_bench_fixture(
+        "readiness_gate_input_context",
+        {
+            "fixture_run_id": FIXTURE_RUN_ID,
+            "project_id": project_id,
+            "gate_id": context["gateGlobalId"],
+        },
+    )
+    require(
+        fixture_before_gate == fixture_after_gate,
+        "P7-05 source fixture preparation mutated Gate input or authority",
     )
     offline_seam = run_bench_fixture(
         "verify_external_resolver_offline", {"fixture_run_id": FIXTURE_RUN_ID}
@@ -2116,6 +2746,7 @@ def run_fresh(
         "metadataSynchronized": True,
         "readinessRevisionCount": 4,
         "scoreBasisPoints": 9700,
+        **fixture_scope,
         **zero_effects,
     }
 
@@ -2532,8 +3163,10 @@ def main() -> None:
             actor,
             unrelated,
             base_url,
+            administrator_csrf,
             actor_csrf,
             unrelated_csrf,
+            fixture_password,
         )
     require_safe_payload(result, "P7-05 sanitized verifier evidence")
     print(json.dumps(result, separators=(",", ":"), sort_keys=True))

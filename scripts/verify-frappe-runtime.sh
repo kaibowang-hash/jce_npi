@@ -2469,6 +2469,8 @@ verify_readiness_runtime_log_redaction() {
   for marker in \
     "Synthetic controlled readiness template" \
     "Synthetic readiness confirmation sentinel" \
+    "P705-CAPACITY-SOURCE-SENTINEL" \
+    "P705-TRIAL-REFERENCE-SENTINEL" \
     "P705-ERP-MATERIAL-SENTINEL" \
     "P705-GATE-DRIFT-SENTINEL" \
     "/private/files/"; do

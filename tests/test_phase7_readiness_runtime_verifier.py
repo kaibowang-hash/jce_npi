@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import ast
 import copy
 import importlib.util
 import os
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -141,6 +143,289 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             set(self.module.EXTERNAL_REASON_CODES),
             set(self.module.EXTERNAL_SOURCE_KINDS),
         )
+
+    def test_capacity_source_payload_is_an_independent_two_line_v1_scenario(
+        self,
+    ) -> None:
+        context = self._capacity_source_context()
+        profile = {
+            "globalId": "00000000-0000-4000-8000-000000000220",
+            "snapshotHash": "a" * 64,
+        }
+        retained_context = copy.deepcopy(context)
+        retained_profile = copy.deepcopy(profile)
+
+        payload = self.module.capacity_source_payload(context, profile)
+
+        self.assertEqual(context, retained_context)
+        self.assertEqual(profile, retained_profile)
+        self.assertEqual(payload.get("targetMonthlyAssemblyUnits"), "25000.0")
+        self.assertNotIn("scenarioGlobalId", payload)
+        self.assertNotIn("expectedVersion", payload)
+        self.assertEqual(len(payload.get("lines", [])), 2)
+        self.assertEqual(
+            [line.get("applicabilityGlobalId") for line in payload["lines"]],
+            [
+                value["globalId"]
+                for value in retained_context["applicability"]
+            ],
+        )
+
+        payload["lines"][0]["selectedToolingSetGlobalIds"].append(
+            "00000000-0000-4000-8000-000000000299"
+        )
+        self.assertEqual(context, retained_context)
+        self.assertEqual(profile, retained_profile)
+
+        for applicability in (
+            retained_context["applicability"][:1],
+            retained_context["applicability"]
+            + [copy.deepcopy(retained_context["applicability"][0])],
+        ):
+            with self.subTest(applicability_count=len(applicability)):
+                drifted = copy.deepcopy(retained_context)
+                drifted["applicability"] = applicability
+                with self.assertRaisesRegex(RuntimeError, "two retained applicability"):
+                    self.module.capacity_source_payload(drifted, profile)
+
+    def test_current_controlled_reference_requires_the_exact_current_round_target(
+        self,
+    ) -> None:
+        workspace = self._controlled_reference_workspace()
+        expected = workspace["reviewReferenceRevisions"][0]
+        self.assertEqual(
+            self.module.current_controlled_reference(workspace),
+            expected,
+        )
+
+        mutations = (
+            lambda value: value["trialRound"].__setitem__(
+                "optimisticVersion", 8
+            ),
+            lambda value: value["trialRound"].__setitem__(
+                "snapshotHash", "9" * 64
+            ),
+            lambda value: value["comparisonSnapshots"][0]["sources"][-1].__setitem__(
+                "trialRoundOptimisticVersion", 8
+            ),
+            lambda value: value["comparisonSnapshots"][0]["sources"][-1].__setitem__(
+                "trialRoundSnapshotHash", "9" * 64
+            ),
+            lambda value: value["reviewReferenceRevisions"][0][
+                "comparisonSnapshot"
+            ].__setitem__("snapshotHash", "8" * 64),
+            lambda value: value["reviewReferenceRevisions"][0].__setitem__(
+                "referenceKind", "internal_sample_review"
+            ),
+        )
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                drifted = copy.deepcopy(workspace)
+                mutate(drifted)
+                self.assertIsNone(
+                    self.module.current_controlled_reference(drifted)
+                )
+
+    def test_source_preparation_keys_are_exact_bounded_and_non_sensitive(self) -> None:
+        expected = (
+            f"p7-05-runtime-{FIXTURE_RUN_ID}-capacity-source",
+            f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-reopen",
+            f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-comparison",
+            f"p7-05-runtime-{FIXTURE_RUN_ID}-reference-create",
+        )
+        self.assertEqual(
+            self.module.SOURCE_PREPARATION_IDEMPOTENCY_KEYS,
+            expected,
+        )
+        self.assertEqual(
+            expected,
+            (
+                self.module.CAPACITY_SOURCE_PREP_KEY,
+                self.module.TRIAL_REFERENCE_REOPEN_KEY,
+                self.module.TRIAL_REFERENCE_COMPARISON_KEY,
+                self.module.TRIAL_REFERENCE_CREATE_KEY,
+            ),
+        )
+        self.assertEqual(len(set(expected)), 4)
+        for value in (
+            *expected,
+            self.module.CAPACITY_SOURCE_SENTINEL,
+            self.module.TRIAL_REFERENCE_SENTINEL,
+        ):
+            with self.subTest(value=value):
+                self.assertLessEqual(len(value), 128)
+                self.assertIsNotNone(re.fullmatch(r"[A-Za-z0-9-]+", value))
+                folded = value.casefold()
+                for forbidden in (
+                    "password",
+                    "secret",
+                    "token",
+                    "cookie",
+                    "csrf",
+                    "private",
+                    "/",
+                    "\\",
+                ):
+                    self.assertNotIn(forbidden, folded)
+
+    def test_source_preparation_precedes_the_readiness_baseline(self) -> None:
+        tree = ast.parse(self.source)
+        run_fresh = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "run_fresh"
+        )
+        source_preparation_calls = [
+            node
+            for node in ast.walk(run_fresh)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "prepare_readiness_source_fixtures"
+        ]
+        baseline_calls = [
+            node
+            for node in ast.walk(run_fresh)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "run_bench_fixture"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and node.args[0].value == "readiness_persistence_context"
+        ]
+
+        self.assertEqual(len(source_preparation_calls), 1)
+        self.assertGreaterEqual(len(baseline_calls), 3)
+        ordered_baselines = sorted(baseline_calls, key=lambda node: node.lineno)
+        self.assertLess(
+            ordered_baselines[0].lineno,
+            source_preparation_calls[0].lineno,
+        )
+        self.assertLess(
+            source_preparation_calls[0].lineno,
+            ordered_baselines[1].lineno,
+        )
+
+    def test_source_fixture_and_readiness_effect_windows_are_reported_separately(
+        self,
+    ) -> None:
+        for marker in (
+            "verify_source_preparation_scope",
+            '"fixtureCapacityCommandCount": 1',
+            '"fixtureCapacityScenarioCreated": True',
+            '"fixtureAuditEventCount": 4',
+            '"fixtureIntegrationTrafficCreated": False',
+            '"fixtureSourcePreparationCommandCount": 4',
+            '"fixtureTrialCommandCount": 3',
+            '"fixtureTrialHistoryExtended": True',
+            '"fixtureTrialRoundReopenedToAnalysis": True',
+            '"readinessIntegrationTrafficCreated": False',
+            '"readinessGateMutationCreated": False',
+            '"readinessTrialMutationCreated": False',
+            '"readinessWorkItemMutationCreated": False',
+            '"readinessToolingMutationCreated": False',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.source)
+        for misleading in (
+            '"integrationTrafficCreated": False',
+            '"toolingMutationCreated": False',
+        ):
+            with self.subTest(misleading=misleading):
+                self.assertNotIn(misleading, self.source)
+
+    def test_source_fixture_scope_rejects_undeclared_mutation(self) -> None:
+        stable = {
+            "customerReferenceKeys": ["ERPNEXT:CUSTOMER-001"],
+            "fixtureRunId": FIXTURE_RUN_ID,
+            "gateGlobalId": "00000000-0000-4000-8000-000000000240",
+            "gateKey": "G6",
+            "gateOptimisticVersion": 1,
+            "memberGlobalId": "00000000-0000-4000-8000-000000000241",
+            "memberOptimisticVersion": 1,
+            "projectGlobalId": "00000000-0000-4000-8000-000000000242",
+            "projectOptimisticVersion": 1,
+            "projectType": "new_mold",
+            "secondProjectGlobalId": "00000000-0000-4000-8000-000000000243",
+        }
+        allowed_deltas = {
+            "tooling:NPI Tooling Capacity Scenario Revision": 1,
+            "tooling:NPI Tooling Command Idempotency": 1,
+            "trial:NPI Trial Round": 0,
+            "trial:NPI Trial Round Lifecycle Event": 1,
+            "trial:NPI Trial Command Idempotency": 3,
+            "trial:NPI Trial Round Comparison Snapshot": 1,
+            "trial:NPI Trial Review Reference Revision": 1,
+            "trial:NPI Trial Conclusion Revision": 1,
+            "NPI Outbox Message": 0,
+            "NPI Inbox Message": 0,
+            "project:NPI Engineering Project": 0,
+        }
+        before_counts = {key: 10 for key in allowed_deltas}
+        after_counts = {
+            key: before_counts[key] + delta for key, delta in allowed_deltas.items()
+        }
+        before_digests = {key: f"before-{index}" for index, key in enumerate(allowed_deltas)}
+        after_digests = {
+            key: (
+                f"after-{index}"
+                if key
+                in {
+                    "tooling:NPI Tooling Capacity Scenario Revision",
+                    "tooling:NPI Tooling Command Idempotency",
+                    "trial:NPI Trial Round",
+                    "trial:NPI Trial Round Lifecycle Event",
+                    "trial:NPI Trial Command Idempotency",
+                    "trial:NPI Trial Round Comparison Snapshot",
+                    "trial:NPI Trial Review Reference Revision",
+                    "trial:NPI Trial Conclusion Revision",
+                }
+                else before_digests[key]
+            )
+            for index, key in enumerate(allowed_deltas)
+        }
+        audit_keys = (
+            "toolingCapacity",
+            "trialComparison",
+            "trialReference",
+            "trialReopen",
+        )
+        before = {
+            **stable,
+            "downstreamCounts": before_counts,
+            "downstreamDigests": before_digests,
+            "sourcePreparationAuditCounts": {key: 2 for key in audit_keys},
+            "sourcePreparationAuditDigests": {
+                key: f"audit-before-{key}" for key in audit_keys
+            },
+        }
+        after = {
+            **stable,
+            "downstreamCounts": after_counts,
+            "downstreamDigests": after_digests,
+            "sourcePreparationAuditCounts": {key: 3 for key in audit_keys},
+            "sourcePreparationAuditDigests": {
+                key: f"audit-after-{key}" for key in audit_keys
+            },
+        }
+
+        result = self.module.verify_source_preparation_scope(before, after)
+        self.assertEqual(result["fixtureSourcePreparationCommandCount"], 4)
+        self.assertFalse(result["fixtureIntegrationTrafficCreated"])
+
+        tampered = copy.deepcopy(after)
+        tampered["downstreamCounts"]["NPI Outbox Message"] += 1
+        with self.assertRaisesRegex(RuntimeError, "unauthorized collection"):
+            self.module.verify_source_preparation_scope(before, tampered)
+        tampered = copy.deepcopy(after)
+        tampered["sourcePreparationAuditCounts"]["trialReopen"] += 1
+        with self.assertRaisesRegex(RuntimeError, "audit history"):
+            self.module.verify_source_preparation_scope(before, tampered)
+        tampered = copy.deepcopy(after)
+        tampered["downstreamDigests"]["project:NPI Engineering Project"] = (
+            "unexpected"
+        )
+        with self.assertRaisesRegex(RuntimeError, "rewrote adjacent truth"):
+            self.module.verify_source_preparation_scope(before, tampered)
 
     def test_template_lifecycle_and_independent_project_instance_are_proved(self) -> None:
         for marker in (
@@ -360,10 +645,12 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             '"NPI Outbox Message"',
             '"NPI Inbox Message"',
             "controlled readiness created ERP integration traffic",
-            '"integrationTrafficCreated": False',
-            '"gateMutationCreated": False',
-            '"workItemMutationCreated": False',
-            '"toolingMutationCreated": False',
+            "source fixture preparation created ERP integration traffic",
+            '"fixtureIntegrationTrafficCreated": False',
+            '"readinessIntegrationTrafficCreated": False',
+            '"readinessGateMutationCreated": False',
+            '"readinessWorkItemMutationCreated": False',
+            '"readinessToolingMutationCreated": False',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
@@ -438,6 +725,8 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             "/private/files/",
             "P7-05 raw readiness value or private path leaked into the runtime log.",
             "Synthetic controlled readiness",
+            "P705-CAPACITY-SOURCE-SENTINEL",
+            "P705-TRIAL-REFERENCE-SENTINEL",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.shell)
@@ -594,6 +883,86 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             for item in revision["items"]
             if item["definition"]["key"] == item_key
         )
+
+    @staticmethod
+    def _capacity_source_context() -> dict[str, object]:
+        return {
+            "revisionId": "00000000-0000-4000-8000-000000000210",
+            "revisionSnapshotHash": "1" * 64,
+            "toolingSetId": "00000000-0000-4000-8000-000000000211",
+            "toolingSetSnapshotHash": "2" * 64,
+            "applicability": [
+                {
+                    "globalId": "00000000-0000-4000-8000-000000000212",
+                    "snapshotHash": "3" * 64,
+                    "partRevisionGlobalId": (
+                        "00000000-0000-4000-8000-000000000213"
+                    ),
+                    "partRevisionSnapshotHash": "4" * 64,
+                },
+                {
+                    "globalId": "00000000-0000-4000-8000-000000000214",
+                    "snapshotHash": "5" * 64,
+                    "partRevisionGlobalId": (
+                        "00000000-0000-4000-8000-000000000215"
+                    ),
+                    "partRevisionSnapshotHash": "6" * 64,
+                },
+            ],
+        }
+
+    @staticmethod
+    def _controlled_reference_workspace() -> dict[str, object]:
+        round_id = "00000000-0000-4000-8000-000000000230"
+        comparison_id = "00000000-0000-4000-8000-000000000231"
+        comparison_hash = "7" * 64
+        round_hash = "6" * 64
+        return {
+            "trialRound": {
+                "globalId": round_id,
+                "optimisticVersion": 7,
+                "snapshotHash": round_hash,
+            },
+            "comparisonSnapshots": [
+                {
+                    "globalId": comparison_id,
+                    "snapshotHash": comparison_hash,
+                    "targetRoundGlobalId": round_id,
+                    "sources": [
+                        {
+                            "sequence": 1,
+                            "trialRoundGlobalId": (
+                                "00000000-0000-4000-8000-000000000229"
+                            ),
+                            "trialRoundOptimisticVersion": 4,
+                            "trialRoundSnapshotHash": "5" * 64,
+                        },
+                        {
+                            "sequence": 2,
+                            "trialRoundGlobalId": round_id,
+                            "trialRoundOptimisticVersion": 7,
+                            "trialRoundSnapshotHash": round_hash,
+                        },
+                    ],
+                }
+            ],
+            "reviewReferenceRevisions": [
+                {
+                    "globalId": "00000000-0000-4000-8000-000000000232",
+                    "referenceGlobalId": (
+                        "00000000-0000-4000-8000-000000000233"
+                    ),
+                    "referenceKind": "controlled_quality_report",
+                    "referenceVersion": 1,
+                    "trialRoundGlobalId": round_id,
+                    "comparisonSnapshot": {
+                        "globalId": comparison_id,
+                        "snapshotHash": comparison_hash,
+                    },
+                    "snapshotHash": "8" * 64,
+                }
+            ],
+        }
 
 
 if __name__ == "__main__":
