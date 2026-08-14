@@ -126,7 +126,49 @@ EXPECTED_P7_04_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
     "implementation/evidence/phase-7/p7-04-live-review-workspace-checkpoint.md",
     "implementation/evidence/phase-7/p7-04-validation.md",
 }
+EXPECTED_P7_05_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-05-plan.md",
+    "implementation/evidence/phase-7/p7-05-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-05-repository-bff-gate-input-checkpoint.md",
+    "implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-05-validation.md",
+}
 EXPECTED_P7_COMPLETED_TRACES = {
+    "FR-NP-001": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
+    "FR-NP-002": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
+    "FR-NP-003": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_CONFIRMATION_FOUNDATION_FORMAL_ERP_MAPPING_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-006": (
+        "7",
+        "TECHNICAL_VERIFIED_CONTROLLED_REPORT_FOUNDATION_FORMAL_ERP_QUALITY_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-007": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
+    "FR-NP-008": (
+        "7",
+        "TECHNICAL_VERIFIED_CAPACITY_SCENARIO_FOUNDATION_RUN_AT_RATE_ACTUAL_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-009": (
+        "7",
+        "TECHNICAL_VERIFIED_TRIAL_ACTION_FOUNDATION_PRODUCTION_RECORD_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-010": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
+    "FR-NP-011": (
+        "7",
+        "TECHNICAL_VERIFIED_CONTROLLED_CONFIRMATION_FOUNDATION_FORMAL_HR_PROJECTION_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-012": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_SUPPLIER_FOUNDATION_FORMAL_ERP_AND_RISK_MUTATION_HELD",
+        EXPECTED_P7_05_EVIDENCE,
+    ),
+    "FR-NP-013": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
     "FR-TR-001": (
         "7",
         "TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD",

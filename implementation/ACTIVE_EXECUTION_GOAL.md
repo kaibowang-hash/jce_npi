@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-12T05:43:01Z`
+Updated: `2026-08-14T07:08:14Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-05`
+- Mode: `IN_PROGRESS_AUDIT — P7-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `680877f8a12886f3aff42f07569a6bb4787a844f` (pushed; P7-05 checkpoint 3
-  final checkpoint PASS; product implementation
+  `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (pushed; P7-05
+  `PASS_LEVEL_2`; checkpoint 3 product implementation
   `583f3474133e7044bbfb11643b79342f75146d5f`)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
@@ -29,15 +29,18 @@ Updated: `2026-08-12T05:43:01Z`
 - Latest P7-04 product checkpoint:
   `02781c0c712c4d8c739114ead24545daa537329d` (`LEVEL 2 PASS`;
   ordinary CI `31488890426`, controlled Gate `31489609774`)
+- Latest P7-05 product Gate:
+  `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (`LEVEL 2 PASS`;
+  ordinary CI `31777229867`, controlled Gate `31777985302`)
 - Current controller task:
-  `P7-05 — NPI checklist, readiness and blockers`
-  (`IN_PROGRESS — CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
-- Resumed product task: `P7-05` (`ACTIVE_CHECKPOINT_4`)
+  `P7-06 — Production handover and observation period`
+  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
+- Resumed product task: `P7-06` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-05 CHECKPOINT 4`)
+  (`IN_PROGRESS — P7-06 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -192,11 +195,34 @@ expanded `109/109` fixed-Linux visual matrix; controlled lanes skip as
 required. Complete evidence is
 `implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md`.
 
-Checkpoint 4 is the only active scope: extend the cumulative disposable-Site
-fixture through P7-05, run the exact-SHA controlled runtime, and complete
-traceability, Task Diff Review and Level 2. No further UI expansion, Level 3,
-production ERP contact, automatic Gate/Work Item/Tooling mutation, handover,
-release, projection or print authority is active. There is no technical Hard
+P7-05 passes Level 2 at exact product checkpoint
+`418b3aab01c9aebbd0cd0001f58006de9c417f6f`. Ordinary pull-request CI
+`31777229867` passes repository `94695121403`, frontend `94695122158`, secret
+scan `94695121480` and fixed-Linux visual `94695121693`; its retained visual
+artifact is `9210406077` with digest
+`sha256:7bd82310028eace5f7406592b84aca8a3d93f3c1e61e36a82530740e8037fcd6`
+and Gitleaks artifact is `9210334347` with digest
+`sha256:f6d4df2b88f0b6aa68e0682c80c44f69f6bc9145b18ad76daa3daa44d02a1dc1`.
+Exact-SHA controlled Gate `31777985302` passes preflight `94697368669` and
+cumulative disposable-Site runtime `94697448103` through P7-05, including
+exact readiness sources, deterministic scoring and dominant blockers,
+Gate-input-only separation, replay/conflict/rollback/IDOR, route recovery,
+migrations, redaction, zero external effects and cleanup. Prior-Gate artifact
+`9210604110` has digest
+`sha256:5a58b6dc50b9731e9578d1d33356c3102094121d4b7825d851ca022e196defb0`;
+runtime artifact `9210730456` has digest
+`sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
+
+The only active scope is the bounded P7-06 Requirement/domain/existing-
+capability audit for `FR-NP-014` and `FR-NP-015`. The audit may freeze the
+future immutable handover-package/acknowledgement and post-SOP observation-
+snapshot boundaries, exact unresolved actions and explicit unavailable
+external actuals; it may not start product code. Automatic G7 close,
+production handover execution, production transactions or ERPNext contact,
+formal acceptance/signature authority, invented yield/complaint/cycle/Tooling
+actuals, release, projection and print authority remain held. No Level 3 was
+run for this transition; the latest complete Level 3 remains `31392474781` at
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
 Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence

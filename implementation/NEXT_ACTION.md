@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P7-05`
+`IN_PROGRESS_AUDIT — P7-06`
 
-Recovery time: `2026-08-12T05:43:01Z`
+Recovery time: `2026-08-14T07:08:14Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -25,6 +25,9 @@ P7-05 checkpoint 3 product commit:
 
 P7-05 checkpoint 3 final checkpoint:
 `680877f8a12886f3aff42f07569a6bb4787a844f`
+
+P7-05 Level 2 product checkpoint and P7-06 audit base:
+`418b3aab01c9aebbd0cd0001f58006de9c417f6f`
 
 ## Current authoritative action
 
@@ -180,17 +183,38 @@ expanded `109/109` fixed-Linux visual matrix; controlled lanes skip as
 required. Complete evidence is
 `implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md`.
 
-Execute only checkpoint 4 in
-`implementation/evidence/phase-7/p7-05-plan.md`: extend the cumulative
-disposable-Site fixture through P7-05 and prove template publish/read,
-independent Project initialization and revision, exact supported sources and
-the five identity-free unavailable external source classes, deterministic
-score and P0 dominance, and Gate blocker/dependency input drift without Gate
-mutation. Prove same- and cross-process replay, stale/fork/conflict/rollback,
-IDOR, route recovery, migrations, redaction, zero ERP/network/Outbox/downstream
-effects and cleanup; then complete traceability, Task Diff Review and Level 2.
-No further UI is authorized. Level 3 remains reserved for the Phase, PR or
-release boundary.
+P7-05 passes Level 2 at exact product checkpoint
+`418b3aab01c9aebbd0cd0001f58006de9c417f6f`. Ordinary pull-request CI
+`31777229867` passes all four required lanes. Exact-SHA controlled Gate
+`31777985302` verifies that prior Gate and passes preflight plus cumulative
+disposable-Site scope through P7-05, with cleanup successful. Prior-Gate
+artifact `9210604110` has digest
+`sha256:5a58b6dc50b9731e9578d1d33356c3102094121d4b7825d851ca022e196defb0`;
+runtime artifact `9210730456` has digest
+`sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
+The ordinary visual artifact `9210406077` has digest
+`sha256:7bd82310028eace5f7406592b84aca8a3d93f3c1e61e36a82530740e8037fcd6`,
+and Gitleaks artifact `9210334347` has digest
+`sha256:f6d4df2b88f0b6aa68e0682c80c44f69f6bc9145b18ad76daa3daa44d02a1dc1`.
+Complete evidence is
+`implementation/evidence/phase-7/p7-05-validation.md`.
+
+Execute only the bounded P7-06 Requirement/domain/existing-capability audit
+for `FR-NP-014` and `FR-NP-015`. Reconcile the authoritative handover and
+post-SOP observation requirements against existing immutable Project,
+readiness, action/evidence and unavailable-external-source foundations; freeze
+aggregate identity, version/predecessor/hash rules, acknowledgements,
+unresolved actions, external-actual availability, permissions, audit,
+idempotency, migration/rollback, checkpoints and affected tests before any
+product code. Do not create product code during the audit. Do not automatically
+close G7, execute a production handover or transaction, contact ERPNext,
+invent yield/complaint/cycle/Tooling actuals, or claim formal receiving-party,
+signature, release, projection or print authority.
+
+No Level 3 was run for P7-05. The latest complete Level 3 remains workflow
+`31392474781` at exact SHA
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`; Level 3 remains reserved for
+the applicable Phase, PR or release boundary.
 
 ## Retained P6-05 and P6-06 execution history
 
