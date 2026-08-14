@@ -129,6 +129,7 @@ jobs:
           tests/e2e/p7-03-trial-quality-live.spec.ts
           tests/e2e/p7-04-trial-review-live.spec.ts
           tests/e2e/p7-05-readiness-live.spec.ts
+          tests/e2e/p7-06-production-transition-live.spec.ts
           tests/e2e/gate-evidence-live.spec.ts
           --grep @visual
         env:
@@ -157,6 +158,7 @@ jobs:
             frontend/tests/e2e/p7-03-trial-quality-live.spec.ts-snapshots/p7-03-*-linux.png
             frontend/tests/e2e/p7-04-trial-review-live.spec.ts-snapshots/p7-04-*-linux.png
             frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-*-linux.png
+            frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-*-linux.png
             frontend/tests/e2e/gate-evidence-live.spec.ts-snapshots/p5-03-*-linux.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json
@@ -186,6 +188,8 @@ jobs:
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p7-04-trial-review-live-*/**/*-diff.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p7-05-readiness-live-*/**/*-actual.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p7-05-readiness-live-*/**/*-diff.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p7-06-production-transition-live-*/**/*-actual.png
+            implementation/evidence/phase-5/r1-06-stage-3/playwright-results/p7-06-production-transition-live-*/**/*-diff.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/gate-evidence-live--visual-*/**/*-actual.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/gate-evidence-live--visual-*/**/*-diff.png
           if-no-files-found: error

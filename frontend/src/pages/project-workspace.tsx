@@ -11,6 +11,7 @@ import type { DocumentDataSource } from "../api/document-data-source";
 import type { EngineeringBomDataSource } from "../api/ebom-data-source";
 import type { EngineeringBomPublishRequestDataSource } from "../api/publish-request-data-source";
 import type { ReadinessDataSource } from "../api/readiness-data-source";
+import type { ProductionTransitionDataSource } from "../api/production-transition-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type {
   ReportWorkspaceDirty,
@@ -53,6 +54,7 @@ import {
 import { ProjectDocumentWorkspace } from "./project-document-workspace";
 import { ProjectEngineeringBomWorkspace } from "./project-ebom-workspace";
 import { ProjectReadinessWorkspace } from "./project-readiness-workspace";
+import { ProjectProductionTransitionWorkspace } from "./project-production-transition-workspace";
 
 type ProjectWorkspaceTab =
   | "overview"
@@ -61,6 +63,7 @@ type ProjectWorkspaceTab =
   | "work-items"
   | "documents"
   | "readiness"
+  | "production-transition"
   | "ebom"
   | ProjectGovernanceSection;
 
@@ -74,6 +77,7 @@ const projectWorkspaceTabs = new Set<ProjectWorkspaceTab>([
   "learning",
   "documents",
   "readiness",
+  "production-transition",
   "ebom",
 ]);
 
@@ -1277,6 +1281,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource,
   engineeringBomDataSource,
   publishRequestDataSource,
+  productionTransitionDataSource,
   readinessDataSource,
   navigate,
   onProjectChanged,
@@ -1291,6 +1296,7 @@ export function ProjectWorkspace({
   domainWorkItemsDataSource?: ProjectDomainWorkItemsDataSource | undefined;
   engineeringBomDataSource?: EngineeringBomDataSource | undefined;
   publishRequestDataSource?: EngineeringBomPublishRequestDataSource | undefined;
+  productionTransitionDataSource?: ProductionTransitionDataSource | undefined;
   readinessDataSource?: ReadinessDataSource | undefined;
   navigate: (target: string) => void;
   onProjectChanged: (project: ProjectControlsViewModel["project"]) => void;
@@ -1464,6 +1470,7 @@ export function ProjectWorkspace({
     { id: "learning", label: t("Learning") },
     { id: "documents", label: t("Design and documents") },
     { id: "readiness", label: t("NPI readiness") },
+    { id: "production-transition", label: t("Production transition") },
     { id: "ebom", label: t("EBOM") },
   ] as const satisfies readonly Readonly<{
     id: ProjectWorkspaceTab;
@@ -1679,6 +1686,20 @@ export function ProjectWorkspace({
         />
       );
     }
+  } else if (activeTab === "production-transition") {
+    content = productionTransitionDataSource ? (
+      <ProjectProductionTransitionWorkspace
+        dataSource={productionTransitionDataSource}
+        projectId={cockpit.project.globalId}
+      />
+    ) : (
+      <section className="workspace-resource-state" role="status">
+        <SemanticStatus label={t("Unavailable")} tone="warning" />
+        <p>
+          {t("The live Production Transition data source is not configured.")}
+        </p>
+      </section>
+    );
   } else if (activeTab === "ebom") {
     content = (
       <ProjectEngineeringBomWorkspace
