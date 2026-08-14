@@ -171,6 +171,7 @@ class NPIProductionTransitionCommandIdempotency(Document):
                 response,
                 target_global_id=self.target_global_id,
                 project_global_id=self.project_global_id,
+                tenant_id=self.tenant_id,
             )
             expected_response_hash = _sha256_json(response)
             if self.response_hash not in (None, "", expected_response_hash):

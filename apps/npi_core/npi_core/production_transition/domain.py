@@ -509,6 +509,7 @@ class ObservationSourceRule:
 class ProductionTransitionPolicyVersion:
     global_id: UUID
     policy_global_id: UUID
+    tenant_id: str
     policy_code: str
     policy_version: int
     optimistic_version: int
@@ -533,6 +534,11 @@ class ProductionTransitionPolicyVersion:
         expected_id = uuid5(policy_id, f"npi-production-transition-policy-version:{version}")
         if self.global_id != expected_id:
             raise _problem("globalId", _("The policy version identifier is not canonical."))
+        object.__setattr__(
+            self,
+            "tenant_id",
+            _text(self.tenant_id, "tenantId", 128, pattern=_TENANT),
+        )
         object.__setattr__(self, "policy_code", _text(self.policy_code, "policyCode", 64, pattern=_CODE))
         _positive(self.optimistic_version, "optimisticVersion")
         object.__setattr__(self, "title", _text(self.title, "title", 200))
@@ -623,6 +629,7 @@ class ProductionTransitionPolicyVersion:
         cls,
         *,
         policy_global_id: UUID,
+        tenant_id: str,
         policy_code: str,
         title: str,
         applicability: ProductionTransitionApplicability,
@@ -640,6 +647,7 @@ class ProductionTransitionPolicyVersion:
         return cls(
             global_id=uuid5(policy_id, "npi-production-transition-policy-version:1"),
             policy_global_id=policy_id,
+            tenant_id=tenant_id,
             policy_code=policy_code,
             policy_version=1,
             optimistic_version=1,
@@ -731,6 +739,7 @@ class ProductionTransitionPolicyVersion:
         return ProductionTransitionPolicyVersion(
             global_id=uuid5(self.policy_global_id, f"npi-production-transition-policy-version:{version}"),
             policy_global_id=self.policy_global_id,
+            tenant_id=self.tenant_id,
             policy_code=self.policy_code,
             policy_version=version,
             optimistic_version=1,
@@ -774,6 +783,7 @@ class ProductionTransitionPolicyVersion:
             "schemaVersion": PRODUCTION_TRANSITION_SCHEMA_VERSION,
             "globalId": str(self.global_id),
             "policyGlobalId": str(self.policy_global_id),
+            "tenantId": self.tenant_id,
             "policyCode": self.policy_code,
             "policyVersion": self.policy_version,
             "versionKeyHash": self.version_key_hash,
@@ -806,6 +816,7 @@ class ProductionTransitionPolicyVersion:
     def version_key_hash(self) -> str:
         return sha256_json(
             {
+                "tenantId": self.tenant_id,
                 "policyGlobalId": str(self.policy_global_id),
                 "policyVersion": self.policy_version,
             }
@@ -1327,6 +1338,8 @@ def _validate_handover_inputs(
 ) -> None:
     if policy.publication_state is not PolicyPublicationState.PUBLISHED:
         raise ProductionTransitionPolicyPublishedRequired()
+    if policy.tenant_id != project.tenant_id:
+        raise _problem("policyRef", _("The published policy does not apply to this Project."))
     if not policy.applicability.applies_to(project):
         raise _problem("policyRef", _("The published policy does not apply to this Project."))
     slot_by_key = {value.slot_key: value for value in slots}
@@ -1904,6 +1917,8 @@ def _validate_observation_policy(
 ) -> None:
     if policy.publication_state is not PolicyPublicationState.PUBLISHED:
         raise ProductionTransitionPolicyPublishedRequired()
+    if policy.tenant_id != project.tenant_id:
+        raise _problem("policyRef", _("The published policy does not apply to this Project."))
     if not policy.applicability.applies_to(project):
         raise _problem("policyRef", _("The published policy does not apply to this Project."))
     if {value.provider_kind for value in policy.observation_source_rules} != set(
@@ -2284,6 +2299,7 @@ def policy_from_snapshot(value: object) -> ProductionTransitionPolicyVersion:
     result = ProductionTransitionPolicyVersion(
         global_id=UUID(_string(record, "globalId")),
         policy_global_id=UUID(_string(record, "policyGlobalId")),
+        tenant_id=_string(record, "tenantId"),
         policy_code=_string(record, "policyCode"),
         policy_version=_integer(record, "policyVersion"),
         optimistic_version=_integer(record, "optimisticVersion"),

@@ -81,6 +81,12 @@ _ROUTES = {
     ("POST", "/api/npi/v1/npi-readiness/templates"): (
         "npi_core.readiness_api.create_readiness_template"
     ),
+    ("GET", "/api/npi/v1/production-transition/policies"): (
+        "npi_core.production_transition_api.list_eligible_production_transition_policies"
+    ),
+    ("POST", "/api/npi/v1/production-transition/policies"): (
+        "npi_core.production_transition_api.create_production_transition_policy_draft"
+    ),
 }
 
 _PROJECT_COCKPIT_ROUTE = re.compile(
@@ -103,6 +109,39 @@ _PROJECT_READINESS_ROUTE = re.compile(
 _PROJECT_READINESS_REVISIONS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/npi-readiness/"
     r"(?P<instance_id>[^/:]+)/revisions$"
+)
+_PRODUCTION_TRANSITION_POLICY_VERSION_ROUTE = re.compile(
+    r"^/api/npi/v1/production-transition/policies/(?P<policy_id>[^/:]+)/versions/"
+    r"(?P<policy_version>[^/:]+)$"
+)
+_PRODUCTION_TRANSITION_POLICY_PUBLISH_ROUTE = re.compile(
+    r"^/api/npi/v1/production-transition/policies/(?P<policy_id>[^/:]+)/versions/"
+    r"(?P<policy_version>[^/:]+):publish$"
+)
+_PRODUCTION_TRANSITION_POLICY_VERSIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/production-transition/policies/(?P<policy_id>[^/:]+)/versions$"
+)
+_PROJECT_PRODUCTION_TRANSITION_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/production-transition$"
+)
+_PROJECT_PRODUCTION_HANDOVER_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/production-handover$"
+)
+_PROJECT_PRODUCTION_HANDOVER_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/production-handover/"
+    r"(?P<handover_id>[^/:]+)/revisions$"
+)
+_PROJECT_PRODUCTION_HANDOVER_ACKNOWLEDGEMENTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/production-handover/"
+    r"(?P<handover_id>[^/:]+)/revisions/(?P<handover_version>[^/:]+)/"
+    r"acknowledgements$"
+)
+_PROJECT_OBSERVATION_PERIODS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/observation-periods$"
+)
+_PROJECT_OBSERVATION_PERIOD_REVISIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/observation-periods/"
+    r"(?P<observation_id>[^/:]+)/revisions$"
 )
 _PROJECT_TRIAL_PLAN_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-plans/"
@@ -704,6 +743,10 @@ def route_request() -> None:
                 _PROJECT_READINESS_ROUTE,
                 "npi_core.readiness_api.get_project_readiness",
             ),
+            (
+                _PROJECT_PRODUCTION_TRANSITION_ROUTE,
+                "npi_core.production_transition_api.get_project_production_transition_workspace",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -813,6 +856,34 @@ def route_request() -> None:
                 _PROJECT_READINESS_REVISIONS_ROUTE,
                 "npi_core.readiness_api.revise_project_readiness",
             ),
+            (
+                _PRODUCTION_TRANSITION_POLICY_PUBLISH_ROUTE,
+                "npi_core.production_transition_api.publish_production_transition_policy_version",
+            ),
+            (
+                _PRODUCTION_TRANSITION_POLICY_VERSIONS_ROUTE,
+                "npi_core.production_transition_api.create_next_production_transition_policy_version",
+            ),
+            (
+                _PROJECT_PRODUCTION_HANDOVER_ROUTE,
+                "npi_core.production_transition_api.create_production_handover_package",
+            ),
+            (
+                _PROJECT_PRODUCTION_HANDOVER_REVISIONS_ROUTE,
+                "npi_core.production_transition_api.revise_production_handover_package",
+            ),
+            (
+                _PROJECT_PRODUCTION_HANDOVER_ACKNOWLEDGEMENTS_ROUTE,
+                "npi_core.production_transition_api.acknowledge_production_handover_slot",
+            ),
+            (
+                _PROJECT_OBSERVATION_PERIODS_ROUTE,
+                "npi_core.production_transition_api.create_observation_period",
+            ),
+            (
+                _PROJECT_OBSERVATION_PERIOD_REVISIONS_ROUTE,
+                "npi_core.production_transition_api.revise_observation_period",
+            ),
         ):
             match = route.fullmatch(path)
             if match is not None:
@@ -823,6 +894,14 @@ def route_request() -> None:
         match = _READINESS_TEMPLATE_VERSION_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_core.readiness_api.edit_readiness_template"
+            route_params = match.groupdict()
+    if command is None and request.method == "PUT":
+        match = _PRODUCTION_TRANSITION_POLICY_VERSION_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_core.production_transition_api."
+                "edit_production_transition_policy_draft"
+            )
             route_params = match.groupdict()
     if command is None and request.method == "GET":
         for route, candidate in (
@@ -1429,6 +1508,9 @@ def route_request() -> None:
     if _p7_05_routes_disabled(command):
         command = "npi_core.readiness_api.readiness_routes_disabled"
         route_params = {}
+    if _p7_06_routes_disabled(command):
+        command = "npi_core.production_transition_api.production_transition_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -1929,6 +2011,21 @@ def _p7_05_routes_disabled(command: str | None) -> bool:
     }
 
 
+def _p7_06_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_06_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and (
+        isinstance(command, str)
+        and command.startswith("npi_core.production_transition_api.")
+        and command
+        != "npi_core.production_transition_api.production_transition_routes_disabled"
+    )
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -1991,6 +2088,8 @@ def _normalize_pre_handler_problem(response, request) -> bool:
 
 def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "POST" and path == "/api/npi/v1/projects":
+        return True
+    if _is_p7_06_request(method, path):
         return True
     if method == "GET" and path == "/api/npi/v1/me/work":
         return True
@@ -2189,6 +2288,27 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     return method == "POST" and any(
         route.fullmatch(path) is not None
         for route, _command in _PROJECT_CONTROL_COMMAND_ROUTES
+    )
+
+
+def _is_p7_06_request(method: str, path: str) -> bool:
+    if path == "/api/npi/v1/production-transition/policies":
+        return method in {"GET", "POST"}
+    if method == "PUT" and _PRODUCTION_TRANSITION_POLICY_VERSION_ROUTE.fullmatch(path):
+        return True
+    if method == "POST" and (
+        _PRODUCTION_TRANSITION_POLICY_PUBLISH_ROUTE.fullmatch(path)
+        or _PRODUCTION_TRANSITION_POLICY_VERSIONS_ROUTE.fullmatch(path)
+        or _PROJECT_PRODUCTION_HANDOVER_ROUTE.fullmatch(path)
+        or _PROJECT_PRODUCTION_HANDOVER_REVISIONS_ROUTE.fullmatch(path)
+        or _PROJECT_PRODUCTION_HANDOVER_ACKNOWLEDGEMENTS_ROUTE.fullmatch(path)
+        or _PROJECT_OBSERVATION_PERIODS_ROUTE.fullmatch(path)
+        or _PROJECT_OBSERVATION_PERIOD_REVISIONS_ROUTE.fullmatch(path)
+    ):
+        return True
+    return (
+        method == "GET"
+        and _PROJECT_PRODUCTION_TRANSITION_ROUTE.fullmatch(path) is not None
     )
 
 

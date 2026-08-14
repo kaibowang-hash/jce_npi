@@ -118,6 +118,7 @@ def source_rules() -> tuple[ObservationSourceRule, ...]:
 def draft_policy() -> ProductionTransitionPolicyVersion:
     return ProductionTransitionPolicyVersion.create_draft(
         policy_global_id=uid(20),
+        tenant_id=TENANT,
         policy_code="PROD-TRANSITION",
         title="Synthetic production transition policy",
         applicability=ProductionTransitionApplicability((ProjectType.NEW_TOOL,)),
@@ -281,6 +282,8 @@ class Phase7ProductionTransitionDomainTest(unittest.TestCase):
 
     def test_policy_draft_publish_next_version_and_round_trip(self) -> None:
         draft = draft_policy()
+        self.assertEqual(draft.tenant_id, TENANT)
+        self.assertEqual(draft.snapshot_payload()["tenantId"], TENANT)
         edited = draft.edit_draft(
             expected_version=1,
             title="Edited title",
@@ -325,6 +328,7 @@ class Phase7ProductionTransitionDomainTest(unittest.TestCase):
             trace_id="trace-p706-policy-next",
         )
         self.assertEqual(successor.policy_version, 2)
+        self.assertEqual(successor.tenant_id, TENANT)
         self.assertEqual(successor.prior_version_ref.snapshot_hash, published.snapshot_hash)
         with self.assertRaises(ProductionTransitionPolicyPublishedRequired):
             successor.next_draft(
@@ -332,6 +336,55 @@ class Phase7ProductionTransitionDomainTest(unittest.TestCase):
                 changed_at=NOW,
                 request_id=uid(28),
                 trace_id="trace-p706-policy-invalid-next",
+            )
+
+    def test_policy_tenant_is_canonical_and_cannot_cross_project_boundary(self) -> None:
+        published = policy()
+        tampered = copy.deepcopy(published.snapshot_payload())
+        tampered["tenantId"] = "tenant-b"
+        with self.assertRaises(RequestValidationFailed):
+            policy_from_snapshot(tampered)
+
+        other_tenant_policy = replace(published, tenant_id="tenant-b")
+        self.assertNotEqual(other_tenant_policy.snapshot_hash, published.snapshot_hash)
+        self.assertNotEqual(
+            other_tenant_policy.version_key_hash,
+            published.version_key_hash,
+        )
+        with self.assertRaises(RequestValidationFailed):
+            create_handover_package_revision(
+                handover_global_id=uid(229),
+                tenant_id=TENANT,
+                project=project(),
+                policy=other_tenant_policy,
+                readiness_ref=None,
+                slots=slots(),
+                manifest=(SOURCE,),
+                server_unresolved_actions=(ACTION,),
+                enabled_user_ids=frozenset(
+                    {SENDER_MEMBER.user_id, RECEIVER_MEMBER.user_id}
+                ),
+                reason="Reject a cross-tenant policy.",
+                created_by_user_id="admin@example.invalid",
+                created_at=NOW,
+                request_id=uid(230),
+                trace_id="trace-p706-policy-tenant-boundary",
+            )
+        with self.assertRaises(RequestValidationFailed):
+            create_observation_period_revision(
+                observation_global_id=uid(231),
+                tenant_id=TENANT,
+                project=project(),
+                policy=other_tenant_policy,
+                handover_package_ref=None,
+                context_references=(),
+                retrospective_references=(),
+                retrospective_note=None,
+                reason="Reject a cross-tenant policy.",
+                created_by_user_id="admin@example.invalid",
+                created_at=NOW,
+                request_id=uid(232),
+                trace_id="trace-p706-observation-policy-tenant-boundary",
             )
 
     def test_policy_persistence_transition_is_exact_and_optimistic(self) -> None:

@@ -19496,11 +19496,12 @@ components:
       type: object
       additionalProperties: false
       description: Immutable after publication; metadata installs no production default row or Project binding.
-      required: [schemaVersion, globalId, policyGlobalId, policyCode, policyVersion, versionKeyHash, optimisticVersion, title, publicationState, priorVersionRef, applicability, receivingGroups, acknowledgementSlots, handoverRequirements, unresolvedActionSelector, observationSourceRules, observationWindowDays, authorityBoundary, changedByUserId, changedAt, requestId, traceId, snapshotHash]
+      required: [schemaVersion, globalId, policyGlobalId, tenantId, policyCode, policyVersion, versionKeyHash, optimisticVersion, title, publicationState, priorVersionRef, applicability, receivingGroups, acknowledgementSlots, handoverRequirements, unresolvedActionSelector, observationSourceRules, observationWindowDays, authorityBoundary, changedByUserId, changedAt, requestId, traceId, snapshotHash]
       properties:
         schemaVersion: { type: integer, const: 1 }
         globalId: { type: string, format: uuid }
         policyGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
         policyCode: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$" }
         policyVersion: { type: integer, minimum: 1 }
         versionKeyHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }

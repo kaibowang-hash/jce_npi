@@ -71,11 +71,22 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 self.assertIn("deny_production_transition_history_delete(self)", source)
                 ast.parse(source)
         policy = self.load("npi_production_transition_policy")
-        self.assertTrue(all("default" not in field for field in policy["fields"]))
-        self.assertEqual(
-            self.fields(policy)["policy_code"].get("unique"),
-            1,
+        policy_fields = self.fields(policy)
+        version_fields = self.fields(
+            self.load("npi_production_transition_policy_version")
         )
+        self.assertTrue(all("default" not in field for field in policy["fields"]))
+        self.assertNotEqual(policy_fields["policy_code"].get("unique"), 1)
+        self.assertEqual(policy_fields["policy_code_key_hash"].get("unique"), 1)
+        for fields in (policy_fields, version_fields):
+            self.assertEqual(fields["tenant_id"].get("reqd"), 1)
+            self.assertEqual(fields["tenant_id"].get("read_only"), 1)
+        validation_source = (TRANSITION_ROOT / "metadata_validation.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("document.tenant_id = tenant_text(value.tenant_id)", validation_source)
+        self.assertIn('"tenant_id": value.tenant_id', validation_source)
+        self.assertIn("document.policy_code_key_hash = hashlib.sha256", validation_source)
 
     def test_only_draft_policy_versions_have_a_guarded_update_path(self) -> None:
         version_metadata = self.load("npi_production_transition_policy_version")
@@ -235,6 +246,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
         self.assertIn("assert_immutable_fields", controller)
         self.assertIn("expected_target_type", controller)
         self.assertIn("validate_receipt_response", controller)
+        self.assertIn("tenant_id=self.tenant_id", controller)
         self.assertLess(
             controller.index("validate_receipt_response("),
             controller.index("expected_response_hash = _sha256_json(response)"),
@@ -263,6 +275,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 policy_response,
                 target_global_id=str(policy.policy_global_id),
                 project_global_id=None,
+                tenant_id=policy.tenant_id,
             ),
             policy_response,
         )
@@ -293,6 +306,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                         response,
                         target_global_id=target,
                         project_global_id=project_id,
+                        tenant_id=policy.tenant_id,
                     )
 
         extra = copy.deepcopy(policy_response)
@@ -303,6 +317,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 extra,
                 target_global_id=str(policy.policy_global_id),
                 project_global_id=None,
+                tenant_id=policy.tenant_id,
             )
         tampered = copy.deepcopy(policy_response)
         tampered["snapshotHash"] = "0" * 64
@@ -312,6 +327,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 tampered,
                 target_global_id=str(policy.policy_global_id),
                 project_global_id=None,
+                tenant_id=policy.tenant_id,
             )
 
         handover = package()
@@ -328,6 +344,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 handover_response,
                 target_global_id=str(handover.global_id),
                 project_global_id=str(handover.project.global_id),
+                tenant_id=handover.tenant_id,
             ),
             handover_response,
         )
@@ -341,6 +358,7 @@ class Phase7ProductionTransitionMetadataTest(unittest.TestCase):
                 wrong_project,
                 target_global_id=str(handover.global_id),
                 project_global_id=str(handover.project.global_id),
+                tenant_id=handover.tenant_id,
             )
 
     def test_snapshot_metadata_replays_the_four_domain_objects(self) -> None:

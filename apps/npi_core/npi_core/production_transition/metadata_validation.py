@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from typing import Any, Callable, TypeVar
 
@@ -36,6 +37,7 @@ _T = TypeVar("_T")
 
 def normalize_policy_root(document: Any) -> None:
     canonical_production_transition_identity(document)
+    tenant_id = tenant_text(document.tenant_id)
     code = str(document.policy_code or "").strip()
     title = str(document.title or "").strip()
     if _CODE.fullmatch(code) is None:
@@ -50,7 +52,11 @@ def normalize_policy_root(document: Any) -> None:
         )
     if type(document.optimistic_version) is not int or document.optimistic_version < 1:
         frappe.throw(_("Enter a positive optimistic version."), frappe.ValidationError)
+    document.tenant_id = tenant_id
     document.policy_code = code
+    document.policy_code_key_hash = hashlib.sha256(
+        f"{tenant_id}:{code.casefold()}".encode("utf-8")
+    ).hexdigest()
     document.title = title
 
 
@@ -100,6 +106,7 @@ def validate_policy_version_document(document: Any, previous: Any | None = None)
         (
             document.global_id,
             document.policy_global_id,
+            document.tenant_id,
             document.policy_code,
             int(document.policy_version),
             int(document.optimistic_version),
@@ -115,6 +122,7 @@ def validate_policy_version_document(document: Any, previous: Any | None = None)
         (
             str(value.global_id),
             str(value.policy_global_id),
+            value.tenant_id,
             value.policy_code,
             value.policy_version,
             value.optimistic_version,
@@ -134,6 +142,7 @@ def validate_policy_version_document(document: Any, previous: Any | None = None)
         str(value.policy_global_id),
         {
             "global_id": str(value.policy_global_id),
+            "tenant_id": value.tenant_id,
             "policy_code": value.policy_code,
         },
         _("The Production Transition Policy is unavailable."),
@@ -145,6 +154,7 @@ def validate_policy_version_document(document: Any, previous: Any | None = None)
             {
                 "global_id": str(prior.global_id),
                 "policy_global_id": str(value.policy_global_id),
+                "tenant_id": value.tenant_id,
                 "policy_version": prior.version,
                 "publication_state": "published",
                 "snapshot_hash": prior.snapshot_hash,
@@ -209,6 +219,7 @@ def validate_policy_version_document(document: Any, previous: Any | None = None)
             frappe.ValidationError,
         )
     document.policy = str(value.policy_global_id)
+    document.tenant_id = tenant_text(value.tenant_id)
     document.version_key_hash = value.version_key_hash
     document.changed_by_user_id = actor_text(value.changed_by_user_id, _("Changed By User ID"))
     document.changed_at = frappe_utc_datetime_text(value.changed_at, _("Changed At"))

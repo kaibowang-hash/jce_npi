@@ -597,14 +597,14 @@ objects:
     owner_system: NPI_ONE
     erp_view: none
     fields:
-      stable_policy_identity_code_title_and_optimistic_version: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_OPTIMISTIC_COMMAND_ONLY}
+      stable_policy_identity_tenant_scoped_code_title_and_optimistic_version: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_SAME_TENANT_OPTIMISTIC_COMMAND_ONLY}
       production_default_policy_project_binding_or_organization_mapping: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
 
   ProductionTransitionPolicyVersion:
     owner_system: NPI_ONE
     erp_view: none
     fields:
-      exact_policy_version_and_project_applicability: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_VERSIONED_CONFIGURATION}
+      exact_policy_version_tenant_and_project_applicability: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_SAME_TENANT_VERSIONED_CONFIGURATION}
       npi_receiving_groups_sender_receiver_slots_handover_requirements_and_observation_rules: {owner: VERSIONED_PRODUCTION_TRANSITION_POLICY, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION_AFTER_PUBLISH}
       published_policy_snapshot: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
       formal_department_quorum_signature_stability_and_g7_authority: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: CONFIGURATION_NOT_GLOBAL_HARDCODE}

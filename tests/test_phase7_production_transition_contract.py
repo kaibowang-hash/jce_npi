@@ -16,22 +16,32 @@ from npi_core.production_transition.request_validation import (
     MANDATORY_EXTERNAL_PROVIDER_ORDER,
     assert_mandatory_provider_kinds,
     parse_acknowledgement_intent,
+    parse_create_handover_request,
+    parse_create_observation_request,
+    parse_create_policy_request,
+    parse_edit_policy_request,
     parse_exact_source_selection,
+    parse_handover_revision_request,
     parse_manifest_source_selection,
     parse_manifest_source_selections,
+    parse_next_policy_version_request,
     parse_observation_revision_request,
+    parse_publish_policy_request,
 )
 from npi_core.production_transition.response_validation import (
     ProductionTransitionResponseInvalid,
     validate_acknowledgement_response,
+    validate_command_response,
     validate_fully_acknowledged_projection,
     validate_handover_acknowledgement_projection,
     validate_handover_package_response,
     validate_observation_projection,
     validate_observation_revision_response,
+    validate_policy_catalog_response,
     validate_policy_version_response,
     validate_receipt_response,
     validate_unavailable_provider_responses,
+    validate_workspace_response,
 )
 
 
@@ -123,6 +133,20 @@ def unavailable_providers() -> list[dict[str, str]]:
             "unit": None,
         },
     ]
+
+
+def policy_definition_payload() -> dict[str, object]:
+    from tests.test_phase7_production_transition_domain import draft_policy
+
+    snapshot = draft_policy().snapshot_payload()
+    return {
+        "applicability": copy.deepcopy(snapshot["applicability"]),
+        "receivingGroups": copy.deepcopy(snapshot["receivingGroups"]),
+        "acknowledgementSlots": copy.deepcopy(snapshot["acknowledgementSlots"]),
+        "handoverRequirements": copy.deepcopy(snapshot["handoverRequirements"]),
+        "observationSourceRules": copy.deepcopy(snapshot["observationSourceRules"]),
+        "observationWindowDays": snapshot["observationWindowDays"],
+    }
 
 
 class Phase7ProductionTransitionContractTest(unittest.TestCase):
@@ -308,13 +332,23 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                     value,
                     target_global_id=target_id,
                     project_global_id=scoped_project_id,
+                    tenant_id="tenant-a",
                 )
+                with self.assertRaises(ProductionTransitionResponseInvalid):
+                    validate_receipt_response(
+                        operation,
+                        value,
+                        target_global_id=target_id,
+                        project_global_id=scoped_project_id,
+                        tenant_id="tenant-b",
+                    )
                 with self.assertRaises(ProductionTransitionResponseInvalid):
                     validate_receipt_response(
                         operation,
                         {**value, "secret": "must-not-seal"},
                         target_global_id=target_id,
                         project_global_id=scoped_project_id,
+                        tenant_id="tenant-a",
                     )
                 missing = dict(value)
                 missing.pop(next(iter(missing)))
@@ -324,6 +358,7 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                         missing,
                         target_global_id=target_id,
                         project_global_id=scoped_project_id,
+                        tenant_id="tenant-a",
                     )
                 tampered = copy.deepcopy(value)
                 if operation.startswith("production_transition_policy."):
@@ -338,6 +373,7 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                         tampered,
                         target_global_id=target_id,
                         project_global_id=scoped_project_id,
+                        tenant_id="tenant-a",
                     )
                 with self.assertRaises(ProductionTransitionResponseInvalid):
                     validate_receipt_response(
@@ -345,6 +381,7 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                         value,
                         target_global_id=str(uid(999)),
                         project_global_id=scoped_project_id,
+                        tenant_id="tenant-a",
                     )
                 if scoped_project_id is not None:
                     with self.assertRaises(ProductionTransitionResponseInvalid):
@@ -353,6 +390,7 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                             value,
                             target_global_id=target_id,
                             project_global_id=str(uid(998)),
+                            tenant_id="tenant-a",
                         )
         with self.assertRaises(ProductionTransitionResponseInvalid):
             validate_receipt_response(
@@ -360,7 +398,511 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                 cases[4][1],
                 target_global_id=cases[4][2],
                 project_global_id=project_id,
+                tenant_id="tenant-a",
             )
+
+    def test_checkpoint_two_request_parsers_are_closed_and_domain_compatible(self) -> None:
+        from tests.test_phase7_production_transition_domain import policy
+
+        published = policy()
+        definition = policy_definition_payload()
+        create = parse_create_policy_request(
+            {
+                "policyCode": "PROD-TRANSITION",
+                "title": "Production transition policy",
+                "definition": definition,
+            }
+        )
+        self.assertEqual(create.policy_code, "PROD-TRANSITION")
+        self.assertEqual(
+            create.definition.applicability.snapshot_payload(),
+            definition["applicability"],
+        )
+        self.assertEqual(
+            [item.snapshot_payload() for item in create.definition.receiving_groups],
+            definition["receivingGroups"],
+        )
+        self.assertEqual(
+            [
+                item.snapshot_payload()
+                for item in create.definition.acknowledgement_slots
+            ],
+            definition["acknowledgementSlots"],
+        )
+        self.assertEqual(
+            [item.snapshot_payload() for item in create.definition.handover_requirements],
+            definition["handoverRequirements"],
+        )
+        self.assertEqual(
+            [item.snapshot_payload() for item in create.definition.observation_source_rules],
+            definition["observationSourceRules"],
+        )
+
+        edit = parse_edit_policy_request(
+            {
+                "expectedOptimisticVersion": 2,
+                "title": "Edited production transition policy",
+                "definition": definition,
+            }
+        )
+        self.assertEqual(edit.expected_optimistic_version, 2)
+        self.assertEqual(
+            parse_publish_policy_request(
+                {
+                    "expectedOptimisticVersion": 2,
+                    "expectedSnapshotHash": HASH_1,
+                }
+            ).expected_snapshot_hash,
+            HASH_1,
+        )
+        self.assertEqual(
+            parse_next_policy_version_request(
+                {
+                    "expectedPublishedVersion": 1,
+                    "expectedPublishedSnapshotHash": HASH_1,
+                }
+            ).expected_published_version,
+            1,
+        )
+
+        policy_ref = {
+            "policyGlobalId": str(published.policy_global_id),
+            "policyVersion": published.policy_version,
+            "policySnapshotHash": published.snapshot_hash,
+        }
+        slot_assignments = [
+            {
+                "slotKey": "sender",
+                "memberGlobalId": UUID_1,
+                "memberExpectedVersion": 2,
+                "roleAssignmentGlobalId": UUID_2,
+                "roleExpectedVersion": 3,
+            },
+            {
+                "slotKey": "receiver",
+                "memberGlobalId": "33333333-3333-4333-8333-333333333333",
+                "memberExpectedVersion": 2,
+                "roleAssignmentGlobalId": "44444444-4444-4444-8444-444444444444",
+                "roleExpectedVersion": 3,
+            },
+        ]
+        manifest = [
+            {
+                "requirementKey": "open_work",
+                "kind": "domain_work_item",
+                "globalId": "55555555-5555-4555-8555-555555555555",
+                "expectedVersion": 4,
+            }
+        ]
+        handover_body = {
+            "expectedProjectVersion": 7,
+            "policy": policy_ref,
+            "slotAssignments": slot_assignments,
+            "manifestSources": manifest,
+            "reason": "Freeze one exact package.",
+        }
+        handover = parse_create_handover_request(handover_body)
+        self.assertEqual(handover.expected_project_version, 7)
+        self.assertEqual(handover.policy.policy_snapshot_hash, published.snapshot_hash)
+        self.assertEqual(
+            tuple(item.slot_key for item in handover.slot_assignments),
+            ("sender", "receiver"),
+        )
+        revised = parse_handover_revision_request(
+            {
+                "expectedRevisionGlobalId": UUID_1,
+                "expectedSnapshotHash": HASH_1,
+                "content": handover_body,
+            }
+        )
+        self.assertEqual(revised.content, handover)
+
+        observation_source = {
+            "kind": "domain_work_item",
+            "globalId": "55555555-5555-4555-8555-555555555555",
+            "expectedVersion": 4,
+        }
+        observation = parse_create_observation_request(
+            {
+                "expectedProjectVersion": 7,
+                "policy": policy_ref,
+                "handover": None,
+                "contextSources": [observation_source],
+                "retrospectiveSources": [observation_source],
+                "retrospectiveNote": "Review the retained evidence.",
+                "reason": "Start the technical observation.",
+            }
+        )
+        self.assertIsNone(observation.handover)
+        self.assertEqual(
+            observation.context_sources[0].expected_version,
+            observation.retrospective_sources[0].expected_version,
+        )
+
+        nested_extras = []
+        for field, nested in (
+            ("applicability", "actualSop"),
+            ("receivingGroups", "formalDepartmentId"),
+            ("acknowledgementSlots", "quorum"),
+            ("handoverRequirements", "callerRole"),
+            ("observationSourceRules", "actualValue"),
+        ):
+            invalid = copy.deepcopy(definition)
+            if isinstance(invalid[field], list):
+                invalid[field][0][nested] = "forbidden"
+            else:
+                invalid[field][nested] = "forbidden"
+            nested_extras.append(invalid)
+        for invalid in nested_extras:
+            with self.subTest(invalid_definition=invalid):
+                with self.assertRaises(RequestValidationFailed):
+                    parse_create_policy_request(
+                        {
+                            "policyCode": "PROD-TRANSITION",
+                            "title": "Production transition policy",
+                            "definition": invalid,
+                        }
+                    )
+
+        duplicate_slot = copy.deepcopy(handover_body)
+        duplicate_slot["slotAssignments"][1]["slotKey"] = "sender"
+        with self.assertRaises(RequestValidationFailed):
+            parse_create_handover_request(duplicate_slot)
+        caller_owned = copy.deepcopy(handover_body)
+        caller_owned["manifestSources"][0]["role"] = "caller_role"
+        with self.assertRaises(RequestValidationFailed):
+            parse_create_handover_request(caller_owned)
+        conflicting_observation = {
+            "expectedProjectVersion": 7,
+            "policy": policy_ref,
+            "handover": None,
+            "contextSources": [observation_source],
+            "retrospectiveSources": [
+                {**observation_source, "expectedVersion": 5}
+            ],
+            "retrospectiveNote": None,
+            "reason": "Reject conflicting exact versions.",
+        }
+        with self.assertRaises(RequestValidationFailed):
+            parse_create_observation_request(conflicting_observation)
+        external_truth = copy.deepcopy(conflicting_observation)
+        external_truth["actualSop"] = "2026-08-14"
+        with self.assertRaises(RequestValidationFailed):
+            parse_create_observation_request(external_truth)
+
+    def test_checkpoint_two_catalog_workspace_and_command_bindings_fail_closed(self) -> None:
+        from tests.test_phase7_production_transition_domain import (
+            ACTION,
+            CONTEXT_SOURCE,
+            NOW,
+            PROJECT_ID,
+            RECEIVER_MEMBER,
+            SENDER_MEMBER,
+            SENDER_ROLE,
+            SOURCE,
+            TENANT,
+            draft_policy,
+            package,
+            policy,
+            project,
+            slots,
+            uid,
+        )
+        from npi_core.production_transition.domain import (
+            ExactVersionReference,
+            create_handover_acknowledgement,
+            create_handover_package_successor,
+            create_observation_period_revision,
+            create_observation_period_successor,
+        )
+
+        def response_value(value: object) -> dict[str, object]:
+            return {**value.snapshot_payload(), "snapshotHash": value.snapshot_hash}
+
+        published = policy()
+        catalog = {
+            "projectGlobalId": str(PROJECT_ID),
+            "policies": [response_value(published)],
+        }
+        self.assertEqual(
+            validate_policy_catalog_response(
+                catalog,
+                project_global_id=str(PROJECT_ID),
+                tenant_id=TENANT,
+            ),
+            catalog,
+        )
+        invalid_catalog = copy.deepcopy(catalog)
+        invalid_catalog["policies"][0]["publicationState"] = "draft"
+        with self.assertRaises(ProductionTransitionResponseInvalid):
+            validate_policy_catalog_response(invalid_catalog, tenant_id=TENANT)
+
+        first_package = package()
+        second_package = create_handover_package_successor(
+            first_package,
+            project=project(),
+            policy=published,
+            readiness_ref=None,
+            slots=slots(),
+            manifest=(SOURCE,),
+            server_unresolved_actions=(ACTION,),
+            enabled_user_ids=frozenset(
+                {SENDER_MEMBER.user_id, RECEIVER_MEMBER.user_id}
+            ),
+            reason="Retain an exact handover successor.",
+            created_by_user_id="admin@example.invalid",
+            created_at=NOW,
+            request_id=uid(710),
+            trace_id="trace-p706-workspace-handover",
+        )
+        handover_ref = ExactVersionReference(
+            second_package.global_id,
+            second_package.handover_version,
+            second_package.snapshot_hash,
+        )
+        first_observation = create_observation_period_revision(
+            observation_global_id=uid(711),
+            tenant_id=TENANT,
+            project=project(),
+            policy=published,
+            handover_package_ref=handover_ref,
+            context_references=(),
+            retrospective_references=(),
+            retrospective_note=None,
+            reason="Start one independent observation stream.",
+            created_by_user_id="admin@example.invalid",
+            created_at=NOW,
+            request_id=uid(712),
+            trace_id="trace-p706-workspace-observation",
+        )
+        second_observation = create_observation_period_successor(
+            first_observation,
+            project=project(),
+            policy=published,
+            handover_package_ref=handover_ref,
+            context_references=(CONTEXT_SOURCE,),
+            retrospective_references=(),
+            retrospective_note="Retain technical review context.",
+            reason="Append one exact observation successor.",
+            created_by_user_id="admin@example.invalid",
+            created_at=NOW,
+            request_id=uid(713),
+            trace_id="trace-p706-workspace-observation-next",
+        )
+
+        def view(value: object) -> dict[str, object]:
+            return {
+                "revision": response_value(value),
+                "acknowledgements": [],
+                "fullyAcknowledged": False,
+            }
+
+        workspace = {
+            "projectGlobalId": str(PROJECT_ID),
+            "currentHandover": view(second_package),
+            "handoverHistory": [view(first_package), view(second_package)],
+            "currentObservation": response_value(second_observation),
+            "observationHistory": [
+                response_value(first_observation),
+                response_value(second_observation),
+            ],
+            "unavailableProviders": unavailable_providers(),
+            "permissions": {
+                "canManagePolicies": True,
+                "canCreateHandover": True,
+                "canReviseHandover": True,
+                "canAcknowledgeSlots": ["sender"],
+                "canCreateObservation": True,
+                "canReviseObservation": True,
+            },
+        }
+        validated = validate_workspace_response(
+            workspace,
+            project_global_id=str(PROJECT_ID),
+            tenant_id=TENANT,
+        )
+        self.assertEqual(validated, workspace)
+        with self.assertRaises(ProductionTransitionResponseInvalid):
+            validate_workspace_response(
+                workspace,
+                project_global_id=str(PROJECT_ID),
+                tenant_id="tenant-b",
+            )
+        for mutation in ("history_order", "current_not_tip", "provider_order", "permission_shape"):
+            invalid = copy.deepcopy(workspace)
+            if mutation == "history_order":
+                invalid["handoverHistory"].reverse()
+            elif mutation == "current_not_tip":
+                invalid["currentObservation"] = invalid["observationHistory"][0]
+            elif mutation == "provider_order":
+                invalid["unavailableProviders"].reverse()
+            else:
+                invalid["permissions"]["canApprove"] = True
+            with self.subTest(mutation=mutation):
+                with self.assertRaises(ProductionTransitionResponseInvalid):
+                    validate_workspace_response(invalid, tenant_id=TENANT)
+
+        created_policy = draft_policy()
+        edited_policy = created_policy.edit_draft(
+            expected_version=1,
+            title="Edited policy",
+            changed_by_user_id="editor@example.invalid",
+            changed_at=NOW,
+            request_id=uid(714),
+            trace_id="trace-p706-command-edit",
+        )
+        next_policy = published.next_draft(
+            changed_by_user_id="editor@example.invalid",
+            changed_at=NOW,
+            request_id=uid(715),
+            trace_id="trace-p706-command-next",
+        )
+        acknowledgement = create_handover_acknowledgement(
+            second_package,
+            slot_key="sender",
+            acknowledgement_intent=True,
+            actor_user_id=SENDER_MEMBER.user_id,
+            actor_user_enabled=True,
+            current_member=SENDER_MEMBER,
+            current_role=SENDER_ROLE,
+            acknowledged_at=NOW,
+            request_id=uid(716),
+            trace_id="trace-p706-command-ack",
+        )
+        project_id = str(PROJECT_ID)
+        validate_command_response(
+            "production_transition_policy.create",
+            response_value(created_policy),
+            target_global_id=str(created_policy.policy_global_id),
+            tenant_id=TENANT,
+        )
+        with self.assertRaises(ProductionTransitionResponseInvalid):
+            validate_command_response(
+                "production_transition_policy.create",
+                response_value(created_policy),
+                target_global_id=str(created_policy.policy_global_id),
+                tenant_id="tenant-b",
+            )
+        validate_command_response(
+            "production_transition_policy.edit",
+            response_value(edited_policy),
+            target_global_id=str(edited_policy.global_id),
+            tenant_id=TENANT,
+            policy_global_id=str(edited_policy.policy_global_id),
+            policy_version=edited_policy.policy_version,
+        )
+        validate_command_response(
+            "production_transition_policy.publish",
+            response_value(published),
+            target_global_id=str(published.global_id),
+            tenant_id=TENANT,
+            policy_global_id=str(published.policy_global_id),
+            policy_version=published.policy_version,
+            policy_snapshot_hash=created_policy.snapshot_hash,
+        )
+        validate_command_response(
+            "production_transition_policy.next_version",
+            response_value(next_policy),
+            target_global_id=str(next_policy.global_id),
+            tenant_id=TENANT,
+            policy_global_id=str(published.policy_global_id),
+            policy_version=published.policy_version,
+            policy_snapshot_hash=published.snapshot_hash,
+        )
+        validate_command_response(
+            "production_handover.create",
+            {
+                "projectGlobalId": project_id,
+                "handoverPackage": response_value(first_package),
+            },
+            target_global_id=str(first_package.global_id),
+            tenant_id=TENANT,
+            project_global_id=project_id,
+            policy_global_id=str(published.policy_global_id),
+            policy_version=published.policy_version,
+            policy_snapshot_hash=published.snapshot_hash,
+        )
+        validate_command_response(
+            "production_handover.revise",
+            {
+                "projectGlobalId": project_id,
+                "handoverPackage": response_value(second_package),
+            },
+            target_global_id=str(second_package.global_id),
+            tenant_id=TENANT,
+            project_global_id=project_id,
+            policy_global_id=str(published.policy_global_id),
+            policy_version=published.policy_version,
+            policy_snapshot_hash=published.snapshot_hash,
+            handover_global_id=str(second_package.handover_global_id),
+            expected_revision_global_id=str(first_package.global_id),
+            expected_snapshot_hash=first_package.snapshot_hash,
+        )
+        validate_command_response(
+            "production_handover.acknowledge",
+            {
+                "projectGlobalId": project_id,
+                "handoverPackage": response_value(second_package),
+                "acknowledgement": response_value(acknowledgement),
+            },
+            target_global_id=str(acknowledgement.global_id),
+            tenant_id=TENANT,
+            project_global_id=project_id,
+            handover_global_id=str(second_package.handover_global_id),
+            handover_version=second_package.handover_version,
+            expected_revision_global_id=str(second_package.global_id),
+            expected_snapshot_hash=second_package.snapshot_hash,
+            slot_key="sender",
+        )
+        validate_command_response(
+            "observation_period.create",
+            {
+                "projectGlobalId": project_id,
+                "observationPeriod": response_value(first_observation),
+            },
+            target_global_id=str(first_observation.global_id),
+            tenant_id=TENANT,
+            project_global_id=project_id,
+            policy_global_id=str(published.policy_global_id),
+            policy_version=published.policy_version,
+            policy_snapshot_hash=published.snapshot_hash,
+            handover_global_id=str(second_package.handover_global_id),
+            handover_version=second_package.handover_version,
+            handover_revision_global_id=str(second_package.global_id),
+            handover_snapshot_hash=second_package.snapshot_hash,
+        )
+        validate_command_response(
+            "observation_period.revise",
+            {
+                "projectGlobalId": project_id,
+                "observationPeriod": response_value(second_observation),
+            },
+            target_global_id=str(second_observation.global_id),
+            tenant_id=TENANT,
+            project_global_id=project_id,
+            observation_global_id=str(second_observation.observation_global_id),
+            expected_revision_global_id=str(first_observation.global_id),
+            expected_snapshot_hash=first_observation.snapshot_hash,
+        )
+
+        wrong_binding = {
+            "operation": "production_handover.revise",
+            "value": {
+                "projectGlobalId": project_id,
+                "handoverPackage": response_value(second_package),
+            },
+            "target_global_id": str(second_package.global_id),
+            "tenant_id": TENANT,
+            "project_global_id": project_id,
+            "policy_global_id": str(published.policy_global_id),
+            "policy_version": published.policy_version,
+            "policy_snapshot_hash": published.snapshot_hash,
+            "handover_global_id": str(second_package.handover_global_id),
+            "expected_revision_global_id": str(first_package.global_id),
+            "expected_snapshot_hash": "0" * 64,
+        }
+        with self.assertRaises(ProductionTransitionResponseInvalid):
+            validate_command_response(**wrong_binding)
 
     def test_response_required_fields_match_domain_canonical_snapshots_exactly(self) -> None:
         from tests.test_phase7_production_transition_domain import (
@@ -1048,6 +1590,7 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
                         },
                         target_global_id=invalid_acknowledgement["globalId"],
                         project_global_id=str(package_value.project.global_id),
+                        tenant_id=package_value.tenant_id,
                     )
 
     def test_acknowledgement_request_has_no_actor_proxy_signature_or_gate_authority(self) -> None:
@@ -1318,6 +1861,18 @@ class Phase7ProductionTransitionContractTest(unittest.TestCase):
 
     def test_ownership_separates_npi_snapshots_external_actuals_and_gate_authority(self) -> None:
         self.assertIn(
+            "stable_policy_identity_tenant_scoped_code_title_and_optimistic_version",
+            OWNERSHIP,
+        )
+        self.assertIn(
+            "conflict: GUARDED_SAME_TENANT_OPTIMISTIC_COMMAND_ONLY",
+            OWNERSHIP,
+        )
+        self.assertIn(
+            "exact_policy_version_tenant_and_project_applicability",
+            OWNERSHIP,
+        )
+        self.assertNotIn(
             "stable_policy_identity_code_title_and_optimistic_version",
             OWNERSHIP,
         )

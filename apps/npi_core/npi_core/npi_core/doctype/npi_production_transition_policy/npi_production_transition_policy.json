@@ -9,7 +9,9 @@
   "title_field": "title",
   "fields": [
     {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
-    {"fieldname": "policy_code", "fieldtype": "Data", "label": "Production Transition Policy Code", "reqd": 1, "unique": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "policy_code", "fieldtype": "Data", "label": "Production Transition Policy Code", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "policy_code_key_hash", "fieldtype": "Data", "label": "Policy Key Hash", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "title", "fieldtype": "Data", "label": "Production Transition Policy Title", "reqd": 1, "read_only": 1, "length": 200},
     {"fieldname": "optimistic_version", "fieldtype": "Int", "label": "Optimistic Version", "reqd": 1, "read_only": 1}
   ],
