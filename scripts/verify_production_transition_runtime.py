@@ -801,9 +801,104 @@ def production_transition_fixture_context(
     }
 
 
+def _production_transition_source_candidate(
+    kind_text: str,
+    predecessor_sources: Mapping[str, Mapping[str, object]],
+    current_sources: Mapping[str, Mapping[str, object]],
+) -> Mapping[str, object] | None:
+    current = current_sources.get(kind_text)
+    if current is not None:
+        return current
+    predecessor_kind = (
+        "trial_defect" if kind_text == "trial_defect_revision" else kind_text
+    )
+    return predecessor_sources.get(predecessor_kind)
+
+
+def _production_transition_current_sources(
+    predecessor_sources: Mapping[str, Mapping[str, object]],
+    readiness_chain: Sequence[object],
+    defect_chain: Sequence[object],
+    conclusion_chain: Sequence[object],
+) -> dict[str, dict[str, object]]:
+    require(bool(readiness_chain), "P7-06 current readiness revision is unavailable")
+    require(bool(defect_chain), "P7-06 current Trial defect is unavailable")
+    require(bool(conclusion_chain), "P7-06 current Trial conclusion is unavailable")
+
+    predecessor_defect = predecessor_sources.get("trial_defect")
+    require(
+        isinstance(predecessor_defect, dict),
+        "P7-06 predecessor Trial defect is unavailable",
+    )
+    predecessor_defect_value = next(
+        (
+            value
+            for value in defect_chain
+            if str(value.global_id) == str(predecessor_defect["globalId"])
+        ),
+        None,
+    )
+    require(
+        predecessor_defect_value is not None
+        and predecessor_defect_value.defect_version
+        == int(predecessor_defect["sourceVersion"])
+        and predecessor_defect_value.snapshot_hash
+        == str(predecessor_defect["snapshotHash"]),
+        "P7-06 predecessor Trial defect chain drifted",
+    )
+
+    predecessor_conclusion = predecessor_sources.get("trial_conclusion")
+    require(
+        isinstance(predecessor_conclusion, dict),
+        "P7-06 predecessor Trial conclusion is unavailable",
+    )
+    predecessor_conclusion_value = next(
+        (
+            value
+            for value in conclusion_chain
+            if str(value.global_id) == str(predecessor_conclusion["globalId"])
+        ),
+        None,
+    )
+    require(
+        predecessor_conclusion_value is not None
+        and predecessor_conclusion_value.conclusion_version
+        == int(predecessor_conclusion["sourceVersion"])
+        and predecessor_conclusion_value.snapshot_hash
+        == str(predecessor_conclusion["snapshotHash"]),
+        "P7-06 predecessor Trial conclusion chain drifted",
+    )
+
+    current_readiness = readiness_chain[-1]
+    current_defect = defect_chain[-1]
+    current_conclusion = conclusion_chain[-1]
+    return {
+        "readiness_instance_revision": {
+            "globalId": str(current_readiness.global_id),
+            "kind": "readiness_instance_revision",
+            "snapshotHash": current_readiness.snapshot_hash,
+            "sourceVersion": current_readiness.instance_version,
+        },
+        "trial_defect_revision": {
+            "globalId": str(current_defect.global_id),
+            "kind": "trial_defect_revision",
+            "snapshotHash": current_defect.snapshot_hash,
+            "sourceVersion": current_defect.defect_version,
+        },
+        "trial_conclusion": {
+            "globalId": str(current_conclusion.global_id),
+            "kind": "trial_conclusion",
+            "snapshotHash": current_conclusion.snapshot_hash,
+            "sourceVersion": current_conclusion.conclusion_version,
+        },
+    }
+
+
 def production_transition_source_context(
     fixture_run_id: str, *, project_id: str
 ) -> dict[str, object]:
+    import frappe
+
     from npi_core.foundation.security import Principal
     from npi_core.production_transition.domain import HandoverSourceKind
     from npi_core.production_transition.frappe_repository import (
@@ -813,6 +908,9 @@ def production_transition_source_context(
         SOURCE_LOADER_SEAMS,
         SourceResolutionContext,
     )
+    from npi_core.readiness.frappe_repository import _project_revision_chain
+    from npi_core.trial.quality_repository import FrappeTrialQualityRepository
+    from npi_core.trial.review_repository import FrappeTrialReviewRepository
 
     document_runtime._validated_runtime_site()
     require(fixture_run_id == FIXTURE_RUN_ID, "P7-06 source namespace drifted")
@@ -824,23 +922,77 @@ def production_transition_source_context(
         for value in predecessor["internalSources"]
         if isinstance(value, dict)
     }
+    principal = Principal(
+        ACTOR_USER,
+        roles=frozenset({"NPI API User", "System Manager"}),
+        tenant_id=TENANT_ID,
+    )
     repository = FrappeProductionTransitionRepository(
-        principal=Principal(
-            ACTOR_USER,
-            roles=frozenset({"NPI API User", "System Manager"}),
-            tenant_id=TENANT_ID,
-        ),
+        principal=principal,
         request_id=str(uuid4()),
         trace_id=f"trace-{uuid4().hex}",
     )
     context = SourceResolutionContext(TENANT_ID, UUID(project_id))
+    project = frappe.get_doc("NPI Engineering Project", project_id)
+    require(
+        str(project.global_id) == project_id and str(project.tenant_id) == TENANT_ID,
+        "P7-06 source Project context drifted",
+    )
+    readiness_chain = _project_revision_chain(project)
+
+    predecessor_defect = predecessor_sources.get("trial_defect")
+    require(
+        isinstance(predecessor_defect, dict),
+        "P7-06 predecessor Trial defect is unavailable",
+    )
+    predecessor_defect_document = frappe.get_doc(
+        "NPI Trial Defect Revision",
+        str(predecessor_defect["globalId"]),
+    )
+    quality_repository = FrappeTrialQualityRepository(
+        principal=principal,
+        request_id=str(uuid4()),
+        trace_id=f"trace-{uuid4().hex}",
+    )
+    defect_chain = quality_repository._trial_defect_chain(
+        project,
+        defect_id=UUID(str(predecessor_defect_document.defect_global_id)),
+        for_update=False,
+    )
+
+    predecessor_conclusion = predecessor_sources.get("trial_conclusion")
+    require(
+        isinstance(predecessor_conclusion, dict),
+        "P7-06 predecessor Trial conclusion is unavailable",
+    )
+    predecessor_conclusion_document = frappe.get_doc(
+        "NPI Trial Conclusion Revision",
+        str(predecessor_conclusion["globalId"]),
+    )
+    trial_repository = FrappeTrialReviewRepository(
+        principal=principal,
+        request_id=str(uuid4()),
+        trace_id=f"trace-{uuid4().hex}",
+    )
+    conclusion_chain = trial_repository._conclusion_chain(
+        project,
+        UUID(str(predecessor_conclusion_document.trial_round_global_id)),
+        UUID(str(predecessor_conclusion_document.conclusion_global_id)),
+    )
+    current_sources = _production_transition_current_sources(
+        predecessor_sources,
+        readiness_chain,
+        defect_chain,
+        conclusion_chain,
+    )
     sources = []
     tuple_differences = []
     for kind_text in SOURCE_KINDS:
-        predecessor_kind = (
-            "trial_defect" if kind_text == "trial_defect_revision" else kind_text
+        candidate = _production_transition_source_candidate(
+            kind_text,
+            predecessor_sources,
+            current_sources,
         )
-        candidate = predecessor_sources.get(predecessor_kind)
         require(
             isinstance(candidate, dict),
             f"P7-06 source candidate is unavailable: {kind_text}",
@@ -880,7 +1032,7 @@ def production_transition_source_context(
     return {
         "exactSources": sources,
         "fixtureRunId": fixture_run_id,
-        "p705FileTupleRejected": True,
+        "p705FileTupleDifferent": True,
         "sourceCount": len(sources),
     }
 
@@ -1942,7 +2094,7 @@ def run_fresh(
         and isinstance(context.get("unresolvedActions"), list)
         and isinstance(sources, list)
         and len(sources) == 9
-        and source_context.get("p705FileTupleRejected") is True
+        and source_context.get("p705FileTupleDifferent") is True
         and offline.get("providerOrder") == list(PROVIDER_RESPONSE_ORDER)
         and offline.get("repositoryCalls") == 0,
         "P7-06 schema, fixture, source, or offline preflight drifted",
@@ -2569,7 +2721,7 @@ def run_fresh(
         "handoverRevisionCount": 2,
         "metadataSynchronized": True,
         "observationRevisionCount": 2,
-        "p705FileTupleRejected": True,
+        "p705FileTupleDifferent": True,
         "policyVersionCount": 1,
         "providerCount": 5,
         "providerRepositoryCalls": 0,

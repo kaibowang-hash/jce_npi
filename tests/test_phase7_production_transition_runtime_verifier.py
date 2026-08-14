@@ -8,6 +8,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -278,23 +279,147 @@ class Phase7ProductionTransitionRuntimeVerifierTest(unittest.TestCase):
                 predecessor=None,
             )
 
-    def test_source_context_re_resolves_all_nine_and_rejects_p705_file_tuple(self) -> None:
-        source = inspect.getsource(self.module.production_transition_source_context)
+    def test_source_context_re_resolves_all_nine_and_distinguishes_p705_file_tuple(
+        self,
+    ) -> None:
+        source = "\n".join(
+            (
+                inspect.getsource(self.module._production_transition_current_sources),
+                inspect.getsource(self.module.production_transition_source_context),
+            )
+        )
         for marker in (
             "readiness_runtime.readiness_source_context",
+            "_project_revision_chain",
+            "readiness_chain[-1]",
+            "_trial_defect_chain",
+            "defect_chain[-1]",
+            "_conclusion_chain",
+            "conclusion_chain[-1]",
+            "_production_transition_source_candidate",
             "SOURCE_LOADER_SEAMS",
             "resolved.source_version",
             "resolved.snapshot_hash",
-            '"trial_defect" if kind_text == "trial_defect_revision"',
             'kind_text == "file_revision"',
             'tuple_differences == [True]',
-            '"p705FileTupleRejected": True',
+            '"p705FileTupleDifferent": True',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, source)
         self.assertEqual(len(self.module.SOURCE_KINDS), 9)
         self.assertIn("trial_defect_revision", self.module.SOURCE_KINDS)
         self.assertNotIn("trial_defect", self.module.SOURCE_KINDS)
+
+    def test_source_candidate_uses_current_readiness_defect_and_conclusion_tips(
+        self,
+    ) -> None:
+        predecessor_sources = {
+            "project": {"globalId": "project-id"},
+            "trial_conclusion": {"globalId": "approved-v2"},
+            "trial_defect": {"globalId": "closed-v5"},
+        }
+        current_sources = {
+            "readiness_instance_revision": {"globalId": "readiness-v4"},
+            "trial_defect_revision": {"globalId": "reopened-v6"},
+            "trial_conclusion": {"globalId": "reopened-v6"},
+        }
+        candidate = self.module._production_transition_source_candidate
+        self.assertEqual(
+            candidate(
+                "readiness_instance_revision",
+                predecessor_sources,
+                current_sources,
+            ),
+            current_sources["readiness_instance_revision"],
+        )
+        self.assertNotEqual(
+            candidate(
+                "readiness_instance_revision",
+                predecessor_sources,
+                current_sources,
+            ),
+            predecessor_sources["project"],
+        )
+        self.assertEqual(
+            candidate("trial_conclusion", predecessor_sources, current_sources),
+            current_sources["trial_conclusion"],
+        )
+        self.assertEqual(
+            candidate(
+                "trial_defect_revision",
+                predecessor_sources,
+                current_sources,
+            ),
+            current_sources["trial_defect_revision"],
+        )
+
+    def test_current_source_bridge_validates_history_and_uses_chain_tips(self) -> None:
+        readiness_v4 = SimpleNamespace(
+            global_id="readiness-v4",
+            instance_version=4,
+            snapshot_hash="4" * 64,
+        )
+        defect_v5 = SimpleNamespace(
+            global_id="defect-v5",
+            defect_version=5,
+            snapshot_hash="5" * 64,
+        )
+        defect_v6 = SimpleNamespace(
+            global_id="defect-v6",
+            defect_version=6,
+            snapshot_hash="6" * 64,
+        )
+        conclusion_v2 = SimpleNamespace(
+            global_id="conclusion-v2",
+            conclusion_version=2,
+            snapshot_hash="2" * 64,
+        )
+        conclusion_v6 = SimpleNamespace(
+            global_id="conclusion-v6",
+            conclusion_version=6,
+            snapshot_hash="c" * 64,
+        )
+        predecessor_sources = {
+            "trial_defect": {
+                "globalId": "defect-v5",
+                "sourceVersion": 5,
+                "snapshotHash": "5" * 64,
+            },
+            "trial_conclusion": {
+                "globalId": "conclusion-v2",
+                "sourceVersion": 2,
+                "snapshotHash": "2" * 64,
+            },
+        }
+        current = self.module._production_transition_current_sources(
+            predecessor_sources,
+            (readiness_v4,),
+            (defect_v5, defect_v6),
+            (conclusion_v2, conclusion_v6),
+        )
+        self.assertEqual(
+            {
+                kind: value["globalId"]
+                for kind, value in current.items()
+            },
+            {
+                "readiness_instance_revision": "readiness-v4",
+                "trial_defect_revision": "defect-v6",
+                "trial_conclusion": "conclusion-v6",
+            },
+        )
+        drifted = copy.deepcopy(predecessor_sources)
+        drifted["trial_conclusion"]["sourceVersion"] = 3
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "predecessor Trial conclusion chain drifted",
+        ):
+            self.module._production_transition_current_sources(
+                drifted,
+                (readiness_v4,),
+                (defect_v5, defect_v6),
+                (conclusion_v2, conclusion_v6),
+            )
 
     def test_all_nonterminal_preflight_compares_exact_db_identity_and_truth(self) -> None:
         source = inspect.getsource(self.module.production_transition_fixture_context)
