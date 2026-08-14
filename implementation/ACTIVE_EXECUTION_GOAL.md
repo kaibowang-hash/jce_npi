@@ -1,17 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-14T07:48:00Z`
+Updated: `2026-08-14T10:03:34Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (pushed; P7-05
-  `PASS_LEVEL_2`; checkpoint 3 product implementation
-  `583f3474133e7044bbfb11643b79342f75146d5f`)
+  `d078f063c35fb7a0f7b8d74c634e17d5ff238cb1` (pushed; P7-06
+  checkpoint 1 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -32,18 +31,21 @@ Updated: `2026-08-14T07:48:00Z`
 - Latest P7-05 product Gate:
   `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (`LEVEL 2 PASS`;
   ordinary CI `31777229867`, controlled Gate `31777985302`)
+- Latest P7-06 product checkpoint:
+  `d078f063c35fb7a0f7b8d74c634e17d5ff238cb1` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31789635452`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-06 — Production handover and observation period`
-  (`AUDIT PASS; CHECKPOINT 1 ACTIVE`)
-- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_1_ONLY`)
+  (`IN_PROGRESS; CHECKPOINT 2 REPOSITORY/BFF BOUNDARY`)
+- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_2_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-06 CHECKPOINT 1`)
+  (`IN_PROGRESS — P7-06 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -216,24 +218,33 @@ migrations, redaction, zero external effects and cleanup. Prior-Gate artifact
 runtime artifact `9210730456` has digest
 `sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
 
-The bounded P7-06 Requirement/domain/existing-capability audit for
-`FR-NP-014` and `FR-NP-015` passes at starting controller checkpoint
-`75c67e6ffbe8b1cd113a7eac97c7878bce28e258`. Ordinary CI `31779635051`
-passes fixed-Linux visual `94702372737`, repository `94702372854`, frontend
-`94702372873` and secret scan `94702372905`; the controlled lane is expected
-skipped. The audit confirms there is no existing aggregate suitable for this
-boundary. Business variation must be carried by a versioned
-`ProductionTransitionPolicyVersion` with no default business values.
+P7-06 checkpoint 1 passes at exact product checkpoint
+`d078f063c35fb7a0f7b8d74c634e17d5ff238cb1`. Ordinary pull-request CI
+`31789635452` passes repository `94733409400` (`1,796` tracked Python plus
+reconciliation/repository verification), frontend `94733409390` (`56` files,
+`881/881` unit, `388/388` E2E and `7,193` direct trilingual sources), secret
+scan `94733409403` and unchanged `109/109` fixed-Linux visual job
+`94733409444`. Complete evidence is
+`implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md`.
 
-The only authorized atomic scope is P7-06 checkpoint 1: pure domain models,
-closed contracts, explicit data ownership, six additive guarded DocTypes,
-direct translations and focused tests. No route, business row, Gate input,
-UI, runtime fixture or ERP integration is authorized. Formal receiving-
-organization and bilateral authority, actual SOP, external yield/complaint/
-cycle/Tooling actuals, stability policy and G7 close remain held. No Level 3
-was run for this transition; the latest complete Level 3 remains
-`31392474781` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no
-technical Hard Blocker.
+The additive boundary proves the no-default immutable policy, user-approved
+Scheme A policy-owned handover assignment, immutable package and independent
+actor-slot acknowledgement facts, separate exact observation references and
+five identity-free unavailable external providers. It opens no route,
+business row, Gate hook, UI or runtime fixture.
+
+The only authorized atomic scope is P7-06 checkpoint 2: internal-admin policy
+commands, Project-first production-transition read and exact package,
+acknowledgement and observation commands; closed source resolution;
+actor-bound replay; one transaction; append-only audit; and the independent
+default-closed `npi_p7_06_routes_disabled` boundary. No Gate input/evidence/
+mutation, Project/Work Item/Tooling mutation, external provider, UI, runtime
+fixture or ERP integration is authorized. Formal receiving-organization and
+bilateral authority, actual SOP, external yield/complaint/cycle/Tooling
+actuals, stability policy and G7 close remain held. No Level 3 ran for this
+checkpoint; the latest complete Level 3 remains `31392474781` at
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
+Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

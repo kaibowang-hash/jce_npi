@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-06`
+`IN_PROGRESS_CHECKPOINT_2 — P7-06`
 
-Recovery time: `2026-08-14T07:48:00Z`
+Recovery time: `2026-08-14T10:03:34Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -31,6 +31,9 @@ P7-05 Level 2 product checkpoint and P7-06 audit base:
 
 P7-06 audit PASS and checkpoint 1 starting controller:
 `75c67e6ffbe8b1cd113a7eac97c7878bce28e258`
+
+P7-06 checkpoint 1 product checkpoint:
+`d078f063c35fb7a0f7b8d74c634e17d5ff238cb1`
 
 ## Current authoritative action
 
@@ -202,17 +205,22 @@ and Gitleaks artifact `9210334347` has digest
 Complete evidence is
 `implementation/evidence/phase-7/p7-05-validation.md`.
 
-The bounded P7-06 audit passes at starting controller checkpoint
-`75c67e6ffbe8b1cd113a7eac97c7878bce28e258`. Exact-SHA ordinary CI
-`31779635051` passes visual `94702372737`, repository `94702372854`, frontend
-`94702372873` and secret scan `94702372905`; the controlled lane is expected
-skipped. The audit finds no existing aggregate suitable for reuse and freezes
-a versioned `ProductionTransitionPolicyVersion` with no default business
-values as the sole carrier of business variation.
+P7-06 checkpoint 1 passes at exact product checkpoint
+`d078f063c35fb7a0f7b8d74c634e17d5ff238cb1`. Exact-SHA ordinary CI
+`31789635452` passes repository `94733409400` (`1,796` tracked Python plus
+reconciliation/repository verification), frontend `94733409390` (`56` files,
+`881/881` unit, `388/388` E2E and `7,193` direct trilingual sources), secret
+scan `94733409403` and unchanged `109/109` fixed-Linux visual job
+`94733409444`. Controlled preflight `94736007237` and runtime `94736007523`
+skip as required. Complete evidence is
+`implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md`.
 
-Execute only P7-06 checkpoint 1: add the pure domain boundary, closed contract,
-explicit data ownership, six additive guarded DocTypes, direct translations
-and focused tests. Do not activate a route, business row, Gate input, UI,
+Execute only P7-06 checkpoint 2: add internal-admin policy commands,
+Project-first production-transition reads and exact package, acknowledgement
+and observation commands, closed canonical source resolvers, actor-bound
+idempotency, one transaction, append-only audit and the independently default-
+closed `npi_p7_06_routes_disabled` boundary. Do not activate a Gate input or
+evidence hook, Gate/Project/Work Item/Tooling mutation, external provider, UI,
 runtime fixture or ERP integration. Formal receiving-organization and
 bilateral authority, actual SOP, external yield/complaint/cycle/Tooling
 actuals, stability policy and G7 close remain held. An acknowledgement must

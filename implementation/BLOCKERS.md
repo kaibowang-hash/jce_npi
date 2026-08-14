@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-14T07:48:00Z`
+Updated: `2026-08-14T10:03:34Z`
 
 ## Active hard blockers
 
@@ -9,12 +9,13 @@ None. P7-05 passes Level 2 at exact product checkpoint
 `31777229867` and exact-SHA controlled Gate `31777985302` both pass; the
 controlled runtime artifact is `9210730456` with digest
 `sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
-P7-06 audit starting controller `75c67e6ffbe8b1cd113a7eac97c7878bce28e258`
-passes ordinary CI `31779635051` at the exact SHA: visual `94702372737`,
-repository `94702372854`, frontend `94702372873` and secret scan `94702372905`
-all pass, while the controlled lane is expected skipped. The audit is PASS
-and only checkpoint 1 is active; no user action, login or frontend operation
-is required.
+P7-06 checkpoint 1 product SHA
+`d078f063c35fb7a0f7b8d74c634e17d5ff238cb1` passes ordinary CI
+`31789635452` at the exact SHA: repository `94733409400`, frontend
+`94733409390`, secret scan `94733409403` and `109/109` fixed-Linux visual job
+`94733409444` all pass, while controlled preflight `94736007237` and runtime
+`94736007523` skip as required. Checkpoint 2 is active; no user action, login
+or frontend operation is required.
 
 ## Active recovery
 
@@ -26,10 +27,12 @@ and runtime artifact `9210730456` with digest
 `sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`
 close the P7-05 recovery chain. The earlier controlled-runtime failures remain
 diagnostic evidence of serial verifier/fixture corrections and are not active
-blockers. P7-06 checkpoint 1 is restricted to pure domain models, closed
-contracts, explicit data ownership, six additive guarded DocTypes, direct
-translations and focused tests. No route, business row, Gate input, UI,
-runtime fixture, ERP integration or Level 3 is active.
+blockers. P7-06 checkpoint 2 is restricted to internal-admin policy commands,
+Project-first reads and package/acknowledgement/observation commands, closed
+source resolution, actor-bound replay, one transaction, append-only audit and
+the independent default-closed route boundary. No Gate input/evidence/
+mutation, Project/Work Item/Tooling mutation, external provider, UI, runtime
+fixture, ERP integration or Level 3 is active.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -40,8 +43,8 @@ actuals, stability policy, readiness/release, the external
 Released Trial Summary event/projection under `DR-REC-009`, and production
 print policy remain scoped holds, not global Hard Blockers. The latest complete
 Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`; no Level 3 ran in this P7-05
-transition.
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`; no Level 3 ran for P7-06
+checkpoint 1.
 
 ## Historical recovery
 

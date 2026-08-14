@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-14T07:08:14Z`
+Updated: `2026-08-14T10:03:34Z`
 
 ## Authority and operating mode
 
@@ -2972,3 +2972,44 @@ repeat or rewrite it merely to restore context. See
   workflow `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no active technical
   Hard Blocker and no user or GitHub frontend action is required.
+
+## 2026-08-14 P7-06 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint
+  `d078f063c35fb7a0f7b8d74c634e17d5ff238cb1` adds only the pure immutable
+  Production Transition policy, handover-package, acknowledgement and
+  independent observation-period foundations; closed contracts and explicit
+  ownership; six guarded additive DocTypes; direct translations and focused
+  tests. Under the user-approved Scheme A boundary, each published handover
+  requirement owns its accepted kinds, minimum count and `manifestRole`; the
+  browser submits only exact `requirementKey`, kind, ID and expected version,
+  while observation references independently freeze `context` or
+  `retrospective` usage without a handover assignment.
+- Exact-SHA ordinary pull-request CI `31789635452` passes repository
+  `94733409400` with `1,796` tracked Python tests plus reconciliation and
+  repository verification; frontend `94733409390` with `56` files,
+  `881/881` unit tests, `388/388` non-visual E2E tests and `7,193` complete
+  direct English/`zh`/`zh-TW` sources; secret scan `94733409403`; and the
+  unchanged `109/109` fixed-Linux visual matrix in `94733409444`. Visual
+  artifact `9215015413` has digest
+  `sha256:af255a03accfb6d1e64f29f896bdf2f9d2ce4fdb466ef613dbb43f6476ec2c54`;
+  Gitleaks artifact `9214911743` has digest
+  `sha256:7d4bab48c53b553e2e479a19cbdae92cfffba5a5b9c7d9c68a267e6044401c43`.
+  Controlled preflight `94736007237` and runtime `94736007523` skip as
+  required because checkpoint 1 opens no route or runtime fixture.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md`.
+  This is checkpoint 1 PASS, not the P7-06 Level 2 or Level 3 Gate.
+- Standing continuous-delivery authority activates only checkpoint 2:
+  internal-admin policy commands, Project-first production-transition read,
+  package/acknowledgement/observation commands, exact source resolvers,
+  actor-bound replay, one transaction, append-only audit and the independent
+  default-closed `npi_p7_06_routes_disabled` boundary. No Gate input,
+  evidence attachment or mutation, Project/Work Item/Tooling mutation,
+  external provider, UI or runtime fixture is active.
+- Formal receiving-organization and bilateral authority, electronic
+  signature and acceptance, actual SOP, external production actuals,
+  stability business authority, G7 close, ERP/network/Outbox work, release,
+  projection and print remain held. The latest complete Level 3 remains
+  workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
