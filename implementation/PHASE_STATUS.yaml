@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-14T11:52:18Z'
+updated_at: '2026-08-14T16:14:37Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-06
-current_task_status: IN_PROGRESS_CHECKPOINT_3
-current_task_completed_stage: P7_06_REPOSITORY_BFF_PASS
-current_task_next_stage: P7_06_LIVE_PROJECT_PRODUCTION_TRANSITION_WORKSPACE
+current_task_status: IN_PROGRESS_CHECKPOINT_4
+current_task_completed_stage: P7_06_LIVE_PROJECT_PRODUCTION_TRANSITION_WORKSPACE_PASS
+current_task_next_stage: P7_06_CONTROLLED_RUNTIME_AND_LEVEL_2
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-06
-resumed_product_task_status: ACTIVE_CHECKPOINT_3
+resumed_product_task_status: ACTIVE_CHECKPOINT_4
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1809,7 +1809,7 @@ p7_05:
 p7_06:
   task: P7-06
   controller_task: P7-06_PRODUCTION_HANDOVER_OBSERVATION_PERIOD
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: IN_PROGRESS_CHECKPOINT_4
   phase: 7
   milestone: M6-06
   requirements:
@@ -1827,8 +1827,13 @@ p7_06:
   checkpoint_2_product_checkpoint: 7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef
   checkpoint_2_ordinary_ci: 31797120347
   checkpoint_2: PASS
-  current_stage: LIVE_PROJECT_PRODUCTION_TRANSITION_WORKSPACE
-  next_stage_after_pass: CONTROLLED_RUNTIME_AND_LEVEL_2
+  checkpoint_3_product_commit: 796712f7af6695549f611abdaf1bf53bd14c3e82
+  checkpoint_3_diagnostic_ci: 31815647237
+  checkpoint_3_final_checkpoint: b11e892128e3b9832b0cf92e48e0c331bf80eac4
+  checkpoint_3_ci: 31817424246
+  checkpoint_3: PASS
+  current_stage: CONTROLLED_RUNTIME_AND_LEVEL_2
+  next_stage_after_pass: P7_07_REQUIREMENT_DOMAIN_AUDIT
   product_code_changed: true
   external_holds:
     - PRODUCTION_ACTUAL_SOP_AND_ERPNEXT_YIELD_CYCLE_QUALITY_AND_TOOLING_STABILITY_RESULTS
@@ -1840,6 +1845,7 @@ p7_06:
     - implementation/evidence/phase-7/p7-06-plan.md
     - implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md
     - implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md
+    - implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

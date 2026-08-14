@@ -1,16 +1,17 @@
 # Active Execution Goal
 
-Updated: `2026-08-14T11:52:18Z`
+Updated: `2026-08-14T16:14:37Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef` (pushed; P7-06
-  checkpoint 2 PASS)
+  `b11e892128e3b9832b0cf92e48e0c331bf80eac4` (pushed; P7-06 checkpoint 3
+  final checkpoint PASS; product implementation
+  `796712f7af6695549f611abdaf1bf53bd14c3e82`)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -32,20 +33,20 @@ Updated: `2026-08-14T11:52:18Z`
   `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (`LEVEL 2 PASS`;
   ordinary CI `31777229867`, controlled Gate `31777985302`)
 - Latest P7-06 product checkpoint:
-  `7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef` (`CHECKPOINT 2 PASS`;
-  ordinary CI `31797120347`)
+  `b11e892128e3b9832b0cf92e48e0c331bf80eac4` (`CHECKPOINT 3 PASS`;
+  ordinary CI `31817424246`; product implementation `796712f`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-06 — Production handover and observation period`
-  (`IN_PROGRESS; CHECKPOINT 3 LIVE PROJECT WORKSPACE`)
-- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_3_ONLY`)
+  (`IN_PROGRESS; CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
+- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_4_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-06 CHECKPOINT 3`)
+  (`IN_PROGRESS — P7-06 CHECKPOINT 4`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -237,22 +238,29 @@ forward fix by binding policy-root uniqueness, version snapshots and sealed
 responses to the exact tenant. It performs no Gate, Project, Work Item,
 Tooling, ERP, network, Outbox or external-provider mutation.
 
-The only authorized atomic scope is P7-06 checkpoint 3: the strict Production
-Transition data source and dense trilingual Project workspace for exact
-handover manifest, frozen receiving groups and acknowledgement slots,
-unresolved actions, immutable history, observation source/state and
-retrospective truth. It must cover loading, empty, read-only, permission,
-validation, conflict, processing, retry, superseded and external-unavailable
-states, accessibility and affected fixed-Linux visuals. The live UI and data
-source are closed to the complete Project workspace GET plus acknowledgement
-by the current signed-in actor for an exact eligible slot on the unique current
-package. Checkpoint 3 must not expose policy create/edit/publish/successor,
-package create/supersede or observation create/revise UI or transport.
-Controlled runtime and Level 2 remain checkpoint 4. Formal receiving-
-organization and bilateral
-authority, actual SOP, external yield/complaint/cycle/Tooling actuals,
-stability policy and G7 close remain held. No Level 3 ran for this checkpoint;
-the latest complete Level 3 remains `31392474781` at
+P7-06 checkpoint 3 passes. Product implementation
+`796712f7af6695549f611abdaf1bf53bd14c3e82` delivers the strict Production
+Transition data source and dense trilingual Project workspace. Diagnostic
+ordinary CI `31815647237` passes repository (`1,851`), frontend (`908` unit,
+`399` E2E, `7,307` direct trilingual sources and statements `80.36%`) and
+secret scan while isolating exactly fifteen screenshot-only differences.
+Final checkpoint `b11e892128e3b9832b0cf92e48e0c331bf80eac4` changes only
+those fifteen reviewed Linux baselines and the twelve newly required exact
+current-task paths. Final ordinary CI `31817424246` passes repository
+`94822344253`, frontend `94822344360`, secret scan `94822344279` and the
+complete `112/112` fixed-Linux visual matrix in `94822344387`; controlled
+preflight and runtime skip as required. Complete evidence is
+`implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md`.
+
+Checkpoint 4 is the only authorized atomic scope: extend the cumulative
+disposable-Site fixture through P7-06, execute the exact-SHA controlled
+runtime, and complete traceability, Task Diff Review and Level 2. No further
+UI, Level 3, Gate/Project/Work Item/Tooling mutation, production ERP/network/
+Outbox effect, external provider, release, projection or print authority is
+active. Formal receiving-organization and bilateral authority, electronic
+signature or approval, actual SOP, external yield/complaint/cycle/Tooling
+actuals, stability business policy and G7 close remain held. The latest
+complete Level 3 remains `31392474781` at
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
 Blocker.
 

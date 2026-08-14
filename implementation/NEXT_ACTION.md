@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-06`
+`IN_PROGRESS_CHECKPOINT_4 — P7-06`
 
-Recovery time: `2026-08-14T11:52:18Z`
+Recovery time: `2026-08-14T16:14:37Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -37,6 +37,12 @@ P7-06 checkpoint 1 product checkpoint:
 
 P7-06 checkpoint 2 product checkpoint:
 `7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef`
+
+P7-06 checkpoint 3 product commit:
+`796712f7af6695549f611abdaf1bf53bd14c3e82`
+
+P7-06 checkpoint 3 final checkpoint:
+`b11e892128e3b9832b0cf92e48e0c331bf80eac4`
 
 ## Current authoritative action
 
@@ -218,35 +224,36 @@ reconciliation/repository verification), frontend `94756537820` (`56` files,
 `94758839280` and runtime `94758839769` skip as required. Complete evidence is
 `implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md`.
 
-Execute only P7-06 checkpoint 3: compose the strict Production Transition data
-source and dense Project workspace with exact handover manifest, receiving-
-group and acknowledgement-slot truth, unresolved actions, immutable package
-and acknowledgement history, observation source/state and retrospective
-references, and explicit identity-free unavailable providers. Cover loading,
-empty, read-only, permission, validation, conflict, processing, retry,
-superseded and external-unavailable states in English, `zh` and `zh-TW`, plus
-accessibility and affected fixed-Linux visuals. Use `project-page.tsx` only as
-the existing data-source injection seam and keep live transport outside the
-workspace. Treat policy titles, group labels, slot labels and source data as
-business data; all shell, state and error copy remains literal English source
-text with direct `zh` and `zh-TW` translations.
+P7-06 checkpoint 3 passes. Product implementation
+`796712f7af6695549f611abdaf1bf53bd14c3e82` delivers the strict Production
+Transition data source and dense trilingual Project workspace. Diagnostic
+ordinary CI `31815647237` passes repository (`1,851`), frontend (`908` unit,
+`399` E2E, `7,307` direct trilingual sources and statements `80.36%`) and
+secret scan while isolating exactly fifteen screenshot-only differences.
+Final checkpoint `b11e892128e3b9832b0cf92e48e0c331bf80eac4` changes only
+those fifteen independently reviewed Linux baselines and the twelve newly
+required exact current-task paths. Final ordinary CI `31817424246` at that
+exact SHA passes repository, frontend, secret scan and the expanded `112/112`
+fixed-Linux visual matrix; controlled lanes skip as required. Complete
+evidence is
+`implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md`.
 
-The live data source and UI are closed to the complete Project workspace GET
-and acknowledgement by the current signed-in actor for an exact eligible slot
-on the unique current package. Do not implement or expose policy
-create/edit/publish/successor, package create/supersede, or observation
-create/revise transport, controls or forms in checkpoint 3.
+Execute only checkpoint 4 in
+`implementation/evidence/phase-7/p7-06-plan.md`: extend the cumulative
+disposable-Site fixture through P7-06 and prove policy publication, exact
+package succession, current-package actor-slot acknowledgements without
+successor inheritance, independent observation succession, all five identity-
+free offline providers, and immutable reconstruction. Prove same- and cross-
+process replay, stale/fork/conflict/rollback, IDOR, route recovery, migrations,
+redaction, zero Gate/Project/Work Item/Tooling/ERP/network/Outbox effects and
+cleanup; then complete traceability, Task Diff Review and Level 2.
 
-Do not add template-policy administration UI, Gate input/evidence/mutation,
-Project/Work Item/Tooling mutation, external providers, runtime fixtures or
-ERP integration. Formal receiving-organization and bilateral authority,
-actual SOP, external yield/complaint/cycle/Tooling actuals, stability policy
-and G7 close remain held. An acknowledgement must not become an electronic
-signature, approval or G7 decision, and Trial or capacity evidence must not
-become a production actual. Controlled runtime and Level 2 remain checkpoint
-4.
-
-No Level 3 was run for P7-06 checkpoint 2. The latest complete Level 3
+No further UI is authorized. Formal receiving-organization and bilateral
+authority, electronic signature or approval, actual SOP, external yield/
+complaint/cycle/Tooling actuals, stability business policy and G7 close remain
+held. An acknowledgement remains fact-only and Trial/readiness/capacity
+evidence remains distinct from a production actual. No Level 3 was run for
+P7-06 checkpoint 3. The latest complete Level 3
 remains workflow `31392474781` at exact SHA
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`; Level 3 remains reserved for
 the applicable Phase, PR or release boundary.

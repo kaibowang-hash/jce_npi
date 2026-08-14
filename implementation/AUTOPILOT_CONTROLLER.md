@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-14T11:52:18Z`
+Updated: `2026-08-14T16:14:37Z`
 
 ## Authority and operating mode
 
@@ -3070,3 +3070,44 @@ repeat or rewrite it merely to restore context. See
   and print remain held. The latest complete Level 3 remains workflow
   `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-14 P7-06 checkpoint 3 PASS; checkpoint 4 active
+
+- Product implementation
+  `796712f7af6695549f611abdaf1bf53bd14c3e82` delivers the strict Production
+  Transition data source and dense trilingual Project workspace. Diagnostic
+  ordinary CI `31815647237` passes repository `94816548050` (`1,851`),
+  frontend `94816548288` (`58/58` files, `908/908` unit, `399/399` non-
+  visual E2E, `7,307` direct trilingual sources, statements `80.36%` and zero
+  vulnerabilities) and secret scan `94816548211`. Visual `94816548086`
+  reports `97` passed and `15` failed, isolating exactly fifteen screenshot-
+  only differences;
+  controlled preflight `94819524570` and runtime `94819525297` skip as
+  required. This diagnostic run is not a PASS Gate.
+- Final checkpoint `b11e892128e3b9832b0cf92e48e0c331bf80eac4`
+  changes only the fifteen independently reviewed Linux baselines and twelve
+  exact current-task paths. Final pull-request CI `31817424246` at that exact
+  SHA passes repository `94822344253` (`1,851`), frontend `94822344360`
+  (`58/58` files, `908/908` unit, `399/399` non-visual E2E, `7,307` direct
+  trilingual sources, statements `80.36%` and zero vulnerabilities), secret
+  scan `94822344279` and visual `94822344387` (`112/112`). Controlled runtime
+  `94825306276` and preflight `94825306398` skip as required.
+- The reviewed workspace preserves the exact immutable handover manifest,
+  receiving groups and actor-bound slots, acknowledgement and package history,
+  unresolved actions, independent observation references and the five
+  identity-free unavailable providers. It exposes only complete Project GET
+  truth and current signed-in actor acknowledgement for an exact eligible slot
+  on the unique current package; it exposes no policy/package/observation
+  create or revise transport and creates no signature, approval, G7, Gate,
+  ERP or downstream effect.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md`.
+  This is checkpoint 3 PASS, not P7-06 runtime, Level 2 or Level 3. The latest
+  complete Level 3 remains workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+- Standing transition authority activates only checkpoint 4: extend the
+  cumulative disposable-Site fixture through P7-06, execute exact-SHA
+  controlled runtime, and complete traceability, Task Diff Review and Level 2.
+  No further UI, Level 3, formal receiving/signature/G7 authority, Gate/
+  Project/Work Item/Tooling mutation, external actual/provider, ERP/network/
+  Outbox, release, projection or print authority is active.
