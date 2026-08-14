@@ -409,6 +409,139 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
         )
         assert_successors.assert_called_once()
 
+    def test_retained_capacity_predecessor_accepts_only_exact_profile_chain(
+        self,
+    ) -> None:
+        project_id, stored, workspace = self._retained_capacity_chain_fixture()
+        profiles = workspace["process"]["customerStandardRevisions"]
+        profile_one, profile_two = profiles
+        scenario_one, scenario_two = workspace["capacityScenarioRevisions"]
+
+        self.assertTrue(
+            all(
+                line["cycleProvenance"]
+                == {
+                    "kind": "customer_standard",
+                    "globalId": profile_two["globalId"],
+                    "snapshotHash": profile_two["snapshotHash"],
+                }
+                for line in scenario_one["lines"] + scenario_two["lines"]
+            )
+        )
+        self.module.retained_capacity_source_context(project_id, stored, workspace)
+
+        def retarget_predecessor(
+            stored_values,
+            workspace_value,
+            *,
+            kind,
+            global_id,
+            snapshot_hash,
+        ):
+            predecessor, successor = workspace_value["capacityScenarioRevisions"]
+            for line in predecessor["lines"]:
+                line["cycleProvenance"] = {
+                    "kind": kind,
+                    "globalId": global_id,
+                    "snapshotHash": snapshot_hash,
+                }
+            predecessor["snapshotHash"] = self._response_hash(predecessor)
+            stored_values[0]["snapshot_hash"] = predecessor["snapshotHash"]
+            successor["predecessorSnapshotHash"] = predecessor["snapshotHash"]
+            stored_values[1]["predecessor_snapshot_hash"] = predecessor[
+                "snapshotHash"
+            ]
+            successor["snapshotHash"] = self._response_hash(successor)
+            stored_values[1]["snapshot_hash"] = successor["snapshotHash"]
+
+        alternate_stored = copy.deepcopy(stored)
+        alternate_workspace = copy.deepcopy(workspace)
+        retarget_predecessor(
+            alternate_stored,
+            alternate_workspace,
+            kind="customer_standard",
+            global_id=profile_one["globalId"],
+            snapshot_hash=profile_one["snapshotHash"],
+        )
+        self.module.retained_capacity_source_context(
+            project_id,
+            alternate_stored,
+            alternate_workspace,
+        )
+
+        invalid_provenances = (
+            (
+                "customer_standard",
+                "00000000-0000-4000-8000-000000000299",
+                "f" * 64,
+            ),
+            ("customer_standard", profile_two["globalId"], "f" * 64),
+            (
+                "scenario_assumption",
+                profile_two["globalId"],
+                profile_two["snapshotHash"],
+            ),
+        )
+        for kind, global_id, snapshot_hash in invalid_provenances:
+            with self.subTest(kind=kind, global_id=global_id):
+                drifted_stored = copy.deepcopy(stored)
+                drifted_workspace = copy.deepcopy(workspace)
+                retarget_predecessor(
+                    drifted_stored,
+                    drifted_workspace,
+                    kind=kind,
+                    global_id=global_id,
+                    snapshot_hash=snapshot_hash,
+                )
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "predecessor cycle provenance drifted",
+                ):
+                    self.module.retained_capacity_source_context(
+                        project_id,
+                        drifted_stored,
+                        drifted_workspace,
+                    )
+
+    def test_retained_capacity_rejects_cross_stream_profile_successor(
+        self,
+    ) -> None:
+        project_id, stored, workspace = self._retained_capacity_chain_fixture()
+        profile_two = workspace["process"]["customerStandardRevisions"][1]
+        profile_two["profileGlobalId"] = (
+            "00000000-0000-4000-8000-000000000298"
+        )
+        profile_two["versionKeyHash"] = self._value_hash(
+            {
+                "profileGlobalId": profile_two["profileGlobalId"],
+                "profileVersion": profile_two["profileVersion"],
+            }
+        )
+        profile_two["snapshotHash"] = self._response_hash(profile_two)
+
+        scenario_one, scenario_two = workspace["capacityScenarioRevisions"]
+        for scenario in (scenario_one, scenario_two):
+            for line in scenario["lines"]:
+                line["cycleProvenance"]["snapshotHash"] = profile_two[
+                    "snapshotHash"
+                ]
+        scenario_one["snapshotHash"] = self._response_hash(scenario_one)
+        stored[0]["snapshot_hash"] = scenario_one["snapshotHash"]
+        scenario_two["predecessorSnapshotHash"] = scenario_one["snapshotHash"]
+        stored[1]["predecessor_snapshot_hash"] = scenario_one["snapshotHash"]
+        scenario_two["snapshotHash"] = self._response_hash(scenario_two)
+        stored[1]["snapshot_hash"] = scenario_two["snapshotHash"]
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "Customer Standard successor lineage drifted",
+        ):
+            self.module.retained_capacity_source_context(
+                project_id,
+                stored,
+                workspace,
+            )
+
     def test_retained_capacity_chain_selection_fails_closed(self) -> None:
         project_id, stored, _workspace = self._retained_capacity_chain_fixture()
         first, second, master_id = self.module._retained_capacity_rows(
@@ -1315,7 +1448,7 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             (217, 214, 215, "5", "6", "60.0", "54.0"),
         )
 
-        def line(spec, exact_profile) -> dict[str, object]:
+        def line(spec, exact_profile, scenario_version: int) -> dict[str, object]:
             line_id, applicability_id, part_id, app_hash, part_hash, first, second = spec
             return {
                 "globalId": f"00000000-0000-4000-8000-{line_id:012d}",
@@ -1331,9 +1464,7 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
                 "workingDaysPerMonth": 26,
                 "oeeRatio": "0.85",
                 "yieldRatio": "0.98",
-                "cycleSeconds": (
-                    second if exact_profile["profileVersion"] == 2 else first
-                ),
+                "cycleSeconds": second if scenario_version == 2 else first,
                 "cavityCount": 1,
                 "usagePerAssembly": "1.0",
                 "effectiveSetCount": 1,
@@ -1363,7 +1494,9 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             }
 
         def scenario(version: int, exact_profile, predecessor=None):
-            scenario_lines = [line(spec, exact_profile) for spec in line_specs]
+            scenario_lines = [
+                line(spec, exact_profile, version) for spec in line_specs
+            ]
             result_values = (
                 (
                     ("1428.000000", "37128.000000"),
@@ -1440,7 +1573,9 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             value["snapshotHash"] = cls._response_hash(value)
             return value
 
-        scenario_one = scenario(1, profile_one)
+        # The retained P6 fixture creates both Capacity revisions after the
+        # Customer Standard successor, so both provenance tuples point to v2.
+        scenario_one = scenario(1, profile_two)
         scenario_two = scenario(2, profile_two, scenario_one)
         stored = [
             {

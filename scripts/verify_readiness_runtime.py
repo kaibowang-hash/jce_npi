@@ -990,6 +990,7 @@ def retained_capacity_source_context(
         and first_profile.get("predecessorSnapshotHash") is None
         and profile.get("tenantId") == TENANT_ID
         and profile.get("layer") == "customer_standard"
+        and profile.get("profileGlobalId") == first_profile.get("profileGlobalId")
         and profile.get("predecessorGlobalId") == first_profile.get("globalId")
         and profile.get("predecessorSnapshotHash")
         == first_profile.get("snapshotHash"),
@@ -1147,11 +1148,28 @@ def retained_capacity_source_context(
             set_provenance.get("snapshotHash"),
             "P7-05 retained Capacity Tooling Set",
         )
+        predecessor_cycle_provenance = first_line.get("cycleProvenance")
+        require(
+            isinstance(predecessor_cycle_provenance, dict),
+            "P7-05 retained Capacity predecessor cycle provenance drifted",
+        )
+        predecessor_profile_id = _uuid(
+            predecessor_cycle_provenance.get("globalId"),
+            "P7-05 retained Capacity predecessor Customer Standard",
+        )
+        predecessor_profile_hashes = {
+            first_profile_id: first_profile_hash,
+            profile_id: profile_hash,
+        }
+        require(
+            predecessor_profile_id in predecessor_profile_hashes,
+            "P7-05 retained Capacity predecessor cycle provenance drifted",
+        )
         _exact_capacity_provenance(
-            first_line.get("cycleProvenance"),
+            predecessor_cycle_provenance,
             kind="customer_standard",
-            global_id=first_profile_id,
-            snapshot_hash=first_profile_hash,
+            global_id=predecessor_profile_id,
+            snapshot_hash=predecessor_profile_hashes[predecessor_profile_id],
             label="predecessor cycle",
         )
         _exact_capacity_provenance(
