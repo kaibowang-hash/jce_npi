@@ -2945,3 +2945,30 @@ repeat or rewrite it merely to restore context. See
   workflow `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no active technical
   Hard Blocker and no user or GitHub frontend action is required.
+
+## 2026-08-14 P7-06 audit PASS; checkpoint 1 active
+
+- Starting controller checkpoint
+  `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` passes exact-SHA ordinary CI
+  `31779635051`: fixed-Linux visual `94702372737`, repository `94702372854`,
+  frontend `94702372873` and secret scan `94702372905` all pass. The
+  controlled lane is expected skipped.
+- The bounded Requirement/domain/existing-capability audit for `FR-NP-014`
+  and `FR-NP-015` is PASS. There is no existing aggregate suitable for the
+  production-transition boundary. Business differences must be carried by a
+  versioned `ProductionTransitionPolicyVersion` with no default business
+  values; they must not be inferred from current Trial, readiness or capacity
+  data.
+- Standing continuous-delivery authority activates only checkpoint 1: pure
+  domain models, closed contracts, explicit data ownership, six additive
+  guarded DocTypes, direct translations and focused tests. No route, business
+  row, Gate input, UI, runtime fixture or ERP integration is active.
+- A receiving acknowledgement is neither an electronic signature nor an
+  approval or G7 decision. Trial or capacity evidence is not a production
+  actual. Formal receiving-organization and bilateral authority, actual SOP,
+  external yield/complaint/cycle/Tooling actuals, stability policy and G7
+  close remain scoped holds.
+- No Level 3 was run for this transition. The latest complete Level 3 remains
+  workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no active technical
+  Hard Blocker and no user or GitHub frontend action is required.

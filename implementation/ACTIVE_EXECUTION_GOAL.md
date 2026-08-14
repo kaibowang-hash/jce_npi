@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-14T07:08:14Z`
+Updated: `2026-08-14T07:48:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P7-06`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-06`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -32,15 +32,18 @@ Updated: `2026-08-14T07:08:14Z`
 - Latest P7-05 product Gate:
   `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (`LEVEL 2 PASS`;
   ordinary CI `31777229867`, controlled Gate `31777985302`)
+- P7-06 starting controller checkpoint:
+  `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
+  ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-06 — Production handover and observation period`
-  (`IN_PROGRESS — REQUIREMENT/DOMAIN/EXISTING-CAPABILITY AUDIT`)
-- Resumed product task: `P7-06` (`ACTIVE_AUDIT_ONLY`)
+  (`AUDIT PASS; CHECKPOINT 1 ACTIVE`)
+- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_1_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-06 AUDIT`)
+  (`IN_PROGRESS — P7-06 CHECKPOINT 1`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -213,17 +216,24 @@ migrations, redaction, zero external effects and cleanup. Prior-Gate artifact
 runtime artifact `9210730456` has digest
 `sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
 
-The only active scope is the bounded P7-06 Requirement/domain/existing-
-capability audit for `FR-NP-014` and `FR-NP-015`. The audit may freeze the
-future immutable handover-package/acknowledgement and post-SOP observation-
-snapshot boundaries, exact unresolved actions and explicit unavailable
-external actuals; it may not start product code. Automatic G7 close,
-production handover execution, production transactions or ERPNext contact,
-formal acceptance/signature authority, invented yield/complaint/cycle/Tooling
-actuals, release, projection and print authority remain held. No Level 3 was
-run for this transition; the latest complete Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
-Blocker.
+The bounded P7-06 Requirement/domain/existing-capability audit for
+`FR-NP-014` and `FR-NP-015` passes at starting controller checkpoint
+`75c67e6ffbe8b1cd113a7eac97c7878bce28e258`. Ordinary CI `31779635051`
+passes fixed-Linux visual `94702372737`, repository `94702372854`, frontend
+`94702372873` and secret scan `94702372905`; the controlled lane is expected
+skipped. The audit confirms there is no existing aggregate suitable for this
+boundary. Business variation must be carried by a versioned
+`ProductionTransitionPolicyVersion` with no default business values.
+
+The only authorized atomic scope is P7-06 checkpoint 1: pure domain models,
+closed contracts, explicit data ownership, six additive guarded DocTypes,
+direct translations and focused tests. No route, business row, Gate input,
+UI, runtime fixture or ERP integration is authorized. Formal receiving-
+organization and bilateral authority, actual SOP, external yield/complaint/
+cycle/Tooling actuals, stability policy and G7 close remain held. No Level 3
+was run for this transition; the latest complete Level 3 remains
+`31392474781` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no
+technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

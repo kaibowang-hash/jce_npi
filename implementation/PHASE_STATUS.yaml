@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-14T07:07:17Z'
+updated_at: '2026-08-14T07:49:32Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-06
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P7_05_LEVEL_2_PASS
-current_task_next_stage: P7_06_REQUIREMENT_DOMAIN_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P7_06_REQUIREMENT_DOMAIN_AUDIT_PASS
+current_task_next_stage: P7_06_DOMAIN_CONTRACT_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-06
-resumed_product_task_status: ACTIVE_AUDIT
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1809,24 +1809,29 @@ p7_05:
 p7_06:
   task: P7-06
   controller_task: P7-06_PRODUCTION_HANDOVER_OBSERVATION_PERIOD
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-06
   requirements:
     - FR-NP-014
     - FR-NP-015
   predecessor_product_checkpoint: 418b3aab01c9aebbd0cd0001f58006de9c417f6f
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  starting_controller_checkpoint: 75c67e6ffbe8b1cd113a7eac97c7878bce28e258
+  starting_controller_ci: 31779635051
+  audit: PASS
+  audit_controller_checkpoint: 75c67e6ffbe8b1cd113a7eac97c7878bce28e258
+  audit_ordinary_ci: 31779635051
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage_after_pass: REPOSITORY_BFF
   product_code_changed: false
   external_holds:
-    - PRODUCTION_ERPNEXT_YIELD_CYCLE_QUALITY_AND_TOOLING_STABILITY_RESULTS
-    - CUSTOMER_COMPLAINT_AND_EXTERNAL_RECEIVING_CONFIRMATION
-    - AUTOMATIC_G7_GATE_WORK_ITEM_TOOLING_LIFECYCLE_AND_PRODUCTION_MUTATION
+    - PRODUCTION_ACTUAL_SOP_AND_ERPNEXT_YIELD_CYCLE_QUALITY_AND_TOOLING_STABILITY_RESULTS
+    - CUSTOMER_COMPLAINT_AND_FORMAL_RECEIVING_ORGANIZATION_CONFIRMATION
+    - STABILITY_BUSINESS_POLICY_AND_AUTOMATIC_G7_GATE_WORK_ITEM_TOOLING_LIFECYCLE_AND_PRODUCTION_MUTATION
     - RELEASED_TRIAL_SUMMARY_EXTERNAL_PROJECTION_AND_PRODUCTION_PRINT
   evidence:
     - implementation/evidence/phase-7/p7-05-validation.md
+    - implementation/evidence/phase-7/p7-06-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-06`
+`IN_PROGRESS_CHECKPOINT_1 — P7-06`
 
-Recovery time: `2026-08-14T07:08:14Z`
+Recovery time: `2026-08-14T07:48:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -28,6 +28,9 @@ P7-05 checkpoint 3 final checkpoint:
 
 P7-05 Level 2 product checkpoint and P7-06 audit base:
 `418b3aab01c9aebbd0cd0001f58006de9c417f6f`
+
+P7-06 audit PASS and checkpoint 1 starting controller:
+`75c67e6ffbe8b1cd113a7eac97c7878bce28e258`
 
 ## Current authoritative action
 
@@ -199,17 +202,22 @@ and Gitleaks artifact `9210334347` has digest
 Complete evidence is
 `implementation/evidence/phase-7/p7-05-validation.md`.
 
-Execute only the bounded P7-06 Requirement/domain/existing-capability audit
-for `FR-NP-014` and `FR-NP-015`. Reconcile the authoritative handover and
-post-SOP observation requirements against existing immutable Project,
-readiness, action/evidence and unavailable-external-source foundations; freeze
-aggregate identity, version/predecessor/hash rules, acknowledgements,
-unresolved actions, external-actual availability, permissions, audit,
-idempotency, migration/rollback, checkpoints and affected tests before any
-product code. Do not create product code during the audit. Do not automatically
-close G7, execute a production handover or transaction, contact ERPNext,
-invent yield/complaint/cycle/Tooling actuals, or claim formal receiving-party,
-signature, release, projection or print authority.
+The bounded P7-06 audit passes at starting controller checkpoint
+`75c67e6ffbe8b1cd113a7eac97c7878bce28e258`. Exact-SHA ordinary CI
+`31779635051` passes visual `94702372737`, repository `94702372854`, frontend
+`94702372873` and secret scan `94702372905`; the controlled lane is expected
+skipped. The audit finds no existing aggregate suitable for reuse and freezes
+a versioned `ProductionTransitionPolicyVersion` with no default business
+values as the sole carrier of business variation.
+
+Execute only P7-06 checkpoint 1: add the pure domain boundary, closed contract,
+explicit data ownership, six additive guarded DocTypes, direct translations
+and focused tests. Do not activate a route, business row, Gate input, UI,
+runtime fixture or ERP integration. Formal receiving-organization and
+bilateral authority, actual SOP, external yield/complaint/cycle/Tooling
+actuals, stability policy and G7 close remain held. An acknowledgement must
+not become an electronic signature, approval or G7 decision, and Trial or
+capacity evidence must not become a production actual.
 
 No Level 3 was run for P7-05. The latest complete Level 3 remains workflow
 `31392474781` at exact SHA
