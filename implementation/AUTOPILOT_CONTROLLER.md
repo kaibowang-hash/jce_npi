@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-14T16:14:37Z`
+Updated: `2026-08-14T18:54:42Z`
 
 ## Authority and operating mode
 
@@ -3111,3 +3111,67 @@ repeat or rewrite it merely to restore context. See
   No further UI, Level 3, formal receiving/signature/G7 authority, Gate/
   Project/Work Item/Tooling mutation, external actual/provider, ERP/network/
   Outbox, release, projection or print authority is active.
+
+## 2026-08-14 P7-06 Level 2 PASS; P7-07 audit active
+
+- Exact P7-06 task checkpoint
+  `563fff535bc46f3d0c216a68a555b61b32479a0d` passes ordinary pull-request CI
+  `31828878511`: repository `94859592477` proves `1,873` tracked Python tests;
+  frontend `94859592402` proves `58/58` files, `908/908` unit tests,
+  `399/399` non-visual E2E tests, `7,307` complete direct English/`zh`/`zh-TW`
+  sources, statements/branches/functions/lines
+  `80.36%/80.24%/83.05%/83.00%` and zero vulnerabilities; secret scan
+  `94859592400` proves the exact `26`-commit pull-request first-parent range
+  and `462`-commit full branch history contain no leak; visual `94859592530`
+  passes `112/112`. Visual artifact `9230002263` has digest
+  `sha256:85d9a950afe2bf4d168007f0cf8c2905e993ee143a2086393f986652ab5426ef`;
+  Gitleaks artifact `9229888878` has digest
+  `sha256:004638f284cd537f4c90d1c426c7a94cee0b78d5d6f84da660de797d8c163384`.
+- Optimized exact-SHA Level 2 workflow `31829617671` passes controlled
+  preflight `94861911975` and cumulative disposable-Site runtime
+  `94862026482` through scope `p5-01-through-p7-06`. Prior-Gate artifact
+  `9230158705` has digest
+  `sha256:c7daa59f5e28db999489a5660e2a15f36f98d2d42bd6af78e6818d805d97d917`;
+  runtime artifact `9230370526` has digest
+  `sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`,
+  and its `result.txt` payload has SHA-256
+  `ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
+- The runtime proves four actor-bound acknowledgements, eleven P7-06 audit
+  events, nine exact current sources, two immutable handover-package
+  revisions, two independent observation revisions, one published policy
+  version, five identity-free offline providers and eleven sealed receipts.
+  Sensitive values are not persisted; every Gate, Project, Work Item,
+  Tooling, ERP/network/Outbox and downstream snapshot remains unchanged.
+  All eleven routes pass disabled/recovered probes, cross-process replay is
+  true, redaction passes and disposable containers, volumes and network are
+  removed by the successful cleanup step.
+- Failed Level 2 attempts `31823927177` at
+  `23403286bb662c83af115f977dbc76988a0ee5d2` and `31827177095` at
+  `bfac3f0fd9219940a591e2afd48f3bb9ef37003c` remain immutable diagnostic
+  evidence. They respectively exposed a fixture that selected stale
+  predecessor readiness/defect/conclusion sources and a workspace-IDOR probe
+  that conflated the acknowledgement actor with an unauthorized Project
+  reader. Neither attempt recorded or uploaded a runtime result artifact;
+  both completed disposable-resource cleanup. Bounded forward fixes select
+  the exact current source-chain tips and separate an NPI-API-only unauthorized
+  reader, authorized acknowledgement actor and System Manager without changing
+  product API, permission or PASS criteria.
+- P7-06 is `PASS_LEVEL_2` with truthful held dispositions for `FR-NP-014` and
+  `FR-NP-015`. Retain every immutable policy, package, acknowledgement,
+  observation, source snapshot, receipt and audit. After retained rows exist,
+  rollback disables only the independent P7-06 routes and Project workspace
+  and uses a reviewed forward repair; it never rewrites retained history.
+- Standing continuous-delivery authority activates only the bounded P7-07
+  Requirement/domain/existing-capability audit for `FR-PRN-002`,
+  `FR-INT-015` and `FR-TR-008`. The audit must freeze the NPI-owned immutable
+  Released Trial Summary, exact Trial and controlled-reference source versions,
+  redaction, reuse of P5-06 controlled-output mechanics, ownership,
+  authorization, migration, rollback, checkpoints and affected tests before
+  product code.
+- External event schema/routing/delivery/target receipt under `DR-REC-009`,
+  production form mapping, signer/retention/copy policy under `DR-REC-003/004`,
+  approval/signature/G7 authority, ERPNext/JCE projection and production print
+  execution remain scoped holds. No Level 3 ran for this transition; the latest
+  complete Level 3 remains workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no active technical
+  Hard Blocker and no user or GitHub frontend action is required.

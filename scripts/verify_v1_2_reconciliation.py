@@ -133,6 +133,13 @@ EXPECTED_P7_05_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
     "implementation/evidence/phase-7/p7-05-live-readiness-workspace-checkpoint.md",
     "implementation/evidence/phase-7/p7-05-validation.md",
 }
+EXPECTED_P7_06_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-06-plan.md",
+    "implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md",
+    "implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-06-validation.md",
+}
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-NP-001": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
     "FR-NP-002": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
@@ -169,6 +176,16 @@ EXPECTED_P7_COMPLETED_TRACES = {
         EXPECTED_P7_05_EVIDENCE,
     ),
     "FR-NP-013": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
+    "FR-NP-014": (
+        "7",
+        "TECHNICAL_VERIFIED_IMMUTABLE_HANDOVER_ACKNOWLEDGEMENT_FOUNDATION_FORMAL_ORGANIZATION_AND_G7_AUTHORITY_HELD",
+        EXPECTED_P7_06_EVIDENCE,
+    ),
+    "FR-NP-015": (
+        "7",
+        "TECHNICAL_VERIFIED_OBSERVATION_REVIEW_FOUNDATION_ACTUAL_SOP_EXTERNAL_METRICS_AND_STABILITY_AUTHORITY_HELD",
+        EXPECTED_P7_06_EVIDENCE,
+    ),
     "FR-TR-001": (
         "7",
         "TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD",

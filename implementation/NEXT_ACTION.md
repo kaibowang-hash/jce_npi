@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P7-06`
+`IN_PROGRESS_AUDIT — P7-07`
 
-Recovery time: `2026-08-14T16:14:37Z`
+Recovery time: `2026-08-14T18:54:42Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -43,6 +43,9 @@ P7-06 checkpoint 3 product commit:
 
 P7-06 checkpoint 3 final checkpoint:
 `b11e892128e3b9832b0cf92e48e0c331bf80eac4`
+
+P7-06 Level 2 final product checkpoint and P7-07 audit base:
+`563fff535bc46f3d0c216a68a555b61b32479a0d`
 
 ## Current authoritative action
 
@@ -238,23 +241,50 @@ fixed-Linux visual matrix; controlled lanes skip as required. Complete
 evidence is
 `implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md`.
 
-Execute only checkpoint 4 in
-`implementation/evidence/phase-7/p7-06-plan.md`: extend the cumulative
-disposable-Site fixture through P7-06 and prove policy publication, exact
-package succession, current-package actor-slot acknowledgements without
-successor inheritance, independent observation succession, all five identity-
-free offline providers, and immutable reconstruction. Prove same- and cross-
-process replay, stale/fork/conflict/rollback, IDOR, route recovery, migrations,
-redaction, zero Gate/Project/Work Item/Tooling/ERP/network/Outbox effects and
-cleanup; then complete traceability, Task Diff Review and Level 2.
+P7-06 passes Level 2 at exact final product checkpoint
+`563fff535bc46f3d0c216a68a555b61b32479a0d`. Ordinary pull-request CI
+`31828878511` passes repository `94859592477` (`1,873` tracked Python),
+frontend `94859592402` (`58/58` files, `908/908` unit, `399/399` non-visual
+E2E, `7,307` complete direct trilingual sources, coverage
+`80.36%/80.24%/83.05%/83.00%`, zero vulnerabilities), secret scan
+`94859592400` (`26` pull-request first-parent and `462` full-history commits,
+no leaks) and `112/112` visual job `94859592530`. Visual artifact
+`9230002263` has digest
+`sha256:85d9a950afe2bf4d168007f0cf8c2905e993ee143a2086393f986652ab5426ef`;
+Gitleaks artifact `9229888878` has digest
+`sha256:004638f284cd537f4c90d1c426c7a94cee0b78d5d6f84da660de797d8c163384`.
 
-No further UI is authorized. Formal receiving-organization and bilateral
-authority, electronic signature or approval, actual SOP, external yield/
-complaint/cycle/Tooling actuals, stability business policy and G7 close remain
-held. An acknowledgement remains fact-only and Trial/readiness/capacity
-evidence remains distinct from a production actual. No Level 3 was run for
-P7-06 checkpoint 3. The latest complete Level 3
-remains workflow `31392474781` at exact SHA
+Independent exact-SHA controlled Gate `31829617671` passes preflight
+`94861911975`, prior-Gate artifact `9230158705` with digest
+`sha256:c7daa59f5e28db999489a5660e2a15f36f98d2d42bd6af78e6818d805d97d917`,
+and runtime `94862026482` through scope `p5-01-through-p7-06`. Runtime artifact
+`9230370526` has digest
+`sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
+its `result.txt` payload hashes to
+`sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
+It proves `4` acknowledgements, `11` audits, `9` exact sources, `2` package
+revisions, `2` observation revisions, `1` policy version, `5` providers, `11`
+receipts, cross-process replay, all `11` routes disabled/recovered,
+`sensitivePersisted=false`, `zeroDownstreamEffects=true` and cleanup PASS.
+
+Controlled runs `31823927177` at `2340328` and `31827177095` at `bfac3f0`
+remain truthful diagnostic failures for the current-source bridge and IDOR
+actor fixture. Neither produced a runtime result or runtime artifact; both
+cleanup steps passed. Bounded forward fixes and affected tests preceded the
+independent final PASS. Task Diff
+`75c67e6ffbe8b1cd113a7eac97c7878bce28e258..563fff535bc46f3d0c216a68a555b61b32479a0d`
+is `11` commits, `80` paths, `34,596` insertions and `105` deletions. Complete
+evidence is `implementation/evidence/phase-7/p7-06-validation.md`.
+
+Execute only the bounded P7-07 Requirement/domain/existing-capability audit
+for `FR-PRN-002`, `FR-INT-015` and `FR-TR-008`. Freeze the immutable Released
+Trial Summary and controlled-output boundary before product implementation.
+Do not edit product code or activate any route, row, migration, event,
+projection, form, signature, retention, copy, release or print authority.
+External event/projection remains held under `DR-REC-009`; form mapping,
+signature, retention and copy policy remain held under `DR-REC-003` and
+`DR-REC-004`; G7, ERP and production print authority remain held. The latest
+complete Level 3 remains workflow `31392474781` at exact SHA
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`; Level 3 remains reserved for
 the applicable Phase, PR or release boundary.
 

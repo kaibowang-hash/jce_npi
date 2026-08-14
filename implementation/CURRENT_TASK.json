@@ -1,100 +1,46 @@
 {
   "schema_version": 1,
-  "task_id": "P7-06",
+  "task_id": "P7-07",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_CHECKPOINT_4",
+  "status": "IN_PROGRESS_AUDIT",
   "completion_gate": "LEVEL_2",
-  "authorized_next_task": "P7-07",
-  "base_checkpoint": "75c67e6ffbe8b1cd113a7eac97c7878bce28e258",
-  "predecessor_product_checkpoint": "418b3aab01c9aebbd0cd0001f58006de9c417f6f",
+  "authorized_next_task": "P7-08",
+  "base_checkpoint": "563fff535bc46f3d0c216a68a555b61b32479a0d",
+  "predecessor_product_checkpoint": "563fff535bc46f3d0c216a68a555b61b32479a0d",
   "requirement_ids": [
-    "FR-NP-014",
-    "FR-NP-015"
+    "FR-PRN-002",
+    "FR-INT-015",
+    "FR-TR-008"
   ],
   "scope": [
-    "Publish immutable versioned Production Transition policies with explicit Project applicability, receiving-group definitions, sender and receiver acknowledgement slots, handover requirements that freeze accepted source kinds, minimum count and manifestRole, unresolved-action rules, observation-source requirements and conclusion rules, with no installed business default.",
-    "Freeze append-only Handover Package revisions over exact same-Project Project, member, role-assignment, readiness, Work Item, released Document or Baseline, clean private File Revision, Tooling and retained Trial source identities, versions and hashes without latest-value substitution; under Scheme A the browser submits published-policy requirementKey, kind, ID and expectedVersion only, while role, hash and projection are server-owned and one exact kind/ID tuple is assigned and counted once.",
-    "Append independent actor-bound acknowledgements to one exact handover package revision and required frozen slot while deriving fully acknowledged state only at query time, never rewriting the package hash and never inheriting acknowledgement facts into a successor package.",
-    "Retain a separate immutable Observation Period revision stream whose exact evidence references independently freeze kind, ID, version, hash and context or retrospective usage without handover requirementKey or manifestRole, and whose mandatory actual SOP, first-batch yield, customer complaint, production cycle and Tooling-stability providers are server-injected identity-free unavailable until separately approved external adapters exist.",
-    "Deliver the closed Project-first repository and BFF boundary, dense trilingual Project production-transition workspace, additive metadata, controlled runtime and Level 2 evidence under the frozen P7-06 plan.",
-    "Keep every Gate or G7 decision, Project lifecycle change, Work Item or Tooling mutation, ERP or customer transaction, Outbox or external projection and released output behind separate authority outside P7-06."
+    "Audit one NPI-owned immutable Released Trial Summary snapshot that freezes exact Trial Plan, Round, locked input, Trial Actual, Sample, cavity, defect, action, verification, comparison, controlled-reference and conclusion identities, versions and hashes without latest-value substitution.",
+    "Audit reuse of the existing P5-06 controlled-print registry, immutable snapshot and output mechanics, including exact language, actor, time, QR/hash, watermark, copy state, audited reprint and redaction truth.",
+    "Audit the NPI-side foundation for FR-INT-015 while keeping external event schema, routing, delivery, target projection and receipt confirmation held under DR-REC-009.",
+    "Keep formal production form mapping, signer, retention and copy policy behind DR-REC-003 and DR-REC-004, and keep released evidence distinct from approval, G7 authority or external execution.",
+    "Define the minimum complete vertical slice, ownership, additive persistence, closed BFF, trilingual industrial workspace, tests, migration and rollback before product code."
   ],
   "non_scope": [
-    "Any installed default Production Transition policy, formal organization or receiving-department mapping, hard-coded G7 identity, acknowledgement quorum, signature semantics, actual-SOP provider, production-metric provider, stability threshold or business conclusion authority.",
-    "Automatic G7 pass or close, Gate input or evidence attachment, Gate policy or decision mutation, Project completion or lifecycle change, Work Item mutation, Tooling lifecycle change, production handover execution or production release.",
-    "Caller-supplied or fabricated actual SOP, yield, complaint, cycle, Tooling-stability, availability, value, score or conclusion truth; production ERPNext or customer-system access, network traffic or mutation.",
-    "Treating policy publication, readiness, evidence presence, package creation, acknowledgement or fully acknowledged state as approval, electronic signature, production acceptance, Gate authorization or acceptance by an unavailable external party.",
-    "Released Trial Summary, external event projection, production print, raw private File URLs, generic DocType CRUD, Frappe or ERPNext core patches, test deletion or threshold reduction."
+    "Product implementation before the P7-07 audit and frozen plan pass.",
+    "External Released Trial Summary event publication, ERPNext or JCE projection, downstream delivery, target receipt confirmation or production form mapping.",
+    "Caller-supplied release, signer, retention, copy, watermark, source hash, translated enum or latest-source truth; raw private File URLs or unredacted controlled values.",
+    "Treating summary generation, controlled output or print evidence as approval, electronic signature, formal production acceptance, G7 close or Project lifecycle authority.",
+    "P7-08 mobile field actions, generic DocType CRUD, Frappe or ERPNext core patches, production ERPNext access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
-    "PRODUCTION_TRANSITION_POLICY_VERSIONS_ARE_IMMUTABLE_AND_METADATA_INSTALLS_NO_BUSINESS_DEFAULT",
-    "POLICY_DRAFT_WRITES_ARE_GUARDED_OPTIMISTIC_AND_PUBLISHED_POLICY_VERSIONS_ARE_IMMUTABLE",
-    "HANDOVER_PACKAGE_REVISIONS_ARE_APPEND_ONLY_AND_FREEZE_EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES",
-    "HANDOVER_SOURCE_KINDS_VERSIONS_HASHES_AND_SERVER_CANONICAL_PROJECTIONS_ARE_CLOSED",
-    "HANDOVER_BROWSER_SUBMITS_PUBLISHED_POLICY_REQUIREMENT_KEY_KIND_ID_AND_EXPECTED_VERSION_ONLY",
-    "HANDOVER_MANIFEST_ROLE_IS_FROZEN_BY_THE_PUBLISHED_REQUIREMENT_AND_SERVER_INJECTED",
-    "DIFFERENT_HANDOVER_REQUIREMENTS_MAY_ACCEPT_THE_SAME_SOURCE_KIND",
-    "ONE_EXACT_HANDOVER_SOURCE_KIND_AND_ID_BELONGS_TO_ONE_REQUIREMENT_AND_COUNTS_ONCE",
-    "ACKNOWLEDGEMENTS_ARE_INDEPENDENT_ACTOR_BOUND_FACTS_FOR_ONE_EXACT_PACKAGE_REVISION_AND_SLOT",
-    "ONLY_THE_UNIQUE_CURRENT_PACKAGE_REVISION_ACCEPTS_NEW_ACKNOWLEDGEMENTS",
-    "FULLY_ACKNOWLEDGED_IS_QUERY_DERIVED_AND_NEVER_REWRITES_A_PACKAGE_SNAPSHOT",
-    "ACKNOWLEDGEMENT_REVALIDATES_FROZEN_USER_MEMBER_ROLE_VERSION_HASH_AND_EFFECTIVITY_WITHOUT_PROXY_SUBSTITUTION",
-    "PACKAGE_SUCCESSORS_NEVER_INHERIT_PRIOR_ACKNOWLEDGEMENTS",
-    "UNRESOLVED_ACTIONS_ARE_SERVER_ENUMERATED_AND_RETAIN_EXACT_SOURCE_OWNER_DUE_DATE_STATE_VERSION_AND_HASH",
-    "OBSERVATION_PERIOD_REVISIONS_ARE_SEPARATE_IMMUTABLE_AND_NEVER_INFER_ACTUAL_SOP_FROM_TARGET_SOP",
-    "ONLY_THE_UNIQUE_CURRENT_OBSERVATION_REVISION_ACCEPTS_A_SUCCESSOR_AND_FORKS_FAIL_CLOSED",
-    "OBSERVATION_CONTEXT_AND_RETROSPECTIVE_REFERENCES_USE_ONLY_THE_CLOSED_EXACT_HANDOVER_SOURCE_REGISTRY",
-    "OBSERVATION_REFERENCES_INDEPENDENTLY_FREEZE_KIND_ID_VERSION_HASH_AND_CONTEXT_OR_RETROSPECTIVE_USAGE",
-    "OBSERVATION_REFERENCES_CARRY_NO_HANDOVER_REQUIREMENT_KEY_OR_MANIFEST_ROLE",
-    "THE_SAME_OBSERVATION_TUPLE_ACROSS_USAGE_LISTS_RETAINS_ONE_VERSION_AND_HASH",
-    "ACTUAL_SOP_YIELD_COMPLAINT_CYCLE_AND_TOOLING_STABILITY_ARE_FIVE_MANDATORY_SERVER_INJECTED_PROVIDERS",
-    "ACTUAL_SOP_AND_EXTERNAL_PRODUCTION_RESULTS_ARE_IDENTITY_FREE_UNAVAILABLE_UNTIL_APPROVED_ADAPTERS_EXIST",
+    "RELEASED_TRIAL_SUMMARY_SNAPSHOTS_ARE_IMMUTABLE_AND_FREEZE_EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES",
+    "RELEASED_OUTPUT_REUSES_CONTROLLED_PRINT_REGISTRY_SNAPSHOT_OUTPUT_QR_HASH_WATERMARK_COPY_AND_REPRINT_TRUTH",
+    "SUMMARY_AND_REPRINT_NEVER_RESOLVE_RETAINED_SOURCES_TO_LATEST",
+    "NPI_OWNED_RELEASED_SUMMARY_IS_DISTINCT_FROM_EXTERNAL_EVENT_PROJECTION_AND_RECEIPT",
+    "RAW_PRIVATE_FILE_URLS_AND_UNREDACTED_CONTROLLED_VALUES_NEVER_ENTER_OUTPUT_OR_LOGS",
+    "FORMAL_PRODUCTION_FORM_SIGNER_RETENTION_AND_COPY_POLICY_REMAIN_HELD",
     "NO_AUTOMATIC_G7_GATE_PROJECT_WORK_ITEM_TOOLING_ERP_OUTBOX_OR_EXTERNAL_MUTATION",
     "PROJECT_FIRST_AUTHORIZATION_AND_ACTOR_BOUND_IDEMPOTENCY",
-    "NO_LATEST_VALUE_SUBSTITUTION_OR_EVIDENCE_AS_APPROVAL",
+    "NO_EVIDENCE_OUTPUT_OR_PRINT_AS_APPROVAL",
     "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
-    ".github/workflows/ci.yml",
-    "apps/npi_core/npi_core/bff.py",
-    "apps/npi_core/npi_core/production_transition/*",
-    "apps/npi_core/npi_core/production_transition_api.py",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_production_transition_policy/*",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_production_transition_policy_version/*",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_handover_package_revision/*",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_handover_acknowledgement/*",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_observation_period_revision/*",
-    "apps/npi_core/npi_core/npi_core/doctype/npi_production_transition_command_idempotency/*",
-    "apps/npi_core/npi_core/translations/zh.csv",
-    "apps/npi_core/npi_core/translations/zh-TW.csv",
-    "contracts/data-ownership.yaml",
-    "contracts/npi-api.openapi.yaml",
-    "frontend/src/api/production-transition-data-source.ts",
-    "frontend/src/app/app.tsx",
-    "frontend/src/generated/catalogs.ts",
-    "frontend/src/pages/project-page.tsx",
-    "frontend/src/pages/project-production-transition-workspace.tsx",
-    "frontend/src/pages/project-workspace.tsx",
-    "frontend/src/styles/app.css",
-    "frontend/tests/e2e/p7-06-production-transition-live.spec.ts",
-    "frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/*",
-    "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-en-1366x768-100-linux.png",
-    "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-1440x900-125-linux.png",
-    "frontend/tests/e2e/p5-01-documents-live.spec.ts-snapshots/p5-01-documents-zh-TW-1920x1080-150-linux.png",
-    "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-en-1366x768-100-linux.png",
-    "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-1440x900-125-linux.png",
-    "frontend/tests/e2e/p5-04-ebom-live.spec.ts-snapshots/p5-04-ebom-workspace-zh-TW-1920x1080-150-linux.png",
-    "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-en-1366x768-100-linux.png",
-    "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-1440x900-125-linux.png",
-    "frontend/tests/e2e/p5-06-controlled-print-live.spec.ts-snapshots/p5-06-controlled-print-zh-TW-1920x1080-150-linux.png",
-    "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-en-1366x768-100-linux.png",
-    "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-zh-1440x900-125-linux.png",
-    "frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-readiness-zh-TW-1920x1080-150-linux.png",
-    "frontend/tests/support/production-transition-fixture.ts",
-    "frontend/tests/unit/production-transition-data-source.test.ts",
-    "frontend/tests/unit/project-production-transition-workspace.test.tsx",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -106,34 +52,21 @@
     "implementation/RISK_REGISTER.md",
     "implementation/phase-7-requirement-anchor.md",
     "implementation/evidence/phase-7/p7-06-*.md",
-    "scripts/verify-frappe-runtime.sh",
-    "scripts/verify.sh",
-    "scripts/verify_production_transition_runtime.py",
+    "implementation/evidence/phase-7/p7-07-*.md",
     "scripts/verify_v1_2_reconciliation.py",
-    "tests/test_current_task_verifier.py",
-    "tests/test_phase7_production_transition_api.py",
-    "tests/test_phase7_production_transition_contract.py",
-    "tests/test_phase7_production_transition_domain.py",
-    "tests/test_phase7_production_transition_metadata.py",
-    "tests/test_phase7_production_transition_repository.py",
-    "tests/test_phase7_production_transition_repository_seams.py",
-    "tests/test_phase7_production_transition_runtime_verifier.py"
+    "tests/test_current_task_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
-      ["python", "-m", "unittest", "tests.test_phase7_production_transition_domain", "tests.test_phase7_production_transition_metadata", "tests.test_phase7_production_transition_contract", "-v"],
       ["python", "scripts/verify_current_task.py"],
+      ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"],
-      ["npm", "--prefix", "frontend", "run", "test:e2e"],
-      ["npx", "playwright", "test", "tests/e2e/p7-06-production-transition-live.spec.ts", "--grep", "@visual"]
+      ["bash", "scripts/verify.sh"]
     ],
     "runtime_preflight": [
-      ["python", "scripts/verify_current_task.py"],
-      ["python", "-m", "unittest", "tests.test_phase7_production_transition_runtime_verifier", "-v"],
-      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
+      ["python", "scripts/verify_current_task.py"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
@@ -142,15 +75,15 @@
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "P7-06",
+    "phase_status_current_task": "P7-07",
     "phase_status_execution_hold": "NONE",
-    "phase_status_resumed_product_task": "P7-06",
-    "active_goal_marker": "P7-06",
-    "next_action_marker": "P7-06",
-    "controller_marker": "P7-06 checkpoint 3 PASS; checkpoint 4 active"
+    "phase_status_resumed_product_task": "P7-07",
+    "active_goal_marker": "P7-07",
+    "next_action_marker": "P7-07",
+    "controller_marker": "P7-06 Level 2 PASS; P7-07 audit active"
   },
   "rollback": {
-    "before_product_resume": "Before retained P7-06 rows, restore the starting controller checkpoint and migrate only a disposable Site fresh.",
-    "after_product_resume": "After retained policy, package, acknowledgement or observation history, disable only the independent P7-06 routes and Project workspace and deliver a reviewed forward repair without rewriting, deleting, renumbering or inheriting retained revisions, acknowledgements, source snapshots or audit history."
+    "before_product_resume": "Restore the P7-06 Level 2 checkpoint; the bounded P7-07 audit creates no product row, route, metadata, output or external effect.",
+    "after_product_resume": "Use the rollback frozen in the accepted P7-07 plan; after retained summary or controlled-output history, disable only independent P7-07 routes and workspace and deliver a reviewed forward repair without rewriting summaries, outputs, source snapshots, receipts or audit history."
   }
 }

@@ -1,17 +1,18 @@
 # Active Execution Goal
 
-Updated: `2026-08-14T16:14:37Z`
+Updated: `2026-08-14T18:54:42Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-06`
+- Mode: `IN_PROGRESS_AUDIT — P7-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `b11e892128e3b9832b0cf92e48e0c331bf80eac4` (pushed; P7-06 checkpoint 3
-  final checkpoint PASS; product implementation
-  `796712f7af6695549f611abdaf1bf53bd14c3e82`)
+  `563fff535bc46f3d0c216a68a555b61b32479a0d` (pushed; P7-06
+  `PASS_LEVEL_2`; product implementation
+  `796712f7af6695549f611abdaf1bf53bd14c3e82` plus bounded controlled-runtime
+  forward fixes)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -32,21 +33,21 @@ Updated: `2026-08-14T16:14:37Z`
 - Latest P7-05 product Gate:
   `418b3aab01c9aebbd0cd0001f58006de9c417f6f` (`LEVEL 2 PASS`;
   ordinary CI `31777229867`, controlled Gate `31777985302`)
-- Latest P7-06 product checkpoint:
-  `b11e892128e3b9832b0cf92e48e0c331bf80eac4` (`CHECKPOINT 3 PASS`;
-  ordinary CI `31817424246`; product implementation `796712f`)
+- Latest P7-06 product Gate:
+  `563fff535bc46f3d0c216a68a555b61b32479a0d` (`LEVEL 2 PASS`;
+  ordinary CI `31828878511`; exact-SHA controlled Gate `31829617671`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P7-06 — Production handover and observation period`
-  (`IN_PROGRESS; CHECKPOINT 4 CONTROLLED RUNTIME AND LEVEL 2`)
-- Resumed product task: `P7-06` (`ACTIVE_CHECKPOINT_4_ONLY`)
+  `P7-07 — Immutable Released Trial Summary and controlled output`
+  (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P7-07` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-06 CHECKPOINT 4`)
+  (`IN_PROGRESS — P7-07 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -252,15 +253,51 @@ complete `112/112` fixed-Linux visual matrix in `94822344387`; controlled
 preflight and runtime skip as required. Complete evidence is
 `implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md`.
 
-Checkpoint 4 is the only authorized atomic scope: extend the cumulative
-disposable-Site fixture through P7-06, execute the exact-SHA controlled
-runtime, and complete traceability, Task Diff Review and Level 2. No further
-UI, Level 3, Gate/Project/Work Item/Tooling mutation, production ERP/network/
-Outbox effect, external provider, release, projection or print authority is
-active. Formal receiving-organization and bilateral authority, electronic
-signature or approval, actual SOP, external yield/complaint/cycle/Tooling
-actuals, stability business policy and G7 close remain held. The latest
-complete Level 3 remains `31392474781` at
+P7-06 passes Level 2 at exact final product checkpoint
+`563fff535bc46f3d0c216a68a555b61b32479a0d`. Ordinary pull-request CI
+`31828878511` passes repository `94859592477` (`1,873` tracked Python),
+frontend `94859592402` (`58/58` files, `908/908` unit, `399/399` non-visual
+E2E, `7,307` complete direct trilingual sources, aggregate coverage
+`80.36%/80.24%/83.05%/83.00%` and zero vulnerabilities), secret scan
+`94859592400` (`26` pull-request first-parent commits and `462` full-history
+commits with no leaks) and `112/112` fixed-Linux visual job `94859592530`.
+Visual artifact `9230002263` has digest
+`sha256:85d9a950afe2bf4d168007f0cf8c2905e993ee143a2086393f986652ab5426ef`;
+Gitleaks artifact `9229888878` has digest
+`sha256:004638f284cd537f4c90d1c426c7a94cee0b78d5d6f84da660de797d8c163384`.
+
+Independent exact-SHA controlled Gate `31829617671` passes preflight
+`94861911975`, prior-Gate artifact `9230158705` with digest
+`sha256:c7daa59f5e28db999489a5660e2a15f36f98d2d42bd6af78e6818d805d97d917`,
+and cumulative runtime `94862026482` through scope
+`p5-01-through-p7-06`. Runtime artifact `9230370526` has digest
+`sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
+its `result.txt` payload hashes to
+`sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
+The runtime proves `4` acknowledgements, `11` audits, `9` exact sources, `2`
+package revisions, `2` observation revisions, `1` policy version, `5`
+identity-free providers and `11` receipts, plus cross-process replay, all
+`11` routes disabled/recovered, redaction, `sensitivePersisted=false`,
+`zeroDownstreamEffects=true` and successful cleanup.
+
+Diagnostic controlled runs `31823927177` at `2340328` and `31827177095` at
+`bfac3f0` are retained as failures, not PASS evidence. They respectively
+exposed current-source bridge and IDOR actor-fixture defects; neither produced
+a runtime result or runtime artifact, both cleaned up successfully, and each
+was followed by a bounded forward fix plus affected tests before the final
+independent attempt. The exact Task Diff
+`75c67e6ffbe8b1cd113a7eac97c7878bce28e258..563fff535bc46f3d0c216a68a555b61b32479a0d`
+contains `11` commits, `80` paths, `34,596` insertions and `105` deletions.
+Complete evidence is
+`implementation/evidence/phase-7/p7-06-validation.md`.
+
+The only active atomic scope is the bounded P7-07 Requirement/domain/existing-
+capability audit for `FR-PRN-002`, `FR-INT-015` and `FR-TR-008`. No product
+code, route, row, migration, event, projection, form, signature, retention,
+copy, release or print authority is active. External event/projection remains
+held under `DR-REC-009`; form mapping, signature, retention and copy policy
+remain held under `DR-REC-003` and `DR-REC-004`; G7, ERP and production print
+authority remain held. The latest complete Level 3 remains `31392474781` at
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
 Blocker.
 

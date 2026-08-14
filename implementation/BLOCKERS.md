@@ -1,50 +1,46 @@
 # Blockers
 
-Updated: `2026-08-14T16:14:37Z`
+Updated: `2026-08-14T18:54:42Z`
 
 ## Active hard blockers
 
-None. P7-05 passes Level 2 at exact product checkpoint
-`418b3aab01c9aebbd0cd0001f58006de9c417f6f`. Ordinary pull-request CI
-`31777229867` and exact-SHA controlled Gate `31777985302` both pass; the
-controlled runtime artifact is `9210730456` with digest
-`sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`.
-P7-06 checkpoint 3 final SHA
-`b11e892128e3b9832b0cf92e48e0c331bf80eac4` passes ordinary CI
-`31817424246` at the exact SHA: repository `94822344253`, frontend
-`94822344360`, secret scan `94822344279` and `112/112` fixed-Linux visual job
-`94822344387` all pass, while controlled runtime `94825306276` and preflight
-`94825306398` skip as required. Product implementation is `796712f`; final
-checkpoint `b11e892` changes only reviewed Linux baselines and their exact
-task paths. Checkpoint 4 is active; no user action, login or frontend operation
-is required.
+None. P7-06 passes Level 2 at exact final product checkpoint
+`563fff535bc46f3d0c216a68a555b61b32479a0d`. Ordinary pull-request CI
+`31828878511` passes repository `94859592477`, frontend `94859592402`, secret
+scan `94859592400` and `112/112` fixed-Linux visual job `94859592530`.
+Independent exact-SHA controlled Gate `31829617671` passes preflight
+`94861911975`, cumulative disposable-Site runtime `94862026482` through
+`p5-01-through-p7-06`, redaction, zero downstream effects and cleanup.
+Runtime artifact `9230370526` has digest
+`sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
+its `result.txt` payload hashes to
+`sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
+P7-07 audit is active; no user action, login or frontend operation is required.
 
 ## Active recovery
 
-None. The ordered delivery hold remains resolved and P7-05 is sealed
-`PASS_LEVEL_2`. Controlled preflight `94697368669`, runtime `94697448103`,
-prior-Gate artifact `9210604110` with digest
-`sha256:5a58b6dc50b9731e9578d1d33356c3102094121d4b7825d851ca022e196defb0`,
-and runtime artifact `9210730456` with digest
-`sha256:e018a02bc3005670879822c3ca2ec348136b4f36db50feb7ac7398c395ba4372`
-close the P7-05 recovery chain. The earlier controlled-runtime failures remain
-diagnostic evidence of serial verifier/fixture corrections and are not active
-blockers. P7-06 checkpoint 3 is proven and sealed. P7-06 is restricted to
-checkpoint 4 cumulative disposable-Site runtime, traceability, Task Diff Review
-and Level 2. No further UI, Gate input/evidence/mutation, Project/Work Item/
-Tooling mutation, external provider, ERP integration or Level 3 is active.
+None. The ordered delivery hold remains resolved and P7-06 is sealed
+`PASS_LEVEL_2`. Diagnostic controlled runs `31823927177` at `2340328` and
+`31827177095` at `bfac3f0` respectively exposed the current-source bridge and
+IDOR actor-fixture defects. Neither produced a runtime result or runtime
+artifact; both cleanup steps passed. Bounded forward fixes and affected tests
+preceded the independent final ordinary and controlled PASS at `563fff5`.
+Only the P7-07 Requirement/domain/existing-capability audit is active. No
+product code, route, row, migration, event, projection, form, release or Level
+3 execution is authorized by this transition.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
 signature authority, automatic Gate/Work Item/Tooling/G7 mutation, formal
 production handover, receiving-organization or bilateral authority, actual
 SOP, production transactions and external yield/complaint/cycle/Tooling
-actuals, stability policy, readiness/release, the external
-Released Trial Summary event/projection under `DR-REC-009`, and production
-print policy remain scoped holds, not global Hard Blockers. The latest complete
-Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`; no Level 3 ran for P7-06
-checkpoint 3.
+actuals, stability policy, readiness/release, the external Released Trial
+Summary event/projection under `DR-REC-009`, form mapping, signature,
+retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
+production print authority remain scoped holds, not global Hard Blockers. The
+latest complete Level 3 remains `31392474781` at
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`; P7-06 Level 2 does not replace
+that Phase/PR/release boundary.
 
 ## Historical recovery
 
