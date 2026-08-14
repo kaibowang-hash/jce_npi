@@ -593,6 +593,65 @@ objects:
       readiness_blocker_to_gate_review_input: {owner: NPI_ONE_GATE_REVIEW_INPUT_BUILDER, editable_in: [], direction: REFERENCE_ONLY, conflict: GATE_POLICY_REMAINS_INDEPENDENT}
       gate_work_item_risk_tooling_handover_and_external_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_05}
 
+  ProductionTransitionPolicy:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      stable_policy_identity_code_title_and_optimistic_version: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN], direction: NONE, conflict: GUARDED_OPTIMISTIC_COMMAND_ONLY}
+      production_default_policy_project_binding_or_organization_mapping: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_METADATA}
+
+  ProductionTransitionPolicyVersion:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_policy_version_and_project_applicability: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: EXACT_VERSIONED_CONFIGURATION}
+      npi_receiving_groups_sender_receiver_slots_handover_requirements_and_observation_rules: {owner: VERSIONED_PRODUCTION_TRANSITION_POLICY, editable_in: [NPI_ONE_INTERNAL_ADMIN_DRAFT], direction: NONE, conflict: NEW_POLICY_VERSION_AFTER_PUBLISH}
+      published_policy_snapshot: {owner: NPI_ONE_PRODUCTION_TRANSITION_POLICY_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_department_quorum_signature_stability_and_g7_authority: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: CONFIGURATION_NOT_GLOBAL_HARDCODE}
+
+  HandoverPackageRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: reference_only
+    fields:
+      exact_handover_version_predecessor_project_policy_and_source_manifest: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_EXACT_SNAPSHOT}
+      exact_project_member_role_and_receiving_group_slot_snapshots: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: IMMUTABLE_SNAPSHOT}
+      complete_non_terminal_action_snapshot: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: SERVER_ENUMERATED_ALL_NON_TERMINAL}
+      source_projection_truth: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_VERSION_REFERENCE}
+      fully_acknowledged_projection: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: NEVER_PERSIST_OR_REHASH_PACKAGE}
+      formal_production_department_acceptance_signature_gate_and_g7_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_06}
+
+  HandoverAcknowledgement:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      exact_package_slot_actor_member_and_role_snapshot: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_CURRENT_TIP_ONLY}
+      acknowledgement_intent_actor_time_request_and_trace: {owner: NPI_ONE_PRODUCTION_HANDOVER_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_ACTOR_BOUND_FACT}
+      substitution_delegation_admin_proxy_signature_and_approval: {owner: FUTURE_APPROVED_PRODUCTION_TRANSITION_AUTHORITY, editable_in: [], direction: NONE, conflict: UNAVAILABLE_NO_PROXY_OR_SIGNATURE}
+
+  ObservationPeriodRevision:
+    owner_system: SPLIT_BY_FACT_LAYER
+    erp_view: read_only_external_provider_projection
+    fields:
+      exact_observation_version_predecessor_project_policy_handover_and_npi_context: {owner: NPI_ONE_OBSERVATION_PERIOD_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_UNIQUE_CURRENT_TIP}
+      retrospective_note_and_exact_npi_evidence: {owner: NPI_ONE_OBSERVATION_PERIOD_COMMAND, editable_in: [NPI_ONE_OBSERVATION_PERIOD_COMMAND], direction: NONE, conflict: IMMUTABLE_SUCCESSOR_REQUIRED}
+      actual_sop: {owner: FUTURE_APPROVED_PRODUCTION_ACTUAL_PROVIDER, editable_in: [], direction: EXTERNAL_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      first_batch_yield: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      customer_complaint: {owner: FUTURE_APPROVED_CUSTOMER_COMPLAINT_PROVIDER, editable_in: [], direction: EXTERNAL_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      production_cycle_time: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      tooling_stability: {owner: ERPNEXT_AND_FUTURE_PHASE_8_ADAPTER, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE_IDENTITY_FREE_NO_CALLER_VALUE}
+      source_availability_observed_window_and_technical_disposition: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: NOT_EVALUABLE_WHILE_ANY_PROVIDER_UNAVAILABLE}
+      formal_production_stability_acceptance_gate_and_g7_effect: {owner: FUTURE_SEPARATELY_APPROVED_COMMANDS, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_IN_P7_06}
+
+  ProductionTransitionCommandIdempotency:
+    owner_system: NPI_ONE
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      canonical_payload_hash: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: PAYLOAD_HASH_CONFLICT}
+      response_seal_transition: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [NPI_ONE_PRODUCTION_TRANSITION_COMMAND_UNSEALED_ONLY], direction: NONE, conflict: ONE_WAY_SEAL}
+      sealed_response_and_target_identity: {owner: NPI_ONE_PRODUCTION_TRANSITION_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
   ToolingProcessProfileRevision:
     owner_system: SPLIT_BY_FACT_LAYER
     erp_view: none

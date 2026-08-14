@@ -21,6 +21,7 @@ tags:
   - { name: Tooling }
   - { name: Trials }
   - { name: Readiness }
+  - { name: ProductionTransition }
   - { name: Execution }
 paths:
   /session/bootstrap:
@@ -5940,6 +5941,321 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /production-transition/policies:
+    get:
+      tags: [ProductionTransition]
+      operationId: listEligibleProductionTransitionPolicies
+      description: Returns exact published policy versions only after Project-first authorization; metadata installs no default policy or binding.
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          description: Immutable Engineering Project global_id used for Project-first authorization and applicability
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ProductionTransitionPolicyCatalogResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [ProductionTransition]
+      operationId: createProductionTransitionPolicyDraft
+      description: Creates one internal-admin draft with no production default, organization mapping, provider or Gate authority.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-transition-policy
+      x-audit-operation: production_transition_policy.create
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProductionTransitionPolicy" }
+      responses:
+        "201": { $ref: "#/components/responses/ProductionTransitionPolicyCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /production-transition/policies/{policyId}/versions/{policyVersion}:
+    put:
+      tags: [ProductionTransition]
+      operationId: editProductionTransitionPolicyDraft
+      description: Replaces the exact current draft under optimistic concurrency; published versions remain immutable.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-transition-policy
+      x-audit-operation: production_transition_policy.edit
+      parameters:
+        - $ref: "#/components/parameters/ProductionTransitionPolicyId"
+        - $ref: "#/components/parameters/ProductionTransitionPolicyVersionParam"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditProductionTransitionPolicy" }
+      responses:
+        "200": { $ref: "#/components/responses/ProductionTransitionPolicyCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /production-transition/policies/{policyId}/versions/{policyVersion}:publish:
+    post:
+      tags: [ProductionTransition]
+      operationId: publishProductionTransitionPolicyVersion
+      description: Publishes one exact validated draft as an immutable version without binding a Project or asserting production authority.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-transition-policy
+      x-audit-operation: production_transition_policy.publish
+      parameters:
+        - $ref: "#/components/parameters/ProductionTransitionPolicyId"
+        - $ref: "#/components/parameters/ProductionTransitionPolicyVersionParam"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishProductionTransitionPolicy" }
+      responses:
+        "200": { $ref: "#/components/responses/ProductionTransitionPolicyCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /production-transition/policies/{policyId}/versions:
+    post:
+      tags: [ProductionTransition]
+      operationId: createNextProductionTransitionPolicyVersion
+      description: Creates the exact next draft from one current published version and hash; no generic clone or latest lookup is accepted.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-transition-policy
+      x-audit-operation: production_transition_policy.next_version
+      parameters:
+        - $ref: "#/components/parameters/ProductionTransitionPolicyId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateNextProductionTransitionPolicyVersion" }
+      responses:
+        "201": { $ref: "#/components/responses/ProductionTransitionPolicyCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/production-transition:
+    get:
+      tags: [ProductionTransition]
+      operationId: getProjectProductionTransitionWorkspace
+      description: Returns independently versioned handover and observation history, response-only acknowledgement derivation, server-enumerated unresolved actions and identity-free unavailable external providers after Project-first authorization.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ProductionTransitionQueryResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/production-handover:
+    post:
+      tags: [ProductionTransition]
+      operationId: createProductionHandoverPackage
+      description: Freezes one exact Project, published policy, server-derived slot projections, closed source manifest and complete server-enumerated unresolved Work Item set; it performs no Gate, Project, Work, Tooling or ERP mutation.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-handover-package
+      x-audit-operation: production_handover.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProductionHandoverPackage" }
+      responses:
+        "201": { $ref: "#/components/responses/ProductionHandoverCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/production-handover/{handoverId}/revisions:
+    post:
+      tags: [ProductionTransition]
+      operationId: reviseProductionHandoverPackage
+      description: Appends one exact current-tip successor and re-enumerates all unresolved actions without inheriting acknowledgements.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: production-handover-package
+      x-audit-operation: production_handover.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ProductionHandoverId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviseProductionHandoverPackage" }
+      responses:
+        "201": { $ref: "#/components/responses/ProductionHandoverCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/production-handover/{handoverId}/revisions/{handoverVersion}/acknowledgements:
+    post:
+      tags: [ProductionTransition]
+      operationId: acknowledgeProductionHandoverSlot
+      description: Appends one acknowledgement fact only for the exact frozen enabled slot actor on the unique current package tip; no proxy, substitution, signature, approval, production acceptance or G7 effect applies.
+      x-required-roles: [NPI API User]
+      x-authorization-boundary: exact frozen enabled package-slot actor only; System Manager has no proxy authority
+      x-transaction-boundary: production-handover-acknowledgement
+      x-audit-operation: production_handover.acknowledge
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ProductionHandoverId"
+        - $ref: "#/components/parameters/ProductionHandoverVersionParam"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AcknowledgeProductionHandoverSlot" }
+      responses:
+        "201": { $ref: "#/components/responses/ProductionHandoverAcknowledgementCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/observation-periods:
+    post:
+      tags: [ProductionTransition]
+      operationId: createObservationPeriod
+      description: Creates one independent observation revision while the five mandatory external providers remain identity-free unavailable and the technical disposition is server-derived not_evaluable.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: observation-period
+      x-audit-operation: observation_period.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateObservationPeriod" }
+      responses:
+        "201": { $ref: "#/components/responses/ObservationPeriodCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/observation-periods/{observationId}/revisions:
+    post:
+      tags: [ProductionTransition]
+      operationId: reviseObservationPeriod
+      description: Appends an exact unique-current-tip successor with same-Project NPI review context; caller values, scores, statuses, conclusions, provider identities and dates are rejected.
+      x-required-roles: [System Manager]
+      x-transaction-boundary: observation-period
+      x-audit-operation: observation_period.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ObservationPeriodId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviseObservationPeriod" }
+      responses:
+        "201": { $ref: "#/components/responses/ObservationPeriodCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
 components:
   securitySchemes:
     sessionAuth:
@@ -6048,6 +6364,36 @@ components:
       name: instanceId
       required: true
       description: Stable Project readiness-instance global_id within the already-authorized Project
+      schema: { type: string, format: uuid }
+    ProductionTransitionPolicyId:
+      in: path
+      name: policyId
+      required: true
+      description: Stable production-transition policy global_id
+      schema: { type: string, format: uuid }
+    ProductionTransitionPolicyVersionParam:
+      in: path
+      name: policyVersion
+      required: true
+      description: Exact positive production-transition policy version
+      schema: { type: integer, minimum: 1 }
+    ProductionHandoverId:
+      in: path
+      name: handoverId
+      required: true
+      description: Stable production-handover stream global_id within the already-authorized Project
+      schema: { type: string, format: uuid }
+    ProductionHandoverVersionParam:
+      in: path
+      name: handoverVersion
+      required: true
+      description: Exact positive handover package revision number
+      schema: { type: integer, minimum: 1 }
+    ObservationPeriodId:
+      in: path
+      name: observationId
+      required: true
+      description: Stable observation-period stream global_id within the already-authorized Project
       schema: { type: string, format: uuid }
     IdempotencyKey:
       in: header
@@ -7293,6 +7639,64 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ReadinessWorkspace" }
+    ProductionTransitionPolicyCatalogResult:
+      description: Exact published production-transition policy versions eligible for the authorized Project
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProductionTransitionPolicyCatalog" }
+    ProductionTransitionPolicyCommandResult:
+      description: Exact policy draft or published version after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProductionTransitionPolicyVersion" }
+    ProductionTransitionQueryResult:
+      description: Exact authorized Project production-transition workspace with independent immutable histories
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProductionTransitionWorkspace" }
+    ProductionHandoverCommandResult:
+      description: Exact handover package receipt response after one atomic append-only command or safe actor-bound replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProductionHandoverCommandResponse" }
+    ProductionHandoverAcknowledgementCommandResult:
+      description: Exact package and actor-bound acknowledgement receipt response after atomic append or safe replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ProductionHandoverAcknowledgementCommandResponse" }
+    ObservationPeriodCommandResult:
+      description: Exact observation-period receipt response after one atomic append-only command or safe actor-bound replay
+      headers:
+        X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+        X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" } }
+        Idempotency-Replayed: { required: true, schema: { type: boolean } }
+        Cache-Control: { required: true, schema: { type: string, const: "private, no-store" } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ObservationPeriodCommandResponse" }
     DocumentCapabilityResult:
       description: URL-free exact file capability truth
       headers:
@@ -18871,7 +19275,7 @@ components:
       type: object
       additionalProperties: false
       description: Explicit formal-provider hold. It performs no ERP or network call and accepts no caller disposition.
-      required: [kind, state, reasonCode]
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
       properties:
         kind:
           type: string
@@ -18927,6 +19331,762 @@ components:
           maxItems: 5
           items: { $ref: "#/components/schemas/ReadinessUnavailableProjection" }
         permissions: { $ref: "#/components/schemas/ReadinessPermissions" }
+    ProductionTransitionSha256:
+      type: string
+      pattern: "^[a-f0-9]{64}$"
+    ProductionTransitionApplicability:
+      type: object
+      additionalProperties: false
+      required: [projectTypes, projectGlobalIds, customerReferenceKeys]
+      properties:
+        projectTypes:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, enum: [customer_owned_tool, new_tool, tool_change] }
+        projectGlobalIds:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        customerReferenceKeys:
+          type: array
+          maxItems: 1000
+          uniqueItems: true
+          items: { type: string, minLength: 1, maxLength: 256 }
+    ProductionTransitionReceivingGroupDefinition:
+      type: object
+      additionalProperties: false
+      description: NPI receiving-group key only; it does not assert a formal HR or ERP production department.
+      required: [key, title]
+      properties:
+        key: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        title: { type: string, minLength: 1, maxLength: 200 }
+    ProductionTransitionAcknowledgementSlotDefinition:
+      type: object
+      additionalProperties: false
+      description: Policy slot definition; publication validation requires at least one sender and one receiver slot.
+      required: [key, groupKey, direction, allowedProjectRoleKeys]
+      properties:
+        key: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        groupKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        direction: { type: string, enum: [sender, receiver] }
+        allowedProjectRoleKeys:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+    ProductionTransitionHandoverObjectRequirement:
+      type: object
+      additionalProperties: false
+      description: The published policy owns the canonical manifest role; a handover caller selects only the requirement and exact source identity/version.
+      required: [key, acceptedSourceKinds, manifestRole, minimumCount]
+      properties:
+        key: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        acceptedSourceKinds:
+          type: array
+          minItems: 1
+          maxItems: 9
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/ProductionTransitionSourceKind" }
+        manifestRole: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        minimumCount: { type: integer, minimum: 1, maximum: 1000 }
+    ProductionTransitionMetricRule:
+      oneOf:
+        - $ref: "#/components/schemas/ProductionTransitionActualSopRule"
+        - $ref: "#/components/schemas/ProductionTransitionCustomerComplaintRule"
+        - $ref: "#/components/schemas/ProductionTransitionFirstBatchYieldRule"
+        - $ref: "#/components/schemas/ProductionTransitionCycleTimeRule"
+        - $ref: "#/components/schemas/ProductionTransitionToolingStabilityRule"
+    ProductionTransitionAllowedDispositions:
+      type: array
+      minItems: 1
+      maxItems: 4
+      uniqueItems: true
+      items: { type: string, enum: [not_evaluable, within_rule, outside_rule, review_required] }
+      contains: { const: not_evaluable }
+      minContains: 1
+      maxContains: 1
+    ProductionTransitionActualSopRule:
+      type: object
+      additionalProperties: false
+      required: [providerKind, unit, comparator, threshold, allowedDispositions]
+      properties:
+        providerKind: { type: string, const: actual_sop }
+        comparator: { type: "null" }
+        threshold: { type: "null" }
+        allowedDispositions: { $ref: "#/components/schemas/ProductionTransitionAllowedDispositions" }
+        unit: { type: "null" }
+    ProductionTransitionCustomerComplaintRule:
+      type: object
+      additionalProperties: false
+      required: [providerKind, unit, comparator, threshold, allowedDispositions]
+      properties:
+        providerKind: { type: string, const: customer_complaint }
+        comparator: { type: string, enum: [less_than_or_equal, greater_than_or_equal, equal] }
+        threshold: { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+        allowedDispositions: { $ref: "#/components/schemas/ProductionTransitionAllowedDispositions" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+    ProductionTransitionFirstBatchYieldRule:
+      type: object
+      additionalProperties: false
+      required: [providerKind, unit, comparator, threshold, allowedDispositions]
+      properties:
+        providerKind: { type: string, const: first_batch_yield }
+        comparator: { type: string, enum: [less_than_or_equal, greater_than_or_equal, equal] }
+        threshold: { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+        allowedDispositions: { $ref: "#/components/schemas/ProductionTransitionAllowedDispositions" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+    ProductionTransitionCycleTimeRule:
+      type: object
+      additionalProperties: false
+      required: [providerKind, unit, comparator, threshold, allowedDispositions]
+      properties:
+        providerKind: { type: string, const: production_cycle_time }
+        comparator: { type: string, enum: [less_than_or_equal, greater_than_or_equal, equal] }
+        threshold: { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+        allowedDispositions: { $ref: "#/components/schemas/ProductionTransitionAllowedDispositions" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+    ProductionTransitionToolingStabilityRule:
+      type: object
+      additionalProperties: false
+      required: [providerKind, unit, comparator, threshold, allowedDispositions]
+      properties:
+        providerKind: { type: string, const: tooling_stability }
+        comparator: { type: string, enum: [less_than_or_equal, greater_than_or_equal, equal] }
+        threshold: { type: string, pattern: "^-?[0-9]+(?:\\.[0-9]+)?$" }
+        allowedDispositions: { $ref: "#/components/schemas/ProductionTransitionAllowedDispositions" }
+        unit: { type: string, minLength: 1, maxLength: 32 }
+    ProductionTransitionObservationSourceRules:
+      type: array
+      minItems: 5
+      maxItems: 5
+      prefixItems:
+        - { $ref: "#/components/schemas/ProductionTransitionActualSopRule" }
+        - { $ref: "#/components/schemas/ProductionTransitionCustomerComplaintRule" }
+        - { $ref: "#/components/schemas/ProductionTransitionFirstBatchYieldRule" }
+        - { $ref: "#/components/schemas/ProductionTransitionCycleTimeRule" }
+        - { $ref: "#/components/schemas/ProductionTransitionToolingStabilityRule" }
+      items: false
+    ProductionTransitionPolicyDefinition:
+      type: object
+      additionalProperties: false
+      description: Explicit no-default NPI technical configuration; it carries no provider actual, production acceptance, stability conclusion or G7 authority.
+      required: [applicability, receivingGroups, acknowledgementSlots, handoverRequirements, observationSourceRules, observationWindowDays]
+      properties:
+        applicability: { $ref: "#/components/schemas/ProductionTransitionApplicability" }
+        receivingGroups:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionReceivingGroupDefinition" }
+        acknowledgementSlots:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionAcknowledgementSlotDefinition" }
+        handoverRequirements:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionHandoverObjectRequirement" }
+        observationSourceRules:
+          $ref: "#/components/schemas/ProductionTransitionObservationSourceRules"
+        observationWindowDays: { type: integer, minimum: 1, maximum: 3650 }
+    ProductionTransitionPolicyVersion:
+      type: object
+      additionalProperties: false
+      description: Immutable after publication; metadata installs no production default row or Project binding.
+      required: [schemaVersion, globalId, policyGlobalId, policyCode, policyVersion, versionKeyHash, optimisticVersion, title, publicationState, priorVersionRef, applicability, receivingGroups, acknowledgementSlots, handoverRequirements, unresolvedActionSelector, observationSourceRules, observationWindowDays, authorityBoundary, changedByUserId, changedAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        policyGlobalId: { type: string, format: uuid }
+        policyCode: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$" }
+        policyVersion: { type: integer, minimum: 1 }
+        versionKeyHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        optimisticVersion: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        publicationState: { type: string, enum: [draft, published] }
+        priorVersionRef:
+          oneOf: [{ $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }, { type: "null" }]
+        applicability: { $ref: "#/components/schemas/ProductionTransitionApplicability" }
+        receivingGroups:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionReceivingGroupDefinition" }
+        acknowledgementSlots:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionAcknowledgementSlotDefinition" }
+        handoverRequirements:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionHandoverObjectRequirement" }
+        unresolvedActionSelector: { $ref: "#/components/schemas/ProductionTransitionUnresolvedActionSelector" }
+        observationSourceRules:
+          $ref: "#/components/schemas/ProductionTransitionObservationSourceRules"
+        observationWindowDays: { type: integer, minimum: 1, maximum: 3650 }
+        authorityBoundary: { type: string, const: npi_technical_configuration_only }
+        changedByUserId: { type: string, format: email, maxLength: 254 }
+        changedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionTransitionPolicyCatalog:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, policies]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        policies:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionPolicyVersion" }
+    CreateProductionTransitionPolicy:
+      type: object
+      additionalProperties: false
+      required: [policyCode, title, definition]
+      properties:
+        policyCode: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$" }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        definition: { $ref: "#/components/schemas/ProductionTransitionPolicyDefinition" }
+    EditProductionTransitionPolicy:
+      type: object
+      additionalProperties: false
+      required: [expectedOptimisticVersion, title, definition]
+      properties:
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        definition: { $ref: "#/components/schemas/ProductionTransitionPolicyDefinition" }
+    PublishProductionTransitionPolicy:
+      type: object
+      additionalProperties: false
+      required: [expectedOptimisticVersion, expectedSnapshotHash]
+      properties:
+        expectedOptimisticVersion: { type: integer, minimum: 1 }
+        expectedSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    CreateNextProductionTransitionPolicyVersion:
+      type: object
+      additionalProperties: false
+      required: [expectedPublishedVersion, expectedPublishedSnapshotHash]
+      properties:
+        expectedPublishedVersion: { type: integer, minimum: 1 }
+        expectedPublishedSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionTransitionSourceKind:
+      type: string
+      enum: [readiness_instance_revision, domain_work_item, released_document, release_baseline, file_revision, tooling_capacity_scenario, trial_defect_revision, trial_review_reference, trial_conclusion]
+    ProductionTransitionExactVersionReference:
+      type: object
+      additionalProperties: false
+      required: [globalId, version, snapshotHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionTransitionUnresolvedActionSelector:
+      type: object
+      additionalProperties: false
+      required: [mode, kinds]
+      properties:
+        mode: { type: string, const: all_non_terminal }
+        kinds:
+          type: array
+          minItems: 4
+          maxItems: 4
+          prefixItems:
+            - { type: string, const: action }
+            - { type: string, const: decision_request }
+            - { type: string, const: issue }
+            - { type: string, const: risk }
+          items: false
+    ProductionTransitionExactSourceSelection:
+      type: object
+      additionalProperties: false
+      description: Observation browser request submits only a closed kind, exact identity and expected version; server fixes usage, loads the canonical projection and computes its hash.
+      required: [kind, globalId, expectedVersion]
+      properties:
+        kind: { $ref: "#/components/schemas/ProductionTransitionSourceKind" }
+        globalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+    ProductionTransitionManifestSourceSelection:
+      type: object
+      additionalProperties: false
+      description: Handover browser request selects one published-policy requirement and exact source tuple; role, projection and hash remain server-owned.
+      required: [requirementKey, kind, globalId, expectedVersion]
+      properties:
+        requirementKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        kind: { $ref: "#/components/schemas/ProductionTransitionSourceKind" }
+        globalId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+    ProductionTransitionExactSourceReference:
+      type: object
+      additionalProperties: false
+      description: Canonical handover manifest reference; requirementKey comes from the caller selection and role is injected from the exact published policy requirement.
+      required: [requirementKey, kind, globalId, sourceVersion, snapshotHash, role]
+      properties:
+        requirementKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        kind: { $ref: "#/components/schemas/ProductionTransitionSourceKind" }
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        role: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+    ProductionTransitionObservationSourceReference:
+      type: object
+      additionalProperties: false
+      description: Canonical observation reference; usage, projection and hash are server-owned and it carries no handover requirement or manifest role.
+      required: [kind, globalId, sourceVersion, snapshotHash, usage]
+      properties:
+        kind: { $ref: "#/components/schemas/ProductionTransitionSourceKind" }
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        usage: { type: string, enum: [context, retrospective] }
+    ProductionTransitionSlotAssignmentSelection:
+      type: object
+      additionalProperties: false
+      required: [slotKey, memberGlobalId, memberExpectedVersion, roleAssignmentGlobalId, roleExpectedVersion]
+      properties:
+        slotKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        memberGlobalId: { type: string, format: uuid }
+        memberExpectedVersion: { type: integer, minimum: 1 }
+        roleAssignmentGlobalId: { type: string, format: uuid }
+        roleExpectedVersion: { type: integer, minimum: 1 }
+    ProductionTransitionPolicyReferenceRequest:
+      type: object
+      additionalProperties: false
+      required: [policyGlobalId, policyVersion, policySnapshotHash]
+      properties:
+        policyGlobalId: { type: string, format: uuid }
+        policyVersion: { type: integer, minimum: 1 }
+        policySnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionHandoverRequestContent:
+      type: object
+      additionalProperties: false
+      required: [expectedProjectVersion, policy, slotAssignments, manifestSources, reason]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        policy: { $ref: "#/components/schemas/ProductionTransitionPolicyReferenceRequest" }
+        slotAssignments:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionSlotAssignmentSelection" }
+        manifestSources:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionManifestSourceSelection" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    CreateProductionHandoverPackage:
+      allOf:
+        - $ref: "#/components/schemas/ProductionHandoverRequestContent"
+      unevaluatedProperties: false
+    ReviseProductionHandoverPackage:
+      type: object
+      additionalProperties: false
+      required: [expectedRevisionGlobalId, expectedSnapshotHash, content]
+      properties:
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        content: { $ref: "#/components/schemas/ProductionHandoverRequestContent" }
+    AcknowledgeProductionHandoverSlot:
+      type: object
+      additionalProperties: false
+      description: Actor and time are session-derived; this request carries no proxy, signature, approval, fullyAcknowledged, Gate or production-acceptance value.
+      required: [expectedRevisionGlobalId, expectedSnapshotHash, slotKey, intent]
+      properties:
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        slotKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        intent: { type: string, const: acknowledge }
+    ProductionTransitionProjectSnapshot:
+      type: object
+      additionalProperties: false
+      required: [globalId, tenantId, optimisticVersion, businessCode, title, projectType, ownerUserId, targetSopDate, targetSopState, lifecycleState, templateRef, workPolicyRef, customerReferenceKeys]
+      properties:
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        optimisticVersion: { type: integer, minimum: 1 }
+        businessCode: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._/-]{0,63}$" }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        projectType: { type: string, enum: [customer_owned_tool, new_tool, tool_change] }
+        ownerUserId: { type: string, format: email, maxLength: 254 }
+        targetSopDate:
+          description: Planned Project context only; never actual SOP.
+          oneOf: [{ type: string, format: date }, { type: "null" }]
+        targetSopState: { type: string, const: planned_only }
+        lifecycleState: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,63}$" }
+        templateRef: { $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }
+        workPolicyRef: { $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }
+        customerReferenceKeys:
+          type: array
+          maxItems: 1000
+          items: { type: string, minLength: 1, maxLength: 256 }
+    ProductionTransitionMemberSnapshot:
+      type: object
+      additionalProperties: false
+      required: [globalId, tenantId, projectGlobalId, userId, effectiveFrom, effectiveTo, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        userId: { type: string, format: email, maxLength: 254 }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { oneOf: [{ type: string, format: date }, { type: "null" }] }
+        optimisticVersion: { type: integer, minimum: 1 }
+    ProductionTransitionRoleSnapshot:
+      type: object
+      additionalProperties: false
+      required: [globalId, tenantId, projectGlobalId, memberGlobalId, roleKey, effectiveFrom, effectiveTo, optimisticVersion]
+      properties:
+        globalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        memberGlobalId: { type: string, format: uuid }
+        roleKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { oneOf: [{ type: string, format: date }, { type: "null" }] }
+        optimisticVersion: { type: integer, minimum: 1 }
+    ProductionTransitionFrozenSlot:
+      type: object
+      additionalProperties: false
+      required: [slotKey, groupKey, direction, member, memberSnapshotHash, role, roleSnapshotHash]
+      properties:
+        slotKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        direction: { type: string, enum: [sender, receiver] }
+        groupKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        member: { $ref: "#/components/schemas/ProductionTransitionMemberSnapshot" }
+        memberSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        role: { $ref: "#/components/schemas/ProductionTransitionRoleSnapshot" }
+        roleSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionTransitionUnresolvedWorkItemSnapshot:
+      type: object
+      additionalProperties: false
+      required: [globalId, sourceVersion, snapshotHash, kind, state, ownerUserId, dueDate]
+      properties:
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        kind: { type: string, enum: [action, decision_request, issue, risk] }
+        state: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,63}$" }
+        ownerUserId: { type: string, format: email, maxLength: 254 }
+        dueDate: { type: string, format: date }
+    HandoverAcknowledgement:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, globalId, handoverGlobalId, packageRevisionGlobalId, packageVersion, packageSnapshotHash, slotKey, acknowledgementIntent, actorUserId, memberGlobalId, memberOptimisticVersion, memberSnapshotHash, roleGlobalId, roleOptimisticVersion, roleSnapshotHash, acknowledgedAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        handoverGlobalId: { type: string, format: uuid }
+        packageRevisionGlobalId: { type: string, format: uuid }
+        packageVersion: { type: integer, minimum: 1 }
+        packageSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        slotKey: { type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$" }
+        acknowledgementIntent: { type: string, const: acknowledge_exact_package_slot }
+        actorUserId: { type: string, format: email, maxLength: 254 }
+        memberGlobalId: { type: string, format: uuid }
+        memberOptimisticVersion: { type: integer, minimum: 1 }
+        memberSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        roleGlobalId: { type: string, format: uuid }
+        roleOptimisticVersion: { type: integer, minimum: 1 }
+        roleSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        acknowledgedAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    HandoverPackageRevision:
+      type: object
+      additionalProperties: false
+      description: Immutable canonical NPI technical handover snapshot; acknowledgement projections never contribute to its snapshotHash.
+      required: [schemaVersion, globalId, handoverGlobalId, handoverVersion, versionKeyHash, predecessorGlobalId, predecessorSnapshotHash, tenantId, project, projectSnapshotHash, policyRef, readinessRef, slots, manifest, unresolvedActionSelector, unresolvedActions, reason, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        handoverGlobalId: { type: string, format: uuid }
+        handoverVersion: { type: integer, minimum: 1 }
+        versionKeyHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        predecessorGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        predecessorSnapshotHash: { oneOf: [{ $ref: "#/components/schemas/ProductionTransitionSha256" }, { type: "null" }] }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        project: { $ref: "#/components/schemas/ProductionTransitionProjectSnapshot" }
+        projectSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        policyRef: { $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }
+        readinessRef:
+          oneOf: [{ $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }, { type: "null" }]
+        slots:
+          type: array
+          minItems: 2
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ProductionTransitionFrozenSlot" }
+        manifest:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionExactSourceReference" }
+        unresolvedActionSelector: { $ref: "#/components/schemas/ProductionTransitionUnresolvedActionSelector" }
+        unresolvedActions:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/ProductionTransitionUnresolvedWorkItemSnapshot" }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    HandoverPackageView:
+      type: object
+      additionalProperties: false
+      description: Query-only wrapper; fullyAcknowledged is derived from immutable acknowledgement facts and never stored in or hashed into revision.
+      required: [revision, acknowledgements, fullyAcknowledged]
+      properties:
+        revision: { $ref: "#/components/schemas/HandoverPackageRevision" }
+        acknowledgements:
+          type: array
+          maxItems: 100
+          items: { $ref: "#/components/schemas/HandoverAcknowledgement" }
+        fullyAcknowledged:
+          type: boolean
+          readOnly: true
+          description: Query-time derivation only; not approval, signature, production acceptance, Gate result or G7 closure.
+    ProductionTransitionExternalUnavailableProvider:
+      oneOf:
+        - $ref: "#/components/schemas/ProductionTransitionActualSopUnavailable"
+        - $ref: "#/components/schemas/ProductionTransitionFirstBatchYieldUnavailable"
+        - $ref: "#/components/schemas/ProductionTransitionCustomerComplaintUnavailable"
+        - $ref: "#/components/schemas/ProductionTransitionCycleTimeUnavailable"
+        - $ref: "#/components/schemas/ProductionTransitionToolingStabilityUnavailable"
+    ProductionTransitionActualSopUnavailable:
+      type: object
+      additionalProperties: false
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
+      properties:
+        kind: { type: string, const: actual_sop }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: actual_sop_provider_unavailable }
+        sourceIdentity: { type: "null" }
+        observedAt: { type: "null" }
+        value: { type: "null" }
+        unit: { type: "null" }
+    ProductionTransitionFirstBatchYieldUnavailable:
+      type: object
+      additionalProperties: false
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
+      properties:
+        kind: { type: string, const: first_batch_yield }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: first_batch_yield_provider_unavailable }
+        sourceIdentity: { type: "null" }
+        observedAt: { type: "null" }
+        value: { type: "null" }
+        unit: { type: "null" }
+    ProductionTransitionCustomerComplaintUnavailable:
+      type: object
+      additionalProperties: false
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
+      properties:
+        kind: { type: string, const: customer_complaint }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: customer_complaint_provider_unavailable }
+        sourceIdentity: { type: "null" }
+        observedAt: { type: "null" }
+        value: { type: "null" }
+        unit: { type: "null" }
+    ProductionTransitionCycleTimeUnavailable:
+      type: object
+      additionalProperties: false
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
+      properties:
+        kind: { type: string, const: production_cycle_time }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: production_cycle_time_provider_unavailable }
+        sourceIdentity: { type: "null" }
+        observedAt: { type: "null" }
+        value: { type: "null" }
+        unit: { type: "null" }
+    ProductionTransitionToolingStabilityUnavailable:
+      type: object
+      additionalProperties: false
+      required: [kind, state, reasonCode, sourceIdentity, observedAt, value, unit]
+      properties:
+        kind: { type: string, const: tooling_stability }
+        state: { type: string, const: unavailable }
+        reasonCode: { type: string, const: tooling_stability_provider_unavailable }
+        sourceIdentity: { type: "null" }
+        observedAt: { type: "null" }
+        value: { type: "null" }
+        unit: { type: "null" }
+    ProductionTransitionExternalUnavailableProviders:
+      type: array
+      minItems: 5
+      maxItems: 5
+      prefixItems:
+        - { $ref: "#/components/schemas/ProductionTransitionActualSopUnavailable" }
+        - { $ref: "#/components/schemas/ProductionTransitionFirstBatchYieldUnavailable" }
+        - { $ref: "#/components/schemas/ProductionTransitionCustomerComplaintUnavailable" }
+        - { $ref: "#/components/schemas/ProductionTransitionCycleTimeUnavailable" }
+        - { $ref: "#/components/schemas/ProductionTransitionToolingStabilityUnavailable" }
+      items: false
+    ProductionTransitionHandoverReferenceRequest:
+      type: object
+      additionalProperties: false
+      required: [handoverGlobalId, handoverVersion, handoverRevisionGlobalId, handoverSnapshotHash]
+      properties:
+        handoverGlobalId: { type: string, format: uuid }
+        handoverVersion: { type: integer, minimum: 1 }
+        handoverRevisionGlobalId: { type: string, format: uuid }
+        handoverSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    CreateObservationPeriod:
+      type: object
+      additionalProperties: false
+      description: Mandatory providers are injected server-side; no actual SOP, observed date, metric identity/value/status/score/pass flag or conclusion is accepted.
+      required: [expectedProjectVersion, policy, handover, contextSources, retrospectiveSources, retrospectiveNote, reason]
+      properties:
+        expectedProjectVersion: { type: integer, minimum: 1 }
+        policy: { $ref: "#/components/schemas/ProductionTransitionPolicyReferenceRequest" }
+        handover:
+          oneOf: [{ $ref: "#/components/schemas/ProductionTransitionHandoverReferenceRequest" }, { type: "null" }]
+        contextSources:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionExactSourceSelection" }
+        retrospectiveSources:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionExactSourceSelection" }
+        retrospectiveNote:
+          oneOf: [{ type: string, maxLength: 4000 }, { type: "null" }]
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    ReviseObservationPeriod:
+      type: object
+      additionalProperties: false
+      description: Exact unique-tip successor request; external provider truth and disposition remain server-derived.
+      required: [expectedRevisionGlobalId, expectedSnapshotHash, contextSources, retrospectiveSources, retrospectiveNote, reason]
+      properties:
+        expectedRevisionGlobalId: { type: string, format: uuid }
+        expectedSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        contextSources:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionExactSourceSelection" }
+        retrospectiveSources:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ProductionTransitionExactSourceSelection" }
+        retrospectiveNote:
+          oneOf: [{ type: string, maxLength: 4000 }, { type: "null" }]
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    ObservationPeriodRevision:
+      type: object
+      additionalProperties: false
+      description: Independent immutable NPI observation/review snapshot; external actuals remain unavailable and no formal production stability is asserted.
+      required: [schemaVersion, globalId, observationGlobalId, observationVersion, versionKeyHash, predecessorGlobalId, predecessorSnapshotHash, tenantId, project, projectSnapshotHash, policyRef, handoverPackageRef, contextReferences, retrospectiveReferences, providers, observedStartDate, observedEndDate, observationState, technicalDisposition, authorityBoundary, retrospectiveNote, reason, createdByUserId, createdAt, requestId, traceId, snapshotHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        observationGlobalId: { type: string, format: uuid }
+        observationVersion: { type: integer, minimum: 1 }
+        versionKeyHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        predecessorGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        predecessorSnapshotHash: { oneOf: [{ $ref: "#/components/schemas/ProductionTransitionSha256" }, { type: "null" }] }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        project: { $ref: "#/components/schemas/ProductionTransitionProjectSnapshot" }
+        projectSnapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+        policyRef: { $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }
+        handoverPackageRef:
+          oneOf: [{ $ref: "#/components/schemas/ProductionTransitionExactVersionReference" }, { type: "null" }]
+        contextReferences:
+          type: array
+          maxItems: 1000
+          items:
+            allOf:
+              - { $ref: "#/components/schemas/ProductionTransitionObservationSourceReference" }
+              - properties:
+                  usage: { type: string, const: context }
+        retrospectiveReferences:
+          type: array
+          maxItems: 1000
+          items:
+            allOf:
+              - { $ref: "#/components/schemas/ProductionTransitionObservationSourceReference" }
+              - properties:
+                  usage: { type: string, const: retrospective }
+        providers:
+          $ref: "#/components/schemas/ProductionTransitionExternalUnavailableProviders"
+        observedStartDate: { type: "null" }
+        observedEndDate: { type: "null" }
+        observationState: { type: string, const: not_evaluable }
+        technicalDisposition:
+          type: string
+          const: not_evaluable
+          description: Server-derived while any mandatory provider is unavailable; never success, stable, approval or Gate truth.
+        authorityBoundary: { type: string, const: technical_observation_only }
+        retrospectiveNote:
+          oneOf: [{ type: string, maxLength: 4000 }, { type: "null" }]
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        createdByUserId: { type: string, format: email, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        snapshotHash: { $ref: "#/components/schemas/ProductionTransitionSha256" }
+    ProductionHandoverCommandResponse:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, handoverPackage]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        handoverPackage: { $ref: "#/components/schemas/HandoverPackageRevision" }
+    ProductionHandoverAcknowledgementCommandResponse:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, handoverPackage, acknowledgement]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        handoverPackage: { $ref: "#/components/schemas/HandoverPackageRevision" }
+        acknowledgement: { $ref: "#/components/schemas/HandoverAcknowledgement" }
+    ObservationPeriodCommandResponse:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, observationPeriod]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        observationPeriod: { $ref: "#/components/schemas/ObservationPeriodRevision" }
+    ProductionTransitionPermissions:
+      type: object
+      additionalProperties: false
+      required: [canManagePolicies, canCreateHandover, canReviseHandover, canAcknowledgeSlots, canCreateObservation, canReviseObservation]
+      properties:
+        canManagePolicies: { type: boolean }
+        canCreateHandover: { type: boolean }
+        canReviseHandover: { type: boolean }
+        canAcknowledgeSlots:
+          type: array
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 128 }
+        canCreateObservation: { type: boolean }
+        canReviseObservation: { type: boolean }
+    ProductionTransitionWorkspace:
+      type: object
+      additionalProperties: false
+      description: Exact independent histories; no Gate, Project lifecycle, Work Item, Tooling, ERP, event or external projection mutation occurs.
+      required: [projectGlobalId, currentHandover, handoverHistory, currentObservation, observationHistory, unavailableProviders, permissions]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        currentHandover:
+          oneOf: [{ $ref: "#/components/schemas/HandoverPackageView" }, { type: "null" }]
+        handoverHistory:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/HandoverPackageView" }
+        currentObservation:
+          oneOf: [{ $ref: "#/components/schemas/ObservationPeriodRevision" }, { type: "null" }]
+        observationHistory:
+          type: array
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ObservationPeriodRevision" }
+        unavailableProviders:
+          $ref: "#/components/schemas/ProductionTransitionExternalUnavailableProviders"
+        permissions: { $ref: "#/components/schemas/ProductionTransitionPermissions" }
     ProblemDetails:
       type: object
       additionalProperties: false

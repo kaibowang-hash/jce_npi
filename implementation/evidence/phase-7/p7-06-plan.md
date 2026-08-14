@@ -89,6 +89,11 @@ change or released output.
   server-evaluated conclusion rules. The package, not the reusable policy,
   freezes exact Project member and role-assignment identities. Neither object
   creates a formal HR or ERP department mapping.
+- Every published handover object requirement freezes its requirement key,
+  accepted closed source kinds, minimum count and controlled `manifestRole`.
+  Different requirements may accept the same source kind. `manifestRole` is
+  policy-owned assignment data and is never supplied or overridden by the
+  browser.
 - The policy must define at least one required sender slot and one required
   receiving slot. Exact production quorum, substitution, separation-of-duty,
   delegation and signature rules remain configuration/authority holds rather
@@ -150,10 +155,16 @@ change or released output.
   | `trial_conclusion` | `NPI Trial Conclusion Revision.global_id` | `conclusion_version` | canonical conclusion `snapshot_hash` |
 
   The server reuses or extracts the already governed canonical loaders for
-  each tuple. The browser may select only closed source options returned for
-  the Project and submits kind, ID and expected version only; it cannot submit
-  a new kind, projection, disposition or hash. The server computes and freezes
-  the canonical hash after exact authorization and currentness checks.
+  each tuple. Under the frozen Scheme A boundary, the browser may select only
+  closed source options returned for the Project and submits the exact
+  published-policy `requirementKey`, kind, ID and expected version only. It
+  cannot submit a role, hash, projection, disposition or new kind. The server
+  validates the requirement and its accepted kind, computes the canonical
+  hash after exact authorization and currentness checks, and injects the
+  requirement's frozen `manifestRole`. Different requirements may accept the
+  same kind, but within one package an exact `(kind, ID)` belongs to exactly
+  one requirement and counts exactly once. Duplicate, ambiguous or cross-
+  requirement reuse of the same exact tuple fails before any write.
   Member and role slots freeze a server-derived canonical projection containing
   exact identity, optimistic version, user/member/role keys and effectivity.
 - Every receiving-group and acknowledgement-slot row freezes the NPI policy
@@ -223,12 +234,17 @@ change or released output.
   imputations or pass flags.
 - Exact NPI-owned Work Item, Document/Baseline, clean File, Tooling and Trial
   references may provide review context or retrospective evidence, but cannot
-  be relabelled as any external production actual. Observation context and
-  retrospective references are restricted to the applicable exact tuples in
-  the closed handover source registry in section 3.2. They use the same
-  canonical loaders, same-Project/version/hash checks and server-returned
-  source options; caller projections/hashes, generic kinds and latest lookup
-  are rejected. Each successor freezes the complete exact tuple set anew.
+  be relabelled as any external production actual. Observation references are
+  independent of handover requirement assignment: the browser submits only
+  closed exact kind, ID and expected version with usage fixed to `context` or
+  `retrospective`; it cannot submit a handover `requirementKey`,
+  `manifestRole`, hash or projection. The server uses the applicable closed
+  source registry and canonical loader, enforces same-Project/current-version
+  checks, and freezes exact kind, ID, resolved version, canonical hash and
+  usage. If the same `(kind, ID)` tuple occurs across the context and
+  retrospective lists, its resolved version and hash must be identical;
+  drift or conflicting duplicates fail before any write. Each successor
+  freezes the complete exact reference set anew without a latest lookup.
 - Source availability, observation state and conclusion are server-derived
   from the exact published policy and resolved sources. While any mandatory
   provider is unavailable, every missing source has state `unavailable`,
@@ -340,11 +356,12 @@ binding or business truth.
 ## 7. Checkpoints
 
 1. **Pure domain/contract/additive metadata** — no-default policy publication,
-   immutable package/successor, actor-slot acknowledgement, independent
-   observation revisions, exact source and identity-free unavailable-provider
-   invariants; closed OpenAPI/ownership; six guarded DocTypes; receipt values,
-   direct translations and focused tests. No live route, row, Gate hook, UI or
-   runtime fixture.
+   published-requirement-owned `manifestRole`, Scheme A handover selection,
+   immutable package/successor, actor-slot acknowledgement, independent exact
+   observation references, identity-free unavailable-provider invariants;
+   closed OpenAPI/ownership; six guarded DocTypes; receipt values, direct
+   translations and focused tests. No live route, row, Gate hook, UI or runtime
+   fixture.
 2. **Repository/BFF boundary** — internal-admin policy commands, Project-first
    workspace/package/observation commands, exact source resolvers,
    actor-bound replay, one transaction/audit and independent default-closed
@@ -388,9 +405,9 @@ acceptance, G7 close or post-SOP production stability has occurred.
 
 | Change boundary | Minimum affected evidence |
 | --- | --- |
-| policy/domain/ownership/OpenAPI/metadata | guarded optimistic draft write, publication immutability, no-default policy, exact applicability/hash, required sender/receiver slots, closed source table, object/action rules, external provider closed schema, six-DocType metadata and generic mutation denials |
-| handover package and acknowledgement repository/BFF | exact Project/source containment, paired identity/version/hash drift, no-latest substitution, complete server-enumerated unresolved items, owner/due freeze, current-tip-only acknowledgement, successor non-inheritance, unchanged package hash after acknowledgement, User/member/role effectivity/version/hash and no substitution/proxy, duplicate/replay/conflict/rollback, CSRF/IDOR and no approval/signature/Gate effect |
-| observation repository/BFF | aggregate independence, unique current tip and concurrent fork rejection, target-SOP/actual-SOP distinction, mandatory non-omittable five-provider identity-free offline set, absent observed dates/values/identities, exact `not_evaluable` derivation, closed-registry retrospective tuples with no latest lookup, no caller value/status/conclusion, no zero/pass/stable imputation, exact review/evidence successor and zero network/Outbox traffic |
+| policy/domain/ownership/OpenAPI/metadata | guarded optimistic draft write, publication immutability, no-default policy, exact applicability/hash, required sender/receiver slots, each published handover requirement's accepted kinds/minimum count/`manifestRole`, closed Scheme A request without caller role/hash/projection, closed source table, object/action rules, external provider closed schema, six-DocType metadata and generic mutation denials |
+| handover package and acknowledgement repository/BFF | exact Project/source containment, published `requirementKey` membership and accepted-kind validation, different requirements accepting the same kind, one exact `(kind, ID)` assigned to one requirement and counted once, server-injected `manifestRole`, paired identity/version/hash drift, no-latest substitution, complete server-enumerated unresolved items, owner/due freeze, current-tip-only acknowledgement, successor non-inheritance, unchanged package hash after acknowledgement, User/member/role effectivity/version/hash and no substitution/proxy, duplicate/replay/conflict/rollback, CSRF/IDOR and no approval/signature/Gate effect |
+| observation repository/BFF | aggregate independence, unique current tip and concurrent fork rejection, target-SOP/actual-SOP distinction, mandatory non-omittable five-provider identity-free offline set, absent observed dates/values/identities, exact `not_evaluable` derivation, independent closed-registry references with fixed `context`/`retrospective` usage and no handover `requirementKey`/`manifestRole`, identical resolved version/hash when one tuple occurs across both lists, no latest lookup, no caller value/status/conclusion, no zero/pass/stable imputation, exact review/evidence successor and zero network/Outbox traffic |
 | Project workspace and translations | unit/state/accessibility, English/`zh`/`zh-TW`, mixed-language scan, permission/read-only/error/conflict/superseded/unavailable states and affected fixed-Linux visual matrix |
 | controlled runtime and controller evidence | fresh install/migrate, same/cross-process replay, retained reconstruction, route disable/recovery, no Gate/Project/Work/Tooling/ERP mutation, cleanup, current-task diff, trace and reconciliation |
 
