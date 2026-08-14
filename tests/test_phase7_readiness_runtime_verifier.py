@@ -4,6 +4,7 @@ import ast
 import copy
 import hashlib
 import importlib.util
+import inspect
 import json
 import os
 import re
@@ -145,6 +146,15 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
             set(self.module.EXTERNAL_REASON_CODES),
             set(self.module.EXTERNAL_SOURCE_KINDS),
         )
+
+    def test_persisted_readiness_project_uses_the_canonical_row_loader(self) -> None:
+        source = inspect.getsource(self.module.readiness_source_context)
+        self.assertIn(
+            "frozen = _instance_from_document(revisions[-1]).project",
+            source,
+        )
+        self.assertNotIn("instance_from_snapshot", source)
+        self.assertNotIn(".instance_snapshot", source)
 
     def test_capacity_source_payload_is_an_independent_two_line_v1_scenario(
         self,

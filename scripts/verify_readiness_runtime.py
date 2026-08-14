@@ -2069,11 +2069,12 @@ def readiness_source_context(
     import frappe
 
     from npi_core.foundation.security import Principal
-    from npi_core.readiness.domain import ReadinessSourceKind, instance_from_snapshot
+    from npi_core.readiness.domain import ReadinessSourceKind
     from npi_core.readiness.frappe_repository import (
         FrappeReadinessRepository,
         _domain_work_item_source_snapshot,
         _domain_work_item_value,
+        _instance_from_document,
         _payload_hash,
     )
     from npi_core.readiness.source_resolver import ExactSourceQuery, SourceResolutionContext
@@ -2102,7 +2103,7 @@ def readiness_source_context(
     }
     revisions = _source_rows(frappe, "NPI Readiness Instance Revision", project_id)
     require(bool(revisions), "P7-05 frozen Project source is unavailable")
-    frozen = instance_from_snapshot(revisions[-1].instance_snapshot).project
+    frozen = _instance_from_document(revisions[-1]).project
     candidates["project"].append(
         (str(frozen.global_id), frozen.optimistic_version, frozen.snapshot_hash)
     )
