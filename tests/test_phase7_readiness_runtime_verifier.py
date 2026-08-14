@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import importlib.util
+import json
 import os
 import re
 import sys
@@ -147,22 +149,43 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
     def test_capacity_source_payload_is_an_independent_two_line_v1_scenario(
         self,
     ) -> None:
-        context = self._capacity_source_context()
-        profile = {
-            "globalId": "00000000-0000-4000-8000-000000000220",
-            "snapshotHash": "a" * 64,
-        }
+        project_id, stored, workspace = self._retained_capacity_chain_fixture()
+        context, profile, source_inputs = (
+            self.module.retained_capacity_source_context(
+                project_id,
+                stored,
+                workspace,
+            )
+        )
         retained_context = copy.deepcopy(context)
         retained_profile = copy.deepcopy(profile)
+        retained_inputs = copy.deepcopy(source_inputs)
 
-        payload = self.module.capacity_source_payload(context, profile)
+        payload = self.module.capacity_source_payload(
+            context,
+            profile,
+            source_inputs,
+        )
 
         self.assertEqual(context, retained_context)
         self.assertEqual(profile, retained_profile)
+        self.assertEqual(source_inputs, retained_inputs)
         self.assertEqual(payload.get("targetMonthlyAssemblyUnits"), "25000.0")
         self.assertNotIn("scenarioGlobalId", payload)
         self.assertNotIn("expectedVersion", payload)
         self.assertEqual(len(payload.get("lines", [])), 2)
+        self.assertEqual(
+            [line["cycleSeconds"] for line in payload["lines"]],
+            ["36.0", "54.0"],
+        )
+        self.assertEqual(payload["lines"], retained_inputs["lines"])
+        self.assertTrue(
+            all(
+                set(line) == set(self.module._CAPACITY_LINE_REQUEST_FIELDS)
+                and "globalId" not in line
+                for line in payload["lines"]
+            )
+        )
         self.assertEqual(
             [line.get("applicabilityGlobalId") for line in payload["lines"]],
             [
@@ -176,6 +199,7 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
         )
         self.assertEqual(context, retained_context)
         self.assertEqual(profile, retained_profile)
+        self.assertEqual(source_inputs, retained_inputs)
 
         for applicability in (
             retained_context["applicability"][:1],
@@ -186,7 +210,324 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
                 drifted = copy.deepcopy(retained_context)
                 drifted["applicability"] = applicability
                 with self.assertRaisesRegex(RuntimeError, "two retained applicability"):
-                    self.module.capacity_source_payload(drifted, profile)
+                    self.module.capacity_source_payload(
+                        drifted,
+                        profile,
+                        source_inputs,
+                    )
+
+        mismatched = copy.deepcopy(source_inputs)
+        for line, cycle in zip(mismatched["lines"], ("42.0", "60.0")):
+            line["cycleSeconds"] = cycle
+        mismatched["lineInputHash"] = self._value_hash(mismatched["lines"])
+        with self.assertRaisesRegex(RuntimeError, "cycle and source profile"):
+            self.module.capacity_source_payload(context, profile, mismatched)
+
+        created = copy.deepcopy(workspace["capacityScenarioRevisions"][1])
+        created_line_ids = [
+            "00000000-0000-4000-8000-000000000250",
+            "00000000-0000-4000-8000-000000000251",
+        ]
+        created.update(
+            {
+                "globalId": "00000000-0000-4000-8000-000000000252",
+                "scenarioGlobalId": (
+                    "00000000-0000-4000-8000-000000000253"
+                ),
+                "scenarioVersion": 1,
+                "predecessorGlobalId": None,
+                "predecessorSnapshotHash": None,
+                "title": self.module.CAPACITY_SOURCE_SENTINEL,
+                "effectiveFrom": "2026-08-23",
+                "targetMonthlyAssemblyUnits": "25000.0",
+                "reason": self.module.CAPACITY_SOURCE_SENTINEL,
+                "lines": [
+                    {"globalId": line_id, **copy.deepcopy(line)}
+                    for line_id, line in zip(
+                        created_line_ids,
+                        source_inputs["lines"],
+                    )
+                ],
+                "result": {
+                    "formulaVersion": "capacity.v1",
+                    "roundingRule": "decimal-6-half-even",
+                    "lineResults": [
+                        {
+                            "globalId": created_line_ids[0],
+                            "partsPerDay": "1666.000000",
+                            "partsPerMonth": "43316.000000",
+                            "assemblyUnitsPerDay": "1666.000000",
+                            "assemblyUnitsPerMonth": "43316.000000",
+                        },
+                        {
+                            "globalId": created_line_ids[1],
+                            "partsPerDay": "1110.666667",
+                            "partsPerMonth": "28877.333333",
+                            "assemblyUnitsPerDay": "1110.666667",
+                            "assemblyUnitsPerMonth": "28877.333333",
+                        },
+                    ],
+                    "scenarioAssemblyUnitsPerMonth": "28877.333333",
+                    "bottleneckLineGlobalIds": [created_line_ids[1]],
+                    "gap": "0.000000",
+                },
+            }
+        )
+        created["versionKeyHash"] = self._value_hash(
+            {
+                "scenarioGlobalId": created["scenarioGlobalId"],
+                "scenarioVersion": 1,
+            }
+        )
+        created["snapshotHash"] = self._response_hash(created)
+        self.module.verify_prepared_capacity_source(
+            created,
+            source_inputs,
+            context,
+        )
+
+        def reuse_retained_scenario_identities(value):
+            value["globalId"] = source_inputs[
+                "retainedScenarioRevisionGlobalIds"
+            ][0]
+            value["scenarioGlobalId"] = source_inputs[
+                "retainedScenarioGlobalId"
+            ]
+            value["versionKeyHash"] = self._value_hash(
+                {
+                    "scenarioGlobalId": value["scenarioGlobalId"],
+                    "scenarioVersion": 1,
+                }
+            )
+
+        def stream_reuses_retained_revision(value):
+            value["scenarioGlobalId"] = source_inputs[
+                "retainedScenarioRevisionGlobalIds"
+            ][0]
+            value["versionKeyHash"] = self._value_hash(
+                {
+                    "scenarioGlobalId": value["scenarioGlobalId"],
+                    "scenarioVersion": 1,
+                }
+            )
+
+        def revision_reuses_retained_stream(value):
+            value["globalId"] = source_inputs[
+                "retainedScenarioGlobalId"
+            ]
+
+        def revision_reuses_created_stream(value):
+            value["globalId"] = value["scenarioGlobalId"]
+
+        response_mutations = (
+            lambda value: value["lines"][0].__setitem__(
+                "cycleSeconds", "42.0"
+            ),
+            lambda value: value["lines"][0].__setitem__(
+                "globalId", source_inputs["retainedLineGlobalIds"][0]
+            ),
+            lambda value: value["result"]["lineResults"][0].__setitem__(
+                "globalId", "00000000-0000-4000-8000-000000000299"
+            ),
+            lambda value: value["result"].__setitem__(
+                "scenarioAssemblyUnitsPerMonth", "28878.000000"
+            ),
+            reuse_retained_scenario_identities,
+            stream_reuses_retained_revision,
+            revision_reuses_retained_stream,
+            revision_reuses_created_stream,
+        )
+        for index, mutate in enumerate(response_mutations):
+            with self.subTest(response_mutation=index):
+                drifted = copy.deepcopy(created)
+                mutate(drifted)
+                drifted["snapshotHash"] = self._response_hash(drifted)
+                with self.assertRaises(RuntimeError):
+                    self.module.verify_prepared_capacity_source(
+                        drifted,
+                        source_inputs,
+                        context,
+                    )
+
+    def test_retained_capacity_context_ignores_unrelated_project_masters(self) -> None:
+        project_id, stored, workspace = self._retained_capacity_chain_fixture()
+        expected_master = stored[0]["tooling_master_global_id"]
+        request_result = object()
+
+        with (
+            patch.object(
+                self.module.document_runtime,
+                "fixture_project",
+                return_value=(project_id, 17),
+            ),
+            patch.object(
+                self.module.tooling_controls_runtime,
+                "rows",
+                return_value=copy.deepcopy(stored),
+            ),
+            patch.object(
+                self.module.tooling_controls_runtime,
+                "tooling_request",
+                return_value=request_result,
+            ) as request,
+            patch.object(
+                self.module.tooling_controls_runtime,
+                "assert_engineering_context",
+                return_value=copy.deepcopy(workspace),
+            ) as assert_context,
+            patch.object(
+                self.module.tooling_controls_runtime,
+                "assert_successors",
+            ) as assert_successors,
+            patch.object(
+                self.module.tooling_controls_runtime,
+                "project_context",
+                side_effect=AssertionError("legacy singleton helper called"),
+            ) as legacy_context,
+        ):
+            context, profile, source_inputs, path = (
+                self.module._load_retained_capacity_source_context(
+                    object(),
+                    "http://127.0.0.1:8003",
+                )
+            )
+
+        self.assertEqual(context["projectId"], project_id)
+        self.assertEqual(context["masterId"], expected_master)
+        self.assertEqual(profile["profileVersion"], 2)
+        self.assertEqual(
+            [line["cycleSeconds"] for line in source_inputs["lines"]],
+            ["36.0", "54.0"],
+        )
+        self.assertIn(expected_master, path)
+        legacy_context.assert_not_called()
+        request.assert_called_once()
+        assert_context.assert_called_once_with(
+            request_result,
+            context={"projectId": project_id, "masterId": expected_master},
+            expected_count=2,
+        )
+        assert_successors.assert_called_once()
+
+    def test_retained_capacity_chain_selection_fails_closed(self) -> None:
+        project_id, stored, _workspace = self._retained_capacity_chain_fixture()
+        first, second, master_id = self.module._retained_capacity_rows(
+            project_id,
+            list(reversed(stored)),
+        )
+        self.assertEqual(first["scenario_version"], 1)
+        self.assertEqual(second["scenario_version"], 2)
+        self.assertEqual(master_id, stored[0]["tooling_master_global_id"])
+
+        mutations = (
+            lambda values: values.pop(),
+            lambda values: values.append(copy.deepcopy(values[-1])),
+            lambda values: values[1].__setitem__(
+                "scenario_version", values[0]["scenario_version"]
+            ),
+            lambda values: values[1].__setitem__(
+                "scenario_global_id",
+                "00000000-0000-4000-8000-000000000299",
+            ),
+            lambda values: values[1].__setitem__(
+                "tooling_master_global_id",
+                "00000000-0000-4000-8000-000000000298",
+            ),
+            lambda values: values[1].__setitem__(
+                "predecessor_global_id",
+                "00000000-0000-4000-8000-000000000297",
+            ),
+            lambda values: values[1].__setitem__(
+                "predecessor_snapshot_hash", "f" * 64
+            ),
+            lambda values: values[0].__setitem__("tenant_id", "other-tenant"),
+        )
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                drifted = copy.deepcopy(stored)
+                mutate(drifted)
+                with self.assertRaises(RuntimeError):
+                    self.module._retained_capacity_rows(project_id, drifted)
+
+    def test_retained_capacity_context_rejects_paired_source_drift(self) -> None:
+        project_id, stored, workspace = self._retained_capacity_chain_fixture()
+        context, profile, source_inputs = self.module.retained_capacity_source_context(
+            project_id,
+            stored,
+            workspace,
+        )
+        self.assertEqual(context["masterId"], stored[0]["tooling_master_global_id"])
+        self.assertEqual(len(context["applicability"]), 2)
+        self.assertEqual(profile["profileVersion"], 2)
+        self.assertEqual(
+            [line["cycleSeconds"] for line in source_inputs["lines"]],
+            ["36.0", "54.0"],
+        )
+
+        def mutate_set_hash(values):
+            for line in values[2]["capacityScenarioRevisions"][1]["lines"]:
+                line["setProvenance"]["snapshotHash"] = "f" * 64
+
+        def mutate_set_identity(values):
+            for line in values[2]["capacityScenarioRevisions"][1]["lines"]:
+                line["selectedToolingSetGlobalIds"] = [
+                    "00000000-0000-4000-8000-000000000296"
+                ]
+                line["setProvenance"]["globalId"] = (
+                    "00000000-0000-4000-8000-000000000296"
+                )
+
+        def mutate_applicability(values):
+            line = values[2]["capacityScenarioRevisions"][1]["lines"][0]
+            line["applicabilityGlobalId"] = (
+                "00000000-0000-4000-8000-000000000295"
+            )
+            line["applicabilitySnapshotHash"] = "e" * 64
+            line["usageProvenance"]["globalId"] = line[
+                "applicabilityGlobalId"
+            ]
+            line["usageProvenance"]["snapshotHash"] = line[
+                "applicabilitySnapshotHash"
+            ]
+
+        def mutate_part(values):
+            line = values[2]["capacityScenarioRevisions"][1]["lines"][0]
+            line["partRevisionGlobalId"] = (
+                "00000000-0000-4000-8000-000000000294"
+            )
+            line["partRevisionSnapshotHash"] = "d" * 64
+
+        mutations = (
+            mutate_set_hash,
+            mutate_set_identity,
+            mutate_applicability,
+            mutate_part,
+            lambda values: values[2]["capacityScenarioRevisions"][1][
+                "lines"
+            ][0]["cycleProvenance"].__setitem__("kind", "scenario_assumption"),
+            lambda values: values[2]["capacityScenarioRevisions"][1][
+                "lines"
+            ][1].__setitem__("effectiveSetCount", 2),
+            lambda values: values[2]["capacityScenarioRevisions"][1][
+                "lines"
+            ][1].__setitem__(
+                "applicabilityGlobalId",
+                values[2]["capacityScenarioRevisions"][1]["lines"][0][
+                    "applicabilityGlobalId"
+                ],
+            ),
+        )
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                drifted_stored = copy.deepcopy(stored)
+                drifted_workspace = copy.deepcopy(workspace)
+                values = (project_id, drifted_stored, drifted_workspace)
+                mutate(values)
+                successor = drifted_workspace["capacityScenarioRevisions"][1]
+                successor["snapshotHash"] = self._response_hash(successor)
+                drifted_stored[1]["snapshot_hash"] = successor["snapshotHash"]
+                with self.assertRaises(RuntimeError):
+                    self.module.retained_capacity_source_context(*values)
 
     def test_current_controlled_reference_requires_the_exact_current_round_target(
         self,
@@ -885,31 +1226,246 @@ class Phase7ReadinessRuntimeVerifierTest(unittest.TestCase):
         )
 
     @staticmethod
-    def _capacity_source_context() -> dict[str, object]:
-        return {
-            "revisionId": "00000000-0000-4000-8000-000000000210",
-            "revisionSnapshotHash": "1" * 64,
-            "toolingSetId": "00000000-0000-4000-8000-000000000211",
-            "toolingSetSnapshotHash": "2" * 64,
-            "applicability": [
-                {
-                    "globalId": "00000000-0000-4000-8000-000000000212",
-                    "snapshotHash": "3" * 64,
-                    "partRevisionGlobalId": (
-                        "00000000-0000-4000-8000-000000000213"
-                    ),
-                    "partRevisionSnapshotHash": "4" * 64,
+    def _response_hash(value: dict[str, object]) -> str:
+        payload = copy.deepcopy(value)
+        payload.pop("snapshotHash", None)
+        return Phase7ReadinessRuntimeVerifierTest._value_hash(payload)
+
+    @staticmethod
+    def _value_hash(value: object) -> str:
+        return hashlib.sha256(
+            json.dumps(
+                value,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+
+    @classmethod
+    def _retained_capacity_chain_fixture(
+        cls,
+    ) -> tuple[str, list[dict[str, object]], dict[str, object]]:
+        project_id = "00000000-0000-4000-8000-000000000200"
+        master_id = "00000000-0000-4000-8000-000000000201"
+        scenario_id = "00000000-0000-4000-8000-000000000202"
+        revision_id = "00000000-0000-4000-8000-000000000210"
+        revision_hash = "1" * 64
+        tooling_set_id = "00000000-0000-4000-8000-000000000211"
+        tooling_set_hash = "2" * 64
+        profile_stream_id = "00000000-0000-4000-8000-000000000218"
+
+        def profile(version: int, predecessor=None) -> dict[str, object]:
+            value = {
+                "schemaVersion": 1,
+                "globalId": f"00000000-0000-4000-8000-{220 + version:012d}",
+                "profileGlobalId": profile_stream_id,
+                "tenantId": "runtime-tenant",
+                "projectGlobalId": project_id,
+                "toolingMasterGlobalId": master_id,
+                "toolingRevisionGlobalId": revision_id,
+                "toolingRevisionSnapshotHash": revision_hash,
+                "layer": "customer_standard",
+                "profileVersion": version,
+                "predecessorGlobalId": (
+                    None if predecessor is None else predecessor["globalId"]
+                ),
+                "predecessorSnapshotHash": (
+                    None if predecessor is None else predecessor["snapshotHash"]
+                ),
+                "context": {
+                    "kind": "tooling_revision_specification",
+                    "globalId": revision_id,
+                    "snapshotHash": revision_hash,
                 },
-                {
-                    "globalId": "00000000-0000-4000-8000-000000000214",
-                    "snapshotHash": "5" * 64,
-                    "partRevisionGlobalId": (
-                        "00000000-0000-4000-8000-000000000215"
-                    ),
-                    "partRevisionSnapshotHash": "6" * 64,
+                "effectiveFrom": f"2026-08-{19 + version:02d}",
+                "metrics": [
+                    {
+                        "globalId": (
+                            "00000000-0000-4000-8000-000000000219"
+                        ),
+                        "code": "cycle_time",
+                        "valueKind": "numeric",
+                        "numericValue": "42.0" if version == 1 else "36.0",
+                        "textValue": None,
+                        "unit": "s",
+                        "comparisonRule": None,
+                    }
+                ],
+                "reason": f"profile-{version}",
+                "createdByUserId": "Administrator",
+                "createdAt": f"2026-08-{19 + version:02d}T00:00:00Z",
+                "requestId": f"00000000-0000-4000-8000-{230 + version:012d}",
+                "traceId": f"profile-{version}",
+                "versionKeyHash": cls._value_hash(
+                    {
+                        "profileGlobalId": profile_stream_id,
+                        "profileVersion": version,
+                    }
+                ),
+            }
+            value["snapshotHash"] = cls._response_hash(value)
+            return value
+
+        profile_one = profile(1)
+        profile_two = profile(2, profile_one)
+
+        line_specs = (
+            (216, 212, 213, "3", "4", "42.0", "36.0"),
+            (217, 214, 215, "5", "6", "60.0", "54.0"),
+        )
+
+        def line(spec, exact_profile) -> dict[str, object]:
+            line_id, applicability_id, part_id, app_hash, part_hash, first, second = spec
+            return {
+                "globalId": f"00000000-0000-4000-8000-{line_id:012d}",
+                "partRevisionGlobalId": (
+                    f"00000000-0000-4000-8000-{part_id:012d}"
+                ),
+                "partRevisionSnapshotHash": part_hash * 64,
+                "applicabilityGlobalId": (
+                    f"00000000-0000-4000-8000-{applicability_id:012d}"
+                ),
+                "applicabilitySnapshotHash": app_hash * 64,
+                "availableHoursPerDay": "20.0",
+                "workingDaysPerMonth": 26,
+                "oeeRatio": "0.85",
+                "yieldRatio": "0.98",
+                "cycleSeconds": (
+                    second if exact_profile["profileVersion"] == 2 else first
+                ),
+                "cavityCount": 1,
+                "usagePerAssembly": "1.0",
+                "effectiveSetCount": 1,
+                "selectedToolingSetGlobalIds": [tooling_set_id],
+                "cycleProvenance": {
+                    "kind": "customer_standard",
+                    "globalId": exact_profile["globalId"],
+                    "snapshotHash": exact_profile["snapshotHash"],
                 },
-            ],
+                "cavityProvenance": {
+                    "kind": "tooling_revision",
+                    "globalId": revision_id,
+                    "snapshotHash": revision_hash,
+                },
+                "usageProvenance": {
+                    "kind": "tooling_applicability",
+                    "globalId": (
+                        f"00000000-0000-4000-8000-{applicability_id:012d}"
+                    ),
+                    "snapshotHash": app_hash * 64,
+                },
+                "setProvenance": {
+                    "kind": "tooling_set_selection",
+                    "globalId": tooling_set_id,
+                    "snapshotHash": tooling_set_hash,
+                },
+            }
+
+        def scenario(version: int, exact_profile, predecessor=None):
+            scenario_lines = [line(spec, exact_profile) for spec in line_specs]
+            result_values = (
+                (
+                    ("1428.000000", "37128.000000"),
+                    ("999.600000", "25989.600000"),
+                    "25989.600000",
+                    "74010.400000",
+                )
+                if version == 1
+                else (
+                    ("1666.000000", "43316.000000"),
+                    ("1110.666667", "28877.333333"),
+                    "28877.333333",
+                    "71122.666667",
+                )
+            )
+            first_result, second_result, capacity, gap = result_values
+            value = {
+                "schemaVersion": 1,
+                "globalId": f"00000000-0000-4000-8000-{202 + version:012d}",
+                "scenarioGlobalId": scenario_id,
+                "tenantId": "runtime-tenant",
+                "projectGlobalId": project_id,
+                "toolingMasterGlobalId": master_id,
+                "scenarioVersion": version,
+                "predecessorGlobalId": (
+                    None if predecessor is None else predecessor["globalId"]
+                ),
+                "predecessorSnapshotHash": (
+                    None if predecessor is None else predecessor["snapshotHash"]
+                ),
+                "title": "retained capacity",
+                "effectiveFrom": f"2026-08-{20 + version:02d}",
+                "targetMonthlyAssemblyUnits": "100000.0",
+                "formulaVersion": "capacity.v1",
+                "roundingRule": "decimal-6-half-even",
+                "lines": scenario_lines,
+                "result": {
+                    "formulaVersion": "capacity.v1",
+                    "roundingRule": "decimal-6-half-even",
+                    "lineResults": [
+                        {
+                            "globalId": scenario_lines[0]["globalId"],
+                            "partsPerDay": first_result[0],
+                            "partsPerMonth": first_result[1],
+                            "assemblyUnitsPerDay": first_result[0],
+                            "assemblyUnitsPerMonth": first_result[1],
+                        },
+                        {
+                            "globalId": scenario_lines[1]["globalId"],
+                            "partsPerDay": second_result[0],
+                            "partsPerMonth": second_result[1],
+                            "assemblyUnitsPerDay": second_result[0],
+                            "assemblyUnitsPerMonth": second_result[1],
+                        },
+                    ],
+                    "scenarioAssemblyUnitsPerMonth": capacity,
+                    "bottleneckLineGlobalIds": [
+                        scenario_lines[1]["globalId"]
+                    ],
+                    "gap": gap,
+                },
+                "reason": f"scenario-{version}",
+                "createdByUserId": "Administrator",
+                "createdAt": f"2026-08-{20 + version:02d}T00:00:00Z",
+                "requestId": f"00000000-0000-4000-8000-{240 + version:012d}",
+                "traceId": f"scenario-{version}",
+                "versionKeyHash": cls._value_hash(
+                    {
+                        "scenarioGlobalId": scenario_id,
+                        "scenarioVersion": version,
+                    }
+                ),
+            }
+            value["snapshotHash"] = cls._response_hash(value)
+            return value
+
+        scenario_one = scenario(1, profile_one)
+        scenario_two = scenario(2, profile_two, scenario_one)
+        stored = [
+            {
+                "global_id": value["globalId"],
+                "scenario_global_id": value["scenarioGlobalId"],
+                "version_key_hash": value["versionKeyHash"],
+                "tenant_id": value["tenantId"],
+                "project_global_id": value["projectGlobalId"],
+                "tooling_master_global_id": value["toolingMasterGlobalId"],
+                "scenario_version": value["scenarioVersion"],
+                "predecessor_global_id": value["predecessorGlobalId"],
+                "predecessor_snapshot_hash": value["predecessorSnapshotHash"],
+                "snapshot_hash": value["snapshotHash"],
+            }
+            for value in (scenario_one, scenario_two)
+        ]
+        workspace = {
+            "projectGlobalId": project_id,
+            "toolingMasterGlobalId": master_id,
+            "capacityScenarioRevisions": [scenario_one, scenario_two],
+            "process": {
+                "customerStandardRevisions": [profile_one, profile_two],
+            },
         }
+        return project_id, stored, workspace
 
     @staticmethod
     def _controlled_reference_workspace() -> dict[str, object]:

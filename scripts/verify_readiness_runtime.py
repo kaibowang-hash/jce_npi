@@ -7,7 +7,8 @@ import os
 import re
 import subprocess
 from collections.abc import Mapping, Sequence
-from decimal import Decimal, InvalidOperation
+from copy import deepcopy
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN, localcontext
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -377,6 +378,7 @@ def template_payload(context: Mapping[str, object], *, edited: bool = False) -> 
 def capacity_source_payload(
     context: Mapping[str, object],
     profile: Mapping[str, object],
+    source_inputs: Mapping[str, object],
 ) -> dict[str, object]:
     """Build one bounded passing source without rewriting retained P6 history."""
 
@@ -387,20 +389,143 @@ def capacity_source_payload(
         and all(isinstance(value, dict) for value in applications),
         "P7-05 Capacity source requires the two retained applicability rows",
     )
-    payload = tooling_controls_runtime.capacity_payload(
-        dict(context),
-        dict(profile),
-        version=1,
+    lines = source_inputs.get("lines")
+    retained_line_ids = source_inputs.get("retainedLineGlobalIds")
+    try:
+        retained_capacity = Decimal(
+            str(source_inputs.get("scenarioAssemblyUnitsPerMonth"))
+        )
+    except InvalidOperation:
+        require(False, "P7-05 retained Capacity result is invalid")
+        raise AssertionError
+    require(
+        set(source_inputs)
+        == {
+            "lines",
+            "lineInputHash",
+            "retainedLineGlobalIds",
+            "retainedScenarioGlobalId",
+            "retainedScenarioRevisionGlobalIds",
+            "scenarioAssemblyUnitsPerMonth",
+        }
+        and isinstance(lines, list)
+        and len(lines) == 2
+        and all(isinstance(value, dict) for value in lines)
+        and source_inputs.get("lineInputHash") == _canonical_value_hash(lines),
+        "P7-05 retained Capacity line inputs drifted",
     )
     require(
-        "scenarioGlobalId" not in payload and "expectedVersion" not in payload,
-        "P7-05 Capacity source must remain an independent first revision",
+        isinstance(retained_line_ids, list)
+        and len(retained_line_ids) == 2
+        and len(
+            {
+                _uuid(value, "P7-05 retained Capacity line")
+                for value in retained_line_ids
+            }
+        )
+        == 2
+        and retained_capacity >= Decimal("25000"),
+        "P7-05 retained Capacity identities or result drifted",
+    )
+    retained_scenario_id = _uuid(
+        source_inputs.get("retainedScenarioGlobalId"),
+        "P7-05 retained Capacity Scenario stream",
+    )
+    retained_revision_ids = source_inputs.get(
+        "retainedScenarioRevisionGlobalIds"
+    )
+    require(
+        isinstance(retained_revision_ids, list)
+        and len(retained_revision_ids) == 2
+        and len(
+            {
+                _uuid(value, "P7-05 retained Capacity Scenario revision")
+                for value in retained_revision_ids
+            }
+        )
+        == 2
+        and retained_scenario_id not in set(retained_revision_ids),
+        "P7-05 retained Capacity Scenario identities drifted",
+    )
+    profile_id = _uuid(
+        profile.get("globalId"),
+        "P7-05 retained Customer Standard",
+    )
+    profile_hash = _hash(
+        profile.get("snapshotHash"),
+        "P7-05 retained Customer Standard",
+    )
+    applications_by_id = {
+        value.get("globalId"): value
+        for value in applications
+        if isinstance(value.get("globalId"), str)
+    }
+    require(
+        len(applications_by_id) == 2,
+        "P7-05 retained Capacity applicability is ambiguous",
+    )
+    validated_lines: list[dict[str, object]] = []
+    line_cycles: list[Decimal] = []
+    for line in lines:
+        application = applications_by_id.get(line.get("applicabilityGlobalId"))
+        require(
+            set(line) == set(_CAPACITY_LINE_REQUEST_FIELDS)
+            and isinstance(application, dict)
+            and line.get("partRevisionGlobalId")
+            == application.get("partRevisionGlobalId")
+            and line.get("partRevisionSnapshotHash")
+            == application.get("partRevisionSnapshotHash")
+            and line.get("applicabilitySnapshotHash")
+            == application.get("snapshotHash")
+            and line.get("effectiveSetCount") == 1
+            and line.get("selectedToolingSetGlobalIds")
+            == [context.get("toolingSetId")],
+            "P7-05 retained Capacity request line drifted",
+        )
+        _exact_capacity_provenance(
+            line.get("cycleProvenance"),
+            kind="customer_standard",
+            global_id=profile_id,
+            snapshot_hash=profile_hash,
+            label="request cycle",
+        )
+        _exact_capacity_provenance(
+            line.get("cavityProvenance"),
+            kind="tooling_revision",
+            global_id=str(context.get("revisionId")),
+            snapshot_hash=str(context.get("revisionSnapshotHash")),
+            label="request cavity",
+        )
+        _exact_capacity_provenance(
+            line.get("usageProvenance"),
+            kind="tooling_applicability",
+            global_id=str(application["globalId"]),
+            snapshot_hash=str(application["snapshotHash"]),
+            label="request usage",
+        )
+        _exact_capacity_provenance(
+            line.get("setProvenance"),
+            kind="tooling_set_selection",
+            global_id=str(context.get("toolingSetId")),
+            snapshot_hash=str(context.get("toolingSetSnapshotHash")),
+            label="request Tooling Set",
+        )
+        try:
+            line_cycles.append(Decimal(str(line.get("cycleSeconds"))))
+        except InvalidOperation:
+            require(False, "P7-05 retained Capacity request cycle is invalid")
+            raise AssertionError
+        validated_lines.append(deepcopy(line))
+    require(
+        min(line_cycles)
+        == _profile_cycle_seconds(profile, "P7-05 retained Customer Standard"),
+        "P7-05 retained Capacity request cycle and source profile drifted",
     )
     return {
-        **payload,
         "title": CAPACITY_SOURCE_SENTINEL,
         "effectiveFrom": "2026-08-23",
         "targetMonthlyAssemblyUnits": "25000.0",
+        "lines": validated_lines,
         "reason": CAPACITY_SOURCE_SENTINEL,
     }
 
@@ -458,16 +583,707 @@ def current_controlled_reference(
     return matches[0] if len(matches) == 1 else None
 
 
-def _prepare_capacity_source(
+_CAPACITY_ROW_FIELDS = (
+    "global_id",
+    "scenario_global_id",
+    "version_key_hash",
+    "tenant_id",
+    "project_global_id",
+    "tooling_master_global_id",
+    "scenario_version",
+    "predecessor_global_id",
+    "predecessor_snapshot_hash",
+    "snapshot_hash",
+)
+_CAPACITY_LINE_REQUEST_FIELDS = (
+    "partRevisionGlobalId",
+    "partRevisionSnapshotHash",
+    "applicabilityGlobalId",
+    "applicabilitySnapshotHash",
+    "availableHoursPerDay",
+    "workingDaysPerMonth",
+    "oeeRatio",
+    "yieldRatio",
+    "cycleSeconds",
+    "cavityCount",
+    "usagePerAssembly",
+    "effectiveSetCount",
+    "selectedToolingSetGlobalIds",
+    "cycleProvenance",
+    "cavityProvenance",
+    "usageProvenance",
+    "setProvenance",
+)
+_CAPACITY_LINE_FIELDS = {"globalId", *_CAPACITY_LINE_REQUEST_FIELDS}
+_CAPACITY_STABLE_LINE_INPUT_FIELDS = set(_CAPACITY_LINE_REQUEST_FIELDS) - {
+    "cycleSeconds",
+    "cycleProvenance",
+}
+_CAPACITY_SCENARIO_FIELDS = {
+    "schemaVersion",
+    "globalId",
+    "scenarioGlobalId",
+    "tenantId",
+    "projectGlobalId",
+    "toolingMasterGlobalId",
+    "scenarioVersion",
+    "predecessorGlobalId",
+    "predecessorSnapshotHash",
+    "title",
+    "effectiveFrom",
+    "targetMonthlyAssemblyUnits",
+    "formulaVersion",
+    "roundingRule",
+    "lines",
+    "result",
+    "reason",
+    "createdByUserId",
+    "createdAt",
+    "requestId",
+    "traceId",
+    "versionKeyHash",
+    "snapshotHash",
+}
+_CAPACITY_RESULT_FIELDS = {
+    "formulaVersion",
+    "roundingRule",
+    "lineResults",
+    "scenarioAssemblyUnitsPerMonth",
+    "bottleneckLineGlobalIds",
+    "gap",
+}
+_CAPACITY_LINE_RESULT_FIELDS = {
+    "globalId",
+    "partsPerDay",
+    "partsPerMonth",
+    "assemblyUnitsPerDay",
+    "assemblyUnitsPerMonth",
+}
+_CAPACITY_ROUNDING_QUANTUM = Decimal("0.000001")
+_PROCESS_PROFILE_FIELDS = {
+    "schemaVersion",
+    "globalId",
+    "profileGlobalId",
+    "tenantId",
+    "projectGlobalId",
+    "toolingMasterGlobalId",
+    "toolingRevisionGlobalId",
+    "toolingRevisionSnapshotHash",
+    "layer",
+    "profileVersion",
+    "predecessorGlobalId",
+    "predecessorSnapshotHash",
+    "context",
+    "effectiveFrom",
+    "metrics",
+    "reason",
+    "createdByUserId",
+    "createdAt",
+    "requestId",
+    "traceId",
+    "versionKeyHash",
+    "snapshotHash",
+}
+
+
+def _canonical_value_hash(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _canonical_snapshot_hash(value: Mapping[str, object], label: str) -> str:
+    snapshot = dict(value)
+    expected = _hash(snapshot.pop("snapshotHash", None), label)
+    actual = _canonical_value_hash(snapshot)
+    require(actual == expected, f"{label} canonical snapshot drifted")
+    return expected
+
+
+def _profile_cycle_seconds(value: Mapping[str, object], label: str) -> Decimal:
+    metrics = value.get("metrics")
+    require(isinstance(metrics, list), f"{label} metrics drifted")
+    matches = [
+        metric
+        for metric in metrics
+        if isinstance(metric, dict)
+        and metric.get("code") == "cycle_time"
+        and metric.get("valueKind") == "numeric"
+        and metric.get("textValue") is None
+        and metric.get("unit") == "s"
+    ]
+    require(len(matches) == 1, f"{label} cycle metric drifted")
+    try:
+        seconds = Decimal(str(matches[0].get("numericValue")))
+    except InvalidOperation:
+        require(False, f"{label} cycle metric is invalid")
+        raise AssertionError
+    require(seconds > 0, f"{label} cycle metric is invalid")
+    return seconds
+
+
+def _rounded_capacity(value: Decimal) -> str:
+    return format(
+        value.quantize(
+            _CAPACITY_ROUNDING_QUANTUM,
+            rounding=ROUND_HALF_EVEN,
+        ),
+        "f",
+    )
+
+
+def _capacity_result_payload(
+    lines: Sequence[Mapping[str, object]],
+    target: object,
+) -> dict[str, object]:
+    require(bool(lines), "P7-05 Capacity result requires exact lines")
+    results: list[dict[str, object]] = []
+    try:
+        target_value = Decimal(str(target))
+        for line in lines:
+            with localcontext() as context:
+                context.prec = 50
+                parts_per_day = (
+                    Decimal(str(line.get("availableHoursPerDay")))
+                    * Decimal("3600")
+                    / Decimal(str(line.get("cycleSeconds")))
+                    * Decimal(str(line.get("oeeRatio")))
+                    * Decimal(str(line.get("yieldRatio")))
+                    * Decimal(str(line.get("cavityCount")))
+                    * Decimal(str(line.get("effectiveSetCount")))
+                )
+                parts_per_month = parts_per_day * Decimal(
+                    str(line.get("workingDaysPerMonth"))
+                )
+                assembly_per_day = parts_per_day / Decimal(
+                    str(line.get("usagePerAssembly"))
+                )
+                assembly_per_month = parts_per_month / Decimal(
+                    str(line.get("usagePerAssembly"))
+                )
+            results.append(
+                {
+                    "globalId": _uuid(
+                        line.get("globalId"),
+                        "P7-05 Capacity result line",
+                    ),
+                    "partsPerDay": _rounded_capacity(parts_per_day),
+                    "partsPerMonth": _rounded_capacity(parts_per_month),
+                    "assemblyUnitsPerDay": _rounded_capacity(assembly_per_day),
+                    "assemblyUnitsPerMonth": _rounded_capacity(assembly_per_month),
+                }
+            )
+    except (InvalidOperation, ZeroDivisionError):
+        require(False, "P7-05 Capacity result inputs are invalid")
+        raise AssertionError
+    scenario_capacity = min(
+        Decimal(str(value["assemblyUnitsPerMonth"]))
+        for value in results
+    )
+    bottlenecks = [
+        str(value["globalId"])
+        for value in sorted(results, key=lambda item: str(item["globalId"]))
+        if Decimal(str(value["assemblyUnitsPerMonth"])) == scenario_capacity
+    ]
+    gap = max(target_value - scenario_capacity, Decimal("0"))
+    return {
+        "formulaVersion": "capacity.v1",
+        "roundingRule": "decimal-6-half-even",
+        "lineResults": results,
+        "scenarioAssemblyUnitsPerMonth": format(scenario_capacity, "f"),
+        "bottleneckLineGlobalIds": bottlenecks,
+        "gap": _rounded_capacity(gap),
+    }
+
+
+def _retained_capacity_rows(
+    project_id: str,
+    values: Sequence[Mapping[str, object]],
+) -> tuple[dict[str, object], dict[str, object], str]:
+    """Lock the original P6-05 chain without assuming one Project Master."""
+
+    project_id = _uuid(project_id, "P7-05 retained Capacity Project")
+    require(
+        isinstance(values, (list, tuple))
+        and len(values) == 2
+        and all(isinstance(value, Mapping) for value in values),
+        "P7-05 retained Capacity Scenario chain is unavailable",
+    )
+    rows_by_version: dict[int, dict[str, object]] = {}
+    for value in values:
+        row = dict(value)
+        require(
+            set(row) == set(_CAPACITY_ROW_FIELDS)
+            and row.get("tenant_id") == TENANT_ID
+            and row.get("project_global_id") == project_id
+            and isinstance(row.get("scenario_version"), int)
+            and not isinstance(row.get("scenario_version"), bool)
+            and row["scenario_version"] in {1, 2},
+            "P7-05 retained Capacity Scenario identity drifted",
+        )
+        version = int(row["scenario_version"])
+        require(
+            version not in rows_by_version,
+            "P7-05 retained Capacity Scenario version is ambiguous",
+        )
+        _uuid(row.get("global_id"), "P7-05 retained Capacity revision")
+        _uuid(row.get("scenario_global_id"), "P7-05 retained Capacity stream")
+        _uuid(row.get("tooling_master_global_id"), "P7-05 retained Capacity Master")
+        _hash(row.get("version_key_hash"), "P7-05 retained Capacity version key")
+        _hash(row.get("snapshot_hash"), "P7-05 retained Capacity revision")
+        rows_by_version[version] = row
+    require(
+        set(rows_by_version) == {1, 2},
+        "P7-05 retained Capacity Scenario versions drifted",
+    )
+    first = rows_by_version[1]
+    second = rows_by_version[2]
+    require(
+        first.get("scenario_global_id") == second.get("scenario_global_id")
+        and first.get("tooling_master_global_id")
+        == second.get("tooling_master_global_id")
+        and first.get("predecessor_global_id") in {None, ""}
+        and first.get("predecessor_snapshot_hash") in {None, ""}
+        and second.get("predecessor_global_id") == first.get("global_id")
+        and second.get("predecessor_snapshot_hash") == first.get("snapshot_hash"),
+        "P7-05 retained Capacity Scenario lineage or Master identity drifted",
+    )
+    return first, second, str(first["tooling_master_global_id"])
+
+
+def _exact_capacity_provenance(
+    value: object,
+    *,
+    kind: str,
+    global_id: str,
+    snapshot_hash: str,
+    label: str,
+) -> None:
+    require(
+        isinstance(value, dict)
+        and set(value) == {"kind", "globalId", "snapshotHash"}
+        and value.get("kind") == kind
+        and value.get("globalId") == global_id
+        and value.get("snapshotHash") == snapshot_hash,
+        f"P7-05 retained Capacity {label} provenance drifted",
+    )
+
+
+def retained_capacity_source_context(
+    project_id: str,
+    stored_scenarios: Sequence[Mapping[str, object]],
+    workspace: Mapping[str, object],
+) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    """Rebuild exact capacity inputs from the retained immutable v2 snapshot."""
+
+    first_row, second_row, master_id = _retained_capacity_rows(
+        project_id,
+        stored_scenarios,
+    )
+    require(
+        workspace.get("projectGlobalId") == project_id
+        and workspace.get("toolingMasterGlobalId") == master_id,
+        "P7-05 retained Capacity workspace scope drifted",
+    )
+    scenarios = workspace.get("capacityScenarioRevisions")
+    process = workspace.get("process")
+    require(
+        isinstance(scenarios, list)
+        and len(scenarios) == 2
+        and all(isinstance(value, dict) for value in scenarios)
+        and isinstance(process, dict)
+        and isinstance(process.get("customerStandardRevisions"), list)
+        and len(process["customerStandardRevisions"]) == 2,
+        "P7-05 retained Capacity workspace collections drifted",
+    )
+    response_by_version = {
+        value.get("scenarioVersion"): value
+        for value in scenarios
+        if isinstance(value.get("scenarioVersion"), int)
+        and not isinstance(value.get("scenarioVersion"), bool)
+    }
+    require(
+        set(response_by_version) == {1, 2},
+        "P7-05 retained Capacity response versions drifted",
+    )
+    for version, stored in ((1, first_row), (2, second_row)):
+        response = response_by_version[version]
+        require(
+            set(response) == _CAPACITY_SCENARIO_FIELDS
+            and response.get("globalId") == stored.get("global_id")
+            and response.get("scenarioGlobalId") == stored.get("scenario_global_id")
+            and response.get("versionKeyHash") == stored.get("version_key_hash")
+            and response.get("versionKeyHash")
+            == _canonical_value_hash(
+                {
+                    "scenarioGlobalId": response.get("scenarioGlobalId"),
+                    "scenarioVersion": version,
+                }
+            )
+            and response.get("tenantId") == TENANT_ID
+            and response.get("projectGlobalId") == project_id
+            and response.get("toolingMasterGlobalId") == master_id
+            and response.get("predecessorGlobalId")
+            == stored.get("predecessor_global_id")
+            and response.get("predecessorSnapshotHash")
+            == stored.get("predecessor_snapshot_hash")
+            and response.get("snapshotHash") == stored.get("snapshot_hash"),
+            "P7-05 retained Capacity persisted response drifted",
+        )
+        _canonical_snapshot_hash(
+            response,
+            f"P7-05 retained Capacity response v{version}",
+        )
+        require(
+            isinstance(response.get("lines"), list)
+            and all(
+                isinstance(value, dict)
+                for value in response["lines"]
+            )
+            and response.get("result")
+            == _capacity_result_payload(
+                response["lines"],
+                response.get("targetMonthlyAssemblyUnits"),
+            ),
+            f"P7-05 retained Capacity result v{version} drifted",
+        )
+
+    profiles = process["customerStandardRevisions"]
+    profile_by_version = {
+        value.get("profileVersion"): value
+        for value in profiles
+        if isinstance(value, dict)
+        and isinstance(value.get("profileVersion"), int)
+        and not isinstance(value.get("profileVersion"), bool)
+    }
+    require(
+        set(profile_by_version) == {1, 2},
+        "P7-05 Customer Standard chain versions drifted",
+    )
+    profile_matches = [
+        value
+        for value in profiles
+        if isinstance(value, dict)
+        and value.get("profileVersion") == 2
+        and value.get("projectGlobalId") == project_id
+        and value.get("toolingMasterGlobalId") == master_id
+    ]
+    require(
+        len(profile_matches) == 1,
+        "P7-05 exact Customer Standard successor is unavailable",
+    )
+    profile = dict(profile_matches[0])
+    first_profile = profile_by_version[1]
+    require(
+        set(first_profile) == _PROCESS_PROFILE_FIELDS
+        and set(profile) == _PROCESS_PROFILE_FIELDS
+        and first_profile.get("tenantId") == TENANT_ID
+        and first_profile.get("projectGlobalId") == project_id
+        and first_profile.get("toolingMasterGlobalId") == master_id
+        and first_profile.get("layer") == "customer_standard"
+        and first_profile.get("predecessorGlobalId") is None
+        and first_profile.get("predecessorSnapshotHash") is None
+        and profile.get("tenantId") == TENANT_ID
+        and profile.get("layer") == "customer_standard"
+        and profile.get("predecessorGlobalId") == first_profile.get("globalId")
+        and profile.get("predecessorSnapshotHash")
+        == first_profile.get("snapshotHash"),
+        "P7-05 Customer Standard successor lineage drifted",
+    )
+    for version, value in ((1, first_profile), (2, profile)):
+        require(
+            value.get("versionKeyHash")
+            == _canonical_value_hash(
+                {
+                    "profileGlobalId": value.get("profileGlobalId"),
+                    "profileVersion": version,
+                }
+            ),
+            "P7-05 Customer Standard version key drifted",
+        )
+    first_profile_id = _uuid(
+        first_profile.get("globalId"),
+        "P7-05 Customer Standard predecessor",
+    )
+    first_profile_hash = _canonical_snapshot_hash(
+        first_profile,
+        "P7-05 Customer Standard predecessor",
+    )
+    profile_id = _uuid(profile.get("globalId"), "P7-05 Customer Standard successor")
+    profile_hash = _canonical_snapshot_hash(
+        profile,
+        "P7-05 Customer Standard successor",
+    )
+    revision_id = _uuid(
+        profile.get("toolingRevisionGlobalId"),
+        "P7-05 retained Tooling Revision",
+    )
+    revision_hash = _hash(
+        profile.get("toolingRevisionSnapshotHash"),
+        "P7-05 retained Tooling Revision",
+    )
+    require(
+        first_profile.get("toolingRevisionGlobalId") == revision_id
+        and first_profile.get("toolingRevisionSnapshotHash") == revision_hash,
+        "P7-05 Customer Standard Tooling Revision drifted",
+    )
+    first_profile_cycle = _profile_cycle_seconds(
+        first_profile,
+        "P7-05 Customer Standard predecessor",
+    )
+    profile_cycle = _profile_cycle_seconds(
+        profile,
+        "P7-05 Customer Standard successor",
+    )
+    require(
+        first_profile_cycle - profile_cycle == Decimal("6"),
+        "P7-05 Customer Standard controlled cycle delta drifted",
+    )
+
+    first_lines = response_by_version[1].get("lines")
+    lines = response_by_version[2].get("lines")
+    require(
+        isinstance(first_lines, list)
+        and len(first_lines) == 2
+        and all(isinstance(value, dict) for value in first_lines)
+        and isinstance(lines, list)
+        and len(lines) == 2
+        and all(isinstance(value, dict) for value in lines),
+        "P7-05 retained Capacity successor lines drifted",
+    )
+    first_lines_by_id = {
+        value.get("globalId"): value
+        for value in first_lines
+        if isinstance(value.get("globalId"), str)
+    }
+    require(
+        len(first_lines_by_id) == 2,
+        "P7-05 retained Capacity predecessor line identities drifted",
+    )
+    applicability: list[dict[str, object]] = []
+    request_lines: list[dict[str, object]] = []
+    tooling_set_id: str | None = None
+    tooling_set_hash: str | None = None
+    part_ids: set[str] = set()
+    applicability_ids: set[str] = set()
+    predecessor_cycles: list[Decimal] = []
+    successor_cycles: list[Decimal] = []
+    for line in lines:
+        require(
+            set(line) == _CAPACITY_LINE_FIELDS
+            and line.get("effectiveSetCount") == 1,
+            "P7-05 retained Capacity line contract drifted",
+        )
+        line_id = _uuid(
+            line.get("globalId"),
+            "P7-05 retained Capacity line",
+        )
+        first_line = first_lines_by_id.get(line_id)
+        require(
+            isinstance(first_line, dict)
+            and set(first_line) == _CAPACITY_LINE_FIELDS
+            and first_line.get("partRevisionGlobalId")
+            == line.get("partRevisionGlobalId")
+            and first_line.get("partRevisionSnapshotHash")
+            == line.get("partRevisionSnapshotHash")
+            and first_line.get("applicabilityGlobalId")
+            == line.get("applicabilityGlobalId")
+            and first_line.get("applicabilitySnapshotHash")
+            == line.get("applicabilitySnapshotHash")
+            and all(
+                first_line.get(key) == line.get(key)
+                for key in _CAPACITY_STABLE_LINE_INPUT_FIELDS
+            ),
+            "P7-05 retained Capacity immutable line inputs drifted",
+        )
+        try:
+            predecessor_cycle = Decimal(str(first_line.get("cycleSeconds")))
+            successor_cycle = Decimal(str(line.get("cycleSeconds")))
+        except InvalidOperation:
+            require(False, "P7-05 retained Capacity cycle input is invalid")
+            raise AssertionError
+        require(
+            predecessor_cycle - successor_cycle == Decimal("6"),
+            "P7-05 retained Capacity controlled cycle delta drifted",
+        )
+        predecessor_cycles.append(predecessor_cycle)
+        successor_cycles.append(successor_cycle)
+        part_id = _uuid(
+            line.get("partRevisionGlobalId"),
+            "P7-05 retained Capacity Part Revision",
+        )
+        part_hash = _hash(
+            line.get("partRevisionSnapshotHash"),
+            "P7-05 retained Capacity Part Revision",
+        )
+        applicability_id = _uuid(
+            line.get("applicabilityGlobalId"),
+            "P7-05 retained Capacity applicability",
+        )
+        applicability_hash = _hash(
+            line.get("applicabilitySnapshotHash"),
+            "P7-05 retained Capacity applicability",
+        )
+        selected_sets = line.get("selectedToolingSetGlobalIds")
+        require(
+            isinstance(selected_sets, list) and len(selected_sets) == 1,
+            "P7-05 retained Capacity Tooling Set selection drifted",
+        )
+        selected_set_id = _uuid(
+            selected_sets[0],
+            "P7-05 retained Capacity Tooling Set",
+        )
+        set_provenance = line.get("setProvenance")
+        require(
+            isinstance(set_provenance, dict),
+            "P7-05 retained Capacity Tooling Set provenance drifted",
+        )
+        selected_set_hash = _hash(
+            set_provenance.get("snapshotHash"),
+            "P7-05 retained Capacity Tooling Set",
+        )
+        _exact_capacity_provenance(
+            first_line.get("cycleProvenance"),
+            kind="customer_standard",
+            global_id=first_profile_id,
+            snapshot_hash=first_profile_hash,
+            label="predecessor cycle",
+        )
+        _exact_capacity_provenance(
+            line.get("cycleProvenance"),
+            kind="customer_standard",
+            global_id=profile_id,
+            snapshot_hash=profile_hash,
+            label="cycle",
+        )
+        _exact_capacity_provenance(
+            line.get("cavityProvenance"),
+            kind="tooling_revision",
+            global_id=revision_id,
+            snapshot_hash=revision_hash,
+            label="cavity",
+        )
+        _exact_capacity_provenance(
+            line.get("usageProvenance"),
+            kind="tooling_applicability",
+            global_id=applicability_id,
+            snapshot_hash=applicability_hash,
+            label="usage",
+        )
+        _exact_capacity_provenance(
+            set_provenance,
+            kind="tooling_set_selection",
+            global_id=selected_set_id,
+            snapshot_hash=selected_set_hash,
+            label="Tooling Set",
+        )
+        require(
+            tooling_set_id in {None, selected_set_id}
+            and tooling_set_hash in {None, selected_set_hash}
+            and part_id not in part_ids
+            and applicability_id not in applicability_ids,
+            "P7-05 retained Capacity line identities are ambiguous",
+        )
+        tooling_set_id = selected_set_id
+        tooling_set_hash = selected_set_hash
+        part_ids.add(part_id)
+        applicability_ids.add(applicability_id)
+        applicability.append(
+            {
+                "globalId": applicability_id,
+                "snapshotHash": applicability_hash,
+                "partRevisionGlobalId": part_id,
+                "partRevisionSnapshotHash": part_hash,
+            }
+        )
+        request_lines.append(
+            {
+                key: deepcopy(line[key])
+                for key in _CAPACITY_LINE_REQUEST_FIELDS
+            }
+        )
+    require(
+        tooling_set_id is not None
+        and tooling_set_hash is not None
+        and sorted(predecessor_cycles)
+        == [first_profile_cycle, first_profile_cycle + Decimal("18")]
+        and sorted(successor_cycles)
+        == [profile_cycle, profile_cycle + Decimal("18")],
+        "P7-05 retained Capacity Tooling Set or cycle truth is unavailable",
+    )
+    retained_result = response_by_version[2].get("result")
+    try:
+        retained_capacity = Decimal(
+            str(retained_result.get("scenarioAssemblyUnitsPerMonth"))
+        )
+    except (AttributeError, InvalidOperation):
+        require(False, "P7-05 retained Capacity result is invalid")
+        raise AssertionError
+    require(
+        isinstance(retained_result, dict)
+        and retained_result.get("formulaVersion") == "capacity.v1"
+        and retained_result.get("roundingRule") == "decimal-6-half-even"
+        and retained_capacity >= Decimal("25000"),
+        "P7-05 retained Capacity result cannot satisfy the prepared source",
+    )
+    return (
+        {
+            "projectId": project_id,
+            "masterId": master_id,
+            "revisionId": revision_id,
+            "revisionSnapshotHash": revision_hash,
+            "toolingSetId": tooling_set_id,
+            "toolingSetSnapshotHash": tooling_set_hash,
+            "applicability": applicability,
+        },
+        profile,
+        {
+            "lines": request_lines,
+            "lineInputHash": _canonical_value_hash(request_lines),
+            "retainedLineGlobalIds": [
+                str(value["globalId"])
+                for value in lines
+            ],
+            "retainedScenarioGlobalId": str(first_row["scenario_global_id"]),
+            "retainedScenarioRevisionGlobalIds": [
+                str(first_row["global_id"]),
+                str(second_row["global_id"]),
+            ],
+            "scenarioAssemblyUnitsPerMonth": str(retained_result["scenarioAssemblyUnitsPerMonth"]),
+        },
+    )
+
+
+def _load_retained_capacity_source_context(
     administrator,
     base_url: str,
-    administrator_csrf: str,
-) -> dict[str, object]:
-    context = tooling_controls_runtime.project_context(administrator, base_url)
-    path = tooling_controls_runtime.engineering_path(
-        str(context["projectId"]),
-        str(context["masterId"]),
+) -> tuple[
+    dict[str, object],
+    dict[str, object],
+    dict[str, object],
+    str,
+]:
+    project_id, _project_version = document_runtime.fixture_project(
+        administrator,
+        base_url,
     )
+    stored_scenarios = tooling_controls_runtime.rows(
+        administrator,
+        base_url,
+        "NPI Tooling Capacity Scenario Revision",
+        [["project_global_id", "=", project_id]],
+        list(_CAPACITY_ROW_FIELDS),
+    )
+    _first, _second, master_id = _retained_capacity_rows(
+        project_id,
+        stored_scenarios,
+    )
+    path = tooling_controls_runtime.engineering_path(project_id, master_id)
     retained = tooling_controls_runtime.assert_engineering_context(
         tooling_controls_runtime.tooling_request(
             administrator,
@@ -475,18 +1291,142 @@ def _prepare_capacity_source(
             path,
             query_key="readiness-source-before",
         ),
-        context=context,
+        context={"projectId": project_id, "masterId": master_id},
         expected_count=2,
     )
-    profiles = retained["process"]["customerStandardRevisions"]
-    require(
-        isinstance(profiles, list) and len(profiles) == 2,
-        "P7-05 retained Customer Standard profiles are unavailable",
+    tooling_controls_runtime.assert_successors(retained)
+    context, profile, source_inputs = retained_capacity_source_context(
+        project_id,
+        stored_scenarios,
+        retained,
     )
-    profile = max(profiles, key=lambda value: int(value.get("profileVersion") or 0))
+    return context, profile, source_inputs, path
+
+
+def verify_prepared_capacity_source(
+    scenario: Mapping[str, object],
+    source_inputs: Mapping[str, object],
+    context: Mapping[str, object],
+) -> None:
+    scenario_result = scenario.get("result")
+    created_lines = scenario.get("lines")
+    created_results = (
+        scenario_result.get("lineResults")
+        if isinstance(scenario_result, dict)
+        else None
+    )
+    requested_lines = source_inputs.get("lines")
+    try:
+        target = Decimal(str(scenario.get("targetMonthlyAssemblyUnits")))
+        gap = Decimal(str(scenario_result.get("gap")))
+        created_capacity = Decimal(
+            str(scenario_result.get("scenarioAssemblyUnitsPerMonth"))
+        )
+        retained_capacity = Decimal(
+            str(source_inputs.get("scenarioAssemblyUnitsPerMonth"))
+        )
+    except (AttributeError, InvalidOperation):
+        require(False, "P7-05 prepared Capacity Scenario result is invalid")
+        raise AssertionError
     require(
-        isinstance(profile, dict) and profile.get("profileVersion") == 2,
-        "P7-05 exact Customer Standard successor is unavailable",
+        set(scenario) == _CAPACITY_SCENARIO_FIELDS
+        and scenario.get("schemaVersion") == 1
+        and scenario.get("tenantId") == TENANT_ID
+        and scenario.get("projectGlobalId") == context.get("projectId")
+        and scenario.get("toolingMasterGlobalId") == context.get("masterId")
+        and scenario.get("scenarioVersion") == 1
+        and scenario.get("predecessorGlobalId") is None
+        and scenario.get("predecessorSnapshotHash") is None
+        and scenario.get("versionKeyHash")
+        == _canonical_value_hash(
+            {
+                "scenarioGlobalId": scenario.get("scenarioGlobalId"),
+                "scenarioVersion": 1,
+            }
+        )
+        and scenario.get("title") == CAPACITY_SOURCE_SENTINEL
+        and scenario.get("effectiveFrom") == "2026-08-23"
+        and target == Decimal("25000")
+        and scenario.get("formulaVersion") == "capacity.v1"
+        and scenario.get("roundingRule") == "decimal-6-half-even"
+        and scenario.get("reason") == CAPACITY_SOURCE_SENTINEL
+        and gap == Decimal("0")
+        and created_capacity == retained_capacity
+        and isinstance(scenario_result, dict)
+        and set(scenario_result) == _CAPACITY_RESULT_FIELDS
+        and scenario_result.get("formulaVersion") == "capacity.v1"
+        and scenario_result.get("roundingRule") == "decimal-6-half-even"
+        and isinstance(created_lines, list)
+        and len(created_lines) == 2
+        and isinstance(created_results, list)
+        and len(created_results) == 2
+        and isinstance(requested_lines, list)
+        and all(isinstance(value, dict) for value in created_lines)
+        and all(
+            isinstance(value, dict)
+            and set(value) == _CAPACITY_LINE_RESULT_FIELDS
+            for value in created_results
+        ),
+        "P7-05 prepared Capacity Scenario is not an independent satisfied source",
+    )
+    require(
+        scenario_result
+        == _capacity_result_payload(
+            created_lines,
+            scenario.get("targetMonthlyAssemblyUnits"),
+        ),
+        "P7-05 prepared Capacity result does not match its exact inputs",
+    )
+    created_stream_id = _uuid(
+        scenario.get("scenarioGlobalId"),
+        "prepared Capacity Scenario stream",
+    )
+    created_revision_id = _uuid(
+        scenario.get("globalId"),
+        "prepared Capacity Scenario revision",
+    )
+    retained_revision_ids = set(
+        source_inputs.get("retainedScenarioRevisionGlobalIds", [])
+    )
+    retained_ids = {
+        source_inputs.get("retainedScenarioGlobalId"),
+        *retained_revision_ids,
+    }
+    require(
+        len({created_stream_id, created_revision_id}) == 2
+        and not {created_stream_id, created_revision_id}.intersection(
+            retained_ids
+        ),
+        "P7-05 prepared Capacity Scenario reused retained identities",
+    )
+    _canonical_snapshot_hash(scenario, "prepared Capacity Scenario revision")
+    created_line_ids = [
+        _uuid(value.get("globalId"), "prepared Capacity line")
+        for value in created_lines
+    ]
+    retained_line_ids = set(source_inputs.get("retainedLineGlobalIds", []))
+    require(
+        len(set(created_line_ids)) == 2
+        and not set(created_line_ids).intersection(retained_line_ids)
+        and [value.get("globalId") for value in created_results]
+        == created_line_ids
+        and [
+            {key: deepcopy(value[key]) for key in _CAPACITY_LINE_REQUEST_FIELDS}
+            for value in created_lines
+        ]
+        == requested_lines,
+        "P7-05 prepared Capacity line inputs or identities drifted",
+    )
+
+
+def _prepare_capacity_source(
+    administrator,
+    base_url: str,
+    administrator_csrf: str,
+) -> dict[str, object]:
+    context, profile, source_inputs, path = _load_retained_capacity_source_context(
+        administrator,
+        base_url,
     )
     result = tooling_controls_runtime.command(
         administrator,
@@ -497,30 +1437,12 @@ def _prepare_capacity_source(
             str(context["masterId"]),
             "/capacity-scenario-revisions",
         ),
-        capacity_source_payload(context, profile),
+        capacity_source_payload(context, profile, source_inputs),
         CAPACITY_SOURCE_PREP_KEY,
     )
     scenario = result.body.get("scenario")
     require(isinstance(scenario, dict), "P7-05 prepared Capacity Scenario drifted")
-    scenario_result = scenario.get("result")
-    try:
-        target = Decimal(str(scenario.get("targetMonthlyAssemblyUnits")))
-        gap = Decimal(str(scenario_result.get("gap")))
-    except (AttributeError, InvalidOperation):
-        require(False, "P7-05 prepared Capacity Scenario result is invalid")
-        raise AssertionError
-    require(
-        scenario.get("scenarioVersion") == 1
-        and scenario.get("predecessorGlobalId") is None
-        and scenario.get("predecessorSnapshotHash") is None
-        and target == Decimal("25000")
-        and gap == Decimal("0")
-        and isinstance(scenario.get("lines"), list)
-        and len(scenario["lines"]) == 2,
-        "P7-05 prepared Capacity Scenario is not an independent satisfied source",
-    )
-    _uuid(scenario.get("globalId"), "prepared Capacity Scenario revision")
-    _hash(scenario.get("snapshotHash"), "prepared Capacity Scenario revision")
+    verify_prepared_capacity_source(scenario, source_inputs, context)
     after = tooling_controls_runtime.tooling_request(
         administrator,
         base_url,
