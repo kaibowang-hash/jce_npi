@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-14T10:03:34Z`
+Updated: `2026-08-14T11:52:18Z`
 
 ## Authority and operating mode
 
@@ -3012,4 +3012,61 @@ repeat or rewrite it merely to restore context. See
   stability business authority, G7 close, ERP/network/Outbox work, release,
   projection and print remain held. The latest complete Level 3 remains
   workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-14 P7-06 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint
+  `7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef` activates only the frozen eleven-
+  route repository/BFF boundary. Internal System Managers own no-default
+  policy commands; all Project operations authorize the Project first; exact
+  package, acknowledgement and observation commands resolve only closed same-
+  Project sources and seal actor-bound replay, receipt, audit and canonical
+  response truth in one transaction. The independent
+  `npi_p7_06_routes_disabled` boundary remains default-closed.
+- Exact-SHA ordinary pull-request CI `31797120347` passes repository
+  `94756537757` with `1,851` tracked Python tests plus reconciliation and
+  repository verification; frontend `94756537820` with `56` files,
+  `881/881` unit tests, `388/388` non-visual E2E tests, `7,193` complete direct
+  English/`zh`/`zh-TW` sources, statements `80.14%` and zero vulnerabilities;
+  secret scan `94756537745`; and the unchanged `109/109` fixed-Linux visual
+  matrix in `94756537718`. Visual artifact `9217889371` has digest
+  `sha256:f577e500df2b343b5d4dee3a804997e3359554ea5a0a964f92027a9993895f6f`;
+  Gitleaks artifact `9217790725` has digest
+  `sha256:c7076242aa2f4728c853e5fed0bb3d082eb079eca72a3588882ee3945e8b9ebd`.
+  Controlled preflight `94758839280` and runtime `94758839769` skip as
+  required because checkpoint 2 adds no runtime fixture.
+- Before any retained P7-06 route-created business row, checkpoint 2 completes
+  an additive tenant-isolation forward fix: policy roots freeze exact tenant
+  identity and use a tenant-scoped policy-code key; immutable policy-version
+  snapshots, version keys, OpenAPI/ownership truth and sealed command replay
+  also bind the exact tenant. This does not weaken authority or rewrite
+  history. After retained history exists, rollback remains independent route/
+  workspace disable plus a reviewed forward repair, never destructive history
+  mutation.
+- Scheme A remains exact: the browser submits requirement key, kind, ID and
+  expected version only; the server injects policy-owned manifest role,
+  canonical hash and projection. The current package alone may receive an
+  acknowledgement from its exact enabled frozen User/member/role slot, and a
+  successor inherits none. Observation references remain independent, while
+  all five external production providers remain identity-free `unavailable`
+  and derive only `not_evaluable`.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md`.
+  This is checkpoint 2 PASS, not the P7-06 Level 2 or Level 3 Gate.
+- Standing continuous-delivery authority activates only checkpoint 3: the
+  strict Production Transition data source and dense trilingual Project
+  workspace with exact manifest, receiving-group/slot acknowledgement,
+  unresolved-action, immutable history, observation source/state and
+  retrospective truth; complete honest states, accessibility and affected
+  fixed-Linux visuals. The live data source/UI may call only the complete
+  Project workspace GET and acknowledgement by the signed-in actor for an
+  exact eligible slot on the unique current package. It must not expose policy
+  create/edit/publish/successor, package create/supersede or observation
+  create/revise transport or UI. Controlled runtime and Level 2 remain
+  checkpoint 4.
+  Formal receiving authority, signature/approval/G7, Gate/Project/Work Item/
+  Tooling mutation, external actuals, ERP/network/Outbox, release, projection
+  and print remain held. The latest complete Level 3 remains workflow
+  `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.

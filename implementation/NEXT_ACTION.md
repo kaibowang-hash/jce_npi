@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-06`
+`IN_PROGRESS_CHECKPOINT_3 — P7-06`
 
-Recovery time: `2026-08-14T10:03:34Z`
+Recovery time: `2026-08-14T11:52:18Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -34,6 +34,9 @@ P7-06 audit PASS and checkpoint 1 starting controller:
 
 P7-06 checkpoint 1 product checkpoint:
 `d078f063c35fb7a0f7b8d74c634e17d5ff238cb1`
+
+P7-06 checkpoint 2 product checkpoint:
+`7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef`
 
 ## Current authoritative action
 
@@ -205,30 +208,46 @@ and Gitleaks artifact `9210334347` has digest
 Complete evidence is
 `implementation/evidence/phase-7/p7-05-validation.md`.
 
-P7-06 checkpoint 1 passes at exact product checkpoint
-`d078f063c35fb7a0f7b8d74c634e17d5ff238cb1`. Exact-SHA ordinary CI
-`31789635452` passes repository `94733409400` (`1,796` tracked Python plus
-reconciliation/repository verification), frontend `94733409390` (`56` files,
-`881/881` unit, `388/388` E2E and `7,193` direct trilingual sources), secret
-scan `94733409403` and unchanged `109/109` fixed-Linux visual job
-`94733409444`. Controlled preflight `94736007237` and runtime `94736007523`
-skip as required. Complete evidence is
-`implementation/evidence/phase-7/p7-06-domain-metadata-checkpoint.md`.
+P7-06 checkpoint 2 passes at exact product checkpoint
+`7aeceff6fd75180bbe7efddfc9ee4d2c382e43ef`. Exact-SHA ordinary CI
+`31797120347` passes repository `94756537757` (`1,851` tracked Python plus
+reconciliation/repository verification), frontend `94756537820` (`56` files,
+`881/881` unit, `388/388` E2E, `7,193` direct trilingual sources, statements
+`80.14%` and zero vulnerabilities), secret scan `94756537745` and unchanged
+`109/109` fixed-Linux visual job `94756537718`. Controlled preflight
+`94758839280` and runtime `94758839769` skip as required. Complete evidence is
+`implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md`.
 
-Execute only P7-06 checkpoint 2: add internal-admin policy commands,
-Project-first production-transition reads and exact package, acknowledgement
-and observation commands, closed canonical source resolvers, actor-bound
-idempotency, one transaction, append-only audit and the independently default-
-closed `npi_p7_06_routes_disabled` boundary. Do not activate a Gate input or
-evidence hook, Gate/Project/Work Item/Tooling mutation, external provider, UI,
-runtime fixture or ERP integration. Formal receiving-organization and
-bilateral authority, actual SOP, external yield/complaint/cycle/Tooling
-actuals, stability policy and G7 close remain held. An acknowledgement must
-not become an electronic signature, approval or G7 decision, and Trial or
-capacity evidence must not become a production actual.
+Execute only P7-06 checkpoint 3: compose the strict Production Transition data
+source and dense Project workspace with exact handover manifest, receiving-
+group and acknowledgement-slot truth, unresolved actions, immutable package
+and acknowledgement history, observation source/state and retrospective
+references, and explicit identity-free unavailable providers. Cover loading,
+empty, read-only, permission, validation, conflict, processing, retry,
+superseded and external-unavailable states in English, `zh` and `zh-TW`, plus
+accessibility and affected fixed-Linux visuals. Use `project-page.tsx` only as
+the existing data-source injection seam and keep live transport outside the
+workspace. Treat policy titles, group labels, slot labels and source data as
+business data; all shell, state and error copy remains literal English source
+text with direct `zh` and `zh-TW` translations.
 
-No Level 3 was run for P7-05. The latest complete Level 3 remains workflow
-`31392474781` at exact SHA
+The live data source and UI are closed to the complete Project workspace GET
+and acknowledgement by the current signed-in actor for an exact eligible slot
+on the unique current package. Do not implement or expose policy
+create/edit/publish/successor, package create/supersede, or observation
+create/revise transport, controls or forms in checkpoint 3.
+
+Do not add template-policy administration UI, Gate input/evidence/mutation,
+Project/Work Item/Tooling mutation, external providers, runtime fixtures or
+ERP integration. Formal receiving-organization and bilateral authority,
+actual SOP, external yield/complaint/cycle/Tooling actuals, stability policy
+and G7 close remain held. An acknowledgement must not become an electronic
+signature, approval or G7 decision, and Trial or capacity evidence must not
+become a production actual. Controlled runtime and Level 2 remain checkpoint
+4.
+
+No Level 3 was run for P7-06 checkpoint 2. The latest complete Level 3
+remains workflow `31392474781` at exact SHA
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`; Level 3 remains reserved for
 the applicable Phase, PR or release boundary.
 
