@@ -73,7 +73,22 @@ class Phase7ProductionTransitionRuntimeVerifierTest(unittest.TestCase):
             self.module.ACKNOWLEDGEMENT_USER,
             self.module.document_runtime.BASELINE_USER,
         )
+        self.assertEqual(
+            self.module.IDOR_READER_USER,
+            self.module.trial_runtime.VERIFIER_USER,
+        )
         self.assertNotEqual(self.module.ACTOR_USER, self.module.ACKNOWLEDGEMENT_USER)
+        self.assertEqual(
+            len(
+                {
+                    self.module.ACTOR_USER,
+                    self.module.UNRELATED_USER,
+                    self.module.ACKNOWLEDGEMENT_USER,
+                    self.module.IDOR_READER_USER,
+                }
+            ),
+            4,
+        )
         self.assertEqual(
             self.module.policy_path(),
             "/api/npi/v1/production-transition/policies",
@@ -463,6 +478,90 @@ class Phase7ProductionTransitionRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, source)
+
+    def test_project_first_probes_separate_reader_acknowledger_and_manager(self) -> None:
+        calls: list[tuple[str, object, object]] = []
+        problem = {
+            "status": 404,
+            "code": "PRODUCTION_TRANSITION_UNAVAILABLE",
+            "title": "Unavailable",
+            "detail": "Unavailable",
+            "retryable": False,
+        }
+
+        def transition_request(opener, _base_url, path, *, query_key):
+            calls.append(("GET", opener, query_key))
+            return SimpleNamespace(body=problem, path=path)
+
+        def command(opener, _base_url, csrf_token, path, _payload, key, **_kwargs):
+            calls.append(("POST", opener, csrf_token))
+            return SimpleNamespace(body=problem, key=key, path=path)
+
+        with (
+            patch.object(self.module, "transition_counts", return_value={}),
+            patch.object(
+                self.module,
+                "run_bench_fixture",
+                return_value={"digest": "stable"},
+            ),
+            patch.object(self.module, "transition_request", transition_request),
+            patch.object(self.module, "command", command),
+            patch.object(self.module, "validate_problem"),
+        ):
+            self.module.verify_project_first_idor(
+                "unauthorized-reader",
+                "acknowledgement-reader",
+                "manager",
+                "http://127.0.0.1",
+                "ack-csrf",
+                "manager-csrf",
+                second_project_id="second-project",
+                second_project_version=2,
+                target_package={
+                    "globalId": "package-revision",
+                    "handoverGlobalId": "handover",
+                    "handoverVersion": 2,
+                    "snapshotHash": HASH_A,
+                },
+                target_observation={"observationGlobalId": "observation"},
+                handover_payload={"content": {"expectedProjectVersion": 1}},
+                observation_payload={"expectedRevisionGlobalId": "revision"},
+                administrator="administrator",
+                target_project_id="target-project",
+            )
+
+        self.assertEqual(
+            calls,
+            [
+                ("GET", "unauthorized-reader", "idor-real-secondary"),
+                ("GET", "unauthorized-reader", "idor-absent-secondary"),
+                ("POST", "manager", "manager-csrf"),
+                ("POST", "manager", "manager-csrf"),
+                ("POST", "acknowledgement-reader", "ack-csrf"),
+                ("POST", "acknowledgement-reader", "ack-csrf"),
+                ("POST", "manager", "manager-csrf"),
+                ("POST", "manager", "manager-csrf"),
+            ],
+        )
+
+    def test_project_first_fixture_proves_three_distinct_authority_levels(self) -> None:
+        fixture = inspect.getsource(
+            self.module.production_transition_fixture_context
+        )
+        preparation = inspect.getsource(self.module.prepare_runtime_users)
+        for marker in (
+            "IDOR_READER_USER",
+            'roles=frozenset({"NPI API User"})',
+            "not idor_repository._can_view_project",
+            "acknowledgement_repository._can_view_project",
+            "repository._can_administer_project",
+            "idor_repository._current_actor_member(second_project) is None",
+            '"System Manager" not in idor_reader_roles',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, fixture)
+        self.assertIn('"System Manager" not in roles', preparation)
+        self.assertIn("IDOR_READER_USER", preparation)
 
     def test_zero_effect_snapshot_covers_project_gate_readiness_integration_and_global_p706(self) -> None:
         source = inspect.getsource(

@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 
 import verify_document_runtime as document_runtime
 import verify_readiness_runtime as readiness_runtime
+import verify_trial_runtime as trial_runtime
 from verify_frappe_runtime import (
     HttpResult,
     login,
@@ -41,6 +42,7 @@ TENANT_ID = document_runtime.TENANT_ID
 ACTOR_USER = readiness_runtime.ACTOR_USER
 UNRELATED_USER = readiness_runtime.UNRELATED_USER
 ACKNOWLEDGEMENT_USER = document_runtime.BASELINE_USER
+IDOR_READER_USER = trial_runtime.VERIFIER_USER
 
 POLICY_CODE = f"P706-{FIXTURE_RUN_ID[:16].upper()}"
 POLICY_SENTINEL = "P706-POLICY-SENTINEL"
@@ -702,6 +704,8 @@ def production_transition_fixture_context(
     )
     user = frappe.get_doc("User", ACKNOWLEDGEMENT_USER)
     user_roles = {str(value.role) for value in user.roles}
+    idor_reader = frappe.get_doc("User", IDOR_READER_USER)
+    idor_reader_roles = {str(value.role) for value in idor_reader.roles}
     require(
         str(project.global_id) == project_id
         and str(project.tenant_id) == TENANT_ID
@@ -773,17 +777,61 @@ def production_transition_fixture_context(
         ),
         "P7-06 all-nonterminal Work Item preflight drifted",
     )
-    second_projects = frappe.get_all(
+    idor_repository = FrappeProductionTransitionRepository(
+        principal=Principal(
+            IDOR_READER_USER,
+            roles=frozenset({"NPI API User"}),
+            tenant_id=TENANT_ID,
+        ),
+        request_id=str(uuid4()),
+        trace_id=f"trace-{uuid4().hex}",
+    )
+    acknowledgement_repository = FrappeProductionTransitionRepository(
+        principal=Principal(
+            ACKNOWLEDGEMENT_USER,
+            roles=frozenset({"NPI API User"}),
+            tenant_id=TENANT_ID,
+        ),
+        request_id=str(uuid4()),
+        trace_id=f"trace-{uuid4().hex}",
+    )
+    second_project_rows = frappe.get_all(
         "NPI Engineering Project",
         filters={"tenant_id": TENANT_ID, "global_id": ["!=", project_id]},
         fields=["global_id", "optimistic_version"],
         order_by="global_id asc",
-        limit_page_length=2,
+        limit_page_length=101,
     )
-    require(bool(second_projects), "P7-06 second Project IDOR fixture is unavailable")
+    require(
+        len(second_project_rows) <= 100,
+        "P7-06 second Project IDOR fixture inventory is unsafe",
+    )
+    second_project = None
+    for row in second_project_rows:
+        candidate = frappe.get_doc("NPI Engineering Project", str(row.global_id))
+        candidate_id = UUID(str(candidate.global_id))
+        if (
+            not idor_repository._can_view_project(candidate, candidate_id)
+            and acknowledgement_repository._can_view_project(candidate, candidate_id)
+            and repository._can_administer_project(candidate, candidate_id)
+        ):
+            second_project = candidate
+            break
+    require(
+        second_project is not None
+        and int(idor_reader.enabled) == 1
+        and str(idor_reader.user_type) == "System User"
+        and "NPI API User" in idor_reader_roles
+        and "System Manager" not in idor_reader_roles
+        and str(second_project.owner_user_id).casefold()
+        != IDOR_READER_USER.casefold()
+        and idor_repository._current_actor_member(second_project) is None,
+        "P7-06 Project-first actor separation fixture is unavailable",
+    )
     return {
         "acknowledgementUser": ACKNOWLEDGEMENT_USER,
         "fixtureRunId": fixture_run_id,
+        "idorReaderUser": IDOR_READER_USER,
         "memberGlobalId": str(member.global_id),
         "memberOptimisticVersion": int(member.optimistic_version),
         "projectGlobalId": project_id,
@@ -792,10 +840,8 @@ def production_transition_fixture_context(
         "roleAssignmentGlobalId": str(role.global_id),
         "roleKey": str(role.role_key),
         "roleOptimisticVersion": int(role.optimistic_version),
-        "secondProjectGlobalId": str(second_projects[0].global_id),
-        "secondProjectOptimisticVersion": int(
-            second_projects[0].optimistic_version
-        ),
+        "secondProjectGlobalId": str(second_project.global_id),
+        "secondProjectOptimisticVersion": int(second_project.optimistic_version),
         "unresolvedActionKinds": sorted(allowed_kinds),
         "unresolvedActions": [value.snapshot_payload() for value in unresolved],
     }
@@ -1425,6 +1471,30 @@ def prepare_runtime_users(
         and "System Manager" not in roles,
         "P7-06 acknowledgement actor gained proxy authority",
     )
+    changed = update_resource(
+        administrator,
+        base_url,
+        "User",
+        IDOR_READER_USER,
+        {"new_password": fixture_password},
+        administrator_csrf,
+    )
+    require(changed.status == 200, "P7-06 IDOR reader password was not set")
+    retained = get_resource(administrator, base_url, "User", IDOR_READER_USER)
+    data = retained.body.get("data", {})
+    roles = {
+        str(value.get("role"))
+        for value in data.get("roles", [])
+        if isinstance(value, dict)
+    }
+    require(
+        retained.status == 200
+        and data.get("enabled") == 1
+        and data.get("user_type") == "System User"
+        and "NPI API User" in roles
+        and "System Manager" not in roles,
+        "P7-06 Project-first IDOR reader gained proxy authority",
+    )
 
 
 def policy_catalog(opener, base_url: str, project_id: str) -> dict[str, Any]:
@@ -1810,10 +1880,11 @@ def _expect_problem_without_write(
 
 
 def verify_project_first_idor(
-    reader,
+    unauthorized_reader,
+    acknowledgement_reader,
     manager,
     base_url: str,
-    reader_csrf: str,
+    acknowledgement_csrf: str,
     manager_csrf: str,
     *,
     second_project_id: str,
@@ -1831,14 +1902,14 @@ def verify_project_first_idor(
         {"fixture_run_id": FIXTURE_RUN_ID, "project_id": target_project_id},
     )
     cross_project = transition_request(
-        reader,
+        unauthorized_reader,
         base_url,
         workspace_path(second_project_id),
         query_key="idor-real-secondary",
     )
     validate_problem(cross_project, 404, "PRODUCTION_TRANSITION_UNAVAILABLE")
     absent = transition_request(
-        reader,
+        unauthorized_reader,
         base_url,
         workspace_path(ABSENT_ID),
         query_key="idor-absent-secondary",
@@ -1900,8 +1971,8 @@ def verify_project_first_idor(
         "handover-revise",
     )
     assert_secondary_pair(
-        reader,
-        reader_csrf,
+        acknowledgement_reader,
+        acknowledgement_csrf,
         handover_path(
             second_project_id,
             str(target_package["handoverGlobalId"]),
@@ -2061,6 +2132,7 @@ def run_fresh(
     administrator,
     actor,
     unrelated,
+    unauthorized_reader,
     acknowledgement_actor,
     base_url: str,
     actor_csrf: str,
@@ -2090,6 +2162,7 @@ def run_fresh(
     require(
         schema.get("metadataSynchronized") is True
         and context.get("acknowledgementUser") == ACKNOWLEDGEMENT_USER
+        and context.get("idorReaderUser") == IDOR_READER_USER
         and context.get("roleKey") == document_runtime.BASELINE_ROLE_KEY
         and isinstance(context.get("unresolvedActions"), list)
         and isinstance(sources, list)
@@ -2624,6 +2697,7 @@ def run_fresh(
     )
 
     verify_project_first_idor(
+        unauthorized_reader,
         acknowledgement_actor,
         actor,
         base_url,
@@ -3182,11 +3256,21 @@ def main() -> None:
     validate_local_fixture_inputs(
         base_url, "Administrator", ACKNOWLEDGEMENT_USER
     )
+    validate_local_fixture_inputs(base_url, "Administrator", IDOR_READER_USER)
     require(
         ACTOR_USER.endswith("@example.invalid")
         and UNRELATED_USER.endswith("@example.invalid")
         and ACKNOWLEDGEMENT_USER.endswith("@example.invalid")
-        and len({ACTOR_USER, UNRELATED_USER, ACKNOWLEDGEMENT_USER}) == 3
+        and IDOR_READER_USER.endswith("@example.invalid")
+        and len(
+            {
+                ACTOR_USER,
+                UNRELATED_USER,
+                ACKNOWLEDGEMENT_USER,
+                IDOR_READER_USER,
+            }
+        )
+        == 4
         and FIXTURE_RUN_ID != "0" * 32,
         "P7-06 runtime fixture identity drifted",
     )
@@ -3230,10 +3314,15 @@ def main() -> None:
     else:
         unrelated = login(base_url, UNRELATED_USER, fixture_password)
         unrelated_csrf = bootstrap_csrf(unrelated, base_url, UNRELATED_USER)
+        unauthorized_reader = login(
+            base_url, IDOR_READER_USER, fixture_password
+        )
+        bootstrap_csrf(unauthorized_reader, base_url, IDOR_READER_USER)
         result = run_fresh(
             administrator,
             actor,
             unrelated,
+            unauthorized_reader,
             acknowledgement_actor,
             base_url,
             actor_csrf,
