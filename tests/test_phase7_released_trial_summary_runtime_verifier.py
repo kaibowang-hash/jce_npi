@@ -5,7 +5,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 from uuid import UUID
 
 
@@ -241,6 +241,50 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, replay)
+
+    def test_main_validates_administrator_and_both_disposable_users(self) -> None:
+        module = self.module
+        base_url = "http://127.0.0.1:8003"
+        with patch.object(
+            sys,
+            "argv",
+            [
+                str(VERIFIER),
+                "--base-url",
+                base_url,
+                "--route-disable-probe",
+                "disabled",
+            ],
+        ), patch.dict(
+            os.environ,
+            {module.document_runtime.FIXTURE_RUN_ID_ENV: FIXTURE_RUN_ID},
+            clear=False,
+        ), patch.object(
+            module,
+            "secret_from_environment",
+            return_value="fixture-secret",
+        ), patch.object(
+            module,
+            "validate_local_fixture_inputs",
+            return_value=base_url,
+        ) as validate_inputs, patch.object(
+            module,
+            "login",
+            return_value=object(),
+        ), patch.object(
+            module,
+            "route_disable_probe",
+            return_value={"routeMode": "disabled"},
+        ), patch("builtins.print"):
+            module.main()
+
+        self.assertEqual(
+            validate_inputs.call_args_list,
+            [
+                call(base_url, "Administrator", module.ACTOR_USER),
+                call(base_url, "Administrator", module.UNRELATED_USER),
+            ],
+        )
 
     def test_shell_orders_p707_after_p706_and_restores_independent_switch(self) -> None:
         shell = self.shell

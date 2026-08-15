@@ -1746,7 +1746,12 @@ def main() -> None:
     fixture_password = secret_from_environment("NPI_RUNTIME_FIXTURE_PASSWORD")
     base_url = validate_local_fixture_inputs(
         arguments.base_url,
+        "Administrator",
         ACTOR_USER,
+    )
+    validate_local_fixture_inputs(
+        base_url,
+        "Administrator",
         UNRELATED_USER,
     )
     require(
