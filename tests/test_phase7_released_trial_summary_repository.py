@@ -417,6 +417,41 @@ class Phase7ReleasedTrialSummaryRepositoryTest(unittest.TestCase):
                 reason="Probe an absent summary stream without disclosing history.",
             )
 
+    def test_noop_successor_is_conflict_before_source_graph_resolution(self) -> None:
+        repository = object.__new__(self.Repository)
+        project = SimpleNamespace()
+        trial_round = SimpleNamespace()
+        predecessor = summary()
+        conclusion = SimpleNamespace(
+            global_id=predecessor.conclusion_revision_global_id,
+            conclusion_version=predecessor.conclusion_version,
+            snapshot_hash=predecessor.conclusion_snapshot_hash,
+        )
+        repository._summary_command_start = lambda *_args: (project, None, "b" * 64)
+        repository._locked_exact_round = lambda *_args: (SimpleNamespace(), trial_round)
+        repository._summary_history = lambda *_args, **_kwargs: (predecessor,)
+        repository._exact_current_decided_conclusion = lambda *_args: conclusion
+        repository._exact_source_graph = lambda *_args: self.fail(
+            "A no-op successor must fail before source graph resolution."
+        )
+
+        with self.assertRaises(self.domain.ReleasedTrialSummaryConflict):
+            repository.revise_summary(
+                PROJECT,
+                ROUND,
+                predecessor.summary_global_id,
+                idempotency_key_hash="c" * 64,
+                expected_round_optimistic_version=7,
+                expected_round_snapshot_hash="2" * 64,
+                conclusion_revision_id=conclusion.global_id,
+                expected_conclusion_version=conclusion.conclusion_version,
+                expected_conclusion_snapshot_hash=conclusion.snapshot_hash,
+                predecessor_revision_id=predecessor.global_id,
+                expected_predecessor_version=predecessor.summary_version,
+                expected_predecessor_snapshot_hash=predecessor.snapshot_hash,
+                reason="Reject a no-op Released Trial Summary successor.",
+            )
+
     def test_actor_receipt_row_audit_workspace_and_seal_order_is_atomic(self) -> None:
         value = summary()
         repository = object.__new__(self.Repository)

@@ -216,6 +216,14 @@ class FrappeReleasedTrialSummaryRepository(FrappeTrialReviewRepository):
             expected_conclusion_version,
             expected_conclusion_snapshot_hash,
         )
+        if any(
+            (
+                conclusion.global_id == predecessor.conclusion_revision_global_id,
+                conclusion.conclusion_version <= predecessor.conclusion_version,
+                conclusion.snapshot_hash == predecessor.conclusion_snapshot_hash,
+            )
+        ):
+            raise ReleasedTrialSummaryConflict()
         graph = self._exact_source_graph(project, trial_round, conclusion)
         now = datetime.now(UTC)
         value = self._build_revision(
