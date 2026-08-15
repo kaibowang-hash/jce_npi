@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-14T18:54:42Z`
+Updated: `2026-08-15T04:20:26Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P7-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -36,18 +36,21 @@ Updated: `2026-08-14T18:54:42Z`
 - Latest P7-06 product Gate:
   `563fff535bc46f3d0c216a68a555b61b32479a0d` (`LEVEL 2 PASS`;
   ordinary CI `31828878511`; exact-SHA controlled Gate `31829617671`)
+- P7-07 starting controller checkpoint:
+  `b9dc2135e16e1b19d375bb29ab733e5e63ccef08` (`AUDIT PASS`;
+  ordinary CI `31832348527` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-07 — Immutable Released Trial Summary and controlled output`
-  (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P7-07` (`ACTIVE_AUDIT_ONLY`)
+  (`CHECKPOINT 1 — DOMAIN, CONTRACT AND ADDITIVE METADATA`)
+- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_1_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-07 AUDIT`)
+  (`IN_PROGRESS — P7-07 CHECKPOINT 1`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -291,15 +294,25 @@ contains `11` commits, `80` paths, `34,596` insertions and `105` deletions.
 Complete evidence is
 `implementation/evidence/phase-7/p7-06-validation.md`.
 
-The only active atomic scope is the bounded P7-07 Requirement/domain/existing-
-capability audit for `FR-PRN-002`, `FR-INT-015` and `FR-TR-008`. No product
-code, route, row, migration, event, projection, form, signature, retention,
-copy, release or print authority is active. External event/projection remains
-held under `DR-REC-009`; form mapping, signature, retention and copy policy
-remain held under `DR-REC-003` and `DR-REC-004`; G7, ERP and production print
-authority remain held. The latest complete Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
-Blocker.
+The bounded P7-07 Requirement/domain/existing-capability audit passes at
+starting controller `b9dc2135e16e1b19d375bb29ab733e5e63ccef08`, whose
+ordinary pull-request CI `31832348527` passes repository `94870751889`,
+frontend `94870751782`, secret scan `94870751845` and fixed-Linux visual
+`94870751727` at `112/112`; controlled lanes skip as expected. The frozen plan
+is `implementation/evidence/phase-7/p7-07-plan.md`.
+
+The only active atomic scope is checkpoint 1: pure immutable Released Trial
+Summary domains, closed OpenAPI/ownership, one guarded additive revision
+DocType, two closed operations on the existing Trial receipt, direct
+translations and focused tests. No repository/BFF route, business row, UI,
+runtime, production mapping, PDF, external event/projection, form, signature,
+retention, numbered copy, G7, ERP or production print authority is active.
+Approved and rejected conclusions remain exact technical facts; neither the
+summary nor output is approval. External event/projection remains held under
+`DR-REC-009`; form mapping, signature, retention and copy policy remain held
+under `DR-REC-003` and `DR-REC-004`. The latest complete Level 3 remains
+`31392474781` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no
+technical Hard Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

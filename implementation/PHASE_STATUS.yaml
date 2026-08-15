@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-14T18:54:42Z'
+updated_at: '2026-08-15T04:20:26Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-07
-current_task_status: IN_PROGRESS_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
 current_task_completed_stage: P7_06_LEVEL_2_PASS
-current_task_next_stage: P7_07_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_next_stage: P7_07_DOMAIN_CONTRACT_ADDITIVE_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-07
-resumed_product_task_status: ACTIVE_AUDIT_ONLY
+resumed_product_task_status: ACTIVE_CHECKPOINT_1_ONLY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1858,7 +1858,7 @@ p7_06:
 p7_07:
   task: P7-07
   controller_task: P7-07_IMMUTABLE_RELEASED_TRIAL_SUMMARY_CONTROLLED_OUTPUT
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-07
   requirements:
@@ -1866,9 +1866,13 @@ p7_07:
     - FR-INT-015
     - FR-TR-008
   predecessor_product_checkpoint: 563fff535bc46f3d0c216a68a555b61b32479a0d
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  starting_controller_checkpoint: b9dc2135e16e1b19d375bb29ab733e5e63ccef08
+  starting_controller_ci: 31832348527
+  audit: PASS
+  audit_controller_checkpoint: b9dc2135e16e1b19d375bb29ab733e5e63ccef08
+  audit_ordinary_ci: 31832348527
+  current_stage: DOMAIN_CONTRACT_ADDITIVE_METADATA
+  next_stage_after_pass: REPOSITORY_BFF_SOURCE_ADAPTER
   product_code_changed: false
   external_holds:
     - RELEASED_TRIAL_SUMMARY_EXTERNAL_EVENT_SCHEMA_ROUTING_DELIVERY_AND_TARGET_RECEIPT
@@ -1877,6 +1881,7 @@ p7_07:
     - PRODUCTION_ERPNEXT_JCE_PROJECTION_AND_PRINT_EXECUTION
   evidence:
     - implementation/evidence/phase-7/p7-06-validation.md
+    - implementation/evidence/phase-7/p7-07-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

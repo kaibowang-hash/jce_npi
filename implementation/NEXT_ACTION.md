@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-07`
+`IN_PROGRESS_CHECKPOINT_1 — P7-07`
 
-Recovery time: `2026-08-14T18:54:42Z`
+Recovery time: `2026-08-15T04:20:26Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -46,6 +46,9 @@ P7-06 checkpoint 3 final checkpoint:
 
 P7-06 Level 2 final product checkpoint and P7-07 audit base:
 `563fff535bc46f3d0c216a68a555b61b32479a0d`
+
+P7-07 audit PASS and checkpoint 1 starting controller:
+`b9dc2135e16e1b19d375bb29ab733e5e63ccef08`
 
 ## Current authoritative action
 
@@ -276,17 +279,21 @@ independent final PASS. Task Diff
 is `11` commits, `80` paths, `34,596` insertions and `105` deletions. Complete
 evidence is `implementation/evidence/phase-7/p7-06-validation.md`.
 
-Execute only the bounded P7-07 Requirement/domain/existing-capability audit
-for `FR-PRN-002`, `FR-INT-015` and `FR-TR-008`. Freeze the immutable Released
-Trial Summary and controlled-output boundary before product implementation.
-Do not edit product code or activate any route, row, migration, event,
-projection, form, signature, retention, copy, release or print authority.
-External event/projection remains held under `DR-REC-009`; form mapping,
-signature, retention and copy policy remain held under `DR-REC-003` and
-`DR-REC-004`; G7, ERP and production print authority remain held. The latest
-complete Level 3 remains workflow `31392474781` at exact SHA
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`; Level 3 remains reserved for
-the applicable Phase, PR or release boundary.
+The bounded P7-07 audit passes at controller `b9dc213`; exact-SHA ordinary CI
+`31832348527` passes repository, frontend/E2E, secret and `112/112` visual
+lanes, while controlled lanes skip as expected. The frozen plan is
+`implementation/evidence/phase-7/p7-07-plan.md`.
+
+Execute only checkpoint 1: pure immutable Released Trial Summary domain and
+exact parsers, closed OpenAPI/ownership, one guarded additive summary-revision
+DocType, the two closed existing Trial receipt operations, direct translations
+and focused tests. Do not activate repository/BFF routes, business rows, UI,
+runtime, production mapping/PDF, event, projection, form, signature,
+retention, copy or formal release authority. External event/projection remains
+held under `DR-REC-009`; form mapping, signature, retention and copy policy
+remain held under `DR-REC-003/004`; G7, ERP and production print authority
+remain held. The latest complete Level 3 remains workflow `31392474781` at
+exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
 
 ## Retained P6-05 and P6-06 execution history
 

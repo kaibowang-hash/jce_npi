@@ -3,10 +3,10 @@
   "task_id": "P7-07",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_2",
   "authorized_next_task": "P7-08",
-  "base_checkpoint": "563fff535bc46f3d0c216a68a555b61b32479a0d",
+  "base_checkpoint": "b9dc2135e16e1b19d375bb29ab733e5e63ccef08",
   "predecessor_product_checkpoint": "563fff535bc46f3d0c216a68a555b61b32479a0d",
   "requirement_ids": [
     "FR-PRN-002",
@@ -14,33 +14,62 @@
     "FR-TR-008"
   ],
   "scope": [
-    "Audit one NPI-owned immutable Released Trial Summary snapshot that freezes exact Trial Plan, Round, locked input, Trial Actual, Sample, cavity, defect, action, verification, comparison, controlled-reference and conclusion identities, versions and hashes without latest-value substitution.",
-    "Audit reuse of the existing P5-06 controlled-print registry, immutable snapshot and output mechanics, including exact language, actor, time, QR/hash, watermark, copy state, audited reprint and redaction truth.",
-    "Audit the NPI-side foundation for FR-INT-015 while keeping external event schema, routing, delivery, target projection and receipt confirmation held under DR-REC-009.",
-    "Keep formal production form mapping, signer, retention and copy policy behind DR-REC-003 and DR-REC-004, and keep released evidence distinct from approval, G7 authority or external execution.",
-    "Define the minimum complete vertical slice, ownership, additive persistence, closed BFF, trilingual industrial workspace, tests, migration and rollback before product code."
+    "Retain one append-only NPI-owned Released Trial Summary revision stream per exact Project and Trial Round, freezing the current decided Trial conclusion and complete exact Plan, Round, locked-input, Actual, Sample, cavity, defect, action, verification, comparison and controlled-reference identities, versions and hashes without latest-value substitution.",
+    "Derive and retain one bounded URL-free localized-neutral presentation projection and closed server-owned redaction manifest from the exact source graph, rejecting overflow or incomplete data rather than truncating, sampling or fabricating truth.",
+    "Append a successor only for a later exact current approved or rejected conclusion, preserving every prior summary and controlled output while keeping submitted and reopened conclusions ineligible for new summary retention.",
+    "Register the exact released_trial_summary controlled-print source adapter while reusing P5-06 registry, immutable snapshot/output, private File, QR/hash, actor/time/language/watermark/copy-state and audited download mechanics without installing a production mapping.",
+    "Deliver the closed Project-first repository/BFF boundary, dense trilingual live Trial summary workspace, additive metadata, controlled runtime and Level 2 evidence under the frozen P7-07 plan.",
+    "Keep formal release, approval, signature, production form owner, retention, browser-print, numbered-copy, external event/payload/consumer/receipt, ERP/JCE projection, G7/Gate, Project, Work Item and Tooling lifecycle authority outside P7-07."
   ],
   "non_scope": [
-    "Product implementation before the P7-07 audit and frozen plan pass.",
-    "External Released Trial Summary event publication, ERPNext or JCE projection, downstream delivery, target receipt confirmation or production form mapping.",
-    "Caller-supplied release, signer, retention, copy, watermark, source hash, translated enum or latest-source truth; raw private File URLs or unredacted controlled values.",
-    "Treating summary generation, controlled output or print evidence as approval, electronic signature, formal production acceptance, G7 close or Project lifecycle authority.",
+    "Any production controlled-print mapping, Print Format, form owner, signer, wet or electronic signature, retention period, browser-print claim, numbered-copy policy or formal production release role under DR-REC-003 and DR-REC-004.",
+    "Any Released Trial Summary external event identity, payload version, consumer-specific redaction contract, routing, delivery, target projection or receipt confirmation under DR-REC-009.",
+    "Treating a retained approved or rejected technical conclusion, summary, evidence, PDF, QR, hash or audit as customer approval, production acceptance, electronic signature, G7 close, Gate decision or Project completion.",
+    "Caller-supplied tenant, actor, summary version/state, source manifest, source hash, presentation projection, redaction, translation, mapping, watermark, copy state, output, event, provider or external truth.",
     "P7-08 mobile field actions, generic DocType CRUD, Frappe or ERPNext core patches, production ERPNext access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
-    "RELEASED_TRIAL_SUMMARY_SNAPSHOTS_ARE_IMMUTABLE_AND_FREEZE_EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES",
-    "RELEASED_OUTPUT_REUSES_CONTROLLED_PRINT_REGISTRY_SNAPSHOT_OUTPUT_QR_HASH_WATERMARK_COPY_AND_REPRINT_TRUTH",
-    "SUMMARY_AND_REPRINT_NEVER_RESOLVE_RETAINED_SOURCES_TO_LATEST",
-    "NPI_OWNED_RELEASED_SUMMARY_IS_DISTINCT_FROM_EXTERNAL_EVENT_PROJECTION_AND_RECEIPT",
-    "RAW_PRIVATE_FILE_URLS_AND_UNREDACTED_CONTROLLED_VALUES_NEVER_ENTER_OUTPUT_OR_LOGS",
-    "FORMAL_PRODUCTION_FORM_SIGNER_RETENTION_AND_COPY_POLICY_REMAIN_HELD",
+    "RELEASED_TRIAL_SUMMARY_REVISIONS_ARE_APPEND_ONLY_AND_FREEZE_EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES",
+    "ONLY_ONE_STABLE_SUMMARY_STREAM_AND_ONE_UNIQUE_CURRENT_TIP_EXIST_PER_PROJECT_AND_TRIAL_ROUND",
+    "NEW_SUMMARIES_REQUIRE_THE_EXACT_CURRENT_APPROVED_OR_REJECTED_CONCLUSION_TIP",
+    "SUBMITTED_AND_REOPENED_CONCLUSIONS_CANNOT_PRODUCE_A_NEW_RETAINED_SUMMARY",
+    "SUCCESSORS_REQUIRE_EXACT_PREDECESSOR_AND_NEWLY_DECIDED_SOURCE_TRUTH_WITHOUT_REWRITING_HISTORY",
+    "SUMMARY_SOURCE_GRAPH_IS_SERVER_ENUMERATED_COMPLETE_CLOSED_AND_PROJECT_SCOPED",
+    "PRESENTATION_PROJECTION_IS_LOCALIZED_NEUTRAL_URL_FREE_BOUNDED_AND_NEVER_TRUNCATED",
+    "REDACTION_MANIFEST_IS_SERVER_DERIVED_CLOSED_AND_CANNOT_BE_WEAKENED_BY_THE_CALLER",
+    "CONTROLLED_PRINT_ADAPTER_RESOLVES_ONLY_THE_EXACT_RETAINED_SUMMARY_REVISION_AND_PROJECTION_HASH",
+    "REGISTERING_A_SOURCE_ADAPTER_INSTALLS_NO_PRODUCTION_PRINT_MAPPING_OR_AUTHORITY",
+    "REPRINT_NEVER_RESOLVES_RETAINED_SUMMARY_OR_TRIAL_SOURCES_TO_LATEST",
+    "FORMAL_FORM_SIGNER_RETENTION_COPY_EVENT_PROJECTION_AND_RECEIPT_POLICY_REMAIN_HELD",
     "NO_AUTOMATIC_G7_GATE_PROJECT_WORK_ITEM_TOOLING_ERP_OUTBOX_OR_EXTERNAL_MUTATION",
     "PROJECT_FIRST_AUTHORIZATION_AND_ACTOR_BOUND_IDEMPOTENCY",
-    "NO_EVIDENCE_OUTPUT_OR_PRINT_AS_APPROVAL",
+    "NO_EVIDENCE_SUMMARY_OUTPUT_OR_PRINT_AS_APPROVAL",
     "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/controlled_print/source_registry.py",
+    "apps/npi_core/npi_core/released_summary_api.py",
+    "apps/npi_core/npi_core/trial/released_summary_*.py",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_released_trial_summary_revision/*",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_trial_command_idempotency/npi_trial_command_idempotency.json",
+    "apps/npi_core/npi_core/npi_core/doctype/npi_trial_command_idempotency/npi_trial_command_idempotency.py",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/trial-data-source.ts",
+    "frontend/src/app/app.tsx",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/live-trial-page.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts",
+    "frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts-snapshots/*",
+    "frontend/tests/support/released-trial-summary-fixture.ts",
+    "frontend/tests/unit/live-trial-page.test.tsx",
+    "frontend/tests/unit/trial-data-source.test.ts",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -51,22 +80,34 @@
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
     "implementation/phase-7-requirement-anchor.md",
-    "implementation/evidence/phase-7/p7-06-*.md",
     "implementation/evidence/phase-7/p7-07-*.md",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_released_trial_summary_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
-    "tests/test_current_task_verifier.py"
+    "tests/test_current_task_verifier.py",
+    "tests/test_phase5_controlled_print_source_registry.py",
+    "tests/test_phase7_released_trial_summary_api.py",
+    "tests/test_phase7_released_trial_summary_contract.py",
+    "tests/test_phase7_released_trial_summary_domain.py",
+    "tests/test_phase7_released_trial_summary_metadata.py",
+    "tests/test_phase7_released_trial_summary_repository.py",
+    "tests/test_phase7_released_trial_summary_runtime_verifier.py"
   ],
   "affected_checks": {
     "level_1": [
+      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_domain", "tests.test_phase7_released_trial_summary_metadata", "tests.test_phase7_released_trial_summary_contract", "-v"],
       ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/verify_v1_2_reconciliation.py"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["npm", "--prefix", "frontend", "run", "test:e2e"],
+      ["npx", "playwright", "test", "tests/e2e/p7-07-released-trial-summary-live.spec.ts", "--grep", "@visual"]
     ],
     "runtime_preflight": [
-      ["python", "scripts/verify_current_task.py"]
+      ["python", "scripts/verify_current_task.py"],
+      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_runtime_verifier", "-v"],
+      ["bash", "-n", "scripts/verify-frappe-runtime.sh"]
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
@@ -80,10 +121,10 @@
     "phase_status_resumed_product_task": "P7-07",
     "active_goal_marker": "P7-07",
     "next_action_marker": "P7-07",
-    "controller_marker": "P7-06 Level 2 PASS; P7-07 audit active"
+    "controller_marker": "P7-07 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore the P7-06 Level 2 checkpoint; the bounded P7-07 audit creates no product row, route, metadata, output or external effect.",
-    "after_product_resume": "Use the rollback frozen in the accepted P7-07 plan; after retained summary or controlled-output history, disable only independent P7-07 routes and workspace and deliver a reviewed forward repair without rewriting summaries, outputs, source snapshots, receipts or audit history."
+    "before_product_resume": "Before retained P7-07 rows, restore the starting controller checkpoint and migrate only a disposable Site fresh.",
+    "after_product_resume": "After retained summary or controlled-output history, disable only the independent P7-07 routes and Trial workspace and deliver a reviewed forward repair without rewriting, deleting, renumbering, rehashing or re-rendering retained summaries, receipts, audits, controlled-print snapshots, outputs, access events or private File identities."
   }
 }

@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-14T18:54:42Z`
+Updated: `2026-08-15T04:20:26Z`
 
 ## Active hard blockers
 
@@ -15,7 +15,9 @@ Runtime artifact `9230370526` has digest
 `sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
 its `result.txt` payload hashes to
 `sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
-P7-07 audit is active; no user action, login or frontend operation is required.
+P7-07 audit passes at controller `b9dc213`; ordinary CI `31832348527` passes
+all four required lanes and controlled lanes skip as expected. Checkpoint 1 is
+active; no user action, login or frontend operation is required.
 
 ## Active recovery
 
@@ -25,9 +27,11 @@ None. The ordered delivery hold remains resolved and P7-06 is sealed
 IDOR actor-fixture defects. Neither produced a runtime result or runtime
 artifact; both cleanup steps passed. Bounded forward fixes and affected tests
 preceded the independent final ordinary and controlled PASS at `563fff5`.
-Only the P7-07 Requirement/domain/existing-capability audit is active. No
-product code, route, row, migration, event, projection, form, release or Level
-3 execution is authorized by this transition.
+Only P7-07 checkpoint 1 is active: pure immutable domains, closed contracts and
+ownership, one guarded additive summary-revision DocType, existing Trial
+receipt operations, translations and focused tests. Repository/BFF routes,
+business rows, UI, runtime, production mapping/PDF, event, projection, form,
+release authority and Level 3 execution remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
