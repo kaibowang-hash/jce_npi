@@ -153,7 +153,7 @@ def _command(
         actor = authenticated_user()
         require_csrf_token()
         principal = authenticated_principal(actor)
-        _require_role(principal)
+        _require_command_role(principal)
         reject_unexpected_request_fields(allowed_fields, request_fields)
         require_request_fields(allowed_fields, request_fields)
         request_id, repository = _new_repository(principal)
@@ -338,6 +338,11 @@ def _require_routes_enabled() -> None:
 
 def _require_role(principal: Principal) -> None:
     if principal.is_external or "NPI API User" not in principal.roles:
+        raise PermissionDenied()
+
+
+def _require_command_role(principal: Principal) -> None:
+    if principal.is_external or "System Manager" not in principal.roles:
         raise PermissionDenied()
 
 

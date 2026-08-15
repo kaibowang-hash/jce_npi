@@ -1138,7 +1138,7 @@ def _verify_idor_and_no_write(
     denied = summary_request(
         no_write,
         base_url,
-        summary_path(project_id, round_id, current["summaryRevisions"][-1]["globalId"]),
+        summary_stream_path(project_id, round_id, current["summaryRevisions"][-1]),
         method="POST",
         payload=revise_payload(
             current["trialRound"],

@@ -216,6 +216,9 @@ class Phase7ReleasedTrialSummaryApiTest(unittest.TestCase):
         self.api.authenticated_principal = lambda _actor: (
             order.append("principal") or PrincipalStub()
         )
+        self.api._require_command_role = lambda _principal: order.append(
+            "command-authority"
+        )
         self.api.reject_unexpected_request_fields = lambda *_args: order.append("closed-body")
         self.api.require_request_fields = lambda *_args: order.append("required-body")
         self.api._new_repository = lambda _principal: (
@@ -223,17 +226,28 @@ class Phase7ReleasedTrialSummaryApiTest(unittest.TestCase):
         )
         self.api.retain_released_trial_summary(**self.retain_payload())
         self.assertEqual(
-            order[:7],
+            order[:8],
             [
                 "switch",
                 "authentication",
                 "csrf",
                 "principal",
+                "command-authority",
                 "closed-body",
                 "required-body",
                 "repository",
             ],
         )
+
+    def test_commands_require_internal_system_manager_before_body_parsing(self) -> None:
+        self.api.authenticated_principal = lambda _actor: PrincipalStub(
+            roles=("NPI API User",)
+        )
+        self.api.reject_unexpected_request_fields = lambda *_args: self.fail(
+            "The command body must not be parsed before authority is established."
+        )
+        with self.assertRaises(self.api.PermissionDenied):
+            self.api.retain_released_trial_summary(**self.retain_payload())
 
     def test_response_validation_rejects_scope_escape_and_open_fields(self) -> None:
         with self.assertRaises(RuntimeError):
