@@ -383,6 +383,40 @@ class Phase7ReleasedTrialSummaryRepositoryTest(unittest.TestCase):
             )
         )
 
+    def test_absent_summary_stream_is_unavailable_before_predecessor_conflict(self) -> None:
+        repository = object.__new__(self.Repository)
+        project = SimpleNamespace()
+        trial_round = SimpleNamespace()
+        predecessor = SimpleNamespace(
+            summary_global_id=UUID(int=601),
+            global_id=UUID(int=602),
+            summary_version=2,
+            snapshot_hash="a" * 64,
+        )
+        repository._summary_command_start = lambda *_args: (project, None, "b" * 64)
+        repository._locked_exact_round = lambda *_args: (SimpleNamespace(), trial_round)
+        repository._summary_history = lambda *_args, **_kwargs: (predecessor,)
+        repository._exact_current_decided_conclusion = lambda *_args: self.fail(
+            "Conclusion resolution must not disclose an absent summary stream."
+        )
+
+        with self.assertRaises(self.domain.ReleasedTrialSummaryUnavailable):
+            repository.revise_summary(
+                PROJECT,
+                ROUND,
+                UUID(int=603),
+                idempotency_key_hash="c" * 64,
+                expected_round_optimistic_version=7,
+                expected_round_snapshot_hash="2" * 64,
+                conclusion_revision_id=UUID(int=604),
+                expected_conclusion_version=5,
+                expected_conclusion_snapshot_hash="f" * 64,
+                predecessor_revision_id=predecessor.global_id,
+                expected_predecessor_version=predecessor.summary_version,
+                expected_predecessor_snapshot_hash=predecessor.snapshot_hash,
+                reason="Probe an absent summary stream without disclosing history.",
+            )
+
     def test_actor_receipt_row_audit_workspace_and_seal_order_is_atomic(self) -> None:
         value = summary()
         repository = object.__new__(self.Repository)

@@ -199,9 +199,10 @@ class FrappeReleasedTrialSummaryRepository(FrappeTrialReviewRepository):
         if not history:
             raise ReleasedTrialSummaryUnavailable()
         predecessor = history[-1]
+        if predecessor.summary_global_id != summary_id:
+            raise ReleasedTrialSummaryUnavailable()
         if any(
             (
-                predecessor.summary_global_id != summary_id,
                 predecessor.global_id != predecessor_revision_id,
                 predecessor.summary_version != expected_predecessor_version,
                 predecessor.snapshot_hash != expected_predecessor_snapshot_hash,
