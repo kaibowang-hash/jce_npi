@@ -3642,3 +3642,44 @@ repeat or rewrite it merely to restore context. See
   live ERP mapper and production ERPNext/JCE endpoint, credential, data and
   traffic remain inactive. No user action is required and there is no Hard
   Blocker.
+
+## 2026-08-16 P8-01 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint `fd4fc6a7383d43b92cf363cebc08b6c8c7faeb3c`
+  passes ordinary pull-request CI `31909152423`: repository `95071497748`
+  proves `1,957` tracked Python tests and repository/reconciliation checks;
+  frontend `95071497747` proves `59/59` files, `918/918` unit tests, `421/421`
+  E2E, `7,554` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.31%/80.16%/82.81%/82.96%` and zero vulnerabilities; secret
+  `95071497699` scans `27` first-parent task commits and `498` complete branch
+  commits with no leak; visual `95071497717` passes the unchanged `119/119`
+  fixed-Linux matrix.
+- Visual artifact `9253219631` has digest
+  `sha256:de0e17de39195f246925b8daf51c41c7e18ec7559033d18093fc1441f85df2e9`;
+  Gitleaks artifact `9253173621` has digest
+  `sha256:afe9cb716cd9047034cfa19f2fe9c31eea0cc0e49eedf178b8ece79da50b793d`.
+  Controlled jobs skip as required because checkpoint 2 adds no controlled
+  fixture, live mapper, external transport or production configuration.
+- The exact Project is authorized before every secondary identity. Seven
+  named no-generic-CRUD readers feed one bounded internal refresh; immutable
+  observation, conditional locked-head advance and structural audit share one
+  guarded transaction with exact replay/hash-conflict/reorder/unavailable/
+  synthetic/restart truth. The GET-only Project BFF validates a closed,
+  bounded, sorted response and leaks no raw error or secret.
+- Existing Tooling manufacturing-cost and acceptance-Asset readers accept
+  only exact tenant/Project/head/observation, available, fresh and
+  authoritative snapshots. Mock/synthetic/unavailable/stale/conflict and
+  substituted identities cannot become formal ERP truth. The worker has no
+  production configuration and performs no live network request. Complete
+  evidence is
+  `implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
+- This is checkpoint 2 PASS, not P8-01 Level 2 or Phase 8 Level 3. Standing
+  authority activates only checkpoint 3: the strict frontend data source,
+  dense read-only Project projection table/inspector, exact existing Tooling
+  cost/Asset presentation, direct trilingual honest-state, accessibility and
+  affected governed visual proof.
+- P8-02 signed webhook/Inbox, all target writes, generic retry/DLQ/replay/
+  reconciliation operations, Trial Summary/JCE Core behavior, production
+  freshness/EAC/quality policies and production ERPNext/JCE endpoint,
+  credential, data and traffic remain inactive. No user action is required and
+  there is no Hard Blocker.

@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-16`
 
-Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZED`
 
 Starting audit/controller checkpoint:
 `046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6`
@@ -18,6 +18,12 @@ Checkpoint 1 final checkpoint:
 
 Checkpoint 1 ordinary CI:
 `31905949549`
+
+Checkpoint 2 final checkpoint:
+`fd4fc6a7383d43b92cf363cebc08b6c8c7faeb3c`
+
+Checkpoint 2 ordinary CI:
+`31909152423`
 
 Primary requirements:
 
@@ -441,8 +447,8 @@ rollback.
 
 ## 13. Automatic transition
 
-Checkpoint 1 passes at exact final checkpoint `6d88175` and ordinary CI
-`31905949549`, and authorizes only checkpoint 2. Standing continuous-delivery
+Checkpoint 2 passes at exact final checkpoint `fd4fc6a` and ordinary CI
+`31909152423`, and authorizes only checkpoint 3. Standing continuous-delivery
 authority permits automatic progression after each exact-SHA ordinary CI and
 affected Gate passes. P8-01 completes only after the final Level 3 Gate. Only
 then may the controller activate P8-02. No checkpoint authorizes production

@@ -996,19 +996,17 @@ must preserve that boundary.
   Lifecycle, source Revision, formal Supplier, ERP location/Asset, customer
   signature and file mutation remain scoped holds rather than global blockers.
 
-## Current authoritative blocker state — 2026-08-16T03:24:00Z
+## Current authoritative blocker state — 2026-08-16T04:34:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
-- Exact P8-01 checkpoint 1 final SHA `6d88175` passes ordinary CI
-  `31905949549`; repository, frontend with `421/421` E2E, secret and unchanged
+- Exact P8-01 checkpoint 2 product SHA `fd4fc6a` passes ordinary CI
+  `31909152423`; repository, frontend with `421/421` E2E, secret and unchanged
   `119/119` fixed-Linux visual lanes pass and controlled lanes correctly skip.
-- Complete checkpoint 1 evidence is
-  `implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`; only
-  checkpoint 2 durable repository/internal refresh/read-only BFF and existing
-  Tooling cost/Asset reader-injection work is active.
+- Complete checkpoint 2 evidence is
+  `implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`; only
+  checkpoint 3 dense direct-trilingual read-only product truth is active.
 - Missing production endpoint/credential/data, current ERP customization,
   sandbox mapping, production freshness/EAC/quality policy and P8-02..09
-  authorities are scoped holds. They do not block Project-first repository,
-  Mock-default reader seams, no-network sandbox contract, synthetic proof or
-  bounded read-only BFF work. Production ERPNext/JCE contact remains
-  prohibited.
+  authorities are scoped holds. They do not block a strict Project projection
+  data source/table/inspector or confirmed-current Tooling cost/Asset display.
+  Production ERPNext/JCE contact remains prohibited.

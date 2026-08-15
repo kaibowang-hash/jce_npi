@@ -296,9 +296,12 @@ capability audit also passes at exact controller SHA `046dba1` and ordinary CI
 exact final checkpoint `6d88175` and ordinary CI `31905949549`; complete
 evidence is
 `implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
-Standing delivery authority now activates only P8-01 checkpoint 2: exact
-Project-first scope resolution, seven named adapter reader seams, durable
-observation/head transactions, bounded internal refresh, a Project-first
-read-only BFF collection and injected Tooling cost/Asset readers. No
-checkpoint 3 UI, public webhook, target write, retry/DLQ/replay/reconciliation
-operation or production ERPNext/JCE contact is authorized.
+P8-01 checkpoint 2 passes at exact product checkpoint `fd4fc6a` and ordinary
+CI `31909152423`; complete evidence is
+`implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
+Standing delivery authority now activates only P8-01 checkpoint 3: the strict
+projection frontend data source, one dense read-only Project table/inspector,
+exact confirmed-current Tooling cost/Asset presentation, direct trilingual
+honest-state/accessibility/E2E and affected governed visuals. No public
+webhook, target write, retry/DLQ/replay/reconciliation operation or production
+ERPNext/JCE contact is authorized.

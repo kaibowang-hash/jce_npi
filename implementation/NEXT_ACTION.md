@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P8-01`
+`IN_PROGRESS_CHECKPOINT_3 — P8-01`
 
-Recovery time: `2026-08-16T03:24:00Z`
+Recovery time: `2026-08-16T04:34:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -101,6 +101,12 @@ P8-01 checkpoint 1 final checkpoint:
 P8-01 checkpoint 1 ordinary CI:
 `31905949549`
 
+P8-01 checkpoint 2 final checkpoint:
+`fd4fc6a7383d43b92cf363cebc08b6c8c7faeb3c`
+
+P8-01 checkpoint 2 ordinary CI:
+`31909152423`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -134,18 +140,25 @@ frontend `95063650577` (`59/59` files, `918/918` unit, `421/421` E2E,
 Complete evidence is
 `implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
 
+P8-01 checkpoint 2 passes at exact product checkpoint `fd4fc6a`. Ordinary CI
+`31909152423` passes repository `95071497748` (`1,957` tracked Python),
+frontend `95071497747` (`59/59` files, `918/918` unit, `421/421` E2E,
+`7,554` complete direct trilingual sources, coverage
+`80.31%/80.16%/82.81%/82.96%` and zero vulnerabilities), secret
+`95071497699` and unchanged `119/119` fixed-Linux visual `95071497717`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
+
 Follow the frozen `implementation/evidence/phase-8/p8-01-plan.md`. Execute
-only checkpoint 2: resolve and authorize the exact tenant/Project before every
-secondary scope/source identity; add seven named no-generic-CRUD reader seams;
-persist immutable observations and one locked guarded head atomically; retain
-exact replay, hash conflict, reorder, unavailable and restart truth; expose a
-bounded Project-first read-only BFF collection; and inject only confirmed exact
-current snapshots into the existing Tooling cost and Asset readers. Mock and
-synthetic never become available business truth. The sandbox seam has no live
-field mapper and sends no network request. Do not add checkpoint 3 UI, a
-public webhook, target write, retry/DLQ/replay/reconciliation operations,
-Trial Summary event or JCE Core display. Production ERPNext/JCE remains
-prohibited.
+only checkpoint 3: add the strict closed ERP-projection frontend data source;
+render one dense read-only Project projection table and inspector; surface
+confirmed-current cost and Asset truth only in the existing Tooling
+workspaces; and prove loading, empty, denied, read-only, unavailable, stale,
+unknown, synthetic, conflict and error states, keyboard/focus/Axe, direct
+English/`zh`/`zh-TW`, mixed-language denial and governed visuals. Add no edit
+path, caller-supplied target truth, raw error/secret, public webhook, target
+write, retry/DLQ/replay/reconciliation operation, Trial Summary event or JCE
+Core behavior. Production ERPNext/JCE remains prohibited.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,
