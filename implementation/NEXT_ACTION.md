@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P7-07`
+`IN_PROGRESS_CHECKPOINT_2 — P7-07`
 
-Recovery time: `2026-08-15T04:20:26Z`
+Recovery time: `2026-08-15T07:40:40Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -49,6 +49,9 @@ P7-06 Level 2 final product checkpoint and P7-07 audit base:
 
 P7-07 audit PASS and checkpoint 1 starting controller:
 `b9dc2135e16e1b19d375bb29ab733e5e63ccef08`
+
+P7-07 checkpoint 1 product checkpoint:
+`684c6833a4e0c2732ce55cfc1883fa805f07dd97`
 
 ## Current authoritative action
 
@@ -279,21 +282,26 @@ independent final PASS. Task Diff
 is `11` commits, `80` paths, `34,596` insertions and `105` deletions. Complete
 evidence is `implementation/evidence/phase-7/p7-06-validation.md`.
 
-The bounded P7-07 audit passes at controller `b9dc213`; exact-SHA ordinary CI
-`31832348527` passes repository, frontend/E2E, secret and `112/112` visual
-lanes, while controlled lanes skip as expected. The frozen plan is
-`implementation/evidence/phase-7/p7-07-plan.md`.
+P7-07 checkpoint 1 passes at exact product checkpoint
+`684c6833a4e0c2732ce55cfc1883fa805f07dd97`. Exact-SHA ordinary CI
+`31872006649` passes repository `94982017438` (`1,893` tracked Python),
+frontend `94982017474` (`58/58` files, `908/908` unit, `399/399` E2E and
+`7,360` direct trilingual sources), secret scan `94982017414` and unchanged
+`112/112` fixed-Linux visual job `94982017419`. Controlled preflight
+`94983213717` and runtime `94983213982` skip as required. Complete evidence is
+`implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 1: pure immutable Released Trial Summary domain and
-exact parsers, closed OpenAPI/ownership, one guarded additive summary-revision
-DocType, the two closed existing Trial receipt operations, direct translations
-and focused tests. Do not activate repository/BFF routes, business rows, UI,
-runtime, production mapping/PDF, event, projection, form, signature,
-retention, copy or formal release authority. External event/projection remains
-held under `DR-REC-009`; form mapping, signature, retention and copy policy
-remain held under `DR-REC-003/004`; G7, ERP and production print authority
-remain held. The latest complete Level 3 remains workflow `31392474781` at
-exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+Execute only checkpoint 2: add exact source graph loaders; Project, Round and
+summary-stream locks; Project-first history/current reads; retain and revise
+commands; exact current decided-conclusion revalidation; actor-bound sealed
+replay; one transaction; append-only audit; the independently default-closed
+`npi_p7_07_routes_disabled` boundary; and exact `released_trial_summary`
+controlled-print source-adapter registration. Do not activate a frontend
+action, runtime fixture, production mapping/PDF, external event/projection,
+form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/Outbox
+mutation or formal release authority. Holds remain under `DR-REC-003/004/009`.
+The latest complete Level 3 remains workflow `31392474781` at exact SHA
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`.
 
 ## Retained P6-05 and P6-06 execution history
 

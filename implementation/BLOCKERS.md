@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-15T04:20:26Z`
+Updated: `2026-08-15T07:40:40Z`
 
 ## Active hard blockers
 
@@ -15,9 +15,12 @@ Runtime artifact `9230370526` has digest
 `sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
 its `result.txt` payload hashes to
 `sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
-P7-07 audit passes at controller `b9dc213`; ordinary CI `31832348527` passes
-all four required lanes and controlled lanes skip as expected. Checkpoint 1 is
-active; no user action, login or frontend operation is required.
+P7-07 checkpoint 1 product SHA
+`684c6833a4e0c2732ce55cfc1883fa805f07dd97` passes ordinary CI
+`31872006649`: repository `94982017438`, frontend `94982017474`, secret scan
+`94982017414` and `112/112` fixed-Linux visual job `94982017419` all pass;
+controlled jobs `94983213717` and `94983213982` skip as required. Checkpoint 2
+is active; no user action, login or frontend operation is required.
 
 ## Active recovery
 
@@ -27,11 +30,13 @@ None. The ordered delivery hold remains resolved and P7-06 is sealed
 IDOR actor-fixture defects. Neither produced a runtime result or runtime
 artifact; both cleanup steps passed. Bounded forward fixes and affected tests
 preceded the independent final ordinary and controlled PASS at `563fff5`.
-Only P7-07 checkpoint 1 is active: pure immutable domains, closed contracts and
-ownership, one guarded additive summary-revision DocType, existing Trial
-receipt operations, translations and focused tests. Repository/BFF routes,
-business rows, UI, runtime, production mapping/PDF, event, projection, form,
-release authority and Level 3 execution remain inactive.
+Only P7-07 checkpoint 2 is active: exact source loaders and Project/Round/
+stream locks, Project-first history/current reads, retain/revise commands,
+actor-bound sealed replay, one transaction, append-only audit, the independent
+default-closed route boundary and exact controlled-print source-adapter
+registration. UI, runtime fixture, production mapping/PDF, external event/
+projection, form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/
+Outbox mutation, release authority and Level 3 execution remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

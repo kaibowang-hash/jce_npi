@@ -1,18 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T04:20:26Z`
+Updated: `2026-08-15T07:40:40Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `563fff535bc46f3d0c216a68a555b61b32479a0d` (pushed; P7-06
-  `PASS_LEVEL_2`; product implementation
-  `796712f7af6695549f611abdaf1bf53bd14c3e82` plus bounded controlled-runtime
-  forward fixes)
+  `684c6833a4e0c2732ce55cfc1883fa805f07dd97` (pushed; P7-07
+  checkpoint 1 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -39,18 +37,21 @@ Updated: `2026-08-15T04:20:26Z`
 - P7-07 starting controller checkpoint:
   `b9dc2135e16e1b19d375bb29ab733e5e63ccef08` (`AUDIT PASS`;
   ordinary CI `31832348527` exact-SHA PASS; controlled lanes expected skipped)
+- Latest P7-07 product checkpoint:
+  `684c6833a4e0c2732ce55cfc1883fa805f07dd97` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31872006649`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-07 — Immutable Released Trial Summary and controlled output`
-  (`CHECKPOINT 1 — DOMAIN, CONTRACT AND ADDITIVE METADATA`)
-- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_1_ONLY`)
+  (`CHECKPOINT 2 — REPOSITORY, BFF AND SOURCE ADAPTER`)
+- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_2_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-07 CHECKPOINT 1`)
+  (`IN_PROGRESS — P7-07 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -294,25 +295,32 @@ contains `11` commits, `80` paths, `34,596` insertions and `105` deletions.
 Complete evidence is
 `implementation/evidence/phase-7/p7-06-validation.md`.
 
-The bounded P7-07 Requirement/domain/existing-capability audit passes at
-starting controller `b9dc2135e16e1b19d375bb29ab733e5e63ccef08`, whose
-ordinary pull-request CI `31832348527` passes repository `94870751889`,
-frontend `94870751782`, secret scan `94870751845` and fixed-Linux visual
-`94870751727` at `112/112`; controlled lanes skip as expected. The frozen plan
-is `implementation/evidence/phase-7/p7-07-plan.md`.
+P7-07 checkpoint 1 passes at exact product checkpoint
+`684c6833a4e0c2732ce55cfc1883fa805f07dd97`. Ordinary pull-request CI
+`31872006649` passes repository `94982017438` (`1,893` tracked Python plus
+reconciliation/repository verification), frontend `94982017474` (`58` files,
+`908/908` unit, `399/399` E2E and `7,360` direct trilingual sources), secret
+scan `94982017414` and unchanged `112/112` fixed-Linux visual job
+`94982017419`. Complete evidence is
+`implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md`.
 
-The only active atomic scope is checkpoint 1: pure immutable Released Trial
-Summary domains, closed OpenAPI/ownership, one guarded additive revision
-DocType, two closed operations on the existing Trial receipt, direct
-translations and focused tests. No repository/BFF route, business row, UI,
-runtime, production mapping, PDF, external event/projection, form, signature,
-retention, numbered copy, G7, ERP or production print authority is active.
-Approved and rejected conclusions remain exact technical facts; neither the
-summary nor output is approval. External event/projection remains held under
-`DR-REC-009`; form mapping, signature, retention and copy policy remain held
-under `DR-REC-003` and `DR-REC-004`. The latest complete Level 3 remains
-`31392474781` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no
-technical Hard Blocker.
+The additive boundary proves append-only exact decided-conclusion lineage,
+canonical exact source manifests, closed source-bound presentation facts, the
+`524288`-byte no-truncation boundary, server-owned redaction and explicit
+unavailable external effects. It opens no route, business row, source adapter,
+controlled-print mapping, UI or runtime fixture.
+
+The only active atomic scope is checkpoint 2: exact source graph loaders;
+Project/Round/stream locks; Project-first history/current reads; retain and
+revise commands; actor-bound sealed replay; one transaction; append-only audit;
+the independent default-closed `npi_p7_07_routes_disabled` boundary; and exact
+`released_trial_summary` source-adapter registration. No UI, runtime fixture,
+production mapping/PDF, external event/projection, form, signature, retention,
+numbered copy, G7, Gate/Project/Work Item/Tooling/ERP/Outbox mutation or
+production print authority is active. External/formal holds remain under
+`DR-REC-003/004/009`. The latest complete Level 3 remains `31392474781` at
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no technical Hard
+Blocker.
 
 ## Retained P6-05 and P6-06 execution evidence
 

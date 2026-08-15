@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-15T04:20:26Z`
+Updated: `2026-08-15T07:40:40Z`
 
 ## Authority and operating mode
 
@@ -3210,3 +3210,46 @@ repeat or rewrite it merely to restore context. See
   print and numbered copies remain held under `DR-REC-003/004`. Gate/Project/
   Work Item/Tooling/ERP/Outbox mutation and production print authority remain
   held. No user action is required and no Level 3 ran for this transition.
+
+## 2026-08-15 P7-07 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint `684c6833a4e0c2732ce55cfc1883fa805f07dd97`
+  passes ordinary pull-request CI `31872006649`: repository `94982017438`
+  passes `1,893` tracked Python tests and repository/reconciliation checks;
+  frontend `94982017474` passes `58/58` files, `908/908` unit tests,
+  `399/399` non-visual E2E tests, `7,360` direct trilingual sources, coverage
+  `80.36%/80.24%/83.05%/83.00%` and zero vulnerabilities; secret scan
+  `94982017414` proves all `28` task paths, the exact `26`-commit first-parent
+  range and `465`-commit branch history contain no leak; visual
+  `94982017419` passes the unchanged `112/112` fixed-Linux matrix.
+- Visual artifact `9243731265` has digest
+  `sha256:8ee405cb06c832ac6f698bfbc7e09007408673684f92a55ffdf70473497348d9`;
+  Gitleaks artifact `9243685598` has digest
+  `sha256:dd85e880d7ecc671abde0abed07e2d06cc08a7d00e15cdd51db110ac12e6d849`.
+  Controlled preflight `94983213717` and runtime `94983213982` skip as
+  required because checkpoint 1 opens no route, source adapter or runtime
+  fixture.
+- Checkpoint 1 freezes append-only summary succession over the exact decided
+  conclusion, canonical complete source identities/versions/hashes, closed
+  source-bound presentation facts, a strict `524288`-byte no-truncation
+  boundary, server-owned redaction and explicit unavailable external effects.
+  Closed contracts/ownership, one guarded DocType and two actor-bound receipt
+  operations activate no route, row, UI, mapping, PDF or external effect.
+- Complete checkpoint evidence is
+  `implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md`. This
+  is checkpoint 1 PASS, not P7-07 Level 2 or Level 3.
+- Standing continuous-delivery authority activates only checkpoint 2: exact
+  source graph loaders; Project/Round/stream locks; Project-first history and
+  current reads; retain/revise commands; exact current decided-conclusion
+  revalidation; actor-bound sealed replay; one transaction; append-only audit;
+  the independent default-closed `npi_p7_07_routes_disabled` boundary; and
+  registration of the exact `released_trial_summary` controlled-print source
+  adapter. It may not add UI, runtime fixture, production mapping, PDF/external
+  event/projection authority or Gate/Project/Work Item/Tooling/ERP/Outbox
+  mutation.
+- Holds under `DR-REC-003/004/009` remain unchanged. An approved or rejected
+  technical conclusion, retained summary, QR, hash or controlled output is
+  never customer approval, signature, production acceptance, G7 or Gate truth.
+  No user action is required and the latest complete Level 3 remains workflow
+  `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
