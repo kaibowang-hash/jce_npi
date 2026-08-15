@@ -368,7 +368,12 @@ Checkpoint 3 passed at exact product SHA
 `9a2ed86fb3780d5d8cdcda023a76d647d384ca63` and exact-SHA ordinary PR CI
 `31877039560`. Complete live-workspace evidence is
 `implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md`.
-Only checkpoint 4 is active.
+
+Checkpoint 4 and the P7-07 Level 2 Task Gate passed at exact final product SHA
+`dda9c13a6c3b499347cb96c830de2a034fa61203`: ordinary PR CI `31887451908`
+and exact-SHA controlled Gate `31887990384` both pass. Complete evidence is
+`implementation/evidence/phase-7/p7-07-validation.md`. No checkpoint remains
+active in P7-07.
 
 ### Checkpoint 4 — controlled runtime and Level 2
 

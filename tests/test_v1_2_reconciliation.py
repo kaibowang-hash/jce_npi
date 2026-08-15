@@ -77,12 +77,17 @@ class V12ReconciliationTests(unittest.TestCase):
         by_id = {row["requirement_id"]: row for row in rows}
         for requirement_id in ("FR-PRN-001", "FR-PRN-002"):
             row = by_id[requirement_id]
+            completed_trace = self.verifier.EXPECTED_P7_COMPLETED_TRACES.get(
+                requirement_id
+            )
             self.assertEqual(
                 row["status"],
-                "TECHNICAL_VERIFIED",
+                completed_trace[1] if completed_trace else "TECHNICAL_VERIFIED",
             )
             expected_evidence = set(
-                self.verifier.EXPECTED_P5_06_TRACE[requirement_id][1]
+                completed_trace[2]
+                if completed_trace
+                else self.verifier.EXPECTED_P5_06_TRACE[requirement_id][1]
             )
             if requirement_id in self.verifier.EXPECTED_P7_CARRIED_FOUNDATIONS:
                 expected_evidence |= self.verifier.EXPECTED_P7_ANCHOR_EVIDENCE

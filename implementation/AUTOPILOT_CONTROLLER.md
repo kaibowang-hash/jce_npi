@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-15T07:40:40Z`
+Updated: `2026-08-15T14:01:59Z`
 
 ## Authority and operating mode
 
@@ -3328,3 +3328,53 @@ repeat or rewrite it merely to restore context. See
 - Holds under `DR-REC-003/004/009` remain unchanged. No user action is
   required and the latest complete Level 3 remains workflow `31392474781` at
   exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-15 P7-07 Level 2 PASS; P7-08 audit active
+
+- Exact P7-07 product checkpoint
+  `dda9c13a6c3b499347cb96c830de2a034fa61203` passes ordinary pull-request CI
+  `31887451908`: repository `95018720965` proves `1,921` tracked Python tests;
+  frontend `95018720920` proves `58/58` files, `913/913` unit tests,
+  `408/408` non-visual E2E, `7,439` complete direct English/`zh`/`zh-TW`
+  sources, coverage `80.31%/80.25%/82.90%/82.98%` and zero vulnerabilities;
+  secret scan `95018720949` proves the exact `28`-commit pull-request range and
+  `481`-commit complete branch history contain no leak; visual `95018720948`
+  passes `115/115`.
+- Exact-SHA Level 2 workflow `31887990384` passes controlled preflight
+  `95019975279` and cumulative disposable-Site runtime `95020020601` through
+  scope `p5-01-through-p7-07`. Prior-Gate artifact `9247778821` has digest
+  `sha256:7ca6b2f3bc0611db909284b2a8fba9189ce334780d6e1974cef63d498bed4ea5`;
+  runtime artifact `9247862817` has digest
+  `sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`,
+  and its PASS payload has SHA-256
+  `e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
+- Runtime proves one stable summary stream, two exact immutable revisions over
+  later decided-conclusion tips, preservation of the first approved summary
+  and its exact controlled PDF after a rejected successor, actor-bound replay,
+  conflict/stale/fork/IDOR/no-write denial, route recovery, two migrations,
+  rollback, sensitive-value redaction, zero Gate/Project/Work Item/Tooling/
+  Trial-source/ERP/integration/external effects and disposable cleanup.
+- Failed controlled runs `31879465954`, `31880413652`, `31881430363`,
+  `31882139299`, `31883285579`, `31884101755`, `31884984877`, `31885950651`
+  and `31886960724` remain diagnostic evidence, not PASS evidence. Each failed
+  closed at one isolated fixture or product boundary, cleaned up, received only
+  a bounded evidence-proved forward fix, passed affected and exact-SHA ordinary
+  checks, and was followed by a new independent controlled attempt.
+- P7-07 is `PASS_LEVEL_2` with truthful held dispositions for `FR-PRN-002`,
+  `FR-INT-015` and `FR-TR-008`. Retain every immutable summary, conclusion,
+  source snapshot, controlled snapshot/output, private File, receipt and audit.
+  After retained rows exist, rollback disables only P7-07 routes/workspace and
+  uses a reviewed forward repair; it never rewrites retained history.
+- Standing continuous-delivery authority activates only the bounded P7-08
+  Requirement/domain/existing-capability audit for `UX-020`. The audit must
+  freeze responsive Trial/Gate review, same-BFF permission/capability truth,
+  private photo evidence, issue capture, reviewed scan entry, phone/tablet
+  accessibility, desktop-only complex engineering tables, tests, migration,
+  rollback and the final Phase 7 Level 3 boundary before product code.
+- Mobile grants no new authority. Mobile-only roles/transitions, raw private
+  File URLs, automatic camera/barcode/QR submission, offline sync, background
+  queues, native apps, device management, production ERPNext/external effects
+  and Phase 8 behavior remain inactive. No Level 3 ran for this transition;
+  the latest complete Level 3 remains `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no Hard Blocker and no
+  user or GitHub frontend action is required.

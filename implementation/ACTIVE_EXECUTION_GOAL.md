@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T09:40:46Z`
+Updated: `2026-08-15T14:01:59Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_4 — P7-07`
+- Mode: `IN_PROGRESS_AUDIT — P7-08`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `9a2ed86fb3780d5d8cdcda023a76d647d384ca63` (pushed; P7-07
-  checkpoint 3 PASS)
+  `dda9c13a6c3b499347cb96c830de2a034fa61203` (pushed; P7-07
+  `PASS_LEVEL_2`)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -37,25 +37,46 @@ Updated: `2026-08-15T09:40:46Z`
 - P7-07 starting controller checkpoint:
   `b9dc2135e16e1b19d375bb29ab733e5e63ccef08` (`AUDIT PASS`;
   ordinary CI `31832348527` exact-SHA PASS; controlled lanes expected skipped)
-- Latest P7-07 product checkpoint:
-  `9a2ed86fb3780d5d8cdcda023a76d647d384ca63` (`CHECKPOINT 3 PASS`;
-  ordinary CI `31877039560`)
+- Latest P7-07 product Gate:
+  `dda9c13a6c3b499347cb96c830de2a034fa61203` (`LEVEL 2 PASS`;
+  ordinary CI `31887451908`; exact-SHA controlled Gate `31887990384`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P7-07 — Immutable Released Trial Summary and controlled output`
-  (`CHECKPOINT 4 — CONTROLLED RUNTIME AND LEVEL 2`)
-- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_4_ONLY`)
+  `P7-08 — Mobile field actions` (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P7-08` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-07 CHECKPOINT 4`)
+  (`IN_PROGRESS — P7-08 AUDIT`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
+
+P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
+`31887451908` passes `1,921` tracked Python tests, `913/913` frontend unit,
+`408/408` non-visual E2E, `7,439` complete direct trilingual sources, both
+secret boundaries and `115/115` fixed-Linux visuals. Exact-SHA controlled
+Gate `31887990384` passes preflight and cumulative disposable-Site runtime
+scope `p5-01-through-p7-07`; runtime artifact `9247862817` has digest
+`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`
+and proves two immutable summaries, the exact retained first controlled PDF,
+replay/conflict/rollback/IDOR, redaction, zero downstream effects and cleanup.
+Complete evidence is
+`implementation/evidence/phase-7/p7-07-validation.md`.
+
+The only active atomic scope is the bounded P7-08 Requirement/domain/existing-
+capability audit for `UX-020`. It must inspect and freeze responsive Trial/Gate
+review, same-BFF authority, private photo evidence, issue capture, reviewed
+scan entry, phone/tablet accessibility, desktop-only complex tables, tests and
+rollback before product code. Mobile grants no new authority. Offline sync,
+native apps, automatic scan submission, production ERPNext/external effects
+and Phase 8 behavior remain inactive. The latest complete Level 3 remains
+workflow `31392474781` at exact SHA
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

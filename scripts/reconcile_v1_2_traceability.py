@@ -30,9 +30,19 @@ ADDENDUM_REQUIREMENTS = (
     ("FR-UX-042", "P0", "5", "DECISION_REQUIRED_DR_REC_001"),
     ("FR-UX-043", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-PRN-001", "P0", "5", "TECHNICAL_VERIFIED"),
-    ("FR-PRN-002", "P0", "5", "TECHNICAL_VERIFIED"),
+    (
+        "FR-PRN-002",
+        "P0",
+        "7",
+        "TECHNICAL_VERIFIED_RELEASED_SUMMARY_CONTROLLED_OUTPUT_FOUNDATION_PRODUCTION_FORM_POLICY_HELD",
+    ),
     ("FR-PRN-003", "P0", "5", "DECISION_REQUIRED_DR_REC_003_004"),
-    ("FR-INT-015", "P1", "8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
+    (
+        "FR-INT-015",
+        "P1",
+        "7",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+    ),
     ("FR-BR-001", "P0", "5", "TECHNICAL_VERIFIED"),
     ("FR-BR-002", "P1", "8", "PLANNED_PHASE_8_APPROVED_JCE_CORE_ASSET"),
     ("FR-TX-019", "P0", "6", "TECHNICAL_VERIFIED_FOUNDATION"),
@@ -329,11 +339,21 @@ P7_ADDENDUM_ANCHOR_EVIDENCE = {
     + (
         "implementation/phase-7-requirement-anchor.md",
         "implementation/evidence/phase-7/p7-00-validation.md",
+        "implementation/evidence/phase-7/p7-07-plan.md",
+        "implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-validation.md",
     ),
     "FR-INT-015": (
         "implementation/V1_2_RECONCILIATION_DECISIONS.md",
         "implementation/phase-7-requirement-anchor.md",
         "implementation/evidence/phase-7/p7-00-validation.md",
+        "implementation/evidence/phase-7/p7-07-plan.md",
+        "implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md",
+        "implementation/evidence/phase-7/p7-07-validation.md",
     ),
 }
 P6_01_COMPLETED_EVIDENCE = {

@@ -99,6 +99,7 @@ EXPECTED_P7_ANCHOR_ALLOCATION = {
         "FR-NP-013",
     },
     "P7-06": {"FR-NP-014", "FR-NP-015"},
+    "P7-07": {"FR-PRN-002", "FR-INT-015", "FR-TR-008"},
     "P7-08": {"UX-020"},
 }
 EXPECTED_P7_ANCHOR_EVIDENCE = {
@@ -139,6 +140,29 @@ EXPECTED_P7_06_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
     "implementation/evidence/phase-7/p7-06-repository-bff-checkpoint.md",
     "implementation/evidence/phase-7/p7-06-live-production-transition-workspace-checkpoint.md",
     "implementation/evidence/phase-7/p7-06-validation.md",
+}
+EXPECTED_P7_07_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/evidence/phase-7/p7-07-plan.md",
+    "implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md",
+    "implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md",
+    "implementation/evidence/phase-7/p7-07-validation.md",
+}
+EXPECTED_P7_07_PRINT_EVIDENCE = EXPECTED_P7_07_EVIDENCE | {
+    "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+    "implementation/phase-5-requirement-anchor.md",
+    "apps/npi_core/npi_core/controlled_print/rendering.py",
+    "apps/npi_core/npi_core/controlled_print/qr.py",
+    "apps/npi_core/npi_core/controlled_print/frappe_repository.py",
+    "frontend/src/api/controlled-print-data-source.ts",
+    "tests/test_phase5_controlled_print_rendering.py",
+    "tests/test_phase5_controlled_print_repository_transaction.py",
+    "scripts/verify_controlled_print_runtime.py",
+    "implementation/evidence/phase-5/p5-06-validation.md",
+    "implementation/phase-5-gate.md",
+}
+EXPECTED_P7_07_INTEGRATION_EVIDENCE = EXPECTED_P7_07_EVIDENCE | {
+    "implementation/V1_2_RECONCILIATION_DECISIONS.md",
 }
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-NP-001": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
@@ -186,6 +210,16 @@ EXPECTED_P7_COMPLETED_TRACES = {
         "TECHNICAL_VERIFIED_OBSERVATION_REVIEW_FOUNDATION_ACTUAL_SOP_EXTERNAL_METRICS_AND_STABILITY_AUTHORITY_HELD",
         EXPECTED_P7_06_EVIDENCE,
     ),
+    "FR-PRN-002": (
+        "7",
+        "TECHNICAL_VERIFIED_RELEASED_SUMMARY_CONTROLLED_OUTPUT_FOUNDATION_PRODUCTION_FORM_POLICY_HELD",
+        EXPECTED_P7_07_PRINT_EVIDENCE,
+    ),
+    "FR-INT-015": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+        EXPECTED_P7_07_INTEGRATION_EVIDENCE,
+    ),
     "FR-TR-001": (
         "7",
         "TECHNICAL_VERIFIED_FOUNDATION_RESOURCE_RESERVATION_HELD",
@@ -228,8 +262,8 @@ EXPECTED_P7_COMPLETED_TRACES = {
     ),
     "FR-TR-008": (
         "7",
-        "TECHNICAL_VERIFIED_COMPARISON_FOUNDATION_SUMMARY_OUTPUT_HELD",
-        EXPECTED_P7_04_EVIDENCE,
+        "TECHNICAL_VERIFIED_IMMUTABLE_RELEASED_SUMMARY_FOUNDATION_FORMAL_RELEASE_HELD",
+        EXPECTED_P7_04_EVIDENCE | EXPECTED_P7_07_EVIDENCE,
     ),
     "FR-TR-009": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_03_EVIDENCE),
     "FR-TR-010": (
@@ -238,10 +272,7 @@ EXPECTED_P7_COMPLETED_TRACES = {
         EXPECTED_P7_02_EVIDENCE,
     ),
 }
-EXPECTED_P7_CARRIED_FOUNDATIONS = {
-    "FR-PRN-002": ("5", "TECHNICAL_VERIFIED"),
-    "FR-INT-015": ("8", "PLANNED_NPI_SIDE_READ_ONLY_PROJECTION"),
-}
+EXPECTED_P7_CARRIED_FOUNDATIONS = {}
 EXPECTED_R1_03_TRACE = {
     "FR-UX-039": (
         "TECHNICAL_VERIFIED",
@@ -1763,9 +1794,13 @@ def verify_trace_sets() -> None:
         expected_evidence,
     ) in EXPECTED_P5_06_TRACE.items():
         row = by_id[requirement_id]
+        completed_trace = EXPECTED_P7_COMPLETED_TRACES.get(requirement_id)
         actual_evidence = {
             value.strip() for value in row["evidence"].split(";") if value.strip()
         }
+        expected_phase, effective_status = (
+            completed_trace[:2] if completed_trace else ("5", expected_status)
+        )
         if (
             row["priority"],
             row["phase"],
@@ -1775,8 +1810,8 @@ def verify_trace_sets() -> None:
             row["canonical_ids"],
         ) != (
             "P0",
-            "5",
-            expected_status,
+            expected_phase,
+            effective_status,
             "docs/V1_2_RECONCILIATION_ADDENDUM.md",
             "ADDENDUM_DIRECT",
             requirement_id,
@@ -1784,11 +1819,7 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the completed P5-06 trace truth"
             )
-        permitted_evidence = expected_evidence | (
-            EXPECTED_P7_ANCHOR_EVIDENCE
-            if requirement_id in EXPECTED_P7_CARRIED_FOUNDATIONS
-            else set()
-        )
+        permitted_evidence = completed_trace[2] if completed_trace else expected_evidence
         if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain its complete P5-06 plan evidence set"

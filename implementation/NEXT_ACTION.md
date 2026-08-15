@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_4 — P7-07`
+`IN_PROGRESS_AUDIT — P7-08`
 
-Recovery time: `2026-08-15T09:40:46Z`
+Recovery time: `2026-08-15T14:01:59Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -59,7 +59,39 @@ P7-07 checkpoint 2 product checkpoint:
 P7-07 checkpoint 3 product checkpoint:
 `9a2ed86fb3780d5d8cdcda023a76d647d384ca63`
 
+P7-07 Level 2 final product checkpoint and P7-08 audit base:
+`dda9c13a6c3b499347cb96c830de2a034fa61203`
+
 ## Current authoritative action
+
+P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
+`31887451908` passes repository `95018720965` (`1,921` tracked Python),
+frontend `95018720920` (`913/913` unit, `408/408` non-visual E2E, `7,439`
+complete direct trilingual sources, coverage
+`80.31%/80.25%/82.90%/82.98%`, zero vulnerabilities), secret scan
+`95018720949` and `115/115` fixed-Linux visual job `95018720948`.
+
+Independent exact-SHA controlled Gate `31887990384` passes preflight
+`95019975279` and cumulative runtime `95020020601` through
+`p5-01-through-p7-07`. Runtime artifact `9247862817` has digest
+`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
+its PASS payload hashes to
+`sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
+The exact source graph, two immutable summaries, retained summary-v1 PDF,
+same/cross-process replay, conflict/stale/fork/IDOR/no-write, route recovery,
+migrations, rollback, redaction, zero downstream effects and cleanup pass.
+Complete evidence is
+`implementation/evidence/phase-7/p7-07-validation.md`.
+
+Execute only the bounded P7-08 Requirement/domain/existing-capability audit
+for `UX-020`. Inspect existing responsive Trial/Gate review, shared BFF
+capabilities, private attachment/photo flow, issue capture and scan primitives;
+freeze authority, viewport, accessibility, trilingual, test, migration and
+rollback boundaries in `implementation/evidence/phase-7/p7-08-plan.md` before
+product implementation. Mobile must grant no new authority; complex
+engineering tables remain desktop. Do not activate offline sync, native app,
+automatic scan submission, production ERPNext/external traffic or Phase 8
+behavior. The latest complete Level 3 remains `31392474781` at `22cb24d`.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

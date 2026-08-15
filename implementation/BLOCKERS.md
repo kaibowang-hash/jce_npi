@@ -1,41 +1,33 @@
 # Blockers
 
-Updated: `2026-08-15T09:40:46Z`
+Updated: `2026-08-15T14:01:59Z`
 
 ## Active hard blockers
 
-None. P7-06 passes Level 2 at exact final product checkpoint
-`563fff535bc46f3d0c216a68a555b61b32479a0d`. Ordinary pull-request CI
-`31828878511` passes repository `94859592477`, frontend `94859592402`, secret
-scan `94859592400` and `112/112` fixed-Linux visual job `94859592530`.
-Independent exact-SHA controlled Gate `31829617671` passes preflight
-`94861911975`, cumulative disposable-Site runtime `94862026482` through
-`p5-01-through-p7-06`, redaction, zero downstream effects and cleanup.
-Runtime artifact `9230370526` has digest
-`sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
-its `result.txt` payload hashes to
-`sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
-P7-07 checkpoint 3 product SHA
-`9a2ed86fb3780d5d8cdcda023a76d647d384ca63` passes ordinary CI
-`31877039560`: repository `94994234564`, frontend `94994234549`, secret scan
-`94994234566` and `115/115` fixed-Linux visual job `94994234575` all pass;
-controlled jobs `94995433086` and `94995433200` skip as required. Checkpoint 4
-is active; no user action, login or frontend operation is required.
+None. P7-07 passes Level 2 at exact final product checkpoint
+`dda9c13a6c3b499347cb96c830de2a034fa61203`. Ordinary pull-request CI
+`31887451908` passes repository `95018720965`, frontend `95018720920`, secret
+scan `95018720949` and `115/115` fixed-Linux visual job `95018720948`.
+Independent exact-SHA controlled Gate `31887990384` passes preflight
+`95019975279`, cumulative disposable-Site runtime `95020020601` through
+`p5-01-through-p7-07`, redaction, zero downstream effects and cleanup. Runtime
+artifact `9247862817` has digest
+`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
+its PASS payload hashes to
+`sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
+Only the P7-08 audit is active; no user action, login or frontend operation is
+required.
 
 ## Active recovery
 
-None. The ordered delivery hold remains resolved and P7-06 is sealed
-`PASS_LEVEL_2`. Diagnostic controlled runs `31823927177` at `2340328` and
-`31827177095` at `bfac3f0` respectively exposed the current-source bridge and
-IDOR actor-fixture defects. Neither produced a runtime result or runtime
-artifact; both cleanup steps passed. Bounded forward fixes and affected tests
-preceded the independent final ordinary and controlled PASS at `563fff5`.
-Only P7-07 checkpoint 4 is active: cumulative disposable-Site Trial runtime,
-one disposable synthetic mapping, exact controlled PDF and replay/conflict/
-rollback/redaction/zero-effect proof, Requirement trace, Task Diff Review and
-the Level 2 Gate. Production mapping/policy, external event/projection/
-receipt, form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/
-Outbox mutation, release authority and Level 3 execution remain inactive.
+None. The ordered delivery hold remains resolved and P7-07 is sealed
+`PASS_LEVEL_2`. Its nine failed controlled attempts remain diagnostic evidence,
+not PASS evidence; each failed closed, cleaned up, received only a bounded
+evidence-proved forward fix and was followed by a fresh exact-SHA ordinary and
+controlled attempt. Only the bounded P7-08 `UX-020` audit is active. Product
+code, mobile-only roles or transitions, raw private File URLs, automatic scan
+submission, offline/native behavior, production ERPNext/external effects and
+Phase 8 behavior remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -47,7 +39,7 @@ Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
 latest complete Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`; P7-06 Level 2 does not replace
+`22cb24d42174a5b75f475127ac3aa9fee5a08606`; P7-07 Level 2 does not replace
 that Phase/PR/release boundary.
 
 ## Historical recovery
