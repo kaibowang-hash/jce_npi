@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  ErpProjectionsRequestCancelledError,
+  type ErpProjectionCollectionViewModel,
+  type ErpProjectionItemViewModel,
+} from "../api/erp-projections-data-source";
+import {
+  confirmedToolAssetProjection,
+  LiveToolingAcceptanceAssetDataSource,
+  type ToolingAcceptanceAssetDataSource,
+} from "../api/tooling-acceptance-asset-data-source";
+import {
   TOOL_ASSET_MOCK_ACKNOWLEDGEMENT,
   toolingAcceptanceCategories,
   type CreateToolAssetRequestCommand,
@@ -25,13 +35,22 @@ import {
   Panel,
   SemanticStatus,
 } from "../components/primitives";
-import { formatDateTime, formatNumber } from "../i18n/formatters";
+import {
+  formatDate,
+  formatDateTime,
+  formatDecimal,
+  formatNumber,
+} from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
 
 type ResourceState =
   | { kind: "loading" }
   | { kind: "loaded"; value: WorkspaceResources }
+  | { kind: "failed"; failure: RequestFailure };
+type AssetProjectionResourceState =
+  | { kind: "loading" }
+  | { kind: "loaded"; value: ErpProjectionCollectionViewModel }
   | { kind: "failed"; failure: RequestFailure };
 type CommandState =
   | { kind: "idle" }
@@ -197,12 +216,340 @@ function newAcceptanceDraft(
   };
 }
 
+const liveAssetProjectionDataSource =
+  new LiveToolingAcceptanceAssetDataSource();
+
+function assetObservationStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  item: ErpProjectionItemViewModel,
+): string {
+  if (item.availability === "unavailable") return t("Unavailable observation");
+  if (item.availability === "synthetic") return t("Synthetic observation");
+  if (item.freshness === "stale") return t("Stale observation");
+  if (item.freshness === "unknown") return t("Unknown freshness");
+  switch (item.disposition) {
+    case "applied_current":
+      return t("Current observation");
+    case "unavailable_current":
+      return t("Unavailable observation");
+    case "superseded":
+      return t("Superseded observation");
+    case "duplicate_exact":
+      return t("Exact duplicate");
+    case "conflicted":
+      return t("Conflicted observation");
+    case "synthetic_retained":
+      return t("Synthetic observation");
+  }
+}
+
+function assetMovementLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  action: "move" | "loan" | "return" | "archive" | "scrap",
+): string {
+  switch (action) {
+    case "move":
+      return t("Move");
+    case "loan":
+      return t("Loan");
+    case "return":
+      return t("Return");
+    case "archive":
+      return t("Archive");
+    case "scrap":
+      return t("Scrap");
+  }
+}
+
+function AssetProjectionPanel({
+  preferredSetId,
+  resource,
+  retry,
+  setIds,
+}: {
+  preferredSetId: string | undefined;
+  resource: AssetProjectionResourceState;
+  retry: () => void;
+  setIds: ReadonlySet<string>;
+}): React.JSX.Element {
+  const { locale, t } = useI18n();
+  if (resource.kind === "loading") {
+    return (
+      <div
+        aria-busy="true"
+        aria-label={t("Loading ERPNext Asset projection")}
+        className="workspace-resource-state workspace-resource-state--loading"
+        role="status"
+      >
+        <div className="skeleton skeleton--title" />
+        <div className="skeleton" />
+        <span className="visually-hidden">
+          {t("Loading ERPNext Asset projection")}
+        </span>
+      </div>
+    );
+  }
+  if (resource.kind === "failed") {
+    const denied =
+      resource.failure.problem?.status === 401 ||
+      resource.failure.problem?.status === 403;
+    return (
+      <div className="tooling-acceptance__projection-unavailable" role="alert">
+        <SemanticStatus
+          label={denied ? t("No permission") : t("Error")}
+          tone="danger"
+        />
+        <strong>
+          {denied
+            ? t("ERPNext Asset projection access is not available.")
+            : t("ERPNext Asset projection could not be used safely.")}
+        </strong>
+        <span className="tooling-acceptance__projection-detail">
+          {t("No protected formal Asset values were displayed.")}
+        </span>
+        <RequestFailurePanel failure={resource.failure} />
+        {canRetry(resource.failure) ? (
+          <Button icon="refresh" onClick={retry}>
+            {t("Retry")}
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+  if (resource.value.accessState === "redacted") {
+    return (
+      <div className="tooling-acceptance__projection-unavailable" role="status">
+        <SemanticStatus label={t("No permission")} tone="warning" />
+        <strong>
+          {t("ERPNext Asset projection access is not available.")}
+        </strong>
+        <span className="tooling-acceptance__projection-detail">
+          {t("No protected formal Asset values were displayed.")}
+        </span>
+      </div>
+    );
+  }
+  const scopedItems = resource.value.items.filter(
+    (item) =>
+      item.projectionKind === "tool_asset_status" &&
+      item.scopeKind === "tooling_set" &&
+      setIds.has(item.scopeGlobalId),
+  );
+  const item =
+    scopedItems.find(
+      (candidate) => candidate.scopeGlobalId === preferredSetId,
+    ) ?? scopedItems[0];
+  if (!item) {
+    return (
+      <div className="tooling-acceptance__projection-unavailable" role="status">
+        <SemanticStatus label={t("Unavailable")} tone="warning" />
+        <strong>
+          {t("Formal Asset mapping has not been observed from ERPNext.")}
+        </strong>
+        <span className="tooling-acceptance__projection-detail">
+          {t(
+            "Mapping cardinality is zero or one formal Asset per physical Set.",
+          )}
+        </span>
+        <span className="tooling-acceptance__projection-detail">
+          {t(
+            "ERPNext remains the only editable system for Asset and location truth.",
+          )}
+        </span>
+      </div>
+    );
+  }
+  const confirmed = confirmedToolAssetProjection(item);
+  if (!confirmed) {
+    return (
+      <div className="tooling-acceptance__projection-unavailable" role="status">
+        <SemanticStatus
+          label={assetObservationStateLabel(t, item)}
+          tone={item.disposition === "conflicted" ? "danger" : "warning"}
+        />
+        <strong>{t("Formal Asset value withheld")}</strong>
+        <span className="tooling-acceptance__projection-detail">
+          {t(
+            "Only a fresh, confirmed current observation can display formal Asset truth.",
+          )}
+        </span>
+        {item.unavailableReasonCode ? (
+          <span className="tooling-acceptance__projection-detail">
+            {t("Reason code")}:{" "}
+            <span data-language-exempt="identifier">
+              {item.unavailableReasonCode}
+            </span>
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+  const asset = confirmed.values;
+  return (
+    <div className="tooling-acceptance__formal-asset">
+      <div className="scenario-banner" role="status">
+        <SemanticStatus label={t("Confirmed current")} tone="success" />
+        <span>
+          {t("This formal Asset projection is read only and owned by ERPNext.")}
+        </span>
+      </div>
+      <DefinitionList
+        rows={[
+          {
+            label: t("Physical Set ID"),
+            value: asset.toolingSetGlobalId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Formal Asset ID"),
+            value: asset.formalAssetId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Asset state"),
+            value: asset.assetState,
+            exempt: "identifier",
+          },
+          {
+            label: t("Current location"),
+            value: asset.currentLocation,
+            exempt: "business-data",
+          },
+          {
+            label: t("Shot count"),
+            value: formatNumber(locale, asset.shotCount, 0),
+          },
+          {
+            label: t("Expected life shots"),
+            value:
+              asset.expectedLifeShots === null
+                ? t("Not provided")
+                : formatNumber(locale, asset.expectedLifeShots, 0),
+          },
+          {
+            label: t("Maintenance due"),
+            value:
+              asset.maintenanceDue === null
+                ? t("Not provided")
+                : formatDate(locale, asset.maintenanceDue),
+          },
+          {
+            label: t("Target version"),
+            value: asset.targetVersion,
+            exempt: "identifier",
+          },
+          {
+            label: t("Source modified at"),
+            value: formatDateTime(
+              locale,
+              confirmed.item.sourceModifiedAt ?? "",
+            ),
+          },
+          {
+            label: t("Received at"),
+            value: formatDateTime(locale, confirmed.item.receivedAt),
+          },
+        ]}
+      />
+      {asset.movements.length ? (
+        <div className="table-scroll" tabIndex={0}>
+          <table className="data-table data-table--compact">
+            <caption>{t("Asset movements")}</caption>
+            <thead>
+              <tr>
+                <th>{t("Action")}</th>
+                <th>{t("From location")}</th>
+                <th>{t("To location")}</th>
+                <th>{t("Occurred at")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {asset.movements.map((movement) => (
+                <tr key={movement.globalId}>
+                  <td>{assetMovementLabel(t, movement.actionKind)}</td>
+                  <td data-language-exempt="business-data">
+                    {movement.fromLocation ?? t("Not provided")}
+                  </td>
+                  <td data-language-exempt="business-data">
+                    {movement.toLocation ?? t("Not provided")}
+                  </td>
+                  <td>{formatDateTime(locale, movement.occurredAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      {asset.repairs.length ? (
+        <div className="table-scroll" tabIndex={0}>
+          <table className="data-table data-table--compact">
+            <caption>{t("Asset repairs")}</caption>
+            <thead>
+              <tr>
+                <th>{t("Summary")}</th>
+                <th>{t("Downtime hours")}</th>
+                <th>{t("Completed at")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {asset.repairs.map((repair) => (
+                <tr key={repair.globalId}>
+                  <td data-language-exempt="business-data">{repair.summary}</td>
+                  <td>{formatDecimal(locale, repair.downtimeHours)}</td>
+                  <td>{formatDateTime(locale, repair.completedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      {asset.spares.length ? (
+        <div className="table-scroll" tabIndex={0}>
+          <table className="data-table data-table--compact">
+            <caption>{t("Asset spares")}</caption>
+            <thead>
+              <tr>
+                <th>{t("Formal Item ID")}</th>
+                <th>{t("Description")}</th>
+                <th>{t("Stock on hand")}</th>
+                <th>{t("Minimum stock")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {asset.spares.map((spare) => (
+                <tr key={spare.formalItemId}>
+                  <td data-language-exempt="identifier">
+                    {spare.formalItemId}
+                  </td>
+                  <td data-language-exempt="business-data">
+                    {spare.description}
+                  </td>
+                  <td>
+                    {formatDecimal(locale, spare.stockOnHand)}{" "}
+                    <span data-language-exempt="unit">{spare.unit}</span>
+                  </td>
+                  <td>
+                    {formatDecimal(locale, spare.minimumStock)}{" "}
+                    <span data-language-exempt="unit">{spare.unit}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ToolingAcceptanceAssetWorkspace({
+  assetProjectionDataSource = liveAssetProjectionDataSource,
   dataSource,
   master,
   projectId,
   reportWorkspaceDirty,
 }: {
+  assetProjectionDataSource?: ToolingAcceptanceAssetDataSource | undefined;
   dataSource: ToolingDataSource;
   master: ToolingMasterSummaryViewModel;
   projectId: string;
@@ -211,6 +558,9 @@ export default function ToolingAcceptanceAssetWorkspace({
   const { locale, sessionCommandContext, t } = useI18n();
   const [attempt, setAttempt] = useState(0);
   const [resource, setResource] = useState<ResourceState>({ kind: "loading" });
+  const [assetProjectionAttempt, setAssetProjectionAttempt] = useState(0);
+  const [assetProjectionResource, setAssetProjectionResource] =
+    useState<AssetProjectionResourceState>({ kind: "loading" });
   const [draft, setDraft] = useState<AcceptanceDraft | null>(null);
   const [selectedAcceptanceId, setSelectedAcceptanceId] = useState<string>("");
   const [acknowledged, setAcknowledged] = useState(false);
@@ -264,6 +614,30 @@ export default function ToolingAcceptanceAssetWorkspace({
       controller.abort();
     };
   }, [attempt, dataSource, master.globalId, projectId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void assetProjectionDataSource
+      .loadAssetProjections(projectId, controller.signal)
+      .then((value) => {
+        if (!controller.signal.aborted)
+          setAssetProjectionResource({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof ErpProjectionsRequestCancelledError
+        )
+          return;
+        setAssetProjectionResource({
+          failure: toRequestFailure(error),
+          kind: "failed",
+        });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [assetProjectionAttempt, assetProjectionDataSource, projectId]);
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
@@ -944,25 +1318,15 @@ export default function ToolingAcceptanceAssetWorkspace({
         </Panel>
 
         <Panel title={t("ERPNext Asset projection")}>
-          <div
-            className="tooling-acceptance__projection-unavailable"
-            role="status"
-          >
-            <SemanticStatus label={t("Unavailable")} tone="warning" />
-            <strong>
-              {t("Formal Asset mapping has not been observed from ERPNext.")}
-            </strong>
-            <span className="tooling-acceptance__projection-detail">
-              {t(
-                "Mapping cardinality is zero or one formal Asset per physical Set.",
-              )}
-            </span>
-            <span className="tooling-acceptance__projection-detail">
-              {t(
-                "ERPNext remains the only editable system for Asset and location truth.",
-              )}
-            </span>
-          </div>
+          <AssetProjectionPanel
+            preferredSetId={selectedSet?.globalId}
+            resource={assetProjectionResource}
+            retry={() => {
+              setAssetProjectionResource({ kind: "loading" });
+              setAssetProjectionAttempt((current) => current + 1);
+            }}
+            setIds={new Set(value.sets.items.map((item) => item.globalId))}
+          />
         </Panel>
       </div>
 

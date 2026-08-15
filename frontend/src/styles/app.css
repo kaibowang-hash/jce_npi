@@ -3416,6 +3416,74 @@ textarea::placeholder {
   border-top: var(--npi-border-default) solid var(--npi-color-border-default);
 }
 
+.erp-projections {
+  margin-block-start: var(--npi-space-3);
+}
+
+.erp-projections__body {
+  display: grid;
+  gap: var(--npi-space-2);
+}
+
+.erp-projections__layout {
+  align-items: start;
+  display: grid;
+  gap: var(--npi-space-2);
+  grid-template-columns: minmax(44rem, 1fr) minmax(19rem, 0.38fr);
+  min-inline-size: 0;
+}
+
+.erp-projections__table {
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  max-block-size: 32rem;
+  min-inline-size: 0;
+  overflow: auto;
+}
+
+.erp-projections__table .data-table {
+  min-inline-size: 58rem;
+}
+
+.erp-projections__inspector {
+  min-inline-size: 0;
+}
+
+.erp-projections__inspector .docked-inspector {
+  inset-block-start: var(--npi-space-2);
+  max-block-size: 36rem;
+}
+
+.projection-inspector__status {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--npi-space-1);
+  margin-block-end: var(--npi-space-2);
+}
+
+.projection-authority-state {
+  border-inline-start: var(--npi-border-selected) solid
+    var(--npi-color-semantic-warning);
+  display: grid;
+  gap: var(--npi-space-1);
+  padding: var(--npi-space-2);
+}
+
+.projection-authority-state p {
+  margin: 0;
+}
+
+@media (width <= 78rem) {
+  .erp-projections__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .erp-projections__inspector .docked-inspector {
+    max-block-size: none;
+    position: static;
+  }
+}
+
 .document-workspace {
   display: grid;
   min-width: 0;
@@ -5548,6 +5616,22 @@ textarea::placeholder {
   padding: var(--npi-space-3);
 }
 
+.tooling-acceptance__formal-asset {
+  display: grid;
+  gap: var(--npi-space-2);
+}
+
+.tooling-acceptance__formal-asset .field-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tooling-acceptance__formal-asset caption {
+  color: var(--npi-color-text-primary);
+  font-weight: var(--npi-typography-weight-semibold);
+  padding: var(--npi-space-1) var(--npi-space-2);
+  text-align: start;
+}
+
 .tooling-acceptance__editor {
   display: grid;
   gap: var(--npi-space-3);
@@ -5599,6 +5683,10 @@ textarea::placeholder {
   .tooling-acceptance__checklist,
   .tooling-acceptance__editor-meta,
   .tooling-acceptance__file-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tooling-acceptance__formal-asset .field-list {
     grid-template-columns: 1fr;
   }
 }

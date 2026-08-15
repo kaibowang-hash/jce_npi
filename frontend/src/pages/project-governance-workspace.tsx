@@ -21,6 +21,22 @@ import {
   mergeProjectActivityPages,
   ProjectControlsRequestCancelledError,
 } from "../api/project-controls-data-source";
+import {
+  ErpProjectionsRequestCancelledError,
+  type ErpProjectionAvailability,
+  type ErpProjectionDisposition,
+  type ErpProjectionFreshness,
+  type ErpProjectionItemValues,
+  type ErpProjectionItemViewModel,
+  type ErpProjectionKind,
+  type ErpProjectionMasterValues,
+  type ErpProjectionProjectCostValues,
+  type ErpProjectionQualityValues,
+  type ErpProjectionScopeKind,
+  type ErpProjectionToolAssetValues,
+  type ErpProjectionToolingCostValues,
+  type ErpProjectionValues,
+} from "../api/erp-projections-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import { DockedInspector } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
@@ -48,6 +64,7 @@ import type {
   SemanticTone,
 } from "../domain/view-models";
 import {
+  formatDate,
   formatDateTime,
   formatDecimal,
   formatList,
@@ -388,6 +405,619 @@ function MissingDataSource(): React.JSX.Element {
         {t("The live project collaboration data source is not configured.")}
       </p>
     </section>
+  );
+}
+
+function projectionKindLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: ErpProjectionKind,
+): string {
+  switch (kind) {
+    case "customer_master":
+      return t("Customer master");
+    case "supplier_master":
+      return t("Supplier master");
+    case "formal_item_master":
+      return t("Formal Item master");
+    case "tooling_procurement_cost":
+      return t("Tooling procurement and cost");
+    case "project_cost":
+      return t("Project cost");
+    case "formal_quality_status":
+      return t("Formal quality status");
+    case "tool_asset_status":
+      return t("Tool Asset status");
+  }
+}
+
+function projectionScopeLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: ErpProjectionScopeKind,
+): string {
+  switch (kind) {
+    case "project":
+      return t("Project");
+    case "tooling_master":
+      return t("Tooling master");
+    case "tooling_set":
+      return t("Physical Set");
+    case "engineering_item":
+      return t("Engineering Item");
+    case "trial_round":
+      return t("Trial round");
+    case "readiness":
+      return t("Readiness");
+  }
+}
+
+function projectionAvailabilityLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  availability: ErpProjectionAvailability,
+): string {
+  switch (availability) {
+    case "available":
+      return t("Available");
+    case "unavailable":
+      return t("Unavailable");
+    case "synthetic":
+      return t("Synthetic evidence");
+  }
+}
+
+function projectionFreshnessLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  freshness: ErpProjectionFreshness,
+): string {
+  switch (freshness) {
+    case "fresh":
+      return t("Fresh");
+    case "stale":
+      return t("Stale");
+    case "unknown":
+      return t("Unknown freshness");
+  }
+}
+
+function projectionDispositionLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  disposition: ErpProjectionDisposition,
+): string {
+  switch (disposition) {
+    case "applied_current":
+      return t("Current observation");
+    case "unavailable_current":
+      return t("Unavailable observation");
+    case "superseded":
+      return t("Superseded observation");
+    case "duplicate_exact":
+      return t("Exact duplicate");
+    case "conflicted":
+      return t("Conflicted observation");
+    case "synthetic_retained":
+      return t("Synthetic observation");
+  }
+}
+
+function projectionTone(item: ErpProjectionItemViewModel): SemanticTone {
+  if (item.disposition === "conflicted") return "danger";
+  if (
+    item.availability !== "available" ||
+    item.freshness !== "fresh" ||
+    item.disposition !== "applied_current"
+  )
+    return "warning";
+  return "success";
+}
+
+function authoritativeProjectionValues(
+  item: ErpProjectionItemViewModel,
+): ErpProjectionValues | null {
+  if (
+    item.availability !== "available" ||
+    item.freshness !== "fresh" ||
+    item.disposition !== "applied_current" ||
+    item.currentTruth?.observationGlobalId !== item.observationGlobalId ||
+    item.currentTruth.sourceVersion !== item.sourceVersion ||
+    item.currentTruth.sourceModifiedAt !== item.sourceModifiedAt ||
+    item.currentTruth.receivedAt !== item.receivedAt ||
+    item.currentTruth.payloadHash !== item.payloadHash
+  ) {
+    return null;
+  }
+  return item.currentTruth.values;
+}
+
+function ProjectionValueDetails({
+  item,
+}: {
+  item: ErpProjectionItemViewModel;
+}): React.JSX.Element {
+  const { locale, t } = useI18n();
+  const values = authoritativeProjectionValues(item);
+  if (values === null) {
+    return (
+      <div className="projection-authority-state" role="status">
+        <SemanticStatus label={t("Formal value withheld")} tone="warning" />
+        <p>
+          {t(
+            "No authoritative current value is displayed for this observation.",
+          )}
+        </p>
+        {item.unavailableReasonCode ? (
+          <p>
+            {t("Reason code")}:{" "}
+            <span data-language-exempt="identifier">
+              {item.unavailableReasonCode}
+            </span>
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  switch (item.projectionKind) {
+    case "customer_master":
+    case "supplier_master": {
+      const master = values as ErpProjectionMasterValues;
+      return (
+        <DefinitionList
+          rows={[
+            { label: t("Code"), value: master.code, exempt: "identifier" },
+            {
+              label: t("Display name"),
+              value: master.displayName,
+              exempt: "business-data",
+            },
+            {
+              label: t("Enabled"),
+              value: master.enabled ? t("Yes") : t("No"),
+            },
+            {
+              label: t("Status code"),
+              value: master.statusCode ?? t("Not provided"),
+              ...(master.statusCode ? { exempt: "identifier" as const } : {}),
+            },
+          ]}
+        />
+      );
+    }
+    case "formal_item_master": {
+      const itemValues = values as ErpProjectionItemValues;
+      return (
+        <DefinitionList
+          rows={[
+            {
+              label: t("Item code"),
+              value: itemValues.itemCode,
+              exempt: "identifier",
+            },
+            {
+              label: t("Stock unit"),
+              value: itemValues.stockUom,
+              exempt: "unit",
+            },
+            {
+              label: t("Enabled"),
+              value: itemValues.enabled ? t("Yes") : t("No"),
+            },
+            {
+              label: t("Status code"),
+              value: itemValues.statusCode ?? t("Not provided"),
+              ...(itemValues.statusCode
+                ? { exempt: "identifier" as const }
+                : {}),
+            },
+          ]}
+        />
+      );
+    }
+    case "tooling_procurement_cost": {
+      const cost = values as ErpProjectionToolingCostValues;
+      return (
+        <>
+          <DefinitionList
+            rows={[
+              {
+                label: t("Supplier code"),
+                value: cost.supplier.supplierCode,
+                exempt: "identifier",
+              },
+              {
+                label: t("Supplier name"),
+                value: cost.supplier.supplierName,
+                exempt: "business-data",
+              },
+              {
+                label: t("Target version"),
+                value: cost.supplier.targetVersion,
+                exempt: "identifier",
+              },
+            ]}
+          />
+          <table className="data-table data-table--compact">
+            <thead>
+              <tr>
+                <th>{t("Cost type")}</th>
+                <th>{t("Posting date")}</th>
+                <th>{t("Amount")}</th>
+                <th>{t("Currency")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cost.rows.map((row) => (
+                <tr key={`${row.sourceRowId}:${row.sourceRowVersion}`}>
+                  <td data-language-exempt="identifier">{row.costTypeCode}</td>
+                  <td>{formatDate(locale, row.postingDate)}</td>
+                  <td>{formatDecimal(locale, row.amount)}</td>
+                  <td data-language-exempt="unit">{row.currency}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      );
+    }
+    case "project_cost": {
+      const cost = values as ErpProjectionProjectCostValues;
+      return (
+        <table className="data-table data-table--compact">
+          <thead>
+            <tr>
+              <th>{t("Row kind")}</th>
+              <th>{t("Posting date")}</th>
+              <th>{t("Amount or hours")}</th>
+              <th>{t("Currency")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cost.rows.map((row) => (
+              <tr key={`${row.sourceRowId}:${row.sourceRowVersion}`}>
+                <td data-language-exempt="identifier">{row.rowKind}</td>
+                <td>{formatDate(locale, row.postingDate)}</td>
+                <td>{formatDecimal(locale, row.amount ?? row.hours ?? "0")}</td>
+                <td data-language-exempt="unit">
+                  {row.currency ?? t("Hours")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+    case "formal_quality_status": {
+      const quality = values as ErpProjectionQualityValues;
+      return (
+        <DefinitionList
+          rows={[
+            {
+              label: t("Record kind"),
+              value: quality.recordKind,
+              exempt: "identifier",
+            },
+            {
+              label: t("Status code"),
+              value: quality.statusCode,
+              exempt: "identifier",
+            },
+            {
+              label: t("Result code"),
+              value: quality.resultCode ?? t("Not provided"),
+              ...(quality.resultCode ? { exempt: "identifier" as const } : {}),
+            },
+            {
+              label: t("Observed at"),
+              value: formatDateTime(locale, quality.observedAt),
+            },
+          ]}
+        />
+      );
+    }
+    case "tool_asset_status": {
+      const asset = values as ErpProjectionToolAssetValues;
+      return (
+        <DefinitionList
+          rows={[
+            {
+              label: t("Formal Asset ID"),
+              value: asset.formalAssetId,
+              exempt: "identifier",
+            },
+            {
+              label: t("Asset state"),
+              value: asset.assetState,
+              exempt: "identifier",
+            },
+            {
+              label: t("Current location"),
+              value: asset.currentLocation,
+              exempt: "business-data",
+            },
+            {
+              label: t("Shot count"),
+              value: formatNumber(locale, asset.shotCount, 0),
+            },
+            {
+              label: t("Expected life shots"),
+              value:
+                asset.expectedLifeShots === null
+                  ? t("Not provided")
+                  : formatNumber(locale, asset.expectedLifeShots, 0),
+            },
+            {
+              label: t("Maintenance due"),
+              value:
+                asset.maintenanceDue === null
+                  ? t("Not provided")
+                  : formatDate(locale, asset.maintenanceDue),
+            },
+            {
+              label: t("Movement records"),
+              value: formatNumber(locale, asset.movements.length, 0),
+            },
+            {
+              label: t("Repair records"),
+              value: formatNumber(locale, asset.repairs.length, 0),
+            },
+            {
+              label: t("Spare records"),
+              value: formatNumber(locale, asset.spares.length, 0),
+            },
+          ]}
+        />
+      );
+    }
+  }
+}
+
+function ProjectionInspector({
+  item,
+}: {
+  item: ErpProjectionItemViewModel | undefined;
+}): React.JSX.Element {
+  const { locale, t } = useI18n();
+  if (!item) {
+    return (
+      <DockedInspector title={t("ERP projection details")}>
+        <p>{t("Select an ERP projection observation to inspect it.")}</p>
+      </DockedInspector>
+    );
+  }
+  return (
+    <DockedInspector title={projectionKindLabel(t, item.projectionKind)}>
+      <div className="projection-inspector__status">
+        <SemanticStatus
+          label={projectionAvailabilityLabel(t, item.availability)}
+          tone={projectionTone(item)}
+        />
+        <SemanticStatus
+          label={projectionFreshnessLabel(t, item.freshness)}
+          tone={item.freshness === "fresh" ? "success" : "warning"}
+        />
+      </div>
+      <DefinitionList
+        rows={[
+          {
+            label: t("Observation state"),
+            value: projectionDispositionLabel(t, item.disposition),
+          },
+          {
+            label: t("Scope"),
+            value: projectionScopeLabel(t, item.scopeKind),
+          },
+          {
+            label: t("Scope ID"),
+            value: item.scopeGlobalId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Source object"),
+            value: `${item.sourceObjectType} / ${item.sourceObjectId}`,
+            exempt: "identifier",
+          },
+          {
+            label: t("Source version"),
+            value: item.sourceVersion ?? t("Not provided"),
+            ...(item.sourceVersion ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Source modified at"),
+            value:
+              item.sourceModifiedAt === null
+                ? t("Not provided")
+                : formatDateTime(locale, item.sourceModifiedAt),
+          },
+          {
+            label: t("Received at"),
+            value: formatDateTime(locale, item.receivedAt),
+          },
+          {
+            label: t("Editable"),
+            value: t("No, read only"),
+          },
+        ]}
+      />
+      <h3>{t("Confirmed formal values")}</h3>
+      <ProjectionValueDetails item={item} />
+    </DockedInspector>
+  );
+}
+
+function ErpProjectionsWorkspace({
+  dataSource,
+  projectId,
+}: {
+  dataSource: ProjectControlsDataSource;
+  projectId: string;
+}): React.JSX.Element {
+  const { t } = useI18n();
+  const [attempt, setAttempt] = useState(0);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [state, setState] = useState<
+    ResourceState<
+      Awaited<ReturnType<ProjectControlsDataSource["loadErpProjections"]>>
+    >
+  >({ kind: "loading" });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void dataSource
+      .loadErpProjections(projectId, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setState({ kind: "loaded", value });
+        setSelectedId((current) =>
+          current &&
+          value.items.some((item) => item.observationGlobalId === current)
+            ? current
+            : (value.items[0]?.observationGlobalId ?? null),
+        );
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof ErpProjectionsRequestCancelledError
+        )
+          return;
+        setState({ failure: toRequestFailure(error), kind: "failed" });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [attempt, dataSource, projectId]);
+
+  let body: ReactNode;
+  if (state.kind === "loading") {
+    body = <ResourceLoading label={t("Loading ERP projections")} />;
+  } else if (state.kind === "failed") {
+    const denied =
+      state.failure.problem?.status === 401 ||
+      state.failure.problem?.status === 403;
+    body = (
+      <section className="workspace-resource-state" role="alert">
+        <SemanticStatus
+          label={denied ? t("No permission") : t("Error")}
+          tone="danger"
+        />
+        <h3>
+          {denied
+            ? t("ERP projection access is not available")
+            : t("ERP projection data could not be used safely")}
+        </h3>
+        <p>
+          {denied
+            ? t("No protected ERP projection values were displayed.")
+            : t("Use the reference ID for support or retry when available.")}
+        </p>
+        <RequestFailurePanel failure={state.failure} />
+        {canRetry(state.failure) ? (
+          <Button
+            icon="refresh"
+            onClick={() => {
+              setState({ kind: "loading" });
+              setAttempt((current) => current + 1);
+            }}
+          >
+            {t("Retry")}
+          </Button>
+        ) : null}
+      </section>
+    );
+  } else if (state.value.accessState === "redacted") {
+    body = (
+      <section className="workspace-resource-state" role="status">
+        <SemanticStatus label={t("No permission")} tone="warning" />
+        <h3>{t("ERP projection access is not available")}</h3>
+        <p>{t("No protected ERP projection values were displayed.")}</p>
+      </section>
+    );
+  } else if (state.value.items.length === 0) {
+    body = (
+      <section className="workspace-resource-state" role="status">
+        <SemanticStatus label={t("No observations")} tone="neutral" />
+        <p>
+          {t("No ERP projection observations are available for this project.")}
+        </p>
+      </section>
+    );
+  } else {
+    const selected = state.value.items.find(
+      (item) => item.observationGlobalId === selectedId,
+    );
+    body = (
+      <div className="erp-projections__layout">
+        <div className="erp-projections__table" tabIndex={0}>
+          <table className="data-table data-table--compact">
+            <thead>
+              <tr>
+                <th>{t("Select")}</th>
+                <th>{t("Projection")}</th>
+                <th>{t("Scope")}</th>
+                <th>{t("Availability")}</th>
+                <th>{t("Freshness")}</th>
+                <th>{t("Observation state")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.value.items.map((item) => (
+                <tr
+                  className={
+                    selectedId === item.observationGlobalId
+                      ? "data-table__row--selected"
+                      : undefined
+                  }
+                  key={item.observationGlobalId}
+                >
+                  <td>
+                    <input
+                      aria-label={t("Inspect {{projection}}", {
+                        projection: projectionKindLabel(t, item.projectionKind),
+                      })}
+                      checked={selectedId === item.observationGlobalId}
+                      name="erp-projection-observation"
+                      onChange={() => {
+                        setSelectedId(item.observationGlobalId);
+                      }}
+                      type="radio"
+                    />
+                  </td>
+                  <td>{projectionKindLabel(t, item.projectionKind)}</td>
+                  <td>{projectionScopeLabel(t, item.scopeKind)}</td>
+                  <td>
+                    <SemanticStatus
+                      label={projectionAvailabilityLabel(t, item.availability)}
+                      tone={projectionTone(item)}
+                    />
+                  </td>
+                  <td>{projectionFreshnessLabel(t, item.freshness)}</td>
+                  <td>{projectionDispositionLabel(t, item.disposition)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="erp-projections__inspector">
+          <ProjectionInspector item={selected} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Panel
+      bodyClassName="erp-projections__body"
+      className="erp-projections"
+      title={t("ERPNext governed projections")}
+    >
+      <div className="scenario-banner" role="status">
+        <SemanticStatus label={t("Read only")} tone="info" />
+        <span>
+          {t(
+            "ERPNext owns these formal values. NPI One displays validated observations and never edits or refreshes them here.",
+          )}
+        </span>
+      </div>
+      {body}
+    </Panel>
   );
 }
 
@@ -1229,6 +1859,7 @@ function ControlsWorkspace({
           </div>
         </Panel>
       </div>
+      <ErpProjectionsWorkspace dataSource={dataSource} projectId={projectId} />
       {selectedReview ? (
         <ImpactReview
           confirmLabel={t("Execute lifecycle action")}

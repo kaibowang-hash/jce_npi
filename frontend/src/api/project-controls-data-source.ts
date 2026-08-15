@@ -25,6 +25,11 @@ import type {
   ProjectObjectLinkViewModel,
   ProjectObjectTargetViewModel,
 } from "../domain/view-models";
+import {
+  LiveErpProjectionsDataSource,
+  type ErpProjectionCollectionViewModel,
+  type ErpProjectionsDataSource,
+} from "./erp-projections-data-source";
 import { NpiHttpClient, NpiTransportError } from "./http";
 
 export interface ProjectCommandContext {
@@ -95,6 +100,10 @@ export interface CreateProjectLearningCommand {
 }
 
 export interface ProjectControlsDataSource {
+  loadErpProjections(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<ErpProjectionCollectionViewModel>;
   loadControls(
     projectId: string,
     signal: AbortSignal,
@@ -1177,7 +1186,17 @@ function throwIfCancelled(signal: AbortSignal): void {
 }
 
 export class LiveProjectControlsDataSource implements ProjectControlsDataSource {
-  constructor(private readonly http = new NpiHttpClient()) {}
+  constructor(
+    private readonly http = new NpiHttpClient(),
+    private readonly erpProjections: ErpProjectionsDataSource = new LiveErpProjectionsDataSource(),
+  ) {}
+
+  async loadErpProjections(
+    projectId: string,
+    signal: AbortSignal,
+  ): Promise<ErpProjectionCollectionViewModel> {
+    return await this.erpProjections.loadProjectProjections(projectId, signal);
+  }
 
   async loadControls(
     projectId: string,

@@ -30,7 +30,12 @@ import {
   Panel,
   SemanticStatus,
 } from "../components/primitives";
-import { formatDate, formatNumber } from "../i18n/formatters";
+import {
+  formatDate,
+  formatDateTime,
+  formatDecimal,
+  formatNumber,
+} from "../i18n/formatters";
 import { useI18n } from "../i18n/runtime";
 import { Button, Select, TextInput } from "../ui-adapters/npi-ui";
 
@@ -1104,6 +1109,13 @@ export default function ToolingManufacturingWorkspace({
                   value: loaded.plans.erpProjection.targetVersion,
                 },
                 {
+                  label: t("Observed at"),
+                  value: formatDateTime(
+                    locale,
+                    loaded.plans.erpProjection.observedAt,
+                  ),
+                },
+                {
                   label: t("Actual-cost rows"),
                   value: formatNumber(
                     locale,
@@ -1131,9 +1143,7 @@ export default function ToolingManufacturingWorkspace({
                         {item.costTypeCode}
                       </td>
                       <td data-language-exempt="unit">{item.currency}</td>
-                      <td data-language-exempt="business-data">
-                        {item.amount}
-                      </td>
+                      <td>{formatDecimal(locale, item.amount)}</td>
                     </tr>
                   ))}
                 </tbody>

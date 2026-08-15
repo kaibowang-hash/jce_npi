@@ -8,6 +8,7 @@ import type {
   ToolingRevisionCollectionViewModel,
   ToolingSetCollectionViewModel,
 } from "../../src/api/tooling-data-source";
+import type { ToolingAcceptanceAssetDataSource } from "../../src/api/tooling-acceptance-asset-data-source";
 import { NpiTransportError } from "../../src/api/http";
 import ToolingAcceptanceAssetWorkspace from "../../src/pages/tooling-acceptance-asset-workspace";
 import {
@@ -15,10 +16,16 @@ import {
   acceptanceRevision,
   assetRequest,
   assetRequestCollection,
+  toolAssetProjectionCollection,
   toolingAcceptanceHash as hash,
   toolingAcceptanceIds as ids,
 } from "../support/tooling-acceptance-fixture";
 import { renderWithLocale } from "../support/render";
+
+function required<T>(value: T | undefined, message: string): T {
+  if (value === undefined) throw new Error(message);
+  return value;
+}
 
 function master(): ToolingMasterSummaryViewModel {
   return {
@@ -163,9 +170,19 @@ function enableCommandSession(): void {
   );
 }
 
-function renderWorkspace(source: ToolingDataSource): void {
+function renderWorkspace(
+  source: ToolingDataSource,
+  assetProjectionDataSource: ToolingAcceptanceAssetDataSource = {
+    loadAssetProjections: () =>
+      Promise.resolve({
+        ...toolAssetProjectionCollection(),
+        items: [],
+      }),
+  },
+): void {
   renderWithLocale(
     <ToolingAcceptanceAssetWorkspace
+      assetProjectionDataSource={assetProjectionDataSource}
       dataSource={source}
       master={master()}
       projectId={ids.project}
@@ -225,6 +242,104 @@ describe("Tooling acceptance and Asset workspace", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("Approved")).not.toBeInTheDocument();
     expect(screen.queryByText("Dispatched")).not.toBeInTheDocument();
+  });
+
+  it("renders only confirmed current formal Asset truth as read only", async () => {
+    renderWorkspace(dataSource(), {
+      loadAssetProjections: () =>
+        Promise.resolve(toolAssetProjectionCollection()),
+    });
+
+    expect(await screen.findByText("ASSET-00042")).toBeVisible();
+    expect(screen.getByText("Plant A / Tooling Bay 3")).toBeVisible();
+    expect(screen.getByText("Replaced worn guide pin")).toBeVisible();
+    expect(screen.getByText("Guide pin")).toBeVisible();
+    expect(screen.getByText("Confirmed current")).toBeVisible();
+    expect(
+      screen.getByText(
+        "This formal Asset projection is read only and owned by ERPNext.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /ERPNext|Edit formal Asset/u }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("withholds stale, conflicted and redacted formal Asset values", async () => {
+    const stale = structuredClone(toolAssetProjectionCollection());
+    required(
+      stale.items[0],
+      "The stale Asset projection is required.",
+    ).freshness = "stale";
+    const rendered = renderWithLocale(
+      <ToolingAcceptanceAssetWorkspace
+        assetProjectionDataSource={{
+          loadAssetProjections: () => Promise.resolve(stale),
+        }}
+        dataSource={dataSource()}
+        master={master()}
+        projectId={ids.project}
+      />,
+      "en",
+      `/projects/${ids.project}/tooling/${ids.master}`,
+    );
+    expect(
+      await screen.findByText("Formal Asset value withheld"),
+    ).toBeVisible();
+    expect(screen.getByText("Stale observation")).toBeVisible();
+    expect(screen.queryByText("ASSET-00042")).not.toBeInTheDocument();
+
+    const conflict = structuredClone(toolAssetProjectionCollection());
+    required(
+      conflict.items[0],
+      "The conflicted Asset projection is required.",
+    ).disposition = "conflicted";
+    rendered.unmount();
+    const conflictRender = renderWithLocale(
+      <ToolingAcceptanceAssetWorkspace
+        assetProjectionDataSource={{
+          loadAssetProjections: () => Promise.resolve(conflict),
+        }}
+        dataSource={dataSource()}
+        master={master()}
+        projectId={ids.project}
+      />,
+      "en",
+      `/projects/${ids.project}/tooling/${ids.master}`,
+    );
+    expect(await screen.findByText("Conflicted observation")).toBeVisible();
+    expect(screen.queryByText("ASSET-00042")).not.toBeInTheDocument();
+
+    const redacted = {
+      ...toolAssetProjectionCollection(),
+      accessState: "redacted" as const,
+      reasonCode: "projection_access_redacted" as const,
+      permissions: {
+        view: false,
+        edit: false as const,
+        refresh: false as const,
+      },
+      items: [],
+    };
+    conflictRender.unmount();
+    renderWithLocale(
+      <ToolingAcceptanceAssetWorkspace
+        assetProjectionDataSource={{
+          loadAssetProjections: () => Promise.resolve(redacted),
+        }}
+        dataSource={dataSource()}
+        master={master()}
+        projectId={ids.project}
+      />,
+      "en",
+      `/projects/${ids.project}/tooling/${ids.master}`,
+    );
+    expect(
+      await screen.findByText(
+        "ERPNext Asset projection access is not available.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByText("ASSET-00042")).not.toBeInTheDocument();
   });
 
   it("retries an acceptance workspace transport failure", async () => {

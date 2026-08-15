@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  confirmedToolAssetProjection,
+  LiveToolingAcceptanceAssetDataSource,
+} from "../../src/api/tooling-acceptance-asset-data-source";
+import {
   isCreateToolAssetRequestCommand,
   isCreateToolingAcceptanceEvidenceRevisionCommand,
   isToolAssetRequest,
@@ -15,8 +19,14 @@ import {
   assetRequest,
   assetRequestCollection,
   assetRequestCommand,
+  toolAssetProjectionCollection,
   toolingAcceptanceIds as ids,
 } from "../support/tooling-acceptance-fixture";
+
+function required<T>(value: T | undefined, message: string): T {
+  if (value === undefined) throw new Error(message);
+  return value;
+}
 
 function governedResponse(value: unknown, init?: RequestInit): Response {
   const headers = new Headers(init?.headers);
@@ -37,6 +47,42 @@ afterEach(() => {
 });
 
 describe("Tooling acceptance and Asset live data source", () => {
+  it("delegates the governed Asset kind and confirms only exact current truth", async () => {
+    const collection = toolAssetProjectionCollection();
+    const loadProjectProjections = vi.fn(() => Promise.resolve(collection));
+    const source = new LiveToolingAcceptanceAssetDataSource({
+      loadProjectProjections,
+    });
+    const signal = new AbortController().signal;
+
+    await expect(
+      source.loadAssetProjections(ids.project, signal),
+    ).resolves.toBe(collection);
+    expect(loadProjectProjections).toHaveBeenCalledWith(
+      ids.project,
+      signal,
+      "tool_asset_status",
+    );
+    const item = required(collection.items[0], "The Asset item is required.");
+    expect(confirmedToolAssetProjection(item)).toMatchObject({
+      values: { formalAssetId: "ASSET-00042" },
+    });
+
+    const stale = structuredClone(item);
+    stale.freshness = "stale";
+    expect(confirmedToolAssetProjection(stale)).toBeNull();
+
+    const conflicted = structuredClone(item);
+    conflicted.disposition = "conflicted";
+    expect(confirmedToolAssetProjection(conflicted)).toBeNull();
+
+    const mismatched = structuredClone(item);
+    if (!mismatched.currentTruth)
+      throw new Error("The Asset current truth is required.");
+    mismatched.currentTruth.payloadHash = "f".repeat(64);
+    expect(confirmedToolAssetProjection(mismatched)).toBeNull();
+  });
+
   it("accepts only exact unavailable ERP projection and separated Mock truth", () => {
     expect(isToolingAcceptanceAssetContext(acceptanceContext())).toBe(true);
     expect(isToolAssetRequestCollection(assetRequestCollection())).toBe(true);

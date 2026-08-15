@@ -1,4 +1,5 @@
 import {
+  act,
   screen,
   waitFor,
   within,
@@ -18,6 +19,7 @@ import type {
 import type { Locale } from "../../src/i18n/runtime";
 import { ProjectGovernanceWorkspace } from "../../src/pages/project-governance-workspace";
 import {
+  erpProjectionCollectionFixture,
   projectActivityFixture,
   projectControlIds,
   projectControlsFixture,
@@ -26,6 +28,11 @@ import {
 import { renderWithLocale } from "../support/render";
 
 const csrfToken = "project-controls-csrf-token-fixture-0001";
+
+function required<T>(value: T | undefined, message: string): T {
+  if (value === undefined) throw new Error(message);
+  return value;
+}
 
 function enableCommandSession(): void {
   const fetchMock = vi.fn<typeof fetch>(() =>
@@ -79,6 +86,7 @@ function createDataSource(
     createLearning: () => Promise.resolve(learningItemFixture()),
     loadActivity: () => Promise.resolve(projectActivityFixture()),
     loadControls: () => Promise.resolve(projectControlsFixture()),
+    loadErpProjections: () => Promise.resolve(erpProjectionCollectionFixture()),
     loadLearning: () => Promise.resolve(projectLearningFixture()),
     transition: () => Promise.resolve(projectControlsFixture()),
     ...overrides,
@@ -193,6 +201,158 @@ describe("Project governance workspace", () => {
     );
     expect(call[2].signal).toBeInstanceOf(AbortSignal);
     expect(onProjectChanged).toHaveBeenCalledWith(updated.project);
+  });
+
+  it("renders all governed ERP projection kinds and inspects confirmed values read only", async () => {
+    const user = userEvent.setup();
+    renderWorkspace(createDataSource(), "controls");
+
+    const heading = await screen.findByRole("heading", {
+      name: "ERPNext governed projections",
+    });
+    const panel = heading.closest("section");
+    if (!panel) throw new Error("The ERP projection panel is required.");
+    const projection = within(panel);
+    expect(projection.getByText("Mobility Customer")).toBeVisible();
+    expect(
+      projection.getByText(
+        "ERPNext owns these formal values. NPI One displays validated observations and never edits or refreshes them here.",
+      ),
+    ).toBeVisible();
+    expect(projection.getAllByRole("radio")).toHaveLength(7);
+
+    await user.click(
+      projection.getByRole("radio", { name: "Inspect Tool Asset status" }),
+    );
+    expect(projection.getByText("ASSET-00042")).toBeVisible();
+    expect(projection.getByText("Plant A / Tooling Bay 3")).toBeVisible();
+    expect(projection.getByText("No, read only")).toBeVisible();
+    expect(
+      projection.queryByRole("button", { name: /edit|refresh/iu }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("withholds stale, unavailable, synthetic and conflicted projection values", async () => {
+    const states = erpProjectionCollectionFixture();
+    required(states.items[0], "The stale projection is required.").freshness =
+      "stale";
+    const unavailable = required(
+      states.items[1],
+      "The unavailable projection is required.",
+    );
+    unavailable.availability = "unavailable";
+    unavailable.freshness = "unknown";
+    unavailable.disposition = "unavailable_current";
+    unavailable.sourceVersion = null;
+    unavailable.sourceModifiedAt = null;
+    unavailable.unavailableReasonCode = "not_observed";
+    unavailable.values = null;
+    unavailable.currentTruth = null;
+    const synthetic = required(
+      states.items[2],
+      "The synthetic projection is required.",
+    );
+    synthetic.availability = "synthetic";
+    synthetic.freshness = "unknown";
+    synthetic.disposition = "synthetic_retained";
+    required(
+      states.items[3],
+      "The conflicted projection is required.",
+    ).disposition = "conflicted";
+    renderWorkspace(
+      createDataSource({ loadErpProjections: () => Promise.resolve(states) }),
+      "controls",
+    );
+
+    const heading = await screen.findByRole("heading", {
+      name: "ERPNext governed projections",
+    });
+    const panel = heading.closest("section");
+    if (!panel) throw new Error("The ERP projection panel is required.");
+    const projection = within(panel);
+    expect(projection.getByText("Formal value withheld")).toBeVisible();
+    expect(projection.getAllByText("Stale").length).toBeGreaterThan(0);
+    expect(projection.queryByText("Mobility Customer")).not.toBeInTheDocument();
+    expect(projection.getByText("Unavailable observation")).toBeVisible();
+    expect(projection.getByText("Synthetic observation")).toBeVisible();
+    expect(projection.getByText("Conflicted observation")).toBeVisible();
+  });
+
+  it("keeps ERP projection loading, empty, redacted and retryable failure explicit", async () => {
+    let resolveProjection:
+      | ((value: ReturnType<typeof erpProjectionCollectionFixture>) => void)
+      | undefined;
+    const pending = new Promise<
+      ReturnType<typeof erpProjectionCollectionFixture>
+    >((resolve) => {
+      resolveProjection = resolve;
+    });
+    const rendered = renderWorkspace(
+      createDataSource({ loadErpProjections: () => pending }),
+      "controls",
+    );
+    expect(
+      await screen.findByLabelText("Loading ERP projections"),
+    ).toBeVisible();
+
+    act(() => {
+      resolveProjection?.({ ...erpProjectionCollectionFixture(), items: [] });
+    });
+    expect(
+      await screen.findByText(
+        "No ERP projection observations are available for this project.",
+      ),
+    ).toBeVisible();
+
+    const redacted = {
+      ...erpProjectionCollectionFixture(),
+      accessState: "redacted" as const,
+      reasonCode: "projection_access_redacted" as const,
+      permissions: {
+        view: false,
+        edit: false as const,
+        refresh: false as const,
+      },
+      items: [],
+    };
+    rendered.unmount();
+    const redactedRender = renderWorkspace(
+      createDataSource({
+        loadErpProjections: () => Promise.resolve(redacted),
+      }),
+      "controls",
+    );
+    expect(
+      await screen.findByText(
+        "No protected ERP projection values were displayed.",
+      ),
+    ).toBeVisible();
+
+    const failed = vi
+      .fn<ProjectControlsDataSource["loadErpProjections"]>()
+      .mockRejectedValueOnce(
+        new NpiTransportError("network", "request-projection", "request"),
+      )
+      .mockResolvedValueOnce({
+        ...erpProjectionCollectionFixture(),
+        items: [],
+      });
+    redactedRender.unmount();
+    renderWorkspace(
+      createDataSource({ loadErpProjections: failed }),
+      "controls",
+    );
+    expect(
+      await screen.findByText("ERP projection data could not be used safely"),
+    ).toBeVisible();
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "Retry" }));
+    expect(
+      await screen.findByText(
+        "No ERP projection observations are available for this project.",
+      ),
+    ).toBeVisible();
   });
 
   it("requires an explicit reason and recovery plan for a manual red assessment", async () => {
@@ -815,6 +975,32 @@ describe("Project governance workspace", () => {
       ).toBeVisible();
       expect(
         screen.queryByText("Control policy and authority"),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    [
+      "zh",
+      "ERPNext 受控投影",
+      "ERPNext 主责这些正式值。NPI One 在此仅显示已验证观察，绝不编辑或刷新这些值。",
+    ],
+    [
+      "zh-TW",
+      "ERPNext 受控投影",
+      "ERPNext 主責這些正式值。NPI One 在此僅顯示已驗證觀察，絕不編輯或重新整理這些值。",
+    ],
+  ] as const)(
+    "renders ERP projection ownership entirely from the %s catalog",
+    async (locale, heading, ownership) => {
+      renderWorkspace(createDataSource(), "controls", { locale });
+
+      expect(
+        await screen.findByRole("heading", { name: heading }),
+      ).toBeVisible();
+      expect(screen.getByText(ownership)).toBeVisible();
+      expect(
+        screen.queryByText("ERPNext governed projections"),
       ).not.toBeInTheDocument();
     },
   );

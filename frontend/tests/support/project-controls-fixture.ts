@@ -1,4 +1,11 @@
 import type {
+  ErpProjectionCollectionViewModel,
+  ErpProjectionItemViewModel,
+  ErpProjectionKind,
+  ErpProjectionScopeKind,
+  ErpProjectionValues,
+} from "../../src/api/erp-projections-data-source";
+import type {
   ProjectActivityPageViewModel,
   ProjectControlsViewModel,
   ProjectLearningPageViewModel,
@@ -21,6 +28,211 @@ export const projectControlIds = {
 
 const snapshotHash = "a".repeat(64);
 const fileHash = "b".repeat(64);
+
+const projectionIds = {
+  customer: "10000000-0000-4000-8000-000000000001",
+  engineeringItem: "10000000-0000-4000-8000-000000000002",
+  formalItem: "10000000-0000-4000-8000-000000000003",
+  quality: "10000000-0000-4000-8000-000000000004",
+  projectCost: "10000000-0000-4000-8000-000000000005",
+  supplier: "10000000-0000-4000-8000-000000000006",
+  toolingMaster: "10000000-0000-4000-8000-000000000007",
+  toolingSet: "10000000-0000-4000-8000-000000000008",
+  asset: "10000000-0000-4000-8000-000000000009",
+  toolingCost: "10000000-0000-4000-8000-00000000000a",
+} as const;
+
+function currentProjection(
+  observationGlobalId: string,
+  projectionKind: ErpProjectionKind,
+  scopeKind: ErpProjectionScopeKind,
+  scopeGlobalId: string,
+  sourceObjectType: string,
+  sourceObjectId: string,
+  values: ErpProjectionValues,
+  hashCharacter: string,
+): ErpProjectionItemViewModel {
+  const payloadHash = hashCharacter.repeat(64);
+  return {
+    observationGlobalId,
+    projectionKind,
+    scopeKind,
+    scopeGlobalId,
+    availability: "available",
+    freshness: "fresh",
+    disposition: "applied_current",
+    sourceSystem: "ERPNEXT",
+    sourceObjectType,
+    sourceObjectId,
+    sourceVersion: "erp-v1",
+    sourceModifiedAt: "2026-07-26T08:00:00Z",
+    receivedAt: "2026-07-26T08:05:00Z",
+    payloadHash,
+    unavailableReasonCode: null,
+    values,
+    currentTruth: {
+      observationGlobalId,
+      sourceVersion: "erp-v1",
+      sourceModifiedAt: "2026-07-26T08:00:00Z",
+      receivedAt: "2026-07-26T08:05:00Z",
+      payloadHash,
+      values,
+    },
+    editable: false,
+  };
+}
+
+export function erpProjectionCollectionFixture(): ErpProjectionCollectionViewModel {
+  const toolingCostValues = {
+    toolingMasterGlobalId: projectionIds.toolingMaster,
+    supplier: {
+      sourceObjectId: "SUP-ERP-001",
+      targetVersion: "supplier-v4",
+      supplierCode: "SUP-001",
+      supplierName: "Precision Tooling Supplier",
+    },
+    rows: [
+      {
+        toolingMasterGlobalId: projectionIds.toolingMaster,
+        sourceRowId: "PROC-COST-ROW-001",
+        sourceRowVersion: "cost-v3",
+        supplierSourceObjectId: "SUP-ERP-001",
+        purchaseOrderSourceId: "PO-26001",
+        purchaseReceiptSourceId: "PR-26001",
+        purchaseInvoiceSourceId: "PI-26001",
+        actualCostSourceId: "GL-26001",
+        costTypeCode: "ACTUAL",
+        postingDate: "2026-07-25",
+        currency: "CNY",
+        amount: "128000.50",
+      },
+    ],
+  } as const;
+  const items = [
+    currentProjection(
+      projectionIds.customer,
+      "customer_master",
+      "project",
+      projectControlIds.project,
+      "Customer",
+      "CUSTOMER-ERP-001",
+      {
+        code: "CUS-001",
+        displayName: "Mobility Customer",
+        enabled: true,
+        statusCode: "ACTIVE",
+      },
+      "1",
+    ),
+    currentProjection(
+      projectionIds.formalItem,
+      "formal_item_master",
+      "engineering_item",
+      projectionIds.engineeringItem,
+      "Item",
+      "ITEM-ERP-001",
+      {
+        itemCode: "ITEM-001",
+        stockUom: "EA",
+        enabled: true,
+        statusCode: "ACTIVE",
+      },
+      "2",
+    ),
+    currentProjection(
+      projectionIds.quality,
+      "formal_quality_status",
+      "project",
+      projectControlIds.project,
+      "FormalQualityStatus",
+      "QI-ERP-001",
+      {
+        recordKind: "quality_inspection",
+        statusCode: "COMPLETED",
+        resultCode: "ACCEPTED",
+        observedAt: "2026-07-26T07:30:00Z",
+      },
+      "3",
+    ),
+    currentProjection(
+      projectionIds.projectCost,
+      "project_cost",
+      "project",
+      projectControlIds.project,
+      "ProjectCost",
+      "PROJECT-COST-ERP-001",
+      {
+        rows: [
+          {
+            rowKind: "actual_cost",
+            sourceRowId: "PROJECT-COST-ROW-001",
+            sourceRowVersion: "row-v2",
+            postingDate: "2026-07-24",
+            currency: "CNY",
+            amount: "43000",
+            hours: null,
+          },
+        ],
+      },
+      "4",
+    ),
+    currentProjection(
+      projectionIds.supplier,
+      "supplier_master",
+      "tooling_master",
+      projectionIds.toolingMaster,
+      "Supplier",
+      "SUPPLIER-ERP-001",
+      {
+        code: "SUP-001",
+        displayName: "Precision Tooling Supplier",
+        enabled: true,
+        statusCode: "APPROVED",
+      },
+      "5",
+    ),
+    currentProjection(
+      projectionIds.asset,
+      "tool_asset_status",
+      "tooling_set",
+      projectionIds.toolingSet,
+      "Asset",
+      "ASSET-ERP-001",
+      {
+        toolingSetGlobalId: projectionIds.toolingSet,
+        mappingVersion: 2,
+        formalAssetId: "ASSET-00042",
+        targetVersion: "asset-v7",
+        assetState: "IN_SERVICE",
+        currentLocation: "Plant A / Tooling Bay 3",
+        shotCount: 18250,
+        expectedLifeShots: 500000,
+        maintenanceDue: "2026-09-30",
+        movements: [],
+        repairs: [],
+        spares: [],
+      },
+      "6",
+    ),
+    currentProjection(
+      projectionIds.toolingCost,
+      "tooling_procurement_cost",
+      "tooling_master",
+      projectionIds.toolingMaster,
+      "ToolingProcurementCost",
+      "TOOL-COST-ERP-001",
+      toolingCostValues,
+      "7",
+    ),
+  ];
+  return {
+    projectGlobalId: projectControlIds.project,
+    accessState: "available",
+    reasonCode: null,
+    permissions: { view: true, edit: false, refresh: false },
+    items,
+  };
+}
 
 export function projectControlsFixture(): ProjectControlsViewModel {
   return {

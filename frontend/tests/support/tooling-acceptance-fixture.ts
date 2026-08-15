@@ -1,3 +1,4 @@
+import type { ErpProjectionCollectionViewModel } from "../../src/api/erp-projections-data-source";
 import {
   TOOL_ASSET_MOCK_ACKNOWLEDGEMENT,
   toolingAcceptanceCategories,
@@ -217,5 +218,85 @@ export function assetRequestCollection(): ToolAssetRequestCollectionViewModel {
     items: [assetRequest()],
     projectGlobalId: toolingAcceptanceIds.project,
     toolingMasterGlobalId: toolingAcceptanceIds.master,
+  };
+}
+
+export function toolAssetProjectionCollection(): ErpProjectionCollectionViewModel {
+  const values = {
+    toolingSetGlobalId: toolingAcceptanceIds.set,
+    mappingVersion: 2,
+    formalAssetId: "ASSET-00042",
+    targetVersion: "asset-v7",
+    assetState: "IN_SERVICE",
+    currentLocation: "Plant A / Tooling Bay 3",
+    shotCount: 18_250,
+    expectedLifeShots: 500_000,
+    maintenanceDue: "2026-09-30",
+    movements: [
+      {
+        globalId: "90000000-0000-4000-8000-000000000001",
+        actionKind: "move",
+        fromLocation: "Toolroom",
+        toLocation: "Tooling Bay 3",
+        occurredAt: "2026-08-08T08:00:00Z",
+        sourceObjectId: "ASSET-MOVE-001",
+      },
+    ],
+    repairs: [
+      {
+        globalId: "90000000-0000-4000-8000-000000000002",
+        summary: "Replaced worn guide pin",
+        downtimeHours: "2.5",
+        completedAt: "2026-08-07T11:00:00Z",
+        sourceObjectId: "ASSET-REPAIR-001",
+      },
+    ],
+    spares: [
+      {
+        formalItemId: "SPARE-001",
+        description: "Guide pin",
+        stockOnHand: "4",
+        minimumStock: "2",
+        unit: "EA",
+        supplierId: "SUP-001",
+      },
+    ],
+  } as const;
+  const observationGlobalId = "90000000-0000-4000-8000-000000000003";
+  const payloadHash = toolingAcceptanceHash("9");
+  return {
+    projectGlobalId: toolingAcceptanceIds.project,
+    accessState: "available",
+    reasonCode: null,
+    permissions: { view: true, edit: false, refresh: false },
+    items: [
+      {
+        observationGlobalId,
+        projectionKind: "tool_asset_status",
+        scopeKind: "tooling_set",
+        scopeGlobalId: toolingAcceptanceIds.set,
+        availability: "available",
+        freshness: "fresh",
+        disposition: "applied_current",
+        sourceSystem: "ERPNEXT",
+        sourceObjectType: "Asset",
+        sourceObjectId: "ASSET-ERP-001",
+        sourceVersion: "asset-v7",
+        sourceModifiedAt: "2026-08-08T08:30:00Z",
+        receivedAt: "2026-08-08T08:35:00Z",
+        payloadHash,
+        unavailableReasonCode: null,
+        values,
+        currentTruth: {
+          observationGlobalId,
+          sourceVersion: "asset-v7",
+          sourceModifiedAt: "2026-08-08T08:30:00Z",
+          receivedAt: "2026-08-08T08:35:00Z",
+          payloadHash,
+          values,
+        },
+        editable: false,
+      },
+    ],
   };
 }
