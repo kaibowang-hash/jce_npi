@@ -194,18 +194,25 @@ class LocalFrappeRuntimeSafetyTest(unittest.TestCase):
         )
         for marker in (
             "base64.urlsafe_b64encode(secrets.token_bytes(32))",
-            'set-config encryption_key "${runtime_encryption_key}"',
+            'set-config -- encryption_key "${runtime_encryption_key}"',
             "unset runtime_encryption_key",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, initializer)
         self.assertLess(
             initializer.index("run_site_guard database"),
-            initializer.index('set-config encryption_key "${runtime_encryption_key}"'),
+            initializer.index(
+                'set-config -- encryption_key "${runtime_encryption_key}"'
+            ),
         )
         self.assertLess(
-            initializer.index('set-config encryption_key "${runtime_encryption_key}"'),
+            initializer.index(
+                'set-config -- encryption_key "${runtime_encryption_key}"'
+            ),
             initializer.index('set-config npi_tenant_id "${tenant_id}"'),
+        )
+        self.assertNotIn(
+            'set-config encryption_key "${runtime_encryption_key}"', initializer
         )
         final_live_guard = initializer.rindex("run_site_guard live")
         self.assertGreater(final_live_guard, initializer.index("install-app"))

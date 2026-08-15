@@ -201,7 +201,7 @@ if [[ "${site_created}" == true ]]; then
     "${bench_path}/env/bin/python" -c \
       'import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii"))'
   )"
-  run_bench --site "${site_name}" set-config encryption_key "${runtime_encryption_key}"
+  run_bench --site "${site_name}" set-config -- encryption_key "${runtime_encryption_key}"
   unset runtime_encryption_key
 else
   # The strict configuration anchor above is followed by a live identity probe
