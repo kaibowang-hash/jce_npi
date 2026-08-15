@@ -3416,3 +3416,43 @@ repeat or rewrite it merely to restore context. See
   Level 3 remains `31392474781` at
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no Hard Blocker and no
   user action is required.
+
+## 2026-08-15 P7-08 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint `300bc167fbe2912a5a7fac7e31c86f025521749e`
+  passes ordinary pull-request CI `31891796533`: repository `95029057330`
+  proves `1,921` tracked Python tests and repository/reconciliation checks;
+  frontend `95029057344` proves `59/59` files, `918/918` unit tests, `408/408`
+  non-visual E2E, `7,457` complete direct English/`zh`/`zh-TW` sources,
+  coverage `80.35%/80.28%/82.94%/83.02%` and zero vulnerabilities; secret
+  scan `95029057296` proves the `28`-commit first-parent range and `485`-commit
+  branch history contain no leak; visual `95029057308` passes the unchanged
+  `115/115` fixed-Linux matrix.
+- Visual artifact `9248783301` has digest
+  `sha256:8c9e1354c6348e521a58b5b15bffc93f3ffa16ccfa1b7ae99bf6e0c7a27ca11d`;
+  Gitleaks artifact `9248733354` has digest
+  `sha256:50089cf62f05bb1279079634a7845bba9a68a04d388ac8d969c891ee3c63e5f1`.
+  Controlled jobs skip as required because checkpoint 1 changes no route,
+  runtime fixture, backend contract or persisted product truth.
+- The reviewed scan primitive trims and length/control-checks input, matches
+  exactly one reference already present in the authorized workspace, requires
+  separate review and apply, invalidates changed input, rechecks the current
+  reference set on apply and never submits a BFF command. Unknown, ambiguous,
+  unavailable and applied-without-command truth are explicit and directly
+  translated. The desktop-engineering handoff is mobile-only, square, dense
+  and retains the same authorized workspace context.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-08-primitives-checkpoint.md`. This is
+  checkpoint 1 PASS, not P7-08 Level 2 or Phase 7 Level 3.
+- Standing continuous-delivery authority activates only checkpoint 2: a
+  focused phone/tablet Trial summary, the existing camera-facing attachment
+  selector over the unchanged bounded private pending upload and exact clean
+  bind commands, reviewed cavity apply into the existing filter/open quality
+  editor, the unchanged issue impact-review/submit command and explicit
+  desktop handoff for enumerated complex engineering tables.
+- Gate integration, automatic scan submission, camera decoding, raw private
+  File URLs, mobile-only authority, API/Schema/permission/business changes,
+  offline/native behavior, production ERPNext/external traffic and Phase 8
+  remain inactive. No user action is required; the latest complete Level 3
+  remains workflow `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.

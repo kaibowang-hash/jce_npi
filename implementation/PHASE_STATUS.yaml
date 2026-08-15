@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-15T14:29:07Z'
+updated_at: '2026-08-15T15:18:04Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-08
-current_task_status: IN_PROGRESS_CHECKPOINT_1
-current_task_completed_stage: P7_08_AUDIT_PASS
-current_task_next_stage: P7_08_REVIEWED_FIELD_PRIMITIVES
+current_task_status: IN_PROGRESS_CHECKPOINT_2
+current_task_completed_stage: P7_08_REVIEWED_FIELD_PRIMITIVES_PASS
+current_task_next_stage: P7_08_LIVE_TRIAL_FIELD_ACTIONS
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-08
-resumed_product_task_status: ACTIVE_CHECKPOINT_1
+resumed_product_task_status: ACTIVE_CHECKPOINT_2
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1907,7 +1907,7 @@ p7_07:
 p7_08:
   task: P7-08
   controller_task: P7-08_MOBILE_FIELD_ACTIONS
-  status: IN_PROGRESS_CHECKPOINT_1
+  status: IN_PROGRESS_CHECKPOINT_2
   phase: 7
   milestone: M6-08
   requirements:
@@ -1916,9 +1916,19 @@ p7_08:
   starting_controller_checkpoint: eee737f1eef1937c6a515586850a9ea62e68686a
   audit: PASS
   audit_plan: implementation/evidence/phase-7/p7-08-plan.md
-  current_stage: REVIEWED_FIELD_PRIMITIVES_AND_RESPONSIVE_POLICY
-  next_stage_after_pass: LIVE_TRIAL_FIELD_ACTIONS
-  product_code_changed: false
+  checkpoint_1_product_checkpoint: 300bc167fbe2912a5a7fac7e31c86f025521749e
+  checkpoint_1_ordinary_ci: 31891796533
+  checkpoint_1_repository_job: 95029057330
+  checkpoint_1_frontend_job: 95029057344
+  checkpoint_1_secret_job: 95029057296
+  checkpoint_1_visual_job: 95029057308
+  checkpoint_1_visual_artifact: 9248783301
+  checkpoint_1_visual_digest: sha256:8c9e1354c6348e521a58b5b15bffc93f3ffa16ccfa1b7ae99bf6e0c7a27ca11d
+  checkpoint_1_gitleaks_artifact: 9248733354
+  checkpoint_1_gitleaks_digest: sha256:50089cf62f05bb1279079634a7845bba9a68a04d388ac8d969c891ee3c63e5f1
+  current_stage: LIVE_TRIAL_FIELD_ACTIONS
+  next_stage_after_pass: LIVE_GATE_FIELD_REVIEW_AND_FINAL_PHASE_GATE
+  product_code_changed: true
   external_holds:
     - MOBILE_ONLY_AUTHORITY_ROLE_PERMISSION_STATUS_APPROVAL_GATE_OR_TRIAL_COMMAND
     - OFFLINE_SYNC_BACKGROUND_QUEUE_NATIVE_APPLICATION_AND_DEVICE_MANAGEMENT
@@ -1927,6 +1937,7 @@ p7_08:
   evidence:
     - implementation/evidence/phase-7/p7-07-validation.md
     - implementation/evidence/phase-7/p7-08-plan.md
+    - implementation/evidence/phase-7/p7-08-primitives-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

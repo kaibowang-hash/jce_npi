@@ -2,13 +2,16 @@
 
 Recorded: `2026-08-15`
 
-Status: `FROZEN — AUDIT PASS; CHECKPOINT 1 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZED`
 
 Starting controller checkpoint:
 `eee737f1eef1937c6a515586850a9ea62e68686a`
 
 Retained predecessor product checkpoint:
 `dda9c13a6c3b499347cb96c830de2a034fa61203`
+
+Checkpoint 1 product checkpoint:
+`300bc167fbe2912a5a7fac7e31c86f025521749e`
 
 Primary requirement: `UX-020`
 

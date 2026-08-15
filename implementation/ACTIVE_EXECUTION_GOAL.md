@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T14:29:07Z`
+Updated: `2026-08-15T15:18:04Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P7-08`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-08`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `dda9c13a6c3b499347cb96c830de2a034fa61203` (pushed; P7-07
-  `PASS_LEVEL_2`)
+  `300bc167fbe2912a5a7fac7e31c86f025521749e` (pushed; P7-08
+  `CHECKPOINT_1_PASS`)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -43,17 +43,20 @@ Updated: `2026-08-15T14:29:07Z`
 - P7-08 audit starting controller:
   `eee737f1eef1937c6a515586850a9ea62e68686a` (`AUDIT PASS`;
   ordinary CI `31889082835` exact-SHA PASS; controlled lanes expected skipped)
+- P7-08 checkpoint 1 product checkpoint:
+  `300bc167fbe2912a5a7fac7e31c86f025521749e` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31891796533` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P7-08 — Mobile field actions` (`IN_PROGRESS_CHECKPOINT_1`)
-- Resumed product task: `P7-08` (`ACTIVE_CHECKPOINT_1`)
+  `P7-08 — Mobile field actions` (`IN_PROGRESS_CHECKPOINT_2`)
+- Resumed product task: `P7-08` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-08 CHECKPOINT 1`)
+  (`IN_PROGRESS — P7-08 CHECKPOINT 2`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 
@@ -71,14 +74,22 @@ replay/conflict/rollback/IDOR, redaction, zero downstream effects and cleanup.
 Complete evidence is
 `implementation/evidence/phase-7/p7-07-validation.md`.
 
-The bounded P7-08 audit passes at starting controller `eee737f`; ordinary CI
-`31889082835` passes repository, frontend with `408/408` E2E, secret scan and
-`115/115` fixed-Linux visuals. The frozen plan is
-`implementation/evidence/phase-7/p7-08-plan.md`. The only active atomic scope
-is checkpoint 1: one reviewed exact-reference scan primitive, one honest
-desktop-engineering handoff and their square dense responsive/i18n/unit
-policy. It changes no API, schema, permission, business transition or runtime
-truth. Mobile grants no new authority; automatic scan submission, offline or
+P7-08 checkpoint 1 passes at exact product checkpoint `300bc16`; ordinary CI
+`31891796533` passes `1,921` tracked Python tests, `918/918` frontend unit,
+`408/408` non-visual E2E, `7,457` complete direct trilingual sources, both
+secret boundaries and `115/115` fixed-Linux visuals. The reviewed scan
+primitive exact-matches only authorized references, separates review from
+apply, invalidates changed input and never submits a command. Complete
+evidence is
+`implementation/evidence/phase-7/p7-08-primitives-checkpoint.md`.
+
+The only active atomic scope is checkpoint 2: integrate the existing live
+Trial workspace on phone/tablet with an exact field summary, camera-facing
+photo selection over the unchanged private pending upload and clean bind
+commands, reviewed cavity apply into the filter/open issue editor, and an
+explicit desktop handoff for enumerated complex engineering tables. No API,
+schema, permission, business transition, Gate integration or runtime truth
+changes. Mobile grants no new authority; automatic scan submission, offline or
 native behavior, production ERPNext/external effects and Phase 8 remain
 inactive. The latest complete Level 3 remains workflow `31392474781` at exact
 SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`. There is no Hard Blocker.

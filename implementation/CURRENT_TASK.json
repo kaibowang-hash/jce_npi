@@ -3,7 +3,7 @@
   "task_id": "P7-08",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_CHECKPOINT_1",
+  "status": "IN_PROGRESS_CHECKPOINT_2",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-00",
   "base_checkpoint": "dda9c13a6c3b499347cb96c830de2a034fa61203",
@@ -105,7 +105,7 @@
     "phase_status_resumed_product_task": "P7-08",
     "active_goal_marker": "P7-08",
     "next_action_marker": "P7-08",
-    "controller_marker": "P7-08 audit PASS; checkpoint 1 active"
+    "controller_marker": "P7-08 checkpoint 1 PASS; checkpoint 2 active"
   },
   "rollback": {
     "before_product_resume": "Restore the exact P7-07 final product checkpoint and retain its immutable Trial summary and controlled-output history; the frozen P7-08 audit plan and controller transition contain no product mutation.",
