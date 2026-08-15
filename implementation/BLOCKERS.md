@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-15T14:01:59Z`
+Updated: `2026-08-15T14:29:07Z`
 
 ## Active hard blockers
 
@@ -15,8 +15,9 @@ artifact `9247862817` has digest
 `sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
 its PASS payload hashes to
 `sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
-Only the P7-08 audit is active; no user action, login or frontend operation is
-required.
+P7-08 audit starting controller `eee737f` passes ordinary CI `31889082835`;
+checkpoint 1 is active under the frozen P7-08 plan. No user action, login or
+frontend operation is required.
 
 ## Active recovery
 
@@ -24,10 +25,11 @@ None. The ordered delivery hold remains resolved and P7-07 is sealed
 `PASS_LEVEL_2`. Its nine failed controlled attempts remain diagnostic evidence,
 not PASS evidence; each failed closed, cleaned up, received only a bounded
 evidence-proved forward fix and was followed by a fresh exact-SHA ordinary and
-controlled attempt. Only the bounded P7-08 `UX-020` audit is active. Product
-code, mobile-only roles or transitions, raw private File URLs, automatic scan
-submission, offline/native behavior, production ERPNext/external effects and
-Phase 8 behavior remain inactive.
+controlled attempt. The bounded P7-08 `UX-020` audit passes and only reviewed
+field primitives/responsive policy checkpoint 1 is active. Live Trial/Gate
+integration, mobile-only roles or transitions, raw private File URLs,
+automatic scan submission, offline/native behavior, production ERPNext/
+external effects and Phase 8 behavior remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

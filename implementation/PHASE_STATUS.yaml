@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-15T14:01:59Z'
+updated_at: '2026-08-15T14:29:07Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-08
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P7_07_LEVEL_2_PASS
-current_task_next_stage: P7_08_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P7_08_AUDIT_PASS
+current_task_next_stage: P7_08_REVIEWED_FIELD_PRIMITIVES
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-08
-resumed_product_task_status: ACTIVE_AUDIT_ONLY
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1907,15 +1907,17 @@ p7_07:
 p7_08:
   task: P7-08
   controller_task: P7-08_MOBILE_FIELD_ACTIONS
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 7
   milestone: M6-08
   requirements:
     - UX-020
   predecessor_product_checkpoint: dda9c13a6c3b499347cb96c830de2a034fa61203
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  starting_controller_checkpoint: eee737f1eef1937c6a515586850a9ea62e68686a
+  audit: PASS
+  audit_plan: implementation/evidence/phase-7/p7-08-plan.md
+  current_stage: REVIEWED_FIELD_PRIMITIVES_AND_RESPONSIVE_POLICY
+  next_stage_after_pass: LIVE_TRIAL_FIELD_ACTIONS
   product_code_changed: false
   external_holds:
     - MOBILE_ONLY_AUTHORITY_ROLE_PERMISSION_STATUS_APPROVAL_GATE_OR_TRIAL_COMMAND
@@ -1924,6 +1926,7 @@ p7_08:
     - PRODUCTION_ERPNEXT_EXTERNAL_NETWORK_AND_OUTBOX_EXECUTION
   evidence:
     - implementation/evidence/phase-7/p7-07-validation.md
+    - implementation/evidence/phase-7/p7-08-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -3,7 +3,7 @@
   "task_id": "P7-08",
   "task_kind": "product",
   "phase": 7,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-00",
   "base_checkpoint": "dda9c13a6c3b499347cb96c830de2a034fa61203",
@@ -12,18 +12,18 @@
     "UX-020"
   ],
   "scope": [
-    "Audit the exact existing responsive Trial and Gate review surfaces, same-BFF capability checks, Project-first authority, private attachment flow, issue capture and scan-entry primitives before defining any P7-08 product change.",
-    "Freeze a mobile field-action boundary in which phone and tablet layouts may prepare only actions already authorized by the same desktop BFF command, permission, CSRF, optimistic-conflict, audit and idempotency contracts.",
-    "Freeze photo evidence as the existing bounded private upload and clean File Revision bind flow with explicit local, pending, clean, failed, permission-unavailable and retry states and no raw private File URL.",
-    "Freeze scan entry as constrained data-entry assistance with visible parsed values and explicit user review before an existing command; scanning never creates authority, bypasses validation or silently submits.",
-    "Keep complex engineering comparison, parameter, dimension, source-manifest and controlled-output tables desktop-only while providing an honest mobile summary and deliberate desktop handoff.",
-    "Define the minimum complete vertical slice, ownership, responsive breakpoints, accessibility, trilingual coverage, affected tests, migration impact, rollback and final Phase 7 Level 3 boundary before product code."
+    "Deliver the frozen frontend-only P7-08 slice without changing backend routes, schemas, permissions, ownership or business state machines.",
+    "Add reviewed exact-reference scan entry that accepts device or manual text, matches only already-authorized workspace cavity references, separates review from apply and never submits a command automatically.",
+    "Expose phone and tablet Trial issue capture and photo evidence through the existing Project-first quality, bounded private upload and exact clean File Revision bind commands with unchanged CSRF, idempotency, conflict, audit and response validation.",
+    "Expose phone and tablet Gate review and decision only when the same existing server-returned action is authorized, using the unchanged Gate command coordinator, impact review, receipt, retry and conflict paths.",
+    "Keep enumerated complex engineering comparison, parameter, dimension, source-manifest, baseline-impact and controlled-output tables on desktop while mobile retains exact identity, version, blocker, permission, scan and held-authority summaries plus a deliberate same-link desktop handoff.",
+    "Complete three direct locales, phone/tablet keyboard-touch-zoom accessibility, affected fixed-Linux visuals, Level 2 and the final Phase 7 Level 3 release gate before activating P8-00."
   ],
   "non_scope": [
-    "Product implementation before the P7-08 Requirement/domain/existing-capability audit and frozen plan pass.",
     "Any new mobile-only role, permission, status transition, approval, Gate decision, Trial conclusion, upload bypass, raw File URL, offline sync, background queue, native application, device management or production integration authority.",
     "Rendering complex engineering tables as compressed or horizontally unusable phone controls, or hiding critical blockers, exact versions, conflicts, held authority or unavailable external truth to fit a small screen.",
     "Automatic submission from camera, barcode or QR input; caller-supplied actor, tenant, Project authority, immutable source hash, audit identity, external result or translated enum.",
+    "Camera barcode or QR decoding, external scanner dependencies, service workers, background upload, push notification, biometric or signature semantics.",
     "Phase 8 ERPNext integration, generic DocType CRUD, Frappe or ERPNext core patches, production ERPNext access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
@@ -42,6 +42,17 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".github/workflows/ci.yml",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "frontend/src/components/mobile-field-actions.tsx",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/gate-evidence-page.tsx",
+    "frontend/src/pages/live-trial-page.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts",
+    "frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts-snapshots/*",
+    "frontend/tests/unit/mobile-field-actions.test.tsx",
     "implementation/ACTIVE_EXECUTION_GOAL.md",
     "implementation/AUTOPILOT_CONTROLLER.md",
     "implementation/BLOCKERS.md",
@@ -51,6 +62,7 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
+    "implementation/phase-7-gate.md",
     "implementation/phase-7-requirement-anchor.md",
     "implementation/evidence/phase-7/p7-07-plan.md",
     "implementation/evidence/phase-7/p7-07-validation.md",
@@ -63,6 +75,9 @@
   ],
   "affected_checks": {
     "level_1": [
+      ["npm", "--prefix", "frontend", "exec", "vitest", "--", "run", "tests/unit/mobile-field-actions.test.tsx"],
+      ["npm", "--prefix", "frontend", "run", "typecheck"],
+      ["npm", "--prefix", "frontend", "run", "lint"],
       ["python", "scripts/verify_current_task.py"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
@@ -90,10 +105,10 @@
     "phase_status_resumed_product_task": "P7-08",
     "active_goal_marker": "P7-08",
     "next_action_marker": "P7-08",
-    "controller_marker": "P7-07 Level 2 PASS; P7-08 audit active"
+    "controller_marker": "P7-08 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore the exact P7-07 final product checkpoint and retain its immutable Trial summary and controlled-output history; the P7-08 audit and controller transition contain no product mutation.",
+    "before_product_resume": "Restore the exact P7-07 final product checkpoint and retain its immutable Trial summary and controlled-output history; the frozen P7-08 audit plan and controller transition contain no product mutation.",
     "after_product_resume": "Disable only the independent P7-08 mobile entry surfaces and deliver a reviewed forward repair while preserving every existing Project, Gate, Trial, issue, attachment, receipt, audit and immutable source record."
   }
 }

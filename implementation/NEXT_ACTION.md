@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P7-08`
+`IN_PROGRESS_CHECKPOINT_1 — P7-08`
 
-Recovery time: `2026-08-15T14:01:59Z`
+Recovery time: `2026-08-15T14:29:07Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -62,6 +62,9 @@ P7-07 checkpoint 3 product checkpoint:
 P7-07 Level 2 final product checkpoint and P7-08 audit base:
 `dda9c13a6c3b499347cb96c830de2a034fa61203`
 
+P7-08 audit starting controller:
+`eee737f1eef1937c6a515586850a9ea62e68686a`
+
 ## Current authoritative action
 
 P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
@@ -83,15 +86,18 @@ migrations, rollback, redaction, zero downstream effects and cleanup pass.
 Complete evidence is
 `implementation/evidence/phase-7/p7-07-validation.md`.
 
-Execute only the bounded P7-08 Requirement/domain/existing-capability audit
-for `UX-020`. Inspect existing responsive Trial/Gate review, shared BFF
-capabilities, private attachment/photo flow, issue capture and scan primitives;
-freeze authority, viewport, accessibility, trilingual, test, migration and
-rollback boundaries in `implementation/evidence/phase-7/p7-08-plan.md` before
-product implementation. Mobile must grant no new authority; complex
-engineering tables remain desktop. Do not activate offline sync, native app,
-automatic scan submission, production ERPNext/external traffic or Phase 8
-behavior. The latest complete Level 3 remains `31392474781` at `22cb24d`.
+The bounded P7-08 audit passes at starting controller `eee737f`; exact-SHA
+ordinary CI `31889082835` passes every ordinary lane and `115/115` visuals.
+Follow the frozen `implementation/evidence/phase-7/p7-08-plan.md`. Execute only
+checkpoint 1: add the local reviewed exact-reference scan entry and honest
+desktop-engineering handoff, plus focused unit, accessibility, i18n and square
+dense responsive styles. Review and apply must remain separate, input changes
+must invalidate a prior review, and neither path may submit a BFF command.
+Do not change API/schema/permission/business truth or activate live Trial/Gate
+integration until checkpoint 1 and its exact-SHA ordinary CI pass. Mobile-only
+authority, raw File URLs, automatic scan submission, offline/native behavior,
+production ERPNext/external traffic and Phase 8 remain inactive. The latest
+complete Level 3 remains `31392474781` at `22cb24d`.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,
