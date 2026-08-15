@@ -1608,9 +1608,17 @@ def validate_conclusion_successor(
             _("Select the exact current Trial conclusion revision and transition."),
         )
     if successor.state is not TrialConclusionRevisionState.SUBMITTED:
+        if (
+            successor.trial_round_optimistic_version
+            != predecessor.trial_round_optimistic_version + 1
+            or successor.trial_round_snapshot_hash
+            == predecessor.trial_round_snapshot_hash
+        ):
+            raise _problem(
+                "trialRoundOptimisticVersion",
+                _("Select the exact current Trial conclusion revision and transition."),
+            )
         stable = (
-            "trial_round_optimistic_version",
-            "trial_round_snapshot_hash",
             "conclusion_code",
             "policy_revision",
             "comparison_snapshot",

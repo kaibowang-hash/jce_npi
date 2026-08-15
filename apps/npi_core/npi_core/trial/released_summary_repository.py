@@ -333,8 +333,6 @@ class FrappeReleasedTrialSummaryRepository(FrappeTrialReviewRepository):
         if target is None or any(
             (
                 target is not comparison.sources[-1],
-                target.trial_round_optimistic_version != trial_round.optimistic_version,
-                target.trial_round_snapshot_hash != trial_round.snapshot_hash,
                 target.trial_plan_revision.global_id
                 != trial_round.trial_plan_revision_global_id,
                 target.trial_plan_revision.snapshot_hash

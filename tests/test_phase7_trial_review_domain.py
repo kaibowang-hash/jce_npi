@@ -600,6 +600,10 @@ class Phase7TrialReviewDomainTest(unittest.TestCase):
         approved = replace(
             submitted,
             global_id=uid(460),
+            trial_round_optimistic_version=(
+                submitted.trial_round_optimistic_version + 1
+            ),
+            trial_round_snapshot_hash="e" * 64,
             conclusion_version=2,
             predecessor_global_id=submitted.global_id,
             predecessor_snapshot_hash=submitted.snapshot_hash,
@@ -615,14 +619,13 @@ class Phase7TrialReviewDomainTest(unittest.TestCase):
         )
         validate_conclusion_successor(submitted, approved)
         validate_conclusion_sources(policy(), snapshot, (review,), approved)
-        drifted = replace(
+        stale_round = replace(
             approved,
             global_id=uid(461),
             conclusion_version=3,
             predecessor_global_id=approved.global_id,
             predecessor_snapshot_hash=approved.snapshot_hash,
             state=TrialConclusionRevisionState.REOPENED,
-            trial_round_snapshot_hash="f" * 64,
             summary_input=build_one_page_summary_input(
                 snapshot,
                 (review,),
@@ -632,7 +635,23 @@ class Phase7TrialReviewDomainTest(unittest.TestCase):
             snapshot_hash="",
         )
         with self.assertRaises(RequestValidationFailed):
-            validate_conclusion_successor(approved, drifted)
+            validate_conclusion_successor(approved, stale_round)
+        reopened = replace(
+            stale_round,
+            trial_round_optimistic_version=(
+                approved.trial_round_optimistic_version + 1
+            ),
+            trial_round_snapshot_hash="f" * 64,
+            snapshot_hash="",
+        )
+        validate_conclusion_successor(approved, reopened)
+        drifted_sources = replace(
+            reopened,
+            proposed_next_work=("Replace the frozen submitted work.",),
+            snapshot_hash="",
+        )
+        with self.assertRaises(RequestValidationFailed):
+            validate_conclusion_successor(approved, drifted_sources)
 
     def test_closed_snapshot_rejects_tampered_derived_or_external_truth(self) -> None:
         snapshot = comparison()

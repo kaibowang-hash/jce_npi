@@ -202,8 +202,8 @@ class Phase7ReleasedTrialSummaryRepositoryTest(unittest.TestCase):
         )
         target = SimpleNamespace(
             trial_round_global_id=ROUND,
-            trial_round_optimistic_version=7,
-            trial_round_snapshot_hash="2" * 64,
+            trial_round_optimistic_version=5,
+            trial_round_snapshot_hash="1" * 64,
             trial_plan_revision=exact(101, "1"),
             input_lock_revision=exact(102, "3"),
             actual_revision=exact(103, "4"),

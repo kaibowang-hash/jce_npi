@@ -312,6 +312,96 @@ class Phase7TrialReviewValidationTest(unittest.TestCase):
             self.assertIsInstance(captured[fieldname], str)
             self.assertEqual(json.loads(captured[fieldname]), expected_value)
 
+    def test_decision_successor_binds_the_transactional_round_tip(self) -> None:
+        repository = object.__new__(self.repository.FrappeTrialReviewRepository)
+        repository.actor = "reviewer@example.invalid"
+        repository.request_id = ROUND_2
+        repository.trace_id = "trace-p7-07-decision-round"
+        project = types.SimpleNamespace()
+        document = types.SimpleNamespace()
+        current_round = types.SimpleNamespace(
+            optimistic_version=11,
+            snapshot_hash="b" * 64,
+        )
+        successor_round = types.SimpleNamespace(
+            optimistic_version=12,
+            snapshot_hash="c" * 64,
+        )
+        predecessor = types.SimpleNamespace(
+            global_id=UUID(REVISION),
+            conclusion_global_id=UUID(STABLE),
+            tenant_id="TENANT-A",
+            project_global_id=UUID(PROJECT),
+            trial_round_global_id=UUID(ROUND),
+            trial_round_optimistic_version=current_round.optimistic_version,
+            trial_round_snapshot_hash=current_round.snapshot_hash,
+            conclusion_version=7,
+            snapshot_hash=SHA,
+            state=self.review_domain.TrialConclusionRevisionState.SUBMITTED,
+            conclusion_code=types.SimpleNamespace(value="pass"),
+            policy_revision=types.SimpleNamespace(),
+            comparison_snapshot=types.SimpleNamespace(),
+            review_references=(),
+            blockers=(),
+            summary_input={},
+            proposed_next_work=("Verify the exact decision.",),
+            proposed_gate_effect="Proposal only.",
+            proposed_npi_effect="Proposal only.",
+        )
+        captured: dict[str, object] = {}
+        repository._review_command_start = lambda *_args: (project, None, SHA)
+        repository._exact_review_context_from_values = (
+            lambda *_args: (document, current_round, types.SimpleNamespace())
+        )
+        repository._exact_conclusion_revision = lambda *_args: predecessor
+        repository._conclusion_chain = lambda *_args: (predecessor,)
+
+        def persist(*_args, **kwargs):
+            captured["target"] = kwargs["target"]
+            return kwargs["target"]
+
+        repository._persist_review_command = persist
+        values = {
+            "expected_conclusion_revision_id": predecessor.global_id,
+            "expected_conclusion_revision_snapshot_hash": predecessor.snapshot_hash,
+            "expected_conclusion_version": predecessor.conclusion_version,
+            "reason": "Approve the exact submitted Trial conclusion.",
+        }
+
+        with (
+            patch.object(
+                self.repository,
+                "transition_trial_round",
+                return_value=(successor_round, types.SimpleNamespace()),
+            ),
+            patch.object(
+                self.repository,
+                "TrialConclusionRevision",
+                side_effect=lambda **kwargs: types.SimpleNamespace(**kwargs),
+            ),
+            patch.object(self.repository, "validate_conclusion_successor"),
+        ):
+            repository._transition_conclusion(
+                UUID(PROJECT),
+                UUID(ROUND),
+                predecessor.conclusion_global_id,
+                idempotency_key_hash=SHA,
+                operation="trial_conclusion.decide",
+                capability=self.review_domain.TrialConclusionCapability.DECIDE,
+                requested_state=self.review_domain.TrialConclusionRevisionState.APPROVED,
+                expected_round_states={self.repository.TrialRoundState.SUBMITTED},
+                values=values,
+            )
+
+        target = captured["target"]
+        self.assertEqual(
+            target.trial_round_optimistic_version,
+            successor_round.optimistic_version,
+        )
+        self.assertEqual(target.trial_round_snapshot_hash, successor_round.snapshot_hash)
+        self.assertIs(target.comparison_snapshot, predecessor.comparison_snapshot)
+        self.assertIs(target.policy_revision, predecessor.policy_revision)
+
 
 if __name__ == "__main__":
     unittest.main()

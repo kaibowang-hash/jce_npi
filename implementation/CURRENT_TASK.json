@@ -53,6 +53,8 @@
     "apps/npi_core/npi_core/bff.py",
     "apps/npi_core/npi_core/controlled_print/source_registry.py",
     "apps/npi_core/npi_core/released_summary_api.py",
+    "apps/npi_core/npi_core/trial/review_domain.py",
+    "apps/npi_core/npi_core/trial/review_repository.py",
     "apps/npi_core/npi_core/trial/released_summary_*.py",
     "apps/npi_core/npi_core/npi_core/doctype/npi_released_trial_summary_revision/*",
     "apps/npi_core/npi_core/npi_core/doctype/npi_trial_command_idempotency/npi_trial_command_idempotency.json",
@@ -99,11 +101,13 @@
     "tests/test_phase7_released_trial_summary_metadata.py",
     "tests/test_phase7_released_trial_summary_repository.py",
     "tests/test_phase7_released_trial_summary_runtime_verifier.py",
+    "tests/test_phase7_trial_review_domain.py",
+    "tests/test_phase7_trial_review_repository.py",
     "tests/test_phase7_trial_metadata.py"
   ],
   "affected_checks": {
     "level_1": [
-      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_domain", "tests.test_phase7_released_trial_summary_metadata", "tests.test_phase7_released_trial_summary_contract", "-v"],
+      ["python", "-m", "unittest", "tests.test_phase7_released_trial_summary_domain", "tests.test_phase7_released_trial_summary_metadata", "tests.test_phase7_released_trial_summary_contract", "tests.test_phase7_trial_review_domain", "tests.test_phase7_trial_review_repository", "-v"],
       ["python", "scripts/verify_current_task.py"],
       ["git", "diff", "--check"]
     ],
