@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P8-01`
+`IN_PROGRESS_CHECKPOINT_2 — P8-01`
 
-Recovery time: `2026-08-16T02:30:00Z`
+Recovery time: `2026-08-16T03:24:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -92,6 +92,15 @@ P8-01 audit/controller checkpoint:
 P8-01 audit ordinary CI:
 `31902540587`
 
+P8-01 checkpoint 1 implementation commit:
+`4e4308aedac96c10a498c2b599055c2ecd2ce21a`
+
+P8-01 checkpoint 1 final checkpoint:
+`6d88175582ac09fdc3ef542f1443e5213cb9a6d6`
+
+P8-01 checkpoint 1 ordinary CI:
+`31905949549`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -116,24 +125,27 @@ Gitleaks artifact `9251237713` has digest
 `sha256:73a6d5203457ecadea0c7673392e56292f707652a2eb81e0281e702c4f44e820`.
 Complete evidence is `implementation/evidence/phase-8/p8-00-validation.md`.
 
-Exact audit/controller SHA `046dba1` passes ordinary CI `31902540587`:
-repository `95055380476` proves `1,923` tracked Python tests; frontend
-`95055380547`, secret `95055380583` and unchanged `119/119` fixed-Linux
-visual `95055380454` all pass. Controlled lanes correctly skip. Visual
-artifact `9251521099` has digest
-`sha256:a899c710200b41814e4e7ad4efdf39cda3320461af54b4f58502ac8f1f7d5d34`;
-Gitleaks artifact `9251475066` has digest
-`sha256:94acc3acc31b6f786b3e91da514df2acc811c7dbcb60350f86f1d7e8119adaf0`.
+P8-01 checkpoint 1 passes at exact final checkpoint `6d88175`. Ordinary CI
+`31905949549` passes repository `95063650353` (`1,940` tracked Python),
+frontend `95063650577` (`59/59` files, `918/918` unit, `421/421` E2E,
+`7,552` complete direct trilingual sources, coverage
+`80.33%/80.18%/82.81%/82.98%` and zero vulnerabilities), secret
+`95063650349` and unchanged `119/119` fixed-Linux visual `95063650319`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
 
-The P8-01 audit is PASS and its exact plan is frozen at
-`implementation/evidence/phase-8/p8-01-plan.md`. Execute only checkpoint 1:
-add the pure seven-kind Customer/Supplier/formal-Item/Tooling-cost/Project-
-cost/formal-quality/Tool-Asset observation domains, closed event/OpenAPI/
-ownership contracts, fail-closed Mock/sandbox configuration and two guarded
-additive observation/head DocTypes with focused tests. Do not activate a BFF
-route, repository writer, scheduler, business row, UI, signed webhook,
-target write/execution, retry/replay/reconciliation, Trial Summary event or
-JCE Core display. Production ERPNext remains prohibited.
+Follow the frozen `implementation/evidence/phase-8/p8-01-plan.md`. Execute
+only checkpoint 2: resolve and authorize the exact tenant/Project before every
+secondary scope/source identity; add seven named no-generic-CRUD reader seams;
+persist immutable observations and one locked guarded head atomically; retain
+exact replay, hash conflict, reorder, unavailable and restart truth; expose a
+bounded Project-first read-only BFF collection; and inject only confirmed exact
+current snapshots into the existing Tooling cost and Asset readers. Mock and
+synthetic never become available business truth. The sandbox seam has no live
+field mapper and sends no network request. Do not add checkpoint 3 UI, a
+public webhook, target write, retry/DLQ/replay/reconciliation operations,
+Trial Summary event or JCE Core display. Production ERPNext/JCE remains
+prohibited.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

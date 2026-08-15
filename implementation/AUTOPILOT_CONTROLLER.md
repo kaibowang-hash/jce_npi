@@ -3600,3 +3600,45 @@ repeat or rewrite it merely to restore context. See
   production freshness/EAC/quality policies and production ERPNext/JCE
   endpoint, credential, data and traffic remain inactive. Missing sandbox and
   customization facts remain scoped holds, not a global Hard Blocker.
+
+## 2026-08-16 P8-01 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact final checkpoint `6d88175582ac09fdc3ef542f1443e5213cb9a6d6`
+  passes ordinary pull-request CI `31905949549`: repository `95063650353`
+  proves `1,940` tracked Python tests and repository/reconciliation checks;
+  frontend `95063650577` proves `59/59` files, `918/918` unit tests, `421/421`
+  E2E, `7,552` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.33%/80.18%/82.81%/82.98%` and zero vulnerabilities; secret
+  `95063650349` scans `27` first-parent task commits and `496` complete branch
+  commits with no leak; visual `95063650319` passes the unchanged `119/119`
+  fixed-Linux matrix.
+- Visual artifact `9252381948` has digest
+  `sha256:996165540f1bba9e503dab7f1203521dbe8576a514097ae9ea7767aec8f20d5b`;
+  Gitleaks artifact `9252339236` has digest
+  `sha256:fc27bac3e8065516e539f7d8746e4ff7bfb5a2f0a7d552113baaad95df9762f7`.
+  Controlled jobs skip as required because checkpoint 1 activates no route,
+  repository worker, runtime fixture, business row or external transport.
+- Implementation commit `4e4308a` adds exactly seven operation-specific pure
+  projection contracts, canonical hashes, conflict-safe modified-time ordering,
+  unknown-without-policy freshness, fail-closed Mock/synthetic/sandbox
+  configuration, closed event/OpenAPI/ownership contracts, two guarded
+  additive support DocTypes and direct Simplified/Traditional translations.
+  It creates no generic target query, live mapper, production configuration or
+  network call.
+- Diagnostic CI `31905640883` passed repository, secret and `119/119` visual
+  but correctly rejected a stale generated React catalog. Repair checkpoint
+  `6d88175` expands unapproved `ERP` in both Chinese translations and
+  regenerates the Frappe-backed catalog; the fresh complete CI passes without
+  changing feature behavior, test criteria or checkpoint scope. Complete
+  evidence is
+  `implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
+- This is checkpoint 1 PASS, not P8-01 Level 2 or Phase 8 Level 3. Standing
+  authority activates only checkpoint 2: exact Project/context-first scope
+  enumeration, seven named reader seams, immutable-observation/locked-head
+  transaction, replay/conflict/reorder/restart handling, bounded internal
+  refresh, read-only Project BFF and exact Tooling cost/Asset reader injection.
+- Checkpoint 3 UI, P8-02 signed webhook/Inbox, all target writes, generic
+  retry/DLQ/replay/reconciliation operations, Trial Summary/JCE Core behavior,
+  live ERP mapper and production ERPNext/JCE endpoint, credential, data and
+  traffic remain inactive. No user action is required and there is no Hard
+  Blocker.

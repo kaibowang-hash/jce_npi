@@ -1,25 +1,25 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T02:30:00Z`
+Updated: `2026-08-16T03:24:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-01`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P8-01`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `31114021cf18cf5e32c22902de5150ed2922e7ba` (pushed; P7-08
-  `LEVEL_2_PASS` and Phase 7 `LEVEL_3_PASS`)
+  `6d88175582ac09fdc3ef542f1443e5213cb9a6d6` (pushed; P8-01
+  `CHECKPOINT_1_PASS`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
   `31899480493` (`PASS — LEVEL 3` at `31114021cf18cf5e32c22902de5150ed2922e7ba`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
-- Latest evidence-only exact-SHA CI:
-  `31902540587` (`PASS` at
-  `046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6`; P8-01 audit transition)
+- Latest checkpoint exact-SHA CI:
+  `31905949549` (`PASS` at
+  `6d88175582ac09fdc3ef542f1443e5213cb9a6d6`; P8-01 checkpoint 1)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -50,18 +50,21 @@ Updated: `2026-08-16T02:30:00Z`
 - P7-08 checkpoint 2 final checkpoint:
   `290c66fe3e2e5c53058b5253b844c6332902f189` (`CHECKPOINT 2 PASS`;
   ordinary CI `31894667043` exact-SHA PASS; controlled lanes expected skipped)
+- P8-01 checkpoint 1 final checkpoint:
+  `6d88175582ac09fdc3ef542f1443e5213cb9a6d6` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31905949549` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-01 — read-only master and status projections`
-  (`IN_PROGRESS_CHECKPOINT_1`)
-- Resumed product task: `P8-01` (`ACTIVE_CHECKPOINT_1`)
+  (`IN_PROGRESS_CHECKPOINT_2`)
+- Resumed product task: `P8-01` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-01 CHECKPOINT 1`)
+  (`IN_PROGRESS — P8-01 CHECKPOINT 2`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -95,13 +98,22 @@ unchanged `119/119` fixed-Linux visual `95055380454` all pass. Controlled
 lanes correctly skip. The bounded audit is frozen in
 `implementation/evidence/phase-8/p8-01-plan.md`.
 
-The only active atomic scope is checkpoint 1: pure seven-kind projection
-domains, operation-specific event/OpenAPI/ownership contracts, fail-closed
-Mock/sandbox configuration and two guarded additive observation/head
-DocTypes. No route, repository write, scheduler, business row, UI or external
-call is active in checkpoint 1. P8-02 through P8-09 remain inactive.
-Production ERPNext/JCE endpoints, credentials, data and network contact remain
-prohibited. There is no Hard Blocker.
+P8-01 checkpoint 1 passes at exact final checkpoint `6d88175`. Ordinary CI
+`31905949549` passes repository `95063650353` (`1,940` tracked Python tests),
+frontend `95063650577` (`918/918` unit, `421/421` E2E, `7,552` direct
+trilingual sources, coverage thresholds and zero vulnerabilities), secret
+`95063650349` and unchanged `119/119` fixed-Linux visual `95063650319`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
+
+The only active atomic scope is checkpoint 2: Project/context-first scope
+resolution, seven named reader seams, durable immutable observation and
+guarded-head transaction, exact replay/conflict/restart behavior, bounded
+internal refresh, Project-first read-only BFF and exact existing Tooling cost/
+Asset reader injection. The worker has no production configuration and sends
+no live network request. Checkpoint 3 UI, P8-02 through P8-09, and production
+ERPNext/JCE endpoints, credentials, data and traffic remain inactive. There is
+no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

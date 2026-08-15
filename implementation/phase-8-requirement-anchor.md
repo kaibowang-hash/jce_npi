@@ -292,8 +292,13 @@ P8-00 is documentation/trace work only and passes its exact-SHA ordinary CI
 and Level 2 validation. The bounded P8-01 requirement/domain/existing-
 capability audit also passes at exact controller SHA `046dba1` and ordinary CI
 `31902540587`; its frozen plan is
-`implementation/evidence/phase-8/p8-01-plan.md`. Standing delivery authority
-now activates only P8-01 checkpoint 1 pure domains, closed contracts,
-fail-closed configuration and guarded additive metadata. No route, repository
-write, scheduler, business row, UI or external adapter call is authorized
-before that checkpoint passes its exact-SHA ordinary CI.
+`implementation/evidence/phase-8/p8-01-plan.md`. P8-01 checkpoint 1 passes at
+exact final checkpoint `6d88175` and ordinary CI `31905949549`; complete
+evidence is
+`implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md`.
+Standing delivery authority now activates only P8-01 checkpoint 2: exact
+Project-first scope resolution, seven named adapter reader seams, durable
+observation/head transactions, bounded internal refresh, a Project-first
+read-only BFF collection and injected Tooling cost/Asset readers. No
+checkpoint 3 UI, public webhook, target write, retry/DLQ/replay/reconciliation
+operation or production ERPNext/JCE contact is authorized.
