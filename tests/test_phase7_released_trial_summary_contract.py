@@ -17,7 +17,7 @@ def schema(name: str) -> str:
 
 
 class Phase7ReleasedTrialSummaryContractTest(unittest.TestCase):
-    def test_checkpoint_one_schemas_are_closed_without_activating_routes(self) -> None:
+    def test_checkpoint_two_schemas_and_exact_routes_are_closed(self) -> None:
         names = (
             "ReleasedTrialSummarySourceReference",
             "ReleasedTrialSummaryFact",
@@ -32,8 +32,25 @@ class Phase7ReleasedTrialSummaryContractTest(unittest.TestCase):
         for name in names:
             with self.subTest(name=name):
                 self.assertIn("additionalProperties: false", schema(name))
+        for name in (
+            "ReleasedTrialSummaryWorkspace",
+            "ReleasedTrialSummaryPermissions",
+            "ReleasedTrialSummaryControlledOutput",
+            "ReleasedTrialSummaryAuthorityHolds",
+        ):
+            self.assertIn("additionalProperties: false", schema(name))
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("released-trial-summaries", paths)
+        self.assertEqual(paths.count("released-trial-summaries:"), 1)
+        self.assertEqual(paths.count("released-trial-summaries/{summaryId}:revise:"), 1)
+        for marker in (
+            "operationId: getReleasedTrialSummaries",
+            "operationId: retainReleasedTrialSummary",
+            "operationId: reviseReleasedTrialSummary",
+            "x-audit-operation: released_trial_summary.retain",
+            "x-audit-operation: released_trial_summary.revise",
+            "technical-system-manager-only-no-formal-release-authority",
+        ):
+            self.assertIn(marker, paths)
 
     def test_revision_contract_is_append_only_exact_source_and_decided_only(self) -> None:
         revision = schema("ReleasedTrialSummaryRevision")

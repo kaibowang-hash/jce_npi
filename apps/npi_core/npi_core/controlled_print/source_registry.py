@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -17,6 +18,7 @@ from npi_core.controlled_print.domain import (
     freeze_controlled_print_source,
     sha256_json,
 )
+from npi_core.foundation.errors import RequestValidationFailed
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,7 +88,7 @@ class ControlledPrintSourceAdapter(Protocol):
 
 
 class ControlledPrintSourceRegistry:
-    """Immutable source-adapter registry with no production adapter by default."""
+    """Immutable closed source-adapter registry."""
 
     def __init__(
         self,
@@ -140,6 +142,96 @@ class ControlledPrintSourceRegistry:
 
 _DISPOSABLE_RUNTIME_MARKER = "npi-one-local-runtime-disposable-v1"
 _DISPOSABLE_RUNTIME_SOURCE_KIND = "npi.synthetic_runtime_project"
+_RELEASED_TRIAL_SUMMARY_SOURCE_KIND = "released_trial_summary"
+
+
+class _ReleasedTrialSummarySourceAdapter:
+    """Resolve one exact retained summary revision without refreshing Trial truth."""
+
+    source_object_type = _RELEASED_TRIAL_SUMMARY_SOURCE_KIND
+
+    def resolve_exact(
+        self,
+        *,
+        project_global_id: UUID,
+        source_global_id: UUID,
+    ) -> ResolvedControlledPrintSource | None:
+        import frappe
+
+        # Project authorization remains upstream; resolution is still Project-first
+        # so a secondary source identity cannot disclose cross-Project existence.
+        try:
+            project = frappe.get_doc(
+                "NPI Engineering Project",
+                str(project_global_id),
+            )
+        except frappe.DoesNotExistError:
+            return None
+        if str(project.global_id) != str(project_global_id):
+            return None
+        try:
+            document = frappe.get_doc(
+                "NPI Released Trial Summary Revision",
+                str(source_global_id),
+            )
+        except frappe.DoesNotExistError:
+            return None
+        from npi_core.trial.released_summary_domain import (
+            released_trial_summary_from_snapshot,
+        )
+
+        try:
+            raw_snapshot = document.summary_snapshot
+            if isinstance(raw_snapshot, str):
+                raw_snapshot = json.loads(raw_snapshot)
+            if not isinstance(raw_snapshot, Mapping):
+                return None
+            value = released_trial_summary_from_snapshot(raw_snapshot)
+        except (json.JSONDecodeError, RequestValidationFailed, TypeError, ValueError):
+            return None
+        try:
+            persisted_summary_version = int(document.summary_version)
+        except (TypeError, ValueError):
+            return None
+        if any(
+            (
+                str(document.global_id) != str(source_global_id),
+                value.global_id != source_global_id,
+                value.project_global_id != project_global_id,
+                value.tenant_id != str(project.tenant_id),
+                str(document.project_global_id) != str(project_global_id),
+                str(document.tenant_id) != str(project.tenant_id),
+                persisted_summary_version != value.summary_version,
+                value.snapshot_hash != str(document.snapshot_hash),
+                value.presentation_projection_hash
+                != str(document.presentation_projection_hash),
+            )
+        ):
+            return None
+        snapshot: dict[str, object] = {
+            "schemaVersion": "npi.released_trial_summary.controlled_print_source.v1",
+            "summaryRevision": {
+                "globalId": str(value.global_id),
+                "summaryGlobalId": str(value.summary_global_id),
+                "summaryVersion": value.summary_version,
+                "snapshotHash": value.snapshot_hash,
+                "presentationProjectionHash": value.presentation_projection_hash,
+            },
+            "presentationProjection": value.snapshot_payload()["presentationProjection"],
+        }
+        return ResolvedControlledPrintSource(
+            project_global_id=project_global_id,
+            project_type_key=str(project.project_type),
+            gate_key=None,
+            reference=ControlledPrintSourceReference(
+                source_object_type=self.source_object_type,
+                source_global_id=source_global_id,
+                source_version=value.summary_version,
+                source_state=value.conclusion_state.value,
+                source_snapshot_hash=sha256_json(snapshot),
+            ),
+            snapshot=snapshot,
+        )
 
 
 class _DisposableRuntimeProjectSourceAdapter:
@@ -221,12 +313,11 @@ def _disposable_runtime_source_global_id(project_global_id: UUID) -> UUID:
 
 
 def default_controlled_print_source_registry() -> ControlledPrintSourceRegistry:
-    """Return the closed registry, empty outside the exact disposable CI Site.
+    """Return closed server adapters without installing a print mapping."""
 
-    Exact production source adapters are added only with their approved domain form.
-    """
-
-    adapters: tuple[ControlledPrintSourceAdapter, ...] = ()
+    adapters: tuple[ControlledPrintSourceAdapter, ...] = (
+        _ReleasedTrialSummarySourceAdapter(),
+    )
     if _is_disposable_runtime_site():
-        adapters = (_DisposableRuntimeProjectSourceAdapter(),)
+        adapters = (*adapters, _DisposableRuntimeProjectSourceAdapter())
     return ControlledPrintSourceRegistry(adapters)

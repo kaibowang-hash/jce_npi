@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '6e609e96be27edf7';
+export const catalogVersion = '0a7697b2a978da74';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -6304,8 +6304,11 @@ export const catalogs = {
     "The release policy snapshot hash does not match its content.": "发布策略快照哈希与其内容不匹配。",
     "The released revision cannot be overwritten; a new revision is required.": "已发布修订版不可覆盖；必须创建新修订版。",
     "The Released Trial Summary derived hash does not match.": "已发布试模总结派生哈希不匹配。",
+    "The Released Trial Summary is unavailable.": "已发布试模总结不可用。",
     "The Released Trial Summary redaction rules cannot be changed.": "已发布试模总结脱敏规则不能更改。",
     "The Released Trial Summary snapshot hash does not match.": "已发布试模总结快照哈希不匹配。",
+    "The Released Trial Summary source was changed by another user.": "已发布试模总结来源已被其他用户更改。",
+    "The Released Trial Summary workspace is temporarily unavailable.": "已发布试模总结工作区暂时不可用。",
     "The released Trial version is immutable.": "已发布的试模版本不可更改。",
     "The reopen event records the authenticated authority, reason, prior decision, versions, input hash, and trace identity.": "重新打开事件会记录已认证的权限操作人、原因、先前决策、版本、输入哈希和跟踪标识。",
     "The request body is invalid.": "请求正文无效。",
@@ -6416,6 +6419,7 @@ export const catalogs = {
     "The successor revision, receipt, actor and exact source references are audited atomically.": "后续修订、收据、操作者和精确来源引用将以原子方式审计。",
     "The summary presentation contains a forbidden private locator.": "摘要呈现内容包含禁止的私有定位信息。",
     "The summary presentation contains a forbidden sensitive field.": "摘要呈现内容包含禁止的敏感字段。",
+    "The summary routes are disabled while a reviewed forward fix is applied.": "在应用经评审的前向修复期间，摘要路由已禁用。",
     "The summary source manifest contains duplicate truth.": "摘要来源清单包含重复事实。",
     "The summary source manifest is incomplete.": "摘要来源清单不完整。",
     "The supplier is waiting for your decision.": "供应商正在等待您的决策。",
@@ -13666,8 +13670,11 @@ export const catalogs = {
     "The release policy snapshot hash does not match its content.": "發布策略快照雜湊與其內容不符。",
     "The released revision cannot be overwritten; a new revision is required.": "已發布修訂版不可覆寫；必須建立新修訂版。",
     "The Released Trial Summary derived hash does not match.": "已發佈試模總結衍生雜湊不相符。",
+    "The Released Trial Summary is unavailable.": "已發佈試模總結無法使用。",
     "The Released Trial Summary redaction rules cannot be changed.": "已發佈試模總結去識別規則不能變更。",
     "The Released Trial Summary snapshot hash does not match.": "已發佈試模總結快照雜湊不相符。",
+    "The Released Trial Summary source was changed by another user.": "已發佈試模總結來源已由其他使用者變更。",
+    "The Released Trial Summary workspace is temporarily unavailable.": "已發佈試模總結工作區暫時無法使用。",
     "The released Trial version is immutable.": "已發佈的試模版本不可變更。",
     "The reopen event records the authenticated authority, reason, prior decision, versions, input hash, and trace identity.": "重新開啟事件會記錄已驗證身分的權責人、原因、先前決策、版本、輸入雜湊及追蹤識別。",
     "The request body is invalid.": "請求本文無效。",
@@ -13778,6 +13785,7 @@ export const catalogs = {
     "The successor revision, receipt, actor and exact source references are audited atomically.": "後續修訂、收據、操作者和精確來源參照將以不可分割方式稽核。",
     "The summary presentation contains a forbidden private locator.": "摘要呈現內容包含禁止的私有定位資訊。",
     "The summary presentation contains a forbidden sensitive field.": "摘要呈現內容包含禁止的敏感欄位。",
+    "The summary routes are disabled while a reviewed forward fix is applied.": "套用經評審的前向修正期間，摘要路由已停用。",
     "The summary source manifest contains duplicate truth.": "摘要來源清單包含重複事實。",
     "The summary source manifest is incomplete.": "摘要來源清單不完整。",
     "The supplier is waiting for your decision.": "供應商正在等待您的決策。",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import patch
 from dataclasses import dataclass
@@ -20,6 +21,10 @@ from npi_core.controlled_print.source_registry import (
     ResolvedControlledPrintSource,
     _disposable_runtime_source_global_id,
     default_controlled_print_source_registry,
+)
+from tests.test_phase7_released_trial_summary_domain import (
+    PROJECT as RELEASED_PROJECT_ID,
+    summary as released_summary,
 )
 
 
@@ -71,12 +76,12 @@ def source(
 
 
 class Phase5ControlledPrintSourceRegistryTest(unittest.TestCase):
-    def test_default_registry_has_no_enabled_source_or_production_fallback(
+    def test_default_registry_registers_exact_summary_without_mapping_fallback(
         self,
     ) -> None:
         registry = default_controlled_print_source_registry()
 
-        self.assertEqual(registry.source_object_types, ())
+        self.assertEqual(registry.source_object_types, ("released_trial_summary",))
         with self.assertRaises(ControlledPrintUnavailable):
             registry.resolve_exact(
                 project_global_id=PROJECT_ID,
@@ -89,11 +94,11 @@ class Phase5ControlledPrintSourceRegistryTest(unittest.TestCase):
         self,
     ) -> None:
         for marker, expected in (
-            (None, ()),
-            ("npi-one-local-runtime-disposable", ()),
+            (None, ("released_trial_summary",)),
+            ("npi-one-local-runtime-disposable", ("released_trial_summary",)),
             (
                 "npi-one-local-runtime-disposable-v1",
-                ("npi.synthetic_runtime_project",),
+                ("npi.synthetic_runtime_project", "released_trial_summary"),
             ),
         ):
             with self.subTest(marker=marker):
@@ -113,6 +118,89 @@ class Phase5ControlledPrintSourceRegistryTest(unittest.TestCase):
             source_id,
             _disposable_runtime_source_global_id(OTHER_PROJECT_ID),
         )
+
+    def test_released_summary_adapter_returns_only_exact_retained_projection(self) -> None:
+        value = replace(
+            released_summary(),
+            global_id=UUID("00000000-0000-4000-8000-000000000720"),
+            snapshot_hash="",
+        )
+        project = SimpleNamespace(
+            global_id=str(RELEASED_PROJECT_ID),
+            tenant_id="tenant-a",
+            project_type="new_tool",
+        )
+        document = SimpleNamespace(
+            global_id=str(value.global_id),
+            tenant_id="tenant-a",
+            project_global_id=str(RELEASED_PROJECT_ID),
+            summary_version=value.summary_version,
+            summary_snapshot=value.snapshot_payload()
+            | {"snapshotHash": value.snapshot_hash},
+            snapshot_hash=value.snapshot_hash,
+            presentation_projection_hash=value.presentation_projection_hash,
+        )
+
+        class Missing(Exception):
+            pass
+
+        def get_doc(doctype, name):
+            if doctype == "NPI Engineering Project" and name == str(RELEASED_PROJECT_ID):
+                return project
+            if (
+                doctype == "NPI Released Trial Summary Revision"
+                and name == str(value.global_id)
+            ):
+                return document
+            raise Missing()
+
+        frappe = SimpleNamespace(
+            conf={},
+            get_doc=get_doc,
+            DoesNotExistError=Missing,
+        )
+        with patch.dict("sys.modules", {"frappe": frappe}):
+            registry = default_controlled_print_source_registry()
+            resolved = registry.resolve_exact(
+                project_global_id=RELEASED_PROJECT_ID,
+                source_object_type="released_trial_summary",
+                source_global_id=value.global_id,
+                expected_source_version=value.summary_version,
+            )
+
+        self.assertEqual(resolved.reference.source_state, "approved")
+        self.assertEqual(
+            resolved.snapshot["summaryRevision"]["snapshotHash"],
+            value.snapshot_hash,
+        )
+        self.assertEqual(
+            sha256_json(resolved.snapshot["presentationProjection"]),
+            value.presentation_projection_hash,
+        )
+        self.assertNotIn("tenantId", resolved.snapshot)
+
+        document.snapshot_hash = "0" * 64
+        with patch.dict("sys.modules", {"frappe": frappe}), self.assertRaises(
+            ControlledPrintUnavailable
+        ):
+            default_controlled_print_source_registry().resolve_exact(
+                project_global_id=RELEASED_PROJECT_ID,
+                source_object_type="released_trial_summary",
+                source_global_id=value.global_id,
+                expected_source_version=value.summary_version,
+            )
+
+        document.snapshot_hash = value.snapshot_hash
+        document.summary_snapshot = "{not-json"
+        with patch.dict("sys.modules", {"frappe": frappe}), self.assertRaises(
+            ControlledPrintUnavailable
+        ):
+            default_controlled_print_source_registry().resolve_exact(
+                project_global_id=RELEASED_PROJECT_ID,
+                source_object_type="released_trial_summary",
+                source_global_id=value.global_id,
+                expected_source_version=value.summary_version,
+            )
 
     def test_exact_registered_source_resolves_and_snapshot_is_frozen(self) -> None:
         mutable = {

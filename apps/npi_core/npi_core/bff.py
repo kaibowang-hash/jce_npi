@@ -249,6 +249,15 @@ _PROJECT_TRIAL_REOPEN_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
     r"(?P<trial_round_id>[^/:]+):reopen$"
 )
+_PROJECT_RELEASED_TRIAL_SUMMARIES_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/released-trial-summaries$"
+)
+_PROJECT_RELEASED_TRIAL_SUMMARY_REVISE_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trial-rounds/"
+    r"(?P<trial_round_id>[^/:]+)/released-trial-summaries/"
+    r"(?P<summary_id>[^/:]+):revise$"
+)
 _PROJECT_TOOLING_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/tooling$"
 )
@@ -740,6 +749,10 @@ def route_request() -> None:
                 "npi_core.trial_api.get_trial_review_workspace",
             ),
             (
+                _PROJECT_RELEASED_TRIAL_SUMMARIES_ROUTE,
+                "npi_core.released_summary_api.get_released_trial_summaries",
+            ),
+            (
                 _PROJECT_READINESS_ROUTE,
                 "npi_core.readiness_api.get_project_readiness",
             ),
@@ -843,6 +856,14 @@ def route_request() -> None:
             (
                 _PROJECT_TRIAL_REOPEN_ROUTE,
                 "npi_core.trial_api.reopen_trial_conclusion",
+            ),
+            (
+                _PROJECT_RELEASED_TRIAL_SUMMARIES_ROUTE,
+                "npi_core.released_summary_api.retain_released_trial_summary",
+            ),
+            (
+                _PROJECT_RELEASED_TRIAL_SUMMARY_REVISE_ROUTE,
+                "npi_core.released_summary_api.revise_released_trial_summary",
             ),
             (
                 _READINESS_TEMPLATE_PUBLISH_ROUTE,
@@ -1511,6 +1532,9 @@ def route_request() -> None:
     if _p7_06_routes_disabled(command):
         command = "npi_core.production_transition_api.production_transition_routes_disabled"
         route_params = {}
+    if _p7_07_routes_disabled(command):
+        command = "npi_core.released_summary_api.released_trial_summary_routes_disabled"
+        route_params = {}
     frappe.local.form_dict.cmd = command or "npi_core.bff.route_not_found"
     frappe.flags.npi_bff_request = True
     frappe.flags.npi_route_params = route_params
@@ -2026,6 +2050,20 @@ def _p7_06_routes_disabled(command: str | None) -> bool:
     )
 
 
+def _p7_07_routes_disabled(command: str | None) -> bool:
+    configuration = getattr(frappe, "conf", None)
+    value = (
+        configuration.get("npi_p7_07_routes_disabled")
+        if hasattr(configuration, "get")
+        else None
+    )
+    return value is not False and command in {
+        "npi_core.released_summary_api.get_released_trial_summaries",
+        "npi_core.released_summary_api.retain_released_trial_summary",
+        "npi_core.released_summary_api.revise_released_trial_summary",
+    }
+
+
 def _p5_01_routes_disabled(command: str | None) -> bool:
     return document_routes_are_disabled() and (
         isinstance(command, str) and command.startswith("npi_core.document_api.")
@@ -2090,6 +2128,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "POST" and path == "/api/npi/v1/projects":
         return True
     if _is_p7_06_request(method, path):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_RELEASED_TRIAL_SUMMARIES_ROUTE.fullmatch(path) is not None
+        or _PROJECT_RELEASED_TRIAL_SUMMARY_REVISE_ROUTE.fullmatch(path) is not None
+    ):
         return True
     if method == "GET" and path == "/api/npi/v1/me/work":
         return True

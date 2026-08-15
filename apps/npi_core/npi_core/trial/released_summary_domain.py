@@ -10,7 +10,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from npi_core.controlled_print.domain import MAX_SOURCE_SNAPSHOT_BYTES
-from npi_core.foundation.errors import RequestValidationFailed
+from npi_core.foundation.errors import NpiProblem, RequestValidationFailed
 from npi_core.trial.domain import sha256_json
 from npi_core.trial.review_domain import (
     TrialConclusionCode,
@@ -47,6 +47,7 @@ class ReleasedTrialSummarySourceKind(StrEnum):
     TRIAL_ACTUAL_REVISION = "trial_actual_revision"
     TRIAL_SAMPLE_BATCH_REVISION = "trial_sample_batch_revision"
     TRIAL_CAVITY_RESULT_REVISION = "trial_cavity_result_revision"
+    TOOLING_DEFECT_REVISION = "tooling_defect_revision"
     TRIAL_DEFECT_REVISION = "trial_defect_revision"
     TRIAL_DEFECT_VERIFICATION_REVISION = "trial_defect_verification_revision"
     TRIAL_ROUND_COMPARISON_SNAPSHOT = "trial_round_comparison_snapshot"
@@ -63,6 +64,35 @@ class ReleasedTrialSummaryFactValueState(StrEnum):
     OPEN = "open"
     CLOSED = "closed"
     INFORMATIONAL = "informational"
+
+
+class ReleasedTrialSummaryUnavailable(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            404,
+            "RELEASED_TRIAL_SUMMARY_UNAVAILABLE",
+            _("The Released Trial Summary is unavailable."),
+        )
+
+
+class ReleasedTrialSummaryConflict(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "RELEASED_TRIAL_SUMMARY_CONFLICT",
+            _("The Released Trial Summary source was changed by another user."),
+        )
+
+
+class ReleasedTrialSummaryRoutesDisabled(NpiProblem):
+    def __init__(self) -> None:
+        super().__init__(
+            503,
+            "RELEASED_TRIAL_SUMMARY_ROUTES_DISABLED",
+            _("The Released Trial Summary workspace is temporarily unavailable."),
+            _("The summary routes are disabled while a reviewed forward fix is applied."),
+            retryable=True,
+        )
 
 
 _SOURCE_ORDER = {kind: index for index, kind in enumerate(ReleasedTrialSummarySourceKind)}

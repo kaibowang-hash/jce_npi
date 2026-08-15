@@ -152,4 +152,6 @@ def validate_released_summary_document(document: Any) -> None:
     document.presentation_projection = canonical_json(supplied["presentationProjection"])
     document.redaction_manifest = canonical_json(supplied["redactionManifest"])
     document.created_at = frappe_utc_datetime_text(value.created_at, _("Created At"))
-    document.summary_snapshot = canonical_json(value.snapshot_payload())
+    document.summary_snapshot = canonical_json(
+        value.snapshot_payload() | {"snapshotHash": value.snapshot_hash}
+    )

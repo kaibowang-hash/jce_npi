@@ -3672,6 +3672,64 @@ paths:
             schema: { $ref: "#/components/schemas/ReopenTrialConclusion" }
       responses: { "201": { $ref: "#/components/responses/TrialReviewCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
 
+  /projects/{projectId}/trial-rounds/{trialRoundId}/released-trial-summaries:
+    get:
+      tags: [Trials]
+      operationId: getReleasedTrialSummaries
+      description: Returns the bounded append-only summary history after Project-first authorization, including one unique current tip and explicit controlled-output and external-authority holds.
+      x-required-roles: [NPI API User]
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/RequestId"
+      responses: { "200": { $ref: "#/components/responses/ReleasedTrialSummaryResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+    post:
+      tags: [Trials]
+      operationId: retainReleasedTrialSummary
+      description: Atomically freezes the exact current approved or rejected conclusion and complete server-enumerated Trial source graph without granting release, signature, Gate or production authority.
+      x-required-roles: [System Manager]
+      x-business-authority: technical-system-manager-only-no-formal-release-authority
+      x-transaction-boundary: project-trial-round-summary-stream
+      x-audit-operation: released_trial_summary.retain
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RetainReleasedTrialSummary" }
+      responses: { "201": { $ref: "#/components/responses/ReleasedTrialSummaryCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
+  /projects/{projectId}/trial-rounds/{trialRoundId}/released-trial-summaries/{summaryId}:revise:
+    post:
+      tags: [Trials]
+      operationId: reviseReleasedTrialSummary
+      description: Appends an exact successor only for a later current decided conclusion while preserving every prior summary and controlled output.
+      x-required-roles: [System Manager]
+      x-business-authority: technical-system-manager-only-no-formal-release-authority
+      x-transaction-boundary: project-trial-round-summary-stream
+      x-audit-operation: released_trial_summary.revise
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/TrialRoundId"
+        - in: path
+          name: summaryId
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReviseReleasedTrialSummary" }
+      responses: { "201": { $ref: "#/components/responses/ReleasedTrialSummaryCommandResult" }, "400": { $ref: "#/components/responses/BadRequest" }, "401": { $ref: "#/components/responses/AuthenticationError" }, "403": { $ref: "#/components/responses/PermissionError" }, "404": { $ref: "#/components/responses/NotFoundError" }, "409": { $ref: "#/components/responses/ProjectConflict" }, "422": { $ref: "#/components/responses/ProjectValidationError" }, "500": { $ref: "#/components/responses/InternalError" }, "503": { $ref: "#/components/responses/ServiceUnavailable" }, default: { $ref: "#/components/responses/ProjectError" } }
+
   /projects/{projectId}/eboms/{ebomId}/revisions/{revisionId}/publish-requests:
     get:
       tags: [Execution]
@@ -7315,6 +7373,39 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/TrialReviewWorkspace" }
+    ReleasedTrialSummaryResult:
+      description: Authorized exact Released Trial Summary history and current tip
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReleasedTrialSummaryWorkspace" }
+    ReleasedTrialSummaryCommandResult:
+      description: Exact Released Trial Summary workspace after one atomic command or safe actor-bound replay
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ReleasedTrialSummaryWorkspace" }
     TrialEvidenceContentResult:
       description: Audited exact private evidence bytes; never a redirect or stable URL
       headers:
@@ -18899,6 +18990,67 @@ components:
         traceId: { type: string, minLength: 1, maxLength: 256 }
         versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
         snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    ReleasedTrialSummaryCurrentConclusion:
+      type: object
+      additionalProperties: false
+      required: [globalId, conclusionVersion, snapshotHash, state, conclusionCode]
+      properties:
+        globalId: { type: string, format: uuid }
+        conclusionVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        state: { type: string, enum: [approved, rejected] }
+        conclusionCode: { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+    ReleasedTrialSummaryPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, retain, revise, requiresExactRound, requiresExactConclusion, requiresExactPredecessor]
+      properties:
+        view: { type: boolean, const: true }
+        retain: { type: boolean }
+        revise: { type: boolean }
+        requiresExactRound: { type: boolean, const: true }
+        requiresExactConclusion: { type: boolean, const: true }
+        requiresExactPredecessor: { type: boolean, const: true }
+    ReleasedTrialSummaryControlledOutput:
+      type: object
+      additionalProperties: false
+      required: [sourceObjectType, sourceGlobalId, sourceVersion, mapping]
+      properties:
+        sourceObjectType: { type: string, const: released_trial_summary }
+        sourceGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        sourceVersion:
+          oneOf: [{ type: integer, minimum: 1 }, { type: "null" }]
+        mapping: { type: string, const: unavailable }
+    ReleasedTrialSummaryAuthorityHolds:
+      type: object
+      additionalProperties: false
+      required: [formalRelease, customerApproval, signature, productionAcceptance, gateDecision, externalProjection]
+      properties:
+        formalRelease: { type: string, const: unavailable }
+        customerApproval: { type: string, const: unavailable }
+        signature: { type: string, const: unavailable }
+        productionAcceptance: { type: string, const: unavailable }
+        gateDecision: { type: string, const: unavailable }
+        externalProjection: { type: string, const: unavailable }
+    ReleasedTrialSummaryWorkspace:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, trialRound, summaryRevisions, currentSummaryRevisionGlobalId, currentDecidedConclusion, permissions, controlledOutput, holds]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        trialRound: { $ref: "#/components/schemas/TrialRoundSummary" }
+        summaryRevisions:
+          type: array
+          maxItems: 10000
+          items: { $ref: "#/components/schemas/ReleasedTrialSummaryRevision" }
+        currentSummaryRevisionGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        currentDecidedConclusion:
+          oneOf: [{ $ref: "#/components/schemas/ReleasedTrialSummaryCurrentConclusion" }, { type: "null" }]
+        permissions: { $ref: "#/components/schemas/ReleasedTrialSummaryPermissions" }
+        controlledOutput: { $ref: "#/components/schemas/ReleasedTrialSummaryControlledOutput" }
+        holds: { $ref: "#/components/schemas/ReleasedTrialSummaryAuthorityHolds" }
     ReleasedTrialSummarySha256:
       type: string
       pattern: "^[a-f0-9]{64}$"
@@ -18909,7 +19061,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [trial_plan_revision, trial_round, trial_input_lock_revision, trial_actual_revision, trial_sample_batch_revision, trial_cavity_result_revision, trial_defect_revision, trial_defect_verification_revision, trial_round_comparison_snapshot, trial_review_reference_revision, trial_conclusion_revision]
+          enum: [trial_plan_revision, trial_round, trial_input_lock_revision, trial_actual_revision, trial_sample_batch_revision, trial_cavity_result_revision, tooling_defect_revision, trial_defect_revision, trial_defect_verification_revision, trial_round_comparison_snapshot, trial_review_reference_revision, trial_conclusion_revision]
         globalId: { type: string, format: uuid }
         sourceVersion: { type: integer, minimum: 1 }
         snapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
