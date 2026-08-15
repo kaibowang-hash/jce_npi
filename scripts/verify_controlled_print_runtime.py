@@ -183,7 +183,8 @@ def verify_controlled_print_schema(**_kwargs: object) -> dict[str, object]:
 
     registry = default_controlled_print_source_registry()
     require(
-        registry.source_object_types == (SOURCE_KIND,),
+        registry.source_object_types
+        == (SOURCE_KIND, "released_trial_summary"),
         "Disposable P5-06 source adapter scope drifted",
     )
     return {

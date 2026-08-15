@@ -444,6 +444,22 @@ else:
     "${bench_path}/sites/${site_name}/site_config.json"
 }
 
+released_summary_route_switch_state() {
+  "${bench_path}/env/bin/python" -c \
+    'import json, pathlib, sys
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+switch_name = "npi_p7_07_routes_disabled"
+if switch_name not in config:
+    print("absent")
+elif config[switch_name] is True:
+    print("true")
+elif config[switch_name] is False:
+    print("false")
+else:
+    print("invalid")' \
+    "${bench_path}/sites/${site_name}/site_config.json"
+}
+
 verify_p405_route_switch_state() {
   local expected="$1"
   local actual
@@ -654,6 +670,16 @@ verify_production_transition_route_switch_state() {
   fi
 }
 
+verify_released_summary_route_switch_state() {
+  local expected="$1"
+  local actual
+  actual="$(released_summary_route_switch_state)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "P7-07 route-disable switch state is ${actual}, expected ${expected}." >&2
+    return 1
+  fi
+}
+
 route_disable_original_state="$(p405_route_switch_state)"
 if [[ "${route_disable_original_state}" != "absent" ]]; then
   echo "Runtime Site must start without the P4-05 route-disable switch." >&2
@@ -779,6 +805,13 @@ if [[ "${production_transition_route_disable_original_state}" != "absent" ]]; th
   echo "Runtime Site must start without the P7-06 route-disable switch." >&2
   exit 2
 fi
+released_summary_route_disable_original_state="$(
+  released_summary_route_switch_state
+)"
+if [[ "${released_summary_route_disable_original_state}" != "absent" ]]; then
+  echo "Runtime Site must start without the P7-07 route-disable switch." >&2
+  exit 2
+fi
 if [[ "${verification_mode}" == "all" ||
       "${verification_mode}" == "--document-only" ||
       "${verification_mode}" == "--tooling-only" ||
@@ -819,6 +852,7 @@ trial_quality_route_disable_config_changed=false
 trial_review_route_disable_config_changed=false
 readiness_route_disable_config_changed=false
 production_transition_route_disable_config_changed=false
+released_summary_route_disable_config_changed=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1138,6 +1172,17 @@ set_production_transition_route_switch() {
   verify_production_transition_route_switch_state "${expected}"
 }
 
+set_released_summary_route_switch() {
+  local value="$1"
+  local expected="$2"
+  (
+    cd "${bench_path}"
+    bench --site "${site_name}" set-config \
+      npi_p7_07_routes_disabled "${value}"
+  )
+  verify_released_summary_route_switch_state "${expected}"
+}
+
 restore_p405_route_switch() {
   if ! set_p405_route_switch None absent; then
     return 1
@@ -1285,6 +1330,13 @@ restore_production_transition_route_switch() {
   production_transition_route_disable_config_changed=false
 }
 
+restore_released_summary_route_switch() {
+  if ! set_released_summary_route_switch None absent; then
+    return 1
+  fi
+  released_summary_route_disable_config_changed=false
+}
+
 cleanup() {
   local exit_status=$?
   trap - EXIT
@@ -1414,6 +1466,12 @@ cleanup() {
   if [[ "${production_transition_route_disable_config_changed}" == true ]]; then
     if ! restore_production_transition_route_switch; then
       echo "Failed to restore the P7-06 route-disable switch to absent." >&2
+      exit_status=1
+    fi
+  fi
+  if [[ "${released_summary_route_disable_config_changed}" == true ]]; then
+    if ! restore_released_summary_route_switch; then
+      echo "Failed to restore the P7-07 route-disable switch to absent." >&2
       exit_status=1
     fi
   fi
@@ -2533,6 +2591,66 @@ run_production_transition_route_probe() {
   )
 }
 
+run_released_summary_runtime_verifier() {
+  local mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_released_trial_summary_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_released_trial_summary_runtime.py" \
+        --base-url "${base_url}" \
+        --replay-only
+    fi
+    echo "Unknown Released Trial Summary runtime verification mode." >&2
+    exit 2
+  )
+}
+
+run_released_summary_route_probe() {
+  local expected_mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD \
+      NPI_GATE_EVIDENCE_RUNTIME_RUN_ID \
+      NPI_GATE_REVIEW_RUNTIME_RUN_ID \
+      NPI_DOCUMENT_RUNTIME_RUN_ID \
+      NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
+      NPI_PROJECT_WORK_RUNTIME_RUN_ID \
+      NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
+      NPI_RUNTIME_FIXTURE_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    exec python "${repo_root}/scripts/verify_released_trial_summary_runtime.py" \
+      --base-url "${base_url}" \
+      --route-disable-probe "${expected_mode}"
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -2628,6 +2746,25 @@ verify_production_transition_runtime_log_redaction() {
 
 report_production_transition_runtime_failure() {
   echo "P7-06 runtime log output withheld because it may contain controlled Production transition values or private paths." >&2
+}
+
+verify_released_summary_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "P707-RETAIN-APPROVED-SUMMARY" \
+    "P707-RETAIN-REJECTED-SUMMARY" \
+    "P707-DISPOSABLE-CONTROLLED-OUTPUT" \
+    "P707 decide exact technical conclusion" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P7-07 raw summary value or private path leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_released_summary_runtime_failure() {
+  echo "P7-07 runtime log output withheld because it may contain controlled Released Trial Summary values or private paths." >&2
 }
 
 if [[ "${verification_mode}" == "all" ]]; then
@@ -3295,6 +3432,52 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! verify_production_transition_runtime_log_redaction; then
     report_production_transition_runtime_failure
+    exit 1
+  fi
+  released_summary_route_disable_config_changed=true
+  stop_runtime_server
+  set_released_summary_route_switch false false
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  if ! run_released_summary_runtime_verifier fresh; then
+    echo "Local Frappe Released Trial Summary runtime verification failed." >&2
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_released_summary_route_switch true true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  if ! run_released_summary_route_probe disabled; then
+    echo "Local Frappe Released Trial Summary route-disable probe failed." >&2
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  set_released_summary_route_switch false false
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  if ! run_released_summary_route_probe recovered; then
+    echo "Local Frappe Released Trial Summary route recovery probe failed." >&2
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  if ! run_released_summary_runtime_verifier replay-only; then
+    echo "Local Frappe Released Trial Summary cross-process replay verification failed." >&2
+    report_released_summary_runtime_failure
+    exit 1
+  fi
+  if ! verify_released_summary_runtime_log_redaction; then
+    report_released_summary_runtime_failure
     exit 1
   fi
 fi

@@ -262,6 +262,10 @@ class Phase5ControlledPrintRuntimeVerifierTest(unittest.TestCase):
 
     def test_schema_and_fixture_surface_are_exactly_guarded(self) -> None:
         self.assertEqual(len(self.module.CONTROLLED_PRINT_DOCTYPES), 6)
+        self.assertIn(
+            '(SOURCE_KIND, "released_trial_summary")',
+            self.source,
+        )
         self.assertIn("_require_disposable_site()", self.source)
         self.assertIn(
             "controlled_print_registry_write",
