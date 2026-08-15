@@ -133,6 +133,14 @@ def summary_path(
     return base if summary_id is None else f"{base}/{summary_id}:revise"
 
 
+def summary_stream_path(
+    project_id: str,
+    round_id: str,
+    revision: Mapping[str, object],
+) -> str:
+    return summary_path(project_id, round_id, str(revision["summaryGlobalId"]))
+
+
 def capability_path(project_id: str, summary: Mapping[str, object]) -> str:
     query = urllib.parse.urlencode(
         {
@@ -1415,7 +1423,7 @@ def run_fresh(
         reviewer,
         base_url,
         reviewer_csrf,
-        summary_path(project_id, round_id, summary_v1["globalId"]),
+        summary_stream_path(project_id, round_id, summary_v1),
         revise_request,
         REVISE_KEY,
     )
@@ -1440,7 +1448,7 @@ def run_fresh(
         reviewer,
         base_url,
         reviewer_csrf,
-        summary_path(project_id, round_id, summary_v1["globalId"]),
+        summary_stream_path(project_id, round_id, summary_v1),
         revise_request,
         REVISE_KEY,
         replayed=True,
@@ -1450,7 +1458,7 @@ def run_fresh(
     stale = summary_request(
         reviewer,
         base_url,
-        summary_path(project_id, round_id, summary_v1["globalId"]),
+        summary_stream_path(project_id, round_id, summary_v1),
         method="POST",
         payload=revise_request,
         csrf_token=reviewer_csrf,
@@ -1460,7 +1468,7 @@ def run_fresh(
     noop = summary_request(
         reviewer,
         base_url,
-        summary_path(project_id, round_id, second["globalId"]),
+        summary_stream_path(project_id, round_id, second),
         method="POST",
         payload=revise_payload(
             revised_body["trialRound"],

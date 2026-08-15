@@ -66,8 +66,16 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
         module = self.module
         summary = {
             "globalId": "10000000-0000-4000-8000-000000000001",
+            "summaryGlobalId": "10000000-0000-4000-8000-000000000002",
             "summaryVersion": 3,
         }
+        self.assertEqual(
+            module.summary_stream_path("project", "round", summary),
+            (
+                "/api/npi/v1/projects/project/trial-rounds/round/"
+                "released-trial-summaries/10000000-0000-4000-8000-000000000002:revise"
+            ),
+        )
         self.assertEqual(
             module.controlled_print_payload(summary),
             {
