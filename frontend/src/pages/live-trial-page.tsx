@@ -74,6 +74,11 @@ import {
 } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
 import { ControlledPrintAction } from "../components/controlled-print-action";
+import { AttachmentField } from "../components/field-attachment-primitives";
+import {
+  MobileEngineeringHandoff,
+  ReviewedScanEntry,
+} from "../components/mobile-field-actions";
 import {
   DefinitionList,
   ImpactReview,
@@ -223,6 +228,132 @@ function memberIds(value: string): readonly string[] {
     .split(/[\s,;]+/u)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function countOpenBlockingDefects(
+  workspace: TrialQualityWorkspace | null,
+): number {
+  if (!workspace) return 0;
+  const latestByDefect = new Map<
+    string,
+    {
+      readonly blocking: boolean;
+      readonly state: string;
+      readonly version: number;
+    }
+  >();
+  for (const entry of workspace.defectRevisions) {
+    const revision = entry.revision;
+    const retained = latestByDefect.get(revision.defectGlobalId);
+    if (!retained || revision.defectVersion > retained.version) {
+      latestByDefect.set(revision.defectGlobalId, {
+        blocking: revision.blocking,
+        state: revision.state,
+        version: revision.defectVersion,
+      });
+    }
+  }
+  return Array.from(latestByDefect.values()).filter(
+    (revision) => revision.blocking && revision.state !== "closed",
+  ).length;
+}
+
+function MobileTrialFieldSummary({
+  execution,
+  plan,
+  projectId,
+  quality,
+  round,
+}: {
+  readonly execution: TrialExecutionWorkspace | null;
+  readonly plan: TrialPlanDetail | null;
+  readonly projectId: string;
+  readonly quality: TrialQualityWorkspace | null;
+  readonly round: TrialRoundSummary | null;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const nonCleanFiles =
+    execution?.pendingFiles.filter((file) => file.scanState !== "clean")
+      .length ?? 0;
+  const evidenceActionAvailable = Boolean(
+    sessionCommandContext && execution?.permissions.canManageEvidence,
+  );
+  const defectActionAvailable = Boolean(
+    sessionCommandContext && execution && quality?.permissions.manageDefects,
+  );
+
+  return (
+    <section
+      aria-labelledby="mobile-trial-field-summary-title"
+      className="mobile-trial-field-summary mobile-field-only"
+      data-testid="mobile-trial-field-summary"
+    >
+      <div className="mobile-trial-field-summary__header">
+        <h2 id="mobile-trial-field-summary-title">
+          {t("Trial field summary")}
+        </h2>
+        <SemanticStatus
+          label={
+            round
+              ? roundStateLabel(t, round.currentState)
+              : t("No Round selected")
+          }
+          tone={round ? "info" : "warning"}
+        />
+      </div>
+      <DefinitionList
+        rows={[
+          {
+            label: t("Project stable ID"),
+            value: projectId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Trial Plan stable ID"),
+            value: plan?.planGlobalId ?? t("Unavailable"),
+            ...(plan ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Plan version"),
+            value: plan
+              ? formatNumber(locale, plan.latestRevision.planVersion, 0)
+              : t("Unavailable"),
+          },
+          {
+            label: t("Selected Round"),
+            value: round?.displayLabel ?? t("Not selected"),
+            ...(round ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Round version"),
+            value: round
+              ? formatNumber(locale, round.optimisticVersion, 0)
+              : t("Unavailable"),
+          },
+          {
+            label: t("Files not in clean state"),
+            value: formatNumber(locale, nonCleanFiles, 0),
+          },
+          {
+            label: t("Open blocking defects"),
+            value: formatNumber(locale, countOpenBlockingDefects(quality), 0),
+          },
+          {
+            label: t("Session command context"),
+            value: sessionCommandContext ? t("Verified") : t("Unavailable"),
+          },
+          {
+            label: t("Evidence photo action"),
+            value: evidenceActionAvailable ? t("Available") : t("Unavailable"),
+          },
+          {
+            label: t("Trial defect action"),
+            value: defectActionAvailable ? t("Available") : t("Unavailable"),
+          },
+        ]}
+      />
+    </section>
+  );
 }
 
 function purposeLabel(
@@ -862,7 +993,23 @@ function TrialExecutionSection({
       setSampleEditor(initialSampleEditor(workspace, revisionGlobalId));
     if (kind === "upload") setSelectedFile(null);
     if (kind !== "bind_evidence") setBindFileId(null);
-    globalThis.queueMicrotask(() => firstControl.current?.focus());
+    globalThis.queueMicrotask(() => {
+      const matchMediaCandidate: unknown = Reflect.get(
+        globalThis,
+        "matchMedia",
+      );
+      const mobileViewport =
+        typeof matchMediaCandidate === "function" &&
+        (matchMediaCandidate as typeof globalThis.matchMedia).call(
+          globalThis,
+          "(width <= 920px)",
+        ).matches;
+      const mobilePhotoInput =
+        kind === "upload" && mobileViewport
+          ? document.getElementById("trial-evidence-photo")
+          : null;
+      (mobilePhotoInput ?? firstControl.current)?.focus();
+    });
   };
 
   const acceptExecution = (
@@ -2207,19 +2354,45 @@ function TrialExecutionSection({
       {editorKind === "upload" ? (
         <Panel title={t("Upload private evidence file")}>
           <div className="trial-live__upload-editor">
-            <label>
-              <span>{t("Evidence file")}</span>
-              <input
-                accept="image/*,video/*,.csv,.pdf"
-                aria-label={t("Evidence file")}
-                disabled={processing}
-                onChange={(event) => {
-                  setSelectedFile(event.target.files?.[0] ?? null);
+            <div className="desktop-engineering-only">
+              <label>
+                <span>{t("Evidence file")}</span>
+                <input
+                  accept="image/*,video/*,.csv,.pdf"
+                  aria-label={t("Evidence file")}
+                  disabled={processing}
+                  onChange={(event) => {
+                    setSelectedFile(event.target.files?.[0] ?? null);
+                  }}
+                  ref={firstControl}
+                  type="file"
+                />
+              </label>
+            </div>
+            <div className="mobile-field-only">
+              <AttachmentField
+                accept="image/*"
+                access={processing ? "read_only" : "editable"}
+                capture="environment"
+                guidance={t(
+                  "Capture or choose one image. Selection remains local until you start the private upload.",
+                )}
+                id="trial-evidence-photo"
+                label={t("Trial evidence photo")}
+                onClearLocal={() => {
+                  setSelectedFile(null);
                 }}
-                ref={firstControl}
-                type="file"
+                onSelectFile={(file) => {
+                  setSelectedFile(file);
+                }}
+                onStart={uploadSelectedFile}
+                state={
+                  selectedFile
+                    ? { kind: "local_selected", file: selectedFile }
+                    : { kind: "empty" }
+                }
               />
-            </label>
+            </div>
             <div className="blocking-message failure-explanation">
               <SemanticStatus
                 label={t("Private and pending scan")}
@@ -2233,6 +2406,7 @@ function TrialExecutionSection({
             </div>
             <div className="detail-actions">
               <Button
+                className="desktop-engineering-only"
                 disabled={!selectedFile || processing}
                 onClick={uploadSelectedFile}
                 visual="primary"
@@ -2307,7 +2481,10 @@ function TrialExecutionSection({
           </div>
         </Panel>
       ) : null}
-      <Panel title={t("Locked preparation inputs")}>
+      <Panel
+        className="desktop-engineering-only"
+        title={t("Locked preparation inputs")}
+      >
         {latestLock ? (
           <>
             <DefinitionList
@@ -2381,7 +2558,10 @@ function TrialExecutionSection({
           </div>
         )}
       </Panel>
-      <Panel title={t("Actual process parameters")}>
+      <Panel
+        className="desktop-engineering-only"
+        title={t("Actual process parameters")}
+      >
         {latestActual ? (
           <table
             aria-label={t("Actual process parameters")}
@@ -2456,7 +2636,7 @@ function TrialExecutionSection({
           </p>
         </div>
       </Panel>
-      <Panel title={t("Sample Batches")}>
+      <Panel className="desktop-engineering-only" title={t("Sample Batches")}>
         {workspace.sampleBatchRevisions.length ? (
           <table
             aria-label={t("Sample Batches")}
@@ -3323,6 +3503,23 @@ function TrialQualitySection({
   return (
     <>
       <Panel title={t("Trial quality workspace")}>
+        <div className="mobile-field-only">
+          <ReviewedScanEntry
+            disabled={!workspace.permissions.view || processing}
+            onApply={(reference) => {
+              setCavityFilter(reference.value);
+              setEditor((current) =>
+                current
+                  ? { ...current, cavityGlobalId: reference.value }
+                  : current,
+              );
+            }}
+            references={workspace.cavityFilters.map((cavity) => ({
+              label: cavity.globalId,
+              value: cavity.globalId,
+            }))}
+          />
+        </div>
         <div className="trial-live__command-bar">
           {workspace.permissions.recordCavityResult ? (
             <Button
@@ -3956,7 +4153,7 @@ function TrialQualitySection({
           </form>
         </Panel>
       ) : null}
-      <Panel title={t("Defect Pareto")}>
+      <Panel className="desktop-engineering-only" title={t("Defect Pareto")}>
         {filteredPareto.length ? (
           <table
             aria-label={t("Defect Pareto")}
@@ -4002,7 +4199,10 @@ function TrialQualitySection({
           </div>
         )}
       </Panel>
-      <Panel title={t("Cavity measurements")}>
+      <Panel
+        className="desktop-engineering-only"
+        title={t("Cavity measurements")}
+      >
         {filteredCavityResults.length ? (
           <table
             aria-label={t("Cavity measurements")}
@@ -4090,7 +4290,7 @@ function TrialQualitySection({
           </div>
         )}
       </Panel>
-      <Panel title={t("Defect timeline")}>
+      <Panel className="desktop-engineering-only" title={t("Defect timeline")}>
         {filteredDefects.length ? (
           <table
             aria-label={t("Defect timeline")}
@@ -4206,7 +4406,7 @@ function TrialQualitySection({
           </div>
         )}
       </Panel>
-      <Panel title={t("Defect actions")}>
+      <Panel className="desktop-engineering-only" title={t("Defect actions")}>
         {trialDefects.some((entry) => entry.revision.actions.length) ? (
           <table
             aria-label={t("Defect actions")}
@@ -4271,7 +4471,10 @@ function TrialQualitySection({
           </div>
         )}
       </Panel>
-      <Panel title={t("Independent verification")}>
+      <Panel
+        className="desktop-engineering-only"
+        title={t("Independent verification")}
+      >
         {workspace.verificationRevisions.length ? (
           <table
             aria-label={t("Independent verification")}
@@ -5017,7 +5220,10 @@ function TrialReviewSection({
       ) : null}
       {latestComparison ? (
         <>
-          <Panel title={t("Exact Round input comparison")}>
+          <Panel
+            className="desktop-engineering-only"
+            title={t("Exact Round input comparison")}
+          >
             <table
               aria-label={t("Exact Round input comparison")}
               className="data-table trial-live__comparison-table"
@@ -5062,7 +5268,10 @@ function TrialReviewSection({
               </tbody>
             </table>
           </Panel>
-          <Panel title={t("Performance and dimension comparison")}>
+          <Panel
+            className="desktop-engineering-only"
+            title={t("Performance and dimension comparison")}
+          >
             <table
               aria-label={t("Performance and dimension comparison")}
               className="data-table trial-live__comparison-table"
@@ -5137,7 +5346,10 @@ function TrialReviewSection({
               </tbody>
             </table>
           </Panel>
-          <Panel title={t("Defect trend across compared Rounds")}>
+          <Panel
+            className="desktop-engineering-only"
+            title={t("Defect trend across compared Rounds")}
+          >
             {latestComparison.defectTrends.length ? (
               <table
                 aria-label={t("Defect trend across compared Rounds")}
@@ -5179,7 +5391,10 @@ function TrialReviewSection({
           </Panel>
         </>
       ) : (
-        <Panel title={t("Exact Round comparison")}>
+        <Panel
+          className="desktop-engineering-only"
+          title={t("Exact Round comparison")}
+        >
           <div className="empty-state" role="status">
             <strong>{t("No immutable Round comparison is available.")}</strong>
             <span>
@@ -5190,7 +5405,10 @@ function TrialReviewSection({
           </div>
         </Panel>
       )}
-      <Panel title={t("Controlled review references")}>
+      <Panel
+        className="desktop-engineering-only"
+        title={t("Controlled review references")}
+      >
         {references.length ? (
           <table
             aria-label={t("Controlled review references")}
@@ -5348,7 +5566,10 @@ function TrialReviewSection({
               </div>
             )}
           </Panel>
-          <Panel title={t("Immutable conclusion history")}>
+          <Panel
+            className="desktop-engineering-only"
+            title={t("Immutable conclusion history")}
+          >
             <table
               aria-label={t("Immutable conclusion history")}
               className="data-table"
@@ -6059,7 +6280,10 @@ function ReleasedTrialSummarySection({
                 </p>
               </Panel>
 
-              <Panel title={t("Safe presentation facts")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Safe presentation facts")}
+              >
                 <label className="field-control">
                   <span>{t("Fact group")}</span>
                   <Select
@@ -6170,7 +6394,10 @@ function ReleasedTrialSummarySection({
                 </div>
               </Panel>
 
-              <Panel title={t("Exact source manifest")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Exact source manifest")}
+              >
                 <div
                   aria-label={t("Exact source manifest")}
                   className="released-summary-workspace__table-body"
@@ -6230,7 +6457,10 @@ function ReleasedTrialSummarySection({
               </Panel>
             </>
           ) : (
-            <Panel title={t("Selected technical summary")}>
+            <Panel
+              className="desktop-engineering-only"
+              title={t("Selected technical summary")}
+            >
               <div className="empty-state" role="status">
                 <strong>
                   {t("No immutable summary revision is available.")}
@@ -7072,6 +7302,14 @@ export default function LiveTrialPage({
           </span>
         </div>
       ) : null}
+      <MobileTrialFieldSummary
+        execution={executionWorkspace}
+        plan={planDetail}
+        projectId={projectId}
+        quality={qualityWorkspace}
+        round={selectedRoundTruth}
+      />
+      <MobileEngineeringHandoff />
       {editor ? (
         <Panel title={editorLabel(t, editor.kind)}>
           <form
@@ -7664,7 +7902,10 @@ export default function LiveTrialPage({
                   ]}
                 />
               </Panel>
-              <Panel title={t("Proposed resources")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Proposed resources")}
+              >
                 <table
                   aria-label={t("Proposed resources")}
                   className="data-table"
@@ -7719,7 +7960,10 @@ export default function LiveTrialPage({
                   </tbody>
                 </table>
               </Panel>
-              <Panel title={t("Responsible Project members")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Responsible Project members")}
+              >
                 <table
                   aria-label={t("Responsible Project members")}
                   className="data-table"
@@ -7751,7 +7995,10 @@ export default function LiveTrialPage({
                   </tbody>
                 </table>
               </Panel>
-              <Panel title={t("Immutable Plan revision history")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Immutable Plan revision history")}
+              >
                 <table
                   aria-label={t("Immutable Plan revision history")}
                   className="data-table"
@@ -7781,7 +8028,10 @@ export default function LiveTrialPage({
                   </tbody>
                 </table>
               </Panel>
-              <Panel title={t("Planned Rounds")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Planned Rounds")}
+              >
                 <div id="trial-live-rounds" tabIndex={-1} />
                 {planDetail.rounds.length ? (
                   <table
@@ -7841,7 +8091,10 @@ export default function LiveTrialPage({
                   </p>
                 )}
               </Panel>
-              <Panel title={t("Generated actions")}>
+              <Panel
+                className="desktop-engineering-only"
+                title={t("Generated actions")}
+              >
                 <div id="trial-live-actions" tabIndex={-1} />
                 {planDetail.actionLinks.length ? (
                   <table
