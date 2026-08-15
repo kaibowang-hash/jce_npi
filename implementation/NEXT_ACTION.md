@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-07`
+`IN_PROGRESS_CHECKPOINT_3 — P7-07`
 
-Recovery time: `2026-08-15T07:40:40Z`
+Recovery time: `2026-08-15T08:32:19Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -52,6 +52,9 @@ P7-07 audit PASS and checkpoint 1 starting controller:
 
 P7-07 checkpoint 1 product checkpoint:
 `684c6833a4e0c2732ce55cfc1883fa805f07dd97`
+
+P7-07 checkpoint 2 product checkpoint:
+`b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6`
 
 ## Current authoritative action
 
@@ -291,15 +294,22 @@ frontend `94982017474` (`58/58` files, `908/908` unit, `399/399` E2E and
 `94983213717` and runtime `94983213982` skip as required. Complete evidence is
 `implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md`.
 
-Execute only checkpoint 2: add exact source graph loaders; Project, Round and
-summary-stream locks; Project-first history/current reads; retain and revise
-commands; exact current decided-conclusion revalidation; actor-bound sealed
-replay; one transaction; append-only audit; the independently default-closed
-`npi_p7_07_routes_disabled` boundary; and exact `released_trial_summary`
-controlled-print source-adapter registration. Do not activate a frontend
-action, runtime fixture, production mapping/PDF, external event/projection,
-form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/Outbox
-mutation or formal release authority. Holds remain under `DR-REC-003/004/009`.
+P7-07 checkpoint 2 passes at exact product checkpoint `b6a50b9`. Exact-SHA
+ordinary CI `31874165243` passes repository `94987257323` (`1,905` tracked
+Python), frontend `94987257376` (`908/908` unit, `399/399` E2E, `7,364`
+direct trilingual sources and zero vulnerabilities), secret scan `94987257391`
+(`467` commits, no leaks) and unchanged `112/112` fixed-Linux visual job
+`94987257304`. Controlled lanes skip as required. Complete evidence is
+`implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md`.
+
+Execute only checkpoint 3: add the dense Released Summary section to the
+existing live Trial workspace with a strict data source, exact history/current
+inspector, source/redaction/authority truth, retain/revise review and reused
+controlled-print action. Cover every frozen honest state, keyboard/focus/Axe,
+direct English/`zh`/`zh-TW`, route-intercept E2E and reviewed governed Linux
+visuals. Do not add a runtime fixture, production mapping, generic print
+behavior, external event/projection/receipt, formal release authority or
+downstream mutation. Holds remain under `DR-REC-003/004/009`.
 The latest complete Level 3 remains workflow `31392474781` at exact SHA
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
 

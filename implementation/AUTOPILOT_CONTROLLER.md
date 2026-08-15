@@ -3253,3 +3253,39 @@ repeat or rewrite it merely to restore context. See
   No user action is required and the latest complete Level 3 remains workflow
   `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-15 P7-07 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint `b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6`
+  passes ordinary pull-request CI `31874165243`: repository `94987257323`
+  passes `1,905` tracked Python tests and repository/reconciliation checks;
+  frontend `94987257376` passes `58/58` files, `908/908` unit tests,
+  `399/399` non-visual E2E tests, `7,364` direct trilingual sources, coverage
+  `80.39%/80.26%/83.05%/83.03%` and zero vulnerabilities; secret scan
+  `94987257391` scans `467` commits with no leak; visual `94987257304` passes
+  the unchanged `112/112` fixed-Linux matrix.
+- Visual artifact `9244313048` has digest
+  `sha256:088c577eba4aed946a7fd20f822f379769da11ca91d3b229cd743bf810769e07`;
+  Gitleaks artifact `9244270139` has digest
+  `sha256:c6a37ba80211c6a52dd7dbb07b599f10e9c52f8490f4db827a06c0a889f3b7d2`.
+  Controlled preflight `94988374172` and runtime `94988374331` skip because
+  checkpoint 2 installs no runtime fixture or synthetic mapping.
+- Checkpoint 2 activates only exact complete source enumeration, Project/
+  Round/stream locks, Project-first history/current reads, retain/revise,
+  current decided-conclusion revalidation, actor-bound sealed replay, one
+  transaction/audit and the exact default-closed source adapter. The Tooling-
+  defect source kind is a read-only representation of already frozen P7-04
+  defect tips and grants no Tooling lifecycle mutation authority.
+- Complete evidence is
+  `implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md`.
+  This is checkpoint 2 PASS, not P7-07 Level 2 or Level 3.
+- Standing continuous-delivery authority activates only checkpoint 3: a
+  strict browser data source and dense trilingual Released Summary section in
+  the existing live Trial workspace, with exact current/history inspection,
+  source/redaction/authority truth, reviewed retain/revise, reused controlled-
+  print action, honest states, accessibility, E2E and governed visuals. It may
+  not add runtime fixtures, production mapping, generic print behavior,
+  external authority or downstream mutation.
+- Holds under `DR-REC-003/004/009` remain unchanged. No user action is
+  required and the latest complete Level 3 remains workflow `31392474781` at
+  exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.

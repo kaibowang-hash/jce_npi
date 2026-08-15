@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T07:40:40Z`
+Updated: `2026-08-15T08:32:19Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_2 — P7-07`
+- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-07`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `684c6833a4e0c2732ce55cfc1883fa805f07dd97` (pushed; P7-07
-  checkpoint 1 PASS)
+  `b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6` (pushed; P7-07
+  checkpoint 2 PASS)
 - Retained prior Phase Gate checkpoint:
   `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
   Level 3 PASS)
@@ -38,20 +38,20 @@ Updated: `2026-08-15T07:40:40Z`
   `b9dc2135e16e1b19d375bb29ab733e5e63ccef08` (`AUDIT PASS`;
   ordinary CI `31832348527` exact-SHA PASS; controlled lanes expected skipped)
 - Latest P7-07 product checkpoint:
-  `684c6833a4e0c2732ce55cfc1883fa805f07dd97` (`CHECKPOINT 1 PASS`;
-  ordinary CI `31872006649`)
+  `b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6` (`CHECKPOINT 2 PASS`;
+  ordinary CI `31874165243`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P7-07 — Immutable Released Trial Summary and controlled output`
-  (`CHECKPOINT 2 — REPOSITORY, BFF AND SOURCE ADAPTER`)
-- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_2_ONLY`)
+  (`CHECKPOINT 3 — LIVE TRILINGUAL TRIAL WORKSPACE`)
+- Resumed product task: `P7-07` (`ACTIVE_CHECKPOINT_3_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-07 CHECKPOINT 2`)
+  (`IN_PROGRESS — P7-07 CHECKPOINT 3`)
 - Latest complete product Phase:
   `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
 

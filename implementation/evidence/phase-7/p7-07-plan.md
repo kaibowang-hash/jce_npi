@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-15`
 
-Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZED`
 
 Starting controller checkpoint:
 `b9dc2135e16e1b19d375bb29ab733e5e63ccef08`
@@ -357,6 +357,12 @@ event, provider or ERP endpoint is exposed.
   English/Simplified-Chinese/Traditional-Chinese mixed-language and overflow;
   route-intercept E2E; reviewed governed Linux visuals. No new design token or
   generic controlled-print behavior is introduced.
+
+Checkpoint 2 passed at exact product SHA
+`b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6` and exact-SHA ordinary PR CI
+`31874165243`. Complete repository/BFF/source-adapter evidence is
+`implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md`.
+Only checkpoint 3 is active.
 
 ### Checkpoint 4 — controlled runtime and Level 2
 
