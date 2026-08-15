@@ -3,17 +3,23 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID
 
 import frappe
 
 from npi_core.tooling.acceptance_domain import (
+    ErpAssetMovementObservation,
+    ErpAssetRepairObservation,
+    ErpAssetSpareInventoryObservation,
     ToolingAcceptanceChecklistItem,
     ToolingAcceptanceEvidenceRevision,
     ToolingAcceptanceFileEvidence,
+    ToolingAssetActionKind,
     ToolingAssetActionEvidence,
+    ToolingAssetProjectionAvailable,
+    ToolingAssetProjectionUnavailable,
     ToolingRepairEvidence,
     ToolingSpareRecommendation,
     acceptance_revision_from_snapshot,
@@ -24,6 +30,13 @@ from npi_core.tooling.frappe_validation import tooling_command_write
 
 
 _MAX_ACCEPTANCE_REVISIONS = 500
+_UNAVAILABLE_ASSET_PROJECTION_SNAPSHOT = {
+    "sourceSystem": "ERPNEXT",
+    "editableIn": "ERPNEXT",
+    "state": "unavailable",
+    "reasonCode": "erp_asset_projection_unavailable",
+    "mappingCardinality": "zero_or_one_per_physical_set",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,14 +77,37 @@ class ToolingAcceptanceRepositoryMixin:
                 for value in self._acceptance_revisions(project, tooling_master_id)
             ],
             "assetRequests": [],
-            "assetProjection": {
-                "sourceSystem": "ERPNEXT",
-                "editableIn": "ERPNEXT",
-                "state": "unavailable",
-                "reasonCode": "erp_asset_projection_unavailable",
-                "mappingCardinality": "zero_or_one_per_physical_set",
-            },
+            "assetProjection": self._asset_projection(
+                project,
+                tooling_master_id,
+            ).public_dict(),
         }
+
+    def _asset_projection(
+        self,
+        project: object,
+        tooling_master_id: UUID,
+    ) -> ToolingAssetProjectionUnavailable | ToolingAssetProjectionAvailable:
+        reader = self._asset_status_reader or self._resolved_projection_consumer_reader()
+        if reader is None:
+            return ToolingAssetProjectionUnavailable()
+        snapshot = reader.read_tool_asset_status(
+            project_global_id=UUID(str(project.global_id)),
+            tooling_master_global_id=tooling_master_id,
+        )
+        if snapshot is None:
+            return ToolingAssetProjectionUnavailable()
+        projection = _asset_projection_from_snapshot(snapshot)
+        if isinstance(projection, ToolingAssetProjectionUnavailable):
+            return projection
+        tooling_set = self._tooling_set_for_project(
+            project,
+            tooling_master_id,
+            projection.tooling_set_global_id,
+        )
+        if tooling_set is None:
+            raise ToolingReferenceUnavailable()
+        return projection
 
     def create_tooling_acceptance_evidence_revision(
         self,
@@ -494,6 +530,151 @@ def _json_object(value: object) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise RuntimeError("The acceptance-evidence snapshot is invalid.")
     return value
+
+
+def _asset_projection_from_snapshot(
+    value: object,
+) -> ToolingAssetProjectionUnavailable | ToolingAssetProjectionAvailable:
+    if not isinstance(value, Mapping):
+        raise RuntimeError("The ERP Asset projection snapshot is invalid.")
+    state = value.get("state")
+    if state == "unavailable":
+        if dict(value) != _UNAVAILABLE_ASSET_PROJECTION_SNAPSHOT:
+            raise RuntimeError("The unavailable ERP Asset projection is not closed.")
+        return ToolingAssetProjectionUnavailable(
+            source_system=str(value["sourceSystem"]),
+            editable_in=str(value["editableIn"]),
+            state=str(value["state"]),
+            reason_code=str(value["reasonCode"]),
+        )
+    expected = {
+        "sourceSystem",
+        "editableIn",
+        "state",
+        "mappingCardinality",
+        "toolingSetGlobalId",
+        "mappingVersion",
+        "formalAssetId",
+        "targetVersion",
+        "assetState",
+        "currentLocation",
+        "shotCount",
+        "expectedLifeShots",
+        "maintenanceDue",
+        "movements",
+        "repairs",
+        "spares",
+        "observationGlobalId",
+        "observationHash",
+        "observedAt",
+    }
+    if (
+        state != "available"
+        or set(value) != expected
+        or value.get("sourceSystem") != "ERPNEXT"
+        or value.get("editableIn") != "ERPNEXT"
+        or value.get("mappingCardinality") != "zero_or_one_per_physical_set"
+    ):
+        raise RuntimeError("The available ERP Asset projection is not closed.")
+    return ToolingAssetProjectionAvailable(
+        tooling_set_global_id=value["toolingSetGlobalId"],
+        mapping_version=value["mappingVersion"],
+        formal_asset_id=value["formalAssetId"],
+        target_version=value["targetVersion"],
+        asset_state=value["assetState"],
+        current_location=value["currentLocation"],
+        shot_count=value["shotCount"],
+        expected_life_shots=value["expectedLifeShots"],
+        maintenance_due=(
+            date.fromisoformat(str(value["maintenanceDue"]))
+            if value["maintenanceDue"] is not None
+            else None
+        ),
+        movements=tuple(
+            _asset_movement_from_snapshot(item)
+            for item in _projection_sequence(value["movements"], maximum=200)
+        ),
+        repairs=tuple(
+            _asset_repair_from_snapshot(item)
+            for item in _projection_sequence(value["repairs"], maximum=200)
+        ),
+        spares=tuple(
+            _asset_spare_from_snapshot(item)
+            for item in _projection_sequence(value["spares"], maximum=500)
+        ),
+        observation_global_id=value["observationGlobalId"],
+        observation_hash=value["observationHash"],
+        observed_at=_projection_datetime(value["observedAt"]),
+    )
+
+
+def _asset_movement_from_snapshot(value: object) -> ErpAssetMovementObservation:
+    row = _projection_record(
+        value,
+        {"globalId", "actionKind", "fromLocation", "toLocation", "occurredAt", "sourceObjectId"},
+    )
+    return ErpAssetMovementObservation(
+        global_id=row["globalId"],
+        action_kind=ToolingAssetActionKind(str(row["actionKind"])),
+        from_location=row["fromLocation"],
+        to_location=row["toLocation"],
+        occurred_at=_projection_datetime(row["occurredAt"]),
+        source_object_id=row["sourceObjectId"],
+    )
+
+
+def _asset_repair_from_snapshot(value: object) -> ErpAssetRepairObservation:
+    row = _projection_record(
+        value,
+        {"globalId", "summary", "downtimeHours", "completedAt", "sourceObjectId"},
+    )
+    return ErpAssetRepairObservation(
+        global_id=row["globalId"],
+        summary=row["summary"],
+        downtime_hours=row["downtimeHours"],
+        completed_at=_projection_datetime(row["completedAt"]),
+        source_object_id=row["sourceObjectId"],
+    )
+
+
+def _asset_spare_from_snapshot(value: object) -> ErpAssetSpareInventoryObservation:
+    row = _projection_record(
+        value,
+        {"formalItemId", "description", "stockOnHand", "minimumStock", "unit", "supplierId"},
+    )
+    return ErpAssetSpareInventoryObservation(
+        formal_item_id=row["formalItemId"],
+        description=row["description"],
+        stock_on_hand=row["stockOnHand"],
+        minimum_stock=row["minimumStock"],
+        unit=row["unit"],
+        supplier_id=row["supplierId"],
+    )
+
+
+def _projection_record(value: object, fields: set[str]) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or set(value) != fields:
+        raise RuntimeError("The ERP Asset projection record is not closed.")
+    return value
+
+
+def _projection_sequence(value: object, *, maximum: int) -> Sequence[object]:
+    if isinstance(value, (str, bytes, bytearray)) or not isinstance(value, Sequence):
+        raise RuntimeError("The ERP Asset projection collection is invalid.")
+    if len(value) > maximum:
+        raise RuntimeError("The ERP Asset projection collection exceeds its safe bound.")
+    return value
+
+
+def _projection_datetime(value: object) -> datetime:
+    parsed = (
+        value
+        if isinstance(value, datetime)
+        else datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    )
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def _database_datetime(value: datetime) -> str:

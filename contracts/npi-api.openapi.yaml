@@ -488,6 +488,48 @@ paths:
         default:
           $ref: "#/components/responses/ProjectError"
 
+  /projects/{projectId}/erp-projections:
+    get:
+      tags: [Projects, Execution]
+      operationId: getProjectErpProjections
+      description: >-
+        Returns one bounded, read-only collection of server-scoped ERP
+        observations after authenticating and authorizing the exact Project.
+        The optional kind filter is closed and no source or target identity is
+        accepted from the browser. External actors receive a redacted empty
+        collection. This route never refreshes or mutates ERP or NPI business
+        state.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - name: kind
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/ERPProjectionKind" }
+      responses:
+        "200":
+          description: Authorized bounded Project ERP projection collection
+          headers:
+            Cache-Control:
+              required: true
+              schema: { type: string, const: "private, no-store" }
+            X-Request-ID:
+              required: true
+              schema: { type: string, format: uuid }
+            X-Trace-ID:
+              required: true
+              schema: { type: string, minLength: 8, maxLength: 128 }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ERPProjectionCollection" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default:
+          $ref: "#/components/responses/ProjectError"
+
   /projects/{projectId}/work-context:
     get:
       tags: [Projects, Work]
@@ -7916,10 +7958,21 @@ components:
         - { $ref: "#/components/schemas/ERPProjectionProjectCostValues" }
         - { $ref: "#/components/schemas/ERPProjectionQualityValues" }
         - { $ref: "#/components/schemas/ERPProjectionToolAssetValues" }
+    ERPProjectionCurrentTruth:
+      type: object
+      additionalProperties: false
+      required: [observationGlobalId, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, values]
+      properties:
+        observationGlobalId: { type: string, format: uuid }
+        sourceVersion: { type: string, minLength: 1, maxLength: 255 }
+        sourceModifiedAt: { type: string, format: date-time }
+        receivedAt: { type: string, format: date-time }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        values: { $ref: "#/components/schemas/ERPProjectionValues" }
     ERPProjectionItem:
       type: object
       additionalProperties: false
-      required: [observationGlobalId, projectionKind, scopeKind, scopeGlobalId, availability, freshness, disposition, sourceSystem, sourceObjectType, sourceObjectId, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, unavailableReasonCode, values, editable]
+      required: [observationGlobalId, projectionKind, scopeKind, scopeGlobalId, availability, freshness, disposition, sourceSystem, sourceObjectType, sourceObjectId, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, unavailableReasonCode, values, currentTruth, editable]
       properties:
         observationGlobalId: { type: string, format: uuid }
         projectionKind: { $ref: "#/components/schemas/ERPProjectionKind" }
@@ -7940,6 +7993,10 @@ components:
           oneOf:
             - { $ref: "#/components/schemas/ERPProjectionValues" }
             - { type: "null" }
+        currentTruth:
+          oneOf:
+            - { $ref: "#/components/schemas/ERPProjectionCurrentTruth" }
+            - { type: "null" }
         editable: { type: boolean, const: false }
     ERPProjectionPermissions:
       type: object
@@ -7952,9 +8009,11 @@ components:
     ERPProjectionCollection:
       type: object
       additionalProperties: false
-      required: [projectGlobalId, permissions, items]
+      required: [projectGlobalId, accessState, reasonCode, permissions, items]
       properties:
         projectGlobalId: { type: string, format: uuid }
+        accessState: { type: string, enum: [available, redacted] }
+        reasonCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
         permissions: { $ref: "#/components/schemas/ERPProjectionPermissions" }
         items:
           type: array

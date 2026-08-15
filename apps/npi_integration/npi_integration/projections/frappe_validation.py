@@ -9,6 +9,7 @@ from frappe import _
 
 PROJECTION_OBSERVATION_WRITE_FLAG = "npi_erp_projection_observation_write"
 PROJECTION_HEAD_WRITE_FLAG = "npi_erp_projection_head_write"
+AUDIT_APPEND_FLAG = "npi_audit_append"
 
 
 def require_projection_observation_write() -> None:
@@ -54,6 +55,18 @@ def projection_observation_write() -> Iterator[None]:
 @contextmanager
 def projection_head_write() -> Iterator[None]:
     with _flag_scope(PROJECTION_HEAD_WRITE_FLAG):
+        yield
+
+
+@contextmanager
+def projection_repository_write() -> Iterator[None]:
+    """Authorize one observation, head and structural audit transaction."""
+
+    with (
+        _flag_scope(PROJECTION_OBSERVATION_WRITE_FLAG),
+        _flag_scope(PROJECTION_HEAD_WRITE_FLAG),
+        _flag_scope(AUDIT_APPEND_FLAG),
+    ):
         yield
 
 

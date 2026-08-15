@@ -63,6 +63,7 @@ _MAX_APPLICABILITY = 1_000
 _MAX_SETS = 200
 _MAX_INTAKES = 100
 _MAX_EVIDENCE = 500
+_UNRESOLVED_PROJECTION_READER = object()
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,12 +87,49 @@ class FrappeToolingRepository(
         clock=None,
         uuid_factory=uuid4,
         procurement_cost_reader=None,
+        asset_status_reader=None,
+        projection_reader=None,
         **values: object,
     ) -> None:
         super().__init__(**values)
         self._clock = clock or (lambda: datetime.now(UTC))
         self._uuid_factory = uuid_factory
         self._procurement_cost_reader = procurement_cost_reader
+        self._asset_status_reader = asset_status_reader
+        self._projection_consumer_reader = (
+            projection_reader
+            if projection_reader is not None
+            else _UNRESOLVED_PROJECTION_READER
+        )
+
+    def _resolved_projection_consumer_reader(self):
+        reader = self._projection_consumer_reader
+        if reader is not _UNRESOLVED_PROJECTION_READER:
+            return reader
+        hooks = frappe.get_hooks("npi_erp_projection_reader_factory")
+        if isinstance(hooks, str):
+            factories = [hooks]
+        else:
+            factories = list(hooks or ())
+        if not factories:
+            reader = None
+        elif len(factories) != 1 or not isinstance(factories[0], str):
+            raise RuntimeError("ERP projection consumer reader hook is ambiguous.")
+        else:
+            factory = frappe.get_attr(factories[0])
+            if not callable(factory):
+                raise RuntimeError("ERP projection consumer reader factory is invalid.")
+            reader = factory()
+            if not all(
+                callable(getattr(reader, method, None))
+                for method in (
+                    "read_tooling_procurement_cost",
+                    "read_tool_asset_status",
+                )
+            ):
+                raise RuntimeError("ERP projection consumer reader is invalid.")
+        self._projection_consumer_reader = reader
+        return reader
 
     def authorize_scope(
         self,

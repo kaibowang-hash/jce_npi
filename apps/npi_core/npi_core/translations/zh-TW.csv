@@ -7550,3 +7550,5 @@ tool_asset_status,模具資產狀態
 tooling_procurement_cost,模具採購成本
 unavailable_current,目前不可用
 unknown,未知
+"ERP projection access is temporarily unavailable.","企業資源規劃投影存取暫時不可用。"
+"Select a supported projection kind.","請選擇支援的投影類型。"

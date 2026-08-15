@@ -133,7 +133,10 @@ class Phase8ProjectionMetadataTest(unittest.TestCase):
 
     def test_visible_sources_have_symmetric_direct_chinese_translations(self) -> None:
         sources: set[str] = set()
-        source_paths: list[Path] = [PROJECTION_ROOT / "frappe_validation.py"]
+        source_paths: list[Path] = [
+            PROJECTION_ROOT / "frappe_validation.py",
+            ROOT / "apps/npi_integration/npi_integration/projection_api.py",
+        ]
         for folder in self.FOLDERS:
             metadata = self.load(folder)
             sources.add(str(metadata["name"]))
@@ -174,7 +177,7 @@ class Phase8ProjectionMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_one_has_no_route_repository_scheduler_network_or_fixture_rows(self) -> None:
+    def test_checkpoint_one_foundation_remains_scheduler_network_and_fixture_free(self) -> None:
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (
@@ -195,7 +198,6 @@ class Phase8ProjectionMetadataTest(unittest.TestCase):
             "write_doc",
         ):
             self.assertNotIn(forbidden, combined)
-        self.assertFalse((ROOT / "apps/npi_integration/npi_integration/projection_api.py").exists())
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = '986c3960b774e0b9';
+export const catalogVersion = '8d78366506719e48';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -2048,6 +2048,7 @@ export const catalogs = {
     "ERP dispatch is unavailable in this Phase 5 boundary.": "此第 5 阶段边界不提供企业资源计划系统分派。",
     "ERP formal quality results": "企业资源计划系统正式质量结果",
     "ERP material verification is unavailable.": "企业资源计划物料验证不可用。",
+    "ERP projection access is temporarily unavailable.": "企业资源计划投影访问暂时不可用。",
     "ERP projection heads can only be changed by the controlled projection service.": "企业资源计划投影头只能由受控投影服务更改。",
     "ERP projection observation and head records cannot be deleted.": "企业资源计划投影观察和投影头记录不能删除。",
     "ERP projection observation history cannot be changed.": "企业资源计划投影观察历史不能更改。",
@@ -5266,6 +5267,7 @@ export const catalogs = {
     "Select a supported project reference type.": "请选择受支持的项目引用类型。",
     "Select a supported project type.": "请选择受支持的项目类型。",
     "Select a supported Project type.": "请选择受支持的项目类型。",
+    "Select a supported projection kind.": "请选择受支持的投影类型。",
     "Select a supported publish policy state.": "请选择支持的发布策略状态。",
     "Select a supported RACI context type.": "请选择支持的职责矩阵上下文类型。",
     "Select a supported RACI responsibility.": "请选择支持的职责矩阵职责。",
@@ -9602,6 +9604,7 @@ export const catalogs = {
     "ERP dispatch is unavailable in this Phase 5 boundary.": "此第 5 階段邊界不提供企業資源規劃系統分派。",
     "ERP formal quality results": "企業資源規劃系統正式品質結果",
     "ERP material verification is unavailable.": "企業資源規劃物料驗證不可用。",
+    "ERP projection access is temporarily unavailable.": "企業資源規劃投影存取暫時不可用。",
     "ERP projection heads can only be changed by the controlled projection service.": "企業資源規劃投影頭只能由受控投影服務變更。",
     "ERP projection observation and head records cannot be deleted.": "企業資源規劃投影觀察和投影頭記錄不能刪除。",
     "ERP projection observation history cannot be changed.": "企業資源規劃投影觀察歷史不能變更。",
@@ -12820,6 +12823,7 @@ export const catalogs = {
     "Select a supported project reference type.": "請選取受支援的專案引用類型。",
     "Select a supported project type.": "請選取受支援的專案類型。",
     "Select a supported Project type.": "請選擇支援的專案類型。",
+    "Select a supported projection kind.": "請選擇支援的投影類型。",
     "Select a supported publish policy state.": "請選擇支援的發佈策略狀態。",
     "Select a supported RACI context type.": "請選擇支援的職責矩陣上下文類型。",
     "Select a supported RACI responsibility.": "請選擇支援的職責矩陣職責。",

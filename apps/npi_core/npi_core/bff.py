@@ -92,6 +92,9 @@ _ROUTES = {
 _PROJECT_COCKPIT_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/]+)/cockpit$"
 )
+_PROJECT_ERP_PROJECTIONS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/erp-projections$"
+)
 _PROJECT_TRIALS_ROUTE = re.compile(
     r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/trials$"
 )
@@ -729,6 +732,11 @@ def route_request() -> None:
 
     command = _ROUTES.get((request.method, path))
     route_params: dict[str, str] = {}
+    if command is None and request.method == "GET":
+        match = _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_integration.projection_api.get_erp_projections"
+            route_params = match.groupdict()
     if command is None and request.method == "GET":
         for route, candidate in (
             (
@@ -2170,6 +2178,7 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method == "GET" and (
         _PROJECT_COCKPIT_ROUTE.fullmatch(path) is not None
         or _PROJECT_WORK_CONTEXT_ROUTE.fullmatch(path) is not None
+        or _PROJECT_ERP_PROJECTIONS_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method in {"GET", "POST"} and (

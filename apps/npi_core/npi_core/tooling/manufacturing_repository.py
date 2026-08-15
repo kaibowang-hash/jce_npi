@@ -756,7 +756,7 @@ class ToolingManufacturingRepositoryMixin:
         project: object,
         tooling_master_id: UUID,
     ) -> ToolingProcurementCostUnavailable | ToolingProcurementCostAvailable:
-        reader = self._procurement_cost_reader
+        reader = self._procurement_cost_reader or self._resolved_projection_consumer_reader()
         if reader is None:
             return ToolingProcurementCostUnavailable()
         snapshot = reader.read_tooling_procurement_cost(

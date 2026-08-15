@@ -141,7 +141,7 @@ class Phase8ProjectionContractTest(unittest.TestCase):
         self.assertIn("source_object_id", common_then["required"])
         self.assertIn("correlation_id", common_then["required"])
 
-    def test_openapi_defines_only_closed_read_schemas_without_activating_a_route(self) -> None:
+    def test_openapi_activates_only_the_closed_project_read_route(self) -> None:
         for name in (
             "ERPProjectionKind",
             "ERPProjectionMasterValues",
@@ -150,6 +150,7 @@ class Phase8ProjectionContractTest(unittest.TestCase):
             "ERPProjectionProjectCostValues",
             "ERPProjectionQualityValues",
             "ERPProjectionToolAssetValues",
+            "ERPProjectionCurrentTruth",
             "ERPProjectionItem",
             "ERPProjectionPermissions",
             "ERPProjectionCollection",
@@ -160,7 +161,15 @@ class Phase8ProjectionContractTest(unittest.TestCase):
         self.assertIn("editable: { type: boolean, const: false }", schemas)
         self.assertIn("refresh: { type: boolean, const: false }", schemas)
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("/erp-projections", paths)
+        self.assertEqual(paths.count("/projects/{projectId}/erp-projections:"), 1)
+        route = paths[paths.index("  /projects/{projectId}/erp-projections:") :]
+        route = route[: route.index("\n  /projects/{projectId}/work-context:")]
+        self.assertIn("operationId: getProjectErpProjections", route)
+        self.assertIn("This route never refreshes or mutates ERP or NPI", route)
+        self.assertNotIn("post:", route)
+        self.assertNotIn("put:", route)
+        self.assertNotIn("delete:", route)
+        self.assertNotIn("sourceObjectId", route)
 
     def test_ownership_keeps_business_truth_in_erp_and_projection_records_read_only(self) -> None:
         for marker in (

@@ -115,6 +115,32 @@ class ProjectionContext:
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectionRefreshTarget:
+    context: ProjectionContext
+    kind: ProjectionKind
+    source_object_id: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.context, ProjectionContext):
+            raise ProjectionContractError("Projection refresh context is invalid.")
+        if not isinstance(self.kind, ProjectionKind):
+            raise ProjectionContractError("projectionKind is unsupported.")
+        if self.context.scope_kind not in PROJECTION_DEFINITIONS[self.kind].scopes:
+            raise ProjectionContractError(
+                "Projection kind does not support the selected server-owned scope."
+            )
+        object.__setattr__(
+            self,
+            "source_object_id",
+            _text(self.source_object_id, "sourceObjectId", 255),
+        )
+
+    @property
+    def source_object_type(self) -> str:
+        return PROJECTION_DEFINITIONS[self.kind].source_object_type
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectionReaderResult:
     kind: ProjectionKind
     adapter_mode: AdapterMode
@@ -234,6 +260,29 @@ class ProjectionReaderResult:
             "unavailable_reason_code": self.unavailable_reason_code,
             "values": dict(self.values) if self.values is not None else None,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectionApplyOutcome:
+    observation_global_id: UUID
+    disposition: ApplicationDisposition
+    head_optimistic_version: int
+    replayed: bool = False
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "observation_global_id",
+            _uuid(self.observation_global_id, "observationGlobalId"),
+        )
+        if not isinstance(self.disposition, ApplicationDisposition):
+            raise ProjectionContractError("Projection disposition is unsupported.")
+        if type(self.head_optimistic_version) is not int or self.head_optimistic_version < 1:
+            raise ProjectionContractError(
+                "Projection head version must be a positive whole number."
+            )
+        if type(self.replayed) is not bool:
+            raise ProjectionContractError("Projection replay state must be boolean.")
 
 
 @dataclass(frozen=True, slots=True)
