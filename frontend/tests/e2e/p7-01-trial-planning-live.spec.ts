@@ -271,8 +271,9 @@ test.describe("P7-01 live Trial planning workspace", () => {
       await installTrialApi(page);
       await openWorkspace(page, locale);
 
-      await expect(page.locator("#trial-live-plans > li")).toHaveCount(1);
-      await expect(page.getByText("T0", { exact: true }).first()).toBeVisible();
+      const planList = page.locator("#trial-live-plans");
+      await expect(planList.locator(":scope > li")).toHaveCount(1);
+      await expect(planList.getByText("T0", { exact: true })).toBeVisible();
       await expect(page.getByText("No booking claim")).toHaveCount(
         locale === "en" ? 1 : 0,
       );
