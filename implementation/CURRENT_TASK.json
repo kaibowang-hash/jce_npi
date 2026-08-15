@@ -106,6 +106,7 @@
     ".github/workflows/ci.yml",
     "scripts/reconcile_v1_2_traceability.py",
     "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_projection_runtime.py",
     "scripts/verify_current_task.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",

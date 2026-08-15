@@ -234,7 +234,7 @@ jobs:
       - name: Verify current task and runtime contract before Site setup
         run: |
           python scripts/verify_current_task.py
-          python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier tests.test_phase7_readiness_runtime_verifier tests.test_phase7_production_transition_runtime_verifier tests.test_phase7_released_trial_summary_runtime_verifier -v
+          python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier tests.test_phase7_readiness_runtime_verifier tests.test_phase7_production_transition_runtime_verifier tests.test_phase7_released_trial_summary_runtime_verifier tests.test_phase8_projection_runtime_verifier -v
           bash -n scripts/verify-frappe-runtime.sh
       - name: Verify exact prior pull-request Gate for Level 2 reuse
         if: inputs.gate_mode == 'level_2_controlled'
@@ -271,7 +271,7 @@ jobs:
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-06 Production transition
     # scope=p5-01-through-p7-06
     # predecessor_scope=p5-01-through-p7-05
-    name: P5 controlled document runtime and P6 Tooling through export plus P7-07 Released Trial Summary
+    name: P5 controlled document runtime and P6 Tooling through export plus P7-07 Released Trial Summary and P8-01 ERP projections
     needs: controlled_preflight
     if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
@@ -295,11 +295,11 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-07 Released Trial Summary
-        run: bash scripts/verify-frappe-runtime.sh --trial-only
+      - name: Verify cumulative P5 through P7-07 runtime plus P8-01 ERP projections
+        run: bash scripts/verify-frappe-runtime.sh --projection-only
       - name: Record controlled runtime result
         run: |
-          mkdir -p "${RUNNER_TEMP}/p7-trial-runtime"
+          mkdir -p "${RUNNER_TEMP}/p8-projection-runtime"
           {
             printf 'result=PASS\n'
             printf 'head_sha=%s\n' "${GITHUB_SHA}"
@@ -308,20 +308,24 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p7-07\n'
-            printf 'predecessor_scope=p5-01-through-p7-06\n'
+            printf 'scope=p5-01-through-p8-01\n'
+            printf 'predecessor_scope=p5-01-through-p7-07\n'
+            printf 'p7_scope=p5-01-through-p7-07\n'
+            printf 'p7_predecessor_scope=p5-01-through-p7-06\n'
             printf 'p6_scope=p5-01-through-p6-08\n'
             printf 'p6_predecessor_scope=p5-01-through-p6-07\n'
             printf 'frappe_commit=a3d8090ba80cb91d3ed72ea90bec67df201db5c1\n'
-            printf 'command=bash scripts/verify-frappe-runtime.sh --trial-only\n'
-            printf 'predecessor_command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'
+            printf 'command=bash scripts/verify-frappe-runtime.sh --projection-only\n'
+            printf 'predecessor_command=bash scripts/verify-frappe-runtime.sh --trial-only\n'
+            printf 'p6_predecessor_command=bash scripts/verify-frappe-runtime.sh --tooling-only\n'
             printf 'p5_predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
-            printf 'predecessor_artifact=p6-tooling-runtime-${{ github.run_id }}\n'
-          } >"${RUNNER_TEMP}/p7-trial-runtime/result.txt"
+            printf 'predecessor_artifact=p7-trial-runtime-${{ github.run_id }}\n'
+            printf 'p6_predecessor_artifact=p6-tooling-runtime-${{ github.run_id }}\n'
+          } >"${RUNNER_TEMP}/p8-projection-runtime/result.txt"
       - uses: actions/upload-artifact@v6
         with:
-          name: p7-trial-runtime-${{ github.run_id }}
-          path: ${{ runner.temp }}/p7-trial-runtime/result.txt
+          name: p8-projection-runtime-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-projection-runtime/result.txt
           if-no-files-found: error
           retention-days: 30
       - name: Clean ephemeral runtime resources
