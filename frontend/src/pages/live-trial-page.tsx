@@ -6996,10 +6996,6 @@ export default function LiveTrialPage({
           { id: "trial-live-execution", label: t("Trial Round execution") },
           { id: "trial-live-quality", label: t("Trial quality workspace") },
           { id: "trial-live-review", label: t("Trial review and conclusion") },
-          {
-            id: "trial-live-released-summary",
-            label: t("Released Trial Summary"),
-          },
           { id: "trial-live-later", label: t("External execution boundary") },
           { id: "trial-live-inspector", label: t("Trial truth inspector") },
         ]}
