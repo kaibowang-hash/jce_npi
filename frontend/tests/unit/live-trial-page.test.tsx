@@ -25,6 +25,10 @@ import {
   trialReviewIds,
   trialReviewWorkspace,
 } from "../support/trial-review-fixture";
+import {
+  emptyReleasedTrialSummaryWorkspace,
+  releasedTrialSummaryWorkspace,
+} from "../support/released-trial-summary-fixture";
 
 const sessionCsrfToken = "c".repeat(64);
 
@@ -48,6 +52,8 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
     loadPlan: () => Promise.resolve(trialPlanDetail()),
     loadRoundQuality: () => Promise.resolve(trialQualityWorkspace()),
     loadRoundReview: () => Promise.resolve(trialReviewWorkspace()),
+    loadReleasedTrialSummaries: () =>
+      Promise.resolve(releasedTrialSummaryWorkspace()),
     loadRoundExecution: () =>
       Promise.resolve(
         trialExecutionWorkspace({
@@ -79,6 +85,8 @@ function dataSource(overrides: Partial<TrialDataSource> = {}): TrialDataSource {
     revisePlan: () => Promise.reject(new Error("not used")),
     decideConclusion: () => Promise.reject(new Error("not used")),
     reopenConclusion: () => Promise.reject(new Error("not used")),
+    retainReleasedTrialSummary: () => Promise.reject(new Error("not used")),
+    reviseReleasedTrialSummary: () => Promise.reject(new Error("not used")),
     startRound: () => Promise.reject(new Error("not used")),
     submitConclusion: () => Promise.reject(new Error("not used")),
     uploadEvidenceFile: () => Promise.reject(new Error("not used")),
@@ -1056,10 +1064,14 @@ describe("live Trial planning page", () => {
         name: "Trial review and conclusion",
       }),
     ).toBeVisible();
-    expect(screen.getByText("material.lot_batch")).toBeVisible();
+    expect(
+      screen.getAllByText("material.lot_batch").length,
+    ).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("rib.end.width")).toHaveLength(2);
     expect(screen.getByText("Controlled quality report")).toBeVisible();
-    expect(screen.getAllByText("Conditional pass")).toHaveLength(2);
+    expect(
+      screen.getAllByText("Conditional pass").length,
+    ).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("A blocking defect remains open")).toBeVisible();
     expect(screen.getByText("Proposal only")).toBeVisible();
     expect(
@@ -1876,5 +1888,156 @@ describe("live Trial planning page", () => {
       location: "Rib end",
       reason: "Continue the stable Tooling defect into T0",
     });
+  });
+
+  it("renders exact immutable Released Summary history and safe source truth", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource()}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const workspace = await screen.findByRole("region", {
+      name: "Released Trial Summary",
+    });
+    await user.selectOptions(
+      within(workspace).getByLabelText("Fact group"),
+      "actualParameters",
+    );
+    expect(within(workspace).getByText("injection.pressure")).toBeVisible();
+    expect(within(workspace).getByText("Trial Plan revision")).toBeVisible();
+    expect(
+      within(workspace).getByText(
+        "This is an NPI-owned technical summary. It is not approval, signature, production acceptance, Gate truth or external publication.",
+      ),
+    ).toBeVisible();
+    expect(
+      within(workspace).getByText("Controlled output mapping"),
+    ).toBeVisible();
+  });
+
+  it("retains the exact decided conclusion and refreshes history without replacing the command key", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const empty = emptyReleasedTrialSummaryWorkspace();
+    const retained = releasedTrialSummaryWorkspace();
+    const loadReleasedTrialSummaries = vi
+      .fn<TrialDataSource["loadReleasedTrialSummaries"]>()
+      .mockResolvedValueOnce(empty)
+      .mockResolvedValueOnce(retained);
+    const retainReleasedTrialSummary = vi
+      .fn<TrialDataSource["retainReleasedTrialSummary"]>()
+      .mockResolvedValue({ replayed: false, workspace: retained });
+    const reportWorkspaceDirty = vi.fn();
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadReleasedTrialSummaries,
+          retainReleasedTrialSummary,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+        reportWorkspaceDirty={reportWorkspaceDirty}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    const primary = await screen.findByRole("button", {
+      name: "Retain technical summary",
+    });
+    await user.click(primary);
+    expect(reportWorkspaceDirty).toHaveBeenCalledWith(
+      expect.objectContaining({ objectIdentity: trialPlanningIds.round }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable technical summary command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Retain the exact decided Trial conclusion",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Retain technical summary" }),
+    );
+
+    await waitFor(() => {
+      expect(retainReleasedTrialSummary).toHaveBeenCalledOnce();
+      expect(loadReleasedTrialSummaries).toHaveBeenCalledTimes(2);
+    });
+    expect(retainReleasedTrialSummary.mock.calls[0]?.[2]).toEqual({
+      conclusionRevisionGlobalId: empty.currentDecidedConclusion?.globalId,
+      expectedConclusionSnapshotHash:
+        empty.currentDecidedConclusion?.snapshotHash,
+      expectedConclusionVersion:
+        empty.currentDecidedConclusion?.conclusionVersion,
+      expectedRoundOptimisticVersion: empty.trialRound.optimisticVersion,
+      expectedRoundSnapshotHash: empty.trialRound.snapshotHash,
+      reason: "Retain the exact decided Trial conclusion",
+    });
+    expect(
+      retainReleasedTrialSummary.mock.calls[0]?.[3].idempotencyKey,
+    ).toMatch(/^released-summary-retain-/u);
+    expect(
+      await screen.findByText(
+        "The technical summary and audit history were retained immutably.",
+      ),
+    ).toBeVisible();
+  });
+
+  it("preserves accepted summary truth when the confirmation refresh fails", async () => {
+    installAuthenticatedSession();
+    const user = userEvent.setup();
+    const empty = emptyReleasedTrialSummaryWorkspace();
+    const retained = releasedTrialSummaryWorkspace();
+    const loadReleasedTrialSummaries = vi
+      .fn<TrialDataSource["loadReleasedTrialSummaries"]>()
+      .mockResolvedValueOnce(empty)
+      .mockRejectedValueOnce(
+        new NpiTransportError("network", "request-summary-refresh", "request"),
+      );
+    const retainReleasedTrialSummary = vi
+      .fn<TrialDataSource["retainReleasedTrialSummary"]>()
+      .mockResolvedValue({ replayed: false, workspace: retained });
+    renderWithLocale(
+      <LiveTrialPage
+        dataSource={dataSource({
+          loadReleasedTrialSummaries,
+          retainReleasedTrialSummary,
+        })}
+        navigate={vi.fn()}
+        projectId={trialPlanningIds.project}
+      />,
+      "en",
+      `/projects/${trialPlanningIds.project}/trials`,
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: "Retain technical summary" }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Review immutable technical summary command",
+    });
+    await user.type(
+      within(dialog).getByLabelText("Reason"),
+      "Retain once and reload current truth",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Retain technical summary" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "The server accepted the command. Do not submit it again.",
+      ),
+    ).toBeVisible();
+    expect(retainReleasedTrialSummary).toHaveBeenCalledOnce();
+    expect(screen.getByText("injection.pressure")).toBeVisible();
   });
 });

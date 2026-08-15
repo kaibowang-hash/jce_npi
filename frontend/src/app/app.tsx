@@ -225,6 +225,7 @@ export function App(): React.JSX.Element {
       <ToolingPage navigate={guardedNavigate} scenario={route.scenario} />
     ) : route.screen === "trial" && route.trialMode === "live" ? (
       <LiveTrialPage
+        controlledPrintDataSource={liveControlledPrintDataSource}
         dataSource={liveTrialDataSource}
         navigate={guardedNavigate}
         projectId={route.projectGlobalId ?? ""}

@@ -1166,6 +1166,195 @@ export interface TrialReviewCommandResult {
   replayed: boolean;
 }
 
+export const releasedTrialSummarySourceKinds = [
+  "trial_plan_revision",
+  "trial_round",
+  "trial_input_lock_revision",
+  "trial_actual_revision",
+  "trial_sample_batch_revision",
+  "trial_cavity_result_revision",
+  "tooling_defect_revision",
+  "trial_defect_revision",
+  "trial_defect_verification_revision",
+  "trial_round_comparison_snapshot",
+  "trial_review_reference_revision",
+  "trial_conclusion_revision",
+] as const;
+export type ReleasedTrialSummarySourceKind =
+  (typeof releasedTrialSummarySourceKinds)[number];
+
+export interface ReleasedTrialSummarySourceReference {
+  kind: ReleasedTrialSummarySourceKind;
+  globalId: string;
+  sourceVersion: number;
+  snapshotHash: string;
+}
+
+export type ReleasedTrialSummaryFactState =
+  | "measured"
+  | "not_measured"
+  | "unavailable"
+  | "satisfied"
+  | "failed"
+  | "open"
+  | "closed"
+  | "informational";
+
+export interface ReleasedTrialSummaryFact {
+  factKey: string;
+  valueState: ReleasedTrialSummaryFactState;
+  value: string | number | boolean | null;
+  unit: string | null;
+  sourceReferences: readonly ReleasedTrialSummarySourceReference[];
+}
+
+export type ReleasedTrialSummaryFactGroup =
+  | "inputChanges"
+  | "actualParameters"
+  | "samples"
+  | "cavityResults"
+  | "defects"
+  | "comparison"
+  | "controlledReferences"
+  | "blockers";
+
+export type ReleasedTrialSummaryFacts = Readonly<
+  Record<ReleasedTrialSummaryFactGroup, readonly ReleasedTrialSummaryFact[]>
+>;
+
+export interface ReleasedTrialSummaryPresentationProjection {
+  schemaVersion: "npi.released_trial_summary.presentation.v1";
+  projectGlobalId: string;
+  trialPlanGlobalId: string;
+  trialRoundGlobalId: string;
+  conclusionRevision: ReleasedTrialSummarySourceReference;
+  conclusionState: "approved" | "rejected";
+  conclusionCode: TrialConclusionCode;
+  sourceManifest: readonly ReleasedTrialSummarySourceReference[];
+  facts: ReleasedTrialSummaryFacts;
+  externalEffects: {
+    customerApproval: "unavailable";
+    externalProjection: "unavailable";
+    formalSignature: "unavailable";
+    gateDecision: "unavailable";
+    productionAcceptance: "unavailable";
+  };
+}
+
+export interface ReleasedTrialSummaryRedactionManifest {
+  schemaVersion: "npi.released_trial_summary.redaction.v1";
+  appliedRuleCodes: readonly (
+    | "exclude_credentials"
+    | "exclude_file_content"
+    | "exclude_private_locators"
+    | "exclude_provider_payloads"
+    | "exclude_unapproved_external_projection"
+  )[];
+  excludedSensitiveFieldClasses: readonly (
+    | "authorization_headers"
+    | "credentials"
+    | "file_content"
+    | "private_paths"
+    | "private_urls"
+    | "production_hostnames"
+    | "provider_payloads"
+    | "secrets"
+    | "session_cookies"
+  )[];
+  externalProjection: "unavailable";
+}
+
+export interface ReleasedTrialSummaryRevision {
+  schemaVersion: "npi.released_trial_summary.v1";
+  globalId: string;
+  summaryGlobalId: string;
+  tenantId: string;
+  projectGlobalId: string;
+  trialPlanGlobalId: string;
+  trialRoundGlobalId: string;
+  summaryVersion: number;
+  predecessorGlobalId: string | null;
+  predecessorSnapshotHash: string | null;
+  trialRoundOptimisticVersion: number;
+  trialRoundSnapshotHash: string;
+  trialPlanRevisionGlobalId: string;
+  trialPlanRevisionSnapshotHash: string;
+  conclusionRevisionGlobalId: string;
+  conclusionVersion: number;
+  conclusionSnapshotHash: string;
+  conclusionState: "approved" | "rejected";
+  conclusionCode: TrialConclusionCode;
+  sourceManifest: readonly ReleasedTrialSummarySourceReference[];
+  presentationProjection: ReleasedTrialSummaryPresentationProjection;
+  redactionManifest: ReleasedTrialSummaryRedactionManifest;
+  reason: string;
+  createdByUserId: string;
+  createdAt: string;
+  requestId: string;
+  traceId: string;
+  versionKeyHash: string;
+  sourceManifestHash: string;
+  presentationProjectionHash: string;
+  redactionManifestHash: string;
+  snapshotHash: string;
+}
+
+export interface ReleasedTrialSummaryWorkspace {
+  projectGlobalId: string;
+  trialRound: TrialRoundSummary;
+  summaryRevisions: readonly ReleasedTrialSummaryRevision[];
+  currentSummaryRevisionGlobalId: string | null;
+  currentDecidedConclusion: {
+    globalId: string;
+    conclusionVersion: number;
+    snapshotHash: string;
+    state: "approved" | "rejected";
+    conclusionCode: TrialConclusionCode;
+  } | null;
+  permissions: {
+    view: true;
+    retain: boolean;
+    revise: boolean;
+    requiresExactRound: true;
+    requiresExactConclusion: true;
+    requiresExactPredecessor: true;
+  };
+  controlledOutput: {
+    sourceObjectType: "released_trial_summary";
+    sourceGlobalId: string | null;
+    sourceVersion: number | null;
+    mapping: "unavailable";
+  };
+  holds: {
+    formalRelease: "unavailable";
+    customerApproval: "unavailable";
+    signature: "unavailable";
+    productionAcceptance: "unavailable";
+    gateDecision: "unavailable";
+    externalProjection: "unavailable";
+  };
+}
+
+export interface RetainReleasedTrialSummaryCommand {
+  expectedRoundOptimisticVersion: number;
+  expectedRoundSnapshotHash: string;
+  conclusionRevisionGlobalId: string;
+  expectedConclusionVersion: number;
+  expectedConclusionSnapshotHash: string;
+  reason: string;
+}
+
+export interface ReviseReleasedTrialSummaryCommand extends RetainReleasedTrialSummaryCommand {
+  predecessorRevisionGlobalId: string;
+  expectedPredecessorVersion: number;
+  expectedPredecessorSnapshotHash: string;
+}
+
+export interface ReleasedTrialSummaryCommandResult {
+  workspace: ReleasedTrialSummaryWorkspace;
+  replayed: boolean;
+}
+
 export interface PrepareTrialRoundCommand {
   expectedRoundOptimisticVersion: number;
   references: readonly TrialLockedReferenceInput[];
@@ -1402,6 +1591,24 @@ export interface TrialDataSource {
     command: ReopenTrialConclusionCommand,
     context: TrialCommandContext,
   ): Promise<TrialReviewCommandResult>;
+  loadReleasedTrialSummaries(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<ReleasedTrialSummaryWorkspace>;
+  retainReleasedTrialSummary(
+    projectId: string,
+    roundId: string,
+    command: RetainReleasedTrialSummaryCommand,
+    context: TrialCommandContext,
+  ): Promise<ReleasedTrialSummaryCommandResult>;
+  reviseReleasedTrialSummary(
+    projectId: string,
+    roundId: string,
+    summaryId: string,
+    command: ReviseReleasedTrialSummaryCommand,
+    context: TrialCommandContext,
+  ): Promise<ReleasedTrialSummaryCommandResult>;
 }
 
 export class TrialRequestCancelledError extends Error {
@@ -3900,6 +4107,462 @@ export function isTrialReviewWorkspace(
   );
 }
 
+const releasedSummaryFactGroups = [
+  "inputChanges",
+  "actualParameters",
+  "samples",
+  "cavityResults",
+  "defects",
+  "comparison",
+  "controlledReferences",
+  "blockers",
+] as const;
+const releasedSummaryFactStates = [
+  "measured",
+  "not_measured",
+  "unavailable",
+  "satisfied",
+  "failed",
+  "open",
+  "closed",
+  "informational",
+] as const;
+const releasedSummaryRedactionRules = [
+  "exclude_credentials",
+  "exclude_file_content",
+  "exclude_private_locators",
+  "exclude_provider_payloads",
+  "exclude_unapproved_external_projection",
+] as const;
+const releasedSummarySensitiveClasses = [
+  "authorization_headers",
+  "credentials",
+  "file_content",
+  "private_paths",
+  "private_urls",
+  "production_hostnames",
+  "provider_payloads",
+  "secrets",
+  "session_cookies",
+] as const;
+
+function record(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isReleasedSummarySource(
+  value: unknown,
+): value is ReleasedTrialSummarySourceReference {
+  if (!record(value)) return false;
+  return (
+    exact(value, ["kind", "globalId", "sourceVersion", "snapshotHash"]) &&
+    member(value.kind, releasedTrialSummarySourceKinds) &&
+    typeof value.globalId === "string" &&
+    uuidPattern.test(value.globalId) &&
+    whole(value.sourceVersion, 1) &&
+    typeof value.snapshotHash === "string" &&
+    hashPattern.test(value.snapshotHash)
+  );
+}
+
+function sourceKey(value: ReleasedTrialSummarySourceReference): string {
+  return `${value.kind}:${value.globalId}:${String(value.sourceVersion)}:${value.snapshotHash}`;
+}
+
+function sameSources(
+  left: readonly ReleasedTrialSummarySourceReference[],
+  right: readonly ReleasedTrialSummarySourceReference[],
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every((source, index) => {
+      const candidate = right[index];
+      return (
+        candidate !== undefined && sourceKey(source) === sourceKey(candidate)
+      );
+    })
+  );
+}
+
+function safeReleasedSummaryValue(value: unknown): boolean {
+  if (value === null || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  return (
+    textValue(value, 0, 4000) &&
+    !/(?:https?|file):\/\/|\/private\/files\//iu.test(value)
+  );
+}
+
+function isReleasedSummaryFact(
+  value: unknown,
+): value is ReleasedTrialSummaryFact {
+  if (!record(value)) return false;
+  return (
+    exact(value, [
+      "factKey",
+      "valueState",
+      "value",
+      "unit",
+      "sourceReferences",
+    ]) &&
+    textValue(value.factKey, 1, 256) &&
+    member(value.valueState, releasedSummaryFactStates) &&
+    safeReleasedSummaryValue(value.value) &&
+    (value.unit === null || textValue(value.unit, 1, 64)) &&
+    Array.isArray(value.sourceReferences) &&
+    value.sourceReferences.length >= 1 &&
+    value.sourceReferences.length <= 100 &&
+    value.sourceReferences.every(isReleasedSummarySource) &&
+    unique(value.sourceReferences.map(sourceKey))
+  );
+}
+
+function isReleasedSummaryFacts(
+  value: unknown,
+): value is ReleasedTrialSummaryFacts {
+  if (!record(value) || !exact(value, releasedSummaryFactGroups)) return false;
+  return releasedSummaryFactGroups.every((key) => {
+    const facts = value[key];
+    return (
+      Array.isArray(facts) &&
+      facts.length <= 25000 &&
+      facts.every(isReleasedSummaryFact)
+    );
+  });
+}
+
+function unavailableExternalEffects(value: unknown): boolean {
+  if (!record(value)) return false;
+  return (
+    exact(value, [
+      "customerApproval",
+      "externalProjection",
+      "formalSignature",
+      "gateDecision",
+      "productionAcceptance",
+    ]) && Object.values(value).every((item) => item === "unavailable")
+  );
+}
+
+function isReleasedSummaryProjection(
+  value: unknown,
+): value is ReleasedTrialSummaryPresentationProjection {
+  if (!record(value)) return false;
+  if (
+    !exact(value, [
+      "schemaVersion",
+      "projectGlobalId",
+      "trialPlanGlobalId",
+      "trialRoundGlobalId",
+      "conclusionRevision",
+      "conclusionState",
+      "conclusionCode",
+      "sourceManifest",
+      "facts",
+      "externalEffects",
+    ]) ||
+    value.schemaVersion !== "npi.released_trial_summary.presentation.v1" ||
+    typeof value.projectGlobalId !== "string" ||
+    !uuidPattern.test(value.projectGlobalId) ||
+    typeof value.trialPlanGlobalId !== "string" ||
+    !uuidPattern.test(value.trialPlanGlobalId) ||
+    typeof value.trialRoundGlobalId !== "string" ||
+    !uuidPattern.test(value.trialRoundGlobalId) ||
+    !isReleasedSummarySource(value.conclusionRevision) ||
+    value.conclusionRevision.kind !== "trial_conclusion_revision" ||
+    !member(value.conclusionState, ["approved", "rejected"] as const) ||
+    !member(value.conclusionCode, trialConclusionCodes) ||
+    !Array.isArray(value.sourceManifest) ||
+    value.sourceManifest.length < 6 ||
+    value.sourceManifest.length > 25000 ||
+    !value.sourceManifest.every(isReleasedSummarySource) ||
+    !unique(value.sourceManifest.map(sourceKey)) ||
+    !isReleasedSummaryFacts(value.facts) ||
+    !unavailableExternalEffects(value.externalEffects)
+  )
+    return false;
+  const manifest = new Set(value.sourceManifest.map(sourceKey));
+  const facts = value.facts;
+  return releasedSummaryFactGroups.every((group) =>
+    facts[group].every((fact) =>
+      fact.sourceReferences.every((source) => manifest.has(sourceKey(source))),
+    ),
+  );
+}
+
+function isReleasedSummaryRedaction(
+  value: unknown,
+): value is ReleasedTrialSummaryRedactionManifest {
+  if (!record(value)) return false;
+  return (
+    exact(value, [
+      "schemaVersion",
+      "appliedRuleCodes",
+      "excludedSensitiveFieldClasses",
+      "externalProjection",
+    ]) &&
+    value.schemaVersion === "npi.released_trial_summary.redaction.v1" &&
+    Array.isArray(value.appliedRuleCodes) &&
+    value.appliedRuleCodes.length === releasedSummaryRedactionRules.length &&
+    value.appliedRuleCodes.every((item) =>
+      member(item, releasedSummaryRedactionRules),
+    ) &&
+    unique(value.appliedRuleCodes) &&
+    Array.isArray(value.excludedSensitiveFieldClasses) &&
+    value.excludedSensitiveFieldClasses.length ===
+      releasedSummarySensitiveClasses.length &&
+    value.excludedSensitiveFieldClasses.every((item) =>
+      member(item, releasedSummarySensitiveClasses),
+    ) &&
+    unique(value.excludedSensitiveFieldClasses) &&
+    value.externalProjection === "unavailable"
+  );
+}
+
+function isReleasedSummaryRevision(
+  value: unknown,
+): value is ReleasedTrialSummaryRevision {
+  if (!record(value)) return false;
+  if (
+    !exact(value, [
+      "schemaVersion",
+      "globalId",
+      "summaryGlobalId",
+      "tenantId",
+      "projectGlobalId",
+      "trialPlanGlobalId",
+      "trialRoundGlobalId",
+      "summaryVersion",
+      "predecessorGlobalId",
+      "predecessorSnapshotHash",
+      "trialRoundOptimisticVersion",
+      "trialRoundSnapshotHash",
+      "trialPlanRevisionGlobalId",
+      "trialPlanRevisionSnapshotHash",
+      "conclusionRevisionGlobalId",
+      "conclusionVersion",
+      "conclusionSnapshotHash",
+      "conclusionState",
+      "conclusionCode",
+      "sourceManifest",
+      "presentationProjection",
+      "redactionManifest",
+      "reason",
+      "createdByUserId",
+      "createdAt",
+      "requestId",
+      "traceId",
+      "versionKeyHash",
+      "sourceManifestHash",
+      "presentationProjectionHash",
+      "redactionManifestHash",
+      "snapshotHash",
+    ]) ||
+    value.schemaVersion !== "npi.released_trial_summary.v1" ||
+    ![
+      value.globalId,
+      value.summaryGlobalId,
+      value.projectGlobalId,
+      value.trialPlanGlobalId,
+      value.trialRoundGlobalId,
+      value.trialPlanRevisionGlobalId,
+      value.conclusionRevisionGlobalId,
+      value.requestId,
+    ].every((item) => typeof item === "string" && uuidPattern.test(item)) ||
+    !textValue(value.tenantId, 1, 256) ||
+    !whole(value.summaryVersion, 1) ||
+    !whole(value.trialRoundOptimisticVersion, 1) ||
+    !whole(value.conclusionVersion, 1) ||
+    ![
+      value.trialRoundSnapshotHash,
+      value.trialPlanRevisionSnapshotHash,
+      value.conclusionSnapshotHash,
+      value.versionKeyHash,
+      value.sourceManifestHash,
+      value.presentationProjectionHash,
+      value.redactionManifestHash,
+      value.snapshotHash,
+    ].every((item) => typeof item === "string" && hashPattern.test(item)) ||
+    !member(value.conclusionState, ["approved", "rejected"] as const) ||
+    !member(value.conclusionCode, trialConclusionCodes) ||
+    !Array.isArray(value.sourceManifest) ||
+    value.sourceManifest.length < 6 ||
+    value.sourceManifest.length > 25000 ||
+    !value.sourceManifest.every(isReleasedSummarySource) ||
+    !unique(value.sourceManifest.map(sourceKey)) ||
+    !isReleasedSummaryProjection(value.presentationProjection) ||
+    !isReleasedSummaryRedaction(value.redactionManifest) ||
+    !textValue(value.reason, 1, 2000) ||
+    !textValue(value.createdByUserId, 1, 254) ||
+    !dateTime(value.createdAt) ||
+    !textValue(value.traceId, 1, 256)
+  )
+    return false;
+  const predecessorValid =
+    (value.summaryVersion === 1 &&
+      value.predecessorGlobalId === null &&
+      value.predecessorSnapshotHash === null) ||
+    (value.summaryVersion > 1 &&
+      typeof value.predecessorGlobalId === "string" &&
+      uuidPattern.test(value.predecessorGlobalId) &&
+      typeof value.predecessorSnapshotHash === "string" &&
+      hashPattern.test(value.predecessorSnapshotHash));
+  const conclusionSource = value.presentationProjection.conclusionRevision;
+  return (
+    predecessorValid &&
+    value.presentationProjection.projectGlobalId === value.projectGlobalId &&
+    value.presentationProjection.trialPlanGlobalId ===
+      value.trialPlanGlobalId &&
+    value.presentationProjection.trialRoundGlobalId ===
+      value.trialRoundGlobalId &&
+    value.presentationProjection.conclusionState === value.conclusionState &&
+    value.presentationProjection.conclusionCode === value.conclusionCode &&
+    conclusionSource.globalId === value.conclusionRevisionGlobalId &&
+    conclusionSource.sourceVersion === value.conclusionVersion &&
+    conclusionSource.snapshotHash === value.conclusionSnapshotHash &&
+    sameSources(
+      value.sourceManifest,
+      value.presentationProjection.sourceManifest,
+    )
+  );
+}
+
+export function isReleasedTrialSummaryWorkspace(
+  value: unknown,
+): value is ReleasedTrialSummaryWorkspace {
+  if (!record(value)) return false;
+  if (
+    !exact(value, [
+      "projectGlobalId",
+      "trialRound",
+      "summaryRevisions",
+      "currentSummaryRevisionGlobalId",
+      "currentDecidedConclusion",
+      "permissions",
+      "controlledOutput",
+      "holds",
+    ]) ||
+    typeof value.projectGlobalId !== "string" ||
+    !uuidPattern.test(value.projectGlobalId) ||
+    !isTrialRound(value.trialRound) ||
+    !Array.isArray(value.summaryRevisions) ||
+    value.summaryRevisions.length > 10000 ||
+    !value.summaryRevisions.every(isReleasedSummaryRevision) ||
+    !record(value.permissions) ||
+    !exact(value.permissions, [
+      "view",
+      "retain",
+      "revise",
+      "requiresExactRound",
+      "requiresExactConclusion",
+      "requiresExactPredecessor",
+    ]) ||
+    value.permissions.view !== true ||
+    typeof value.permissions.retain !== "boolean" ||
+    typeof value.permissions.revise !== "boolean" ||
+    value.permissions.requiresExactRound !== true ||
+    value.permissions.requiresExactConclusion !== true ||
+    value.permissions.requiresExactPredecessor !== true ||
+    !record(value.controlledOutput) ||
+    !exact(value.controlledOutput, [
+      "sourceObjectType",
+      "sourceGlobalId",
+      "sourceVersion",
+      "mapping",
+    ]) ||
+    value.controlledOutput.sourceObjectType !== "released_trial_summary" ||
+    value.controlledOutput.mapping !== "unavailable" ||
+    !record(value.holds) ||
+    !exact(value.holds, [
+      "formalRelease",
+      "customerApproval",
+      "signature",
+      "productionAcceptance",
+      "gateDecision",
+      "externalProjection",
+    ]) ||
+    !Object.values(value.holds).every((item) => item === "unavailable")
+  )
+    return false;
+  const projectId = value.projectGlobalId;
+  const roundId = value.trialRound.globalId;
+  if (
+    value.trialRound.projectGlobalId !== projectId ||
+    !value.summaryRevisions.every(
+      (revision) =>
+        revision.projectGlobalId === projectId &&
+        revision.trialRoundGlobalId === roundId,
+    ) ||
+    !unique(value.summaryRevisions.map((revision) => revision.globalId))
+  )
+    return false;
+  const revisions = value.summaryRevisions;
+  const tip = revisions.at(-1) ?? null;
+  if (
+    revisions.some((revision, index) => {
+      const predecessor =
+        index === 0 ? null : (revisions.at(index - 1) ?? null);
+      return (
+        revision.summaryVersion !== index + 1 ||
+        (predecessor !== null &&
+          (revision.summaryGlobalId !== predecessor.summaryGlobalId ||
+            revision.predecessorGlobalId !== predecessor.globalId ||
+            revision.predecessorSnapshotHash !== predecessor.snapshotHash))
+      );
+    }) ||
+    value.currentSummaryRevisionGlobalId !== (tip?.globalId ?? null) ||
+    value.controlledOutput.sourceGlobalId !== (tip?.globalId ?? null) ||
+    value.controlledOutput.sourceVersion !== (tip?.summaryVersion ?? null)
+  )
+    return false;
+  if (value.currentDecidedConclusion !== null) {
+    if (
+      !record(value.currentDecidedConclusion) ||
+      !exact(value.currentDecidedConclusion, [
+        "globalId",
+        "conclusionVersion",
+        "snapshotHash",
+        "state",
+        "conclusionCode",
+      ]) ||
+      typeof value.currentDecidedConclusion.globalId !== "string" ||
+      !uuidPattern.test(value.currentDecidedConclusion.globalId) ||
+      !whole(value.currentDecidedConclusion.conclusionVersion, 1) ||
+      typeof value.currentDecidedConclusion.snapshotHash !== "string" ||
+      !hashPattern.test(value.currentDecidedConclusion.snapshotHash) ||
+      !member(value.currentDecidedConclusion.state, [
+        "approved",
+        "rejected",
+      ] as const) ||
+      !member(
+        value.currentDecidedConclusion.conclusionCode,
+        trialConclusionCodes,
+      )
+    )
+      return false;
+  }
+  if (value.permissions.retain && value.permissions.revise) return false;
+  if (
+    value.permissions.retain &&
+    (tip !== null || value.currentDecidedConclusion === null)
+  )
+    return false;
+  if (value.permissions.revise) {
+    const conclusion = value.currentDecidedConclusion as NonNullable<
+      ReleasedTrialSummaryWorkspace["currentDecidedConclusion"]
+    > | null;
+    if (
+      tip === null ||
+      conclusion === null ||
+      conclusion.conclusionVersion <= tip.conclusionVersion ||
+      conclusion.globalId === tip.conclusionRevisionGlobalId ||
+      conclusion.snapshotHash === tip.conclusionSnapshotHash
+    )
+      return false;
+  }
+  return true;
+}
+
 function requestNotReady(): NpiTransportError {
   return new NpiTransportError(
     "request_not_ready",
@@ -4966,6 +5629,56 @@ function validReopenCommand(value: ReopenTrialConclusionCommand): boolean {
   );
 }
 
+function validRetainReleasedSummary(
+  value: RetainReleasedTrialSummaryCommand,
+): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "conclusionRevisionGlobalId",
+      "expectedConclusionVersion",
+      "expectedConclusionSnapshotHash",
+      "reason",
+    ]) &&
+    whole(value.expectedRoundOptimisticVersion, 1) &&
+    hashPattern.test(value.expectedRoundSnapshotHash) &&
+    uuidPattern.test(value.conclusionRevisionGlobalId) &&
+    whole(value.expectedConclusionVersion, 1) &&
+    hashPattern.test(value.expectedConclusionSnapshotHash) &&
+    textValue(value.reason, 1, 2000)
+  );
+}
+
+function validReviseReleasedSummary(
+  value: ReviseReleasedTrialSummaryCommand,
+): boolean {
+  return (
+    exact(value, [
+      "expectedRoundOptimisticVersion",
+      "expectedRoundSnapshotHash",
+      "conclusionRevisionGlobalId",
+      "expectedConclusionVersion",
+      "expectedConclusionSnapshotHash",
+      "predecessorRevisionGlobalId",
+      "expectedPredecessorVersion",
+      "expectedPredecessorSnapshotHash",
+      "reason",
+    ]) &&
+    validRetainReleasedSummary({
+      expectedRoundOptimisticVersion: value.expectedRoundOptimisticVersion,
+      expectedRoundSnapshotHash: value.expectedRoundSnapshotHash,
+      conclusionRevisionGlobalId: value.conclusionRevisionGlobalId,
+      expectedConclusionVersion: value.expectedConclusionVersion,
+      expectedConclusionSnapshotHash: value.expectedConclusionSnapshotHash,
+      reason: value.reason,
+    }) &&
+    uuidPattern.test(value.predecessorRevisionGlobalId) &&
+    whole(value.expectedPredecessorVersion, 1) &&
+    hashPattern.test(value.expectedPredecessorSnapshotHash)
+  );
+}
+
 function isBinaryBlob(value: unknown): value is Blob {
   return (
     value instanceof Blob ||
@@ -5136,6 +5849,34 @@ export class LiveTrialDataSource implements TrialDataSource {
     }
   }
 
+  async loadReleasedTrialSummaries(
+    projectId: string,
+    roundId: string,
+    signal: AbortSignal,
+  ): Promise<ReleasedTrialSummaryWorkspace> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    cancelled(signal);
+    try {
+      return await this.http.request<ReleasedTrialSummaryWorkspace>(
+        `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/released-trial-summaries`,
+        { signal },
+        {
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is ReleasedTrialSummaryWorkspace =>
+            isReleasedTrialSummaryWorkspace(value) &&
+            value.projectGlobalId === expectedProjectId &&
+            value.trialRound.globalId === expectedRoundId,
+        },
+      );
+    } catch (error) {
+      cancelled(signal);
+      throw error;
+    }
+  }
+
   private async command(
     path: string,
     projectId: string,
@@ -5291,6 +6032,49 @@ export class LiveTrialDataSource implements TrialDataSource {
           requireTraceId: true,
           validate: (value): value is TrialReviewWorkspace =>
             isTrialReviewWorkspace(value) &&
+            value.projectGlobalId === projectId &&
+            value.trialRound.globalId === roundId,
+          validateResponse: (response) => {
+            const header = replayHeader(response);
+            if (header === null) return false;
+            replayed = header;
+            return true;
+          },
+        },
+      );
+      return { replayed, workspace };
+    } catch (error) {
+      cancelled(context.signal);
+      throw error;
+    }
+  }
+
+  private async releasedSummaryCommand(
+    path: string,
+    projectId: string,
+    roundId: string,
+    body: object,
+    context: TrialCommandContext,
+  ): Promise<ReleasedTrialSummaryCommandResult> {
+    cancelled(context.signal);
+    let replayed = false;
+    try {
+      const workspace = await this.http.request<ReleasedTrialSummaryWorkspace>(
+        path,
+        {
+          body: JSON.stringify(body),
+          headers: { "Idempotency-Key": context.idempotencyKey },
+          method: "POST",
+          signal: context.signal,
+        },
+        {
+          csrfToken: context.csrfToken,
+          requireIdempotencyReplay: true,
+          requirePrivateNoStore: true,
+          requireRequestIdEcho: true,
+          requireTraceId: true,
+          validate: (value): value is ReleasedTrialSummaryWorkspace =>
+            isReleasedTrialSummaryWorkspace(value) &&
             value.projectGlobalId === projectId &&
             value.trialRound.globalId === roundId,
           validateResponse: (response) => {
@@ -5741,6 +6525,46 @@ export class LiveTrialDataSource implements TrialDataSource {
       return Promise.reject(requestNotReady());
     return this.reviewCommand(
       `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}:reopen`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  retainReleasedTrialSummary(
+    projectId: string,
+    roundId: string,
+    command: RetainReleasedTrialSummaryCommand,
+    context: TrialCommandContext,
+  ): Promise<ReleasedTrialSummaryCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    if (!validContext(context) || !validRetainReleasedSummary(command))
+      return Promise.reject(requestNotReady());
+    return this.releasedSummaryCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/released-trial-summaries`,
+      expectedProjectId,
+      expectedRoundId,
+      command,
+      context,
+    );
+  }
+
+  reviseReleasedTrialSummary(
+    projectId: string,
+    roundId: string,
+    summaryId: string,
+    command: ReviseReleasedTrialSummaryCommand,
+    context: TrialCommandContext,
+  ): Promise<ReleasedTrialSummaryCommandResult> {
+    const expectedProjectId = requireUuid(projectId);
+    const expectedRoundId = requireUuid(roundId);
+    const expectedSummaryId = requireUuid(summaryId);
+    if (!validContext(context) || !validReviseReleasedSummary(command))
+      return Promise.reject(requestNotReady());
+    return this.releasedSummaryCommand(
+      `/projects/${expectedProjectId}/trial-rounds/${expectedRoundId}/released-trial-summaries/${expectedSummaryId}:revise`,
       expectedProjectId,
       expectedRoundId,
       command,

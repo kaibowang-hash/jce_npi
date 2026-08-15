@@ -6,6 +6,7 @@ import {
   isTrialPlanningWorkspace,
   isTrialQualityWorkspace,
   isTrialReviewWorkspace,
+  isReleasedTrialSummaryWorkspace,
   LiveTrialDataSource,
   type CreateTrialCavityResultCommand,
   type CreateTrialDefectCommand,
@@ -38,6 +39,12 @@ import {
   trialReviewReference,
   trialReviewWorkspace,
 } from "../support/trial-review-fixture";
+import {
+  releasedTrialSummaryIds,
+  releasedTrialSummaryRevision,
+  releasedTrialSummaryWorkspace,
+  successorReleasedTrialSummaryWorkspace,
+} from "../support/released-trial-summary-fixture";
 
 function requestUrl(request: RequestInfo | URL | undefined): string {
   if (typeof request === "string") return request;
@@ -1147,5 +1154,162 @@ describe("Trial planning data source", () => {
       ),
     ).rejects.toBeInstanceOf(NpiTransportError);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("accepts only exact URL-free and append-only Released Summary workspaces", () => {
+    const workspace = releasedTrialSummaryWorkspace();
+    const revision = releasedTrialSummaryRevision();
+    const currentConclusion = workspace.currentDecidedConclusion;
+    if (!currentConclusion)
+      throw new Error("The Released Summary test requires a conclusion.");
+
+    expect(isReleasedTrialSummaryWorkspace(workspace)).toBe(true);
+    expect(
+      isReleasedTrialSummaryWorkspace(successorReleasedTrialSummaryWorkspace()),
+    ).toBe(true);
+    expect(
+      isReleasedTrialSummaryWorkspace({ ...workspace, released: true }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        summaryRevisions: [
+          {
+            ...revision,
+            presentationProjection: {
+              ...revision.presentationProjection,
+              facts: {
+                ...revision.presentationProjection.facts,
+                inputChanges:
+                  revision.presentationProjection.facts.inputChanges.map(
+                    (fact) => ({
+                      ...fact,
+                      value: "https://private.invalid/file",
+                    }),
+                  ),
+              },
+            },
+          },
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        currentSummaryRevisionGlobalId: trialReviewIds.conclusion,
+      }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        summaryRevisions: [
+          revision,
+          {
+            ...revision,
+            globalId: trialReviewIds.conclusion,
+            predecessorGlobalId: null,
+            predecessorSnapshotHash: null,
+            summaryVersion: 2,
+          },
+        ],
+      }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        permissions: { ...workspace.permissions, retain: true, revise: true },
+      }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        permissions: { ...workspace.permissions, revise: true },
+      }),
+    ).toBe(false);
+    expect(
+      isReleasedTrialSummaryWorkspace({
+        ...workspace,
+        currentDecidedConclusion: {
+          ...currentConclusion,
+          conclusionVersion: 2,
+          globalId: trialReviewIds.conclusion,
+          snapshotHash: "d".repeat(64),
+        },
+        permissions: { ...workspace.permissions, revise: true },
+      }),
+    ).toBe(true);
+  });
+
+  it("loads and submits exact actor-bound Released Summary commands", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>((_request, init) =>
+      Promise.resolve(
+        response(
+          releasedTrialSummaryWorkspace(),
+          init,
+          init?.method === "POST" ? true : undefined,
+        ),
+      ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    const source = new LiveTrialDataSource();
+    const workspace = releasedTrialSummaryWorkspace();
+    const conclusion = workspace.currentDecidedConclusion;
+    const revision = workspace.summaryRevisions[0];
+    if (!conclusion || !revision)
+      throw new Error("The Released Summary test requires exact source truth.");
+    const command = {
+      conclusionRevisionGlobalId: conclusion.globalId,
+      expectedConclusionSnapshotHash: conclusion.snapshotHash,
+      expectedConclusionVersion: conclusion.conclusionVersion,
+      expectedRoundOptimisticVersion: workspace.trialRound.optimisticVersion,
+      expectedRoundSnapshotHash: workspace.trialRound.snapshotHash,
+      reason: "Retain the exact decided conclusion",
+    };
+
+    await source.loadReleasedTrialSummaries(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      new AbortController().signal,
+    );
+    const retained = await source.retainReleasedTrialSummary(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      command,
+      context("summary-retain"),
+    );
+    const revised = await source.reviseReleasedTrialSummary(
+      trialPlanningIds.project,
+      trialPlanningIds.round,
+      releasedTrialSummaryIds.summary,
+      {
+        ...command,
+        expectedPredecessorSnapshotHash: revision.snapshotHash,
+        expectedPredecessorVersion: revision.summaryVersion,
+        predecessorRevisionGlobalId: revision.globalId,
+        reason: "Append the exact successor",
+      },
+      context("summary-revise"),
+    );
+
+    expect(retained.replayed).toBe(true);
+    expect(revised.replayed).toBe(true);
+    expect(requestUrl(fetch.mock.calls[0]?.[0])).toBe(
+      `/api/npi/v1/projects/${trialPlanningIds.project}/trial-rounds/${trialPlanningIds.round}/released-trial-summaries`,
+    );
+    expect(requestUrl(fetch.mock.calls[2]?.[0])).toBe(
+      `/api/npi/v1/projects/${trialPlanningIds.project}/trial-rounds/${trialPlanningIds.round}/released-trial-summaries/${releasedTrialSummaryIds.summary}:revise`,
+    );
+    expect(bodyValue(fetch.mock.calls[2]?.[1]?.body)).toEqual({
+      ...command,
+      expectedPredecessorSnapshotHash: revision.snapshotHash,
+      expectedPredecessorVersion: revision.summaryVersion,
+      predecessorRevisionGlobalId: revision.globalId,
+      reason: "Append the exact successor",
+    });
+    for (const call of fetch.mock.calls.slice(1)) {
+      expect(new Headers(call[1]?.headers).get("Idempotency-Key")).toMatch(
+        /^trial-summary-/u,
+      );
+    }
   });
 });

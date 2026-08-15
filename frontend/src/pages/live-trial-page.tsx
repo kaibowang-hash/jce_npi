@@ -55,8 +55,16 @@ import {
   type VerifyTrialDefectCommand,
   type DecideTrialConclusionCommand,
   type ReopenTrialConclusionCommand,
+  type ReleasedTrialSummaryCommandResult,
+  type ReleasedTrialSummaryFactGroup,
+  type ReleasedTrialSummaryFactState,
+  type ReleasedTrialSummarySourceKind,
+  type ReleasedTrialSummaryWorkspace,
+  type RetainReleasedTrialSummaryCommand,
+  type ReviseReleasedTrialSummaryCommand,
   type SubmitTrialConclusionCommand,
 } from "../api/trial-data-source";
+import type { ControlledPrintDataSource } from "../api/controlled-print-data-source";
 import { toRequestFailure, type RequestFailure } from "../api/http";
 import type { ReportWorkspaceDirty } from "../app/workspace-navigation";
 import {
@@ -65,6 +73,7 @@ import {
   SectionAnchors,
 } from "../components/object-components";
 import { RequestFailurePanel } from "../components/problem-details-panel";
+import { ControlledPrintAction } from "../components/controlled-print-action";
 import {
   DefinitionList,
   ImpactReview,
@@ -98,6 +107,11 @@ type ReviewState =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "loaded"; value: TrialReviewWorkspace }
+  | { kind: "failed"; failure: RequestFailure };
+type ReleasedSummaryState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "loaded"; value: ReleasedTrialSummaryWorkspace }
   | { kind: "failed"; failure: RequestFailure };
 type EditorKind =
   | "create_plan"
@@ -5438,12 +5452,920 @@ function TrialReviewSection({
   );
 }
 
+type ReleasedSummaryCommandState =
+  | { kind: "idle" }
+  | { kind: "processing"; label: string }
+  | { kind: "succeeded"; label: string; replayed: boolean }
+  | {
+      kind: "accepted_refresh_failed";
+      label: string;
+      replayed: boolean;
+      failure: RequestFailure;
+    }
+  | { kind: "failed"; failure: RequestFailure };
+
+const releasedSummaryFactGroups: readonly ReleasedTrialSummaryFactGroup[] = [
+  "inputChanges",
+  "actualParameters",
+  "samples",
+  "cavityResults",
+  "defects",
+  "comparison",
+  "controlledReferences",
+  "blockers",
+];
+const releasedSummaryPageSize = 50;
+
+function releasedSummarySourceLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: ReleasedTrialSummarySourceKind,
+): string {
+  switch (kind) {
+    case "trial_plan_revision":
+      return t("Trial Plan revision");
+    case "trial_round":
+      return t("Trial Round");
+    case "trial_input_lock_revision":
+      return t("Input lock revision");
+    case "trial_actual_revision":
+      return t("Trial Actual revision");
+    case "trial_sample_batch_revision":
+      return t("Sample Batch revision");
+    case "trial_cavity_result_revision":
+      return t("Cavity Result revision");
+    case "tooling_defect_revision":
+      return t("Tooling defect revision");
+    case "trial_defect_revision":
+      return t("Trial defect revision");
+    case "trial_defect_verification_revision":
+      return t("Defect verification revision");
+    case "trial_round_comparison_snapshot":
+      return t("Round comparison snapshot");
+    case "trial_review_reference_revision":
+      return t("Review reference revision");
+    case "trial_conclusion_revision":
+      return t("Trial conclusion revision");
+  }
+}
+
+function releasedSummaryFactGroupLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  group: ReleasedTrialSummaryFactGroup,
+): string {
+  switch (group) {
+    case "inputChanges":
+      return t("Input changes");
+    case "actualParameters":
+      return t("Actual parameters");
+    case "samples":
+      return t("Samples");
+    case "cavityResults":
+      return t("Cavity results");
+    case "defects":
+      return t("Defects and actions");
+    case "comparison":
+      return t("Round comparison");
+    case "controlledReferences":
+      return t("Controlled references");
+    case "blockers":
+      return t("Technical blockers");
+  }
+}
+
+function releasedSummaryFactStateLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  state: ReleasedTrialSummaryFactState,
+): string {
+  switch (state) {
+    case "measured":
+      return t("Measured");
+    case "not_measured":
+      return t("Not measured");
+    case "unavailable":
+      return t("Unavailable");
+    case "satisfied":
+      return t("Satisfied");
+    case "failed":
+      return t("Failed");
+    case "open":
+      return t("Open");
+    case "closed":
+      return t("Closed");
+    case "informational":
+      return t("Informational");
+  }
+}
+
+function releasedSummaryActionLabel(
+  t: ReturnType<typeof useI18n>["t"],
+  kind: "retain" | "revise",
+): string {
+  return kind === "retain"
+    ? t("Retain technical summary")
+    : t("Revise technical summary");
+}
+
+function isReleasedSummaryOverflow(failure: RequestFailure): boolean {
+  const code = failure.problem?.code ?? "";
+  return code.includes("OVERFLOW") || code.includes("TOO_LARGE");
+}
+
+function ReleasedTrialSummarySection({
+  controlledPrintDataSource,
+  dataSource,
+  onWorkspace,
+  projectId,
+  reportWorkspaceDirty,
+  workspace,
+}: {
+  controlledPrintDataSource?: ControlledPrintDataSource | undefined;
+  dataSource: TrialDataSource;
+  onWorkspace: (value: ReleasedTrialSummaryWorkspace) => void;
+  projectId: string;
+  reportWorkspaceDirty?: ReportWorkspaceDirty | undefined;
+  workspace: ReleasedTrialSummaryWorkspace;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const currentRevision = workspace.summaryRevisions.at(-1) ?? null;
+  const [selectedRevisionId, setSelectedRevisionId] = useState<string | null>(
+    workspace.currentSummaryRevisionGlobalId,
+  );
+  const [factGroup, setFactGroup] =
+    useState<ReleasedTrialSummaryFactGroup>("inputChanges");
+  const [factPage, setFactPage] = useState(0);
+  const [sourcePage, setSourcePage] = useState(0);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [command, setCommand] = useState<ReleasedSummaryCommandState>({
+    kind: "idle",
+  });
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const idempotencyKey = useRef<string | null>(null);
+  const latestCommand = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      activeRequest.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!reportWorkspaceDirty) return undefined;
+    if (!reviewOpen && command.kind !== "processing") {
+      reportWorkspaceDirty(null);
+      return undefined;
+    }
+    reportWorkspaceDirty({
+      objectIdentity:
+        currentRevision?.globalId ?? workspace.trialRound.globalId,
+      version: currentRevision
+        ? `released-summary-v${String(currentRevision.summaryVersion)}`
+        : `trial-round-v${String(workspace.trialRound.optimisticVersion)}`,
+      returnFocusTarget: () => returnFocus.current,
+    });
+    return () => {
+      reportWorkspaceDirty(null);
+    };
+  }, [
+    command.kind,
+    currentRevision,
+    reportWorkspaceDirty,
+    reviewOpen,
+    workspace.trialRound,
+  ]);
+
+  const selectedRevision =
+    workspace.summaryRevisions.find(
+      (revision) => revision.globalId === selectedRevisionId,
+    ) ?? currentRevision;
+  const currentConclusion = workspace.currentDecidedConclusion;
+  const actionKind = useMemo<"retain" | "revise" | null>(() => {
+    if (
+      currentRevision === null &&
+      currentConclusion !== null &&
+      workspace.permissions.retain
+    )
+      return "retain";
+    if (
+      currentRevision !== null &&
+      currentConclusion !== null &&
+      workspace.permissions.revise &&
+      (currentRevision.conclusionRevisionGlobalId !==
+        currentConclusion.globalId ||
+        currentRevision.conclusionSnapshotHash !==
+          currentConclusion.snapshotHash)
+    )
+      return "revise";
+    return null;
+  }, [currentConclusion, currentRevision, workspace.permissions]);
+
+  const reloadWorkspace = useCallback((): void => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    void dataSource
+      .loadReleasedTrialSummaries(
+        projectId,
+        workspace.trialRound.globalId,
+        controller.signal,
+      )
+      .then((value) => {
+        if (controller.signal.aborted || activeRequest.current !== controller)
+          return;
+        activeRequest.current = null;
+        onWorkspace(value);
+        setSelectedRevisionId(value.currentSummaryRevisionGlobalId);
+        setCommand({ kind: "idle" });
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          activeRequest.current !== controller ||
+          error instanceof TrialRequestCancelledError
+        )
+          return;
+        activeRequest.current = null;
+        setCommand({ kind: "failed", failure: toRequestFailure(error) });
+      });
+  }, [dataSource, onWorkspace, projectId, workspace.trialRound.globalId]);
+
+  const acceptCommand = useCallback(
+    (result: ReleasedTrialSummaryCommandResult, label: string): void => {
+      onWorkspace(result.workspace);
+      setSelectedRevisionId(result.workspace.currentSummaryRevisionGlobalId);
+      setReviewOpen(false);
+      idempotencyKey.current = null;
+      const controller = new AbortController();
+      activeRequest.current = controller;
+      void dataSource
+        .loadReleasedTrialSummaries(
+          projectId,
+          result.workspace.trialRound.globalId,
+          controller.signal,
+        )
+        .then((value) => {
+          if (controller.signal.aborted || activeRequest.current !== controller)
+            return;
+          activeRequest.current = null;
+          onWorkspace(value);
+          setSelectedRevisionId(value.currentSummaryRevisionGlobalId);
+          setCommand({ kind: "succeeded", label, replayed: result.replayed });
+          globalThis.queueMicrotask(() => returnFocus.current?.focus());
+        })
+        .catch((error: unknown) => {
+          if (
+            controller.signal.aborted ||
+            activeRequest.current !== controller ||
+            error instanceof TrialRequestCancelledError
+          )
+            return;
+          activeRequest.current = null;
+          setCommand({
+            failure: toRequestFailure(error),
+            kind: "accepted_refresh_failed",
+            label,
+            replayed: result.replayed,
+          });
+          globalThis.queueMicrotask(() => returnFocus.current?.focus());
+        });
+    },
+    [dataSource, onWorkspace, projectId],
+  );
+
+  const confirmCommand = (reason: string): void => {
+    if (!actionKind || !currentConclusion || !sessionCommandContext) return;
+    const label = releasedSummaryActionLabel(t, actionKind);
+    const key =
+      idempotencyKey.current ??
+      `released-summary-${actionKind}-${globalThis.crypto.randomUUID()}`;
+    idempotencyKey.current = key;
+    const baseCommand: RetainReleasedTrialSummaryCommand = {
+      conclusionRevisionGlobalId: currentConclusion.globalId,
+      expectedConclusionSnapshotHash: currentConclusion.snapshotHash,
+      expectedConclusionVersion: currentConclusion.conclusionVersion,
+      expectedRoundOptimisticVersion: workspace.trialRound.optimisticVersion,
+      expectedRoundSnapshotHash: workspace.trialRound.snapshotHash,
+      reason,
+    };
+    const execute = (): void => {
+      activeRequest.current?.abort();
+      const controller = new AbortController();
+      activeRequest.current = controller;
+      setCommand({ kind: "processing", label });
+      const context = {
+        csrfToken: sessionCommandContext.csrfToken,
+        idempotencyKey: key,
+        signal: controller.signal,
+      };
+      let request: Promise<ReleasedTrialSummaryCommandResult>;
+      if (actionKind === "retain") {
+        request = dataSource.retainReleasedTrialSummary(
+          projectId,
+          workspace.trialRound.globalId,
+          baseCommand,
+          context,
+        );
+      } else {
+        if (!currentRevision) return;
+        request = dataSource.reviseReleasedTrialSummary(
+          projectId,
+          workspace.trialRound.globalId,
+          currentRevision.summaryGlobalId,
+          {
+            ...baseCommand,
+            expectedPredecessorSnapshotHash: currentRevision.snapshotHash,
+            expectedPredecessorVersion: currentRevision.summaryVersion,
+            predecessorRevisionGlobalId: currentRevision.globalId,
+          } satisfies ReviseReleasedTrialSummaryCommand,
+          context,
+        );
+      }
+      void request
+        .then((result) => {
+          if (controller.signal.aborted || activeRequest.current !== controller)
+            return;
+          activeRequest.current = null;
+          acceptCommand(result, label);
+        })
+        .catch((error: unknown) => {
+          if (
+            controller.signal.aborted ||
+            activeRequest.current !== controller ||
+            error instanceof TrialRequestCancelledError
+          )
+            return;
+          activeRequest.current = null;
+          setReviewOpen(false);
+          setCommand({ kind: "failed", failure: toRequestFailure(error) });
+        });
+    };
+    latestCommand.current = execute;
+    execute();
+  };
+
+  const facts = selectedRevision?.presentationProjection.facts[factGroup] ?? [];
+  const factPageCount = Math.max(
+    1,
+    Math.ceil(facts.length / releasedSummaryPageSize),
+  );
+  const sourceManifest = selectedRevision?.sourceManifest ?? [];
+  const sourcePageCount = Math.max(
+    1,
+    Math.ceil(sourceManifest.length / releasedSummaryPageSize),
+  );
+  const visibleFacts = facts.slice(
+    factPage * releasedSummaryPageSize,
+    (factPage + 1) * releasedSummaryPageSize,
+  );
+  const visibleSources = sourceManifest.slice(
+    sourcePage * releasedSummaryPageSize,
+    (sourcePage + 1) * releasedSummaryPageSize,
+  );
+  return (
+    <section
+      aria-label={t("Released Trial Summary")}
+      className="released-summary-workspace"
+    >
+      <div className="released-summary-workspace__toolbar">
+        <div className="released-summary-workspace__title">
+          <strong>{t("Released Trial Summary")}</strong>
+          <span className="released-summary-workspace__subtitle">
+            {t(
+              "Immutable technical retention from the exact decided conclusion",
+            )}
+          </span>
+        </div>
+        {actionKind ? (
+          <Button
+            disabled={
+              command.kind === "processing" || sessionCommandContext === null
+            }
+            id="released-summary-primary-action"
+            onClick={(event) => {
+              returnFocus.current = event.currentTarget;
+              setReviewOpen(true);
+            }}
+            visual="primary"
+          >
+            {releasedSummaryActionLabel(t, actionKind)}
+          </Button>
+        ) : null}
+      </div>
+
+      {!sessionCommandContext ||
+      (!workspace.permissions.retain && !workspace.permissions.revise) ? (
+        <div
+          className="scenario-banner scenario-banner--read-only"
+          role="status"
+        >
+          <span>{t("Released Summary is read only in this session.")}</span>
+          <span>
+            {t(
+              "The server rechecks Project visibility and exact technical authority for every retain or revise command.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "processing" ? (
+        <div
+          className="scenario-banner scenario-banner--processing"
+          role="status"
+        >
+          <span>{command.label}</span>
+          <span>
+            {t(
+              "The exact Round, decided conclusion, predecessor and source graph are being verified atomically.",
+            )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "succeeded" ? (
+        <div className="scenario-banner scenario-banner--queued" role="status">
+          <span>{command.label}</span>
+          <span>
+            {command.replayed
+              ? t(
+                  "The exact prior summary command response was replayed safely.",
+                )
+              : t(
+                  "The technical summary and audit history were retained immutably.",
+                )}
+          </span>
+        </div>
+      ) : null}
+      {command.kind === "accepted_refresh_failed" ? (
+        <Panel
+          title={t("Summary retained; current history could not be refreshed")}
+        >
+          <p>
+            {command.replayed
+              ? t(
+                  "The server replayed the accepted command. Do not submit it again.",
+                )
+              : t("The server accepted the command. Do not submit it again.")}
+          </p>
+          <RequestFailurePanel failure={command.failure} />
+          <Button onClick={reloadWorkspace}>
+            {t("Reload summary history")}
+          </Button>
+        </Panel>
+      ) : null}
+      {command.kind === "failed" ? (
+        <Panel
+          title={
+            isReleasedSummaryOverflow(command.failure)
+              ? t("Summary source graph exceeds the safe retention boundary")
+              : t("Released Summary command failed")
+          }
+        >
+          <RequestFailurePanel failure={command.failure} />
+          {command.failure.problem?.status === 409 ? (
+            <Button onClick={reloadWorkspace}>
+              {t("Reload current summary")}
+            </Button>
+          ) : canRetry(command.failure) ? (
+            <Button onClick={() => latestCommand.current?.()}>
+              {t("Retry exact command")}
+            </Button>
+          ) : null}
+        </Panel>
+      ) : null}
+
+      <div className="released-summary-workspace__layout">
+        <Panel
+          bodyClassName="released-summary-workspace__history-body"
+          className="released-summary-workspace__history"
+          title={t("Immutable summary history")}
+        >
+          {workspace.summaryRevisions.length ? (
+            <ol>
+              {[...workspace.summaryRevisions].reverse().map((revision) => (
+                <li key={revision.globalId}>
+                  <button
+                    aria-current={
+                      selectedRevision?.globalId === revision.globalId
+                        ? "page"
+                        : undefined
+                    }
+                    className="released-summary-workspace__history-select"
+                    onClick={() => {
+                      setSelectedRevisionId(revision.globalId);
+                      setFactPage(0);
+                      setSourcePage(0);
+                    }}
+                    type="button"
+                  >
+                    <strong>
+                      {t("Version")}{" "}
+                      {formatNumber(locale, revision.summaryVersion, 0)}
+                    </strong>
+                    <span className="released-summary-workspace__history-state">
+                      {conclusionStateLabel(t, revision.conclusionState)}
+                    </span>
+                    <time
+                      className="released-summary-workspace__history-time"
+                      dateTime={revision.createdAt}
+                    >
+                      {formatDateTime(locale, revision.createdAt)}
+                    </time>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div className="empty-state" role="status">
+              <strong>{t("No technical summary has been retained.")}</strong>
+              <span>
+                {currentConclusion
+                  ? t(
+                      "The current decided conclusion is eligible for technical retention when authority is available.",
+                    )
+                  : t(
+                      "A unique current approved or rejected conclusion is required first.",
+                    )}
+              </span>
+            </div>
+          )}
+        </Panel>
+
+        <div className="released-summary-workspace__content">
+          {selectedRevision ? (
+            <>
+              <Panel
+                actions={
+                  controlledPrintDataSource ? (
+                    <ControlledPrintAction
+                      dataSource={controlledPrintDataSource}
+                      projectId={projectId}
+                      source={{
+                        sourceGlobalId: selectedRevision.globalId,
+                        sourceKind: "released_trial_summary",
+                        sourceVersion: selectedRevision.summaryVersion,
+                      }}
+                    />
+                  ) : undefined
+                }
+                title={t("Selected technical summary")}
+              >
+                <DefinitionList
+                  rows={[
+                    {
+                      label: t("Summary stable ID"),
+                      value: selectedRevision.summaryGlobalId,
+                      exempt: "identifier",
+                    },
+                    {
+                      label: t("Revision stable ID"),
+                      value: selectedRevision.globalId,
+                      exempt: "identifier",
+                    },
+                    {
+                      label: t("Conclusion state"),
+                      value: conclusionStateLabel(
+                        t,
+                        selectedRevision.conclusionState,
+                      ),
+                    },
+                    {
+                      label: t("Conclusion"),
+                      value: conclusionCodeLabel(
+                        t,
+                        selectedRevision.conclusionCode,
+                      ),
+                    },
+                    {
+                      label: t("Source manifest entries"),
+                      value: formatNumber(
+                        locale,
+                        selectedRevision.sourceManifest.length,
+                        0,
+                      ),
+                    },
+                    {
+                      label: t("Controlled output mapping"),
+                      value: t("Unavailable"),
+                    },
+                    {
+                      label: t("Retained by"),
+                      value: selectedRevision.createdByUserId,
+                      exempt: "business-data",
+                    },
+                  ]}
+                />
+                <p className="released-summary-workspace__disclaimer">
+                  {t(
+                    "This is an NPI-owned technical summary. It is not approval, signature, production acceptance, Gate truth or external publication.",
+                  )}
+                </p>
+              </Panel>
+
+              <Panel title={t("Safe presentation facts")}>
+                <label className="field-control">
+                  <span>{t("Fact group")}</span>
+                  <Select
+                    onChange={(event) => {
+                      setFactGroup(
+                        event.target.value as ReleasedTrialSummaryFactGroup,
+                      );
+                      setFactPage(0);
+                    }}
+                    value={factGroup}
+                  >
+                    {releasedSummaryFactGroups.map((group) => (
+                      <option key={group} value={group}>
+                        {releasedSummaryFactGroupLabel(t, group)} (
+                        {formatNumber(
+                          locale,
+                          selectedRevision.presentationProjection.facts[group]
+                            .length,
+                          0,
+                        )}
+                        )
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                {visibleFacts.length ? (
+                  <div
+                    aria-label={t("Safe presentation facts")}
+                    className="released-summary-workspace__table-body"
+                    tabIndex={0}
+                  >
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>{t("Fact")}</th>
+                          <th>{t("State")}</th>
+                          <th>{t("Value")}</th>
+                          <th>{t("Unit")}</th>
+                          <th>{t("Sources")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleFacts.map((fact, index) => (
+                          <tr
+                            key={`${fact.factKey}:${String(index + factPage * releasedSummaryPageSize)}`}
+                          >
+                            <td data-language-exempt="business-data">
+                              {fact.factKey}
+                            </td>
+                            <td>
+                              {releasedSummaryFactStateLabel(
+                                t,
+                                fact.valueState,
+                              )}
+                            </td>
+                            <td data-language-exempt="business-data">
+                              {fact.value === null
+                                ? t("Unavailable")
+                                : typeof fact.value === "boolean"
+                                  ? fact.value
+                                    ? t("Yes")
+                                    : t("No")
+                                  : typeof fact.value === "number"
+                                    ? formatNumber(locale, fact.value, 2)
+                                    : fact.value}
+                            </td>
+                            <td data-language-exempt="identifier">
+                              {fact.unit ?? "—"}
+                            </td>
+                            <td>
+                              {formatNumber(
+                                locale,
+                                fact.sourceReferences.length,
+                                0,
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p>{t("No facts are retained in this group.")}</p>
+                )}
+                <div className="released-summary-workspace__pagination">
+                  <Button
+                    disabled={factPage === 0}
+                    onClick={() => {
+                      setFactPage((page) => Math.max(0, page - 1));
+                    }}
+                  >
+                    {t("Previous")}
+                  </Button>
+                  <span>
+                    {t("Page")} {formatNumber(locale, factPage + 1, 0)} /{" "}
+                    {formatNumber(locale, factPageCount, 0)}
+                  </span>
+                  <Button
+                    disabled={factPage + 1 >= factPageCount}
+                    onClick={() => {
+                      setFactPage((page) =>
+                        Math.min(factPageCount - 1, page + 1),
+                      );
+                    }}
+                  >
+                    {t("Next")}
+                  </Button>
+                </div>
+              </Panel>
+
+              <Panel title={t("Exact source manifest")}>
+                <div
+                  aria-label={t("Exact source manifest")}
+                  className="released-summary-workspace__table-body"
+                  tabIndex={0}
+                >
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{t("Source kind")}</th>
+                        <th>{t("Stable ID")}</th>
+                        <th>{t("Version")}</th>
+                        <th>{t("Snapshot hash")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleSources.map((source) => (
+                        <tr key={`${source.kind}:${source.globalId}`}>
+                          <td>{releasedSummarySourceLabel(t, source.kind)}</td>
+                          <td data-language-exempt="identifier">
+                            {source.globalId}
+                          </td>
+                          <td>
+                            {formatNumber(locale, source.sourceVersion, 0)}
+                          </td>
+                          <td data-language-exempt="identifier">
+                            <code>{source.snapshotHash}</code>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="released-summary-workspace__pagination">
+                  <Button
+                    disabled={sourcePage === 0}
+                    onClick={() => {
+                      setSourcePage((page) => Math.max(0, page - 1));
+                    }}
+                  >
+                    {t("Previous")}
+                  </Button>
+                  <span>
+                    {t("Page")} {formatNumber(locale, sourcePage + 1, 0)} /{" "}
+                    {formatNumber(locale, sourcePageCount, 0)}
+                  </span>
+                  <Button
+                    disabled={sourcePage + 1 >= sourcePageCount}
+                    onClick={() => {
+                      setSourcePage((page) =>
+                        Math.min(sourcePageCount - 1, page + 1),
+                      );
+                    }}
+                  >
+                    {t("Next")}
+                  </Button>
+                </div>
+              </Panel>
+            </>
+          ) : (
+            <Panel title={t("Selected technical summary")}>
+              <div className="empty-state" role="status">
+                <strong>
+                  {t("No immutable summary revision is available.")}
+                </strong>
+              </div>
+            </Panel>
+          )}
+        </div>
+
+        <DockedInspector title={t("Summary authority inspector")}>
+          <DefinitionList
+            rows={[
+              {
+                label: t("Current decided conclusion"),
+                value: currentConclusion
+                  ? conclusionStateLabel(t, currentConclusion.state)
+                  : t("Unavailable"),
+              },
+              {
+                label: t("Exact predecessor required"),
+                value: t("Yes"),
+              },
+              {
+                label: t("Redaction rules applied"),
+                value: selectedRevision
+                  ? formatNumber(
+                      locale,
+                      selectedRevision.redactionManifest.appliedRuleCodes
+                        .length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
+              {
+                label: t("Sensitive field classes excluded"),
+                value: selectedRevision
+                  ? formatNumber(
+                      locale,
+                      selectedRevision.redactionManifest
+                        .excludedSensitiveFieldClasses.length,
+                      0,
+                    )
+                  : t("Unavailable"),
+              },
+              {
+                label: t("External projection"),
+                value: t("Unavailable"),
+              },
+              {
+                label: t("Formal release"),
+                value: t("Unavailable"),
+              },
+              {
+                label: t("Customer approval"),
+                value: t("Unavailable"),
+              },
+              {
+                label: t("Signature"),
+                value: t("Unavailable"),
+              },
+              {
+                label: t("Production acceptance"),
+                value: t("Unavailable"),
+              },
+              {
+                label: t("Gate decision"),
+                value: t("Unavailable"),
+              },
+            ]}
+          />
+          <p className="context-help">
+            {t(
+              "Structural redaction excludes private locators, file content, credentials, provider payloads and unapproved external projection.",
+            )}
+          </p>
+        </DockedInspector>
+      </div>
+
+      {reviewOpen && actionKind ? (
+        <ImpactReview
+          confirmLabel={releasedSummaryActionLabel(t, actionKind)}
+          contextRows={[
+            {
+              exempt: "identifier",
+              label: t("Round snapshot"),
+              value: workspace.trialRound.snapshotHash,
+            },
+            {
+              exempt: "identifier",
+              label: t("Conclusion snapshot"),
+              value: currentConclusion?.snapshotHash ?? "—",
+            },
+          ]}
+          details={{
+            objectIdentity: workspace.trialRound.globalId,
+            version: currentRevision
+              ? `v${String(currentRevision.summaryVersion)}`
+              : t("New summary stream"),
+            impact: t(
+              "Appends one immutable technical summary from the exact complete source graph.",
+            ),
+            permission: t(
+              "The server rechecks Project membership and technical retain or revise authority.",
+            ),
+            irreversible: t(
+              "Retained summary revisions and controlled outputs are never overwritten or deleted.",
+            ),
+            failureHandling: t(
+              "A failed command changes no summary, receipt or audit row. Retry preserves the same command identity.",
+            ),
+            audit: t(
+              "Actor, reason, request, trace, exact sources, redaction and predecessor are retained.",
+            ),
+          }}
+          onCancel={() => {
+            setReviewOpen(false);
+          }}
+          onConfirm={confirmCommand}
+          reasonMaxLength={2000}
+          returnFocusTarget={() => returnFocus.current}
+          title={t("Review immutable technical summary command")}
+        />
+      ) : null}
+    </section>
+  );
+}
+
 export default function LiveTrialPage({
+  controlledPrintDataSource,
   dataSource,
   navigate,
   projectId,
   reportWorkspaceDirty,
 }: {
+  controlledPrintDataSource?: ControlledPrintDataSource | undefined;
   dataSource: TrialDataSource;
   navigate: (target: string) => void;
   projectId: string;
@@ -5455,6 +6377,7 @@ export default function LiveTrialPage({
   const [executionAttempt, setExecutionAttempt] = useState(0);
   const [qualityAttempt, setQualityAttempt] = useState(0);
   const [reviewAttempt, setReviewAttempt] = useState(0);
+  const [releasedSummaryAttempt, setReleasedSummaryAttempt] = useState(0);
   const [resource, setResource] = useState<ResourceState>({ kind: "loading" });
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
@@ -5462,6 +6385,9 @@ export default function LiveTrialPage({
   const [execution, setExecution] = useState<ExecutionState>({ kind: "idle" });
   const [quality, setQuality] = useState<QualityState>({ kind: "idle" });
   const [review, setReview] = useState<ReviewState>({ kind: "idle" });
+  const [releasedSummary, setReleasedSummary] = useState<ReleasedSummaryState>({
+    kind: "idle",
+  });
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -5518,6 +6444,9 @@ export default function LiveTrialPage({
         setExecution(nextRoundId ? { kind: "loading" } : { kind: "idle" });
         setQuality(nextRoundId ? { kind: "loading" } : { kind: "idle" });
         setReview(nextRoundId ? { kind: "loading" } : { kind: "idle" });
+        setReleasedSummary(
+          nextRoundId ? { kind: "loading" } : { kind: "idle" },
+        );
       })
       .catch((error: unknown) => {
         if (
@@ -5627,6 +6556,31 @@ export default function LiveTrialPage({
       controller.abort();
     };
   }, [dataSource, projectId, reviewAttempt, selectedRoundId]);
+
+  useEffect(() => {
+    if (!selectedRoundId) return undefined;
+    const controller = new AbortController();
+    void dataSource
+      .loadReleasedTrialSummaries(projectId, selectedRoundId, controller.signal)
+      .then((value) => {
+        if (controller.signal.aborted) return;
+        setReleasedSummary({ kind: "loaded", value });
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          error instanceof TrialRequestCancelledError
+        )
+          return;
+        setReleasedSummary({
+          kind: "failed",
+          failure: toRequestFailure(error),
+        });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [dataSource, projectId, releasedSummaryAttempt, selectedRoundId]);
 
   useEffect(() => {
     if (!reportWorkspaceDirty) return undefined;
@@ -6042,6 +6996,10 @@ export default function LiveTrialPage({
           { id: "trial-live-execution", label: t("Trial Round execution") },
           { id: "trial-live-quality", label: t("Trial quality workspace") },
           { id: "trial-live-review", label: t("Trial review and conclusion") },
+          {
+            id: "trial-live-released-summary",
+            label: t("Released Trial Summary"),
+          },
           { id: "trial-live-later", label: t("External execution boundary") },
           { id: "trial-live-inspector", label: t("Trial truth inspector") },
         ]}
@@ -7055,6 +8013,35 @@ export default function LiveTrialPage({
                   projectId={projectId}
                   reportWorkspaceDirty={reportWorkspaceDirty}
                   workspace={review.value}
+                />
+              ) : null}
+              <div id="trial-live-released-summary" tabIndex={-1} />
+              {releasedSummary.kind === "loading" ? <LoadingSurface /> : null}
+              {releasedSummary.kind === "failed" ? (
+                <Panel title={t("Released Summary workspace unavailable")}>
+                  <RequestFailurePanel failure={releasedSummary.failure} />
+                  {canRetry(releasedSummary.failure) ? (
+                    <Button
+                      onClick={() => {
+                        setReleasedSummary({ kind: "loading" });
+                        setReleasedSummaryAttempt((current) => current + 1);
+                      }}
+                    >
+                      {t("Retry")}
+                    </Button>
+                  ) : null}
+                </Panel>
+              ) : null}
+              {releasedSummary.kind === "loaded" ? (
+                <ReleasedTrialSummarySection
+                  controlledPrintDataSource={controlledPrintDataSource}
+                  dataSource={dataSource}
+                  onWorkspace={(value) => {
+                    setReleasedSummary({ kind: "loaded", value });
+                  }}
+                  projectId={projectId}
+                  reportWorkspaceDirty={reportWorkspaceDirty}
+                  workspace={releasedSummary.value}
                 />
               ) : null}
               <Panel title={t("External execution boundary")}>
