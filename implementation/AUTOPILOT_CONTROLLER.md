@@ -2894,6 +2894,7 @@ repeat or rewrite it merely to restore context. See
   This is checkpoint 3 PASS, not P7-05 runtime, Level 2 or Level 3. The latest
   complete Level 3 remains `31392474781` at
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
 - Standing transition authority activates only checkpoint 4: extend the
   cumulative disposable-Site fixture through P7-05, execute the exact-SHA
   controlled runtime, and complete traceability, Task Diff Review and Level 2.
@@ -3499,3 +3500,37 @@ repeat or rewrite it merely to restore context. See
   No user action is required. The latest complete Level 3 remains workflow
   `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-16 Phase 7 Level 3 PASS; P8-00 validation active
+
+- Exact final P7-08 product SHA
+  `31114021cf18cf5e32c22902de5150ed2922e7ba` passes ordinary pull-request CI
+  `31898840279`: repository `95046204818` proves `1,921` tracked Python tests;
+  frontend `95046204781` proves `918/918` unit, `421/421` E2E, `7,471`
+  complete direct trilingual sources, coverage thresholds and zero
+  vulnerabilities; secret `95046204823` and `119/119` fixed-Linux visual
+  `95046204879` pass.
+- Final unchanged Level 3 workflow `31899480493` passes repository
+  `95047888121`, frontend `95047888180`, full-history secret `95047888120`,
+  `119/119` visual `95047888417`, controlled preflight `95049302368` and
+  cumulative disposable-Site runtime `95049356690`. Runtime artifact
+  `9250918326` has digest
+  `sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`;
+  exact source/replay/migration/recovery/redaction, zero integration traffic
+  and cleanup pass. The release-gate review reports no P0/P1/P2 finding.
+- `UX-020` advances to `TECHNICAL_VERIFIED`. Complete evidence is
+  `implementation/evidence/phase-7/p7-08-validation.md` and
+  `implementation/phase-7-gate.md`. No API, Schema, dependency, migration,
+  permission command or production integration changed.
+- Phase 7 closes `PASS_LEVEL_3`. Standing continuous-delivery authority
+  activates only P8-00: create and exact-SHA validate the Phase 8 requirement
+  anchor for M7-01..09, field ownership, operation-specific requests/results,
+  signed webhook/Inbox, Outbox, idempotency, retry/replay/reconciliation,
+  stable system codes, Mock/sandbox safety, rollback and scoped holds. This
+  controller marker is: `Phase 7 Level 3 PASS; P8-00 validation active`.
+- P8-00 changes no product code. Production ERPNext/JCE endpoints,
+  credentials, data and traffic remain prohibited. `DR-REC-009`, missing
+  target customization/sandbox facts and optional/later-domain
+  `INT-008/009/011/012/013/014` behavior are scoped holds, not global Hard
+  Blockers. After P8-00 Level 2 PASS, activate only the bounded P8-01 read-only
+  projection audit.

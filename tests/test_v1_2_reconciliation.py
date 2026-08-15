@@ -63,6 +63,20 @@ class V12ReconciliationTests(unittest.TestCase):
     def test_trace_sets_are_complete_and_consistent(self) -> None:
         self.verifier.verify_trace_sets()
 
+    def test_p7_08_mobile_field_trace_is_technically_verified(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        row = next(item for item in rows if item["requirement_id"] == "UX-020")
+        self.assertEqual(row["phase"], "7")
+        self.assertEqual(row["status"], "TECHNICAL_VERIFIED")
+        self.assertEqual(
+            {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            },
+            self.verifier.EXPECTED_P7_08_EVIDENCE,
+        )
+
     def test_launchflow_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)
         row = next(item for item in rows if item["requirement_id"] == "FR-BR-001")

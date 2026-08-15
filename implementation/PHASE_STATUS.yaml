@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
-current_phase: 7
-updated_at: '2026-08-15T16:18:10Z'
+current_phase: 8
+updated_at: '2026-08-16T01:10:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P7-08
-current_task_status: IN_PROGRESS_CHECKPOINT_3
-current_task_completed_stage: P7_08_LIVE_TRIAL_FIELD_ACTIONS_PASS
-current_task_next_stage: P7_08_LIVE_GATE_FIELD_REVIEW_AND_FINAL_PHASE_GATE
+current_task: P8-00
+current_task_status: IN_PROGRESS_VALIDATION
+current_task_completed_stage: PHASE_7_LEVEL_3_PASS_AND_PHASE_8_ANCHOR_DRAFTED
+current_task_next_stage: P8_00_EXACT_SHA_LEVEL_2_VALIDATION
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P7-08
-resumed_product_task_status: ACTIVE_CHECKPOINT_3
+resumed_product_task: P8-00
+resumed_product_task_status: ACTIVE_VALIDATION
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1907,7 +1907,7 @@ p7_07:
 p7_08:
   task: P7-08
   controller_task: P7-08_MOBILE_FIELD_ACTIONS
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: PASS_LEVEL_2_AND_PHASE_LEVEL_3
   phase: 7
   milestone: M6-08
   requirements:
@@ -1938,8 +1938,37 @@ p7_08:
   checkpoint_2_visual_digest: sha256:845f99b34e678ed27f7409b08f16b7c1db7d3b8f1aa1d881802b8b9ea6d35f3c
   checkpoint_2_gitleaks_artifact: 9249464490
   checkpoint_2_gitleaks_digest: sha256:6098cd5f213b0a030a724ca4eb2284b837a8559a24a4c8063b129fe70ff1b02f
-  current_stage: LIVE_GATE_FIELD_REVIEW_AND_FINAL_PHASE_GATE
-  next_stage_after_pass: P8_00_AFTER_LEVEL_2_AND_PHASE_7_LEVEL_3
+  checkpoint_3_product_checkpoint: 5e8384f968e1b3e147d5810117ea46b252f483da
+  checkpoint_3_diagnostic_ci: 31898005702
+  task_product_checkpoint: 31114021cf18cf5e32c22902de5150ed2922e7ba
+  task_ordinary_ci_workflow: 31898840279
+  task_repository_job: 95046204818
+  task_frontend_job: 95046204781
+  task_secret_job: 95046204823
+  task_visual_job: 95046204879
+  task_visual_artifact: 9250577462
+  task_visual_digest: sha256:c17989f4bf4f4cf9df637224cb9c2ac5b74e1c852ac579219aff3cf2866a83d6
+  task_gitleaks_artifact: 9250529122
+  task_gitleaks_digest: sha256:8813adb499eadba0d0d534d97bae78816112340a895918cbcfd988b3e3471adb
+  phase_level_3_workflow: 31899480493
+  phase_level_3_repository_job: 95047888121
+  phase_level_3_frontend_job: 95047888180
+  phase_level_3_secret_job: 95047888120
+  phase_level_3_visual_job: 95047888417
+  phase_level_3_preflight_job: 95049302368
+  phase_level_3_runtime_job: 95049356690
+  phase_level_3_runtime_artifact: 9250918326
+  phase_level_3_runtime_digest: sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2
+  phase_level_3_visual_artifact: 9250730442
+  phase_level_3_visual_digest: sha256:db8697a4f128150c67b04a72f89a122ceccf3f0fef2f0b0a4a2393e9016fe759
+  phase_level_3_gitleaks_artifact: 9250685703
+  phase_level_3_gitleaks_digest: sha256:4b50bf64677d400172941d8cc54eed037fca73f120282e581e24746065c58c78
+  task_gate: PASS_LEVEL_2
+  phase_gate: PASS_LEVEL_3
+  truthful_disposition:
+    UX-020: TECHNICAL_VERIFIED
+  current_stage: COMPLETE
+  next_stage_after_pass: P8_00_REQUIREMENT_ANCHOR
   product_code_changed: true
   external_holds:
     - MOBILE_ONLY_AUTHORITY_ROLE_PERMISSION_STATUS_APPROVAL_GATE_OR_TRIAL_COMMAND
@@ -1951,6 +1980,61 @@ p7_08:
     - implementation/evidence/phase-7/p7-08-plan.md
     - implementation/evidence/phase-7/p7-08-primitives-checkpoint.md
     - implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md
+    - implementation/evidence/phase-7/p7-08-validation.md
+    - implementation/phase-7-gate.md
+p8_00:
+  task: P8-00
+  controller_task: P8-00_ERPNEXT_INTEGRATION_REQUIREMENT_ANCHOR
+  status: IN_PROGRESS_VALIDATION
+  phase: 8
+  milestone: M7
+  requirements:
+    - FR-PM-002
+    - FR-PM-010
+    - FR-DS-013
+    - FR-TL-008
+    - FR-TL-011
+    - FR-TL-012
+    - FR-TL-013
+    - FR-TL-014
+    - FR-TL-015
+    - FR-TL-016
+    - FR-TR-006
+    - FR-NP-006
+    - FR-RP-009
+    - FR-INT-015
+    - FR-BR-002
+    - UX-016
+    - INT-001
+    - INT-002
+    - INT-003
+    - INT-004
+    - INT-005
+    - INT-006
+    - INT-007
+    - INT-008
+    - INT-009
+    - INT-010
+    - INT-011
+    - INT-012
+    - INT-013
+    - INT-014
+    - NFR-INT-001
+  predecessor_product_checkpoint: 31114021cf18cf5e32c22902de5150ed2922e7ba
+  audit: PASS
+  anchor: implementation/phase-8-requirement-anchor.md
+  current_stage: EXACT_SHA_LEVEL_2_VALIDATION
+  next_stage_after_pass: P8_01_REQUIREMENT_DOMAIN_AUDIT
+  product_code_changed: false
+  external_holds:
+    - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
+    - CURRENT_ERPNEXT_CUSTOMIZATION_MAPPING_AND_SANDBOX_RECONCILIATION_PACKAGE
+    - DR_REC_009_RELEASED_TRIAL_SUMMARY_EVENT_PAYLOAD_REDACTION_AND_CONSUMER_MAPPING
+    - INT_008_CHANGE_DOMAIN_INT_009_EXTERNAL_FILE_CONSUMER_AND_INT_011_TARGET_FIELD_MAPPING
+    - INT_012_IDENTITY_PROVIDER_INT_013_OPTIONAL_OPENPROJECT_AND_INT_014_PHASE_9_BI
+  evidence:
+    - implementation/phase-7-gate.md
+    - implementation/phase-8-requirement-anchor.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -1976,6 +2060,6 @@ phases:
   - {id: 4, name: Project Work Items and Stage Gates, status: PASS, repair_round: 0, gate: implementation/phase-4-gate.md}
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
-  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07], current_task: P7-08}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: NOT_STARTED, repair_round: 0}
+  - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P8-00}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

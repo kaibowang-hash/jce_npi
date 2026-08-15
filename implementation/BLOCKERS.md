@@ -1,36 +1,27 @@
 # Blockers
 
-Updated: `2026-08-15T16:18:10Z`
+Updated: `2026-08-16T01:10:00Z`
 
 ## Active hard blockers
 
-None. P7-07 passes Level 2 at exact final product checkpoint
-`dda9c13a6c3b499347cb96c830de2a034fa61203`. Ordinary pull-request CI
-`31887451908` passes repository `95018720965`, frontend `95018720920`, secret
-scan `95018720949` and `115/115` fixed-Linux visual job `95018720948`.
-Independent exact-SHA controlled Gate `31887990384` passes preflight
-`95019975279`, cumulative disposable-Site runtime `95020020601` through
-`p5-01-through-p7-07`, redaction, zero downstream effects and cleanup. Runtime
-artifact `9247862817` has digest
-`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
-its PASS payload hashes to
-`sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
-P7-08 checkpoint 2 exact final SHA `290c66f` passes ordinary CI
-`31894667043`; checkpoint 3 live Gate field review and final Phase Gate are
-active under the frozen P7-08 plan. No user action, login or frontend operation
-is required.
+None. P7-08 and Phase 7 pass at exact final product SHA
+`31114021cf18cf5e32c22902de5150ed2922e7ba`. Ordinary CI `31898840279`
+passes repository `95046204818`, frontend `95046204781`, secret
+`95046204823` and `119/119` fixed-Linux visual `95046204879`. Final Level 3
+workflow `31899480493` passes repository, frontend, full-history secret,
+visual, controlled preflight and cumulative disposable-Site runtime
+`95049356690`. Runtime artifact `9250918326` has digest
+`sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`;
+zero integration traffic and cleanup pass. P8-00 documentation/trace validation
+is active. No user action, login or frontend operation is required.
 
 ## Active recovery
 
-None. The ordered delivery hold remains resolved and P7-07 is sealed
-`PASS_LEVEL_2`. Its nine failed controlled attempts remain diagnostic evidence,
-not PASS evidence; each failed closed, cleaned up, received only a bounded
-evidence-proved forward fix and was followed by a fresh exact-SHA ordinary and
-controlled attempt. P7-08 reviewed field primitives and live Trial field
-actions pass; only live Gate field review plus the final Level 2/Level 3 Gate
-is active. Mobile-only roles or transitions, raw private File URLs, automatic
-scan submission, offline/native behavior, production ERPNext/external effects
-and Phase 8 behavior remain inactive.
+None. Phase 7 is sealed `PASS_LEVEL_3`; failed diagnostic runs remain
+diagnostic evidence rather than PASS evidence. P8-00 changes only requirement
+anchor, trace and controller documentation. Product adapters, webhooks,
+workers, projections and UI remain inactive until their exact Phase 8 atomic
+task is audited and validated.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -41,9 +32,11 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 remains `31392474781` at
-`22cb24d42174a5b75f475127ac3aa9fee5a08606`; P7-07 Level 2 does not replace
-that Phase/PR/release boundary.
+latest complete Level 3 is `31899480493` at
+`31114021cf18cf5e32c22902de5150ed2922e7ba`. Production ERPNext/JCE endpoints,
+credentials, data and traffic; missing customization/sandbox mappings;
+`DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
+remain scoped holds, not global Hard Blockers.
 
 ## Historical recovery
 

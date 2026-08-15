@@ -1,22 +1,22 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T16:18:10Z`
+Updated: `2026-08-16T01:10:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P7-08`
+- Mode: `IN_PROGRESS_VALIDATION — P8-00`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `290c66fe3e2e5c53058b5253b844c6332902f189` (pushed; P7-08
-  `CHECKPOINT_2_PASS`)
+  `31114021cf18cf5e32c22902de5150ed2922e7ba` (pushed; P7-08
+  `LEVEL_2_PASS` and Phase 7 `LEVEL_3_PASS`)
 - Retained prior Phase Gate checkpoint:
-  `68f230fee73b1b6ca95206346d128e1518613d82` (P6-08 Level 2 and Phase 6
+  `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `31392474781` (`PASS — LEVEL 3` at `22cb24d42174a5b75f475127ac3aa9fee5a08606`;
-  repository, frontend, secret, `97/97` visual and cumulative controlled Site)
+  `31899480493` (`PASS — LEVEL 3` at `31114021cf18cf5e32c22902de5150ed2922e7ba`;
+  repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest evidence-only exact-SHA CI:
   `31460976409` (`PASS` at `1c0e8fdd73901c59ce920ff73fa5eea962be70c0`)
 - Latest P7-02 product Gate:
@@ -53,50 +53,37 @@ Updated: `2026-08-15T16:18:10Z`
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P7-08 — Mobile field actions` (`IN_PROGRESS_CHECKPOINT_3`)
-- Resumed product task: `P7-08` (`ACTIVE_CHECKPOINT_3`)
+  `P8-00 — ERPNext integration requirement anchor` (`IN_PROGRESS_VALIDATION`)
+- Resumed product task: `P8-00` (`ACTIVE_VALIDATION`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
-  `7 — Trial, Quality Issues and NPI Readiness`
-  (`IN_PROGRESS — P7-08 CHECKPOINT 3`)
+  `8 — ERPNext Integration and Execution Requests`
+  (`IN_PROGRESS — P8-00 VALIDATION`)
 - Latest complete product Phase:
-  `6 — Tooling, Capacity, Controlled Import and Export` (`PASS — LEVEL 3`)
+  `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
 ## Authoritative current atomic scope
 
-P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
-`31887451908` passes `1,921` tracked Python tests, `913/913` frontend unit,
-`408/408` non-visual E2E, `7,439` complete direct trilingual sources, both
-secret boundaries and `115/115` fixed-Linux visuals. Exact-SHA controlled
-Gate `31887990384` passes preflight and cumulative disposable-Site runtime
-scope `p5-01-through-p7-07`; runtime artifact `9247862817` has digest
-`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`
-and proves two immutable summaries, the exact retained first controlled PDF,
-replay/conflict/rollback/IDOR, redaction, zero downstream effects and cleanup.
-Complete evidence is
-`implementation/evidence/phase-7/p7-07-validation.md`.
+P7-08 and Phase 7 are sealed at exact final product checkpoint `3111402`.
+Ordinary CI `31898840279` passes `1,921` tracked Python tests, `918/918`
+frontend unit, `421/421` E2E, `7,471` complete direct trilingual sources,
+both secret boundaries and `119/119` fixed-Linux visuals. Final Level 3
+workflow `31899480493` passes the unchanged exact SHA, complete repository/
+frontend/secret/visual lanes and cumulative disposable-Site runtime; runtime
+artifact `9250918326` has digest
+`sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`.
+Complete evidence is `implementation/evidence/phase-7/p7-08-validation.md`
+and `implementation/phase-7-gate.md`.
 
-P7-08 checkpoint 2 passes at exact final checkpoint `290c66f`; ordinary CI
-`31894667043` passes `1,921` tracked Python tests, `918/918` frontend unit,
-`414/414` non-visual E2E, `7,467` complete direct trilingual sources, both
-secret boundaries and `115/115` fixed-Linux visuals. The phone/tablet Trial
-surface reuses the exact private upload, clean bind and defect commands;
-camera selection and reviewed cavity apply submit nothing automatically.
-Complete evidence is
-`implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md`.
-
-The only active atomic scope is checkpoint 3: integrate the existing live Gate
-workspace on phone/tablet with exact Project/Gate/cycle/policy/version,
-readiness blockers, server-permitted action and held-authority truth; keep the
-unchanged impact review, command coordinator, receipt, retry and conflict
-paths; and move only enumerated engineering matrices behind an honest desktop
-handoff. Then run P7-08 Level 2 and the final Phase 7 Level 3 release gate
-before P8-00. No API, schema, permission, business transition or runtime truth
-change is authorized. Mobile grants no new authority; production ERPNext and
-external effects remain inactive. The latest complete Level 3 remains workflow
-`31392474781` at exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
-There is no Hard Blocker.
+The only active atomic scope is P8-00 documentation/trace validation. The
+Phase 8 anchor allocates M7-01 through M7-09, operation-specific integration,
+field ownership, signed webhook/Inbox, Outbox/execution, retry/replay/
+reconciliation, stable codes, Mock/sandbox and rollback invariants. It changes
+no product code. Production ERPNext/JCE endpoints, credentials, data and
+network contact remain prohibited. `DR-REC-009` and interfaces whose domain,
+provider or mapping is absent remain explicit scoped holds. Run exact-SHA
+ordinary Level 2 checks before activating P8-01. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

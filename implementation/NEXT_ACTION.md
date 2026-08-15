@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-08`
+`IN_PROGRESS_VALIDATION — P8-00`
 
-Recovery time: `2026-08-15T16:18:10Z`
+Recovery time: `2026-08-16T01:10:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -71,49 +71,39 @@ P7-08 checkpoint 1 product checkpoint:
 P7-08 checkpoint 2 final checkpoint:
 `290c66fe3e2e5c53058b5253b844c6332902f189`
 
+P7-08 Level 2 and Phase 7 Level 3 final product checkpoint:
+`31114021cf18cf5e32c22902de5150ed2922e7ba`
+
+P7-08 ordinary CI:
+`31898840279`
+
+Phase 7 final Level 3 workflow:
+`31899480493`
+
 ## Current authoritative action
 
-P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
-`31887451908` passes repository `95018720965` (`1,921` tracked Python),
-frontend `95018720920` (`913/913` unit, `408/408` non-visual E2E, `7,439`
-complete direct trilingual sources, coverage
-`80.31%/80.25%/82.90%/82.98%`, zero vulnerabilities), secret scan
-`95018720949` and `115/115` fixed-Linux visual job `95018720948`.
+P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
+`31898840279` passes repository `95046204818` (`1,921` tracked Python),
+frontend `95046204781` (`918/918` unit, `421/421` E2E, `7,471` direct
+trilingual sources and coverage thresholds), secret `95046204823` and
+`119/119` fixed-Linux visual `95046204879`.
 
-Independent exact-SHA controlled Gate `31887990384` passes preflight
-`95019975279` and cumulative runtime `95020020601` through
-`p5-01-through-p7-07`. Runtime artifact `9247862817` has digest
-`sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
-its PASS payload hashes to
-`sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
-The exact source graph, two immutable summaries, retained summary-v1 PDF,
-same/cross-process replay, conflict/stale/fork/IDOR/no-write, route recovery,
-migrations, rollback, redaction, zero downstream effects and cleanup pass.
-Complete evidence is
-`implementation/evidence/phase-7/p7-07-validation.md`.
+Final unchanged Phase 7 Level 3 workflow `31899480493` passes repository,
+frontend, full-history secret, `119/119` visual, preflight and cumulative
+disposable-Site runtime. Runtime artifact `9250918326` has digest
+`sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`.
+Complete evidence is `implementation/evidence/phase-7/p7-08-validation.md`
+and `implementation/phase-7-gate.md`.
 
-P7-08 checkpoint 2 passes at exact final checkpoint `290c66f`. Ordinary CI
-`31894667043` passes repository `95036026662` (`1,921` tracked Python),
-frontend `95036026724` (`59/59` files, `918/918` unit, `414/414` non-visual
-E2E, `7,467` complete direct trilingual sources, coverage
-`80.35%/80.31%/82.89%/83.01%`, zero vulnerabilities), secret scan
-`95036026676` and `115/115` fixed-Linux visual job `95036026641`. Complete
-evidence is `implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md`.
-
-Follow the frozen `implementation/evidence/phase-7/p7-08-plan.md`. Execute only
-checkpoint 3: add a phone/tablet Gate field summary with exact Project/Gate/
-cycle/policy/version, readiness blockers, server-permitted action and held
-authority; reorder only responsive presentation so the existing authorized
-action is reachable before desktop evidence/history matrices; preserve the
-same impact review, command coordinator, receipt, retry and conflict paths;
-and retain desktop requirements/evidence/history/baseline tables behind honest
-bounded summaries and same-link handoff. Prove phone authorized action plus
-denied, read-only, blocked, conflict and processing states, direct trilingual
-copy, accessibility and fixed-Linux visuals. Then run P7-08 Level 2 and the
-final Phase 7 Level 3 `release-gate` before P8-00. Do not change API, schema,
-permission or business truth. Mobile-only authority, production ERPNext/
-external traffic and Phase 8 remain inactive. The latest complete Level 3
-remains `31392474781` at `22cb24d`.
+Validate only `P8-00`: the documentation-only
+`implementation/phase-8-requirement-anchor.md` must allocate M7-01..09 and
+the complete integration catalog, freeze field ownership, stable technical
+codes, signed webhook/Inbox, operation-specific execution/Outbox, explicit
+result/retry/replay/reconciliation, Mock/sandbox safety, rollback and scoped
+holds. Run reconciliation/current-task tests and exact-SHA ordinary Level 2.
+Do not add a route, DocType, Schema, migration, adapter, UI or external call.
+Production ERPNext remains prohibited. After P8-00 PASS activate only the
+bounded P8-01 read-only projection audit.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

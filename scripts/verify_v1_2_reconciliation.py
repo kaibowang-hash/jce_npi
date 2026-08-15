@@ -66,7 +66,7 @@ EXPECTED_UX_REMEDIATION_ALLOCATION = {
     "UX-011": ("5", "TECHNICAL_VERIFIED"),
     "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-018": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
-    "UX-020": ("7", "ANCHORED_P7_08"),
+    "UX-020": ("7", "TECHNICAL_VERIFIED"),
     "UX-026": ("5", "PROTOTYPE_VERIFIED_BACKEND_APPROVAL_HELD"),
     "UX-027": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
     "UX-028": ("5", "TECHNICAL_VERIFIED_FOUNDATION_AUTHORITY_HELD"),
@@ -163,6 +163,20 @@ EXPECTED_P7_07_PRINT_EVIDENCE = EXPECTED_P7_07_EVIDENCE | {
 }
 EXPECTED_P7_07_INTEGRATION_EVIDENCE = EXPECTED_P7_07_EVIDENCE | {
     "implementation/V1_2_RECONCILIATION_DECISIONS.md",
+}
+EXPECTED_P7_08_EVIDENCE = EXPECTED_P7_ANCHOR_EVIDENCE | {
+    "implementation/V1_2_DOCX_PACK_COVERAGE_MATRIX.csv",
+    "docs/V1_2_RECONCILIATION_ADDENDUM.md",
+    "frontend/src/components/mobile-field-actions.tsx",
+    "frontend/src/pages/live-trial-page.tsx",
+    "frontend/src/pages/gate-evidence-page.tsx",
+    "frontend/tests/unit/mobile-field-actions.test.tsx",
+    "frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts",
+    "implementation/evidence/phase-7/p7-08-plan.md",
+    "implementation/evidence/phase-7/p7-08-primitives-checkpoint.md",
+    "implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md",
+    "implementation/evidence/phase-7/p7-08-validation.md",
+    "implementation/phase-7-gate.md",
 }
 EXPECTED_P7_COMPLETED_TRACES = {
     "FR-NP-001": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_05_EVIDENCE),
@@ -271,6 +285,7 @@ EXPECTED_P7_COMPLETED_TRACES = {
         "TECHNICAL_VERIFIED_MANUAL_FOUNDATION_MACHINE_IMPORT_HELD",
         EXPECTED_P7_02_EVIDENCE,
     ),
+    "UX-020": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_08_EVIDENCE),
 }
 EXPECTED_P7_CARRIED_FOUNDATIONS = {}
 EXPECTED_R1_03_TRACE = {
