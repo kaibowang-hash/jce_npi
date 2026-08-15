@@ -83,6 +83,10 @@ REVIEWED_GITLEAKS_FINGERPRINTS = frozenset(
             "67824bc5742bf4ad031b69aab476f4188a901b27:"
             "implementation/PHASE_STATUS.yaml:generic-api-key:1095"
         ),
+        (
+            "b1babbf46f0ebe7f22c21fca3162ed71327c46dc:"
+            "implementation/evidence/phase-7/p7-07-plan.md:generic-api-key:419"
+        ),
     }
 )
 

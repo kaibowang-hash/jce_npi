@@ -48,6 +48,7 @@
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
+    ".gitleaksignore",
     ".github/workflows/ci.yml",
     "apps/npi_core/npi_core/bff.py",
     "apps/npi_core/npi_core/controlled_print/source_registry.py",
@@ -82,8 +83,10 @@
     "implementation/phase-7-requirement-anchor.md",
     "implementation/evidence/phase-7/p7-07-*.md",
     "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_devcontainer.py",
     "scripts/verify_released_trial_summary_runtime.py",
     "scripts/verify_v1_2_reconciliation.py",
+    "tests/test_devcontainer_verifier.py",
     "tests/test_current_task_verifier.py",
     "tests/test_phase5_controlled_print_source_registry.py",
     "tests/test_phase7_released_trial_summary_api.py",
@@ -91,7 +94,8 @@
     "tests/test_phase7_released_trial_summary_domain.py",
     "tests/test_phase7_released_trial_summary_metadata.py",
     "tests/test_phase7_released_trial_summary_repository.py",
-    "tests/test_phase7_released_trial_summary_runtime_verifier.py"
+    "tests/test_phase7_released_trial_summary_runtime_verifier.py",
+    "tests/test_phase7_trial_metadata.py"
   ],
   "affected_checks": {
     "level_1": [

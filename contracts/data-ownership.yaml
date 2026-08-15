@@ -565,6 +565,18 @@ objects:
       proposed_next_work_gate_and_npi_effect: {owner: NPI_ONE_TRIAL_REVIEW_COMMAND, editable_in: [], direction: NONE, conflict: PROPOSAL_ONLY_NO_EXTERNAL_MUTATION}
       gate_npi_readiness_tooling_lifecycle_formal_quality_and_customer_signature_effect: {owner: FUTURE_SEPARATELY_APPROVED_POLICIES, editable_in: [], direction: NONE, conflict: UNAVAILABLE_IN_P7_04}
 
+  ReleasedTrialSummaryRevision:
+    owner_system: NPI_ONE
+    erp_view: future_read_only_projection
+    fields:
+      exact_summary_stream_revision_predecessor_project_plan_round_and_decided_conclusion: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: APPEND_ONLY_EXACT_CURRENT_TIP}
+      complete_trial_source_manifest_and_immutable_snapshot: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_COMMAND, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_IDENTITIES_VERSIONS_AND_HASHES_WIN}
+      localized_neutral_url_free_presentation_and_structural_redaction: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: CLOSED_SERVER_DERIVED_NO_TRUNCATION}
+      controlled_print_source_projection: {owner: NPI_ONE_RELEASED_TRIAL_SUMMARY_ADAPTER, editable_in: [], direction: REFERENCE_ONLY, conflict: EXACT_RETAINED_REVISION_ONLY}
+      production_form_mapping_signer_retention_browser_print_and_copy_policy: {owner: FUTURE_APPROVED_CONTROLLED_PRINT_POLICY, editable_in: [], direction: NONE, conflict: NOT_INSTALLED_BY_P7_07}
+      external_event_payload_consumer_redaction_delivery_projection_and_receipt: {owner: FUTURE_PHASE_8_INTEGRATION_CONTRACT, editable_in: [], direction: NONE, conflict: UNAVAILABLE_UNDER_DR_REC_009}
+      customer_approval_formal_signature_production_acceptance_g7_gate_project_work_item_tooling_and_erp_effect: {owner: FUTURE_SEPARATELY_APPROVED_AUTHORITIES, editable_in: [], direction: NONE, conflict: NO_AUTOMATIC_MUTATION_OR_AUTHORITY}
+
   NpiReadinessTemplate:
     owner_system: NPI_ONE
     erp_view: none

@@ -18899,6 +18899,173 @@ components:
         traceId: { type: string, minLength: 1, maxLength: 256 }
         versionKeyHash: { $ref: "#/components/schemas/TrialReviewSha256" }
         snapshotHash: { $ref: "#/components/schemas/TrialReviewSha256" }
+    ReleasedTrialSummarySha256:
+      type: string
+      pattern: "^[a-f0-9]{64}$"
+    ReleasedTrialSummarySourceReference:
+      type: object
+      additionalProperties: false
+      required: [kind, globalId, sourceVersion, snapshotHash]
+      properties:
+        kind:
+          type: string
+          enum: [trial_plan_revision, trial_round, trial_input_lock_revision, trial_actual_revision, trial_sample_batch_revision, trial_cavity_result_revision, trial_defect_revision, trial_defect_verification_revision, trial_round_comparison_snapshot, trial_review_reference_revision, trial_conclusion_revision]
+        globalId: { type: string, format: uuid }
+        sourceVersion: { type: integer, minimum: 1 }
+        snapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+    ReleasedTrialSummaryFact:
+      type: object
+      additionalProperties: false
+      description: Localized-neutral safe fact derived from exact retained Trial sources; never a translated enum or external authority.
+      required: [factKey, valueState, value, unit, sourceReferences]
+      properties:
+        factKey: { type: string, minLength: 1, maxLength: 256 }
+        valueState: { type: string, enum: [measured, not_measured, unavailable, satisfied, failed, open, closed, informational] }
+        value:
+          oneOf:
+            - { type: string, maxLength: 4000 }
+            - { type: number }
+            - { type: boolean }
+            - { type: "null" }
+        unit:
+          oneOf: [{ type: string, minLength: 1, maxLength: 64 }, { type: "null" }]
+        sourceReferences:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { $ref: "#/components/schemas/ReleasedTrialSummarySourceReference" }
+    ReleasedTrialSummaryPresentationFacts:
+      type: object
+      additionalProperties: false
+      required: [inputChanges, actualParameters, samples, cavityResults, defects, comparison, controlledReferences, blockers]
+      properties:
+        inputChanges: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        actualParameters: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        samples: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        cavityResults: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        defects: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        comparison: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        controlledReferences: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+        blockers: { type: array, maxItems: 25000, items: { $ref: "#/components/schemas/ReleasedTrialSummaryFact" } }
+    ReleasedTrialSummaryExternalEffects:
+      type: object
+      additionalProperties: false
+      required: [customerApproval, externalProjection, formalSignature, gateDecision, productionAcceptance]
+      properties:
+        customerApproval: { type: string, const: unavailable }
+        externalProjection: { type: string, const: unavailable }
+        formalSignature: { type: string, const: unavailable }
+        gateDecision: { type: string, const: unavailable }
+        productionAcceptance: { type: string, const: unavailable }
+    ReleasedTrialSummaryPresentationProjection:
+      type: object
+      additionalProperties: false
+      description: Complete URL-free localized-neutral projection retained once from the exact source graph; overflow fails and is never truncated.
+      required: [schemaVersion, projectGlobalId, trialPlanGlobalId, trialRoundGlobalId, conclusionRevision, conclusionState, conclusionCode, sourceManifest, facts, externalEffects]
+      properties:
+        schemaVersion: { type: string, const: npi.released_trial_summary.presentation.v1 }
+        projectGlobalId: { type: string, format: uuid }
+        trialPlanGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        conclusionRevision: { $ref: "#/components/schemas/ReleasedTrialSummarySourceReference" }
+        conclusionState: { type: string, enum: [approved, rejected] }
+        conclusionCode: { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+        sourceManifest:
+          type: array
+          minItems: 6
+          maxItems: 25000
+          items: { $ref: "#/components/schemas/ReleasedTrialSummarySourceReference" }
+        facts: { $ref: "#/components/schemas/ReleasedTrialSummaryPresentationFacts" }
+        externalEffects: { $ref: "#/components/schemas/ReleasedTrialSummaryExternalEffects" }
+    ReleasedTrialSummaryRedactionManifest:
+      type: object
+      additionalProperties: false
+      description: Closed server-owned structural redaction; DR-REC-009 consumer redaction remains unavailable.
+      required: [schemaVersion, appliedRuleCodes, excludedSensitiveFieldClasses, externalProjection]
+      properties:
+        schemaVersion: { type: string, const: npi.released_trial_summary.redaction.v1 }
+        appliedRuleCodes:
+          type: array
+          minItems: 5
+          maxItems: 5
+          uniqueItems: true
+          items: { type: string, enum: [exclude_credentials, exclude_file_content, exclude_private_locators, exclude_provider_payloads, exclude_unapproved_external_projection] }
+        excludedSensitiveFieldClasses:
+          type: array
+          minItems: 9
+          maxItems: 9
+          uniqueItems: true
+          items: { type: string, enum: [authorization_headers, credentials, file_content, private_paths, private_urls, production_hostnames, provider_payloads, secrets, session_cookies] }
+        externalProjection: { type: string, const: unavailable }
+    ReleasedTrialSummaryRevision:
+      type: object
+      additionalProperties: false
+      description: Append-only NPI technical summary of one exact decided Trial conclusion. It is not approval, signature, production acceptance, Gate truth or external publication.
+      required: [schemaVersion, globalId, summaryGlobalId, tenantId, projectGlobalId, trialPlanGlobalId, trialRoundGlobalId, summaryVersion, predecessorGlobalId, predecessorSnapshotHash, trialRoundOptimisticVersion, trialRoundSnapshotHash, trialPlanRevisionGlobalId, trialPlanRevisionSnapshotHash, conclusionRevisionGlobalId, conclusionVersion, conclusionSnapshotHash, conclusionState, conclusionCode, sourceManifest, presentationProjection, redactionManifest, reason, createdByUserId, createdAt, requestId, traceId, versionKeyHash, sourceManifestHash, presentationProjectionHash, redactionManifestHash, snapshotHash]
+      properties:
+        schemaVersion: { type: string, const: npi.released_trial_summary.v1 }
+        globalId: { type: string, format: uuid }
+        summaryGlobalId: { type: string, format: uuid }
+        tenantId: { type: string, minLength: 1, maxLength: 256 }
+        projectGlobalId: { type: string, format: uuid }
+        trialPlanGlobalId: { type: string, format: uuid }
+        trialRoundGlobalId: { type: string, format: uuid }
+        summaryVersion: { type: integer, minimum: 1 }
+        predecessorGlobalId:
+          oneOf: [{ type: string, format: uuid }, { type: "null" }]
+        predecessorSnapshotHash:
+          oneOf: [{ $ref: "#/components/schemas/ReleasedTrialSummarySha256" }, { type: "null" }]
+        trialRoundOptimisticVersion: { type: integer, minimum: 1 }
+        trialRoundSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        trialPlanRevisionGlobalId: { type: string, format: uuid }
+        trialPlanRevisionSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        conclusionRevisionGlobalId: { type: string, format: uuid }
+        conclusionVersion: { type: integer, minimum: 1 }
+        conclusionSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        conclusionState: { type: string, enum: [approved, rejected] }
+        conclusionCode: { type: string, enum: [pass, conditional_pass, tooling_change, design_change, process_tuning, material_change, cancelled] }
+        sourceManifest:
+          type: array
+          minItems: 6
+          maxItems: 25000
+          items: { $ref: "#/components/schemas/ReleasedTrialSummarySourceReference" }
+        presentationProjection: { $ref: "#/components/schemas/ReleasedTrialSummaryPresentationProjection" }
+        redactionManifest: { $ref: "#/components/schemas/ReleasedTrialSummaryRedactionManifest" }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        createdByUserId: { type: string, minLength: 1, maxLength: 254 }
+        createdAt: { type: string, format: date-time }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 1, maxLength: 256 }
+        versionKeyHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        sourceManifestHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        presentationProjectionHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        redactionManifestHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        snapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+    RetainReleasedTrialSummary:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, expectedRoundSnapshotHash, conclusionRevisionGlobalId, expectedConclusionVersion, expectedConclusionSnapshotHash, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        conclusionRevisionGlobalId: { type: string, format: uuid }
+        expectedConclusionVersion: { type: integer, minimum: 1 }
+        expectedConclusionSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+    ReviseReleasedTrialSummary:
+      type: object
+      additionalProperties: false
+      required: [expectedRoundOptimisticVersion, expectedRoundSnapshotHash, conclusionRevisionGlobalId, expectedConclusionVersion, expectedConclusionSnapshotHash, predecessorRevisionGlobalId, expectedPredecessorVersion, expectedPredecessorSnapshotHash, reason]
+      properties:
+        expectedRoundOptimisticVersion: { type: integer, minimum: 1 }
+        expectedRoundSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        conclusionRevisionGlobalId: { type: string, format: uuid }
+        expectedConclusionVersion: { type: integer, minimum: 1 }
+        expectedConclusionSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        predecessorRevisionGlobalId: { type: string, format: uuid }
+        expectedPredecessorVersion: { type: integer, minimum: 1 }
+        expectedPredecessorSnapshotHash: { $ref: "#/components/schemas/ReleasedTrialSummarySha256" }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
     ReadinessSha256:
       type: string
       minLength: 64

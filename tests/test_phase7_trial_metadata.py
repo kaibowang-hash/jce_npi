@@ -349,6 +349,8 @@ class Phase7TrialMetadataTest(unittest.TestCase):
             "trial_conclusion.submit": "trial_conclusion_revision",
             "trial_conclusion.decide": "trial_conclusion_revision",
             "trial_conclusion.reopen": "trial_conclusion_revision",
+            "released_trial_summary.retain": "released_trial_summary_revision",
+            "released_trial_summary.revise": "released_trial_summary_revision",
         }
         self.assertEqual(
             str(fields["operation"].get("options", "")).splitlines(),
