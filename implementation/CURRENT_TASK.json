@@ -1,76 +1,53 @@
 {
   "schema_version": 1,
-  "task_id": "P8-00",
+  "task_id": "P8-01",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_VALIDATION",
-  "completion_gate": "LEVEL_2",
-  "authorized_next_task": "P8-01",
-  "base_checkpoint": "31114021cf18cf5e32c22902de5150ed2922e7ba",
+  "status": "IN_PROGRESS_AUDIT",
+  "completion_gate": "LEVEL_3",
+  "authorized_next_task": "P8-02",
+  "base_checkpoint": "1da93f4d21dd434c99cfdc778ac1e63c4668d114",
   "predecessor_product_checkpoint": "31114021cf18cf5e32c22902de5150ed2922e7ba",
   "requirement_ids": [
-    "FR-PM-002",
-    "FR-PM-010",
-    "FR-DS-013",
-    "FR-TL-008",
-    "FR-TL-011",
-    "FR-TL-012",
-    "FR-TL-013",
-    "FR-TL-014",
-    "FR-TL-015",
-    "FR-TL-016",
-    "FR-TR-006",
-    "FR-NP-006",
-    "FR-RP-009",
-    "FR-INT-015",
-    "FR-BR-002",
-    "UX-016",
     "INT-001",
-    "INT-002",
-    "INT-003",
-    "INT-004",
-    "INT-005",
     "INT-006",
     "INT-007",
-    "INT-008",
-    "INT-009",
     "INT-010",
-    "INT-011",
-    "INT-012",
-    "INT-013",
-    "INT-014",
-    "NFR-INT-001"
+    "FR-PM-010",
+    "FR-TL-008",
+    "FR-TR-006",
+    "FR-NP-006"
   ],
   "scope": [
-    "Close Phase 7 only from the exact P7-08 Level 2 and Phase 7 Level 3 evidence at final product SHA 31114021cf18cf5e32c22902de5150ed2922e7ba.",
-    "Create the documentation-only Phase 8 requirement anchor that allocates M7-01 through M7-09 and every carried integration requirement without changing product code.",
-    "Freeze field ownership, stable NPI_ONE and ERPNEXT codes, operation-specific request/result, signed webhook, Inbox, Outbox, idempotency, retry, replay, reconciliation, adapter-mode and rollback invariants.",
-    "Record Mock as the default, sandbox as explicit and allowlisted, and production ERPNext endpoints, credentials, data and network contact as prohibited.",
-    "Keep INT-008, INT-009, INT-011, INT-012, INT-013, INT-014 and DR-REC-009 dependent behavior as explicit scoped holds rather than inventing missing domains, providers, mappings or event contracts.",
-    "Run reconciliation, current-task, documentation and repository Level 2 checks at the exact transition SHA before activating P8-01."
+    "Audit existing ERP-owned Customer, Supplier, Item, procurement, cost, quality and Asset-status read-only fields, reliability primitives, guarded metadata, BFF patterns and integration contracts before defining any P8-01 product change.",
+    "Freeze exact operation-specific projection identities, source ownership, source version or modified ordering, event and payload identity, received time, hash, projection state, staleness and explicit unavailable truth without inferring target values.",
+    "Freeze Project-first and tenant-aware authorization, redaction, object-substitution resistance, current membership, read-only capability and no caller-supplied target truth for every projection query.",
+    "Freeze Mock-default and explicitly configured allowlisted sandbox adapter seams; Mock emits unavailable or synthetic observation fixtures only and never formal target confirmation, while production hosts, credentials, data and traffic remain rejected.",
+    "Define the minimum complete vertical slice, closed contracts, ownership changes, additive guarded metadata, migration and rollback, duplicate and reordered observation fault matrix, disposable-Site proof and exact Level 3 impact boundary before product code.",
+    "Keep P8-02 signed webhook and Project-draft behavior, all target write execution, DLQ/replay/reconciliation operations UI, Trial Summary external contract and JCE Core display outside P8-01."
   ],
   "non_scope": [
-    "Any product route, DocType, Schema, migration, worker, adapter, webhook, Outbox dispatch, Inbox processing, projection, UI, translation or display-brand behavior.",
-    "Any production ERPNext or JCE endpoint, credential, request, data import, mutation, reconciliation, replay or compensating transaction.",
-    "Any guessed custom field, target state, numbering rule, formal Item, submitted BOM, Asset, quality result, external Trial Summary event or ERP/JCE consumer mapping.",
-    "Any generic ERPNext DocType write API, cross-database access, browser-to-ERP call, Frappe or ERPNext core modification, permission relaxation or test-threshold reduction.",
-    "Any Phase 9 Change, reporting, BI, external portal or optional OpenProject implementation."
+    "Product implementation before the bounded P8-01 Requirement/domain/existing-capability audit and frozen plan pass.",
+    "Any ERPNext or JCE production endpoint, credential, data, request, webhook, read, write, mutation, replay, reconciliation or compensating transaction.",
+    "Any generic target DocType CRUD, caller-selected endpoint or method, cross-database access, browser-to-ERP call, Frappe or ERPNext core patch, permission relaxation or target-owned field edit from NPI One.",
+    "Any Item, MBOM, Asset or quality execution request; any target mapping or succeeded result; any formal procurement, cost, Quality Inspection, NCR, CAPA, maintenance or finance value not authenticated from an approved observation.",
+    "Any signed webhook landing, Project draft creation, operation worker, retry or DLQ action, Trial Summary event, JCE Core display activation, Phase 9 Change/reporting behavior, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
-    "ERPNEXT_REMAINS_FORMAL_MANUFACTURING_COMMERCIAL_QUALITY_ASSET_AND_FINANCE_OWNER",
-    "NPI_ONE_BROWSER_CALLS_ONLY_THE_NPI_BFF_AND_NEVER_RECEIVES_TARGET_CREDENTIALS",
-    "NO_CROSS_DATABASE_READ_OR_WRITE_AND_NO_FRAPPE_OR_ERPNEXT_CORE_PATCH",
-    "NPI_ONE_AND_ERPNEXT_TECHNICAL_CODES_REMAIN_STABLE",
-    "JCE_CORE_AND_CORE_PNG_ARE_DISPLAY_ONLY_AND_ALLOCATED_SOLELY_TO_P8_09",
+    "ERP_OWNS_CUSTOMER_SUPPLIER_FORMAL_ITEM_PROCUREMENT_COST_QUALITY_ASSET_AND_FINANCIAL_TRUTH",
+    "NPI_PROJECTIONS_ARE_READ_ONLY_VERSIONED_SOURCE_OBSERVATIONS_AND_NEVER_DUAL_MASTER_COPIES",
+    "PROJECT_AND_TENANT_AUTHORIZATION_PRECEDE_EVERY_SECONDARY_EXTERNAL_IDENTITY",
+    "CALLERS_CANNOT_SUPPLY_TARGET_IDENTITY_VERSION_SUCCESS_STALENESS_OR_AUTHORITY_AS_TRUTH",
+    "OLDER_DUPLICATE_OR_REORDERED_OBSERVATIONS_NEVER_OVERWRITE_NEWER_TARGET_TRUTH",
+    "MISSING_STALE_UNAVAILABLE_SUPERSEDED_AND_CONFLICTED_PROJECTION_STATES_REMAIN_EXPLICIT",
     "MOCK_DEFAULT_SANDBOX_EXPLICIT_ALLOWLISTED_AND_PRODUCTION_REJECTED",
-    "EVERY_WRITE_OPERATION_HAS_A_SEPARATE_CLOSED_IDEMPOTENT_REQUEST_AND_RESULT_CONTRACT",
-    "QUEUED_ACCEPTED_TIMEOUT_OR_NETWORK_SUCCESS_NEVER_EQUALS_TARGET_BUSINESS_SUCCESS",
-    "SIGNED_WEBHOOK_LANDS_DURABLE_INBOX_BEFORE_ASYNC_BUSINESS_PROCESSING",
-    "DUPLICATE_REORDERED_RESTART_PARTIAL_TIMEOUT_AFTER_COMMIT_AND_REPLAY_FAULTS_REMAIN_EXPLICIT",
-    "RETRY_REPLAY_AND_RECONCILIATION_NEVER_EDIT_THE_ORIGINAL_IMMUTABLE_REQUEST",
-    "DR_REC_009_AND_UNMAPPED_OPTIONAL_OR_LATER_DOMAIN_INTERFACES_REMAIN_SCOPED_HOLDS",
-    "P8_00_CHANGES_DOCUMENTATION_TRACE_AND_CONTROLLER_STATE_ONLY",
-    "LEVEL_1_AND_LEVEL_2_PASS_CRITERIA"
+    "MOCK_AND_TRANSPORT_SUCCESS_NEVER_EMIT_FORMAL_TARGET_CONFIRMATION_OR_MAPPING",
+    "BROWSER_CALLS_ONLY_THE_NPI_BFF_AND_RECEIVES_NO_TARGET_CREDENTIAL_OR_RAW_ERROR_BODY",
+    "NO_CROSS_DATABASE_ACCESS_GENERIC_TARGET_CRUD_OR_FRAPPE_ERPNEXT_CORE_PATCH",
+    "NPI_ONE_AND_ERPNEXT_TECHNICAL_CODES_REMAIN_STABLE",
+    "P8_02_THROUGH_P8_09_AND_PHASE_9_AUTHORITIES_REMAIN_INACTIVE",
+    "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI_IF_ANY_USER_VISIBLE_STATE_IS_LATER_AUTHORIZED",
+    "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
     "implementation/ACTIVE_EXECUTION_GOAL.md",
@@ -82,12 +59,11 @@
     "implementation/PHASE_STATUS.yaml",
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
-    "implementation/evidence/phase-7/p7-08-plan.md",
-    "implementation/evidence/phase-7/p7-08-validation.md",
-    "implementation/evidence/phase-8/p8-00-validation.md",
-    "implementation/phase-7-gate.md",
     "implementation/phase-8-requirement-anchor.md",
+    "implementation/evidence/phase-8/p8-00-validation.md",
+    "implementation/evidence/phase-8/p8-01-*.md",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify_current_task.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
     "tests/test_v1_2_reconciliation.py"
@@ -101,9 +77,7 @@
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"],
-      ["python", "scripts/verify_current_task.py"],
-      ["python", "scripts/verify_v1_2_reconciliation.py"]
+      ["bash", "scripts/verify.sh"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
@@ -116,15 +90,15 @@
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "P8-00",
+    "phase_status_current_task": "P8-01",
     "phase_status_execution_hold": "NONE",
-    "phase_status_resumed_product_task": "P8-00",
-    "active_goal_marker": "P8-00",
-    "next_action_marker": "P8-00",
-    "controller_marker": "Phase 7 Level 3 PASS; P8-00 validation active"
+    "phase_status_resumed_product_task": "P8-01",
+    "active_goal_marker": "P8-01",
+    "next_action_marker": "P8-01",
+    "controller_marker": "P8-00 Level 2 PASS; P8-01 audit active"
   },
   "rollback": {
-    "before_product_resume": "Restore the exact P7-08 final product checkpoint while retaining the immutable Phase 7 Level 3 evidence; the Phase 8 anchor and controller transition contain no product or external mutation.",
-    "after_product_resume": "P8-00 has no product resume. Correct the append-only anchor/controller evidence forward; never rewrite Phase 7 history or contact an external target to validate documentation."
+    "before_product_resume": "Restore the exact P8-00 validated anchor/controller checkpoint while retaining its immutable Phase 7 and P8-00 evidence; the P8-01 audit transition contains no product or external mutation.",
+    "after_product_resume": "Disable only the independent P8-01 projection routes and adapter worker, retain every immutable observation and audit record, and deliver a reviewed forward repair without rewriting ERP-owned or source-version truth."
   }
 }

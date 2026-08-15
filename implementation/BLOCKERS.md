@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-16T01:10:00Z`
+Updated: `2026-08-15T18:47:39Z`
 
 ## Active hard blockers
 
@@ -12,16 +12,18 @@ workflow `31899480493` passes repository, frontend, full-history secret,
 visual, controlled preflight and cumulative disposable-Site runtime
 `95049356690`. Runtime artifact `9250918326` has digest
 `sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`;
-zero integration traffic and cleanup pass. P8-00 documentation/trace validation
-is active. No user action, login or frontend operation is required.
+zero integration traffic and cleanup pass. P8-00 documentation/trace checkpoint
+`1da93f4` passes ordinary Level 2 CI `31901621310`; P8-01 bounded read-only
+projection audit is active. No user action, login or frontend operation is
+required.
 
 ## Active recovery
 
 None. Phase 7 is sealed `PASS_LEVEL_3`; failed diagnostic runs remain
-diagnostic evidence rather than PASS evidence. P8-00 changes only requirement
-anchor, trace and controller documentation. Product adapters, webhooks,
-workers, projections and UI remain inactive until their exact Phase 8 atomic
-task is audited and validated.
+diagnostic evidence rather than PASS evidence. P8-00 is sealed
+`PASS_LEVEL_2`; P8-01 changes no product behavior until its audit plan passes.
+Adapters, webhooks, workers, projections and UI remain inactive until their
+exact Phase 8 atomic task is audited and validated.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

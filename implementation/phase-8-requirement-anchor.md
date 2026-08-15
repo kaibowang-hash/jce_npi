@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-00 VALIDATION**
+Status: **ANCHORED — P8-00 LEVEL 2 PASS**
 
 Anchor date: 2026-08-16
 
@@ -8,6 +8,13 @@ Controller phase: 8 — ERPNext Integration and Execution Requests
 
 Retained predecessor product checkpoint:
 `31114021cf18cf5e32c22902de5150ed2922e7ba`
+
+Validated anchor/controller checkpoint:
+`1da93f4d21dd434c99cfdc778ac1e63c4668d114`
+
+Validation evidence:
+`implementation/evidence/phase-8/p8-00-validation.md` — ordinary CI
+`31901621310` PASS
 
 ## 1. Authority and bounded outcome
 
@@ -281,8 +288,8 @@ an unapproved compensating mutation.
 
 ## 15. Automatic transition
 
-P8-00 is documentation/trace work only. After its exact-SHA ordinary CI and
-Level 2 validation pass, standing delivery authority activates only
+P8-00 is documentation/trace work only and passes its exact-SHA ordinary CI
+and Level 2 validation. Standing delivery authority activates only
 `P8-01 — read-only master and status projections`, beginning with its bounded
 requirement/domain/existing-capability audit. No adapter or product behavior is
-authorized by this anchor alone.
+authorized by this anchor alone or before the P8-01 plan is frozen.

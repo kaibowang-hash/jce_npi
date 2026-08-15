@@ -366,6 +366,56 @@ P7_ADDENDUM_ANCHOR_EVIDENCE = {
         "implementation/evidence/phase-7/p7-07-validation.md",
     ),
 }
+P8_ANCHOR_EVIDENCE = (
+    "implementation/phase-8-requirement-anchor.md",
+    "implementation/evidence/phase-8/p8-00-validation.md",
+)
+P8_ANCHOR_ALLOCATION = {
+    "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
+    "P8-02": {"FR-PM-002", "INT-002"},
+    "P8-03": {"INT-003"},
+    "P8-04": {"INT-004"},
+    "P8-05": {"INT-005"},
+    "P8-07": {"FR-RP-009", "NFR-INT-001"},
+    "P8-09": {"FR-BR-002"},
+}
+P8_CARRIED_FOUNDATIONS = {
+    "FR-DS-013": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-008": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-011": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-012": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-013": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-014": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-015": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-016": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TR-006": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_REFERENCE_FOUNDATION_FORMAL_ERP_PROJECTION_HELD",
+    ),
+    "FR-NP-006": (
+        "7",
+        "TECHNICAL_VERIFIED_CONTROLLED_REPORT_FOUNDATION_FORMAL_ERP_QUALITY_HELD",
+    ),
+    "FR-INT-015": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+    ),
+    "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
+}
+P8_SCOPED_HOLDS = {
+    "INT-008": ("9", "HELD_PHASE_9_CHANGE_DOMAIN"),
+    "INT-009": ("8", "SCOPED_HOLD_EXTERNAL_FILE_CONSUMER_MAPPING"),
+    "INT-011": ("8", "SCOPED_HOLD_TARGET_SUMMARY_FIELD_MAPPING"),
+    "INT-012": (
+        "8",
+        "SCOPED_HOLD_EXTERNAL_IDENTITY_TOPOLOGY_AND_SCOPES",
+    ),
+    "INT-013": (
+        "8",
+        "SCOPED_HOLD_OPTIONAL_PROVIDER_AND_OWNERSHIP_DECISION",
+    ),
+    "INT-014": ("9", "HELD_PHASE_9_REPORTING_BI_BOUNDARY"),
+}
 P6_01_COMPLETED_EVIDENCE = {
     "FR-TX-001": (
         "apps/npi_core/npi_core/tooling/domain.py",
@@ -762,6 +812,37 @@ def _expanded_rows(
             expanded.append(normalized_row)
             expanded_by_id[requirement_id] = normalized_row
         existing_ids.add(requirement_id)
+
+    for task_id, requirement_ids in P8_ANCHOR_ALLOCATION.items():
+        anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
+        for requirement_id in requirement_ids:
+            row = expanded_by_id[requirement_id]
+            row["phase"] = "8"
+            row["status"] = anchored_status
+            evidence = [
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            ]
+            row["evidence"] = "; ".join(
+                dict.fromkeys((*evidence, *P8_ANCHOR_EVIDENCE))
+            )
+
+    for requirement_id, (phase, status) in {
+        **P8_CARRIED_FOUNDATIONS,
+        **P8_SCOPED_HOLDS,
+    }.items():
+        row = expanded_by_id[requirement_id]
+        row["phase"] = phase
+        row["status"] = status
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *P8_ANCHOR_EVIDENCE))
+        )
 
     return expanded
 

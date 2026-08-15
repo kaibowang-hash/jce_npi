@@ -288,6 +288,56 @@ EXPECTED_P7_COMPLETED_TRACES = {
     "UX-020": ("7", "TECHNICAL_VERIFIED", EXPECTED_P7_08_EVIDENCE),
 }
 EXPECTED_P7_CARRIED_FOUNDATIONS = {}
+EXPECTED_P8_ANCHOR_ALLOCATION = {
+    "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
+    "P8-02": {"FR-PM-002", "INT-002"},
+    "P8-03": {"INT-003"},
+    "P8-04": {"INT-004"},
+    "P8-05": {"INT-005"},
+    "P8-07": {"FR-RP-009", "NFR-INT-001"},
+    "P8-09": {"FR-BR-002"},
+}
+EXPECTED_P8_ANCHOR_EVIDENCE = {
+    "implementation/phase-8-requirement-anchor.md",
+    "implementation/evidence/phase-8/p8-00-validation.md",
+}
+EXPECTED_P8_CARRIED_FOUNDATIONS = {
+    "FR-DS-013": ("5", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-008": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-011": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-012": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-013": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-014": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-015": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TL-016": ("6", "TECHNICAL_VERIFIED_FOUNDATION"),
+    "FR-TR-006": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_REFERENCE_FOUNDATION_FORMAL_ERP_PROJECTION_HELD",
+    ),
+    "FR-NP-006": (
+        "7",
+        "TECHNICAL_VERIFIED_CONTROLLED_REPORT_FOUNDATION_FORMAL_ERP_QUALITY_HELD",
+    ),
+    "FR-INT-015": (
+        "7",
+        "TECHNICAL_VERIFIED_NPI_SUMMARY_SOURCE_FOUNDATION_EXTERNAL_PROJECTION_HELD",
+    ),
+    "UX-016": ("8", "TECHNICAL_VERIFIED_FOUNDATION"),
+}
+EXPECTED_P8_SCOPED_HOLDS = {
+    "INT-008": ("9", "HELD_PHASE_9_CHANGE_DOMAIN"),
+    "INT-009": ("8", "SCOPED_HOLD_EXTERNAL_FILE_CONSUMER_MAPPING"),
+    "INT-011": ("8", "SCOPED_HOLD_TARGET_SUMMARY_FIELD_MAPPING"),
+    "INT-012": (
+        "8",
+        "SCOPED_HOLD_EXTERNAL_IDENTITY_TOPOLOGY_AND_SCOPES",
+    ),
+    "INT-013": (
+        "8",
+        "SCOPED_HOLD_OPTIONAL_PROVIDER_AND_OWNERSHIP_DECISION",
+    ),
+    "INT-014": ("9", "HELD_PHASE_9_REPORTING_BI_BOUNDARY"),
+}
 EXPECTED_R1_03_TRACE = {
     "FR-UX-039": (
         "TECHNICAL_VERIFIED",
@@ -1965,13 +2015,18 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the completed P6-04 trace truth"
             )
-        if actual_evidence != expected_evidence:
+        permitted_evidence = expected_evidence | (
+            EXPECTED_P8_ANCHOR_EVIDENCE
+            if requirement_id in EXPECTED_P8_CARRIED_FOUNDATIONS
+            else set()
+        )
+        if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain its complete P6-04 evidence set"
             )
         missing_evidence = sorted(
             path
-            for path in expected_evidence
+            for path in permitted_evidence
             if "/" in path and not (ROOT / path).is_file()
         )
         if missing_evidence:
@@ -2053,13 +2108,18 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the completed P6-06 trace truth"
             )
-        if actual_evidence != expected_evidence:
+        permitted_evidence = expected_evidence | (
+            EXPECTED_P8_ANCHOR_EVIDENCE
+            if requirement_id in EXPECTED_P8_CARRIED_FOUNDATIONS
+            else set()
+        )
+        if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain its complete P6-06 evidence set"
             )
         missing_evidence = sorted(
             path
-            for path in expected_evidence
+            for path in permitted_evidence
             if "/" in path and not (ROOT / path).is_file()
         )
         if missing_evidence:
@@ -2098,13 +2158,18 @@ def verify_trace_sets() -> None:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain the completed P6-07 trace truth"
             )
-        if actual_evidence != expected_evidence:
+        permitted_evidence = expected_evidence | (
+            EXPECTED_P8_ANCHOR_EVIDENCE
+            if requirement_id in EXPECTED_P8_CARRIED_FOUNDATIONS
+            else set()
+        )
+        if actual_evidence != permitted_evidence:
             raise ReconciliationVerificationError(
                 f"{requirement_id} must retain its complete P6-07 evidence set"
             )
         missing_evidence = sorted(
             path
-            for path in expected_evidence
+            for path in permitted_evidence
             if "/" in path and not (ROOT / path).is_file()
         )
         if missing_evidence:
@@ -2159,7 +2224,17 @@ def verify_trace_sets() -> None:
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks the Phase 7 anchor evidence"
                 )
-            if completed_trace and evidence != completed_trace[2]:
+            permitted_completed_evidence = (
+                completed_trace[2]
+                | (
+                    EXPECTED_P8_ANCHOR_EVIDENCE
+                    if requirement_id in EXPECTED_P8_CARRIED_FOUNDATIONS
+                    else set()
+                )
+                if completed_trace
+                else set()
+            )
+            if completed_trace and evidence != permitted_completed_evidence:
                 raise ReconciliationVerificationError(
                     f"{requirement_id} lacks its exact completed task evidence"
                 )
@@ -2186,6 +2261,51 @@ def verify_trace_sets() -> None:
         if not EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence):
             raise ReconciliationVerificationError(
                 f"{requirement_id} lacks the Phase 7 scoped-hold evidence"
+            )
+
+    for task_id, requirement_ids in EXPECTED_P8_ANCHOR_ALLOCATION.items():
+        anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
+        for requirement_id in requirement_ids:
+            row = by_id[requirement_id]
+            if (row["phase"], row["status"]) != ("8", anchored_status):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} is not allocated to {task_id}"
+                )
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            if not EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence):
+                raise ReconciliationVerificationError(
+                    f"{requirement_id} lacks the Phase 8 anchor evidence"
+                )
+
+    for requirement_id, expected_trace in {
+        **EXPECTED_P8_CARRIED_FOUNDATIONS,
+        **EXPECTED_P8_SCOPED_HOLDS,
+    }.items():
+        row = by_id[requirement_id]
+        if (row["phase"], row["status"]) != expected_trace:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} does not retain its Phase 8 anchor truth"
+            )
+        evidence = {
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        }
+        if not EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence):
+            raise ReconciliationVerificationError(
+                f"{requirement_id} lacks the Phase 8 scoped evidence"
+            )
+        missing_evidence = sorted(
+            path for path in evidence if "/" in path and not (ROOT / path).is_file()
+        )
+        if missing_evidence:
+            raise ReconciliationVerificationError(
+                f"{requirement_id} references missing Phase 8 evidence: "
+                f"{missing_evidence}"
             )
 
     linked_alias_ids = {

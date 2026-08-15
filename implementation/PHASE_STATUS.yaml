@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-16T01:10:00Z'
+updated_at: '2026-08-15T18:47:39Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-00
-current_task_status: IN_PROGRESS_VALIDATION
-current_task_completed_stage: PHASE_7_LEVEL_3_PASS_AND_PHASE_8_ANCHOR_DRAFTED
-current_task_next_stage: P8_00_EXACT_SHA_LEVEL_2_VALIDATION
+current_task: P8-01
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P8_00_LEVEL_2_PASS
+current_task_next_stage: P8_01_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P8-00
-resumed_product_task_status: ACTIVE_VALIDATION
+resumed_product_task: P8-01
+resumed_product_task_status: ACTIVE_AUDIT_ONLY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1985,7 +1985,7 @@ p7_08:
 p8_00:
   task: P8-00
   controller_task: P8-00_ERPNEXT_INTEGRATION_REQUIREMENT_ANCHOR
-  status: IN_PROGRESS_VALIDATION
+  status: PASS_LEVEL_2
   phase: 8
   milestone: M7
   requirements:
@@ -2023,7 +2023,18 @@ p8_00:
   predecessor_product_checkpoint: 31114021cf18cf5e32c22902de5150ed2922e7ba
   audit: PASS
   anchor: implementation/phase-8-requirement-anchor.md
-  current_stage: EXACT_SHA_LEVEL_2_VALIDATION
+  anchor_checkpoint: 1da93f4d21dd434c99cfdc778ac1e63c4668d114
+  ordinary_ci_workflow: 31901621310
+  repository_job: 95053171972
+  frontend_job: 95053172010
+  secret_scan_job: 95053172009
+  visual_job: 95053172077
+  visual_artifact: 9251286410
+  visual_digest: sha256:970524654b68f57fc023c54ef3520cb000838dd74a7ea728a495bce7a8834b6c
+  gitleaks_artifact: 9251237713
+  gitleaks_digest: sha256:73a6d5203457ecadea0c7673392e56292f707652a2eb81e0281e702c4f44e820
+  task_gate: PASS_LEVEL_2
+  current_stage: COMPLETE
   next_stage_after_pass: P8_01_REQUIREMENT_DOMAIN_AUDIT
   product_code_changed: false
   external_holds:
@@ -2035,6 +2046,36 @@ p8_00:
   evidence:
     - implementation/phase-7-gate.md
     - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-8/p8-00-validation.md
+p8_01:
+  task: P8-01
+  controller_task: P8-01_READ_ONLY_MASTER_AND_STATUS_PROJECTIONS
+  status: IN_PROGRESS_AUDIT
+  phase: 8
+  milestone: M7-01
+  requirements:
+    - INT-001
+    - INT-006
+    - INT-007
+    - INT-010
+    - FR-PM-010
+    - FR-TL-008
+    - FR-TR-006
+    - FR-NP-006
+  predecessor_product_checkpoint: 31114021cf18cf5e32c22902de5150ed2922e7ba
+  audit_base_checkpoint: 1da93f4d21dd434c99cfdc778ac1e63c4668d114
+  audit: IN_PROGRESS
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  product_code_changed: false
+  external_holds:
+    - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
+    - CURRENT_ERPNEXT_CUSTOMIZATION_MAPPING_AND_SANDBOX_RECONCILIATION_PACKAGE
+    - P8_02_SIGNED_WEBHOOK_AND_PROJECT_DRAFT_BEHAVIOR
+    - P8_03_THROUGH_P8_09_TARGET_EXECUTION_OPERATIONS_AND_DISPLAY
+  evidence:
+    - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-8/p8-00-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2061,5 +2102,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [], current_task: P8-00}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00], current_task: P8-01}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

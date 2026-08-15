@@ -3534,3 +3534,35 @@ repeat or rewrite it merely to restore context. See
   `INT-008/009/011/012/013/014` behavior are scoped holds, not global Hard
   Blockers. After P8-00 Level 2 PASS, activate only the bounded P8-01 read-only
   projection audit.
+
+## 2026-08-16 P8-00 Level 2 PASS; P8-01 audit active
+
+- Exact P8-00 documentation/controller SHA
+  `1da93f4d21dd434c99cfdc778ac1e63c4668d114` passes ordinary pull-request CI
+  `31901621310`: repository `95053171972` proves `1,922` tracked Python tests;
+  frontend `95053172010` proves `918/918` unit, `421/421` E2E, `7,471`
+  direct trilingual sources, coverage thresholds, build/install policy and
+  zero vulnerabilities; secret `95053172009` passes current-tree and complete
+  branch-history Gitleaks; `119/119` fixed-Linux visual `95053172077` passes.
+  Controlled runtime lanes correctly skip because P8-00 changes no product or
+  runtime truth.
+- Visual artifact `9251286410` has digest
+  `sha256:970524654b68f57fc023c54ef3520cb000838dd74a7ea728a495bce7a8834b6c`;
+  Gitleaks artifact `9251237713` has digest
+  `sha256:73a6d5203457ecadea0c7673392e56292f707652a2eb81e0281e702c4f44e820`.
+  Complete evidence is
+  `implementation/evidence/phase-8/p8-00-validation.md`.
+- P8-00 closes `PASS_LEVEL_2`. Requirements are allocated to P8-01..09,
+  carried foundations retain prior truthful status, and `INT-008/009/011/012/
+  013/014` retain explicit domain/provider/mapping holds. No route, DocType,
+  Schema, migration, adapter, credential, external message or product behavior
+  was introduced.
+- Standing authority activates only the P8-01 Requirement/domain/existing-
+  capability audit for read-only ERP-owned master and status projections. It
+  must freeze exact source identity/version/order/staleness/unavailable truth,
+  ownership, authorization/redaction, Mock/sandbox, duplicate/reorder/restart,
+  migration/rollback and Level 3 impact before product code. This controller
+  marker is: `P8-00 Level 2 PASS; P8-01 audit active`.
+- P8-02 through P8-09 remain inactive. Production ERPNext/JCE endpoints,
+  credentials, data and network traffic remain prohibited and no missing
+  production fact is a Hard Blocker for the bounded audit.

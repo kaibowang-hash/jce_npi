@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_VALIDATION — P8-00`
+`IN_PROGRESS_AUDIT — P8-01`
 
-Recovery time: `2026-08-16T01:10:00Z`
+Recovery time: `2026-08-15T18:47:39Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -80,6 +80,12 @@ P7-08 ordinary CI:
 Phase 7 final Level 3 workflow:
 `31899480493`
 
+P8-00 anchor/controller checkpoint and P8-01 audit base:
+`1da93f4d21dd434c99cfdc778ac1e63c4668d114`
+
+P8-00 ordinary Level 2 CI:
+`31901621310`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -95,15 +101,25 @@ disposable-Site runtime. Runtime artifact `9250918326` has digest
 Complete evidence is `implementation/evidence/phase-7/p7-08-validation.md`
 and `implementation/phase-7-gate.md`.
 
-Validate only `P8-00`: the documentation-only
-`implementation/phase-8-requirement-anchor.md` must allocate M7-01..09 and
-the complete integration catalog, freeze field ownership, stable technical
-codes, signed webhook/Inbox, operation-specific execution/Outbox, explicit
-result/retry/replay/reconciliation, Mock/sandbox safety, rollback and scoped
-holds. Run reconciliation/current-task tests and exact-SHA ordinary Level 2.
-Do not add a route, DocType, Schema, migration, adapter, UI or external call.
-Production ERPNext remains prohibited. After P8-00 PASS activate only the
-bounded P8-01 read-only projection audit.
+P8-00 passes Level 2 at exact documentation/controller checkpoint `1da93f4`.
+Ordinary CI `31901621310` passes repository `95053171972`, frontend
+`95053172010`, secret `95053172009` and `119/119` fixed-Linux visual
+`95053172077`. Visual artifact `9251286410` has digest
+`sha256:970524654b68f57fc023c54ef3520cb000838dd74a7ea728a495bce7a8834b6c`;
+Gitleaks artifact `9251237713` has digest
+`sha256:73a6d5203457ecadea0c7673392e56292f707652a2eb81e0281e702c4f44e820`.
+Complete evidence is `implementation/evidence/phase-8/p8-00-validation.md`.
+
+Execute only the bounded P8-01 Requirement/domain/existing-capability audit.
+Inspect current ERP-owned master/status projections, source ordering and
+staleness, unavailable truth, reliability primitives, metadata, BFF and
+contracts; freeze the exact minimum projection slice, ownership,
+authorization, Mock/sandbox, duplicate/reorder/restart faults, tests,
+migration, rollback and Level 3 boundary in
+`implementation/evidence/phase-8/p8-01-plan.md` before product code. Do not
+activate P8-02 signed webhook, any target write/execution, replay operations,
+Trial Summary event or JCE Core display. Production ERPNext remains
+prohibited.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

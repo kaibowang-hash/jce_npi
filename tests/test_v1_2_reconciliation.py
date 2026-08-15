@@ -154,13 +154,16 @@ class V12ReconciliationTests(unittest.TestCase):
         for requirement_id, expected in self.verifier.EXPECTED_P6_06_TRACE.items():
             row = by_id[requirement_id]
             self.assertEqual(row["status"], expected[1])
+            expected_evidence = set(expected[5])
+            if requirement_id in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS:
+                expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
                     for value in row["evidence"].split(";")
                     if value.strip()
                 },
-                expected[5],
+                expected_evidence,
             )
 
     def test_p6_07_trace_is_verified_with_controlled_runtime_evidence(self) -> None:
@@ -170,13 +173,16 @@ class V12ReconciliationTests(unittest.TestCase):
             row = by_id[requirement_id]
             self.assertEqual(row["phase"], expected[1])
             self.assertEqual(row["status"], expected[2])
+            expected_evidence = set(expected[6])
+            if requirement_id in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS:
+                expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
                     for value in row["evidence"].split(";")
                     if value.strip()
                 },
-                expected[6],
+                expected_evidence,
             )
 
     def test_r1_03_trace_is_verified_with_runtime_evidence(self) -> None:
@@ -230,7 +236,13 @@ class V12ReconciliationTests(unittest.TestCase):
                     )
                 )
                 if completed_trace:
-                    self.assertEqual(evidence, completed_trace[2])
+                    expected_evidence = set(completed_trace[2])
+                    if (
+                        requirement_id
+                        in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS
+                    ):
+                        expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
+                    self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(
                         (self.verifier.ROOT / evidence_path).is_file(),
@@ -248,6 +260,40 @@ class V12ReconciliationTests(unittest.TestCase):
             }
             self.assertTrue(
                 self.verifier.EXPECTED_P7_ANCHOR_EVIDENCE.issubset(evidence)
+            )
+
+    def test_p8_00_trace_is_anchored_without_overclaiming_holds(self) -> None:
+        rows = self.verifier._read_csv(self.verifier.TRACE)
+        by_id = {row["requirement_id"]: row for row in rows}
+        for task_id, requirement_ids in (
+            self.verifier.EXPECTED_P8_ANCHOR_ALLOCATION.items()
+        ):
+            anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
+            for requirement_id in requirement_ids:
+                row = by_id[requirement_id]
+                self.assertEqual((row["phase"], row["status"]), ("8", anchored_status))
+                evidence = {
+                    value.strip()
+                    for value in row["evidence"].split(";")
+                    if value.strip()
+                }
+                self.assertTrue(
+                    self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
+                )
+
+        for requirement_id, expected_trace in {
+            **self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS,
+            **self.verifier.EXPECTED_P8_SCOPED_HOLDS,
+        }.items():
+            row = by_id[requirement_id]
+            self.assertEqual((row["phase"], row["status"]), expected_trace)
+            evidence = {
+                value.strip()
+                for value in row["evidence"].split(";")
+                if value.strip()
+            }
+            self.assertTrue(
+                self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
             )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
