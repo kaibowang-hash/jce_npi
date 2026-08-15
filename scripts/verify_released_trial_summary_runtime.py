@@ -836,12 +836,14 @@ def retained_truth(*, project_id: str) -> dict[str, object]:
             "NPI Trial Conclusion Revision",
         )
     }
+    # P7-04 seals 12/39/5 lifecycle/command/conclusion rows, P7-05 adds
+    # 1/3/1, and this flow adds five review transitions plus two summary commands.
     require(
         trial_counts
         == {
             "NPI Trial Round": 2,
-            "NPI Trial Round Lifecycle Event": 17,
-            "NPI Trial Command Idempotency": 46,
+            "NPI Trial Round Lifecycle Event": 18,
+            "NPI Trial Command Idempotency": 49,
             "NPI Trial Conclusion Revision": 11,
         },
         "P7-07 cumulative Trial cardinality drifted",

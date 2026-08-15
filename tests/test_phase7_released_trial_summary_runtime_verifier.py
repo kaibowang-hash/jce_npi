@@ -291,8 +291,8 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, fresh)
-        self.assertIn('"NPI Trial Round Lifecycle Event": 17', self.source)
-        self.assertIn('"NPI Trial Command Idempotency": 46', self.source)
+        self.assertIn('"NPI Trial Round Lifecycle Event": 18', self.source)
+        self.assertIn('"NPI Trial Command Idempotency": 49', self.source)
 
     def test_cross_process_replay_reuses_both_summary_receipts_and_pdf(self) -> None:
         replay = self.source.split("def run_replay_only", 1)[1].split("\ndef ", 1)[0]
