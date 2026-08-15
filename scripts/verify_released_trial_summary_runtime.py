@@ -49,7 +49,6 @@ REVISE_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-revise"
 STALE_REVISE_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-stale-revise"
 NOOP_REVISE_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-noop-revise"
 NO_WRITE_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-no-write"
-REOPEN_APPROVED_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-reopen-approved"
 SUBMIT_APPROVED_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-submit-approved"
 DECIDE_APPROVED_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-decide-approved"
 REOPEN_REJECTED_KEY = f"p7-07-runtime-{FIXTURE_RUN_ID}-reopen-rejected"
@@ -358,27 +357,60 @@ def revise_payload(
     }
 
 
-def _reference_tips(values: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    tips: dict[str, Mapping[str, Any]] = {}
-    for value in values:
-        stable_id = str(value["referenceGlobalId"])
-        if stable_id not in tips or int(value["referenceVersion"]) > int(
-            tips[stable_id]["referenceVersion"]
-        ):
-            tips[stable_id] = value
-    result = [dict(value) for value in tips.values()]
-    result.sort(
-        key=lambda value: (
-            value.get("referenceKind") != "internal_sample_review",
-            str(value.get("referenceKind")),
-        )
+def _exact_snapshots(
+    values: Sequence[Mapping[str, Any]],
+    frozen: Sequence[Mapping[str, Any]],
+    label: str,
+) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for expected in frozen:
+        matches = [
+            value
+            for value in values
+            if value.get("globalId") == expected.get("globalId")
+            and value.get("snapshotHash") == expected.get("snapshotHash")
+        ]
+        result.append(trial_runtime.exact_single(matches, label))
+    return result
+
+
+def _submission_sources(
+    workspace: Mapping[str, Any],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    current_reference = readiness_runtime.current_controlled_reference(workspace)
+    if current_reference is not None:
+        comparison_snapshot = current_reference.get("comparisonSnapshot")
+        frozen_references: Sequence[Mapping[str, Any]] = [current_reference]
+    else:
+        predecessor = workspace["conclusionRevisions"][-1]
+        comparison_snapshot = predecessor.get("comparisonSnapshot")
+        frozen_references = predecessor.get("reviewReferences") or []
+    require(
+        isinstance(comparison_snapshot, Mapping) and bool(frozen_references),
+        "P7-07 exact submission sources are unavailable",
+    )
+    comparison = _exact_snapshots(
+        workspace["comparisonSnapshots"],
+        [comparison_snapshot],
+        "P7-07 exact submission comparison",
+    )[0]
+    references = _exact_snapshots(
+        workspace["reviewReferenceRevisions"],
+        frozen_references,
+        "P7-07 exact submission reference",
     )
     require(
-        [value.get("referenceKind") for value in result]
-        == ["internal_sample_review", "controlled_quality_report"],
-        "P7-07 exact review-reference tips drifted",
+        all(
+            value.get("comparisonSnapshot")
+            == {
+                "globalId": comparison["globalId"],
+                "snapshotHash": comparison["snapshotHash"],
+            }
+            for value in references
+        ),
+        "P7-07 submission references do not match the exact comparison",
     )
-    return result
+    return comparison, references
 
 
 def _review_context(
@@ -403,8 +435,8 @@ def _review_context(
         state=state,
         round_version=round_version,
         policies=1,
-        comparisons=1,
-        references=3,
+        comparisons=2,
+        references=4,
         conclusions=conclusions,
     )
 
@@ -449,9 +481,7 @@ def _submit(
     key: str,
 ) -> dict[str, Any]:
     policy = trial_runtime.exact_single(workspace["policyVersions"], "P7-07 policy")
-    comparison = trial_runtime.exact_single(
-        workspace["comparisonSnapshots"], "P7-07 comparison"
-    )
+    comparison, references = _submission_sources(workspace)
     predecessor = workspace["conclusionRevisions"][-1]
     result = trial_runtime.command(
         reviewer,
@@ -462,7 +492,7 @@ def _submit(
             policy,
             workspace["trialRound"],
             comparison,
-            _reference_tips(workspace["reviewReferenceRevisions"]),
+            references,
             predecessor=predecessor,
         ),
         key,
@@ -802,8 +832,8 @@ def retained_truth(*, project_id: str) -> dict[str, object]:
         trial_counts
         == {
             "NPI Trial Round": 2,
-            "NPI Trial Round Lifecycle Event": 18,
-            "NPI Trial Command Idempotency": 47,
+            "NPI Trial Round Lifecycle Event": 17,
+            "NPI Trial Command Idempotency": 46,
             "NPI Trial Conclusion Revision": 11,
         },
         "P7-07 cumulative Trial cardinality drifted",
@@ -1142,29 +1172,8 @@ def run_fresh(
         base_url,
         project_id,
         round_id,
-        state="rejected",
-        round_version=9,
-        conclusions=5,
-    )
-    reopened_approved = _reopen(
-        reviewer,
-        base_url,
-        reviewer_csrf,
-        project_id,
-        round_id,
-        initial,
-        REOPEN_APPROVED_KEY,
-        "P707 reopen rejected technical conclusion for approved successor.",
-    )
-    trial_runtime.assert_review_workspace(
-        HttpResult(201, {}, reopened_approved),
-        project_id,
-        round_id,
-        state="reopened",
+        state="analysis",
         round_version=10,
-        policies=1,
-        comparisons=1,
-        references=3,
         conclusions=6,
     )
     submitted_approved = _submit(
@@ -1173,7 +1182,7 @@ def run_fresh(
         reviewer_csrf,
         project_id,
         round_id,
-        reopened_approved,
+        initial,
         SUBMIT_APPROVED_KEY,
     )
     approved = _decide(
@@ -1193,8 +1202,8 @@ def run_fresh(
         state="approved",
         round_version=12,
         policies=1,
-        comparisons=1,
-        references=3,
+        comparisons=2,
+        references=4,
         conclusions=8,
     )
     empty = assert_summary_workspace(
@@ -1377,8 +1386,8 @@ def run_fresh(
         state="rejected",
         round_version=15,
         policies=1,
-        comparisons=1,
-        references=3,
+        comparisons=2,
+        references=4,
         conclusions=11,
     )
     current = assert_summary_workspace(
@@ -1592,8 +1601,8 @@ def route_disable_probe(
         state="rejected",
         round_version=15,
         policies=1,
-        comparisons=1,
-        references=3,
+        comparisons=2,
+        references=4,
         conclusions=11,
     )
     if expected_mode == "disabled":

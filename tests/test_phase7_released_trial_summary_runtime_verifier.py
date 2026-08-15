@@ -124,7 +124,7 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
             "downstreamCounts": {
                 "project:NPI Engineering Project": 1,
                 "trial:NPI Trial Round": 1,
-                "trial:NPI Trial Command Idempotency": 47,
+                "trial:NPI Trial Command Idempotency": 46,
             },
             "downstreamDigests": {
                 "project:NPI Engineering Project": "a" * 64,
@@ -210,8 +210,65 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
             )
         self.assertIs(result, response)
 
+    def test_submission_sources_continue_current_then_frozen_p705_scope(self) -> None:
+        module = self.module
+        old_comparison = {
+            "globalId": "10000000-0000-4000-8000-000000000001",
+            "snapshotHash": "a" * 64,
+        }
+        current_comparison = {
+            "globalId": "10000000-0000-4000-8000-000000000002",
+            "snapshotHash": "b" * 64,
+        }
+        old_reference = {
+            "globalId": "20000000-0000-4000-8000-000000000001",
+            "snapshotHash": "c" * 64,
+            "comparisonSnapshot": old_comparison,
+        }
+        current_reference = {
+            "globalId": "20000000-0000-4000-8000-000000000002",
+            "snapshotHash": "d" * 64,
+            "comparisonSnapshot": current_comparison,
+        }
+        workspace = {
+            "comparisonSnapshots": [old_comparison, current_comparison],
+            "reviewReferenceRevisions": [old_reference, current_reference],
+            "conclusionRevisions": [
+                {
+                    "comparisonSnapshot": old_comparison,
+                    "reviewReferences": [
+                        {
+                            "globalId": old_reference["globalId"],
+                            "snapshotHash": old_reference["snapshotHash"],
+                        }
+                    ],
+                }
+            ],
+        }
+        with patch.object(
+            module.readiness_runtime,
+            "current_controlled_reference",
+            return_value=current_reference,
+        ):
+            self.assertEqual(
+                module._submission_sources(workspace),
+                (current_comparison, [current_reference]),
+            )
+        with patch.object(
+            module.readiness_runtime,
+            "current_controlled_reference",
+            return_value=None,
+        ):
+            self.assertEqual(
+                module._submission_sources(workspace),
+                (old_comparison, [old_reference]),
+            )
+
     def test_fresh_flow_orders_approved_print_before_rejected_successor(self) -> None:
         fresh = self.source.split("def run_fresh", 1)[1].split("\ndef ", 1)[0]
+        self.assertNotIn("REOPEN_APPROVED_KEY", fresh)
+        self.assertIn('state="analysis"', fresh)
+        self.assertIn("round_version=10", fresh)
         self.assertLess(fresh.index("DECIDE_APPROVED_KEY"), fresh.index("RETAIN_KEY"))
         self.assertLess(fresh.index("RETAIN_KEY"), fresh.index("PRINT_KEY"))
         self.assertLess(fresh.index("PRINT_KEY"), fresh.index("DECIDE_REJECTED_KEY"))
@@ -226,7 +283,8 @@ class Phase7ReleasedTrialSummaryRuntimeVerifierTest(unittest.TestCase):
         ):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, fresh)
-        self.assertIn('"NPI Trial Command Idempotency": 47', self.source)
+        self.assertIn('"NPI Trial Round Lifecycle Event": 17', self.source)
+        self.assertIn('"NPI Trial Command Idempotency": 46', self.source)
 
     def test_cross_process_replay_reuses_both_summary_receipts_and_pdf(self) -> None:
         replay = self.source.split("def run_replay_only", 1)[1].split("\ndef ", 1)[0]
