@@ -7810,6 +7810,156 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    ERPProjectionKind:
+      type: string
+      enum: [customer_master, supplier_master, formal_item_master, tooling_procurement_cost, project_cost, formal_quality_status, tool_asset_status]
+    ERPProjectionMasterValues:
+      type: object
+      additionalProperties: false
+      required: [code, displayName, enabled, statusCode]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 128 }
+        displayName: { type: string, minLength: 1, maxLength: 200 }
+        enabled: { type: boolean }
+        statusCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+    ERPProjectionItemValues:
+      type: object
+      additionalProperties: false
+      required: [itemCode, stockUom, enabled, statusCode]
+      properties:
+        itemCode: { type: string, minLength: 1, maxLength: 128 }
+        stockUom: { type: string, minLength: 1, maxLength: 128 }
+        enabled: { type: boolean }
+        statusCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+    ERPProjectionToolingCostValues:
+      type: object
+      additionalProperties: false
+      required: [toolingMasterGlobalId, supplier, rows]
+      properties:
+        toolingMasterGlobalId: { type: string, format: uuid }
+        supplier: { $ref: "#/components/schemas/ToolingFormalSupplierReference" }
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ToolingErpActualCostRow" }
+    ERPProjectionProjectCostRow:
+      type: object
+      additionalProperties: false
+      required: [rowKind, sourceRowId, sourceRowVersion, postingDate, currency, amount, hours]
+      properties:
+        rowKind: { type: string, enum: [commitment, actual_cost, labor_hours, expense] }
+        sourceRowId: { type: string, minLength: 1, maxLength: 128 }
+        sourceRowVersion: { type: string, minLength: 1, maxLength: 128 }
+        postingDate: { type: string, format: date }
+        currency: { type: [string, "null"], pattern: "^[A-Z]{3}$" }
+        amount: { type: [string, "null"], pattern: "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", maxLength: 32 }
+        hours: { type: [string, "null"], pattern: "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", maxLength: 32 }
+      allOf:
+        - if:
+            properties: { rowKind: { const: labor_hours } }
+            required: [rowKind]
+          then:
+            properties: { currency: { type: "null" }, amount: { type: "null" }, hours: { type: string } }
+          else:
+            properties: { currency: { type: string }, amount: { type: string }, hours: { type: "null" } }
+    ERPProjectionProjectCostValues:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items: { $ref: "#/components/schemas/ERPProjectionProjectCostRow" }
+    ERPProjectionQualityValues:
+      type: object
+      additionalProperties: false
+      required: [recordKind, statusCode, resultCode, observedAt]
+      properties:
+        recordKind: { type: string, enum: [quality_inspection, ncr, capa] }
+        statusCode: { type: string, minLength: 1, maxLength: 128 }
+        resultCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        observedAt: { type: string, format: date-time }
+    ERPProjectionToolAssetValues:
+      type: object
+      additionalProperties: false
+      required: [toolingSetGlobalId, mappingVersion, formalAssetId, targetVersion, assetState, currentLocation, shotCount, expectedLifeShots, maintenanceDue, movements, repairs, spares]
+      properties:
+        toolingSetGlobalId: { type: string, format: uuid }
+        mappingVersion: { type: integer, minimum: 1 }
+        formalAssetId: { type: string, minLength: 1, maxLength: 128 }
+        targetVersion: { type: string, minLength: 1, maxLength: 128 }
+        assetState: { type: string, minLength: 1, maxLength: 128 }
+        currentLocation: { type: string, minLength: 1, maxLength: 255 }
+        shotCount: { type: integer, minimum: 0 }
+        expectedLifeShots: { type: [integer, "null"], minimum: 1 }
+        maintenanceDue: { type: [string, "null"], format: date }
+        movements:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolAssetMovementObservation" }
+        repairs:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ToolAssetRepairObservation" }
+        spares:
+          type: array
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ToolAssetSpareInventoryObservation" }
+    ERPProjectionValues:
+      oneOf:
+        - { $ref: "#/components/schemas/ERPProjectionMasterValues" }
+        - { $ref: "#/components/schemas/ERPProjectionItemValues" }
+        - { $ref: "#/components/schemas/ERPProjectionToolingCostValues" }
+        - { $ref: "#/components/schemas/ERPProjectionProjectCostValues" }
+        - { $ref: "#/components/schemas/ERPProjectionQualityValues" }
+        - { $ref: "#/components/schemas/ERPProjectionToolAssetValues" }
+    ERPProjectionItem:
+      type: object
+      additionalProperties: false
+      required: [observationGlobalId, projectionKind, scopeKind, scopeGlobalId, availability, freshness, disposition, sourceSystem, sourceObjectType, sourceObjectId, sourceVersion, sourceModifiedAt, receivedAt, payloadHash, unavailableReasonCode, values, editable]
+      properties:
+        observationGlobalId: { type: string, format: uuid }
+        projectionKind: { $ref: "#/components/schemas/ERPProjectionKind" }
+        scopeKind: { type: string, enum: [project, tooling_master, tooling_set, engineering_item, trial_round, readiness] }
+        scopeGlobalId: { type: string, format: uuid }
+        availability: { type: string, enum: [available, unavailable, synthetic] }
+        freshness: { type: string, enum: [fresh, stale, unknown] }
+        disposition: { type: string, enum: [applied_current, unavailable_current, superseded, duplicate_exact, conflicted, synthetic_retained] }
+        sourceSystem: { type: string, const: ERPNEXT }
+        sourceObjectType: { type: string, minLength: 1, maxLength: 100 }
+        sourceObjectId: { type: string, minLength: 1, maxLength: 255 }
+        sourceVersion: { type: [string, "null"], minLength: 1, maxLength: 255 }
+        sourceModifiedAt: { type: [string, "null"], format: date-time }
+        receivedAt: { type: string, format: date-time }
+        payloadHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        unavailableReasonCode: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        values:
+          oneOf:
+            - { $ref: "#/components/schemas/ERPProjectionValues" }
+            - { type: "null" }
+        editable: { type: boolean, const: false }
+    ERPProjectionPermissions:
+      type: object
+      additionalProperties: false
+      required: [view, edit, refresh]
+      properties:
+        view: { type: boolean }
+        edit: { type: boolean, const: false }
+        refresh: { type: boolean, const: false }
+    ERPProjectionCollection:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, permissions, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        permissions: { $ref: "#/components/schemas/ERPProjectionPermissions" }
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ERPProjectionItem" }
     ControlledPrintSourceReference:
       type: object
       additionalProperties: false

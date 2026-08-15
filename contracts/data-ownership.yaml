@@ -27,6 +27,16 @@ objects:
       status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       project_specific_contact_notes: {owner: NPI_ONE, editable_in: [NPI_ONE], direction: NONE, conflict: NPI_ONLY}
 
+  Supplier:
+    owner_system: ERPNEXT
+    npi_view: projection
+    key: erpnext_supplier_id
+    fields:
+      name: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      supplier_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      status: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      portal_profile_and_commercial_master: {owner: ERPNEXT_OR_FUTURE_APPROVED_SUPPLIER_PORTAL, editable_in: [], direction: NONE, conflict: UNAVAILABLE}
+
   EngineeringProject:
     owner_system: NPI_ONE
     erp_view: summary_link
@@ -132,6 +142,24 @@ objects:
       actor_assignment: {owner: SOURCE_OBJECT_OWNER, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
       category_action_and_target: {owner: NPI_ONE_PROJECTION, editable_in: [], direction: NONE, conflict: REBUILD_FROM_SOURCE}
       active_projection_state: {owner: NPI_ONE_PROJECTION, editable_in: [NPI_ONE_PROJECTION_SERVICE], direction: NONE, conflict: REVALIDATE_SOURCE}
+
+  ERPProjectionObservation:
+    owner_system: NPI_ONE_ERP_PROJECTION_SERVICE
+    erp_view: source_observation
+    fields:
+      exact_event_source_version_modified_time_payload_and_hash: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_OBSERVATION}
+      tenant_project_and_server_owned_scope: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: NONE, conflict: PROJECT_FIRST_EXACT_SCOPE}
+      availability_freshness_and_application_disposition: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ORDER_AND_POLICY_WIN}
+      credentials_raw_response_and_target_error_body: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  ERPProjectionHead:
+    owner_system: NPI_ONE_ERP_PROJECTION_SERVICE
+    erp_view: read_model_pointer
+    fields:
+      exact_stream_identity_and_optimistic_version: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: NONE, conflict: LOCKED_VERSION_CONFLICT}
+      confirmed_current_and_latest_refresh_observation_pointers: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_ORDER}
+      source_version_modified_time_payload_hash_and_freshness_policy_ref: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: SOURCE_OBSERVATION_WINS}
+      erp_business_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
 
   GateTemplate:
     owner_system: NPI_ONE
@@ -486,6 +514,7 @@ objects:
       formal_supplier_purchase_order_receipt_invoice_and_actual_cost: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
       source_object_versions_currency_amount_and_raw_cost_type_code: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       exact_master_supplier_raw_cost_type_aggregation: {owner: NPI_ONE_RULE_ENGINE, editable_in: [], direction: DERIVED_READ_ONLY, conflict: SOURCE_ROWS_WIN}
+      source_observation_connection: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
       production_projection_connection_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
 
   ToolingDefectRevision:
@@ -797,10 +826,11 @@ objects:
     owner_system: ERPNEXT
     npi_view: read_only
     fields:
-      zero_or_one_mapping_per_physical_set: {owner: ERPNEXT, editable_in: [FUTURE_PHASE_8_INTEGRATION_ADAPTER], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+      zero_or_one_mapping_per_physical_set: {owner: ERPNEXT, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
       formal_asset_id_state_location_shot_life_and_maintenance_due: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
       movement_repair_spare_inventory_supplier_and_cost_history: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
-      source_observation_mapping_version_and_reconciliation: {owner: FUTURE_PHASE_8_INTEGRATION_ADAPTER, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
+      source_observation_and_mapping_version: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: EXACT_TARGET_OBSERVATION}
+      production_reconciliation: {owner: FUTURE_PHASE_8_RECONCILIATION_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: UNAVAILABLE}
 
   ToolingHealthProjection:
     owner_system: ERPNEXT

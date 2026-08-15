@@ -152,6 +152,75 @@
           "actor"
         ]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "enum": [
+              "erpnext.customer_master.observed",
+              "erpnext.supplier_master.observed",
+              "erpnext.formal_item_master.observed",
+              "erpnext.tooling_procurement_cost.observed",
+              "erpnext.project_cost.observed",
+              "erpnext.formal_quality_status.observed",
+              "erpnext.tool_asset_status.observed"
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "object_version": {"const": 1},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"enum": ["internal", "confidential"]},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 255}
+            }
+          },
+          "payload": {"$ref": "#/$defs/erp_projection_observation_v1"}
+        },
+        "required": ["target_system", "source_object_id", "payload_hash", "correlation_id", "actor"]
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.customer_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Customer"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "customer_master"}, "scope_kind": {"const": "project"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_master_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.supplier_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Supplier"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "supplier_master"}, "scope_kind": {"const": "tooling_master"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_master_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.formal_item_master.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Item"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "formal_item_master"}, "scope_kind": {"const": "engineering_item"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_item_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.tooling_procurement_cost.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "ToolingProcurementCost"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "tooling_procurement_cost"}, "scope_kind": {"const": "tooling_master"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_tooling_cost_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.project_cost.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "ProjectCost"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "project_cost"}, "scope_kind": {"const": "project"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_project_cost_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.formal_quality_status.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "FormalQualityStatus"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "formal_quality_status"}, "scope_kind": {"enum": ["project", "trial_round", "readiness"]}, "values": {"oneOf": [{"$ref": "#/$defs/erp_quality_values_v1"}, {"type": "null"}]}}}]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "erpnext.tool_asset_status.observed"}}, "required": ["event_type"]},
+      "then": {"properties": {"object_type": {"const": "Asset"}, "payload": {"allOf": [{"$ref": "#/$defs/erp_projection_observation_v1"}, {"properties": {"projection_kind": {"const": "tool_asset_status"}, "scope_kind": {"const": "tooling_set"}, "values": {"oneOf": [{"$ref": "#/$defs/erp_tool_asset_values_v1"}, {"type": "null"}]}}}]}}}
     }
   ],
   "properties": {
@@ -161,7 +230,19 @@
     },
     "event_type": {
       "type": "string",
-      "pattern": "^[a-z0-9]+(\\.[a-z0-9_]+)+$"
+      "enum": [
+        "npi.ebom_publish_request.ready",
+        "erpnext.ebom_publish_result.observed",
+        "npi.tooling_asset_request.ready",
+        "erpnext.tooling_asset_result.observed",
+        "erpnext.customer_master.observed",
+        "erpnext.supplier_master.observed",
+        "erpnext.formal_item_master.observed",
+        "erpnext.tooling_procurement_cost.observed",
+        "erpnext.project_cost.observed",
+        "erpnext.formal_quality_status.observed",
+        "erpnext.tool_asset_status.observed"
+      ]
     },
     "event_version": {
       "type": "integer",
@@ -574,6 +655,227 @@
             ]
           }
         }
+      }
+    },
+    "erp_projection_observation_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "adapter_contract_version",
+        "projection_kind",
+        "tenant_id",
+        "project_global_id",
+        "scope_kind",
+        "scope_global_id",
+        "adapter_mode",
+        "source_environment",
+        "source_object_id",
+        "source_version",
+        "source_modified_at",
+        "received_at",
+        "availability",
+        "unavailable_reason_code",
+        "values"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "adapter_contract_version": {"const": "npi.erp-projection.v1"},
+        "projection_kind": {"enum": ["customer_master", "supplier_master", "formal_item_master", "tooling_procurement_cost", "project_cost", "formal_quality_status", "tool_asset_status"]},
+        "tenant_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"},
+        "project_global_id": {"type": "string", "format": "uuid"},
+        "scope_kind": {"enum": ["project", "tooling_master", "tooling_set", "engineering_item", "trial_round", "readiness"]},
+        "scope_global_id": {"type": "string", "format": "uuid"},
+        "adapter_mode": {"enum": ["mock", "sandbox", "synthetic"]},
+        "source_environment": {"type": "string", "minLength": 1, "maxLength": 128},
+        "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+        "source_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "source_modified_at": {"type": ["string", "null"], "format": "date-time"},
+        "received_at": {"type": "string", "format": "date-time"},
+        "availability": {"enum": ["available", "unavailable", "synthetic"]},
+        "unavailable_reason_code": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"},
+        "values": {"type": ["object", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"availability": {"const": "unavailable"}}, "required": ["availability"]},
+          "then": {"properties": {"values": {"type": "null"}, "unavailable_reason_code": {"type": "string"}}},
+          "else": {"properties": {"values": {"type": "object"}, "unavailable_reason_code": {"type": "null"}, "source_version": {"type": "string"}, "source_modified_at": {"type": "string", "format": "date-time"}}}
+        },
+        {
+          "if": {"properties": {"availability": {"const": "available"}}, "required": ["availability"]},
+          "then": {"properties": {"adapter_mode": {"const": "sandbox"}}}
+        },
+        {
+          "if": {"properties": {"availability": {"const": "synthetic"}}, "required": ["availability"]},
+          "then": {"properties": {"adapter_mode": {"const": "synthetic"}}}
+        },
+        {
+          "if": {"properties": {"adapter_mode": {"const": "mock"}}, "required": ["adapter_mode"]},
+          "then": {"properties": {"availability": {"const": "unavailable"}}}
+        }
+      ]
+    },
+    "erp_master_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "displayName", "enabled", "statusCode"],
+      "properties": {
+        "code": {"type": "string", "minLength": 1, "maxLength": 128},
+        "displayName": {"type": "string", "minLength": 1, "maxLength": 200},
+        "enabled": {"type": "boolean"},
+        "statusCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_item_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemCode", "stockUom", "enabled", "statusCode"],
+      "properties": {
+        "itemCode": {"type": "string", "minLength": 1, "maxLength": 128},
+        "stockUom": {"type": "string", "minLength": 1, "maxLength": 128},
+        "enabled": {"type": "boolean"},
+        "statusCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_tooling_cost_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolingMasterGlobalId", "supplier", "rows"],
+      "properties": {
+        "toolingMasterGlobalId": {"type": "string", "format": "uuid"},
+        "supplier": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceObjectId", "targetVersion", "supplierCode", "supplierName"],
+          "properties": {
+            "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128},
+            "targetVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+            "supplierCode": {"type": "string", "minLength": 1, "maxLength": 128},
+            "supplierName": {"type": "string", "minLength": 1, "maxLength": 200}
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["toolingMasterGlobalId", "sourceRowId", "sourceRowVersion", "supplierSourceObjectId", "purchaseOrderSourceId", "purchaseReceiptSourceId", "purchaseInvoiceSourceId", "actualCostSourceId", "costTypeCode", "postingDate", "currency", "amount"],
+            "properties": {
+              "toolingMasterGlobalId": {"type": "string", "format": "uuid"},
+              "sourceRowId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "sourceRowVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+              "supplierSourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseOrderSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseReceiptSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "purchaseInvoiceSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "actualCostSourceId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "costTypeCode": {"type": "string", "minLength": 1, "maxLength": 128},
+              "postingDate": {"type": "string", "format": "date"},
+              "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+              "amount": {"type": "string", "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32}
+            }
+          }
+        }
+      }
+    },
+    "erp_project_cost_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rows"],
+      "properties": {
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rowKind", "sourceRowId", "sourceRowVersion", "postingDate", "currency", "amount", "hours"],
+            "properties": {
+              "rowKind": {"enum": ["commitment", "actual_cost", "labor_hours", "expense"]},
+              "sourceRowId": {"type": "string", "minLength": 1, "maxLength": 128},
+              "sourceRowVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+              "postingDate": {"type": "string", "format": "date"},
+              "currency": {"type": ["string", "null"], "pattern": "^[A-Z]{3}$"},
+              "amount": {"type": ["string", "null"], "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+              "hours": {"type": ["string", "null"], "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32}
+            },
+            "allOf": [
+              {"if": {"properties": {"rowKind": {"const": "labor_hours"}}, "required": ["rowKind"]}, "then": {"properties": {"currency": {"type": "null"}, "amount": {"type": "null"}, "hours": {"type": "string"}}}, "else": {"properties": {"currency": {"type": "string"}, "amount": {"type": "string"}, "hours": {"type": "null"}}}}
+            ]
+          }
+        }
+      }
+    },
+    "erp_quality_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordKind", "statusCode", "resultCode", "observedAt"],
+      "properties": {
+        "recordKind": {"enum": ["quality_inspection", "ncr", "capa"]},
+        "statusCode": {"type": "string", "minLength": 1, "maxLength": 128},
+        "resultCode": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "observedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "erp_tool_asset_values_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolingSetGlobalId", "mappingVersion", "formalAssetId", "targetVersion", "assetState", "currentLocation", "shotCount", "expectedLifeShots", "maintenanceDue", "movements", "repairs", "spares"],
+      "properties": {
+        "toolingSetGlobalId": {"type": "string", "format": "uuid"},
+        "mappingVersion": {"type": "integer", "minimum": 1},
+        "formalAssetId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "targetVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+        "assetState": {"type": "string", "minLength": 1, "maxLength": 128},
+        "currentLocation": {"type": "string", "minLength": 1, "maxLength": 255},
+        "shotCount": {"type": "integer", "minimum": 0},
+        "expectedLifeShots": {"type": ["integer", "null"], "minimum": 1},
+        "maintenanceDue": {"type": ["string", "null"], "format": "date"},
+        "movements": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/erp_asset_movement_v1"}},
+        "repairs": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/erp_asset_repair_v1"}},
+        "spares": {"type": "array", "maxItems": 500, "items": {"$ref": "#/$defs/erp_asset_spare_v1"}}
+      }
+    },
+    "erp_asset_movement_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["globalId", "actionKind", "fromLocation", "toLocation", "occurredAt", "sourceObjectId"],
+      "properties": {
+        "globalId": {"type": "string", "format": "uuid"},
+        "actionKind": {"enum": ["move", "loan", "return", "archive", "scrap"]},
+        "fromLocation": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "toLocation": {"type": ["string", "null"], "minLength": 1, "maxLength": 255},
+        "occurredAt": {"type": "string", "format": "date-time"},
+        "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_asset_repair_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["globalId", "summary", "downtimeHours", "completedAt", "sourceObjectId"],
+      "properties": {
+        "globalId": {"type": "string", "format": "uuid"},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "downtimeHours": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "completedAt": {"type": "string", "format": "date-time"},
+        "sourceObjectId": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "erp_asset_spare_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formalItemId", "description", "stockOnHand", "minimumStock", "unit", "supplierId"],
+      "properties": {
+        "formalItemId": {"type": "string", "minLength": 1, "maxLength": 128},
+        "description": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "stockOnHand": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "minimumStock": {"type": "string", "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$", "maxLength": 32},
+        "unit": {"type": "string", "minLength": 1, "maxLength": 32},
+        "supplierId": {"type": ["string", "null"], "minLength": 1, "maxLength": 128}
       }
     },
     "tooling_asset_result_observed_v1": {

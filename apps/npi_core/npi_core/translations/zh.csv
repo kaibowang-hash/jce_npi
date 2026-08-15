@@ -7469,3 +7469,84 @@ released_trial_summary_revision,已发布试模总结修订
 "Unsafe file evidence","不安全的文件证据"
 "Project global ID","项目全局标识"
 "Gate global ID","阶段门全局标识"
+"Adapter Contract Version","适配器合同版本"
+"Adapter Mode","适配器模式"
+"An available projection cannot use an unavailable disposition.","可用投影不能使用不可用处置状态。"
+"An available projection head requires confirmed current truth.","可用投影头需要已确认的当前事实。"
+"An unavailable projection cannot become confirmed current truth.","不可用投影不能成为已确认的当前事实。"
+"Application Disposition","应用处置状态"
+"Correlation ID","关联标识"
+"Current Projection Observation","当前投影观察"
+"Current Projection Payload Hash","当前投影负载哈希"
+"Current Source Modified At","当前源修改时间"
+"Current Source Version","当前源版本"
+"Current projection fields must be present together.","当前投影字段必须同时存在。"
+"ERP projection heads can only be changed by the controlled projection service.","ERP 投影头只能由受控投影服务更改。"
+"ERP projection observation and head records cannot be deleted.","ERP 投影观察和投影头记录不能删除。"
+"ERP projection observation history cannot be changed.","ERP 投影观察历史不能更改。"
+"ERP projection observations can only be appended by the controlled projection service.","ERP 投影观察只能由受控投影服务追加。"
+"ERP projection system ownership is invalid.","ERP 投影系统主责无效。"
+"Event Key Hash","事件键哈希"
+"Event Version","事件版本"
+"Fresh or stale projection truth requires a policy reference.","新鲜或过期的投影事实需要策略引用。"
+"Freshness Policy Reference","新鲜度策略引用"
+"Last Refresh Projection Observation","最近刷新投影观察"
+"Projection Availability","投影可用性"
+"Projection Freshness","投影新鲜度"
+"Projection Head Hash","投影头哈希"
+"Projection Head Snapshot","投影头快照"
+"Projection Kind","投影种类"
+"Projection Observation Hash","投影观察哈希"
+"Projection Observation Snapshot","投影观察快照"
+"Projection Payload","投影负载"
+"Projection Payload Hash","投影负载哈希"
+"Projection Scope Global ID","投影范围全局标识"
+"Projection Scope Kind","投影范围种类"
+"Projection Stream Key Hash","投影流键哈希"
+"Received At","接收时间"
+"Schema Version","架构版本"
+"Select the supported projection adapter contract.","请选择受支持的投影适配器合同。"
+"Select the supported projection event version.","请选择受支持的投影事件版本。"
+"Select the supported projection schema version.","请选择受支持的投影架构版本。"
+"Sensitivity","敏感级别"
+"Source Environment","源环境"
+"Source Modified At","源修改时间"
+"Synthetic projection proof must remain non-authoritative.","合成投影证明必须保持非权威状态。"
+"Target System","目标系统"
+"The ERP projection input is invalid.","ERP 投影输入无效。"
+"The exact current projection observation is unavailable.","精确的当前投影观察不可用。"
+"The exact last refresh projection observation is unavailable.","精确的最近刷新投影观察不可用。"
+"The projection event does not match its operation-specific kind.","投影事件与其操作专用种类不匹配。"
+"The projection event key hash does not match its fields.","投影事件键哈希与其字段不匹配。"
+"The projection head does not match its operation-specific stream.","投影头与其操作专用流不匹配。"
+"The projection head hash does not match its fields.","投影头哈希与其字段不匹配。"
+"The projection head optimistic version must advance by one.","投影头乐观锁版本必须递增一。"
+"The projection head snapshot does not match its fields.","投影头快照与其字段不匹配。"
+"The projection observation hash does not match its fields.","投影观察哈希与其字段不匹配。"
+"The projection observation snapshot does not match its fields.","投影观察快照与其字段不匹配。"
+"The projection payload does not match its exact fields.","投影负载与其精确字段不匹配。"
+"The projection payload hash does not match its fields.","投影负载哈希与其字段不匹配。"
+"The projection stream key hash does not match its fields.","投影流键哈希与其字段不匹配。"
+"Unavailable Reason Code","不可用原因代码"
+"NPI ERP Projection Head","NPI ERP 投影头"
+"NPI ERP Projection Observation","NPI ERP 投影观察"
+applied_current,已应用为当前
+available,可用
+confidential,机密
+conflicted,冲突
+customer_master,客户主数据
+duplicate_exact,精确重复
+engineering_item,工程物料
+formal_item_master,正式物料主数据
+formal_quality_status,正式质量状态
+fresh,新鲜
+project_cost,项目成本
+readiness,NPI 就绪度
+sandbox,沙箱
+supplier_master,供应商主数据
+synthetic,合成
+synthetic_retained,已保留合成事实
+tool_asset_status,模具资产状态
+tooling_procurement_cost,模具采购成本
+unavailable_current,当前不可用
+unknown,未知
