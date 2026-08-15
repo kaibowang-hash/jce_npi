@@ -299,9 +299,13 @@ evidence is
 P8-01 checkpoint 2 passes at exact product checkpoint `fd4fc6a` and ordinary
 CI `31909152423`; complete evidence is
 `implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
-Standing delivery authority now activates only P8-01 checkpoint 3: the strict
-projection frontend data source, one dense read-only Project table/inspector,
-exact confirmed-current Tooling cost/Asset presentation, direct trilingual
-honest-state/accessibility/E2E and affected governed visuals. No public
-webhook, target write, retry/DLQ/replay/reconciliation operation or production
+P8-01 checkpoint 3 passes at exact final checkpoint `71bd18a` and ordinary CI
+`31913915708`; complete evidence is
+`implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`. Standing
+delivery authority now activates only the final Level 3 Gate: cumulative
+disposable-Site seven-kind projection runtime, migrations twice, exact replay/
+order/conflict/restart/IDOR/redaction/route recovery, Tooling consumer closure,
+zero target write/production traffic and cleanup, plus complete exact-SHA
+repository/frontend/secret/visual/runtime review. No public webhook, target
+write, retry/DLQ/replay/reconciliation operation, P8-02 behavior or production
 ERPNext/JCE contact is authorized.

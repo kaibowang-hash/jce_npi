@@ -3683,3 +3683,47 @@ repeat or rewrite it merely to restore context. See
   freshness/EAC/quality policies and production ERPNext/JCE endpoint,
   credential, data and traffic remain inactive. No user action is required and
   there is no Hard Blocker.
+
+## 2026-08-16 P8-01 checkpoint 3 PASS; final Level 3 active
+
+- Exact final checkpoint `71bd18a610b685894ab2ed84df4a51a4306eacae`
+  passes ordinary pull-request CI `31913915708`: repository `95082933283`
+  proves `1,957` tracked Python tests and repository/reconciliation checks;
+  frontend `95082933315` proves `60/60` files, `933/933` unit tests, `426/426`
+  E2E, `7,641` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities; secret
+  `95082933287` scans `26` first-parent task commits and `501` complete branch
+  commits with no leak; visual `95082933361` passes the complete `119/119`
+  fixed-Linux matrix.
+- Visual artifact `9254446244` has digest
+  `sha256:b31632b5c9ba7081825ea239c67057effcc2fa9020db52b30142df50c2dcaaf0`;
+  Gitleaks artifact `9254406588` has digest
+  `sha256:ca2dfa295d3237b39b6fd8eea72e6bf646a5330ab3d22b040094bcff1b769fb9`.
+  Controlled jobs skip as required because this is ordinary checkpoint CI,
+  not the final Level 3 dispatch.
+- The strict frontend accepts only the closed seven-kind Project-contained
+  collection. The dense Project table/inspector and existing Tooling cost/
+  Asset workspaces expose formal values only for exact available, fresh,
+  authoritative applied-current truth and otherwise withhold them under
+  explicit unavailable/stale/unknown/synthetic/conflict/error state. Direct
+  trilingual, keyboard, Axe, mixed-language and three governed visual cases
+  pass. Complete evidence is
+  `implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`.
+- Diagnostic CI `31913049429` passed repository/frontend/secret and failed
+  only three retained P6-06 visuals because their request fixture aborted the
+  newly added projection endpoint. Forward repair `71bd18a` returns a closed
+  unavailable projection from that fixture; all three old snapshots match
+  without baseline, assertion, tolerance or product error-semantics changes.
+- This is checkpoint 3 PASS, not P8-01 completion. Standing authority
+  activates only the final Level 3 Gate: cumulative disposable-Site runtime
+  through all seven projection kinds, migrations twice, duplicate/reorder/
+  conflict/restart, Mock unavailable, synthetic non-authoritative truth,
+  exact Tooling consumer closure, Project-first IDOR/redaction, route recovery,
+  zero target write, zero production traffic and cleanup, plus complete exact-
+  SHA repository/frontend/secret/visual/runtime verification and release
+  review.
+- P8-02 signed webhook/Inbox, all target writes, generic retry/DLQ/replay/
+  reconciliation operations, Trial Summary/JCE Core behavior, production
+  freshness/EAC/quality policies and production ERPNext/JCE endpoint,
+  credential, data and traffic remain inactive. No user action is required and
+  there is no Hard Blocker.

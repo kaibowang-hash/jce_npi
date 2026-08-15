@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-16T04:34:00Z'
+updated_at: '2026-08-16T06:22:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-01
-current_task_status: IN_PROGRESS_CHECKPOINT_3
-current_task_completed_stage: P8_01_CHECKPOINT_2_DURABLE_REPOSITORY_BFF_PASS
-current_task_next_stage: P8_01_CHECKPOINT_3_DENSE_TRILINGUAL_PRODUCT_TRUTH
+current_task_status: IN_PROGRESS_FINAL_LEVEL_3
+current_task_completed_stage: P8_01_CHECKPOINT_3_DENSE_TRILINGUAL_PRODUCT_TRUTH_PASS
+current_task_next_stage: P8_01_FINAL_LEVEL_3_GATE
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P8-01
-resumed_product_task_status: ACTIVE_CHECKPOINT_3
+resumed_product_task_status: ACTIVE_FINAL_LEVEL_3
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2050,7 +2050,7 @@ p8_00:
 p8_01:
   task: P8-01
   controller_task: P8-01_READ_ONLY_MASTER_AND_STATUS_PROJECTIONS
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: IN_PROGRESS_FINAL_LEVEL_3
   phase: 8
   milestone: M7-01
   requirements:
@@ -2089,8 +2089,20 @@ p8_01:
   checkpoint_2_visual_digest: sha256:de0e17de39195f246925b8daf51c41c7e18ec7559033d18093fc1441f85df2e9
   checkpoint_2_gitleaks_artifact: 9253173621
   checkpoint_2_gitleaks_digest: sha256:afe9cb716cd9047034cfa19f2fe9c31eea0cc0e49eedf178b8ece79da50b793d
-  current_stage: CHECKPOINT_3_DENSE_TRILINGUAL_PRODUCT_TRUTH
-  next_stage_after_pass: FINAL_LEVEL_3_GATE
+  checkpoint_3_implementation_commit: 9026477d806bb2af39dcbfd7a1c900c17285aa5a
+  checkpoint_3_final_checkpoint: 71bd18a610b685894ab2ed84df4a51a4306eacae
+  checkpoint_3_diagnostic_ci: 31913049429
+  checkpoint_3_ordinary_ci: 31913915708
+  checkpoint_3_repository_job: 95082933283
+  checkpoint_3_frontend_job: 95082933315
+  checkpoint_3_secret_job: 95082933287
+  checkpoint_3_visual_job: 95082933361
+  checkpoint_3_visual_artifact: 9254446244
+  checkpoint_3_visual_digest: sha256:b31632b5c9ba7081825ea239c67057effcc2fa9020db52b30142df50c2dcaaf0
+  checkpoint_3_gitleaks_artifact: 9254406588
+  checkpoint_3_gitleaks_digest: sha256:ca2dfa295d3237b39b6fd8eea72e6bf646a5330ab3d22b040094bcff1b769fb9
+  current_stage: FINAL_LEVEL_3_GATE
+  next_stage_after_pass: P8_02_REQUIREMENT_DOMAIN_AUDIT
   product_code_changed: true
   external_holds:
     - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
@@ -2103,6 +2115,7 @@ p8_01:
     - implementation/evidence/phase-8/p8-01-plan.md
     - implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md
     - implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md
+    - implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

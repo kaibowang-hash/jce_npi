@@ -3,7 +3,7 @@
   "task_id": "P8-01",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_3",
+  "status": "IN_PROGRESS_FINAL_LEVEL_3",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-02",
   "base_checkpoint": "1da93f4d21dd434c99cfdc778ac1e63c4668d114",
@@ -141,7 +141,7 @@
     "phase_status_resumed_product_task": "P8-01",
     "active_goal_marker": "P8-01",
     "next_action_marker": "P8-01",
-    "controller_marker": "P8-01 checkpoint 2 PASS; checkpoint 3 active"
+    "controller_marker": "P8-01 checkpoint 3 PASS; final Level 3 active"
   },
   "rollback": {
     "before_product_resume": "Restore the exact P8-00 validated anchor/controller checkpoint while retaining its immutable Phase 7 and P8-00 evidence; the P8-01 audit transition contains no product or external mutation.",

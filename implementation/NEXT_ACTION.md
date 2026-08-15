@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P8-01`
+`IN_PROGRESS_FINAL_LEVEL_3 — P8-01`
 
-Recovery time: `2026-08-16T04:34:00Z`
+Recovery time: `2026-08-16T06:22:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -107,6 +107,15 @@ P8-01 checkpoint 2 final checkpoint:
 P8-01 checkpoint 2 ordinary CI:
 `31909152423`
 
+P8-01 checkpoint 3 implementation commit:
+`9026477d806bb2af39dcbfd7a1c900c17285aa5a`
+
+P8-01 checkpoint 3 final checkpoint:
+`71bd18a610b685894ab2ed84df4a51a4306eacae`
+
+P8-01 checkpoint 3 ordinary CI:
+`31913915708`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -149,16 +158,27 @@ frontend `95071497747` (`59/59` files, `918/918` unit, `421/421` E2E,
 Complete evidence is
 `implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
 
+P8-01 checkpoint 3 passes at exact final checkpoint `71bd18a`. Ordinary CI
+`31913915708` passes repository `95082933283` (`1,957` tracked Python),
+frontend `95082933315` (`60/60` files, `933/933` unit, `426/426` E2E,
+`7,641` complete direct trilingual sources, coverage
+`80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities), secret
+`95082933287` and complete `119/119` fixed-Linux visual `95082933361`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`.
+
 Follow the frozen `implementation/evidence/phase-8/p8-01-plan.md`. Execute
-only checkpoint 3: add the strict closed ERP-projection frontend data source;
-render one dense read-only Project projection table and inspector; surface
-confirmed-current cost and Asset truth only in the existing Tooling
-workspaces; and prove loading, empty, denied, read-only, unavailable, stale,
-unknown, synthetic, conflict and error states, keyboard/focus/Axe, direct
-English/`zh`/`zh-TW`, mixed-language denial and governed visuals. Add no edit
-path, caller-supplied target truth, raw error/secret, public webhook, target
-write, retry/DLQ/replay/reconciliation operation, Trial Summary event or JCE
-Core behavior. Production ERPNext/JCE remains prohibited.
+only the final Level 3 Gate: extend the cumulative disposable-Site runtime
+through all seven projection kinds; run additive migrations twice; prove
+immutable observations and guarded heads under duplicate, reorder, equal-time
+conflict and restart; prove Mock unavailable and synthetic non-authoritative
+truth; prove exact confirmed-current Tooling cost/Asset consumers, Project-
+first IDOR/redaction, route disable/recovery, zero target write, zero production
+traffic and cleanup; then run the complete exact-SHA repository, frontend,
+secret, `119/119` visual and runtime Gate with release review. Add no new UI,
+public webhook, target write, generic retry/DLQ/replay/reconciliation operation,
+Trial Summary event or JCE Core behavior. P8-02 and production ERPNext/JCE
+remain prohibited until P8-01 Level 3 passes.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,
