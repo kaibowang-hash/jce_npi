@@ -3566,3 +3566,37 @@ repeat or rewrite it merely to restore context. See
 - P8-02 through P8-09 remain inactive. Production ERPNext/JCE endpoints,
   credentials, data and network traffic remain prohibited and no missing
   production fact is a Hard Blocker for the bounded audit.
+
+## 2026-08-16 P8-01 audit PASS; checkpoint 1 active
+
+- Exact audit/controller SHA
+  `046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6` passes ordinary pull-request
+  CI `31902540587`: repository `95055380476` proves `1,923` tracked Python
+  tests; frontend `95055380547`, secret `95055380583` and unchanged `119/119`
+  fixed-Linux visual `95055380454` all pass. Controlled preflight and runtime
+  correctly skip because the audit transition changes no product/runtime
+  truth. Visual artifact `9251521099` has digest
+  `sha256:a899c710200b41814e4e7ad4efdf39cda3320461af54b4f58502ac8f1f7d5d34`;
+  Gitleaks artifact `9251475066` has digest
+  `sha256:94acc3acc31b6f786b3e91da514df2acc811c7dbcb60350f86f1d7e8119adaf0`.
+- The audit confirms reusable P6-04 Tooling cost and P6-06 Asset read-only
+  consumer unions, Project-first context anchors and fail-closed Trial/
+  Readiness quality seams, but no durable master/status observation event,
+  repository, head, worker or public projection route. Minimal Inbox/Outbox
+  foundations do not provide those missing guarantees.
+- `implementation/evidence/phase-8/p8-01-plan.md` freezes seven closed
+  projection kinds, immutable global observations, guarded Project/context
+  heads, exact modified-time/version/hash ordering, separate availability and
+  freshness, unknown-without-policy truth, Mock unavailable, explicit
+  sandbox configuration, Project-first redaction, additive migration,
+  route-disable rollback, four checkpoints and final Level 3 impact.
+- Standing authority activates only checkpoint 1: pure domains, seven
+  operation-specific observation contracts, Supplier/adapter ownership
+  corrections, closed OpenAPI read schemas, fail-closed adapter configuration
+  and two guarded additive DocTypes with focused tests. No route, repository
+  write, scheduler, business row, UI or external call is active. This
+  controller marker is: `P8-01 audit PASS; checkpoint 1 active`.
+- P8-02 through P8-09, all target writes, generic execution/replay operations,
+  production freshness/EAC/quality policies and production ERPNext/JCE
+  endpoint, credential, data and traffic remain inactive. Missing sandbox and
+  customization facts remain scoped holds, not a global Hard Blocker.

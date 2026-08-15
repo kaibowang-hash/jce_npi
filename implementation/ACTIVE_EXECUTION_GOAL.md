@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-15T18:47:39Z`
+Updated: `2026-08-16T02:30:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-01`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-01`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,8 @@ Updated: `2026-08-15T18:47:39Z`
   `31899480493` (`PASS — LEVEL 3` at `31114021cf18cf5e32c22902de5150ed2922e7ba`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest evidence-only exact-SHA CI:
-  `31901621310` (`PASS` at
-  `1da93f4d21dd434c99cfdc778ac1e63c4668d114`; P8-00 Level 2)
+  `31902540587` (`PASS` at
+  `046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6`; P8-01 audit transition)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -54,13 +54,14 @@ Updated: `2026-08-15T18:47:39Z`
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-01 — read-only master and status projections` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-01` (`ACTIVE_AUDIT_ONLY`)
+  `P8-01 — read-only master and status projections`
+  (`IN_PROGRESS_CHECKPOINT_1`)
+- Resumed product task: `P8-01` (`ACTIVE_CHECKPOINT_1`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-01 AUDIT`)
+  (`IN_PROGRESS — P8-01 CHECKPOINT 1`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -87,15 +88,20 @@ runtime lanes correctly skip because P8-00 changes no product or runtime
 truth. Complete evidence is
 `implementation/evidence/phase-8/p8-00-validation.md`.
 
-The only active atomic scope is the bounded P8-01 Requirement/domain/
-existing-capability audit. It must inspect current ERP-owned Customer,
-Supplier, Item, procurement, cost, quality and Asset-status fields, existing
-reliability primitives, guarded metadata and BFF/contracts; then freeze exact
-projection identity/version/order/staleness/unavailable, authorization,
-redaction, Mock/sandbox, fault, migration, rollback and Level 3 boundaries in
-`implementation/evidence/phase-8/p8-01-plan.md` before product code. P8-02
-through P8-09 remain inactive. Production ERPNext/JCE endpoints, credentials,
-data and network contact remain prohibited. There is no Hard Blocker.
+Exact audit/controller SHA `046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6`
+passes ordinary CI `31902540587`: repository `95055380476` proves `1,923`
+tracked Python tests; frontend `95055380547`, secret `95055380583` and
+unchanged `119/119` fixed-Linux visual `95055380454` all pass. Controlled
+lanes correctly skip. The bounded audit is frozen in
+`implementation/evidence/phase-8/p8-01-plan.md`.
+
+The only active atomic scope is checkpoint 1: pure seven-kind projection
+domains, operation-specific event/OpenAPI/ownership contracts, fail-closed
+Mock/sandbox configuration and two guarded additive observation/head
+DocTypes. No route, repository write, scheduler, business row, UI or external
+call is active in checkpoint 1. P8-02 through P8-09 remain inactive.
+Production ERPNext/JCE endpoints, credentials, data and network contact remain
+prohibited. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

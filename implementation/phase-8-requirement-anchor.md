@@ -289,7 +289,11 @@ an unapproved compensating mutation.
 ## 15. Automatic transition
 
 P8-00 is documentation/trace work only and passes its exact-SHA ordinary CI
-and Level 2 validation. Standing delivery authority activates only
-`P8-01 — read-only master and status projections`, beginning with its bounded
-requirement/domain/existing-capability audit. No adapter or product behavior is
-authorized by this anchor alone or before the P8-01 plan is frozen.
+and Level 2 validation. The bounded P8-01 requirement/domain/existing-
+capability audit also passes at exact controller SHA `046dba1` and ordinary CI
+`31902540587`; its frozen plan is
+`implementation/evidence/phase-8/p8-01-plan.md`. Standing delivery authority
+now activates only P8-01 checkpoint 1 pure domains, closed contracts,
+fail-closed configuration and guarded additive metadata. No route, repository
+write, scheduler, business row, UI or external adapter call is authorized
+before that checkpoint passes its exact-SHA ordinary CI.

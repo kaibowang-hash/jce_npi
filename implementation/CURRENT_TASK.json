@@ -3,7 +3,7 @@
   "task_id": "P8-01",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-02",
   "base_checkpoint": "1da93f4d21dd434c99cfdc778ac1e63c4668d114",
@@ -19,19 +19,19 @@
     "FR-NP-006"
   ],
   "scope": [
-    "Audit existing ERP-owned Customer, Supplier, Item, procurement, cost, quality and Asset-status read-only fields, reliability primitives, guarded metadata, BFF patterns and integration contracts before defining any P8-01 product change.",
-    "Freeze exact operation-specific projection identities, source ownership, source version or modified ordering, event and payload identity, received time, hash, projection state, staleness and explicit unavailable truth without inferring target values.",
-    "Freeze Project-first and tenant-aware authorization, redaction, object-substitution resistance, current membership, read-only capability and no caller-supplied target truth for every projection query.",
-    "Freeze Mock-default and explicitly configured allowlisted sandbox adapter seams; Mock emits unavailable or synthetic observation fixtures only and never formal target confirmation, while production hosts, credentials, data and traffic remain rejected.",
-    "Define the minimum complete vertical slice, closed contracts, ownership changes, additive guarded metadata, migration and rollback, duplicate and reordered observation fault matrix, disposable-Site proof and exact Level 3 impact boundary before product code.",
+    "Implement the frozen seven-kind Customer, Supplier, formal Item, Tooling procurement/cost, Project cost, formal quality-status and Tool Asset-status observation foundation from implementation/evidence/phase-8/p8-01-plan.md.",
+    "Persist immutable canonical observations and one guarded Project/context current head with exact source version/modified ordering, payload hash, received time, availability, freshness and explicit unavailable, superseded, synthetic and conflict truth.",
+    "Enforce Project-first and tenant-aware authorization, external-actor redaction, object-substitution resistance, current membership, read-only capability and no caller-supplied target truth for every projection query.",
+    "Keep Mock no-network and unavailable by default; accept only an explicitly configured allowlisted non-production sandbox seam, retain synthetic proof as non-authoritative and reject production hosts, credentials, data and traffic.",
+    "Deliver closed contracts, ownership changes, additive guarded metadata, bounded internal refresh/read-only BFF, existing Tooling cost and Asset reader injection, dense direct-trilingual projection truth, migration/rollback, duplicate/reorder/restart proof and a complete Level 3 Gate.",
     "Keep P8-02 signed webhook and Project-draft behavior, all target write execution, DLQ/replay/reconciliation operations UI, Trial Summary external contract and JCE Core display outside P8-01."
   ],
   "non_scope": [
-    "Product implementation before the bounded P8-01 Requirement/domain/existing-capability audit and frozen plan pass.",
+    "Any product change outside the exact checkpoints, kinds, fields, authority and consumer boundaries frozen in implementation/evidence/phase-8/p8-01-plan.md.",
     "Any ERPNext or JCE production endpoint, credential, data, request, webhook, read, write, mutation, replay, reconciliation or compensating transaction.",
     "Any generic target DocType CRUD, caller-selected endpoint or method, cross-database access, browser-to-ERP call, Frappe or ERPNext core patch, permission relaxation or target-owned field edit from NPI One.",
     "Any Item, MBOM, Asset or quality execution request; any target mapping or succeeded result; any formal procurement, cost, Quality Inspection, NCR, CAPA, maintenance or finance value not authenticated from an approved observation.",
-    "Any signed webhook landing, Project draft creation, operation worker, retry or DLQ action, Trial Summary event, JCE Core display activation, Phase 9 Change/reporting behavior, test deletion or threshold reduction."
+    "Any signed webhook landing, Project draft creation, generic execution worker, retry or DLQ action, Trial Summary event, JCE Core display activation, Phase 9 Change/reporting behavior, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
     "ERP_OWNS_CUSTOMER_SUPPLIER_FORMAL_ITEM_PROCUREMENT_COST_QUALITY_ASSET_AND_FINANCIAL_TRUTH",
@@ -46,7 +46,8 @@
     "NO_CROSS_DATABASE_ACCESS_GENERIC_TARGET_CRUD_OR_FRAPPE_ERPNEXT_CORE_PATCH",
     "NPI_ONE_AND_ERPNEXT_TECHNICAL_CODES_REMAIN_STABLE",
     "P8_02_THROUGH_P8_09_AND_PHASE_9_AUTHORITIES_REMAIN_INACTIVE",
-    "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI_IF_ANY_USER_VISIBLE_STATE_IS_LATER_AUTHORIZED",
+    "NO_APPROVED_FRESHNESS_POLICY_MEANS_UNKNOWN_AND_NO_APPROVED_EAC_OR_QUALITY_RULE_IS_INVENTED",
+    "EN_ZH_ZH_TW_DIRECT_TRANSLATION_AND_INDUSTRIAL_UI_FOR_EVERY_NEW_USER_VISIBLE_STATE",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
@@ -62,22 +63,66 @@
     "implementation/phase-8-requirement-anchor.md",
     "implementation/evidence/phase-8/p8-00-validation.md",
     "implementation/evidence/phase-8/p8-01-*.md",
+    "apps/npi_integration/npi_integration/hooks.py",
+    "apps/npi_integration/npi_integration/projection_api.py",
+    "apps/npi_integration/npi_integration/projections/*",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_erp_projection_observation/*",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_erp_projection_head/*",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/project_controls_api.py",
+    "apps/npi_core/npi_core/project_controls/*",
+    "apps/npi_core/npi_core/tooling/frappe_repository.py",
+    "apps/npi_core/npi_core/tooling/manufacturing_repository.py",
+    "apps/npi_core/npi_core/tooling/acceptance_repository.py",
+    "apps/npi_core/npi_core/tooling_api.py",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/integration-event.schema.json",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/api/erp-projections-data-source.ts",
+    "frontend/src/api/project-controls-data-source.ts",
+    "frontend/src/api/tooling-manufacturing-contract.ts",
+    "frontend/src/api/tooling-acceptance-asset-data-source.ts",
+    "frontend/src/generated/catalogs.ts",
+    "frontend/src/pages/project-governance-workspace.tsx",
+    "frontend/src/pages/live-tooling-page.tsx",
+    "frontend/src/pages/tooling-manufacturing-workspace.tsx",
+    "frontend/src/pages/tooling-acceptance-asset-workspace.tsx",
+    "frontend/src/styles/app.css",
+    "frontend/tests/unit/erp-projections-data-source.test.ts",
+    "frontend/tests/unit/project-governance-workspace.test.tsx",
+    "frontend/tests/unit/live-tooling-page.test.tsx",
+    "frontend/tests/unit/tooling-manufacturing-data-source.test.ts",
+    "frontend/tests/unit/tooling-manufacturing-workspace.test.tsx",
+    "frontend/tests/unit/tooling-acceptance-asset-data-source.test.ts",
+    "frontend/tests/unit/tooling-acceptance-asset-workspace.test.tsx",
+    "frontend/tests/support/project-controls-fixture.ts",
+    "frontend/tests/support/tooling-acceptance-fixture.ts",
+    "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts",
+    "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts-snapshots/*",
+    "frontend/tests/e2e/p0-visual-registry.json",
+    ".github/workflows/ci.yml",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify-frappe-runtime.sh",
     "scripts/verify_current_task.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
-    "tests/test_v1_2_reconciliation.py"
+    "tests/test_v1_2_reconciliation.py",
+    "tests/test_phase8_projection_*.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
+      ["python", "-m", "unittest", "tests.test_phase8_projection_domain", "tests.test_phase8_projection_contract", "tests.test_phase8_projection_metadata", "-v"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_projection_*.py", "-v"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
@@ -86,7 +131,7 @@
     ],
     "level_3": [
       ["bash", "scripts/verify.sh"],
-      ["bash", "scripts/verify-frappe-runtime.sh", "--trial-only"]
+      ["bash", "scripts/verify-frappe-runtime.sh", "--projection-only"]
     ]
   },
   "expected_state": {
@@ -95,7 +140,7 @@
     "phase_status_resumed_product_task": "P8-01",
     "active_goal_marker": "P8-01",
     "next_action_marker": "P8-01",
-    "controller_marker": "P8-00 Level 2 PASS; P8-01 audit active"
+    "controller_marker": "P8-01 audit PASS; checkpoint 1 active"
   },
   "rollback": {
     "before_product_resume": "Restore the exact P8-00 validated anchor/controller checkpoint while retaining its immutable Phase 7 and P8-00 evidence; the P8-01 audit transition contains no product or external mutation.",

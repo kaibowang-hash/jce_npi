@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-01`
+`IN_PROGRESS_CHECKPOINT_1 — P8-01`
 
-Recovery time: `2026-08-15T18:47:39Z`
+Recovery time: `2026-08-16T02:30:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -86,6 +86,12 @@ P8-00 anchor/controller checkpoint and P8-01 audit base:
 P8-00 ordinary Level 2 CI:
 `31901621310`
 
+P8-01 audit/controller checkpoint:
+`046dba1c14e8f1f54d8db63ac383fbccc5b4d3d6`
+
+P8-01 audit ordinary CI:
+`31902540587`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -110,16 +116,24 @@ Gitleaks artifact `9251237713` has digest
 `sha256:73a6d5203457ecadea0c7673392e56292f707652a2eb81e0281e702c4f44e820`.
 Complete evidence is `implementation/evidence/phase-8/p8-00-validation.md`.
 
-Execute only the bounded P8-01 Requirement/domain/existing-capability audit.
-Inspect current ERP-owned master/status projections, source ordering and
-staleness, unavailable truth, reliability primitives, metadata, BFF and
-contracts; freeze the exact minimum projection slice, ownership,
-authorization, Mock/sandbox, duplicate/reorder/restart faults, tests,
-migration, rollback and Level 3 boundary in
-`implementation/evidence/phase-8/p8-01-plan.md` before product code. Do not
-activate P8-02 signed webhook, any target write/execution, replay operations,
-Trial Summary event or JCE Core display. Production ERPNext remains
-prohibited.
+Exact audit/controller SHA `046dba1` passes ordinary CI `31902540587`:
+repository `95055380476` proves `1,923` tracked Python tests; frontend
+`95055380547`, secret `95055380583` and unchanged `119/119` fixed-Linux
+visual `95055380454` all pass. Controlled lanes correctly skip. Visual
+artifact `9251521099` has digest
+`sha256:a899c710200b41814e4e7ad4efdf39cda3320461af54b4f58502ac8f1f7d5d34`;
+Gitleaks artifact `9251475066` has digest
+`sha256:94acc3acc31b6f786b3e91da514df2acc811c7dbcb60350f86f1d7e8119adaf0`.
+
+The P8-01 audit is PASS and its exact plan is frozen at
+`implementation/evidence/phase-8/p8-01-plan.md`. Execute only checkpoint 1:
+add the pure seven-kind Customer/Supplier/formal-Item/Tooling-cost/Project-
+cost/formal-quality/Tool-Asset observation domains, closed event/OpenAPI/
+ownership contracts, fail-closed Mock/sandbox configuration and two guarded
+additive observation/head DocTypes with focused tests. Do not activate a BFF
+route, repository writer, scheduler, business row, UI, signed webhook,
+target write/execution, retry/replay/reconciliation, Trial Summary event or
+JCE Core display. Production ERPNext remains prohibited.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

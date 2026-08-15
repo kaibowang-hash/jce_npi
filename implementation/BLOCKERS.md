@@ -995,3 +995,18 @@ must preserve that boundary.
 - P6-02 checkpoint 2 is PASS. Only the live workspace checkpoint is active.
   Lifecycle, source Revision, formal Supplier, ERP location/Asset, customer
   signature and file mutation remain scoped holds rather than global blockers.
+
+## Current authoritative blocker state — 2026-08-16T02:30:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- Exact P8-01 audit/controller SHA `046dba1` passes ordinary CI
+  `31902540587`; repository, frontend, secret and unchanged `119/119`
+  fixed-Linux visual lanes pass and controlled lanes correctly skip.
+- The P8-01 audit is frozen in
+  `implementation/evidence/phase-8/p8-01-plan.md`; only checkpoint 1 pure
+  domain/contract/guarded-metadata work is active.
+- Missing production endpoint/credential/data, current ERP customization,
+  sandbox mapping, production freshness/EAC/quality policy and P8-02..09
+  authorities are scoped holds. They do not block Mock-default, closed
+  contracts, fail-closed configuration or additive metadata. Production
+  ERPNext/JCE contact remains prohibited.
