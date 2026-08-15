@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-15`
 
-Status: `FROZEN — CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 3 PASS; CHECKPOINT 4 AUTHORIZED`
 
 Starting controller checkpoint:
 `b9dc2135e16e1b19d375bb29ab733e5e63ccef08`
@@ -362,7 +362,13 @@ Checkpoint 2 passed at exact product SHA
 `b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6` and exact-SHA ordinary PR CI
 `31874165243`. Complete repository/BFF/source-adapter evidence is
 `implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md`.
-Only checkpoint 3 is active.
+Checkpoint 3 was then activated.
+
+Checkpoint 3 passed at exact product SHA
+`9a2ed86fb3780d5d8cdcda023a76d647d384ca63` and exact-SHA ordinary PR CI
+`31877039560`. Complete live-workspace evidence is
+`implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md`.
+Only checkpoint 4 is active.
 
 ### Checkpoint 4 — controlled runtime and Level 2
 

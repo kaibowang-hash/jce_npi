@@ -3289,3 +3289,42 @@ repeat or rewrite it merely to restore context. See
 - Holds under `DR-REC-003/004/009` remain unchanged. No user action is
   required and the latest complete Level 3 remains workflow `31392474781` at
   exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-15 P7-07 checkpoint 3 PASS; checkpoint 4 active
+
+- Exact product checkpoint `9a2ed86fb3780d5d8cdcda023a76d647d384ca63`
+  passes ordinary pull-request CI `31877039560`: repository `94994234564`
+  passes `1,905` tracked Python tests and repository/reconciliation checks;
+  frontend `94994234549` passes `58/58` files, `913/913` unit tests,
+  `408/408` non-visual E2E tests, `7,439` direct trilingual sources, coverage
+  `80.31%/80.25%/82.90%/82.98%` and zero vulnerabilities; secret scan
+  `94994234566` scans `470` commits with no leak; visual `94994234575` passes
+  the expanded `115/115` fixed-Linux matrix.
+- Visual artifact `9245060184` has digest
+  `sha256:a6d88366adb22c9ef6404caf32895a8a77ee8b7bb1230db0b48d7e48f4e7515c`;
+  Gitleaks artifact `9245015977` has digest
+  `sha256:b4e2913a4d46fb79f004ba8aa94eba83c8ece4f7bbb3e738d6579c0a7ab7839f`.
+  Controlled preflight `94995433086` and runtime `94995433200` skip because
+  checkpoint 3 installs no runtime fixture or synthetic mapping.
+- Diagnostic ordinary CI `31876670734` proved the new P7-07 visuals already
+  matched and isolated only three out-of-scope P7-01 anchor-bar differences.
+  Forward fix `9a2ed86` removed only the extra four-line global anchor entry;
+  no Released Summary behavior, assertion, threshold, translation, route,
+  permission or authority boundary was weakened.
+- Checkpoint 3 activates only the strict Released Summary browser data source,
+  dense trilingual existing-Trial workspace, exact current/history/source/
+  redaction/authority inspection, reviewed retain/revise, reused controlled-
+  print action, honest states, accessibility, E2E and governed visuals.
+  Complete evidence is
+  `implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md`.
+  This is checkpoint 3 PASS, not P7-07 Level 2 or Level 3.
+- Standing continuous-delivery authority activates only checkpoint 4:
+  cumulative disposable-Site Trial runtime, one disposable synthetic mapping,
+  exact controlled PDF and replay/stale/fork/IDOR/route/migration/rollback/
+  redaction/zero-effect proof, Requirement trace, Task Diff Review and P7-07
+  Level 2. Production ERPNext contact, production mapping/policy, external
+  event/projection/receipt, formal release authority, downstream mutation and
+  Level 3 remain inactive.
+- Holds under `DR-REC-003/004/009` remain unchanged. No user action is
+  required and the latest complete Level 3 remains workflow `31392474781` at
+  exact SHA `22cb24d42174a5b75f475127ac3aa9fee5a08606`.

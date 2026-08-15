@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 7
-updated_at: '2026-08-15T08:32:19Z'
+updated_at: '2026-08-15T09:40:46Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P7-07
-current_task_status: IN_PROGRESS_CHECKPOINT_3
-current_task_completed_stage: P7_07_REPOSITORY_BFF_SOURCE_ADAPTER_PASS
-current_task_next_stage: P7_07_LIVE_TRIAL_RELEASED_SUMMARY_WORKSPACE
+current_task_status: IN_PROGRESS_CHECKPOINT_4
+current_task_completed_stage: P7_07_LIVE_TRIAL_RELEASED_SUMMARY_WORKSPACE_PASS
+current_task_next_stage: P7_07_CONTROLLED_RUNTIME_AND_LEVEL_2
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P7-07
-resumed_product_task_status: ACTIVE_CHECKPOINT_2_ONLY
+resumed_product_task_status: ACTIVE_CHECKPOINT_4_ONLY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -1858,7 +1858,7 @@ p7_06:
 p7_07:
   task: P7-07
   controller_task: P7-07_IMMUTABLE_RELEASED_TRIAL_SUMMARY_CONTROLLED_OUTPUT
-  status: IN_PROGRESS_CHECKPOINT_3
+  status: IN_PROGRESS_CHECKPOINT_4
   phase: 7
   milestone: M6-07
   requirements:
@@ -1877,8 +1877,11 @@ p7_07:
   checkpoint_2_product_checkpoint: b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6
   checkpoint_2_ordinary_ci: 31874165243
   checkpoint_2: PASS
-  current_stage: LIVE_TRIAL_RELEASED_SUMMARY_WORKSPACE
-  next_stage_after_pass: CONTROLLED_RUNTIME_AND_LEVEL_2
+  checkpoint_3_product_checkpoint: 9a2ed86fb3780d5d8cdcda023a76d647d384ca63
+  checkpoint_3_ordinary_ci: 31877039560
+  checkpoint_3: PASS
+  current_stage: CONTROLLED_RUNTIME_AND_LEVEL_2
+  next_stage_after_pass: P7_08_AUDIT
   product_code_changed: true
   external_holds:
     - RELEASED_TRIAL_SUMMARY_EXTERNAL_EVENT_SCHEMA_ROUTING_DELIVERY_AND_TARGET_RECEIPT
@@ -1890,6 +1893,7 @@ p7_07:
     - implementation/evidence/phase-7/p7-07-plan.md
     - implementation/evidence/phase-7/p7-07-domain-metadata-checkpoint.md
     - implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md
+    - implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

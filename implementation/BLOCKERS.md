@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-15T08:32:19Z`
+Updated: `2026-08-15T09:40:46Z`
 
 ## Active hard blockers
 
@@ -15,11 +15,11 @@ Runtime artifact `9230370526` has digest
 `sha256:0b68c53e2abea2ba11957134977b68ef507e9b22cc4bbd5e450718832fd573a0`;
 its `result.txt` payload hashes to
 `sha256:ec9b17ef86dc66e96dcdeac4b5b04d30c011f75020b815a237a2c598f2715559`.
-P7-07 checkpoint 2 product SHA
-`b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6` passes ordinary CI
-`31874165243`: repository `94987257323`, frontend `94987257376`, secret scan
-`94987257391` and `112/112` fixed-Linux visual job `94987257304` all pass;
-controlled jobs `94988374172` and `94988374331` skip as required. Checkpoint 3
+P7-07 checkpoint 3 product SHA
+`9a2ed86fb3780d5d8cdcda023a76d647d384ca63` passes ordinary CI
+`31877039560`: repository `94994234564`, frontend `94994234549`, secret scan
+`94994234566` and `115/115` fixed-Linux visual job `94994234575` all pass;
+controlled jobs `94995433086` and `94995433200` skip as required. Checkpoint 4
 is active; no user action, login or frontend operation is required.
 
 ## Active recovery
@@ -30,12 +30,11 @@ None. The ordered delivery hold remains resolved and P7-06 is sealed
 IDOR actor-fixture defects. Neither produced a runtime result or runtime
 artifact; both cleanup steps passed. Bounded forward fixes and affected tests
 preceded the independent final ordinary and controlled PASS at `563fff5`.
-Only P7-07 checkpoint 3 is active: the strict Released Summary browser data
-source and dense trilingual live Trial workspace, exact history/current and
-source/redaction/authority inspection, retain/revise review, honest states,
-accessibility, E2E and governed visual evidence. Runtime fixture, production
-mapping/PDF, generic print behavior, external event/
-projection, form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/
+Only P7-07 checkpoint 4 is active: cumulative disposable-Site Trial runtime,
+one disposable synthetic mapping, exact controlled PDF and replay/conflict/
+rollback/redaction/zero-effect proof, Requirement trace, Task Diff Review and
+the Level 2 Gate. Production mapping/policy, external event/projection/
+receipt, form/signature/retention/copy, Gate/Project/Work Item/Tooling/ERP/
 Outbox mutation, release authority and Level 3 execution remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext

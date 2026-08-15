@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P7-07`
+`IN_PROGRESS_CHECKPOINT_4 — P7-07`
 
-Recovery time: `2026-08-15T08:32:19Z`
+Recovery time: `2026-08-15T09:40:46Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -55,6 +55,9 @@ P7-07 checkpoint 1 product checkpoint:
 
 P7-07 checkpoint 2 product checkpoint:
 `b6a50b9c1fb6bd38bc7cb1099c8744d57e4e96e6`
+
+P7-07 checkpoint 3 product checkpoint:
+`9a2ed86fb3780d5d8cdcda023a76d647d384ca63`
 
 ## Current authoritative action
 
@@ -302,14 +305,24 @@ direct trilingual sources and zero vulnerabilities), secret scan `94987257391`
 `94987257304`. Controlled lanes skip as required. Complete evidence is
 `implementation/evidence/phase-7/p7-07-repository-bff-source-adapter-checkpoint.md`.
 
-Execute only checkpoint 3: add the dense Released Summary section to the
-existing live Trial workspace with a strict data source, exact history/current
-inspector, source/redaction/authority truth, retain/revise review and reused
-controlled-print action. Cover every frozen honest state, keyboard/focus/Axe,
-direct English/`zh`/`zh-TW`, route-intercept E2E and reviewed governed Linux
-visuals. Do not add a runtime fixture, production mapping, generic print
-behavior, external event/projection/receipt, formal release authority or
-downstream mutation. Holds remain under `DR-REC-003/004/009`.
+P7-07 checkpoint 3 passes at exact product checkpoint `9a2ed86`. Exact-SHA
+ordinary CI `31877039560` passes repository `94994234564` (`1,905` tracked
+Python), frontend `94994234549` (`913/913` unit, `408/408` E2E, `7,439`
+direct trilingual sources and zero vulnerabilities), secret scan `94994234566`
+(`470` complete-history commits, no leaks) and expanded `115/115` fixed-Linux
+visual job `94994234575`. Controlled lanes skip as required. Complete evidence
+is `implementation/evidence/phase-7/p7-07-live-released-summary-workspace-checkpoint.md`.
+
+Execute only checkpoint 4: extend the cumulative disposable Trial runtime
+through P7-07, install only a disposable synthetic mapping, retain approved,
+successor and rejected technical summaries, render/download the exact
+controlled PDF, and prove replay, stale/fork/IDOR, route recovery,
+migrate-twice, rollback, redaction, sentinel scanning, zero downstream effects
+and clean teardown. Then complete exact Requirement trace, Task Diff Review and
+the P7-07 Level 2 Gate. Do not contact production ERPNext or activate an
+external event/projection/receipt, production mapping/policy, formal release
+authority, downstream mutation or Level 3. Holds remain under
+`DR-REC-003/004/009`.
 The latest complete Level 3 remains workflow `31392474781` at exact SHA
 `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
 
