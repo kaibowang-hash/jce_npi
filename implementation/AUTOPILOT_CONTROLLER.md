@@ -3456,3 +3456,46 @@ repeat or rewrite it merely to restore context. See
   remain inactive. No user action is required; the latest complete Level 3
   remains workflow `31392474781` at exact SHA
   `22cb24d42174a5b75f475127ac3aa9fee5a08606`.
+
+## 2026-08-15 P7-08 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact final checkpoint `290c66fe3e2e5c53058b5253b844c6332902f189`
+  passes ordinary pull-request CI `31894667043`: repository `95036026662`
+  proves `1,921` tracked Python tests and repository/reconciliation checks;
+  frontend `95036026724` proves `59/59` files, `918/918` unit tests,
+  `414/414` non-visual E2E, `7,467` complete direct English/`zh`/`zh-TW`
+  sources, coverage `80.35%/80.31%/82.89%/83.01%` and zero vulnerabilities;
+  secret scan `95036026676` proves `29` first-parent task commits and `488`
+  complete branch commits contain no leak; visual `95036026641` passes the
+  unchanged `115/115` fixed-Linux matrix.
+- Visual artifact `9249514548` has digest
+  `sha256:845f99b34e678ed27f7409b08f16b7c1db7d3b8f1aa1d881802b8b9ea6d35f3c`;
+  Gitleaks artifact `9249464490` has digest
+  `sha256:6098cd5f213b0a030a724ca4eb2284b837a8559a24a4c8063b129fe70ff1b02f`.
+  Controlled jobs skip as required because checkpoint 2 changes no route,
+  runtime fixture, backend contract or persisted business schema.
+- Product commit `a0a024d` adds an exact phone/tablet Trial field summary,
+  camera-facing image selection over the unchanged explicit private upload,
+  reviewed cavity scan apply into only the filter/open editor, the unchanged
+  defect command and deliberate desktop handoff for enumerated engineering
+  matrices. Pending/clean/failed and permission truth remain explicit; camera
+  selection and scan review/apply submit nothing automatically.
+- Diagnostic CI `31893986953` retained `411/414` E2E and isolated only the
+  legacy P7-01 broad `T0` selector choosing the new hidden mobile summary on
+  desktop in all three locales. Repair commit `290c66f` scopes that assertion
+  to `#trial-live-plans`; focused P7-01 plus P7-08 tests pass `13/13`, and the
+  fresh exact-SHA full CI passes without changing product behavior or PASS
+  criteria. Complete evidence is
+  `implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md`.
+- This is checkpoint 2 PASS, not P7-08 Level 2 or Phase 7 Level 3. Standing
+  continuous-delivery authority activates checkpoint 3 only: exact mobile
+  Gate summary, existing server-permitted action presentation, unchanged
+  impact review/coordinator/receipt/retry/conflict paths, honest desktop
+  handoff, focused phone/tablet state/accessibility/trilingual proof, affected
+  fixed-Linux visuals, then P7-08 Level 2 and final Phase 7 Level 3.
+- Mobile-only role, permission, transition or Gate authority; raw private File
+  URLs; automatic scan submission; API/Schema/business changes; offline/native
+  behavior; production ERPNext/external traffic; and Phase 8 remain inactive.
+  No user action is required. The latest complete Level 3 remains workflow
+  `31392474781` at exact SHA
+  `22cb24d42174a5b75f475127ac3aa9fee5a08606`.

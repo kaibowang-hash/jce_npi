@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-15`
 
-Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 AUTHORIZED`
+Status: `FROZEN — CHECKPOINT 2 PASS; CHECKPOINT 3 AUTHORIZED`
 
 Starting controller checkpoint:
 `eee737f1eef1937c6a515586850a9ea62e68686a`
@@ -12,6 +12,15 @@ Retained predecessor product checkpoint:
 
 Checkpoint 1 product checkpoint:
 `300bc167fbe2912a5a7fac7e31c86f025521749e`
+
+Checkpoint 2 product commit:
+`a0a024d45341739fc6441faee876d4876932b2eb`
+
+Checkpoint 2 final checkpoint:
+`290c66fe3e2e5c53058b5253b844c6332902f189`
+
+Checkpoint 2 ordinary CI:
+`31894667043`
 
 Primary requirement: `UX-020`
 

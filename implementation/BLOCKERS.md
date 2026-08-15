@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-15T15:18:04Z`
+Updated: `2026-08-15T16:18:10Z`
 
 ## Active hard blockers
 
@@ -15,9 +15,10 @@ artifact `9247862817` has digest
 `sha256:4bab7b5d83191cad8485cb29b64b7d60309e619301c595483622f072b4c9b2f5`;
 its PASS payload hashes to
 `sha256:e044f3daf92ad4f0d1d9686d5060db411c747df46b02a47fa987254921bb08fd`.
-P7-08 checkpoint 1 exact product SHA `300bc16` passes ordinary CI
-`31891796533`; checkpoint 2 live Trial field actions are active under the
-frozen P7-08 plan. No user action, login or frontend operation is required.
+P7-08 checkpoint 2 exact final SHA `290c66f` passes ordinary CI
+`31894667043`; checkpoint 3 live Gate field review and final Phase Gate are
+active under the frozen P7-08 plan. No user action, login or frontend operation
+is required.
 
 ## Active recovery
 
@@ -25,11 +26,11 @@ None. The ordered delivery hold remains resolved and P7-07 is sealed
 `PASS_LEVEL_2`. Its nine failed controlled attempts remain diagnostic evidence,
 not PASS evidence; each failed closed, cleaned up, received only a bounded
 evidence-proved forward fix and was followed by a fresh exact-SHA ordinary and
-controlled attempt. P7-08 reviewed field primitives/responsive policy pass;
-only live Trial field actions checkpoint 2 is active. Gate integration,
-mobile-only roles or transitions, raw private File URLs, automatic scan
-submission, offline/native behavior, production ERPNext/external effects and
-Phase 8 behavior remain inactive.
+controlled attempt. P7-08 reviewed field primitives and live Trial field
+actions pass; only live Gate field review plus the final Level 2/Level 3 Gate
+is active. Mobile-only roles or transitions, raw private File URLs, automatic
+scan submission, offline/native behavior, production ERPNext/external effects
+and Phase 8 behavior remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

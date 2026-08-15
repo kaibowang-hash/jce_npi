@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P7-08`
+`IN_PROGRESS_CHECKPOINT_3 — P7-08`
 
-Recovery time: `2026-08-15T15:18:04Z`
+Recovery time: `2026-08-15T16:18:10Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -68,6 +68,9 @@ P7-08 audit starting controller:
 P7-08 checkpoint 1 product checkpoint:
 `300bc167fbe2912a5a7fac7e31c86f025521749e`
 
+P7-08 checkpoint 2 final checkpoint:
+`290c66fe3e2e5c53058b5253b844c6332902f189`
+
 ## Current authoritative action
 
 P7-07 passes Level 2 at exact final product checkpoint `dda9c13`. Ordinary CI
@@ -89,27 +92,28 @@ migrations, rollback, redaction, zero downstream effects and cleanup pass.
 Complete evidence is
 `implementation/evidence/phase-7/p7-07-validation.md`.
 
-P7-08 checkpoint 1 passes at exact product checkpoint `300bc16`. Ordinary CI
-`31891796533` passes repository `95029057330` (`1,921` tracked Python),
-frontend `95029057344` (`59/59` files, `918/918` unit, `408/408` non-visual
-E2E, `7,457` complete direct trilingual sources, coverage
-`80.35%/80.28%/82.94%/83.02%`, zero vulnerabilities), secret scan
-`95029057296` and `115/115` fixed-Linux visual job `95029057308`. Complete
-evidence is `implementation/evidence/phase-7/p7-08-primitives-checkpoint.md`.
+P7-08 checkpoint 2 passes at exact final checkpoint `290c66f`. Ordinary CI
+`31894667043` passes repository `95036026662` (`1,921` tracked Python),
+frontend `95036026724` (`59/59` files, `918/918` unit, `414/414` non-visual
+E2E, `7,467` complete direct trilingual sources, coverage
+`80.35%/80.31%/82.89%/83.01%`, zero vulnerabilities), secret scan
+`95036026676` and `115/115` fixed-Linux visual job `95036026641`. Complete
+evidence is `implementation/evidence/phase-7/p7-08-trial-field-checkpoint.md`.
 
 Follow the frozen `implementation/evidence/phase-7/p7-08-plan.md`. Execute only
-checkpoint 2: add a phone/tablet Trial field summary, reuse the existing field
-attachment path for environment-camera photo selection while retaining the
-unchanged bounded private pending upload and exact clean bind commands, and
-apply a separately reviewed exact cavity reference only to the existing filter
-or open quality editor. Keep the normal issue impact review/submit command
-unchanged. Enumerated engineering tables remain desktop-only with an honest
-same-link handoff; mobile must retain exact identity/version/state, blocker,
-permission and scan truth. Do not change API/schema/permission/business truth
-or activate Gate integration until checkpoint 2 and its exact-SHA ordinary CI
-pass. Mobile-only authority, raw File URLs, automatic scan submission,
-offline/native behavior, production ERPNext/external traffic and Phase 8 remain
-inactive. The latest complete Level 3 remains `31392474781` at `22cb24d`.
+checkpoint 3: add a phone/tablet Gate field summary with exact Project/Gate/
+cycle/policy/version, readiness blockers, server-permitted action and held
+authority; reorder only responsive presentation so the existing authorized
+action is reachable before desktop evidence/history matrices; preserve the
+same impact review, command coordinator, receipt, retry and conflict paths;
+and retain desktop requirements/evidence/history/baseline tables behind honest
+bounded summaries and same-link handoff. Prove phone authorized action plus
+denied, read-only, blocked, conflict and processing states, direct trilingual
+copy, accessibility and fixed-Linux visuals. Then run P7-08 Level 2 and the
+final Phase 7 Level 3 `release-gate` before P8-00. Do not change API, schema,
+permission or business truth. Mobile-only authority, production ERPNext/
+external traffic and Phase 8 remain inactive. The latest complete Level 3
+remains `31392474781` at `22cb24d`.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,
