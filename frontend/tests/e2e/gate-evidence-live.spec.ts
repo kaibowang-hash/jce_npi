@@ -428,11 +428,19 @@ async function expectLocalizedReviewRoomLoaded(
   page: Page,
   locale: TestLocale,
 ): Promise<void> {
-  await expect(
-    page.getByRole("table", {
-      name: translate(locale, "Frozen Gate requirements"),
-    }),
-  ).toBeVisible();
+  const frozenRequirements = page.getByRole("table", {
+    name: translate(locale, "Frozen Gate requirements"),
+  });
+  const mobileFieldLayout = await page.evaluate(
+    () => globalThis.matchMedia("(width <= 920px)").matches,
+  );
+  if (mobileFieldLayout) {
+    await expect(page.locator(".mobile-gate-field-summary")).toBeVisible();
+    await expect(frozenRequirements).toBeHidden();
+    await expect(page.locator(".mobile-engineering-handoff")).toBeVisible();
+  } else {
+    await expect(frozenRequirements).toBeVisible();
+  }
   await expect(
     page.getByRole("complementary", {
       name: translate(locale, "Review inspector"),
