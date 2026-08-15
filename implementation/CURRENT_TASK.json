@@ -101,6 +101,7 @@
     "frontend/tests/support/tooling-acceptance-fixture.ts",
     "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts",
     "frontend/tests/e2e/p8-01-erp-projections-live.spec.ts-snapshots/*",
+    "frontend/tests/e2e/p6-03-tooling-revision-live.spec.ts",
     "frontend/tests/e2e/p0-visual-registry.json",
     ".github/workflows/ci.yml",
     "scripts/reconcile_v1_2_traceability.py",

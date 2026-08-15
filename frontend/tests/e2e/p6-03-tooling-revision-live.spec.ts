@@ -26,6 +26,7 @@ import {
   acceptanceContext as baseAcceptanceContext,
   acceptanceRevision as baseAcceptanceRevision,
   assetRequest as baseAssetRequest,
+  toolAssetProjectionCollection,
 } from "../support/tooling-acceptance-fixture";
 import {
   toolingListPage,
@@ -956,6 +957,17 @@ async function installApi(
     }
     if (path.endsWith("/tooling-list")) {
       await fulfillJson(route, toolingListPage());
+      return;
+    }
+    if (path.endsWith("/erp-projections")) {
+      expect(new URL(request.url()).searchParams.get("kind")).toBe(
+        "tool_asset_status",
+      );
+      await fulfillJson(route, {
+        ...toolAssetProjectionCollection(),
+        items: [],
+        projectGlobalId: projectId,
+      });
       return;
     }
     if (path.endsWith(`/tooling/${masterId}/acceptance-assets`)) {
