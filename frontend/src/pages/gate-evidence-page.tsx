@@ -13,6 +13,7 @@ import {
   AttachmentField,
   type RegisteredAttachmentTruth,
 } from "../components/field-attachment-primitives";
+import { MobileEngineeringHandoff } from "../components/mobile-field-actions";
 import {
   DockedInspector,
   MetricStrip,
@@ -1405,6 +1406,212 @@ function impactDetails(
   }
 }
 
+function optionalMobileFieldMedia(): MediaQueryList | null {
+  const matchMedia = (
+    globalThis as unknown as {
+      matchMedia?: ((mediaQuery: string) => MediaQueryList) | undefined;
+    }
+  ).matchMedia;
+  return matchMedia?.("(width <= 920px)") ?? null;
+}
+
+function useMobileFieldLayout(): boolean {
+  const [mobile, setMobile] = useState(
+    () => optionalMobileFieldMedia()?.matches ?? false,
+  );
+  useEffect(() => {
+    const media = optionalMobileFieldMedia();
+    if (!media) return undefined;
+    const update = (): void => {
+      setMobile(media.matches);
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => {
+      media.removeEventListener("change", update);
+    };
+  }, []);
+  return mobile;
+}
+
+function MobileGateFieldSummary({
+  currentAction,
+  view,
+}: {
+  currentAction: string;
+  view: GateReviewViewModel;
+}): React.JSX.Element {
+  const { locale, sessionCommandContext, t } = useI18n();
+  const { activeCycle, evidence, gate, project } = view;
+  return (
+    <section
+      aria-labelledby="mobile-gate-field-summary-heading"
+      className="mobile-gate-field-summary mobile-field-only"
+      data-testid="mobile-gate-field-summary"
+    >
+      <div className="mobile-gate-field-summary__header">
+        <h2 id="mobile-gate-field-summary-heading">{t("Gate field review")}</h2>
+        <SemanticStatus
+          label={
+            sessionCommandContext &&
+            currentAction !== t("No permitted review action")
+              ? t("Available")
+              : t("Unavailable")
+          }
+          tone={
+            sessionCommandContext &&
+            currentAction !== t("No permitted review action")
+              ? "info"
+              : "warning"
+          }
+        />
+      </div>
+      <DefinitionList
+        rows={[
+          {
+            label: t("Project global ID"),
+            value: project.globalId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Gate global ID"),
+            value: gate.globalId,
+            exempt: "identifier",
+          },
+          {
+            label: t("Gate version"),
+            value: formatNumber(locale, gate.version, 0),
+          },
+          {
+            label: t("Review state"),
+            value: gateReviewStateLabel(t, gate.reviewState),
+          },
+          {
+            label: t("Cycle global ID"),
+            value: activeCycle?.globalId ?? t("Not applicable"),
+            ...(activeCycle ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Cycle state"),
+            value: activeCycle
+              ? gateReviewCycleStateLabel(t, activeCycle.state)
+              : t("No active cycle"),
+          },
+          {
+            label: t("Cycle version"),
+            value: activeCycle
+              ? formatNumber(locale, activeCycle.version, 0)
+              : t("Not applicable"),
+          },
+          {
+            label: t("Policy global ID"),
+            value: activeCycle?.policyRef.globalId ?? t("Not applicable"),
+            ...(activeCycle ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Policy version"),
+            value: activeCycle
+              ? formatNumber(locale, activeCycle.policyRef.version, 0)
+              : t("Not applicable"),
+          },
+          {
+            label: t("Current frozen input hash"),
+            value: activeCycle?.inputHash ?? t("Not applicable"),
+            ...(activeCycle ? { exempt: "identifier" as const } : {}),
+          },
+          {
+            label: t("Required"),
+            value: formatNumber(locale, evidence.summary.requiredCount, 0),
+          },
+          {
+            label: t("Missing evidence"),
+            value: formatNumber(
+              locale,
+              evidence.summary.missingRequiredCount,
+              0,
+            ),
+          },
+          {
+            label: t("Unsafe file evidence"),
+            value: formatNumber(locale, evidence.summary.unsafeScanCount, 0),
+          },
+          {
+            label: t("Session command context"),
+            value: sessionCommandContext ? t("Available") : t("Unavailable"),
+          },
+          {
+            label: t("Current server action"),
+            value: currentAction,
+          },
+          {
+            label: t("Downstream guard"),
+            value: gate.downstreamDecisionCurrent
+              ? t("Current decision accepted")
+              : t("Downstream use denied"),
+          },
+        ]}
+      />
+      <section className="mobile-gate-field-summary__section">
+        <h3>{t("Gate decision readiness")}</h3>
+        {view.decisionReadiness.blockedReasons.length ? (
+          <ul
+            aria-label={t("Gate decision readiness")}
+            className="compact-value-list"
+          >
+            {view.decisionReadiness.blockedReasons.map((reason) => (
+              <li key={reason.outcome}>
+                <SemanticStatus
+                  label={gateDecisionOutcomeLabel(t, reason.outcome)}
+                  tone="warning"
+                />{" "}
+                <span>
+                  {gateReviewDecisionBlockedReasonLabel(t, reason.code)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <SemanticStatus label={t("Available")} tone="success" />
+        )}
+      </section>
+      <section className="mobile-gate-field-summary__section">
+        <h3>{t("Current Gate blockers")}</h3>
+        {view.blockers.length ? (
+          <ul
+            aria-label={t("Current Gate blockers")}
+            className="mobile-gate-field-summary__blockers"
+          >
+            {view.blockers.map((blocker) => (
+              <li
+                className="mobile-gate-field-summary__blocker"
+                key={blocker.globalId}
+              >
+                <strong data-language-exempt="business-data">
+                  {blocker.title}
+                </strong>
+                <span>
+                  {domainWorkItemKindLabel(t, blocker.kind)} ·{" "}
+                  {governedPolicyLabel(t, blocker.stateLabelSource)}
+                </span>
+                <span data-language-exempt="business-data">
+                  {blocker.owner}
+                </span>
+                <time dateTime={blocker.dueAt}>
+                  {formatDateTime(locale, blocker.dueAt)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-inline">
+            {t("No current same-Gate blocking work items were returned.")}
+          </p>
+        )}
+      </section>
+    </section>
+  );
+}
+
 function GateReviewWorkspace({
   dataSource,
   onReceiptRecoveryRequired,
@@ -1426,6 +1633,7 @@ function GateReviewWorkspace({
   view: GateReviewViewModel;
 }): React.JSX.Element {
   const { locale, sessionCommandContext, t } = useI18n();
+  const mobileFieldLayout = useMobileFieldLayout();
   const { project, gate, evidence, activeCycle, permissions } = view;
   const commandKey = commandRouteKey(project.globalId, gate.globalId);
   const coordinatedCommand = coordinatedCommands.get(commandKey);
@@ -2403,7 +2611,7 @@ function GateReviewWorkspace({
         </section>
       ) : null}
       <ObjectHeader
-        {...(primaryAction ? { primaryAction } : {})}
+        {...(!mobileFieldLayout && primaryAction ? { primaryAction } : {})}
         code={`${gate.key} / ${project.businessCode}`}
         metadata={
           <span>
@@ -2429,6 +2637,16 @@ function GateReviewWorkspace({
           />
         }
       />
+      {mobileFieldLayout ? (
+        <MobileGateFieldSummary
+          currentAction={
+            selectedAction
+              ? actionLabel(t, selectedAction)
+              : t("No permitted review action")
+          }
+          view={view}
+        />
+      ) : null}
       <MetricStrip
         metrics={[
           {
@@ -2471,15 +2689,21 @@ function GateReviewWorkspace({
           },
         ]}
       />
-      <SectionAnchors
-        sections={[
-          { id: "gate-review-inputs", label: t("Frozen review inputs") },
-          { id: "gate-review-work", label: t("Review evidence and blockers") },
-          { id: "gate-review-inspector", label: t("Review inspector") },
-        ]}
-      />
+      <div className="desktop-engineering-only">
+        <SectionAnchors
+          sections={[
+            { id: "gate-review-inputs", label: t("Frozen review inputs") },
+            {
+              id: "gate-review-work",
+              label: t("Review evidence and blockers"),
+            },
+            { id: "gate-review-inspector", label: t("Review inspector") },
+          ]}
+        />
+      </div>
       <div className="review-layout gate-review-layout">
         <Panel
+          className="desktop-engineering-only"
           id="gate-review-inputs"
           scrollableBody
           title={t("Frozen requirements and review sequence")}
@@ -2492,6 +2716,7 @@ function GateReviewWorkspace({
           <ReviewStepsTable cycle={activeCycle} />
         </Panel>
         <Panel
+          className="desktop-engineering-only"
           id="gate-review-work"
           scrollableBody
           title={t("Review evidence and blockers")}
@@ -3569,6 +3794,18 @@ function GateReviewWorkspace({
               </p>
             </section>
           ) : null}
+          {mobileFieldLayout && primaryAction ? (
+            <div className="detail-actions mobile-gate-primary-action mobile-field-only">
+              <Button
+                disabled={primaryAction.disabled}
+                id="gate-review-mobile-primary-action"
+                onClick={primaryAction.onClick}
+                visual="primary"
+              >
+                {primaryAction.label}
+              </Button>
+            </div>
+          ) : null}
           {!selectedAction ? (
             <div className="inspector-note">
               <SemanticStatus
@@ -3786,6 +4023,7 @@ function GateReviewWorkspace({
           </section>
         </DockedInspector>
       </div>
+      {mobileFieldLayout ? <MobileEngineeringHandoff /> : null}
       {impactAction ? (
         <ImpactReview
           confirmLabel={actionLabel(t, impactAction)}
@@ -3799,9 +4037,14 @@ function GateReviewWorkspace({
             if (prepared) executeCommand(prepared);
           }}
           reasonRequired={impactAction.kind !== "decide_gate"}
-          returnFocusTarget={() =>
-            document.getElementById("gate-review-primary-action")
-          }
+          returnFocusTarget={() => {
+            const mobileAction = document.getElementById(
+              "gate-review-mobile-primary-action",
+            );
+            return mobileAction?.getClientRects().length
+              ? mobileAction
+              : document.getElementById("gate-review-primary-action");
+          }}
           title={
             impactAction.kind === "request_exception"
               ? t("Review controlled exception request")

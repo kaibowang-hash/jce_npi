@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'f71bba9bcbe791b2';
+export const catalogVersion = 'd98d2a5ca3734954';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -2393,6 +2393,8 @@ export const catalogs = {
     "Gate evidence records can only be changed through an authorized NPI Gate command.": "阶段门证据记录只能通过已授权的 NPI 阶段门命令更改。",
     "Gate evidence references can only be added through an authorized NPI Gate command.": "阶段门证据引用只能通过已授权的 NPI 阶段门命令添加。",
     "Gate evidence references cannot be changed.": "阶段门证据引用不能更改。",
+    "Gate field review": "阶段门现场评审",
+    "Gate global ID": "阶段门全局标识",
     "Gate Global ID": "阶段门全局标识符",
     "Gate input identities must be unique.": "阶段门输入标识必须唯一。",
     "Gate input snapshot change events": "阶段门输入快照变更事件",
@@ -4122,6 +4124,7 @@ export const catalogs = {
     "Project followed": "已关注项目",
     "Project Follower Key": "项目关注者键",
     "Project Follower Key does not match its identities.": "项目关注者键与其标识不匹配。",
+    "Project global ID": "项目全局标识",
     "Project Global ID": "项目全局标识符",
     "Project health": "项目健康度",
     "Project health assessed": "已评估项目健康度",
@@ -7261,6 +7264,7 @@ export const catalogs = {
     "Unresolved actions must use canonical UUID order.": "未解决行动必须按规范 UUID 顺序排列。",
     "Unresolved Work Item Selector Snapshot": "未解决工作项选择器快照",
     "Unresolved Work Item Snapshot": "未解决工作项快照",
+    "Unsafe file evidence": "不安全的文件证据",
     "Unsafe file evidence cannot be excepted.": "不安全的文件证据不能获得豁免。",
     "Unsaved changes": "未保存的变更",
     "Unvalidated inserts cannot retain validation evidence.": "未验证的镶件不能保留验证证据。",
@@ -9862,6 +9866,8 @@ export const catalogs = {
     "Gate evidence records can only be changed through an authorized NPI Gate command.": "階段門證據記錄只能透過已授權的 NPI 階段門命令變更。",
     "Gate evidence references can only be added through an authorized NPI Gate command.": "階段門證據參照只能透過已授權的 NPI 階段門命令新增。",
     "Gate evidence references cannot be changed.": "階段門證據參照不能變更。",
+    "Gate field review": "階段門現場評審",
+    "Gate global ID": "階段門全域識別碼",
     "Gate Global ID": "階段門全域識別碼",
     "Gate input identities must be unique.": "階段門輸入識別必須唯一。",
     "Gate input snapshot change events": "階段門輸入快照變更事件",
@@ -11591,6 +11597,7 @@ export const catalogs = {
     "Project followed": "已關注專案",
     "Project Follower Key": "專案關注者鍵",
     "Project Follower Key does not match its identities.": "專案關注者鍵與其識別不相符。",
+    "Project global ID": "專案全域識別碼",
     "Project Global ID": "專案全域識別碼",
     "Project health": "專案健康度",
     "Project health assessed": "已評估專案健康度",
@@ -14730,6 +14737,7 @@ export const catalogs = {
     "Unresolved actions must use canonical UUID order.": "未解決行動必須按規範 UUID 順序排列。",
     "Unresolved Work Item Selector Snapshot": "未解決工作項目選擇器快照",
     "Unresolved Work Item Snapshot": "未解決工作項目快照",
+    "Unsafe file evidence": "不安全的檔案證據",
     "Unsafe file evidence cannot be excepted.": "不安全的檔案證據不能豁免。",
     "Unsaved changes": "未儲存的變更",
     "Unvalidated inserts cannot retain validation evidence.": "未驗證的鑲件不能保留驗證證據。",

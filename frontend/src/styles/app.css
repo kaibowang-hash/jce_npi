@@ -4579,7 +4579,8 @@ textarea::placeholder {
   display: none;
 }
 
-.mobile-trial-field-summary {
+.mobile-trial-field-summary,
+.mobile-gate-field-summary {
   min-width: 0;
   gap: var(--npi-space-2);
   padding: var(--npi-space-2);
@@ -4589,7 +4590,8 @@ textarea::placeholder {
   background: var(--npi-color-surface-default);
 }
 
-.mobile-trial-field-summary__header {
+.mobile-trial-field-summary__header,
+.mobile-gate-field-summary__header {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -4598,9 +4600,46 @@ textarea::placeholder {
   flex-wrap: wrap;
 }
 
-.mobile-trial-field-summary__header h2 {
+.mobile-trial-field-summary__header h2,
+.mobile-gate-field-summary__header h2 {
   margin: 0;
   font-size: var(--npi-typography-size-sm);
+}
+
+.mobile-gate-field-summary__section {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+  padding-top: var(--npi-space-2);
+  border-top: var(--npi-border-default) solid var(--npi-color-border-default);
+}
+
+.mobile-gate-field-summary__section h3 {
+  margin: 0;
+}
+
+.mobile-gate-field-summary__blockers {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mobile-gate-field-summary__blocker {
+  display: grid;
+  min-width: 0;
+  gap: var(--npi-space-1);
+  padding: var(--npi-space-2);
+  border: var(--npi-border-default) solid var(--npi-color-border-default);
+  border-radius: var(--npi-radius-none);
+  background: var(--npi-color-surface-subtle);
+}
+
+.mobile-gate-field-summary__blockers :where(strong, span, time) {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .reviewed-scan-entry {
@@ -5111,8 +5150,22 @@ textarea::placeholder {
   .trial-live__center,
   .trial-live .panel,
   .mobile-trial-field-summary,
+  .mobile-gate-field-summary,
   .mobile-engineering-handoff {
     min-width: 0;
+  }
+
+  .gate-review-layout > #gate-review-inspector {
+    order: -1;
+  }
+
+  #gate-review-primary-action {
+    display: none;
+  }
+
+  #gate-review-mobile-primary-action {
+    width: 100%;
+    min-height: 44px;
   }
 
   .controlled-undo-prototype__workspace {

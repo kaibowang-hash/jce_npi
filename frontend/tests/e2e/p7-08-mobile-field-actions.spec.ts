@@ -5,6 +5,15 @@ import type {
   TrialExecutionWorkspace,
   TrialQualityWorkspace,
 } from "../../src/api/trial-data-source";
+import type {
+  GateReviewOutcome,
+  GateReviewViewModel,
+} from "../../src/domain/view-models";
+import { translate } from "../../src/i18n/runtime";
+import {
+  gateReviewFixture,
+  gateReviewReadOnlyFixture,
+} from "../support/gate-review-fixture";
 import {
   trialExecutionIds,
   trialExecutionWorkspace,
@@ -27,6 +36,10 @@ const csrfToken = "p7-08-mobile-field-browser-csrf-token-0001";
 const sessionEndpoint = /\/api\/npi\/v1\/session\/bootstrap(?:\?.*)?$/u;
 const trialEndpoint =
   /\/api\/npi\/v1\/projects\/[^/?]+\/(?:trials|trial-plans(?:\/.*)?|trial-rounds(?:\/.*|:[^/?]+))$/u;
+const gateReviewEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review(?:\?.*)?$/u;
+const submitGateReviewEndpoint =
+  /\/api\/npi\/v1\/projects\/[^/?]+\/gates\/[^/?]+\/review-cycles\/[^/?]+\/reviews(?:\?.*)?$/u;
 const requestIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
@@ -44,6 +57,66 @@ interface ApiOptions {
   readonly quality?: TrialQualityWorkspace;
 }
 
+interface GateReviewSubmitPayload {
+  readonly expectedCycleVersion: number;
+  readonly expectedInputHash: string;
+  readonly opinion: string;
+  readonly outcome: GateReviewOutcome;
+  readonly stepKey: string;
+}
+
+function isGateReviewSubmitPayload(
+  value: unknown,
+): value is GateReviewSubmitPayload {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.expectedCycleVersion === "number" &&
+    typeof candidate.expectedInputHash === "string" &&
+    typeof candidate.opinion === "string" &&
+    (candidate.outcome === "approved" || candidate.outcome === "rejected") &&
+    typeof candidate.stepKey === "string"
+  );
+}
+
+function submittedGateReviewView(
+  view: GateReviewViewModel,
+  body: GateReviewSubmitPayload,
+): GateReviewViewModel {
+  const cycle = view.activeCycle;
+  if (!cycle)
+    throw new Error("The Gate field fixture requires an active cycle.");
+  return {
+    ...view,
+    activeCycle: {
+      ...cycle,
+      selectedSteps: cycle.selectedSteps.map((step) => {
+        if (step.stepKey === body.stepKey) {
+          return {
+            ...step,
+            review: {
+              actor: step.assignedMember.userId,
+              globalId: "d1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1",
+              inputHash: body.expectedInputHash,
+              opinion: body.opinion.trim(),
+              outcome: body.outcome,
+              reviewedAt: "2026-08-15T16:00:00Z",
+              snapshotHash: "d".repeat(64),
+              stepKey: step.stepKey,
+            },
+            state: body.outcome,
+          };
+        }
+        if (step.sequence === 2 && body.outcome === "approved") {
+          return { ...step, state: "available" as const };
+        }
+        return step;
+      }),
+      version: body.expectedCycleVersion + 1,
+    },
+  };
+}
+
 function requestIdentity(route: Route): string {
   const requestId = route.request().headers()["x-request-id"] ?? "";
   expect(requestId).toMatch(requestIdPattern);
@@ -55,6 +128,7 @@ async function fulfillJson(
   body: unknown,
   status = 200,
   replayed?: boolean,
+  traceId = "trace-p7-08-mobile-field-browser",
 ): Promise<void> {
   await route.fulfill({
     body: JSON.stringify(body),
@@ -65,13 +139,17 @@ async function fulfillJson(
         ? {}
         : { "Idempotency-Replayed": String(replayed) }),
       "X-Request-ID": requestIdentity(route),
-      "X-Trace-ID": "trace-p7-08-mobile-field-browser",
+      "X-Trace-ID": traceId,
     },
     status,
   });
 }
 
-async function installSession(page: Page, locale: TestLocale): Promise<void> {
+async function installSession(
+  page: Page,
+  locale: TestLocale,
+  userId = "field.engineer@example.invalid",
+): Promise<void> {
   await page.route(sessionEndpoint, async (route) => {
     await fulfillJson(route, {
       allowedLanguages: ["en", "zh", "zh-TW"],
@@ -79,9 +157,29 @@ async function installSession(page: Page, locale: TestLocale): Promise<void> {
       csrfToken,
       language: locale,
       preferences: { navigationCollapsed: false },
-      userId: "field.engineer@example.invalid",
+      userId,
     });
   });
+}
+
+async function installGateReviewApi(
+  page: Page,
+  view: GateReviewViewModel,
+): Promise<ObservedRequest[]> {
+  const observed: ObservedRequest[] = [];
+  await page.route(gateReviewEndpoint, async (route) => {
+    const request = route.request();
+    observed.push({
+      contentType: request.headers()["content-type"],
+      csrf: request.headers()["x-frappe-csrf-token"],
+      idempotencyKey: request.headers()["idempotency-key"],
+      method: request.method(),
+      path: new URL(request.url()).pathname,
+      payload: null,
+    });
+    await fulfillJson(route, view);
+  });
+  return observed;
 }
 
 async function installTrialApi(
@@ -186,6 +284,28 @@ async function openFieldWorkspace(
 async function expectAxeClean(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page })
     .include(".trial-live")
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+}
+
+async function openGateFieldWorkspace(
+  page: Page,
+  locale: TestLocale,
+  viewport: { readonly height: number; readonly width: number },
+): Promise<void> {
+  await page.setViewportSize(viewport);
+  await page.goto(
+    `/projects/${trialPlanningIds.project}/gates/44444444-4444-4444-8444-444444444444?lang=${locale}`,
+    { waitUntil: "domcontentloaded" },
+  );
+  await expect(page.locator(".route-loading")).toHaveCount(0);
+  await expect(page.locator(".gate-review-room")).toBeVisible();
+}
+
+async function expectGateAxeClean(page: Page): Promise<void> {
+  const results = await new AxeBuilder({ page })
+    .include(".gate-review-room")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   expect(results.violations).toEqual([]);
@@ -385,5 +505,302 @@ test.describe("P7-08 live Trial mobile field actions", () => {
         businessCode: "DEF-FIELD-001",
       }),
     });
+  });
+});
+
+test.describe("P7-08 live Gate mobile field review", () => {
+  const responsiveCases = [
+    { locale: "en", viewport: { height: 844, width: 390 } },
+    { locale: "zh", viewport: { height: 1024, width: 768 } },
+    { locale: "zh-TW", viewport: { height: 844, width: 390 } },
+  ] as const;
+
+  for (const responsive of responsiveCases) {
+    test(`shows exact Gate authority and blocker truth in ${responsive.locale} at ${String(responsive.viewport.width)}px`, async ({
+      page,
+    }) => {
+      const locale = responsive.locale;
+      const view = gateReviewFixture();
+      await installSession(page, locale, "reviewer@example.invalid");
+      await installGateReviewApi(page, view);
+      await openGateFieldWorkspace(page, locale, responsive.viewport);
+
+      const summary = page.getByTestId("mobile-gate-field-summary");
+      await expect(summary).toBeVisible();
+      await expect(summary).toContainText(view.project.globalId);
+      await expect(summary).toContainText(view.gate.globalId);
+      await expect(summary).toContainText(view.activeCycle?.globalId ?? "");
+      await expect(summary).toContainText(
+        view.activeCycle?.policyRef.globalId ?? "",
+      );
+      await expect(summary).toContainText(
+        "Synthetic unresolved dimensional issue",
+      );
+      await expect(summary).toContainText(
+        translate(locale, "The assigned decision authority is required."),
+      );
+      await expect(summary).toContainText(
+        translate(locale, "Downstream use denied"),
+      );
+      await expect(summary).toContainText(translate(locale, "Submit review"));
+      await expect(
+        page.getByRole("table", {
+          name: translate(locale, "Frozen Gate requirements"),
+        }),
+      ).toBeHidden();
+      const inspector = page.getByRole("complementary", {
+        name: translate(locale, "Review inspector"),
+      });
+      await expect(inspector).toBeVisible();
+      await expect(
+        page.getByRole("button", {
+          name: translate(locale, "Submit review"),
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: translate(locale, "Decide Gate") }),
+      ).toHaveCount(0);
+      await expect(
+        page.locator('[data-visual-primary="true"]:visible'),
+      ).toHaveCount(1);
+      await expect(page.locator(".mobile-engineering-handoff")).toBeVisible();
+      expect(
+        await summary.evaluate(
+          (element) => globalThis.getComputedStyle(element).borderRadius,
+        ),
+      ).toBe("0px");
+      await expectNoMixedLanguage(page, locale);
+      await expectNoDocumentOverflow(page);
+      await expectGateAxeClean(page);
+    });
+  }
+
+  test("submits one already-authorized phone review through the unchanged command boundary", async ({
+    page,
+  }) => {
+    const view = gateReviewFixture();
+    const observed: ObservedRequest[] = [];
+    let releaseResponse: (() => void) | undefined;
+    const responseMayComplete = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
+    });
+    await installSession(page, "en", "reviewer@example.invalid");
+    await installGateReviewApi(page, view);
+    await page.route(submitGateReviewEndpoint, async (route) => {
+      const request = route.request();
+      const payload: unknown = request.postDataJSON();
+      if (!isGateReviewSubmitPayload(payload)) {
+        throw new Error("The Gate field fixture received an invalid command.");
+      }
+      observed.push({
+        contentType: request.headers()["content-type"],
+        csrf: request.headers()["x-frappe-csrf-token"],
+        idempotencyKey: request.headers()["idempotency-key"],
+        method: request.method(),
+        path: new URL(request.url()).pathname,
+        payload,
+      });
+      await responseMayComplete;
+      await fulfillJson(
+        route,
+        submittedGateReviewView(view, payload),
+        200,
+        false,
+      );
+    });
+    await openGateFieldWorkspace(page, "en", { height: 844, width: 390 });
+
+    await page
+      .getByRole("textbox", { name: "Complete review opinion" })
+      .fill("Exact field review completed against the frozen input.");
+    await page.getByRole("button", { name: "Submit review" }).click();
+
+    await expect.poll(() => observed.length).toBe(1);
+    const processingAction = page.locator(
+      '[data-visual-primary="true"]:visible',
+    );
+    await expect(processingAction).toHaveText("Processing Gate review command");
+    await expect(processingAction).toHaveAttribute("disabled");
+    expect(observed[0]).toMatchObject({
+      csrf: csrfToken,
+      method: "POST",
+      payload: {
+        expectedCycleVersion: view.activeCycle?.version,
+        expectedInputHash: view.activeCycle?.inputHash,
+        opinion: "Exact field review completed against the frozen input.",
+        outcome: "approved",
+        stepKey: "ENGINEERING_REVIEW",
+      },
+    });
+    expect(observed[0]?.idempotencyKey).toMatch(/^gate-review:/u);
+
+    releaseResponse?.();
+    await expect(
+      page.getByText("Server confirmed", { exact: true }),
+    ).toBeVisible();
+  });
+
+  test("keeps a phone read-only review free of command actions", async ({
+    page,
+  }) => {
+    const view = gateReviewReadOnlyFixture();
+    const observed = await installGateReviewApi(page, view);
+    await installSession(page, "en", "reviewer@example.invalid");
+    await openGateFieldWorkspace(page, "en", { height: 844, width: 390 });
+
+    const summary = page.getByTestId("mobile-gate-field-summary");
+    await expect(summary).toContainText("No permitted review action");
+    await expect(
+      page.getByRole("button", { name: "Submit review" }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Decide Gate" })).toHaveCount(
+      0,
+    );
+    expect(
+      observed.filter((request) => request.method === "POST"),
+    ).toHaveLength(0);
+  });
+
+  test("keeps protected Gate truth absent from a denied phone", async ({
+    page,
+  }) => {
+    await installSession(page, "en", "reviewer@example.invalid");
+    await page.route(gateReviewEndpoint, async (route) => {
+      await fulfillJson(
+        route,
+        {
+          code: "GATE_REVIEW_ACCESS_DENIED",
+          retryable: false,
+          status: 403,
+          title: "Gate review access is not available",
+          traceId: "trace-p7-08-gate-denied",
+          type: "urn:npi:problem:gate_review_access_denied",
+        },
+        403,
+        undefined,
+        "trace-p7-08-gate-denied",
+      );
+    });
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.goto(
+      `/projects/${trialPlanningIds.project}/gates/44444444-4444-4444-8444-444444444444?lang=en`,
+      { waitUntil: "domcontentloaded" },
+    );
+    await expect(page.locator(".route-loading")).toHaveCount(0);
+
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Gate review access is not available",
+      }),
+    ).toBeVisible();
+    await expect(page.getByTestId("mobile-gate-field-summary")).toHaveCount(0);
+    await expect(page.getByText("Synthetic initiation evidence")).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole("button", { name: "Submit review" }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Decide Gate" })).toHaveCount(
+      0,
+    );
+  });
+
+  test("fails a stale phone review closed without exposing another command", async ({
+    page,
+  }) => {
+    const view = gateReviewFixture();
+    await installSession(page, "en", "reviewer@example.invalid");
+    await installGateReviewApi(page, view);
+    await page.route(submitGateReviewEndpoint, async (route) => {
+      await fulfillJson(
+        route,
+        {
+          code: "GATE_REVIEW_VERSION_CONFLICT",
+          retryable: false,
+          status: 409,
+          title: "Version conflict",
+          traceId: "trace-p7-08-gate-conflict",
+          type: "urn:npi:problem:gate_review_version_conflict",
+        },
+        409,
+        undefined,
+        "trace-p7-08-gate-conflict",
+      );
+    });
+    await openGateFieldWorkspace(page, "en", { height: 844, width: 390 });
+    await page
+      .getByRole("textbox", { name: "Complete review opinion" })
+      .fill("This stale review must fail closed.");
+    await page.getByRole("button", { name: "Submit review" }).click();
+
+    await expect(
+      page.getByRole("alert", { name: "Gate review command failure" }),
+    ).toContainText("trace-p7-08-gate-conflict");
+    await expect(
+      page.getByRole("button", { name: "Reload Gate review" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Submit review" }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Decide Gate" })).toHaveCount(
+      0,
+    );
+  });
+});
+
+test.describe("@visual P7-08 Gate mobile field evidence", () => {
+  const cases = [
+    {
+      locale: "en",
+      name: "p7-08-gate-field-en-390x844",
+      viewport: { height: 844, width: 390 },
+    },
+    {
+      locale: "zh",
+      name: "p7-08-gate-field-zh-768x1024",
+      viewport: { height: 1024, width: 768 },
+    },
+    {
+      locale: "zh-TW",
+      name: "p7-08-gate-field-zh-TW-390x844",
+      viewport: { height: 844, width: 390 },
+    },
+  ] as const;
+
+  for (const visualCase of cases) {
+    test(`@visual ${visualCase.name}`, async ({ page }) => {
+      await installSession(page, visualCase.locale, "reviewer@example.invalid");
+      await installGateReviewApi(page, gateReviewFixture());
+      await openGateFieldWorkspace(
+        page,
+        visualCase.locale,
+        visualCase.viewport,
+      );
+      await expect(page.getByTestId("mobile-gate-field-summary")).toBeVisible();
+
+      await expect(page.locator("#main-content")).toHaveScreenshot(
+        `${visualCase.name}.png`,
+        { animations: "disabled" },
+      );
+    });
+  }
+
+  test("@visual p7-08-gate-desktop-engineering-guard-en-1440x900", async ({
+    page,
+  }) => {
+    await installSession(page, "en", "reviewer@example.invalid");
+    await installGateReviewApi(page, gateReviewFixture());
+    await openGateFieldWorkspace(page, "en", { height: 900, width: 1440 });
+
+    await expect(page.getByTestId("mobile-gate-field-summary")).toBeHidden();
+    await expect(
+      page.getByRole("table", { name: "Frozen Gate requirements" }),
+    ).toBeVisible();
+    await expect(page.locator(".mobile-engineering-handoff")).toBeHidden();
+    await expect(page.locator("#main-content")).toHaveScreenshot(
+      "p7-08-gate-desktop-engineering-guard-en-1440x900.png",
+      { animations: "disabled" },
+    );
   });
 });

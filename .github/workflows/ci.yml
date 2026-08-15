@@ -131,6 +131,7 @@ jobs:
           tests/e2e/p7-05-readiness-live.spec.ts
           tests/e2e/p7-06-production-transition-live.spec.ts
           tests/e2e/p7-07-released-trial-summary-live.spec.ts
+          tests/e2e/p7-08-mobile-field-actions.spec.ts
           tests/e2e/gate-evidence-live.spec.ts
           --grep @visual
         env:
@@ -161,6 +162,7 @@ jobs:
             frontend/tests/e2e/p7-05-readiness-live.spec.ts-snapshots/p7-05-*-linux.png
             frontend/tests/e2e/p7-06-production-transition-live.spec.ts-snapshots/p7-06-*-linux.png
             frontend/tests/e2e/p7-07-released-trial-summary-live.spec.ts-snapshots/p7-07-*-linux.png
+            frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts-snapshots/p7-08-*-linux.png
             frontend/tests/e2e/gate-evidence-live.spec.ts-snapshots/p5-03-*-linux.png
             implementation/evidence/phase-5/r1-06-stage-3/playwright-report/**
             implementation/evidence/phase-5/r1-06-stage-3/playwright-results/.last-run.json

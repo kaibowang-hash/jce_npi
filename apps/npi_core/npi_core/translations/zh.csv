@@ -7465,3 +7465,7 @@ released_trial_summary_revision,已发布试模总结修订
 "Trial defect action","试模缺陷操作"
 "Capture or choose one image. Selection remains local until you start the private upload.","拍摄或选择一张图片。在您开始私密上传前，所选文件仅保留在本地。"
 "Trial evidence photo","试模证据照片"
+"Gate field review","阶段门现场评审"
+"Unsafe file evidence","不安全的文件证据"
+"Project global ID","项目全局标识"
+"Gate global ID","阶段门全局标识"

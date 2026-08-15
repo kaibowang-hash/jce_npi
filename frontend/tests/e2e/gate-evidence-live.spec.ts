@@ -464,7 +464,9 @@ test.describe("live Gate Review Room", () => {
     ).toBeVisible();
     await expect(page.getByText("Waiting for prior sequence")).toBeVisible();
     await expect(
-      page.getByText("Synthetic unresolved dimensional issue"),
+      page
+        .getByText("Synthetic unresolved dimensional issue")
+        .filter({ visible: true }),
     ).toBeVisible();
     await page
       .getByRole("button", {
@@ -585,7 +587,9 @@ test.describe("live Gate Review Room", () => {
     await page.getByRole("button", { name: "Submit review" }).click();
 
     await expect(
-      page.getByText("Processing Gate review command"),
+      page
+        .getByText("Processing Gate review command")
+        .filter({ visible: true }),
     ).toBeVisible();
     await expect(page.getByText("Server confirmed")).toHaveCount(0);
     await expect.poll(() => commandRequests.length).toBe(1);
@@ -745,8 +749,12 @@ test.describe("live Gate Review Room", () => {
       page.getByText("Gate input snapshot changed").first(),
     ).toBeVisible();
     await expect(page.getByText("Decision invalidated")).toBeVisible();
-    await expect(page.getByText("5".repeat(64)).first()).toBeVisible();
-    await expect(page.getByText("c".repeat(64)).first()).toBeVisible();
+    await expect(
+      page.getByText("5".repeat(64)).filter({ visible: true }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText("c".repeat(64)).filter({ visible: true }).first(),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", {
         name: "Acknowledge change and start review",
@@ -1096,7 +1104,10 @@ test.describe("trilingual Gate Review Room non-normal state matrix", () => {
         await openGate(page, locale);
         await expectLocalizedReviewRoomLoaded(page, locale);
         await expect(
-          page.getByText(translate(locale, state.expectedSource)).first(),
+          page
+            .getByText(translate(locale, state.expectedSource))
+            .filter({ visible: true })
+            .first(),
         ).toBeVisible();
         await expectNoMixedLanguage(page, locale);
         await expectNoDocumentOverflow(page);
@@ -1501,7 +1512,7 @@ async function prepareReviewVisualCase(
       );
       await expect(
         state === "processing"
-          ? page.getByText(statusLabel)
+          ? page.getByText(statusLabel).filter({ visible: true })
           : page.getByRole("heading", { name: statusLabel }),
       ).toBeVisible();
     } catch (error) {

@@ -51,6 +51,7 @@
     "frontend/src/pages/live-trial-page.tsx",
     "frontend/src/styles/app.css",
     "frontend/tests/e2e/p7-01-trial-planning-live.spec.ts",
+    "frontend/tests/e2e/gate-evidence-live.spec.ts",
     "frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts",
     "frontend/tests/e2e/p7-08-mobile-field-actions.spec.ts-snapshots/*",
     "frontend/tests/unit/mobile-field-actions.test.tsx",
