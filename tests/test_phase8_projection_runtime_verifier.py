@@ -232,6 +232,48 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
         self.assertEqual(context["part_id"], part_id)
         self.assertEqual(context["tooling_set_id"], tooling_set_id)
 
+    def test_fixture_context_uses_tooling_master_ownership_contract(self) -> None:
+        project_id = "00000000-0000-4000-8000-000000000801"
+        master_id = "00000000-0000-4000-8000-000000000802"
+        part_id = "00000000-0000-4000-8000-000000000803"
+        tooling_set_id = "00000000-0000-4000-8000-000000000804"
+        documents = {
+            ("NPI Engineering Project", project_id): SimpleNamespace(
+                global_id=project_id,
+                tenant_id=self.runtime.TENANT_ID,
+            ),
+            ("NPI Tooling Master", master_id): SimpleNamespace(
+                originating_project_global_id=project_id,
+                tenant_id=self.runtime.TENANT_ID,
+            ),
+            ("NPI Engineering Part", part_id): SimpleNamespace(
+                originating_project_global_id=project_id,
+                tenant_id=self.runtime.TENANT_ID,
+            ),
+            ("NPI Tooling Set", tooling_set_id): SimpleNamespace(
+                project_global_id=project_id,
+                tooling_master_global_id=master_id,
+                tenant_id=self.runtime.TENANT_ID,
+            ),
+        }
+        frappe = SimpleNamespace(
+            get_doc=lambda doctype, name: documents[(doctype, name)]
+        )
+        with (
+            patch.dict(sys.modules, {"frappe": frappe}),
+            patch.object(
+                self.runtime.document_runtime,
+                "_validated_runtime_site",
+            ),
+        ):
+            self.runtime._validate_fixture_context(
+                fixture_run_id=self.runtime.FIXTURE_RUN_ID,
+                project_id=project_id,
+                master_id=master_id,
+                part_id=part_id,
+                tooling_set_id=tooling_set_id,
+            )
+
     def test_shell_projection_mode_is_cumulative_and_restores_route_switch(self) -> None:
         source = (SCRIPTS / "verify-frappe-runtime.sh").read_text(encoding="utf-8")
         self.assertIn('"--projection-only"', source)

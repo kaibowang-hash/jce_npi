@@ -905,7 +905,7 @@ def _validate_fixture_context(
     require(
         str(project.global_id) == project_id
         and str(project.tenant_id) == TENANT_ID
-        and str(master.project_global_id) == project_id
+        and str(master.originating_project_global_id) == project_id
         and str(master.tenant_id) == TENANT_ID
         and str(part.originating_project_global_id) == project_id
         and str(part.tenant_id) == TENANT_ID
