@@ -7711,3 +7711,5 @@ unknown,未知
 "project_replayed","已重放项目"
 "received_after_creation","创建后收到"
 "unbound","未绑定"
+"The Inbox processing state is invalid.","收件箱处理状态无效。"
+"The Inbox processing transition is not allowed.","不允许此收件箱处理状态转换。"

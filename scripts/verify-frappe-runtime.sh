@@ -39,7 +39,13 @@ unset \
   NPI_PROJECT_CONTROLS_RUNTIME_RUN_ID \
   NPI_PROJECT_WORK_RUNTIME_RUN_ID \
   NPI_RUNTIME_ADMINISTRATOR_PASSWORD \
-  NPI_RUNTIME_FIXTURE_PASSWORD
+  NPI_RUNTIME_FIXTURE_PASSWORD \
+  NPI_P8_02_RUNTIME_ENABLED \
+  NPI_P8_02_RUNTIME_ACTOR \
+  NPI_P8_02_RUNTIME_OWNER \
+  NPI_P8_02_RUNTIME_TEMPLATE_ID \
+  NPI_P8_02_RUNTIME_SECRET_OLD \
+  NPI_P8_02_RUNTIME_SECRET_NEW
 
 # shellcheck disable=SC1090
 source "${toolchain_file}"
@@ -887,6 +893,7 @@ readiness_route_disable_config_changed=false
 production_transition_route_disable_config_changed=false
 released_summary_route_disable_config_changed=false
 projection_route_disable_config_changed=false
+inbound_project_runtime_environment_active=false
 
 start_runtime_server() {
   if curl --silent --output /dev/null \
@@ -1395,6 +1402,10 @@ cleanup() {
   if ! stop_runtime_server; then
     exit_status=1
   fi
+  if [[ "${inbound_project_runtime_environment_active}" == true ]]; then
+    clear_inbound_project_runtime_environment
+    inbound_project_runtime_environment_active=false
+  fi
   if [[ "${route_disable_config_changed}" == true ]]; then
     if ! restore_p405_route_switch; then
       echo "Failed to restore the P4-05 route-disable switch to absent." >&2
@@ -1760,6 +1771,30 @@ document_runtime_run_id="$(
 )"
 if [[ ! "${document_runtime_run_id}" =~ ^[a-f0-9]{32}$ ]]; then
   echo "Document runtime namespace generation failed." >&2
+  exit 2
+fi
+
+inbound_project_runtime_actor="npi-inbound-${document_runtime_run_id:0:12}@example.invalid"
+inbound_project_runtime_owner="npi-owner-${document_runtime_run_id:0:12}@example.invalid"
+inbound_project_runtime_template_id="$(
+  "${bench_path}/env/bin/python" -c \
+    'import sys; from uuid import UUID, uuid5; print(uuid5(UUID("be05ea93-4d1a-4ac0-a148-c3e7a8a80202"), sys.argv[1]))' \
+    "${document_runtime_run_id}"
+)"
+inbound_project_runtime_secret_old="$(
+  "${bench_path}/env/bin/python" -c \
+    'import hashlib, sys; print(hashlib.sha256(("p8-old:" + sys.argv[1]).encode()).hexdigest())' \
+    "${document_runtime_run_id}"
+)"
+inbound_project_runtime_secret_new="$(
+  "${bench_path}/env/bin/python" -c \
+    'import hashlib, sys; print(hashlib.sha256(("p8-new:" + sys.argv[1]).encode()).hexdigest())' \
+    "${document_runtime_run_id}"
+)"
+if [[ ! "${inbound_project_runtime_template_id}" =~ ^[a-f0-9-]{36}$ ||
+      ! "${inbound_project_runtime_secret_old}" =~ ^[a-f0-9]{64}$ ||
+      ! "${inbound_project_runtime_secret_new}" =~ ^[a-f0-9]{64}$ ]]; then
+  echo "Inbound Project runtime fixture generation failed." >&2
   exit 2
 fi
 
@@ -2769,6 +2804,58 @@ run_projection_route_probe() {
   )
 }
 
+export_inbound_project_runtime_environment() {
+  export NPI_P8_02_RUNTIME_ENABLED=1
+  export NPI_P8_02_RUNTIME_ACTOR="${inbound_project_runtime_actor}"
+  export NPI_P8_02_RUNTIME_OWNER="${inbound_project_runtime_owner}"
+  export NPI_P8_02_RUNTIME_TEMPLATE_ID="${inbound_project_runtime_template_id}"
+  export NPI_P8_02_RUNTIME_SECRET_OLD="${inbound_project_runtime_secret_old}"
+  export NPI_P8_02_RUNTIME_SECRET_NEW="${inbound_project_runtime_secret_new}"
+}
+
+clear_inbound_project_runtime_environment() {
+  unset \
+    NPI_P8_02_RUNTIME_ENABLED \
+    NPI_P8_02_RUNTIME_ACTOR \
+    NPI_P8_02_RUNTIME_OWNER \
+    NPI_P8_02_RUNTIME_TEMPLATE_ID \
+    NPI_P8_02_RUNTIME_SECRET_OLD \
+    NPI_P8_02_RUNTIME_SECRET_NEW
+}
+
+run_inbound_project_runtime_verifier() {
+  local mode="$1"
+  (
+    unset \
+      FRAPPE_DB_HOST \
+      FRAPPE_DB_PORT \
+      FRAPPE_DB_SOCKET \
+      FRAPPE_DB_TYPE \
+      NPI_ADMINISTRATOR_PASSWORD \
+      NPI_DATABASE_ROOT_PASSWORD
+    export NPI_RUNTIME_ADMINISTRATOR_PASSWORD="${runtime_administrator_password}"
+    export NPI_RUNTIME_FIXTURE_PASSWORD="${runtime_fixture_password}"
+    export NPI_DOCUMENT_RUNTIME_RUN_ID="${document_runtime_run_id}"
+    export_inbound_project_runtime_environment
+    if [[ "${mode}" == "disabled" ]]; then
+      exec python "${repo_root}/scripts/verify_inbound_project_runtime.py" \
+        --base-url "${base_url}" \
+        --disabled-probe
+    fi
+    if [[ "${mode}" == "fresh" ]]; then
+      exec python "${repo_root}/scripts/verify_inbound_project_runtime.py" \
+        --base-url "${base_url}"
+    fi
+    if [[ "${mode}" == "replay-only" ]]; then
+      exec python "${repo_root}/scripts/verify_inbound_project_runtime.py" \
+        --base-url "${base_url}" \
+        --replay-only
+    fi
+    echo "Unknown inbound Project runtime verification mode." >&2
+    exit 2
+  )
+}
+
 verify_tooling_import_runtime_log_redaction() {
   local marker
   for marker in \
@@ -2905,6 +2992,26 @@ verify_projection_runtime_log_redaction() {
 
 report_projection_runtime_failure() {
   echo "P8-01 runtime log output withheld because it may contain controlled ERP projection values or private paths." >&2
+}
+
+verify_inbound_project_runtime_log_redaction() {
+  local marker
+  for marker in \
+    "${inbound_project_runtime_secret_old}" \
+    "${inbound_project_runtime_secret_new}" \
+    "Synthetic inbound Project" \
+    "Synthetic conflict" \
+    "QTN-P802-" \
+    "/private/files/"; do
+    if grep --fixed-strings --quiet -- "${marker}" "${runtime_log}"; then
+      echo "P8-02 raw inbound value, secret or private path leaked into the runtime log." >&2
+      return 1
+    fi
+  done
+}
+
+report_inbound_project_runtime_failure() {
+  echo "P8-02 runtime log output withheld because it may contain signed inbound values or private paths." >&2
 }
 
 if [[ "${verification_mode}" == "all" ]]; then
@@ -3671,6 +3778,41 @@ if [[ "${verification_mode}" == "all" ||
   fi
   if ! verify_projection_runtime_log_redaction; then
     report_projection_runtime_failure
+    exit 1
+  fi
+
+  # P8-02 remains disabled with no explicit disposable process environment.
+  if ! run_inbound_project_runtime_verifier disabled; then
+    echo "Local Frappe inbound Project default-disabled probe failed." >&2
+    report_inbound_project_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  export_inbound_project_runtime_environment
+  inbound_project_runtime_environment_active=true
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_inbound_project_runtime_failure
+    exit 1
+  fi
+  if ! run_inbound_project_runtime_verifier fresh; then
+    echo "Local Frappe inbound Project runtime verification failed." >&2
+    report_inbound_project_runtime_failure
+    exit 1
+  fi
+  stop_runtime_server
+  start_runtime_server
+  if ! wait_for_runtime_server; then
+    report_inbound_project_runtime_failure
+    exit 1
+  fi
+  if ! run_inbound_project_runtime_verifier replay-only; then
+    echo "Local Frappe inbound Project cross-process replay verification failed." >&2
+    report_inbound_project_runtime_failure
+    exit 1
+  fi
+  if ! verify_inbound_project_runtime_log_redaction; then
+    report_inbound_project_runtime_failure
     exit 1
   fi
 fi

@@ -255,6 +255,8 @@ jobs:
           retention-days: 30
 
   document_runtime:
+    # Preserved P6-08 job name: P5 controlled document runtime and P6 Tooling through export
+    # Preserved P7-07 job label: P7-07 Released Trial Summary
     # Preserved predecessor scope: P7-03 Trial quality
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-03 Trial quality
     # scope=p5-01-through-p7-03
@@ -271,7 +273,7 @@ jobs:
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-06 Production transition
     # scope=p5-01-through-p7-06
     # predecessor_scope=p5-01-through-p7-05
-    name: P5 controlled document runtime and P6 Tooling through export plus P7-07 Released Trial Summary and P8-01 ERP projections
+    name: P5 controlled runtime through P7-07 plus P8-01 ERP projections and P8-02 inbound Project
     needs: controlled_preflight
     if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
@@ -295,11 +297,11 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 through P7-07 runtime plus P8-01 ERP projections
+      - name: Verify cumulative P5 through P7-07 runtime plus P8-01 and P8-02 integration
         run: bash scripts/verify-frappe-runtime.sh --projection-only
       - name: Record controlled runtime result
         run: |
-          mkdir -p "${RUNNER_TEMP}/p8-projection-runtime"
+          mkdir -p "${RUNNER_TEMP}/p8-integration-runtime"
           {
             printf 'result=PASS\n'
             printf 'head_sha=%s\n' "${GITHUB_SHA}"
@@ -308,8 +310,8 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p8-01\n'
-            printf 'predecessor_scope=p5-01-through-p7-07\n'
+            printf 'scope=p5-01-through-p8-02\n'
+            printf 'predecessor_scope=p5-01-through-p8-01\n'
             printf 'p7_scope=p5-01-through-p7-07\n'
             printf 'p7_predecessor_scope=p5-01-through-p7-06\n'
             printf 'p6_scope=p5-01-through-p6-08\n'
@@ -321,11 +323,11 @@ jobs:
             printf 'p5_predecessor_command=bash scripts/verify-frappe-runtime.sh --document-only\n'
             printf 'predecessor_artifact=p7-trial-runtime-${{ github.run_id }}\n'
             printf 'p6_predecessor_artifact=p6-tooling-runtime-${{ github.run_id }}\n'
-          } >"${RUNNER_TEMP}/p8-projection-runtime/result.txt"
+          } >"${RUNNER_TEMP}/p8-integration-runtime/result.txt"
       - uses: actions/upload-artifact@v6
         with:
-          name: p8-projection-runtime-${{ github.run_id }}
-          path: ${{ runner.temp }}/p8-projection-runtime/result.txt
+          name: p8-integration-runtime-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-integration-runtime/result.txt
           if-no-files-found: error
           retention-days: 30
       - name: Clean ephemeral runtime resources

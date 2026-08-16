@@ -86,6 +86,11 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
         self.assertGreaterEqual(inbox.count("require_inbox_write()"), 2)
         self.assertIn("deny_legacy_inbox_update()", inbox)
         self.assertIn("_IMMUTABLE_V1_FIELDS", inbox)
+        self.assertIn("_PROCESSING_FIELDS", inbox)
+        self.assertIn('previous_state == state == "processing"', inbox)
+        self.assertIn('previous_state == "processing"', inbox)
+        self.assertIn("attempt_count != previous_attempt", inbox)
+        self.assertIn("str(document.claim_token)", inbox)
         self.assertIn("parse_project_source_event", inbox)
         self.assertIn("SourceStreamIdentity(", inbox)
         self.assertIn("deny_inbound_project_delete()", inbox)
@@ -157,7 +162,7 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_two_activates_only_fixed_ingress_without_worker_or_business_effects(self) -> None:
+    def test_checkpoint_three_activates_only_fixed_ingress_and_bounded_worker(self) -> None:
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in INBOUND_ROOT.glob("*.py")
@@ -168,8 +173,8 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
-            "scheduler_events",
-            "projectinstantiationservice",
+            "dead_letter",
+            "manual_replay",
         ):
             self.assertNotIn(forbidden, combined)
         bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
@@ -184,7 +189,25 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
         self.assertIn("frappe.db.commit()", api)
         self.assertIn("_enqueue_after_commit", api)
         self.assertIn("FrappeInboundProjectRepository", repository)
-        self.assertFalse((INBOUND_ROOT / "worker.py").exists())
+        worker = (INBOUND_ROOT / "worker.py").read_text(encoding="utf-8")
+        worker_repository = (INBOUND_ROOT / "worker_repository.py").read_text(
+            encoding="utf-8"
+        )
+        hooks = (
+            ROOT / "apps/npi_integration/npi_integration/hooks.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("recover_inbound_project_receipts", worker)
+        self.assertIn("RECOVERY_BATCH_LIMIT = 100", worker_repository)
+        self.assertIn("ProjectInstantiationService", worker_repository)
+        self.assertIn("scheduler_events", hooks)
+        self.assertIn("recover_inbound_project_receipts", hooks)
+        self.assertIn("npi_inbound_project_profile_resolver", hooks)
+        self.assertIn("npi_inbound_project_secret_resolver", hooks)
+        runtime_fixture = (INBOUND_ROOT / "runtime_fixture.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("npi_runtime_disposable_marker", runtime_fixture)
+        self.assertIn("NPI_P8_02_RUNTIME_ENABLED", runtime_fixture)
         for forbidden in (
             "NPI Engineering Project",
             "NPI Gate Shell",
@@ -192,10 +215,8 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             "ProjectInstantiationService",
         ):
             self.assertNotIn(forbidden, repository)
-        self.assertNotIn(
-            "inbound_project",
-            (ROOT / "apps/npi_integration/npi_integration/hooks.py").read_text(encoding="utf-8"),
-        )
+        self.assertNotIn("NPI Domain Work Item", worker_repository)
+        self.assertNotIn("NPI Outbox Message", worker_repository)
 
     def _assert_support_only_permissions(self, metadata: dict[str, object]) -> None:
         self.assertEqual(metadata.get("allow_rename"), 0)

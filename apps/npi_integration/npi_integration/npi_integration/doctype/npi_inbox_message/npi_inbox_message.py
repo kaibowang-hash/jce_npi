@@ -67,6 +67,28 @@ _IMMUTABLE_V1_FIELDS = (
     "receipt_snapshot",
     "receipt_hash",
 )
+_PROCESSING_FIELDS = (
+    "state",
+    "disposition",
+    "claim_token",
+    "claimed_at",
+    "lease_expires_at",
+    "attempt_count",
+    "last_error_code",
+    "last_error_at",
+    "project_global_id",
+    "project_result_hash",
+)
+_TERMINAL_STATES = frozenset(
+    {
+        "succeeded",
+        "failed_retryable",
+        "failed_final",
+        "quarantined",
+        "superseded",
+        "received_after_creation",
+    }
+)
 
 
 class NPIInboxMessage(Document):
@@ -261,6 +283,7 @@ class NPIInboxMessage(Document):
             )
         self.signed_at = frappe_utc_datetime_text(signed_at, _("Signed At"))
         self.received_at = frappe_utc_datetime_text(received_at, _("Received At"))
+        _validate_processing_state(self, previous)
 
     def on_trash(self) -> None:
         deny_inbound_project_delete()
@@ -271,3 +294,166 @@ def _is_v1(document: object) -> bool:
         return int(getattr(document, "schema_version", 0) or 0) == 1
     except (TypeError, ValueError):
         return False
+
+
+def _validate_processing_state(document: NPIInboxMessage, previous: object | None) -> None:
+    state = str(document.state or "")
+    disposition = str(document.disposition or "")
+    try:
+        attempt_count = int(document.attempt_count or 0)
+    except (TypeError, ValueError):
+        _invalid_processing_state()
+        return
+    claim_values = (
+        document.claim_token,
+        document.claimed_at,
+        document.lease_expires_at,
+    )
+    result_values = (document.project_global_id, document.project_result_hash)
+    error_values = (document.last_error_code, document.last_error_at)
+    has_claim = all(claim_values)
+    has_result = all(result_values)
+    has_error = all(error_values)
+    if any(claim_values) != has_claim or any(result_values) != has_result or any(
+        error_values
+    ) != has_error:
+        _invalid_processing_state()
+
+    if has_claim:
+        claimed_at = utc_datetime_text(document.claimed_at, _("Claimed At"))
+        lease_expires_at = utc_datetime_text(
+            document.lease_expires_at, _("Lease Expires At")
+        )
+        if lease_expires_at <= claimed_at:
+            _invalid_processing_state()
+        document.claimed_at = frappe_utc_datetime_text(claimed_at, _("Claimed At"))
+        document.lease_expires_at = frappe_utc_datetime_text(
+            lease_expires_at, _("Lease Expires At")
+        )
+    if has_result:
+        document.project_result_hash = lowercase_sha256(
+            document.project_result_hash, _("Project Result Hash")
+        )
+    if has_error:
+        document.last_error_code = required_text(
+            document.last_error_code, _("Last Error Code"), 128
+        )
+        last_error_at = utc_datetime_text(
+            document.last_error_at, _("Last Error At")
+        )
+        document.last_error_at = frappe_utc_datetime_text(
+            last_error_at, _("Last Error At")
+        )
+
+    valid = False
+    if state == "pending":
+        valid = disposition == "pending" and attempt_count == 0 and not any(
+            (has_claim, has_result, has_error)
+        )
+    elif state == "processing":
+        valid = (
+            disposition == "pending"
+            and attempt_count >= 1
+            and has_claim
+            and not has_result
+            and not has_error
+        )
+    elif state == "succeeded":
+        valid = (
+            disposition in {"project_created", "project_replayed"}
+            and attempt_count >= 1
+            and has_claim
+            and has_result
+            and not has_error
+        )
+    elif state in {"failed_retryable", "failed_final"}:
+        valid = (
+            disposition == state
+            and attempt_count >= 1
+            and has_claim
+            and has_error
+            and not has_result
+        )
+    elif state in {"superseded", "quarantined"}:
+        valid = (
+            disposition == ("superseded" if state == "superseded" else "conflicted")
+            and not has_result
+            and not has_error
+            and (
+                (attempt_count == 0 and not has_claim)
+                or (attempt_count >= 1 and has_claim)
+            )
+        )
+    elif state == "received_after_creation":
+        valid = (
+            disposition == "received_after_creation"
+            and attempt_count == 0
+            and not any((has_claim, has_result, has_error))
+        )
+    if not valid:
+        _invalid_processing_state()
+
+    if previous is None:
+        return
+    previous_state = str(getattr(previous, "state", "") or "")
+    if previous_state in _TERMINAL_STATES:
+        assert_immutable_fields(document, previous, _PROCESSING_FIELDS)
+        return
+    allowed = {
+        "pending": {"processing"},
+        "processing": {
+            "processing",
+            "succeeded",
+            "failed_retryable",
+            "failed_final",
+            "quarantined",
+            "superseded",
+        },
+    }
+    if state not in allowed.get(previous_state, set()):
+        frappe.throw(
+            _("The Inbox processing transition is not allowed."),
+            frappe.ValidationError,
+        )
+    previous_attempt = int(getattr(previous, "attempt_count", 0) or 0)
+    if previous_state == "pending" and attempt_count != previous_attempt + 1:
+        frappe.throw(
+            _("The Inbox processing transition is not allowed."),
+            frappe.ValidationError,
+        )
+    if previous_state == state == "processing":
+        previous_expiry = utc_datetime_text(
+            getattr(previous, "lease_expires_at", None), _("Lease Expires At")
+        )
+        if (
+            attempt_count != previous_attempt + 1
+            or str(document.claim_token) == str(getattr(previous, "claim_token", ""))
+            or utc_datetime_text(document.claimed_at, _("Claimed At"))
+            < previous_expiry
+        ):
+            frappe.throw(
+                _("The Inbox processing transition is not allowed."),
+                frappe.ValidationError,
+            )
+    elif previous_state == "processing":
+        if (
+            attempt_count != previous_attempt
+            or str(document.claim_token) != str(getattr(previous, "claim_token", ""))
+            or utc_datetime_text(document.claimed_at, _("Claimed At"))
+            != utc_datetime_text(getattr(previous, "claimed_at", None), _("Claimed At"))
+            or utc_datetime_text(document.lease_expires_at, _("Lease Expires At"))
+            != utc_datetime_text(
+                getattr(previous, "lease_expires_at", None), _("Lease Expires At")
+            )
+        ):
+            frappe.throw(
+                _("The Inbox processing transition is not allowed."),
+                frappe.ValidationError,
+            )
+
+
+def _invalid_processing_state() -> None:
+    frappe.throw(
+        _("The Inbox processing state is invalid."),
+        frappe.ValidationError,
+    )

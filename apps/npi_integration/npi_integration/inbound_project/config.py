@@ -77,6 +77,38 @@ class ProjectIntakePolicy:
     owner_user_id: str
     business_code_mode: BusinessCodeMode = BusinessCodeMode.SOURCE_DOCUMENT_ID
 
+    @classmethod
+    def from_snapshot(cls, value: object) -> ProjectIntakePolicy:
+        if not isinstance(value, dict) or set(value) != {
+            "schema_version",
+            "source_object_type",
+            "template_global_id",
+            "template_version",
+            "project_type",
+            "owner_user_id",
+            "business_code_mode",
+        }:
+            raise ProjectSourceContractError("Policy snapshot is invalid.")
+        if value["schema_version"] != 1:
+            raise ProjectSourceContractError("Policy snapshot version is unsupported.")
+        try:
+            source_object_type = ProjectSourceObjectType(value["source_object_type"])
+            business_code_mode = BusinessCodeMode(value["business_code_mode"])
+        except (TypeError, ValueError) as error:
+            raise ProjectSourceContractError("Policy snapshot is invalid.") from error
+        return cls(
+            source_object_type=source_object_type,
+            template_global_id=_uuid(
+                value["template_global_id"], "template_global_id"
+            ),
+            template_version=_positive(
+                value["template_version"], "template_version"
+            ),
+            project_type=value["project_type"],
+            owner_user_id=value["owner_user_id"],
+            business_code_mode=business_code_mode,
+        )
+
     def __post_init__(self) -> None:
         if not isinstance(self.source_object_type, ProjectSourceObjectType):
             raise ProjectSourceContractError("Policy source object type is unsupported.")

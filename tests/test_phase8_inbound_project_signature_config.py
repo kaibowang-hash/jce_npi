@@ -111,6 +111,21 @@ def profile(**changes: object) -> InboundProjectProfile:
 
 
 class Phase8InboundProjectSignatureConfigTest(unittest.TestCase):
+    def test_policy_snapshot_round_trips_only_the_frozen_closed_shape(self) -> None:
+        original = policy(ProjectSourceObjectType.QUOTATION)
+        restored = ProjectIntakePolicy.from_snapshot(original.snapshot())
+        self.assertEqual(restored, original)
+        self.assertEqual(restored.snapshot_hash, original.snapshot_hash)
+        for invalid in (
+            {**original.snapshot(), "unexpected": True},
+            {key: value for key, value in original.snapshot().items() if key != "owner_user_id"},
+            {**original.snapshot(), "schema_version": 2},
+            {**original.snapshot(), "business_code_mode": "caller_supplied"},
+        ):
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ProjectSourceContractError):
+                    ProjectIntakePolicy.from_snapshot(invalid)
+
     def test_exact_raw_signature_binds_method_path_key_timestamp_request_and_body(self) -> None:
         headers = signed_headers()
         verify_request_signature(

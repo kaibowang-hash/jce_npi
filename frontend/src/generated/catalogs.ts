@@ -1,5 +1,5 @@
 /* Generated from npi_core Frappe CSV catalogs. Do not edit. */
-export const catalogVersion = 'fb0aa2164631a575';
+export const catalogVersion = '9acce9dd3e1e0c99';
 export const catalogs = {
   "zh": {
     "{{changed}} changed, {{same}} unchanged": "{{changed}} 项已变化，{{same}} 项未变化",
@@ -6406,6 +6406,8 @@ export const catalogs = {
     "The in-memory prototype command captured a reason; no audit record was persisted.": "内存中的原型命令已记录原因，但未持久保存审计记录。",
     "The inbound Project service is unavailable.": "入站项目服务不可用。",
     "The Inbox payload does not match the signed event.": "收件箱载荷与已签名事件不匹配。",
+    "The Inbox processing state is invalid.": "收件箱处理状态无效。",
+    "The Inbox processing transition is not allowed.": "不允许此收件箱处理状态转换。",
     "The Inbox receipt fields do not match the signed event.": "收件箱回执字段与已签名事件不匹配。",
     "The Inbox receipt hash does not match its snapshot.": "收件箱回执哈希与其快照不匹配。",
     "The Inbox receipt snapshot does not match its immutable fields.": "收件箱回执快照与其不可变字段不匹配。",
@@ -14121,6 +14123,8 @@ export const catalogs = {
     "The in-memory prototype command captured a reason; no audit record was persisted.": "記憶體中的原型命令已記錄原因，但未持久儲存稽核記錄。",
     "The inbound Project service is unavailable.": "入站專案服務無法使用。",
     "The Inbox payload does not match the signed event.": "收件匣承載資料與已簽章事件不相符。",
+    "The Inbox processing state is invalid.": "收件匣處理狀態無效。",
+    "The Inbox processing transition is not allowed.": "不允許此收件匣處理狀態轉換。",
     "The Inbox receipt fields do not match the signed event.": "收件匣回執欄位與已簽章事件不相符。",
     "The Inbox receipt hash does not match its snapshot.": "收件匣回執雜湊與其快照不相符。",
     "The Inbox receipt snapshot does not match its immutable fields.": "收件匣回執快照與其不可變欄位不相符。",

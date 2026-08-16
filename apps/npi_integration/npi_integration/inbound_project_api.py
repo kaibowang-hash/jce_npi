@@ -274,6 +274,8 @@ def _enqueue_after_commit(receipt_id: UUID) -> None:
         "npi_integration.inbound_project.worker.process_inbox_message",
         queue="short",
         enqueue_after_commit=False,
+        deduplicate=True,
+        job_id=f"inbound-project-{receipt_id}",
         receipt_id=str(receipt_id),
     )
 
