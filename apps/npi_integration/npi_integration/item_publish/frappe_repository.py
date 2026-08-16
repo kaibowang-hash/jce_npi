@@ -983,7 +983,7 @@ class FrappeItemPublishRepository(FrappePublishRequestRepository):
             or str(row.released_evidence_hash)
             != canonical_hash(evidence.canonical_mapping())
             or bool(row.dispatch_allowed) != value.dispatch_allowed
-            or int(row.optimistic_version) != 1
+            or int(row.optimistic_version) < 1
         ):
             raise RuntimeError("Persisted Item publish request scope is invalid.")
         return value

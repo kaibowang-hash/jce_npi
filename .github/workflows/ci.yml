@@ -234,7 +234,7 @@ jobs:
       - name: Verify current task and runtime contract before Site setup
         run: |
           python scripts/verify_current_task.py
-          python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier tests.test_phase7_readiness_runtime_verifier tests.test_phase7_production_transition_runtime_verifier tests.test_phase7_released_trial_summary_runtime_verifier tests.test_phase8_projection_runtime_verifier -v
+          python -m unittest tests.test_phase7_trial_runtime_verifier tests.test_phase7_trial_quality_runtime_verifier tests.test_phase7_trial_review_runtime_verifier tests.test_phase7_readiness_runtime_verifier tests.test_phase7_production_transition_runtime_verifier tests.test_phase7_released_trial_summary_runtime_verifier tests.test_phase8_projection_runtime_verifier tests.test_phase8_item_publish_runtime_verifier -v
           bash -n scripts/verify-frappe-runtime.sh
       - name: Verify exact prior pull-request Gate for Level 2 reuse
         if: inputs.gate_mode == 'level_2_controlled'
@@ -260,6 +260,8 @@ jobs:
     # Preserved P8-01 scope: scope=p5-01-through-p8-01
     # Preserved P8-01 predecessor_scope=p5-01-through-p7-07
     # Preserved P8-01 artifact: p8-projection-runtime-${{ github.run_id }}
+    # Preserved P8-02 scope: scope=p5-01-through-p8-02
+    # Preserved P8-02 predecessor_scope=p5-01-through-p8-01
     # Preserved predecessor scope: P7-03 Trial quality
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-03 Trial quality
     # scope=p5-01-through-p7-03
@@ -276,7 +278,7 @@ jobs:
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-06 Production transition
     # scope=p5-01-through-p7-06
     # predecessor_scope=p5-01-through-p7-05
-    name: P5 controlled runtime through P7-07 plus P8-01 ERP projections and P8-02 inbound Project
+    name: P5 controlled runtime through P8-03 Item command and Outbox worker
     needs: controlled_preflight
     if: github.event_name == 'workflow_dispatch' && !cancelled() && (inputs.gate_mode == 'level_3' || inputs.gate_mode == 'level_2_controlled') && needs.controlled_preflight.result == 'success'
     runs-on: ubuntu-latest
@@ -300,7 +302,7 @@ jobs:
         run: bash scripts/init-frappe-bench.sh
       - name: Initialize fixed disposable NPI Site
         run: bash scripts/init-npi-site.sh
-      - name: Verify cumulative P5 through P7-07 runtime plus P8-01 and P8-02 integration
+      - name: Verify cumulative P5 through P8-03 integration runtime
         run: bash scripts/verify-frappe-runtime.sh --projection-only
       - name: Record controlled runtime result
         run: |
@@ -313,8 +315,8 @@ jobs:
             printf 'site=npi.localhost\n'
             printf 'database=npi_one_runtime\n'
             printf 'runtime_marker=npi-one-local-runtime-disposable-v1\n'
-            printf 'scope=p5-01-through-p8-02\n'
-            printf 'predecessor_scope=p5-01-through-p8-01\n'
+            printf 'scope=p5-01-through-p8-03\n'
+            printf 'predecessor_scope=p5-01-through-p8-02\n'
             printf 'p7_scope=p5-01-through-p7-07\n'
             printf 'p7_predecessor_scope=p5-01-through-p7-06\n'
             printf 'p6_scope=p5-01-through-p6-08\n'

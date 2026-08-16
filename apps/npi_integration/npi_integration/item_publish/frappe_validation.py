@@ -96,6 +96,7 @@ def item_request_transaction_write() -> Iterator[None]:
 def item_claim_write() -> Iterator[None]:
     with (
         _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+        _flag_scope(ITEM_REQUEST_WRITE_FLAG),
         _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
         _flag_scope(AUDIT_APPEND_FLAG),
     ):

@@ -16,7 +16,8 @@ npi_erp_projection_reader_factory = (
 # requeues pending receipts or processing receipts whose claim lease expired.
 scheduler_events = {
     "all": [
-        "npi_integration.inbound_project.worker.recover_inbound_project_receipts"
+        "npi_integration.inbound_project.worker.recover_inbound_project_receipts",
+        "npi_integration.item_publish.worker.recover_item_publish_outbox_messages",
     ]
 }
 
@@ -28,4 +29,14 @@ npi_inbound_project_profile_resolver = (
 )
 npi_inbound_project_secret_resolver = (
     "npi_integration.inbound_project.runtime_fixture.resolve_secret"
+)
+
+# P8-03 remains inert outside the explicit disposable runtime marker. The
+# registry contains only the network-free synthetic operation adapter; no
+# Sandbox or production endpoint, credential, method, or field mapping exists.
+npi_item_publish_profile_resolver = (
+    "npi_integration.item_publish.runtime_fixture.resolve_profile"
+)
+npi_item_publish_adapter_registry = (
+    "npi_integration.item_publish.runtime_fixture.resolve_adapter_registry"
 )

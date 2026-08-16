@@ -220,7 +220,7 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_two_activates_only_repository_and_fixed_command_boundary(self) -> None:
+    def test_checkpoint_three_activates_only_closed_worker_and_synthetic_runtime(self) -> None:
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in ITEM_ROOT.glob("*.py")
@@ -231,7 +231,6 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
-            "scheduler_events",
             "adapter.call",
         ):
             self.assertNotIn(forbidden, combined)
@@ -261,11 +260,38 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             '_PROFILE_RESOLVER_HOOK = "npi_item_publish_profile_resolver"',
         ):
             self.assertIn(marker, api)
-        self.assertFalse((ITEM_ROOT / "worker.py").exists())
+        worker = (ITEM_ROOT / "worker.py").read_text(encoding="utf-8")
+        worker_repository = (ITEM_ROOT / "worker_repository.py").read_text(
+            encoding="utf-8"
+        )
+        adapters = (ITEM_ROOT / "adapters.py").read_text(encoding="utf-8")
+        runtime_fixture = (ITEM_ROOT / "runtime_fixture.py").read_text(
+            encoding="utf-8"
+        )
+        for marker in (
+            "recover_item_publish_outbox_messages",
+            "mark_adapter_boundary",
+            "uncertain_item_adapter_result",
+            "ITEM_PUBLISH_RESULT_COMMIT_FAILED",
+        ):
+            self.assertIn(marker, worker)
+        for marker in (
+            "class FrappeItemPublishWorkerRepository",
+            "recoverable_outbox_event_ids",
+            "item_claim_write()",
+            "item_result_transaction_write()",
+            "classify_mapping_observation(",
+        ):
+            self.assertIn(marker, worker_repository)
+        self.assertIn("class ItemAdapterRegistry", adapters)
+        self.assertIn("npi-one-item-publish-disposable-v1", runtime_fixture)
+        self.assertNotIn("https://", runtime_fixture)
         hooks = (
             ROOT / "apps/npi_integration/npi_integration/hooks.py"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("npi_item_publish_profile_resolver", hooks)
+        self.assertIn("recover_item_publish_outbox_messages", hooks)
+        self.assertIn("npi_item_publish_profile_resolver", hooks)
+        self.assertIn("npi_item_publish_adapter_registry", hooks)
 
 
 if __name__ == "__main__":
