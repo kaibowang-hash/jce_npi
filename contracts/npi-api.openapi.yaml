@@ -23,7 +23,59 @@ tags:
   - { name: Readiness }
   - { name: ProductionTransition }
   - { name: Execution }
+  - { name: Integration }
 paths:
+  /integration/erpnext/project-source-events:
+    post:
+      tags: [Integration]
+      operationId: acceptErpnextProjectSourceEvent
+      security: []
+      description: >-
+        Accepts one closed ERPNext Quotation or Sales Order submitted event
+        after HMAC-SHA256 authentication over the exact raw request body. The
+        server resolves tenant and intake policy; a 202 response confirms only
+        durable Inbox acceptance or exact replay and never Project creation.
+      parameters:
+        - name: X-Request-ID
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-NPI-Key-ID
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128, pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]*$" }
+        - name: X-NPI-Timestamp
+          in: header
+          required: true
+          schema: { type: string, pattern: "^(?:0|[1-9][0-9]{0,11})$" }
+        - name: X-NPI-Signature
+          in: header
+          required: true
+          schema: { type: string, pattern: "^v1=[a-f0-9]{64}$" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InboundProjectSourceEvent" }
+      responses:
+        "202":
+          description: Authenticated event durably accepted or exactly replayed
+          headers:
+            Cache-Control: { required: true, schema: { type: string, const: "no-store" } }
+            X-Request-ID: { required: true, schema: { type: string, format: uuid } }
+            X-Trace-ID: { required: true, schema: { type: string, minLength: 8, maxLength: 128 } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InboundProjectReceiptAccepted" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "409": { $ref: "#/components/responses/ProjectError" }
+        "413": { $ref: "#/components/responses/ProjectError" }
+        "415": { $ref: "#/components/responses/ProjectError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /session/bootstrap:
     get:
       tags: [Session]
@@ -7852,6 +7904,65 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/DocumentFileCapabilityResult" }
   schemas:
+    InboundProjectSourcePayload:
+      type: object
+      additionalProperties: false
+      required: [schema_version, submission_state, title, target_sop, source_modified_at]
+      properties:
+        schema_version: { type: integer, const: 1 }
+        submission_state: { type: string, const: submitted }
+        title: { type: string, minLength: 1, maxLength: 140 }
+        target_sop: { type: string, format: date }
+        source_modified_at: { type: string, format: date-time, pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" }
+    InboundProjectSourceEvent:
+      type: object
+      additionalProperties: false
+      required: [event_id, event_type, event_version, occurred_at, source_system, target_system, global_id, object_type, source_object_id, object_version, correlation_id, trace_id, actor, payload_hash, payload, sensitivity]
+      properties:
+        event_id: { type: string, format: uuid }
+        event_type: { type: string, enum: [erpnext.quotation.submitted, erpnext.sales_order.submitted] }
+        event_version: { type: integer, const: 1 }
+        occurred_at: { type: string, format: date-time, pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" }
+        source_system: { type: string, const: ERPNEXT }
+        target_system: { type: string, const: NPI_ONE }
+        global_id: { type: string, format: uuid }
+        object_type: { type: string, enum: [Quotation, Sales Order] }
+        source_object_id: { type: string, minLength: 1, maxLength: 255 }
+        object_version: { type: integer, minimum: 1, maximum: 2147483647 }
+        correlation_id: { type: string, format: uuid }
+        trace_id: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        actor:
+          type: object
+          additionalProperties: false
+          required: [type, id]
+          properties:
+            type: { type: string, const: service }
+            id: { type: string, minLength: 1, maxLength: 254 }
+        payload_hash: { type: string, pattern: "^[a-f0-9]{64}$" }
+        payload: { $ref: "#/components/schemas/InboundProjectSourcePayload" }
+        sensitivity: { type: string, const: confidential }
+      allOf:
+        - if:
+            properties: { event_type: { const: erpnext.quotation.submitted } }
+            required: [event_type]
+          then:
+            properties: { object_type: { const: Quotation } }
+        - if:
+            properties: { event_type: { const: erpnext.sales_order.submitted } }
+            required: [event_type]
+          then:
+            properties: { object_type: { const: Sales Order } }
+    InboundProjectReceiptAccepted:
+      type: object
+      additionalProperties: false
+      required: [receiptId, eventId, state, exactDuplicate, requestId, traceId]
+      properties:
+        receiptId: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        state: { type: string, enum: [pending, processing, succeeded, failed_retryable, failed_final, quarantined, superseded, received_after_creation] }
+        exactDuplicate: { type: boolean }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
     ERPProjectionKind:
       type: string
       enum: [customer_master, supplier_master, formal_item_master, tooling_procurement_cost, project_cost, formal_quality_status, tool_asset_status]

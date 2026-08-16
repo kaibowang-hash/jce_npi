@@ -48,6 +48,7 @@ objects:
       control_policy_binding: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NONE, conflict: EXACT_VERSION_REFERENCE}
       current_health_summary: {owner: NPI_ONE_RULE_ENGINE, editable_in: [NPI_ONE_PROJECT_CONTROL_COMMAND], direction: NPI_TO_ERPNEXT_SUMMARY, conflict: VERSION_CONFLICT}
       sales_order_id: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: OWNER_WINS}
+      erp_project_source_binding_and_initial_draft_seed: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: CREATE_ONCE_NO_AUTOMATIC_REWRITE}
 
   ProjectTeam:
     owner_system: NPI_ONE
@@ -160,6 +161,40 @@ objects:
       confirmed_current_and_latest_refresh_observation_pointers: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: REFERENCE_ONLY, conflict: EXACT_SOURCE_ORDER}
       source_version_modified_time_payload_hash_and_freshness_policy_ref: {owner: NPI_ONE_ERP_PROJECTION_SERVICE, editable_in: [NPI_ONE_ERP_PROJECTION_SERVICE], direction: DERIVED_READ_ONLY, conflict: SOURCE_OBSERVATION_WINS}
       erp_business_fields: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: NEVER_COPIED_AS_EDITABLE_TRUTH}
+
+  ERPProjectSourceEvent:
+    owner_system: ERPNEXT
+    npi_view: authenticated_append_only_receipt
+    fields:
+      event_source_identity_version_and_submitted_payload: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: EXACT_EVENT_AND_SOURCE_VERSION_HASH}
+      service_actor_trace_correlation_and_occurrence: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_SIGNED_ENVELOPE}
+      tenant_profile_policy_and_project_mapping: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: NONE, conflict: SERVER_RESOLVED_FAIL_CLOSED}
+      raw_hmac_secret_signature_header_cookie_and_authorization: {owner: NEVER_PERSIST, editable_in: [], direction: NONE, conflict: REJECT_AND_REDACT}
+
+  InboundProjectReceipt:
+    owner_system: NPI_ONE_INBOUND_PROJECT_SERVICE
+    erp_view: none
+    fields:
+      exact_raw_body_event_policy_and_authentication_evidence: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: APPEND_ONLY_HASHED_RECEIPT}
+      processing_claim_disposition_error_and_project_result: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [NPI_ONE_INBOUND_PROJECT_SERVICE], direction: NONE, conflict: LEASED_STATE_TRANSITION}
+      legacy_inbox_rows: {owner: LEGACY_INTEGRATION_HISTORY, editable_in: [], direction: NONE, conflict: READ_ONLY_NEVER_PROMOTE}
+
+  ProjectSourceBinding:
+    owner_system: NPI_ONE_INBOUND_PROJECT_SERVICE
+    erp_view: source_identity_mapping
+    fields:
+      tenant_profile_source_identity_and_key_hash: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_IDENTITY}
+      highest_received_version_payload_and_inbox: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [NPI_ONE_INBOUND_PROJECT_SERVICE], direction: DERIVED_READ_ONLY, conflict: LOCKED_SOURCE_ORDER}
+      bound_project_version_payload_and_policy: {owner: NPI_ONE_INBOUND_PROJECT_SERVICE, editable_in: [], direction: REFERENCE_ONLY, conflict: BIND_ONCE}
+
+  InboundProjectProfileAndPolicy:
+    owner_system: NPI_ONE_ADMIN
+    erp_view: none
+    fields:
+      tenant_service_actor_event_allowlist_and_nonproduction_attestation: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: VERSIONED_FAIL_CLOSED_CONFIGURATION}
+      project_template_type_owner_and_business_code_mode: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: IMMUTABLE_POLICY_SNAPSHOT_PER_RECEIPT}
+      signing_key_id_validity_and_opaque_secret_reference: {owner: NPI_ONE_ADMIN, editable_in: [NPI_ONE_ADMIN], direction: NONE, conflict: ROTATE_BY_NEW_KEY_DESCRIPTOR}
+      raw_hmac_secret: {owner: EXTERNAL_SECRET_RESOLVER, editable_in: [], direction: NONE, conflict: NEVER_PERSIST_OR_EXPOSE}
 
   GateTemplate:
     owner_system: NPI_ONE

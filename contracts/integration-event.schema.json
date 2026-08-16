@@ -21,6 +21,66 @@
       "if": {
         "properties": {
           "event_type": {
+            "anyOf": [
+              {"const": "erpnext.quotation.submitted"},
+              {"const": "erpnext.sales_order.submitted"}
+            ]
+          }
+        },
+        "required": ["event_type"]
+      },
+      "then": {
+        "properties": {
+          "event_version": {"const": 1},
+          "occurred_at": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+          "source_system": {"const": "ERPNEXT"},
+          "target_system": {"const": "NPI_ONE"},
+          "source_object_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "object_version": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+          "correlation_id": {"type": "string", "format": "uuid"},
+          "causation_id": false,
+          "idempotency_key": false,
+          "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sensitivity": {"const": "confidential"},
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"const": "service"},
+              "id": {"type": "string", "minLength": 1, "maxLength": 254}
+            }
+          },
+          "payload": {"$ref": "#/$defs/erp_project_source_submitted_v1"}
+        },
+        "required": [
+          "target_system",
+          "source_object_id",
+          "correlation_id",
+          "actor",
+          "payload_hash",
+          "sensitivity"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "erpnext.quotation.submitted"}},
+        "required": ["event_type"]
+      },
+      "then": {"properties": {"object_type": {"const": "Quotation"}}}
+    },
+    {
+      "if": {
+        "properties": {"event_type": {"const": "erpnext.sales_order.submitted"}},
+        "required": ["event_type"]
+      },
+      "then": {"properties": {"object_type": {"const": "Sales Order"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
             "const": "npi.ebom_publish_request.ready"
           }
         },
@@ -241,7 +301,9 @@
         "erpnext.tooling_procurement_cost.observed",
         "erpnext.project_cost.observed",
         "erpnext.formal_quality_status.observed",
-        "erpnext.tool_asset_status.observed"
+        "erpnext.tool_asset_status.observed",
+        "erpnext.quotation.submitted",
+        "erpnext.sales_order.submitted"
       ]
     },
     "event_version": {
@@ -353,6 +415,24 @@
     }
   },
   "$defs": {
+    "erp_project_source_submitted_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "submission_state",
+        "title",
+        "target_sop",
+        "source_modified_at"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "submission_state": {"const": "submitted"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 140},
+        "target_sop": {"type": "string", "format": "date"},
+        "source_modified_at": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}
+      }
+    },
     "engineering_bom_publish_request_ready_v1": {
       "type": "object",
       "additionalProperties": false,
