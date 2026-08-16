@@ -4040,3 +4040,25 @@ repeat or rewrite it merely to restore context. See
   ordinary CI`. Production ERPNext/JCE endpoint, credential, data and traffic,
   every target write/formal mapping, P8-04 through P8-09 and generic operations
   remain inactive. There is no Hard Blocker and no user action is required.
+
+## 2026-08-16 P8-03 audit-plan CI PASS; checkpoint 1 active
+
+- Frozen plan/task-manifest checkpoint
+  `bf5e02261d09f9e2aa013db095a590d028281c0c` passes ordinary pull-request CI
+  `31947838578`: repository `95166577992`, frontend `95166577951`, secret
+  `95166577991` and unchanged `119/119` fixed-Linux visual `95166578010` pass;
+  controlled lanes correctly skip because the plan activates no product or
+  runtime behavior.
+- Standing continuous-delivery authority activates only checkpoint 1 pure
+  Item source-grouping/request/profile/state/fault/mapping/claim domains,
+  additive Item-only event/OpenAPI/ownership contracts, guarded version-1
+  Outbox and Item request/idempotency/attempt/result/mapping metadata, direct
+  translations and focused tests.
+- Checkpoint 1 creates no BFF route, repository request/Outbox row, worker,
+  adapter, scheduler, target call, formal mapping or UI behavior. Mock remains
+  zero-dispatch; synthetic remains network-free and non-authoritative. Every
+  production ERPNext/JCE endpoint, credential, datum and request is prohibited.
+- The controller marker is: `P8-03 audit-plan CI PASS; checkpoint 1 active`.
+  Checkpoint 2 waits for the exact checkpoint 1 product SHA ordinary CI.
+  P8-04 through P8-09 and generic P8-07 retry/DLQ/replay/reconciliation remain
+  inactive. There is no Hard Blocker and no user action is required.

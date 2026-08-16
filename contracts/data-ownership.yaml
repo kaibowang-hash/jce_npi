@@ -421,6 +421,65 @@ objects:
       actor_operation_and_payload_identity: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
       response_and_seal: {owner: NPI_ONE_PUBLISH_REQUEST_COMMAND, editable_in: [NPI_ONE_PUBLISH_REQUEST_COMMAND], direction: NONE, conflict: ONE_WAY_SEAL}
 
+  ItemPublishRequest:
+    owner_system: NPI_ONE
+    erp_view: reference_only
+    fields:
+      project_scoped_engineering_identity_and_exact_released_source: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_SNAPSHOT}
+      request_profile_actor_trace_and_idempotency_identity: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT_VIA_EXECUTION, conflict: IMMUTABLE_IDENTITY}
+      execution_state_and_terminal_result_reference: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: APPEND_ONLY_TRANSITION}
+      formal_item_code_stock_uom_item_group_naming_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: TARGET_CONFIRMATION_REQUIRED}
+
+  ItemPublishCommandIdempotency:
+    owner_system: NPI_ONE_ITEM_PUBLISH_COMMAND
+    erp_view: none
+    fields:
+      actor_project_operation_and_hashed_key_scope: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      raw_idempotency_key: {owner: REQUEST_TRANSPORT, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      request_payload_hash_and_sealed_response: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ItemPublishOutboxMessage:
+    owner_system: NPI_ONE_ITEM_EXECUTION_SERVICE
+    erp_view: integration_message
+    fields:
+      immutable_versioned_event_request_profile_source_and_actor_envelope: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_SNAPSHOT}
+      claim_lease_attempt_count_and_safe_disposition: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: NONE, conflict: LEASE_AND_ONE_WAY_TRANSITION}
+      raw_secret_authorization_header_and_arbitrary_response_body: {owner: SECRET_AND_TRANSPORT_BOUNDARY, editable_in: [], direction: NONE, conflict: NEVER_PERSIST}
+      legacy_outbox_execution_authority: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_PROMOTE}
+
+  ItemPublishAttempt:
+    owner_system: NPI_ONE_ITEM_EXECUTION_SERVICE
+    erp_view: reference_only
+    fields:
+      immutable_request_claim_profile_source_and_target_idempotency_identity: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NPI_TO_ERPNEXT, conflict: IMMUTABLE_IDENTITY}
+      adapter_boundary_transport_hash_and_safe_fault_truth: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: BIDIRECTIONAL_EVENT, conflict: ONE_WAY_SEAL}
+      retry_or_reconciliation_authority: {owner: FUTURE_P8_07_RETRY_POLICY, editable_in: [], direction: NONE, conflict: FAIL_CLOSED}
+
+  ItemPublishResult:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      request_event_attempt_source_and_response_binding: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_SNAPSHOT}
+      formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      result_authority_fault_and_observation_hash: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY}
+
+  ItemMappingObservation:
+    owner_system: SPLIT_BY_FIELD
+    erp_view: source_record
+    fields:
+      project_scoped_source_stream_request_event_attempt_and_result_identity: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      observed_formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: AUTHENTICATED_TARGET_CONFIRMATION_REQUIRED}
+      authority_disposition_previous_mapping_and_observation_hash: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [], direction: NONE, conflict: APPEND_ONLY_OBSERVATION}
+      synthetic_or_mock_formal_mapping: {owner: NONE, editable_in: [], direction: NONE, conflict: NEVER_AUTHORITATIVE}
+
+  ItemMappingHead:
+    owner_system: NPI_ONE_INTEGRATION_PROJECTION
+    erp_view: reference_only
+    fields:
+      project_scoped_source_stream_and_engineering_identity: {owner: NPI_ONE_ITEM_PUBLISH_COMMAND, editable_in: [], direction: NONE, conflict: IMMUTABLE_IDENTITY}
+      current_authoritative_observation_pointer_and_mapping_version: {owner: NPI_ONE_ITEM_EXECUTION_SERVICE, editable_in: [NPI_ONE_ITEM_EXECUTION_SERVICE], direction: NONE, conflict: COMPARE_AND_SET}
+      formal_item_code_and_target_version: {owner: ERPNEXT, editable_in: [ERPNEXT], direction: ERPNEXT_TO_NPI, conflict: IMMUTABLE_ITEM_IDENTITY}
+
   EngineeringPart:
     owner_system: NPI_ONE
     erp_view: reference_only

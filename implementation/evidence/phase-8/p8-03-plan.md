@@ -2,10 +2,16 @@
 
 Recorded: `2026-08-16`
 
-Status: `FROZEN — AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI`
+Status: `FROZEN — AUDIT-PLAN CI PASS; CHECKPOINT 1 ACTIVE`
 
 Starting audit/controller checkpoint:
 `97cba0924a98c36d7302d863a8e88733926df167`
+
+Frozen plan/task-manifest checkpoint:
+`bf5e02261d09f9e2aa013db095a590d028281c0c`
+
+Frozen plan ordinary pull-request CI:
+`31947838578` (`PASS`)
 
 Retained predecessor product checkpoint:
 `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`
@@ -28,6 +34,11 @@ ordinary pull-request CI `31946640640`: repository `95163586941`, frontend
 `95163586879`, secret `95163586822` and unchanged `119/119` fixed-Linux visual
 `95163586888` all pass. Controlled lanes correctly skip because that
 transition and this audit add no product or runtime behavior.
+
+The exact frozen plan/task-manifest SHA `bf5e022` then passes ordinary CI
+`31947838578`: repository `95166577992`, frontend `95166577951`, secret
+`95166577991` and unchanged `119/119` fixed-Linux visual `95166578010` pass;
+controlled lanes correctly skip. Checkpoint 1 is therefore active.
 
 The repository has valuable release and integration foundations, but it does
 not yet have an executable Item boundary:
@@ -544,8 +555,8 @@ reconciliation and rollback evidence before use.
 ## 14. Automatic transition
 
 Standing continuous-delivery authority permits automatic progression after
-each exact-SHA ordinary CI and affected Gate passes. Checkpoint 1 becomes the
-only active product scope only after the commit freezing this plan and task
-manifest passes ordinary CI. No checkpoint authorizes production ERPNext/JCE
-contact. P8-03 completes only after its final Level 3 Gate; only then may the
-controller activate P8-04.
+each exact-SHA ordinary CI and affected Gate passes. The commit freezing this
+plan and task manifest passes ordinary CI `31947838578`, so checkpoint 1 is
+the only active product scope. No checkpoint authorizes production ERPNext/
+JCE contact. P8-03 completes only after its final Level 3 Gate; only then may
+the controller activate P8-04.

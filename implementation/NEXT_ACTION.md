@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-03`
+`IN_PROGRESS_CHECKPOINT_1 — P8-03`
 
-Recovery time: `2026-08-16T12:40:00Z`
+Recovery time: `2026-08-16T13:30:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -167,6 +167,12 @@ P8-03 audit transition checkpoint:
 P8-03 audit transition ordinary CI:
 `31946640640`
 
+P8-03 frozen audit-plan checkpoint:
+`bf5e02261d09f9e2aa013db095a590d028281c0c`
+
+P8-03 frozen audit-plan ordinary CI:
+`31947838578`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -275,10 +281,10 @@ engineering identity, agreeing repeated occurrences, immutable Phase 5
 released source, expected mapping/target versions, separate request/Outbox/
 attempt/result/mapping truth, Project-first authority, no-default execution
 profile, uncertain timeout/no blind redispatch and authoritative-Sandbox-only
-formal mapping.
+formal mapping. Exact frozen plan/task-manifest SHA `bf5e022` passes ordinary
+CI `31947838578`.
 
-Commit and push this audit plan/controller transition, then wait for its exact-
-SHA ordinary CI. Only after that CI passes, execute checkpoint 1: pure source-
+Execute checkpoint 1: pure source-
 grouping/request/profile/state/fault/mapping/claim domains, additive Item-only
 event/OpenAPI/ownership contracts, guarded version-1 Outbox and Item execution
 metadata, direct translations and focused tests. Checkpoint 1 activates no BFF

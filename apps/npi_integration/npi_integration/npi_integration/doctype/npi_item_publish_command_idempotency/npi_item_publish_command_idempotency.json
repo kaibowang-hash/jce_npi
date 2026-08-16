@@ -1,0 +1,27 @@
+{
+  "doctype": "DocType",
+  "name": "NPI Item Publish Command Idempotency",
+  "module": "NPI Integration",
+  "custom": 0,
+  "allow_rename": 0,
+  "autoname": "field:scope_key_hash",
+  "track_changes": 0,
+  "read_only": 1,
+  "fields": [
+    {"fieldname": "scope_key_hash", "fieldtype": "Data", "label": "Item Publish Idempotency Scope Hash", "reqd": 1, "unique": 1, "read_only": 1},
+    {"fieldname": "tenant_id", "fieldtype": "Data", "label": "Tenant ID", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "project_global_id", "fieldtype": "Link", "label": "Project Global ID", "options": "NPI Engineering Project", "reqd": 1, "read_only": 1, "search_index": 1},
+    {"fieldname": "operation", "fieldtype": "Data", "label": "Item Publish Operation", "reqd": 1, "read_only": 1},
+    {"fieldname": "actor_user_id", "fieldtype": "Data", "label": "Actor User ID", "reqd": 1, "read_only": 1},
+    {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_payload_hash", "fieldtype": "Data", "label": "Item Publish Request Payload Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Item Publish Request", "options": "NPI Item Publish Request", "reqd": 1, "read_only": 1},
+    {"fieldname": "response_snapshot", "fieldtype": "JSON", "label": "Item Publish Sealed Response", "reqd": 1, "read_only": 1},
+    {"fieldname": "response_hash", "fieldtype": "Data", "label": "Item Publish Sealed Response Hash", "reqd": 1, "read_only": 1},
+    {"fieldname": "created_at", "fieldtype": "Datetime", "label": "Created At", "reqd": 1, "read_only": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0},
+    {"role": "NPI API User", "read": 0, "write": 0, "create": 0, "delete": 0, "export": 0, "print": 0, "email": 0}
+  ]
+}

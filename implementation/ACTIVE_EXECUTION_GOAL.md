@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T12:40:00Z`
+Updated: `2026-08-16T13:30:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-03`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,8 @@ Updated: `2026-08-16T12:40:00Z`
   `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31946640640` (`PASS` at
-  `97cba0924a98c36d7302d863a8e88733926df167`; P8-03 audit transition)
+  `31947838578` (`PASS` at
+  `bf5e02261d09f9e2aa013db095a590d028281c0c`; P8-03 frozen audit plan)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -76,19 +76,22 @@ Updated: `2026-08-16T12:40:00Z`
   ordinary CI `31944345420`; exact-SHA Level 3 `31944941030`)
 - P8-03 audit transition checkpoint:
   `97cba0924a98c36d7302d863a8e88733926df167` (`AUDIT INPUT PASS`;
-  ordinary CI `31946640640`; frozen plan commit CI pending)
+  ordinary CI `31946640640`)
+- P8-03 frozen audit-plan checkpoint:
+  `bf5e02261d09f9e2aa013db095a590d028281c0c` (`AUDIT PLAN PASS`;
+  ordinary CI `31947838578`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-03 — Item publish execution`
-  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
+  (`IN_PROGRESS_CHECKPOINT_1`)
 - Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_1_AFTER_AUDIT_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 CHECKPOINT 1 AWAITING AUDIT CI`)
+  (`IN_PROGRESS — P8-03 CHECKPOINT 1`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -215,8 +218,8 @@ publish history immutable, derives one tenant + Project + exact engineering-
 identity stream across agreeing EBOM occurrences, separates approval/request/
 Outbox/attempt/transport/result/mapping, requires expected mapping and target
 versions, and permits formal mapping only from an authenticated authoritative
-Sandbox result. Checkpoint 1 may begin only after this audit/manifest commit
-passes exact-SHA ordinary CI, and then may add only pure domains, additive
+Sandbox result. Exact frozen plan/task-manifest SHA `bf5e022` passes ordinary
+CI `31947838578`; checkpoint 1 is active and may add only pure domains, additive
 contracts, guarded metadata, direct translations and focused tests—no route,
 row, worker, adapter or UI behavior. Mock/synthetic cannot report a formal Item
 code or mapping. Production ERPNext/JCE contact and P8-04 through P8-09 remain

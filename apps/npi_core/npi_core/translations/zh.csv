@@ -7713,3 +7713,160 @@ unknown,未知
 "unbound","未绑定"
 "The Inbox processing state is invalid.","收件箱处理状态无效。"
 "The Inbox processing transition is not allowed.","不允许此收件箱处理状态转换。"
+A mapped Item request requires exact update target truth.,已映射的物料请求必须包含准确的更新目标事实。
+A new Item publish attempt must start before adapter execution.,新的物料发布尝试必须在适配器执行前启动。
+A non-terminal Item Outbox message cannot reference a terminal result.,非终态物料发件箱消息不能引用终态结果。
+A pending Item Outbox message cannot retain a live claim.,待处理的物料发件箱消息不能保留有效认领。
+An Item Outbox message cannot return to pending after the adapter boundary.,物料发件箱消息跨越适配器边界后不能返回待处理状态。
+A processing Item Outbox message requires an exact claim.,处理中的物料发件箱消息必须包含准确认领。
+A terminal Item Outbox message requires an exact result.,终态物料发件箱消息必须包含准确结果。
+Adapter Boundary Crossed,已跨越适配器边界
+Adapter Request Snapshot Hash,适配器请求快照哈希
+An advanced Item mapping observation must increment its version by one.,推进的物料映射观察版本必须递增一。
+An authoritative Item mapping observation cannot be non-authoritative.,权威物料映射观察不能标记为非权威。
+An initial Item mapping observation cannot reference previous mapping truth.,初始物料映射观察不能引用先前映射事实。
+An uncertain Item Outbox message requires a crossed adapter boundary.,不确定的物料发件箱消息必须已跨越适配器边界。
+An uncertain Item publish attempt requires reconciliation after the adapter boundary.,跨越适配器边界后的不确定物料发布尝试必须对账。
+An unmapped Item request must use the create intent without target identity.,未映射的物料请求必须使用创建意图且不含目标标识。
+An updated Item mapping observation requires previous mapping truth.,更新的物料映射观察必须包含先前映射事实。
+Connect Timeout Seconds,连接超时秒数
+Current Item Mapping Observation,当前物料映射观察
+Current Mapping Observation Hash,当前映射观察哈希
+Exact Adapter Request Snapshot,准确适配器请求快照
+Exact Item Source Snapshot,准确物料来源快照
+Exact Released Item Evidence,准确已发布物料证据
+Exact Target Result Hash,准确目标结果哈希
+Exact Target Result Snapshot,准确目标结果快照
+Executable Item publish requests must retain dispatch authority.,可执行物料发布请求必须保留分派权限。
+Expected Formal Item Code,预期正式物料编码
+Expected Item Mapping Version,预期物料映射版本
+Expected Mapping Observation Hash,预期映射观察哈希
+Expected Target Version,预期目标版本
+Finished At,完成时间
+Item Dispatch Allowed,允许物料分派
+Item Execution Profile ID,物料执行配置标识
+Item Execution Profile Snapshot Hash,物料执行配置快照哈希
+Item Execution Profile Version,物料执行配置版本
+Item Mapping Disposition,物料映射处置
+Item Mapping Head Hash,物料映射头哈希
+Item Mapping Head Snapshot,物料映射头快照
+Item Mapping Observation Hash,物料映射观察哈希
+Item Mapping Observation Snapshot,物料映射观察快照
+Item Mapping Version,物料映射版本
+Item Outbox Claim Token,物料发件箱认领令牌
+Item Outbox Disposition,物料发件箱处置
+Item Outbox Event ID,物料发件箱事件标识
+Item Outbox Event Snapshot Hash,物料发件箱事件快照哈希
+Item Outbox Message,物料发件箱消息
+Item Outbox attempt count cannot decrease.,物料发件箱尝试次数不能减少。
+Item Outbox claim fields must be present together.,物料发件箱认领字段必须同时存在。
+Item Outbox lease expiry must follow claim time.,物料发件箱租约到期时间必须晚于认领时间。
+Item Publish API Version,物料发布 API 版本
+Item Publish Attempt,物料发布尝试
+Item Publish Attempt Hash,物料发布尝试哈希
+Item Publish Attempt Number,物料发布尝试序号
+Item Publish Attempt Snapshot,物料发布尝试快照
+Item Publish Attempt State,物料发布尝试状态
+Item Publish Fault Kind,物料发布故障类型
+Item Publish Idempotency Scope Hash,物料发布幂等范围哈希
+Item Publish Intent,物料发布意图
+Item Publish Operation,物料发布操作
+Item Publish Request,物料发布请求
+Item Publish Request Payload Hash,物料发布请求载荷哈希
+Item Publish Request State,物料发布请求状态
+Item Publish Result,物料发布结果
+Item Publish Result Hash,物料发布结果哈希
+Item Publish Result Snapshot,物料发布结果快照
+Item Publish Result State,物料发布结果状态
+Item Publish Sealed Response,物料发布已封存响应
+Item Publish Sealed Response Hash,物料发布已封存响应哈希
+Item Result Authority,物料结果权威性
+Item Source Hash,物料来源哈希
+Item Source Stream Key Hash,物料来源流键哈希
+Item Target Mode,物料目标模式
+Item mapping records can only be changed by the controlled Item execution service.,物料映射记录只能由受控物料执行服务更改。
+Item publish Outbox messages can only be changed by the controlled Item execution service.,物料发布发件箱消息只能由受控物料执行服务更改。
+Item publish adapter timeouts cannot exceed 120 seconds.,物料发布适配器超时不能超过 120 秒。
+Item publish attempt completion time must match its terminal state.,物料发布尝试完成时间必须与终态一致。
+Item publish attempts can only be changed by the controlled Item execution service.,物料发布尝试只能由受控物料执行服务更改。
+Item publish execution history cannot be changed.,物料发布执行历史不能更改。
+Item publish execution history cannot be deleted.,物料发布执行历史不能删除。
+Item publish idempotency records can only be changed through an authorized NPI command.,物料发布幂等记录只能通过授权的 NPI 命令更改。
+Item publish requests can only be changed through an authorized NPI command.,物料发布请求只能通过授权的 NPI 命令更改。
+Item publish results can only be appended by the controlled Item execution service.,物料发布结果只能由受控物料执行服务追加。
+Item publish source contains MBOM-owned fields.,物料发布来源包含由 MBOM 主责的字段。
+Last Item Publish Attempt,最近物料发布尝试
+Legacy Outbox messages cannot be promoted into Item execution.,旧版发件箱消息不能升级为物料执行消息。
+Mock Item publish requests cannot dispatch or report target progress.,模拟物料发布请求不能分派或报告目标进度。
+NPI Item Mapping Head,NPI 物料映射头
+NPI Item Mapping Observation,NPI 物料映射观察
+NPI Item Publish Attempt,NPI 物料发布尝试
+NPI Item Publish Command Idempotency,NPI 物料发布命令幂等记录
+NPI Item Publish Request,NPI 物料发布请求
+NPI Item Publish Result,NPI 物料发布结果
+Observed Formal Item Code,已观察正式物料编码
+Observed Item success requires a crossed adapter boundary.,已观察物料成功必须已跨越适配器边界。
+Observed Target Version,已观察目标版本
+Only Sandbox authority can produce a formal Item mapping observation.,只有沙箱权威结果可以生成正式物料映射观察。
+Previous Item Mapping Version,先前物料映射版本
+Previous Mapping Observation Hash,先前映射观察哈希
+Read Timeout Seconds,读取超时秒数
+Released Item Evidence Hash,已发布物料证据哈希
+Response Authenticated,响应已认证
+Safe Error Code,安全错误代码
+Selected Publish Node Global ID,所选发布节点全局标识
+Synthetic Item proof cannot contain or advance a formal mapping.,合成物料证明不能包含或推进正式映射。
+Target Environment Code,目标环境代码
+Target Idempotency Key Hash,目标幂等键哈希
+Target Response Hash,目标响应哈希
+Target Status Code,目标状态代码
+The Item Outbox envelope version or operation is invalid.,物料发件箱信封版本或操作无效。
+The Item Outbox event snapshot hash does not match its fields.,物料发件箱事件快照哈希与其字段不匹配。
+The Item Outbox payload hash does not match its exact fields.,物料发件箱载荷哈希与其准确字段不匹配。
+The Item mapping head hash does not match its snapshot.,物料映射头哈希与其快照不匹配。
+The Item mapping head snapshot does not match its fields.,物料映射头快照与其字段不匹配。
+The Item mapping head version must advance by one.,物料映射头版本必须递增一。
+The Item mapping observation authority is invalid.,物料映射观察权威性无效。
+The Item mapping observation disposition is invalid.,物料映射观察处置无效。
+The Item mapping observation hash does not match its snapshot.,物料映射观察哈希与其快照不匹配。
+The Item mapping observation snapshot does not match its fields.,物料映射观察快照与其字段不匹配。
+The Item publish Outbox reference cannot be replaced.,物料发布发件箱引用不能替换。
+The Item publish attempt hash does not match its snapshot.,物料发布尝试哈希与其快照不匹配。
+The Item publish attempt snapshot does not match its fields.,物料发布尝试快照与其字段不匹配。
+The Item publish attempt state is invalid.,物料发布尝试状态无效。
+The Item publish idempotency operation is invalid.,物料发布幂等操作无效。
+The Item publish idempotency scope hash does not match its fields.,物料发布幂等范围哈希与其字段不匹配。
+The Item publish request optimistic version must advance by one.,物料发布请求乐观版本必须递增一。
+The Item publish request payload hash does not match its fields.,物料发布请求载荷哈希与其字段不匹配。
+"The Item publish request state, intent, or target mode is invalid.",物料发布请求状态、意图或目标模式无效。
+The Item publish request version or operation is invalid.,物料发布请求版本或操作无效。
+The Item publish result authority or target truth is invalid.,物料发布结果权威性或目标事实无效。
+The Item publish result hash does not match its snapshot.,物料发布结果哈希与其快照不匹配。
+The Item publish result reference cannot be replaced.,物料发布结果引用不能替换。
+The Item publish result snapshot does not match its fields.,物料发布结果快照与其字段不匹配。
+The Item publish sealed response does not match its request.,物料发布已封存响应与其请求不匹配。
+The Item publish sealed response hash does not match its fields.,物料发布已封存响应哈希与其字段不匹配。
+The adapter boundary cannot be cleared after it is crossed.,跨越适配器边界后不能清除该状态。
+The adapter request snapshot does not match its Item request.,适配器请求快照与其物料请求不匹配。
+The adapter request snapshot hash does not match its fields.,适配器请求快照哈希与其字段不匹配。
+The exact Item source snapshot does not match its identities.,准确物料来源快照与其标识不匹配。
+The exact Item source snapshot hash does not match its fields.,准确物料来源快照哈希与其字段不匹配。
+The exact authoritative Item mapping observation is unavailable.,准确的权威物料映射观察不可用。
+The exact target result hash does not match its snapshot.,准确目标结果哈希与其快照不匹配。
+The initial Item publish request state does not match its target mode.,初始物料发布请求状态与其目标模式不匹配。
+The released Item evidence hash does not match its fields.,已发布物料证据哈希与其字段不匹配。
+The target status code is invalid.,目标状态代码无效。
+Transport Disposition,传输处置
+advanced,已推进
+authoritative_sandbox,权威沙箱
+create_item,创建物料
+mapping_conflict,映射冲突
+non_authoritative,非权威
+observed_conflict,已观察冲突
+observed_failure,已观察失败
+observed_success,已观察成功
+synthetic_verified,合成验证完成
+uncertain,不确定
+uncertain_after_timeout,超时后不确定
+update_item_engineering_fields,更新物料工程字段
+{record} state transition is invalid.,{record} 状态转换无效。

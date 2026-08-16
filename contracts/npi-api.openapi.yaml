@@ -20727,6 +20727,219 @@ components:
         unavailableProviders:
           $ref: "#/components/schemas/ProductionTransitionExternalUnavailableProviders"
         permissions: { $ref: "#/components/schemas/ProductionTransitionPermissions" }
+    ItemPublishSha256:
+      type: string
+      pattern: "^[a-f0-9]{64}$"
+    ItemPublishTargetMode:
+      type: string
+      enum: [mock, synthetic, sandbox]
+    ItemPublishIntent:
+      type: string
+      enum: [create_item, update_item_engineering_fields]
+    ItemPublishRequestState:
+      type: string
+      enum: [validated_mock, queued, processing, synthetic_verified, succeeded, failed_retryable, failed_final, uncertain_after_timeout, mapping_conflict]
+    ItemPublishOccurrence:
+      type: object
+      additionalProperties: false
+      required: [publishNodeGlobalId, lineGlobalId, engineeringItemId, description, engineeringUom, attributes, lineHash, nodeInputHash]
+      properties:
+        publishNodeGlobalId: { type: string, format: uuid }
+        lineGlobalId: { type: string, format: uuid }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: string, minLength: 1, maxLength: 280 }
+        engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+        attributes:
+          type: object
+          additionalProperties: { type: string, minLength: 1, maxLength: 280 }
+          maxProperties: 50
+        lineHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        nodeInputHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+    ItemPublishSourceSnapshot:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, tenantId, projectGlobalId, engineeringItemId, selectedPublishNodeGlobalId, itemMaster, occurrences, streamKeyHash, sourceHash]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        tenantId: { type: string, minLength: 1, maxLength: 128 }
+        projectGlobalId: { type: string, format: uuid }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        selectedPublishNodeGlobalId: { type: string, format: uuid }
+        itemMaster:
+          type: object
+          additionalProperties: false
+          required: [description, engineeringUom, attributes]
+          properties:
+            description: { type: string, minLength: 1, maxLength: 280 }
+            engineeringUom: { type: string, minLength: 1, maxLength: 16 }
+            attributes:
+              type: object
+              additionalProperties: { type: string, minLength: 1, maxLength: 280 }
+              maxProperties: 50
+        occurrences:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items: { $ref: "#/components/schemas/ItemPublishOccurrence" }
+        streamKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        sourceHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+    ItemPublishReleasedEvidence:
+      type: object
+      additionalProperties: false
+      required: [publishRequestGlobalId, publishRequestPayloadHash, publishPolicyGlobalId, publishPolicyVersion, publishPolicySnapshotHash, ebomGlobalId, ebomVersion, revisionGlobalId, revisionNumber, revisionSnapshotHash, lifecycleVersion, releaseEventGlobalId, releaseEventHash, approvalEvidenceIds, releasedAt]
+      properties:
+        publishRequestGlobalId: { type: string, format: uuid }
+        publishRequestPayloadHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        publishPolicyGlobalId: { type: string, format: uuid }
+        publishPolicyVersion: { type: integer, minimum: 1 }
+        publishPolicySnapshotHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        ebomGlobalId: { type: string, format: uuid }
+        ebomVersion: { type: integer, minimum: 1 }
+        revisionGlobalId: { type: string, format: uuid }
+        revisionNumber: { type: integer, minimum: 1 }
+        revisionSnapshotHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        lifecycleVersion: { type: integer, minimum: 1 }
+        releaseEventGlobalId: { type: string, format: uuid }
+        releaseEventHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        approvalEvidenceIds:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        releasedAt: { type: string, format: date-time }
+    ItemPublishProfileReference:
+      type: object
+      additionalProperties: false
+      required: [profileId, profileVersion, targetMode, environmentCode, snapshotHash]
+      properties:
+        profileId: { type: string, minLength: 1, maxLength: 128 }
+        profileVersion: { type: integer, minimum: 1 }
+        targetMode: { $ref: "#/components/schemas/ItemPublishTargetMode" }
+        environmentCode: { type: string, minLength: 1, maxLength: 64 }
+        snapshotHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+    ItemPublishMappingExpectation:
+      type: object
+      additionalProperties: false
+      required: [mappingVersion, formalItemCode, targetVersion, observationHash]
+      properties:
+        mappingVersion: { type: integer, minimum: 0 }
+        formalItemCode: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        observationHash: { oneOf: [{ $ref: "#/components/schemas/ItemPublishSha256" }, { type: "null" }] }
+    ItemPublishRequest:
+      type: object
+      additionalProperties: false
+      description: Immutable Project-scoped Item execution request; local commit does not mean target acceptance or success.
+      required: [schemaVersion, globalId, apiVersion, operation, source, releasedEvidence, profile, mappingExpectation, intent, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, state, dispatchAllowed, optimisticVersion, createdAt, updatedAt]
+      properties:
+        schemaVersion: { type: integer, const: 1 }
+        globalId: { type: string, format: uuid }
+        apiVersion: { type: string, const: npi.erp-item-publish.v1 }
+        operation: { type: string, const: publish_released_item }
+        source: { $ref: "#/components/schemas/ItemPublishSourceSnapshot" }
+        releasedEvidence: { $ref: "#/components/schemas/ItemPublishReleasedEvidence" }
+        profile: { $ref: "#/components/schemas/ItemPublishProfileReference" }
+        mappingExpectation: { $ref: "#/components/schemas/ItemPublishMappingExpectation" }
+        intent: { $ref: "#/components/schemas/ItemPublishIntent" }
+        actorUserId: { type: string, minLength: 1, maxLength: 254 }
+        requestId: { type: string, format: uuid }
+        traceId: { type: string, minLength: 8, maxLength: 128 }
+        idempotencyKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        payloadHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        state: { $ref: "#/components/schemas/ItemPublishRequestState" }
+        dispatchAllowed: { type: boolean }
+        outboxEventId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        resultGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        optimisticVersion: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ItemPublishAttempt:
+      type: object
+      additionalProperties: false
+      required: [globalId, requestGlobalId, outboxEventId, attemptNumber, state, adapterBoundaryCrossed, targetIdempotencyKeyHash, requestSnapshotHash, startedAt, finishedAt, reconciliationRequired, attemptHash]
+      properties:
+        globalId: { type: string, format: uuid }
+        requestGlobalId: { type: string, format: uuid }
+        outboxEventId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1 }
+        state: { type: string, enum: [started, synthetic_verified, observed_success, observed_failure, uncertain] }
+        adapterBoundaryCrossed: { type: boolean }
+        targetIdempotencyKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        requestSnapshotHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { oneOf: [{ type: string, format: date-time }, { type: "null" }] }
+        targetStatusCode: { oneOf: [{ type: integer, minimum: 100, maximum: 599 }, { type: "null" }] }
+        responseHash: { oneOf: [{ $ref: "#/components/schemas/ItemPublishSha256" }, { type: "null" }] }
+        faultKind: { oneOf: [{ type: string, minLength: 1, maxLength: 100 }, { type: "null" }] }
+        reconciliationRequired: { type: boolean }
+        safeErrorCode: { oneOf: [{ type: string, minLength: 1, maxLength: 100 }, { type: "null" }] }
+        attemptHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+    ItemPublishResult:
+      type: object
+      additionalProperties: false
+      description: Formal Item identity appears only on authenticated authoritative Sandbox success.
+      required: [globalId, requestGlobalId, outboxEventId, attemptGlobalId, attemptNumber, sourceHash, state, authority, responseAuthenticated, responseHash, formalItemCode, targetVersion, faultKind, resultHash, observedAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        requestGlobalId: { type: string, format: uuid }
+        outboxEventId: { type: string, format: uuid }
+        attemptGlobalId: { type: string, format: uuid }
+        attemptNumber: { type: integer, minimum: 1 }
+        sourceHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        state: { type: string, enum: [synthetic_verified, succeeded, failed_retryable, failed_final, uncertain_after_timeout] }
+        authority: { type: string, enum: [none, synthetic, authoritative_sandbox] }
+        responseAuthenticated: { type: boolean }
+        responseHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        formalItemCode: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        faultKind: { type: string, minLength: 1, maxLength: 100 }
+        resultHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        observedAt: { type: string, format: date-time }
+    ItemMappingObservation:
+      type: object
+      additionalProperties: false
+      required: [globalId, sourceStreamKeyHash, engineeringItemId, mappingVersion, formalItemCode, targetVersion, requestGlobalId, attemptGlobalId, resultGlobalId, authority, disposition, previousMappingVersion, previousObservationHash, targetResultHash, observationHash, observedAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        sourceStreamKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        mappingVersion: { oneOf: [{ type: integer, minimum: 1 }, { type: "null" }] }
+        formalItemCode: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        targetVersion: { oneOf: [{ type: string, minLength: 1, maxLength: 140 }, { type: "null" }] }
+        requestGlobalId: { type: string, format: uuid }
+        attemptGlobalId: { type: string, format: uuid }
+        resultGlobalId: { type: string, format: uuid }
+        authority: { type: string, enum: [synthetic, authoritative_sandbox] }
+        disposition: { type: string, enum: [advanced, non_authoritative, observed_conflict] }
+        previousMappingVersion: { type: integer, minimum: 0 }
+        previousObservationHash: { oneOf: [{ $ref: "#/components/schemas/ItemPublishSha256" }, { type: "null" }] }
+        targetResultHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        observationHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        observedAt: { type: string, format: date-time }
+    ItemMappingHead:
+      type: object
+      additionalProperties: false
+      description: Read-only association to exact ERP-owned Item truth observed through an authoritative result.
+      required: [globalId, sourceStreamKeyHash, engineeringItemId, mappingVersion, formalItemCode, targetVersion, currentObservationGlobalId, currentObservationHash, headHash, updatedAt]
+      properties:
+        globalId: { type: string, format: uuid }
+        sourceStreamKeyHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        engineeringItemId: { type: string, minLength: 1, maxLength: 128 }
+        mappingVersion: { type: integer, minimum: 1 }
+        formalItemCode: { type: string, minLength: 1, maxLength: 140 }
+        targetVersion: { type: string, minLength: 1, maxLength: 140 }
+        currentObservationGlobalId: { type: string, format: uuid }
+        currentObservationHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        headHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+        updatedAt: { type: string, format: date-time }
+    ItemPublishPermissions:
+      type: object
+      additionalProperties: false
+      required: [canView, canExecute]
+      properties:
+        canView: { type: boolean }
+        canExecute: { type: boolean }
     ProblemDetails:
       type: object
       additionalProperties: false

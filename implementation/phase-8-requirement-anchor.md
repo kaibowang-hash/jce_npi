@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
+Status: **IN PROGRESS — P8-03 AUDIT-PLAN CI PASS; CHECKPOINT 1 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -353,7 +353,8 @@ redaction, zero target write/production traffic and cleanup. Complete evidence
 is `implementation/evidence/phase-8/p8-02-validation.md`.
 
 The P8-03 audit passes after transition checkpoint `97cba09` ordinary CI
-`31946640640` and is frozen in
+`31946640640`; its frozen plan/task manifest at exact SHA `bf5e022` then
+passes ordinary CI `31947838578`. The boundary is frozen in
 `implementation/evidence/phase-8/p8-03-plan.md`. It preserves Phase 5 as
 immutable combined Mock evidence and defines a separate Item-only operation
 over one tenant + Project + exact engineering identity. All released
@@ -365,8 +366,7 @@ authoritative mapping requires an authenticated non-production Sandbox result
 and exact compare-and-set. Timeout after the adapter boundary is uncertain and
 cannot redispatch before future P8-07 reconciliation.
 
-Standing authority now activates only checkpoint 1 after this frozen plan and
-task manifest pass exact-SHA ordinary CI. Checkpoint 1 may add pure Item source/
+Standing authority now activates only checkpoint 1. Checkpoint 1 may add pure Item source/
 request/profile/state/fault/mapping/claim domains, additive Item-only event/
 OpenAPI/ownership contracts, guarded version-1 Outbox and Item metadata,
 translations and focused tests. It activates no route, row, worker, adapter,
