@@ -34,6 +34,7 @@ class Phase8InboundProjectRuntimeVerifierTest(unittest.TestCase):
             "INBOUND_PROJECT_INGRESS_UNAVAILABLE",
             "INBOUND_PROJECT_SOURCE_CONFLICT",
             "ThreadPoolExecutor",
+            "capture_retained_context",
             "process_reordered_receipts",
             "live claim was stolen",
             "expired claim was not recovered",
@@ -44,6 +45,7 @@ class Phase8InboundProjectRuntimeVerifierTest(unittest.TestCase):
             '{"role": "Desk User"}',
             "created_actor.status in {200, 201}",
             "created_owner.status in {200, 201}",
+            'str(later.body["receiptId"])',
         ):
             self.assertIn(marker, source)
         self.assertEqual(source.count('base_url, "User", ACTOR_USER'), 2)

@@ -508,10 +508,27 @@ def replay_receipt(
     }
 
 
+def capture_retained_context(
+    source_id: str,
+    receipt_ids: list[str],
+) -> dict[str, object]:
+    parsed_receipt_ids = tuple(str(UUID(str(value))) for value in receipt_ids)
+    require(
+        len(parsed_receipt_ids) == 3 and len(set(parsed_receipt_ids)) == 3,
+        "P8-02 retained context receipt scope drifted",
+    )
+    context = _runtime_context(source_id, parsed_receipt_ids)
+    return {
+        "digest": context["digest"],
+        "projectGlobalId": context["binding"].get("bound_project_global_id"),
+    }
+
+
 def run_local_bench_fixture(method: str, kwargs: dict[str, object]) -> None:
     import frappe
 
     fixtures = {
+        "capture_retained_context": capture_retained_context,
         "process_reordered_receipts": process_reordered_receipts,
         "replay_receipt": replay_receipt,
     }
@@ -681,8 +698,23 @@ def run_fresh(base_url: str) -> dict[str, object]:
         and later.body.get("state") == "received_after_creation",
         "P8-02 later source version attempted to rewrite the Project",
     )
+    retained = run_bench_fixture(
+        "capture_retained_context",
+        {
+            "source_id": main_source,
+            "receipt_ids": [
+                str(older.body["receiptId"]),
+                newer_receipt,
+                str(later.body["receiptId"]),
+            ],
+        },
+    )
+    require(
+        retained.get("projectGlobalId") == processed.get("projectGlobalId"),
+        "P8-02 later source version changed the bound Project",
+    )
     return {
-        "digest": processed["digest"],
+        "digest": retained["digest"],
         "newerReceiptId": newer_receipt,
         "olderReceiptId": str(older.body["receiptId"]),
         "projectGlobalId": processed["projectGlobalId"],
