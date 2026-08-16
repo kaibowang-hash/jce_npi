@@ -257,6 +257,9 @@ jobs:
   document_runtime:
     # Preserved P6-08 job name: P5 controlled document runtime and P6 Tooling through export
     # Preserved P7-07 job label: P7-07 Released Trial Summary
+    # Preserved P8-01 scope: scope=p5-01-through-p8-01
+    # Preserved P8-01 predecessor_scope=p5-01-through-p7-07
+    # Preserved P8-01 artifact: p8-projection-runtime-${{ github.run_id }}
     # Preserved predecessor scope: P7-03 Trial quality
     # Verify cumulative P5 and P6-08 controlled runtime plus P7-01 through P7-03 Trial quality
     # scope=p5-01-through-p7-03

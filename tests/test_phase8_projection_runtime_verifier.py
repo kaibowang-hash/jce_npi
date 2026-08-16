@@ -344,9 +344,9 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
         self.assertIn(
             "bash scripts/verify-frappe-runtime.sh --projection-only", source
         )
-        self.assertIn("scope=p5-01-through-p8-02", source)
-        self.assertIn("predecessor_scope=p5-01-through-p8-01", source)
-        self.assertIn("p8-integration-runtime-${{ github.run_id }}", source)
+        self.assertIn("scope=p5-01-through-p8-01", source)
+        self.assertIn("predecessor_scope=p5-01-through-p7-07", source)
+        self.assertIn("p8-projection-runtime-${{ github.run_id }}", source)
         self.assertIn("needs.controlled_preflight.result == 'success'", source)
 
 
