@@ -4062,3 +4062,31 @@ repeat or rewrite it merely to restore context. See
   Checkpoint 2 waits for the exact checkpoint 1 product SHA ordinary CI.
   P8-04 through P8-09 and generic P8-07 retry/DLQ/replay/reconciliation remain
   inactive. There is no Hard Blocker and no user action is required.
+
+## 2026-08-16 P8-03 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint `1c1faa771ef8a129467fa4376edbcede12a9ecbb`
+  passes ordinary pull-request CI `31950411271`: repository `95172902059`
+  proves `2,048` tracked Python tests; frontend `95172902078` proves `933/933`
+  unit, `426/426` E2E, `7,872` direct trilingual sources, coverage thresholds
+  and zero vulnerabilities; secret `95172902103` scans `527` branch commits
+  with no leak; unchanged `119/119` fixed-Linux visual `95172902112` passes.
+  Controlled lanes correctly skip because checkpoint 1 activates no route,
+  row, worker, adapter, fixture or external transport.
+- Checkpoint 1 freezes exact tenant + Project + engineering-identity grouping,
+  released/profile/request hashes, create/update mapping expectations, closed
+  fault/authority/CAS rules, strict Mock/synthetic/Sandbox configuration,
+  Item-only contracts and guarded additive Outbox/request/idempotency/attempt/
+  result/mapping metadata. Mock and synthetic proof cannot produce a formal
+  Item identity, legacy Outbox cannot be promoted, terminal execution history
+  is frozen and a crossed adapter boundary cannot return to pending.
+- Standing continuous-delivery authority activates only checkpoint 2 fixed
+  Project-first list/detail/create, exact Phase 5 released-source/profile/
+  current-mapping resolution, actor-bound command idempotency, atomic request +
+  version-1 Outbox + audit, commit-before-response and enqueue-after-commit.
+  Mock creates only `validated_mock` with zero Outbox/attempt/mapping/network.
+- The controller marker is: `P8-03 checkpoint 1 PASS; checkpoint 2 active`.
+  Checkpoint 3 waits for checkpoint 2 exact-SHA ordinary CI. Worker, adapter,
+  result/mapping execution, UI, production ERPNext/JCE, MBOM/P8-04 through
+  P8-09 and generic P8-07 operations remain inactive. There is no Hard Blocker
+  and no user action is required.

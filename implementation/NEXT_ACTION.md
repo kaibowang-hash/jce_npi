@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P8-03`
+`IN_PROGRESS_CHECKPOINT_2 — P8-03`
 
-Recovery time: `2026-08-16T13:30:00Z`
+Recovery time: `2026-08-16T13:55:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -173,6 +173,12 @@ P8-03 frozen audit-plan checkpoint:
 P8-03 frozen audit-plan ordinary CI:
 `31947838578`
 
+P8-03 checkpoint 1 product checkpoint:
+`1c1faa771ef8a129467fa4376edbcede12a9ecbb`
+
+P8-03 checkpoint 1 ordinary CI:
+`31950411271`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -284,11 +290,16 @@ profile, uncertain timeout/no blind redispatch and authoritative-Sandbox-only
 formal mapping. Exact frozen plan/task-manifest SHA `bf5e022` passes ordinary
 CI `31947838578`.
 
-Execute checkpoint 1: pure source-
-grouping/request/profile/state/fault/mapping/claim domains, additive Item-only
-event/OpenAPI/ownership contracts, guarded version-1 Outbox and Item execution
-metadata, direct translations and focused tests. Checkpoint 1 activates no BFF
-route, repository row, Outbox row, worker, adapter, mapping or UI behavior.
+Checkpoint 1 passes at exact product SHA `1c1faa7` and ordinary CI
+`31950411271`; complete evidence is
+`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`.
+
+Execute checkpoint 2: add only the fixed Project-first list/detail/create BFF
+boundary, exact Phase 5 released-source/profile/current-mapping resolution,
+actor-bound command idempotency and atomic request + version-1 Outbox + audit
+landing. Commit before response and enqueue only after commit. Mock must create
+only `validated_mock` with zero Outbox/attempt/mapping/network effect. Do not
+add a worker, adapter call, target result, UI or formal mapping.
 
 Do not contact production ERPNext/JCE, infer current custom Item fields,
 naming/UOM rules or service scopes, invent a cross-Project part identity, let

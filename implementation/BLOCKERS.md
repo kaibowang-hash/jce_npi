@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-16T13:30:00Z`
+Updated: `2026-08-16T13:55:00Z`
 
 ## Active hard blockers
 
@@ -14,17 +14,17 @@ artifact `9263250125` has digest
 `sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
 signed ingress/Inbox concurrency/restart, at-most-one Project draft, stable
 cross-process replay, migrations twice, zero target write, zero production
-traffic and cleanup pass. The bounded P8-03 Item-publish audit and exact frozen
-plan/task-manifest SHA `bf5e022` pass ordinary CI `31947838578`, so checkpoint
-1 pure domain/contract/metadata implementation is active. No user action,
-login or frontend operation is required.
+traffic and cleanup pass. P8-03 checkpoint 1 exact product SHA `1c1faa7` passes
+ordinary CI `31950411271`, so checkpoint 2 Project-first command and atomic
+Outbox landing is active. No user action, login or frontend operation is
+required.
 
 ## Active recovery
 
 None. P8-02 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-03 checkpoint 1 remains behavior-free and is active after
-the frozen plan CI passes. Production adapters, formal Item
+authoritative. P8-03 checkpoint 1 is sealed by exact-SHA ordinary CI and
+checkpoint 2 is active. Production adapters, formal Item
 mapping, Item/MBOM/Asset/quality target writes, P8-04 through P8-09 and the
 P8-07 operations/replay/reconciliation surface remain inactive.
 

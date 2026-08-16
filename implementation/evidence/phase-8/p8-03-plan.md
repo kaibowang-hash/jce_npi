@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-16`
 
-Status: `FROZEN — AUDIT-PLAN CI PASS; CHECKPOINT 1 ACTIVE`
+Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE`
 
 Starting audit/controller checkpoint:
 `97cba0924a98c36d7302d863a8e88733926df167`
@@ -12,6 +12,12 @@ Frozen plan/task-manifest checkpoint:
 
 Frozen plan ordinary pull-request CI:
 `31947838578` (`PASS`)
+
+Checkpoint 1 product checkpoint:
+`1c1faa771ef8a129467fa4376edbcede12a9ecbb`
+
+Checkpoint 1 ordinary pull-request CI:
+`31950411271` (`PASS`)
 
 Retained predecessor product checkpoint:
 `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`
@@ -555,8 +561,9 @@ reconciliation and rollback evidence before use.
 ## 14. Automatic transition
 
 Standing continuous-delivery authority permits automatic progression after
-each exact-SHA ordinary CI and affected Gate passes. The commit freezing this
-plan and task manifest passes ordinary CI `31947838578`, so checkpoint 1 is
-the only active product scope. No checkpoint authorizes production ERPNext/
-JCE contact. P8-03 completes only after its final Level 3 Gate; only then may
-the controller activate P8-04.
+each exact-SHA ordinary CI and affected Gate passes. Checkpoint 1 product SHA
+`1c1faa7` passes ordinary CI `31950411271`; checkpoint 2 is now the only active
+product scope. Complete checkpoint evidence is
+`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`. No
+checkpoint authorizes production ERPNext/JCE contact. P8-03 completes only
+after its final Level 3 Gate; only then may the controller activate P8-04.

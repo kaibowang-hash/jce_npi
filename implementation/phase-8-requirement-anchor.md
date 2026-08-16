@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 AUDIT-PLAN CI PASS; CHECKPOINT 1 ACTIVE**
+Status: **IN PROGRESS — P8-03 CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -366,10 +366,16 @@ authoritative mapping requires an authenticated non-production Sandbox result
 and exact compare-and-set. Timeout after the adapter boundary is uncertain and
 cannot redispatch before future P8-07 reconciliation.
 
-Standing authority now activates only checkpoint 1. Checkpoint 1 may add pure Item source/
-request/profile/state/fault/mapping/claim domains, additive Item-only event/
-OpenAPI/ownership contracts, guarded version-1 Outbox and Item metadata,
-translations and focused tests. It activates no route, row, worker, adapter,
-mapping or UI behavior. `NFR-INT-001` full operations/DLQ/replay/
-reconciliation remains P8-07. P8-04 through P8-09 and production ERPNext/JCE
-remain inactive.
+Checkpoint 1 passes at exact product SHA `1c1faa7` and ordinary CI
+`31950411271`: `2,048` tracked Python tests, `933/933` frontend unit,
+`426/426` E2E, `7,872` direct trilingual sources, complete history secret scan
+and unchanged `119/119` visual matrix pass; controlled lanes correctly skip.
+Complete evidence is
+`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`.
+
+Standing authority now activates only checkpoint 2 Project-first list/detail/
+create, exact released-source/profile/current-mapping resolution, actor-bound
+idempotency and atomic request + Outbox + audit landing. Worker/adapter/result/
+mapping and UI behavior remain inactive. `NFR-INT-001` full operations/DLQ/
+replay/reconciliation remains P8-07. P8-04 through P8-09 and production
+ERPNext/JCE remain inactive.

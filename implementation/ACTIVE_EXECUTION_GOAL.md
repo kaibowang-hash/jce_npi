@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T13:30:00Z`
+Updated: `2026-08-16T13:55:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-03`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P8-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `260ed2ef865180f33edfca0e8fe1daf4a0a4e771` (pushed; P8-02
-  `PASS_LEVEL_3`)
+  `1c1faa771ef8a129467fa4376edbcede12a9ecbb` (pushed; P8-03
+  `CHECKPOINT_1_PASS`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,8 +18,8 @@ Updated: `2026-08-16T13:30:00Z`
   `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31947838578` (`PASS` at
-  `bf5e02261d09f9e2aa013db095a590d028281c0c`; P8-03 frozen audit plan)
+  `31950411271` (`PASS` at
+  `1c1faa771ef8a129467fa4376edbcede12a9ecbb`; P8-03 checkpoint 1)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -80,18 +80,21 @@ Updated: `2026-08-16T13:30:00Z`
 - P8-03 frozen audit-plan checkpoint:
   `bf5e02261d09f9e2aa013db095a590d028281c0c` (`AUDIT PLAN PASS`;
   ordinary CI `31947838578`)
+- P8-03 checkpoint 1 product checkpoint:
+  `1c1faa771ef8a129467fa4376edbcede12a9ecbb` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31950411271` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-03 — Item publish execution`
-  (`IN_PROGRESS_CHECKPOINT_1`)
-- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_1_AFTER_AUDIT_CI`)
+  (`IN_PROGRESS_CHECKPOINT_2`)
+- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_2_AFTER_CHECKPOINT_1_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 CHECKPOINT 1`)
+  (`IN_PROGRESS — P8-03 CHECKPOINT 2`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
