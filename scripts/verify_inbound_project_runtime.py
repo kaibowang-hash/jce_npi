@@ -158,7 +158,7 @@ def ensure_runtime_users(
 ) -> None:
     actor = project_runtime.get_resource(administrator, base_url, "User", ACTOR_USER)
     if actor.status == 404:
-        actor = project_runtime.create_resource(
+        created_actor = project_runtime.create_resource(
             administrator,
             base_url,
             "User",
@@ -175,7 +175,14 @@ def ensure_runtime_users(
             },
             csrf_token,
         )
-    require(actor.status in {200, 201}, "P8-02 runtime actor is unavailable")
+        require(
+            created_actor.status in {200, 201},
+            "P8-02 runtime actor could not be created",
+        )
+        actor = project_runtime.get_resource(
+            administrator, base_url, "User", ACTOR_USER
+        )
+    require(actor.status == 200, "P8-02 runtime actor is unavailable")
     actor_value = actor.body.get("data", {})
     actor_roles = {
         row.get("role")
@@ -193,7 +200,7 @@ def ensure_runtime_users(
 
     owner = project_runtime.get_resource(administrator, base_url, "User", OWNER_USER)
     if owner.status == 404:
-        owner = project_runtime.create_resource(
+        created_owner = project_runtime.create_resource(
             administrator,
             base_url,
             "User",
@@ -209,8 +216,15 @@ def ensure_runtime_users(
             },
             csrf_token,
         )
+        require(
+            created_owner.status in {200, 201},
+            "P8-02 runtime owner could not be created",
+        )
+        owner = project_runtime.get_resource(
+            administrator, base_url, "User", OWNER_USER
+        )
     require(
-        owner.status in {200, 201}
+        owner.status == 200
         and owner.body.get("data", {}).get("enabled") == 1,
         "P8-02 runtime owner is unavailable",
     )

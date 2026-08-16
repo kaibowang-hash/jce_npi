@@ -41,8 +41,12 @@ class Phase8InboundProjectRuntimeVerifierTest(unittest.TestCase):
             "received_after_creation",
             "cross-process replay changed durable truth",
             '"reference_rules": []',
+            "created_actor.status in {200, 201}",
+            "created_owner.status in {200, 201}",
         ):
             self.assertIn(marker, source)
+        self.assertEqual(source.count('base_url, "User", ACTOR_USER'), 2)
+        self.assertEqual(source.count('base_url, "User", OWNER_USER'), 2)
         for forbidden in (
             "requests.",
             "httpx.",
