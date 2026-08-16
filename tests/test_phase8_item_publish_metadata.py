@@ -174,7 +174,12 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
 
     def test_visible_sources_have_symmetric_direct_chinese_translations(self) -> None:
         sources: set[str] = set()
-        source_paths = [ITEM_ROOT / "frappe_validation.py"]
+        source_paths = [
+            ITEM_ROOT / "frappe_validation.py",
+            ITEM_ROOT / "frappe_repository.py",
+            ITEM_ROOT / "problems.py",
+            ROOT / "apps/npi_integration/npi_integration/item_publish_api.py",
+        ]
         for folder in (*self.FOLDERS, "npi_outbox_message"):
             metadata = self.load(folder)
             sources.add(str(metadata["name"]))
@@ -215,7 +220,7 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_one_has_no_route_repository_worker_adapter_or_network_activation(self) -> None:
+    def test_checkpoint_two_activates_only_repository_and_fixed_command_boundary(self) -> None:
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in ITEM_ROOT.glob("*.py")
@@ -226,17 +231,41 @@ class Phase8ItemPublishMetadataTest(unittest.TestCase):
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
-            "frappe.get" + "_doc",
-            "enqueue(",
             "scheduler_events",
             "adapter.call",
         ):
             self.assertNotIn(forbidden, combined)
-        self.assertFalse((ITEM_ROOT / "frappe_repository.py").exists())
-        self.assertFalse((ITEM_ROOT / "worker.py").exists())
-        self.assertFalse(
-            (ROOT / "apps/npi_integration/npi_integration/item_publish_api.py").exists()
+        repository = (ITEM_ROOT / "frappe_repository.py").read_text(
+            encoding="utf-8"
         )
+        api = (
+            ROOT / "apps/npi_integration/npi_integration/item_publish_api.py"
+        ).read_text(encoding="utf-8")
+        for marker in (
+            "class FrappeItemPublishRepository",
+            "self._locked_command_project(project_id)",
+            "self._exact_released_phase5_request(",
+            "group_item_source(",
+            "self._current_mapping_for_source(project, source, lock=True)",
+            "with item_request_transaction_write()",
+            "self._insert_item_request(",
+            "self._insert_outbox(",
+            "self._insert_idempotency_receipt(",
+        ):
+            self.assertIn(marker, repository)
+        for marker in (
+            "frappe.db.commit()",
+            "_enqueue_after_commit(outcome.outbox_event_id)",
+            'enqueue_after_commit=False',
+            '"npi_integration.item_publish.worker.process_outbox_message"',
+            '_PROFILE_RESOLVER_HOOK = "npi_item_publish_profile_resolver"',
+        ):
+            self.assertIn(marker, api)
+        self.assertFalse((ITEM_ROOT / "worker.py").exists())
+        hooks = (
+            ROOT / "apps/npi_integration/npi_integration/hooks.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("npi_item_publish_profile_resolver", hooks)
 
 
 if __name__ == "__main__":

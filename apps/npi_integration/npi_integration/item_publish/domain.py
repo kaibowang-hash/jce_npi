@@ -13,6 +13,10 @@ from uuid import UUID, uuid4
 ITEM_PUBLISH_SCHEMA_VERSION = 1
 ITEM_PUBLISH_API_VERSION = "npi.erp-item-publish.v1"
 ITEM_PUBLISH_OPERATION = "publish_released_item"
+ITEM_PUBLISH_ACKNOWLEDGEMENT = (
+    "I confirm this request uses the exact released Item source and current "
+    "execution profile."
+)
 ITEM_REQUEST_EVENT_TYPE = "npi.item_publish_request.ready"
 ITEM_RESULT_EVENT_TYPE = "erpnext.item_publish_result.observed"
 MAX_ITEM_OCCURRENCES = 500
@@ -516,13 +520,16 @@ class ItemPublishRequest:
         )
         if not isinstance(self.state, ItemPublishRequestState):
             raise ItemPublishContractError("request.state is unsupported.")
-        expected_state = (
-            ItemPublishRequestState.VALIDATED_MOCK
-            if self.profile.target_mode is ItemTargetMode.MOCK
-            else ItemPublishRequestState.QUEUED
-        )
-        if self.state is not expected_state:
-            raise ItemPublishContractError("request initial state does not match target mode.")
+        if (
+            self.profile.target_mode is ItemTargetMode.MOCK
+            and self.state is not ItemPublishRequestState.VALIDATED_MOCK
+        ) or (
+            self.profile.target_mode is not ItemTargetMode.MOCK
+            and self.state is ItemPublishRequestState.VALIDATED_MOCK
+        ):
+            raise ItemPublishContractError(
+                "request state does not match target mode."
+            )
         object.__setattr__(self, "created_at", _aware_utc(self.created_at, "request.createdAt"))
         expected_hash = canonical_hash(self.payload())
         if self.payload_hash and _hash(self.payload_hash, "request.payloadHash") != expected_hash:

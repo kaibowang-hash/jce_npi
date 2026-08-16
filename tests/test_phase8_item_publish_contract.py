@@ -90,16 +90,29 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
         self.assertEqual(synthetic["authority"]["const"], "synthetic")
         self.assertFalse(synthetic["response_authenticated"]["const"])
 
-    def test_openapi_adds_item_schemas_without_activating_item_routes(self) -> None:
+    def test_openapi_activates_only_fixed_project_first_item_routes(self) -> None:
         paths = OPENAPI[: OPENAPI.index("\ncomponents:")]
-        self.assertNotIn("/item-publish-requests", paths)
+        base = "/projects/{projectId}/item-publish-requests"
+        self.assertEqual(paths.count(f"  {base}:\n"), 1)
+        self.assertEqual(
+            paths.count(f"  {base}/{{itemPublishRequestId}}:\n"),
+            1,
+        )
+        self.assertIn("operationId: listItemPublishRequests", paths)
+        self.assertIn("operationId: createItemPublishRequest", paths)
+        self.assertIn("operationId: getItemPublishRequest", paths)
+        self.assertNotIn("retryItemPublishRequest", paths)
+        self.assertNotIn("reconcileItemPublishRequest", paths)
         schemas = OPENAPI[OPENAPI.index("  schemas:\n") :]
         for name in (
+            "CreateItemPublishRequest",
             "ItemPublishSourceSnapshot",
             "ItemPublishReleasedEvidence",
             "ItemPublishProfileReference",
             "ItemPublishMappingExpectation",
             "ItemPublishRequest",
+            "ItemPublishRequestList",
+            "ItemPublishRequestDetail",
             "ItemPublishAttempt",
             "ItemPublishResult",
             "ItemMappingObservation",
@@ -123,6 +136,28 @@ class Phase8ItemPublishContractTest(unittest.TestCase):
             self.assertNotIn(forbidden, item)
         self.assertIn("local commit does not mean target acceptance or success", item)
         self.assertIn("authenticated authoritative sandbox success", item)
+        create = item[
+            item.index("    createitempublishrequest:\n") : item.index(
+                "    itempublishsourcefilters:\n"
+            )
+        ]
+        for required in (
+            "publishrequestglobalid",
+            "selectedpublishnodeglobalid",
+            "expectedmappingversion",
+            "acknowledgement",
+        ):
+            self.assertIn(required, create)
+        for forbidden in (
+            "tenantid",
+            "actoruserid",
+            "targetmode",
+            "operation:",
+            "formalitemcode",
+            "targetversion",
+            "payloadhash",
+        ):
+            self.assertNotIn(forbidden, create)
 
     def test_ownership_separates_npi_execution_truth_from_erp_item_master_truth(self) -> None:
         for marker in (

@@ -7856,6 +7856,13 @@ The exact target result hash does not match its snapshot.,准确目标结果哈�
 The initial Item publish request state does not match its target mode.,初始物料发布请求状态与其目标模式不匹配。
 The released Item evidence hash does not match its fields.,已发布物料证据哈希与其字段不匹配。
 The target status code is invalid.,目标状态代码无效。
+Confirm the exact released Item source and execution profile.,确认准确的已发布物料来源和执行配置。
+Repeated engineering identity contains conflicting Item fields.,重复的工程标识包含冲突的物料字段。
+The Item publish source or mapping changed. Reload it before continuing.,物料发布来源或映射已变化。请重新加载后再继续。
+The exact Item execution profile is unavailable.,准确的物料执行配置不可用。
+The exact Item publish request is unavailable.,准确的物料发布请求不可用。
+The idempotency key was already used for a different Item publish request.,该幂等键已用于其他物料发布请求。
+You are not authorized to request Item execution for this Project.,您无权为此项目请求物料执行。
 Transport Disposition,传输处置
 advanced,已推进
 authoritative_sandbox,权威沙箱

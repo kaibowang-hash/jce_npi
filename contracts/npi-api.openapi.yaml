@@ -3907,6 +3907,91 @@ paths:
         "503": { $ref: "#/components/responses/ServiceUnavailable" }
         default: { $ref: "#/components/responses/ProjectError" }
 
+  /projects/{projectId}/item-publish-requests:
+    get:
+      tags: [Execution]
+      operationId: listItemPublishRequests
+      description: >
+        Returns at most 200 immutable Item-only execution requests for one
+        already-authorized Project. Optional source filters are exact UUIDs;
+        the server derives tenant, actor, profile and mapping truth.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/RequestId"
+        - in: query
+          name: publishRequestGlobalId
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: selectedPublishNodeGlobalId
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { $ref: "#/components/responses/ItemPublishRequestListResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+    post:
+      tags: [Execution]
+      operationId: createItemPublishRequest
+      description: >
+        Atomically commits one immutable Item-only request, actor-bound
+        idempotency receipt, audit and, only for an explicitly configured
+        synthetic or non-production Sandbox profile, one version-1 Outbox
+        message. A 201 confirms only the local commit; a 200 is the exact
+        replay and neither response means target acceptance or Item success.
+      x-required-roles: [NPI API User]
+      x-business-authority: exact-project-member-and-item-profile-requester
+      x-transaction-boundary: item-request-idempotency-outbox-audit
+      x-audit-operation: item_publish.request.create
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/RequestId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateItemPublishRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/ItemPublishRequestCommandResult" }
+        "201": { $ref: "#/components/responses/ItemPublishRequestCommandResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "403": { $ref: "#/components/responses/PermissionError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "409": { $ref: "#/components/responses/ProjectConflict" }
+        "422": { $ref: "#/components/responses/ProjectValidationError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
+  /projects/{projectId}/item-publish-requests/{itemPublishRequestId}:
+    get:
+      tags: [Execution]
+      operationId: getItemPublishRequest
+      description: >
+        Returns one Project-contained immutable Item execution request and its
+        current observed mapping expectation. It exposes no retry,
+        reconciliation, adapter, credential or generic target operation.
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+        - $ref: "#/components/parameters/ItemPublishRequestId"
+        - $ref: "#/components/parameters/RequestId"
+      responses:
+        "200": { $ref: "#/components/responses/ItemPublishRequestDetailResult" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/AuthenticationError" }
+        "404": { $ref: "#/components/responses/NotFoundError" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        default: { $ref: "#/components/responses/ProjectError" }
+
   /projects/{projectId}/controlled-print/capability:
     get:
       tags: [ControlledPrint]
@@ -6483,6 +6568,12 @@ components:
       required: true
       description: Immutable operation-specific formal Item/MBOM publish-request global_id
       schema: { type: string, format: uuid }
+    ItemPublishRequestId:
+      in: path
+      name: itemPublishRequestId
+      required: true
+      description: Immutable Item-only execution-request global_id within the already-authorized Project
+      schema: { type: string, format: uuid }
     FileRevisionId:
       in: path
       name: fileRevisionId
@@ -7287,6 +7378,54 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/EngineeringBomPublishRequest" }
+    ItemPublishRequestListResult:
+      description: Bounded immutable Item-only requests and server-derived execution capability
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ItemPublishRequestList" }
+    ItemPublishRequestDetailResult:
+      description: Exact immutable Item request and current observed mapping truth
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ItemPublishRequestDetail" }
+    ItemPublishRequestCommandResult:
+      description: Durable local Item request or exact actor-bound replay; never target acceptance or Item success
+      headers:
+        X-Request-ID:
+          required: true
+          schema: { type: string, format: uuid }
+        X-Trace-ID:
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9._:-]+$" }
+        Idempotency-Replayed:
+          required: true
+          schema: { type: boolean }
+        Cache-Control:
+          required: true
+          schema: { type: string, const: "private, no-store" }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ItemPublishRequestDetail" }
     ToolingQueryResult:
       description: Authorized bounded Project Tooling identity and applicability truth
       headers:
@@ -20831,7 +20970,7 @@ components:
       type: object
       additionalProperties: false
       description: Immutable Project-scoped Item execution request; local commit does not mean target acceptance or success.
-      required: [schemaVersion, globalId, apiVersion, operation, source, releasedEvidence, profile, mappingExpectation, intent, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, state, dispatchAllowed, optimisticVersion, createdAt, updatedAt]
+      required: [schemaVersion, globalId, apiVersion, operation, source, releasedEvidence, profile, mappingExpectation, intent, actorUserId, requestId, traceId, idempotencyKeyHash, payloadHash, state, dispatchAllowed, outboxEventId, resultGlobalId, optimisticVersion, createdAt, updatedAt]
       properties:
         schemaVersion: { type: integer, const: 1 }
         globalId: { type: string, format: uuid }
@@ -20940,6 +21079,63 @@ components:
       properties:
         canView: { type: boolean }
         canExecute: { type: boolean }
+    CreateItemPublishRequest:
+      type: object
+      additionalProperties: false
+      required: [publishRequestGlobalId, selectedPublishNodeGlobalId, expectedMappingVersion, acknowledgement]
+      properties:
+        publishRequestGlobalId:
+          type: string
+          format: uuid
+          description: Exact immutable Phase 5 released-source publish request
+        selectedPublishNodeGlobalId:
+          type: string
+          format: uuid
+          description: Exact source node used only to select the Project-scoped engineering identity
+        expectedMappingVersion: { type: integer, minimum: 0, maximum: 2147483647 }
+        acknowledgement:
+          type: string
+          const: I confirm this request uses the exact released Item source and current execution profile.
+    ItemPublishSourceFilters:
+      type: object
+      additionalProperties: false
+      required: [publishRequestGlobalId, selectedPublishNodeGlobalId]
+      properties:
+        publishRequestGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+        selectedPublishNodeGlobalId: { oneOf: [{ type: string, format: uuid }, { type: "null" }] }
+    ItemPublishCurrentMapping:
+      type: object
+      additionalProperties: false
+      required: [mappingVersion, formalItemCode, targetVersion, observationHash]
+      properties:
+        mappingVersion: { type: integer, minimum: 1 }
+        formalItemCode: { type: string, minLength: 1, maxLength: 140, readOnly: true }
+        targetVersion: { type: string, minLength: 1, maxLength: 140, readOnly: true }
+        observationHash: { $ref: "#/components/schemas/ItemPublishSha256" }
+    ItemPublishRequestList:
+      type: object
+      additionalProperties: false
+      required: [projectGlobalId, sourceFilters, permissions, executionProfile, items]
+      properties:
+        projectGlobalId: { type: string, format: uuid }
+        sourceFilters: { $ref: "#/components/schemas/ItemPublishSourceFilters" }
+        permissions: { $ref: "#/components/schemas/ItemPublishPermissions" }
+        executionProfile:
+          oneOf: [{ $ref: "#/components/schemas/ItemPublishProfileReference" }, { type: "null" }]
+        items:
+          type: array
+          maxItems: 200
+          items: { $ref: "#/components/schemas/ItemPublishRequest" }
+    ItemPublishRequestDetail:
+      type: object
+      additionalProperties: false
+      required: [requestGlobalId, request, currentMapping, permissions]
+      properties:
+        requestGlobalId: { type: string, format: uuid }
+        request: { $ref: "#/components/schemas/ItemPublishRequest" }
+        currentMapping:
+          oneOf: [{ $ref: "#/components/schemas/ItemPublishCurrentMapping" }, { type: "null" }]
+        permissions: { $ref: "#/components/schemas/ItemPublishPermissions" }
     ProblemDetails:
       type: object
       additionalProperties: false

@@ -522,6 +522,13 @@ _EBOM_PUBLISH_REQUEST_ROUTE = re.compile(
     r"(?P<ebom_id>[^/:]+)/revisions/(?P<revision_id>[^/:]+)/publish-requests/"
     r"(?P<publish_request_id>[^/:]+)$"
 )
+_PROJECT_ITEM_PUBLISH_REQUESTS_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/item-publish-requests$"
+)
+_PROJECT_ITEM_PUBLISH_REQUEST_ROUTE = re.compile(
+    r"^/api/npi/v1/projects/(?P<project_id>[^/:]+)/item-publish-requests/"
+    r"(?P<item_publish_request_id>[^/:]+)$"
+)
 _EBOM_COMMAND_ROUTES = (
     (
         re.compile(
@@ -1386,6 +1393,20 @@ def route_request() -> None:
         match = _EBOM_PUBLISH_REQUEST_ROUTE.fullmatch(path)
         if match is not None:
             command = "npi_integration.publish_request_api.get_publish_request"
+            route_params = match.groupdict()
+    if command is None and request.method in {"GET", "POST"}:
+        match = _PROJECT_ITEM_PUBLISH_REQUESTS_ROUTE.fullmatch(path)
+        if match is not None:
+            command = (
+                "npi_integration.item_publish_api.get_item_publish_requests"
+                if request.method == "GET"
+                else "npi_integration.item_publish_api.create_item_publish_request"
+            )
+            route_params = match.groupdict()
+    if command is None and request.method == "GET":
+        match = _PROJECT_ITEM_PUBLISH_REQUEST_ROUTE.fullmatch(path)
+        if match is not None:
+            command = "npi_integration.item_publish_api.get_item_publish_request"
             route_params = match.groupdict()
     if command is None and request.method == "POST":
         match = _EBOM_REVISIONS_ROUTE.fullmatch(path)
@@ -2305,6 +2326,11 @@ def _requires_project_request_id(method: str, path: str) -> bool:
     if method in {"GET", "POST"} and (
         _EBOM_PUBLISH_REQUESTS_ROUTE.fullmatch(path) is not None
         or _EBOM_PUBLISH_REQUEST_ROUTE.fullmatch(path) is not None
+    ):
+        return True
+    if method in {"GET", "POST"} and (
+        _PROJECT_ITEM_PUBLISH_REQUESTS_ROUTE.fullmatch(path) is not None
+        or _PROJECT_ITEM_PUBLISH_REQUEST_ROUTE.fullmatch(path) is not None
     ):
         return True
     if method == "GET" and (
