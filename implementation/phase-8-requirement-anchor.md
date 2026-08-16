@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-02 AUDIT PASS; CHECKPOINT 1 ACTIVE**
+Status: **IN PROGRESS — P8-02 CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -318,10 +318,20 @@ asynchronous processing/restart/reorder, server-owned intake mapping and
 at-most-one Project draft in
 `implementation/evidence/phase-8/p8-02-plan.md`.
 
-Standing delivery authority now activates only P8-02 checkpoint 1 pure
-signature/event/configuration domains, contracts and guarded additive
-metadata. It activates no route, row, scheduler, worker, Project, secret or
-external call. Exact-SHA ordinary CI must pass before checkpoint 2.
-`NFR-INT-001` full operations/DLQ/replay/reconciliation remains P8-07. P8-03
-through P8-09, production ERPNext/JCE contact and every target write remain
-inactive.
+P8-02 checkpoint 1 passes at exact product SHA `a040f21` and ordinary CI
+`31930363720`. It proves exact raw-byte HMAC input and constant-time compare,
+inclusive five-minute replay/key-rotation rules, two duplicate-key-free closed
+events and canonical hashes, fail-closed non-production profile/policy, source
+order/claim domains, immutable Inbox/source-binding metadata, direct
+trilingual coverage and no route, row, worker, Project, secret or network
+effect. Complete evidence is
+`implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
+
+Standing delivery authority now activates only P8-02 checkpoint 2 fixed signed
+ingress and durable landing. It may authenticate before parsing, resolve only
+injected non-production configuration/secrets, atomically land Inbox/source
+truth plus safe audit, commit before `202` and enqueue only after commit. It
+activates no worker or Project creation. Exact-SHA ordinary CI must pass before
+checkpoint 3. `NFR-INT-001` full operations/DLQ/replay/reconciliation remains
+P8-07. P8-03 through P8-09, production ERPNext/JCE contact and every target
+write remain inactive.

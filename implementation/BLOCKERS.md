@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-16T07:00:00Z`
+Updated: `2026-08-16T07:15:00Z`
 
 ## Active hard blockers
 
@@ -13,16 +13,18 @@ preflight and cumulative disposable-Site runtime `95115065221`. Runtime
 artifact `9258083274` has digest
 `sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`;
 seven-kind replay/order/conflict/restart, IDOR/redaction, migrations twice,
-zero target write, zero production traffic and cleanup pass. Only the bounded
-P8-02 signed-webhook/Inbox audit is active. No user action, login or frontend
-operation is required.
+zero target write, zero production traffic and cleanup pass. P8-02 checkpoint
+1 also passes at exact SHA `a040f21` and ordinary CI `31930363720`; only the
+bounded checkpoint 2 signed ingress/durable landing is active. No user action,
+login or frontend operation is required.
 
 ## Active recovery
 
 None. P8-01 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-02 changes no product behavior until its audit plan and
-transition CI pass. Production adapters/webhooks, target writes, P8-03 through
+authoritative. P8-02 checkpoint 1 activates no route or row; checkpoint 2 may
+activate only the default-disabled signed route and atomic Inbox/source landing.
+The worker, Project creation, production adapters, target writes, P8-03 through
 P8-09 and the P8-07 operations/replay/reconciliation surface remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
@@ -1012,18 +1014,18 @@ must preserve that boundary.
   proof with Mock unavailable and zero production traffic. Production
   ERPNext/JCE contact remains prohibited.
 
-## Current authoritative blocker state — 2026-08-16T07:00:00Z
+## Current authoritative blocker state — 2026-08-16T07:15:00Z
 
 - `NO_ACTIVE_HARD_BLOCKER`.
 - P8-01 is sealed `PASS_LEVEL_3` at exact product SHA `b938926`; ordinary CI
   `31925662056` and Level 3 `31926087732` pass. P8-02 starting controller
   `726115a` passes ordinary CI `31927559261` with all required ordinary lanes
   green and controlled lanes correctly skipped.
-- The P8-02 audit is PASS and frozen in
-  `implementation/evidence/phase-8/p8-02-plan.md`. Checkpoint 1 contains only
-  pure signature/event/configuration domains, shared contracts and guarded
-  additive metadata; it activates no route, row, worker, Project, secret or
-  network contact.
+- P8-02 checkpoint 1 passes at exact product SHA `a040f21` and ordinary CI
+  `31930363720`; repository, frontend, secret and `119/119` visual lanes are
+  green and controlled lanes correctly skip. The only active scope is
+  checkpoint 2 fixed signed ingress and atomic durable Inbox/source landing;
+  it activates no worker, Project or production network contact.
 - Missing production signing keys, reverse-proxy facts, current ERP custom
   fields, naming, Project owner/template and service-scope mapping are scoped
   external holds. The default-disabled code and disposable synthetic runtime

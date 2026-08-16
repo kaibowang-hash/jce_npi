@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_1 — P8-02`
+`IN_PROGRESS_CHECKPOINT_2 — P8-02`
 
-Recovery time: `2026-08-16T07:00:00Z`
+Recovery time: `2026-08-16T07:15:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -131,6 +131,12 @@ P8-02 audit/controller checkpoint:
 P8-02 audit ordinary CI:
 `31927559261`
 
+P8-02 checkpoint 1 final product checkpoint:
+`a040f21d4379d529f9524bbf09c1ac5016fe6881`
+
+P8-02 checkpoint 1 ordinary CI:
+`31930363720`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -204,14 +210,21 @@ The P8-02 audit passes at starting controller `726115a`; ordinary CI
 `31927559261` passes all required lanes and controlled jobs correctly skip.
 The frozen plan is `implementation/evidence/phase-8/p8-02-plan.md`.
 
-Execute only P8-02 checkpoint 1: add pure canonical JSON and two-event parsing,
-exact raw-body HMAC/signing-input verification, five-minute replay/key-rotation
-and non-production profile/intake-policy validation, source order/claim domains,
-closed event/OpenAPI/ownership contracts, guarded additive Inbox and Project
-Source Binding metadata/controllers, direct translations and focused tests.
-Do not activate a route, repository insert, scheduler, worker, Project row,
-default profile, secret or external call. Exact-SHA ordinary CI must pass
-before checkpoint 2.
+P8-02 checkpoint 1 passes at exact SHA `a040f21`; ordinary CI `31930363720`
+passes repository `95124090677`, frontend `95124090661`, secret
+`95124090655` and unchanged `119/119` visual `95124090840`, while controlled
+jobs correctly skip. Complete evidence is
+`implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
+
+Execute only P8-02 checkpoint 2: add the one fixed POST route, raw request
+adapter, authentication-before-parse sequence, disabled-by-default profile and
+injected secret resolver, safe structural audit/problem responses, atomic
+Inbox plus source-stream durable landing, commit-before-`202` response and
+enqueue-after-commit behavior. Prove authentication ordering, route disable/
+recovery, exact duplicate and event/source hash conflicts, source ordering,
+rollback, no Project creation and no external call. Do not activate the worker,
+create a Project, install a default profile/secret, contact a network target or
+begin checkpoint 3. Exact-SHA ordinary CI must pass before checkpoint 3.
 
 Do not claim the P8-07 `NFR-INT-001` operations/DLQ/replay/reconciliation slice,
 contact production ERPNext/JCE, infer current custom fields or service scopes,

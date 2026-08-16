@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T07:00:00Z`
+Updated: `2026-08-16T07:15:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-02`
+- Mode: `IN_PROGRESS_CHECKPOINT_2 — P8-02`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `b938926293c51c2e3ac1f63adab583c099a5c3ed` (pushed; P8-01
-  `PASS_LEVEL_3`)
+  `a040f21d4379d529f9524bbf09c1ac5016fe6881` (pushed; P8-02
+  `CHECKPOINT_1_PASS`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,8 +18,8 @@ Updated: `2026-08-16T07:00:00Z`
   `31926087732` (`PASS — LEVEL 3` at `b938926293c51c2e3ac1f63adab583c099a5c3ed`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31925662056` (`PASS` at
-  `b938926293c51c2e3ac1f63adab583c099a5c3ed`; P8-01 final)
+  `31930363720` (`PASS` at
+  `a040f21d4379d529f9524bbf09c1ac5016fe6881`; P8-02 checkpoint 1)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -62,17 +62,20 @@ Updated: `2026-08-16T07:00:00Z`
 - P8-01 final product Gate:
   `b938926293c51c2e3ac1f63adab583c099a5c3ed` (`LEVEL 3 PASS`;
   ordinary CI `31925662056`; exact-SHA Level 3 `31926087732`)
+- P8-02 checkpoint 1 final checkpoint:
+  `a040f21d4379d529f9524bbf09c1ac5016fe6881` (`CHECKPOINT 1 PASS`;
+  ordinary CI `31930363720` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_CHECKPOINT_1`)
-- Resumed product task: `P8-02` (`ACTIVE_CHECKPOINT_1`)
+  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_CHECKPOINT_2`)
+- Resumed product task: `P8-02` (`ACTIVE_CHECKPOINT_2`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-02 AUDIT`)
+  (`IN_PROGRESS — P8-02 CHECKPOINT 2`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -152,13 +155,23 @@ five-minute replay window, key rotation, two-event contract, default-disabled
 source profile, immutable Inbox/source binding, claim lease, source ordering,
 server-owned Project intake policy and Level 3 boundary.
 
-The only active atomic scope is P8-02 checkpoint 1: pure signature/event/
-configuration domains, closed shared contracts, guarded additive Inbox and
-Project Source Binding metadata, direct `zh`/`zh-TW` translations and focused
-tests. It activates no route, row, scheduler, worker, Project, secret or
-external call. Exact-SHA ordinary CI must pass before checkpoint 2. Full
-operations/DLQ/replay/reconciliation remains P8-07; production ERPNext/JCE and
-P8-03 through P8-09 remain inactive. There is no Hard Blocker.
+P8-02 checkpoint 1 passes at exact product checkpoint `a040f21`. Ordinary CI
+`31930363720` passes repository `95124090677` (`1,990` tracked Python tests),
+frontend `95124090661` (`933/933` unit, `426/426` E2E, `7,706` direct
+trilingual sources, coverage thresholds and zero vulnerabilities), secret
+`95124090655` and unchanged `119/119` fixed-Linux visual `95124090840`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
+
+The only active atomic scope is P8-02 checkpoint 2: add the one fixed signed
+ingress, authentication-before-parse adapter, disabled-by-default profile and
+injected secret resolver, safe audit/problem boundary, atomic Inbox plus
+source-stream landing, commit-before-`202` response and enqueue-after-commit
+behavior. It creates no Project and activates no worker or production
+configuration/network contact. Exact-SHA ordinary CI must pass before
+checkpoint 3. Full operations/DLQ/replay/reconciliation remains P8-07;
+production ERPNext/JCE and P8-03 through P8-09 remain inactive. There is no
+Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

@@ -512,3 +512,8 @@ each exact-SHA ordinary CI and affected Gate passes. Checkpoint 1 is the only
 active product scope after this plan commit passes ordinary CI. No checkpoint
 authorizes production ERPNext/JCE contact. P8-02 completes only after its final
 Level 3 Gate; only then may the controller activate P8-03.
+
+Checkpoint progress recorded on 2026-08-16: checkpoint 1 passes at exact
+product SHA `a040f21d4379d529f9524bbf09c1ac5016fe6881` and ordinary CI
+`31930363720`. Checkpoint 2 is now the only active product scope; every later
+checkpoint and the final Level 3 boundary remain unchanged.

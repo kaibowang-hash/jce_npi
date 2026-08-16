@@ -3811,3 +3811,47 @@ repeat or rewrite it merely to restore context. See
   reconciliation stays P8-07. P8-03 through P8-09, outbound target effects and
   production ERPNext/JCE endpoint, credential, data and traffic remain
   inactive. There is no Hard Blocker and no user action is required.
+
+## 2026-08-16 P8-02 checkpoint 1 PASS; checkpoint 2 active
+
+- Exact product checkpoint `a040f21d4379d529f9524bbf09c1ac5016fe6881`
+  passes ordinary pull-request CI `31930363720`: repository `95124090677`
+  proves `1,990` tracked Python tests and repository/reconciliation checks;
+  frontend `95124090661` proves `60/60` files, `933/933` unit tests, `426/426`
+  E2E, `7,706` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities; secret
+  `95124090655` scans `25` first-parent task commits and `513` complete branch
+  commits with no leak; visual `95124090840` passes the unchanged `119/119`
+  fixed-Linux matrix.
+- Visual artifact `9259127166` has digest
+  `sha256:eb93d1bb1f036c187d206a801fcf443e79159ecbc066286cb68b1387ece5ebe1`;
+  Gitleaks artifact `9259085371` has digest
+  `sha256:8d335ed28fe3d7ea5fd123d4c5d4eb67618d27bfeab1f7fd6afedd0f66d8f3fd`.
+  Controlled preflight/runtime skip as required because checkpoint 1 opens no
+  route, repository, worker, fixture, business row or external transport.
+- The exact raw bytes are bound to the fixed method/path, key ID, Unix second,
+  canonical request UUID and HMAC-SHA256 under constant-time comparison. The
+  inclusive five-minute replay edges, overlapping distinct key rotation,
+  secret-reference-only non-production profile and exact two-policy coverage
+  fail closed without installing configuration or key material.
+- Only the two submitted Quotation/Sales Order events parse through a closed,
+  duplicate-key-free, integer-only UTF-8 contract. Payload, canonical event,
+  exact raw body, source stream and immutable receipt hashes are independently
+  fixed. Event/source duplicate, conflict, reorder and lease domains are
+  explicit; existing legacy Inbox rows stay readable but cannot be promoted.
+- The guarded additive Inbox and Project Source Binding metadata are
+  System-Manager support-read-only and controlled-service write-only. Shared
+  event/OpenAPI/ownership contracts and direct Simplified/Traditional Chinese
+  catalogs pass without UI or visual delta. Complete evidence is
+  `implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
+- This is checkpoint 1 PASS, not P8-02 completion. Standing authority activates
+  only checkpoint 2: the fixed raw request route, authentication-before-parse,
+  injected default-disabled profile/secret resolver, bounded safe audit/problem
+  boundary, atomic Inbox plus source-stream landing, commit-before-`202` and
+  enqueue-after-commit behavior. Its marker is: `P8-02 checkpoint 1 PASS;
+  checkpoint 2 active`.
+- Checkpoint 2 creates no Project and starts no worker. Checkpoint 3, default or
+  production configuration, outbound network/target effects, generic DLQ/
+  manual replay/reconciliation, P8-03 through P8-09 and production ERPNext/JCE
+  endpoint, credential, data and traffic remain inactive. There is no Hard
+  Blocker and no user action is required.
