@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-16T12:05:00Z`
+Updated: `2026-08-16T12:40:00Z`
 
 ## Active hard blockers
 
@@ -14,17 +14,19 @@ artifact `9263250125` has digest
 `sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
 signed ingress/Inbox concurrency/restart, at-most-one Project draft, stable
 cross-process replay, migrations twice, zero target write, zero production
-traffic and cleanup pass. Only the bounded P8-03 Item-publish audit is active.
-No user action, login or frontend operation is required.
+traffic and cleanup pass. The bounded P8-03 Item-publish audit now passes and
+freezes checkpoint 1; only its plan/controller exact-SHA ordinary CI is pending
+before pure domain/contract/metadata implementation. No user action, login or
+frontend operation is required.
 
 ## Active recovery
 
 None. P8-02 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-03 changes no product behavior until its audit plan and
-transition CI pass. Production adapters, Item/MBOM/Asset/quality target writes,
-P8-04 through P8-09 and the P8-07 operations/replay/reconciliation surface
-remain inactive.
+authoritative. P8-03 checkpoint 1 remains behavior-free and may start only
+after the frozen plan transition CI passes. Production adapters, formal Item
+mapping, Item/MBOM/Asset/quality target writes, P8-04 through P8-09 and the
+P8-07 operations/replay/reconciliation surface remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer

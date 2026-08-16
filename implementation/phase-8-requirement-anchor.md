@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-02 LEVEL 3 PASS; P8-03 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-03 AUDIT PASS; CHECKPOINT 1 AWAITS EXACT-SHA ORDINARY CI**
 
 Anchor date: 2026-08-16
 
@@ -352,12 +352,24 @@ later-version no rewrite, stable cross-process replay, migrations twice,
 redaction, zero target write/production traffic and cleanup. Complete evidence
 is `implementation/evidence/phase-8/p8-02-validation.md`.
 
-Standing delivery authority now activates only the bounded P8-03 requirement/
-domain/existing-capability and security audit for `INT-003` and the Item
-portion of `FR-DS-013`. The audit must freeze an operation-specific request
-over exact released source identity/version/hash, expected target version,
-actor/trace/idempotency, distinct approval/request/attempt/uncertain/observed-
-result truth, formal Item mapping authority, Mock/sandbox safety, permissions,
-migration, rollback and Level 3 impact before product code. Mock cannot report
-a formal Item code. `NFR-INT-001` full operations/DLQ/replay/reconciliation
-remains P8-07. P8-04 through P8-09 and production ERPNext/JCE remain inactive.
+The P8-03 audit passes after transition checkpoint `97cba09` ordinary CI
+`31946640640` and is frozen in
+`implementation/evidence/phase-8/p8-03-plan.md`. It preserves Phase 5 as
+immutable combined Mock evidence and defines a separate Item-only operation
+over one tenant + Project + exact engineering identity. All released
+occurrences must agree on Item-master fields; MBOM facts remain excluded. The
+request freezes exact source/profile/mapping/target versions and separates
+approval, request, Outbox, attempt, transport, result observation and mapping
+head. Mock and disposable synthetic proof have no formal code/mapping;
+authoritative mapping requires an authenticated non-production Sandbox result
+and exact compare-and-set. Timeout after the adapter boundary is uncertain and
+cannot redispatch before future P8-07 reconciliation.
+
+Standing authority now activates only checkpoint 1 after this frozen plan and
+task manifest pass exact-SHA ordinary CI. Checkpoint 1 may add pure Item source/
+request/profile/state/fault/mapping/claim domains, additive Item-only event/
+OpenAPI/ownership contracts, guarded version-1 Outbox and Item metadata,
+translations and focused tests. It activates no route, row, worker, adapter,
+mapping or UI behavior. `NFR-INT-001` full operations/DLQ/replay/
+reconciliation remains P8-07. P8-04 through P8-09 and production ERPNext/JCE
+remain inactive.

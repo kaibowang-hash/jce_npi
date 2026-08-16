@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-03`
+`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-03`
 
-Recovery time: `2026-08-16T12:05:00Z`
+Recovery time: `2026-08-16T12:40:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -161,6 +161,12 @@ P8-02 final ordinary CI:
 P8-02 final Level 3 workflow:
 `31944941030`
 
+P8-03 audit transition checkpoint:
+`97cba0924a98c36d7302d863a8e88733926df167`
+
+P8-03 audit transition ordinary CI:
+`31946640640`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -263,20 +269,27 @@ artifact `9263250125` has digest
 Complete evidence is
 `implementation/evidence/phase-8/p8-02-validation.md`.
 
-Execute only the bounded P8-03 Item-publish requirement/domain/existing-
-capability and security audit. Read `INT-003`, the carried Item portion of
-`FR-DS-013`, ownership/contracts and exact released-source/request/result
-foundations. Freeze the smallest operation-specific Item request, distinct
-approval/request/attempt/uncertain/observed-result states, exact source and
-expected target version, Project-first authority, idempotency, Mock/sandbox,
-fault, migration, rollback, allowed-path/test map and Level 3 boundary in
-`implementation/evidence/phase-8/p8-03-plan.md`. Product code waits for that
-audit plan and its exact-SHA ordinary CI.
+The P8-03 audit passes and freezes the exact Item-only boundary in
+`implementation/evidence/phase-8/p8-03-plan.md`: tenant + Project + exact
+engineering identity, agreeing repeated occurrences, immutable Phase 5
+released source, expected mapping/target versions, separate request/Outbox/
+attempt/result/mapping truth, Project-first authority, no-default execution
+profile, uncertain timeout/no blind redispatch and authoritative-Sandbox-only
+formal mapping.
+
+Commit and push this audit plan/controller transition, then wait for its exact-
+SHA ordinary CI. Only after that CI passes, execute checkpoint 1: pure source-
+grouping/request/profile/state/fault/mapping/claim domains, additive Item-only
+event/OpenAPI/ownership contracts, guarded version-1 Outbox and Item execution
+metadata, direct translations and focused tests. Checkpoint 1 activates no BFF
+route, repository row, Outbox row, worker, adapter, mapping or UI behavior.
 
 Do not contact production ERPNext/JCE, infer current custom Item fields,
-naming rules or service scopes, let Mock report a formal Item code, execute an
-Item write, activate MBOM/Asset/quality operations, or activate P8-04 through
-P8-09 behavior.
+naming/UOM rules or service scopes, invent a cross-Project part identity, let
+Mock or synthetic proof report a formal Item code/mapping, execute an Item
+write, activate a route/row/worker before its checkpoint, add generic retry/
+reconciliation, activate MBOM/Asset/quality operations, or activate P8-04
+through P8-09 behavior.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

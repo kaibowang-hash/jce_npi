@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-16T12:05:00Z`
+Updated: `2026-08-16T12:40:00Z`
 
 ## Authority and operating mode
 
@@ -4000,3 +4000,43 @@ repeat or rewrite it merely to restore context. See
   credential, data and traffic, Item/MBOM/Asset/quality target writes and
   generic operations/reconciliation remain inactive. There is no Hard Blocker
   and no user action is required.
+
+## 2026-08-16 P8-03 audit PASS; checkpoint 1 awaits exact-SHA ordinary CI
+
+- Audit transition checkpoint
+  `97cba0924a98c36d7302d863a8e88733926df167` passes ordinary pull-request CI
+  `31946640640`: repository `95163586941`, frontend `95163586879`, secret
+  `95163586822` and unchanged `119/119` fixed-Linux visual `95163586888` pass;
+  controlled lanes correctly skip because no product/runtime behavior changed.
+- The exact audit is frozen in
+  `implementation/evidence/phase-8/p8-03-plan.md`. Phase 5 remains immutable
+  Mock evidence; P8-03 creates a separate Item-only `publish_released_item`
+  execution boundary over one tenant + Project + exact engineering identity.
+  Repeated EBOM occurrences must agree on description, engineering UOM and
+  attributes; quantity, hierarchy, alternates and effectivity remain MBOM
+  facts. No cross-Project part identity is inferred.
+- One immutable request freezes the exact Phase 5 request/node/occurrence and
+  released revision/lifecycle/release/approval hashes, separate execution
+  profile, source hash, expected mapping-head version, expected target version,
+  server-derived create/update intent, actor, trace and idempotency. Approval,
+  request, Outbox, attempt, transport, result observation and mapping head are
+  distinct evidence.
+- Mock has no Outbox/attempt/formal code/mapping/success. Disposable synthetic
+  mode may prove only network-free worker mechanics and ends non-authoritative
+  without a formal code. A formal mapping requires an authenticated
+  authoritative non-production Sandbox result bound to the exact attempt and a
+  locked mapping compare-and-set. No Sandbox profile or adapter is installed.
+- Timeout or crash after the adapter boundary is
+  `uncertain_after_timeout`; redispatch is prohibited until future P8-07
+  reconciliation. HTTP acceptance alone is never target success. P8-07 retains
+  generic retry/DLQ/replay/reconciliation and P8-04 retains MBOM execution.
+- Checkpoint 1 is limited to pure source-grouping/request/profile/state/fault/
+  mapping/claim domains, additive Item-only event/OpenAPI/ownership contracts,
+  guarded version-1 Outbox and Item execution metadata, direct translations
+  and focused tests. It activates no BFF route, repository row, Outbox row,
+  worker, adapter, mapping or UI behavior. It begins only after this frozen
+  plan/manifest commit passes exact-SHA ordinary CI.
+- The controller marker is: `P8-03 audit PASS; checkpoint 1 awaits exact-SHA
+  ordinary CI`. Production ERPNext/JCE endpoint, credential, data and traffic,
+  every target write/formal mapping, P8-04 through P8-09 and generic operations
+  remain inactive. There is no Hard Blocker and no user action is required.

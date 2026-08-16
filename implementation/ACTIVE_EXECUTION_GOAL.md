@@ -1,10 +1,10 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T12:05:00Z`
+Updated: `2026-08-16T12:40:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-03`
+- Mode: `IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI — P8-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -18,8 +18,8 @@ Updated: `2026-08-16T12:05:00Z`
   `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31944345420` (`PASS` at
-  `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`; P8-02 final)
+  `31946640640` (`PASS` at
+  `97cba0924a98c36d7302d863a8e88733926df167`; P8-03 audit transition)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -74,17 +74,21 @@ Updated: `2026-08-16T12:05:00Z`
 - P8-02 final product Gate:
   `260ed2ef865180f33edfca0e8fe1daf4a0a4e771` (`LEVEL 3 PASS`;
   ordinary CI `31944345420`; exact-SHA Level 3 `31944941030`)
+- P8-03 audit transition checkpoint:
+  `97cba0924a98c36d7302d863a8e88733926df167` (`AUDIT INPUT PASS`;
+  ordinary CI `31946640640`; frozen plan commit CI pending)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-03 — Item publish execution` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-03` (`ACTIVE_AUDIT_ONLY`)
+  `P8-03 — Item publish execution`
+  (`IN_PROGRESS_CHECKPOINT_1_AWAITING_AUDIT_CI`)
+- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_1_AFTER_AUDIT_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 AUDIT`)
+  (`IN_PROGRESS — P8-03 CHECKPOINT 1 AWAITING AUDIT CI`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -204,16 +208,19 @@ twice, redaction, zero target write, zero production traffic and cleanup.
 Complete evidence is
 `implementation/evidence/phase-8/p8-02-validation.md`.
 
-The only active atomic scope is the bounded P8-03 requirement/domain/existing-
-capability and security audit for `INT-003` and the Item portion of
-`FR-DS-013`. It must inspect the exact released engineering sources and
-integration foundations, then freeze one operation-specific Item request,
-immutable source identity/version/hash, expected target version, actor/trace/
-idempotency, observed authoritative mapping, uncertain timeout behavior,
-permissions, migration, rollback and Level 3 impact in
-`implementation/evidence/phase-8/p8-03-plan.md` before product code. Mock may
-not report a formal Item code. Production ERPNext/JCE contact and P8-04 through
-P8-09 remain inactive. There is no Hard Blocker.
+The bounded P8-03 audit passes and freezes the four-checkpoint Item-only
+technical execution foundation in
+`implementation/evidence/phase-8/p8-03-plan.md`. The plan keeps Phase 5
+publish history immutable, derives one tenant + Project + exact engineering-
+identity stream across agreeing EBOM occurrences, separates approval/request/
+Outbox/attempt/transport/result/mapping, requires expected mapping and target
+versions, and permits formal mapping only from an authenticated authoritative
+Sandbox result. Checkpoint 1 may begin only after this audit/manifest commit
+passes exact-SHA ordinary CI, and then may add only pure domains, additive
+contracts, guarded metadata, direct translations and focused tests—no route,
+row, worker, adapter or UI behavior. Mock/synthetic cannot report a formal Item
+code or mapping. Production ERPNext/JCE contact and P8-04 through P8-09 remain
+inactive. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,
