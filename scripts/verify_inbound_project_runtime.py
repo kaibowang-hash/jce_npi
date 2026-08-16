@@ -171,7 +171,10 @@ def ensure_runtime_users(
                 "new_password": fixture_password,
                 "send_welcome_email": 0,
                 "user_type": "System User",
-                "roles": [{"role": "NPI API User"}],
+                "roles": [
+                    {"role": "Desk User"},
+                    {"role": "NPI API User"},
+                ],
             },
             csrf_token,
         )

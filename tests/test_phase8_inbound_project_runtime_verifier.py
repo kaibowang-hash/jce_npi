@@ -41,6 +41,7 @@ class Phase8InboundProjectRuntimeVerifierTest(unittest.TestCase):
             "received_after_creation",
             "cross-process replay changed durable truth",
             '"reference_rules": []',
+            '{"role": "Desk User"}',
             "created_actor.status in {200, 201}",
             "created_owner.status in {200, 201}",
         ):
