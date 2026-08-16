@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-01 LEVEL 3 PASS; P8-02 AUDIT ACTIVE**
+Status: **IN PROGRESS — P8-02 AUDIT PASS; CHECKPOINT 1 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -309,12 +309,19 @@ replay/order/conflict/restart/IDOR/redaction/route recovery, Tooling consumer
 closure, zero target write/production traffic and cleanup. Complete evidence
 is `implementation/evidence/phase-8/p8-01-validation.md`.
 
-Standing delivery authority now activates only the bounded P8-02 requirement/
-domain/existing-capability and security audit for `INT-002` and `FR-PM-002`.
-The audit must freeze raw-body signature/replay-window verification, durable
-Inbox landing before acknowledgement, event identity/hash conflict,
-asynchronous processing/restart/reorder, exact source-document mapping,
-at-most-one Project draft, migration/rollback and Level 3 impact before
-product code. `NFR-INT-001` full operations/DLQ/replay/reconciliation remains
-P8-07. P8-03 through P8-09, production ERPNext/JCE contact and every target
-write remain inactive.
+Starting P8-02 audit/controller SHA `726115a` passes ordinary CI
+`31927559261`. The bounded audit freezes exact raw-body HMAC, the five-minute
+replay window and key rotation, closed Quotation/Sales Order submit events,
+default-disabled non-production source profiles, durable landing before
+acknowledgement, immutable event/hash and source-version conflict, leased
+asynchronous processing/restart/reorder, server-owned intake mapping and
+at-most-one Project draft in
+`implementation/evidence/phase-8/p8-02-plan.md`.
+
+Standing delivery authority now activates only P8-02 checkpoint 1 pure
+signature/event/configuration domains, contracts and guarded additive
+metadata. It activates no route, row, scheduler, worker, Project, secret or
+external call. Exact-SHA ordinary CI must pass before checkpoint 2.
+`NFR-INT-001` full operations/DLQ/replay/reconciliation remains P8-07. P8-03
+through P8-09, production ERPNext/JCE contact and every target write remain
+inactive.

@@ -1,7 +1,7 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_AUDIT — P8-02`
+`IN_PROGRESS_CHECKPOINT_1 — P8-02`
 
 Recovery time: `2026-08-16T07:00:00Z`
 
@@ -125,6 +125,12 @@ P8-01 final ordinary CI:
 P8-01 final Level 3 workflow:
 `31926087732`
 
+P8-02 audit/controller checkpoint:
+`726115aa58ecaec17a6986cce1b628c760d3ba67`
+
+P8-02 audit ordinary CI:
+`31927559261`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -194,17 +200,20 @@ recovery, migrations twice, zero target write, zero production traffic and
 cleanup pass. Complete evidence is
 `implementation/evidence/phase-8/p8-01-validation.md`.
 
-Execute only the bounded P8-02 requirement/domain/existing-capability and
-security audit for `INT-002` and `FR-PM-002`. Inspect existing webhook,
-signature, Inbox, worker, Project draft/source mapping, idempotency, permission
-and audit seams. Freeze exact raw-body signature/timestamp/replay-window/key-
-rotation rules, landing-before-acknowledgement transaction, event identity and
-payload-hash conflict, asynchronous claim/restart/reorder semantics, one exact
-submitted Quotation or Sales Order to at most one Project draft, migration,
-rollback, changed-files/tests and Level 3 impact in
-`implementation/evidence/phase-8/p8-02-plan.md` before product code.
+The P8-02 audit passes at starting controller `726115a`; ordinary CI
+`31927559261` passes all required lanes and controlled jobs correctly skip.
+The frozen plan is `implementation/evidence/phase-8/p8-02-plan.md`.
 
-Do not claim the P8-07 `NFR-INT-001` operations/replay/reconciliation slice,
+Execute only P8-02 checkpoint 1: add pure canonical JSON and two-event parsing,
+exact raw-body HMAC/signing-input verification, five-minute replay/key-rotation
+and non-production profile/intake-policy validation, source order/claim domains,
+closed event/OpenAPI/ownership contracts, guarded additive Inbox and Project
+Source Binding metadata/controllers, direct translations and focused tests.
+Do not activate a route, repository insert, scheduler, worker, Project row,
+default profile, secret or external call. Exact-SHA ordinary CI must pass
+before checkpoint 2.
+
+Do not claim the P8-07 `NFR-INT-001` operations/DLQ/replay/reconciliation slice,
 contact production ERPNext/JCE, infer current custom fields or service scopes,
 create a submitted Project, mutate a Gate/Work Item/Tooling/Trial object, or
 activate P8-03 through P8-09 behavior.

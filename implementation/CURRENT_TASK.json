@@ -3,7 +3,7 @@
   "task_id": "P8-02",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_AUDIT",
+  "status": "IN_PROGRESS_CHECKPOINT_1",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-03",
   "base_checkpoint": "b938926293c51c2e3ac1f63adab583c099a5c3ed",
@@ -13,35 +13,38 @@
     "FR-PM-002"
   ],
   "scope": [
-    "Audit the exact ERPNext-to-NPI One signed webhook and durable Inbox boundary for submitted Quotation or Sales Order source documents allocated to P8-02.",
-    "Freeze raw-body signature, timestamp and replay-window verification, key rotation, response semantics, exact event identity plus payload-hash deduplication and fail-closed conflict handling before product code.",
-    "Freeze durable landing-before-acknowledgement, asynchronous claim and processing, restart and reorder behavior, and at-most-one Project draft from one exact submitted source document.",
-    "Reuse existing Project ownership, permission, idempotency, audit and integration foundations only where repository evidence proves their contract; identify the smallest missing vertical slice and its migration and rollback boundary.",
-    "Keep production ERPNext and JCE Core endpoints, credentials, data and traffic prohibited; use Mock and disposable synthetic proof only until an explicitly approved non-production sandbox contract exists.",
-    "Produce implementation/evidence/phase-8/p8-02-plan.md with exact contracts, states, fault matrix, allowed paths, affected tests and Level 3 impact before any P8-02 product behavior."
+    "Implement only the P8-02 three-checkpoint signed-webhook, durable Inbox and at-most-one Project-draft vertical slice frozen in implementation/evidence/phase-8/p8-02-plan.md.",
+    "Checkpoint 1 adds pure raw-body HMAC, closed event, non-production source-profile and intake-policy validation, source ordering and claim domains, shared contracts, guarded additive Inbox/source-binding metadata and direct translations without activating a route or row.",
+    "Checkpoint 2 may add only the fixed POST route, authentication-before-parse request adapter, safe audit/problem boundary, atomic durable landing, commit-before-202 and enqueue-after-commit behavior after checkpoint 1 exact-SHA ordinary CI passes.",
+    "Checkpoint 3 may add only the bounded claim/expired-lease worker, server actor-owner-template resolution, existing Project draft aggregate reuse, unique ERP source binding and atomic result/audit after checkpoint 2 exact-SHA ordinary CI passes.",
+    "Prove same-event and same-source idempotency, hash conflict, key rotation, replay window, source reorder, cross-process restart and at-most-one NPI-owned Project draft while retaining the existing template snapshot and Gate-shell draft invariant.",
+    "Keep the route disabled without an exact non-production profile and injected secret resolver; install no production ERPNext or JCE endpoint, credential, key, mapping, data or traffic and use only disposable synthetic runtime proof.",
+    "Complete exact changed-file tests, Task Diff Review, migrations twice, zero outbound target effect and Level 3 release review before P8-03 activation."
   ],
   "non_scope": [
-    "Any P8-02 product implementation before the requirement, domain, existing-capability and security audit is frozen and its exact-SHA ordinary CI passes.",
-    "Any production ERPNext or JCE endpoint, credential, secret, data, webhook, request, response, network contact, write, replay or reconciliation.",
-    "Any caller-selected Project status, target identity, success, permission, actor, tenant or payload hash; any generic DocType CRUD, cross-database access or Frappe/ERPNext core patch.",
-    "Any automatic Project submission, approval, Gate creation, Work Item generation, Item or MBOM publication, Asset execution, quality mutation or downstream target write.",
-    "P8-03 through P8-09 behavior, generic operations/DLQ UI, production mapping or customization assumptions, Phase 9 behavior, dependency addition, test deletion or threshold reduction."
+    "Any behavior beyond the active checkpoint or outside the exact contracts, states, authorities and paths frozen in implementation/evidence/phase-8/p8-02-plan.md.",
+    "Any production ERPNext or JCE endpoint, credential, signing key, source profile, data, webhook, request, response, network contact, write, replay, reconciliation or compensating transaction.",
+    "Any caller-selected tenant, service actor, Project owner, template, Project type, permission, business-code transformation, target identity, success, payload hash or generic DocType/method/endpoint authority.",
+    "Any Project submission or activation, Gate review/decision/evidence/transition, Work Item generation, Item/MBOM/Asset/quality execution, Tooling/Trial/Readiness mutation or outbound target write; existing Gate shells remain only the atomic draft aggregate invariant.",
+    "Any generic operations UI, DLQ, manual replay, corrected old payload, cross-operation retry/backoff or reconciliation claim allocated to P8-07.",
+    "Any P8-03 through P8-09 behavior, production customization or field/naming/service-scope assumption, new production dependency, core patch, cross-database access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
-    "SIGNATURE_TIMESTAMP_AND_REPLAY_WINDOW_ARE_VERIFIED_OVER_THE_EXACT_RAW_BODY_BEFORE_DURABLE_ACCEPTANCE",
-    "DURABLE_INBOX_LANDING_PRECEDES_SUCCESS_ACKNOWLEDGEMENT_AND_LONG_BUSINESS_WORK_NEVER_RUNS_IN_THE_WEBHOOK_REQUEST",
-    "ONE_EVENT_ID_BINDS_TO_ONE_CANONICAL_PAYLOAD_HASH_AND_HASH_CONFLICTS_FAIL_CLOSED",
-    "DUPLICATE_REORDERED_OR_RESTARTED_PROCESSING_NEVER_CREATES_A_SECOND_PROJECT_OR_REWRITES_NEWER_TRUTH",
-    "ONE_EXACT_SUBMITTED_SOURCE_DOCUMENT_CAN_CREATE_AT_MOST_ONE_NPI_OWNED_PROJECT_DRAFT",
-    "ERP_SOURCE_DOCUMENT_AND_COMMERCIAL_TRUTH_REMAIN_ERPNEXT_OWNED_AND_PROJECT_WORKFLOW_REMAINS_NPI_OWNED",
-    "PROJECT_TENANT_ACTOR_PERMISSION_AND_SOURCE_IDENTITY_ARE_SERVER_RESOLVED_NOT_CALLER_ASSERTED",
-    "ACKNOWLEDGED_QUEUED_OR_PROCESSED_NEVER_MEANS_PROJECT_SUBMITTED_APPROVED_OR_TARGET_CONFIRMED",
-    "MOCK_DEFAULT_DISPOSABLE_SYNTHETIC_ONLY_AND_PRODUCTION_ERPNEXT_JCE_CONTACT_REJECTED",
+    "EXACT_RAW_BODY_METHOD_PATH_KEY_TIMESTAMP_AND_REQUEST_ID_ARE_HMAC_SHA256_BOUND_BEFORE_JSON_TRUST",
+    "FIXED_FIVE_MINUTE_REPLAY_WINDOW_AND_OVERLAPPING_SERVER_OWNED_KEY_ROTATION_FAIL_CLOSED",
+    "DURABLE_INBOX_AND_SOURCE_HEAD_COMMIT_PRECEDES_202_AND_ENQUEUE_OCCURS_ONLY_AFTER_COMMIT",
+    "ONE_EVENT_ID_BINDS_TO_ONE_CANONICAL_EVENT_HASH_AND_CONFLICTS_NEVER_OVERWRITE_THE_FIRST_BODY",
+    "ONE_TENANT_PROFILE_DOCUMENT_TYPE_AND_SOURCE_DOCUMENT_ID_BINDS_TO_AT_MOST_ONE_PROJECT_DRAFT",
+    "SOURCE_VERSION_ORDERING_RETAINS_SUPERSEDED_CONFLICTED_AND_AFTER_CREATION_TRUTH_WITHOUT_PROJECT_REWRITE",
+    "PROJECT_TENANT_SERVICE_ACTOR_OWNER_TEMPLATE_TYPE_AND_IDEMPOTENCY_ARE_SERVER_RESOLVED",
+    "ERP_SOURCE_COMMERCIAL_TRUTH_REMAINS_ERPNEXT_OWNED_WHILE_PROJECT_WORKFLOW_REMAINS_NPI_OWNED",
+    "WEBHOOK_REQUEST_PERFORMS_NO_PROJECT_CREATION_OR_LONG_BUSINESS_WORK",
+    "ACKNOWLEDGED_PENDING_PROCESSING_OR_SUCCEEDED_NEVER_MEANS_PROJECT_SUBMITTED_APPROVED_OR_TARGET_CONFIRMED",
+    "MOCK_DEFAULT_NO_PROFILE_NO_SECRET_NO_ROUTE_AUTHORITY_AND_PRODUCTION_CONTACT_REJECTED",
     "NO_GENERIC_TARGET_CRUD_CROSS_DATABASE_ACCESS_OR_FRAPPE_ERPNEXT_CORE_PATCH",
-    "NPI_ONE_AND_ERPNEXT_TECHNICAL_CODES_REMAIN_STABLE",
-    "NFR_INT_001_FULL_OPERATIONS_REPLAY_AND_RECONCILIATION_CLAIM_REMAINS_P8_07",
+    "NFR_INT_001_FULL_OPERATIONS_DLQ_REPLAY_AND_RECONCILIATION_REMAINS_P8_07",
     "P8_03_THROUGH_P8_09_AND_PHASE_9_AUTHORITIES_REMAIN_INACTIVE",
-    "EN_ZH_ZH_TW_DIRECT_TRANSLATION_FOR_ANY_FUTURE_USER_VISIBLE_STATE",
+    "EN_ZH_ZH_TW_DIRECT_TRANSLATION_FOR_EVERY_NEW_USER_VISIBLE_SUPPORT_STATE",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
   "allowed_paths": [
@@ -57,22 +60,46 @@
     "implementation/phase-8-requirement-anchor.md",
     "implementation/evidence/phase-8/p8-01-validation.md",
     "implementation/evidence/phase-8/p8-02-*.md",
+    "apps/npi_integration/npi_integration/hooks.py",
+    "apps/npi_integration/npi_integration/reliable.py",
+    "apps/npi_integration/npi_integration/inbound_project/*",
+    "apps/npi_integration/npi_integration/inbound_project/**/*",
+    "apps/npi_integration/npi_integration/inbound_project_api.py",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_inbox_message/*",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_project_source_binding/*",
+    "apps/npi_core/npi_core/bff.py",
+    "apps/npi_core/npi_core/project/domain.py",
+    "apps/npi_core/npi_core/project/frappe_repository.py",
+    "apps/npi_core/npi_core/project_api.py",
+    "apps/npi_core/npi_core/translations/zh.csv",
+    "apps/npi_core/npi_core/translations/zh-TW.csv",
+    "contracts/data-ownership.yaml",
+    "contracts/integration-event.schema.json",
+    "contracts/npi-api.openapi.yaml",
+    "frontend/src/generated/catalogs.ts",
+    ".github/workflows/ci.yml",
     "scripts/reconcile_v1_2_traceability.py",
+    "scripts/verify-frappe-runtime.sh",
+    "scripts/verify_inbound_project_runtime.py",
     "scripts/verify_current_task.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
-    "tests/test_v1_2_reconciliation.py"
+    "tests/test_v1_2_reconciliation.py",
+    "tests/test_phase4_project_*.py",
+    "tests/test_phase8_inbound_project_*.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
+      ["python", "-m", "unittest", "tests.test_phase8_inbound_project_domain", "tests.test_phase8_inbound_project_contract", "tests.test_phase8_inbound_project_metadata", "-v"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"]
+      ["bash", "scripts/verify.sh"],
+      ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_inbound_project_*.py", "-v"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
@@ -90,10 +117,10 @@
     "phase_status_resumed_product_task": "P8-02",
     "active_goal_marker": "P8-02",
     "next_action_marker": "P8-02",
-    "controller_marker": "P8-01 Level 3 PASS; P8-02 audit active"
+    "controller_marker": "P8-02 audit PASS; checkpoint 1 active"
   },
   "rollback": {
-    "before_product_resume": "Restore exact P8-01 final checkpoint b938926293c51c2e3ac1f63adab583c099a5c3ed while retaining its immutable projection observations, heads and audits; the P8-02 audit transition contains no product or external mutation.",
-    "after_product_resume": "Disable only the independent P8-02 ingress and worker routes, retain every landed Inbox message, hash, processing attempt, source mapping, Project draft, receipt and audit, and deliver a reviewed forward repair without redispatching or rewriting history."
+    "before_product_resume": "Restore exact P8-01 final checkpoint b938926293c51c2e3ac1f63adab583c099a5c3ed while retaining P8-01 observations, heads and audits; the P8-02 audit plan changes no product or external state.",
+    "after_product_resume": "Disable only the fixed P8-02 ingress, enqueue and worker, retain every Inbox body/hash, claim, conflict, source binding, Project draft, Gate shell and audit, and deploy a reviewed forward repair without deleting, rebinding, redispatching or rewriting history."
   }
 }

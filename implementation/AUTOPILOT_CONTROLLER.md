@@ -3775,3 +3775,39 @@ repeat or rewrite it merely to restore context. See
   P8-09 behavior and production ERPNext/JCE endpoint, credential, data and
   traffic remain inactive. There is no Hard Blocker and no user action is
   required.
+
+## 2026-08-16 P8-02 audit PASS; checkpoint 1 active
+
+- Starting audit/controller checkpoint
+  `726115aa58ecaec17a6986cce1b628c760d3ba67` passes ordinary pull-request CI
+  `31927559261`: repository `95117362588`, frontend `95117362653`, secret
+  `95117362609` and unchanged fixed-Linux visual `95117362620` all pass;
+  controlled preflight/runtime correctly skip because the transition contains
+  no P8-02 product behavior.
+- Visual artifact `9258338305` has digest
+  `sha256:1e2e3c5184a8b3acbc51a321a68fc5378e7098fe331ebff859b0322d11d555a9`;
+  Gitleaks artifact `9258292511` has digest
+  `sha256:5c76c24a9d494c0afb812e043c66cfc36ac596c8030667ef19c123d5f615e42e`.
+- The audit finds only an in-memory Inbox example and minimal support DocType,
+  with no raw-body verifier, source profile/key resolver, fixed webhook,
+  guarded durable landing, claim lease, source binding or Project worker. The
+  existing Project service can be reused only after server resolution of
+  tenant, service actor, owner, template, type and source-derived idempotency.
+- `implementation/evidence/phase-8/p8-02-plan.md` freezes one fixed POST,
+  method/path/key/timestamp/request/raw-body HMAC-SHA256, an inclusive
+  five-minute replay window, overlapping key rotation, two closed submitted-
+  source events, no-production profile/policy, commit-before-202 durable Inbox
+  and source head, enqueue-after-commit, leased worker recovery and one unique
+  ERP source to at most one NPI-owned Project draft.
+- Checkpoint 1 alone is active: pure signature/event/configuration/order/claim
+  domains, integration-event/OpenAPI/ownership contracts, guarded additive
+  Inbox plus Project Source Binding metadata, direct translations and focused
+  tests. It activates no route, repository write, scheduler, worker, Project,
+  default profile, secret or external call. Its marker is: `P8-02 audit PASS;
+  checkpoint 1 active`.
+- Production field/naming/owner/template/service-scope values remain a scoped
+  external hold; checkpoint runtime will use only a disposable synthetic
+  profile and fake secret resolver. Full operations/DLQ/manual replay/
+  reconciliation stays P8-07. P8-03 through P8-09, outbound target effects and
+  production ERPNext/JCE endpoint, credential, data and traffic remain
+  inactive. There is no Hard Blocker and no user action is required.

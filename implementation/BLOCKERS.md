@@ -1011,3 +1011,21 @@ must preserve that boundary.
   authorities are scoped holds. They do not block synthetic disposable-Site
   proof with Mock unavailable and zero production traffic. Production
   ERPNext/JCE contact remains prohibited.
+
+## Current authoritative blocker state — 2026-08-16T07:00:00Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P8-01 is sealed `PASS_LEVEL_3` at exact product SHA `b938926`; ordinary CI
+  `31925662056` and Level 3 `31926087732` pass. P8-02 starting controller
+  `726115a` passes ordinary CI `31927559261` with all required ordinary lanes
+  green and controlled lanes correctly skipped.
+- The P8-02 audit is PASS and frozen in
+  `implementation/evidence/phase-8/p8-02-plan.md`. Checkpoint 1 contains only
+  pure signature/event/configuration domains, shared contracts and guarded
+  additive metadata; it activates no route, row, worker, Project, secret or
+  network contact.
+- Missing production signing keys, reverse-proxy facts, current ERP custom
+  fields, naming, Project owner/template and service-scope mapping are scoped
+  external holds. The default-disabled code and disposable synthetic runtime
+  can proceed without guessing or contacting production. Full operator replay,
+  DLQ and reconciliation remain P8-07 rather than a P8-02 blocker.

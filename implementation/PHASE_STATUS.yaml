@@ -5,12 +5,12 @@ updated_at: '2026-08-16T07:00:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
 current_task: P8-02
-current_task_status: IN_PROGRESS_AUDIT
-current_task_completed_stage: P8_01_LEVEL_3_PASS
-current_task_next_stage: P8_02_REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
+current_task_status: IN_PROGRESS_CHECKPOINT_1
+current_task_completed_stage: P8_02_AUDIT_PASS
+current_task_next_stage: P8_02_CHECKPOINT_1_SIGNATURE_EVENT_CONFIG_METADATA
 current_task_next_stage_status: IN_PROGRESS
 resumed_product_task: P8-02
-resumed_product_task_status: ACTIVE_AUDIT_ONLY
+resumed_product_task_status: ACTIVE_CHECKPOINT_1
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2138,7 +2138,7 @@ p8_01:
 p8_02:
   task: P8-02
   controller_task: P8-02_SIGNED_WEBHOOK_AND_INBOX_PROCESSING
-  status: IN_PROGRESS_AUDIT
+  status: IN_PROGRESS_CHECKPOINT_1
   phase: 8
   milestone: M7-02
   requirements:
@@ -2146,9 +2146,11 @@ p8_02:
     - FR-PM-002
   predecessor_product_checkpoint: b938926293c51c2e3ac1f63adab583c099a5c3ed
   audit_base_checkpoint: b938926293c51c2e3ac1f63adab583c099a5c3ed
-  audit: IN_PROGRESS
-  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_AUDIT
-  next_stage_after_pass: FROZEN_PLAN_CHECKPOINT_1
+  audit: PASS
+  audit_checkpoint: 726115aa58ecaec17a6986cce1b628c760d3ba67
+  audit_ordinary_ci: 31927559261
+  current_stage: CHECKPOINT_1_SIGNATURE_EVENT_CONFIG_METADATA
+  next_stage_after_pass: CHECKPOINT_2_SIGNED_INGRESS_DURABLE_LANDING
   product_code_changed: false
   external_holds:
     - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
@@ -2157,6 +2159,7 @@ p8_02:
     - P8_03_THROUGH_P8_09_TARGET_EXECUTION_OPERATIONS_AND_DISPLAY
   evidence:
     - implementation/evidence/phase-8/p8-01-validation.md
+    - implementation/evidence/phase-8/p8-02-plan.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge

@@ -4,7 +4,7 @@ Updated: `2026-08-16T07:00:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_AUDIT — P8-02`
+- Mode: `IN_PROGRESS_CHECKPOINT_1 — P8-02`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
@@ -66,8 +66,8 @@ Updated: `2026-08-16T07:00:00Z`
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_AUDIT`)
-- Resumed product task: `P8-02` (`ACTIVE_AUDIT_ONLY`)
+  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_CHECKPOINT_1`)
+- Resumed product task: `P8-02` (`ACTIVE_CHECKPOINT_1`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
@@ -145,17 +145,20 @@ recovery, migrations twice, zero target write, zero production traffic and
 cleanup. Complete evidence is
 `implementation/evidence/phase-8/p8-01-validation.md`.
 
-The only active atomic scope is the bounded P8-02 requirement/domain/existing-
-capability and security audit for `INT-002` and `FR-PM-002`. It must inspect
-the existing Inbox, webhook, Project-draft, idempotency, permission, audit and
-worker foundations; freeze raw-body signature/replay-window verification,
-durable landing before acknowledgement, event-ID/payload-hash conflict,
-asynchronous retry/restart/reorder, exact source-document mapping, at-most-one
-Project draft, migrations, rollback and Level 3 impact in
-`implementation/evidence/phase-8/p8-02-plan.md` before product code.
-`NFR-INT-001` full operations/replay/reconciliation remains P8-07. Production
-ERPNext/JCE contact and P8-03 through P8-09 remain inactive. There is no Hard
-Blocker.
+The bounded P8-02 audit passes. Starting audit/controller SHA `726115a` passes
+ordinary CI `31927559261`, and
+`implementation/evidence/phase-8/p8-02-plan.md` freezes the exact raw HMAC,
+five-minute replay window, key rotation, two-event contract, default-disabled
+source profile, immutable Inbox/source binding, claim lease, source ordering,
+server-owned Project intake policy and Level 3 boundary.
+
+The only active atomic scope is P8-02 checkpoint 1: pure signature/event/
+configuration domains, closed shared contracts, guarded additive Inbox and
+Project Source Binding metadata, direct `zh`/`zh-TW` translations and focused
+tests. It activates no route, row, scheduler, worker, Project, secret or
+external call. Exact-SHA ordinary CI must pass before checkpoint 2. Full
+operations/DLQ/replay/reconciliation remains P8-07; production ERPNext/JCE and
+P8-03 through P8-09 remain inactive. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,
