@@ -110,7 +110,11 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             for path in root.glob("*/*.json")
         }
         sources: set[str] = set()
-        source_paths = [INBOUND_ROOT / "frappe_validation.py"]
+        source_paths = [
+            INBOUND_ROOT / "frappe_validation.py",
+            ROOT
+            / "apps/npi_integration/npi_integration/inbound_project_api.py",
+        ]
         for folder in self.FOLDERS:
             metadata = self.load(folder)
             sources.add(str(metadata["name"]))
@@ -153,7 +157,7 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             )
         self.assertEqual(set(catalogs["zh"]), set(catalogs["zh-TW"]))
 
-    def test_checkpoint_one_remains_route_repository_scheduler_network_and_fixture_free(self) -> None:
+    def test_checkpoint_two_activates_only_fixed_ingress_without_worker_or_business_effects(self) -> None:
         combined = "\n".join(
             path.read_text(encoding="utf-8")
             for path in INBOUND_ROOT.glob("*.py")
@@ -164,16 +168,30 @@ class Phase8InboundProjectMetadataTest(unittest.TestCase):
             "urllib." + "request",
             "socket" + ".",
             "frappe.db" + ".sql",
-            "frappe.get" + "_doc",
-            "enqueue(",
             "scheduler_events",
             "projectinstantiationservice",
         ):
             self.assertNotIn(forbidden, combined)
-        self.assertNotIn(
-            "project-source-events",
-            (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8"),
+        bff = (ROOT / "apps/npi_core/npi_core/bff.py").read_text(encoding="utf-8")
+        api = (
+            ROOT / "apps/npi_integration/npi_integration/inbound_project_api.py"
+        ).read_text(encoding="utf-8")
+        repository = (INBOUND_ROOT / "frappe_repository.py").read_text(
+            encoding="utf-8"
         )
+        self.assertEqual(bff.count("project-source-events"), 1)
+        self.assertIn("accept_project_source_event", api)
+        self.assertIn("frappe.db.commit()", api)
+        self.assertIn("_enqueue_after_commit", api)
+        self.assertIn("FrappeInboundProjectRepository", repository)
+        self.assertFalse((INBOUND_ROOT / "worker.py").exists())
+        for forbidden in (
+            "NPI Engineering Project",
+            "NPI Gate Shell",
+            "NPI Domain Work Item",
+            "ProjectInstantiationService",
+        ):
+            self.assertNotIn(forbidden, repository)
         self.assertNotIn(
             "inbound_project",
             (ROOT / "apps/npi_integration/npi_integration/hooks.py").read_text(encoding="utf-8"),

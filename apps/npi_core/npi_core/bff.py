@@ -48,6 +48,10 @@ from .request_security import (
     trial_routes_are_disabled,
 )
 
+_INBOUND_PROJECT_SOURCE_EVENT_PATH = (
+    "/api/npi/v1/integration/erpnext/project-source-events"
+)
+
 _ROUTES = {
     ("GET", "/api/npi/v1/session/bootstrap"): (
         "npi_core.localization_api.get_session_bootstrap"
@@ -726,7 +730,18 @@ _PROJECT_CONTROL_COMMAND_ROUTES = (
 def route_request() -> None:
     """Map the fixed NPI BFF surface before Frappe's generic API router runs."""
     request = frappe.local.request
-    path = request.path.rstrip("/") or "/"
+    raw_path = request.path or "/"
+    if (
+        request.method == "POST"
+        and raw_path == _INBOUND_PROJECT_SOURCE_EVENT_PATH
+    ):
+        frappe.local.form_dict.cmd = (
+            "npi_integration.inbound_project_api.accept_project_source_event"
+        )
+        frappe.flags.npi_bff_request = True
+        frappe.flags.npi_route_params = {}
+        return
+    path = raw_path.rstrip("/") or "/"
     if not _is_npi_api_path(path) or request.method == "OPTIONS":
         return
 
