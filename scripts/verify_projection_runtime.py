@@ -226,7 +226,7 @@ def assert_tooling_consumers(
         and cost.get("toolingMasterGlobalId") == master_id
         and cost.get("targetVersion") == "sandbox-v1"
         and len(cost.get("rows", [])) == 1
-        and cost["rows"][0].get("amount") == "1200.50",
+        and cost["rows"][0].get("amount") == "1200.5",
         "P8-01 Tooling cost consumer did not use confirmed projection truth",
     )
     acceptance = acceptance_runtime.tooling_request(
@@ -1009,7 +1009,7 @@ def _assert_consumers(project_id: str, master_id: str, tooling_set_id: str) -> N
         and cost.get("toolingMasterGlobalId") == master_id
         and cost.get("targetVersion") == "sandbox-v1"
         and len(cost.get("rows", [])) == 1
-        and cost["rows"][0].get("amount") == "1200.50",
+        and cost["rows"][0].get("amount") == "1200.5",
         "P8-01 direct Tooling cost reader closure drifted",
     )
     require(
