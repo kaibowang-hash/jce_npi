@@ -4090,3 +4090,36 @@ repeat or rewrite it merely to restore context. See
   result/mapping execution, UI, production ERPNext/JCE, MBOM/P8-04 through
   P8-09 and generic P8-07 operations remain inactive. There is no Hard Blocker
   and no user action is required.
+
+## 2026-08-16 P8-03 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact final product checkpoint
+  `6e11a86048983f87c9d54e0fc3e3544e7e9a05f0` passes ordinary pull-request CI
+  `31953799677`: repository `95181224022` proves `2,069` tracked Python tests;
+  frontend `95181224027` proves `933/933` unit, `426/426` E2E, `7,879`
+  complete direct trilingual sources, coverage thresholds and zero
+  vulnerabilities; secret `95181224003` scans `26` first-parent task commits
+  and `530` complete branch commits with no leak; unchanged `119/119`
+  fixed-Linux visual `95181224081` passes. Controlled lanes correctly skip
+  because checkpoint 2 installs no worker, adapter or disposable runtime.
+- Project-first list/detail/create, exact Phase 5 released-source/profile/
+  current-mapping resolution, complete occurrence agreement, actor-bound
+  idempotency and atomic request + version-1 Outbox + audit are proven. The
+  transaction commits before response and invokes only the enqueue seam after
+  commit. Mock remains `validated_mock` with zero Outbox, attempt, mapping,
+  enqueue or network effect.
+- Initial diagnostic CI `31953679922` exposed only a missing regenerated React
+  catalog after seven direct backend translations. Final repair `6e11a86`
+  synchronizes that catalog without changing product behavior, test criteria
+  or visual baselines; the exact-SHA run above is authoritative.
+- Standing continuous-delivery authority activates only checkpoint 3 bounded
+  pending/expired-claim recovery, immutable pre-call attempts, closed
+  default-disabled adapters, disposable network-free synthetic proof, closed
+  result/fault classification and atomic authoritative mapping compare-and-
+  set. A crossed adapter boundary must never blindly redispatch; Mock and
+  synthetic proof cannot create a formal Item code or mapping.
+- The controller marker is: `P8-03 checkpoint 2 PASS; checkpoint 3 active`.
+  Checkpoint 4 waits for checkpoint 3 exact-SHA ordinary CI. UI, manual retry/
+  replay/reconciliation, a default profile, networked Sandbox, production
+  ERPNext/JCE, MBOM/P8-04 through P8-09 and generic P8-07 operations remain
+  inactive. There is no Hard Blocker and no user action is required.

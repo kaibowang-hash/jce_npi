@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE**
+Status: **IN PROGRESS — P8-03 CHECKPOINT 2 PASS; CHECKPOINT 3 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -373,9 +373,17 @@ and unchanged `119/119` visual matrix pass; controlled lanes correctly skip.
 Complete evidence is
 `implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`.
 
-Standing authority now activates only checkpoint 2 Project-first list/detail/
-create, exact released-source/profile/current-mapping resolution, actor-bound
-idempotency and atomic request + Outbox + audit landing. Worker/adapter/result/
-mapping and UI behavior remain inactive. `NFR-INT-001` full operations/DLQ/
-replay/reconciliation remains P8-07. P8-04 through P8-09 and production
+Checkpoint 2 passes at exact final product SHA `6e11a86` and ordinary CI
+`31953799677`: `2,069` tracked Python tests, `933/933` frontend unit,
+`426/426` E2E, `7,879` direct trilingual sources, complete history secret scan
+and unchanged `119/119` visual matrix pass; controlled lanes correctly skip.
+Complete evidence is
+`implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`.
+
+Standing authority now activates only checkpoint 3 bounded leased worker/
+recovery, immutable pre-call attempts, closed default-disabled adapters,
+network-free disposable synthetic proof, result classification and atomic
+terminal result/mapping compare-and-set. UI remains inactive; no Sandbox or
+production network profile is installed. `NFR-INT-001` full operations/DLQ/
+manual replay/reconciliation remains P8-07. P8-04 through P8-09 and production
 ERPNext/JCE remain inactive.

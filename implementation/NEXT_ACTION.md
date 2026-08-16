@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P8-03`
+`IN_PROGRESS_CHECKPOINT_3 — P8-03`
 
-Recovery time: `2026-08-16T13:55:00Z`
+Recovery time: `2026-08-16T15:03:03Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -179,6 +179,15 @@ P8-03 checkpoint 1 product checkpoint:
 P8-03 checkpoint 1 ordinary CI:
 `31950411271`
 
+P8-03 checkpoint 2 primary implementation checkpoint:
+`34fa2e5740860d0c1cc5eb4d16c48374cf95dfd3`
+
+P8-03 checkpoint 2 final product checkpoint:
+`6e11a86048983f87c9d54e0fc3e3544e7e9a05f0`
+
+P8-03 checkpoint 2 ordinary CI:
+`31953799677`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -294,12 +303,19 @@ Checkpoint 1 passes at exact product SHA `1c1faa7` and ordinary CI
 `31950411271`; complete evidence is
 `implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`.
 
-Execute checkpoint 2: add only the fixed Project-first list/detail/create BFF
-boundary, exact Phase 5 released-source/profile/current-mapping resolution,
-actor-bound command idempotency and atomic request + version-1 Outbox + audit
-landing. Commit before response and enqueue only after commit. Mock must create
-only `validated_mock` with zero Outbox/attempt/mapping/network effect. Do not
-add a worker, adapter call, target result, UI or formal mapping.
+Checkpoint 2 passes at exact final product SHA `6e11a86` and ordinary CI
+`31953799677`; complete evidence is
+`implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`.
+
+Execute checkpoint 3: add only bounded pending/expired-claim recovery,
+immutable pre-call attempts, the closed default-disabled adapter registry,
+Mock/no-op and disposable network-free synthetic proof, closed fault/result
+classification and atomic terminal result/audit plus authoritative mapping
+compare-and-set. A crossed adapter boundary must never blindly redispatch;
+synthetic proof must remain non-authoritative with no formal Item code or
+mapping. Extend only the cumulative disposable-Site runtime needed to prove
+those mechanics. Do not add UI, manual retry/reconcile, a default profile,
+networked Sandbox, production contact or MBOM behavior.
 
 Do not contact production ERPNext/JCE, infer current custom Item fields,
 naming/UOM rules or service scopes, invent a cross-Project part identity, let

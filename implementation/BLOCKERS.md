@@ -1,6 +1,6 @@
 # Blockers
 
-Updated: `2026-08-16T13:55:00Z`
+Updated: `2026-08-16T15:03:03Z`
 
 ## Active hard blockers
 
@@ -14,19 +14,20 @@ artifact `9263250125` has digest
 `sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
 signed ingress/Inbox concurrency/restart, at-most-one Project draft, stable
 cross-process replay, migrations twice, zero target write, zero production
-traffic and cleanup pass. P8-03 checkpoint 1 exact product SHA `1c1faa7` passes
-ordinary CI `31950411271`, so checkpoint 2 Project-first command and atomic
-Outbox landing is active. No user action, login or frontend operation is
-required.
+traffic and cleanup pass. P8-03 checkpoint 2 final product SHA `6e11a86`
+passes ordinary CI `31953799677`, including repository `95181224022`, frontend
+`95181224027`, secret `95181224003` and unchanged `119/119` fixed-Linux visual
+`95181224081`. Checkpoint 3 bounded worker/adapter/result/mapping proof is
+active. No user action, login or frontend operation is required.
 
 ## Active recovery
 
 None. P8-02 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-03 checkpoint 1 is sealed by exact-SHA ordinary CI and
-checkpoint 2 is active. Production adapters, formal Item
-mapping, Item/MBOM/Asset/quality target writes, P8-04 through P8-09 and the
-P8-07 operations/replay/reconciliation surface remain inactive.
+authoritative. P8-03 checkpoints 1 and 2 are sealed by exact-SHA ordinary CI;
+checkpoint 3 is active. Production adapters, formal Item mapping from Mock or
+synthetic proof, Item/MBOM/Asset/quality production writes, P8-04 through
+P8-09 and the P8-07 operations/replay/reconciliation surface remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -42,6 +43,20 @@ latest complete Level 3 is `31944941030` at
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
+
+## Current authoritative blocker state — 2026-08-16T15:03:03Z
+
+- `NO_ACTIVE_HARD_BLOCKER`.
+- P8-03 checkpoint 2 final product SHA `6e11a86` passes exact-SHA ordinary CI
+  `31953799677`; repository, frontend, secret and unchanged `119/119` visual
+  lanes are green and controlled lanes correctly skip.
+- Only checkpoint 3 bounded lease/recovery, pre-call attempt, closed adapter,
+  network-free synthetic result and authoritative mapping compare-and-set
+  proof is active. It requires no production credential, endpoint or contact.
+- Missing current ERPNext Item customization, naming/UOM/service-scope and
+  authenticated Sandbox facts are scoped external holds. Formal mapping cannot
+  be inferred from Mock, synthetic, HTTP acceptance or timeout. UI, production
+  traffic, P8-04 through P8-09 and P8-07 manual operations remain inactive.
 
 ## Historical recovery
 

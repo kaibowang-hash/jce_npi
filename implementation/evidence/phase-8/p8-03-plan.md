@@ -2,7 +2,7 @@
 
 Recorded: `2026-08-16`
 
-Status: `FROZEN — CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE`
+Status: `FROZEN — CHECKPOINT 2 PASS; CHECKPOINT 3 ACTIVE`
 
 Starting audit/controller checkpoint:
 `97cba0924a98c36d7302d863a8e88733926df167`
@@ -18,6 +18,12 @@ Checkpoint 1 product checkpoint:
 
 Checkpoint 1 ordinary pull-request CI:
 `31950411271` (`PASS`)
+
+Checkpoint 2 final product checkpoint:
+`6e11a86048983f87c9d54e0fc3e3544e7e9a05f0`
+
+Checkpoint 2 ordinary pull-request CI:
+`31953799677` (`PASS`)
 
 Retained predecessor product checkpoint:
 `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`
@@ -562,8 +568,10 @@ reconciliation and rollback evidence before use.
 
 Standing continuous-delivery authority permits automatic progression after
 each exact-SHA ordinary CI and affected Gate passes. Checkpoint 1 product SHA
-`1c1faa7` passes ordinary CI `31950411271`; checkpoint 2 is now the only active
+`1c1faa7` passes ordinary CI `31950411271`; checkpoint 2 final product SHA
+`6e11a86` passes ordinary CI `31953799677`; checkpoint 3 is now the only active
 product scope. Complete checkpoint evidence is
-`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md`. No
+`implementation/evidence/phase-8/p8-03-domain-metadata-checkpoint.md` and
+`implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`. No
 checkpoint authorizes production ERPNext/JCE contact. P8-03 completes only
 after its final Level 3 Gate; only then may the controller activate P8-04.
