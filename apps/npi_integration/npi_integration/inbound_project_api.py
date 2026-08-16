@@ -175,10 +175,10 @@ def _land_with_unique_race_retry(
 ) -> InboundProjectLandingOutcome:
     try:
         return repository.land(authenticated)
-    except frappe.DuplicateEntryError:
+    except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
         # A concurrent first receipt or source-stream reservation can win its
-        # unique key. Roll back every local partial write, then classify once
-        # against the winner's now-durable truth.
+        # primary key or a governed unique field. Roll back every local partial
+        # write, then classify once against the winner's now-durable truth.
         frappe.db.rollback()
         return repository.land(authenticated)
 

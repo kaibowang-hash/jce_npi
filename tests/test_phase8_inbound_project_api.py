@@ -89,8 +89,10 @@ class FakeRepository:
     def land(self, authenticated):
         self.owner.events.append("land")
         self.land_calls.append(authenticated)
-        if self.mode == "unique_race" and len(self.land_calls) == 1:
+        if self.mode == "primary_unique_race" and len(self.land_calls) == 1:
             raise self.owner.frappe.DuplicateEntryError()
+        if self.mode == "field_unique_race" and len(self.land_calls) == 1:
+            raise self.owner.frappe.UniqueValidationError()
         if self.mode == "partial_raise":
             self.owner.partial_rows.extend(
                 ["NPI Inbox Message", "NPI Project Source Binding"]
@@ -157,6 +159,9 @@ class Phase8InboundProjectApiTest(unittest.TestCase):
         self.frappe.db = FakeDatabase(self)
         self.frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         self.frappe.DuplicateEntryError = type("DuplicateEntryError", (Exception,), {})
+        self.frappe.UniqueValidationError = type(
+            "UniqueValidationError", (Exception,), {}
+        )
         self.frappe.whitelist = lambda **_kwargs: lambda function: function
         self.frappe.logger = lambda *_args, **_kwargs: types.SimpleNamespace(
             error=lambda *args, **kwargs: self.diagnostics.append((args, kwargs))
@@ -408,21 +413,24 @@ class Phase8InboundProjectApiTest(unittest.TestCase):
         self.assertFalse(any(value.startswith("enqueue:") for value in self.events))
 
     def test_unique_reservation_race_rolls_back_partial_truth_and_reclassifies_once(self) -> None:
-        self.repository.mode = "unique_race"
-        self.execute(self.request())
-        self.assert_response(202)
-        self.assertEqual(len(self.repository.land_calls), 2)
-        self.assertEqual(
-            self.events,
-            [
-                "read",
-                "land",
-                "rollback",
-                "land",
-                "commit",
-                f"enqueue:{UUID(int=800)}",
-            ],
-        )
+        for mode in ("primary_unique_race", "field_unique_race"):
+            with self.subTest(mode=mode):
+                self.reset_response()
+                self.repository.mode = mode
+                self.execute(self.request())
+                self.assert_response(202)
+                self.assertEqual(len(self.repository.land_calls), 2)
+                self.assertEqual(
+                    self.events,
+                    [
+                        "read",
+                        "land",
+                        "rollback",
+                        "land",
+                        "commit",
+                        f"enqueue:{UUID(int=800)}",
+                    ],
+                )
 
     def test_bff_maps_only_exact_post_and_closes_trailing_generic_and_options(self) -> None:
         bff = importlib.import_module("npi_core.bff")
