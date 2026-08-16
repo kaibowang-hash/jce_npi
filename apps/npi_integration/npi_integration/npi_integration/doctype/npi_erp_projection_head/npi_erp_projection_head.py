@@ -8,6 +8,7 @@ from npi_core.documents.frappe_validation import (
     assert_immutable_fields,
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_object,
     lowercase_sha256,
     positive_integer,
@@ -199,6 +200,15 @@ class NPIERPProjectionHead(Document):
         self.head_snapshot = canonical_json(expected_snapshot)
         if lowercase_sha256(self.head_hash, _("Projection Head Hash")) != canonical_payload_hash(expected_snapshot):
             frappe.throw(_("The projection head hash does not match its fields."), frappe.ValidationError)
+        self.current_source_modified_at = (
+            frappe_utc_datetime_text(
+                current_source_modified_at,
+                _("Current Source Modified At"),
+            )
+            if current_source_modified_at is not None
+            else None
+        )
+        self.updated_at = frappe_utc_datetime_text(updated_at, _("Updated At"))
 
     def on_trash(self) -> None:
         deny_projection_history_delete()

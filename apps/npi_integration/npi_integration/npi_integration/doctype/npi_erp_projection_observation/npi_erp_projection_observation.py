@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from npi_core.documents.frappe_validation import (
     canonical_json,
     canonical_uuid,
+    frappe_utc_datetime_text,
     json_object,
     lowercase_sha256,
     positive_integer,
@@ -114,7 +115,14 @@ class NPIERPProjectionObservation(Document):
         self.source_environment = result.source_environment
         self.source_object_id = result.source_object_id
         self.source_version = result.source_version
-        self.source_modified_at = result.source_modified_at
+        self.source_modified_at = (
+            frappe_utc_datetime_text(
+                result.source_modified_at,
+                _("Source Modified At"),
+            )
+            if result.source_modified_at is not None
+            else None
+        )
         self.unavailable_reason_code = result.unavailable_reason_code
         if self.event_type != definition.event_type or self.source_object_type != definition.source_object_type:
             frappe.throw(_("The projection event does not match its operation-specific kind."), frappe.ValidationError)
@@ -163,6 +171,8 @@ class NPIERPProjectionObservation(Document):
         self.observation_snapshot = canonical_json(expected_snapshot)
         if lowercase_sha256(self.observation_hash, _("Projection Observation Hash")) != canonical_payload_hash(expected_snapshot):
             frappe.throw(_("The projection observation hash does not match its fields."), frappe.ValidationError)
+        self.received_at = frappe_utc_datetime_text(received_at, _("Received At"))
+        self.created_at = frappe_utc_datetime_text(created_at, _("Created At"))
 
     def on_trash(self) -> None:
         deny_projection_history_delete()

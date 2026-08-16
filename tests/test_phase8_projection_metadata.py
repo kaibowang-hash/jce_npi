@@ -120,6 +120,32 @@ class Phase8ProjectionMetadataTest(unittest.TestCase):
         ):
             self.assertIn(marker, head)
 
+    def test_projection_datetime_fields_are_normalized_for_frappe_storage(self) -> None:
+        observation = (
+            DOCTYPE_ROOT
+            / "npi_erp_projection_observation/npi_erp_projection_observation.py"
+        ).read_text(encoding="utf-8")
+        head = (
+            DOCTYPE_ROOT / "npi_erp_projection_head/npi_erp_projection_head.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("self.source_modified_at = (", observation)
+        for fieldname in ("received_at", "created_at"):
+            self.assertIn(
+                f"self.{fieldname} = frappe_utc_datetime_text(",
+                observation,
+            )
+        self.assertIn("self.current_source_modified_at = (", head)
+        self.assertIn(
+            "self.updated_at = frappe_utc_datetime_text(",
+            head,
+        )
+        self.assertGreaterEqual(observation.count("frappe_utc_datetime_text("), 3)
+        self.assertGreaterEqual(head.count("frappe_utc_datetime_text("), 2)
+        self.assertNotIn(
+            "self.source_modified_at = result.source_modified_at",
+            observation,
+        )
+
     def test_metadata_links_target_real_repository_doctypes(self) -> None:
         doctype_names = {
             str(json.loads(path.read_text(encoding="utf-8"))["name"])
