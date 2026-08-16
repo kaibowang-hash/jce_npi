@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **ANCHORED — P8-00 LEVEL 2 PASS**
+Status: **IN PROGRESS — P8-01 LEVEL 3 PASS; P8-02 AUDIT ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -301,11 +301,20 @@ CI `31909152423`; complete evidence is
 `implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md`.
 P8-01 checkpoint 3 passes at exact final checkpoint `71bd18a` and ordinary CI
 `31913915708`; complete evidence is
-`implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`. Standing
-delivery authority now activates only the final Level 3 Gate: cumulative
-disposable-Site seven-kind projection runtime, migrations twice, exact replay/
-order/conflict/restart/IDOR/redaction/route recovery, Tooling consumer closure,
-zero target write/production traffic and cleanup, plus complete exact-SHA
-repository/frontend/secret/visual/runtime review. No public webhook, target
-write, retry/DLQ/replay/reconciliation operation, P8-02 behavior or production
-ERPNext/JCE contact is authorized.
+`implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`. P8-01 then
+passes ordinary CI `31925662056` and exact-SHA Level 3 `31926087732` at final
+product checkpoint `b938926`. The cumulative disposable Site proves seven
+kinds/heads, twenty-five immutable observations, migrations twice, exact
+replay/order/conflict/restart/IDOR/redaction/route recovery, Tooling consumer
+closure, zero target write/production traffic and cleanup. Complete evidence
+is `implementation/evidence/phase-8/p8-01-validation.md`.
+
+Standing delivery authority now activates only the bounded P8-02 requirement/
+domain/existing-capability and security audit for `INT-002` and `FR-PM-002`.
+The audit must freeze raw-body signature/replay-window verification, durable
+Inbox landing before acknowledgement, event identity/hash conflict,
+asynchronous processing/restart/reorder, exact source-document mapping,
+at-most-one Project draft, migration/rollback and Level 3 impact before
+product code. `NFR-INT-001` full operations/DLQ/replay/reconciliation remains
+P8-07. P8-03 through P8-09, production ERPNext/JCE contact and every target
+write remain inactive.

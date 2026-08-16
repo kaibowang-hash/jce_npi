@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-15T14:01:59Z`
+Updated: `2026-08-16T07:00:00Z`
 
 ## Authority and operating mode
 
@@ -3727,3 +3727,51 @@ repeat or rewrite it merely to restore context. See
   freshness/EAC/quality policies and production ERPNext/JCE endpoint,
   credential, data and traffic remain inactive. No user action is required and
   there is no Hard Blocker.
+
+## 2026-08-16 P8-01 Level 3 PASS; P8-02 audit active
+
+- Exact final product checkpoint
+  `b938926293c51c2e3ac1f63adab583c099a5c3ed` passes ordinary pull-request CI
+  `31925662056`: repository `95112716915` proves `1,969` tracked Python tests;
+  frontend `95112716888` proves `60/60` files, `933/933` unit tests,
+  `426/426` non-visual E2E, `7,641` complete direct English/`zh`/`zh-TW`
+  sources, coverage `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities;
+  secret `95112716949` scans `26` first-parent task commits and `510` complete
+  branch commits with no leak; visual `95112716959` passes `119/119`.
+- Exact-SHA Level 3 workflow `31926087732` passes repository `95113770531`,
+  frontend `95113770530`, secret `95113770561`, visual `95113770550`,
+  controlled preflight `95115031258` and cumulative disposable-Site runtime
+  `95115065221`. Runtime artifact `9258083274` has digest
+  `sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`;
+  its PASS result payload has SHA-256
+  `ef234bee4a16da922511b88487994a08b793d35051de53d141ad3a2383f12320`.
+- Runtime proves seven exact kinds and heads, twenty-five immutable
+  observations, same- and cross-process replay, older reorder, equal-time hash
+  conflict, unavailable/recovery truth, exact Tooling cost/Asset consumer
+  closure, Project-first IDOR/redaction, route disable/recovery, two
+  migrations, zero Inbox/Outbox side effect, zero target write, zero
+  production traffic and disposable cleanup.
+- The only sandbox-style configuration is the allowlisted fake host
+  `erp.sandbox.example.test`, fake secret reference, explicit non-production
+  attestation and a controlled no-network reader. Mock and synthetic truth
+  cannot become formal ERP truth. No production endpoint, credential, data or
+  request was installed or contacted.
+- The shared ownership/event/OpenAPI/DocType/repository/BFF/consumer/UI/i18n/
+  runtime release review reports no P0, P1 or P2 finding. Complete evidence is
+  `implementation/evidence/phase-8/p8-01-validation.md`. P8-01 closes
+  `PASS_LEVEL_3`; rollback retains observations, heads and audits and disables
+  only the independent projection route, worker and presentation before a
+  reviewed forward repair.
+- Standing continuous-delivery authority activates only the bounded P8-02
+  requirement/domain/existing-capability and security audit for `INT-002` and
+  `FR-PM-002`. It must freeze raw-body signature, timestamp/replay window and
+  key rotation; durable Inbox landing before acknowledgement; event-ID/hash
+  conflict; asynchronous claim/restart/reorder; exact submitted source mapping;
+  at-most-one NPI-owned Project draft; permissions/audit; migration/rollback;
+  affected tests and Level 3 impact before product code. This controller
+  marker is: `P8-01 Level 3 PASS; P8-02 audit active`.
+- `NFR-INT-001` complete operations/DLQ/replay/reconciliation remains P8-07.
+  Project submission, Gate/Work Item/Tooling/Trial mutation, P8-03 through
+  P8-09 behavior and production ERPNext/JCE endpoint, credential, data and
+  traffic remain inactive. There is no Hard Blocker and no user action is
+  required.

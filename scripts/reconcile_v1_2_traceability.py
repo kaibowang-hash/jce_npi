@@ -370,6 +370,25 @@ P8_ANCHOR_EVIDENCE = (
     "implementation/phase-8-requirement-anchor.md",
     "implementation/evidence/phase-8/p8-00-validation.md",
 )
+P8_01_COMPLETED_EVIDENCE = (
+    "implementation/evidence/phase-8/p8-01-plan.md",
+    "implementation/evidence/phase-8/p8-01-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-01-repository-bff-checkpoint.md",
+    "implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md",
+    "implementation/evidence/phase-8/p8-01-validation.md",
+)
+P8_01_COMPLETED_ALLOCATION = {
+    "FR-PM-010": "TECHNICAL_VERIFIED_COST_PROJECTION_FOUNDATION_BUDGET_EAC_POLICY_HELD",
+    "INT-001": "TECHNICAL_VERIFIED_READ_ONLY_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
+    "INT-006": "TECHNICAL_VERIFIED_READ_ONLY_COST_PROJECTION_FOUNDATION_INBOUND_RECONCILIATION_HELD",
+    "INT-007": "TECHNICAL_VERIFIED_READ_ONLY_QUALITY_STATUS_PROJECTION_FOUNDATION_LINKAGE_POLICY_HELD",
+    "INT-010": "TECHNICAL_VERIFIED_READ_ONLY_PROJECT_COST_PROJECTION_FOUNDATION_EAC_POLICY_HELD",
+}
+P8_01_EVIDENCE_REQUIREMENTS = set(P8_01_COMPLETED_ALLOCATION) | {
+    "FR-TL-008",
+    "FR-TR-006",
+    "FR-NP-006",
+}
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
     "P8-02": {"FR-PM-002", "INT-002"},
@@ -842,6 +861,20 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_ANCHOR_EVIDENCE))
+        )
+
+    for requirement_id in P8_01_EVIDENCE_REQUIREMENTS:
+        row = expanded_by_id[requirement_id]
+        if requirement_id in P8_01_COMPLETED_ALLOCATION:
+            row["phase"] = "8"
+            row["status"] = P8_01_COMPLETED_ALLOCATION[requirement_id]
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *P8_01_COMPLETED_EVIDENCE))
         )
 
     return expanded

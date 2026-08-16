@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_LEVEL_3 — P8-01`
+`IN_PROGRESS_AUDIT — P8-02`
 
-Recovery time: `2026-08-16T06:22:00Z`
+Recovery time: `2026-08-16T07:00:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -116,6 +116,15 @@ P8-01 checkpoint 3 final checkpoint:
 P8-01 checkpoint 3 ordinary CI:
 `31913915708`
 
+P8-01 final product checkpoint and P8-02 audit base:
+`b938926293c51c2e3ac1f63adab583c099a5c3ed`
+
+P8-01 final ordinary CI:
+`31925662056`
+
+P8-01 final Level 3 workflow:
+`31926087732`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -167,18 +176,38 @@ frontend `95082933315` (`60/60` files, `933/933` unit, `426/426` E2E,
 Complete evidence is
 `implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`.
 
-Follow the frozen `implementation/evidence/phase-8/p8-01-plan.md`. Execute
-only the final Level 3 Gate: extend the cumulative disposable-Site runtime
-through all seven projection kinds; run additive migrations twice; prove
-immutable observations and guarded heads under duplicate, reorder, equal-time
-conflict and restart; prove Mock unavailable and synthetic non-authoritative
-truth; prove exact confirmed-current Tooling cost/Asset consumers, Project-
-first IDOR/redaction, route disable/recovery, zero target write, zero production
-traffic and cleanup; then run the complete exact-SHA repository, frontend,
-secret, `119/119` visual and runtime Gate with release review. Add no new UI,
-public webhook, target write, generic retry/DLQ/replay/reconciliation operation,
-Trial Summary event or JCE Core behavior. P8-02 and production ERPNext/JCE
-remain prohibited until P8-01 Level 3 passes.
+P8-01 passes Level 3 at exact final product checkpoint `b938926`. Ordinary CI
+`31925662056` passes repository `95112716915` (`1,969` tracked Python),
+frontend `95112716888` (`933/933` unit, `426/426` E2E, `7,641` direct
+trilingual sources, coverage `80.36%/80.20%/83.00%/82.99%` and zero
+vulnerabilities), secret `95112716949` and `119/119` fixed-Linux visual
+`95112716959`.
+
+Exact-SHA Level 3 `31926087732` passes repository `95113770531`, frontend
+`95113770530`, secret `95113770561`, visual `95113770550`, preflight
+`95115031258` and cumulative disposable runtime `95115065221`. Runtime
+artifact `9258083274` has digest
+`sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`.
+The seven heads, twenty-five observations, replay/reorder/conflict/restart,
+Tooling cost/Asset consumer closure, Project-first IDOR/redaction, route
+recovery, migrations twice, zero target write, zero production traffic and
+cleanup pass. Complete evidence is
+`implementation/evidence/phase-8/p8-01-validation.md`.
+
+Execute only the bounded P8-02 requirement/domain/existing-capability and
+security audit for `INT-002` and `FR-PM-002`. Inspect existing webhook,
+signature, Inbox, worker, Project draft/source mapping, idempotency, permission
+and audit seams. Freeze exact raw-body signature/timestamp/replay-window/key-
+rotation rules, landing-before-acknowledgement transaction, event identity and
+payload-hash conflict, asynchronous claim/restart/reorder semantics, one exact
+submitted Quotation or Sales Order to at most one Project draft, migration,
+rollback, changed-files/tests and Level 3 impact in
+`implementation/evidence/phase-8/p8-02-plan.md` before product code.
+
+Do not claim the P8-07 `NFR-INT-001` operations/replay/reconciliation slice,
+contact production ERPNext/JCE, infer current custom fields or service scopes,
+create a submitted Project, mutate a Gate/Work Item/Tooling/Trial object, or
+activate P8-03 through P8-09 behavior.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

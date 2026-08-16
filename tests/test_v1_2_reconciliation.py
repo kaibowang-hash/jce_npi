@@ -157,6 +157,8 @@ class V12ReconciliationTests(unittest.TestCase):
             expected_evidence = set(expected[5])
             if requirement_id in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS:
                 expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_01_EVIDENCE_REQUIREMENTS:
+                expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -176,6 +178,8 @@ class V12ReconciliationTests(unittest.TestCase):
             expected_evidence = set(expected[6])
             if requirement_id in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS:
                 expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
+            if requirement_id in self.verifier.EXPECTED_P8_01_EVIDENCE_REQUIREMENTS:
+                expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
             self.assertEqual(
                 {
                     value.strip()
@@ -242,6 +246,11 @@ class V12ReconciliationTests(unittest.TestCase):
                         in self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS
                     ):
                         expected_evidence |= self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE
+                    if (
+                        requirement_id
+                        in self.verifier.EXPECTED_P8_01_EVIDENCE_REQUIREMENTS
+                    ):
+                        expected_evidence |= self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE
                     self.assertEqual(evidence, expected_evidence)
                 for evidence_path in evidence:
                     self.assertTrue(
@@ -271,7 +280,13 @@ class V12ReconciliationTests(unittest.TestCase):
             anchored_status = f"ANCHORED_{task_id.replace('-', '_')}"
             for requirement_id in requirement_ids:
                 row = by_id[requirement_id]
-                self.assertEqual((row["phase"], row["status"]), ("8", anchored_status))
+                expected_status = (
+                    self.verifier.EXPECTED_P8_01_COMPLETED_ALLOCATION.get(
+                        requirement_id,
+                        anchored_status,
+                    )
+                )
+                self.assertEqual((row["phase"], row["status"]), ("8", expected_status))
                 evidence = {
                     value.strip()
                     for value in row["evidence"].split(";")
@@ -280,6 +295,12 @@ class V12ReconciliationTests(unittest.TestCase):
                 self.assertTrue(
                     self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
                 )
+                if requirement_id in self.verifier.EXPECTED_P8_01_EVIDENCE_REQUIREMENTS:
+                    self.assertTrue(
+                        self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE.issubset(
+                            evidence
+                        )
+                    )
 
         for requirement_id, expected_trace in {
             **self.verifier.EXPECTED_P8_CARRIED_FOUNDATIONS,
@@ -295,6 +316,12 @@ class V12ReconciliationTests(unittest.TestCase):
             self.assertTrue(
                 self.verifier.EXPECTED_P8_ANCHOR_EVIDENCE.issubset(evidence)
             )
+            if requirement_id in self.verifier.EXPECTED_P8_01_EVIDENCE_REQUIREMENTS:
+                self.assertTrue(
+                    self.verifier.EXPECTED_P8_01_COMPLETED_EVIDENCE.issubset(
+                        evidence
+                    )
+                )
 
     def test_r1_04_trace_is_verified_with_runtime_evidence(self) -> None:
         rows = self.verifier._read_csv(self.verifier.TRACE)

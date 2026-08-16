@@ -1,29 +1,29 @@
 # Blockers
 
-Updated: `2026-08-15T18:47:39Z`
+Updated: `2026-08-16T07:00:00Z`
 
 ## Active hard blockers
 
-None. P7-08 and Phase 7 pass at exact final product SHA
-`31114021cf18cf5e32c22902de5150ed2922e7ba`. Ordinary CI `31898840279`
-passes repository `95046204818`, frontend `95046204781`, secret
-`95046204823` and `119/119` fixed-Linux visual `95046204879`. Final Level 3
-workflow `31899480493` passes repository, frontend, full-history secret,
-visual, controlled preflight and cumulative disposable-Site runtime
-`95049356690`. Runtime artifact `9250918326` has digest
-`sha256:84bff2803a329960e6a0ebcd9f46c48d499a1d13387ef9a61b1e6b7c881840f2`;
-zero integration traffic and cleanup pass. P8-00 documentation/trace checkpoint
-`1da93f4` passes ordinary Level 2 CI `31901621310`; P8-01 bounded read-only
-projection audit is active. No user action, login or frontend operation is
-required.
+None. P8-01 passes at exact final product SHA
+`b938926293c51c2e3ac1f63adab583c099a5c3ed`. Ordinary CI `31925662056`
+passes repository `95112716915`, frontend `95112716888`, secret
+`95112716949` and `119/119` fixed-Linux visual `95112716959`. Final Level 3
+workflow `31926087732` passes repository, frontend, secret, visual, controlled
+preflight and cumulative disposable-Site runtime `95115065221`. Runtime
+artifact `9258083274` has digest
+`sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`;
+seven-kind replay/order/conflict/restart, IDOR/redaction, migrations twice,
+zero target write, zero production traffic and cleanup pass. Only the bounded
+P8-02 signed-webhook/Inbox audit is active. No user action, login or frontend
+operation is required.
 
 ## Active recovery
 
-None. Phase 7 is sealed `PASS_LEVEL_3`; failed diagnostic runs remain
-diagnostic evidence rather than PASS evidence. P8-00 is sealed
-`PASS_LEVEL_2`; P8-01 changes no product behavior until its audit plan passes.
-Adapters, webhooks, workers, projections and UI remain inactive until their
-exact Phase 8 atomic task is audited and validated.
+None. P8-01 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
+diagnostic evidence rather than PASS evidence and the final exact-SHA run is
+authoritative. P8-02 changes no product behavior until its audit plan and
+transition CI pass. Production adapters/webhooks, target writes, P8-03 through
+P8-09 and the P8-07 operations/replay/reconciliation surface remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -34,8 +34,8 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 is `31899480493` at
-`31114021cf18cf5e32c22902de5150ed2922e7ba`. Production ERPNext/JCE endpoints,
+latest complete Level 3 is `31926087732` at
+`b938926293c51c2e3ac1f63adab583c099a5c3ed`. Production ERPNext/JCE endpoints,
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.

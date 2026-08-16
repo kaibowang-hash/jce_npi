@@ -1,25 +1,25 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T06:22:00Z`
+Updated: `2026-08-16T07:00:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_FINAL_LEVEL_3 — P8-01`
+- Mode: `IN_PROGRESS_AUDIT — P8-02`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `71bd18a610b685894ab2ed84df4a51a4306eacae` (pushed; P8-01
-  `CHECKPOINT_3_PASS`)
+  `b938926293c51c2e3ac1f63adab583c099a5c3ed` (pushed; P8-01
+  `PASS_LEVEL_3`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
 - Latest complete exact-SHA delivery Gate:
-  `31899480493` (`PASS — LEVEL 3` at `31114021cf18cf5e32c22902de5150ed2922e7ba`;
+  `31926087732` (`PASS — LEVEL 3` at `b938926293c51c2e3ac1f63adab583c099a5c3ed`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31913915708` (`PASS` at
-  `71bd18a610b685894ab2ed84df4a51a4306eacae`; P8-01 checkpoint 3)
+  `31925662056` (`PASS` at
+  `b938926293c51c2e3ac1f63adab583c099a5c3ed`; P8-01 final)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -59,18 +59,20 @@ Updated: `2026-08-16T06:22:00Z`
 - P8-01 checkpoint 3 final checkpoint:
   `71bd18a610b685894ab2ed84df4a51a4306eacae` (`CHECKPOINT 3 PASS`;
   ordinary CI `31913915708` exact-SHA PASS; controlled lanes expected skipped)
+- P8-01 final product Gate:
+  `b938926293c51c2e3ac1f63adab583c099a5c3ed` (`LEVEL 3 PASS`;
+  ordinary CI `31925662056`; exact-SHA Level 3 `31926087732`)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-01 — read-only master and status projections`
-  (`IN_PROGRESS_FINAL_LEVEL_3`)
-- Resumed product task: `P8-01` (`ACTIVE_FINAL_LEVEL_3`)
+  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_AUDIT`)
+- Resumed product task: `P8-02` (`ACTIVE_AUDIT_ONLY`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-01 FINAL LEVEL 3`)
+  (`IN_PROGRESS — P8-02 AUDIT`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -128,14 +130,31 @@ trilingual sources, coverage thresholds and zero vulnerabilities), secret
 Complete evidence is
 `implementation/evidence/phase-8/p8-01-product-ui-checkpoint.md`.
 
-The only active atomic scope is the final P8-01 Level 3 Gate: extend the
-cumulative disposable-Site runtime through the seven projection kinds,
-migrate twice and prove exact duplicate/reorder/conflict/restart, Mock
-unavailable, synthetic non-authoritative truth, confirmed-current Tooling
-consumer closure, Project-first IDOR/redaction, route disable/recovery, zero
-target write, zero production traffic and cleanup; then run complete exact-SHA
-repository/frontend/secret/visual/runtime verification and release review.
-P8-02 and production ERPNext/JCE contact remain inactive. There is no Hard
+P8-01 passes Level 3 at exact final product checkpoint `b938926`. Ordinary CI
+`31925662056` passes repository `95112716915` (`1,969` tracked Python),
+frontend `95112716888` (`933/933` unit, `426/426` E2E, `7,641` direct
+trilingual sources and coverage thresholds), secret `95112716949` and
+`119/119` fixed-Linux visual `95112716959`. Exact-SHA Level 3
+`31926087732` passes repository `95113770531`, frontend `95113770530`, secret
+`95113770561`, visual `95113770550`, preflight `95115031258` and cumulative
+disposable-Site runtime `95115065221`. Runtime artifact `9258083274` has
+digest `sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`
+and proves seven heads, twenty-five immutable observations, exact replay/
+reorder/conflict/restart, Tooling consumer closure, IDOR/redaction, route
+recovery, migrations twice, zero target write, zero production traffic and
+cleanup. Complete evidence is
+`implementation/evidence/phase-8/p8-01-validation.md`.
+
+The only active atomic scope is the bounded P8-02 requirement/domain/existing-
+capability and security audit for `INT-002` and `FR-PM-002`. It must inspect
+the existing Inbox, webhook, Project-draft, idempotency, permission, audit and
+worker foundations; freeze raw-body signature/replay-window verification,
+durable landing before acknowledgement, event-ID/payload-hash conflict,
+asynchronous retry/restart/reorder, exact source-document mapping, at-most-one
+Project draft, migrations, rollback and Level 3 impact in
+`implementation/evidence/phase-8/p8-02-plan.md` before product code.
+`NFR-INT-001` full operations/replay/reconciliation remains P8-07. Production
+ERPNext/JCE contact and P8-03 through P8-09 remain inactive. There is no Hard
 Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
