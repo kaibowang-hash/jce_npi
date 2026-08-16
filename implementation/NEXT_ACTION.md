@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P8-03`
+`IN_PROGRESS_CHECKPOINT_4 — P8-03`
 
-Recovery time: `2026-08-16T15:03:03Z`
+Recovery time: `2026-08-16T16:07:13Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -188,6 +188,12 @@ P8-03 checkpoint 2 final product checkpoint:
 P8-03 checkpoint 2 ordinary CI:
 `31953799677`
 
+P8-03 checkpoint 3 product checkpoint:
+`1a2c5bebdf5288d6c6570c87eb2753908867bea8`
+
+P8-03 checkpoint 3 ordinary CI:
+`31956908978`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -307,15 +313,18 @@ Checkpoint 2 passes at exact final product SHA `6e11a86` and ordinary CI
 `31953799677`; complete evidence is
 `implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`.
 
-Execute checkpoint 3: add only bounded pending/expired-claim recovery,
-immutable pre-call attempts, the closed default-disabled adapter registry,
-Mock/no-op and disposable network-free synthetic proof, closed fault/result
-classification and atomic terminal result/audit plus authoritative mapping
-compare-and-set. A crossed adapter boundary must never blindly redispatch;
-synthetic proof must remain non-authoritative with no formal Item code or
-mapping. Extend only the cumulative disposable-Site runtime needed to prove
-those mechanics. Do not add UI, manual retry/reconcile, a default profile,
-networked Sandbox, production contact or MBOM behavior.
+Checkpoint 3 passes at exact product SHA `1a2c5be` and ordinary CI
+`31956908978`; complete evidence is
+`implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`.
+
+Execute checkpoint 4: extend only the existing Phase 5 EBOM workspace and the
+fixed P8-03 data source with a dense trilingual Item execution inspector,
+truthful Mock/queued/processing/failed/uncertain/synthetic/authoritative-
+mapping states, exact source/profile/expected-version impact and one guarded
+primary request action. Include direct English/`zh`/`zh-TW` translations,
+accessibility, focused unit/E2E and the three fixed visual cases. Do not add a
+retry/reconcile control, browser target access, default profile, networked
+Sandbox, production contact or MBOM behavior.
 
 Do not contact production ERPNext/JCE, infer current custom Item fields,
 naming/UOM rules or service scopes, invent a cross-Project part identity, let

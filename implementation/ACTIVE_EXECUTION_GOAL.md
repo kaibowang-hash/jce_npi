@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T15:03:03Z`
+Updated: `2026-08-16T16:07:13Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P8-03`
+- Mode: `IN_PROGRESS_CHECKPOINT_4 — P8-03`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `6e11a86048983f87c9d54e0fc3e3544e7e9a05f0` (pushed; P8-03
-  `CHECKPOINT_2_PASS`)
+  `1a2c5bebdf5288d6c6570c87eb2753908867bea8` (pushed; P8-03
+  `CHECKPOINT_3_PASS`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,8 +18,8 @@ Updated: `2026-08-16T15:03:03Z`
   `31944941030` (`PASS — LEVEL 3` at `260ed2ef865180f33edfca0e8fe1daf4a0a4e771`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31953799677` (`PASS` at
-  `6e11a86048983f87c9d54e0fc3e3544e7e9a05f0`; P8-03 checkpoint 2)
+  `31956908978` (`PASS` at
+  `1a2c5bebdf5288d6c6570c87eb2753908867bea8`; P8-03 checkpoint 3)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -86,18 +86,21 @@ Updated: `2026-08-16T15:03:03Z`
 - P8-03 checkpoint 2 final product checkpoint:
   `6e11a86048983f87c9d54e0fc3e3544e7e9a05f0` (`CHECKPOINT 2 PASS`;
   ordinary CI `31953799677` exact-SHA PASS; controlled lanes expected skipped)
+- P8-03 checkpoint 3 product checkpoint:
+  `1a2c5bebdf5288d6c6570c87eb2753908867bea8` (`CHECKPOINT 3 PASS`;
+  ordinary CI `31956908978` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
   `P8-03 — Item publish execution`
-  (`IN_PROGRESS_CHECKPOINT_3`)
-- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_3_AFTER_CHECKPOINT_2_CI`)
+  (`IN_PROGRESS_CHECKPOINT_4`)
+- Resumed product task: `P8-03` (`ACTIVE_CHECKPOINT_4_AFTER_CHECKPOINT_3_CI`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-03 CHECKPOINT 3`)
+  (`IN_PROGRESS — P8-03 CHECKPOINT 4`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -225,16 +228,16 @@ identity stream across agreeing EBOM occurrences, separates approval/request/
 Outbox/attempt/transport/result/mapping, requires expected mapping and target
 versions, and permits formal mapping only from an authenticated authoritative
 Sandbox result. Exact frozen plan/task-manifest SHA `bf5e022` passes ordinary
-CI `31947838578`. Checkpoint 1 passes at `1c1faa7` / `31950411271`; checkpoint
-2 passes at exact final product SHA `6e11a86` / ordinary CI `31953799677`.
-Project-first list/detail/create, exact released-source/profile/current-mapping
-resolution, actor-bound idempotency and atomic request/Outbox/audit landing are
-now proven. Checkpoint 3 is active only for bounded leased recovery, pre-call
-immutable attempts, the closed default-disabled adapter registry, network-free
-disposable synthetic proof, result classification and mapping compare-and-set.
-Mock/synthetic cannot report a formal Item code or mapping. Production
-ERPNext/JCE contact and P8-04 through P8-09 remain inactive. There is no Hard
-Blocker.
+CI `31947838578`. Checkpoints 1 and 2 pass at `1c1faa7` / `31950411271` and
+`6e11a86` / `31953799677`. Checkpoint 3 passes at exact product SHA `1a2c5be`
+and ordinary CI `31956908978`: bounded lease recovery, immutable pre-call
+attempts, a closed default-disabled adapter registry, network-free synthetic
+proof, closed result classification, no post-boundary redispatch and atomic
+authoritative mapping compare-and-set are proven. Checkpoint 4 is active only
+for the dense trilingual EBOM Item execution workspace and one guarded primary
+request action. Mock/synthetic cannot report a formal Item code or mapping.
+Production ERPNext/JCE contact and P8-04 through P8-09 remain inactive. There
+is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

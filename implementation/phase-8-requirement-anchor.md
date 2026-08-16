@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-03 CHECKPOINT 2 PASS; CHECKPOINT 3 ACTIVE**
+Status: **IN PROGRESS — P8-03 CHECKPOINT 3 PASS; CHECKPOINT 4 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -380,10 +380,17 @@ and unchanged `119/119` visual matrix pass; controlled lanes correctly skip.
 Complete evidence is
 `implementation/evidence/phase-8/p8-03-command-outbox-checkpoint.md`.
 
-Standing authority now activates only checkpoint 3 bounded leased worker/
-recovery, immutable pre-call attempts, closed default-disabled adapters,
-network-free disposable synthetic proof, result classification and atomic
-terminal result/mapping compare-and-set. UI remains inactive; no Sandbox or
-production network profile is installed. `NFR-INT-001` full operations/DLQ/
-manual replay/reconciliation remains P8-07. P8-04 through P8-09 and production
-ERPNext/JCE remain inactive.
+Checkpoint 3 passes at exact product SHA `1a2c5be` and ordinary CI
+`31956908978`: `2,094` tracked Python tests, `933/933` frontend unit,
+`426/426` E2E, `7,879` direct trilingual sources, complete history secret scan
+and unchanged `119/119` visual matrix pass; controlled lanes correctly skip.
+Complete evidence is
+`implementation/evidence/phase-8/p8-03-worker-adapter-result-checkpoint.md`.
+
+Standing authority now activates only checkpoint 4: the dense direct-
+trilingual EBOM Item execution inspector, exact source/profile/expected-
+version impact, truthful Mock/queued/processing/failed/uncertain/synthetic/
+authoritative-mapping states and one guarded primary request action. No retry/
+reconcile control, browser target access, Sandbox or production network profile
+is installed. `NFR-INT-001` full operations/DLQ/manual replay/reconciliation
+remains P8-07. P8-04 through P8-09 and production ERPNext/JCE remain inactive.

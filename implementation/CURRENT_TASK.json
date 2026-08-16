@@ -3,7 +3,7 @@
   "task_id": "P8-03",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_3",
+  "status": "IN_PROGRESS_CHECKPOINT_4",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-04",
   "base_checkpoint": "260ed2ef865180f33edfca0e8fe1daf4a0a4e771",
@@ -134,7 +134,7 @@
     "phase_status_resumed_product_task": "P8-03",
     "active_goal_marker": "P8-03",
     "next_action_marker": "P8-03",
-    "controller_marker": "P8-03 checkpoint 2 PASS; checkpoint 3 active"
+    "controller_marker": "P8-03 checkpoint 3 PASS; checkpoint 4 active"
   },
   "rollback": {
     "before_product_resume": "Restore exact P8-02 final product checkpoint 260ed2ef865180f33edfca0e8fe1daf4a0a4e771 while retaining every P8-02 Inbox receipt, source binding, Project draft, Gate shell and audit; the P8-03 audit changes no product or external state.",

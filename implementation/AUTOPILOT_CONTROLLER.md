@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-16T12:40:00Z`
+Updated: `2026-08-16T16:07:13Z`
 
 ## Authority and operating mode
 
@@ -4123,3 +4123,36 @@ repeat or rewrite it merely to restore context. See
   replay/reconciliation, a default profile, networked Sandbox, production
   ERPNext/JCE, MBOM/P8-04 through P8-09 and generic P8-07 operations remain
   inactive. There is no Hard Blocker and no user action is required.
+
+## 2026-08-16 P8-03 checkpoint 3 PASS; checkpoint 4 active
+
+- Exact product checkpoint
+  `1a2c5bebdf5288d6c6570c87eb2753908867bea8` passes ordinary pull-request CI
+  `31956908978`: repository `95188821489` proves `2,094` tracked Python tests;
+  frontend `95188821475` proves `933/933` unit, `426/426` E2E and `7,879`
+  complete direct trilingual sources; secret `95188821470` scans `26`
+  first-parent task commits and `532` complete branch commits with no leak;
+  unchanged `119/119` fixed-Linux visual `95188821520` passes. Controlled lanes
+  correctly skip because ordinary checkpoint CI is not the final Level 3
+  disposable-Site dispatch.
+- Bounded pending/expired-claim recovery, exact state locks, immutable pre-call
+  attempts, stable target idempotency, closed default-disabled adapters,
+  network-free non-authoritative synthetic execution, classified
+  failures/uncertainty and atomic terminal result/audit are proven. An attempt
+  that crossed the adapter boundary is never blindly redispatched.
+- Only an authenticated authoritative non-production Sandbox result with exact
+  source/profile/result binding may create a mapping observation and advance
+  the mapping head under compare-and-set. No Sandbox is installed or called;
+  Mock and synthetic retain no formal Item code/version or mapping. The
+  cumulative fixture/verifier is now extended for the final Level 3 Gate.
+- Standing continuous-delivery authority activates only checkpoint 4: extend
+  the existing Phase 5 EBOM workspace and fixed P8-03 data source with the
+  dense direct-trilingual Item execution inspector, truthful disabled/status/
+  impact/result/mapping states and one guarded primary request action. Add the
+  focused accessibility, unit/E2E and three fixed visual cases.
+- The controller marker is: `P8-03 checkpoint 3 PASS; checkpoint 4 active`.
+  The final Level 3 Gate waits for checkpoint 4 exact-SHA ordinary CI. Manual
+  retry/replay/reconciliation, browser target access, default or networked
+  profiles, production ERPNext/JCE, MBOM/P8-04 through P8-09 and generic P8-07
+  operations remain inactive. There is no Hard Blocker and no user action is
+  required.
