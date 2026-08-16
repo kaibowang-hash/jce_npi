@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_FINAL_LEVEL_3 — P8-02`
+`IN_PROGRESS_AUDIT — P8-03`
 
-Recovery time: `2026-08-16T08:18:00Z`
+Recovery time: `2026-08-16T12:05:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -152,6 +152,15 @@ P8-02 checkpoint 3 final checkpoint:
 P8-02 checkpoint 3 ordinary CI:
 `31935510653`
 
+P8-02 final product checkpoint and P8-03 audit base:
+`260ed2ef865180f33edfca0e8fe1daf4a0a4e771`
+
+P8-02 final ordinary CI:
+`31944345420`
+
+P8-02 final Level 3 workflow:
+`31944941030`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -243,20 +252,31 @@ passes repository `95136660668`, frontend `95136660777`, secret
 jobs correctly skip. Complete evidence is
 `implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md`.
 
-Execute only the final P8-02 Level 3 Gate. First require the controller/evidence
-checkpoint to pass exact-SHA ordinary CI. Then dispatch the complete Level 3
-workflow against that unchanged SHA and prove repository/frontend/history-
-secret/`119/119` visual plus cumulative disposable-Site runtime, migrations
-twice, default-disable/route recovery, bad/stale/key-rotation signatures,
-durable acknowledgement, duplicate/conflict/reorder/concurrency, live/expired
-leases, exactly one draft/source binding/two Gate shells, later-version no
-rewrite, redaction, zero target write, zero production traffic and cleanup.
-Apply the `release-gate` review before P8-03 is activated.
+P8-02 passes Level 3 at exact final product checkpoint `260ed2e`. Ordinary CI
+`31944345420` and exact-SHA Level 3 `31944941030` pass every required lane.
+Cumulative runtime `95160766683` proves default-disable, signature/key-
+rotation rejection, durable Inbox, concurrency/restart, one Project draft/
+source binding/two Gate shells, stable final replay digest, migrations twice,
+redaction, zero target write, zero production traffic and cleanup. Runtime
+artifact `9263250125` has digest
+`sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-02-validation.md`.
 
-Do not claim the P8-07 `NFR-INT-001` operations/DLQ/replay/reconciliation slice,
-contact production ERPNext/JCE, infer current custom fields or service scopes,
-create a submitted Project, mutate a Gate/Work Item/Tooling/Trial object, or
-activate P8-03 through P8-09 behavior.
+Execute only the bounded P8-03 Item-publish requirement/domain/existing-
+capability and security audit. Read `INT-003`, the carried Item portion of
+`FR-DS-013`, ownership/contracts and exact released-source/request/result
+foundations. Freeze the smallest operation-specific Item request, distinct
+approval/request/attempt/uncertain/observed-result states, exact source and
+expected target version, Project-first authority, idempotency, Mock/sandbox,
+fault, migration, rollback, allowed-path/test map and Level 3 boundary in
+`implementation/evidence/phase-8/p8-03-plan.md`. Product code waits for that
+audit plan and its exact-SHA ordinary CI.
+
+Do not contact production ERPNext/JCE, infer current custom Item fields,
+naming rules or service scopes, let Mock report a formal Item code, execute an
+Item write, activate MBOM/Asset/quality operations, or activate P8-04 through
+P8-09 behavior.
 
 P7-01 passes Level 2 at exact checkpoint `78efa3e`. Final unchanged workflow
 `31380834335` passes repository `93430635765` (`1,485/1,485` tracked Python,

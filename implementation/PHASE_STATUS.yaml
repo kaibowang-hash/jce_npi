@@ -1,16 +1,16 @@
 version: '1.2'
 overall_status: IN_PROGRESS
 current_phase: 8
-updated_at: '2026-08-16T08:18:00Z'
+updated_at: '2026-08-16T12:05:00Z'
 authorization: automatic_transition_after_pass
 execution_hold: NONE
-current_task: P8-02
-current_task_status: IN_PROGRESS_FINAL_LEVEL_3
-current_task_completed_stage: P8_02_CHECKPOINT_3_CLAIM_PROJECT_BINDING_RUNTIME_PASS
-current_task_next_stage: P8_02_FINAL_LEVEL_3_GATE
+current_task: P8-03
+current_task_status: IN_PROGRESS_AUDIT
+current_task_completed_stage: P8_02_LEVEL_3_PASS
+current_task_next_stage: P8_03_REQUIREMENT_DOMAIN_AUDIT
 current_task_next_stage_status: IN_PROGRESS
-resumed_product_task: P8-02
-resumed_product_task_status: ACTIVE_FINAL_LEVEL_3
+resumed_product_task: P8-03
+resumed_product_task_status: ACTIVE_AUDIT_ONLY
 repair_accounting:
   basis: PRODUCT_ROOT_ONLY
   product_root_budget: 5
@@ -2138,7 +2138,7 @@ p8_01:
 p8_02:
   task: P8-02
   controller_task: P8-02_SIGNED_WEBHOOK_AND_INBOX_PROCESSING
-  status: IN_PROGRESS_FINAL_LEVEL_3
+  status: PASS_LEVEL_3
   phase: 8
   milestone: M7-02
   requirements:
@@ -2181,20 +2181,74 @@ p8_02:
   checkpoint_3_visual_digest: sha256:2c417cf2d93c1783bcb4e462b20ed903b65b3d0b3b51645757123d452b5f42e3
   checkpoint_3_gitleaks_artifact: 9260515460
   checkpoint_3_gitleaks_digest: sha256:6b7d7a45995de3d254a38dee15b63b575e1a4ae1abf1e281089d7006952231b1
-  current_stage: FINAL_LEVEL_3_GATE
+  level_3_product_checkpoint: 260ed2ef865180f33edfca0e8fe1daf4a0a4e771
+  level_3_ordinary_ci: 31944345420
+  level_3_ordinary_repository_job: 95157995410
+  level_3_ordinary_frontend_job: 95157995356
+  level_3_ordinary_secret_job: 95157995393
+  level_3_ordinary_visual_job: 95157995395
+  level_3_ordinary_visual_artifact: 9262918058
+  level_3_ordinary_visual_digest: sha256:a30c32289e92f6fd226fd48b915fc10735691c1ff87e466b6e5b6719f82226b8
+  level_3_ordinary_gitleaks_artifact: 9262871812
+  level_3_ordinary_gitleaks_digest: sha256:714e67d2e42a0dbc56906f706ebe6400ca2ef2d93cd66fbfe91d331454fbcf25
+  level_3_workflow: 31944941030
+  level_3_repository_job: 95159399250
+  level_3_frontend_job: 95159399214
+  level_3_secret_job: 95159399232
+  level_3_visual_job: 95159399354
+  level_3_preflight_job: 95160725595
+  level_3_runtime_job: 95160766683
+  level_3_runtime_artifact: 9263250125
+  level_3_runtime_digest: sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693
+  level_3_runtime_result_digest: sha256:531df14622f6db42a5602586a4eb65760a8c8837b0382990bc0708fdc278b67d
+  level_3_diagnostic_runs:
+    - {run: 31936906558, root: PRODUCT_INGRESS_INTERNAL_WRITE_SCOPE, repair: ecac1185d92a3131150819163a9a3353dadbcedd}
+    - {run: 31938675345, root: VERIFIER_RETAINED_USER_RESPONSE, repair: 9b7f7c344eb0c55524bb2b7022114a3cc979e42a}
+    - {run: 31940189741, root: VERIFIER_ACTOR_USER_TYPE, repair: c4798829a09cb7514d7cdbf5a3a88b8481a3a2c8}
+    - {run: 31941719602, root: PRODUCT_FIELD_UNIQUE_CONCURRENCY_CLASSIFICATION, repair: b5039808a6948c90a31a0f744f739880fa49a695}
+    - {run: 31943330103, root: VERIFIER_FINAL_DIGEST_SAMPLING, repair: 260ed2ef865180f33edfca0e8fe1daf4a0a4e771}
+  task_gate: PASS_LEVEL_3
+  current_stage: COMPLETE
   next_stage_after_pass: P8_03_REQUIREMENT_DOMAIN_AUDIT
   product_code_changed: true
   external_holds:
     - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
     - CURRENT_ERPNEXT_CUSTOMIZATION_MAPPING_AND_SANDBOX_RECONCILIATION_PACKAGE
     - NFR_INT_001_FULL_OPERATIONS_REPLAY_AND_RECONCILIATION_P8_07
-    - P8_03_THROUGH_P8_09_TARGET_EXECUTION_OPERATIONS_AND_DISPLAY
+    - P8_03_ITEM_PUBLISH_PRODUCT_BEHAVIOR_PENDING_AUDIT
+    - P8_04_THROUGH_P8_09_TARGET_EXECUTION_OPERATIONS_AND_DISPLAY
   evidence:
     - implementation/evidence/phase-8/p8-01-validation.md
     - implementation/evidence/phase-8/p8-02-plan.md
     - implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md
     - implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md
     - implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md
+    - implementation/evidence/phase-8/p8-02-validation.md
+p8_03:
+  task: P8-03
+  controller_task: P8-03_ITEM_PUBLISH_EXECUTION
+  status: IN_PROGRESS_AUDIT
+  phase: 8
+  milestone: M7-03
+  requirements:
+    - INT-003
+    - FR-DS-013
+  predecessor_product_checkpoint: 260ed2ef865180f33edfca0e8fe1daf4a0a4e771
+  audit_base_checkpoint: 260ed2ef865180f33edfca0e8fe1daf4a0a4e771
+  audit: IN_PROGRESS
+  current_stage: REQUIREMENT_DOMAIN_EXISTING_CAPABILITY_SECURITY_AUDIT
+  next_stage_after_pass: P8_03_FROZEN_CHECKPOINT_1
+  product_code_changed: false
+  external_holds:
+    - PRODUCTION_ERPNEXT_ENDPOINT_CREDENTIAL_DATA_AND_NETWORK_CONTACT
+    - CURRENT_ERPNEXT_ITEM_FIELD_NAMING_VERSION_AND_SERVICE_SCOPE_MAPPING
+    - FORMAL_ITEM_CODE_FROM_MOCK_OR_UNOBSERVED_TARGET_RESULT
+    - NFR_INT_001_FULL_OPERATIONS_REPLAY_AND_RECONCILIATION_P8_07
+    - P8_04_THROUGH_P8_09_TARGET_EXECUTION_OPERATIONS_AND_DISPLAY
+  evidence:
+    - implementation/phase-8-requirement-anchor.md
+    - implementation/evidence/phase-8/p8-00-validation.md
+    - implementation/evidence/phase-8/p8-02-validation.md
 bridge:
   id: R1
   name: V1.2 reconciliation and shared UX bridge
@@ -2221,5 +2275,5 @@ phases:
   - {id: 5, name: Part Design Documents Baselines and EBOM, status: PASS, repair_round: 0, completed_tasks: [P5-00, P5-01, P5-02, P5-03, P5-04, P5-05, P5-06], current_task: COMPLETE, gate: implementation/phase-5-gate.md}
   - {id: 6, name: Tooling Domain, status: PASS, repair_round: 0, completed_tasks: [P6-00, P6-01, P6-02, P6-03, P6-04, P6-05, P6-06, P6-07, P6-08], current_task: COMPLETE, gate: implementation/phase-6-gate.md}
   - {id: 7, name: Trial Quality Issues and NPI Readiness, status: PASS, repair_round: 0, completed_tasks: [P7-00, P7-01, P7-02, P7-03, P7-04, P7-05, P7-06, P7-07, P7-08], current_task: COMPLETE, gate: implementation/phase-7-gate.md}
-  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01], current_task: P8-02}
+  - {id: 8, name: ERPNext Integration and Execution Requests, status: IN_PROGRESS, repair_round: 0, completed_tasks: [P8-00, P8-01, P8-02], current_task: P8-03}
   - {id: 9, name: Change Portfolio Reporting and Hardening, status: NOT_STARTED, repair_round: 0}

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-02 CHECKPOINT 3 PASS; FINAL LEVEL 3 ACTIVE**
+Status: **IN PROGRESS — P8-02 LEVEL 3 PASS; P8-03 AUDIT ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -343,12 +343,21 @@ source-derived idempotency, existing Project draft aggregate reuse and atomic
 binding/result/audit. Complete evidence is
 `implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md`.
 
-Standing delivery authority now activates only the final P8-02 Level 3 Gate:
-complete exact-SHA repository/frontend/secret/visual verification, cumulative
-disposable-Site runtime and `release-gate` review. The runtime must prove
-migrations twice, signed-route disable/recovery, bad/stale/key-rotation
+P8-02 then passes ordinary CI `31944345420` and exact-SHA Level 3
+`31944941030` at final product checkpoint `260ed2e`. The cumulative disposable
+Site proves signed-route disable/recovery, bad/stale/key-rotation
 authentication, durable acknowledgement, duplicate/conflict/reorder/
 concurrency, claim restart, exactly one draft/binding/two Gate shells,
-later-version no rewrite, redaction, zero target write, zero production traffic
-and cleanup. `NFR-INT-001` full operations/DLQ/replay/reconciliation remains
-P8-07. P8-03 through P8-09 and production ERPNext/JCE remain inactive.
+later-version no rewrite, stable cross-process replay, migrations twice,
+redaction, zero target write/production traffic and cleanup. Complete evidence
+is `implementation/evidence/phase-8/p8-02-validation.md`.
+
+Standing delivery authority now activates only the bounded P8-03 requirement/
+domain/existing-capability and security audit for `INT-003` and the Item
+portion of `FR-DS-013`. The audit must freeze an operation-specific request
+over exact released source identity/version/hash, expected target version,
+actor/trace/idempotency, distinct approval/request/attempt/uncertain/observed-
+result truth, formal Item mapping authority, Mock/sandbox safety, permissions,
+migration, rollback and Level 3 impact before product code. Mock cannot report
+a formal Item code. `NFR-INT-001` full operations/DLQ/replay/reconciliation
+remains P8-07. P8-04 through P8-09 and production ERPNext/JCE remain inactive.

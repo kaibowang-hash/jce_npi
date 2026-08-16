@@ -389,6 +389,17 @@ P8_01_EVIDENCE_REQUIREMENTS = set(P8_01_COMPLETED_ALLOCATION) | {
     "FR-TR-006",
     "FR-NP-006",
 }
+P8_02_COMPLETED_EVIDENCE = (
+    "implementation/evidence/phase-8/p8-02-plan.md",
+    "implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md",
+    "implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md",
+    "implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md",
+    "implementation/evidence/phase-8/p8-02-validation.md",
+)
+P8_02_COMPLETED_ALLOCATION = {
+    "FR-PM-002": "TECHNICAL_VERIFIED_INBOUND_PROJECT_DRAFT_FOUNDATION_PRODUCTION_MAPPING_HELD",
+    "INT-002": "TECHNICAL_VERIFIED_SIGNED_INBOX_PROJECT_DRAFT_FOUNDATION_PRODUCTION_INBOUND_RECONCILIATION_HELD",
+}
 P8_ANCHOR_ALLOCATION = {
     "P8-01": {"FR-PM-010", "INT-001", "INT-006", "INT-007", "INT-010"},
     "P8-02": {"FR-PM-002", "INT-002"},
@@ -875,6 +886,19 @@ def _expanded_rows(
         ]
         row["evidence"] = "; ".join(
             dict.fromkeys((*evidence, *P8_01_COMPLETED_EVIDENCE))
+        )
+
+    for requirement_id, status in P8_02_COMPLETED_ALLOCATION.items():
+        row = expanded_by_id[requirement_id]
+        row["phase"] = "8"
+        row["status"] = status
+        evidence = [
+            value.strip()
+            for value in row["evidence"].split(";")
+            if value.strip()
+        ]
+        row["evidence"] = "; ".join(
+            dict.fromkeys((*evidence, *P8_02_COMPLETED_EVIDENCE))
         )
 
     return expanded

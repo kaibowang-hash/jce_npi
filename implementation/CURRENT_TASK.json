@@ -1,49 +1,45 @@
 {
   "schema_version": 1,
-  "task_id": "P8-02",
+  "task_id": "P8-03",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_FINAL_LEVEL_3",
+  "status": "IN_PROGRESS_AUDIT",
   "completion_gate": "LEVEL_3",
-  "authorized_next_task": "P8-03",
-  "base_checkpoint": "b938926293c51c2e3ac1f63adab583c099a5c3ed",
-  "predecessor_product_checkpoint": "b938926293c51c2e3ac1f63adab583c099a5c3ed",
+  "authorized_next_task": "P8-04",
+  "base_checkpoint": "260ed2ef865180f33edfca0e8fe1daf4a0a4e771",
+  "predecessor_product_checkpoint": "260ed2ef865180f33edfca0e8fe1daf4a0a4e771",
   "requirement_ids": [
-    "INT-002",
-    "FR-PM-002"
+    "INT-003",
+    "FR-DS-013"
   ],
   "scope": [
-    "Implement only the P8-02 three-checkpoint signed-webhook, durable Inbox and at-most-one Project-draft vertical slice frozen in implementation/evidence/phase-8/p8-02-plan.md.",
-    "Checkpoint 1 adds pure raw-body HMAC, closed event, non-production source-profile and intake-policy validation, source ordering and claim domains, shared contracts, guarded additive Inbox/source-binding metadata and direct translations without activating a route or row.",
-    "Checkpoint 2 may add only the fixed POST route, authentication-before-parse request adapter, safe audit/problem boundary, atomic durable landing, commit-before-202 and enqueue-after-commit behavior after checkpoint 1 exact-SHA ordinary CI passes.",
-    "Checkpoint 3 may add only the bounded claim/expired-lease worker, server actor-owner-template resolution, existing Project draft aggregate reuse, unique ERP source binding and atomic result/audit after checkpoint 2 exact-SHA ordinary CI passes.",
-    "Prove same-event and same-source idempotency, hash conflict, key rotation, replay window, source reorder, cross-process restart and at-most-one NPI-owned Project draft while retaining the existing template snapshot and Gate-shell draft invariant.",
-    "Keep the route disabled without an exact non-production profile and injected secret resolver; install no production ERPNext or JCE endpoint, credential, key, mapping, data or traffic and use only disposable synthetic runtime proof.",
-    "Complete exact changed-file tests, Task Diff Review, migrations twice, zero outbound target effect and Level 3 release review before P8-03 activation."
+    "Audit the exact NPI One to ERPNext Item publish execution boundary allocated to P8-03, including the Item portion of the carried FR-DS-013 release foundation.",
+    "Inspect existing released design and EBOM sources, integration request/result primitives, ownership contracts, Project-first permissions, audit, idempotency and Mock seams before choosing any implementation.",
+    "Freeze one operation-specific Item request with exact immutable released source identity, version and hash, expected target version, actor, trace and idempotency; distinguish approval, queued request, attempt, uncertain transport and observed target mapping.",
+    "Freeze ERPNext ownership of formal Item Code and target state; Mock, enqueue, HTTP success or timeout may never produce a formal mapping or claim target success.",
+    "Keep production ERPNext and JCE Core endpoints, credentials, data and traffic prohibited; use only pure contracts, Mock and disposable synthetic proof until an explicitly approved non-production sandbox contract exists.",
+    "Produce implementation/evidence/phase-8/p8-03-plan.md with exact requirements, ownership, contracts, states, permissions, fault matrix, migration, rollback, allowed paths, affected tests and Level 3 impact before any P8-03 product behavior."
   ],
   "non_scope": [
-    "Any behavior beyond the active checkpoint or outside the exact contracts, states, authorities and paths frozen in implementation/evidence/phase-8/p8-02-plan.md.",
-    "Any production ERPNext or JCE endpoint, credential, signing key, source profile, data, webhook, request, response, network contact, write, replay, reconciliation or compensating transaction.",
-    "Any caller-selected tenant, service actor, Project owner, template, Project type, permission, business-code transformation, target identity, success, payload hash or generic DocType/method/endpoint authority.",
-    "Any Project submission or activation, Gate review/decision/evidence/transition, Work Item generation, Item/MBOM/Asset/quality execution, Tooling/Trial/Readiness mutation or outbound target write; existing Gate shells remain only the atomic draft aggregate invariant.",
-    "Any generic operations UI, DLQ, manual replay, corrected old payload, cross-operation retry/backoff or reconciliation claim allocated to P8-07.",
-    "Any P8-03 through P8-09 behavior, production customization or field/naming/service-scope assumption, new production dependency, core patch, cross-database access, test deletion or threshold reduction."
+    "Any P8-03 product implementation before the requirement, domain, existing-capability and security audit is frozen and its exact-SHA ordinary CI passes.",
+    "Any production ERPNext or JCE endpoint, credential, data, request, response, network contact, Item creation/update, reconciliation or compensating transaction.",
+    "Any caller-selected target method, DocType, Item Code, target identity, target version, success, authority, actor, tenant, source hash or generic CRUD payload.",
+    "Any MBOM publish, Tool Asset execution, formal quality mutation, generic operations/DLQ/manual replay/reconciliation, Project/Gate/Work Item/Tooling/Trial mutation or source revision rewrite.",
+    "Any P8-04 through P8-09 behavior, production customization or naming/field/service-scope assumption, new production dependency, core patch, cross-database access, test deletion or threshold reduction."
   ],
   "frozen_invariants": [
-    "EXACT_RAW_BODY_METHOD_PATH_KEY_TIMESTAMP_AND_REQUEST_ID_ARE_HMAC_SHA256_BOUND_BEFORE_JSON_TRUST",
-    "FIXED_FIVE_MINUTE_REPLAY_WINDOW_AND_OVERLAPPING_SERVER_OWNED_KEY_ROTATION_FAIL_CLOSED",
-    "DURABLE_INBOX_AND_SOURCE_HEAD_COMMIT_PRECEDES_202_AND_ENQUEUE_OCCURS_ONLY_AFTER_COMMIT",
-    "ONE_EVENT_ID_BINDS_TO_ONE_CANONICAL_EVENT_HASH_AND_CONFLICTS_NEVER_OVERWRITE_THE_FIRST_BODY",
-    "ONE_TENANT_PROFILE_DOCUMENT_TYPE_AND_SOURCE_DOCUMENT_ID_BINDS_TO_AT_MOST_ONE_PROJECT_DRAFT",
-    "SOURCE_VERSION_ORDERING_RETAINS_SUPERSEDED_CONFLICTED_AND_AFTER_CREATION_TRUTH_WITHOUT_PROJECT_REWRITE",
-    "PROJECT_TENANT_SERVICE_ACTOR_OWNER_TEMPLATE_TYPE_AND_IDEMPOTENCY_ARE_SERVER_RESOLVED",
-    "ERP_SOURCE_COMMERCIAL_TRUTH_REMAINS_ERPNEXT_OWNED_WHILE_PROJECT_WORKFLOW_REMAINS_NPI_OWNED",
-    "WEBHOOK_REQUEST_PERFORMS_NO_PROJECT_CREATION_OR_LONG_BUSINESS_WORK",
-    "ACKNOWLEDGED_PENDING_PROCESSING_OR_SUCCEEDED_NEVER_MEANS_PROJECT_SUBMITTED_APPROVED_OR_TARGET_CONFIRMED",
-    "MOCK_DEFAULT_NO_PROFILE_NO_SECRET_NO_ROUTE_AUTHORITY_AND_PRODUCTION_CONTACT_REJECTED",
-    "NO_GENERIC_TARGET_CRUD_CROSS_DATABASE_ACCESS_OR_FRAPPE_ERPNEXT_CORE_PATCH",
-    "NFR_INT_001_FULL_OPERATIONS_DLQ_REPLAY_AND_RECONCILIATION_REMAINS_P8_07",
-    "P8_03_THROUGH_P8_09_AND_PHASE_9_AUTHORITIES_REMAIN_INACTIVE",
+    "ERP_NEXT_OWNS_FORMAL_ITEM_CODE_MASTER_STATE_AND_TARGET_VERSION",
+    "NPI_ONE_OWNS_RELEASED_ENGINEERING_SOURCE_APPROVAL_REQUEST_AND_AUDIT_TRUTH",
+    "ITEM_PUBLISH_IS_ONE_OPERATION_SPECIFIC_COMMAND_NOT_GENERIC_TARGET_CRUD",
+    "EXACT_RELEASED_SOURCE_ID_VERSION_HASH_AND_EXPECTED_TARGET_VERSION_ARE_IMMUTABLE",
+    "APPROVAL_REQUEST_ATTEMPT_TRANSPORT_AND_OBSERVED_TARGET_RESULT_ARE_DISTINCT",
+    "QUEUED_ACCEPTED_HTTP_SUCCESS_OR_TIMEOUT_NEVER_MEANS_ITEM_CREATED_OR_MAPPED",
+    "TIMEOUT_AFTER_POSSIBLE_COMMIT_IS_UNCERTAIN_AND_REQUIRES_RECONCILIATION_BEFORE_REDISPATCH",
+    "FORMAL_ITEM_MAPPING_REQUIRES_AN_OBSERVED_AUTHORITATIVE_TARGET_RESULT",
+    "PROJECT_TENANT_ACTOR_PERMISSION_TRACE_AND_IDEMPOTENCY_ARE_SERVER_ENFORCED",
+    "MOCK_DEFAULT_NO_FORMAL_ITEM_CODE_NO_TARGET_SUCCESS_AND_PRODUCTION_REJECTED",
+    "NO_BROWSER_TO_ERP_CROSS_DATABASE_ACCESS_GENERIC_CRUD_OR_CORE_PATCH",
+    "P8_04_THROUGH_P8_09_AND_PHASE_9_AUTHORITIES_REMAIN_INACTIVE",
     "EN_ZH_ZH_TW_DIRECT_TRANSLATION_FOR_EVERY_NEW_USER_VISIBLE_SUPPORT_STATE",
     "LEVEL_1_2_3_PASS_CRITERIA"
   ],
@@ -58,48 +54,24 @@
     "implementation/REQUIREMENT_TRACEABILITY.csv",
     "implementation/RISK_REGISTER.md",
     "implementation/phase-8-requirement-anchor.md",
-    "implementation/evidence/phase-8/p8-01-validation.md",
-    "implementation/evidence/phase-8/p8-02-*.md",
-    "apps/npi_integration/npi_integration/hooks.py",
-    "apps/npi_integration/npi_integration/reliable.py",
-    "apps/npi_integration/npi_integration/inbound_project/*",
-    "apps/npi_integration/npi_integration/inbound_project/**/*",
-    "apps/npi_integration/npi_integration/inbound_project_api.py",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_inbox_message/*",
-    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_project_source_binding/*",
-    "apps/npi_core/npi_core/bff.py",
-    "apps/npi_core/npi_core/project/domain.py",
-    "apps/npi_core/npi_core/project/frappe_repository.py",
-    "apps/npi_core/npi_core/project_api.py",
-    "apps/npi_core/npi_core/translations/zh.csv",
-    "apps/npi_core/npi_core/translations/zh-TW.csv",
-    "contracts/data-ownership.yaml",
-    "contracts/integration-event.schema.json",
-    "contracts/npi-api.openapi.yaml",
-    "frontend/src/generated/catalogs.ts",
-    ".github/workflows/ci.yml",
+    "implementation/evidence/phase-8/p8-02-validation.md",
+    "implementation/evidence/phase-8/p8-03-*.md",
     "scripts/reconcile_v1_2_traceability.py",
-    "scripts/verify-frappe-runtime.sh",
-    "scripts/verify_inbound_project_runtime.py",
     "scripts/verify_current_task.py",
     "scripts/verify_v1_2_reconciliation.py",
     "tests/test_current_task_verifier.py",
-    "tests/test_v1_2_reconciliation.py",
-    "tests/test_phase4_project_*.py",
-    "tests/test_phase8_inbound_project_*.py"
+    "tests/test_v1_2_reconciliation.py"
   ],
   "affected_checks": {
     "level_1": [
       ["python", "scripts/verify_current_task.py"],
       ["python", "scripts/reconcile_v1_2_traceability.py"],
       ["python", "scripts/verify_v1_2_reconciliation.py"],
-      ["python", "-m", "unittest", "tests.test_phase8_inbound_project_domain", "tests.test_phase8_inbound_project_contract", "tests.test_phase8_inbound_project_metadata", "-v"],
       ["python", "-m", "unittest", "tests.test_current_task_verifier", "tests.test_v1_2_reconciliation", "-v"],
       ["git", "diff", "--check"]
     ],
     "level_2": [
-      ["bash", "scripts/verify.sh"],
-      ["python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_phase8_inbound_project_*.py", "-v"]
+      ["bash", "scripts/verify.sh"]
     ],
     "runtime_preflight": [
       ["python", "scripts/verify_current_task.py"],
@@ -112,15 +84,15 @@
     ]
   },
   "expected_state": {
-    "phase_status_current_task": "P8-02",
+    "phase_status_current_task": "P8-03",
     "phase_status_execution_hold": "NONE",
-    "phase_status_resumed_product_task": "P8-02",
-    "active_goal_marker": "P8-02",
-    "next_action_marker": "P8-02",
-    "controller_marker": "P8-02 checkpoint 3 PASS; final Level 3 active"
+    "phase_status_resumed_product_task": "P8-03",
+    "active_goal_marker": "P8-03",
+    "next_action_marker": "P8-03",
+    "controller_marker": "P8-02 Level 3 PASS; P8-03 audit active"
   },
   "rollback": {
-    "before_product_resume": "Restore exact P8-01 final checkpoint b938926293c51c2e3ac1f63adab583c099a5c3ed while retaining P8-01 observations, heads and audits; the P8-02 audit plan changes no product or external state.",
-    "after_product_resume": "Disable only the fixed P8-02 ingress, enqueue and worker, retain every Inbox body/hash, claim, conflict, source binding, Project draft, Gate shell and audit, and deploy a reviewed forward repair without deleting, rebinding, redispatching or rewriting history."
+    "before_product_resume": "Restore exact P8-02 final product checkpoint 260ed2ef865180f33edfca0e8fe1daf4a0a4e771 while retaining every P8-02 Inbox receipt, source binding, Project draft, Gate shell and audit; the P8-03 audit changes no product or external state.",
+    "after_product_resume": "Not authorized until the P8-03 audit freezes the exact Item request, attempt, observed mapping, migration and forward-repair boundary."
   }
 }

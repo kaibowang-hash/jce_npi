@@ -1,6 +1,6 @@
 # V1.2 Autopilot Controller
 
-Updated: `2026-08-16T07:00:00Z`
+Updated: `2026-08-16T12:05:00Z`
 
 ## Authority and operating mode
 
@@ -3949,3 +3949,54 @@ repeat or rewrite it merely to restore context. See
   traffic, Project submission, target writes and generic DLQ/manual replay/
   reconciliation remain inactive. There is no Hard Blocker and no user action
   is required.
+
+## 2026-08-16 P8-02 Level 3 PASS; P8-03 audit active
+
+- Exact final product checkpoint
+  `260ed2ef865180f33edfca0e8fe1daf4a0a4e771` passes ordinary pull-request CI
+  `31944345420`: repository `95157995410` proves `2,021` tracked Python tests;
+  frontend `95157995356` proves `60/60` files, `933/933` unit tests,
+  `426/426` non-visual E2E, `7,715` complete direct English/`zh`/`zh-TW`
+  sources, coverage `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities;
+  secret `95157995393` scans `24` first-parent task commits and `524` complete
+  branch commits with no leak; visual `95157995395` passes `119/119`.
+- Exact-SHA Level 3 workflow `31944941030` passes repository `95159399250`,
+  frontend `95159399214`, secret `95159399232`, visual `95159399354`,
+  controlled preflight `95160725595` and cumulative disposable-Site runtime
+  `95160766683`. Runtime artifact `9263250125` has digest
+  `sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
+  its PASS result payload has SHA-256
+  `531df14622f6db42a5602586a4eb65760a8c8837b0382990bc0708fdc278b67d`.
+- Runtime proves default-disabled ingress with zero Project, bad/stale/key-
+  rotation rejection, durable acknowledgement, exact duplicate/conflict/
+  reorder and unique-field concurrency, live-lease denial, expired-claim
+  recovery, exactly one NPI-owned draft/source binding and two Gate shells,
+  later-version no rewrite and stable cross-process replay against the final
+  retained digest. Migrations run twice after Site setup; redaction, zero
+  target write, zero production traffic and disposable cleanup pass.
+- Failed controlled runs `31936906558`, `31938675345`, `31940189741`,
+  `31941719602` and `31943330103` remain diagnostic-only evidence. They closed
+  two product roots (internal ingress write scope and Frappe field-unique race
+  classification) and three verifier/fixture roots through bounded forward
+  repairs, each followed by exact-SHA ordinary CI. No failed run supplied a
+  PASS artifact or weakened a contract, permission, transaction or criterion.
+- The raw-request/event/OpenAPI/ownership/DocType/ingress/repository/worker/
+  Project/i18n/migration/rollback/runtime/secrets release review reports no
+  P0, P1 or P2 finding. Complete evidence is
+  `implementation/evidence/phase-8/p8-02-validation.md`. P8-02 closes
+  `PASS_LEVEL_3`; rollback retains every Inbox body/hash, claim, conflict,
+  source binding, Project draft, Gate shell and audit and disables only the
+  fixed route, enqueue and worker before a reviewed forward repair.
+- Standing continuous-delivery authority activates only the bounded P8-03
+  requirement/domain/existing-capability and security audit for `INT-003` and
+  the Item portion of `FR-DS-013`. It must freeze one operation-specific Item
+  request with exact released source identity/version/hash, expected target
+  version, actor/trace/idempotency, distinct approval/request/attempt/
+  uncertain/observed-result truth, ERP-owned formal mapping, permissions,
+  migration/rollback, affected tests and Level 3 impact before product code.
+  This controller marker is: `P8-02 Level 3 PASS; P8-03 audit active`.
+- Mock, enqueue, HTTP success and timeout cannot report a formal Item code or
+  target success. P8-04 through P8-09, production ERPNext/JCE endpoint,
+  credential, data and traffic, Item/MBOM/Asset/quality target writes and
+  generic operations/reconciliation remain inactive. There is no Hard Blocker
+  and no user action is required.

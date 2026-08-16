@@ -1,32 +1,30 @@
 # Blockers
 
-Updated: `2026-08-16T08:18:00Z`
+Updated: `2026-08-16T12:05:00Z`
 
 ## Active hard blockers
 
-None. P8-01 passes at exact final product SHA
-`b938926293c51c2e3ac1f63adab583c099a5c3ed`. Ordinary CI `31925662056`
-passes repository `95112716915`, frontend `95112716888`, secret
-`95112716949` and `119/119` fixed-Linux visual `95112716959`. Final Level 3
-workflow `31926087732` passes repository, frontend, secret, visual, controlled
-preflight and cumulative disposable-Site runtime `95115065221`. Runtime
-artifact `9258083274` has digest
-`sha256:86007c9e5fece16c3a0b01eeca608cbb5845ae50f976feb8c4c1da8aff2aab43`;
-seven-kind replay/order/conflict/restart, IDOR/redaction, migrations twice,
-zero target write, zero production traffic and cleanup pass. P8-02 checkpoint
-3 also passes at exact SHA `f3f7fba` and ordinary CI `31935510653`; only the
-final cumulative Level 3 Gate and release review are active. No user action,
-login or frontend operation is required.
+None. P8-02 passes at exact final product SHA
+`260ed2ef865180f33edfca0e8fe1daf4a0a4e771`. Ordinary CI `31944345420`
+passes repository `95157995410`, frontend `95157995356`, secret
+`95157995393` and `119/119` fixed-Linux visual `95157995395`. Final Level 3
+workflow `31944941030` passes repository, frontend, secret, visual, controlled
+preflight and cumulative disposable-Site runtime `95160766683`. Runtime
+artifact `9263250125` has digest
+`sha256:f9a8acee24ee8ac6d07c8e0efddd2cc384f1664fbd9397a7c3a219c59dc3b693`;
+signed ingress/Inbox concurrency/restart, at-most-one Project draft, stable
+cross-process replay, migrations twice, zero target write, zero production
+traffic and cleanup pass. Only the bounded P8-03 Item-publish audit is active.
+No user action, login or frontend operation is required.
 
 ## Active recovery
 
-None. P8-01 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
+None. P8-02 is sealed `PASS_LEVEL_3`; precursor controlled runs remain
 diagnostic evidence rather than PASS evidence and the final exact-SHA run is
-authoritative. P8-02 checkpoint 3 adds only the default-disabled signed route,
-durable Inbox/source landing, bounded leased worker and NPI-owned draft Project
-binding. The final Level 3 may execute only synthetic disposable-Site proof.
-Production adapters, target writes, P8-03 through P8-09 and the P8-07
-operations/replay/reconciliation surface remain inactive.
+authoritative. P8-03 changes no product behavior until its audit plan and
+transition CI pass. Production adapters, Item/MBOM/Asset/quality target writes,
+P8-04 through P8-09 and the P8-07 operations/replay/reconciliation surface
+remain inactive.
 
 Automatic machine import, confirmed production reservation, production ERPNext
 access, formal NCR/Quality Inspection projection, production approval/customer
@@ -37,8 +35,8 @@ actuals, stability policy, readiness/release, the external Released Trial
 Summary event/projection under `DR-REC-009`, form mapping, signature,
 retention and copy policy under `DR-REC-003` and `DR-REC-004`, and G7/ERP/
 production print authority remain scoped holds, not global Hard Blockers. The
-latest complete Level 3 is `31926087732` at
-`b938926293c51c2e3ac1f63adab583c099a5c3ed`. Production ERPNext/JCE endpoints,
+latest complete Level 3 is `31944941030` at
+`260ed2ef865180f33edfca0e8fe1daf4a0a4e771`. Production ERPNext/JCE endpoints,
 credentials, data and traffic; missing customization/sandbox mappings;
 `DR-REC-009`; and optional/later-domain `INT-008/009/011/012/013/014` behavior
 remain scoped holds, not global Hard Blockers.
