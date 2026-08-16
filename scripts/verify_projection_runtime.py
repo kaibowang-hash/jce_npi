@@ -289,7 +289,8 @@ def retained_context(administrator, base_url: str) -> dict[str, object]:
     require(
         workspace.status == 200
         and isinstance(workspace.body.get("masters"), list)
-        and isinstance(workspace.body.get("parts"), list),
+        and isinstance(workspace.body.get("parts"), list)
+        and isinstance(workspace.body.get("applicability"), list),
         "P8-01 retained Tooling workspace is unavailable",
     )
     masters = [
@@ -308,11 +309,29 @@ def retained_context(administrator, base_url: str) -> dict[str, object]:
         str(UUID(master_id)) == master_id,
         "P8-01 retained Tooling Master identity drifted",
     )
+    linked_part_ids = {
+        str(value["part"]["partGlobalId"])
+        for value in workspace.body["applicability"]
+        if isinstance(value, dict)
+        and value.get("projectGlobalId") == project_id
+        and value.get("toolingMasterGlobalId") == master_id
+        and isinstance(value.get("part"), dict)
+        and isinstance(value["part"].get("partGlobalId"), str)
+    }
+    require(
+        linked_part_ids,
+        "P8-01 retained Tooling applicability is unavailable",
+    )
     parts = [
         value
         for value in workspace.body["parts"]
         if isinstance(value, dict)
-        and value.get("title") == "Synthetic front housing"
+        and value.get("globalId") in linked_part_ids
+        and value.get("title") == "Synthetic front housing revised"
+        and isinstance(value.get("currentRevision"), dict)
+        and value["currentRevision"].get("partGlobalId") == value.get("globalId")
+        and value["currentRevision"].get("revisionNumber") == 2
+        and value["currentRevision"].get("revisionLabel") == "B"
     ]
     require(
         len(parts) == 1,

@@ -6,6 +6,8 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 from uuid import UUID
 
 
@@ -130,11 +132,105 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn('value.get("title") == "Synthetic shared front housing tool"', source)
-        self.assertIn('value.get("title") == "Synthetic front housing"', source)
+        self.assertIn('value.get("title") == "Synthetic front housing revised"', source)
+        self.assertIn('value.get("globalId") in linked_part_ids', source)
+        self.assertIn('value["part"].get("partGlobalId")', source)
         self.assertIn('value.get("physicalSerial") == "P6-02-PHYSICAL-001"', source)
         self.assertNotIn(
             "tooling_revision_runtime.project_context(administrator, base_url)", source
         )
+
+    def test_retained_context_rejects_same_title_part_not_linked_to_master(self) -> None:
+        project_id = "00000000-0000-4000-8000-000000000801"
+        master_id = "00000000-0000-4000-8000-000000000802"
+        part_id = "00000000-0000-4000-8000-000000000803"
+        part_revision_id = "00000000-0000-4000-8000-000000000804"
+        unrelated_part_id = "00000000-0000-4000-8000-000000000805"
+        tooling_set_id = "00000000-0000-4000-8000-000000000806"
+        responses = [
+            SimpleNamespace(
+                status=200,
+                body={
+                    "references": [
+                        {
+                            "type": "customer",
+                            "sourceSystem": "ERPNEXT",
+                            "sourceObjectId": "customer-fixture",
+                        }
+                    ]
+                },
+            ),
+            SimpleNamespace(
+                status=200,
+                body={
+                    "masters": [
+                        {
+                            "globalId": master_id,
+                            "title": "Synthetic shared front housing tool",
+                            "originatingProjectGlobalId": project_id,
+                        }
+                    ],
+                    "parts": [
+                        {
+                            "globalId": unrelated_part_id,
+                            "title": "Synthetic front housing revised",
+                            "currentRevision": {
+                                "globalId": "00000000-0000-4000-8000-000000000807",
+                                "partGlobalId": unrelated_part_id,
+                                "revisionNumber": 2,
+                                "revisionLabel": "B",
+                            },
+                        },
+                        {
+                            "globalId": part_id,
+                            "title": "Synthetic front housing revised",
+                            "currentRevision": {
+                                "globalId": part_revision_id,
+                                "partGlobalId": part_id,
+                                "revisionNumber": 2,
+                                "revisionLabel": "B",
+                            },
+                        },
+                    ],
+                    "applicability": [
+                        {
+                            "projectGlobalId": project_id,
+                            "toolingMasterGlobalId": master_id,
+                            "part": {"partGlobalId": part_id},
+                        }
+                    ],
+                },
+            ),
+            SimpleNamespace(
+                status=200,
+                body={
+                    "items": [
+                        {
+                            "globalId": tooling_set_id,
+                            "toolingMasterGlobalId": master_id,
+                            "physicalSerial": "P6-02-PHYSICAL-001",
+                        }
+                    ]
+                },
+            ),
+        ]
+        with (
+            patch.object(
+                self.runtime.document_runtime,
+                "fixture_project",
+                return_value=(project_id, 1),
+            ),
+            patch.object(
+                self.runtime.tooling_runtime,
+                "tooling_request",
+                side_effect=responses,
+            ),
+        ):
+            context = self.runtime.retained_context(object(), "http://127.0.0.1")
+        self.assertEqual(context["project_id"], project_id)
+        self.assertEqual(context["master_id"], master_id)
+        self.assertEqual(context["part_id"], part_id)
+        self.assertEqual(context["tooling_set_id"], tooling_set_id)
 
     def test_shell_projection_mode_is_cumulative_and_restores_route_switch(self) -> None:
         source = (SCRIPTS / "verify-frappe-runtime.sh").read_text(encoding="utf-8")
