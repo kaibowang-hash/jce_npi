@@ -271,6 +271,7 @@ test.describe("P8-01 live ERP projection read path", () => {
     await expect(
       page.getByRole("heading", { name: "ERPNext governed projections" }),
     ).toBeVisible();
+    await expect(page.getByText("Mobility Customer")).toBeVisible();
 
     await page.unrouteAll({ behavior: "wait" });
     await installSession(page, "en");
