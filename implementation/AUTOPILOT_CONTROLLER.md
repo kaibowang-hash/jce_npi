@@ -3901,3 +3901,51 @@ repeat or rewrite it merely to restore context. See
   effect. Generic DLQ/manual replay/reconciliation remains P8-07. P8-03 through
   P8-09 and production ERPNext/JCE endpoint, credential, data and traffic
   remain inactive. There is no Hard Blocker and no user action is required.
+
+## 2026-08-16 P8-02 checkpoint 3 PASS; final Level 3 active
+
+- Exact final checkpoint `f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39`
+  passes ordinary pull-request CI `31935510653`: repository `95136660668`
+  proves `2,020` tracked Python tests and repository/reconciliation checks;
+  frontend `95136660777` proves `60/60` files, `933/933` unit tests, `426/426`
+  E2E, `7,715` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities; secret
+  `95136660731` accepts `55` cumulative task paths, scans `23` first-parent task
+  commits and `518` complete branch commits with no leak; visual `95136660747`
+  passes the unchanged `119/119` fixed-Linux matrix.
+- Visual artifact `9260567884` has digest
+  `sha256:2c417cf2d93c1783bcb4e462b20ed903b65b3d0b3b51645757123d452b5f42e3`;
+  Gitleaks artifact `9260515460` has digest
+  `sha256:6b7d7a45995de3d254a38dee15b63b575e1a4ae1abf1e281089d7006952231b1`.
+  Controlled jobs skip as required because this is ordinary checkpoint CI,
+  not the final Level 3 dispatch.
+- Diagnostic run `31935393383` passed repository and failed only current-task
+  path verification because a historical P8-01 runtime test was changed for
+  the cumulative P8-02 label. Repair `f3f7fba` restores that test unchanged and
+  preserves its predecessor labels as CI comments; the new P8-02 test owns the
+  new scope. No product, baseline, threshold or PASS criterion changed.
+- The bounded short worker claims only authenticated pending or expired-
+  processing receipts, denies live-lease theft, revalidates raw event/frozen
+  policy/profile/source truth and locks the exact source binding before Project
+  work. It requires an enabled scoped internal actor, enabled owner and exact
+  published template, derives Project idempotency only from the source key and
+  reuses the existing NPI-owned draft aggregate.
+- Project creation, exact binding, Inbox result and audit share one transaction.
+  A bound source can only replay its exact Project ID; older/conflicted/later
+  versions cannot rewrite it. Focused proof covers one draft, exact template
+  snapshot, two `not_started` Gate shells and no Project submission, Gate review,
+  Work Item, target request/write or production contact. Complete evidence is
+  `implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md`.
+- This is checkpoint 3 PASS, not P8-02 completion. Standing authority activates
+  only the final Level 3 Gate: complete exact-SHA repository/frontend/secret/
+  visual verification, cumulative disposable-Site migrations/runtime,
+  default-disable/route recovery, bad/stale/key-rotation signatures, durable
+  acknowledgement, duplicate/conflict/reorder/concurrency, claim restart,
+  exactly one draft/binding/two Gate shells, later-version no rewrite,
+  redaction, zero target write, zero production traffic, cleanup and
+  `release-gate` review. Its marker is: `P8-02 checkpoint 3 PASS; final Level 3
+  active`.
+- P8-03 through P8-09, production ERPNext/JCE endpoint, credential, data and
+  traffic, Project submission, target writes and generic DLQ/manual replay/
+  reconciliation remain inactive. There is no Hard Blocker and no user action
+  is required.

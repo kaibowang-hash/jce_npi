@@ -523,3 +523,8 @@ Checkpoint 2 passes at exact product SHA
 `31932869203`. Checkpoint 3 is now the only active product scope; the final
 Level 3 boundary remains unchanged and production ERPNext/JCE contact remains
 prohibited.
+
+Checkpoint 3 passes at exact final product SHA
+`f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39` and ordinary CI
+`31935510653`. The final Level 3 Gate is now the only active scope; P8-03 and
+production ERPNext/JCE contact remain inactive until that Gate passes.

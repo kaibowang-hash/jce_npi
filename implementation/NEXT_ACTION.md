@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_3 — P8-02`
+`IN_PROGRESS_FINAL_LEVEL_3 — P8-02`
 
-Recovery time: `2026-08-16T07:16:00Z`
+Recovery time: `2026-08-16T08:18:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -143,6 +143,15 @@ P8-02 checkpoint 2 final product checkpoint:
 P8-02 checkpoint 2 ordinary CI:
 `31932869203`
 
+P8-02 checkpoint 3 implementation commit:
+`6960bd13fc07c99c86744df692ab995eb59d4b3c`
+
+P8-02 checkpoint 3 final checkpoint:
+`f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39`
+
+P8-02 checkpoint 3 ordinary CI:
+`31935510653`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -228,15 +237,21 @@ passes repository `95130229892`, frontend `95130229934`, secret
 jobs correctly skip. Complete evidence is
 `implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md`.
 
-Execute only P8-02 checkpoint 3: add the bounded pending/expired-claim worker,
-source-stream locking, server service-actor/owner/template resolution, existing
-Project draft aggregate reuse and atomic source binding, Inbox result and
-audit. Prove live-lease denial, expired recovery, crash/restart/concurrency,
-higher-before-older reorder, equal conflict, source-derived idempotency,
-policy/owner/template/code failure, exactly one draft with its exact template
-snapshot and Gate shells, later-version no rewrite and no submission/Gate/
-Work Item/target effect. Extend only the disposable synthetic cumulative
-runtime. Exact-SHA ordinary CI must pass before the final Level 3 Gate.
+P8-02 checkpoint 3 passes at exact SHA `f3f7fba`; ordinary CI `31935510653`
+passes repository `95136660668`, frontend `95136660777`, secret
+`95136660731` and unchanged `119/119` visual `95136660747`, while controlled
+jobs correctly skip. Complete evidence is
+`implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md`.
+
+Execute only the final P8-02 Level 3 Gate. First require the controller/evidence
+checkpoint to pass exact-SHA ordinary CI. Then dispatch the complete Level 3
+workflow against that unchanged SHA and prove repository/frontend/history-
+secret/`119/119` visual plus cumulative disposable-Site runtime, migrations
+twice, default-disable/route recovery, bad/stale/key-rotation signatures,
+durable acknowledgement, duplicate/conflict/reorder/concurrency, live/expired
+leases, exactly one draft/source binding/two Gate shells, later-version no
+rewrite, redaction, zero target write, zero production traffic and cleanup.
+Apply the `release-gate` review before P8-03 is activated.
 
 Do not claim the P8-07 `NFR-INT-001` operations/DLQ/replay/reconciliation slice,
 contact production ERPNext/JCE, infer current custom fields or service scopes,

@@ -1,16 +1,16 @@
 # Active Execution Goal
 
-Updated: `2026-08-16T07:16:00Z`
+Updated: `2026-08-16T08:18:00Z`
 
 - Goal: `NPI One V1.2 — Reconciled Autopilot Continuous Delivery`
 - Codex Goal ID: `019fd0b5-9261-7a02-ab3f-afc91036cc3b`
-- Mode: `IN_PROGRESS_CHECKPOINT_3 — P8-02`
+- Mode: `IN_PROGRESS_FINAL_LEVEL_3 — P8-02`
 - Final target: `IMPLEMENTATION_COMPLETE` or a true Hard Blocker defined by
   `implementation/AUTOPILOT_CONTROLLER.md`
 - Branch: `codex/npi-v1.2-implementation`
 - Latest exact product checkpoint:
-  `4c77c4472a0ea07bc14a2073f0b6c7d3b006b870` (pushed; P8-02
-  `CHECKPOINT_2_PASS`)
+  `f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39` (pushed; P8-02
+  `CHECKPOINT_3_PASS`)
 - Retained prior Phase Gate checkpoint:
   `31114021cf18cf5e32c22902de5150ed2922e7ba` (P7-08 Level 2 and Phase 7
   Level 3 PASS)
@@ -18,8 +18,8 @@ Updated: `2026-08-16T07:16:00Z`
   `31926087732` (`PASS — LEVEL 3` at `b938926293c51c2e3ac1f63adab583c099a5c3ed`;
   repository, frontend, secret, `119/119` visual and cumulative controlled Site)
 - Latest checkpoint exact-SHA CI:
-  `31932869203` (`PASS` at
-  `4c77c4472a0ea07bc14a2073f0b6c7d3b006b870`; P8-02 checkpoint 2)
+  `31935510653` (`PASS` at
+  `f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39`; P8-02 checkpoint 3)
 - Latest P7-02 product Gate:
   ordinary CI `31432120639` and exact-SHA controlled Gate `31432837104`
   (`PASS` at `3a267196d11921ba1111a0774f5f85bd8647ed9f`)
@@ -68,17 +68,20 @@ Updated: `2026-08-16T07:16:00Z`
 - P8-02 checkpoint 2 final checkpoint:
   `4c77c4472a0ea07bc14a2073f0b6c7d3b006b870` (`CHECKPOINT 2 PASS`;
   ordinary CI `31932869203` exact-SHA PASS; controlled lanes expected skipped)
+- P8-02 checkpoint 3 final checkpoint:
+  `f3f7fba8ed0c59ce958f2ecb7709ea3c5a6b1f39` (`CHECKPOINT 3 PASS`;
+  ordinary CI `31935510653` exact-SHA PASS; controlled lanes expected skipped)
 - P7-06 starting controller checkpoint:
   `75c67e6ffbe8b1cd113a7eac97c7878bce28e258` (`AUDIT PASS`;
   ordinary CI `31779635051` exact-SHA PASS; controlled lane expected skipped)
 - Current controller task:
-  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_CHECKPOINT_3`)
-- Resumed product task: `P8-02` (`ACTIVE_CHECKPOINT_3`)
+  `P8-02 — signed webhook and Inbox processing` (`IN_PROGRESS_FINAL_LEVEL_3`)
+- Resumed product task: `P8-02` (`ACTIVE_FINAL_LEVEL_3`)
 - Completed Phase 5 evidence:
   `implementation/phase-5-gate.md`
 - Current product Phase:
   `8 — ERPNext Integration and Execution Requests`
-  (`IN_PROGRESS — P8-02 CHECKPOINT 3`)
+  (`IN_PROGRESS — P8-02 FINAL LEVEL 3`)
 - Latest complete product Phase:
   `7 — Trial, Quality Collaboration and NPI Readiness` (`PASS — LEVEL 3`)
 
@@ -174,14 +177,23 @@ trilingual sources, coverage thresholds and zero vulnerabilities), secret
 Complete evidence is
 `implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md`.
 
-The only active atomic scope is P8-02 checkpoint 3: add the bounded
-pending/expired-claim worker, source lock, server actor/owner/template
-resolution, existing Project draft aggregate reuse and atomic source binding,
-Inbox result and audit. It must prove cross-process restart/concurrency and at
-most one NPI-owned Project draft while retaining the exact template snapshot
-and Gate-shell draft invariant. Only disposable synthetic runtime is allowed.
-Full operations/DLQ/replay/reconciliation remains P8-07; production ERPNext/
-JCE and P8-03 through P8-09 remain inactive. There is no Hard Blocker.
+P8-02 checkpoint 3 passes at exact final checkpoint `f3f7fba`. Ordinary CI
+`31935510653` passes repository `95136660668` (`2,020` tracked Python tests),
+frontend `95136660777` (`933/933` unit, `426/426` E2E, `7,715` direct
+trilingual sources, coverage thresholds and zero vulnerabilities), secret
+`95136660731` and unchanged `119/119` fixed-Linux visual `95136660747`.
+Complete evidence is
+`implementation/evidence/phase-8/p8-02-worker-project-checkpoint.md`.
+
+The only active atomic scope is the final P8-02 Level 3 Gate: run complete
+exact-SHA repository/frontend/secret/visual verification and cumulative
+disposable-Site runtime with migrations twice, default-disable/route recovery,
+signed-request rejection/key rotation, duplicate/conflict/reorder/concurrency,
+expired-claim restart, exactly one draft/source binding/two Gate shells,
+later-version no rewrite, redaction, zero target write, zero production traffic
+and cleanup, then perform the `release-gate` review. Full operations/DLQ/
+replay/reconciliation remains P8-07; production ERPNext/JCE and P8-03 through
+P8-09 remain inactive. There is no Hard Blocker.
 
 P7-01 passes Level 2 at exact product checkpoint `78efa3e`. Final unchanged
 workflow `31380834335` passes `1,485/1,485` Python, `822/822` frontend unit,

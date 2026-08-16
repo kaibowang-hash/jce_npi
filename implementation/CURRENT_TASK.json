@@ -3,7 +3,7 @@
   "task_id": "P8-02",
   "task_kind": "product",
   "phase": 8,
-  "status": "IN_PROGRESS_CHECKPOINT_3",
+  "status": "IN_PROGRESS_FINAL_LEVEL_3",
   "completion_gate": "LEVEL_3",
   "authorized_next_task": "P8-03",
   "base_checkpoint": "b938926293c51c2e3ac1f63adab583c099a5c3ed",
@@ -117,7 +117,7 @@
     "phase_status_resumed_product_task": "P8-02",
     "active_goal_marker": "P8-02",
     "next_action_marker": "P8-02",
-    "controller_marker": "P8-02 checkpoint 2 PASS; checkpoint 3 active"
+    "controller_marker": "P8-02 checkpoint 3 PASS; final Level 3 active"
   },
   "rollback": {
     "before_product_resume": "Restore exact P8-01 final checkpoint b938926293c51c2e3ac1f63adab583c099a5c3ed while retaining P8-01 observations, heads and audits; the P8-02 audit plan changes no product or external state.",
