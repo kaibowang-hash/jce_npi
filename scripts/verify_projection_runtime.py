@@ -243,7 +243,7 @@ def assert_tooling_consumers(
         and asset.get("sourceSystem") == "ERPNEXT"
         and asset.get("editableIn") == "ERPNEXT"
         and asset.get("toolingSetGlobalId") == tooling_set_id
-        and asset.get("targetVersion") == "sandbox-v1"
+        and asset.get("targetVersion") == "sandbox-asset-v1"
         and asset.get("mappingCardinality") == "zero_or_one_per_physical_set",
         "P8-01 Tool Asset consumer did not use confirmed projection truth",
     )
@@ -1015,7 +1015,7 @@ def _assert_consumers(project_id: str, master_id: str, tooling_set_id: str) -> N
     require(
         isinstance(asset, dict)
         and asset.get("toolingSetGlobalId") == tooling_set_id
-        and asset.get("targetVersion") == "sandbox-v1"
+        and asset.get("targetVersion") == "sandbox-asset-v1"
         and asset.get("state") == "available",
         "P8-01 direct Tool Asset reader closure drifted",
     )

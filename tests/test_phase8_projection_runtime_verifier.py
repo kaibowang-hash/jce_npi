@@ -145,6 +145,28 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
             self.assertIn('cost["rows"][0].get("amount") == "1200.5"', consumer)
             self.assertNotIn('cost["rows"][0].get("amount") == "1200.50"', consumer)
 
+    def test_consumer_proof_uses_asset_payload_target_version(self) -> None:
+        source = (SCRIPTS / "verify_projection_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        http_consumer = source[
+            source.index("def assert_tooling_consumers(") : source.index(
+                "def retained_context("
+            )
+        ]
+        direct_consumer = source[
+            source.index("def _assert_consumers(") : source.index(
+                "def seed_projection_truth("
+            )
+        ]
+        for consumer in (http_consumer, direct_consumer):
+            self.assertIn(
+                'asset.get("targetVersion") == "sandbox-asset-v1"', consumer
+            )
+            self.assertNotIn(
+                'asset.get("targetVersion") == "sandbox-v1"', consumer
+            )
+
     def test_retained_context_uses_exact_fixture_identity_not_global_cardinality(self) -> None:
         source = (SCRIPTS / "verify_projection_runtime.py").read_text(
             encoding="utf-8"
