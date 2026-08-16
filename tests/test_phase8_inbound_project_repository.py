@@ -80,11 +80,14 @@ class Phase8InboundProjectRepositoryTest(unittest.TestCase):
             sys.modules.pop(name, None)
         self.documents: dict[str, dict[str, FakeDocument]] = {}
         self.events: list[tuple[str, str, str]] = []
+        self.user_transitions: list[tuple[str, str]] = []
         self.locked: list[tuple[str, str]] = []
         self.fail_on: tuple[str, str] | None = None
         self.frappe = types.ModuleType("frappe")
         self.frappe._ = lambda source: source
         self.frappe.flags = types.SimpleNamespace()
+        self.frappe.session = types.SimpleNamespace(user="Guest")
+        self.frappe.set_user = self.set_user
         self.frappe.DoesNotExistError = type("DoesNotExistError", (Exception,), {})
         self.frappe.DuplicateEntryError = type("DuplicateEntryError", (Exception,), {})
         self.frappe.get_all = self.get_all
@@ -94,6 +97,10 @@ class Phase8InboundProjectRepositoryTest(unittest.TestCase):
             "npi_integration.inbound_project.frappe_repository"
         )
         self.repository = self.module.FrappeInboundProjectRepository()
+
+    def set_user(self, user: str) -> None:
+        self.user_transitions.append((self.frappe.session.user, user))
+        self.frappe.session.user = user
 
     def tearDown(self) -> None:
         for name in self.MODULES:
@@ -196,6 +203,11 @@ class Phase8InboundProjectRepositoryTest(unittest.TestCase):
             "npi_audit_append",
         ):
             self.assertFalse(hasattr(self.frappe.flags, flag))
+        self.assertEqual(self.frappe.session.user, "Guest")
+        self.assertEqual(
+            self.user_transitions,
+            [("Guest", "Administrator"), ("Administrator", "Guest")],
+        )
 
     def test_event_exact_replay_returns_original_and_conflict_never_overwrites_it(self) -> None:
         first = self.repository.land(self.authenticated(indent=2))
@@ -278,6 +290,27 @@ class Phase8InboundProjectRepositoryTest(unittest.TestCase):
         serialized = repr(dict(audit)).casefold()
         for forbidden in ("signature", "authorization", "cookie", "secret/"):
             self.assertNotIn(forbidden, serialized)
+        self.assertEqual(self.frappe.session.user, "Guest")
+        self.assertEqual(
+            self.user_transitions,
+            [("Guest", "Administrator"), ("Administrator", "Guest")],
+        )
+
+    def test_system_service_scope_restores_guest_after_repository_failure(self) -> None:
+        self.fail_on = ("insert", "NPI Inbox Message")
+        with self.assertRaisesRegex(RuntimeError, "Injected failure"):
+            self.repository.land(self.authenticated())
+        self.assertEqual(self.frappe.session.user, "Guest")
+        self.assertEqual(
+            self.user_transitions,
+            [("Guest", "Administrator"), ("Administrator", "Guest")],
+        )
+        for flag in (
+            "npi_inbound_project_inbox_write",
+            "npi_project_source_binding_write",
+            "npi_audit_append",
+        ):
+            self.assertFalse(hasattr(self.frappe.flags, flag))
 
 
 if __name__ == "__main__":
