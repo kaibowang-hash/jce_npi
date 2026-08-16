@@ -125,6 +125,17 @@ class Phase8ProjectionRuntimeVerifierTest(unittest.TestCase):
         self.assertIn("sourceObjectId=forbidden", source)
         self.assertIn("zero_or_one_per_physical_set", source)
 
+    def test_retained_context_uses_exact_fixture_identity_not_global_cardinality(self) -> None:
+        source = (SCRIPTS / "verify_projection_runtime.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('value.get("title") == "Synthetic shared front housing tool"', source)
+        self.assertIn('value.get("title") == "Synthetic front housing"', source)
+        self.assertIn('value.get("physicalSerial") == "P6-02-PHYSICAL-001"', source)
+        self.assertNotIn(
+            "tooling_revision_runtime.project_context(administrator, base_url)", source
+        )
+
     def test_shell_projection_mode_is_cumulative_and_restores_route_switch(self) -> None:
         source = (SCRIPTS / "verify-frappe-runtime.sh").read_text(encoding="utf-8")
         self.assertIn('"--projection-only"', source)

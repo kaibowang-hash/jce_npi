@@ -16,7 +16,7 @@ from uuid import UUID
 import verify_document_runtime as document_runtime
 import verify_tooling_acceptance_runtime as acceptance_runtime
 import verify_tooling_manufacturing_runtime as manufacturing_runtime
-import verify_tooling_revision_runtime as tooling_revision_runtime
+import verify_tooling_runtime as tooling_runtime
 from verify_frappe_runtime import (
     create_disposable_user,
     delete_disposable_user,
@@ -252,20 +252,112 @@ def assert_tooling_consumers(
 
 
 def retained_context(administrator, base_url: str) -> dict[str, object]:
-    (
-        project_id,
-        master_id,
-        part_id,
-        _part_revision_ids,
-        tooling_set_id,
-        model_reference,
-    ) = tooling_revision_runtime.project_context(administrator, base_url)
+    project_id, _version = document_runtime.fixture_project(administrator, base_url)
+    cockpit = tooling_runtime.tooling_request(
+        administrator,
+        base_url,
+        f"/api/npi/v1/projects/{project_id}/cockpit",
+        query_key="p801-project-reference",
+    )
+    references = cockpit.body.get("references")
+    require(
+        cockpit.status == 200 and isinstance(references, list),
+        "P8-01 retained Project references are unavailable",
+    )
+    customer_references = [
+        value
+        for value in references
+        if isinstance(value, dict) and value.get("type") == "customer"
+    ]
+    require(
+        len(customer_references) == 1,
+        "P8-01 retained Project customer reference cardinality drifted",
+    )
+    customer_reference = customer_references[0]
+    require(
+        customer_reference.get("sourceSystem") in {"NPI_ONE", "ERPNEXT"}
+        and isinstance(customer_reference.get("sourceObjectId"), str)
+        and bool(customer_reference["sourceObjectId"]),
+        "P8-01 retained Project customer reference drifted",
+    )
+    workspace = tooling_runtime.tooling_request(
+        administrator,
+        base_url,
+        tooling_runtime.tooling_path(project_id),
+        query_key="p801-retained-context",
+    )
+    require(
+        workspace.status == 200
+        and isinstance(workspace.body.get("masters"), list)
+        and isinstance(workspace.body.get("parts"), list),
+        "P8-01 retained Tooling workspace is unavailable",
+    )
+    masters = [
+        value
+        for value in workspace.body["masters"]
+        if isinstance(value, dict)
+        and value.get("title") == "Synthetic shared front housing tool"
+        and value.get("originatingProjectGlobalId") == project_id
+    ]
+    require(
+        len(masters) == 1,
+        "P8-01 retained Tooling Master cardinality drifted",
+    )
+    master_id = str(masters[0].get("globalId"))
+    require(
+        str(UUID(master_id)) == master_id,
+        "P8-01 retained Tooling Master identity drifted",
+    )
+    parts = [
+        value
+        for value in workspace.body["parts"]
+        if isinstance(value, dict)
+        and value.get("title") == "Synthetic front housing"
+    ]
+    require(
+        len(parts) == 1,
+        "P8-01 retained engineering Part cardinality drifted",
+    )
+    part_id = str(parts[0].get("globalId"))
+    require(
+        str(UUID(part_id)) == part_id,
+        "P8-01 retained engineering Part identity drifted",
+    )
+    sets = tooling_runtime.tooling_request(
+        administrator,
+        base_url,
+        tooling_runtime.tooling_set_path(project_id, master_id),
+        query_key="sets",
+    )
+    require(
+        sets.status == 200 and isinstance(sets.body.get("items"), list),
+        "P8-01 retained Tooling Sets are unavailable",
+    )
+    tooling_sets = [
+        value
+        for value in sets.body["items"]
+        if isinstance(value, dict)
+        and value.get("physicalSerial") == "P6-02-PHYSICAL-001"
+        and value.get("toolingMasterGlobalId") == master_id
+    ]
+    require(
+        len(tooling_sets) == 1,
+        "P8-01 retained physical Tooling Set cardinality drifted",
+    )
+    tooling_set_id = str(tooling_sets[0].get("globalId"))
+    require(
+        str(UUID(tooling_set_id)) == tooling_set_id,
+        "P8-01 retained physical Tooling Set identity drifted",
+    )
     return {
         "project_id": project_id,
         "master_id": master_id,
         "part_id": part_id,
         "tooling_set_id": tooling_set_id,
-        "model_reference": model_reference,
+        "model_reference": {
+            "sourceSystem": str(customer_reference["sourceSystem"]),
+            "sourceObjectId": str(customer_reference["sourceObjectId"]),
+        },
     }
 
 
