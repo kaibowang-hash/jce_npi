@@ -3855,3 +3855,49 @@ repeat or rewrite it merely to restore context. See
   manual replay/reconciliation, P8-03 through P8-09 and production ERPNext/JCE
   endpoint, credential, data and traffic remain inactive. There is no Hard
   Blocker and no user action is required.
+
+## 2026-08-16 P8-02 checkpoint 2 PASS; checkpoint 3 active
+
+- Exact product checkpoint `4c77c4472a0ea07bc14a2073f0b6c7d3b006b870`
+  passes ordinary pull-request CI `31932869203`: repository `95130229892`
+  proves `2,007` tracked Python tests and repository/reconciliation checks;
+  frontend `95130229934` proves `60/60` files, `933/933` unit tests, `426/426`
+  E2E, `7,713` complete direct English/`zh`/`zh-TW` sources, coverage
+  `80.36%/80.20%/83.00%/82.99%` and zero vulnerabilities; secret
+  `95130229918` scans `24` first-parent task commits and `515` complete branch
+  commits with no leak; visual `95130229907` passes the unchanged `119/119`
+  fixed-Linux matrix.
+- Visual artifact `9259841389` has digest
+  `sha256:6f99414ab8f0472e3413dd103c7624b367d83136a4563d676da15642d65a7b86`;
+  Gitleaks artifact `9259797335` has digest
+  `sha256:be8eb21923d1e7588e20f43b926a66a7838b6ad66731ad0641c587e215655a35`.
+  Controlled preflight/runtime skip as required at this intermediate
+  checkpoint; checkpoint 3 owns the cumulative disposable-Site proof.
+- The fixed BFF route accepts only exact POST. The raw adapter bounds body,
+  content and encoding, ignores caller `X-Forwarded-Proto`, resolves the Site
+  tenant and stays disabled without one exact non-production profile plus
+  opaque secret resolver. Generic Frappe method, wrong method and trailing
+  route variants cannot bypass the operation.
+- Signature/profile/key/secret verification precedes the closed business
+  parser. Stable `401/409/413/415/422/503/500` problems and structural audits
+  expose no raw body, signature, secret, Authorization, cookie, traceback,
+  Site path or database detail. Partial and ambiguous commit paths never
+  acknowledge or enqueue.
+- One transaction freezes the immutable Inbox receipt, exact source head and
+  audit. Exact event replay retains the original; event/source conflict,
+  superseded, reorder and received-after-creation truth never overwrite it.
+  `202` is staged only after commit, and enqueue runs only after commit. No
+  Project, Gate, Work Item, target request or network effect occurs. Complete
+  evidence is
+  `implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md`.
+- This is checkpoint 2 PASS, not P8-02 completion. Standing authority activates
+  only checkpoint 3: bounded pending/expired-claim recovery, source locking,
+  server actor/owner/template resolution, existing Project draft aggregate
+  reuse and atomic source binding, Inbox result and audit. Its marker is:
+  `P8-02 checkpoint 2 PASS; checkpoint 3 active`.
+- Checkpoint 3 must use only disposable synthetic configuration and prove
+  restart/concurrency, at-most-one NPI-owned draft, exact template snapshot and
+  Gate shells, later-version no rewrite and no submission/Gate/Work Item/target
+  effect. Generic DLQ/manual replay/reconciliation remains P8-07. P8-03 through
+  P8-09 and production ERPNext/JCE endpoint, credential, data and traffic
+  remain inactive. There is no Hard Blocker and no user action is required.

@@ -1,6 +1,6 @@
 # Phase 8 Requirement Anchor — ERPNext Reliable Integration
 
-Status: **IN PROGRESS — P8-02 CHECKPOINT 1 PASS; CHECKPOINT 2 ACTIVE**
+Status: **IN PROGRESS — P8-02 CHECKPOINT 2 PASS; CHECKPOINT 3 ACTIVE**
 
 Anchor date: 2026-08-16
 
@@ -327,11 +327,21 @@ trilingual coverage and no route, row, worker, Project, secret or network
 effect. Complete evidence is
 `implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
 
-Standing delivery authority now activates only P8-02 checkpoint 2 fixed signed
-ingress and durable landing. It may authenticate before parsing, resolve only
-injected non-production configuration/secrets, atomically land Inbox/source
-truth plus safe audit, commit before `202` and enqueue only after commit. It
-activates no worker or Project creation. Exact-SHA ordinary CI must pass before
-checkpoint 3. `NFR-INT-001` full operations/DLQ/replay/reconciliation remains
-P8-07. P8-03 through P8-09, production ERPNext/JCE contact and every target
-write remain inactive.
+P8-02 checkpoint 2 passes at exact product SHA `4c77c44` and ordinary CI
+`31932869203`. It proves the fixed POST-only route, raw request bounds, TLS
+server fact, default-disabled injected profile/secret boundary,
+authentication-before-business-parse, atomic Inbox/source/audit landing,
+commit-before-`202`, enqueue-after-commit, exact replay/conflict/order truth,
+safe rollback/redaction and no Project/Gate/Work Item/network effect. Complete
+evidence is
+`implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md`.
+
+Standing delivery authority now activates only P8-02 checkpoint 3 leased
+worker and at-most-one Project draft. It may add bounded pending/expired-claim
+recovery, source locking, server actor/owner/template resolution, existing
+Project draft aggregate reuse and atomic binding/result/audit. It may use only
+disposable synthetic runtime configuration and must preserve Project draft,
+template snapshot and Gate-shell invariants. Exact-SHA ordinary CI must pass
+before the final Level 3 Gate. `NFR-INT-001` full operations/DLQ/replay/
+reconciliation remains P8-07. P8-03 through P8-09, production ERPNext/JCE
+contact and every target write remain inactive.

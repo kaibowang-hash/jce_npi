@@ -1,9 +1,9 @@
 # Next Action
 
 Status:
-`IN_PROGRESS_CHECKPOINT_2 — P8-02`
+`IN_PROGRESS_CHECKPOINT_3 — P8-02`
 
-Recovery time: `2026-08-16T07:15:00Z`
+Recovery time: `2026-08-16T07:16:00Z`
 
 Required branch:
 `codex/npi-v1.2-implementation`
@@ -137,6 +137,12 @@ P8-02 checkpoint 1 final product checkpoint:
 P8-02 checkpoint 1 ordinary CI:
 `31930363720`
 
+P8-02 checkpoint 2 final product checkpoint:
+`4c77c4472a0ea07bc14a2073f0b6c7d3b006b870`
+
+P8-02 checkpoint 2 ordinary CI:
+`31932869203`
+
 ## Current authoritative action
 
 P7-08 passes Level 2 at exact final product checkpoint `3111402`. Ordinary CI
@@ -216,15 +222,21 @@ passes repository `95124090677`, frontend `95124090661`, secret
 jobs correctly skip. Complete evidence is
 `implementation/evidence/phase-8/p8-02-domain-metadata-checkpoint.md`.
 
-Execute only P8-02 checkpoint 2: add the one fixed POST route, raw request
-adapter, authentication-before-parse sequence, disabled-by-default profile and
-injected secret resolver, safe structural audit/problem responses, atomic
-Inbox plus source-stream durable landing, commit-before-`202` response and
-enqueue-after-commit behavior. Prove authentication ordering, route disable/
-recovery, exact duplicate and event/source hash conflicts, source ordering,
-rollback, no Project creation and no external call. Do not activate the worker,
-create a Project, install a default profile/secret, contact a network target or
-begin checkpoint 3. Exact-SHA ordinary CI must pass before checkpoint 3.
+P8-02 checkpoint 2 passes at exact SHA `4c77c44`; ordinary CI `31932869203`
+passes repository `95130229892`, frontend `95130229934`, secret
+`95130229918` and unchanged `119/119` visual `95130229907`, while controlled
+jobs correctly skip. Complete evidence is
+`implementation/evidence/phase-8/p8-02-ingress-landing-checkpoint.md`.
+
+Execute only P8-02 checkpoint 3: add the bounded pending/expired-claim worker,
+source-stream locking, server service-actor/owner/template resolution, existing
+Project draft aggregate reuse and atomic source binding, Inbox result and
+audit. Prove live-lease denial, expired recovery, crash/restart/concurrency,
+higher-before-older reorder, equal conflict, source-derived idempotency,
+policy/owner/template/code failure, exactly one draft with its exact template
+snapshot and Gate shells, later-version no rewrite and no submission/Gate/
+Work Item/target effect. Extend only the disposable synthetic cumulative
+runtime. Exact-SHA ordinary CI must pass before the final Level 3 Gate.
 
 Do not claim the P8-07 `NFR-INT-001` operations/DLQ/replay/reconciliation slice,
 contact production ERPNext/JCE, infer current custom fields or service scopes,
