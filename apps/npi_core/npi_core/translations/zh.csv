@@ -7948,3 +7948,25 @@ Response contract invalid,响应契约无效
 Response authentication invalid,响应身份验证无效
 Unknown execution fault,未知的执行故障
 The current Item mapping expectation is unavailable.,当前物料映射预期不可用。
+NPI Item Publish Stream Guard,物料发布串流守卫
+Active Item Publish Request,活动物料发布请求
+Active Target Idempotency Key Hash,活动目标幂等键哈希
+Active Item Publish State,活动物料发布状态
+Last Item Publish Request,最近物料发布请求
+Last Target Idempotency Key Hash,最近目标幂等键哈希
+Last Item Publish State,最近物料发布状态
+Blocked Reason Code,阻断原因代码
+Active Item Publish binding,活动物料发布绑定
+Last Item Publish binding,最近物料发布绑定
+The Item source stream key hash does not match its identity.,物料来源流键哈希与其身份不匹配。
+The Item source stream guard version must advance by one.,物料来源串流守卫版本必须递增一位。
+"{label} must contain request, target key, and state.","{label}必须包含请求、目标键和状态。"
+{label} contains an invalid state.,{label}包含无效状态。
+Item publish stream guards can only be changed by the controlled Item execution service.,物料发布串流守卫只能由受控物料执行服务更改。
+Executable Item publish requests require a target key and service actor.,可执行物料发布请求需要目标键和服务主体。
+Mock Item publish requests cannot freeze a target key or service actor.,Mock物料发布请求不能冻结目标键或服务主体。
+The target idempotency key must match the semantic target effect.,目标幂等键必须匹配语义目标效果。
+The semantic target effect hash does not match its immutable request.,语义目标效果哈希与其不可变请求不匹配。
+Executable Item Outbox messages require the exact target key and service actor.,可执行物料发件箱消息需要精确目标键和服务主体。
+Service Actor User ID,服务主体用户 ID
+Semantic Target Effect Hash,语义目标效果哈希

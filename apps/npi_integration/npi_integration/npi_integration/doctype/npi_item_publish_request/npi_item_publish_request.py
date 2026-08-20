@@ -26,6 +26,7 @@ from npi_integration.item_publish.domain import (
     ItemPublishRequestState,
     ItemTargetMode,
     canonical_hash,
+    semantic_target_effect_hash,
 )
 from npi_integration.item_publish.frappe_validation import (
     deny_item_history_delete,
@@ -80,9 +81,12 @@ _IMMUTABLE_FIELDS = (
     "expected_mapping_observation_hash",
     "dispatch_allowed",
     "actor_user_id",
+    "service_actor_user_id",
     "request_id",
     "trace_id",
     "idempotency_key_hash",
+    "target_idempotency_key_hash",
+    "semantic_effect_hash",
     "payload_hash",
     "created_at",
 )
@@ -117,6 +121,10 @@ class NPIItemPublishRequest(Document):
             )
         self.tenant_id = tenant_text(self.tenant_id)
         self.actor_user_id = actor_text(self.actor_user_id, _("Actor User ID"))
+        if self.service_actor_user_id:
+            self.service_actor_user_id = actor_text(
+                self.service_actor_user_id, _("Service Actor User ID")
+            )
 
     def validate(self) -> None:
         previous = self.get_doc_before_save()
@@ -182,6 +190,16 @@ class NPIItemPublishRequest(Document):
             ("payload_hash", _("Item Publish Request Payload Hash")),
         ):
             setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
+        if self.target_idempotency_key_hash:
+            self.target_idempotency_key_hash = lowercase_sha256(
+                self.target_idempotency_key_hash,
+                _("Target Idempotency Key Hash"),
+            )
+        if self.semantic_effect_hash:
+            self.semantic_effect_hash = lowercase_sha256(
+                self.semantic_effect_hash,
+                _("Semantic Target Effect Hash"),
+            )
         source = json_object(self.source_snapshot, _("Exact Item Source Snapshot"))
         evidence = json_object(
             self.released_evidence_snapshot, _("Exact Released Item Evidence")
@@ -261,7 +279,47 @@ class NPIItemPublishRequest(Document):
                     _("Mock Item publish requests cannot dispatch or report target progress."),
                     frappe.ValidationError,
                 )
-        elif not self.dispatch_allowed:
+        if mode is ItemTargetMode.MOCK:
+            if self.target_idempotency_key_hash or self.service_actor_user_id:
+                frappe.throw(
+                    _("Mock Item publish requests cannot freeze a target key or service actor."),
+                    frappe.ValidationError,
+                )
+        else:
+            if not self.target_idempotency_key_hash or not self.service_actor_user_id:
+                frappe.throw(
+                    _("Executable Item publish requests require a target key and service actor."),
+                    frappe.ValidationError,
+                )
+            expected_effect_hash = semantic_target_effect_hash(
+                source=source,
+                released_evidence=evidence,
+                profile={
+                    "profileId": self.profile_id,
+                    "profileVersion": self.profile_version,
+                    "targetMode": mode.value,
+                    "environmentCode": self.environment_code,
+                    "snapshotHash": self.profile_snapshot_hash,
+                },
+                mapping_expectation={
+                    "mappingVersion": mapping_version,
+                    "formalItemCode": self.expected_formal_item_code or None,
+                    "targetVersion": self.expected_target_version or None,
+                    "observationHash": self.expected_mapping_observation_hash or None,
+                },
+            )
+            if self.target_idempotency_key_hash != expected_effect_hash:
+                frappe.throw(
+                    _("The target idempotency key must match the semantic target effect."),
+                    frappe.ValidationError,
+                )
+            if self.semantic_effect_hash and self.semantic_effect_hash != expected_effect_hash:
+                frappe.throw(
+                    _("The semantic target effect hash does not match its immutable request."),
+                    frappe.ValidationError,
+                )
+            self.semantic_effect_hash = expected_effect_hash
+        if not self.dispatch_allowed and mode is not ItemTargetMode.MOCK:
             frappe.throw(
                 _("Executable Item publish requests must retain dispatch authority."),
                 frappe.ValidationError,

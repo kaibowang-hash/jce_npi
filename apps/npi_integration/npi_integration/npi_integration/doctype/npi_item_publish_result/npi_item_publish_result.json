@@ -12,7 +12,7 @@
     {"fieldname": "global_id", "fieldtype": "Data", "label": "Global ID", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "request_global_id", "fieldtype": "Link", "label": "Item Publish Request", "options": "NPI Item Publish Request", "reqd": 1, "read_only": 1},
     {"fieldname": "outbox_event_id", "fieldtype": "Link", "label": "Item Outbox Event ID", "options": "NPI Outbox Message", "reqd": 1, "read_only": 1},
-    {"fieldname": "attempt_global_id", "fieldtype": "Link", "label": "Item Publish Attempt", "options": "NPI Item Publish Attempt", "reqd": 1, "read_only": 1},
+    {"fieldname": "attempt_global_id", "fieldtype": "Link", "label": "Item Publish Attempt", "options": "NPI Item Publish Attempt", "reqd": 1, "unique": 1, "read_only": 1},
     {"fieldname": "attempt_number", "fieldtype": "Int", "label": "Item Publish Attempt Number", "reqd": 1, "read_only": 1},
     {"fieldname": "idempotency_key_hash", "fieldtype": "Data", "label": "Idempotency Key Hash", "reqd": 1, "read_only": 1},
     {"fieldname": "source_hash", "fieldtype": "Data", "label": "Item Source Hash", "reqd": 1, "read_only": 1},

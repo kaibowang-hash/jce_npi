@@ -481,6 +481,104 @@ class ItemExecutionProfileReference:
         }
 
 
+def semantic_target_effect_payload(
+    *,
+    source: ItemSourceSnapshot | Mapping[str, object],
+    released_evidence: ReleasedItemSourceEvidence | Mapping[str, object],
+    profile: ItemExecutionProfileReference | Mapping[str, object],
+    mapping_expectation: ItemMappingExpectation | Mapping[str, object],
+) -> dict[str, object]:
+    """Return the request-independent target effect identity.
+
+    The effect is intentionally based on immutable source/evidence/profile and
+    the server-derived mapping expectation.  Transport identities, requester
+    identities, selected occurrences and attempt identities are deliberately
+    absent so a retry or a sibling occurrence cannot create a new target
+    mutation identity for the same semantic effect.
+    """
+
+    source_mapping = (
+        source.canonical_mapping()
+        if isinstance(source, ItemSourceSnapshot)
+        else dict(source)
+    )
+    evidence = (
+        released_evidence.canonical_mapping()
+        if isinstance(released_evidence, ReleasedItemSourceEvidence)
+        else dict(released_evidence)
+    )
+    profile_mapping = (
+        profile.canonical_mapping()
+        if isinstance(profile, ItemExecutionProfileReference)
+        else dict(profile)
+    )
+    expectation_mapping = (
+        mapping_expectation.canonical_mapping()
+        if isinstance(mapping_expectation, ItemMappingExpectation)
+        else dict(mapping_expectation)
+    )
+    evidence.pop("publishRequestGlobalId", None)
+    intent = (
+        mapping_expectation.intent.value
+        if isinstance(mapping_expectation, ItemMappingExpectation)
+        else str(
+            expectation_mapping.get("intent")
+            or (
+                "create_item"
+                if int(expectation_mapping.get("mappingVersion") or 0) == 0
+                else "update_item_engineering_fields"
+            )
+        )
+    )
+    return {
+        "contractVersion": ITEM_PUBLISH_SCHEMA_VERSION,
+        "apiVersion": ITEM_PUBLISH_API_VERSION,
+        "operation": ITEM_PUBLISH_OPERATION,
+        "tenantId": (
+            source.tenant_id
+            if isinstance(source, ItemSourceSnapshot)
+            else source_mapping.get("tenantId")
+        ),
+        "projectGlobalId": (
+            str(source.project_global_id)
+            if isinstance(source, ItemSourceSnapshot)
+            else source_mapping.get("projectGlobalId")
+        ),
+        "source": {
+            "streamKeyHash": source_mapping.get("streamKeyHash"),
+            "sourceHash": source_mapping.get("sourceHash"),
+            "engineeringItemId": source_mapping.get("engineeringItemId"),
+        },
+        "releasedEvidence": evidence,
+        "profile": profile_mapping,
+        "intent": intent,
+        "mappingExpectation": expectation_mapping,
+    }
+
+
+def semantic_target_effect_hash(
+    *,
+    source: ItemSourceSnapshot | Mapping[str, object],
+    released_evidence: ReleasedItemSourceEvidence | Mapping[str, object],
+    profile: ItemExecutionProfileReference | Mapping[str, object],
+    mapping_expectation: ItemMappingExpectation | Mapping[str, object],
+) -> str:
+    """Hash the canonical effect identity used as target idempotency key."""
+
+    return canonical_hash(
+        semantic_target_effect_payload(
+            source=source,
+            released_evidence=released_evidence,
+            profile=profile,
+            mapping_expectation=mapping_expectation,
+        )
+    )
+
+
+# Explicit alias used by persistence/security code and downstream tests.
+item_publish_target_effect_hash = semantic_target_effect_hash
+
+
 @dataclass(frozen=True, slots=True)
 class ItemPublishRequest:
     global_id: UUID
@@ -495,6 +593,9 @@ class ItemPublishRequest:
     state: ItemPublishRequestState
     created_at: datetime
     payload_hash: str = ""
+    target_idempotency_key_hash: str | None = None
+    service_actor_user_id: str | None = None
+    semantic_effect_hash: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "global_id", _uuid(self.global_id, "request.globalId"))
@@ -518,6 +619,26 @@ class ItemPublishRequest:
             "idempotency_key_hash",
             _hash(self.idempotency_key_hash, "request.idempotencyKeyHash"),
         )
+        if self.target_idempotency_key_hash is not None:
+            object.__setattr__(
+                self,
+                "target_idempotency_key_hash",
+                _hash(
+                    self.target_idempotency_key_hash,
+                    "request.targetIdempotencyKeyHash",
+                ),
+            )
+        if self.service_actor_user_id is not None:
+            object.__setattr__(
+                self,
+                "service_actor_user_id",
+                _text(
+                    self.service_actor_user_id,
+                    "request.serviceActorUserId",
+                    254,
+                    _ACTOR_PATTERN,
+                ),
+            )
         if not isinstance(self.state, ItemPublishRequestState):
             raise ItemPublishContractError("request.state is unsupported.")
         if (
@@ -530,11 +651,35 @@ class ItemPublishRequest:
             raise ItemPublishContractError(
                 "request state does not match target mode."
             )
+        if self.profile.target_mode is ItemTargetMode.MOCK:
+            if self.target_idempotency_key_hash or self.service_actor_user_id:
+                raise ItemPublishContractError(
+                    "Mock requests cannot freeze target idempotency or a service actor."
+                )
         object.__setattr__(self, "created_at", _aware_utc(self.created_at, "request.createdAt"))
         expected_hash = canonical_hash(self.payload())
         if self.payload_hash and _hash(self.payload_hash, "request.payloadHash") != expected_hash:
             raise ItemPublishContractError("request payload hash does not match the exact command.")
         object.__setattr__(self, "payload_hash", expected_hash)
+        expected_effect = semantic_target_effect_hash(
+            source=self.source,
+            released_evidence=self.released_evidence,
+            profile=self.profile,
+            mapping_expectation=self.mapping_expectation,
+        )
+        # The dataclass is also used to rehydrate legacy/in-memory rows.  The
+        # persistence controllers perform the strict immutable-hash check; a
+        # reconstructed value always carries the effect recalculated here.
+        object.__setattr__(self, "semantic_effect_hash", expected_effect)
+        if self.profile.target_mode is not ItemTargetMode.MOCK and not self.target_idempotency_key_hash:
+            # Keep dataclass replay/upgrade compatibility for legacy in-memory
+            # values; persistence validation requires this field for every new
+            # non-Mock row and the factory always supplies it.
+            object.__setattr__(self, "target_idempotency_key_hash", expected_effect)
+        if self.target_idempotency_key_hash and self.target_idempotency_key_hash != expected_effect:
+            raise ItemPublishContractError(
+                "request target idempotency key must equal its semantic target effect."
+            )
 
     @property
     def dispatch_allowed(self) -> bool:
@@ -576,6 +721,9 @@ class ItemPublishRequest:
             "profile_version": self.profile.profile_version,
             "profile_snapshot_hash": self.profile.snapshot_hash,
             "idempotency_key_hash": self.idempotency_key_hash,
+            "target_idempotency_key_hash": self.target_idempotency_key_hash,
+            "service_actor_user_id": self.service_actor_user_id,
+            "semantic_effect_hash": self.semantic_effect_hash,
         }
 
 
@@ -589,9 +737,17 @@ def create_item_publish_request(
     request_id: UUID,
     trace_id: str,
     idempotency_key_hash: str,
+    service_actor_user_id: str | None = None,
+    target_idempotency_key_hash: str | None = None,
     global_id: UUID | None = None,
     created_at: datetime | None = None,
 ) -> ItemPublishRequest:
+    effect_hash = semantic_target_effect_hash(
+        source=source,
+        released_evidence=released_evidence,
+        profile=profile,
+        mapping_expectation=mapping_expectation,
+    )
     return ItemPublishRequest(
         global_id=global_id or uuid4(),
         source=source,
@@ -608,6 +764,17 @@ def create_item_publish_request(
             else ItemPublishRequestState.QUEUED
         ),
         created_at=created_at or datetime.now(UTC),
+        target_idempotency_key_hash=(
+            None
+            if profile.target_mode is ItemTargetMode.MOCK
+            else target_idempotency_key_hash or effect_hash
+        ),
+        service_actor_user_id=(
+            None
+            if profile.target_mode is ItemTargetMode.MOCK
+            else service_actor_user_id
+        ),
+        semantic_effect_hash=effect_hash,
     )
 
 

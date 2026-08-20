@@ -707,7 +707,10 @@
         "profile_id",
         "profile_version",
         "profile_snapshot_hash",
-        "idempotency_key_hash"
+        "idempotency_key_hash",
+        "target_idempotency_key_hash",
+        "service_actor_user_id",
+        "semantic_effect_hash"
       ],
       "properties": {
         "schema_version": {"const": 1},
@@ -729,7 +732,10 @@
         "profile_id": {"type": "string", "minLength": 1, "maxLength": 128},
         "profile_version": {"type": "integer", "minimum": 1},
         "profile_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        "idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target_idempotency_key_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "service_actor_user_id": {"type": "string", "minLength": 1, "maxLength": 254},
+        "semantic_effect_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       },
       "allOf": [
         {

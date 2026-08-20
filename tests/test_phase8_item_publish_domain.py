@@ -34,6 +34,8 @@ from npi_integration.item_publish.domain import (
     create_item_publish_request,
     group_item_source,
     issue_item_claim,
+    semantic_target_effect_hash,
+    semantic_target_effect_payload,
 )
 
 
@@ -95,6 +97,50 @@ def profile(mode: ItemTargetMode) -> ItemExecutionProfileReference:
 
 
 class Phase8ItemPublishDomainTest(unittest.TestCase):
+    def test_semantic_target_effect_excludes_transport_actor_occurrence_and_attempt_identity(self) -> None:
+        source = group_item_source(
+            tenant_id="tenant-synthetic",
+            project_global_id=uid(1),
+            selected_publish_node_global_id=uid(2),
+            occurrences=(occurrence(2), occurrence(3)),
+        )
+        expectation = ItemMappingExpectation(0)
+        payload = semantic_target_effect_payload(
+            source=source,
+            released_evidence=evidence(),
+            profile=profile(ItemTargetMode.SYNTHETIC),
+            mapping_expectation=expectation,
+        )
+        serialized = str(payload)
+        self.assertNotIn("requestGlobalId", serialized)
+        self.assertNotIn("requestId", serialized)
+        self.assertNotIn("idempotencyKey", serialized)
+        self.assertNotIn("actor", serialized)
+        self.assertNotIn("selectedPublishNodeGlobalId", serialized)
+        self.assertNotIn("attempt", serialized)
+        self.assertEqual(
+            semantic_target_effect_hash(
+                source=source,
+                released_evidence=evidence(),
+                profile=profile(ItemTargetMode.SYNTHETIC),
+                mapping_expectation=expectation,
+            ),
+            canonical_hash(payload),
+        )
+        changed_profile = replace(
+            profile(ItemTargetMode.SYNTHETIC),
+            profile_version=2,
+        )
+        self.assertNotEqual(
+            semantic_target_effect_hash(
+                source=source,
+                released_evidence=evidence(),
+                profile=changed_profile,
+                mapping_expectation=expectation,
+            ),
+            canonical_hash(payload),
+        )
+
     def test_grouping_uses_project_scoped_engineering_identity_and_all_occurrences(self) -> None:
         source = group_item_source(
             tenant_id="tenant-synthetic",

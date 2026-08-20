@@ -59,8 +59,11 @@ _V1_FIELDS = (
     "source_hash",
     "expected_mapping_version",
     "actor_user_id",
+    "service_actor_user_id",
     "request_id",
     "idempotency_key_hash",
+    "target_idempotency_key_hash",
+    "semantic_effect_hash",
     "event_snapshot_hash",
 )
 _IMMUTABLE_V1_FIELDS = (
@@ -110,6 +113,10 @@ class NPIOutboxMessage(Document):
             setattr(self, fieldname, canonical_uuid(getattr(self, fieldname), label))
         self.tenant_id = tenant_text(self.tenant_id)
         self.actor_user_id = actor_text(self.actor_user_id, _("Actor User ID"))
+        if self.service_actor_user_id:
+            self.service_actor_user_id = actor_text(
+                self.service_actor_user_id, _("Service Actor User ID")
+            )
         if self.claim_token:
             self.claim_token = canonical_uuid(
                 self.claim_token, _("Item Outbox Claim Token")
@@ -182,6 +189,17 @@ class NPIOutboxMessage(Document):
             ("payload_hash", _("Payload Hash")),
         ):
             setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
+        for fieldname, label in (
+            ("target_idempotency_key_hash", _("Target Idempotency Key Hash")),
+            ("semantic_effect_hash", _("Semantic Target Effect Hash")),
+        ):
+            if getattr(self, fieldname, None):
+                setattr(self, fieldname, lowercase_sha256(getattr(self, fieldname), label))
+        if not self.target_idempotency_key_hash or not self.service_actor_user_id:
+            frappe.throw(
+                _("Executable Item Outbox messages require the exact target key and service actor."),
+                frappe.ValidationError,
+            )
         payload = json_object(self.payload, _("Payload"))
         if canonical_hash(payload) != self.payload_hash:
             frappe.throw(
@@ -207,9 +225,12 @@ class NPIOutboxMessage(Document):
                 "expectedMappingVersion": self.expected_mapping_version,
                 "expectedTargetVersion": self.expected_target_version or None,
                 "actorUserId": self.actor_user_id,
+                "serviceActorUserId": self.service_actor_user_id,
                 "requestId": self.request_id,
                 "traceId": self.trace_id,
                 "idempotencyKeyHash": self.idempotency_key_hash,
+                "targetIdempotencyKeyHash": self.target_idempotency_key_hash,
+                "semanticEffectHash": self.semantic_effect_hash or None,
                 "payloadHash": self.payload_hash,
             }
         )

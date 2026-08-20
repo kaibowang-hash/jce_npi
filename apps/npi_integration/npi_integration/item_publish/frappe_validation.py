@@ -13,6 +13,7 @@ ITEM_IDEMPOTENCY_WRITE_FLAG = "npi_item_publish_idempotency_write"
 ITEM_ATTEMPT_WRITE_FLAG = "npi_item_publish_attempt_write"
 ITEM_RESULT_WRITE_FLAG = "npi_item_publish_result_write"
 ITEM_MAPPING_WRITE_FLAG = "npi_item_mapping_write"
+ITEM_STREAM_GUARD_WRITE_FLAG = "npi_item_publish_stream_guard_write"
 AUDIT_APPEND_FLAG = "npi_audit_append"
 SYSTEM_SERVICE_USER = "Administrator"
 
@@ -59,6 +60,15 @@ def require_item_mapping_write() -> None:
     )
 
 
+def require_item_stream_guard_write() -> None:
+    _require_flag(
+        ITEM_STREAM_GUARD_WRITE_FLAG,
+        _(
+            "Item publish stream guards can only be changed by the controlled Item execution service."
+        ),
+    )
+
+
 def deny_item_history_update() -> None:
     frappe.throw(
         _("Item publish execution history cannot be changed."),
@@ -89,6 +99,7 @@ def item_request_transaction_write() -> Iterator[None]:
             _flag_scope(ITEM_REQUEST_WRITE_FLAG),
             _flag_scope(ITEM_IDEMPOTENCY_WRITE_FLAG),
             _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
         ):
             yield
@@ -101,6 +112,7 @@ def item_claim_write() -> Iterator[None]:
     with _service_user_write_scope():
         with (
             _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
             _flag_scope(ITEM_REQUEST_WRITE_FLAG),
             _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
             _flag_scope(AUDIT_APPEND_FLAG),
@@ -115,6 +127,7 @@ def item_result_transaction_write() -> Iterator[None]:
     with _service_user_write_scope():
         with (
             _flag_scope(ITEM_OUTBOX_WRITE_FLAG),
+            _flag_scope(ITEM_STREAM_GUARD_WRITE_FLAG),
             _flag_scope(ITEM_REQUEST_WRITE_FLAG),
             _flag_scope(ITEM_ATTEMPT_WRITE_FLAG),
             _flag_scope(ITEM_RESULT_WRITE_FLAG),

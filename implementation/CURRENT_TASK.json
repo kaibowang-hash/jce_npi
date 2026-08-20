@@ -64,6 +64,7 @@
     "apps/npi_integration/npi_integration/npi_integration/doctype/npi_item_publish_command_idempotency/**",
     "apps/npi_integration/npi_integration/npi_integration/doctype/npi_item_publish_request/**",
     "apps/npi_integration/npi_integration/npi_integration/doctype/npi_item_publish_result/**",
+    "apps/npi_integration/npi_integration/npi_integration/doctype/npi_item_publish_stream_guard/**",
     "apps/npi_integration/npi_integration/npi_integration/doctype/npi_outbox_message/**",
     "contracts/data-ownership.yaml",
     "contracts/integration-event.schema.json",
