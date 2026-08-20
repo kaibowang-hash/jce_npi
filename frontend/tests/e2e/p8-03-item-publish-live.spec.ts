@@ -258,6 +258,7 @@ async function installApi(
 async function openItemInspector(
   page: Page,
   locale: TestLocale,
+  options: { expectAttemptHistory?: boolean } = {},
 ): Promise<void> {
   await page.goto(`/projects/${projectId}?lang=${locale}&tab=ebom`, {
     waitUntil: "domcontentloaded",
@@ -278,7 +279,9 @@ async function openItemInspector(
     ),
   ).toBeVisible();
   await expect(inspector.locator(".item-publish__status-strip")).toBeVisible();
-  await expect(inspector.locator(".item-publish__attempts")).toBeVisible();
+  if (options.expectAttemptHistory ?? true) {
+    await expect(inspector.locator(".item-publish__attempts")).toBeVisible();
+  }
 }
 
 async function expectAxeClean(page: Page): Promise<void> {
@@ -342,7 +345,7 @@ test.describe("P8-03 live Item execution inspector", () => {
         profileMode: "synthetic",
       }),
     });
-    await openItemInspector(page, "en");
+    await openItemInspector(page, "en", { expectAttemptHistory: false });
 
     await page
       .getByRole("checkbox", {
@@ -354,6 +357,11 @@ test.describe("P8-03 live Item execution inspector", () => {
       page.getByText(
         "The immutable request was committed locally. This is not target success.",
       ),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("region", { name: "Item execution inspector" })
+        .locator(".item-publish__attempts"),
     ).toBeVisible();
 
     const command = observed.find(
